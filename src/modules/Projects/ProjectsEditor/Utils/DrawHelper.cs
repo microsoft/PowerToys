@@ -14,6 +14,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
+using System.Windows.Media.Media3D;
+using ModernWpf.Media.Animation;
 using ProjectsEditor.Models;
 
 namespace ProjectsEditor.Utils
@@ -246,6 +248,103 @@ namespace ProjectsEditor.Utils
 
             path.CloseFigure();
             return path;
+        }
+
+        internal static string CreateShortcutIcon(Project project, out Bitmap bitmap)
+        {
+            int iconSize = 128;
+            object shDesktop = (object)"Desktop";
+            IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell();
+            string shortcutIconFilename = (string)shell.SpecialFolders.Item(ref shDesktop) + $"\\{project.Name}.ico";
+            bitmap = new Bitmap(iconSize, iconSize);
+            using (Graphics graphics = Graphics.FromImage(bitmap))
+            {
+                graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                if (project != null)
+                {
+                    List<Application> selectedApps = project.Applications.Where(x => x.IsSelected).ToList();
+                    if (selectedApps.Count > 0)
+                    {
+                        graphics.DrawIcon(selectedApps[0].Icon, new Rectangle(0, 0, iconSize / 2, iconSize / 2));
+                    }
+
+                    if (selectedApps.Count > 1)
+                    {
+                        graphics.DrawIcon(selectedApps[1].Icon, new Rectangle(iconSize / 2, 0, iconSize / 2, iconSize / 2));
+                    }
+
+                    if (selectedApps.Count > 2)
+                    {
+                        graphics.DrawIcon(selectedApps[2].Icon, new Rectangle(0, iconSize / 2, iconSize / 2, iconSize / 2));
+                    }
+
+                    if (selectedApps.Count > 3)
+                    {
+                        graphics.DrawIcon(selectedApps[3].Icon, new Rectangle(iconSize / 2, iconSize / 2, iconSize / 2, iconSize / 2));
+                    }
+                }
+
+                graphics.DrawIcon(new Icon(@"images\Projects.ico"), new Rectangle(iconSize / 4, iconSize / 4, iconSize / 2, iconSize / 2));
+            }
+
+            FileStream fileStream = new FileStream(shortcutIconFilename, FileMode.OpenOrCreate);
+
+            using (var memoryStream = new MemoryStream())
+            {
+                bitmap.Save(memoryStream, ImageFormat.Png);
+
+                BinaryWriter iconWriter = new BinaryWriter(fileStream);
+                if (fileStream != null && iconWriter != null)
+                {
+                    // 0-1 reserved, 0
+                    iconWriter.Write((byte)0);
+                    iconWriter.Write((byte)0);
+
+                    // 2-3 image type, 1 = icon, 2 = cursor
+                    iconWriter.Write((short)1);
+
+                    // 4-5 number of images
+                    iconWriter.Write((short)1);
+
+                    // image entry 1
+                    // 0 image width
+                    iconWriter.Write((byte)iconSize);
+
+                    // 1 image height
+                    iconWriter.Write((byte)iconSize);
+
+                    // 2 number of colors
+                    iconWriter.Write((byte)0);
+
+                    // 3 reserved
+                    iconWriter.Write((byte)0);
+
+                    // 4-5 color planes
+                    iconWriter.Write((short)0);
+
+                    // 6-7 bits per pixel
+                    iconWriter.Write((short)32);
+
+                    // 8-11 size of image data
+                    iconWriter.Write((int)memoryStream.Length);
+
+                    // 12-15 offset of image data
+                    iconWriter.Write((int)(6 + 16));
+
+                    // write image data
+                    // png data must contain the whole png data file
+                    iconWriter.Write(memoryStream.ToArray());
+
+                    iconWriter.Flush();
+                }
+            }
+
+            fileStream.Flush();
+            fileStream.Close();
+            return shortcutIconFilename;
         }
     }
 }

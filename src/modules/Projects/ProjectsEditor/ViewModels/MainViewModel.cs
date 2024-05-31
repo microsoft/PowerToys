@@ -7,10 +7,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Windows.Media.Imaging;
 using ManagedCommon;
 using ProjectsEditor.Models;
 using ProjectsEditor.Utils;
@@ -131,17 +134,19 @@ namespace ProjectsEditor.ViewModels
             }
         }
 
-        private void CreateShortcut(Project editedProject)
+        private void CreateShortcut(Project project)
         {
             object shDesktop = (object)"Desktop";
             IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell();
-            string shortcutAddress = (string)shell.SpecialFolders.Item(ref shDesktop) + $"\\{editedProject.Name}.lnk";
+            string shortcutAddress = (string)shell.SpecialFolders.Item(ref shDesktop) + $"\\{project.Name}.lnk";
             IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(shortcutAddress);
-            shortcut.Description = $"Project Launcher {editedProject.Id}";
+            shortcut.Description = $"Project Launcher {project.Id}";
             string basePath = AppDomain.CurrentDomain.BaseDirectory;
             shortcut.TargetPath = Path.Combine(basePath, "ProjectsEditor.exe");
-            shortcut.Arguments = '"' + editedProject.Id + '"';
+            shortcut.Arguments = '"' + project.Id + '"';
             shortcut.WorkingDirectory = basePath;
+            string iconFilename = DrawHelper.CreateShortcutIcon(project, out Bitmap bitmap);
+            shortcut.IconLocation = iconFilename;
             shortcut.Save();
         }
 
@@ -184,7 +189,23 @@ namespace ProjectsEditor.ViewModels
                 projectEdited.Initialize();
             }
 
+            DrawHelper.CreateShortcutIcon(selectedProject, out Bitmap bitmap);
+            BitmapImage bitmapImage;
+            using (var memory = new MemoryStream())
+            {
+                bitmap.Save(memory, ImageFormat.Png);
+                memory.Position = 0;
+
+                bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = memory;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.EndInit();
+                bitmapImage.Freeze();
+            }
+
             editPage.DataContext = projectEdited;
+            editPage.IconPreview.Source = bitmapImage;
             _mainWindow.ShowPage(editPage);
             lastUpdatedTimer.Stop();
         }

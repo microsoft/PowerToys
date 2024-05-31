@@ -144,19 +144,22 @@ namespace Utils
                     };
                 }
 
-                std::wstring installPathUpper(appData.installPath);
-                std::transform(installPathUpper.begin(), installPathUpper.end(), installPathUpper.begin(), towupper);
-
-                if (appPathUpper.contains(installPathUpper))
+                if (!appData.installPath.empty())
                 {
-                    return appData;
-                }
+                    std::wstring installPathUpper(appData.installPath);
+                    std::transform(installPathUpper.begin(), installPathUpper.end(), installPathUpper.begin(), towupper);
 
-                // edge case, some apps (e.g., Gitkraken) have different .exe files in the subfolders.
-                // apps list contains only one path, so in this case app is not found
-                if (std::filesystem::path(appPath).filename() == std::filesystem::path(appData.installPath).filename())
-                {
-                    return appData;
+                    if (appPathUpper.contains(installPathUpper))
+                    {
+                        return appData;
+                    }
+
+                    // edge case, some apps (e.g., Gitkraken) have different .exe files in the subfolders.
+                    // apps list contains only one path, so in this case app is not found
+                    if (std::filesystem::path(appPath).filename() == std::filesystem::path(appData.installPath).filename())
+                    {
+                        return appData;
+                    }
                 }
             }
 

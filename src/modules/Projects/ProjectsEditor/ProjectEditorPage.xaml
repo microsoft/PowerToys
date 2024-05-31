@@ -163,6 +163,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -190,55 +191,56 @@
                 GotFocus="EditNameTextBox_GotFocus"
                 KeyDown="EditNameTextBoxKeyDown" />
         </StackPanel>
+        <Border
+            Grid.Row="2"
+            HorizontalAlignment="Stretch"
+            Background="{DynamicResource MonitorViewBackgroundBrush}"
+            CornerRadius="5">
+            <ScrollViewer
+                HorizontalAlignment="Center"
+                HorizontalScrollBarVisibility="Auto">
+                <ItemsControl
+                    ItemsSource="{Binding Monitors, Mode=OneWay}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel
+                                IsItemsHost="True"
+                                Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="models:MonitorSetup">
+                            <Grid
+                                Margin="20,20,20,20">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Text="{Binding MonitorInfoWithResolution}" Foreground="{DynamicResource PrimaryForegroundBrush}" FontSize="16" FontWeight="Normal" Margin="0,5,0,5"/>
+                                <Border
+                                    Grid.Row="1"
+                                    CornerRadius="5"
+                                    BorderBrush="{DynamicResource TertiaryBackgroundBrush}"
+                                    BorderThickness="2"
+                                    Margin="0,0,0,10">
+                                    <Image
+                                        Width="200"
+                                        Height="140"
+                                        Source="{Binding PreviewImage, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                        Stretch="Fill"
+                                        Margin="2"/>
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
         <ScrollViewer
+            Margin="0,10,0,0"
             VerticalScrollBarVisibility="Auto"
-            Grid.Row="2">
+            Grid.Row="3">
             <StackPanel Orientation="Vertical">
-                <Border
-                    Grid.Row="2"
-                    HorizontalAlignment="Stretch"
-                    Background="{DynamicResource MonitorViewBackgroundBrush}"
-                    CornerRadius="5">
-                    <ScrollViewer
-                        HorizontalAlignment="Center"
-                        HorizontalScrollBarVisibility="Auto">
-                        <ItemsControl
-                            ItemsSource="{Binding Monitors, Mode=OneWay}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel
-                                        IsItemsHost="True"
-                                        Orientation="Horizontal"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="models:MonitorSetup">
-                                    <Grid
-                                        Margin="20,20,20,20">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="*"/>
-                                        </Grid.RowDefinitions>
-                                        <TextBlock Text="{Binding MonitorInfoWithResolution}" Foreground="{DynamicResource PrimaryForegroundBrush}" FontSize="16" FontWeight="Normal" Margin="0,5,0,5"/>
-                                        <Border
-                                            Grid.Row="1"
-                                            CornerRadius="5"
-                                            BorderBrush="{DynamicResource TertiaryBackgroundBrush}"
-                                            BorderThickness="2"
-                                            Margin="0,0,0,10">
-                                            <Image
-                                                Width="200"
-                                                Height="140"
-                                                Source="{Binding PreviewImage, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-                                                Stretch="Fill"
-                                                Margin="2"/>
-                                        </Border>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </Border>
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -251,12 +253,17 @@
                 </Grid>
             </StackPanel>
         </ScrollViewer>
-        <DockPanel Grid.Row="3" Margin="0,20,0,20">
+        <DockPanel Grid.Row="4" Margin="0,20,0,20">
             <CheckBox
                 DockPanel.Dock="Left"
                 Content="{x:Static props:Resources.CreateShortcut}"
                 IsChecked="{Binding IsShortcutNeeded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 FontSize="14"/>
+            <Image
+                DockPanel.Dock="Left"
+                x:Name="IconPreview"
+                Width="128"
+                Height="128" />
             <StackPanel
                 DockPanel.Dock="Right"
                 Orientation="Horizontal"

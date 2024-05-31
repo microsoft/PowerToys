@@ -124,7 +124,7 @@ int main(int argc, char* argv[])
         Project::Application app {
             .name = data.value().name,
             .title = title,
-            .path = data.value().installPath,
+            .path = processPath,
             .packageFullName = data.value().packageFullName,
             .commandLineArgs = L"",
             .isMinimized = WindowUtils::IsMinimized(window),
