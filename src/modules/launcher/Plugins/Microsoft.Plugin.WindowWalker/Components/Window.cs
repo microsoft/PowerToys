@@ -240,8 +240,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// </summary>
         internal void CloseThisWindowHelper()
         {
-            int result;
-            _ = NativeMethods.SendMessageTimeout(Hwnd, Win32Constants.WM_SYSCOMMAND, Win32Constants.SC_CLOSE, 0, 0x0000, 5000, out result);
+            _ = NativeMethods.SendMessageTimeout(Hwnd, Win32Constants.WM_SYSCOMMAND, Win32Constants.SC_CLOSE, 0, 0x0000, 5000, out _);
         }
 
         /// <summary>
