@@ -36,7 +36,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets a value indicating whether the process is responding or not
         /// </summary>
-        internal bool Responding
+        internal bool IsResponding
         {
             get { return Process.GetProcessById((int)ProcessID).Responding; }
         }
