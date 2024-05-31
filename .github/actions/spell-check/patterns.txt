@@ -40,6 +40,9 @@
 # tabs in c#
 \$"\\t
 
+# Hexadecimal character pattern in code
+\\x[0-9a-fA-F][0-9a-fA-F]
+
 # windows line breaks in strings
 \\r\\n
 

@@ -8,7 +8,7 @@
     xmlns:winuiex="using:WinUIEx"
     x:Uid="Window"
     Width="680"
-    MinWidth="480"
+    MinWidth="520"
     MinHeight="320"
     mc:Ignorable="d">
     <Window.SystemBackdrop>

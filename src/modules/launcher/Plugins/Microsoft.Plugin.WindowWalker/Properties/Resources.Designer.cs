@@ -160,7 +160,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Switches between open windows..
+        ///   Looks up a localized string similar to Switches between open windows.
         /// </summary>
         public static string wox_plugin_windowwalker_plugin_description {
             get {

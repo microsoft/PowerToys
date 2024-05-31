@@ -8,7 +8,7 @@
     <DirectoryRef Id="INSTALLFOLDER" FileSource="$(var.BinDir)">
       <Component Id="powertoys_per_machine_comp" Win64="yes">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys">
-            <RegistryValue Type="string" Name="InstallScope" Value="$(var.InstallScope)" />
+          <RegistryValue Type="string" Name="InstallScope" Value="$(var.InstallScope)" />
         </RegistryKey>
       </Component>
       <Component Id="powertoys_toast_clsid" Win64="yes">
@@ -46,34 +46,19 @@
       </Component>
     </DirectoryRef>
 
-    <?if $(var.PerUser) = "true" ?>
-    <DirectoryRef Id="PersonalFolder">
-      <Directory Id="WindowsPowerShellFolder" Name="PowerShell">
-        <Directory Id="PowerShellModulesFolder" Name="Modules">
-          <Directory Id="PowerToysDscFolder" Name="Microsoft.PowerToys.Configure">
-            <Directory Id="PowerToysDscVerFolder" Name="$(var.Version)">
-              <Component Id="PowerToysDSC" Win64="yes" Guid="4A033E3B-6590-43FD-8FBD-27F9DF557F7F">
-                <RegistryValue Root="HKCU"
-                         Key="Software\[Manufacturer]\[ProductName]"
-                         Name="DSCInstalled"
-                         Type="integer"
-                         Value="1"
-                         KeyPath="yes"/>
-                <!-- Don't fail installation because of DSC. Files are marked as not vital. -->
-                <File Vital="no" Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version)\Microsoft.PowerToys.Configure.psd1" Id="PTConf.psd1" />
-                <File Vital="no" Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version)\Microsoft.PowerToys.Configure.psm1" Id="PTConf.psm1" />
-                <RemoveFolder Id="RemoveThisFolder" On="uninstall" />
-                <RemoveFolder Id="RemovePowerToysDscVerFolder" Directory="PowerToysDscVerFolder" On="uninstall" />
-                <RemoveFolder Id="RemovePowerToysDscFolder" Directory="PowerToysDscFolder" On="uninstall" />
-                <RemoveFolder Id="RemovePowerShellModulesFolder" Directory="PowerShellModulesFolder" On="uninstall" />
-                <RemoveFolder Id="RemoveWindowsPowerShellFolder" Directory="WindowsPowerShellFolder" On="uninstall" />
-              </Component>
-            </Directory>
-          </Directory>
-        </Directory>
-      </Directory>
+    <DirectoryRef Id="DSCModulesReferenceFolder">
+      <Component Id="PowerToysDSCReference" Win64="yes" Guid="40869ACB-0BEB-4911-AE41-5E73BC1586A9">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="DSCModulesReference" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version)\Microsoft.PowerToys.Configure.psd1" Id="PTConfReference.psd1" />
+        <File Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version)\Microsoft.PowerToys.Configure.psm1" Id="PTConfReference.psm1" />
+      </Component>
     </DirectoryRef>
-  <?else?>
+
+    <?if $(var.PerUser) = "true" ?>
+    <!-- DSC module files for PerUser handled in InstallDSCModule custom action. -->
+    <?else?>
     <DirectoryRef Id="ProgramFiles64Folder">
       <Directory Id="WindowsPowerShellFolder" Name="WindowsPowerShell">
         <Directory Id="PowerShellModulesFolder" Name="Modules">
@@ -89,7 +74,7 @@
         </Directory>
       </Directory>
     </DirectoryRef>
-  <?endif?>
+    <?endif?>
 
     <DirectoryRef Id="ApplicationProgramsFolder">
       <Component Id="PowerToysStartMenuShortcut" >
@@ -130,23 +115,27 @@
   </Fragment>
   <Fragment>
     <ComponentGroup Id="CoreComponents">
-        <Component Id="RemoveCoreFolder" Guid="9330BD69-2D12-4D98-B0C7-66C99564D619" Directory="INSTALLFOLDER" >
-          <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-            <RegistryValue Type="string" Name="RemoveCoreFolder" Value="" KeyPath="yes"/>
-          </RegistryKey>
-          <RemoveFolder Id="RemoveBaseApplicationsAssetsFolder" Directory="BaseApplicationsAssetsFolder" On="uninstall"/>
-          <RemoveFolder Id="RemoveWinUI3AppsInstallFolder" Directory="WinUI3AppsInstallFolder" On="uninstall"/>
-          <RemoveFolder Id="RemoveWinUI3AppsAssetsFolder" Directory="WinUI3AppsAssetsFolder" On="uninstall"/>
-          <RemoveFolder Id="RemoveINSTALLFOLDER" Directory="INSTALLFOLDER" On="uninstall"/>
-        </Component>
-        <ComponentRef Id="powertoys_exe" />
-        <ComponentRef Id="PowerToysStartMenuShortcut"/>
-        <ComponentRef Id="powertoys_per_machine_comp" />
-        <ComponentRef Id="powertoys_toast_clsid" />
-        <ComponentRef Id="License_rtf" />
-        <ComponentRef Id="Notice_md" />
-        <ComponentRef Id="DesktopShortcut" />
-        <ComponentRef Id="PowerToysDSC" />
+      <Component Id="RemoveCoreFolder" Guid="9330BD69-2D12-4D98-B0C7-66C99564D619" Directory="INSTALLFOLDER" >
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="RemoveCoreFolder" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <RemoveFolder Id="RemoveBaseApplicationsAssetsFolder" Directory="BaseApplicationsAssetsFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveDSCModulesReferenceFolder" Directory="DSCModulesReferenceFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveWinUI3AppsInstallFolder" Directory="WinUI3AppsInstallFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveWinUI3AppsAssetsFolder" Directory="WinUI3AppsAssetsFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveINSTALLFOLDER" Directory="INSTALLFOLDER" On="uninstall"/>
+      </Component>
+      <ComponentRef Id="powertoys_exe" />
+      <ComponentRef Id="PowerToysStartMenuShortcut"/>
+      <ComponentRef Id="powertoys_per_machine_comp" />
+      <ComponentRef Id="powertoys_toast_clsid" />
+      <ComponentRef Id="License_rtf" />
+      <ComponentRef Id="Notice_md" />
+      <ComponentRef Id="DesktopShortcut" />
+      <ComponentRef Id="PowerToysDSCReference" />
+      <?if $(var.PerUser) = "false" ?>
+      <ComponentRef Id="PowerToysDSC" />
+      <?endif?>
     </ComponentGroup>
   </Fragment>
 </Wix>
