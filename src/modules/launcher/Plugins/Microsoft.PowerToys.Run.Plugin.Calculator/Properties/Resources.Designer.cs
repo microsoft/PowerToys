@@ -169,7 +169,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Calculates mathematical equations (e.g. 5*3-2)..
+        ///   Looks up a localized string similar to Calculates mathematical equations (e.g. 5*3-2).
         /// </summary>
         public static string wox_plugin_calculator_plugin_description {
             get {
@@ -187,7 +187,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Replace input appending &apos;=&apos;.
+        ///   Looks up a localized string similar to Replace input if query ends with &apos;=&apos;.
         /// </summary>
         public static string wox_plugin_calculator_replace_input {
             get {
@@ -196,7 +196,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to When using direct activation, appending &apos;=&apos; to the expression will replace the input with the calculated result (e.g. =5*3-2=)..
+        ///   Looks up a localized string similar to When using direct activation, appending &apos;=&apos; to the expression will replace the input with the calculated result (e.g. &apos;=5*3-2=&apos; will change the query to &apos;=13&apos;)..
         /// </summary>
         public static string wox_plugin_calculator_replace_input_description {
             get {
