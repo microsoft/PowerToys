@@ -64,14 +64,14 @@ namespace AdvancedPaste.Helpers
 
                     string[] lines = text.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
-                    // Validate content as ini (First line is section name
+                    // Validate content as ini (First line is a section name and second line is a key-value-pair.)
                     if (lines.Length >= 2 && IniSectionNameRegex.IsMatch(lines[0]) && IniValueLineRegex.IsMatch(lines[1]))
                     {
                         // Parse and convert Ini
                         foreach (string line in lines)
                         {
                             Match lineSectionNameCheck = IniSectionNameRegex.Match(line);
-                            Match lineValueKeyPairCheck = IniSectionNameRegex.Match(line);
+                            Match lineKeyValuePairCheck = IniValueLineRegex.Match(line);
 
                             if (lineSectionNameCheck.Success)
                             {
@@ -79,15 +79,17 @@ namespace AdvancedPaste.Helpers
                                 lastSectionName = lineSectionNameCheck.Groups[0].Value;
                                 ini.Add(lastSectionName, new Dictionary<string, string>());
                             }
-                            else if (!lineValueKeyPairCheck.Success || string.IsNullOrEmpty(lastSectionName))
+                            else if (string.IsNullOrEmpty(lastSectionName) || !lineKeyValuePairCheck.Success)
                             {
-                                // Fail if not section name and not key-value-pair.
+                                // Fail if lastSectionName is still empty and not key-value-pair.
+                                // (With empty lastSectionName we can't parse key-valeu-pairs
+                                //  and if it is not a key-value-pair then the line is invalid.)
                                 throw new FormatException("Invalid ini file format.");
                             }
                             else
                             {
                                 // Key-value-pair
-                                ini[lastSectionName].Add(lineValueKeyPairCheck.Groups[0].Value, lineValueKeyPairCheck.Groups[1].Value);
+                                ini[lastSectionName].Add(lineKeyValuePairCheck.Groups[0].Value, lineKeyValuePairCheck.Groups[1].Value);
                             }
                         }
 
