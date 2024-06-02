@@ -108,11 +108,12 @@
 
                             <InfoBar.Content>
                                 <StackPanel Spacing="16">
-                                    <Button
-                                        x:Uid="General_DownloadAndInstall"
-                                        Command="{Binding UpdateNowButtonEventHandler}"
-                                        IsEnabled="{Binding IsDownloadAllowed}"
-                                        Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}}" />
+                                   <Button
+    x:Uid="General_DownloadAndInstall"
+    Command="{Binding UpdateNowButtonEventHandler}"
+    IsEnabled="{Binding IsDownloadAllowed}"
+    Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}}"
+    Margin="0,0,0,16" />
 
                                     <!--  In progress panel  -->
                                     <StackPanel
