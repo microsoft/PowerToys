@@ -187,7 +187,7 @@ namespace Microsoft.Plugin.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Searches files and folders..
+        ///   Looks up a localized string similar to Searches files and folders.
         /// </summary>
         public static string Microsoft_plugin_indexer_plugin_description {
             get {
