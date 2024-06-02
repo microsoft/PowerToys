@@ -60,25 +60,23 @@ namespace AdvancedPaste.Helpers
 
                     string[] lines = text.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
-                    if (lines.Length > 0)
+                    // Detect the csv delimiter and the count of occurence based on the first two csv lines.
+                    GetCsvDelimiter(lines, out char delim, out int delimCount);
+
+                    foreach (var line in lines)
                     {
-                        GetCsvDelimiter(lines[0], out char delim, out int delimCount);
-
-                        foreach (var line in lines)
+                        // A CSV line is valid, if the delimiter occurs more or equal times in every line compared to the first data line. (More because sometimes the delim occurs in a data string.)
+                        if (line.Count(x => x == delim) >= delimCount)
                         {
-                            // A CSV line is valid if we know the delimiter and if the delimiter occurs more or equal times in every line. (More because sometimes the delim occurs in a data string.)
-                            if (delimCount > 0 && (line.Count(x => x == delim) >= delimCount))
-                            {
-                                csv.Add(line.Split(delim));
-                            }
-                            else
-                            {
-                                throw new FormatException("Invalid CSV format: Number of delimiters wrong in the current line.");
-                            }
+                            csv.Add(line.Split(delim));
                         }
-
-                        jsonText = JsonConvert.SerializeObject(csv, Newtonsoft.Json.Formatting.Indented);
+                        else
+                        {
+                            throw new FormatException("Invalid CSV format: Number of delimiters wrong in the current line.");
+                        }
                     }
+
+                    jsonText = JsonConvert.SerializeObject(csv, Newtonsoft.Json.Formatting.Indented);
                 }
             }
             catch (Exception ex)
@@ -109,23 +107,31 @@ namespace AdvancedPaste.Helpers
             return string.IsNullOrEmpty(jsonText) ? text : jsonText;
         }
 
-        private static void GetCsvDelimiter(in string firstLine, out char delimiter, out int delimiterCount)
+        private static void GetCsvDelimiter(in string[] csvLines, out char delimiter, out int delimiterCount)
         {
-            Regex sepIdentifierRegex = new Regex("^sep=(.)$");
+            Regex sepIdentifierRegex = new Regex(@"^sep=(.)$");
             delimiter = '\0'; // Unicode "null" character.
             delimiterCount = 0;
 
-            var match = sepIdentifierRegex.Matches(firstLine)?[0].Value.Trim();
-            if (match is not null)
+            if (csvLines.Length > 1)
             {
-                delimiter = match[0];
-                delimiterCount = firstLine.Count(x => x == match[0]);
+                // Try to select the delimiter based on the separator property.
+                string matchChar = sepIdentifierRegex.Matches(csvLines[0])?[0].Value.Trim();
+                if (matchChar != null)
+                {
+                    // We can do matchChar[0] as the match only reutrns one character.
+                    // We get the count from the second line, as the first one only contains the character definition and not a CSV data line.
+                    delimiter = matchChar[0];
+                    delimiterCount = csvLines[1].Count(x => x == matchChar[0]);
+                }
             }
-            else
+
+            if (csvLines.Length > 0 && delimiterCount == 0)
             {
+                // Try to select the correct delimiter based on the first CSV line from a list of predefined delimiters
                 foreach (char c in CsvDelimArry)
                 {
-                    int n = firstLine.Count(x => x == c);
+                    int n = csvLines[0].Count(x => x == c);
                     if (n > delimiterCount)
                     {
                         delimiter = c;
@@ -134,7 +140,7 @@ namespace AdvancedPaste.Helpers
                 }
             }
 
-            // If the delimiter count is 0, we can't detect it and the is no valid CSV line.
+            // If the delimiter count is 0, we can't detect it and it is no valid CSV.
             if (delimiterCount == 0)
             {
                 throw new FormatException("Invalid CSV format: Failed to detect the delimiter.");
