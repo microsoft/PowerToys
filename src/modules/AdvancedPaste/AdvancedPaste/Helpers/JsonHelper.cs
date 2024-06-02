@@ -124,13 +124,14 @@ namespace AdvancedPaste.Helpers
             if (csvLines.Length > 1)
             {
                 // Try to select the delimiter based on the separator property.
-                string matchChar = CsvSepIdentifierRegex.Match(csvLines[0])?.Groups[1].Value.Trim();
-                if (matchChar != null)
+                Match matchChar = CsvSepIdentifierRegex.Match(csvLines[0]);
+                if (matchChar.Success)
                 {
                     // We can do matchChar[0] as the match only returns one character.
                     // We get the count from the second line, as the first one only contains the character definition and not a CSV data line.
-                    delimiter = matchChar[0];
-                    delimiterCount = csvLines[1].Count(x => x == matchChar[0]);
+                    char delimChar = matchChar.Groups[1].Value.Trim()[0];
+                    delimiter = delimChar;
+                    delimiterCount = csvLines[1].Count(x => x == delimChar);
                 }
             }
 
@@ -139,16 +140,22 @@ namespace AdvancedPaste.Helpers
                 // Try to select the correct delimiter based on the first two CSV lines from a list of predefined delimiters.
                 foreach (char c in CsvDelimArry)
                 {
-                    int cnt = csvLines[0].Count(x => x == c);
-                    int cntNextLine = csvLines[1]?.Count(x => x == c) ?? 0;
+                    int cntFirstLine = csvLines[0].Count(x => x == c);
+                    int cntNextLine = 0; // Default to 0 that the 'second line' check is always true.
+
+                    // Additional count if we have more than one line
+                    if (csvLines.Length >= 2)
+                    {
+                        cntNextLine = csvLines[1].Count(x => x == c);
+                    }
 
                     // The delimiter is found if the count is bigger as from the last selected delimiter
-                    // and if the next csvLine does not exist or has the same number or more occurrences of the delimiter.
+                    // and if the next csv line does not exist or has the same number or more occurrences of the delimiter.
                     // (We check the next line to prevent false positives.)
-                    if (cnt > delimiterCount && cnt >= cntNextLine)
+                    if (cntFirstLine > delimiterCount && (cntNextLine == 0 || cntNextLine >= cntFirstLine))
                     {
                         delimiter = c;
-                        delimiterCount = cnt;
+                        delimiterCount = cntFirstLine;
                     }
                 }
             }
