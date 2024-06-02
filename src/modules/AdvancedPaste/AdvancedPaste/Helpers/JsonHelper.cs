@@ -66,6 +66,12 @@ namespace AdvancedPaste.Helpers
 
                     foreach (var line in lines)
                     {
+                        // If line is separator property line, then skip it
+                        if (CsvSepIdentifierRegex.IsMatch(line))
+                        {
+                            continue;
+                        }
+
                         // A CSV line is valid, if the delimiter occurs more or equal times in every line compared to the first data line. (More because sometimes the delimiter occurs in a data string.)
                         if (line.Count(x => x == delim) >= delimCount)
                         {
@@ -77,6 +83,7 @@ namespace AdvancedPaste.Helpers
                         }
                     }
 
+                    Logger.LogDebug("Convert from csv.");
                     jsonText = JsonConvert.SerializeObject(csv, Newtonsoft.Json.Formatting.Indented);
                 }
             }
@@ -97,6 +104,7 @@ namespace AdvancedPaste.Helpers
                         plainText.Add(line);
                     }
 
+                    Logger.LogDebug("Convert from plain text.");
                     jsonText = JsonConvert.SerializeObject(plainText, Newtonsoft.Json.Formatting.Indented);
                 }
             }
@@ -116,7 +124,7 @@ namespace AdvancedPaste.Helpers
             if (csvLines.Length > 1)
             {
                 // Try to select the delimiter based on the separator property.
-                string matchChar = CsvSepIdentifierRegex.Match(csvLines[0])?[0].Value.Trim();
+                string matchChar = CsvSepIdentifierRegex.Match(csvLines[0])?.Groups[1].Value.Trim();
                 if (matchChar != null)
                 {
                     // We can do matchChar[0] as the match only returns one character.
