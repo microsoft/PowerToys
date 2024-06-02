@@ -116,7 +116,7 @@ namespace AdvancedPaste.Helpers
             if (csvLines.Length > 1)
             {
                 // Try to select the delimiter based on the separator property.
-                string matchChar = CsvSepIdentifierRegex.Matches(csvLines[0])?[0].Value.Trim();
+                string matchChar = CsvSepIdentifierRegex.Match(csvLines[0])?[0].Value.Trim();
                 if (matchChar != null)
                 {
                     // We can do matchChar[0] as the match only returns one character.
