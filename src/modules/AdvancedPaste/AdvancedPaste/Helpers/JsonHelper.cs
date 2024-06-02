@@ -16,8 +16,9 @@ namespace AdvancedPaste.Helpers
 {
     internal static class JsonHelper
     {
-        // List of supported CSV cdelimiters
+        // List of supported CSV cdelimiters and Regex to detect seperator property
         private static readonly char[] CsvDelimArry = [',', ';', '\t'];
+        private static readonly Regex CsvSepIdentifierRegex = new Regex(@"^sep=(.)$");
 
         internal static string ToJsonFromXmlOrCsv(DataPackageView clipboardData)
         {
@@ -65,7 +66,7 @@ namespace AdvancedPaste.Helpers
 
                     foreach (var line in lines)
                     {
-                        // A CSV line is valid, if the delimiter occurs more or equal times in every line compared to the first data line. (More because sometimes the delim occurs in a data string.)
+                        // A CSV line is valid, if the delimiter occurs more or equal times in every line compared to the first data line. (More because sometimes the delimiter occurs in a data string.)
                         if (line.Count(x => x == delim) >= delimCount)
                         {
                             csv.Add(line.Split(delim));
@@ -109,14 +110,13 @@ namespace AdvancedPaste.Helpers
 
         private static void GetCsvDelimiter(in string[] csvLines, out char delimiter, out int delimiterCount)
         {
-            Regex sepIdentifierRegex = new Regex(@"^sep=(.)$");
             delimiter = '\0'; // Unicode "null" character.
             delimiterCount = 0;
 
             if (csvLines.Length > 1)
             {
                 // Try to select the delimiter based on the separator property.
-                string matchChar = sepIdentifierRegex.Matches(csvLines[0])?[0].Value.Trim();
+                string matchChar = CsvSepIdentifierRegex.Matches(csvLines[0])?[0].Value.Trim();
                 if (matchChar != null)
                 {
                     // We can do matchChar[0] as the match only reutrns one character.
@@ -128,14 +128,19 @@ namespace AdvancedPaste.Helpers
 
             if (csvLines.Length > 0 && delimiterCount == 0)
             {
-                // Try to select the correct delimiter based on the first CSV line from a list of predefined delimiters
+                // Try to select the correct delimiter based on the first two CSV lines from a list of predefined delimiters.
                 foreach (char c in CsvDelimArry)
                 {
-                    int n = csvLines[0].Count(x => x == c);
-                    if (n > delimiterCount)
+                    int cnt = csvLines[0].Count(x => x == c);
+                    int cntNextLine = csvLines[1]?.Count(x => x == c) ?? 0;
+
+                    // The delimiter is found if the count is bigger as from the last selected delimiter
+                    // and if the next csvLine does not exist or has the same number or more occurences of the delimiter.
+                    // (We check the next line to prevent false positives.)
+                    if (cnt > delimiterCount && cnt >= cntNextLine)
                     {
                         delimiter = c;
-                        delimiterCount = n;
+                        delimiterCount = cnt;
                     }
                 }
             }
