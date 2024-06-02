@@ -3,10 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 using ManagedCommon;
+using Microsoft.Extensions.Azure;
 using Newtonsoft.Json;
 using Windows.ApplicationModel.DataTransfer;
 
@@ -14,6 +17,10 @@ namespace AdvancedPaste.Helpers
 {
     internal static class JsonHelper
     {
+        // Ini parts regex
+        private static readonly Regex IniSectionNameRegex = new Regex("^\\[(.+)\\]");
+        private static readonly Regex IniValueLineRegex = new Regex("(.+?)\\s*=\\s*(.*)");
+
         internal static string ToJsonFromXmlOrCsv(DataPackageView clipboardData)
         {
             Logger.LogTrace();
@@ -44,6 +51,54 @@ namespace AdvancedPaste.Helpers
             catch (Exception ex)
             {
                 Logger.LogError("Failed parsing input as xml", ex);
+            }
+
+            // Try convert Ini
+            // (Must come before CSV that ini is not false detected as CSV.)
+            try
+            {
+                if (string.IsNullOrEmpty(jsonText))
+                {
+                    var ini = new Dictionary<string, Dictionary<string, string>>();
+                    var lastSectionName = string.Empty;
+
+                    string[] lines = text.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+
+                    // Validate content as ini (First line is section name
+                    if (lines.Length >= 2 && IniSectionNameRegex.IsMatch(lines[0]) && IniValueLineRegex.IsMatch(lines[1]))
+                    {
+                        // Parse and convert Ini
+                        foreach (string line in lines)
+                        {
+                            Match lineSectionNameCheck = IniSectionNameRegex.Match(line);
+                            Match lineValueKeyPairCheck = IniSectionNameRegex.Match(line);
+
+                            if (lineSectionNameCheck.Success)
+                            {
+                                // Section name
+                                lastSectionName = lineSectionNameCheck.Groups[0].Value;
+                                ini.Add(lastSectionName, new Dictionary<string, string>());
+                            }
+                            else if (!lineValueKeyPairCheck.Success || string.IsNullOrEmpty(lastSectionName))
+                            {
+                                // Fail if not section name and not key-value-pair.
+                                throw new FormatException("Invalid ini file format.");
+                            }
+                            else
+                            {
+                                // Key-value-pair
+                                ini[lastSectionName].Add(lineValueKeyPairCheck.Groups[0].Value, lineValueKeyPairCheck.Groups[1].Value);
+                            }
+                        }
+
+                        // Convert to JSON
+                        jsonText = JsonConvert.SerializeObject(ini, Newtonsoft.Json.Formatting.Indented);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed parsing input as ini", ex);
             }
 
             // Try convert CSV
