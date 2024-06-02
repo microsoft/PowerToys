@@ -64,9 +64,7 @@ namespace AdvancedPaste.Helpers
                     string[] lines = text.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
                     // Validate content as ini (First line is a section name and second line is a key-value-pair.)
-                    bool sectionMatch = IniSectionNameRegex.IsMatch(lines[0]);
-                    bool keyValueMatch = IniValueLineRegex.IsMatch(lines[1]);
-                    if (lines.Length >= 2 && sectionMatch && keyValueMatch)
+                    if (lines.Length >= 2 && IniSectionNameRegex.IsMatch(lines[0]) && IniValueLineRegex.IsMatch(lines[1]))
                     {
                         // Parse and convert Ini
                         foreach (string line in lines)
