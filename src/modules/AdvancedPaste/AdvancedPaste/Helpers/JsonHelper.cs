@@ -18,7 +18,7 @@ namespace AdvancedPaste.Helpers
     {
         // List of supported CSV cdelimiters and Regex to detect seperator property
         private static readonly char[] CsvDelimArry = [',', ';', '\t'];
-        private static readonly Regex CsvSepIdentifierRegex = new Regex(@"^sep=(.)$");
+        private static readonly Regex CsvSepIdentifierRegex = new Regex(@"^sep=(.)$", RegexOptions.IgnoreCase);
 
         internal static string ToJsonFromXmlOrCsv(DataPackageView clipboardData)
         {
