@@ -16,7 +16,7 @@ namespace AdvancedPaste.Helpers
 {
     internal static class JsonHelper
     {
-        // List of supported CSV cdelimiters and Regex to detect seperator property
+        // List of supported CSV delimiters and Regex to detect separator property
         private static readonly char[] CsvDelimArry = [',', ';', '\t'];
         private static readonly Regex CsvSepIdentifierRegex = new Regex(@"^sep=(.)$", RegexOptions.IgnoreCase);
 
@@ -61,7 +61,7 @@ namespace AdvancedPaste.Helpers
 
                     string[] lines = text.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
-                    // Detect the csv delimiter and the count of occurence based on the first two csv lines.
+                    // Detect the csv delimiter and the count of occurrence based on the first two csv lines.
                     GetCsvDelimiter(lines, out char delim, out int delimCount);
 
                     foreach (var line in lines)
@@ -119,7 +119,7 @@ namespace AdvancedPaste.Helpers
                 string matchChar = CsvSepIdentifierRegex.Matches(csvLines[0])?[0].Value.Trim();
                 if (matchChar != null)
                 {
-                    // We can do matchChar[0] as the match only reutrns one character.
+                    // We can do matchChar[0] as the match only returns one character.
                     // We get the count from the second line, as the first one only contains the character definition and not a CSV data line.
                     delimiter = matchChar[0];
                     delimiterCount = csvLines[1].Count(x => x == matchChar[0]);
@@ -135,7 +135,7 @@ namespace AdvancedPaste.Helpers
                     int cntNextLine = csvLines[1]?.Count(x => x == c) ?? 0;
 
                     // The delimiter is found if the count is bigger as from the last selected delimiter
-                    // and if the next csvLine does not exist or has the same number or more occurences of the delimiter.
+                    // and if the next csvLine does not exist or has the same number or more occurrences of the delimiter.
                     // (We check the next line to prevent false positives.)
                     if (cnt > delimiterCount && cnt >= cntNextLine)
                     {
