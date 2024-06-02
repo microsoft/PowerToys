@@ -3,13 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 using ManagedCommon;
-using Microsoft.Extensions.Azure;
 using Newtonsoft.Json;
 using Windows.ApplicationModel.DataTransfer;
 
@@ -18,8 +16,8 @@ namespace AdvancedPaste.Helpers
     internal static class JsonHelper
     {
         // Ini parts regex
-        private static readonly Regex IniSectionNameRegex = new Regex("^\\[(.+)\\]");
-        private static readonly Regex IniValueLineRegex = new Regex("(.+?)\\s*=\\s*(.*)");
+        private static readonly Regex IniSectionNameRegex = new Regex(@"^\[(.+)\]");
+        private static readonly Regex IniValueLineRegex = new Regex(@"(.+?)\s*=\s*(.*)");
 
         internal static string ToJsonFromXmlOrCsv(DataPackageView clipboardData)
         {
@@ -46,6 +44,7 @@ namespace AdvancedPaste.Helpers
             {
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(text);
+                Logger.LogDebug("Converted from XML.");
                 jsonText = JsonConvert.SerializeXmlNode(doc, Newtonsoft.Json.Formatting.Indented);
             }
             catch (Exception ex)
@@ -65,7 +64,9 @@ namespace AdvancedPaste.Helpers
                     string[] lines = text.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
                     // Validate content as ini (First line is a section name and second line is a key-value-pair.)
-                    if (lines.Length >= 2 && IniSectionNameRegex.IsMatch(lines[0]) && IniValueLineRegex.IsMatch(lines[1]))
+                    bool sectionMatch = IniSectionNameRegex.IsMatch(lines[0]);
+                    bool keyValueMatch = IniValueLineRegex.IsMatch(lines[1]);
+                    if (lines.Length >= 2 && sectionMatch && keyValueMatch)
                     {
                         // Parse and convert Ini
                         foreach (string line in lines)
@@ -75,8 +76,8 @@ namespace AdvancedPaste.Helpers
 
                             if (lineSectionNameCheck.Success)
                             {
-                                // Section name
-                                lastSectionName = lineSectionNameCheck.Groups[0].Value;
+                                // Section name (Group 1)
+                                lastSectionName = lineSectionNameCheck.Groups[1].Value;
                                 ini.Add(lastSectionName, new Dictionary<string, string>());
                             }
                             else if (string.IsNullOrEmpty(lastSectionName) || !lineKeyValuePairCheck.Success)
@@ -88,12 +89,13 @@ namespace AdvancedPaste.Helpers
                             }
                             else
                             {
-                                // Key-value-pair
-                                ini[lastSectionName].Add(lineKeyValuePairCheck.Groups[0].Value, lineKeyValuePairCheck.Groups[1].Value);
+                                // Key-value-pair (Group 1=Key; Group 2=Value)
+                                ini[lastSectionName].Add(lineKeyValuePairCheck.Groups[1].Value, lineKeyValuePairCheck.Groups[2].Value);
                             }
                         }
 
                         // Convert to JSON
+                        Logger.LogDebug("Converted from Ini.");
                         jsonText = JsonConvert.SerializeObject(ini, Newtonsoft.Json.Formatting.Indented);
                     }
                 }
@@ -115,6 +117,7 @@ namespace AdvancedPaste.Helpers
                         csv.Add(line.Split(","));
                     }
 
+                    Logger.LogDebug("Converted from CSV.");
                     jsonText = JsonConvert.SerializeObject(csv, Newtonsoft.Json.Formatting.Indented);
                 }
             }
