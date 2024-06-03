@@ -119,9 +119,6 @@
     <ClInclude Include="OnThreadExecutor.h" />
     <ClInclude Include="PackagedAppUtils.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="VirtualDesktop.h" />
-    <ClInclude Include="WindowFilter.h" />
-    <ClInclude Include="WindowUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -131,8 +128,6 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="VirtualDesktop.cpp" />
-    <ClCompile Include="WindowUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

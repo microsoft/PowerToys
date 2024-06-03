@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 
 #include <chrono>
 #include <iostream>
@@ -6,10 +6,10 @@
 #include "../projects-common/Data.h"
 #include "../projects-common/GuidUtils.h"
 #include "../projects-common/WindowEnumerator.h"
+#include "../projects-common/WindowFilter.h"
 
 #include "MonitorUtils.h"
 #include "PackagedAppUtils.h"
-#include "WindowFilter.h"
 
 int main(int argc, char* argv[])
 {

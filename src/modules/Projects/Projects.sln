@@ -11,7 +11,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "projects-common", "projects
 		projects-common\GuidUtils.h = projects-common\GuidUtils.h
 		projects-common\json.h = projects-common\json.h
 		projects-common\MonitorEnumerator.h = projects-common\MonitorEnumerator.h
+		projects-common\VirtualDesktop.h = projects-common\VirtualDesktop.h
 		projects-common\WindowEnumerator.h = projects-common\WindowEnumerator.h
+		projects-common\WindowFilter.h = projects-common\WindowFilter.h
+		projects-common\WindowUtils.h = projects-common\WindowUtils.h
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProjectsLauncher", "ProjectsLauncher\ProjectsLauncher.vcxproj", "{2CAC093E-5FCF-4102-9C2C-AC7DD5D9EB96}"
