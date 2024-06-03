@@ -47,6 +47,7 @@ namespace Hosts
                     services.AddSingleton<IHostsService, HostsService>();
                     services.AddSingleton<IUserSettings, Hosts.Settings.UserSettings>();
                     services.AddSingleton<IElevationHelper, ElevationHelper>();
+                    services.AddSingleton<IDuplicateService, DuplicateService>();
 
                     // Views and ViewModels
                     services.AddSingleton<ILogger, LoggerWrapper>();
