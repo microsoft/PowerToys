@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -11,6 +12,8 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Web;
+using CommunityToolkit.WinUI.Helpers;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -18,6 +21,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Windows.System;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -177,7 +181,46 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private string _settingsBackupMessage;
         private string _backupRestoreMessageSeverity;
 
+        private string reportBugLink;
+
         // Gets or sets a value indicating whether run powertoys on start-up.
+        public string ReportBugLink
+        {
+            get => reportBugLink;
+            set
+            {
+                reportBugLink = value;
+                OnPropertyChanged(nameof(ReportBugLink));
+            }
+        }
+
+        public void InitializeReportBugLink()
+        {
+            var version = HttpUtility.UrlEncode(GetPowerToysVersion());
+
+            var gitHubURL = "https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CTriage-Needed&template=bug_report.yml" +
+                "&version=" + version;
+
+            ReportBugLink = gitHubURL;
+        }
+
+        private string GetPowerToysVersion()
+        {
+            return "0.88.0"; // Replace with the actual method to get the version.
+        }
+
+        private string GetOSVersion()
+        {
+            // Implement a method to get the OS version
+            return "OS_VERSION_PLACEHOLDER";
+        }
+
+        private string GetDotNetVersion()
+        {
+            // Implement a method to get the .NET version
+            return "DOT_NET_VERSION_PLACEHOLDER";
+        }
+
         public bool Startup
         {
             get

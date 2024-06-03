@@ -367,7 +367,7 @@
         <controls:SettingsPageControl.PrimaryLinks>
             <controls:PageLink x:Uid="GeneralPage_Documentation" Link="https://aka.ms/PowerToysOverview" />
             <controls:PageLink x:Uid="General_Repository" Link="https://aka.ms/powertoys" />
-            <controls:PageLink x:Uid="GeneralPage_ReportAbug" Link="https://aka.ms/powerToysReportBug" />
+            <controls:PageLink x:Uid="GeneralPage_ReportAbug" Link="{x:Bind ViewModel.ReportBugLink, Mode=OneWay}" />
             <controls:PageLink x:Uid="GeneralPage_RequestAFeature_URL" Link="https://aka.ms/powerToysRequestFeature" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>

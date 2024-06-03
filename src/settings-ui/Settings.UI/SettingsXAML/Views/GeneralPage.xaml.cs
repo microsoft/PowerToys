@@ -84,6 +84,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
 
             doRefreshBackupRestoreStatus(100);
+
+            ViewModel.InitializeReportBugLink();
         }
 
         private void OpenColorsSettings_Click(object sender, RoutedEventArgs e)
