@@ -2664,6 +2664,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Shake mouse</value>
     <comment>Mouse is the hardware peripheral.</comment>
   </data>
+  <data name="MouseUtils_Include_Win_Key.Content" xml:space="preserve">
+    <value>Only activate while holding the Windows key</value>
+    <comment>Specifies that the 'Find My Mouse' will only activate if the Windows key is held down while pressing the Ctrl key twice.</comment>
+  </data>
   <data name="MouseUtils_FindMyMouse_ExcludedApps.Description" xml:space="preserve">
     <value>Prevents module activation when an excluded application is the foreground application</value>
   </data>
