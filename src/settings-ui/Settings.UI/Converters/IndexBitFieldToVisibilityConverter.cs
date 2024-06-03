@@ -3,20 +3,20 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Globalization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
 {
-    public sealed class FindMyMouseActivationIntToVisibilityConverter : IValueConverter
+    public sealed class IndexBitFieldToVisibilityConverter : IValueConverter
     {
+        // Receives a hexadecimal bit mask as a parameter. Will check the value against that bitmask.
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            var selectedActivation = (int)value;
-            var expectedActivation = int.Parse(parameter as string, CultureInfo.InvariantCulture);
+            var currentIndexBit = 1 << (int)value;
+            var selectedIndicesBitField = System.Convert.ToUInt32(parameter as string, 16);
 
-            return selectedActivation == expectedActivation ? Visibility.Visible : Visibility.Collapsed;
+            return (selectedIndicesBitField & currentIndexBit) == 0 ? Visibility.Collapsed : Visibility.Visible;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

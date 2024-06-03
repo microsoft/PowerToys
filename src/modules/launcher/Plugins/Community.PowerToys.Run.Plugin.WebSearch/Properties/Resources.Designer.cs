@@ -70,7 +70,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Searches the web with your default search engine..
+        ///   Looks up a localized string similar to Searches the web with your default search engine.
         /// </summary>
         public static string plugin_description {
             get {
