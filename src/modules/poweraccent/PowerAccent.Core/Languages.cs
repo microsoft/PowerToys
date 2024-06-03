@@ -55,6 +55,7 @@ namespace PowerAccent.Core
             {
                 Language.ALL => GetDefaultLetterKeyALL(letter), // ALL
                 Language.CA => GetDefaultLetterKeyCA(letter), // Catalan
+                Language.CUR => GetDefaultLetterKeyCRH(letter), // Crimean Tatar
                 Language.CUR => GetDefaultLetterKeyCUR(letter), // Currency
                 Language.CY => GetDefaultLetterKeyCY(letter), // Welsh
                 Language.CZ => GetDefaultLetterKeyCZ(letter), // Czech
@@ -101,6 +102,7 @@ namespace PowerAccent.Core
             if (!_allLanguagesCache.TryGetValue(letter, out string[] cachedValue))
             {
                 cachedValue = GetDefaultLetterKeyCA(letter)
+                .Union(GetDefaultLetterKeyCRH(letter))
                 .Union(GetDefaultLetterKeyCUR(letter))
                 .Union(GetDefaultLetterKeyCY(letter))
                 .Union(GetDefaultLetterKeyCZ(letter))
