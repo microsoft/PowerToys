@@ -55,7 +55,7 @@ namespace PowerAccent.Core
             {
                 Language.ALL => GetDefaultLetterKeyALL(letter), // ALL
                 Language.CA => GetDefaultLetterKeyCA(letter), // Catalan
-                Language.CUR => GetDefaultLetterKeyCRH(letter), // Crimean Tatar
+                Language.CRH => GetDefaultLetterKeyCRH(letter), // Crimean Tatar
                 Language.CUR => GetDefaultLetterKeyCUR(letter), // Currency
                 Language.CY => GetDefaultLetterKeyCY(letter), // Welsh
                 Language.CZ => GetDefaultLetterKeyCZ(letter), // Czech
