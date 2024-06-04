@@ -3491,6 +3491,10 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Esperanto.Content" xml:space="preserve">
     <value>Esperanto</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_IPA.Content" xml:space="preserve">
+    <value>IPA</value>
+    <comment>International Phonetic Alphabet</comment>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Lithuanian.Content" xml:space="preserve">
     <value>Lithuanian</value>
   </data>
