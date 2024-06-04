@@ -18,10 +18,13 @@ EXPORTS
 	CertifyVirtualCameraDriverCA
 	InstallVirtualCameraDriverCA
 	InstallEmbeddedMSIXCA
+	InstallDSCModuleCA
 	UnApplyModulesRegistryChangeSetsCA
 	UninstallVirtualCameraDriverCA
 	UnRegisterContextMenuPackagesCA
 	UninstallEmbeddedMSIXCA
+	UninstallDSCModuleCA
 	UninstallServicesCA
 	UninstallCommandNotFoundModuleCA
 	UpgradeCommandNotFoundModuleCA
+	UnsetAdvancedPasteAPIKeyCA

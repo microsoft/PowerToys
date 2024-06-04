@@ -10,7 +10,6 @@ markdownpreviewhandler
 mousewithoutborders
 mwb
 oobe
-pasteplain
 poweraccent
 powerlauncher
 POWEROCR
@@ -136,6 +135,7 @@ Zykova
 Kairu
 Deibisu
 riri
+quachpas
 
 # OTHERS
 
@@ -144,6 +144,7 @@ Controlz
 cortana
 fancymouse
 firefox
+gpt
 Inkscape
 Markdig
 modernwpf
@@ -152,6 +153,7 @@ mozilla
 mspaint
 Newtonsoft
 onenote
+openai
 Quickime
 regedit
 roslyn

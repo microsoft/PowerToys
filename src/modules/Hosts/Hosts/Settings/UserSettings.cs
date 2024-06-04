@@ -5,7 +5,6 @@
 using System;
 using System.IO.Abstractions;
 using System.Threading;
-using HostsUILib.Helpers;
 using HostsUILib.Settings;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -45,6 +44,8 @@ namespace Hosts.Settings
         // Moved from Settings.UI.Library
         public HostsEncoding Encoding { get; set; }
 
+        public event EventHandler LoopbackDuplicatesChanged;
+
         public UserSettings()
         {
             _settingsUtils = new SettingsUtils();
@@ -57,8 +58,6 @@ namespace Hosts.Settings
 
             _watcher = Helper.GetFileWatcher(HostsModuleName, "settings.json", () => LoadSettingsFromJson());
         }
-
-        public event EventHandler LoopbackDuplicatesChanged;
 
         private void LoadSettingsFromJson()
         {

@@ -25,6 +25,7 @@ WHITEONBLACK
 
 AYUV
 bak
+Bcl
 exa
 exabyte
 Gbits
@@ -38,6 +39,7 @@ nupkg
 petabyte
 resw
 resx
+srt
 Stereolithography
 terabyte
 UYVY

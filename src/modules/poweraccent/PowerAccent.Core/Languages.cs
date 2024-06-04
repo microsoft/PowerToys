@@ -11,6 +11,7 @@ namespace PowerAccent.Core
     {
         ALL,
         CA,
+        CRH,
         CUR,
         CY,
         CZ,
@@ -54,6 +55,7 @@ namespace PowerAccent.Core
             {
                 Language.ALL => GetDefaultLetterKeyALL(letter), // ALL
                 Language.CA => GetDefaultLetterKeyCA(letter), // Catalan
+                Language.CRH => GetDefaultLetterKeyCRH(letter), // Crimean Tatar
                 Language.CUR => GetDefaultLetterKeyCUR(letter), // Currency
                 Language.CY => GetDefaultLetterKeyCY(letter), // Welsh
                 Language.CZ => GetDefaultLetterKeyCZ(letter), // Czech
@@ -100,6 +102,7 @@ namespace PowerAccent.Core
             if (!_allLanguagesCache.TryGetValue(letter, out string[] cachedValue))
             {
                 cachedValue = GetDefaultLetterKeyCA(letter)
+                .Union(GetDefaultLetterKeyCRH(letter))
                 .Union(GetDefaultLetterKeyCUR(letter))
                 .Union(GetDefaultLetterKeyCY(letter))
                 .Union(GetDefaultLetterKeyCZ(letter))
@@ -188,6 +191,26 @@ namespace PowerAccent.Core
                 LetterKey.VK_DIVIDE_ => new[] { "÷", "√" },
                 LetterKey.VK_MULTIPLY_ => new[] { "×", "⋅" },
                 LetterKey.VK_PLUS => new[] { "≤", "≥", "≠", "≈", "≙", "⊕", "⊗", "∓", "≅", "≡" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
+        // Crimean Tatar
+        private static string[] GetDefaultLetterKeyCRH(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_A => new[] { "â" },
+                LetterKey.VK_C => new[] { "ç" },
+                LetterKey.VK_E => new[] { "€" },
+                LetterKey.VK_G => new[] { "ğ" },
+                LetterKey.VK_H => new[] { "₴" },
+                LetterKey.VK_I => new[] { "ı", "İ" },
+                LetterKey.VK_N => new[] { "ñ" },
+                LetterKey.VK_O => new[] { "ö" },
+                LetterKey.VK_S => new[] { "ş" },
+                LetterKey.VK_T => new[] { "₺" },
+                LetterKey.VK_U => new[] { "ü" },
                 _ => Array.Empty<string>(),
             };
         }

@@ -44,6 +44,7 @@ Below are community created plugins that target a website or software.  They are
 | Plugin | Author | Description |
 | ------ | ------ | ----------- |
 | [Edge Favorite](https://github.com/davidegiacometti/PowerToys-Run-EdgeFavorite) | [davidegiacometti](https://github.com/davidegiacometti) | Open Microsoft Edge favorites |
+| [Edge Workspaces](https://github.com/quachpas/PowerToys-Run-EdgeWorkspaces) | [quachpas](https://github.com/quachpas) | Open Microsoft Edge workspaces|
 | [Everything](https://github.com/lin-ycv/EverythingPowerToys) | [Yu Chieh (Victor) Lin](https://github.com/Lin-ycv) | Get search results from Everything |
 | [GitKraken](https://github.com/davidegiacometti/PowerToys-Run-GitKraken) | [davidegiacometti](https://github.com/davidegiacometti) | Open GitKraken repositories |
 | [Visual Studio Recents](https://github.com/davidegiacometti/PowerToys-Run-VisualStudio) | [davidegiacometti](https://github.com/davidegiacometti) | Open Visual Studio recents |
