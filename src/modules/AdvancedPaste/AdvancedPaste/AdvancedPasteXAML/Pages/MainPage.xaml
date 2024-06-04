@@ -1,0 +1,274 @@
+<Page
+    x:Class="AdvancedPaste.Pages.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:AdvancedPaste.Controls"
+    xmlns:converters="using:AdvancedPaste.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:AdvancedPaste.Models"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    KeyDown="Page_KeyDown"
+    KeyboardAcceleratorPlacementMode="Hidden"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <converters:ListViewIndexConverter x:Name="listViewIndexConverter" />
+        <Style
+            x:Key="PaddingLessFlyoutPresenterStyle"
+            BasedOn="{StaticResource DefaultFlyoutPresenterStyle}"
+            TargetType="FlyoutPresenter">
+            <Style.Setters>
+                <Setter Property="Padding" Value="0" />
+            </Style.Setters>
+        </Style>
+    </Page.Resources>
+    <Page.KeyboardAccelerators>
+        <KeyboardAccelerator Key="Escape" Invoked="KeyboardAccelerator_Invoked" />
+        <KeyboardAccelerator
+            Key="Number1"
+            Invoked="KeyboardAccelerator_Invoked"
+            Modifiers="Control" />
+        <KeyboardAccelerator
+            Key="Number2"
+            Invoked="KeyboardAccelerator_Invoked"
+            Modifiers="Control" />
+        <KeyboardAccelerator
+            Key="Number3"
+            Invoked="KeyboardAccelerator_Invoked"
+            Modifiers="Control" />
+    </Page.KeyboardAccelerators>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <controls:PromptBox
+            x:Name="CustomFormatTextBox"
+            x:Uid="CustomFormatTextBox"
+            Margin="8,4,8,0"
+            x:FieldModifier="public"
+            TabIndex="0">
+            <controls:PromptBox.Footer>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0,0,2,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource CaptionTextBlockStyle}">
+                        <Run x:Uid="AIMistakeNote" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </TextBlock>
+                    <TextBlock
+                        Margin="4,0,2,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource CaptionTextBlockStyle}">
+                        <Hyperlink
+                            x:Name="TermsHyperlink"
+                            NavigateUri="https://openai.com/policies/terms-of-use"
+                            TabIndex="3">
+                            <Run x:Uid="TermsLink" />
+                        </Hyperlink>
+                        <ToolTipService.ToolTip>
+                            <TextBlock Text="https://openai.com/policies/terms-of-use" />
+                        </ToolTipService.ToolTip>
+                    </TextBlock>
+                    <TextBlock
+                        Margin="0,0,2,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        ToolTipService.ToolTip="">
+                        <Run x:Uid="AIFooterSeparator" Foreground="{ThemeResource TextFillColorSecondaryBrush}">|</Run>
+                    </TextBlock>
+                    <TextBlock
+                        Margin="0,0,2,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource CaptionTextBlockStyle}">
+                        <Hyperlink NavigateUri="https://openai.com/policies/privacy-policy" TabIndex="3">
+                            <Run x:Uid="PrivacyLink" />
+                        </Hyperlink>
+                        <ToolTipService.ToolTip>
+                            <TextBlock Text="https://openai.com/policies/privacy-policy" />
+                        </ToolTipService.ToolTip>
+                    </TextBlock>
+                </StackPanel>
+            </controls:PromptBox.Footer>
+        </controls:PromptBox>
+        <Grid
+            Grid.Row="2"
+            Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,0"
+            RowSpacing="4">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <ListView
+                x:Name="PasteOptionsListView"
+                VerticalAlignment="Bottom"
+                IsItemClickEnabled="True"
+                ItemClick="PasteOptionsListView_ItemClick"
+                ItemContainerTransitions="{x:Null}"
+                ItemsSource="{x:Bind pasteFormats, Mode=OneWay}"
+                SelectionMode="None"
+                TabIndex="1">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="local:PasteFormat">
+                        <Grid>
+                            <ToolTipService.ToolTip>
+                                <TextBlock>
+                                    <Run Text="{x:Bind Name}" />
+                                    <Run Text="(" /><Run Text="Ctrl" /><Run Text="+" /><Run Text="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource listViewIndexConverter}}" /><Run Text=")" />
+                                </TextBlock>
+                            </ToolTipService.ToolTip>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="26" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Viewbox
+                                x:Name="IconHolderBox"
+                                MaxWidth="16"
+                                MaxHeight="16"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center">
+                                <ContentPresenter
+                                    x:Name="IconHolder"
+                                    x:Phase="2"
+                                    Content="{x:Bind Icon}" />
+                            </Viewbox>
+                            <TextBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                x:Phase="1"
+                                Text="{x:Bind Name}" />
+
+                            <TextBlock
+                                Grid.Column="2"
+                                Margin="0,0,8,0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}">
+                                <Run Text="Ctrl" /><Run Text="+" /><Run Text="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource listViewIndexConverter}}" />
+                            </TextBlock>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <Rectangle
+                Grid.Row="1"
+                Height="1"
+                HorizontalAlignment="Stretch"
+                Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+            <!--  x:Uid="ClipboardHistoryButton"  -->
+            <Button
+                Grid.Row="2"
+                Height="32"
+                Margin="4,0,4,4"
+                Padding="{StaticResource ButtonPadding}"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch"
+                IsEnabled="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=TwoWay}"
+                Style="{StaticResource SubtleButtonStyle}">
+                <Grid
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    ColumnSpacing="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon
+                        Margin="0,0,0,0"
+                        VerticalAlignment="Center"
+                        AutomationProperties.AccessibilityView="Raw"
+                        FontSize="16"
+                        Glyph="&#xE81C;" />
+                    <TextBlock
+                        x:Uid="ClipboardHistoryButton"
+                        Grid.Column="1"
+                        VerticalAlignment="Center" />
+                    <FontIcon
+                        Grid.Column="2"
+                        AutomationProperties.AccessibilityView="Raw"
+                        FontSize="12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Glyph="&#xE974;" />
+                </Grid>
+                <Button.Flyout>
+                    <Flyout
+                        FlyoutPresenterStyle="{StaticResource PaddingLessFlyoutPresenterStyle}"
+                        Placement="Right"
+                        ShouldConstrainToRootBounds="False">
+
+                        <ListView
+                            Width="320"
+                            IsItemClickEnabled="True"
+                            ItemClick="ClipboardHistory_ItemClick"
+                            ItemsSource="{x:Bind clipboardHistory, Mode=OneWay}"
+                            SelectionMode="None">
+                            <ListView.Transitions />
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="local:ClipboardItem">
+                                    <Grid
+                                        Height="40"
+                                        HorizontalAlignment="Stretch"
+                                        ColumnSpacing="8"
+                                        ToolTipService.ToolTip="{x:Bind Content}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" MaxWidth="240" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Image
+                                            Grid.Column="0"
+                                            HorizontalAlignment="Left"
+                                            x:Phase="2"
+                                            Source="{x:Bind Image}"
+                                            Visibility="Visible" />
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Center"
+                                            x:Phase="1"
+                                            Text="{x:Bind Content}"
+                                            TextTrimming="CharacterEllipsis"
+                                            Visibility="Visible" />
+                                        <Button
+                                            x:Name="moreInfo"
+                                            Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Style="{StaticResource SubtleButtonStyle}">
+                                            <Button.Content>
+                                                <FontIcon FontSize="16" Glyph="&#xe712;" />
+                                            </Button.Content>
+                                            <Button.Flyout>
+                                                <MenuFlyout>
+                                                    <MenuFlyoutItem
+                                                        x:Uid="ClipboardHistoryItemDeleteButton"
+                                                        Click="ClipboardHistoryItemDeleteButton_Click"
+                                                        CommandParameter="{x:Bind (local:ClipboardItem)}"
+                                                        Icon="Delete" />
+                                                </MenuFlyout>
+                                            </Button.Flyout>
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
+
+        </Grid>
+    </Grid>
+</Page>

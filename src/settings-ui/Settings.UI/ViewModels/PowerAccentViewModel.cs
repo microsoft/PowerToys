@@ -25,6 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             "ALL",
             "CA",
+            "CRH",
             "CUR",
             "HR",
             "CZ",
