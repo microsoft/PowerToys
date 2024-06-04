@@ -773,6 +773,7 @@ namespace PowerAccent.Core
             };
         }
 
+        // IPA (International Phonetic Alphabet)
         private static string[] GetDefaultLetterKeyIPA(LetterKey letter)
         {
             return letter switch
