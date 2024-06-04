@@ -425,7 +425,7 @@ namespace ProjectsEditor.Utils
                     graphics.Restore(state);
 
                     var b = (SolidBrush)iconBrushes[brushIndex];
-                    var colorname = (from p in typeof(System.Drawing.Color).GetProperties()
+                    var colorName = (from p in typeof(System.Drawing.Color).GetProperties()
                                      where p.PropertyType.Equals(typeof(System.Drawing.Color))
                                      let value = (System.Drawing.Color)p.GetValue(null, null)
                                      where value.R == b.Color.R &&
@@ -434,11 +434,11 @@ namespace ProjectsEditor.Utils
                                            value.A == b.Color.A
                                      select p.Name).DefaultIfEmpty("unknown").First();
 
-                    graphics.DrawString(colorname, font, Brushes.White, IconSize, IconSize * brushIndex);
+                    graphics.DrawString(colorName, font, Brushes.White, IconSize, IconSize * brushIndex);
                 }
             }
 
-            bitmap.Save(@"C:\temp\shorcutIcons.png");
+            bitmap.Save(@"C:\temp\shortcutIcons.png");
         }
     }
 }
