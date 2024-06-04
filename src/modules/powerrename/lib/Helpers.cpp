@@ -160,7 +160,7 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
                 }
 
                 for (size_t i = 0; i < stemLength; i++)
-                {                    
+                {
                     if (!i || iswspace(stem[i - 1]) || (iswpunct(stem[i - 1]) && contractionOrSingleQuotedWordCheck(stem, i)))
                     {
                         if (iswspace(stem[i]) || iswpunct(stem[i]))
@@ -210,7 +210,7 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
                 {
                     stemLength--;
                 }
-                                
+
                 for (size_t i = 0; i < stemLength; i++)
                 {
                     if (!i || iswspace(stem[i - 1]) || (iswpunct(stem[i - 1]) && contractionOrSingleQuotedWordCheck(stem, i)))
