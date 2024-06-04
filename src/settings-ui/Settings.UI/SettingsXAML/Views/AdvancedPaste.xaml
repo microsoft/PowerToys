@@ -167,7 +167,7 @@
                 </TextBlock>
 
                 <StackPanel Grid.Row="2" Orientation="Vertical">
-                    <TextBlock FontWeight="SemiBold" Text="Configure OpenAI key" />
+                    <TextBlock x:Uid="AdvancedPaste_EnableAIDialog_ConfigureOpenAIKey" FontWeight="SemiBold" />
                     <TextBlock Grid.Row="2" TextWrapping="Wrap">
                         <Run x:Uid="AdvancedPaste_EnableAIDialog_LoginIntoText" />
                         <Hyperlink NavigateUri="https://platform.openai.com/api-keys">
