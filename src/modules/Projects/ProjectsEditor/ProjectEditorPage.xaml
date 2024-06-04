@@ -259,11 +259,6 @@
                 Content="{x:Static props:Resources.CreateShortcut}"
                 IsChecked="{Binding IsShortcutNeeded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 FontSize="14"/>
-            <Image
-                DockPanel.Dock="Left"
-                x:Name="IconPreview"
-                Width="128"
-                Height="128" />
             <StackPanel
                 DockPanel.Dock="Right"
                 Orientation="Horizontal"

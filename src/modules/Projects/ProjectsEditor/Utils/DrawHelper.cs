@@ -22,6 +22,35 @@ namespace ProjectsEditor.Utils
 {
     public class DrawHelper
     {
+        private const int IconSize = 128;
+        private static Font font = new("Tahoma", 24);
+        private static List<Brush> iconBrushes = new List<Brush>
+        {
+            ////Brushes.Gold,
+            ////Brushes.SteelBlue,
+            ////Brushes.SkyBlue,
+            ////Brushes.DarkGoldenrod,
+            ////Brushes.ForestGreen,
+            ////Brushes.Peru,
+            ////Brushes.Chartreuse,
+            ////Brushes.LightPink,
+            ////Brushes.CadetBlue,
+            ////Brushes.DarkSalmon,
+            ////Brushes.Orange,
+            ////Brushes.DarkSeaGreen,
+            ////Brushes.Yellow,
+            ////Brushes.Green,
+            ////Brushes.Orange,
+            ////Brushes.White,
+            new SolidBrush(Color.FromArgb(255, 40, 101, 120)),
+            new SolidBrush(Color.FromArgb(255, 58, 91, 153)),
+            new SolidBrush(Color.FromArgb(255, 87, 88, 163)),
+            new SolidBrush(Color.FromArgb(255, 116, 87, 160)),
+            new SolidBrush(Color.FromArgb(255, 139, 82, 145)),
+        };
+
+        private static int iconBrushIndex;
+
         public static BitmapImage DrawPreview(Project project, Rectangle bounds)
         {
             double scale = 0.1;
@@ -134,7 +163,6 @@ namespace ProjectsEditor.Utils
                 if (app.RepeatIndex > 0)
                 {
                     string indexString = app.RepeatIndex.ToString(CultureInfo.InvariantCulture);
-                    System.Drawing.Font font = new System.Drawing.Font("Tahoma", 8);
                     int indexSize = (int)(iconBounds.Width * 0.5);
                     Rectangle indexBounds = new Rectangle(iconBounds.Right - indexSize, iconBounds.Bottom - indexSize, indexSize, indexSize);
 
@@ -196,7 +224,6 @@ namespace ProjectsEditor.Utils
                     if (app.RepeatIndex > 0)
                     {
                         string indexString = app.RepeatIndex.ToString(CultureInfo.InvariantCulture);
-                        System.Drawing.Font font = new System.Drawing.Font("Tahoma", 8);
                         int indexSize = (int)(iconBounds.Width * 0.5);
                         Rectangle indexBounds = new Rectangle(iconBounds.Right - indexSize, iconBounds.Bottom - indexSize, indexSize, indexSize);
 
@@ -252,42 +279,67 @@ namespace ProjectsEditor.Utils
 
         internal static string CreateShortcutIcon(Project project, out Bitmap bitmap)
         {
-            int iconSize = 128;
             object shDesktop = (object)"Desktop";
             IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell();
             string shortcutIconFilename = (string)shell.SpecialFolders.Item(ref shDesktop) + $"\\{project.Name}.ico";
-            bitmap = new Bitmap(iconSize, iconSize);
+            bitmap = new Bitmap(IconSize, IconSize);
             using (Graphics graphics = Graphics.FromImage(bitmap))
             {
                 graphics.SmoothingMode = SmoothingMode.AntiAlias;
                 graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
                 graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
+                // if (project != null)
+                // {
+                //    List<Application> selectedApps = project.Applications.Where(x => x.IsSelected).ToList();
+                //    if (selectedApps.Count > 0)
+                //    {
+                //        graphics.DrawIcon(selectedApps[0].Icon, new Rectangle(0, 0, IconSize / 2, IconSize / 2));
+                //    }
+                //    if (selectedApps.Count > 1)
+                //    {
+                //        graphics.DrawIcon(selectedApps[1].Icon, new Rectangle(IconSize / 2, 0, IconSize / 2, IconSize / 2));
+                //    }
+                //    if (selectedApps.Count > 2)
+                //    {
+                //        graphics.DrawIcon(selectedApps[2].Icon, new Rectangle(0, IconSize / 2, IconSize / 2, IconSize / 2));
+                //    }
+                //    if (selectedApps.Count > 3)
+                //    {
+                //        graphics.DrawIcon(selectedApps[3].Icon, new Rectangle(IconSize / 2, IconSize / 2, IconSize / 2, IconSize / 2));
+                //    }
+                // }
+                // graphics.FillRectangle(new System.Drawing.SolidBrush(Color.FromArgb(128, 32, 32, 32)), 0, 0, IconSize, IconSize);
+                graphics.FillEllipse(iconBrushes[iconBrushIndex], 0, 0, IconSize, IconSize);
+
+                string shortcutChars = "PR";
+
                 if (project != null)
                 {
-                    List<Application> selectedApps = project.Applications.Where(x => x.IsSelected).ToList();
-                    if (selectedApps.Count > 0)
-                    {
-                        graphics.DrawIcon(selectedApps[0].Icon, new Rectangle(0, 0, iconSize / 2, iconSize / 2));
-                    }
-
-                    if (selectedApps.Count > 1)
-                    {
-                        graphics.DrawIcon(selectedApps[1].Icon, new Rectangle(iconSize / 2, 0, iconSize / 2, iconSize / 2));
-                    }
-
-                    if (selectedApps.Count > 2)
-                    {
-                        graphics.DrawIcon(selectedApps[2].Icon, new Rectangle(0, iconSize / 2, iconSize / 2, iconSize / 2));
-                    }
-
-                    if (selectedApps.Count > 3)
-                    {
-                        graphics.DrawIcon(selectedApps[3].Icon, new Rectangle(iconSize / 2, iconSize / 2, iconSize / 2, iconSize / 2));
-                    }
+                    shortcutChars = project.GetShortcutChars();
                 }
 
-                graphics.DrawIcon(new Icon(@"images\Projects.ico"), new Rectangle(iconSize / 4, iconSize / 4, iconSize / 2, iconSize / 2));
+                Rectangle indexBounds;
+                if (shortcutChars.Length > 1)
+                {
+                    indexBounds = new Rectangle(0, 0, IconSize, IconSize);
+                }
+                else
+                {
+                    indexBounds = new Rectangle(IconSize / 4, 0, IconSize / 2, IconSize);
+                }
+
+                var textSize = graphics.MeasureString(shortcutChars, font);
+                var state = graphics.Save();
+                graphics.TranslateTransform(indexBounds.Left, indexBounds.Top);
+                graphics.ScaleTransform(indexBounds.Width / textSize.Width, indexBounds.Height / textSize.Height);
+                graphics.DrawString(shortcutChars, font, Brushes.White, PointF.Empty);
+                graphics.Restore(state);
+                iconBrushIndex++;
+                if (iconBrushIndex >= iconBrushes.Count)
+                {
+                    iconBrushIndex = 0;
+                }
             }
 
             FileStream fileStream = new FileStream(shortcutIconFilename, FileMode.OpenOrCreate);
@@ -311,10 +363,10 @@ namespace ProjectsEditor.Utils
 
                     // image entry 1
                     // 0 image width
-                    iconWriter.Write((byte)iconSize);
+                    iconWriter.Write((byte)IconSize);
 
                     // 1 image height
-                    iconWriter.Write((byte)iconSize);
+                    iconWriter.Write((byte)IconSize);
 
                     // 2 number of colors
                     iconWriter.Write((byte)0);
@@ -345,6 +397,48 @@ namespace ProjectsEditor.Utils
             fileStream.Flush();
             fileStream.Close();
             return shortcutIconFilename;
+        }
+
+        private static void CreateExamples(Project project)
+        {
+            Bitmap bitmap = new Bitmap(IconSize + 1000, IconSize * iconBrushes.Count);
+            using (Graphics graphics = Graphics.FromImage(bitmap))
+            {
+                for (int brushIndex = 0; brushIndex < iconBrushes.Count; brushIndex++)
+                {
+                    graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                    graphics.FillEllipse(iconBrushes[brushIndex], 0, IconSize * brushIndex, IconSize, IconSize);
+
+                    string shortcutChars = "PR";
+
+                    Rectangle indexBounds;
+                    indexBounds = new Rectangle(0, IconSize * brushIndex, IconSize, IconSize);
+
+                    var textSize = graphics.MeasureString(shortcutChars, font);
+                    var state = graphics.Save();
+                    graphics.TranslateTransform(indexBounds.Left, indexBounds.Top);
+                    graphics.ScaleTransform(indexBounds.Width / textSize.Width, indexBounds.Height / textSize.Height);
+                    graphics.DrawString(shortcutChars, font, Brushes.Black, 0, 0);
+                    graphics.Restore(state);
+
+                    var b = (SolidBrush)iconBrushes[brushIndex];
+                    var colorname = (from p in typeof(System.Drawing.Color).GetProperties()
+                                     where p.PropertyType.Equals(typeof(System.Drawing.Color))
+                                     let value = (System.Drawing.Color)p.GetValue(null, null)
+                                     where value.R == b.Color.R &&
+                                           value.G == b.Color.G &&
+                                           value.B == b.Color.B &&
+                                           value.A == b.Color.A
+                                     select p.Name).DefaultIfEmpty("unknown").First();
+
+                    graphics.DrawString(colorname, font, Brushes.White, IconSize, IconSize * brushIndex);
+                }
+            }
+
+            bitmap.Save(@"C:\temp\shorcutIcons.png");
         }
     }
 }

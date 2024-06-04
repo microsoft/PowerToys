@@ -142,7 +142,7 @@ namespace ProjectsEditor.ViewModels
             IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(shortcutAddress);
             shortcut.Description = $"Project Launcher {project.Id}";
             string basePath = AppDomain.CurrentDomain.BaseDirectory;
-            shortcut.TargetPath = Path.Combine(basePath, "ProjectsEditor.exe");
+            shortcut.TargetPath = Path.Combine(basePath, "ProjectsLauncher.exe");
             shortcut.Arguments = '"' + project.Id + '"';
             shortcut.WorkingDirectory = basePath;
             string iconFilename = DrawHelper.CreateShortcutIcon(project, out Bitmap bitmap);
@@ -189,23 +189,7 @@ namespace ProjectsEditor.ViewModels
                 projectEdited.Initialize();
             }
 
-            DrawHelper.CreateShortcutIcon(selectedProject, out Bitmap bitmap);
-            BitmapImage bitmapImage;
-            using (var memory = new MemoryStream())
-            {
-                bitmap.Save(memory, ImageFormat.Png);
-                memory.Position = 0;
-
-                bitmapImage = new BitmapImage();
-                bitmapImage.BeginInit();
-                bitmapImage.StreamSource = memory;
-                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapImage.EndInit();
-                bitmapImage.Freeze();
-            }
-
             editPage.DataContext = projectEdited;
-            editPage.IconPreview.Source = bitmapImage;
             _mainWindow.ShowPage(editPage);
             lastUpdatedTimer.Stop();
         }
