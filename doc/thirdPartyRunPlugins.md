@@ -27,7 +27,6 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | ------ | ------ | ----------- |
 | [BrowserSearch](https://github.com/TBM13/BrowserSearch) | [TBM13](https://github.com/TBM13) | Search your browser history |
 | [GitHub Emoji](https://github.com/hlaueriksson/GEmojiSharp) | [hlaueriksson](https://github.com/hlaueriksson) | Search GitHub Emoji |
-| [Guid](https://github.com/skttl/ptrun-guid) | [skttl](https://github.com/skttl) | Guid generator |
 | [PowerTranslator](https://github.com/N0I0C0K/PowerTranslator) | [N0I0C0K](https://github.com/N0I0C0K) | Text translator based on Youdao |
 | [Quick Lookup](https://github.com/GTGalaxi/quick-lookup-ptrun) | [gtgalaxi](https://github.com/GTGalaxi) | Search across multiple cyber security tools |
 | [Input Typer](https://github.com/CoreyHayward/PowerToys-Run-InputTyper) | [CoreyHayward](https://github.com/CoreyHayward) | Type the input as if sent from a keyboard |
