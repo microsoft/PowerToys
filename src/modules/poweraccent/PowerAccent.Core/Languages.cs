@@ -795,6 +795,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_W => new[] { "ɰ", "ɯ" },
                 LetterKey.VK_Y => new[] { "ʏ" },
                 LetterKey.VK_Z => new[] { "ʒ", "ʐ", "ʑ" },
+                LetterKey.VK_COMMA => new[] { "ʡ", "ʔ", "ʕ", "ʢ" },
                 _ => Array.Empty<string>(),
             };
         }
