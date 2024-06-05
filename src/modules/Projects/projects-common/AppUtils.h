@@ -60,7 +60,6 @@ namespace Utils
                     continue;
                 }
 
-                std::wcout << name.m_pData << std::endl;
                 AppData data{
                     .name = std::wstring(name.m_pData),
                 };
