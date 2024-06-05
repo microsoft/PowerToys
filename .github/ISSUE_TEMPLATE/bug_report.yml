@@ -33,7 +33,8 @@ body:
   validations:
     required: true
 
-- type: dropdown
+- id: isadmin
+  type: dropdown
   attributes:
     label: Running as admin
     description: Are you running PowerToys as Admin?
@@ -81,8 +82,7 @@ body:
   validations:
     required: true
 
-- id: repro
-  type: textarea
+- type: textarea
   attributes:
     label: Steps to reproduce
     description: We highly suggest including screenshots and a bug report log (System tray > Report bug).
