@@ -268,17 +268,16 @@
                     x:Name="CancelButton"
                     Margin="20,0,0,0"
                     Height="36"
+                    Background="{DynamicResource SecondaryBackgroundBrush}"
                     AutomationProperties.Name="{x:Static props:Resources.Cancel}"
                     Click="CancelButtonClicked">
                     <StackPanel Orientation="Horizontal" Margin="12, 2, 12, 0" >
                         <TextBlock
                             AutomationProperties.Name="{x:Static props:Resources.Cancel}"
                             FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                            Foreground="{DynamicResource AccentButtonForeground}"
                             Text="&#xE711;" />
                         <TextBlock
                             Margin="12,-4,0,0"
-                            Foreground="{DynamicResource AccentButtonForeground}"
                             Text="{x:Static props:Resources.Cancel}" />
                     </StackPanel>
                     <Button.Effect>
