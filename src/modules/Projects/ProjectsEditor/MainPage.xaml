@@ -12,6 +12,26 @@
     <Page.Resources>
         <Thickness x:Key="ContentDialogPadding">24,16,0,24</Thickness>
         <Thickness x:Key="ContentDialogCommandSpaceMargin">0,24,24,0</Thickness>
+        <Style x:Key="DeleteButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource TertiaryBackgroundBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="Transparent" Padding="26,6,26,6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource TitleBarSecondaryForegroundBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource TitleBarSecondaryForegroundBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Style x:Key="CancelButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#9d0808" />
             <Setter Property="BorderBrush" Value="#FF262E34"/>
@@ -233,18 +253,19 @@
                                                 PlacementTarget="{Binding ElementName=MoreButton}"
                                                 Placement="Left">
                                                 <Button
+                                                    Style="{StaticResource DeleteButtonStyle}"
                                                     AutomationProperties.Name="{x:Static props:Resources.Delete}"
                                                     Click="DeleteButtonClicked">
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock
                                                             AutomationProperties.Name="{x:Static props:Resources.Delete}"
                                                             FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                                                            Foreground="{DynamicResource AccentButtonForeground}"
+                                                            Foreground="{DynamicResource PrimaryForegroundBrush}"
                                                             Text="&#xE74D;" />
                                                         <TextBlock
                                                             Margin="10,0,0,0"
                                                             AutomationProperties.Name="{x:Static props:Resources.Delete}"
-                                                            Foreground="{DynamicResource AccentButtonForeground}"
+                                                            Foreground="{DynamicResource PrimaryForegroundBrush}"
                                                             Text="{x:Static props:Resources.Delete}" />
                                                     </StackPanel>
                                                 </Button>
