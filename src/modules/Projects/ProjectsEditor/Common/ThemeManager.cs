@@ -20,7 +20,7 @@ namespace ProjectsEditor.Common
         private const string HighContrastBlackTheme = "HighContrast.Accent4";
         private const string HighContrastWhiteTheme = "HighContrast.Accent5";
 
-        private Theme _currentTheme;
+        private static Theme _currentTheme;
         private Theme _settingsTheme;
         private bool _disposed;
 
@@ -76,7 +76,7 @@ namespace ProjectsEditor.Common
             }
         }
 
-        public Theme GetCurrentTheme()
+        public static Theme GetCurrentTheme()
         {
             return _currentTheme;
         }
