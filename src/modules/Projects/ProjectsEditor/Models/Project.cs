@@ -14,6 +14,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
+using ManagedCommon;
 using ProjectsEditor.Utils;
 
 namespace ProjectsEditor.Models
@@ -275,8 +276,9 @@ namespace ProjectsEditor.Models
                     {
                         graphics.DrawIcon(app.Icon, new Rectangle(32 * appIndex, 0, 24, 24));
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
+                        Logger.LogError($"Exception while drawing the icon for app {Name}. Exception message: {e.Message}");
                     }
 
                     appIndex++;
@@ -314,6 +316,28 @@ namespace ProjectsEditor.Models
             }
 
             return new Rectangle((int)minX, (int)minY, (int)(maxX - minX), (int)(maxY - minY));
+        }
+
+        internal string GetShortcutChars()
+        {
+            if (string.IsNullOrEmpty(Name))
+            {
+                return "PR";
+            }
+
+            string[] words = Name.Trim().ToUpperInvariant().Split(' ');
+            if (words.Length > 2)
+            {
+                return $"{words[0][0]}{words[1][0]}{words[2][0]}";
+            }
+            else if (words.Length == 2)
+            {
+                return $"{words[0][0]}{words[1][0]}";
+            }
+            else
+            {
+                return words[0].Substring(0, Math.Min(3, words[0].Length));
+            }
         }
     }
 }

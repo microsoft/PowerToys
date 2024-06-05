@@ -7,10 +7,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Windows.Media.Imaging;
+using ManagedCommon;
 using ProjectsEditor.Models;
 using ProjectsEditor.Utils;
 using static ProjectsEditor.Data.ProjectsData;
@@ -130,17 +134,19 @@ namespace ProjectsEditor.ViewModels
             }
         }
 
-        private void CreateShortcut(Project editedProject)
+        private void CreateShortcut(Project project)
         {
             object shDesktop = (object)"Desktop";
             IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell();
-            string shortcutAddress = (string)shell.SpecialFolders.Item(ref shDesktop) + $"\\{editedProject.Name}.lnk";
+            string shortcutAddress = (string)shell.SpecialFolders.Item(ref shDesktop) + $"\\{project.Name}.lnk";
             IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(shortcutAddress);
-            shortcut.Description = $"Project Launcher {editedProject.Id}";
+            shortcut.Description = $"Project Launcher {project.Id}";
             string basePath = AppDomain.CurrentDomain.BaseDirectory;
-            shortcut.TargetPath = Path.Combine(basePath, "ProjectsEditor.exe");
-            shortcut.Arguments = '"' + editedProject.Id + '"';
+            shortcut.TargetPath = Path.Combine(basePath, "ProjectsLauncher.exe");
+            shortcut.Arguments = '"' + project.Id + '"';
             shortcut.WorkingDirectory = basePath;
+            string iconFilename = DrawHelper.CreateShortcutIcon(project, out Bitmap bitmap);
+            shortcut.IconLocation = iconFilename;
             shortcut.Save();
         }
 
@@ -221,6 +227,7 @@ namespace ProjectsEditor.ViewModels
         {
             if (!Projects.Where(x => x.Id == projectId).Any())
             {
+                Logger.LogWarning($"Project to launch not find. Id: {projectId}");
                 return;
             }
 
@@ -237,6 +244,7 @@ namespace ProjectsEditor.ViewModels
 
             if (exitAfterLaunch)
             {
+                Logger.LogInfo($"Launched the project {project.Name}. Exiting.");
                 Environment.Exit(0);
             }
         }

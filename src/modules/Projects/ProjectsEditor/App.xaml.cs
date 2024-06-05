@@ -4,6 +4,7 @@
 
 using System;
 using System.Windows;
+using ManagedCommon;
 using ProjectsEditor.Common;
 using ProjectsEditor.Utils;
 using ProjectsEditor.ViewModels;
@@ -34,6 +35,8 @@ namespace ProjectsEditor
         {
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
+            Logger.InitializeLogger("\\Projects\\Logs");
+
             _themeManager = new ThemeManager(this);
 
             if (_mainViewModel == null)
@@ -46,6 +49,7 @@ namespace ProjectsEditor
             string[] args = Environment.GetCommandLineArgs();
             if (args != null && args.Length > 1)
             {
+                Logger.LogInfo($"Started with a parameter: {args[1]}. Trying to launch that project.");
                 _mainViewModel.LaunchProject(args[1]);
                 return;
             }

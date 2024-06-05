@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows;
+using ManagedCommon;
 using ProjectsEditor.Data;
 using ProjectsEditor.Models;
 using ProjectsEditor.ViewModels;
@@ -25,12 +26,14 @@ namespace ProjectsEditor.Utils
                 ProjectsData parser = new ProjectsData();
                 if (!File.Exists(parser.File))
                 {
+                    Logger.LogWarning($"Projects storage file not found: {parser.File}");
                     return new ParsingResult(true);
                 }
 
                 ProjectsData.ProjectsListWrapper projects = parser.Read(parser.File);
                 if (!SetProjects(mainViewModel, projects))
                 {
+                    Logger.LogWarning($"Projects storage file content could not be set. Reason: {Properties.Resources.Error_Parsing_Message}");
                     return new ParsingResult(false, ProjectsEditor.Properties.Resources.Error_Parsing_Message);
                 }
 
@@ -38,6 +41,7 @@ namespace ProjectsEditor.Utils
             }
             catch (Exception e)
             {
+                Logger.LogError($"Exception while parsing storage file: {e.Message}");
                 return new ParsingResult(false, e.Message);
             }
         }
@@ -50,12 +54,14 @@ namespace ProjectsEditor.Utils
                 ProjectsData parser = new ProjectsData();
                 if (!File.Exists(fileName))
                 {
+                    Logger.LogWarning($"ParseProject method. Projects storage file not found: {parser.File}");
                     return new ParsingResult(true);
                 }
 
                 ProjectsData.ProjectsListWrapper projects = parser.Read(fileName);
                 if (!ExtractProject(projects, out project))
                 {
+                    Logger.LogWarning($"ParseProject method. Projects storage file content could not be set. Reason: {Properties.Resources.Error_Parsing_Message}");
                     return new ParsingResult(false, ProjectsEditor.Properties.Resources.Error_Parsing_Message);
                 }
 
@@ -63,6 +69,7 @@ namespace ProjectsEditor.Utils
             }
             catch (Exception e)
             {
+                Logger.LogError($"ParseProject method. Exception while parsing storage file: {e.Message}");
                 return new ParsingResult(false, e.Message);
             }
         }
@@ -209,9 +216,10 @@ namespace ProjectsEditor.Utils
                 IOUtils ioUtils = new IOUtils();
                 ioUtils.WriteFile(serializer.File, serializer.Serialize(projectsWrapper));
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 // TODO: show error
+                Logger.LogError($"Exception while writing storage file: {e.Message}");
             }
         }
 

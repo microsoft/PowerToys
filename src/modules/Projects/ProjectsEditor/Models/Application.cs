@@ -12,7 +12,11 @@ using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
+using ManagedCommon;
+using Windows.ApplicationModel.Core;
+using Windows.Management.Deployment;
 
 namespace ProjectsEditor.Models
 {
@@ -77,16 +81,53 @@ namespace ProjectsEditor.Models
                 {
                     try
                     {
-                        _icon = Icon.ExtractAssociatedIcon(AppPath);
+                        if (!File.Exists(AppPath) && IsPackagedApp)
+                        {
+                            Task<AppListEntry> task = Task.Run<AppListEntry>(async () => await GetAppByPackageFamilyNameAsync());
+                            AppListEntry packApp = task.Result;
+                            string filename = Path.GetFileName(AppPath);
+                            string newExeLocation = Path.Combine(packApp.AppInfo.Package.InstalledPath, filename);
+                            _icon = Icon.ExtractAssociatedIcon(newExeLocation);
+                        }
+                        else
+                        {
+                            _icon = Icon.ExtractAssociatedIcon(AppPath);
+                        }
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
+                        Logger.LogError($"Exception while extracting icon from app path: {AppPath}. Exception message: {e.Message}");
                         _icon = new Icon(@"images\DefaultIcon.ico");
                     }
                 }
 
                 return _icon;
             }
+        }
+
+        public async Task<AppListEntry> GetAppByPackageFamilyNameAsync()
+        {
+            var pkgManager = new PackageManager();
+            var pkg = pkgManager.FindPackagesForUser(string.Empty, PackagedId).FirstOrDefault();
+
+            if (pkg == null)
+            {
+                return null;
+            }
+
+            var apps = await pkg.GetAppListEntriesAsync();
+            if (apps == null || apps.Count == 0)
+            {
+                return null;
+            }
+
+            AppListEntry firstApp = apps[0];
+
+            // RandomAccessStreamReference stream = firstApp.AppInfo.DisplayInfo.GetLogo(new Windows.Foundation.Size(64, 64));
+            // IRandomAccessStreamWithContentType content = await stream.OpenReadAsync();
+            // BitmapImage bitmapImage = new BitmapImage();
+            // bitmapImage.StreamSource = (Stream)content;
+            return firstApp;
         }
 
         private BitmapImage _iconBitmapImage;
@@ -124,9 +165,9 @@ namespace ProjectsEditor.Models
                             _iconBitmapImage = bitmapImage;
                         }
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
-                        // todo
+                        Logger.LogError($"Exception while drawing icon for app with path: {AppPath}. Exception message: {e.Message}");
                     }
                 }
 
