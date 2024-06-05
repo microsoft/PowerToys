@@ -245,49 +245,21 @@
                     x:Name="CancelButton"
                     Margin="20,0,0,0"
                     Height="36"
+                    Padding="24,0,24,0"
+                    Content="{x:Static props:Resources.Cancel}"
                     Background="{DynamicResource SecondaryBackgroundBrush}"
                     AutomationProperties.Name="{x:Static props:Resources.Cancel}"
                     Click="CancelButtonClicked">
-                    <StackPanel Orientation="Horizontal" Margin="12, 2, 12, 0" >
-                        <TextBlock
-                            AutomationProperties.Name="{x:Static props:Resources.Cancel}"
-                            FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                            Text="&#xE711;" />
-                        <TextBlock
-                            Margin="12,-4,0,0"
-                            Text="{x:Static props:Resources.Cancel}" />
-                    </StackPanel>
-                    <Button.Effect>
-                        <DropShadowEffect
-                            BlurRadius="6"
-                            Opacity="0.32"
-                            ShadowDepth="1" />
-                    </Button.Effect>
                 </Button>
                 <Button
                     x:Name="SaveButton"
                     Margin="20,0,0,0"
+                    Padding="24,0,24,0"
                     Height="36"
+                    Content="{x:Static props:Resources.Save_project}"
                     AutomationProperties.Name="{x:Static props:Resources.Save_project}"
                     Click="SaveButtonClicked"
                     Style="{StaticResource AccentButtonStyle}">
-                    <StackPanel Orientation="Horizontal" Margin="12, 2, 12, 0" >
-                        <TextBlock
-                            AutomationProperties.Name="{x:Static props:Resources.Save_project}"
-                            FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                            Foreground="{DynamicResource AccentButtonForeground}"
-                            Text="&#xE74E;" />
-                        <TextBlock
-                            Margin="12,-4,0,0"
-                            Foreground="{DynamicResource AccentButtonForeground}"
-                            Text="{x:Static props:Resources.Save_project}" />
-                    </StackPanel>
-                    <Button.Effect>
-                        <DropShadowEffect
-                            BlurRadius="6"
-                            Opacity="0.32"
-                            ShadowDepth="1" />
-                    </Button.Effect>
                 </Button>
             </StackPanel>
         </DockPanel>
