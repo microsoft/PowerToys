@@ -11,11 +11,7 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
-using System.Windows.Media.Media3D;
-using ModernWpf.Media.Animation;
 using ProjectsEditor.Models;
 
 namespace ProjectsEditor.Utils
@@ -101,7 +97,7 @@ namespace ProjectsEditor.Utils
                 g.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
                 g.Clear(Color.FromArgb(0, 0, 0, 0));
-                Brush brush = new SolidBrush(Color.FromArgb(10, 255, 255, 255)); // TODO: set theme-related colors
+                Brush brush = new SolidBrush(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.FromArgb(10, 255, 255, 255) : Color.FromArgb(10, 0, 0, 0));
                 foreach (Application app in project.Applications.Where(x => x.IsSelected && !x.Minimized))
                 {
                     Rectangle rect = new Rectangle(Scaled(app.ScaledPosition.X - bounds.Left), Scaled(app.ScaledPosition.Y - bounds.Top), Scaled(app.ScaledPosition.Width), Scaled(app.ScaledPosition.Height));
@@ -144,11 +140,11 @@ namespace ProjectsEditor.Utils
             {
                 if (app.IsHighlighted)
                 {
-                    graphics.DrawPath(new Pen(Color.White, graphics.VisibleClipBounds.Height / 25), path); // TODO: set theme-related colors
+                    graphics.DrawPath(new Pen(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.White : Color.DarkGray, graphics.VisibleClipBounds.Height / 25), path);
                 }
                 else
                 {
-                    graphics.DrawPath(new Pen(Color.FromArgb(128, 82, 82, 82), graphics.VisibleClipBounds.Height / 100), path); // TODO: set theme-related colors
+                    graphics.DrawPath(new Pen(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.FromArgb(128, 82, 82, 82) : Color.FromArgb(128, 160, 160, 160), graphics.VisibleClipBounds.Height / 100), path);
                 }
 
                 graphics.FillPath(brush, path);
@@ -202,11 +198,11 @@ namespace ProjectsEditor.Utils
             {
                 if (apps.Where(x => x.IsHighlighted).Any())
                 {
-                    graphics.DrawPath(new Pen(Color.White, graphics.VisibleClipBounds.Height / 25), path);
+                    graphics.DrawPath(new Pen(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.White : Color.DarkGray, graphics.VisibleClipBounds.Height / 25), path);
                 }
                 else
                 {
-                    graphics.DrawPath(new Pen(Color.FromArgb(128, 82, 82, 82), graphics.VisibleClipBounds.Height / 100), path);
+                    graphics.DrawPath(new Pen(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.FromArgb(128, 82, 82, 82) : Color.FromArgb(128, 160, 160, 160), graphics.VisibleClipBounds.Height / 100), path);
                 }
 
                 graphics.FillPath(brush, path);
