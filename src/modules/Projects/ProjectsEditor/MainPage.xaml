@@ -32,29 +32,6 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style x:Key="CancelButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#9d0808" />
-            <Setter Property="BorderBrush" Value="#FF262E34"/>
-            <Setter Property="Foreground" Value="{DynamicResource AccentButtonForeground}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type Button}">
-                        <Border Background="{TemplateBinding Background}" BorderBrush="#FF262E34" BorderThickness="1">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#ec4d37"/>
-                </Trigger>
-                <Trigger Property="IsPressed" Value="True">
-                    <Setter Property="Background" Value="#9d0808"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
     </Page.Resources>
 
     <Grid>
