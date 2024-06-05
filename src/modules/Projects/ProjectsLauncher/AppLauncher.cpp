@@ -4,21 +4,15 @@
 #include <winrt/Windows.Management.Deployment.h>
 #include <winrt/Windows.ApplicationModel.Core.h>
 
-#include <ShellScalingApi.h>
-#include <shellapi.h>
-
 #include <iostream>
 
 #include "../projects-common/MonitorEnumerator.h"
+#include "../projects-common/WindowEnumerator.h"
+#include "../projects-common/WindowFilter.h"
 
 using namespace winrt;
 using namespace Windows::Foundation;
 using namespace Windows::Management::Deployment;
-
-namespace FancyZones
-{
-    inline void SizeWindowToRect(HWND window, RECT rect, BOOL snapZone) noexcept;
-}
 
 namespace Common
 {
@@ -51,132 +45,6 @@ namespace Common
                 }
                 return AwarenessLevel::UNAWARE;
             }
-        }
-    }
-
-    namespace Utils
-    {
-        namespace Elevation
-        {
-            // Run command as non-elevated user, returns true if succeeded, puts the process id into returnPid if returnPid != NULL
-            inline bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid, const wchar_t* workingDir = nullptr, const bool showWindow = true, const RECT& windowRect = {})
-            {
-                //Logger::info(L"run_non_elevated with params={}", params);
-                auto executable_args = L"\"" + file + L"\"";
-                if (!params.empty())
-                {
-                    executable_args += L" " + params;
-                }
-
-                HWND hwnd = GetShellWindow();
-                if (!hwnd)
-                {
-                    if (GetLastError() == ERROR_SUCCESS)
-                    {
-                        //Logger::warn(L"GetShellWindow() returned null. Shell window is not available");
-                    }
-                    else
-                    {
-                        //Logger::error(L"GetShellWindow() failed. {}", get_last_error_or_default(GetLastError()));
-                    }
-
-                    return false;
-                }
-                DWORD pid;
-                GetWindowThreadProcessId(hwnd, &pid);
-
-                winrt::handle process{ OpenProcess(PROCESS_CREATE_PROCESS, FALSE, pid) };
-                if (!process)
-                {
-                    //Logger::error(L"OpenProcess() failed. {}", get_last_error_or_default(GetLastError()));
-                    return false;
-                }
-
-                SIZE_T size = 0;
-
-                InitializeProcThreadAttributeList(nullptr, 1, 0, &size);
-                auto pproc_buffer = std::make_unique<char[]>(size);
-                auto pptal = reinterpret_cast<PPROC_THREAD_ATTRIBUTE_LIST>(pproc_buffer.get());
-                if (!pptal)
-                {
-                    //Logger::error(L"pptal failed to initialize. {}", get_last_error_or_default(GetLastError()));
-                    return false;
-                }
-
-                if (!InitializeProcThreadAttributeList(pptal, 1, 0, &size))
-                {
-                    //Logger::error(L"InitializeProcThreadAttributeList() failed. {}", get_last_error_or_default(GetLastError()));
-                    return false;
-                }
-
-                HANDLE process_handle = process.get();
-                if (!UpdateProcThreadAttribute(pptal,
-                    0,
-                    PROC_THREAD_ATTRIBUTE_PARENT_PROCESS,
-                    &process_handle,
-                    sizeof(process_handle),
-                    nullptr,
-                    nullptr))
-                {
-                    //Logger::error(L"UpdateProcThreadAttribute() failed. {}", get_last_error_or_default(GetLastError()));
-                    return false;
-                }
-
-                STARTUPINFOEX siex = { 0 };
-                siex.lpAttributeList = pptal;
-                siex.StartupInfo.cb = sizeof(siex);
-                PROCESS_INFORMATION pi = { 0 };
-                auto dwCreationFlags = EXTENDED_STARTUPINFO_PRESENT;
-
-                if (!showWindow)
-                {
-                    siex.StartupInfo.dwFlags = STARTF_USESHOWWINDOW;
-                    siex.StartupInfo.wShowWindow = SW_HIDE;
-                    dwCreationFlags = CREATE_NO_WINDOW;
-                }
-                else
-                {
-                    siex.StartupInfo.dwFlags = STARTF_USEPOSITION | STARTF_USESIZE;
-                    siex.StartupInfo.dwX = windowRect.left;
-                    siex.StartupInfo.dwY = windowRect.top;
-                    siex.StartupInfo.dwXSize = windowRect.right - windowRect.left;
-                    siex.StartupInfo.dwYSize = windowRect.bottom - windowRect.top;
-                }
-
-                auto succeeded = CreateProcessW(file.c_str(),
-                    &executable_args[0],
-                    nullptr,
-                    nullptr,
-                    FALSE,
-                    dwCreationFlags,
-                    nullptr,
-                    workingDir,
-                    &siex.StartupInfo,
-                    &pi);
-                if (succeeded)
-                {
-                    if (pi.hProcess)
-                    {
-                        if (returnPid)
-                        {
-                            *returnPid = GetProcessId(pi.hProcess);
-                        }
-
-                        CloseHandle(pi.hProcess);
-                    }
-                    if (pi.hThread)
-                    {
-                        CloseHandle(pi.hThread);
-                    }
-                }
-                else
-                {
-                    //Logger::error(L"CreateProcessW() failed. {}", get_last_error_or_default(GetLastError()));
-                }
-
-                return succeeded;
-            }
-
         }
     }
 }
@@ -257,59 +125,42 @@ namespace FancyZones
         }
     }
 
-    inline void SizeWindowToRect(HWND window, RECT rect, BOOL snapZone) noexcept
+    inline bool SizeWindowToRect(HWND window, bool isMinimized, bool isMaximized, RECT rect) noexcept
     {
-
         WINDOWPLACEMENT placement{};
         ::GetWindowPlacement(window, &placement);
 
-        // Wait if SW_SHOWMINIMIZED would be removed from window (Issue #1685)
-        for (int i = 0; i < 5 && (placement.showCmd == SW_SHOWMINIMIZED); ++i)
+        if (isMinimized)
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            ::GetWindowPlacement(window, &placement);
+            placement.showCmd = SW_MINIMIZE;
         }
-
-        BOOL maximizeLater = false;
-        if (IsWindowVisible(window))
+        else
         {
-            // If is not snap zone then need keep maximize state (move to active monitor)
-            if (!snapZone && placement.showCmd == SW_SHOWMAXIMIZED)
-            {
-                maximizeLater = true;
-            }
-
-            // Do not restore minimized windows. We change their placement though so they restore to the correct zone.
             if ((placement.showCmd != SW_SHOWMINIMIZED) &&
                 (placement.showCmd != SW_MINIMIZE))
             {
-                // Remove maximized show command to make sure window is moved to the correct zone.
                 if (placement.showCmd == SW_SHOWMAXIMIZED)
                     placement.flags &= ~WPF_RESTORETOMAXIMIZED;
 
                 placement.showCmd = SW_RESTORE;
             }
-        }
-        else
-        {
-            placement.showCmd = SW_HIDE;
-        }
 
-        ScreenToWorkAreaCoords(window, rect);
-
-        placement.rcNormalPosition = rect;
+            ScreenToWorkAreaCoords(window, rect);
+            placement.rcNormalPosition = rect;
+        }
+        
         placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
 
-        std::wcout << "Set window placement" << std::endl;
         auto result = ::SetWindowPlacement(window, &placement);
         if (!result)
         {
             std::wcout << "Set window placement failed" << std::endl;
             //Logger::error(L"SetWindowPlacement failed, {}", get_last_error_or_default(GetLastError()));
+            return false;
         }
 
         // make sure window is moved to the correct monitor before maximize.
-        if (maximizeLater)
+        if (isMaximized)
         {
             placement.showCmd = SW_SHOWMAXIMIZED;
         }
@@ -321,45 +172,49 @@ namespace FancyZones
         {
             std::wcout << "Set window placement failed" << std::endl;
             //Logger::error(L"SetWindowPlacement failed, {}", get_last_error_or_default(GetLastError()));
+            return false;
         }
+
+        return true;
     }
 }
 
-bool LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs)
+bool LaunchApp(const std::wstring& appPath, std::wstring commandLineArgs)
 {
-    SHELLEXECUTEINFO shExecInfo;
-    shExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
-    shExecInfo.fMask = NULL;
-    shExecInfo.hwnd = NULL;
-    shExecInfo.lpVerb = NULL;
-    shExecInfo.lpFile = appPath.c_str();
-    shExecInfo.lpParameters = commandLineArgs.c_str();
-    shExecInfo.lpDirectory = NULL;
-    shExecInfo.nShow = SW_MAXIMIZE;
-    shExecInfo.hInstApp = NULL;
+    STARTUPINFO startupInfo;
+    ZeroMemory(&startupInfo, sizeof(startupInfo));
+    startupInfo.cb = sizeof(startupInfo);
 
-    BOOL result = ShellExecuteEx(&shExecInfo);
+    PROCESS_INFORMATION processInfo;
+    ZeroMemory(&processInfo, sizeof(processInfo));
 
-    return result;
+    if (CreateProcess(appPath.c_str(), commandLineArgs.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &startupInfo, &processInfo))
+    {
+        CloseHandle(processInfo.hProcess);
+        CloseHandle(processInfo.hThread);
+
+        return true;
+    }
+    else
+    {
+        std::wcerr << L"Failed to launch process. Error code: " << GetLastError() << std::endl;
+    }
+
+    return false;
 }
 
 bool LaunchPackagedApp(const std::wstring& packageFullName)
 {
     try
     {
-        // Create a PackageManager object to get the package information.
         PackageManager packageManager;
-
-        // Find the package by its full name.
         for (const auto& package : packageManager.FindPackagesForUser({}))
         {
             if (package.Id().FullName() == packageFullName)
             {
-                // Get the AppListEntry for the package.
                 auto getAppListEntriesOperation = package.GetAppListEntriesAsync();
                 auto appEntries = getAppListEntriesOperation.get();
 
-                // Launch the first app in the list.
                 if (appEntries.Size() > 0)
                 {
                     IAsyncOperation<bool> launchOperation = appEntries.GetAt(0).LaunchAsync();
@@ -369,7 +224,6 @@ bool LaunchPackagedApp(const std::wstring& packageFullName)
                 else
                 {
                     std::wcout << L"No app entries found for the package." << std::endl;
-                    return false;
                 }
             }
         }
@@ -384,11 +238,13 @@ bool LaunchPackagedApp(const std::wstring& packageFullName)
 
 bool Launch(const Project::Application& app)
 {
-    bool launched = false;
+    // Get the set of windows before launching the app
+    std::vector<HWND> windowsBefore = WindowEnumerator::Enumerate(WindowFilter::Filter);
+
     if (!app.packageFullName.empty() && app.commandLineArgs.empty())
     {
         std::wcout << L"Launching packaged " << app.name << std::endl;
-        launched = LaunchPackagedApp(app.packageFullName);
+        LaunchPackagedApp(app.packageFullName);
     }
     else
     {
@@ -403,17 +259,42 @@ bool Launch(const Project::Application& app)
             return false;
         }
 
-        launched = LaunchApp(app.path, app.commandLineArgs);
+        LaunchApp(app.path, app.commandLineArgs);
     }
 
-    if (launched)
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+    // Get the set of windows after launching the app
+    std::vector<HWND> launchedWindows{};
+    for (int attempt = 0; attempt < 5 && launchedWindows.empty(); attempt++)
     {
-        std::wcout << L"Launched " << app.name << std::endl;
+        std::vector<HWND> windowsAfter = WindowEnumerator::Enumerate(WindowFilter::Filter);
+
+        // Find the new window
+        for (HWND window : windowsAfter)
+        {
+            if (std::find(windowsBefore.begin(), windowsBefore.end(), window) == windowsBefore.end())
+            {
+                launchedWindows.push_back(window);
+            }
+        }
     }
-    else
+
+    if (launchedWindows.empty())
     {
         std::wcout << L"Failed to launch " << app.name << std::endl;
+        return false;   
     }
-    
-    return launched;
+
+    // Place the window
+    for (auto window : launchedWindows)
+    {
+        if (!FancyZones::SizeWindowToRect(window, app.isMinimized, app.isMaximized, app.position.toRect()))
+        {
+            std::wcout << L"Failed placing " << app.name << std::endl;
+        }
+    }
+
+    std::wcout << L"Launched " << app.name << std::endl;
+    return true;
 }
