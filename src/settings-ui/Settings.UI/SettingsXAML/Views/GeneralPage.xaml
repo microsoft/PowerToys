@@ -271,6 +271,7 @@
                                         </ToolTipService.ToolTip>
                                     </TextBlock>
                                     <Button
+                                        x:Uid="General_SettingsBackupAndRestore_ButtonSelectFolder"
                                         Grid.Column="1"
                                         Command="{Binding SelectSettingBackupDirEventHandler}"
                                         Content="&#xe8da;"

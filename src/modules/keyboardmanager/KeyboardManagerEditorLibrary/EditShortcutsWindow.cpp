@@ -335,8 +335,8 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         // Whenever a remap is added move to the bottom of the screen
         scrollViewer.ChangeView(nullptr, scrollViewer.ScrollableHeight(), nullptr);
 
-        // Set focus to the first Type Button in the newly added row
-        UIHelpers::SetFocusOnTypeButtonInLastRow(shortcutTable, EditorConstants::ShortcutTableColCount);
+        // Set focus to the first "Select" Button in the newly added row
+        UIHelpers::SetFocusOnFirstSelectButtonInLastRowOfEditShortcutsWindow(shortcutTable, EditorConstants::ShortcutTableColCount);
 
         //newShortcut.OpenNewShortcutControlRow(shortcutTable, shortcutTable.Children().GetAt(shortcutTable.Children().Size() - 1).as<StackPanel>());
     });

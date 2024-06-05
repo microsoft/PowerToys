@@ -1,0 +1,91 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\Version.props" />
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <RootNamespace>RegistryPreview</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x86;x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <UseWinUI>true</UseWinUI>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <WindowsPackageType>None</WindowsPackageType>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <SelfContained>true</SelfContained>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <AssemblyName>PowerToys.RegistryPreview</AssemblyName>
+    <ApplicationIcon>Assets\RegistryPreview\RegistryPreview.ico</ApplicationIcon>
+    <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
+    <ProjectPriFileName>PowerToys.RegistryPreview.pri</ProjectPriFileName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Page Remove="RegistryPreviewXAML\App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="RegistryPreviewXAML\App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="RegistryPreviewXAML\" />
+  </ItemGroup>
+
+
+
+  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
+    <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Sizers" />
+    <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="WinUIEx" />
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <!-- 
+    Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
+    Tools extension to be activated for this project even if the Windows App SDK Nuget
+    package has not yet been restored.
+  -->
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- HACK: Common.UI is referenced, even if it is not used, to force dll versions to be the same as in other projects that use it. It's still unclear why this is the case, but this is need for flattening the install directory. -->
+    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\RegistryPreviewUILib\RegistryPreviewUILib.csproj" />
+  </ItemGroup>
+
+  <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">
+    <Message Text="Executing CopyDLLs task" Importance="High" />
+    <ItemGroup>
+      <PRIFile Include="$(OutDir)**\PowerToys.RegistryPreviewUILib.pri" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(PRIFile)" DestinationFolder="$(OutDir)" />
+
+    <Message Text="Copied build files" Importance="High" />
+  </Target>
+
+  <!-- 
+    Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution 
+    Explorer "Package and Publish" context menu entry to be enabled for this project even if 
+    the Windows App SDK Nuget package has not yet been restored.
+  -->
+  <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
+  </PropertyGroup>
+</Project>

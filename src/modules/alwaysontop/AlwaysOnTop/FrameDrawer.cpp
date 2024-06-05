@@ -62,7 +62,7 @@ bool FrameDrawer::CreateRenderTargets(const RECT& clientRect)
         return false;
     }
 
-    m_renderTarget->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
+    m_renderTarget->SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
     m_renderTargetSizeHash = rectHash;
 
     return true;

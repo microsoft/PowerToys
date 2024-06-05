@@ -17,14 +17,15 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 |              | Current utilities: |              |
 |--------------|--------------------|--------------|
-| [Always on Top](https://aka.ms/PowerToysOverview_AoT) | [PowerToys Awake](https://aka.ms/PowerToysOverview_Awake) | [Command Not Found](https://aka.ms/PowerToysOverview_CmdNotFound) |
-| [Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) | [Crop And Lock](https://aka.ms/PowerToysOverview_CropAndLock) | [Environment Variables](https://aka.ms/PowerToysOverview_EnvironmentVariables) |
-| [FancyZones](https://aka.ms/PowerToysOverview_FancyZones) | [File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns) | [File Locksmith](https://aka.ms/PowerToysOverview_FileLocksmith) |
-| [Hosts File Editor](https://aka.ms/PowerToysOverview_HostsFileEditor) | [Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer) | [Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) |
-| [Mouse utilities](https://aka.ms/PowerToysOverview_MouseUtilities) | [Mouse Without Borders](https://aka.ms/PowerToysOverview_MouseWithoutBorders) | [Peek](https://aka.ms/PowerToysOverview_Peek) |
-| [Paste as Plain Text](https://aka.ms/PowerToysOverview_PastePlain) | [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) | [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) |
-| [Quick Accent](https://aka.ms/PowerToysOverview_QuickAccent) | [Registry Preview](https://aka.ms/PowerToysOverview_RegistryPreview) | [Screen Ruler](https://aka.ms/PowerToysOverview_ScreenRuler) |
-| [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) | [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) |
+| [Advanced Paste](https://aka.ms/PowerToysOverview_AdvancedPaste) | [Always on Top](https://aka.ms/PowerToysOverview_AoT) | [PowerToys Awake](https://aka.ms/PowerToysOverview_Awake) |
+| [Command Not Found](https://aka.ms/PowerToysOverview_CmdNotFound) | [Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) | [Crop And Lock](https://aka.ms/PowerToysOverview_CropAndLock) |
+| [Environment Variables](https://aka.ms/PowerToysOverview_EnvironmentVariables) | [FancyZones](https://aka.ms/PowerToysOverview_FancyZones) | [File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns) |
+| [File Locksmith](https://aka.ms/PowerToysOverview_FileLocksmith) | [Hosts File Editor](https://aka.ms/PowerToysOverview_HostsFileEditor) | [Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer) |
+| [Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) | [Mouse utilities](https://aka.ms/PowerToysOverview_MouseUtilities) | [Mouse Without Borders](https://aka.ms/PowerToysOverview_MouseWithoutBorders) |
+| [Peek](https://aka.ms/PowerToysOverview_Peek) | [Paste as Plain Text](https://aka.ms/PowerToysOverview_PastePlain) | [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) |
+| [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) | [Quick Accent](https://aka.ms/PowerToysOverview_QuickAccent) | [Registry Preview](https://aka.ms/PowerToysOverview_RegistryPreview) |
+| [Screen Ruler](https://aka.ms/PowerToysOverview_ScreenRuler) | [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) |
+| [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) |
 
 ## Installing and running Microsoft PowerToys
 
@@ -40,19 +41,19 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and click on `Assets` at the bottom to show the files available in the release. Please use the appropriate PowerToys installer that matches your machine's architecture and install scope. For most, it is `x64` and per-user.
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F53
-[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F52
-[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.79.0/PowerToysUserSetup-0.79.0-x64.exe
-[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.79.0/PowerToysUserSetup-0.79.0-arm64.exe
-[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.79.0/PowerToysSetup-0.79.0-x64.exe
-[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.79.0/PowerToysSetup-0.79.0-arm64.exe
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.82%22
+[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F54
+[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.81.0/PowerToysUserSetup-0.81.0-x64.exe
+[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.81.0/PowerToysUserSetup-0.81.0-arm64.exe
+[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.81.0/PowerToysSetup-0.81.0-x64.exe
+[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.81.0/PowerToysSetup-0.81.0-arm64.exe
  
 |  Description   | Filename | sha256 hash |
 |----------------|----------|-------------|
-| Per user - x64       | [PowerToysUserSetup-0.79.0-x64.exe][ptUserX64] | CF1C715F952A34416CDBE5D06D24FFF47790DDA1D4CA3F81BCAD9D28FF0039A1 |
-| Per user - ARM64     | [PowerToysUserSetup-0.79.0-arm64.exe][ptUserArm64] | ADE572B6F1B59DCDC60A2550D9FD00B8CC7C78BE9330F534691CE4B056ED76F1 |
-| Machine wide - x64   | [PowerToysSetup-0.79.0-x64.exe][ptMachineX64] | 3FD2A6BD9C8F8973BFBBF5DB9236C3D8AF3AE57E5AEC275DDEB5EF31581F80FE |
-| Machine wide - ARM64 | [PowerToysSetup-0.79.0-arm64.exe][ptMachineArm64] | B93017C2A5CFB0DEF708DB412570AA39828E91D85E800EFD22481B46F0DC6852 |
+| Per user - x64       | [PowerToysUserSetup-0.81.0-x64.exe][ptUserX64] | E62B1EE81954A75355C04E7567B1C9AAD6034AA0C61AD22587F8746D0DC488C8 |
+| Per user - ARM64     | [PowerToysUserSetup-0.81.0-arm64.exe][ptUserArm64] | 75330A2DB4F9EF9B548B3B58F8BF3262C8C67E680042639BBBBC87EA244F24E2 |
+| Machine wide - x64   | [PowerToysSetup-0.81.0-x64.exe][ptMachineX64] | 29F151B01FE3C94D4FD75F2D6E8F09A6C0F0962385B83A5A733F6717312F639D |
+| Machine wide - ARM64 | [PowerToysSetup-0.81.0-arm64.exe][ptMachineArm64] | FCE636220E1FB854771258D9558E07B7532728AD4C722A7920338DEE60DEECF7 |
 
 This is our preferred method.
 
@@ -98,142 +99,156 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.79 - February 2024 Update
+### 0.81 - Build 2024 Update
 
-In this release, we focused on stability and improvements.
+In this release, we focused on new features, stability and improvements.
 
 **Highlights**
 
- - New feature: Keyboard Manager allows mapping shortcuts to start applications or opening URIs. Thanks [@jefflord](https://github.com/jefflord)!
- - New feature: Keyboard Manager allows shortcuts with chords. Thanks [@jefflord](https://github.com/jefflord)!
- - Modernized Color Picker with Fluent UX. Thanks [@niels9001](https://github.com/niels9001)!
- - Peek now is able to preview drives. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - File Locksmith has now an entry in the Windows 11 tier 1 context menu.
+ - New utility: Advanced Paste - This is an evolution based on feedback of the Paste As Plain Text utility to do more. It can paste as plain text, markdown, or json directly with the new UX or with a direct keystroke invoke.  These are fully locally executed. In addition, it now has an AI powered option as well if you wish with the free form text box.  The AI feature is 100% opt-in and requires an Open AI key. This new system will allow us to have more freedom in the future to quickly add in new features like pasting an image directly to a file or handle additional meta data types past just text. 
+    - Thanks [@craigloewen-msft](https://github.com/craigloewen-msft) for the core functionality and [@niels9001](https://github.com/niels9001) for the UI/UX design!
+ - Command Not Found now uses the PowerShell Gallery release and now supports ARM64. Thanks [@carlos-zamora](https://github.com/carlos-zamora)!
+ - Fixed most accessibility issues opened after the latest accessibility review.
+ - Refactored, packaged and released the main Environment Variables Editor, Hosts File Editor and Registry Preview utilities functionality as controls to be integrated into DevHome. Thanks [@dabhattimsft](https://github.com/dabhattimsft) for validating and integrating into DevHome!
 
 ### General
 
- - Refactored code so that English is used as a fallback language when a localized resource cannot be found.
+ - Fixed crashes on older CPUS by updating .NET to 8.0.4. (This was a hotfix for 0.80)
 
-### Awake
+### Advanced Paste
 
- - The setting now reverts to "Keep using the current power plan" after Awake deactivates itself after any of the timed modes has expired.
+ - New utility: Advanced Paste - This is an evolution based on feedback of the Paste As Plain Text utility to do more. It can paste as plain text, markdown, or json directly with the new UX or with a direct keystroke invoke.  These are fully locally executed. In addition, it now has an AI powered option as well if you wish with the free form text box.  The AI feature is 100% opt-in and requires an Open AI key. This new system will allow us to have more freedom in the future to quickly add in new features like pasting an image directly to a file or handle additional meta data types past just text. 
+    - Thanks [@craigloewen-msft](https://github.com/craigloewen-msft) for the core functionality and [@niels9001](https://github.com/niels9001) for the UI/UX design!
+
+### AlwaysOnTop
+
+ - Enable border anti-aliasing. Thanks [@ewancg](https://github.com/ewancg)! 
 
 ### Color Picker
 
- - Now uses WPFUI and the UI was updated to follow Fluent UX principles. Thanks [@niels9001](https://github.com/niels9001)!
- - Added enable and disable telemetry to align it with the other utilities.
+ - Improved accessibility by making the Settings and Copy to clipboard buttons focusable.
+ - Improved accessibility by supporting picking a color using the keyboard.
 
 ### Command Not Found
 
- - Added telemetry for when a module instance is created in PowerShell.
+ - Upgraded the Command Not Found to use the new PowerShell Gallery release and support ARM64. Thanks [@carlos-zamora](https://github.com/carlos-zamora)!
+
+### Environment Variables Editor
+
+ - Refactored, packaged and released the main Environment Variables Editor functionality as a control to be integrated into DevHome. Thanks [@dabhattimsft](https://github.com/dabhattimsft) for validating and integrating into DevHome!
 
 ### FancyZones
 
- - Fixed a memory leak occurring on work area changes.
+ - Fixed window wrap around behavior when overriding Windows key and arrow shortcuts on single monitor scenarios. Thanks [@DanRosenberry](https://github.com/DanRosenberry)!
+ - Improved accessibility of the editor by listing the keyboard shortcuts in the Canvas Editor.
 
 ### File Explorer add-ons
 
- - Added support to the .ksh, .zsh, .bsh and .env file types to Monaco previewer. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
- - Re-enabled the RendererAppContainer feature in WebView2, since the associated crash has been fixed in the latest WebView2 releases.
-
-### File Locksmith
-
- - Added as an entry in the Windows 11 tier 1 context menu.
+ - Updated Monaco to 0.47 and added the new sticky scroll setting for DevFiles viewer. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+ - Added the new font size setting for DevFiles viewer. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+ - Added support for .srt (subtitle) file previewing in DevFiles viewer. Thanks [@PesBandi](https://github.com/PesBandi)!
 
 ### Hosts File Editor
 
- - Tweaked filter button style to indicate if filters are applied.
- - Added an error indicator to each input field to indicate why a new entry can't be created.
- - Added an in-line delete button for each entry.
+ - Refactored, packaged and released the main Hosts File Editor functionality as a control to be integrated into DevHome. Thanks [@dabhattimsft](https://github.com/dabhattimsft) for validating and integrating into DevHome!
 
 ### Image Resizer
 
- - Units and resize modes are now localized.
- - Tweaked and improved UI. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
+ - Supported narrator announcing the checkboxes in the UI and the sizes combobox. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Improved accessibility by increasing contrast in the text color of combobox items.
+
+### Installer
+
+ - Fixed some install failures when the folders the DSC module is to be installed in isn't accessible by the WiX installer. (This was a hotfix for 0.80)
+ - Detecting install location for DSC now uses registry instead of WMI to improve performance. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed an error causing the machine scope installer to not install correctly in machines where the documents folder is in a UNC network path. We're still working in a fix for the user scope installer.
 
 ### Keyboard Manager
 
- - Added a feature that allows remapping a shortcut to starting an application. Thanks [@jefflord](https://github.com/jefflord)!
- - Added a feature that allows remapping a shortcut to open a URI. Thanks [@jefflord](https://github.com/jefflord)!
- - Added chords to shortcuts. Thanks [@jefflord](https://github.com/jefflord)!
- - Send telemetry about the key/shortcut to key/shortcut remappings that are set. This doesn't include remap to text, application or URI since those might contain personal information.
- - Added telemetry to send a daily event that at least a key/shortcut to key/shortcut remapping was used.
- - Tweaked and fixed the chords code to better follow conventions when trying to call the same chord multiple times.
-
-### Mouse Without Borders
- - Fixed an issue causing the target path string to be corrupted when registering as a service.
+ - Fixed startup crashes in the editor when the Visual C++ Redistributable wasn't installed. (This was a hotfix for 0.80)
+ - Fixed an accessibility issue where the first button wasn't focused after adding a new row in the editor.
+ - Environment Variables are now expanded in arguments of programs started through a shortcut. Thanks [@HydroH](https://github.com/HydroH)!
 
 ### Paste as Plain Text
 
- - Prevent the start menu from activating when the Windows key is part of the activation shortcut and is released sooner.
+ - Paste as Plain Text was removed as a separate utility, since its functionality is now part of the Advanced Paste utility.
 
 ### Peek
 
- - Fixed a title bar issue after maximizing Peek's window. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Fixed a crash when trying to use Peek in File Explorer alternatives.
- - Added a previewer for drives. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - The folder previewer will now asynchronously calculate size, similar to the Properties screen in File Explorer. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Added support to the .ksh, .zsh, .bsh and .env file types to Monaco previewer. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+ - Updated icons, tweaked UI and refactored internal code. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
+ - Updated Monaco to 0.47 and added the new sticky scroll setting for DevFiles viewer. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+ - Added the new font size setting for DevFiles viewer. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+ - Upgrade the SharpCompress dependency to 0.37.2 and fixed archive parsing. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed aliasing in the image viewer.
+ - Added support for .srt (subtitle) file previewing in DevFiles viewer. Thanks [@PesBandi](https://github.com/PesBandi)!
 
-### PowerRename
+### Power Rename
 
- - PowerRename context menu accelerator key readded.
- - Tweaked PowerRename apply button style. Thanks [@niels9001](https://github.com/niels9001)!
+ - Fixed the descriptions that were mixed up in the regex helper (\S and \w).
 
 ### PowerToys Run
 
- - Fixed an issue causing win32 application icons to not appear correctly in the Programs plugin.
- - Unified phrasing in the plugin descriptions.
- - Fixed an issue causing the PowerToys Run plugin settings to be cleared with each upgrade.
- - Fixed an issue causing VSCodeWorkspaces plugin to not find WSL workspaces.
- - Fixed results tooltip closing fast. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Improved the Registry plugin tooltip spacing. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Allow pressing '=' to replace the query with the current result when using the calculator plugin. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Optimized the code that gathers results from the plugin to reduce CPU consumption.
- - Optimized memory usage in the Window Walker plugin.
- - Fixed crashes and improved error handling when saving json configuration files.
- - The Program plugin will now correctly get the icon for a newly installed packaged application. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Added support for UNC paths starting with // in the Folder plugin. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed the plugin load failed message to list the failed plugins. Thanks [@belkiss](https://github.com/belkiss)!
+ - Icons for MSIX packages are now updated when a package update is detected. Thanks [@HydroH](https://github.com/HydroH)!
+ - Use Mica backdrop instead of Acrylic to fix random crashes caused by the Windows composition being momentarily turned off.
+ - Improved accessibility in the results list action buttons by improving contrast of hovered/focused buttons.
 
 ### Quick Accent
 
- - Added support for the Slovenian character set. Thanks [@aklemen](https://github.com/aklemen)!
+ - Added support for the Esperanto character set. Thanks [@salutontalk](https://github.com/salutontalk) and [@ccmywish](https://github.com/ccmywish)!
+ - Added the ǽ and ϑ characters. Thanks [@PesBandi](https://github.com/PesBandi)!
 
 ### Registry Preview
 
- - Fixed a crash when closing the application and the editor's right click menu is opened.
+ - Refactored, packaged and released the main Registry Preview functionality as a control to be integrated into DevHome. Thanks [@dabhattimsft](https://github.com/dabhattimsft) for validating and integrating into DevHome!
+
+### Text Extractor
+
+ - Fixed an issue causing the Settings page to not be opened when clicking the Settings button in Text Extractor's overlay. (This was a hotfix for 0.80)
 
 ### Settings
 
- - Fixed an alignment issue in the flyout icons causing some icons to be centered when they shouldn't. Thanks [@niels9001](https://github.com/niels9001)!
- - Added the mention that Monaco supports .txt files. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
- - Fixed an issue causing the Settings window to lose its previous maximized state. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Improved UI ordering of the File Explorer add-ons. Thanks [@niels9001](https://github.com/niels9001)!
+ - Applied fixes to theme overriding and cleaned up unneeded code. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed misspells in references to the Hosts File Editor utility. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Improved accessibility of the Select Folder button in the Settings Backup UI.
+ - Improved accessibility by improving focus and tab navigation in the ColorPicker page. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Added a description to the fallback encoder setting in the Image Resizer page. Thanks [@Kissaki](https://github.com/Kissaki)!
+ - Refactored and improved performance in the PowerToys Run plugins UI in the Settings page. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed a crash when a user cleared the contents of a Number Box in the PowerToys Run plugins additional options. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Update the PATH environment variables with the user scope PATH when entering the Command Not Found page to improve PowerShell detection.
 
 ### Documentation
 
- - Fixed broken links in doc/devdocs/readme.md. Thanks [@jem-experience](https://github.com/jem-experience)!
+ - Added the WebSearchShortcut plugin to PowerToys Run thirdPartyRunPlugins.md docs. Thanks [@Daydreamer-riri](https://github.com/Daydreamer-riri)!
+ - Updated COMMUNITY.md with the project managers that are part of the core team.
+ - Improved the DSC samples.
+ - Added the 1Password plugin to PowerToys Run thirdPartyRunPlugins.md docs. Thanks [@KairuDeibisu](https://github.com/KairuDeibisu)!
+ - Added the UnicodeInput plugin to PowerToys Run thirdPartyRunPlugins.md docs. Thanks [@nathancartlidge](https://github.com/nathancartlidge)!
 
 ### Development
 
- - Updated Microsoft.MSBuildCache to 0.1.258-preview. Thanks [@dfederm](https://github.com/dfederm)!
- - Fixed CI to point VCToolsVersion to VC.CRT instead of VC.Redist version. Thanks [@snickler](https://github.com/snickler)!
- - Updated MSTest adapter and framework to 3.2.
- - Fixed CI by pointing WiX 3.14 urls and hashes to the latest release on GitHub.
- - Added Pro and Enterprise editions of Visual Studio to the repository's development configuration DSC scripts.
- - Updated CppWinRT to 2.0.240111.5.
- - Updated System.Drawing.Common to 8.0.2 to fix CI builds after the .NET 8.0.2 upgrade was released.
- - Updated WPFUI version to 3.0.0. Thanks [@niels9001](https://github.com/niels9001)!
- - XAML Styler is now fully tested in the solution when CI runs. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Fixed a faulty XAML binding in the Text Extractor settings page.
- - Updated Microsoft.Web.WebView2 to 1.0.2365.46.
+ - Updated System.Drawing.Common to 8.0.5 to fix CI builds after the .NET 8.0.5 upgrade was released.
+ - Fixed file permissions when doing a build using cache on PR CI. Thanks [@dfederm](https://github.com/dfederm)!
+ - Removed the Test SDK reference on ARM64 to fix local building for ARM64. Thanks [@dfederm](https://github.com/dfederm)!
+ - Replaced make_pair with RemapBufferRow in Keyboard Manager internal code. Thanks [@masaru-iritani](https://github.com/masaru-iritani)!
+ - Added CODEOWNERS file to protect sensitive parts of the repo. Thanks [@htcfreek](https://github.com/htcfreek) for the help in figuring out how to make the spellcheck folder an exception!
+ - Added comments in code. to make it clear what the error badge in PowerToys Run plugin list in Settings means. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
+ - Enabled caching by default in the PR CI pipelines. Thanks [@dfederm](https://github.com/dfederm)!
+ - Disabled caching for PR started from forks, since those were failing. Thanks [@dfederm](https://github.com/dfederm)!
+ - Removed baseline files for policy checking and turned on the "TSA" process in the release pipelines instead.
+ - Added caching of nuget packages in the PR CI pipelines. Thanks [@dfederm](https://github.com/dfederm)!
+ - Updated the release CI pipelines TouchdownBuildTask to v3.
+ - Moved the release CI pipelines to ESRPv5.
+ - Added a policy for GitHub Copilot Workspaces for the repo on GitHub. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
 
-#### What is being planned for version 0.80
+#### What is being planned for version 0.82
 
-For [v0.80][github-next-release-work], we'll work on the items below:
+For [v0.82][github-next-release-work], we'll work on the items below:
 
  - Stability / bug fixes
  - Language selection
- - Automated UI testing through WinAppDriver
- - Develop support for Desired State Configuration
  - New module: File Actions Menu
 
 ## PowerToys Community

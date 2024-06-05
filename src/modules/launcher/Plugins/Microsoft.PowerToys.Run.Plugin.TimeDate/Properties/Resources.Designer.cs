@@ -295,7 +295,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Provides time and date values for the system time or a custom time stamp (Examples: &apos;{0}&apos;, &apos;{1}&apos;, &apos;{2}&apos;, &apos;{3}&apos;).
+        ///   Looks up a localized string similar to Provides time and date values for the system time or a custom time stamp (e.g.&apos;{0}&apos;, &apos;{1}&apos;, &apos;{2}&apos;, &apos;{3}&apos;).
         /// </summary>
         internal static string Microsoft_plugin_timedate_plugin_description {
             get {

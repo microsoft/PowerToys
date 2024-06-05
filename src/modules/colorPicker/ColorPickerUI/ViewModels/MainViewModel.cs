@@ -25,6 +25,7 @@ namespace ColorPicker.ViewModels
         private readonly ZoomWindowHelper _zoomWindowHelper;
         private readonly AppStateHandler _appStateHandler;
         private readonly IUserSettings _userSettings;
+        private KeyboardMonitor _keyboardMonitor;
 
         /// <summary>
         /// Backing field for <see cref="OtherColor"/>
@@ -53,6 +54,7 @@ namespace ColorPicker.ViewModels
             _zoomWindowHelper = zoomWindowHelper;
             _appStateHandler = appStateHandler;
             _userSettings = userSettings;
+            _keyboardMonitor = keyboardMonitor;
 
             NativeEventWaiter.WaitForEventLoop(
                 Constants.ShowColorPickerSharedEvent(),
@@ -77,14 +79,34 @@ namespace ColorPicker.ViewModels
 
             _userSettings.ShowColorName.PropertyChanged += (s, e) => { OnPropertyChanged(nameof(ShowColorName)); };
 
+            _appStateHandler.EnterPressed += AppStateHandler_EnterPressed;
+            _appStateHandler.UserSessionStarted += AppStateHandler_UserSessionStarted;
+            _appStateHandler.UserSessionEnded += AppStateHandler_UserSessionEnded;
+
             // Only start a local keyboard low level hook if running as a standalone.
             // Otherwise, the global keyboard hook from runner will be used to activate Color Picker through ShowColorPickerSharedEvent
-            // and the Escape key will be registered as a shortcut by appStateHandler when ColorPicker is being used.
-            // This is much lighter than using a local low level keyboard hook.
+            // The appStateHandler starts and disposes a low level hook when ColorPicker is being used.
+            // The hook catches the Esc, Space, Enter and Arrow key presses.
+            // This is much lighter than using a permanent local low level keyboard hook.
             if ((System.Windows.Application.Current as ColorPickerUI.App).IsRunningDetachedFromPowerToys())
             {
                 keyboardMonitor?.Start();
             }
+        }
+
+        private void AppStateHandler_UserSessionEnded(object sender, EventArgs e)
+        {
+            _keyboardMonitor.Dispose();
+        }
+
+        private void AppStateHandler_UserSessionStarted(object sender, EventArgs e)
+        {
+            _keyboardMonitor?.Start();
+        }
+
+        private void AppStateHandler_EnterPressed(object sender, EventArgs e)
+        {
+            MouseInfoProvider_OnMouseDown(null, default(System.Drawing.Point));
         }
 
         /// <summary>

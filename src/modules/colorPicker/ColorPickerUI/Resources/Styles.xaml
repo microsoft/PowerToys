@@ -12,10 +12,10 @@
     <converters:NumberToInvertedVisibilityConverter x:Key="numberToInvertedVisibilityConverter" />
 
     <Style x:Key="SubtleButtonStyle" TargetType="{x:Type Button}">
-        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}" />
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Focusable" Value="True" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Padding" Value="1" />

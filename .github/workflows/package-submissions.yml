@@ -1,4 +1,4 @@
-name: Submit Microsoft.PowerToys package to Windows Package Manager Community Repository
+name: WinGet submission on release
 # based off of https://github.com/nushell/nushell/blob/main/.github/workflows/winget-submission.yml
 
 on:
@@ -11,7 +11,7 @@ jobs:
     name: Publish winget package
     runs-on: windows-latest
     steps:
-      - name: Submit package to Windows Package Manager Community Repository
+      - name: Submit Microsoft.PowerToys package to Windows Package Manager Community Repository
         run: |
 
           $wingetPackage = "Microsoft.PowerToys"

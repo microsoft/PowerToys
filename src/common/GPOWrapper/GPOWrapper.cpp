@@ -124,9 +124,9 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredTextExtractorEnabledValue());
     }
-    GpoRuleConfigured GPOWrapper::GetConfiguredPastePlainEnabledValue()
+    GpoRuleConfigured GPOWrapper::GetConfiguredAdvancedPasteEnabledValue()
     {
-        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredPastePlainEnabledValue());
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredAdvancedPasteEnabledValue());
     }
     GpoRuleConfigured GPOWrapper::GetConfiguredVideoConferenceMuteEnabledValue()
     {
@@ -171,5 +171,9 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     GpoRuleConfigured GPOWrapper::GetConfiguredQoiThumbnailsEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredQoiThumbnailsEnabledValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetAllowedAdvancedPasteOnlineAIModelsValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPasteOnlineAIModelsValue());
     }
 }

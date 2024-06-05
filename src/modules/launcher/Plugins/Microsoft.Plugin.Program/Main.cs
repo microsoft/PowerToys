@@ -130,9 +130,12 @@ namespace Microsoft.Plugin.Program
 
         public void UpdateUWPIconPath(Theme theme)
         {
-            foreach (UWPApplication app in _packageRepository)
+            if (_packageRepository != null)
             {
-                app.UpdateLogoPath(theme);
+                foreach (UWPApplication app in _packageRepository)
+                {
+                    app.UpdateLogoPath(theme);
+                }
             }
         }
 

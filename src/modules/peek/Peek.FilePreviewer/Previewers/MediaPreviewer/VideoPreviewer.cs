@@ -4,11 +4,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Dispatching;
 using Peek.Common.Extensions;
 using Peek.Common.Helpers;
@@ -44,9 +42,9 @@ namespace Peek.FilePreviewer.Previewers
 
         private Task<bool>? VideoTask { get; set; }
 
-        public static bool IsFileTypeSupported(string fileExt)
+        public static bool IsItemSupported(IFileSystemItem item)
         {
-            return _supportedFileTypes.Contains(fileExt);
+            return _supportedFileTypes.Contains(item.Extension);
         }
 
         public void Dispose()
@@ -116,7 +114,7 @@ namespace Peek.FilePreviewer.Previewers
         private static readonly HashSet<string> _supportedFileTypes = new()
         {
             ".mp4", ".3g2", ".3gp", ".3gp2", ".3gpp", ".asf", ".avi", ".m2t", ".m2ts",
-            ".m4v", ".mkv", ".mov", ".mp4", ".mp4v", ".mts", ".wm", ".wmv",
+            ".m4v", ".mkv", ".mov", ".mp4", ".mp4v", ".mts", ".wm", ".wmv", ".webm",
         };
     }
 }

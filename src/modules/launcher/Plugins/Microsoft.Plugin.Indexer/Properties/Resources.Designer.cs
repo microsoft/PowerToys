@@ -70,6 +70,33 @@ namespace Microsoft.Plugin.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Prevents files and folders showing up in search results if pattern is matched. Add one pattern per line..
+        /// </summary>
+        public static string excluded_patterns_description {
+            get {
+                return ResourceManager.GetString("excluded_patterns_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Excluded patterns.
+        /// </summary>
+        public static string excluded_patterns_label {
+            get {
+                return ResourceManager.GetString("excluded_patterns_label", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Example: *.exe.
+        /// </summary>
+        public static string excluded_patterns_placeholder {
+            get {
+                return ResourceManager.GetString("excluded_patterns_placeholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Fail to set text in clipboard.
         /// </summary>
         public static string Microsoft_plugin_indexer_clipboard_failed {
@@ -160,7 +187,7 @@ namespace Microsoft.Plugin.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Searches files and folders..
+        ///   Looks up a localized string similar to Searches files and folders.
         /// </summary>
         public static string Microsoft_plugin_indexer_plugin_description {
             get {

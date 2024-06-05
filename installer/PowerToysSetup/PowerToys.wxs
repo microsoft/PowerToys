@@ -68,7 +68,7 @@
                 Vital="no">
             </ExePackage>
             <ExePackage
-                DisplayName="Installing Microsoft Edge WebView2"
+                DisplayName="Microsoft Edge WebView2"
                 Name="MicrosoftEdgeWebview2Setup.exe"
                 Compressed="yes"
                 Id="WebView2"
@@ -81,7 +81,7 @@
                 UninstallCommand="/silent /uninstall">
             </ExePackage>
             <MsiPackage
-                DisplayName="Installing PowerToys"
+                DisplayName="PowerToys MSI"
                 SourceFile="$(var.PowerToysPlatform)\Release\$(var.MSIPath)\$(var.MSIName)"
                 Compressed="yes"
                 DisplayInternalUI="no">
