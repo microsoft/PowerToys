@@ -6,6 +6,7 @@
 
 #include <iostream>
 
+#include "../projects-common/AppUtils.h"
 #include "../projects-common/MonitorEnumerator.h"
 #include "../projects-common/WindowEnumerator.h"
 #include "../projects-common/WindowFilter.h"
@@ -280,10 +281,33 @@ bool Launch(const Project::Application& app)
         }
     }
 
+    // The app wasn't launched, check if it's already launched for single-instance apps
     if (launchedWindows.empty())
     {
-        std::wcout << L"Failed to launch " << app.name << std::endl;
-        return false;   
+        std::wcout << L"Failed to launch " << app.name << L", checking if it's launched already." << std::endl;
+
+        auto apps = Utils::Apps::GetAppsList();
+        auto windows = WindowEnumerator::Enumerate(WindowFilter::Filter);
+        for (HWND window : windows)
+        {
+            std::wstring processPath = Common::Utils::ProcessPath::get_process_path_waiting_uwp(window);
+            auto data = Utils::Apps::GetApp(processPath, apps);
+            if (!data.has_value())
+            {
+                continue;
+            }
+
+            if (data.value().name == app.name)
+            {
+                launchedWindows.push_back(window);
+            }
+        }  
+    }
+
+    // The single-instance app not found
+    if (launchedWindows.empty())
+    {
+        return false;
     }
 
     // Place the window
