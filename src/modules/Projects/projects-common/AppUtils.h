@@ -1,21 +1,16 @@
-#include "pch.h"
-#include "PackagedAppUtils.h"
+#pragma once
 
 #include <windows.h>
-#include <winreg.h>
-
-#include <iostream>
-#include <filesystem>
-
 #include <atlbase.h>
-#include <wil/registry.h>
 #include <ShlObj.h>
 #include <propvarutil.h>
 
+#include <filesystem>
+
 namespace Utils
 {
-    namespace Apps
-    {
+	namespace Apps
+	{
         namespace NonLocalizable
         {
             const wchar_t* PackageFullNameProp = L"System.AppUserModel.PackageFullName";
@@ -26,7 +21,16 @@ namespace Utils
             const wchar_t* FileExplorerPath = L"C:\\WINDOWS\\EXPLORER.EXE";
         }
 
-        AppList IterateAppsFolder()
+		struct AppData
+		{
+            std::wstring name;
+            std::wstring installPath;
+            std::wstring packageFullName;
+		};
+
+		using AppList = std::vector<AppData>; // path; data
+
+        inline AppList IterateAppsFolder()
         {
             AppList result{};
 
@@ -50,18 +54,17 @@ namespace Utils
             {
                 CComPtr<IShellItem> item = items;
                 CComHeapPtr<wchar_t> name;
-                
+
                 if (FAILED(item->GetDisplayName(SIGDN_NORMALDISPLAY, &name)))
                 {
                     continue;
                 }
 
                 std::wcout << name.m_pData << std::endl;
-                AppData data
-                {
+                AppData data{
                     .name = std::wstring(name.m_pData),
                 };
-                
+
                 // properties
                 CComPtr<IPropertyStore> store;
                 if (FAILED(item->BindToHandler(NULL, BHID_PropertyStore, IID_PPV_ARGS(&store))))
@@ -83,7 +86,7 @@ namespace Utils
                     PSGetNameFromPropertyKey(pk, &pkName);
 
                     std::wstring prop(pkName.m_pData);
-                    if (prop == NonLocalizable::PackageFullNameProp || 
+                    if (prop == NonLocalizable::PackageFullNameProp ||
                         prop == NonLocalizable::PackageInstallPathProp ||
                         prop == NonLocalizable::InstallPathProp)
                     {
@@ -122,12 +125,12 @@ namespace Utils
             return result;
         }
 
-        AppList Utils::Apps::GetAppsList()
+        inline AppList GetAppsList()
         {
             return IterateAppsFolder();
         }
 
-        std::optional<AppData> GetApp(const std::wstring& appPath, const AppList& apps)
+        inline std::optional<AppData> GetApp(const std::wstring& appPath, const AppList& apps)
         {
             for (const auto& appData : apps)
             {
@@ -137,8 +140,7 @@ namespace Utils
                 // edge case, "Windows Software Development Kit" has the same app path as "File Explorer"
                 if (appPathUpper == NonLocalizable::FileExplorerPath)
                 {
-                    return AppData
-                    {
+                    return AppData{
                         .name = NonLocalizable::FileExplorerName,
                         .installPath = appPath,
                     };
@@ -164,9 +166,9 @@ namespace Utils
             }
 
             // TODO: not all installed apps found
-            return AppData {
+            return AppData{
                 .installPath = appPath
             };
         }
-    }
+	}
 }

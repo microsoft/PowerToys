@@ -3,13 +3,13 @@
 #include <chrono>
 #include <iostream>
 
+#include "../projects-common/AppUtils.h"
 #include "../projects-common/Data.h"
 #include "../projects-common/GuidUtils.h"
 #include "../projects-common/WindowEnumerator.h"
 #include "../projects-common/WindowFilter.h"
 
 #include "MonitorUtils.h"
-#include "PackagedAppUtils.h"
 
 int main(int argc, char* argv[])
 {

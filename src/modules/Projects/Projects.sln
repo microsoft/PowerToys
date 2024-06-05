@@ -7,6 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProjectsSnapshotTool", "Pro
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "projects-common", "projects-common", "{BA45247D-3046-408D-BE01-128587A7799F}"
 	ProjectSection(SolutionItems) = preProject
+		projects-common\AppUtils.h = projects-common\AppUtils.h
 		projects-common\Data.h = projects-common\Data.h
 		projects-common\GuidUtils.h = projects-common\GuidUtils.h
 		projects-common\json.h = projects-common\json.h

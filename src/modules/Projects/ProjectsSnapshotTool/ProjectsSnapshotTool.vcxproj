@@ -117,14 +117,12 @@
   <ItemGroup>
     <ClInclude Include="MonitorUtils.h" />
     <ClInclude Include="OnThreadExecutor.h" />
-    <ClInclude Include="PackagedAppUtils.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MonitorUtils.cpp" />
     <ClCompile Include="OnThreadExecutor.cpp" />
-    <ClCompile Include="PackagedAppUtils.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

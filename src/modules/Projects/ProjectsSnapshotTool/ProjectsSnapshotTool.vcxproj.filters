@@ -24,9 +24,6 @@
     <ClInclude Include="OnThreadExecutor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PackagedAppUtils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -39,9 +36,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="OnThreadExecutor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PackagedAppUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
