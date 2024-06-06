@@ -11,7 +11,7 @@ The Calculator plugin as the name suggests is used to perform calculations on th
 	|--------------|-----------|------------|------------|
 	| `InputUseEnglishFormat` | `false` | Use English (United States) number format for input | Ignores your system setting and expects numbers in the format '1,000.50' |
 	| `OutputUseEnglishFormat` | `false` | Use English (United States) number format for output | Ignores your system setting and returns numbers in the format '1000.50' |
-	| `IgnoreRegionalInput` | `false` | Ignore delimiters from non-native formatting in input | Changes input to match your regional setting, treating the last non-digit symbol as decimal separator |
+	| `IgnoreRegionalFormatting` | `false` | Ignore delimiters from non-native formatting in input | Changes input to match your regional setting, treating the last non-digit symbol as decimal separator |
 
 * The optional plugin settings are implemented via the [`ISettingProvider`](/src/modules/launcher/Wox.Plugin/ISettingProvider.cs) interface from `Wox.Plugin` project. All available settings for the plugin are defined in the [`Main`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/Main.cs) class of the plugin.
 

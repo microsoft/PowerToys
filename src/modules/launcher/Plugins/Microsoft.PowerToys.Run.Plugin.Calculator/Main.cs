@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         private const string InputUseEnglishFormat = nameof(InputUseEnglishFormat);
         private const string OutputUseEnglishFormat = nameof(OutputUseEnglishFormat);
         private const string ReplaceInput = nameof(ReplaceInput);
-        private const string IgnoreRegionalInput = nameof(IgnoreRegionalInput);
+        private const string IgnoreRegionalFormatting = nameof(IgnoreRegionalFormatting);
 
         private static readonly CalculateEngine CalculateEngine = new CalculateEngine();
 
@@ -31,7 +31,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         private bool _inputUseEnglishFormat;
         private bool _outputUseEnglishFormat;
         private bool _replaceInput;
-        private bool _ignoreRegionalInput;
+        private bool _ignoreRegionalFormatting;
 
         public string Name => Resources.wox_plugin_calculator_plugin_name;
 
@@ -70,9 +70,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             },
             new PluginAdditionalOption
             {
-                Key = IgnoreRegionalInput,
-                DisplayLabel = Resources.wox_plugin_calculator_ignore_regional_input,
-                DisplayDescription = Resources.wox_plugin_calculator_ignore_regional_input_description,
+                Key = IgnoreRegionalFormatting,
+                DisplayLabel = Resources.wox_plugin_calculator_ignore_regional_formatting,
+                DisplayDescription = Resources.wox_plugin_calculator_ignore_regional_formatting_description,
                 Value = false,
             },
         };
@@ -93,7 +93,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             }
 
             NumberTranslator translator = NumberTranslator.Create(inputCulture, new CultureInfo("en-US"));
-            var input = translator.Translate(query.Search.Normalize(NormalizationForm.FormKC), _ignoreRegionalInput);
+            var input = translator.Translate(query.Search.Normalize(NormalizationForm.FormKC), _ignoreRegionalFormatting);
 
             if (replaceInput)
             {
@@ -191,7 +191,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             var inputUseEnglishFormat = false;
             var outputUseEnglishFormat = false;
             var replaceInput = true;
-            var ignoreRegionalInput = false;
+            var ignoreRegionalFormatting = false;
 
             if (settings != null && settings.AdditionalOptions != null)
             {
@@ -204,14 +204,14 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 var optionReplaceInput = settings.AdditionalOptions.FirstOrDefault(x => x.Key == ReplaceInput);
                 replaceInput = optionReplaceInput?.Value ?? replaceInput;
 
-                var optionIgnoreRegionalInput = settings.AdditionalOptions.FirstOrDefault(x => x.Key == IgnoreRegionalInput);
-                ignoreRegionalInput = optionIgnoreRegionalInput?.Value ?? ignoreRegionalInput;
+                var optionIgnoreRegionalInput = settings.AdditionalOptions.FirstOrDefault(x => x.Key == IgnoreRegionalFormatting);
+                ignoreRegionalFormatting = optionIgnoreRegionalInput?.Value ?? ignoreRegionalFormatting;
             }
 
             _inputUseEnglishFormat = inputUseEnglishFormat;
             _outputUseEnglishFormat = outputUseEnglishFormat;
             _replaceInput = replaceInput;
-            _ignoreRegionalInput = ignoreRegionalInput;
+            _ignoreRegionalFormatting = ignoreRegionalFormatting;
         }
 
         public void Dispose()

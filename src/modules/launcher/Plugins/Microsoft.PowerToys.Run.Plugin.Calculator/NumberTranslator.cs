@@ -58,9 +58,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         /// </summary>
         /// <param name="input">input string to translate</param>
         /// <returns>translated string</returns>
-        public string Translate(string input, bool ignoreRegionalInput)
+        public string Translate(string input, bool ignoreRegionalFormatting)
         {
-            return Translate(input, sourceCulture, targetCulture, splitRegexForSource, ignoreRegionalInput);
+            return Translate(input, sourceCulture, targetCulture, splitRegexForSource, ignoreRegionalFormatting);
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             return Translate(input, targetCulture, sourceCulture, splitRegexForTarget, false);
         }
 
-        private static string Translate(string input, CultureInfo cultureFrom, CultureInfo cultureTo, Regex splitRegex, bool ignoreRegionalInput)
+        private static string Translate(string input, CultureInfo cultureFrom, CultureInfo cultureTo, Regex splitRegex, bool ignoreRegionalFormatting)
         {
             var outputBuilder = new StringBuilder();
             var hexRegex = new Regex(@"(?:(0x[\da-fA-F]+))");
@@ -131,7 +131,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                     decimal number;
                     var token_bis = token;
 
-                    if (ignoreRegionalInput)
+                    if (ignoreRegionalFormatting)
                     {
                         if (!string.IsNullOrEmpty(token))
                         {
