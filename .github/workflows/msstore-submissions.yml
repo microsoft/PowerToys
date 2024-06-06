@@ -36,7 +36,7 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |-
-            az keyvault secret download --vault-name ${{ vars.AKV_NAME }} -n ${{ vars.CERT_NAME }} -f cert.pfx
+            az keyvault secret download --vault-name ${{ secrets.AZURE_KEYVAULT_NAME }} -n ${{ secrets.AZURE_AUTH_CERT_NAME }} -f cert.pfx
 
       - name: Configure Store Credentials
         run: |-
