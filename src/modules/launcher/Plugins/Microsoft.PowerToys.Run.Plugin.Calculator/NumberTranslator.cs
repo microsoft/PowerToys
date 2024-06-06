@@ -128,6 +128,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                         {
                             var separatorRegex = new Regex(@"[^\d](?=.*[^\d])");
                             token_bis = separatorRegex.Replace(token, string.Empty);
+                            var separatorRegex2 = new Regex(@"[^\d]");
+                            token_bis = separatorRegex2.Replace(token_bis, cultureFrom.NumberFormat.NumberDecimalSeparator);
                         }
                     }
 
