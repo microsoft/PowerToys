@@ -124,7 +124,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Only uses the last delimiter symbol, treating &apos;1 234.567,89&apos; as &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Changes input to match your regional setting, treating the last non-digit symbol as decimal separator.
         /// </summary>
         public static string wox_plugin_calculator_ignore_regional_input_description {
             get {

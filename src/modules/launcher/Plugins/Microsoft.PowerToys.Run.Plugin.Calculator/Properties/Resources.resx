@@ -171,7 +171,6 @@
     <value>Ignore regional formatting, using the last delimiter symbol to separate whole and decimal parts</value>
   </data>
   <data name="wox_plugin_calculator_ignore_regional_input_description" xml:space="preserve">
-    <value>Only uses the last delimiter symbol, treating '1 234.567,89' as '{0}'.</value>
-    <comment>{0} is a placeholder and will be replaced in code.</comment>
+    <value>Changes input to match your regional setting, treating the last non-digit symbol as decimal separator</value>
   </data>
 </root>
