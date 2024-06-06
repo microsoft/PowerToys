@@ -6,16 +6,6 @@ labels:
 body:
 - type: markdown
   attributes:
-    value: |
-        <script>
-        document.addEventListener("DOMContentLoaded", function() {
-          const urlParams = new URLSearchParams(window.location.search);
-          const isAdminValue = urlParams.get("issue_form[isadmin]");
-          if (isAdminValue) {
-            document.querySelector("#issue_form_isadmin").value = isAdminValue;
-          }
-        });
-        </script>
     value: Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
 - id: version
   type: input
