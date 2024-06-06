@@ -95,6 +95,7 @@ AUTOUPDATE
 AValid
 awakeness
 AWAYMODE
+azcliversion
 azman
 backtracer
 bbwe
@@ -163,6 +164,7 @@ CENTERALIGN
 ceq
 certlm
 certmgr
+cfp
 cguid
 CHANGECBCHAIN
 changecursor
@@ -752,6 +754,7 @@ KEYEVENTF
 KEYIMAGE
 keynum
 keyremaps
+keyvault
 KILLFOCUS
 killrunner
 Knownfolders
