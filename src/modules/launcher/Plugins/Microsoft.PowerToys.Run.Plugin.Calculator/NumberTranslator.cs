@@ -119,9 +119,20 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                     }
 
                     decimal number;
+                    var token_bis = token;
+
+                    // if (RegionalInput flag)
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        if (char.IsDigit(token[0]))
+                        {
+                            var separatorRegex = new Regex(@"[^\d](?=.*[^\d])");
+                            token_bis = separatorRegex.Replace(token, string.Empty);
+                        }
+                    }
 
                     outputBuilder.Append(
-                        decimal.TryParse(token, NumberStyles.Number, cultureFrom, out number)
+                        decimal.TryParse(token_bis, NumberStyles.Number, cultureFrom, out number)
                         ? (new string('0', leadingZeroCount) + number.ToString(cultureTo))
                         : token);
                 }

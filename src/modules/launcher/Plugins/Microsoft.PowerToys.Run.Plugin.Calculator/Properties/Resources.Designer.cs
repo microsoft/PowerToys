@@ -115,6 +115,24 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Ignore regional formatting, using the last delimiter symbol to separate whole and decimal parts.
+        /// </summary>
+        public static string wox_plugin_calculator_ignore_regional_input {
+            get {
+                return ResourceManager.GetString("wox_plugin_calculator_ignore_regional_input", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Only uses the last delimiter symbol, treating &apos;1 234.567,89&apos; as &apos;{0}&apos;..
+        /// </summary>
+        public static string wox_plugin_calculator_ignore_regional_input_description {
+            get {
+                return ResourceManager.GetString("wox_plugin_calculator_ignore_regional_input_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use English (United States) number format for input.
         /// </summary>
         public static string wox_plugin_calculator_in_en_format {
