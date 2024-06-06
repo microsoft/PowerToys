@@ -2664,6 +2664,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Shake mouse</value>
     <comment>Mouse is the hardware peripheral.</comment>
   </data>
+  <data name="MouseUtils_Include_Win_Key.Content" xml:space="preserve">
+    <value>Only activate while holding the Windows key</value>
+    <comment>Specifies that the 'Find My Mouse' will only activate if the Windows key is held down while pressing the Ctrl key twice.</comment>
+  </data>
   <data name="MouseUtils_FindMyMouse_ExcludedApps.Description" xml:space="preserve">
     <value>Prevents module activation when an excluded application is the foreground application</value>
   </data>
@@ -3443,6 +3447,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Catalan.Content" xml:space="preserve">
     <value>Catalan</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Crimean.Content" xml:space="preserve">
+    <value>Crimean Tatar</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Currency.Content" xml:space="preserve">
     <value>Currency</value>
   </data>
@@ -3483,6 +3490,10 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_SelectedLanguage_Esperanto.Content" xml:space="preserve">
     <value>Esperanto</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_IPA.Content" xml:space="preserve">
+    <value>IPA</value>
+    <comment>International Phonetic Alphabet</comment>
   </data>
   <data name="QuickAccent_SelectedLanguage_Lithuanian.Content" xml:space="preserve">
     <value>Lithuanian</value>
@@ -4151,6 +4162,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="AdvancedPaste_EnableAIDialog_LoginIntoText.Text" xml:space="preserve">
     <value>• Login into your</value>
+  </data>
+  <data name="AdvancedPaste_EnableAIDialog_ConfigureOpenAIKey.Text" xml:space="preserve">
+    <value>Configure OpenAI key</value>
   </data>
   <data name="AdvancedPaste_EnableAIDialog_OpenAIApiKeysOverviewText.Text" xml:space="preserve">
     <value>OpenAI API keys overview</value>

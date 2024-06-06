@@ -54,6 +54,7 @@
                             <!--  These should be in the same order as the array items in PowerAccentViewModel.cs  -->
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_All" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Catalan" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Crimean" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Currency" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Croatian" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Czech" />
@@ -70,6 +71,7 @@
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Hebrew" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Hungarian" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Icelandic" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_IPA" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Italian" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Kurdish" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Lithuanian" />

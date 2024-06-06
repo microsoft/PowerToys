@@ -44,6 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             FindMyMouseSettingsConfig = findMyMouseSettingsRepository.SettingsConfig;
             _findMyMouseActivationMethod = FindMyMouseSettingsConfig.Properties.ActivationMethod.Value < 4 ? FindMyMouseSettingsConfig.Properties.ActivationMethod.Value : 0;
+            _findMyMouseIncludeWinKey = FindMyMouseSettingsConfig.Properties.IncludeWinKey.Value;
             _findMyMouseDoNotActivateOnGameMode = FindMyMouseSettingsConfig.Properties.DoNotActivateOnGameMode.Value;
 
             string backgroundColor = FindMyMouseSettingsConfig.Properties.BackgroundColor.Value;
@@ -205,6 +206,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _findMyMouseActivationMethod = value;
                     FindMyMouseSettingsConfig.Properties.ActivationMethod.Value = value;
+                    NotifyFindMyMousePropertyChanged();
+                }
+            }
+        }
+
+        public bool FindMyMouseIncludeWinKey
+        {
+            get
+            {
+                return _findMyMouseIncludeWinKey;
+            }
+
+            set
+            {
+                if (_findMyMouseIncludeWinKey != value)
+                {
+                    _findMyMouseIncludeWinKey = value;
+                    FindMyMouseSettingsConfig.Properties.IncludeWinKey.Value = value;
                     NotifyFindMyMousePropertyChanged();
                 }
             }
@@ -973,6 +992,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _findMyMouseEnabledStateIsGPOConfigured;
         private bool _isFindMyMouseEnabled;
         private int _findMyMouseActivationMethod;
+        private bool _findMyMouseIncludeWinKey;
         private bool _findMyMouseDoNotActivateOnGameMode;
         private string _findMyMouseBackgroundColor;
         private string _findMyMouseSpotlightColor;
