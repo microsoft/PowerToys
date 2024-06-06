@@ -43,11 +43,11 @@ jobs:
 
       - name: Configure Store Credentials
         run: |-
-          msstore-cli reconfigure -cfp cert.pfx -c ${{ secrets.AZURE_CLIENT_ID }} -t ${{ secrets.AZURE_TENANT_ID }} -s ${{ secrets.SELLER_ID }}
+          msstore reconfigure -cfp cert.pfx -c ${{ secrets.AZURE_CLIENT_ID }} -t ${{ secrets.AZURE_TENANT_ID }} -s ${{ secrets.SELLER_ID }}
 
       - name: Update draft submission
         run: |-
-          msstore-cli submission update ${{ secrets.PRODUCT_ID }} '{
+          msstore submission update ${{ secrets.PRODUCT_ID }} '{
             "packages":[
                 {
                   "packageUrl":"${{ steps.releaseVars.outputs.powerToysInstallerX64Url }}",
@@ -68,7 +68,7 @@ jobs:
 
 #      - name: Publish Submission
 #        run: |-
-#          msstore-cli submission publish ${{ secrets.PRODUCT_ID }}
+#          msstore submission publish ${{ secrets.PRODUCT_ID }}
 
       - name: Clean up auth certificate
         if: always()
