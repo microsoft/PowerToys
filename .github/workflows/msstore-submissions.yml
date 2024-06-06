@@ -29,7 +29,7 @@ jobs:
           echo ::set-output name=powerToysInstallerX64Url::$(jq -n "$powerToysSetup" | jq -r '[.[]|select(.name | contains("x64"))][0].browser_download_url')
           echo ::set-output name=powerToysInstallerArm64Url::$(jq -n "$powerToysSetup" | jq -r '[.[]|select(.name | contains("arm64"))][0].browser_download_url')
 
-      - uses: microsoft/setup-msstore-cli
+      - uses: microsoft/setup-msstore-cli@v1
 
       - name: Fetch Store Credential
         uses: azure/cli@v2
