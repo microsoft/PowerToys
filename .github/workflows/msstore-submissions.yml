@@ -5,6 +5,9 @@ on:
   #release:
   #  types: [published]
 
+permissions:
+  id-token: write
+
 jobs:
 
   microsoft_store:
@@ -15,7 +18,6 @@ jobs:
       - name: Log in to Azure
         uses: azure/login@v2
         with:
-          auth-type: IDENTITY
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
