@@ -263,7 +263,7 @@ bool Launch(const Project::Application& app)
         LaunchApp(app.path, app.commandLineArgs);
     }
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     // Get the set of windows after launching the app
     std::vector<HWND> launchedWindows{};
@@ -279,12 +279,14 @@ bool Launch(const Project::Application& app)
                 launchedWindows.push_back(window);
             }
         }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     // The app wasn't launched, check if it's already launched for single-instance apps
     if (launchedWindows.empty())
     {
-        std::wcout << L"Failed to launch " << app.name << L", checking if it's launched already." << std::endl;
+        std::wcout << L"No new windows found, checking if " << app.name << L" is launched already." << std::endl;
 
         auto apps = Utils::Apps::GetAppsList();
         auto windows = WindowEnumerator::Enumerate(WindowFilter::Filter);
