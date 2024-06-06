@@ -10,6 +10,16 @@ body:
 - id: version
   type: input
   attributes:
+    value: |
+        <script>
+        document.addEventListener("DOMContentLoaded", function() {
+          const urlParams = new URLSearchParams(window.location.search);
+          const isAdminValue = urlParams.get("issue_form[isadmin]");
+          if (isAdminValue) {
+            document.querySelector("#issue_form_isadmin").value = isAdminValue;
+          }
+        });
+        </script>
     label: Microsoft PowerToys version
     placeholder: 0.70.0
     description: Hover over system tray icon or look at Settings
