@@ -44,7 +44,7 @@ jobs:
 
       - name: Update draft submission
         run: |-
-          msstore-cli submission update ${{ secrets.PRODUCT_ID } '{
+          msstore-cli submission update ${{ secrets.PRODUCT_ID }} '{
             "packages":[
                 {
                   "packageUrl":"${{ steps.releaseVars.outputs.powerToysInstallerX64Url }}",
