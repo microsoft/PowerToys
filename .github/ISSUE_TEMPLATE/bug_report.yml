@@ -104,8 +104,7 @@ body:
   validations:
     required: false
 
-- id: othersoftware
-  type: textarea
+- type: textarea
   attributes:
     label: Other Software
     description: If you're reporting a bug about our interaction with other software, what software? What versions?
