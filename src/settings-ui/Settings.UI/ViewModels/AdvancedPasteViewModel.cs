@@ -108,6 +108,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _isEnabled = value;
                     OnPropertyChanged(nameof(IsEnabled));
+                    OnPropertyChanged(nameof(ShowOnlineAIModelsGpoConfiguredInfoBar));
+                    OnPropertyChanged(nameof(ShowClipboardHistoryIsGpoConfiguredInfoBar));
 
                     // Set the status of AdvancedPaste in the general settings
                     GeneralSettingsConfig.Enabled.AdvancedPaste = value;
@@ -149,7 +151,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ShowOnlineAIModelsGpoConfiguredInfoBar
         {
-            get => _onlineAIModelsDisallowedByGPO && _enabledGpoRuleConfiguration != GpoRuleConfigured.Disabled && _isEnabled;
+            get => _onlineAIModelsDisallowedByGPO && _isEnabled;
         }
 
         private bool IsClipboardHistoryEnabled()
@@ -218,7 +220,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ShowClipboardHistoryIsGpoConfiguredInfoBar
         {
-            get => IsClipboardHistoryDisabledByGPO() && _enabledGpoRuleConfiguration != GpoRuleConfigured.Disabled && _isEnabled;
+            get => IsClipboardHistoryDisabledByGPO() && _isEnabled;
         }
 
         public HotkeySettings AdvancedPasteUIShortcut
@@ -337,6 +339,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             InitializeEnabledValue();
             OnPropertyChanged(nameof(IsEnabled));
+            OnPropertyChanged(nameof(ShowOnlineAIModelsGpoConfiguredInfoBar));
+            OnPropertyChanged(nameof(ShowClipboardHistoryIsGpoConfiguredInfoBar));
         }
 
         protected virtual void Dispose(bool disposing)
