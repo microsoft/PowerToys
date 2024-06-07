@@ -135,13 +135,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                     {
                         if (!string.IsNullOrEmpty(token))
                         {
-                            if (char.IsDigit(token[0]))
-                            {
-                                var separatorRegex = new Regex(@"[^\d](?=.*[^\d])");
-                                token_bis = separatorRegex.Replace(token, string.Empty);
-                                var separatorRegex2 = new Regex(@"[^\d]");
-                                token_bis = separatorRegex2.Replace(token_bis, cultureFrom.NumberFormat.NumberDecimalSeparator);
-                            }
+                            var separatorRegex = new Regex(@"[^\d](?=.*[^\d])");
+                            token_bis = separatorRegex.Replace(token, string.Empty);
+                            var separatorRegex2 = new Regex(@"[^\d]");
+                            token_bis = separatorRegex2.Replace(token_bis, cultureFrom.NumberFormat.NumberDecimalSeparator);
                         }
                     }
 
