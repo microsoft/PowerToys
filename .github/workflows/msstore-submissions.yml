@@ -46,7 +46,6 @@ jobs:
           msstore reconfigure -cfp cert.pfx -c ${{ secrets.AZURE_CLIENT_ID }} -t ${{ secrets.AZURE_TENANT_ID }} -s ${{ secrets.SELLER_ID }}
 
       - name: Update draft submission
-        if: always()
         run: |-
           msstore submission update ${{ secrets.PRODUCT_ID }} '{
             "packages":[
