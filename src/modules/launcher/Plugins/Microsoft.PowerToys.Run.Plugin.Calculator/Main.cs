@@ -43,6 +43,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         private static readonly CompositeFormat WoxPluginCalculatorInEnFormatDescription = System.Text.CompositeFormat.Parse(Properties.Resources.wox_plugin_calculator_in_en_format_description);
         private static readonly CompositeFormat WoxPluginCalculatorOutEnFormatDescription = System.Text.CompositeFormat.Parse(Properties.Resources.wox_plugin_calculator_out_en_format_description);
+        private static readonly CompositeFormat WoxPluginCalculatorIgnoreRegionalDescription = System.Text.CompositeFormat.Parse(Properties.Resources.wox_plugin_calculator_ignore_regional_formatting_description);
 
         public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
         {
@@ -72,7 +73,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             {
                 Key = IgnoreRegionalFormatting,
                 DisplayLabel = Resources.wox_plugin_calculator_ignore_regional_formatting,
-                DisplayDescription = Resources.wox_plugin_calculator_ignore_regional_formatting_description,
+                DisplayDescription = string.Format(
+                    CultureInfo.CurrentCulture,
+                    WoxPluginCalculatorIgnoreRegionalDescription,
+                    CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator,
+                    CultureInfo.CurrentCulture.NumberFormat.NumberGroupSeparator),
                 Value = false,
             },
         };

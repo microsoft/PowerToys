@@ -115,7 +115,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ignore regional formatting, using the last delimiter symbol to separate whole and decimal parts.
+        ///   Looks up a localized string similar to Ignore difference between decimal and group separators.
         /// </summary>
         public static string wox_plugin_calculator_ignore_regional_formatting {
             get {
@@ -124,7 +124,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Changes input to match your regional setting, treating the last non-digit symbol as decimal separator.
+        ///   Looks up a localized string similar to Ignores difference between &apos;{0}&apos; and &apos;{1}&apos;, treating the last of them as the decimal separator.
         /// </summary>
         public static string wox_plugin_calculator_ignore_regional_formatting_description {
             get {
