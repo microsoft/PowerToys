@@ -3,14 +3,25 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
+using System.Windows;
+using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.WinUI.Helpers;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -18,11 +29,16 @@ using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Windows.System;
+using Windows.System.Profile;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class GeneralViewModel : Observable
     {
+        private static readonly object LockObject = new object();
+        private static bool isBugReportThreadRunning;
+
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private UpdatingSettings UpdatingSettingsConfig { get; set; }
@@ -57,6 +73,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string RunningAsAdminDefaultText { get; set; }
 
+        public AsyncRelayCommand InitializeReportBugLinkCommand { get; }
+
         private string _settingsConfigFileFolder = string.Empty;
 
         private IFileSystemWatcher _fileWatcher;
@@ -74,6 +92,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SelectSettingBackupDirEventHandler = new ButtonClickCommand(SelectSettingBackupDir);
             RestoreConfigsEventHandler = new ButtonClickCommand(RestoreConfigsClick);
             RefreshBackupStatusEventHandler = new ButtonClickCommand(RefreshBackupStatusEventHandlerClick);
+            InitializeReportBugLinkCommand = new AsyncRelayCommand(InitializeReportBugLinkAsync);
             HideBackupAndRestoreMessageAreaAction = hideBackupAndRestoreMessageAreaAction;
             DoBackupAndRestoreDryRun = doBackupAndRestoreDryRun;
             PickSingleFolderDialog = pickSingleFolderDialog;
@@ -177,7 +196,126 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private string _settingsBackupMessage;
         private string _backupRestoreMessageSeverity;
 
+        private string reportBugLink = "https://aka.ms/powerToysReportBug";
+
         // Gets or sets a value indicating whether run powertoys on start-up.
+        public string ReportBugLink
+        {
+            get => reportBugLink;
+            set
+            {
+                reportBugLink = value;
+                OnPropertyChanged(nameof(ReportBugLink));
+            }
+        }
+
+        public async Task InitializeReportBugLinkAsync()
+        {
+            var version = HttpUtility.UrlEncode(Helper.GetProductVersion().TrimStart('v'));
+            var otherSoftwareText = "OS Build Version: " + GetOSVersion() + "\n.NET Version: " + GetDotNetVersion();
+            var otherSoftware = HttpUtility.UrlEncode(otherSoftwareText);
+            string reportResult = LaunchBugReport();
+
+            // DONT FORGET gokcekantarci TO ms
+            var gitHubURL = "https://github.com/gokcekantarci/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CNeeds-Triage&template=bug_report.yml" +
+                "&version=" + version +
+                "&othersoftware=" + otherSoftware;
+
+            if (string.IsNullOrEmpty(reportResult))
+            {
+                MessageBox.Show($"Bug report generated on your desktop. Please attach the file to the GitHub issue.");
+            }
+            else
+            {
+                MessageBox.Show($"Failed to generate bug report.");
+            }
+
+            if (!string.IsNullOrEmpty(gitHubURL))
+            {
+                ReportBugLink = gitHubURL;
+            }
+            else
+            {
+                ReportBugLink = "https://aka.ms/powerToysReportBug";
+            }
+
+            await Task.Delay(100);
+        }
+
+        public static string LaunchBugReport()
+        {
+            string bugReportPath = GetModuleFolderPath() + "\\..\\Tools\\PowerToys.BugReportTool.exe";
+            string errorOutput = string.Empty;
+            lock (LockObject)
+            {
+                if (!isBugReportThreadRunning)
+                {
+                    isBugReportThreadRunning = true;
+                    Thread bugReportThread = new Thread(() =>
+                    {
+                        ProcessStartInfo startInfo = new ProcessStartInfo
+                        {
+                            FileName = bugReportPath,
+                            CreateNoWindow = true,
+                            UseShellExecute = false,
+                            WindowStyle = ProcessWindowStyle.Hidden,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true,
+                        };
+
+                        try
+                        {
+                            using (Process process = Process.Start(startInfo))
+                            {
+                                process.WaitForExit();
+
+                                errorOutput = process.StandardError.ReadToEnd().Trim();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log or handle the exception
+                            MessageBox.Show("Failed to start bug report tool: " + ex.Message, "Error");
+                        }
+                        finally
+                        {
+                            isBugReportThreadRunning = false;
+                        }
+                    });
+                    bugReportThread.IsBackground = true;
+                    bugReportThread.Start();
+                    bugReportThread.Join();
+                }
+            }
+
+            return errorOutput;
+        }
+
+        private static string GetModuleFolderPath()
+        {
+            // You would implement this method to get the path to your module folder in C#
+            return Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+        }
+
+        private string GetDotNetVersion()
+        {
+            var dotNetVersion = RuntimeInformation.FrameworkDescription;
+            return dotNetVersion.ToString();
+        }
+
+        private string GetOSVersion()
+        {
+            var attrNames = new List<string> { "OSVersionFull" };
+            var attrData = AnalyticsInfo.GetSystemPropertiesAsync(attrNames).AsTask().GetAwaiter().GetResult();
+            var osVersion = string.Empty;
+            if (attrData.ContainsKey("OSVersionFull"))
+            {
+                osVersion = attrData["OSVersionFull"];
+            }
+
+            return osVersion.ToString();
+        }
+
         public bool Startup
         {
             get

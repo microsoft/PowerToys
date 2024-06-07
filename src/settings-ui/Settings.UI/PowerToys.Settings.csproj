@@ -24,6 +24,7 @@
   <ItemGroup>
     <None Remove="Assets\Settings\Modules\APDialog.dark.png" />
     <None Remove="Assets\Settings\Modules\APDialog.light.png" />
+    <None Remove="SettingsXAML\Controls\SettingsPageControl\PageLink.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -76,6 +77,7 @@
   </ItemGroup>
 
   <ItemGroup>
+	<PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
     <PackageReference Include="CommunityToolkit.WinUI.Animations" />
@@ -140,6 +142,9 @@
     <None Update="Assets\Settings\Scripts\DisableModule.ps1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="SettingsXAML\Controls\SettingsPageControl\PageLink.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
 </Project>

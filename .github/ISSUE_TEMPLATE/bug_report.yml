@@ -7,7 +7,8 @@ body:
 - type: markdown
   attributes:
     value: Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
-- type: input
+- id: version
+  type: input
   attributes:
     label: Microsoft PowerToys version
     placeholder: 0.70.0
@@ -80,7 +81,8 @@ body:
   validations:
     required: true
 
-- type: textarea
+- id: repro
+  type: textarea
   attributes:
     label: Steps to reproduce
     description: We highly suggest including screenshots and a bug report log (System tray > Report bug).
@@ -102,7 +104,8 @@ body:
   validations:
     required: false
 
-- type: textarea
+- id: othersoftware
+  type: textarea
   attributes:
     label: Other Software
     description: If you're reporting a bug about our interaction with other software, what software? What versions?
