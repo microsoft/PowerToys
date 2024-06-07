@@ -7,7 +7,7 @@
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <UseWPF>true</UseWPF>
-    <UseWindowsForms>true</UseWindowsForms>
+    <UseWindowsForms>False</UseWindowsForms>
     <StartupObject>PowerLauncher.App</StartupObject>
     <ApplicationIcon>Assets\PowerLauncher\RunResource.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>

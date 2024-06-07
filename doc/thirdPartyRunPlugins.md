@@ -27,7 +27,6 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | ------ | ------ | ----------- |
 | [BrowserSearch](https://github.com/TBM13/BrowserSearch) | [TBM13](https://github.com/TBM13) | Search your browser history |
 | [GitHub Emoji](https://github.com/hlaueriksson/GEmojiSharp) | [hlaueriksson](https://github.com/hlaueriksson) | Search GitHub Emoji |
-| [Guid](https://github.com/skttl/ptrun-guid) | [skttl](https://github.com/skttl) | Guid generator |
 | [PowerTranslator](https://github.com/N0I0C0K/PowerTranslator) | [N0I0C0K](https://github.com/N0I0C0K) | Text translator based on Youdao |
 | [Quick Lookup](https://github.com/GTGalaxi/quick-lookup-ptrun) | [gtgalaxi](https://github.com/GTGalaxi) | Search across multiple cyber security tools |
 | [Input Typer](https://github.com/CoreyHayward/PowerToys-Run-InputTyper) | [CoreyHayward](https://github.com/CoreyHayward) | Type the input as if sent from a keyboard |
@@ -36,6 +35,7 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [FastWeb](https://github.com/CCcat8059/FastWeb) | [CCcat](https://github.com/CCcat8059) | Open website in browser |
 | [WebSearchShortcut](https://github.com/Daydreamer-riri/PowerToys-Run-WebSearchShortcut) | [Riri](https://github.com/Daydreamer-riri) | Select a specific search engine to perform searches. |
 | [UnicodeInput](https://github.com/nathancartlidge/powertoys-run-unicode) | [nathancartlidge](https://github.com/nathancartlidge) | Copy Unicode characters to the clipboard |
+| [PowerHexInspector](https://github.com/NaroZeol/PowerHexInspector) | [NaroZeol](https://github.com/NaroZeol) | Peek other forms of an input number |
 
 ## Extending software plugins
 
@@ -44,6 +44,7 @@ Below are community created plugins that target a website or software.  They are
 | Plugin | Author | Description |
 | ------ | ------ | ----------- |
 | [Edge Favorite](https://github.com/davidegiacometti/PowerToys-Run-EdgeFavorite) | [davidegiacometti](https://github.com/davidegiacometti) | Open Microsoft Edge favorites |
+| [Edge Workspaces](https://github.com/quachpas/PowerToys-Run-EdgeWorkspaces) | [quachpas](https://github.com/quachpas) | Open Microsoft Edge workspaces|
 | [Everything](https://github.com/lin-ycv/EverythingPowerToys) | [Yu Chieh (Victor) Lin](https://github.com/Lin-ycv) | Get search results from Everything |
 | [GitKraken](https://github.com/davidegiacometti/PowerToys-Run-GitKraken) | [davidegiacometti](https://github.com/davidegiacometti) | Open GitKraken repositories |
 | [Visual Studio Recents](https://github.com/davidegiacometti/PowerToys-Run-VisualStudio) | [davidegiacometti](https://github.com/davidegiacometti) | Open Visual Studio recents |
