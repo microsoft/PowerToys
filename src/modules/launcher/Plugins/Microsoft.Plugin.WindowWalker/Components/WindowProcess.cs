@@ -38,7 +38,23 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// </summary>
         internal bool IsResponding
         {
-            get { return Process.GetProcessById((int)ProcessID).Responding; }
+            get
+            {
+                try
+                {
+                    return Process.GetProcessById((int)ProcessID).Responding;
+                }
+                catch (InvalidOperationException)
+                {
+                    // Thrown when process not exist.
+                    return true;
+                }
+                catch (NotSupportedException)
+                {
+                    // Thrown when process is not running locally.
+                    return true;
+                }
+            }
         }
 
         /// <summary>
