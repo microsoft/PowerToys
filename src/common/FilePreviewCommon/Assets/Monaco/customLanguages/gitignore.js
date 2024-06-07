@@ -5,9 +5,9 @@
         tokenizer: {
             root: [
                 [/^#.*$/, 'comment'],
-                [/(^!\s*(?:\\\s|\S)+)((?:\s+(?:\\\s|\S)+)*)/, ['custom-gitignore.negation', 'invalid']],
                 [/.*((?<!(^|\/))\*\*.*|\*\*(?!(\/|$))).*/, 'invalid'],
-                [/(^\s*(?:\\\s|\S)+)((?:\s+(?:\\\s|\S)+)*)/, ['tag', 'invalid']],
+                [/((?:^!\s*(?:\\\s|\S)+)?)((?:^\s*(?:\\\s|\S)+)?)((?:\s+(?:\\\s|\S)+)*)/, ['custom-gitignore.negation', 'tag', 'invalid']],
+                //[/(^\s*(?:\\\s|\S)+)((?:\s+(?:\\\s|\S)+)*)/, ['tag', 'invalid']]
             ]
         }
     };
