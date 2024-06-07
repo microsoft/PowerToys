@@ -81,8 +81,7 @@ body:
   validations:
     required: true
 
-- id: repro
-  type: textarea
+- type: textarea
   attributes:
     label: Steps to reproduce
     description: We highly suggest including screenshots and a bug report log (System tray > Report bug).
