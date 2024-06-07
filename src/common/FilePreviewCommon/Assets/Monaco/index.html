@@ -6,7 +6,7 @@
 
         // Get URL parameters:
         // `code` contains the code of the file in base64 encoded
-        // `theme` can be "light" or "dark"
+        // `theme` can be "vs" for light theme or "vs-dark" for dark theme
         // `lang` is the language of the file
         // `wrap` if the editor is wrapping or not
         
@@ -63,15 +63,26 @@
         require.config({ paths: { vs: 'http://[[PT_URL]]/monacoSRC/min/vs' } });
         require(['vs/editor/editor.main'], async function () {
             await registerAdditionalLanguages(monaco)
+
+            // Creates a theme to handle custom tokens
+            monaco.editor.defineTheme('theme', {
+                base: theme, // Sets the base theme to "vs" or "vs-dark" depending on the user's preference
+                inherit: true,
+                rules: [
+                    {token: 'custom-gitignore.negation', foreground: "00f7e5"}
+                ],
+                colors: {} // `colors` is a required attribute
+            });
+
             // Creates the editor
-            // For all parameters: https://microsoft.github.io/monaco-editor/api/interfaces/monaco.editor.istandaloneeditorconstructionoptions.html
+            // For all parameters: https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IStandaloneEditorConstructionOptions.html
             editor = monaco.editor.create(document.getElementById('container'), {
                 value: code, // Sets content of the editor
                 language: lang, // Sets language fof the code
                 readOnly: true, // Sets to readonly
-                theme: theme, // Sets editor theme
+                theme: 'theme', // Sets editor theme
                 minimap: {enabled: false}, // Disables minimap
-                lineNumbersMinChars: "3", //Width of the line numbers
+                lineNumbersMinChars: "3", // Width of the line numbers
                 scrollbar: {
                     // Deactivate shadows
                     shadows: false,
