@@ -142,6 +142,15 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Not Responding.
+        /// </summary>
+        public static string wox_plugin_windowwalker_NotResponding {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_NotResponding", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No..
         /// </summary>
         public static string wox_plugin_windowwalker_Number {

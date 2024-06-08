@@ -202,4 +202,7 @@
   <data name="wox_plugin_windowwalker_SettingSubtitleDesktopName_Description" xml:space="preserve">
     <value>This information is only shown in subtitle and tool tip, if you have at least two desktops.</value>
   </data>
+  <data name="wox_plugin_windowwalker_NotResponding" xml:space="preserve">
+    <value>Not Responding</value>
+  </data>
 </root>
