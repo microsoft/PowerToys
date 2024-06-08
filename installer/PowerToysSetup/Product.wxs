@@ -73,6 +73,7 @@
       <ComponentGroupRef Id="MouseWithoutBordersComponentGroup" />
       <ComponentGroupRef Id="EnvironmentVariablesComponentGroup" />
       <ComponentGroupRef Id="AdvancedPasteComponentGroup" />
+      <ComponentGroupRef Id="NewPlusComponentGroup" />
       <ComponentGroupRef Id="ResourcesComponentGroup" />
       <ComponentGroupRef Id="WindowsAppSDKComponentGroup" />
       <ComponentGroupRef Id="ToolComponentGroup" />

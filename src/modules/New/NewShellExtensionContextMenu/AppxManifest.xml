@@ -9,7 +9,7 @@
   xmlns:desktop5="http://schemas.microsoft.com/appx/manifest/desktop/windows10/5"
   xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
   xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10" IgnorableNamespaces="uap uap2 uap3 rescap desktop desktop4 desktop5 uap10 com">
-	<Identity Name="Microsoft.PowerToys.NewPlus" ProcessorArchitecture="neutral" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" Version="1.0.0.0" />
+	<Identity Name="Microsoft.PowerToys.NewPlusContextMenu" ProcessorArchitecture="neutral" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" Version="1.0.0.0" />
 	<Properties>
 		<DisplayName>PowerToys New+</DisplayName>
 		<PublisherDisplayName>Microsoft</PublisherDisplayName>
@@ -27,7 +27,7 @@
 		<rescap:Capability Name="unvirtualizedResources"/>
 	</Capabilities>
 	<Applications>
-		<Application Id="Microsoft.PowerToys.NewPlus" Executable="NewPlus.exe" uap10:TrustLevel="mediumIL" uap10:RuntimeBehavior="win32App">
+		<Application Id="Microsoft.PowerToys.NewPlusContextMenu" Executable="NewPlus.exe" uap10:TrustLevel="mediumIL" uap10:RuntimeBehavior="win32App">
 			<uap:VisualElements AppListEntry="none" DisplayName="PowerToys New+" Description="New+ File Explorer Context Menu" BackgroundColor="transparent" Square150x150Logo="Assets\New\Square150x150Logo.png" Square44x44Logo="Assets\New\Square44x44Logo.png">
 				<uap:DefaultTile Wide310x150Logo="Assets\New\Wide310x150Logo.png" Square310x310Logo="Assets\New\LargeTile.png" Square71x71Logo="Assets\New\SmallTile.png"></uap:DefaultTile>
 				<uap:SplashScreen Image="Assets\New\SplashScreen.png" />
