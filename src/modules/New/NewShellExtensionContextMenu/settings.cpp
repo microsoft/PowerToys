@@ -24,10 +24,10 @@ static bool LastModifiedTime(const std::wstring& file_Path, FILETIME* returned_f
 
 NewSettings::NewSettings()
 {
-    // New overall enable state is stored in the general settings json file
+    // New+ overall enable state is stored in the general settings json file
     general_settings_json_file_path = PTSettingsHelper::get_powertoys_general_save_file_location();
 
-    // and New' actual settings are stored in new_settings_json_file_path
+    // New+' actual settings are stored in new_settings_json_file_path
     std::wstring settings_save_path = PTSettingsHelper::get_module_save_folder_location(newplus::constants::non_localizable::powertoy_key);
     new_settings_json_file_path = settings_save_path + newplus::constants::non_localizable::settings_json_data_file_path;
 
@@ -98,10 +98,11 @@ void NewSettings::RefreshEnabledState()
     {
         json::JsonObject powertoy_new_enabled_state;
         json::get(json_general_settings, L"enabled", powertoy_new_enabled_state, json::JsonObject{});
-        json::get(powertoy_new_enabled_state, newplus::constants::non_localizable::powertoy_key, new_settings.enabled, true);
+        json::get(powertoy_new_enabled_state, newplus::constants::non_localizable::powertoy_key, new_settings.enabled, false);
     }
     catch (const winrt::hresult_error&)
     {
+        Logger::error(L"New+ unable to load enabled state from json");
     }
 }
 

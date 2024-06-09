@@ -10,8 +10,6 @@ namespace newplus::constants::non_localizable
 
     constexpr WCHAR settings_json_data_file_path[] = L"\\settings.json";
 
-    constexpr WCHAR settings_json_key_enabled[] = L"Enabled";
-
     constexpr WCHAR settings_json_key_hide_file_extension[] = L"HideFileExtension";
 
     constexpr WCHAR settings_json_key_template_location[] = L"TemplateLocation";
