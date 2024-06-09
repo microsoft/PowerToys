@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.PowerToys.Run.Plugin.Registry.Classes;
 using Microsoft.PowerToys.Run.Plugin.Registry.Constants;
 using Microsoft.PowerToys.Run.Plugin.Registry.Properties;
@@ -50,6 +51,12 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
             }
 
             var baseKey = query.Split('\\').FirstOrDefault() ?? string.Empty;
+
+            if (query.Contains("/\""))
+            {
+                baseKey = query.Split("/\"").FirstOrDefault() ?? string.Empty;
+            }
+
             var subKey = query.Replace(baseKey, string.Empty, StringComparison.InvariantCultureIgnoreCase).TrimStart('\\');
 
             var baseKeyResult = _baseKeys
@@ -156,16 +163,17 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
         {
             var list = new Collection<RegistryEntry>();
 
+            var formattedSearchSubKey = Regex.Replace(searchSubKey, @"[""]*[/]*[""]", string.Empty);
             try
             {
                 foreach (var subKey in parentKey.GetSubKeyNames().OrderBy(found => found))
                 {
-                    if (!subKey.StartsWith(searchSubKey, StringComparison.InvariantCultureIgnoreCase))
+                    if (!subKey.StartsWith(formattedSearchSubKey, StringComparison.InvariantCultureIgnoreCase))
                     {
                         continue;
                     }
 
-                    if (string.Equals(subKey, searchSubKey, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(subKey, formattedSearchSubKey, StringComparison.OrdinalIgnoreCase))
                     {
                         var key = parentKey.OpenSubKey(subKey, RegistryKeyPermissionCheck.ReadSubTree);
                         if (key != null)
