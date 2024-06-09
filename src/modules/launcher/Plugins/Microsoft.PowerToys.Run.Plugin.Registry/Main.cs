@@ -82,6 +82,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry
 
             var searchForValueName = QueryHelper.GetQueryParts(query.Search, out var queryKey, out var queryValueName);
 
+            queryKey = queryKey.Replace(@"""", string.Empty);
+
             var (baseKeyList, subKey) = RegistryHelper.GetRegistryBaseKey(queryKey);
             if (baseKeyList is null)
             {
