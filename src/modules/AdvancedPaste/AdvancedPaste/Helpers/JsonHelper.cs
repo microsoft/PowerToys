@@ -85,7 +85,7 @@ namespace AdvancedPaste.Helpers
                             }
                             else if (string.IsNullOrEmpty(lastSectionName) || !lineKeyValuePairCheck.Success)
                             {
-                                // Fail if lastSectionName is still empty and not key-value-pair.
+                                // Fail if lastSectionName is still empty or not key-value-pair.
                                 // (With empty lastSectionName we can't parse key-value-pairs
                                 //  and if it is not a key-value-pair then the line is invalid.)
                                 throw new FormatException("Invalid ini file format.");
