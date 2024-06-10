@@ -33,13 +33,14 @@ body:
   validations:
     required: true
 
-- type: dropdown
+- id: iselevated
+  type: input
   attributes:
     label: Running as admin
     description: Are you running PowerToys as Admin?
-    options:
-      - "Yes"
-      - "No"
+    placeholder: Yes
+  validations:
+    required: true
 
 - type: dropdown
   attributes:
