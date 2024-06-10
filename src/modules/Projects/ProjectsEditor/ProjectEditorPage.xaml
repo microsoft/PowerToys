@@ -38,12 +38,12 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock
-                        Text="&#xE945;"
-                        Foreground="Red"
+                        Text="&#xE7BA;"
+                        Foreground="#EED202"
                         FontSize="14"
                         FontFamily="{DynamicResource SymbolThemeFontFamily}"
                         FontWeight="Normal"
-                        Margin="2 0"
+                        Margin="5 0 0 0"
                         ToolTip="{x:Static props:Resources.NotFoundTooltip}"
                         Visibility="{Binding IsNotFound, Converter={StaticResource BoolToVis}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                         VerticalAlignment="Center"/>
