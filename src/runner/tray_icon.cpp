@@ -291,6 +291,24 @@ void update_bug_report_menu_status(bool isRunning)
     }
 }
 
+static HICON get_icon(Theme theme)
+{
+    return static_cast<HICON>(LoadImage(NULL,
+                                        theme == Theme::Dark ?
+                                            L"svgs/PowerToysWhite.ico" :
+                                            L"svgs/PowerToysDark.ico",
+                                        IMAGE_ICON,
+                                        0,
+                                        0,
+                                        LR_LOADFROMFILE | LR_DEFAULTSIZE | LR_SHARED));
+}
+
+static void handle_theme_change()
+{
+    tray_icon_data.hIcon = get_icon(theme_listener.AppTheme);
+    Shell_NotifyIcon(NIM_MODIFY, &tray_icon_data);
+}
+
 void start_tray_icon(bool isProcessElevated)
 {
     auto h_instance = reinterpret_cast<HINSTANCE>(&__ImageBase);
@@ -352,6 +370,8 @@ void start_tray_icon(bool isProcessElevated)
             },
                                            new bool(isRunning));
         });
+
+        theme_listener.AddChangedHandler(&handle_theme_change);
     }
 }
 
