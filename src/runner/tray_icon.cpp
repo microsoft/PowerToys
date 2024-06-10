@@ -10,6 +10,7 @@
 #include <common/version/version.h>
 #include <common/logger/logger.h>
 #include <common/utils/elevation.h>
+#include <common/Themes/theme_listener.h>
 #include "bug_report.h"
 
 namespace
@@ -36,6 +37,7 @@ namespace
     bool double_clicked = false;
     POINT tray_icon_click_point;
 
+    static ThemeListener theme_listener;
 }
 
 // Struct to fill with callback and the data. The window_proc is responsible for cleaning it.
@@ -259,10 +261,29 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
     return DefWindowProc(window, message, wparam, lparam);
 }
 
+static HICON get_icon(AppTheme theme)
+{
+    return static_cast<HICON>(LoadImage(NULL,
+                                        theme == AppTheme::Dark ?
+                                            L"svgs/PowerToysWhite.ico" :
+                                            L"svgs/PowerToysDark.ico",
+                                        IMAGE_ICON,
+                                        0,
+                                        0,
+                                        LR_LOADFROMFILE | LR_DEFAULTSIZE | LR_SHARED));
+}
+
+
+static void handle_theme_change()
+{
+    tray_icon_data.hIcon = get_icon(theme_listener.AppTheme);
+    Shell_NotifyIcon(NIM_MODIFY, &tray_icon_data);
+}
+
 void start_tray_icon(bool isProcessElevated)
 {
     auto h_instance = reinterpret_cast<HINSTANCE>(&__ImageBase);
-    auto icon = LoadIcon(h_instance, MAKEINTRESOURCE(APPICON));
+    HICON const icon = get_icon(theme_listener.AppTheme);
     if (icon)
     {
         UINT id_tray_icon = 1;
@@ -309,6 +330,7 @@ void start_tray_icon(bool isProcessElevated)
         ChangeWindowMessageFilterEx(hwnd, WM_COMMAND, MSGFLT_ALLOW, nullptr);
 
         tray_icon_created = Shell_NotifyIcon(NIM_ADD, &tray_icon_data) == TRUE;
+        theme_listener.AddChangedHandler(&handle_theme_change);
     }
 }
 
