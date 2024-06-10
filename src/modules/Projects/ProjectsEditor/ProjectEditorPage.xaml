@@ -10,6 +10,8 @@
         Title="Project Editor"
         Background="{DynamicResource PrimaryBackgroundBrush}">
     <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
         <DataTemplate x:Key="headerTemplate">
             <Border>
                 <TextBlock
@@ -28,13 +30,25 @@
                 MouseLeave="AppBorder_MouseLeave">
                 <Grid Margin="5">
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="20"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="3*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
+                    <TextBlock
+                        Text="&#xE945;"
+                        Foreground="Red"
+                        FontSize="14"
+                        FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                        FontWeight="Normal"
+                        Margin="2 0"
+                        ToolTip="{x:Static props:Resources.NotFoundTooltip}"
+                        Visibility="{Binding IsNotFound, Converter={StaticResource BoolToVis}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                        VerticalAlignment="Center"/>
                     <Image
+                        Grid.Column="1"
                         Width="20"
                         Height="20"
                         HorizontalAlignment="Center"
@@ -42,7 +56,7 @@
                         Margin="10"
                         Source="{Binding IconBitmapImage}"/>
                     <TextBlock
-                        Grid.Column="1"
+                        Grid.Column="2"
                         Text="{Binding RepeatIndexString, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                         Foreground="{DynamicResource PrimaryForegroundBrush}"
                         FontSize="14"
@@ -50,7 +64,7 @@
                         Width="20"
                         VerticalAlignment="Center"/>
                     <TextBlock
-                        Grid.Column="2"
+                        Grid.Column="3"
                         Text="{Binding AppName}"
                         Foreground="{DynamicResource PrimaryForegroundBrush}"
                         FontSize="14"
@@ -58,7 +72,7 @@
                         VerticalAlignment="Center"/>
                     <TextBox
                         x:Name="CommandLineTextBox"
-                        Grid.Column="3"
+                        Grid.Column="4"
                         Text="{Binding CommandLineArguments, Mode=TwoWay}"
                         Foreground="{DynamicResource PrimaryForegroundBrush}"
                         Background="{DynamicResource TertiaryBackgroundBrush}"
@@ -67,7 +81,7 @@
                         FontWeight="Normal"
                         VerticalContentAlignment="Center" />
                     <TextBlock
-                        Grid.Column="3"
+                        Grid.Column="4"
                         IsHitTestVisible="False"
                         Text="{x:Static props:Resources.WriteArgs}"
                         Foreground="{DynamicResource SecondaryForegroundBrush}"
@@ -88,7 +102,7 @@
                         </TextBlock.Style>
                     </TextBlock>
                     <CheckBox
-                        Grid.Column="4"
+                        Grid.Column="5"
                         IsChecked="{Binding IsSelected, Mode=TwoWay}"
                         Checked="CheckBox_Checked"
                         Unchecked="CheckBox_Checked"

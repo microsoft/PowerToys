@@ -118,6 +118,7 @@ namespace ProjectsEditor.Utils
                     Maximized = app.Maximized,
                     Minimized = app.Minimized,
                     IsSelected = true,
+                    IsNotFound = false,
                     Position = new Models.Application.WindowPosition()
                     {
                         Height = app.Position.Height,
