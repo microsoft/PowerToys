@@ -38,7 +38,7 @@ body:
   attributes:
     label: Running as admin
     description: Are you running PowerToys as Admin?
-    placeholder: Yes
+    placeholder: "Yes"
   validations:
     required: true
 
