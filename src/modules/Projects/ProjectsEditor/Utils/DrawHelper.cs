@@ -12,6 +12,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows.Media.Imaging;
+using ManagedCommon;
 using ProjectsEditor.Models;
 
 namespace ProjectsEditor.Utils
@@ -140,11 +141,11 @@ namespace ProjectsEditor.Utils
             {
                 if (app.IsHighlighted)
                 {
-                    graphics.DrawPath(new Pen(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.White : Color.DarkGray, graphics.VisibleClipBounds.Height / 25), path);
+                    graphics.DrawPath(new Pen(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.White : Color.DarkGray, graphics.VisibleClipBounds.Height / 50), path);
                 }
                 else
                 {
-                    graphics.DrawPath(new Pen(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.FromArgb(128, 82, 82, 82) : Color.FromArgb(128, 160, 160, 160), graphics.VisibleClipBounds.Height / 100), path);
+                    graphics.DrawPath(new Pen(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.FromArgb(128, 82, 82, 82) : Color.FromArgb(128, 160, 160, 160), graphics.VisibleClipBounds.Height / 200), path);
                 }
 
                 graphics.FillPath(brush, path);
@@ -198,11 +199,11 @@ namespace ProjectsEditor.Utils
             {
                 if (apps.Where(x => x.IsHighlighted).Any())
                 {
-                    graphics.DrawPath(new Pen(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.White : Color.DarkGray, graphics.VisibleClipBounds.Height / 25), path);
+                    graphics.DrawPath(new Pen(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.White : Color.DarkGray, graphics.VisibleClipBounds.Height / 50), path);
                 }
                 else
                 {
-                    graphics.DrawPath(new Pen(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.FromArgb(128, 82, 82, 82) : Color.FromArgb(128, 160, 160, 160), graphics.VisibleClipBounds.Height / 100), path);
+                    graphics.DrawPath(new Pen(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.FromArgb(128, 82, 82, 82) : Color.FromArgb(128, 160, 160, 160), graphics.VisibleClipBounds.Height / 200), path);
                 }
 
                 graphics.FillPath(brush, path);
@@ -393,6 +394,53 @@ namespace ProjectsEditor.Utils
             fileStream.Flush();
             fileStream.Close();
             return shortcutIconFilename;
+        }
+
+        internal static BitmapImage DrawPreviewIcons(Project project)
+        {
+            var selectedApps = project.Applications.Where(x => x.IsSelected);
+            int appsCount = selectedApps.Count();
+            if (appsCount == 0)
+            {
+                return null;
+            }
+
+            Bitmap previewBitmap = new Bitmap(32 * appsCount, 24);
+            using (Graphics graphics = Graphics.FromImage(previewBitmap))
+            {
+                graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                int appIndex = 0;
+                foreach (var app in selectedApps)
+                {
+                    try
+                    {
+                        graphics.DrawIcon(app.Icon, new Rectangle(32 * appIndex, 0, 24, 24));
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.LogError($"Exception while drawing the icon for app {app.AppName}. Exception message: {e.Message}");
+                    }
+
+                    appIndex++;
+                }
+            }
+
+            using (var memory = new MemoryStream())
+            {
+                previewBitmap.Save(memory, ImageFormat.Png);
+                memory.Position = 0;
+
+                var bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = memory;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.EndInit();
+                bitmapImage.Freeze();
+
+                return bitmapImage;
+            }
         }
 
         private static void CreateExamples(Project project)

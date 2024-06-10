@@ -51,6 +51,26 @@ namespace ProjectsEditor.Models
 
         public bool Maximized { get; set; }
 
+        private bool _isNotFound;
+
+        [JsonIgnore]
+        public bool IsNotFound
+        {
+            get
+            {
+                return _isNotFound;
+            }
+
+            set
+            {
+                if (_isNotFound != value)
+                {
+                    _isNotFound = value;
+                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsNotFound)));
+                }
+            }
+        }
+
         [JsonIgnore]
         public bool IsSelected { get; set; }
 
@@ -85,9 +105,17 @@ namespace ProjectsEditor.Models
                         {
                             Task<AppListEntry> task = Task.Run<AppListEntry>(async () => await GetAppByPackageFamilyNameAsync());
                             AppListEntry packApp = task.Result;
-                            string filename = Path.GetFileName(AppPath);
-                            string newExeLocation = Path.Combine(packApp.AppInfo.Package.InstalledPath, filename);
-                            _icon = Icon.ExtractAssociatedIcon(newExeLocation);
+                            if (packApp == null)
+                            {
+                                IsNotFound = true;
+                                _icon = new Icon(@"images\DefaultIcon.ico");
+                            }
+                            else
+                            {
+                                string filename = Path.GetFileName(AppPath);
+                                string newExeLocation = Path.Combine(packApp.AppInfo.Package.InstalledPath, filename);
+                                _icon = Icon.ExtractAssociatedIcon(newExeLocation);
+                            }
                         }
                         else
                         {
@@ -97,6 +125,7 @@ namespace ProjectsEditor.Models
                     catch (Exception e)
                     {
                         Logger.LogError($"Exception while extracting icon from app path: {AppPath}. Exception message: {e.Message}");
+                        IsNotFound = true;
                         _icon = new Icon(@"images\DefaultIcon.ico");
                     }
                 }

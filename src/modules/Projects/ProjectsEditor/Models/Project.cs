@@ -213,6 +213,7 @@ namespace ProjectsEditor.Models
                     Maximized = item.Maximized,
                     IsSelected = item.IsSelected,
                     MonitorNumber = item.MonitorNumber,
+                    IsNotFound = item.IsNotFound,
                     Position = new Application.WindowPosition() { X = item.Position.X, Y = item.Position.Y, Height = item.Position.Height, Width = item.Position.Width },
                     Parent = this,
                 });
@@ -246,58 +247,11 @@ namespace ProjectsEditor.Models
 
         public async void Initialize()
         {
-            PreviewImage = await Task.Run(() => DrawPreviewIcons());
+            PreviewImage = await Task.Run(() => DrawHelper.DrawPreviewIcons(this));
             foreach (MonitorSetup monitor in Monitors)
             {
                 System.Windows.Rect rect = monitor.MonitorDpiAwareBounds;
                 monitor.PreviewImage = await Task.Run(() => DrawHelper.DrawPreview(this, new Rectangle((int)rect.Left, (int)rect.Top, (int)(rect.Right - rect.Left), (int)(rect.Bottom - rect.Top))));
-            }
-        }
-
-        private BitmapImage DrawPreviewIcons()
-        {
-            var selectedApps = Applications.Where(x => x.IsSelected);
-            int appsCount = selectedApps.Count();
-            if (appsCount == 0)
-            {
-                return null;
-            }
-
-            Bitmap previewBitmap = new Bitmap(32 * appsCount, 24);
-            using (Graphics graphics = Graphics.FromImage(previewBitmap))
-            {
-                graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                int appIndex = 0;
-                foreach (var app in selectedApps)
-                {
-                    try
-                    {
-                        graphics.DrawIcon(app.Icon, new Rectangle(32 * appIndex, 0, 24, 24));
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.LogError($"Exception while drawing the icon for app {Name}. Exception message: {e.Message}");
-                    }
-
-                    appIndex++;
-                }
-            }
-
-            using (var memory = new MemoryStream())
-            {
-                previewBitmap.Save(memory, ImageFormat.Png);
-                memory.Position = 0;
-
-                var bitmapImage = new BitmapImage();
-                bitmapImage.BeginInit();
-                bitmapImage.StreamSource = memory;
-                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapImage.EndInit();
-                bitmapImage.Freeze();
-
-                return bitmapImage;
             }
         }
 

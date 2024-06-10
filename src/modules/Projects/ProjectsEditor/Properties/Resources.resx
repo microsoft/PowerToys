@@ -189,6 +189,9 @@
   <data name="New_project" xml:space="preserve">
     <value>New project</value>
   </data>
+  <data name="NotFoundTooltip" xml:space="preserve">
+    <value>The application cannot be found</value>
+  </data>
   <data name="No_Projects_Message" xml:space="preserve">
     <value>There are no saved projects.</value>
   </data>

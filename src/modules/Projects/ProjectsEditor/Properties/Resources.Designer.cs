@@ -286,6 +286,15 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The application cannot be found.
+        /// </summary>
+        public static string NotFoundTooltip {
+            get {
+                return ResourceManager.GetString("NotFoundTooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to an hour ago.
         /// </summary>
         public static string OneHourAgo {
