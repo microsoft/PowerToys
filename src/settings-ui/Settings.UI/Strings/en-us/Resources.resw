@@ -3110,6 +3110,26 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Shell_QuickAccent.Content" xml:space="preserve">
     <value>Quick Accent</value>
   </data>
+  <data name="Shell_Projects.Content" xml:space="preserve">
+    <value>Projects</value>
+  </data>
+  <data name="Projects_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Projects</value>
+    <comment>"Projects" is the name of the utility</comment>
+  </data>
+  <data name="Projects_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="Projects_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to launch the Projects Editor</value>
+  </data>
+  <data name="Projects_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="LearnMore_Projects.Text" xml:space="preserve">
+    <value>Learn more about the Projects utility</value>
+    <comment> Projects is the name of the module. </comment>
+  </data>
   <data name="QuickAccent.ModuleDescription" xml:space="preserve">
     <value>Quick Accent is an alternative way to type accented characters, useful for when a keyboard doesn't support that specific accent.
 
@@ -4177,5 +4197,15 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="AdvancedPaste_EnableAIDialog_NoteAICreditsErrorText.Text" xml:space="preserve">
     <value>If you do not have credits you will see an 'API key quota exceeded' error</value>
+  </data>
+  <data name="Projects.ModuleDescription" xml:space="preserve">
+    <value>Projects is a quick and easy way to launch multiple applications.</value>
+    <comment>{Locked="Always On Top"}</comment>
+  </data>
+  <data name="Projects.ModuleTitle" xml:space="preserve">
+    <value>Projects</value>
+  </data>
+  <data name="Projects_ShortDescription" xml:space="preserve">
+    <value>Create and launch workspaces</value>
   </data>
 </root>

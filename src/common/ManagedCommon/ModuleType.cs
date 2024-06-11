@@ -26,6 +26,7 @@ namespace ManagedCommon
         PowerRename,
         PowerLauncher,
         PowerAccent,
+        Projects,
         RegistryPreview,
         MeasureTool,
         ShortcutGuide,

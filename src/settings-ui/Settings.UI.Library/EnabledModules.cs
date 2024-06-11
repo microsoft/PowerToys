@@ -462,6 +462,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool projects = true;
+
+        [JsonPropertyName("Projects")]
+        public bool Projects
+        {
+            get => projects;
+            set
+            {
+                if (projects != value)
+                {
+                    LogTelemetryEvent(value);
+                    projects = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();

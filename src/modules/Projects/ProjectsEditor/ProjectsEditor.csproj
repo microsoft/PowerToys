@@ -23,7 +23,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ProjectGuid>{5CCC8468-DEC8-4D36-99D4-5C891BEBD481}</ProjectGuid>
+    <ProjectGuid>{367D7543-7DBA-4381-99F1-BF6142A996C4}</ProjectGuid>
     <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
