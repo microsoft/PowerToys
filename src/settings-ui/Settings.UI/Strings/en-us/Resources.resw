@@ -4192,4 +4192,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AdvancedPaste_EnableAIDialog_NoteAICreditsErrorText.Text" xml:space="preserve">
     <value>If you do not have credits you will see an 'API key quota exceeded' error</value>
   </data>
+  <data name="FileExplorerPreview_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable File Explorer add-ons</value>
+  </data>
 </root>
