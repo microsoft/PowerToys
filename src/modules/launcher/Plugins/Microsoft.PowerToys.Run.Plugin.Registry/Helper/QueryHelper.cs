@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.Registry.Constants;
-using Wox.Plugin.Logger;
 
 namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 {
@@ -42,7 +41,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
         /// <returns>A string replacing all the front-slashes with back-slashes</returns>
         private static string SanitizedQuery(in string query)
         {
-            var sanitizedQuery = Regex.Replace(query, @"/(?=[^""]*(?:""[^""]*""[^""]*)*$)", "\\");
+            var sanitizedQuery = Regex.Replace(query, @"/((?=[^""]*(?:""[^""]*""[^""]*)*$))*", "\\");
 
             return sanitizedQuery;
         }

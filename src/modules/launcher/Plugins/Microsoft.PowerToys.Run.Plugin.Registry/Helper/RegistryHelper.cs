@@ -97,7 +97,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
                 return FindSubKey(baseKey, string.Empty);
             }
 
-            var subKeysNames = subKeyPath.Split('\\');
+            var formattedSubKeyPath = Regex.Replace(subKeyPath, @"[""]+[/]+[""]+", "\\");
+            var subKeysNames = formattedSubKeyPath.Split('\\');
             var index = 0;
             RegistryKey? subKey = baseKey;
 
@@ -163,7 +164,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
         {
             var list = new Collection<RegistryEntry>();
 
-            var formattedSearchSubKey = Regex.Replace(searchSubKey, @"[""]*[/]*[""]", string.Empty);
+            var formattedSearchSubKey = Regex.Replace(searchSubKey, @"(?<!"")/""|""/(?!"")|((?<!/)""(?!/))", string.Empty);
             try
             {
                 foreach (var subKey in parentKey.GetSubKeyNames().OrderBy(found => found))
