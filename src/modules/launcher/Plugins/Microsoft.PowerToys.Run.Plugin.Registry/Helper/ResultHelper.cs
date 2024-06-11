@@ -20,30 +20,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
     internal static class ResultHelper
     {
         /// <summary>
-        /// Sanitize the key to avoid issues with searching
-        /// </summary>
-        /// <param name="key">The path key</param>
-        /// <returns>Path key formatted with quotes</returns>
-        private static string SanitizedKey(in string key)
-        {
-            var sanitizedKeyArray = key.Split('\\');
-
-            for (int i = 0; i < sanitizedKeyArray.Length; ++i)
-            {
-                var sanitizedKey = sanitizedKeyArray[i].Split('/');
-
-                if (sanitizedKey.Length > 1)
-                {
-                    sanitizedKey[0] = sanitizedKey.First().Insert(0, "\"");
-                    sanitizedKey[sanitizedKey.Length - 1] = sanitizedKey.Last() + "\"";
-                    sanitizedKeyArray[i] = string.Join('/', sanitizedKey);
-                }
-            }
-
-            return string.Join('\\', sanitizedKeyArray);
-        }
-
-        /// <summary>
         /// Return a list with <see cref="Result"/>s, based on the given list
         /// </summary>
         /// <param name="list">The original result list to convert</param>
@@ -63,9 +39,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
                 if (entry.Exception is null && !(entry.Key is null))
                 {
                     // when key contains keys or fields
-                    result.QueryTextDisplay = SanitizedKey(entry.Key.Name);
+                    result.QueryTextDisplay = entry.Key.Name;
                     result.SubTitle = RegistryHelper.GetSummary(entry.Key);
-                    result.Title = GetTruncatedText(SanitizedKey(entry.Key.Name), MaxTextLength.MaximumTitleLengthWithTwoSymbols);
+                    result.Title = GetTruncatedText(entry.Key.Name, MaxTextLength.MaximumTitleLengthWithTwoSymbols);
                 }
                 else if (entry.Key is null && !(entry.Exception is null))
                 {
