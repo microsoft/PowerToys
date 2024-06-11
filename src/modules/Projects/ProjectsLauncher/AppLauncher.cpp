@@ -239,13 +239,11 @@ bool LaunchPackagedApp(const std::wstring& packageFullName)
 
 bool Launch(const Project::Application& app)
 {
-    // Get the set of windows before launching the app
-    std::vector<HWND> windowsBefore = WindowEnumerator::Enumerate(WindowFilter::Filter);
-
+    bool launched;
     if (!app.packageFullName.empty() && app.commandLineArgs.empty())
     {
         std::wcout << L"Launching packaged " << app.name << std::endl;
-        LaunchPackagedApp(app.packageFullName);
+        launched = LaunchPackagedApp(app.packageFullName);
     }
     else
     {
@@ -260,67 +258,103 @@ bool Launch(const Project::Application& app)
             return false;
         }
 
-        LaunchApp(app.path, app.commandLineArgs);
+        launched = LaunchApp(app.path, app.commandLineArgs);
     }
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::wcout << app.name << (launched ? L" launched" : L" not launched") << std::endl;
+    return launched;
+}
 
-    // Get the set of windows after launching the app
-    std::vector<HWND> launchedWindows{};
-    for (int attempt = 0; attempt < 5 && launchedWindows.empty(); attempt++)
+void Launch(const Project& project)
+{
+    // Get the set of windows before launching the app
+    std::vector<HWND> windowsBefore = WindowEnumerator::Enumerate(WindowFilter::Filter);
+    std::map<Project::Application, HWND> launchedWindows{};
+    auto apps = Utils::Apps::GetAppsList();
+       
+    for (const auto& app : project.apps)
+    {
+        if (Launch(app))
+        {
+            launchedWindows.insert({ app, nullptr });
+        }
+    }
+    
+    // Get newly opened windows after launching apps, keep retrying for 5 seconds
+    for (int attempt = 0; attempt < 50; attempt++)
     {
         std::vector<HWND> windowsAfter = WindowEnumerator::Enumerate(WindowFilter::Filter);
-
-        // Find the new window
         for (HWND window : windowsAfter)
         {
+            // Find the new window
             if (std::find(windowsBefore.begin(), windowsBefore.end(), window) == windowsBefore.end())
             {
-                launchedWindows.push_back(window);
+                // find the corresponding app in the list
+                auto app = Utils::Apps::GetApp(window, apps);
+                if (!app.has_value())
+                {
+                    continue;
+                }
+
+                // set the window
+                auto res = std::find_if(launchedWindows.begin(), launchedWindows.end(), [&](const std::pair<Project::Application, HWND>& val) { return val.first.name == app->name; });
+                if (res != launchedWindows.end())
+                {
+                    res->second = window;
+                }
             }
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        // check if all windows were found
+        auto res = std::find_if(launchedWindows.begin(), launchedWindows.end(), [&](const std::pair<Project::Application, HWND>& val) { return val.second == nullptr; });
+        if (res == launchedWindows.end())
+        {
+            std::wcout << "All windows found." << std::endl;
+            break;
+        }
+        else
+        {
+            std::wcout << "Not all windows found, retry." << std::endl;
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
     }
 
-    // The app wasn't launched, check if it's already launched for single-instance apps
+    // Check single-instance app windows if they were launched before
     if (launchedWindows.empty())
     {
-        std::wcout << L"No new windows found, checking if " << app.name << L" is launched already." << std::endl;
-
-        auto apps = Utils::Apps::GetAppsList();
         auto windows = WindowEnumerator::Enumerate(WindowFilter::Filter);
         for (HWND window : windows)
         {
-            std::wstring processPath = Common::Utils::ProcessPath::get_process_path_waiting_uwp(window);
-            auto data = Utils::Apps::GetApp(processPath, apps);
-            if (!data.has_value())
+            auto app = Utils::Apps::GetApp(window, apps);
+            if (!app.has_value())
             {
                 continue;
             }
 
-            if (data.value().name == app.name)
+            auto res = std::find_if(launchedWindows.begin(), launchedWindows.end(), [&](const std::pair<Project::Application, HWND>& val) { return val.second == nullptr && val.first.name == app->name; });
+            if (res != launchedWindows.end())
             {
-                launchedWindows.push_back(window);
+                res->second = window;
             }
-        }  
+        }
     }
 
-    // The single-instance app not found
-    if (launchedWindows.empty())
+    // Place windows
+    for (const auto& [app, window] : launchedWindows)
     {
-        return false;
-    }
+        if (window == nullptr)
+        {
+            std::wcout << app.name << " window not found." << std::endl;
+            continue;
+        }
 
-    // Place the window
-    for (auto window : launchedWindows)
-    {
-        if (!FancyZones::SizeWindowToRect(window, app.isMinimized, app.isMaximized, app.position.toRect()))
+        if (FancyZones::SizeWindowToRect(window, app.isMinimized, app.isMaximized, app.position.toRect()))
+        {
+            std::wcout << L"Placed " << app.name << std::endl;
+        }
+        else
         {
             std::wcout << L"Failed placing " << app.name << std::endl;
         }
     }
-
-    std::wcout << L"Launched " << app.name << std::endl;
-    return true;
 }

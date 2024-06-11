@@ -32,6 +32,11 @@ struct Project
         bool isMaximized{};
         Position position{};
         int monitor{};
+
+        bool operator<(const Application& rhs) const noexcept
+        {
+            return path < rhs.path;
+        }
     };
 
     struct Monitor

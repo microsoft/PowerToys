@@ -49,11 +49,8 @@ int main(int argc, char* argv[])
     }
 
     // launch apps
-    for (const auto& app : projectToLaunch.apps)
-    {
-        Launch(app);
-    }
-
+    Launch(projectToLaunch);
+    
     // update last-launched time
     time_t launchedTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     projectToLaunch.lastLaunchedTime = launchedTime;
