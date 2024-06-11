@@ -59,7 +59,8 @@
     <script src="http://[[PT_URL]]/monacoSpecialLanguages.js" type="module"></script>
 <script type="module">
         var editor;
-        import { registerAdditionalLanguages } from "http://[[PT_URL]]/monacoSpecialLanguages.js"
+        import { registerAdditionalLanguages } from "http://[[PT_URL]]/monacoSpecialLanguages.js";
+        import { customTokenColors } from "http://[[PT_URL]]/customTokenColors.js";
         require.config({ paths: { vs: 'http://[[PT_URL]]/monacoSRC/min/vs' } });
         require(['vs/editor/editor.main'], async function () {
             await registerAdditionalLanguages(monaco)
@@ -68,9 +69,7 @@
             monaco.editor.defineTheme('theme', {
                 base: theme, // Sets the base theme to "vs" or "vs-dark" depending on the user's preference
                 inherit: true,
-                rules: [
-                    {token: 'custom-gitignore.negation', foreground: '00f7e5'}
-                ],
+                rules: customTokenColors,
                 colors: {} // `colors` is a required attribute
             });
 
@@ -78,7 +77,7 @@
             // For all parameters: https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IStandaloneEditorConstructionOptions.html
             editor = monaco.editor.create(document.getElementById('container'), {
                 value: code, // Sets content of the editor
-                language: lang, // Sets language fof the code
+                language: lang, // Sets language of the code
                 readOnly: true, // Sets to readonly
                 theme: 'theme', // Sets editor theme
                 minimap: {enabled: false}, // Disables minimap
@@ -100,7 +99,7 @@
                 editor.layout();
             };
 
-            // Add switch wrap button to context menu
+            // Add toggle wrap button to context menu
             editor.addAction({
                 id: 'text-wrap',
 
@@ -112,9 +111,9 @@
                 // A rule to evaluate on top of the precondition in order to dispatch the keybindings.
                 keybindingContext: null,
 
-			contextMenuGroupId: 'cutcopypaste',
+                contextMenuGroupId: 'cutcopypaste',
 
-			contextMenuOrder: 100,
+                contextMenuOrder: 100,
 
                 // Method that will be executed when the action is triggered.
                 // @param editor The editor instance is passed in as a convenience
