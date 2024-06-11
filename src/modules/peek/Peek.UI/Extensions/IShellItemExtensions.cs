@@ -28,17 +28,17 @@ public static class IShellItemExtensions
     private static string GetParsingName(this IShellItem shellItem) =>
         shellItem.GetNameCore(Windows.Win32.UI.Shell.SIGDN.SIGDN_DESKTOPABSOLUTEPARSING, logError: true);
 
-    private static string GetNameCore(this IShellItem shellItem, Windows.Win32.UI.Shell.SIGDN signdnName, bool logError)
+    private static string GetNameCore(this IShellItem shellItem, Windows.Win32.UI.Shell.SIGDN displayNameType, bool logError)
     {
         try
         {
-            return shellItem.GetDisplayName(signdnName);
+            return shellItem.GetDisplayName(displayNameType);
         }
         catch (Exception ex)
         {
             if (logError)
             {
-                Logger.LogError($"Getting {Enum.GetName(signdnName)} failed. {ex.Message}");
+                Logger.LogError($"Getting {Enum.GetName(displayNameType)} failed. {ex.Message}");
             }
 
             return string.Empty;
