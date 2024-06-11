@@ -36,7 +36,7 @@ Simply activate the tool with a keyboard shortcut, hover over the desired color,
 
 As a business analyst, you may work with multiple directories and files across different projects. Navigating through the file explorer to locate specific folders can be time consuming and disrupt your workflow.
 
-![Selecting a color using Color Picker](images/overview/Original/PowerLauncher.png)
+![Using PowerToys Run](images/overview/Original/PowerLauncher.png)
 
 PowerToys Run provides a quick and efficient way to access your favorite folders. By pressing a customizable keyboard shortcut, you can open PowerToys Run and start typing the name of the folder you need. As you type, PowerToys Run will display relevant results, allowing you to quickly navigate to your desired location without ever leaving your keyboard.
 
