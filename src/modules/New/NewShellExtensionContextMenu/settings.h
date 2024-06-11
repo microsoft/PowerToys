@@ -19,7 +19,8 @@ public:
 private:
     struct Settings
     {
-        bool enabled{ true };
+        // These values are not used
+        bool enabled{ false };
         bool hide_file_extension{ true };
         std::wstring template_location;
     };

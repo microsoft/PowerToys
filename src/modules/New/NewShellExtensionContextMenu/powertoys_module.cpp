@@ -73,6 +73,11 @@ public:
         }
     }
 
+    virtual bool is_enabled_by_default() const override
+    { 
+        return false; 
+    }
+
     virtual void enable() override
     {
         Logger::info("New+ enabled via Settings UI");
