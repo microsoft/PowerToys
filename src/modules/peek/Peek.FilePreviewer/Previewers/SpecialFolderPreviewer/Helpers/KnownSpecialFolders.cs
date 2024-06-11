@@ -14,7 +14,7 @@ public enum KnownSpecialFolder
 {
     None,
     RecycleBin,
-    ThisComputer,
+    ThisPC,
 }
 
 public static class KnownSpecialFolders
@@ -28,7 +28,7 @@ public static class KnownSpecialFolders
         var folders = new (KnownSpecialFolder Folder, string? ParsingName)[]
         {
             (KnownSpecialFolder.RecycleBin, GetParsingName("shell:RecycleBinFolder")),
-            (KnownSpecialFolder.ThisComputer, GetParsingName("shell:MyComputerFolder")),
+            (KnownSpecialFolder.ThisPC, GetParsingName("shell:MyComputerFolder")),
         };
 
         return folders.Where(folder => !string.IsNullOrEmpty(folder.ParsingName))

@@ -180,8 +180,8 @@ public partial class SpecialFolderPreviewer : ObservableObject, ISpecialFolderPr
                 ThreadHelper.RunOnSTAThread(() => { ComputeRecycleBinDetails(cancellationToken); });
                 break;
 
-            case KnownSpecialFolder.ThisComputer:
-                ComputeThisComputerDetails();
+            case KnownSpecialFolder.ThisPC:
+                ComputeThisPCDetails();
                 break;
         }
 
@@ -210,7 +210,7 @@ public partial class SpecialFolderPreviewer : ObservableObject, ISpecialFolderPr
         }
     }
 
-    private void ComputeThisComputerDetails()
+    private void ComputeThisPCDetails()
     {
         _folderSize = DriveInfo.GetDrives()
                                .Where(drive => drive.DriveType != DriveType.Network)
