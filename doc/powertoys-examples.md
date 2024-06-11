@@ -40,6 +40,16 @@ As a business analyst, you may work with multiple directories and files across d
 
 PowerToys Run provides a quick and efficient way to access your favorite folders. By pressing a customizable keyboard shortcut, you can open PowerToys Run and start typing the name of the folder you need. As you type, PowerToys Run will display relevant results, allowing you to quickly navigate to your desired location without ever leaving your keyboard.
 
+## Keeping Important Windows Always on Top
+
+Imagine you're a project manager coordinating a video conference while taking notes in a separate application. Constantly switching between the video call and your notes can be distracting and inefficient.
+
+Always on Top (AoT) allows you to keep the notes application visible on top of other windows, so you can refer to your notes while participating in the video conference without having to switch back and forth.
+
+![Using Always on Top](images/overview/Original/AlwaysOnTop.png)
+
+To use AoT, select the window you want to keep on top and press the keyboard shortcut (default: `Win + Ctrl + T`). The window will remain on top, allowing you to focus on your meeting and notes simultaneously.
+
 These scenarios are just a few of the ways Microsoft PowerToys can enhance your productivity and streamline your workflow. Whether you're a developer, photographer, designer, or business professional, PowerToys offers a versatile set of tools to optimize your daily tasks. By leveraging the power of PowerToys, you can save time, reduce errors, and focus on what matters most: your work.
 
 Learn more here: [https://learn.microsoft.com/en-us/windows/powertoys/](https://learn.microsoft.com/en-us/windows/powertoys/)
