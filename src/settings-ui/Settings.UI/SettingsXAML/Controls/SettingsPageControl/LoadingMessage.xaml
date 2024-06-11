@@ -1,0 +1,18 @@
+<ContentDialog
+    x:Class="Microsoft.PowerToys.Settings.UI.Controls.LoadingMessage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Bug Report"
+    PrimaryButtonText="Cancel"
+    DefaultButton="Primary">
+    <StackPanel>
+        <TextBlock Text="Creating bug report, please wait..." 
+                   VerticalAlignment="Center" 
+                   HorizontalAlignment="Center"
+                   TextAlignment="Center"/>
+        <ProgressBar IsIndeterminate="True" 
+                     VerticalAlignment="Bottom"
+                     Height="20"
+                     Margin="10"/>
+    </StackPanel>
+</ContentDialog>

@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -18,19 +17,21 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Windows;
-using System.Windows.Input;
-using CommunityToolkit.Mvvm.ComponentModel;
+using System.Windows.Interop;
+using System.Windows.Threading;
+using CommunityToolkit.Common;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.WinUI.Helpers;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
-using Windows.System;
+using Microsoft.UI.Xaml.Controls;
 using Windows.System.Profile;
+using Windows.UI.Core;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -211,41 +212,78 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public async Task InitializeReportBugLinkAsync()
         {
+            string gitHubURL = string.Empty;
             var version = HttpUtility.UrlEncode(Helper.GetProductVersion().TrimStart('v'));
             var otherSoftwareText = "OS Build Version: " + GetOSVersion() + "\n.NET Version: " + GetDotNetVersion();
             var otherSoftware = HttpUtility.UrlEncode(otherSoftwareText);
-            string reportResult = LaunchBugReport();
+            var isElevatedRun = IsElevated ? "Yes" : "No";
 
-            // DONT FORGET gokcekantarci TO ms
-            var gitHubURL = "https://github.com/gokcekantarci/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CNeeds-Triage&template=bug_report.yml" +
-                "&version=" + version +
-                "&othersoftware=" + otherSoftware;
+            var loadingMessage = new LoadingMessage();
+            loadingMessage.XamlRoot = App.GetSettingsWindow().Content.XamlRoot;
 
-            if (string.IsNullOrEmpty(reportResult))
-            {
-                MessageBox.Show($"Bug report generated on your desktop. Please attach the file to the GitHub issue.");
-            }
-            else
-            {
-                MessageBox.Show($"Failed to generate bug report.");
-            }
+            var cts = new CancellationTokenSource();
 
-            if (!string.IsNullOrEmpty(gitHubURL))
+            try
             {
-                ReportBugLink = gitHubURL;
-            }
-            else
-            {
-                ReportBugLink = "https://aka.ms/powerToysReportBug";
-            }
+                var showDialogTask = loadingMessage.ShowAsync().AsTask();
+                var bugReportTask = Task.Run(() => LaunchBugReport(cts.Token), cts.Token);
 
-            await Task.Delay(100);
+                // Wait for either the dialog to be closed or the bug report to be generated
+                var completedTask = await Task.WhenAny(showDialogTask, bugReportTask);
+
+                if (completedTask == showDialogTask && showDialogTask.GetResultOrDefault() == ContentDialogResult.Primary)
+                {
+                    // Cancel the bug report task if the dialog was closed with Cancel
+                    await cts.CancelAsync();
+                }
+                else if (completedTask == bugReportTask)
+                {
+                    loadingMessage.Hide();
+
+                    // Bug report task completed
+                    string reportResult = await bugReportTask;
+
+                    gitHubURL = "https://github.com/gokcekantarci/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CNeeds-Triage&template=bug_report.yml" +
+                        "&version=" + version +
+                        "&othersoftware=" + otherSoftware +
+                        "&iselevated=" + HttpUtility.UrlEncode(isElevatedRun);
+
+                    var dialog = new ContentDialog
+                    {
+                        Title = string.IsNullOrEmpty(reportResult) ? string.Empty : reportResult,
+                        Content = string.IsNullOrEmpty(reportResult) ? "Failed to generate bug report." : "Bug report generated on your desktop. Please attach the file to the GitHub issue.",
+                        CloseButtonText = "OK",
+                        XamlRoot = loadingMessage.XamlRoot,
+                    };
+
+                    await dialog.ShowAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                await cts.CancelAsync();
+                loadingMessage.Hide();
+                var errorDialog = new ContentDialog
+                {
+                    Title = "Error",
+                    Content = $"An error occurred: {ex.Message}",
+                    CloseButtonText = "OK",
+                    XamlRoot = loadingMessage.XamlRoot,
+                };
+                await errorDialog.ShowAsync();
+            }
+            finally
+            {
+                ReportBugLink = !string.IsNullOrEmpty(gitHubURL) ? gitHubURL : "https://aka.ms/powerToysReportBug";
+            }
         }
 
-        public static string LaunchBugReport()
+        // Updated LaunchBugReport method to support cancellation
+        public string LaunchBugReport(CancellationToken token)
         {
             string bugReportPath = GetModuleFolderPath() + "\\..\\Tools\\PowerToys.BugReportTool.exe";
-            string errorOutput = string.Empty;
+            string bugReportFileName = string.Empty;
+
             lock (LockObject)
             {
                 if (!isBugReportThreadRunning)
@@ -267,14 +305,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         {
                             using (Process process = Process.Start(startInfo))
                             {
-                                process.WaitForExit();
+                                while (!process.HasExited)
+                                {
+                                    if (token.IsCancellationRequested)
+                                    {
+                                        process.Kill();
+                                        return;
+                                    }
 
-                                errorOutput = process.StandardError.ReadToEnd().Trim();
+                                    Thread.Sleep(100);
+                                }
                             }
+
+                            // Find the newest bug report file on the desktop
+                            bugReportFileName = FindNewestBugReportFile();
                         }
                         catch (Exception ex)
                         {
-                            // Log or handle the exception
                             MessageBox.Show("Failed to start bug report tool: " + ex.Message, "Error");
                         }
                         finally
@@ -288,13 +335,31 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
 
-            return errorOutput;
+            return bugReportFileName;
         }
 
         private static string GetModuleFolderPath()
         {
             // You would implement this method to get the path to your module folder in C#
             return Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+        }
+
+        private string FindNewestBugReportFile()
+        {
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            DirectoryInfo directoryInfo = new DirectoryInfo(desktopPath);
+
+            // Get all files starting with "PowerToysReport_"
+            FileInfo[] files = directoryInfo.GetFiles("PowerToysReport_*");
+
+            if (files.Length == 0)
+            {
+                return string.Empty;
+            }
+
+            // Find the newest file
+            FileInfo newestFile = files.OrderByDescending(f => f.LastWriteTime).FirstOrDefault();
+            return newestFile?.Name;
         }
 
         private string GetDotNetVersion()
