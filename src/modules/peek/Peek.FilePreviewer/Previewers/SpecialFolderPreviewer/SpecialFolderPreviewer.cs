@@ -176,16 +176,14 @@ public partial class SpecialFolderPreviewer : ObservableObject, ISpecialFolderPr
 
         switch (KnownSpecialFolders.FoldersByParsingName.GetValueOrDefault(Item.ParsingName, KnownSpecialFolder.None))
         {
+            case KnownSpecialFolder.None:
+                break;
+
             case KnownSpecialFolder.RecycleBin:
                 ThreadHelper.RunOnSTAThread(() => { ComputeRecycleBinDetails(cancellationToken); });
-                break;
-
-            case KnownSpecialFolder.ThisPC:
-                ComputeThisPCDetails();
+                cancellationToken.ThrowIfCancellationRequested();
                 break;
         }
-
-        cancellationToken.ThrowIfCancellationRequested();
     }
 
     private void ComputeRecycleBinDetails(CancellationToken cancellationToken)
@@ -201,21 +199,7 @@ public partial class SpecialFolderPreviewer : ObservableObject, ISpecialFolderPr
             }
 
             _folderSize += Convert.ToUInt64(item.Size);
-
-            DateTime dateDeleted = item.ExtendedProperty("System.Recycle.DateDeleted");
-            if (_dateModified == null || _dateModified < dateDeleted)
-            {
-                _dateModified = dateDeleted;
-            }
         }
-    }
-
-    private void ComputeThisPCDetails()
-    {
-        _folderSize = DriveInfo.GetDrives()
-                               .Where(drive => drive.DriveType != DriveType.Network)
-                               .Select(drive => drive.TotalSize - drive.TotalFreeSpace)
-                               .Aggregate(0UL, (runningSum, driveUsedSpace) => runningSum + Convert.ToUInt64(driveUsedSpace));
     }
 
     private void SyncDetails()
