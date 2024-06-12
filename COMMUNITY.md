@@ -169,4 +169,9 @@ Other contributors:
 # Former PowerToys core team members
 
 - [@indierawk2k2](https://github.com/indierawk2k2) - Mike Harsh - Product Manager
+- [@enricogior](https://github.com/enricogior) - Enrico Giordani - Dev Lead
+- [@bzoz](https://github.com/bzoz) - Bartosz Sosnowski - Dev
+- [@ivan100sic](https://github.com/ivan100sic) - Ivan Stošić - Dev
+- [@mykhailopylyp](https://github.com/mykhailopylyp) - Mykhailo Pylyp - Dev
+- [@taras-janea](https://github.com/taras-janea) - Taras Sich - Dev
 - [@yuyoyuppe](https://github.com/yuyoyuppe) - Andrey Nekrasov - Dev
