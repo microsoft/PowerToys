@@ -28,9 +28,14 @@ public sealed partial class SpecialFolderInformationalPreviewControl : UserContr
         InitializeComponent();
     }
 
-    public string FormatFileType(string? fileType) => ReadableStringHelper.FormatResourceString("UnsupportedFile_FileType", fileType);
+    public string FormatFileType(string? fileType) => FormatField("UnsupportedFile_FileType", fileType);
 
-    public string FormatFileSize(string? fileSize) => ReadableStringHelper.FormatResourceString("UnsupportedFile_FileSize", fileSize);
+    public string FormatFileSize(string? fileSize) => FormatField("UnsupportedFile_FileSize", fileSize);
 
-    public string FormatFileDateModified(string? fileDateModified) => ReadableStringHelper.FormatResourceString("UnsupportedFile_DateModified", fileDateModified);
+    public string FormatFileDateModified(string? fileDateModified) => FormatField("UnsupportedFile_DateModified", fileDateModified);
+
+    private static string FormatField(string resourceId, string? fieldValue)
+    {
+        return string.IsNullOrWhiteSpace(fieldValue) ? string.Empty : ReadableStringHelper.FormatResourceString(resourceId, fieldValue);
+    }
 }
