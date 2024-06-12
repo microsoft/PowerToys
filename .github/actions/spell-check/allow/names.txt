@@ -38,6 +38,7 @@ arjunbalgovind
 Ashish
 Baltazar
 Bao
+Bartosz
 betadele
 betsegaw
 bricelam
@@ -52,6 +53,7 @@ crutkas
 damienleroy
 davidegiacometti
 debian
+Deibisu
 Delimarsky
 Deondre
 DHowett
@@ -63,6 +65,7 @@ gabime
 Galaxi
 Garside
 Gershaft
+Giordani
 Gokce
 Guo
 hanselman
@@ -78,6 +81,7 @@ Jaswal
 jefflord
 Jordi
 jyuwono
+Kairu
 Kamra
 Kantarci
 Karthick
@@ -94,6 +98,7 @@ martinmoene
 Melman
 Mikhayelyan
 msft
+Mykhailo
 Myrvold
 Nemeth
 nielslaute
@@ -104,9 +109,11 @@ peteblois
 phoboslab
 Ponten
 Pooja
+Pylyp
 Quriz
 randyrants
 ricardosantos
+riri
 ritchielawrence
 robmikh
 Rutkas
@@ -120,10 +127,12 @@ Seraphima
 skttl
 somil
 Soref
+Sosnowski
 stefan
 Szablewski
 Tadele
 talynone
+Taras
 TBM
 tilovell
 Triet
@@ -133,9 +142,6 @@ Yuniardi
 yuyoyuppe
 Zoltan
 Zykova
-Kairu
-Deibisu
-riri
 
 # OTHERS
 
@@ -168,4 +174,3 @@ xamlstyler
 Xavalon
 Xbox
 Youdao
-
