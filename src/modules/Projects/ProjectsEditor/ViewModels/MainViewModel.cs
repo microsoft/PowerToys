@@ -136,20 +136,19 @@ namespace ProjectsEditor.ViewModels
 
         private void CreateShortcut(Project project)
         {
-            object shDesktop = (object)"Desktop";
-            IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell();
-            string shortcutAddress = (string)shell.SpecialFolders.Item(ref shDesktop) + $"\\{project.Name}.lnk";
-            IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(shortcutAddress);
-            shortcut.Description = $"Project Launcher {project.Id}";
             string basePath = AppDomain.CurrentDomain.BaseDirectory;
-            shortcut.TargetPath = Path.Combine(basePath, "PowerToys.ProjectsLauncher.exe");
-            shortcut.Arguments = '"' + project.Id + '"';
-            shortcut.WorkingDirectory = basePath;
+            string shortcutAddress = FolderUtils.Desktop() + $"\\{project.Name}.lnk";
+            string shortcutIconFilename = FolderUtils.Temp() + $"\\{project.Name}.ico";
 
-            string shortcutIconFilename = (string)shell.SpecialFolders.Item(ref shDesktop) + $"\\{project.Name}.ico";
             Bitmap icon = ProjectIcon.DrawIcon(ProjectIcon.IconTextFromProjectName(project.Name));
             ProjectIcon.SaveIcon(icon, shortcutIconFilename);
 
+            IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell();
+            IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(shortcutAddress);
+            shortcut.Description = $"Project Launcher {project.Id}";
+            shortcut.TargetPath = Path.Combine(basePath, "PowerToys.ProjectsLauncher.exe");
+            shortcut.Arguments = '"' + project.Id + '"';
+            shortcut.WorkingDirectory = basePath;
             shortcut.IconLocation = shortcutIconFilename;
             shortcut.Save();
         }

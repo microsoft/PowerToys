@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using Projects.Data;
+using ProjectsEditor.Utils;
 using static ProjectsEditor.Data.ProjectsData;
 
 namespace ProjectsEditor.Data
@@ -14,7 +15,7 @@ namespace ProjectsEditor.Data
         {
             get
             {
-                return GetDataFolder() + "\\projects.json";
+                return FolderUtils.DataFolder() + "\\projects.json";
             }
         }
 
