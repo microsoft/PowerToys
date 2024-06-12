@@ -1,3 +1,3 @@
 export const customTokenColors = [
-    {token: 'custom-gitignore.negation', foreground: 'f7e500'}
+    {token: 'custom-gitignore.negation', foreground: 'c00ce0'}
 ];
