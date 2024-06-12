@@ -28,7 +28,7 @@ Heiko has helped triaging, discussing, and creating a substantial number of issu
 Jay has helped triaging, discussing, creating a substantial number of issues and PRs.
 
 ### [@jefflord](https://github.com/Jjefflord) - Jeff Lord
-Jeff added in multiple new features into Keyboard manager such as key chord support and launching apps.  He also did multiple features/fixes to PowerToys.
+Jeff added in multiple new features into Keyboard manager, such as key chord support and launching apps. He also contributed multiple features/fixes to PowerToys.
 
 ### [@TheJoeFin](https://github.com/TheJoeFin) - [Joe Finney](https://joefinapps.com)
 Joe has helped triaging, discussing, issues as well as fixing bugs and building features for Text Extractor.
