@@ -11,23 +11,31 @@
 
 #include <MonitorUtils.h>
 
-int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
+#include <common/utils/logger_helper.h>
+#include <common/utils/UnhandledExceptionHandler.h>
+
+const std::wstring moduleName = L"Projects\\ProjectsSnapshotTool";
+const std::wstring internalPath = L"";
+
+int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cmdshow)
 {
+    LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::projectsLauncherLoggerName);
+    InitUnhandledExceptionHandler();  
+
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
     HRESULT comInitHres = CoInitializeEx(0, COINIT_MULTITHREADED);
     if (FAILED(comInitHres))
     {
-        std::wcout << L"Failed to initialize COM library. " << comInitHres << std::endl;
+        Logger::error(L"Failed to initialize COM library. {}", comInitHres);
         return -1;
     }
 
     std::wstring fileName = JsonUtils::ProjectsFile();
-    int len = MultiByteToWideChar(CP_ACP, 0, cmdline, -1, NULL, 0);
-    if (len > 1)
+    std::string cmdLineStr(cmdLine);
+    if (!cmdLineStr.empty())
     {
-        std::wstring fileNameParam(len, L'\0');
-        MultiByteToWideChar(CP_ACP, 0, cmdline, -1, &fileNameParam[0], len);
+        std::wstring fileNameParam(cmdLineStr.begin(), cmdLineStr.end());
         fileName = fileNameParam;
     }
 
@@ -45,8 +53,9 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmd
             }
         }
     }
-    catch (std::exception)
+    catch (std::exception ex)
     {
+        Logger::error("Error reading projects file. {}", ex.what());
     }
     
     // new project name
@@ -72,6 +81,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmd
     std::wstring projectName = defaultNamePrefix + L" " + std::to_wstring(nextProjectIndex + 1);
     time_t creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     Project project{ .id = CreateGuidString(), .name = projectName, .creationTime = creationTime };
+    Logger::trace(L"Creating project {}:{}", project.name, project.id);
 
     // save monitor configuration
     project.monitors = MonitorUtils::IdentifyMonitors();
@@ -144,5 +154,6 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmd
 
     projects.push_back(project);
     json::to_file(fileName, JsonUtils::ProjectsListJSON::ToJson(projects));
+    Logger::trace(L"Project {}:{} created", project.name, project.id);
     return 0;
 }
