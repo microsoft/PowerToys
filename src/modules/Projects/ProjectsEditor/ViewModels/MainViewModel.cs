@@ -142,7 +142,7 @@ namespace ProjectsEditor.ViewModels
             IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(shortcutAddress);
             shortcut.Description = $"Project Launcher {project.Id}";
             string basePath = AppDomain.CurrentDomain.BaseDirectory;
-            shortcut.TargetPath = Path.Combine(basePath, "ProjectsLauncher.exe");
+            shortcut.TargetPath = Path.Combine(basePath, "PowerToys.ProjectsLauncher.exe");
             shortcut.Arguments = '"' + project.Id + '"';
             shortcut.WorkingDirectory = basePath;
 
@@ -269,7 +269,7 @@ namespace ProjectsEditor.ViewModels
         private void RunSnapshotTool(string filename = null)
         {
             Process p = new Process();
-            p.StartInfo = new ProcessStartInfo(@".\ProjectsSnapshotTool.exe");
+            p.StartInfo = new ProcessStartInfo(@".\PowerToys.ProjectsSnapshotTool.exe");
             p.StartInfo.CreateNoWindow = true;
             if (!string.IsNullOrEmpty(filename))
             {
@@ -283,7 +283,7 @@ namespace ProjectsEditor.ViewModels
         private void RunLauncher(string projectId)
         {
             Process p = new Process();
-            p.StartInfo = new ProcessStartInfo(@".\ProjectsLauncher.exe", projectId);
+            p.StartInfo = new ProcessStartInfo(@".\PowerToys.ProjectsLauncher.exe", projectId);
             p.StartInfo.CreateNoWindow = true;
             p.Start();
             p.WaitForExit();
