@@ -12,6 +12,7 @@
 #include <projects-common/WindowFilter.h>
 
 #include <common/Display/dpi_aware.h>
+#include <common/utils/winapi_error.h>
 
 using namespace winrt;
 using namespace Windows::Foundation;
@@ -122,8 +123,7 @@ namespace FancyZones
         auto result = ::SetWindowPlacement(window, &placement);
         if (!result)
         {
-            std::wcout << "Set window placement failed" << std::endl;
-            //Logger::error(L"SetWindowPlacement failed, {}", get_last_error_or_default(GetLastError()));
+            Logger::error(L"SetWindowPlacement failed, {}", get_last_error_or_default(GetLastError()));
             return false;
         }
 
@@ -138,8 +138,7 @@ namespace FancyZones
         result = ::SetWindowPlacement(window, &placement);
         if (!result)
         {
-            std::wcout << "Set window placement failed" << std::endl;
-            //Logger::error(L"SetWindowPlacement failed, {}", get_last_error_or_default(GetLastError()));
+            Logger::error(L"SetWindowPlacement failed, {}", get_last_error_or_default(GetLastError()));
             return false;
         }
 
@@ -165,7 +164,7 @@ bool LaunchApp(const std::wstring& appPath, std::wstring commandLineArgs)
     }
     else
     {
-        std::wcerr << L"Failed to launch process. Error code: " << GetLastError() << std::endl;
+        Logger::error(L"Failed to launch process. {}", get_last_error_or_default(GetLastError()));
     }
 
     return false;
@@ -191,14 +190,14 @@ bool LaunchPackagedApp(const std::wstring& packageFullName)
                 }
                 else
                 {
-                    std::wcout << L"No app entries found for the package." << std::endl;
+                    Logger::error(L"No app entries found for the package.");
                 }
             }
         }
     }
     catch (const hresult_error& ex)
     {
-        std::wcerr << L"Error: " << ex.message().c_str() << std::endl;
+        Logger::error(L"Packaged app launching error: {}", ex.message());
     }
 
     return false;
@@ -209,26 +208,26 @@ bool Launch(const Project::Application& app)
     bool launched;
     if (!app.packageFullName.empty() && app.commandLineArgs.empty())
     {
-        std::wcout << L"Launching packaged " << app.name << std::endl;
+        Logger::trace(L"Launching packaged {}", app.name);
         launched = LaunchPackagedApp(app.packageFullName);
     }
     else
     {
         // TODO: verify app path is up to date. 
         // Packaged apps have version in the path, it will be outdated after update.
-        std::wcout << L"Launching " << app.name << " at " << app.path << std::endl;
+        Logger::trace(L"Launching {} at {}", app.name, app.path);
 
         DWORD dwAttrib = GetFileAttributesW(app.path.c_str());
         if (dwAttrib == INVALID_FILE_ATTRIBUTES)
         {
-            std::wcout << L"  File not found at " << app.path << std::endl;
+            Logger::error(L"File not found at {}", app.path);
             return false;
         }
 
         launched = LaunchApp(app.path, app.commandLineArgs);
     }
 
-    std::wcout << app.name << (launched ? L" launched" : L" not launched") << std::endl;
+    Logger::trace(L"{} {} at {}", app.name, (launched ? L"launched" : L"not launched"), app.path);
     return launched;
 }
 
@@ -276,12 +275,12 @@ void Launch(const Project& project)
         auto res = std::find_if(launchedWindows.begin(), launchedWindows.end(), [&](const std::pair<Project::Application, HWND>& val) { return val.second == nullptr; });
         if (res == launchedWindows.end())
         {
-            std::wcout << "All windows found." << std::endl;
+            Logger::trace(L"All windows found.");
             break;
         }
         else
         {
-            std::wcout << "Not all windows found, retry." << std::endl;
+            Logger::trace(L"Not all windows found, retry.");
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
@@ -311,17 +310,17 @@ void Launch(const Project& project)
     {
         if (window == nullptr)
         {
-            std::wcout << app.name << " window not found." << std::endl;
+            Logger::warn(L"{} window not found.", app.name);
             continue;
         }
 
         if (FancyZones::SizeWindowToRect(window, app.isMinimized, app.isMaximized, app.position.toRect()))
         {
-            std::wcout << L"Placed " << app.name << std::endl;
+            Logger::trace(L"Placed {}", app.name);
         }
         else
         {
-            std::wcout << L"Failed placing " << app.name << std::endl;
+            Logger::error(L"Failed placing {}", app.name);
         }
     }
 }
