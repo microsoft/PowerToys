@@ -200,6 +200,11 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}" />
 
                 <NavigationViewItem
+                    x:Uid="Shell_Projects"
+                    helpers:NavHelper.NavigateTo="views:ProjectsPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Projects.png}" />
+
+                <NavigationViewItem
                     x:Uid="Shell_RegistryPreview"
                     helpers:NavHelper.NavigateTo="views:RegistryPreviewPage"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/RegistryPreview.png}" />

@@ -64,6 +64,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.PowerRename: return generalSettingsConfig.Enabled.PowerRename;
                 case ModuleType.PowerLauncher: return generalSettingsConfig.Enabled.PowerLauncher;
                 case ModuleType.PowerAccent: return generalSettingsConfig.Enabled.PowerAccent;
+                case ModuleType.Projects: return generalSettingsConfig.Enabled.Projects;
                 case ModuleType.RegistryPreview: return generalSettingsConfig.Enabled.RegistryPreview;
                 case ModuleType.MeasureTool: return generalSettingsConfig.Enabled.MeasureTool;
                 case ModuleType.ShortcutGuide: return generalSettingsConfig.Enabled.ShortcutGuide;
@@ -96,6 +97,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.PowerRename: generalSettingsConfig.Enabled.PowerRename = isEnabled; break;
                 case ModuleType.PowerLauncher: generalSettingsConfig.Enabled.PowerLauncher = isEnabled; break;
                 case ModuleType.PowerAccent: generalSettingsConfig.Enabled.PowerAccent = isEnabled; break;
+                case ModuleType.Projects: generalSettingsConfig.Enabled.Projects = isEnabled; break;
                 case ModuleType.RegistryPreview: generalSettingsConfig.Enabled.RegistryPreview = isEnabled; break;
                 case ModuleType.MeasureTool: generalSettingsConfig.Enabled.MeasureTool = isEnabled; break;
                 case ModuleType.ShortcutGuide: generalSettingsConfig.Enabled.ShortcutGuide = isEnabled; break;
@@ -159,6 +161,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.PowerRename => typeof(PowerRenamePage),
                 ModuleType.PowerLauncher => typeof(PowerLauncherPage),
                 ModuleType.PowerAccent => typeof(PowerAccentPage),
+                ModuleType.Projects => typeof(ProjectsPage),
                 ModuleType.RegistryPreview => typeof(RegistryPreviewPage),
                 ModuleType.MeasureTool => typeof(MeasureToolPage),
                 ModuleType.ShortcutGuide => typeof(ShortcutGuidePage),
