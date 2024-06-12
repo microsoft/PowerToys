@@ -22,8 +22,9 @@ namespace ColorPicker.Keyboard
 
         private List<string> _activationKeys = new List<string>();
         private GlobalKeyboardHook _keyboardHook;
-        private bool disposedValue;
         private bool _activationShortcutPressed;
+        private int keyboardMoveSpeed;
+        private Key lastArrowKeyPressed = Key.None;
 
         [ImportingConstructor]
         public KeyboardMonitor(AppStateHandler appStateHandler, IUserSettings userSettings)
@@ -80,6 +81,39 @@ namespace ColorPicker.Keyboard
                 }
             }
 
+            if ((virtualCode == KeyInterop.VirtualKeyFromKey(Key.Space) || virtualCode == KeyInterop.VirtualKeyFromKey(Key.Enter)) && (e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown))
+            {
+                e.Handled = _appStateHandler.HandleEnterPressed();
+                return;
+            }
+
+            if (virtualCode == KeyInterop.VirtualKeyFromKey(Key.Back) && e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown)
+            {
+                e.Handled = _appStateHandler.HandleEscPressed();
+                return;
+            }
+
+            if (CheckMoveNeeded(virtualCode, Key.Up, e, 0, -1))
+            {
+                e.Handled = true;
+                return;
+            }
+            else if (CheckMoveNeeded(virtualCode, Key.Down, e, 0, 1))
+            {
+                e.Handled = true;
+                return;
+            }
+            else if (CheckMoveNeeded(virtualCode, Key.Left, e, -1, 0))
+            {
+                e.Handled = true;
+                return;
+            }
+            else if (CheckMoveNeeded(virtualCode, Key.Right, e, 1, 0))
+            {
+                e.Handled = true;
+                return;
+            }
+
             var name = Helper.GetKeyName((uint)virtualCode);
 
             // If the last key pressed is a modifier key, then currentlyPressedKeys cannot possibly match with _activationKeys
@@ -113,6 +147,35 @@ namespace ColorPicker.Keyboard
                     _appStateHandler.StartUserSession();
                 }
             }
+        }
+
+        private bool CheckMoveNeeded(int virtualCode, Key key, GlobalKeyboardHookEventArgs e, int xMove, int yMove)
+        {
+            if (virtualCode == KeyInterop.VirtualKeyFromKey(key))
+            {
+                if (e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown && _appStateHandler.IsColorPickerVisible())
+                {
+                    if (lastArrowKeyPressed == key)
+                    {
+                        keyboardMoveSpeed++;
+                    }
+                    else
+                    {
+                        keyboardMoveSpeed = 1;
+                    }
+
+                    lastArrowKeyPressed = key;
+                    _appStateHandler.MoveCursor(keyboardMoveSpeed * xMove, keyboardMoveSpeed * yMove);
+                    return true;
+                }
+                else if (e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyUp)
+                {
+                    lastArrowKeyPressed = Key.None;
+                    keyboardMoveSpeed = 0;
+                }
+            }
+
+            return false;
         }
 
         private static bool ArraysAreSame(List<string> first, List<string> second)
@@ -158,15 +221,7 @@ namespace ColorPicker.Keyboard
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    _keyboardHook?.Dispose();
-                }
-
-                disposedValue = true;
-            }
+            _keyboardHook?.Dispose();
         }
 
         public void Dispose()

@@ -15,6 +15,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("activation_method")]
         public IntProperty ActivationMethod { get; set; }
 
+        [JsonPropertyName("include_win_key")]
+        public BoolProperty IncludeWinKey { get; set; }
+
         [JsonPropertyName("activation_shortcut")]
         public HotkeySettings ActivationShortcut { get; set; }
 
@@ -54,6 +57,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public FindMyMouseProperties()
         {
             ActivationMethod = new IntProperty(0);
+            IncludeWinKey = new BoolProperty(false);
             ActivationShortcut = DefaultActivationShortcut;
             DoNotActivateOnGameMode = new BoolProperty(true);
             BackgroundColor = new StringProperty("#000000");

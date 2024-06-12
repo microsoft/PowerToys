@@ -8,7 +8,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -23,21 +22,14 @@ using static HostsUILib.Settings.IUserSettings;
 
 namespace HostsUILib.ViewModels
 {
-    public partial class MainViewModel : ObservableObject, IDisposable
+    public partial class MainViewModel : ObservableObject
     {
         private readonly IHostsService _hostsService;
         private readonly IUserSettings _userSettings;
+        private readonly IDuplicateService _duplicateService;
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-        private readonly string[] _loopbackAddresses =
-        {
-            "127.0.0.1",
-            "::1",
-            "0:0:0:0:0:0:0:1",
-        };
 
         private bool _readingHosts;
-        private bool _disposed;
-        private CancellationTokenSource _tokenSource;
 
         [ObservableProperty]
         private Entry _selected;
@@ -95,10 +87,16 @@ namespace HostsUILib.ViewModels
 
         private OpenSettingsFunction _openSettingsFunction;
 
-        public MainViewModel(IHostsService hostService, IUserSettings userSettings, ILogger logger, OpenSettingsFunction openSettingsFunction)
+        public MainViewModel(
+            IHostsService hostService,
+            IUserSettings userSettings,
+            IDuplicateService duplicateService,
+            ILogger logger,
+            OpenSettingsFunction openSettingsFunction)
         {
             _hostsService = hostService;
             _userSettings = userSettings;
+            _duplicateService = duplicateService;
 
             _hostsService.FileChanged += (s, e) => _dispatcherQueue.TryEnqueue(() => FileChanged = true);
             _userSettings.LoopbackDuplicatesChanged += (s, e) => ReadHosts();
@@ -111,8 +109,7 @@ namespace HostsUILib.ViewModels
         {
             entry.PropertyChanged += Entry_PropertyChanged;
             _entries.Add(entry);
-
-            FindDuplicates(entry.Address, entry.SplittedHosts);
+            _duplicateService.CheckDuplicates(entry.Address, entry.SplittedHosts);
         }
 
         public void Update(int index, Entry entry)
@@ -126,8 +123,8 @@ namespace HostsUILib.ViewModels
             existingEntry.Hosts = entry.Hosts;
             existingEntry.Active = entry.Active;
 
-            FindDuplicates(oldAddress, oldHosts);
-            FindDuplicates(entry.Address, entry.SplittedHosts);
+            _duplicateService.CheckDuplicates(oldAddress, oldHosts);
+            _duplicateService.CheckDuplicates(entry.Address, entry.SplittedHosts);
         }
 
         public void DeleteSelected()
@@ -135,8 +132,7 @@ namespace HostsUILib.ViewModels
             var address = Selected.Address;
             var hosts = Selected.SplittedHosts;
             _entries.Remove(Selected);
-
-            FindDuplicates(address, hosts);
+            _duplicateService.CheckDuplicates(address, hosts);
         }
 
         public void UpdateAdditionalLines(string lines)
@@ -169,8 +165,7 @@ namespace HostsUILib.ViewModels
                 var address = entry.Address;
                 var hosts = entry.SplittedHosts;
                 _entries.Remove(entry);
-
-                FindDuplicates(address, hosts);
+                _duplicateService.CheckDuplicates(address, hosts);
             }
         }
 
@@ -213,9 +208,7 @@ namespace HostsUILib.ViewModels
                 });
                 _readingHosts = false;
 
-                _tokenSource?.Cancel();
-                _tokenSource = new CancellationTokenSource();
-                FindDuplicates(_tokenSource.Token);
+                _duplicateService.Initialize(_entries);
             });
         }
 
@@ -294,12 +287,6 @@ namespace HostsUILib.ViewModels
             _ = Task.Run(SaveAsync);
         }
 
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-
         private void Entry_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (Filtered && (e.PropertyName == nameof(Entry.Hosts)
@@ -324,82 +311,6 @@ namespace HostsUILib.ViewModels
         private void Entries_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             _ = Task.Run(SaveAsync);
-        }
-
-        private void FindDuplicates(CancellationToken cancellationToken)
-        {
-            foreach (var entry in _entries)
-            {
-                try
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    if (!_userSettings.LoopbackDuplicates && _loopbackAddresses.Contains(entry.Address))
-                    {
-                        continue;
-                    }
-
-                    SetDuplicate(entry);
-                }
-                catch (OperationCanceledException)
-                {
-                    LoggerInstance.Logger.LogInfo("FindDuplicates cancelled");
-                    return;
-                }
-            }
-        }
-
-        private void FindDuplicates(string address, IEnumerable<string> hosts)
-        {
-            var entries = _entries.Where(e =>
-                string.Equals(e.Address, address, StringComparison.OrdinalIgnoreCase)
-                || hosts.Intersect(e.SplittedHosts, StringComparer.OrdinalIgnoreCase).Any());
-
-            foreach (var entry in entries)
-            {
-                SetDuplicate(entry);
-            }
-        }
-
-        private void SetDuplicate(Entry entry)
-        {
-            if (!_userSettings.LoopbackDuplicates && _loopbackAddresses.Contains(entry.Address))
-            {
-                _dispatcherQueue.TryEnqueue(() =>
-                {
-                    entry.Duplicate = false;
-                });
-
-                return;
-            }
-
-            var duplicate = false;
-
-            /*
-             * Duplicate are based on the following criteria:
-             * Entries with the same type and at least one host in common
-             * Entries with the same type and address, except when there is only one entry with less than 9 hosts for that type and address
-             */
-            if (_entries.Any(e => e != entry
-                && e.Type == entry.Type
-                && entry.SplittedHosts.Intersect(e.SplittedHosts, StringComparer.OrdinalIgnoreCase).Any()))
-            {
-                duplicate = true;
-            }
-            else if (_entries.Any(e => e != entry
-                && e.Type == entry.Type
-                && string.Equals(e.Address, entry.Address, StringComparison.OrdinalIgnoreCase)))
-            {
-                duplicate = entry.SplittedHosts.Length < Consts.MaxHostsCount
-                    && _entries.Count(e => e.Type == entry.Type
-                        && string.Equals(e.Address, entry.Address, StringComparison.OrdinalIgnoreCase)
-                        && e.SplittedHosts.Length < Consts.MaxHostsCount) > 1;
-            }
-
-            _dispatcherQueue.TryEnqueue(() =>
-            {
-                entry.Duplicate = duplicate;
-            });
         }
 
         private async Task SaveAsync()
@@ -443,18 +354,6 @@ namespace HostsUILib.ViewModels
                 ErrorMessage = errorMessage;
                 IsReadOnly = isReadOnly;
             });
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                    _hostsService?.Dispose();
-                    _disposed = true;
-                }
-            }
         }
     }
 }

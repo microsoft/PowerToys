@@ -34,6 +34,30 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
+        /// Gets a value indicating whether the process is responding or not
+        /// </summary>
+        internal bool IsResponding
+        {
+            get
+            {
+                try
+                {
+                    return Process.GetProcessById((int)ProcessID).Responding;
+                }
+                catch (InvalidOperationException)
+                {
+                    // Thrown when process not exist.
+                    return true;
+                }
+                catch (NotSupportedException)
+                {
+                    // Thrown when process is not running locally.
+                    return true;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the id of the thread
         /// </summary>
         internal uint ThreadID
