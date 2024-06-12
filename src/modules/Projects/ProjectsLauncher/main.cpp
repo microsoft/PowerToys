@@ -6,7 +6,7 @@
 
 #include "AppLauncher.h"
 
-int main(int argc, char* argv[])
+int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
 {
     // read projects
     std::vector<Project> projects;
@@ -34,10 +34,12 @@ int main(int argc, char* argv[])
 
     Project projectToLaunch = projects[0];
 
-    if (argc > 1)
+    int len = MultiByteToWideChar(CP_ACP, 0, cmdline, -1, NULL, 0);
+    if (len > 1)
     {
-        std::string idStr = argv[1];
-        std::wstring id(idStr.begin(), idStr.end());
+        std::wstring id(len, L'\0');
+        MultiByteToWideChar(CP_ACP, 0, cmdline, -1, &id[0], len);
+
         for (const auto& proj : projects)
         {
             if (proj.id == id)
