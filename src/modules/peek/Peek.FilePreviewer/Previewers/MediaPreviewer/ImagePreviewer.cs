@@ -275,8 +275,8 @@ namespace Peek.FilePreviewer.Previewers
                     else
                     {
                         var bitmap = new BitmapImage();
-                        await bitmap.SetSourceAsync(stream.AsRandomAccessStream());
                         Preview = bitmap;
+                        await bitmap.SetSourceAsync(stream.AsRandomAccessStream());
                     }
                 });
             });

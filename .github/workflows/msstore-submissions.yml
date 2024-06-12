@@ -16,7 +16,7 @@ jobs:
         run: |
           release=$(curl https://api.github.com/repos/Microsoft/PowerToys/releases | jq '[.[]|select(.name | contains("Release"))][0]')
           assets=$(jq -n "$release" | jq '.assets')
-          powerToysSetup=$(jq -n "$assets" | jq '[.[]|select(.name | contains("PowerToysSetup"))]')
+          powerToysSetup=$(jq -n "$assets" | jq '[.[]|select(.name | contains("PowerToysUserSetup"))]')
           echo ::set-output name=powerToysInstallerX64Url::$(jq -n "$powerToysSetup" | jq -r '[.[]|select(.name | contains("x64"))][0].browser_download_url')
           echo ::set-output name=powerToysInstallerArm64Url::$(jq -n "$powerToysSetup" | jq -r '[.[]|select(.name | contains("arm64"))][0].browser_download_url')
 

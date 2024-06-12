@@ -30,8 +30,8 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         {
             switch (moduleType)
             {
+                case ModuleType.AdvancedPaste: return "ms-appx:///Assets/Settings/Icons/AdvancedPaste.png";
                 case ModuleType.PowerOCR: return "ms-appx:///Assets/Settings/Icons/TextExtractor.png";
-                case ModuleType.PastePlain: return "ms-appx:///Assets/Settings/Icons/PasteAsPlainText.png";
                 case ModuleType.PowerAccent: return "ms-appx:///Assets/Settings/Icons/QuickAccent.png";
                 case ModuleType.MousePointerCrosshairs: return "ms-appx:///Assets/Settings/Icons/MouseCrosshairs.png";
                 case ModuleType.MeasureTool: return "ms-appx:///Assets/Settings/Icons/ScreenRuler.png";
@@ -44,6 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         {
             switch (moduleType)
             {
+                case ModuleType.AdvancedPaste: return generalSettingsConfig.Enabled.AdvancedPaste;
                 case ModuleType.AlwaysOnTop: return generalSettingsConfig.Enabled.AlwaysOnTop;
                 case ModuleType.Awake: return generalSettingsConfig.Enabled.Awake;
                 case ModuleType.ColorPicker: return generalSettingsConfig.Enabled.ColorPicker;
@@ -59,7 +60,6 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MouseJump: return generalSettingsConfig.Enabled.MouseJump;
                 case ModuleType.MousePointerCrosshairs: return generalSettingsConfig.Enabled.MousePointerCrosshairs;
                 case ModuleType.MouseWithoutBorders: return generalSettingsConfig.Enabled.MouseWithoutBorders;
-                case ModuleType.PastePlain: return generalSettingsConfig.Enabled.PastePlain;
                 case ModuleType.Peek: return generalSettingsConfig.Enabled.Peek;
                 case ModuleType.PowerRename: return generalSettingsConfig.Enabled.PowerRename;
                 case ModuleType.PowerLauncher: return generalSettingsConfig.Enabled.PowerLauncher;
@@ -76,6 +76,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         {
             switch (moduleType)
             {
+                case ModuleType.AdvancedPaste: generalSettingsConfig.Enabled.AdvancedPaste = isEnabled; break;
                 case ModuleType.AlwaysOnTop: generalSettingsConfig.Enabled.AlwaysOnTop = isEnabled; break;
                 case ModuleType.Awake: generalSettingsConfig.Enabled.Awake = isEnabled; break;
                 case ModuleType.ColorPicker: generalSettingsConfig.Enabled.ColorPicker = isEnabled; break;
@@ -91,7 +92,6 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MouseJump: generalSettingsConfig.Enabled.MouseJump = isEnabled; break;
                 case ModuleType.MousePointerCrosshairs: generalSettingsConfig.Enabled.MousePointerCrosshairs = isEnabled; break;
                 case ModuleType.MouseWithoutBorders: generalSettingsConfig.Enabled.MouseWithoutBorders = isEnabled; break;
-                case ModuleType.PastePlain: generalSettingsConfig.Enabled.PastePlain = isEnabled; break;
                 case ModuleType.Peek: generalSettingsConfig.Enabled.Peek = isEnabled; break;
                 case ModuleType.PowerRename: generalSettingsConfig.Enabled.PowerRename = isEnabled; break;
                 case ModuleType.PowerLauncher: generalSettingsConfig.Enabled.PowerLauncher = isEnabled; break;
@@ -107,6 +107,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         {
             switch (moduleType)
             {
+                case ModuleType.AdvancedPaste: return GPOWrapper.GetConfiguredAdvancedPasteEnabledValue();
                 case ModuleType.AlwaysOnTop: return GPOWrapper.GetConfiguredAlwaysOnTopEnabledValue();
                 case ModuleType.Awake: return GPOWrapper.GetConfiguredAwakeEnabledValue();
                 case ModuleType.ColorPicker: return GPOWrapper.GetConfiguredColorPickerEnabledValue();
@@ -122,7 +123,6 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MouseJump: return GPOWrapper.GetConfiguredMouseJumpEnabledValue();
                 case ModuleType.MousePointerCrosshairs: return GPOWrapper.GetConfiguredMousePointerCrosshairsEnabledValue();
                 case ModuleType.MouseWithoutBorders: return GPOWrapper.GetConfiguredMouseWithoutBordersEnabledValue();
-                case ModuleType.PastePlain: return GPOWrapper.GetConfiguredPastePlainEnabledValue();
                 case ModuleType.Peek: return GPOWrapper.GetConfiguredPeekEnabledValue();
                 case ModuleType.PowerRename: return GPOWrapper.GetConfiguredPowerRenameEnabledValue();
                 case ModuleType.PowerLauncher: return GPOWrapper.GetConfiguredPowerLauncherEnabledValue();
@@ -139,6 +139,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         {
             return moduleType switch
             {
+                ModuleType.AdvancedPaste => typeof(AdvancedPastePage),
                 ModuleType.AlwaysOnTop => typeof(AlwaysOnTopPage),
                 ModuleType.Awake => typeof(AwakePage),
                 ModuleType.ColorPicker => typeof(ColorPickerPage),
@@ -154,7 +155,6 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.MouseJump => typeof(MouseUtilsPage),
                 ModuleType.MousePointerCrosshairs => typeof(MouseUtilsPage),
                 ModuleType.MouseWithoutBorders => typeof(MouseWithoutBordersPage),
-                ModuleType.PastePlain => typeof(PastePlainPage),
                 ModuleType.Peek => typeof(PeekPage),
                 ModuleType.PowerRename => typeof(PowerRenamePage),
                 ModuleType.PowerLauncher => typeof(PowerLauncherPage),

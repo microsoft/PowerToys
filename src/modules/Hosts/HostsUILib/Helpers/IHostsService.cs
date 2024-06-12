@@ -9,7 +9,7 @@ using HostsUILib.Models;
 
 namespace HostsUILib.Helpers
 {
-    public interface IHostsService : IDisposable
+    public interface IHostsService
     {
         string HostsFilePath { get; }
 

@@ -151,6 +151,11 @@ namespace CentralizedKeyboardHook
             .key = static_cast<unsigned char>(keyPressInfo.vkCode)
         };
 
+        if (hotkey == Hotkey{})
+        {
+            return CallNextHookEx(hHook, nCode, wParam, lParam);
+        }
+
         std::function<bool()> action;
         {
             // Hold the lock for the shortest possible duration

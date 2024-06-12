@@ -10,7 +10,6 @@ markdownpreviewhandler
 mousewithoutborders
 mwb
 oobe
-pasteplain
 poweraccent
 powerlauncher
 POWEROCR
@@ -54,6 +53,7 @@ damienleroy
 davidegiacometti
 debian
 Deibisu
+Deibisu
 Delimarsky
 Deondre
 DHowett
@@ -82,6 +82,7 @@ jefflord
 Jordi
 jyuwono
 Kairu
+Kairu
 Kamra
 Kantarci
 Karthick
@@ -100,6 +101,7 @@ Mikhayelyan
 msft
 Mykhailo
 Myrvold
+Naro
 Nemeth
 nielslaute
 oldnewthing
@@ -110,9 +112,11 @@ phoboslab
 Ponten
 Pooja
 Pylyp
+quachpas
 Quriz
 randyrants
 ricardosantos
+riri
 riri
 ritchielawrence
 robmikh
@@ -140,6 +144,7 @@ waaverecords
 ycv
 Yuniardi
 yuyoyuppe
+Zeol
 Zoltan
 Zykova
 
@@ -150,6 +155,7 @@ Controlz
 cortana
 fancymouse
 firefox
+gpt
 Inkscape
 Markdig
 modernwpf
@@ -158,6 +164,7 @@ mozilla
 mspaint
 Newtonsoft
 onenote
+openai
 Quickime
 regedit
 roslyn
