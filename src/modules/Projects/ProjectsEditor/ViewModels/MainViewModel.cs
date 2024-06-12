@@ -145,8 +145,12 @@ namespace ProjectsEditor.ViewModels
             shortcut.TargetPath = Path.Combine(basePath, "ProjectsLauncher.exe");
             shortcut.Arguments = '"' + project.Id + '"';
             shortcut.WorkingDirectory = basePath;
-            string iconFilename = DrawHelper.CreateShortcutIcon(project, out Bitmap bitmap);
-            shortcut.IconLocation = iconFilename;
+
+            string shortcutIconFilename = (string)shell.SpecialFolders.Item(ref shDesktop) + $"\\{project.Name}.ico";
+            Bitmap icon = ProjectIcon.DrawIcon(ProjectIcon.IconTextFromProjectName(project.Name));
+            ProjectIcon.SaveIcon(icon, shortcutIconFilename);
+
+            shortcut.IconLocation = shortcutIconFilename;
             shortcut.Save();
         }
 
