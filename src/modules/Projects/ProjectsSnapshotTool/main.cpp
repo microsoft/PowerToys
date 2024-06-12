@@ -11,7 +11,7 @@
 
 #include "MonitorUtils.h"
 
-int main(int argc, char* argv[])
+int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
 {
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
@@ -23,11 +23,12 @@ int main(int argc, char* argv[])
     }
 
     std::wstring fileName = JsonUtils::ProjectsFile();
-    if (argc > 1)
+    int len = MultiByteToWideChar(CP_ACP, 0, cmdline, -1, NULL, 0);
+    if (len > 1)
     {
-        std::string fileNameParam = argv[1];
-        std::wstring filenameStr(fileNameParam.begin(), fileNameParam.end());
-        fileName = filenameStr;
+        std::wstring fileNameParam(len, L'\0');
+        MultiByteToWideChar(CP_ACP, 0, cmdline, -1, &fileNameParam[0], len);
+        fileName = fileNameParam;
     }
 
     // read previously saved projects 
