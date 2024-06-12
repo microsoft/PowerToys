@@ -25,7 +25,7 @@ namespace ProjectsEditor.ViewModels
     {
         private ProjectsEditorIO _projectsEditorIO;
 
-        public ObservableCollection<Project> Projects { get; set; }
+        public ObservableCollection<Project> Projects { get; set; } = new ObservableCollection<Project>();
 
         public IEnumerable<Project> ProjectsView
         {
