@@ -147,7 +147,7 @@ namespace ProjectsEditor.ViewModels
             IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(shortcutAddress);
             shortcut.Description = $"Project Launcher {project.Id}";
             shortcut.TargetPath = Path.Combine(basePath, "PowerToys.ProjectsLauncher.exe");
-            shortcut.Arguments = '"' + project.Id + '"';
+            shortcut.Arguments = project.Id;
             shortcut.WorkingDirectory = basePath;
             shortcut.IconLocation = shortcutIconFilename;
             shortcut.Save();
