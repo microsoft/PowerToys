@@ -49,9 +49,9 @@ registerAdditionalNewLanguage("id", [".fileExtension"], idDefinition(), monaco)
 
 4. In case you wish to add a custom color for a token, you can do so by adding the following line to [`customTokenColors.js`](/src/common/FilePreviewCommon/Assets/Monaco/customTokenColors.js):
 ```javascript
-{token: 'tokenname', foreground: 'ff0000'}
+{token: 'token-name', foreground: 'ff0000'}
 ```
-> Replace `tokenname` with the name of the token and `ff0000` with the hex code of the desired color.
+> Replace `token-name` with the name of the token and `ff0000` with the hex code of the desired color.
 > Note: you can also specify a `background` and a `fontStyle` attribute for your token.
 
 * Keep in mind that these rules apply to all languages. Therefore, you should not change the colors of any default tokens. Instead, create new tokens specific to the language you are adding.
