@@ -4,7 +4,8 @@
 #include <optional>
 #include <shlobj.h>
 
-#include "json.h"
+#include <common/SettingsAPI/settings_helpers.h>
+#include <common/utils/json.h>
 
 struct Project
 {

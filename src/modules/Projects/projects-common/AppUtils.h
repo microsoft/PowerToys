@@ -7,7 +7,7 @@
 
 #include <filesystem>
 
-#include "../projects-common/WindowUtils.h"
+#include <common/utils/process_path.h>
 
 namespace Utils
 {
@@ -174,7 +174,7 @@ namespace Utils
 
         inline std::optional<AppData> GetApp(HWND window, const AppList& apps)
         {
-            std::wstring processPath = Common::Utils::ProcessPath::get_process_path_waiting_uwp(window);
+            std::wstring processPath = get_process_path_waiting_uwp(window);
             return Utils::Apps::GetApp(processPath, apps);
         }
 	}

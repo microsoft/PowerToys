@@ -3,13 +3,13 @@
 #include <chrono>
 #include <iostream>
 
-#include "../projects-common/AppUtils.h"
-#include "../projects-common/Data.h"
-#include "../projects-common/GuidUtils.h"
-#include "../projects-common/WindowEnumerator.h"
-#include "../projects-common/WindowFilter.h"
+#include <projects-common/AppUtils.h>
+#include <projects-common/Data.h>
+#include <projects-common/GuidUtils.h>
+#include <projects-common/WindowEnumerator.h>
+#include <projects-common/WindowFilter.h>
 
-#include "MonitorUtils.h"
+#include <MonitorUtils.h>
 
 int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
 {
@@ -99,7 +99,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmd
         }
 
         // filter by app path
-        std::wstring processPath = Common::Utils::ProcessPath::get_process_path_waiting_uwp(window);
+        std::wstring processPath = get_process_path_waiting_uwp(window);
         if (processPath.empty() || WindowUtils::IsExcludedByDefault(window, processPath, title))
         {
             continue;

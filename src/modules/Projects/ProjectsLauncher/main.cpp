@@ -2,9 +2,9 @@
 
 #include <iostream>
 
-#include "../projects-common/Data.h"
+#include <projects-common/Data.h>
 
-#include "AppLauncher.h"
+#include <AppLauncher.h>
 
 int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
 {

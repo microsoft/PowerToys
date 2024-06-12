@@ -6,49 +6,16 @@
 
 #include <iostream>
 
-#include "../projects-common/AppUtils.h"
-#include "../projects-common/MonitorEnumerator.h"
-#include "../projects-common/WindowEnumerator.h"
-#include "../projects-common/WindowFilter.h"
+#include <projects-common/AppUtils.h>
+#include <projects-common/MonitorEnumerator.h>
+#include <projects-common/WindowEnumerator.h>
+#include <projects-common/WindowFilter.h>
+
+#include <common/Display/dpi_aware.h>
 
 using namespace winrt;
 using namespace Windows::Foundation;
 using namespace Windows::Management::Deployment;
-
-namespace Common
-{
-    namespace Display
-    {
-        namespace DPIAware
-        {
-            enum AwarenessLevel
-            {
-                UNAWARE,
-                SYSTEM_AWARE,
-                PER_MONITOR_AWARE,
-                PER_MONITOR_AWARE_V2,
-                UNAWARE_GDISCALED
-            };
-
-            AwarenessLevel GetAwarenessLevel(DPI_AWARENESS_CONTEXT system_returned_value)
-            {
-                const std::array levels{ DPI_AWARENESS_CONTEXT_UNAWARE,
-                                         DPI_AWARENESS_CONTEXT_SYSTEM_AWARE,
-                                         DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE,
-                                         DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2,
-                                         DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED };
-                for (size_t i = 0; i < size(levels); ++i)
-                {
-                    if (AreDpiAwarenessContextsEqual(levels[i], system_returned_value))
-                    {
-                        return static_cast<DPIAware::AwarenessLevel>(i);
-                    }
-                }
-                return AwarenessLevel::UNAWARE;
-            }
-        }
-    }
-}
 
 namespace FancyZones
 {
@@ -114,8 +81,8 @@ namespace FancyZones
         rect.top -= yOffset;
         rect.bottom -= yOffset;
 
-        const auto level = Common::Display::DPIAware::GetAwarenessLevel(GetWindowDpiAwarenessContext(window));
-        const bool accountForUnawareness = level < Common::Display::DPIAware::PER_MONITOR_AWARE;
+        const auto level = DPIAware::GetAwarenessLevel(GetWindowDpiAwarenessContext(window));
+        const bool accountForUnawareness = level < DPIAware::PER_MONITOR_AWARE;
 
         if (accountForUnawareness && !allMonitorsHaveSameDpiScaling())
         {
