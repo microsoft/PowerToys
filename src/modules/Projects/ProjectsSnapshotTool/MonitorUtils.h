@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "../projects-common/Data.h"
+#include <projects-common/Data.h>
 
 // FancyZones: MonitorUtils.h
 namespace MonitorUtils

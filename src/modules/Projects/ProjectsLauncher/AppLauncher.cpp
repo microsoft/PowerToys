@@ -6,49 +6,17 @@
 
 #include <iostream>
 
-#include "../projects-common/AppUtils.h"
-#include "../projects-common/MonitorEnumerator.h"
-#include "../projects-common/WindowEnumerator.h"
-#include "../projects-common/WindowFilter.h"
+#include <projects-common/AppUtils.h>
+#include <projects-common/MonitorEnumerator.h>
+#include <projects-common/WindowEnumerator.h>
+#include <projects-common/WindowFilter.h>
+
+#include <common/Display/dpi_aware.h>
+#include <common/utils/winapi_error.h>
 
 using namespace winrt;
 using namespace Windows::Foundation;
 using namespace Windows::Management::Deployment;
-
-namespace Common
-{
-    namespace Display
-    {
-        namespace DPIAware
-        {
-            enum AwarenessLevel
-            {
-                UNAWARE,
-                SYSTEM_AWARE,
-                PER_MONITOR_AWARE,
-                PER_MONITOR_AWARE_V2,
-                UNAWARE_GDISCALED
-            };
-
-            AwarenessLevel GetAwarenessLevel(DPI_AWARENESS_CONTEXT system_returned_value)
-            {
-                const std::array levels{ DPI_AWARENESS_CONTEXT_UNAWARE,
-                                         DPI_AWARENESS_CONTEXT_SYSTEM_AWARE,
-                                         DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE,
-                                         DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2,
-                                         DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED };
-                for (size_t i = 0; i < size(levels); ++i)
-                {
-                    if (AreDpiAwarenessContextsEqual(levels[i], system_returned_value))
-                    {
-                        return static_cast<DPIAware::AwarenessLevel>(i);
-                    }
-                }
-                return AwarenessLevel::UNAWARE;
-            }
-        }
-    }
-}
 
 namespace FancyZones
 {
@@ -114,8 +82,8 @@ namespace FancyZones
         rect.top -= yOffset;
         rect.bottom -= yOffset;
 
-        const auto level = Common::Display::DPIAware::GetAwarenessLevel(GetWindowDpiAwarenessContext(window));
-        const bool accountForUnawareness = level < Common::Display::DPIAware::PER_MONITOR_AWARE;
+        const auto level = DPIAware::GetAwarenessLevel(GetWindowDpiAwarenessContext(window));
+        const bool accountForUnawareness = level < DPIAware::PER_MONITOR_AWARE;
 
         if (accountForUnawareness && !allMonitorsHaveSameDpiScaling())
         {
@@ -155,8 +123,7 @@ namespace FancyZones
         auto result = ::SetWindowPlacement(window, &placement);
         if (!result)
         {
-            std::wcout << "Set window placement failed" << std::endl;
-            //Logger::error(L"SetWindowPlacement failed, {}", get_last_error_or_default(GetLastError()));
+            Logger::error(L"SetWindowPlacement failed, {}", get_last_error_or_default(GetLastError()));
             return false;
         }
 
@@ -171,8 +138,7 @@ namespace FancyZones
         result = ::SetWindowPlacement(window, &placement);
         if (!result)
         {
-            std::wcout << "Set window placement failed" << std::endl;
-            //Logger::error(L"SetWindowPlacement failed, {}", get_last_error_or_default(GetLastError()));
+            Logger::error(L"SetWindowPlacement failed, {}", get_last_error_or_default(GetLastError()));
             return false;
         }
 
@@ -198,7 +164,7 @@ bool LaunchApp(const std::wstring& appPath, std::wstring commandLineArgs)
     }
     else
     {
-        std::wcerr << L"Failed to launch process. Error code: " << GetLastError() << std::endl;
+        Logger::error(L"Failed to launch process. {}", get_last_error_or_default(GetLastError()));
     }
 
     return false;
@@ -224,14 +190,14 @@ bool LaunchPackagedApp(const std::wstring& packageFullName)
                 }
                 else
                 {
-                    std::wcout << L"No app entries found for the package." << std::endl;
+                    Logger::error(L"No app entries found for the package.");
                 }
             }
         }
     }
     catch (const hresult_error& ex)
     {
-        std::wcerr << L"Error: " << ex.message().c_str() << std::endl;
+        Logger::error(L"Packaged app launching error: {}", ex.message());
     }
 
     return false;
@@ -239,86 +205,122 @@ bool LaunchPackagedApp(const std::wstring& packageFullName)
 
 bool Launch(const Project::Application& app)
 {
-    // Get the set of windows before launching the app
-    std::vector<HWND> windowsBefore = WindowEnumerator::Enumerate(WindowFilter::Filter);
-
+    bool launched;
     if (!app.packageFullName.empty() && app.commandLineArgs.empty())
     {
-        std::wcout << L"Launching packaged " << app.name << std::endl;
-        LaunchPackagedApp(app.packageFullName);
+        Logger::trace(L"Launching packaged {}", app.name);
+        launched = LaunchPackagedApp(app.packageFullName);
     }
     else
     {
         // TODO: verify app path is up to date. 
         // Packaged apps have version in the path, it will be outdated after update.
-        std::wcout << L"Launching " << app.name << " at " << app.path << std::endl;
+        Logger::trace(L"Launching {} at {}", app.name, app.path);
 
         DWORD dwAttrib = GetFileAttributesW(app.path.c_str());
         if (dwAttrib == INVALID_FILE_ATTRIBUTES)
         {
-            std::wcout << L"  File not found at " << app.path << std::endl;
+            Logger::error(L"File not found at {}", app.path);
             return false;
         }
 
-        LaunchApp(app.path, app.commandLineArgs);
+        launched = LaunchApp(app.path, app.commandLineArgs);
     }
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    Logger::trace(L"{} {} at {}", app.name, (launched ? L"launched" : L"not launched"), app.path);
+    return launched;
+}
 
-    // Get the set of windows after launching the app
-    std::vector<HWND> launchedWindows{};
-    for (int attempt = 0; attempt < 5 && launchedWindows.empty(); attempt++)
+void Launch(const Project& project)
+{
+    // Get the set of windows before launching the app
+    std::vector<HWND> windowsBefore = WindowEnumerator::Enumerate(WindowFilter::Filter);
+    std::map<Project::Application, HWND> launchedWindows{};
+    auto apps = Utils::Apps::GetAppsList();
+       
+    for (const auto& app : project.apps)
+    {
+        if (Launch(app))
+        {
+            launchedWindows.insert({ app, nullptr });
+        }
+    }
+    
+    // Get newly opened windows after launching apps, keep retrying for 5 seconds
+    for (int attempt = 0; attempt < 50; attempt++)
     {
         std::vector<HWND> windowsAfter = WindowEnumerator::Enumerate(WindowFilter::Filter);
-
-        // Find the new window
         for (HWND window : windowsAfter)
         {
+            // Find the new window
             if (std::find(windowsBefore.begin(), windowsBefore.end(), window) == windowsBefore.end())
             {
-                launchedWindows.push_back(window);
+                // find the corresponding app in the list
+                auto app = Utils::Apps::GetApp(window, apps);
+                if (!app.has_value())
+                {
+                    continue;
+                }
+
+                // set the window
+                auto res = std::find_if(launchedWindows.begin(), launchedWindows.end(), [&](const std::pair<Project::Application, HWND>& val) { return val.first.name == app->name; });
+                if (res != launchedWindows.end())
+                {
+                    res->second = window;
+                }
             }
+        }
+
+        // check if all windows were found
+        auto res = std::find_if(launchedWindows.begin(), launchedWindows.end(), [&](const std::pair<Project::Application, HWND>& val) { return val.second == nullptr; });
+        if (res == launchedWindows.end())
+        {
+            Logger::trace(L"All windows found.");
+            break;
+        }
+        else
+        {
+            Logger::trace(L"Not all windows found, retry.");
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
 
-    // The app wasn't launched, check if it's already launched for single-instance apps
+    // Check single-instance app windows if they were launched before
     if (launchedWindows.empty())
     {
-        std::wcout << L"Failed to launch " << app.name << L", checking if it's launched already." << std::endl;
-
-        auto apps = Utils::Apps::GetAppsList();
         auto windows = WindowEnumerator::Enumerate(WindowFilter::Filter);
         for (HWND window : windows)
         {
-            std::wstring processPath = Common::Utils::ProcessPath::get_process_path_waiting_uwp(window);
-            auto data = Utils::Apps::GetApp(processPath, apps);
-            if (!data.has_value())
+            auto app = Utils::Apps::GetApp(window, apps);
+            if (!app.has_value())
             {
                 continue;
             }
 
-            if (data.value().name == app.name)
+            auto res = std::find_if(launchedWindows.begin(), launchedWindows.end(), [&](const std::pair<Project::Application, HWND>& val) { return val.second == nullptr && val.first.name == app->name; });
+            if (res != launchedWindows.end())
             {
-                launchedWindows.push_back(window);
+                res->second = window;
             }
-        }  
-    }
-
-    // The single-instance app not found
-    if (launchedWindows.empty())
-    {
-        return false;
-    }
-
-    // Place the window
-    for (auto window : launchedWindows)
-    {
-        if (!FancyZones::SizeWindowToRect(window, app.isMinimized, app.isMaximized, app.position.toRect()))
-        {
-            std::wcout << L"Failed placing " << app.name << std::endl;
         }
     }
 
-    std::wcout << L"Launched " << app.name << std::endl;
-    return true;
+    // Place windows
+    for (const auto& [app, window] : launchedWindows)
+    {
+        if (window == nullptr)
+        {
+            Logger::warn(L"{} window not found.", app.name);
+            continue;
+        }
+
+        if (FancyZones::SizeWindowToRect(window, app.isMinimized, app.isMaximized, app.position.toRect()))
+        {
+            Logger::trace(L"Placed {}", app.name);
+        }
+        else
+        {
+            Logger::error(L"Failed placing {}", app.name);
+        }
+    }
 }

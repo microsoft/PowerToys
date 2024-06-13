@@ -2,12 +2,21 @@
 
 #include <iostream>
 
-#include "../projects-common/Data.h"
+#include <projects-common/Data.h>
 
-#include "AppLauncher.h"
+#include <AppLauncher.h>
 
-int main(int argc, char* argv[])
+#include <common/utils/logger_helper.h>
+#include <common/utils/UnhandledExceptionHandler.h>
+
+const std::wstring moduleName = L"Projects\\ProjectsLauncher";
+const std::wstring internalPath = L"";
+
+int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cmdShow)
 {
+    LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::projectsLauncherLoggerName);
+    InitUnhandledExceptionHandler();  
+
     // read projects
     std::vector<Project> projects;
     try
@@ -22,22 +31,25 @@ int main(int argc, char* argv[])
             }
         }
     }
-    catch (std::exception)
+    catch (std::exception ex)
     {
+        Logger::error("Exception on reading projects: {}", ex.what());
         return 1;
     }
 
     if (projects.empty())
     {
+        Logger::warn("Projects file is empty");
         return 1;
     }
 
     Project projectToLaunch = projects[0];
 
-    if (argc > 1)
+    std::string idStr(cmdline);
+    std::wstring id(idStr.begin(), idStr.end());
+    Logger::info(L"command line: {}", id);
+    if (!id.empty())
     {
-        std::string idStr = argv[1];
-        std::wstring id(idStr.begin(), idStr.end());
         for (const auto& proj : projects)
         {
             if (proj.id == id)
@@ -48,12 +60,11 @@ int main(int argc, char* argv[])
         }
     }
 
-    // launch apps
-    for (const auto& app : projectToLaunch.apps)
-    {
-        Launch(app);
-    }
+    Logger::info(L"Launch Project {} : {}", projectToLaunch.name, projectToLaunch.id);
 
+    // launch apps
+    Launch(projectToLaunch);
+    
     // update last-launched time
     time_t launchedTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     projectToLaunch.lastLaunchedTime = launchedTime;

@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyTitle>ProjectsEditor</AssemblyTitle>
-    <AssemblyDescription>ProjectsEditor</AssemblyDescription>
-    <Description>ProjectsEditor</Description>
+    <AssemblyTitle>PowerToys.ProjectsEditor</AssemblyTitle>
+    <AssemblyDescription>PowerToys Projects Editor</AssemblyDescription>
+    <Description>PowerToys Projects Editor</Description>
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>

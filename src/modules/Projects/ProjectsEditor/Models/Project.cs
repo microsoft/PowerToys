@@ -271,27 +271,5 @@ namespace ProjectsEditor.Models
 
             return new Rectangle((int)minX, (int)minY, (int)(maxX - minX), (int)(maxY - minY));
         }
-
-        internal string GetShortcutChars()
-        {
-            if (string.IsNullOrEmpty(Name))
-            {
-                return "PR";
-            }
-
-            string[] words = Name.Trim().ToUpperInvariant().Split(' ');
-            if (words.Length > 2)
-            {
-                return $"{words[0][0]}{words[1][0]}{words[2][0]}";
-            }
-            else if (words.Length == 2)
-            {
-                return $"{words[0][0]}{words[1][0]}";
-            }
-            else
-            {
-                return words[0].Substring(0, Math.Min(3, words[0].Length));
-            }
-        }
     }
 }

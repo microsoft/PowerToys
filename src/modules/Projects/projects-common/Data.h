@@ -4,7 +4,8 @@
 #include <optional>
 #include <shlobj.h>
 
-#include "json.h"
+#include <common/SettingsAPI/settings_helpers.h>
+#include <common/utils/json.h>
 
 struct Project
 {
@@ -32,6 +33,11 @@ struct Project
         bool isMaximized{};
         Position position{};
         int monitor{};
+
+        bool operator<(const Application& rhs) const noexcept
+        {
+            return path < rhs.path;
+        }
     };
 
     struct Monitor
@@ -67,13 +73,17 @@ struct ProjectsList
     std::vector<Project> projects;
 };
 
+namespace NonLocalizable
+{
+    const inline wchar_t ModuleKey[] = L"Projects";
+}
+
 namespace JsonUtils
 {
     inline std::wstring ProjectsFile()
     {
-        wchar_t path[MAX_PATH + 1] = { 0 };
-        SHGetFolderPathW(NULL, CSIDL_DESKTOPDIRECTORY, NULL, 0, path);
-        return std::wstring(path) + L"\\projects.json";
+        std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
+        return std::wstring(settingsFolderPath) + L"\\projects.json";
     }
 
     namespace ProjectJSON

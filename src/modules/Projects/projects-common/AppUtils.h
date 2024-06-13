@@ -7,6 +7,8 @@
 
 #include <filesystem>
 
+#include <common/utils/process_path.h>
+
 namespace Utils
 {
 	namespace Apps
@@ -28,7 +30,7 @@ namespace Utils
             std::wstring packageFullName;
 		};
 
-		using AppList = std::vector<AppData>; // path; data
+		using AppList = std::vector<AppData>;
 
         inline AppList IterateAppsFolder()
         {
@@ -168,6 +170,12 @@ namespace Utils
             return AppData{
                 .installPath = appPath
             };
+        }
+
+        inline std::optional<AppData> GetApp(HWND window, const AppList& apps)
+        {
+            std::wstring processPath = get_process_path_waiting_uwp(window);
+            return Utils::Apps::GetApp(processPath, apps);
         }
 	}
 }

@@ -25,7 +25,7 @@ namespace ProjectsEditor.ViewModels
     {
         private ProjectsEditorIO _projectsEditorIO;
 
-        public ObservableCollection<Project> Projects { get; set; }
+        public ObservableCollection<Project> Projects { get; set; } = new ObservableCollection<Project>();
 
         public IEnumerable<Project> ProjectsView
         {
@@ -136,17 +136,20 @@ namespace ProjectsEditor.ViewModels
 
         private void CreateShortcut(Project project)
         {
-            object shDesktop = (object)"Desktop";
+            string basePath = AppDomain.CurrentDomain.BaseDirectory;
+            string shortcutAddress = FolderUtils.Desktop() + $"\\{project.Name}.lnk";
+            string shortcutIconFilename = FolderUtils.Temp() + $"\\{project.Name}.ico";
+
+            Bitmap icon = ProjectIcon.DrawIcon(ProjectIcon.IconTextFromProjectName(project.Name));
+            ProjectIcon.SaveIcon(icon, shortcutIconFilename);
+
             IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell();
-            string shortcutAddress = (string)shell.SpecialFolders.Item(ref shDesktop) + $"\\{project.Name}.lnk";
             IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(shortcutAddress);
             shortcut.Description = $"Project Launcher {project.Id}";
-            string basePath = AppDomain.CurrentDomain.BaseDirectory;
-            shortcut.TargetPath = Path.Combine(basePath, "ProjectsLauncher.exe");
-            shortcut.Arguments = '"' + project.Id + '"';
+            shortcut.TargetPath = Path.Combine(basePath, "PowerToys.ProjectsLauncher.exe");
+            shortcut.Arguments = project.Id;
             shortcut.WorkingDirectory = basePath;
-            string iconFilename = DrawHelper.CreateShortcutIcon(project, out Bitmap bitmap);
-            shortcut.IconLocation = iconFilename;
+            shortcut.IconLocation = shortcutIconFilename;
             shortcut.Save();
         }
 
@@ -265,7 +268,7 @@ namespace ProjectsEditor.ViewModels
         private void RunSnapshotTool(string filename = null)
         {
             Process p = new Process();
-            p.StartInfo = new ProcessStartInfo(@".\ProjectsSnapshotTool.exe");
+            p.StartInfo = new ProcessStartInfo(@".\PowerToys.ProjectsSnapshotTool.exe");
             p.StartInfo.CreateNoWindow = true;
             if (!string.IsNullOrEmpty(filename))
             {
@@ -279,7 +282,7 @@ namespace ProjectsEditor.ViewModels
         private void RunLauncher(string projectId)
         {
             Process p = new Process();
-            p.StartInfo = new ProcessStartInfo(@".\ProjectsLauncher.exe", projectId);
+            p.StartInfo = new ProcessStartInfo(@".\PowerToys.ProjectsLauncher.exe", projectId);
             p.StartInfo.CreateNoWindow = true;
             p.Start();
             p.WaitForExit();

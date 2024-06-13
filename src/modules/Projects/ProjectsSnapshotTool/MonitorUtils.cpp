@@ -3,49 +3,10 @@
 
 #include <ShellScalingApi.h>
 
-#include "../projects-common/MonitorEnumerator.h"
-#include "OnThreadExecutor.h"
+#include <projects-common/MonitorEnumerator.h>
+#include <OnThreadExecutor.h>
 
-namespace Common
-{
-    namespace Display
-    {
-        namespace DPIAware
-        {
-            constexpr inline int DEFAULT_DPI = 96;
-
-            void Convert(HMONITOR monitor_handle, float& width, float& height)
-            {
-                if (monitor_handle == NULL)
-                {
-                    const POINT ptZero = { 0, 0 };
-                    monitor_handle = MonitorFromPoint(ptZero, MONITOR_DEFAULTTOPRIMARY);
-                }
-
-                UINT dpi_x, dpi_y;
-                if (GetDpiForMonitor(monitor_handle, MDT_EFFECTIVE_DPI, &dpi_x, &dpi_y) == S_OK)
-                {
-                    width = width * dpi_x / DEFAULT_DPI;
-                    height = height * dpi_y / DEFAULT_DPI;
-                }
-            }
-
-            HRESULT GetScreenDPIForMonitor(HMONITOR targetMonitor, UINT& dpi)
-            {
-                if (targetMonitor != nullptr)
-                {
-                    UINT dummy = 0;
-                    return GetDpiForMonitor(targetMonitor, MDT_EFFECTIVE_DPI, &dpi, &dummy);
-                }
-                else
-                {
-                    dpi = DPIAware::DEFAULT_DPI;
-                    return E_FAIL;
-                }
-            }
-        }
-    }
-}
+#include <common/Display/dpi_aware.h>
 
 namespace MonitorUtils
 {
@@ -93,7 +54,7 @@ namespace MonitorUtils
                 float dpiUnawareHeight = static_cast<float>(dpiUnawareMonitorInfo.rcMonitor.bottom - dpiUnawareMonitorInfo.rcMonitor.top);
                 
                 UINT dpi = 0;
-                if (Common::Display::DPIAware::GetScreenDPIForMonitor(monitorData.first, dpi) != S_OK)
+                if (DPIAware::GetScreenDPIForMonitor(monitorData.first, dpi) != S_OK)
                 {
                     continue;
                 }

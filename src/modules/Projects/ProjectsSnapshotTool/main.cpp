@@ -3,31 +3,40 @@
 #include <chrono>
 #include <iostream>
 
-#include "../projects-common/AppUtils.h"
-#include "../projects-common/Data.h"
-#include "../projects-common/GuidUtils.h"
-#include "../projects-common/WindowEnumerator.h"
-#include "../projects-common/WindowFilter.h"
+#include <projects-common/AppUtils.h>
+#include <projects-common/Data.h>
+#include <projects-common/GuidUtils.h>
+#include <projects-common/WindowEnumerator.h>
+#include <projects-common/WindowFilter.h>
 
-#include "MonitorUtils.h"
+#include <MonitorUtils.h>
 
-int main(int argc, char* argv[])
+#include <common/utils/logger_helper.h>
+#include <common/utils/UnhandledExceptionHandler.h>
+
+const std::wstring moduleName = L"Projects\\ProjectsSnapshotTool";
+const std::wstring internalPath = L"";
+
+int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cmdShow)
 {
+    LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::projectsLauncherLoggerName);
+    InitUnhandledExceptionHandler();  
+
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
     HRESULT comInitHres = CoInitializeEx(0, COINIT_MULTITHREADED);
     if (FAILED(comInitHres))
     {
-        std::wcout << L"Failed to initialize COM library. " << comInitHres << std::endl;
+        Logger::error(L"Failed to initialize COM library. {}", comInitHres);
         return -1;
     }
 
     std::wstring fileName = JsonUtils::ProjectsFile();
-    if (argc > 1)
+    std::string cmdLineStr(cmdLine);
+    if (!cmdLineStr.empty())
     {
-        std::string fileNameParam = argv[1];
-        std::wstring filenameStr(fileNameParam.begin(), fileNameParam.end());
-        fileName = filenameStr;
+        std::wstring fileNameParam(cmdLineStr.begin(), cmdLineStr.end());
+        fileName = fileNameParam;
     }
 
     // read previously saved projects 
@@ -44,8 +53,9 @@ int main(int argc, char* argv[])
             }
         }
     }
-    catch (std::exception)
+    catch (std::exception ex)
     {
+        Logger::error("Error reading projects file. {}", ex.what());
     }
     
     // new project name
@@ -71,6 +81,7 @@ int main(int argc, char* argv[])
     std::wstring projectName = defaultNamePrefix + L" " + std::to_wstring(nextProjectIndex + 1);
     time_t creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     Project project{ .id = CreateGuidString(), .name = projectName, .creationTime = creationTime };
+    Logger::trace(L"Creating project {}:{}", project.name, project.id);
 
     // save monitor configuration
     project.monitors = MonitorUtils::IdentifyMonitors();
@@ -98,7 +109,7 @@ int main(int argc, char* argv[])
         }
 
         // filter by app path
-        std::wstring processPath = Common::Utils::ProcessPath::get_process_path_waiting_uwp(window);
+        std::wstring processPath = get_process_path_waiting_uwp(window);
         if (processPath.empty() || WindowUtils::IsExcludedByDefault(window, processPath, title))
         {
             continue;
@@ -143,5 +154,6 @@ int main(int argc, char* argv[])
 
     projects.push_back(project);
     json::to_file(fileName, JsonUtils::ProjectsListJSON::ToJson(projects));
+    Logger::trace(L"Project {}:{} created", project.name, project.id);
     return 0;
 }
