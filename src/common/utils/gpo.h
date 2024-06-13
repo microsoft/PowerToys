@@ -367,7 +367,7 @@ namespace powertoys_gpo {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_ADVANCED_PASTE);
     }
 
-    inline gpo_rule_configured_t getConfiguredProjeectsEnabledValue()
+    inline gpo_rule_configured_t getConfiguredProjectsEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_PROJECTS);
     }

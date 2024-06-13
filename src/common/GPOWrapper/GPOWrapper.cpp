@@ -174,6 +174,6 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     }
     GpoRuleConfigured GPOWrapper::GetConfiguredProjectsEnabledValue()
     {
-        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredProjeectsEnabledValue());
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredProjectsEnabledValue());
     }
 }
