@@ -43,4 +43,7 @@ std::vector<std::wstring> processes =
     L"PowerToys.Peek.UI.exe",
     L"PowerToys.CropAndLock.exe",
     L"PowerToys.EnvironmentVariables.exe",
+    L"PowerToys.ProjectsSnapshotTool.exe",
+    L"PowerToys.ProjectsLauncher.exe",
+    L"PowerToys.ProjectsEditor.exe",
 };
