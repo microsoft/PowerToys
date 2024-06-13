@@ -10,6 +10,7 @@ using SHDocVw;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
+using Windows.Win32.UI.WindowsAndMessaging;
 using IServiceProvider = Peek.Common.Models.IServiceProvider;
 
 namespace Peek.Helpers
@@ -28,7 +29,12 @@ namespace Peek.Helpers
 
         public static IShellItemArray? GetItemsInternal(HWND foregroundWindowHandle, bool onlySelectedFiles)
         {
-            if (foregroundWindowHandle.IsDesktopWindow())
+            // If the caret is visible, we assume the user is typing and we don't want to interfere with that
+            if (CaretVisible(foregroundWindowHandle))
+            {
+                return null;
+            }
+            else if (foregroundWindowHandle.IsDesktopWindow())
             {
                 return GetItemsFromDesktop(foregroundWindowHandle, onlySelectedFiles);
             }
@@ -111,6 +117,22 @@ namespace Peek.Helpers
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Returns whether the caret is visible in the specified window.
+        /// </summary>
+        private static bool CaretVisible(HWND hwnd)
+        {
+            GUITHREADINFO guiThreadInfo = new() { cbSize = (uint)Marshal.SizeOf<GUITHREADINFO>() };
+
+            // Get information for the foreground thread
+            if (PInvoke.GetGUIThreadInfo(0, ref guiThreadInfo))
+            {
+                return guiThreadInfo.hwndActive == hwnd && (guiThreadInfo.flags & GUITHREADINFO_FLAGS.GUI_CARETBLINKING) != 0;
+            }
+
+            return false;
         }
     }
 }

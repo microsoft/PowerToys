@@ -79,7 +79,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Folder windows doesn&apos;t run in separate processes. (Click to open Explorer properties.).
+        ///   Looks up a localized string similar to Folder windows do not run in separate processes. (Click to open Explorer properties.).
         /// </summary>
         public static string wox_plugin_windowwalker_ExplorerInfoSubTitle {
             get {
@@ -142,6 +142,15 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Not Responding.
+        /// </summary>
+        public static string wox_plugin_windowwalker_NotResponding {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_NotResponding", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No..
         /// </summary>
         public static string wox_plugin_windowwalker_Number {
@@ -151,7 +160,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Switches between open windows..
+        ///   Looks up a localized string similar to Switches between open windows.
         /// </summary>
         public static string wox_plugin_windowwalker_plugin_description {
             get {

@@ -29,6 +29,7 @@ AFFINETRANSFORM
 AFX
 AGGREGATABLE
 AHybrid
+AKV
 ALarger
 ALLAPPS
 ALLINPUT
@@ -124,6 +125,7 @@ bootstrapper
 BOOTSTRAPPERINSTALLFOLDER
 bostrot
 BOTTOMALIGN
+boxmodel
 BPBF
 bpmf
 bpp
@@ -149,6 +151,7 @@ Cangjie
 CANRENAME
 CAPTUREBLT
 CAPTURECHANGED
+CARETBLINKING
 CAtl
 cch
 CCHDEVICENAME
@@ -198,6 +201,7 @@ CMock
 CMONITORS
 cmpgt
 cne
+CNF
 coclass
 codeofconduct
 codereview
@@ -250,6 +254,7 @@ CREATESCHEDULEDTASK
 CREATESTRUCT
 CREATEWINDOWFAILED
 CRECT
+CRH
 critsec
 Crossdevice
 CRSEL
@@ -423,6 +428,7 @@ ENTERSIZEMOVE
 ENU
 EOAC
 epu
+EPO
 ERASEBKGND
 EREOF
 EResize
@@ -894,6 +900,7 @@ MINIMIZEBOX
 MINIMIZEEND
 MINIMIZESTART
 miniz
+Mip
 Miracast
 mjpg
 mkdn
@@ -1621,6 +1628,7 @@ triaging
 TRK
 trl
 trx
+tsa
 Tsd
 TServer
 TStr

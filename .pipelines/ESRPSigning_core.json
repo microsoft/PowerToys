@@ -45,7 +45,9 @@
                 "PowerToys.PowerOCR.dll",
                 "PowerToys.PowerOCR.exe",
 
-                "PowerToys.PastePlainModuleInterface.dll",
+                "PowerToys.AdvancedPasteModuleInterface.dll",
+                "WinUI3Apps\\PowerToys.AdvancedPaste.exe",
+                "WinUI3Apps\\PowerToys.AdvancedPaste.dll",
 
                 "PowerToys.AwakeModuleInterface.dll",
                 "PowerToys.Awake.exe",
@@ -96,6 +98,7 @@
                 "PowerToys.SvgThumbnailProviderCpp.dll",
 
                 "WinUI3Apps\\PowerToys.HostsModuleInterface.dll",
+                "WinUI3Apps\\PowerToys.HostsUILib.dll",
                 "WinUI3Apps\\PowerToys.Hosts.dll",
                 "WinUI3Apps\\PowerToys.Hosts.exe",
 
@@ -113,6 +116,7 @@
                 "WinUI3Apps\\Powertoys.Peek.dll",
 
                 "WinUI3Apps\\PowerToys.EnvironmentVariablesModuleInterface.dll",
+                "WinUI3Apps\\PowerToys.EnvironmentVariablesUILib.dll",
                 "WinUI3Apps\\PowerToys.EnvironmentVariables.dll",
                 "WinUI3Apps\\PowerToys.EnvironmentVariables.exe",
 
@@ -200,6 +204,7 @@
                 "WinUI3Apps\\PowerRenameContextMenuPackage.msix",
 
                 "WinUI3Apps\\PowerToys.RegistryPreviewExt.dll",
+                "WinUI3Apps\\PowerToys.RegistryPreviewUILib.dll",
                 "WinUI3Apps\\PowerToys.RegistryPreview.dll",
                 "WinUI3Apps\\PowerToys.RegistryPreview.exe",
 
@@ -314,7 +319,9 @@
                 "MessagePack.Annotations.dll",
                 "MessagePack.dll",
                 "Nerdbank.Streams.dll",
+                "WinUI3Apps\\ReverseMarkdown.dll",
                 "WinUI3Apps\\SharpCompress.dll",
+                "WinUI3Apps\\ZstdSharp.dll",
                 "ColorCode.Core.dll", 
                 "ColorCode.UWP.dll",
                 "UnitsNet.dll",

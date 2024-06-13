@@ -71,13 +71,6 @@ namespace Peek.UI.Views
         [ObservableProperty]
         private bool pinned = false;
 
-        private ColumnDefinition systemLeftPaddingColumn = new() { Width = new GridLength(0) };
-        private ColumnDefinition draggableColumn = new() { Width = new GridLength(1, GridUnitType.Star) };
-        private ColumnDefinition launchAppButtonColumn = new() { Width = GridLength.Auto };
-        private ColumnDefinition appRightPaddingColumn = new() { Width = new GridLength(65) };
-        private ColumnDefinition pinButtonColumn = new() { Width = new GridLength(40) };
-        private ColumnDefinition systemRightPaddingColumn = new() { Width = new GridLength(0) };
-
         public TitleBar()
         {
             InitializeComponent();
@@ -150,7 +143,7 @@ namespace Peek.UI.Views
             PowerToysTelemetry.Log.WriteEvent(new OpenWithEvent() { App = DefaultAppName ?? string.Empty });
 
             // StorageFile objects can't represent files that are ".lnk", ".url", or ".wsh" file types.
-            // https://learn.microsoft.com/en-us/uwp/api/windows.storage.storagefile?view=winrt-22621
+            // https://learn.microsoft.com/uwp/api/windows.storage.storagefile?view=winrt-22621
             if (storageFile == null)
             {
                 options.DisplayApplicationPicker = true;
@@ -177,7 +170,7 @@ namespace Peek.UI.Views
 
         public string PinGlyph(bool pinned)
         {
-            return pinned ? "\xE841" : "\xE77A";
+            return pinned ? "\xE77A" : "\xE718";
         }
 
         public string PinToolTip(bool pinned)
@@ -189,54 +182,6 @@ namespace Peek.UI.Views
         private void Pin()
         {
             Pinned = !Pinned;
-        }
-
-        public FlowDirection TitleBarFlowDirection
-        {
-            get
-            {
-                var direction = CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ?
-                    FlowDirection.RightToLeft :
-                    FlowDirection.LeftToRight;
-                SetupGridColumnDefinitions(direction);
-                return direction;
-            }
-        }
-
-        private void SetupGridColumnDefinitions(FlowDirection direction)
-        {
-            TitleBarRootContainer.ColumnDefinitions.Clear();
-
-            if (direction == FlowDirection.LeftToRight)
-            {
-                TitleBarRootContainer.ColumnDefinitions.Add(systemLeftPaddingColumn);
-                TitleBarRootContainer.ColumnDefinitions.Add(draggableColumn);
-                TitleBarRootContainer.ColumnDefinitions.Add(launchAppButtonColumn);
-                TitleBarRootContainer.ColumnDefinitions.Add(appRightPaddingColumn);
-                TitleBarRootContainer.ColumnDefinitions.Add(pinButtonColumn);
-                TitleBarRootContainer.ColumnDefinitions.Add(systemRightPaddingColumn);
-
-                Grid.SetColumn(AppIconAndFileTitleContainer, 1);
-                FileCountAndNameContainer.HorizontalAlignment = HorizontalAlignment.Left;
-                Grid.SetColumn(LaunchAppButton, 2);
-                Grid.SetColumn(PinButton, 4);
-            }
-            else
-            {
-                TitleBarRootContainer.ColumnDefinitions.Add(systemRightPaddingColumn);
-                TitleBarRootContainer.ColumnDefinitions.Add(pinButtonColumn);
-                TitleBarRootContainer.ColumnDefinitions.Add(appRightPaddingColumn);
-                TitleBarRootContainer.ColumnDefinitions.Add(launchAppButtonColumn);
-                TitleBarRootContainer.ColumnDefinitions.Add(draggableColumn);
-                TitleBarRootContainer.ColumnDefinitions.Add(systemLeftPaddingColumn);
-
-                Grid.SetColumn(AppIconAndFileTitleContainer, 4);
-                FileCountAndNameContainer.HorizontalAlignment = HorizontalAlignment.Right;
-                Grid.SetColumn(LaunchAppButton, 3);
-                LaunchAppButton.HorizontalAlignment = HorizontalAlignment.Left;
-                Grid.SetColumn(PinButton, 1);
-                PinButton.HorizontalAlignment = HorizontalAlignment.Right;
-            }
         }
 
         private void TitleBarRootContainer_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -256,37 +201,22 @@ namespace Peek.UI.Views
             {
                 var scale = MainWindow.GetMonitorScale();
 
-                systemRightPaddingColumn.Width = new GridLength(appWindow.TitleBar.RightInset / scale);
-                systemLeftPaddingColumn.Width = new GridLength(appWindow.TitleBar.LeftInset / scale);
+                SystemLeftPaddingColumn.Width = new GridLength(appWindow.TitleBar.LeftInset / scale);
+                SystemRightPaddingColumn.Width = new GridLength(appWindow.TitleBar.RightInset / scale);
 
                 var dragRectsList = new List<RectInt32>();
                 RectInt32 dragRectangleLeft;
                 RectInt32 dragRectangleRight;
 
-                if (TitleBarFlowDirection == FlowDirection.LeftToRight)
-                {
-                    dragRectangleLeft.X = (int)(systemLeftPaddingColumn.ActualWidth * scale);
-                    dragRectangleLeft.Y = 0;
-                    dragRectangleLeft.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
-                    dragRectangleLeft.Width = (int)(draggableColumn.ActualWidth * scale);
+                dragRectangleLeft.X = (int)(SystemLeftPaddingColumn.ActualWidth * scale);
+                dragRectangleLeft.Y = 0;
+                dragRectangleLeft.Width = (int)(DraggableColumn.ActualWidth * scale);
+                dragRectangleLeft.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
 
-                    dragRectangleRight.X = (int)((systemLeftPaddingColumn.ActualWidth + draggableColumn.ActualWidth + launchAppButtonColumn.ActualWidth) * scale);
-                    dragRectangleRight.Y = 0;
-                    dragRectangleRight.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
-                    dragRectangleRight.Width = (int)(appRightPaddingColumn.ActualWidth * scale);
-                }
-                else
-                {
-                    dragRectangleRight.X = (int)(pinButtonColumn.ActualWidth * scale);
-                    dragRectangleRight.Y = 0;
-                    dragRectangleRight.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
-                    dragRectangleRight.Width = (int)(appRightPaddingColumn.ActualWidth * scale);
-
-                    dragRectangleLeft.X = (int)((pinButtonColumn.ActualWidth + appRightPaddingColumn.ActualWidth + launchAppButtonColumn.ActualWidth) * scale);
-                    dragRectangleLeft.Y = 0;
-                    dragRectangleLeft.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
-                    dragRectangleLeft.Width = (int)(draggableColumn.ActualWidth * scale);
-                }
+                dragRectangleRight.X = (int)((SystemLeftPaddingColumn.ActualWidth + DraggableColumn.ActualWidth + LaunchAppButtonColumn.ActualWidth) * scale);
+                dragRectangleRight.Y = 0;
+                dragRectangleRight.Width = (int)(AppRightPaddingColumn.ActualWidth * scale);
+                dragRectangleRight.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
 
                 dragRectsList.Add(dragRectangleLeft);
                 dragRectsList.Add(dragRectangleRight);
@@ -303,14 +233,7 @@ namespace Peek.UI.Views
                 appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
                 appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
                 appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-                if (ThemeHelpers.GetAppTheme() == AppTheme.Light)
-                {
-                    appWindow.TitleBar.ButtonForegroundColor = Colors.DarkSlateGray;
-                }
-                else
-                {
-                    appWindow.TitleBar.ButtonForegroundColor = Colors.White;
-                }
+                appWindow.TitleBar.ButtonForegroundColor = ThemeHelpers.GetAppTheme() == AppTheme.Light ? Colors.DarkSlateGray : Colors.White;
 
                 mainWindow.SetTitleBar(this);
             }

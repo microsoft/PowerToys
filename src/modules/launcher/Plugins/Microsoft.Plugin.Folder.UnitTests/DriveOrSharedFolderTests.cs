@@ -19,6 +19,7 @@ namespace Microsoft.Plugin.Folder.UnitTests
 
         [DataTestMethod]
         [DataRow(@"\\test-server\testdir", true)]
+        [DataRow(@"//test-server/testdir", true)]
         [DataRow(@"c:", true)]
         [DataRow(@"c:\", true)]
         [DataRow(@"C:\", true)]

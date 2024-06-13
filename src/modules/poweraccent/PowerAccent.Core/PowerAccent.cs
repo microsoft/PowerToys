@@ -150,7 +150,7 @@ public class PowerAccent : IDisposable
         {
             var unicode = unicodeList.First();
             var charUnicodeNumber = unicode.CodePoint.ToString("X4", CultureInfo.InvariantCulture);
-            description.AppendFormat(CultureInfo.InvariantCulture, "(U+{0}) {1} ", charUnicodeNumber, unicode.Name);
+            description.AppendFormat(CultureInfo.InvariantCulture, "(U+{0}) {1}", charUnicodeNumber, unicode.Name);
 
             return description.ToString();
         }

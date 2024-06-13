@@ -28,7 +28,7 @@ namespace Peek.UI
     {
         public MainWindowViewModel ViewModel { get; }
 
-        private ThemeListener? themeListener;
+        private readonly ThemeListener? themeListener;
 
         public MainWindow()
         {
@@ -48,6 +48,8 @@ namespace Peek.UI
             ViewModel = Application.Current.GetService<MainWindowViewModel>();
 
             TitleBarControl.SetTitleBarToWindow(this);
+            AppWindow.TitleBar.ExtendsContentIntoTitleBar = true;
+            AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
             AppWindow.SetIcon("Assets/Peek/Icon.ico");
 
             AppWindow.Closing += AppWindow_Closing;
@@ -86,14 +88,7 @@ namespace Peek.UI
         {
             AppWindow appWindow = this.AppWindow;
 
-            if (ThemeHelpers.GetAppTheme() == AppTheme.Light)
-            {
-                appWindow.TitleBar.ButtonForegroundColor = Colors.DarkSlateGray;
-            }
-            else
-            {
-                appWindow.TitleBar.ButtonForegroundColor = Colors.White;
-            }
+            appWindow.TitleBar.ButtonForegroundColor = ThemeHelpers.GetAppTheme() == AppTheme.Light ? Colors.DarkSlateGray : Colors.White;
         }
 
         private void PeekWindow_Activated(object sender, WindowActivatedEventArgs args)
@@ -160,16 +155,16 @@ namespace Peek.UI
             // If no size is requested, try to fit to the monitor size.
             Size requestedSize = e.PreviewSize.MonitorSize ?? monitorSize;
             var contentScale = e.PreviewSize.UseEffectivePixels ? 1 : monitorScale;
-            Size scaledRequestedSize = new Size(requestedSize.Width / contentScale, requestedSize.Height / contentScale);
+            Size scaledRequestedSize = new(requestedSize.Width / contentScale, requestedSize.Height / contentScale);
 
-            // TODO: Investigate why portrait images do not perfectly fit edge-to-edge
+            // TODO: Investigate why portrait images do not perfectly fit edge-to-edge --> WindowHeightContentPadding can be 0 (or close to that) if custom? [Jay]
             Size monitorMinContentSize = GetMonitorMinContentSize(monitorScale);
             Size monitorMaxContentSize = GetMonitorMaxContentSize(monitorSize, monitorScale);
             Size adjustedContentSize = scaledRequestedSize.Fit(monitorMaxContentSize, monitorMinContentSize);
 
             var titleBarHeight = TitleBarControl.ActualHeight;
-            var desiredWindowHeight = adjustedContentSize.Height + titleBarHeight + WindowConstants.WindowWidthContentPadding;
-            var desiredWindowWidth = adjustedContentSize.Width + WindowConstants.WindowHeightContentPadding;
+            var desiredWindowWidth = adjustedContentSize.Width;
+            var desiredWindowHeight = adjustedContentSize.Height + titleBarHeight;
 
             if (!TitleBarControl.Pinned)
             {
@@ -221,12 +216,7 @@ namespace Peek.UI
 
                 var fileExplorerSelectedItemPath = selectedItems.GetItemAt(0).ToIFileSystemItem().Path;
                 var currentItemPath = ViewModel.CurrentItem?.Path;
-                if (fileExplorerSelectedItemPath == null || currentItemPath == null || fileExplorerSelectedItemPath == currentItemPath)
-                {
-                    return false;
-                }
-
-                return true;
+                return fileExplorerSelectedItemPath != null && currentItemPath != null && fileExplorerSelectedItemPath != currentItemPath;
             }
             catch (Exception ex)
             {

@@ -16,7 +16,6 @@ namespace Hosts
         public static void Main(string[] args)
         {
             Logger.InitializeLogger("\\Hosts\\Logs");
-
             WinRT.ComWrappersSupport.InitializeComWrappers();
 
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredHostsFileEditorEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)

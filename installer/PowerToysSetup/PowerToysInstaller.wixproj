@@ -29,6 +29,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
   <PropertyGroup>
     <RunPostBuildEvent>Always</RunPostBuildEvent>
     <PostBuildEvent>
+    call move /Y ..\..\..\AdvancedPaste.wxs.bk ..\..\..\AdvancedPaste.wxs
     call move /Y ..\..\..\Awake.wxs.bk ..\..\..\Awake.wxs
     call move /Y ..\..\..\BaseApplications.wxs.bk ..\..\..\BaseApplications.wxs
     call move /Y ..\..\..\ColorPicker.wxs.bk ..\..\..\ColorPicker.wxs
@@ -100,9 +101,9 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="CustomDialogs\WixUI_PTInstallDir.wxs" />
     <Compile Include="FileActionsMenu.wxs" />
     <Compile Include="Product.wxs" />
+    <Compile Include="AdvancedPaste.wxs" />
     <Compile Include="Awake.wxs" />
     <Compile Include="BaseApplications.wxs" />
-    <Compile Include="CmdNotFound.wxs" />
     <Compile Include="ColorPicker.wxs" />
     <Compile Include="EnvironmentVariables.wxs" />
     <Compile Include="FileExplorerPreview.wxs" />

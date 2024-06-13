@@ -1,0 +1,7 @@
+{
+    "codebaseName": "PowerToys_main",
+    "notificationAliases": ["powertoys@microsoft.com"],
+    "instanceUrl": "https://microsoft.visualstudio.com",
+    "projectName": "OS",
+    "areaPath": "OS\\Windows Client and Services\\ADEPT\\E4D-Engineered for Developers\\SHINE\\PowerToys"
+}
