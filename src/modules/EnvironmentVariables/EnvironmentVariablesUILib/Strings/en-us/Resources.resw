@@ -242,7 +242,7 @@
     <value>Add variable</value>
   </data>
   <data name="DefaultVariablesDescriptionLbl.Text" xml:space="preserve">
-    <value>Add, edit, or remove User and System variables</value>
+    <value>Add, edit, or remove User and System variables.</value>
   </data>
   <data name="EditItem.Text" xml:space="preserve">
     <value>Edit</value>
