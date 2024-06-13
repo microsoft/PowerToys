@@ -194,7 +194,7 @@
     <value>Add</value>
   </data>
   <data name="AppliedVariablesDescriptionLbl.Text" xml:space="preserve">
-    <value>Applied variables list shows the current state of the environment, including Profile, User, and System variables</value>
+    <value>Applied variables list shows the current state of the environment, including Profile, User, and System variables.</value>
   </data>
   <data name="AppliedVariablesLbl.Text" xml:space="preserve">
     <value>Applied variables</value>
