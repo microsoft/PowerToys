@@ -96,6 +96,8 @@ namespace CommonSharedConstants
     const wchar_t SHOW_ENVIRONMENT_VARIABLES_EVENT[] = L"Local\\PowerToysEnvironmentVariables-ShowEnvironmentVariablesEvent-1021f616-e951-4d64-b231-a8f972159978";
     const wchar_t SHOW_ENVIRONMENT_VARIABLES_ADMIN_EVENT[] = L"Local\\PowerToysEnvironmentVariables-EnvironmentVariablesAdminEvent-8c95d2ad-047c-49a2-9e8b-b4656326cfb2";
 
+    const wchar_t PROJECTS_EXIT_EVENT[] = L"Local\\PowerToys-Projects-ExitEvent-29a1566f-f4f8-4d56-9435-d2a437f727c6";
+
     // Max DWORD for key code to disable keys.
     const DWORD VK_DISABLED = 0x100;
 }
