@@ -17,7 +17,7 @@
 const std::wstring moduleName = L"Projects\\ProjectsSnapshotTool";
 const std::wstring internalPath = L"";
 
-int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cmdshow)
+int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cmdShow)
 {
     LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::projectsLauncherLoggerName);
     InitUnhandledExceptionHandler();  
