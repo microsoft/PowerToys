@@ -101,7 +101,7 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
         break;
     case ID_REPORT_BUG_COMMAND:
     {
-        launch_bug_report();
+        InitializeReportBugLinkAsync();
         break;
     }
 

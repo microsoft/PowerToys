@@ -362,10 +362,57 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return newestFile?.Name;
         }
 
-        private string GetDotNetVersion()
+        public static string GetDotNetVersion()
         {
-            var dotNetVersion = RuntimeInformation.FrameworkDescription;
-            return dotNetVersion.ToString();
+            var output = ExecuteCommand("dotnet --list-runtimes");
+            if (string.IsNullOrEmpty(output))
+            {
+                return "Unknown .NET Version";
+            }
+
+            var versions = output
+                .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+                .Select(line =>
+                {
+                    var versionString = line.Split(' ')[1];
+                    if (Version.TryParse(versionString, out var version))
+                    {
+                        return version;
+                    }
+
+                    return new Version(0, 0, 0);
+                })
+                .Where(version => version > new Version(0, 0, 0))
+                .ToList();
+
+            var latestVersion = versions.Max();
+            return $".NET {latestVersion}";
+        }
+
+        private static string ExecuteCommand(string command)
+        {
+            try
+            {
+                var process = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "cmd.exe",
+                        Arguments = $"/C {command}",
+                        RedirectStandardOutput = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                    },
+                };
+
+                process.Start();
+                using var reader = process.StandardOutput;
+                return reader.ReadToEnd();
+            }
+            catch (Exception ex)
+            {
+                return $"Failed to execute command: {ex.Message}";
+            }
         }
 
         private string GetOSVersion()
@@ -376,6 +423,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if (attrData.ContainsKey("OSVersionFull"))
             {
                 osVersion = attrData["OSVersionFull"];
+                var versionParts = osVersion.Split('.');
+                if (versionParts.Length >= 3)
+                {
+                    osVersion = $"{versionParts[0]}.{versionParts[1]}.{versionParts[2]}";
+                }
             }
 
             return osVersion.ToString();
