@@ -6,6 +6,7 @@
 
 #include <AppLauncher.h>
 
+#include <common/utils/gpo.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/UnhandledExceptionHandler.h>
 
@@ -16,6 +17,12 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 {
     LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::projectsLauncherLoggerName);
     InitUnhandledExceptionHandler();  
+
+    if (powertoys_gpo::getConfiguredProjectsEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
+    {
+        Logger::warn(L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+        return 0;
+    }
 
     // read projects
     std::vector<Project> projects;

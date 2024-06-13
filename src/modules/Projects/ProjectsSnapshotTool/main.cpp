@@ -11,6 +11,7 @@
 
 #include <MonitorUtils.h>
 
+#include <common/utils/gpo.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/UnhandledExceptionHandler.h>
 
@@ -20,7 +21,13 @@ const std::wstring internalPath = L"";
 int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cmdShow)
 {
     LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::projectsLauncherLoggerName);
-    InitUnhandledExceptionHandler();  
+    InitUnhandledExceptionHandler();
+
+    if (powertoys_gpo::getConfiguredProjectsEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
+    {
+        Logger::warn(L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+        return 0;
+    }
 
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
