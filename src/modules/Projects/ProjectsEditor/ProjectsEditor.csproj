@@ -44,7 +44,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <AssemblyName>ProjectsEditor</AssemblyName>
+    <AssemblyName>PowerToys.ProjectsEditor</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="images\DefaultIcon.ico" />
