@@ -127,7 +127,7 @@
     <value>New profile</value>
   </data>
   <data name="ProfilesDescriptionLbl.Text" xml:space="preserve">
-    <value>Create profiles to quickly apply a set of preconfigured variables, Profile variables have precedence over User and System variables.</value>
+    <value>Create profiles to quickly apply a set of preconfigured variables. Profile variables have precedence over User and System variables.</value>
   </data>
   <data name="ProfilesLbl.Text" xml:space="preserve">
     <value>Profiles</value>
