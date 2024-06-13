@@ -159,6 +159,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "QuickAccent",
                 IsNew = false,
             });
+            Modules.Insert((int)PowerToysModules.Projects, new OobePowerToysModule()
+            {
+                ModuleName = "Projects",
+                IsNew = false,
+            });
             Modules.Insert((int)PowerToysModules.ShortcutGuide, new OobePowerToysModule()
             {
                 ModuleName = "ShortcutGuide",
@@ -276,6 +281,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "Hosts": NavigationFrame.Navigate(typeof(OobeHosts)); break;
                     case "RegistryPreview": NavigationFrame.Navigate(typeof(OobeRegistryPreview)); break;
                     case "Peek": NavigationFrame.Navigate(typeof(OobePeek)); break;
+                    case "Projects": NavigationFrame.Navigate(typeof(OobeProjects)); break;
                 }
             }
         }

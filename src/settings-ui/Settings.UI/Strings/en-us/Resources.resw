@@ -2060,6 +2060,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Oobe_PowerRename.Description" xml:space="preserve">
     <value>PowerRename enables you to perform simple bulk renaming, searching and replacing file names.</value>
   </data>
+  <data name="Oobe_Projects.Description" xml:space="preserve">
+    <value>The Projects utility enables you to launch a set of applications at once.</value>
+  </data>
   <data name="Oobe_Run.Description" xml:space="preserve">
     <value>PowerToys Run is a quick launcher for power users that contains some additional features without sacrificing performance.</value>
   </data>
@@ -2146,6 +2149,12 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_PowerRename_HowToUse.Text" xml:space="preserve">
     <value>In File Explorer, right-click one or more selected files and select **Rename with PowerRename** from the context menu.</value>
   </data>
+  <data name="Oobe_Projects_HowToUse.Text" xml:space="preserve">
+    <value>In the Projects Editor window create Projects - a set of applications. You can launch Projects from the Projects Editor or by Shortcuts created in the Project Editor.</value>
+  </data>
+  <data name="Oobe_Projects_TipsAndTricks.Text" xml:space="preserve">
+    <value>The Projects utility helps you to have a predefined set of applications on your desktop, each application in a desired position.</value>
+  </data>
   <data name="Oobe_PowerRename_TipsAndTricks.Text" xml:space="preserve">
     <value>PowerRename supports searching for files using regular expressions to enable more advanced renaming functionalities.</value>
   </data>
@@ -2208,6 +2217,10 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_PowerRename.Title" xml:space="preserve">
     <value>PowerRename</value>
+    <comment>Do not localize this string</comment>
+  </data>
+  <data name="Oobe_Projects.Title" xml:space="preserve">
+    <value>Projects</value>
     <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_Run.Title" xml:space="preserve">
