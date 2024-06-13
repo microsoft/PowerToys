@@ -59,6 +59,7 @@ namespace powertoys_gpo {
     const std::wstring POLICY_CONFIGURE_ENABLED_ENVIRONMENT_VARIABLES = L"ConfigureEnabledUtilityEnvironmentVariables";
     const std::wstring POLICY_CONFIGURE_ENABLED_QOI_PREVIEW = L"ConfigureEnabledUtilityFileExplorerQOIPreview";
     const std::wstring POLICY_CONFIGURE_ENABLED_QOI_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerQOIThumbnails";
+    const std::wstring POLICY_CONFIGURE_ENABLED_FILE_EXPLORER_PREVIEW = L"ConfigureEnabledUtilityFileExplorerPreview";
 
     // The registry value names for PowerToys installer and update policies.
     const std::wstring POLICY_DISABLE_PER_USER_INSTALLATION = L"PerUserInstallationDisabled";
@@ -422,7 +423,7 @@ namespace powertoys_gpo {
     }
 
     inline gpo_rule_configured_t getRunPluginEnabledValue(std::string pluginID)
-    {     
+    {
         if (pluginID == "" || pluginID == " ")
         {
             // this plugin id can't exist in the registry
@@ -431,7 +432,7 @@ namespace powertoys_gpo {
 
         std::wstring plugin_id(pluginID.begin(), pluginID.end());
         auto individual_plugin_setting = getPolicyListValue(POWER_LAUNCHER_INDIVIDUAL_PLUGIN_ENABLED_LIST_PATH, plugin_id);
-        
+
         if (individual_plugin_setting.has_value())
         {
             if (*individual_plugin_setting == L"0")
@@ -458,7 +459,7 @@ namespace powertoys_gpo {
         {
             // If no individual plugin policy exists, we check the policy with the setting for all plugins.
             return getConfiguredValue(POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER_ALL_PLUGINS);
-        }        
+        }
     }
 
     inline gpo_rule_configured_t getConfiguredQoiPreviewEnabledValue()
@@ -474,5 +475,10 @@ namespace powertoys_gpo {
     inline gpo_rule_configured_t getAllowedAdvancedPasteOnlineAIModelsValue()
     {
         return getUtilityEnabledValue(POLICY_ALLOW_ADVANCED_PASTE_ONLINE_AI_MODELS);
+    }
+
+    inline gpo_rule_configured_t getConfiguredFileExplorerPreviewEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_FILE_EXPLORER_PREVIEW);
     }
 }

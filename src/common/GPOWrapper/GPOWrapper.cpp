@@ -176,4 +176,8 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPasteOnlineAIModelsValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredFileExplorerPreviewEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredFileExplorerPreviewEnabledValue());
+    }
 }
