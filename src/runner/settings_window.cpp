@@ -672,6 +672,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "MeasureTool";
     case ESettingsWindowNames::PowerOCR:
         return "PowerOcr";
+    case ESettingsWindowNames::Projects:
+        return "Projects";
     case ESettingsWindowNames::RegistryPreview:
         return "RegistryPreview";
     case ESettingsWindowNames::CropAndLock:
@@ -752,6 +754,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "PowerOcr")
     {
         return ESettingsWindowNames::PowerOCR;
+    }
+    else if (value == "Projects")
+    {
+        return ESettingsWindowNames::Projects;
     }
     else if (value == "RegistryPreview")
     {

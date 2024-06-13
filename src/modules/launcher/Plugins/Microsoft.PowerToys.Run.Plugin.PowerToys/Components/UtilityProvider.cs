@@ -184,6 +184,17 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
                     }));
             }
 
+            _utilities.Add(new Utility(
+                UtilityKey.Projects,
+                Resources.Projects,
+                generalSettings.Enabled.Projects,
+                (_) =>
+                {
+                    using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowEnvironmentVariablesSharedEvent());
+                    eventHandle.Set();
+                    return true;
+                }));
+
             _watcher = new FileSystemWatcher
             {
                 Path = Path.GetDirectoryName(settingsUtils.GetSettingsFilePath()),
@@ -229,6 +240,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
                                 case UtilityKey.RegistryPreview: u.Enable(generalSettings.Enabled.RegistryPreview); break;
                                 case UtilityKey.CropAndLock: u.Enable(generalSettings.Enabled.CropAndLock); break;
                                 case UtilityKey.EnvironmentVariables: u.Enable(generalSettings.Enabled.EnvironmentVariables); break;
+                                case UtilityKey.Projects: u.Enable(generalSettings.Enabled.Projects); break;
                             }
                         }
 

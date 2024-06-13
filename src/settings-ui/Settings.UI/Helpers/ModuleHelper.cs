@@ -129,6 +129,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.PowerRename: return GPOWrapper.GetConfiguredPowerRenameEnabledValue();
                 case ModuleType.PowerLauncher: return GPOWrapper.GetConfiguredPowerLauncherEnabledValue();
                 case ModuleType.PowerAccent: return GPOWrapper.GetConfiguredQuickAccentEnabledValue();
+                case ModuleType.Projects: return GPOWrapper.GetConfiguredProjectsEnabledValue();
                 case ModuleType.RegistryPreview: return GPOWrapper.GetConfiguredRegistryPreviewEnabledValue();
                 case ModuleType.MeasureTool: return GPOWrapper.GetConfiguredScreenRulerEnabledValue();
                 case ModuleType.ShortcutGuide: return GPOWrapper.GetConfiguredShortcutGuideEnabledValue();

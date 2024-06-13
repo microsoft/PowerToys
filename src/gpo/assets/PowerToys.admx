@@ -352,6 +352,16 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
+    <policy name="ConfigureEnabledUtilityProjects" class="Both" displayName="$(string.ConfigureEnabledUtilityProjects)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityProjects">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_81_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
     <policy name="ConfigureEnabledUtilityQuickAccent" class="Both" displayName="$(string.ConfigureEnabledUtilityQuickAccent)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityQuickAccent">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />

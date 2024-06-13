@@ -172,4 +172,8 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredQoiThumbnailsEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredProjectsEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredProjeectsEnabledValue());
+    }
 }

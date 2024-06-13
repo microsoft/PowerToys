@@ -139,6 +139,10 @@
     <value>Environment Variables</value>
     <comment>"Environment Variables" is the name of the utility</comment>
   </data>
+  <data name="Projects" xml:space="preserve">
+    <value>Projects</value>
+    <comment>"Projects" is the name of the utility</comment>
+  </data>
   <data name="FancyZones_Editor" xml:space="preserve">
     <value>FancyZones Editor</value>
     <comment>"FancyZones" is the name of the utility</comment>
