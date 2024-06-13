@@ -4195,4 +4195,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="FileExplorerPreview_EnableToggleControl_HeaderText.Header" xml:space="preserve">
     <value>Enable File Explorer add-ons</value>
   </data>
+  <data name="FileExplorerPreview_ShortDescription" xml:space="preserve">
+    <value>Custom preview handlers for Windows File Explorer</value>
+  </data>
 </root>

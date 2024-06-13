@@ -6,7 +6,6 @@ using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Views;
-using Windows.UI;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
@@ -22,6 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MouseHighlighter:
                 case ModuleType.MouseJump:
                 case ModuleType.MousePointerCrosshairs: return $"MouseUtils_{moduleType}/Header";
+                case ModuleType.PowerPreview: return "FileExplorerPreview/ModuleTitle";
                 default: return $"{moduleType}/ModuleTitle";
             }
         }
@@ -36,6 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MousePointerCrosshairs: return "ms-appx:///Assets/Settings/Icons/MouseCrosshairs.png";
                 case ModuleType.MeasureTool: return "ms-appx:///Assets/Settings/Icons/ScreenRuler.png";
                 case ModuleType.PowerLauncher: return $"ms-appx:///Assets/Settings/Icons/PowerToysRun.png";
+                case ModuleType.PowerPreview: return $"ms-appx:///Assets/Settings/Icons/FileExplorerPreview.png";
                 default: return $"ms-appx:///Assets/Settings/Icons/{moduleType}.png";
             }
         }
