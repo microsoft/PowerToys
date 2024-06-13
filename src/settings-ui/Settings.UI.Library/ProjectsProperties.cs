@@ -9,7 +9,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class ProjectsProperties
     {
-        public static readonly HotkeySettings DefaultHotkeyValue = new HotkeySettings(true, false, false, true, 0x50);
+        public static readonly HotkeySettings DefaultHotkeyValue = new HotkeySettings(true, false, false, true, 0x4F);
 
         public ProjectsProperties()
         {
