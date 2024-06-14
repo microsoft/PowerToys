@@ -117,6 +117,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="App" xml:space="preserve">
+    <value>app</value>
+  </data>
+  <data name="Apps" xml:space="preserve">
+    <value>apps</value>
+  </data>
   <data name="App_name" xml:space="preserve">
     <value>App name</value>
   </data>

@@ -176,7 +176,8 @@ namespace ProjectsEditor.Models
         {
             get
             {
-                return Applications.Where(x => x.IsSelected).Count().ToString(CultureInfo.InvariantCulture) + " apps";
+                int count = Applications.Where(x => x.IsSelected).Count();
+                return count.ToString(CultureInfo.InvariantCulture) + " " + (count == 1 ? Properties.Resources.App : Properties.Resources.Apps);
             }
         }
 
