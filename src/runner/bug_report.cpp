@@ -184,7 +184,11 @@ std::string FindNewestBugReportFile()
 {
     char* desktopPathC;
     size_t len;
-    _dupenv_s(&desktopPathC, &len, "USERPROFILE");
+    if (_dupenv_s(&desktopPathC, &len, "USERPROFILE") != 0 || desktopPathC == nullptr)
+    {
+        return "";
+    }
+
     std::string desktopPath(desktopPathC);
     free(desktopPathC);
 
