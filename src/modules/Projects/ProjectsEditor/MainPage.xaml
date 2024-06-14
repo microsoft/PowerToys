@@ -178,8 +178,12 @@
                             <Border Background="{DynamicResource SecondaryBackgroundBrush}"
                                     HorizontalAlignment="Stretch"
                                     CornerRadius="5">
-                                <DockPanel HorizontalAlignment="Stretch">
-                                    <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" Margin="12,14,10,10">
+                                <Grid HorizontalAlignment="Stretch">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="120" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="12,14,10,10">
                                         <TextBlock
                                             Text="{Binding Name, Mode=OneWay,UpdateSourceTrigger=PropertyChanged}"
                                             FontSize="16"
@@ -210,7 +214,7 @@
                                             <TextBlock Text="{Binding LastLaunched, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"/>
                                         </StackPanel>
                                     </StackPanel>
-                                    <StackPanel Orientation="Vertical" DockPanel.Dock="Left" Margin="12,12,12,12">
+                                    <StackPanel Orientation="Vertical" Grid.Column="1" Margin="12,12,12,12">
                                         <StackPanel
                                             Orientation="Horizontal"
                                             HorizontalAlignment="Right">
@@ -259,7 +263,7 @@
                                             BorderThickness="1"
                                             Click="LaunchButton_Click"/>
                                     </StackPanel>
-                                </DockPanel>
+                                </Grid>
                             </Border>
                         </Button>
                     </DataTemplate>

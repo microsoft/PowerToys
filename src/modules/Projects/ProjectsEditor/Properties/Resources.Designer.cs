@@ -61,11 +61,29 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to app.
+        /// </summary>
+        public static string App {
+            get {
+                return ResourceManager.GetString("App", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to App name.
         /// </summary>
         public static string App_name {
             get {
                 return ResourceManager.GetString("App_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to apps.
+        /// </summary>
+        public static string Apps {
+            get {
+                return ResourceManager.GetString("Apps", resourceCulture);
             }
         }
         

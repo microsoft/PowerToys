@@ -8,12 +8,10 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
-using System.Windows.Media.Imaging;
 using ManagedCommon;
 using ProjectsEditor.Models;
 using ProjectsEditor.Utils;
@@ -31,7 +29,7 @@ namespace ProjectsEditor.ViewModels
         {
             get
             {
-                IEnumerable<Project> projects = string.IsNullOrEmpty(_searchTerm) ? Projects : Projects.Where(x => x.Name.Contains(_searchTerm, StringComparison.InvariantCultureIgnoreCase));
+                IEnumerable<Project> projects = GetFilteredProjects();
                 if (projects == null)
                 {
                     return Enumerable.Empty<Project>();
@@ -51,6 +49,30 @@ namespace ProjectsEditor.ViewModels
                     return projects.OrderBy(x => x.Name);
                 }
             }
+        }
+
+        // return those projects where the project name or any of the selected apps' name contains the search term
+        private IEnumerable<Project> GetFilteredProjects()
+        {
+            if (string.IsNullOrEmpty(_searchTerm))
+            {
+                return Projects;
+            }
+
+            return Projects.Where(x =>
+            {
+                if (x.Name.Contains(_searchTerm, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return true;
+                }
+
+                if (x.Applications == null)
+                {
+                    return false;
+                }
+
+                return x.Applications.Any(app => app.IsSelected && app.AppName.Contains(_searchTerm, StringComparison.InvariantCultureIgnoreCase));
+            });
         }
 
         private string _searchTerm;
