@@ -452,7 +452,7 @@
       <Component
           Id="ProjectsEditor_$(var.IdSafeLanguage)_Component"
           Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER"
-          Guid="$(var.CompGUIDPrefix)01">
+          Guid="$(var.CompGUIDPrefix)21">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="ProjectsEditor_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
