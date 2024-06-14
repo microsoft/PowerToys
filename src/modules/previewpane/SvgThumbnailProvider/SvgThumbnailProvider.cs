@@ -120,12 +120,9 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 var a = await _browser.ExecuteScriptAsync($"document.getElementsByTagName('svg')[0].viewBox;");
                 if (a != null)
                 {
-                    // Retrieve the entire HTML content
-                    var htmlContent = await _browser.ExecuteScriptAsync("document.documentElement.outerHTML;");
-
-                    // Directly search for the fill-rule within the HTML content
+                    // Extract the fill-rule directly from SvgContents
                     string fillRule = string.Empty;
-                    var match = Regex.Match(htmlContent, @"fill-rule\s*:\s*([^;]+)");
+                    var match = Regex.Match(SvgContents, @"fill-rule\s*:\s*([^;]+)");
                     if (match.Success)
                     {
                         fillRule = match.Groups[1].Value;
@@ -164,9 +161,9 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
 
             var webView2Options = new CoreWebView2EnvironmentOptions("--block-new-web-contents");
             ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
-               webView2EnvironmentAwaiter = CoreWebView2Environment
-                   .CreateAsync(userDataFolder: _webView2UserDataFolder, options: webView2Options)
-                   .ConfigureAwait(true).GetAwaiter();
+                webView2EnvironmentAwaiter = CoreWebView2Environment
+                    .CreateAsync(userDataFolder: _webView2UserDataFolder, options: webView2Options)
+                    .ConfigureAwait(true).GetAwaiter();
 
             webView2EnvironmentAwaiter.OnCompleted(async () =>
             {
