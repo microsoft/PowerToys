@@ -243,10 +243,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     // Bug report task completed
                     string reportResult = await bugReportTask;
 
-                    gitHubURL = "https://github.com/gokcekantarci/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CNeeds-Triage&template=bug_report.yml" +
+                    gitHubURL = "https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CNeeds-Triage&template=bug_report.yml" +
                         "&version=" + version +
-                        "&othersoftware=" + otherSoftware +
-                        "&iselevated=" + HttpUtility.UrlEncode(isElevatedRun);
+                        "&otherSoftware=" + otherSoftware +
+                        "&isElevated=" + HttpUtility.UrlEncode(isElevatedRun);
 
                     var dialog = new ContentDialog
                     {

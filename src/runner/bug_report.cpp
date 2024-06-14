@@ -6,18 +6,8 @@
 #include <common/utils/resources.h>
 #include <common/version/version.h>
 #include <runner/general_settings.h>
-#include <commctrl.h>
-#include <map>
 #include <regex>
-#include <sstream>
 #include <thread>
-#include <chrono>
-#include <iostream>
-#include <fstream>
-#include <cstdlib>
-#include <vector>
-#include <ppltasks.h>
-#include <shellapi.h>
 #include <atomic>
 #include <future>
 
@@ -62,7 +52,7 @@ std::string LaunchBugReport()
         }
         else
         {
-            std::cerr << "Failed to start bug report tool." << std::endl;
+            bugReportFileName = "Failed to start bug report tool.";
         }
 
         isBugReportThreadRunning.store(false);
@@ -101,9 +91,9 @@ HWND GetMessageBoxHandle()
 
 DWORD WINAPI ShowCancelableMessageBox(LPVOID /*lpParam*/)
 {
-    int msgboxID = MessageBox(nullptr, L"Generating bug report, please wait...", L"BugReport", MB_OKCANCEL | MB_ICONINFORMATION);
+    int msgBoxID = MessageBox(nullptr, L"Generating bug report, please wait...", L"BugReport", MB_OKCANCEL | MB_ICONINFORMATION);
 
-    if (msgboxID == IDCANCEL)
+    if (msgBoxID == IDCANCEL)
     {
         cancelPromise.set_value();
         canceled.store(true);
@@ -155,20 +145,20 @@ void InitializeReportBugLinkAsync()
     
     if (!bugReportResult.empty())
     {
-        std::wstring wversion = get_product_version();
+        std::wstring wVersion = get_product_version();
         std::string version;
-        std::transform(wversion.begin() + 1, wversion.end(), std::back_inserter(version), [](wchar_t c) {
+        std::transform(wVersion.begin() + 1, wVersion.end(), std::back_inserter(version), [](wchar_t c) {
             return static_cast<char>(c);
         });
 
-        std::string otherSoftware = "OS Build Version: " + GetOSVersion() + "\n.NET Version: " + GetDotNetVersion();
+        std::string otherSoftware = "OS Build Version: " + GetOSVersion() + "%0a" + ".NET Version: " + GetDotNetVersion();
         GeneralSettings generalSettings = get_general_settings();
         std::string isElevatedRun = generalSettings.isElevated ? "Yes" : "No";
 
-        gitHubURL = "https://github.com/gokcekantarci/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CNeeds-Triage&template=bug_report.yml" +
+        gitHubURL = "https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CNeeds-Triage&template=bug_report.yml" +
                     std::string("&version=") + version +
-                    std::string("&othersoftware=") + otherSoftware +
-                    std::string("&iselevated=") + isElevatedRun;
+                    std::string("&otherSoftware=") + otherSoftware +
+                    std::string("&isElevated=") + isElevatedRun;
 
         std::wstring wideBugReportResult = stringToWideString(bugReportResult);
         MessageBox(nullptr, L"Bug report generated on your desktop. Please attach the file to the GitHub issue.", wideBugReportResult.c_str(), MB_OKCANCEL | MB_ICONINFORMATION);
@@ -186,8 +176,8 @@ void InitializeReportBugLinkAsync()
     }
 
     // Open the URL
-    std::wstring wgitHubURL(gitHubURL.begin(), gitHubURL.end());
-    ShellExecuteW(nullptr, L"open", wgitHubURL.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+    std::wstring wGitHubURL(gitHubURL.begin(), gitHubURL.end());
+    ShellExecuteW(nullptr, L"open", wGitHubURL.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
 }
 
 std::string FindNewestBugReportFile()
@@ -316,7 +306,6 @@ std::string GetOSVersion()
     }
     catch (...)
     {
-        std::cerr << "Failed to get Windows version info\n";
         return "Unknown Windows Version";
     }
 
@@ -328,7 +317,6 @@ std::string GetOSVersion()
     }
     catch (...)
     {
-        std::cerr << "Failed to format Windows version info\n";
         return "Unknown Windows Version";
     }
 }

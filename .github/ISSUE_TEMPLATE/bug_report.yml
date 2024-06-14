@@ -33,7 +33,7 @@ body:
   validations:
     required: true
 
-- id: iselevated
+- id: isElevated
   type: input
   attributes:
     label: Running as admin
@@ -105,7 +105,7 @@ body:
   validations:
     required: false
 
-- id: othersoftware
+- id: otherSoftware
   type: textarea
   attributes:
     label: Other Software
