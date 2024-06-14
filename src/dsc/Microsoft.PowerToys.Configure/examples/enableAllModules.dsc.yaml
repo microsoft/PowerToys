@@ -57,6 +57,8 @@ properties:
           EnableQoiThumbnail: true
         PowerOcr:
           Enabled: true
+        Projects:
+          Enabled: true
         ShortcutGuide:
           Enabled: true
         VideoConference:
