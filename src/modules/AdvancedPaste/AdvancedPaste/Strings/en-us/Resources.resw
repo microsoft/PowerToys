@@ -127,7 +127,7 @@
     <value>Clipboard data is not text</value>
   </data>
   <data name="OpenAINotConfigured" xml:space="preserve">
-    <value>To custom with AI not enabled</value>
+    <value>To custom with AI is not enabled</value>
   </data>
   <data name="OpenAIApiKeyUnauthorized" xml:space="preserve">
     <value>Invalid API key or endpoint</value>
@@ -224,5 +224,8 @@
   </data>
   <data name="TermsLink.Text" xml:space="preserve">
     <value>OpenAI Terms</value>
+  </data>
+  <data name="OpenAIGpoDisabled" xml:space="preserve">
+    <value>To custom with AI is disabled by your organization</value>
   </data>
 </root>

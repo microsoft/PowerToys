@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "GPOWrapper.h"
 #include "GPOWrapper.g.cpp"
 
@@ -171,6 +171,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     GpoRuleConfigured GPOWrapper::GetConfiguredQoiThumbnailsEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredQoiThumbnailsEnabledValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetAllowedAdvancedPasteOnlineAIModelsValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPasteOnlineAIModelsValue());
     }
     GpoRuleConfigured GPOWrapper::GetConfiguredProjectsEnabledValue()
     {

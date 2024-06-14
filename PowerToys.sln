@@ -146,11 +146,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerLauncher", "src\module
 		{FDB3555B-58EF-4AE6-B5F1-904719637AB4} = {FDB3555B-58EF-4AE6-B5F1-904719637AB4}
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E775CC2C-24CB-48D6-9C3A-BE4CCE0DB17A}"
-	ProjectSection(SolutionItems) = preProject
-		src\tests\win-app-driver\README.md = src\tests\win-app-driver\README.md
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "previewpane", "previewpane", "{2F305555-C296-497E-AC20-5FA1B237996A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PreviewHandlerCommon", "src\modules\previewpane\Common\PreviewHandlerCommon.csproj", "{AF2349B8-E5B6-4004-9502-687C1C7730B1}"

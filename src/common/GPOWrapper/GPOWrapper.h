@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "GPOWrapper.g.h"
 #include <common/utils/gpo.h>
 
@@ -49,6 +49,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredEnvironmentVariablesEnabledValue();
         static GpoRuleConfigured GetConfiguredQoiPreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredQoiThumbnailsEnabledValue();
+        static GpoRuleConfigured GetAllowedAdvancedPasteOnlineAIModelsValue();
         static GpoRuleConfigured GetConfiguredProjectsEnabledValue();
     };
 }
