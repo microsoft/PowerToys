@@ -68,11 +68,15 @@ namespace AdvancedPaste.Helpers
 
                     string[] lines = text.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
-                    // Sipp comment lines. (Comments are lines that starts with a semicolon.)
+                    // Sipp comment lines.
+                    // (Comments are lines that starts with a semicolon.
+                    // This also skips commented key-value-pairs.)
                     lines = lines.Where(l => !l.StartsWith(';')).ToArray();
 
-                    // Validate content as ini (First line is a section name and second line is a key-value-pair.)
-                    if (lines.Length >= 2 && IniSectionNameRegex.IsMatch(lines[0]) && IniValueLineRegex.IsMatch(lines[1]))
+                    // Validate content as ini
+                    // (First line is a section name and second line is a section name or a key-value-pair.)
+                    if (lines.Length >= 2 && IniSectionNameRegex.IsMatch(lines[0]) &&
+                        (IniSectionNameRegex.IsMatch(lines[1]) || IniValueLineRegex.IsMatch(lines[1])))
                     {
                         // Parse and convert Ini
                         foreach (string line in lines)
@@ -83,20 +87,19 @@ namespace AdvancedPaste.Helpers
                             if (lineSectionNameCheck.Success)
                             {
                                 // Section name (Group 1)
-                                lastSectionName = lineSectionNameCheck.Groups[1].Value;
+                                lastSectionName = lineSectionNameCheck.Groups[1].Value.Trim();
                                 ini.Add(lastSectionName, new Dictionary<string, string>());
                             }
                             else if (string.IsNullOrEmpty(lastSectionName) || !lineKeyValuePairCheck.Success)
                             {
-                                // Fail if lastSectionName is still empty or not key-value-pair.
-                                // (With empty lastSectionName we can't parse key-value-pairs
-                                //  and if it is not a key-value-pair then the line is invalid.)
+                                // Fail if lastSectionName is empty. (With empty lastSectionName we can't assign key-value-pairs.)
+                                // And fail if it is not a key-value-pair (and was not detected as section name before).
                                 throw new FormatException("Invalid ini file format.");
                             }
                             else
                             {
                                 // Key-value-pair (Group 1=Key; Group 2=Value)
-                                ini[lastSectionName].Add(lineKeyValuePairCheck.Groups[1].Value, lineKeyValuePairCheck.Groups[2].Value);
+                                ini[lastSectionName].Add(lineKeyValuePairCheck.Groups[1].Value.Trim(), lineKeyValuePairCheck.Groups[2].Value);
                             }
                         }
 
