@@ -21,7 +21,7 @@ $fileWxs = Get-Content $wxsFilePath;
 
 $fileExclusionList = @("*.pdb", "*.lastcodeanalysissucceeded", "createdump.exe", "powertoys.exe")
 
-$fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*.png", "*.gif", "*.ico", "*.cur", "*.svg", "index.html", "reg.js", "gitignore.js", "monacoSpecialLanguages.js", "*.pri")
+$fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*.png", "*.gif", "*.ico", "*.cur", "*.svg", "index.html", "reg.js", "gitignore.js", "monacoSpecialLanguages.js", "customTokenColors.js", "*.pri")
 
 $dllsToIgnore = @("System.CodeDom.dll", "WindowsBase.dll")
 
