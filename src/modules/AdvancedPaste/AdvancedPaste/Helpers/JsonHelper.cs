@@ -68,7 +68,7 @@ namespace AdvancedPaste.Helpers
 
                     string[] lines = text.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
-                    // Sipp comment lines.
+                    // Skipp comment lines.
                     // (Comments are lines that starts with a semicolon.
                     // This also skips commented key-value-pairs.)
                     lines = lines.Where(l => !l.StartsWith(';')).ToArray();
