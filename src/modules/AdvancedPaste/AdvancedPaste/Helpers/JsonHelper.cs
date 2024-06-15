@@ -89,18 +89,29 @@ namespace AdvancedPaste.Helpers
                             {
                                 // Section name (Group 1)
                                 lastSectionName = lineSectionNameCheck.Groups[1].Value.Trim();
+                                if (string.IsNullOrWhiteSpace(lastSectionName))
+                                {
+                                    throw new FormatException("Invalid ini file format: Empty section name.");
+                                }
+
                                 ini.Add(lastSectionName, new Dictionary<string, string>());
                             }
-                            else if (string.IsNullOrEmpty(lastSectionName) || !lineKeyValuePairCheck.Success)
+                            else if (!lineKeyValuePairCheck.Success)
                             {
-                                // Fail if lastSectionName is empty. (With empty lastSectionName we can't assign key-value-pairs.)
-                                // And fail if it is not a key-value-pair (and was not detected as section name before).
-                                throw new FormatException("Invalid ini file format.");
+                                // Fail if it is not a key-value-pair (and was not detected as section name before).
+                                throw new FormatException("Invalid ini file format: Invalid line.");
                             }
                             else
                             {
                                 // Key-value-pair (Group 1=Key; Group 2=Value)
-                                ini[lastSectionName].Add(lineKeyValuePairCheck.Groups[1].Value.Trim(), lineKeyValuePairCheck.Groups[2].Value);
+                                string iniKeyName = lineKeyValuePairCheck.Groups[1].Value.Trim();
+                                if (string.IsNullOrWhiteSpace(iniKeyName))
+                                {
+                                    throw new FormatException("Invalid ini file format: Empty value name (key).");
+                                }
+
+                                string iniValueData = lineKeyValuePairCheck.Groups[2].Value;
+                                ini[lastSectionName].Add(iniKeyName, iniValueData);
                             }
                         }
 
