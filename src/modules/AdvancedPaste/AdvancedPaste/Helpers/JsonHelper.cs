@@ -68,6 +68,9 @@ namespace AdvancedPaste.Helpers
 
                     string[] lines = text.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
+                    // Sipp comment lines. (Comments are lines that starts with a semicolon.)
+                    lines = lines.Where(l => !l.StartsWith(';')).ToArray();
+
                     // Validate content as ini (First line is a section name and second line is a key-value-pair.)
                     if (lines.Length >= 2 && IniSectionNameRegex.IsMatch(lines[0]) && IniValueLineRegex.IsMatch(lines[1]))
                     {
