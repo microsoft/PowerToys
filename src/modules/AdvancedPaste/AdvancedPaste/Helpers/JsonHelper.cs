@@ -74,7 +74,8 @@ namespace AdvancedPaste.Helpers
                     lines = lines.Where(l => !l.StartsWith(';')).ToArray();
 
                     // Validate content as ini
-                    // (First line is a section name and second line is a section name or a key-value-pair.)
+                    // (First line is a section name and second line is a section name or a key-value-pair.
+                    // For the second line we check both, in case the first ini section is empty.)
                     if (lines.Length >= 2 && IniSectionNameRegex.IsMatch(lines[0]) &&
                         (IniSectionNameRegex.IsMatch(lines[1]) || IniValueLineRegex.IsMatch(lines[1])))
                     {
