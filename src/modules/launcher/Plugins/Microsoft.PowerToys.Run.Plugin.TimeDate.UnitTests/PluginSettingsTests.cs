@@ -30,6 +30,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("TimeWithSeconds")]
         [DataRow("DateWithWeekday")]
         [DataRow("HideNumberMessageOnGlobalQuery")]
+        [DataRow("calendarFirstWeekRule")]
+        [DataRow("firstDayOfWeek")]
         public void DoesSettingExist(string name)
         {
             // Setup
@@ -48,6 +50,22 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("DateWithWeekday", false)]
         [DataRow("HideNumberMessageOnGlobalQuery", false)]
         public void DefaultValues(string name, bool valueExpected)
+        {
+            // Setup
+            TimeDateSettings setting = TimeDateSettings.Instance;
+
+            // Act
+            PropertyInfo propertyInfo = setting?.GetType()?.GetProperty(name, BindingFlags.NonPublic | BindingFlags.Instance);
+            var result = propertyInfo?.GetValue(setting);
+
+            // Assert
+            Assert.AreEqual(valueExpected, result);
+        }
+
+        [DataTestMethod]
+        [DataRow("calendarFirstWeekRule", -1)]
+        [DataRow("firstDayOfWeek", -1)]
+        public void DefaultEnumValues(string name, int valueExpected)
         {
             // Setup
             TimeDateSettings setting = TimeDateSettings.Instance;
