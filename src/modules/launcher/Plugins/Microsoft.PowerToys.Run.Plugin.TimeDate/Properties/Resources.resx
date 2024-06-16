@@ -346,7 +346,7 @@
     <value>Configure the calendar rule for the first week of the year.</value>
   </data>
   <data name="Microsoft_plugin_timedate_SettingFirstWeekRule_FirstDay" xml:space="preserve">
-    <value>First day</value>
+    <value>First day of year</value>
   </data>
   <data name="Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFourDayWeek" xml:space="preserve">
     <value>First four day week</value>

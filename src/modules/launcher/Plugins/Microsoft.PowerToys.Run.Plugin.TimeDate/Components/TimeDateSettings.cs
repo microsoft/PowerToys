@@ -184,6 +184,25 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         }
 
         /// <summary>
+        /// Returns a CalendarWeekRule enum value based on the plugin setting.
+        /// </summary>
+        internal CalendarWeekRule GetCalendarWeekRuleSetting()
+        {
+            switch (calendarFirstWeekRule)
+            {
+                case 0:
+                    return CalendarWeekRule.FirstDay;
+                case 1:
+                    return CalendarWeekRule.FirstFullWeek;
+                case 2:
+                    return CalendarWeekRule.FirstFourDayWeek;
+                default:
+                    // Wrong json value and system setting (-1).
+                    return DateTimeFormatInfo.CurrentInfo.CalendarWeekRule;
+            }
+        }
+
+        /// <summary>
         /// Returns a DayOfWeek enum value based on the FirstDayOfWeek plugin setting.
         /// </summary>
         internal DayOfWeek GetFirstDayOfWeekSetting()
@@ -207,25 +226,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 default:
                     // Wrong json value and system setting (-1).
                     return DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek;
-            }
-        }
-
-        /// <summary>
-        /// Returns a CalendarWeekRule enum value based on the plugin setting.
-        /// </summary>
-        internal CalendarWeekRule GetCalendarWeekRuleSetting()
-        {
-            switch (calendarFirstWeekRule)
-            {
-                case 0:
-                    return CalendarWeekRule.FirstDay;
-                case 1:
-                    return CalendarWeekRule.FirstFullWeek;
-                case 2:
-                    return CalendarWeekRule.FirstFourDayWeek;
-                default:
-                    // Wrong json value and system setting (-1).
-                    return DateTimeFormatInfo.CurrentInfo.CalendarWeekRule;
             }
         }
 
