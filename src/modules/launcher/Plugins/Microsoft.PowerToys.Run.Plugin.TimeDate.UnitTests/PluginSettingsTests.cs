@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Globalization;
 using System.Reflection;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -23,10 +22,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             var result = settings?.Length;
 
             // Assert
-            Assert.AreEqual(4, result);
+            Assert.AreEqual(6, result);
         }
 
         [DataTestMethod]
+        [DataRow("CalendarFirstWeekRule")]
+        [DataRow("FirstDayOfWeek")]
         [DataRow("OnlyDateTimeNowGlobal")]
         [DataRow("TimeWithSeconds")]
         [DataRow("DateWithWeekday")]
@@ -38,21 +39,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 
             // Act
             var result = settings?.GetProperty(name, BindingFlags.NonPublic | BindingFlags.Instance);
-
-            // Assert
-            Assert.IsNotNull(result);
-        }
-
-        [DataTestMethod]
-        [DataRow("GetCalendarWeekRuleSetting")]
-        [DataRow("GetFirstDayOfWeekSetting")]
-        public void DoesSettingsMethodExist(string name)
-        {
-            // Setup
-            Type settings = TimeDateSettings.Instance?.GetType();
-
-            // Act
-            var result = settings?.GetMethod(name, BindingFlags.NonPublic | BindingFlags.Instance);
 
             // Assert
             Assert.IsNotNull(result);
@@ -77,29 +63,19 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         }
 
         [DataTestMethod]
-        public void CalendarWeekRuleSettingDefaultBehavior()
+        [DataRow("CalendarFirstWeekRule", -1)]
+        [DataRow("FirstDayOfWeek", -1)]
+        public void DefaultEnumValues(string name, int valueExpected)
         {
             // Setup
             TimeDateSettings setting = TimeDateSettings.Instance;
 
             // Act
-            var result = setting?.GetCalendarWeekRuleSetting();
+            PropertyInfo propertyInfo = setting?.GetType()?.GetProperty(name, BindingFlags.NonPublic | BindingFlags.Instance);
+            var result = propertyInfo?.GetValue(setting);
 
             // Assert
-            Assert.AreEqual(DateTimeFormatInfo.CurrentInfo.CalendarWeekRule, result);
-        }
-
-        [DataTestMethod]
-        public void FirstDayOfWeekSettingDefaultBehavior()
-        {
-            // Setup
-            TimeDateSettings setting = TimeDateSettings.Instance;
-
-            // Act
-            var result = setting?.GetFirstDayOfWeekSetting();
-
-            // Assert
-            Assert.AreEqual(DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek, result);
+            Assert.AreEqual(valueExpected, result);
         }
     }
 }

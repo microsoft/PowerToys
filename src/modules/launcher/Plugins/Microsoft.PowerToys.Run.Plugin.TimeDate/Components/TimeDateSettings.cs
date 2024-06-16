@@ -2,9 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
@@ -31,14 +29,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         private static TimeDateSettings instance;
 
         /// <summary>
-        /// Holds the value of the "First Week Rule" setting
+        /// Gets the value of the "First Week Rule" setting
         /// </summary>
-        private int calendarFirstWeekRule;
+        internal int CalendarFirstWeekRule { get; private set; }
 
         /// <summary>
-        /// Holds the value of the "First Day Of Week" setting
+        /// Gets the value of the "First Day Of Week" setting
         /// </summary>
-        private int firstDayOfWeek;
+        internal int FirstDayOfWeek { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether to show only the time and date for system time in global results or not
@@ -101,7 +99,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             {
                 new PluginAdditionalOption()
                 {
-                    Key = nameof(calendarFirstWeekRule),
+                    Key = nameof(CalendarFirstWeekRule),
                     DisplayLabel = Resources.Microsoft_plugin_timedate_SettingFirstWeekRule,
                     DisplayDescription = Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_Description,
                     PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Combobox,
@@ -116,7 +114,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 },
                 new PluginAdditionalOption()
                 {
-                    Key = nameof(firstDayOfWeek),
+                    Key = nameof(FirstDayOfWeek),
                     DisplayLabel = Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek,
                     PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Combobox,
                     ComboBoxItems = new List<KeyValuePair<string, string>>
@@ -175,58 +173,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 return;
             }
 
-            calendarFirstWeekRule = GetEnumSettingOrDefault(settings, nameof(calendarFirstWeekRule));
-            firstDayOfWeek = GetEnumSettingOrDefault(settings, nameof(firstDayOfWeek));
+            CalendarFirstWeekRule = GetEnumSettingOrDefault(settings, nameof(CalendarFirstWeekRule));
+            FirstDayOfWeek = GetEnumSettingOrDefault(settings, nameof(FirstDayOfWeek));
             OnlyDateTimeNowGlobal = GetSettingOrDefault(settings, nameof(OnlyDateTimeNowGlobal));
             TimeWithSeconds = GetSettingOrDefault(settings, nameof(TimeWithSeconds));
             DateWithWeekday = GetSettingOrDefault(settings, nameof(DateWithWeekday));
             HideNumberMessageOnGlobalQuery = GetSettingOrDefault(settings, nameof(HideNumberMessageOnGlobalQuery));
-        }
-
-        /// <summary>
-        /// Returns a CalendarWeekRule enum value based on the plugin setting.
-        /// </summary>
-        internal CalendarWeekRule GetCalendarWeekRuleSetting()
-        {
-            switch (calendarFirstWeekRule)
-            {
-                case 0:
-                    return CalendarWeekRule.FirstDay;
-                case 1:
-                    return CalendarWeekRule.FirstFullWeek;
-                case 2:
-                    return CalendarWeekRule.FirstFourDayWeek;
-                default:
-                    // Wrong json value and system setting (-1).
-                    return DateTimeFormatInfo.CurrentInfo.CalendarWeekRule;
-            }
-        }
-
-        /// <summary>
-        /// Returns a DayOfWeek enum value based on the FirstDayOfWeek plugin setting.
-        /// </summary>
-        internal DayOfWeek GetFirstDayOfWeekSetting()
-        {
-            switch (firstDayOfWeek)
-            {
-                case 0:
-                    return DayOfWeek.Sunday;
-                case 1:
-                    return DayOfWeek.Monday;
-                case 2:
-                    return DayOfWeek.Tuesday;
-                case 3:
-                    return DayOfWeek.Wednesday;
-                case 4:
-                    return DayOfWeek.Thursday;
-                case 5:
-                    return DayOfWeek.Friday;
-                case 6:
-                    return DayOfWeek.Saturday;
-                default:
-                    // Wrong json value and system setting (-1).
-                    return DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek;
-            }
         }
 
         /// <summary>

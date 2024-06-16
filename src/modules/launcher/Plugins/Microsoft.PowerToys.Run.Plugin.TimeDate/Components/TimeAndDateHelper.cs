@@ -133,6 +133,52 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         {
             return Regex.IsMatch(input, @"^.*(u|ums|ft)\d");
         }
+
+        /// <summary>
+        /// Returns a CalendarWeekRule enum value based on the plugin setting.
+        /// </summary>
+        internal static CalendarWeekRule GetCalendarWeekRule(int pluginSetting)
+        {
+            switch (pluginSetting)
+            {
+                case 0:
+                    return CalendarWeekRule.FirstDay;
+                case 1:
+                    return CalendarWeekRule.FirstFullWeek;
+                case 2:
+                    return CalendarWeekRule.FirstFourDayWeek;
+                default:
+                    // Wrong json value and system setting (-1).
+                    return DateTimeFormatInfo.CurrentInfo.CalendarWeekRule;
+            }
+        }
+
+        /// <summary>
+        /// Returns a DayOfWeek enum value based on the FirstDayOfWeek plugin setting.
+        /// </summary>
+        internal static DayOfWeek GetFirstDayOfWeek(int pluginSetting)
+        {
+            switch (pluginSetting)
+            {
+                case 0:
+                    return DayOfWeek.Sunday;
+                case 1:
+                    return DayOfWeek.Monday;
+                case 2:
+                    return DayOfWeek.Tuesday;
+                case 3:
+                    return DayOfWeek.Wednesday;
+                case 4:
+                    return DayOfWeek.Thursday;
+                case 5:
+                    return DayOfWeek.Friday;
+                case 6:
+                    return DayOfWeek.Saturday;
+                default:
+                    // Wrong json value and system setting (-1).
+                    return DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek;
+            }
+        }
     }
 
     /// <summary>
