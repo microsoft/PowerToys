@@ -9,7 +9,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.VisualBasic;
 
 [assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests")]
 
@@ -176,6 +175,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 return;
             }
 
+            calendarFirstWeekRule = GetEnumSettingOrDefault(settings, nameof(calendarFirstWeekRule));
+            firstDayOfWeek = GetEnumSettingOrDefault(settings, nameof(firstDayOfWeek));
             OnlyDateTimeNowGlobal = GetSettingOrDefault(settings, nameof(OnlyDateTimeNowGlobal));
             TimeWithSeconds = GetSettingOrDefault(settings, nameof(TimeWithSeconds));
             DateWithWeekday = GetSettingOrDefault(settings, nameof(DateWithWeekday));
@@ -214,7 +215,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// </summary>
         internal CalendarWeekRule GetCalendarWeekRuleSetting()
         {
-            switch (firstDayOfWeek)
+            switch (calendarFirstWeekRule)
             {
                 case 0:
                     return CalendarWeekRule.FirstDay;
@@ -241,6 +242,21 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             // If a setting isn't available, we use the value defined in the method GetAdditionalOptions() as fallback.
             // We can use First() instead of FirstOrDefault() because the values must exist. Otherwise, we made a mistake when defining the settings.
             return option?.Value ?? GetAdditionalOptions().First(x => x.Key == name).Value;
+        }
+
+        /// <summary>
+        /// Return the combobox value of the given settings list with the given name.
+        /// </summary>
+        /// <param name="settings">The object that contain all settings.</param>
+        /// <param name="name">The name of the setting.</param>
+        /// <returns>A settings value.</returns>
+        private static int GetEnumSettingOrDefault(PowerLauncherPluginSettings settings, string name)
+        {
+            var option = settings?.AdditionalOptions?.FirstOrDefault(x => x.Key == name);
+
+            // If a setting isn't available, we use the value defined in the method GetAdditionalOptions() as fallback.
+            // We can use First() instead of FirstOrDefault() because the values must exist. Otherwise, we made a mistake when defining the settings.
+            return option?.ComboBoxValue ?? GetAdditionalOptions().First(x => x.Key == name).ComboBoxValue;
         }
     }
 }
