@@ -5,8 +5,6 @@
 using System;
 using System.Globalization;
 using System.Reflection;
-using System.Runtime.Serialization;
-using System.Xml.Linq;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
