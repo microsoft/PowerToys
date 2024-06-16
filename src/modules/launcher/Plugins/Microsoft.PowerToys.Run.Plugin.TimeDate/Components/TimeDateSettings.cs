@@ -104,6 +104,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 {
                     Key = nameof(calendarFirstWeekRule),
                     DisplayLabel = Resources.Microsoft_plugin_timedate_SettingFirstWeekRule,
+                    DisplayDescription = Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_Description,
                     PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Combobox,
                     ComboBoxItems = new List<KeyValuePair<string, string>>
                     {
@@ -190,7 +191,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             {
                 case 0:
                     return DayOfWeek.Sunday;
-                case 1: 
+                case 1:
                     return DayOfWeek.Monday;
                 case 2:
                     return DayOfWeek.Tuesday;

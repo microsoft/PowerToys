@@ -547,6 +547,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Configure the calendar rule for the first week of the year..
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SettingFirstWeekRule_Description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingFirstWeekRule_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to First day.
         /// </summary>
         internal static string Microsoft_plugin_timedate_SettingFirstWeekRule_FirstDay {
