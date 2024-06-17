@@ -181,7 +181,7 @@
                                 <Grid HorizontalAlignment="Stretch">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="120" />
+                                        <ColumnDefinition Width="110" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="12,14,10,10">
                                         <TextBlock
