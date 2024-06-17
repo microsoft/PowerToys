@@ -214,7 +214,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void InitializeEnabledValue()
         {
-            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredFancyZonesEnabledValue();
+            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredFileExplorerPreviewEnabledValue();
             if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
                 // Get the enabled state from GPO.
