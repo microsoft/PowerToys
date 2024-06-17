@@ -122,9 +122,9 @@ namespace ProjectsEditor.Models
                             _icon = Icon.ExtractAssociatedIcon(AppPath);
                         }
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
-                        Logger.LogError($"Exception while extracting icon from app path: {AppPath}. Exception message: {e.Message}");
+                        Logger.LogWarning($"Icon not found on app path: {AppPath}. Using default icon");
                         IsNotFound = true;
                         _icon = new Icon(@"images\DefaultIcon.ico");
                     }

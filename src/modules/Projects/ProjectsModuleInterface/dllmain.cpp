@@ -75,8 +75,7 @@ public:
     // Return the configured status for the gpo policy for the module
     virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
     {
-        // TODO: return powertoys_gpo::getConfiguredProjectsEnabledValue();
-        return powertoys_gpo::gpo_rule_configured_enabled;
+        return powertoys_gpo::getConfiguredProjectsEnabledValue();
     }
 
     // Return JSON with the configuration options.
