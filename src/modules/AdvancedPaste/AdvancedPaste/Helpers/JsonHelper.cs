@@ -16,6 +16,10 @@ namespace AdvancedPaste.Helpers
 {
     internal static class JsonHelper
     {
+        // Ini parts regex
+        private static readonly Regex IniSectionNameRegex = new Regex(@"^\[(.+)\]");
+        private static readonly Regex IniValueLineRegex = new Regex(@"(.+?)\s*=\s*(.*)");
+
         // List of supported CSV delimiters and Regex to detect separator property
         private static readonly char[] CsvDelimArry = [',', ';', '\t'];
         private static readonly Regex CsvSepIdentifierRegex = new Regex(@"^sep=(.)$", RegexOptions.IgnoreCase);
@@ -45,11 +49,81 @@ namespace AdvancedPaste.Helpers
             {
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(text);
+                Logger.LogDebug("Converted from XML.");
                 jsonText = JsonConvert.SerializeXmlNode(doc, Newtonsoft.Json.Formatting.Indented);
             }
             catch (Exception ex)
             {
                 Logger.LogError("Failed parsing input as xml", ex);
+            }
+
+            // Try convert Ini
+            // (Must come before CSV that ini is not false detected as CSV.)
+            try
+            {
+                if (string.IsNullOrEmpty(jsonText))
+                {
+                    var ini = new Dictionary<string, Dictionary<string, string>>();
+                    var lastSectionName = string.Empty;
+
+                    string[] lines = text.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+
+                    // Skipp comment lines.
+                    // (Comments are lines that starts with a semicolon.
+                    // This also skips commented key-value-pairs.)
+                    lines = lines.Where(l => !l.StartsWith(';')).ToArray();
+
+                    // Validate content as ini
+                    // (First line is a section name and second line is a section name or a key-value-pair.
+                    // For the second line we check both, in case the first ini section is empty.)
+                    if (lines.Length >= 2 && IniSectionNameRegex.IsMatch(lines[0]) &&
+                        (IniSectionNameRegex.IsMatch(lines[1]) || IniValueLineRegex.IsMatch(lines[1])))
+                    {
+                        // Parse and convert Ini
+                        foreach (string line in lines)
+                        {
+                            Match lineSectionNameCheck = IniSectionNameRegex.Match(line);
+                            Match lineKeyValuePairCheck = IniValueLineRegex.Match(line);
+
+                            if (lineSectionNameCheck.Success)
+                            {
+                                // Section name (Group 1)
+                                lastSectionName = lineSectionNameCheck.Groups[1].Value.Trim();
+                                if (string.IsNullOrWhiteSpace(lastSectionName))
+                                {
+                                    throw new FormatException("Invalid ini file format: Empty section name.");
+                                }
+
+                                ini.Add(lastSectionName, new Dictionary<string, string>());
+                            }
+                            else if (!lineKeyValuePairCheck.Success)
+                            {
+                                // Fail if it is not a key-value-pair (and was not detected as section name before).
+                                throw new FormatException("Invalid ini file format: Invalid line.");
+                            }
+                            else
+                            {
+                                // Key-value-pair (Group 1=Key; Group 2=Value)
+                                string iniKeyName = lineKeyValuePairCheck.Groups[1].Value.Trim();
+                                if (string.IsNullOrWhiteSpace(iniKeyName))
+                                {
+                                    throw new FormatException("Invalid ini file format: Empty value name (key).");
+                                }
+
+                                string iniValueData = lineKeyValuePairCheck.Groups[2].Value;
+                                ini[lastSectionName].Add(iniKeyName, iniValueData);
+                            }
+                        }
+
+                        // Convert to JSON
+                        Logger.LogDebug("Converted from Ini.");
+                        jsonText = JsonConvert.SerializeObject(ini, Newtonsoft.Json.Formatting.Indented);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed parsing input as ini", ex);
             }
 
             // Try convert CSV
