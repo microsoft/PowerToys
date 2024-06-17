@@ -30,7 +30,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 if (args.Length == 6)
                 {
                     string filePath = args[0];
-                    int hwnd = Convert.ToInt32(args[1], 16);
+                    IntPtr hwnd = IntPtr.Parse(args[1], NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 
                     int left = Convert.ToInt32(args[2], 10);
                     int right = Convert.ToInt32(args[3], 10);
@@ -39,7 +39,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                     Rectangle s = new Rectangle(left, top, right - left, bottom - top);
 
                     _previewHandlerControl = new MonacoPreviewHandlerControl();
-                    _previewHandlerControl.SetWindow((IntPtr)hwnd, s);
+                    _previewHandlerControl.SetWindow(hwnd, s);
                     _previewHandlerControl.DoPreview(filePath);
 
                     NativeEventWaiter.WaitForEventLoop(

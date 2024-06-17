@@ -7,7 +7,7 @@ export async function registerAdditionalLanguages(monaco){
     await languageDefinitions();
     registerAdditionalLanguage("cppExt", [".ino", ".pde"], "cpp", monaco)
     registerAdditionalLanguage("xmlExt", [".wsdl", ".csproj", ".vcxproj", ".vbproj", ".fsproj"], "xml", monaco)
-    registerAdditionalLanguage("txtExt", [".sln", ".log", ".vsconfig", ".env"], "txt", monaco)
+    registerAdditionalLanguage("txtExt", [".sln", ".log", ".vsconfig", ".env", ".srt"], "txt", monaco)
     registerAdditionalLanguage("razorExt", [".razor"], "razor", monaco)
     registerAdditionalLanguage("vbExt", [".vbs"], "vb", monaco)
     registerAdditionalLanguage("iniExt", [".inf", ".gitconfig", ".gitattributes", ".editorconfig"], "ini", monaco)

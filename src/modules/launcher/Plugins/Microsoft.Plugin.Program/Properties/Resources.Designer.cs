@@ -178,7 +178,7 @@ namespace Microsoft.Plugin.Program.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Searches programs..
+        ///   Looks up a localized string similar to Searches programs.
         /// </summary>
         public static string wox_plugin_program_plugin_description {
             get {

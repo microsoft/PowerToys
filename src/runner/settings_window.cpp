@@ -680,6 +680,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "EnvironmentVariables";
     case ESettingsWindowNames::Dashboard:
         return "Dashboard";
+    case ESettingsWindowNames::AdvancedPaste:
+        return "AdvancedPaste";
     default:
     {
         Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
@@ -766,6 +768,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "Dashboard")
     {
         return ESettingsWindowNames::Dashboard;
+    }
+    else if (value == "AdvancedPaste")
+    {
+        return ESettingsWindowNames::AdvancedPaste;
     }
     else
     {

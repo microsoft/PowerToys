@@ -10,18 +10,23 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <AssemblyName>PowerToys.HostsUILib</AssemblyName>
+    <Platforms>AnyCPU</Platforms>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>PowerToys.HostsUILib.pri</ProjectPriFileName>
-
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
     <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Properties for nuget package. -->
+    <Authors>Microsoft Corporation</Authors>
+    <Description>Implements the UI control for the PowerToys Hosts File Editor Utility</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="$(OutDir)\PowerToys.HostsUILib.pri" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
     <None Include="$(OutDir)\PowerToys.HostsUILib.pri" Pack="True" PackageCopyToOutput="True" PackagePath="contentFiles\any\$(TargetFramework)" />
-    <XBFFile Include="$(OutDir)**\*.xbf" />
-    <None Include="@(XBFFile)" Pack="True" PackageCopyToOutput="True" PackagePath="contentFiles\any\$(TargetFramework)" />
     <None Include="$(OutDir)\PowerToys.HostsUILib.pdb" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
 
     <None Include="Assets\**\*.png" Pack="true" PackageCopyToOutput="true" PackagePath="contentFiles\any\$(TargetFramework)\Assets" />
