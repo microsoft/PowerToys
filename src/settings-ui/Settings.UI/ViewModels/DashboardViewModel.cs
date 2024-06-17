@@ -153,6 +153,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.CropAndLock => GetModuleItemsCropAndLock(),
                 ModuleType.EnvironmentVariables => GetModuleItemsEnvironmentVariables(),
                 ModuleType.FancyZones => GetModuleItemsFancyZones(),
+                ModuleType.PowerPreview => GetModuleItemsPowerPreview(),
                 ModuleType.FileLocksmith => GetModuleItemsFileLocksmith(),
                 ModuleType.FindMyMouse => GetModuleItemsFindMyMouse(),
                 ModuleType.Hosts => GetModuleItemsHosts(),
@@ -170,7 +171,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.MeasureTool => GetModuleItemsMeasureTool(),
                 ModuleType.ShortcutGuide => GetModuleItemsShortcutGuide(),
                 ModuleType.PowerOCR => GetModuleItemsPowerOCR(),
-                ModuleType.PowerPreview => GetModuleItemsPowerPreview(),
                 _ => new ObservableCollection<DashboardModuleItem>(), // never called, all values listed above
             };
         }

@@ -52,6 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.CropAndLock: return generalSettingsConfig.Enabled.CropAndLock;
                 case ModuleType.EnvironmentVariables: return generalSettingsConfig.Enabled.EnvironmentVariables;
                 case ModuleType.FancyZones: return generalSettingsConfig.Enabled.FancyZones;
+                case ModuleType.PowerPreview: return generalSettingsConfig.Enabled.PowerPreview;
                 case ModuleType.FileLocksmith: return generalSettingsConfig.Enabled.FileLocksmith;
                 case ModuleType.FindMyMouse: return generalSettingsConfig.Enabled.FindMyMouse;
                 case ModuleType.Hosts: return generalSettingsConfig.Enabled.Hosts;
@@ -69,7 +70,6 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MeasureTool: return generalSettingsConfig.Enabled.MeasureTool;
                 case ModuleType.ShortcutGuide: return generalSettingsConfig.Enabled.ShortcutGuide;
                 case ModuleType.PowerOCR: return generalSettingsConfig.Enabled.PowerOcr;
-                case ModuleType.PowerPreview: return generalSettingsConfig.Enabled.PowerPreview;
                 default: return false;
             }
         }
@@ -85,6 +85,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.CropAndLock: generalSettingsConfig.Enabled.CropAndLock = isEnabled; break;
                 case ModuleType.EnvironmentVariables: generalSettingsConfig.Enabled.EnvironmentVariables = isEnabled; break;
                 case ModuleType.FancyZones: generalSettingsConfig.Enabled.FancyZones = isEnabled; break;
+                case ModuleType.PowerPreview: generalSettingsConfig.Enabled.PowerPreview = isEnabled; break;
                 case ModuleType.FileLocksmith: generalSettingsConfig.Enabled.FileLocksmith = isEnabled; break;
                 case ModuleType.FindMyMouse: generalSettingsConfig.Enabled.FindMyMouse = isEnabled; break;
                 case ModuleType.Hosts: generalSettingsConfig.Enabled.Hosts = isEnabled; break;
@@ -102,7 +103,6 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MeasureTool: generalSettingsConfig.Enabled.MeasureTool = isEnabled; break;
                 case ModuleType.ShortcutGuide: generalSettingsConfig.Enabled.ShortcutGuide = isEnabled; break;
                 case ModuleType.PowerOCR: generalSettingsConfig.Enabled.PowerOcr = isEnabled; break;
-                case ModuleType.PowerPreview: generalSettingsConfig.Enabled.PowerPreview = isEnabled; break;
             }
         }
 
@@ -117,6 +117,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.CropAndLock: return GPOWrapper.GetConfiguredCropAndLockEnabledValue();
                 case ModuleType.EnvironmentVariables: return GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue();
                 case ModuleType.FancyZones: return GPOWrapper.GetConfiguredFancyZonesEnabledValue();
+                case ModuleType.PowerPreview: return GPOWrapper.GetConfiguredFileExplorerPreviewEnabledValue();
                 case ModuleType.FileLocksmith: return GPOWrapper.GetConfiguredFileLocksmithEnabledValue();
                 case ModuleType.FindMyMouse: return GPOWrapper.GetConfiguredFindMyMouseEnabledValue();
                 case ModuleType.Hosts: return GPOWrapper.GetConfiguredHostsFileEditorEnabledValue();
@@ -134,7 +135,6 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MeasureTool: return GPOWrapper.GetConfiguredScreenRulerEnabledValue();
                 case ModuleType.ShortcutGuide: return GPOWrapper.GetConfiguredShortcutGuideEnabledValue();
                 case ModuleType.PowerOCR: return GPOWrapper.GetConfiguredTextExtractorEnabledValue();
-                case ModuleType.PowerPreview: return GPOWrapper.GetConfiguredFileExplorerPreviewEnabledValue();
                 default: return GpoRuleConfigured.Unavailable;
             }
         }
