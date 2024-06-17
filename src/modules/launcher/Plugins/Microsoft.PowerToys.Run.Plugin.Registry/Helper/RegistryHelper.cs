@@ -50,7 +50,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
             }
 
             var baseKey = query.Split('\\').FirstOrDefault() ?? string.Empty;
-
             var subKey = query.Replace(baseKey, string.Empty, StringComparison.InvariantCultureIgnoreCase).TrimStart('\\');
 
             var baseKeyResult = _baseKeys
