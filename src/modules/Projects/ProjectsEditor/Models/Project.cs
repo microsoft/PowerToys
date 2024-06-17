@@ -21,11 +21,6 @@ namespace ProjectsEditor.Models
 {
     public class Project : INotifyPropertyChanged
     {
-        public class ScreenHeader : Application
-        {
-            public string Title { get; set; }
-        }
-
         [JsonIgnore]
         public string EditorWindowTitle { get; set; }
 
@@ -44,6 +39,7 @@ namespace ProjectsEditor.Models
             {
                 _name = value;
                 OnPropertyChanged(new PropertyChangedEventArgs(nameof(Name)));
+                OnPropertyChanged(new PropertyChangedEventArgs(nameof(CanBeSaved)));
             }
         }
 
@@ -121,6 +117,11 @@ namespace ProjectsEditor.Models
                     return lastLaunched + (years <= 1 ? ProjectsEditor.Properties.Resources.OneYearAgo : years + " " + ProjectsEditor.Properties.Resources.YearsAgo);
                 }
             }
+        }
+
+        public bool CanBeSaved
+        {
+            get => Name.Length > 0 && Applications.Where(x => x.IsSelected).Any();
         }
 
         private bool _isPopupVisible;
