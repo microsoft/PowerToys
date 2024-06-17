@@ -150,6 +150,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.CropAndLock => typeof(CropAndLockPage),
                 ModuleType.EnvironmentVariables => typeof(EnvironmentVariablesPage),
                 ModuleType.FancyZones => typeof(FancyZonesPage),
+                ModuleType.PowerPreview => typeof(PowerPreviewPage),
                 ModuleType.FileLocksmith => typeof(FileLocksmithPage),
                 ModuleType.FindMyMouse => typeof(MouseUtilsPage),
                 ModuleType.Hosts => typeof(HostsPage),

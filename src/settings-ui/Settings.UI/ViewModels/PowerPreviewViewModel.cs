@@ -214,7 +214,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void InitializeEnabledValue()
         {
-            /*_enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredFancyZonesEnabledValue();
+            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredFancyZonesEnabledValue();
             if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
                 // Get the enabled state from GPO.
@@ -222,9 +222,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
             }
             else
-            {*/
-            _isEnabled = GeneralSettingsConfig.Enabled.PowerPreview;
-            /*}*/
+            {
+                _isEnabled = GeneralSettingsConfig.Enabled.PowerPreview;
+            }
         }
 
         public void RefreshEnabledState()
@@ -233,6 +233,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsEnabled));
         }
 
+        private GpoRuleConfigured _enabledGpoRuleConfiguration;
+        private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
 
         private GpoRuleConfigured _svgRenderEnabledGpoRuleConfiguration;
@@ -315,11 +317,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _isEnabled;
             set
             {
-                /*if (_enabledStateIsGPOConfigured)
+                if (_enabledStateIsGPOConfigured)
                 {
                     // If it's GPO configured, shouldn't be able to change this state.
                     return;
-                }*/
+                }
 
                 if (_isEnabled != value)
                 {
@@ -333,6 +335,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     SendConfigMSG(outgoing.ToString());
                 }
             }
+        }
+
+        public bool IsEnabledGpoConfigured
+        {
+            get => _enabledStateIsGPOConfigured;
         }
 
         public bool SomePreviewPaneEnabledGposConfigured
