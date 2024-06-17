@@ -1042,7 +1042,7 @@
     <value>Run at startup</value>
   </data>
   <data name="GeneralPage_RunAtStartUp.Description" xml:space="preserve">
-    <value>PowerToys will open automatically</value>
+    <value>PowerToys will run automatically</value>
   </data>
   <data name="GeneralPage_WarningsElevatedApps.Content" xml:space="preserve">
     <value>Show a warning for functionality issues when running alongside elevated applications</value>
