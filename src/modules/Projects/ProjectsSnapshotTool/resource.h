@@ -5,7 +5,7 @@
 //////////////////////////////
 // Non-localizable
 
-#define FILE_DESCRIPTION "PowerToys Projects Snapthot Tool"
+#define FILE_DESCRIPTION "PowerToys Projects Snapshot Tool"
 #define INTERNAL_NAME "PowerToys.ProjectsSnapshotTool"
 #define ORIGINAL_FILENAME "PowerToys.ProjectsSnapshotTool.exe"
 
