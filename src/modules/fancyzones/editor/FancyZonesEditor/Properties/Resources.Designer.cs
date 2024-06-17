@@ -701,7 +701,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Go to settings.
+        ///   Looks up a localized string similar to Open settings.
         /// </summary>
         public static string OpenSettings {
             get {

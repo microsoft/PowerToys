@@ -232,7 +232,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Go to settings.
+        ///   Looks up a localized string similar to Settings.
         /// </summary>
         public static string Open_settings {
             get {

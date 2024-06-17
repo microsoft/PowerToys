@@ -259,7 +259,7 @@ namespace ColorPicker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Go to settings.
+        ///   Looks up a localized string similar to Open settings.
         /// </summary>
         public static string Open_settings {
             get {

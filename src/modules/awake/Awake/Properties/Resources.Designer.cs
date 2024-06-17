@@ -88,7 +88,7 @@ namespace Awake.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Close.
+        ///   Looks up a localized string similar to Exit.
         /// </summary>
         internal static string AWAKE_EXIT {
             get {
