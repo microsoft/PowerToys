@@ -38,24 +38,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
         /// </summary>
         /// <param name="query">Query containing front-slash</param>
         /// <returns>A string replacing all the front-slashes with back-slashes</returns>
-        private static string SanitizedQuery(in string query)
+        private static string SanitizeQuery(in string query)
         {
-            var tempQuery = query.Replace("//", QuerySplitCharacter);
+            var sanitizedQuery = Regex.Replace(query, @"/(?<=^(?:[^""]*""[^""]*"")*[^""]*)(?<!//.+)", "\\");
 
-            var tempQueryParts = tempQuery.Split(QuerySplitCharacter);
-
-            var sanitizedQuery = Regex.Replace(query, @"/(?<=^(?:[^""]*""[^""]*"")*[^""]*)", "\\");
-
-            sanitizedQuery = sanitizedQuery.Replace("\"", string.Empty);
-
-            if (tempQueryParts.Length > 1)
-            {
-                var sanitizedQueryParts = sanitizedQuery.Split(QuerySplitCharacter);
-
-                sanitizedQuery = string.Join(QuerySplitCharacter, sanitizedQueryParts.First(), tempQueryParts.Last());
-            }
-
-            return sanitizedQuery;
+            return sanitizedQuery.Replace("\"", string.Empty);
         }
 
         /// <summary>
@@ -67,7 +54,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
         /// <returns><see langword="true"/> when the query search for a key and a value name, otherwise <see langword="false"/></returns>
         internal static bool GetQueryParts(in string query, out string queryKey, out string queryValueName)
         {
-            var sanitizedQuery = SanitizedQuery(query);
+            var sanitizedQuery = SanitizeQuery(query);
 
             if (!sanitizedQuery.Contains(QuerySplitCharacter, StringComparison.InvariantCultureIgnoreCase))
             {
