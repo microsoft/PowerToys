@@ -13,7 +13,7 @@
     ui:TitleBar.IsIconVisible="True"
     ui:WindowHelper.UseModernWindowStyle="True"
     MinWidth="700"
-    MinHeight="480"
+    MinHeight="680"
     AutomationProperties.Name="Projects Editor"
     Closing="OnClosing"
     ContentRendered="OnContentRendered"

@@ -145,6 +145,7 @@
                 Margin="0,6,0,6"
                 HorizontalAlignment="Left"
                 GotFocus="EditNameTextBox_GotFocus"
+                TextChanged="EditNameTextBox_TextChanged"
                 KeyDown="EditNameTextBoxKeyDown" />
         </StackPanel>
         <Border
@@ -235,6 +236,7 @@
                     Margin="20,0,0,0"
                     Padding="24,0,24,0"
                     Height="36"
+                    IsEnabled="{Binding CanBeSaved, UpdateSourceTrigger=PropertyChanged}"
                     Content="{x:Static props:Resources.Save_project}"
                     AutomationProperties.Name="{x:Static props:Resources.Save_project}"
                     Click="SaveButtonClicked"

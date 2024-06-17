@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -28,6 +29,7 @@ namespace ProjectsEditor
             CheckBox checkBox = sender as CheckBox;
             Models.Application application = checkBox.DataContext as Models.Application;
             Models.Project project = application.Parent;
+            project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.CanBeSaved)));
             project.Initialize();
         }
 
@@ -81,6 +83,13 @@ namespace ProjectsEditor
             app.IsHighlighted = false;
             Project project = app.Parent;
             project.Initialize();
+        }
+
+        private void EditNameTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            Project project = this.DataContext as Project;
+            project.Name = EditNameTextBox.Text;
+            project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.CanBeSaved)));
         }
     }
 }
