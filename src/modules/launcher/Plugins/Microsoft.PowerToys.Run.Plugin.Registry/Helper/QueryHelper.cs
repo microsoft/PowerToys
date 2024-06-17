@@ -41,7 +41,20 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
         /// <returns>A string replacing all the front-slashes with back-slashes</returns>
         private static string SanitizedQuery(in string query)
         {
-            var sanitizedQuery = Regex.Replace(query, @"/((?=[^""]*(?:""[^""]*""[^""]*)*$))*", "\\");
+            var tempQuery = query.Replace("//", QuerySplitCharacter);
+
+            var tempQueryParts = tempQuery.Split(QuerySplitCharacter);
+
+            var sanitizedQuery = Regex.Replace(query, @"/(?<=^(?:[^""]*""[^""]*"")*[^""]*)", "\\");
+
+            sanitizedQuery = sanitizedQuery.Replace("\"", string.Empty);
+
+            if (tempQueryParts.Length > 1)
+            {
+                var sanitizedQueryParts = sanitizedQuery.Split(QuerySplitCharacter);
+
+                sanitizedQuery = string.Join(QuerySplitCharacter, sanitizedQueryParts.First(), tempQueryParts.Last());
+            }
 
             return sanitizedQuery;
         }

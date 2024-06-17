@@ -52,11 +52,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 
             var baseKey = query.Split('\\').FirstOrDefault() ?? string.Empty;
 
-            if (query.Contains("/\""))
-            {
-                baseKey = query.Split("/\"").FirstOrDefault() ?? string.Empty;
-            }
-
             var subKey = query.Replace(baseKey, string.Empty, StringComparison.InvariantCultureIgnoreCase).TrimStart('\\');
 
             var baseKeyResult = _baseKeys
@@ -97,8 +92,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
                 return FindSubKey(baseKey, string.Empty);
             }
 
-            var formattedSubKeyPath = Regex.Replace(subKeyPath, @"[""]+[/]+[""]+", "\\");
-            var subKeysNames = formattedSubKeyPath.Split('\\');
+            var subKeysNames = subKeyPath.Split('\\');
             var index = 0;
             RegistryKey? subKey = baseKey;
 
