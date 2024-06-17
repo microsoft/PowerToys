@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.Registry.Constants;
 
 namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper

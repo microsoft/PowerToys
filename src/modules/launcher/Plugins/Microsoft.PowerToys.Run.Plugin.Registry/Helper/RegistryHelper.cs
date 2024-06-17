@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Microsoft.PowerToys.Run.Plugin.Registry.Classes;
 using Microsoft.PowerToys.Run.Plugin.Registry.Constants;
 using Microsoft.PowerToys.Run.Plugin.Registry.Properties;
@@ -158,17 +157,16 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
         {
             var list = new Collection<RegistryEntry>();
 
-            var formattedSearchSubKey = Regex.Replace(searchSubKey, @"(?<!"")/""|""/(?!"")|((?<!/)""(?!/))", string.Empty);
             try
             {
                 foreach (var subKey in parentKey.GetSubKeyNames().OrderBy(found => found))
                 {
-                    if (!subKey.StartsWith(formattedSearchSubKey, StringComparison.InvariantCultureIgnoreCase))
+                    if (!subKey.StartsWith(searchSubKey, StringComparison.InvariantCultureIgnoreCase))
                     {
                         continue;
                     }
 
-                    if (string.Equals(subKey, formattedSearchSubKey, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(subKey, searchSubKey, StringComparison.OrdinalIgnoreCase))
                     {
                         var key = parentKey.OpenSubKey(subKey, RegistryKeyPermissionCheck.ReadSubTree);
                         if (key != null)
