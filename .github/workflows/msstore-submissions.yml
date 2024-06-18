@@ -46,7 +46,8 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |-
-            az keyvault secret download --vault-name ${{ secrets.AZURE_KEYVAULT_NAME }} -n ${{ secrets.AZURE_AUTH_CERT_NAME }} -f cert.pfx
+            az keyvault secret download --vault-name ${{ secrets.AZURE_KEYVAULT_NAME }} -n ${{ secrets.AZURE_AUTH_CERT_NAME }} -f cert.pfx.b64
+            base64 -d < cert.pfx.b64 > cert.pfx
 
       - name: Configure Store Credentials
         run: |-
@@ -80,4 +81,4 @@ jobs:
       - name: Clean up auth certificate
         if: always()
         run: |-
-          rm -f cert.pfx
+          rm -f cert.pfx cert.pfx.b64
