@@ -159,20 +159,36 @@ namespace ProjectsEditor.ViewModels
         private void CreateShortcut(Project project)
         {
             string basePath = AppDomain.CurrentDomain.BaseDirectory;
-            string shortcutAddress = FolderUtils.Desktop() + $"\\{project.Name}.lnk";
-            string shortcutIconFilename = FolderUtils.Temp() + $"\\{project.Name}.ico";
+            string shortcutAddress = Path.Combine(FolderUtils.Desktop(), project.Name + ".lnk");
+            string shortcutIconFilename = Path.Combine(FolderUtils.Temp(), project.Id + ".ico");
 
             Bitmap icon = ProjectIcon.DrawIcon(ProjectIcon.IconTextFromProjectName(project.Name));
             ProjectIcon.SaveIcon(icon, shortcutIconFilename);
 
-            IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell();
-            IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(shortcutAddress);
-            shortcut.Description = $"Project Launcher {project.Id}";
-            shortcut.TargetPath = Path.Combine(basePath, "PowerToys.ProjectsLauncher.exe");
-            shortcut.Arguments = project.Id;
-            shortcut.WorkingDirectory = basePath;
-            shortcut.IconLocation = shortcutIconFilename;
-            shortcut.Save();
+            try
+            {
+                // Workaround to be able to create a shortcut with unicode filename
+                File.WriteAllBytes(shortcutAddress, Array.Empty<byte>());
+
+                // Create a ShellLinkObject that references the .lnk file
+                Shell32.Shell shl = new Shell32.Shell();
+                Shell32.Folder dir = shl.NameSpace(FolderUtils.Desktop());
+                Shell32.FolderItem itm = dir.Items().Item($"{project.Name}.lnk");
+                Shell32.ShellLinkObject lnk = (Shell32.ShellLinkObject)itm.GetLink;
+
+                // Set the .lnk file properties
+                lnk.Description = $"Project Launcher {project.Id}";
+                lnk.Path = Path.Combine(basePath, "PowerToys.ProjectsLauncher.exe");
+                lnk.Arguments = project.Id.ToString();
+                lnk.WorkingDirectory = basePath;
+                lnk.SetIconLocation(shortcutIconFilename, 0);
+
+                lnk.Save(shortcutAddress);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Shortcut creation error: {ex.Message}");
+            }
         }
 
         public void SaveProjectName(Project project)

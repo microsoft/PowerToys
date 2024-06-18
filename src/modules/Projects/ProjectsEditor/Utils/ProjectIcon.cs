@@ -84,7 +84,12 @@ namespace ProjectsEditor.Utils
 
         public static void SaveIcon(Bitmap icon, string path)
         {
-            FileStream fileStream = new FileStream(path, FileMode.OpenOrCreate);
+            if (Path.Exists(path))
+            {
+                File.Delete(path);
+            }
+
+            FileStream fileStream = new FileStream(path, FileMode.CreateNew);
             using (var memoryStream = new MemoryStream())
             {
                 icon.Save(memoryStream, ImageFormat.Png);
