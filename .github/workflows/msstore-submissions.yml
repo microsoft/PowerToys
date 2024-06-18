@@ -2,8 +2,8 @@ name: Store submission on release
 
 on:
   workflow_dispatch:
-  #release:
-  #  types: [published]
+  release:
+    types: [published]
 
 permissions:
   id-token: write
