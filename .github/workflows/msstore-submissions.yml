@@ -74,9 +74,9 @@ jobs:
             ]
           }'
 
-#      - name: Publish Submission
-#        run: |-
-#          msstore submission publish ${{ secrets.PRODUCT_ID }}
+      - name: Publish Submission
+        run: |-
+          msstore submission publish ${{ secrets.PRODUCT_ID }}
 
       - name: Clean up auth certificate
         if: always()
