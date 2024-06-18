@@ -26,7 +26,7 @@
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
 
-                <controls:SettingsGroup x:Uid="FileExplorerPreview_PreviewPane">
+                <controls:SettingsGroup x:Uid="FileExplorerPreview_PreviewPane" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <InfoBar
                         x:Uid="FileExplorerPreview_PreviewHandlerOutlookIncompatibility"
                         IsClosable="False"
@@ -160,7 +160,7 @@
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings">
+                <controls:SettingsGroup x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <InfoBar
                         x:Uid="FileExplorerPreview_RebootRequired"
                         IsClosable="False"
