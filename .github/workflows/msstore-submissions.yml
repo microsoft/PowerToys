@@ -15,6 +15,13 @@ jobs:
     environment: store
     runs-on: ubuntu-latest
     steps:
+      - name: BODGY - Set up Gnome Keyring for future Cert Auth
+        run: |-
+          sudo apt-get install -y gnome-keyring
+          export $(dbus-launch --sh-syntax)
+          export $(echo 'anypass_just_to_unlock' | gnome-keyring-daemon --unlock)
+          export $(echo 'anypass_just_to_unlock' | gnome-keyring-daemon --start --components=gpg,pkcs11,secrets,ssh)
+
       - name: Log in to Azure
         uses: azure/login@v2
         with:
