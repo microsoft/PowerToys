@@ -169,7 +169,7 @@ HRESULT CPowerRenameRegEx::_OnEnumerateOrRandomizeItemsChanged()
 
     int32_t offset = 0;
     int ei = 0; // Enumerators index
-    int ri = 0; // Randomizers index
+    int ri = 0; // Randomizer index
 
     std::wstring replaceWith{ m_RawReplaceTerm };
     // Remove counter expressions and calculate their offsets in replaceWith string.
@@ -218,7 +218,7 @@ HRESULT CPowerRenameRegEx::_OnEnumerateOrRandomizeItemsChanged()
 
     if (m_flags & RandomizeItems)
     {
-        // Continue with all remaining randomizers
+        // Continue with all remaining randomizer instances
         while (ri < m_randomizer.size())
         {
             const auto& r = m_randomizer[ri];
@@ -418,7 +418,7 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
         if ((m_flags & EnumerateItems) || (m_flags & RandomizeItems))
         {
             int ei = 0; // Enumerators index
-            int ri = 0; // Randomizers index
+            int ri = 0; // Randomizer index
             std::array<wchar_t, MAX_PATH> buffer;
             int32_t offset = 0;
 
@@ -473,7 +473,7 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
             }
             if (m_flags & RandomizeItems)
             {
-                // Replace all remaining randomizers
+                // Replace all remaining randomizer instances
                 while (ri < m_randomizer.size())
                 {
                     const auto& r = m_randomizer[ri];
