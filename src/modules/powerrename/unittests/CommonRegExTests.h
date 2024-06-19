@@ -492,7 +492,7 @@ TEST_METHOD (VerifyRandomizerNoRegex)
     Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${}") == S_OK);
     unsigned long index = {};
     Assert::IsTrue(renameRegEx->Replace(L"foobar", &result, index) == S_OK);
-    Assert::AreEqual(L"foo$1bar_", result);
+    Assert::AreEqual(L"foo$1bar_${}", result);
     CoTaskMemFree(result);
 }
 
