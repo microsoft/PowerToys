@@ -72,12 +72,23 @@ namespace ProjectsEditor.Utils
 
                 g.Clear(Color.FromArgb(0, 0, 0, 0));
                 Brush brush = new SolidBrush(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.FromArgb(10, 255, 255, 255) : Color.FromArgb(10, 0, 0, 0));
-                foreach (Application app in project.Applications.Where(x => x.IsSelected && !x.Minimized))
+
+                var appsToDraw = project.Applications.Where(x => x.IsSelected && !x.Minimized);
+
+                // draw the highlighted app at the end to have its icon in the foreground for the case there are overlapping icons
+                foreach (Application app in appsToDraw.Where(x => !x.IsHighlighted))
                 {
                     Rectangle rect = new Rectangle(Scaled(app.ScaledPosition.X - bounds.Left), Scaled(app.ScaledPosition.Y - bounds.Top), Scaled(app.ScaledPosition.Width), Scaled(app.ScaledPosition.Height));
                     DrawWindow(g, brush, rect, app);
                 }
 
+                foreach (Application app in appsToDraw.Where(x => x.IsHighlighted))
+                {
+                    Rectangle rect = new Rectangle(Scaled(app.ScaledPosition.X - bounds.Left), Scaled(app.ScaledPosition.Y - bounds.Top), Scaled(app.ScaledPosition.Width), Scaled(app.ScaledPosition.Height));
+                    DrawWindow(g, brush, rect, app);
+                }
+
+                // draw the minimized windows
                 Rectangle rectMinimized = new Rectangle(0, Scaled(bounds.Height), Scaled(bounds.Width), Scaled(bounds.Height * 0.2));
                 DrawWindow(g, brush, rectMinimized, project.Applications.Where(x => x.IsSelected && x.Minimized));
             }

@@ -330,5 +330,13 @@ namespace ProjectsEditor.ViewModels
         {
             GC.SuppressFinalize(this);
         }
+
+        internal void CloseAllPopups()
+        {
+            foreach (Project project in Projects)
+            {
+                project.IsPopupVisible = false;
+            }
+        }
     }
 }
