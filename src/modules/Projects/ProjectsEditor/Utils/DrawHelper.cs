@@ -75,7 +75,7 @@ namespace ProjectsEditor.Utils
 
                 var appsToDraw = project.Applications.Where(x => x.IsSelected && !x.Minimized);
 
-                // draw the highlighted app at the end to have its icon in the foreground for the case there are overlappping icons
+                // draw the highlighted app at the end to have its icon in the foreground for the case there are overlapping icons
                 foreach (Application app in appsToDraw.Where(x => !x.IsHighlighted))
                 {
                     Rectangle rect = new Rectangle(Scaled(app.ScaledPosition.X - bounds.Left), Scaled(app.ScaledPosition.Y - bounds.Top), Scaled(app.ScaledPosition.Width), Scaled(app.ScaledPosition.Height));
