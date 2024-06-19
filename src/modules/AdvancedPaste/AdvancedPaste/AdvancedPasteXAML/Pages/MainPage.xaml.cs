@@ -87,6 +87,7 @@ namespace AdvancedPaste.Pages
 
                 _dispatcherQueue.TryEnqueue(async () =>
                 {
+                    // Clear to avoid leaks due to Garbage Collection not clearing the bitmap from memory. Fix for https://github.com/microsoft/PowerToys/issues/33423
                     clipboardHistory.Where(x => x.Image is not null)
                                     .ToList()
                                     .ForEach(x => x.Image.ClearValue(BitmapImage.UriSourceProperty));
