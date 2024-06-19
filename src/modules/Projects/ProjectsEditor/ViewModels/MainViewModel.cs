@@ -171,19 +171,19 @@ namespace ProjectsEditor.ViewModels
                 File.WriteAllBytes(shortcutAddress, Array.Empty<byte>());
 
                 // Create a ShellLinkObject that references the .lnk file
-                Shell32.Shell shl = new Shell32.Shell();
-                Shell32.Folder dir = shl.NameSpace(FolderUtils.Desktop());
-                Shell32.FolderItem itm = dir.Items().Item($"{project.Name}.lnk");
-                Shell32.ShellLinkObject lnk = (Shell32.ShellLinkObject)itm.GetLink;
+                Shell32.Shell shell = new Shell32.Shell();
+                Shell32.Folder dir = shell.NameSpace(FolderUtils.Desktop());
+                Shell32.FolderItem folderItem = dir.Items().Item($"{project.Name}.lnk");
+                Shell32.ShellLinkObject link = (Shell32.ShellLinkObject)folderItem.GetLink;
 
                 // Set the .lnk file properties
-                lnk.Description = $"Project Launcher {project.Id}";
-                lnk.Path = Path.Combine(basePath, "PowerToys.ProjectsLauncher.exe");
-                lnk.Arguments = project.Id.ToString();
-                lnk.WorkingDirectory = basePath;
-                lnk.SetIconLocation(shortcutIconFilename, 0);
+                link.Description = $"Project Launcher {project.Id}";
+                link.Path = Path.Combine(basePath, "PowerToys.ProjectsLauncher.exe");
+                link.Arguments = project.Id.ToString();
+                link.WorkingDirectory = basePath;
+                link.SetIconLocation(shortcutIconFilename, 0);
 
-                lnk.Save(shortcutAddress);
+                link.Save(shortcutAddress);
             }
             catch (Exception ex)
             {
