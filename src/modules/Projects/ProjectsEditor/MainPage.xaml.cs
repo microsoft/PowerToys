@@ -30,6 +30,7 @@ namespace ProjectsEditor
 
         private void EditButtonClicked(object sender, RoutedEventArgs e)
         {
+            _mainViewModel.CloseAllPopups();
             Button button = sender as Button;
             Project selectedProject = button.DataContext as Project;
             _mainViewModel.EditProject(selectedProject);
