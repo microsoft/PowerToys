@@ -304,6 +304,15 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No projects match the current search..
+        /// </summary>
+        public static string NoProjectsMatch {
+            get {
+                return ResourceManager.GetString("NoProjectsMatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The application cannot be found.
         /// </summary>
         public static string NotFoundTooltip {

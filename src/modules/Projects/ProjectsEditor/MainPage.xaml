@@ -5,11 +5,14 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
     xmlns:props="clr-namespace:ProjectsEditor.Properties"
+    xmlns:converters="clr-namespace:ProjectsEditor.Converters"
     xmlns:local="clr-namespace:ProjectsEditor"
     mc:Ignorable="d" 
     d:DesignHeight="450" d:DesignWidth="800"
     Title="MainPage">
     <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <converters:BooleanToInvertedVisibilityConverter x:Key="BooleanToInvertedVisibilityConverter" />
         <Thickness x:Key="ContentDialogPadding">24,16,0,24</Thickness>
         <Thickness x:Key="ContentDialogCommandSpaceMargin">0,24,24,0</Thickness>
         <Style x:Key="DeleteButtonStyle" TargetType="Button">
@@ -149,12 +152,19 @@
                 <ComboBoxItem Content="{x:Static props:Resources.Name}" />
             </ComboBox>
         </StackPanel>
-        
+        <TextBlock
+            Grid.Row="2"
+            Text="{Binding EmptyProjectsViewMessage, UpdateSourceTrigger=PropertyChanged}"
+            FontSize="20"
+            Foreground="{DynamicResource PrimaryForegroundBrush}"
+            Margin="40,40,40,40"
+            Visibility="{Binding IsProjectsViewEmpty, Mode=OneWay, Converter={StaticResource BoolToVis}, UpdateSourceTrigger=PropertyChanged}"/>
         <ScrollViewer
             VerticalContentAlignment="Stretch"
             VerticalScrollBarVisibility="Auto"
             Grid.Row="2"
-            Margin="40,15,40,40">
+            Margin="40,15,40,40"
+            Visibility="{Binding IsProjectsViewEmpty, Mode=OneWay, Converter={StaticResource BooleanToInvertedVisibilityConverter}, UpdateSourceTrigger=PropertyChanged}">
             <ItemsControl ItemsSource="{Binding ProjectsView, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>

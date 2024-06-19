@@ -195,6 +195,9 @@
   <data name="New_project" xml:space="preserve">
     <value>New project</value>
   </data>
+  <data name="NoProjectsMatch" xml:space="preserve">
+    <value>No projects match the current search.</value>
+  </data>
   <data name="NotFoundTooltip" xml:space="preserve">
     <value>The application cannot be found</value>
   </data>

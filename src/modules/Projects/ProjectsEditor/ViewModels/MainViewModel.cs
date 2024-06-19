@@ -30,8 +30,21 @@ namespace ProjectsEditor.ViewModels
             get
             {
                 IEnumerable<Project> projects = GetFilteredProjects();
-                if (projects == null)
+                IsProjectsViewEmpty = !(projects != null && projects.Any());
+                OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsProjectsViewEmpty)));
+                if (IsProjectsViewEmpty)
                 {
+                    if (Projects != null && Projects.Any())
+                    {
+                        EmptyProjectsViewMessage = Properties.Resources.NoProjectsMatch;
+                    }
+                    else
+                    {
+                        EmptyProjectsViewMessage = Properties.Resources.No_Projects_Message;
+                    }
+
+                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(EmptyProjectsViewMessage)));
+
                     return Enumerable.Empty<Project>();
                 }
 
@@ -50,6 +63,10 @@ namespace ProjectsEditor.ViewModels
                 }
             }
         }
+
+        public bool IsProjectsViewEmpty { get; set; }
+
+        public string EmptyProjectsViewMessage { get; set; }
 
         // return those projects where the project name or any of the selected apps' name contains the search term
         private IEnumerable<Project> GetFilteredProjects()
