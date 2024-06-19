@@ -64,6 +64,7 @@ namespace ProjectsEditor.Utils
             }
 
             Bitmap previewBitmap = new Bitmap(Scaled(bounds.Width), Scaled(bounds.Height * 1.2));
+            double desiredIconSize = Scaled(Math.Min(bounds.Width, bounds.Height)) * 0.3;
             using (Graphics g = Graphics.FromImage(previewBitmap))
             {
                 g.SmoothingMode = SmoothingMode.AntiAlias;
@@ -79,13 +80,13 @@ namespace ProjectsEditor.Utils
                 foreach (Application app in appsToDraw.Where(x => !x.IsHighlighted))
                 {
                     Rectangle rect = new Rectangle(Scaled(app.ScaledPosition.X - bounds.Left), Scaled(app.ScaledPosition.Y - bounds.Top), Scaled(app.ScaledPosition.Width), Scaled(app.ScaledPosition.Height));
-                    DrawWindow(g, brush, rect, app);
+                    DrawWindow(g, brush, rect, app, desiredIconSize);
                 }
 
                 foreach (Application app in appsToDraw.Where(x => x.IsHighlighted))
                 {
                     Rectangle rect = new Rectangle(Scaled(app.ScaledPosition.X - bounds.Left), Scaled(app.ScaledPosition.Y - bounds.Top), Scaled(app.ScaledPosition.Width), Scaled(app.ScaledPosition.Height));
-                    DrawWindow(g, brush, rect, app);
+                    DrawWindow(g, brush, rect, app, desiredIconSize);
                 }
 
                 // draw the minimized windows
@@ -109,7 +110,7 @@ namespace ProjectsEditor.Utils
             }
         }
 
-        public static void DrawWindow(Graphics graphics, Brush brush, Rectangle bounds, Application app)
+        public static void DrawWindow(Graphics graphics, Brush brush, Rectangle bounds, Application app, double desiredIconSize)
         {
             if (graphics == null)
             {
@@ -135,7 +136,7 @@ namespace ProjectsEditor.Utils
                 graphics.FillPath(brush, path);
             }
 
-            double iconSize = Math.Min(bounds.Width, bounds.Height) * 0.3;
+            double iconSize = Math.Min(Math.Min(bounds.Width - 4, bounds.Height - 4), desiredIconSize);
             Rectangle iconBounds = new Rectangle((int)(bounds.Left + (bounds.Width / 2) - (iconSize / 2)), (int)(bounds.Top + (bounds.Height / 2) - (iconSize / 2)), (int)iconSize, (int)iconSize);
 
             try
