@@ -41,8 +41,7 @@ protected:
     void _OnReplaceTermChanged();
     void _OnFlagsChanged();
     void _OnFileTimeChanged();
-    HRESULT _OnEnumerateItemsChanged();
-    HRESULT _OnRandomizerItemsChanged();
+    HRESULT _OnEnumerateOrRandomizeItemsChanged();
 
     size_t _Find(std::wstring data, std::wstring toSearch, bool caseInsensitive, size_t pos);
 

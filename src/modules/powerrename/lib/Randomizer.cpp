@@ -45,8 +45,10 @@ std::vector<RandomizerOptions> parseRandomizerOptions(const std::wstring& replac
         {
             option.uuid = true;
         }
-
-        options.push_back(option);
+        if (option.isValid())
+        {
+            options.push_back(option);
+        }
     }
 
     return options;

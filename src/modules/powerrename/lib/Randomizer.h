@@ -20,6 +20,11 @@ struct RandomizerOptions
     std::optional<boolean> digit;
     std::optional<boolean> uuid;
     ReplaceStrSpan replaceStrSpan;
+
+    bool isValid() const
+    {
+        return alnum.has_value() || alpha.has_value() || digit.has_value() || uuid.has_value();
+    }
 };
 
 std::vector<RandomizerOptions> parseRandomizerOptions(const std::wstring& replaceWith);

@@ -591,21 +591,6 @@ namespace winrt::PowerRenameUI::implementation
             }
         }
 
-        if (flag == EnumerateItems)
-        {
-            if (toggleButton_enumItems().IsChecked())
-            {
-                toggleButton_randItems().IsChecked(false);
-            }
-        }
-        else if (flag == RandomizeItems)
-        {
-            if (toggleButton_randItems().IsChecked())
-            {
-                toggleButton_enumItems().IsChecked(false);
-            }
-        }
-
         m_flagValidationInProgress = true;
     }
 
