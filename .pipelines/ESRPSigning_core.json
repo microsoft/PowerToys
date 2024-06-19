@@ -192,6 +192,7 @@
                 "PowerToys.ProjectsSnapshotTool.exe",
                 "PowerToys.ProjectsLauncher.exe",
                 "PowerToys.ProjectsEditor.exe",
+                "PowerToys.ProjectsEditor.dll",
                 "PowerToys.ProjectsModuleInterface.dll",
 
                 "WinUI3Apps\\PowerToys.RegistryPreviewExt.dll",

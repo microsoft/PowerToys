@@ -22,9 +22,9 @@ namespace WindowUtils
         const char SplashClassName[] = "MsoSplash";
         const wchar_t CoreWindow[] = L"WINDOWS.UI.CORE.COREWINDOW";
         const wchar_t SearchUI[] = L"SEARCHUI.EXE";
-        const wchar_t ProjectsSnapshotTool[] = L"PROJECTSSNAPSHOTTOOL";
-        const wchar_t ProjectsEditor[] = L"PROJECTSEDITOR";
-        const wchar_t ProjectsLauncher[] = L"PROJECTSLAUNCHER";
+        const wchar_t ProjectsSnapshotTool[] = L"POWERTOYS.PROJECTSSNAPSHOTTOOL";
+        const wchar_t ProjectsEditor[] = L"POWERTOYS.PROJECTSEDITOR";
+        const wchar_t ProjectsLauncher[] = L"POWERTOYS.PROJECTSLAUNCHER";
     }
 
     inline bool IsRoot(HWND window) noexcept
