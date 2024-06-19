@@ -237,6 +237,9 @@
   <data name="Search" xml:space="preserve">
     <value>Search</value>
   </data>
+  <data name="SearchExplanation" xml:space="preserve">
+    <value>Search for projects or apps</value>
+  </data>
   <data name="SecondsAgo" xml:space="preserve">
     <value>seconds ago</value>
   </data>

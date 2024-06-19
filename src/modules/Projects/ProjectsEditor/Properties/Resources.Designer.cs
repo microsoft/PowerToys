@@ -421,6 +421,15 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Search for projects or apps.
+        /// </summary>
+        public static string SearchExplanation {
+            get {
+                return ResourceManager.GetString("SearchExplanation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to seconds ago.
         /// </summary>
         public static string SecondsAgo {
