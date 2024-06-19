@@ -86,6 +86,10 @@ namespace AdvancedPaste.Pages
 
                 _dispatcherQueue.TryEnqueue(async () =>
                 {
+                    clipboardHistory.Where(x => x.Image is not null)
+                                    .ToList()
+                                    .ForEach(x => x.Image.ClearValue(BitmapImage.UriSourceProperty));
+
                     clipboardHistory.Clear();
 
                     foreach (var item in items)
