@@ -51,7 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private static ISettingsUtils settingsUtils = new SettingsUtils();
 
-        /* NOTE: Experimentation for OOBE is currently turned off server side. Keeping this code in a comment to allow future experiments.
+        /* NOTE: Experimentation for OOBE is currently turned off on server side. Keeping this code in a comment to allow future experiments.
           private bool ExperimentationToggleSwitchEnabled { get; set; } = true;
         */
 
