@@ -158,8 +158,10 @@
             Grid.Row="2"
             Text="{Binding EmptyProjectsViewMessage, UpdateSourceTrigger=PropertyChanged}"
             FontSize="20"
-            Foreground="{DynamicResource PrimaryForegroundBrush}"
-            Margin="40,40,40,40"
+            Foreground="{DynamicResource SecondaryForegroundBrush}"
+            TextAlignment="Center"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
             Visibility="{Binding IsProjectsViewEmpty, Mode=OneWay, Converter={StaticResource BoolToVis}, UpdateSourceTrigger=PropertyChanged}"/>
         <ScrollViewer
             VerticalContentAlignment="Stretch"
