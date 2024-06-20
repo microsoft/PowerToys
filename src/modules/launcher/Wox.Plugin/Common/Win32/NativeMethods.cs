@@ -514,8 +514,8 @@ namespace Wox.Plugin.Common.Win32
         BorderColor = 34,
         CaptionColor = 35,
         TextColor = 36,
-        VisibleFrameBorderThickness,
-        Last = 37,
+        VisibleFrameBorderThickness = 37,
+        Last,
     }
 
     /// <summary>
