@@ -50,11 +50,9 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         return 1;
     }
 
-    Project projectToLaunch = projects[0];
-
+    Project projectToLaunch{};
     std::string idStr(cmdline);
     std::wstring id(idStr.begin(), idStr.end());
-    Logger::info(L"command line: {}", id);
     if (!id.empty())
     {
         for (const auto& proj : projects)
@@ -65,6 +63,12 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
                 break;
             }
         }
+    }
+
+    if (projectToLaunch.id.empty())
+    {
+        Logger::info(L"Project {} not found", id);
+        return 1;
     }
 
     Logger::info(L"Launch Project {} : {}", projectToLaunch.name, projectToLaunch.id);
