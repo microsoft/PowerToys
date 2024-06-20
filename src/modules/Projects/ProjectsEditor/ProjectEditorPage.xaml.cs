@@ -91,5 +91,10 @@ namespace ProjectsEditor
             project.Name = EditNameTextBox.Text;
             project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.CanBeSaved)));
         }
+
+        private void ProjectsTextBlock_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            CancelButtonClicked(null, null);
+        }
     }
 }

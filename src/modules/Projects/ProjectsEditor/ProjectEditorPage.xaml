@@ -123,7 +123,34 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <TextBlock Text="{Binding EditorWindowTitle}" FontSize="24" FontWeight="SemiBold" Margin="0,20,0,20" Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <Button
+                Margin="0,20,0,20" 
+                Background="Transparent"
+                VerticalAlignment="Center">
+                <TextBlock 
+                    Text="{x:Static props:Resources.Projects}" 
+                    FontSize="24" 
+                    FontWeight="Normal" 
+                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                    MouseDown="ProjectsTextBlock_MouseDown"
+                    VerticalAlignment="Center"/>
+            </Button>
+            <TextBlock
+                FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                Foreground="{DynamicResource PrimaryForegroundBrush}"
+                FontSize="16"
+                Margin="10,0,0,0"
+                Text="&#xE76C;" 
+                VerticalAlignment="Center"/>
+            <TextBlock 
+                Text="{Binding EditorWindowTitle}" 
+                FontSize="24" 
+                FontWeight="SemiBold" 
+                Margin="10,0,0,0" 
+                Foreground="{DynamicResource PrimaryForegroundBrush}"
+                VerticalAlignment="Center"/>
+        </StackPanel>
         <StackPanel Grid.Row="1" Orientation="Vertical">
             <TextBlock Text="{x:Static props:Resources.ProjectName}" FontSize="14" FontWeight="Normal" Foreground="{DynamicResource PrimaryForegroundBrush}"/>
             <TextBox

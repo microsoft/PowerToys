@@ -223,7 +223,7 @@
     <value>Pin Project to Taskbar</value>
   </data>
   <data name="ProjectName" xml:space="preserve">
-    <value>Name project</value>
+    <value>Project name</value>
   </data>
   <data name="Projects" xml:space="preserve">
     <value>Projects</value>
