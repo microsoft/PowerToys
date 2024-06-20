@@ -233,7 +233,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 switch (selectedItem.Tag)
                 {
                     case "Overview": NavigationFrame.Navigate(typeof(OobeOverview)); break;
-                    /* NOTE: Experimentation for OOBE is currently turned off server side. Keeping this code in a comment to allow future experiments.
+                    /* NOTE: Experimentation for OOBE is currently turned off on server side. Keeping this code in a comment to allow future experiments.
                         if (ExperimentationToggleSwitchEnabled && GPOWrapper.GetAllowExperimentationValue() != GpoRuleConfigured.Disabled)
                         {
                             switch (AllExperiments.Experiments.LandingPageExperiment)
