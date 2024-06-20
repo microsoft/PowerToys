@@ -19,13 +19,13 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <param name="hwnd">handle to the window to exclude</param>
         public static void SetWindowExclusionFromLivePreview(IntPtr hwnd)
         {
-            int renderPolicy = (int)DwmNCRenderingPolicies.Enabled;
+            uint renderPolicy = (uint)DwmNCRenderingPolicies.Enabled;
 
             _ = NativeMethods.DwmSetWindowAttribute(
                 hwnd,
                 12,
                 ref renderPolicy,
-                sizeof(int));
+                sizeof(uint));
         }
 
         /// <summary>
