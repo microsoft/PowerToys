@@ -243,48 +243,59 @@
                                             <Popup
                                                 IsOpen="{Binding IsPopupVisible, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                                 StaysOpen="False"
+                                                AllowsTransparency="True"
                                                 PlacementTarget="{Binding ElementName=MoreButton}"
                                                 Placement="Left">
-                                                <StackPanel 
-                                                    Background="{DynamicResource PrimaryBackgroundBrush}"
-                                                    Orientation="Vertical">
-                                                    <Button
-                                                        Style="{StaticResource DeleteButtonStyle}"
-                                                        Margin="5"
-                                                        AutomationProperties.Name="{x:Static props:Resources.Edit}"
-                                                        Click="EditButtonClicked">
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <TextBlock
-                                                                AutomationProperties.Name="{x:Static props:Resources.Edit}"
-                                                                FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                                                                Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                                                Text="&#xE70F;" />
-                                                            <TextBlock
-                                                                Margin="10,0,0,0"
-                                                                AutomationProperties.Name="{x:Static props:Resources.Edit}"
-                                                                Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                                                Text="{x:Static props:Resources.Edit}" />
-                                                        </StackPanel>
-                                                    </Button>
-                                                    <Button
-                                                        Style="{StaticResource DeleteButtonStyle}"
-                                                        Margin="5"
-                                                        AutomationProperties.Name="{x:Static props:Resources.Delete}"
-                                                        Click="DeleteButtonClicked">
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <TextBlock
-                                                                AutomationProperties.Name="{x:Static props:Resources.Delete}"
-                                                                FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                                                                Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                                                Text="&#xE74D;" />
-                                                            <TextBlock
-                                                                Margin="10,0,0,0"
-                                                                AutomationProperties.Name="{x:Static props:Resources.Delete}"
-                                                                Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                                                Text="{x:Static props:Resources.Delete}" />
-                                                        </StackPanel>
-                                                    </Button>
-                                                </StackPanel>
+                                                <Grid
+                                                    Background="{DynamicResource PrimaryBackgroundBrush}">
+                                                    <Grid.OpacityMask>
+                                                        <VisualBrush Visual="{Binding ElementName=OpacityBorder}" />
+                                                    </Grid.OpacityMask>
+                                                    <Border
+                                                        HorizontalAlignment="Stretch"
+                                                        VerticalAlignment="Stretch"
+                                                        x:Name="OpacityBorder"
+                                                        Background="Black"
+                                                        CornerRadius="5" />
+                                                    <StackPanel
+                                                        Background="{DynamicResource PrimaryBackgroundBrush}"
+                                                        Orientation="Vertical">
+                                                        <Button
+                                                            Style="{StaticResource DeleteButtonStyle}"
+                                                            AutomationProperties.Name="{x:Static props:Resources.Edit}"
+                                                            Click="EditButtonClicked">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    AutomationProperties.Name="{x:Static props:Resources.Edit}"
+                                                                    FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                                                    Text="&#xE70F;" />
+                                                                <TextBlock
+                                                                    Margin="10,0,0,0"
+                                                                    AutomationProperties.Name="{x:Static props:Resources.Edit}"
+                                                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                                                    Text="{x:Static props:Resources.Edit}" />
+                                                            </StackPanel>
+                                                        </Button>
+                                                        <Button
+                                                            Style="{StaticResource DeleteButtonStyle}"
+                                                            AutomationProperties.Name="{x:Static props:Resources.Delete}"
+                                                            Click="DeleteButtonClicked">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    AutomationProperties.Name="{x:Static props:Resources.Delete}"
+                                                                    FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                                                    Text="&#xE74D;" />
+                                                                <TextBlock
+                                                                    Margin="10,0,0,0"
+                                                                    AutomationProperties.Name="{x:Static props:Resources.Delete}"
+                                                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                                                    Text="{x:Static props:Resources.Delete}" />
+                                                            </StackPanel>
+                                                        </Button>
+                                                    </StackPanel>
+                                                </Grid>
                                             </Popup>
                                         </StackPanel>
                                         <Button
