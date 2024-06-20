@@ -126,6 +126,7 @@
         <StackPanel Grid.Row="0" Orientation="Horizontal">
             <Button
                 Margin="0,20,0,20" 
+                Click="CancelButtonClicked"
                 Background="Transparent"
                 VerticalAlignment="Center">
                 <TextBlock 
@@ -133,7 +134,6 @@
                     FontSize="24" 
                     FontWeight="Normal" 
                     Foreground="{DynamicResource PrimaryForegroundBrush}"
-                    MouseDown="ProjectsTextBlock_MouseDown"
                     VerticalAlignment="Center"/>
             </Button>
             <TextBlock
