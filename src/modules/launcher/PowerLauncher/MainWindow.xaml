@@ -32,9 +32,9 @@
 
     <Grid x:Name="RootGrid" MouseDown="OnMouseDown">
         <!--  We set the background here because the Acrylic can be too translucent / background too bright on Light theme  -->
-        <!--<Grid.Background>
+        <Grid.Background>
             <SolidColorBrush Opacity="0.8" Color="{DynamicResource ApplicationBackgroundColor}" />
-        </Grid.Background>-->
+        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
