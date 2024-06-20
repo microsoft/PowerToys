@@ -235,14 +235,14 @@ void Launch(const Project& project)
 {
     // Get the set of windows before launching the app
     std::vector<HWND> windowsBefore = WindowEnumerator::Enumerate(WindowFilter::Filter);
-    std::map<Project::Application, HWND> launchedWindows{};
+    std::vector<std::pair<Project::Application, HWND>> launchedWindows{};
     auto apps = Utils::Apps::GetAppsList();
        
     for (const auto& app : project.apps)
     {
         if (Launch(app))
         {
-            launchedWindows.insert({ app, nullptr });
+            launchedWindows.push_back({ app, nullptr });
         }
     }
     
@@ -263,7 +263,7 @@ void Launch(const Project& project)
                 }
 
                 // set the window
-                auto res = std::find_if(launchedWindows.begin(), launchedWindows.end(), [&](const std::pair<Project::Application, HWND>& val) { return val.first.name == app->name; });
+                auto res = std::find_if(launchedWindows.begin(), launchedWindows.end(), [&](const std::pair<Project::Application, HWND>& val) { return val.first.name == app->name && val.second == nullptr; });
                 if (res != launchedWindows.end())
                 {
                     res->second = window;
