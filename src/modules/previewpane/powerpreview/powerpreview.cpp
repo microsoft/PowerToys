@@ -166,6 +166,18 @@ void PowerPreviewModule::enable()
     }
 
     m_enabled = true;
+
+    try
+    {
+        PowerToysSettings::PowerToyValues settings =
+            PowerToysSettings::PowerToyValues::load_from_settings_file(PowerPreviewModule::get_key());
+
+        apply_settings(settings);
+    }
+    catch (std::exception const& e)
+    {
+        Trace::InitSetErrorLoadingFile(e.what());
+    }
 }
 
 // Disable active preview handlers.
