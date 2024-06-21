@@ -230,7 +230,6 @@
                         IsTabStop="False"
                         ItemsSource="{Binding ColorRepresentations}"
                         KeyboardNavigation.DirectionalNavigation="Contained"
-                        KeyboardNavigation.TabNavigation="Once"
                         TabIndex="4">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>

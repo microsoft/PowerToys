@@ -1,0 +1,52 @@
+<winuiex:WindowEx
+    x:Class="RegistryPreview.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:winuiex="using:WinUIEx"
+    MinWidth="480"
+    MinHeight="320"
+    Closed="Window_Closed"
+    mc:Ignorable="d">
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid x:Name="MainGrid" Loaded="Grid_Loaded">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid
+            x:Name="titleBar"
+            Grid.Row="0"
+            Height="32"
+            Margin="16,0"
+            ColumnSpacing="16"
+            IsHitTestVisible="True">
+            <Grid.ColumnDefinitions>
+                <!--<ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>-->
+                <ColumnDefinition x:Name="IconColumn" Width="Auto" />
+                <ColumnDefinition x:Name="TitleColumn" Width="Auto" />
+                <!--<ColumnDefinition x:Name="RightPaddingColumn" Width="0"/>-->
+            </Grid.ColumnDefinitions>
+            <Image
+                Grid.Column="0"
+                Width="16"
+                Height="16"
+                VerticalAlignment="Center"
+                Source="../Assets/RegistryPreview/RegistryPreview.ico" />
+            <TextBlock
+                x:Name="titleBarText"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                Text="{Binding ApplicationTitle}" />
+        </Grid>
+
+    </Grid>
+</winuiex:WindowEx>

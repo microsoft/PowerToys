@@ -17,10 +17,7 @@
             TrueValue="Collapsed" />
         <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
-    <controls:SettingsPageControl
-        x:Uid="CmdNotFound"
-        IsEnabled="{x:Bind ViewModel.IsArm64Arch, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
-        ModuleImageSource="ms-appx:///Assets/Settings/Modules/CmdNotFound.png">
+    <controls:SettingsPageControl x:Uid="CmdNotFound" ModuleImageSource="ms-appx:///Assets/Settings/Modules/CmdNotFound.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <InfoBar
@@ -65,7 +62,7 @@
                                 BorderThickness="0"
                                 CornerRadius="0"
                                 IsClosable="False"
-                                IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsArm64Arch, Converter={StaticResource BoolNegationConverter}}">
+                                IsOpen="True">
                                 <InfoBar.ActionButton>
                                     <HyperlinkButton x:Uid="CmdNotFound_CheckCompatibility" Command="{x:Bind ViewModel.CheckRequirementsEventHandler}">
                                         <ToolTipService.ToolTip>
@@ -74,16 +71,10 @@
                                     </HyperlinkButton>
                                 </InfoBar.ActionButton>
                             </InfoBar>
-                            <InfoBar
-                                x:Uid="CmdNotFound_Arm64ArchBar"
-                                BorderThickness="0"
-                                CornerRadius="0"
-                                IsClosable="False"
-                                IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsArm64Arch}" />
                         </StackPanel>
                     </tkcontrols:SettingsExpander.ItemsHeader>
                     <tkcontrols:SettingsExpander.Items>
-                        <tkcontrols:SettingsCard x:Uid="CmdNotFound_PowerShellDetection" Visibility="{x:Bind ViewModel.IsArm64Arch, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                        <tkcontrols:SettingsCard x:Uid="CmdNotFound_PowerShellDetection">
                             <tkcontrols:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IsPowerShell7Detected, Mode=OneWay}">
                                 <tkcontrols:Case Value="True">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -113,7 +104,7 @@
                             </tkcontrols:SwitchPresenter>
                         </tkcontrols:SettingsCard>
 
-                        <tkcontrols:SettingsCard x:Uid="CmdNotFound_WinGetClientDetection" Visibility="{x:Bind ViewModel.IsArm64Arch, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                        <tkcontrols:SettingsCard x:Uid="CmdNotFound_WinGetClientDetection">
                             <tkcontrols:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IsWinGetClientModuleDetected, Mode=OneWay}">
                                 <tkcontrols:Case Value="True">
                                     <StackPanel Orientation="Horizontal" Spacing="8">

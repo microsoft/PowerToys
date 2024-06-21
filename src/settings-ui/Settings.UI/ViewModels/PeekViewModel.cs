@@ -173,6 +173,34 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int SourceCodeFontSize
+        {
+            get => _peekPreviewSettings.SourceCodeFontSize.Value;
+            set
+            {
+                if (_peekPreviewSettings.SourceCodeFontSize.Value != value)
+                {
+                    _peekPreviewSettings.SourceCodeFontSize.Value = value;
+                    OnPropertyChanged(nameof(SourceCodeFontSize));
+                    SavePreviewSettings();
+                }
+            }
+        }
+
+        public bool SourceCodeStickyScroll
+        {
+            get => _peekPreviewSettings.SourceCodeStickyScroll.Value;
+            set
+            {
+                if (_peekPreviewSettings.SourceCodeStickyScroll.Value != value)
+                {
+                    _peekPreviewSettings.SourceCodeStickyScroll.Value = value;
+                    OnPropertyChanged(nameof(SourceCodeStickyScroll));
+                    SavePreviewSettings();
+                }
+            }
+        }
+
         private void NotifySettingsChanged()
         {
             // Using InvariantCulture as this is an IPC message

@@ -1,0 +1,73 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Condition="exists('..\..\..\Version.props')" Project="..\..\..\Version.props" />
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net8.0-windows10.0.20348</TargetFramework>
+    <RootNamespace>EnvironmentVariablesUILib</RootNamespace>
+    <UseWinUI>true</UseWinUI>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <AssemblyName>PowerToys.EnvironmentVariablesUILib</AssemblyName>
+    <Platforms>AnyCPU</Platforms>
+    <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
+    <ProjectPriFileName>PowerToys.EnvironmentVariablesUILib.pri</ProjectPriFileName>
+    <GenerateLibraryLayout>true</GenerateLibraryLayout>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Properties for nuget package. -->
+    <Authors>Microsoft Corporation</Authors>
+    <Description>Implements the UI control for the PowerToys Environment Variables Utility</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(OutDir)\PowerToys.EnvironmentVariablesUILib.pri" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
+    <None Include="$(OutDir)\PowerToys.EnvironmentVariablesUILib.pri" Pack="True" PackageCopyToOutput="True" PackagePath="contentFiles\any\$(TargetFramework)" />
+    <None Include="$(OutDir)\PowerToys.EnvironmentVariablesUILib.pdb" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
+
+    <None Include="Assets\**\*.png" Pack="true" PackageCopyToOutput="true" PackagePath="contentFiles\any\$(TargetFramework)\Assets"/>
+    <None Include="Assets\**\*.ico" Pack="true" PackageCopyToOutput="true" PackagePath="contentFiles\any\$(TargetFramework)\Assets"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Assets\**\*.png" Pack="false" />
+    <Content Remove="Assets\**\*.ico" Pack="false" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
+    <PackageReference Include="CommunityToolkit.WinUI.Converters" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Sizers" />
+    <PackageReference Include="System.IO.Abstractions" />
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+</Project>
