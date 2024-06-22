@@ -47,6 +47,19 @@ bool CTestFileHelper::PathExists(_In_ const std::wstring path)
     return fs::exists(fullPath);
 }
 
+bool CTestFileHelper::PathExistsCaseSensitive(_In_ const std::wstring path)
+{
+    fs::path tempDirPath = fs::path(_tempDirectory);
+    for (const auto& entry : fs::directory_iterator(tempDirPath))
+    {
+        if (entry.path().filename().wstring() == path)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool CTestFileHelper::_CreateTempDirectory()
 {
     // Initialize to the temp directory

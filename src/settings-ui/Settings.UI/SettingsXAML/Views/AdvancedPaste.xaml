@@ -1,0 +1,203 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.AdvancedPastePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Default">
+                    <ImageSource x:Key="DialogHeaderImage">ms-appx:///Assets/Settings/Modules/APDialog.dark.png</ImageSource>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Light">
+                    <ImageSource x:Key="DialogHeaderImage">ms-appx:///Assets/Settings/Modules/APDialog.light.png</ImageSource>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="HighContrast">
+                    <ImageSource x:Key="DialogHeaderImage">ms-appx:///Assets/Settings/Modules/APDialog.light.png</ImageSource>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Page.Resources>
+    <Grid>
+        <controls:SettingsPageControl x:Uid="AdvancedPaste" ModuleImageSource="ms-appx:///Assets/Settings/Modules/AdvancedPaste.png">
+            <controls:SettingsPageControl.ModuleContent>
+                <StackPanel
+                    ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
+                    Orientation="Vertical"
+                    Spacing="2">
+                    <tkcontrols:SettingsCard
+                        x:Uid="AdvancedPaste_EnableToggleControl_HeaderText"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AdvancedPaste.png}"
+                        IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_SettingIsManaged"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                        Severity="Informational" />
+
+                    <controls:SettingsGroup x:Uid="AdvancedPaste_EnableAISettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_EnableAISettingsCard" IsEnabled="{x:Bind ViewModel.IsOnlineAIModelsDisallowedByGPO, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <tkcontrols:SettingsCard.HeaderIcon>
+                                <PathIcon Data="M128 766q0-42 24-77t65-48l178-57q32-11 61-30t52-42q50-50 71-114l58-179q13-40 48-65t78-26q42 0 77 24t50 65l58 177q21 66 72 117 49 50 117 72l176 58q43 14 69 48t26 80q0 41-25 76t-64 49l-178 58q-66 21-117 72-32 32-51 73t-33 84-26 83-30 73-45 51-71 20q-42 0-77-24t-49-65l-58-178q-8-25-19-47t-28-43q-34-43-77-68t-89-41-89-27-78-29-55-45-21-75zm1149 7q-76-29-145-53t-129-60-104-88-73-138l-57-176-67 176q-18 48-42 89t-60 78q-34 34-76 61t-89 43l-177 57q75 29 144 53t127 60 103 89 73 137l57 176 67-176q37-97 103-168t168-103l177-57zm-125 759q0-31 20-57t49-36l99-32q34-11 53-34t30-51 20-59 20-54 33-41 58-16q32 0 59 19t38 50q6 20 11 40t13 40 17 38 25 34q16 17 39 26t48 18 49 16 44 20 31 32 12 50q0 33-18 60t-51 38q-19 6-39 11t-41 13-39 17-34 25q-24 25-35 62t-24 73-35 61-68 25q-32 0-59-19t-38-50q-6-18-11-39t-13-41-17-40-24-33q-18-17-41-27t-47-17-49-15-43-20-30-33-12-54zm583 4q-43-13-74-30t-55-41-40-55-32-74q-12 41-29 72t-42 55-55 42-71 31q81 23 128 71t71 129q15-43 31-74t40-54 53-40 75-32z" />
+                            </tkcontrols:SettingsCard.HeaderIcon>
+                            <tkcontrols:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IsOpenAIEnabled, Mode=OneWay}">
+                                <tkcontrols:Case Value="True">
+                                    <Button x:Uid="AdvancedPaste_DisableAIButton" Click="AdvancedPaste_DisableAIButton_Click" />
+                                </tkcontrols:Case>
+                                <tkcontrols:Case Value="False">
+                                    <Button
+                                        x:Uid="AdvancedPaste_EnableAIButton"
+                                        Click="AdvancedPaste_EnableAIButton_Click"
+                                        Style="{StaticResource AccentButtonStyle}" />
+                                </tkcontrols:Case>
+                            </tkcontrols:SwitchPresenter>
+                            <tkcontrols:SettingsCard.Description>
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock x:Uid="AdvancedPaste_EnableAISettingsCardDescription" />
+                                    <HyperlinkButton x:Uid="AdvancedPaste_EnableAISettingsCardDescriptionLearnMore" NavigateUri="https://learn.microsoft.com/windows/powertoys/advanced-paste" />
+                                </StackPanel>
+                            </tkcontrols:SettingsCard.Description>
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard
+                            x:Uid="AdvancedPaste_ShowCustomPreviewSettingsCard"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE71E;}"
+                            IsEnabled="{x:Bind ViewModel.IsOpenAIEnabled, Mode=OneWay}">
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.ShowCustomPreview, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <InfoBar
+                            x:Uid="GPO_SettingIsManaged"
+                            IsClosable="False"
+                            IsOpen="{x:Bind ViewModel.ShowOnlineAIModelsGpoConfiguredInfoBar, Mode=OneWay}"
+                            IsTabStop="{x:Bind ViewModel.ShowOnlineAIModelsGpoConfiguredInfoBar, Mode=OneWay}"
+                            Severity="Informational" />
+                    </controls:SettingsGroup>
+
+                    <controls:SettingsGroup x:Uid="AdvancedPaste_ClipboardHistorySettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsCard
+                            x:Uid="AdvancedPaste_Clipboard_History_Enabled_SettingsCard"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xF0E3;}"
+                            IsEnabled="{x:Bind ViewModel.ClipboardHistoryDisabledByGPO, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <InfoBar
+                            x:Uid="GPO_SettingIsManaged"
+                            IsClosable="False"
+                            IsOpen="{x:Bind ViewModel.ShowClipboardHistoryIsGpoConfiguredInfoBar, Mode=OneWay}"
+                            IsTabStop="{x:Bind ViewModel.ShowClipboardHistoryIsGpoConfiguredInfoBar, Mode=OneWay}"
+                            Severity="Informational" />
+                    </controls:SettingsGroup>
+
+                    <controls:SettingsGroup x:Uid="AdvancedPaste_Direct_Access_Hotkeys_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsExpander
+                            x:Uid="AdvancedPasteUI_Shortcut"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                            IsExpanded="True">
+                            <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.AdvancedPasteUIShortcut, Mode=TwoWay}" />
+                            <tkcontrols:SettingsExpander.Items>
+                                <tkcontrols:SettingsCard Visibility="Collapsed">
+                                    <!--  There's a bug that makes it so that the first shortcut control inside an expander doesn't work. We add this dummy one so the other entries aren't affected.  -->
+                                    <TextBox />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard x:Uid="PasteAsPlainText_Shortcut">
+                                    <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.PasteAsPlainTextShortcut, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard x:Uid="PasteAsMarkdown_Shortcut">
+                                    <controls:ShortcutControl
+                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                        AllowDisable="True"
+                                        HotkeySettings="{x:Bind Path=ViewModel.PasteAsMarkdownShortcut, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard x:Uid="PasteAsJson_Shortcut">
+                                    <controls:ShortcutControl
+                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                        AllowDisable="True"
+                                        HotkeySettings="{x:Bind Path=ViewModel.PasteAsJsonShortcut, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
+                            </tkcontrols:SettingsExpander.Items>
+                        </tkcontrols:SettingsExpander>
+                        <InfoBar
+                            x:Uid="AdvancedPaste_ShortcutWarning"
+                            IsClosable="False"
+                            IsOpen="{x:Bind ViewModel.IsConflictingCopyShortcut, Mode=OneWay}"
+                            IsTabStop="{x:Bind ViewModel.IsConflictingCopyShortcut, Mode=OneWay}"
+                            Severity="Warning" />
+                    </controls:SettingsGroup>
+                </StackPanel>
+            </controls:SettingsPageControl.ModuleContent>
+            <controls:SettingsPageControl.PrimaryLinks>
+                <controls:PageLink x:Uid="LearnMore_AdvancedPaste" Link="https://aka.ms/PowerToysOverview_AdvancedPaste" />
+            </controls:SettingsPageControl.PrimaryLinks>
+        </controls:SettingsPageControl>
+
+        <ContentDialog
+            x:Name="EnableAIDialog"
+            x:Uid="EnableAIDialog"
+            IsPrimaryButtonEnabled="False"
+            IsSecondaryButtonEnabled="True"
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
+            <Grid RowSpacing="24">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Image Margin="-24,-24,-24,0" Source="{ThemeResource DialogHeaderImage}" />
+                <TextBlock
+                    Grid.Row="1"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    TextWrapping="Wrap">
+                    <Run x:Uid="AdvancedPaste_EnableAIDialog_Description" />
+                    <Hyperlink NavigateUri="https://openai.com/policies/terms-of-use" TabIndex="3">
+                        <Run x:Uid="TermsLink" />
+                    </Hyperlink>
+                    <Run x:Uid="AIFooterSeparator" Foreground="{ThemeResource TextFillColorSecondaryBrush}">|</Run>
+                    <Hyperlink NavigateUri="https://openai.com/policies/privacy-policy" TabIndex="3">
+                        <Run x:Uid="PrivacyLink" />
+                    </Hyperlink>
+                </TextBlock>
+
+                <StackPanel Grid.Row="2" Orientation="Vertical">
+                    <TextBlock x:Uid="AdvancedPaste_EnableAIDialog_ConfigureOpenAIKey" FontWeight="SemiBold" />
+                    <TextBlock Grid.Row="2" TextWrapping="Wrap">
+                        <Run x:Uid="AdvancedPaste_EnableAIDialog_LoginIntoText" />
+                        <Hyperlink NavigateUri="https://platform.openai.com/api-keys">
+                            <Run x:Uid="AdvancedPaste_EnableAIDialog_OpenAIApiKeysOverviewText" />
+                        </Hyperlink>
+                        <LineBreak />
+                        <Run x:Uid="AdvancedPaste_EnableAIDialog_CreateNewKeyText" />
+                        <LineBreak />
+                        <Run x:Uid="AdvancedPaste_EnableAIDialog_NoteAICreditsText" />
+                    </TextBlock>
+                </StackPanel>
+
+                <Grid Grid.Row="3" ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        x:Uid="AdvancedPaste_EnableAIDialogOpenAIApiKey"
+                        VerticalAlignment="Center"
+                        TextWrapping="Wrap" />
+                    <TextBox
+                        x:Name="AdvancedPaste_EnableAIDialogOpenAIApiKey"
+                        Grid.Column="1"
+                        MinWidth="248"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        TextChanged="AdvancedPaste_EnableAIDialogOpenAIApiKey_TextChanged" />
+                </Grid>
+            </Grid>
+        </ContentDialog>
+    </Grid>
+</Page>

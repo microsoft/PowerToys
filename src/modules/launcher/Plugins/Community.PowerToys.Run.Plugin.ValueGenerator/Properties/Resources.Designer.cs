@@ -88,7 +88,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Calculates hashes and generate values..
+        ///   Looks up a localized string similar to Calculates hashes and generate values.
         /// </summary>
         public static string plugin_description {
             get {

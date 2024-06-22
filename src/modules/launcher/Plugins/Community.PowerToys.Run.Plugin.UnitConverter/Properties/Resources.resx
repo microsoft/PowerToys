@@ -127,7 +127,7 @@
     <value>Copy {0} to clipboard</value>
   </data>
   <data name="plugin_description" xml:space="preserve">
-    <value>Provides unit conversion (e.g. 10 ft in m).</value>
+    <value>Provides unit conversion (e.g. 10 ft to m)</value>
   </data>
   <data name="plugin_name" xml:space="preserve">
     <value>Unit Converter</value>
