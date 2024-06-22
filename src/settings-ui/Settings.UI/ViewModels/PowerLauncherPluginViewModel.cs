@@ -179,10 +179,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return $"{Name}. {Description}";
         }
 
-        public string IconPath
-        {
-            get => isDark() ? settings.IconPathDark : settings.IconPathLight;
-        }
+#nullable enable
+        public Uri? IconPath => Uri.TryCreate(isDark() ? settings.IconPathDark : settings.IconPathLight, UriKind.Absolute, out var uri) ? uri : null;
+#nullable restore
 
         public event PropertyChangedEventHandler PropertyChanged;
 

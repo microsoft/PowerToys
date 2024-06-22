@@ -45,8 +45,6 @@ namespace Peek.FilePreviewer.Previewers
             Dispatcher = DispatcherQueue.GetForCurrentThread();
         }
 
-        public bool IsPreviewLoaded => Preview.IconPreview != null;
-
         private IFileSystemItem Item { get; }
 
         private DispatcherQueue Dispatcher { get; }
