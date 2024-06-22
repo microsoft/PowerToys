@@ -1365,7 +1365,7 @@ EXHIBIT A -Mozilla Public License.
 - System.ServiceProcess.ServiceController 8.0.0
 - System.Text.Encoding.CodePages 8.0.0
 - UnicodeInformation 2.6.0
-- UnitsNet 4.145.0
+- UnitsNet 5.50.0
 - UTF.Unknown 2.5.1
 - Vanara.PInvoke.Shell32 3.4.11
 - Vanara.PInvoke.User32 3.4.11
