@@ -466,7 +466,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to First day of week.
+        ///   Looks up a localized string similar to First day of the week.
         /// </summary>
         internal static string Microsoft_plugin_timedate_SettingFirstDayOfWeek {
             get {
@@ -538,7 +538,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to First week rule.
+        ///   Looks up a localized string similar to First week of the year.
         /// </summary>
         internal static string Microsoft_plugin_timedate_SettingFirstWeekRule {
             get {

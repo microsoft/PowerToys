@@ -316,7 +316,7 @@
     <value>Unix epoch time in milliseconds</value>
   </data>
   <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek" xml:space="preserve">
-    <value>First day of week</value>
+    <value>First day of the week</value>
   </data>
   <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek_Friday" xml:space="preserve">
     <value>Friday</value>
