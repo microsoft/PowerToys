@@ -57,16 +57,17 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// </summary>
         /// <param name="date">date</param>
         /// <returns>Number of week in the month</returns>
-        internal static int GetWeekOfMonth(DateTime date)
+        internal static int GetWeekOfMonth(DateTime date, DayOfWeek formatSettingFirstDayOfWeek)
         {
             DateTime beginningOfMonth = new DateTime(date.Year, date.Month, 1);
+            int adjustment = 1; // We count from 1 to 7 and not from 0 to 6
 
-            while (date.Date.AddDays(1).DayOfWeek != CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek)
+            while (date.Date.AddDays(1).DayOfWeek != formatSettingFirstDayOfWeek)
             {
                 date = date.AddDays(1);
             }
 
-            return (int)Math.Truncate((double)date.Subtract(beginningOfMonth).TotalDays / 7f) + 1;
+            return (int)Math.Truncate((double)date.Subtract(beginningOfMonth).TotalDays / 7f) + adjustment;
         }
 
         /// <summary>
@@ -74,13 +75,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// </summary>
         /// <param name="date">Date</param>
         /// <returns>Number of the day in the week</returns>
-        internal static int GetNumberOfDayInWeek(DateTime date)
+        internal static int GetNumberOfDayInWeek(DateTime date, DayOfWeek formatSettingFirstDayOfWeek)
         {
             int daysInWeek = 7;
             int adjustment = 1; // We count from 1 to 7 and not from 0 to 6
-            int formatSettingFirstDayOfWeek = (int)CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek;
 
-            return ((int)(date.DayOfWeek + daysInWeek - formatSettingFirstDayOfWeek) % daysInWeek) + adjustment;
+            return ((date.DayOfWeek + daysInWeek - formatSettingFirstDayOfWeek) % daysInWeek) + adjustment;
         }
 
         /// <summary>

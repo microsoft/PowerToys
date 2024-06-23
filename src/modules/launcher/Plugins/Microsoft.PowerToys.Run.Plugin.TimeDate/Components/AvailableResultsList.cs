@@ -67,7 +67,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 // We use long instead of int for unix time stamp because int is too small after 03:14:07 UTC 2038-01-19
                 long unixTimestamp = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeSeconds();
                 long unixTimestampMilliseconds = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeMilliseconds();
-                int weekOfYear = calendar.GetWeekOfYear(dateTimeNow, DateTimeFormatInfo.CurrentInfo.CalendarWeekRule, DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek);
+                int weekOfYear = calendar.GetWeekOfYear(dateTimeNow, firstWeekRule, firstDayOfTheWeek);
                 string era = DateTimeFormatInfo.CurrentInfo.GetEraName(calendar.GetEra(dateTimeNow));
                 string eraShort = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(calendar.GetEra(dateTimeNow));
 
@@ -138,7 +138,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     },
                     new AvailableResult()
                     {
-                        Value = TimeAndDateHelper.GetNumberOfDayInWeek(dateTimeNow).ToString(CultureInfo.CurrentCulture),
+                        Value = TimeAndDateHelper.GetNumberOfDayInWeek(dateTimeNow, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_DayOfWeek,
                         AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
                         IconType = ResultIconType.Date,
@@ -159,7 +159,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     },
                     new AvailableResult()
                     {
-                        Value = TimeAndDateHelper.GetWeekOfMonth(dateTimeNow).ToString(CultureInfo.CurrentCulture),
+                        Value = TimeAndDateHelper.GetWeekOfMonth(dateTimeNow, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_WeekOfMonth,
                         AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
                         IconType = ResultIconType.Date,
