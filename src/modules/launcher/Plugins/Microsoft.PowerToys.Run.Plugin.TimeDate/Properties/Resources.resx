@@ -340,7 +340,7 @@
     <value>Wednesday</value>
   </data>
   <data name="Microsoft_plugin_timedate_SettingFirstWeekRule" xml:space="preserve">
-    <value>First week rule</value>
+    <value>First week of the year</value>
   </data>
   <data name="Microsoft_plugin_timedate_SettingFirstWeekRule_Description" xml:space="preserve">
     <value>Configure the calendar rule for the first week of the year.</value>
