@@ -207,7 +207,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// Returns a sorted list of values for the combo box of 'first day of week' setting.
         /// The list is sorted based on the current system culture setting.
         /// </summary>
-        /// <remarks>In the world we have three groups of countries: Saturday, Sunday, Monday (Everything else is choosen by the user.)</remarks>
+        /// <remarks>In the world we have three groups of countries: Saturday, Sunday, Monday (Everything else is chosen by the user.)</remarks>
         /// <returns>List of values for combo box.</returns>
         private static List<KeyValuePair<string, string>> GetSortedListForWeekDaySetting()
         {
