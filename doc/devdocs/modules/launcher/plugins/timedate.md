@@ -74,7 +74,7 @@ The following formats are currently available:
 	| Key | Type | Default value | Name | Description |
 	|--------------|--------------|-----------|------------|------------|
 	| `CalendarFirstWeekRule` | Combo box | `-1` (Use system settings) | First week of the year | Configure the calendar rule for the first week of the year. |
-	| `FirstDayOfWeek` | Combo box | `-1` (Use system settings) | First day of week | |
+	| `FirstDayOfWeek` | Combo box | `-1` (Use system settings) | First day of the week | |
 	| `OnlyDateTimeNowGlobal` | Checkbox | `true` | Show only 'Time', 'Date', and 'Now' result for system time on global queries | Regardless of this setting, for global queries the first word of the query has to be a complete match. |
 	| `TimeWithSeconds` | Checkbox | `false` | Show time with seconds | This setting applies to the 'Time' and 'Now' result. |
 	| `DateWithWeekday` | Checkbox | `false` | Show date with weekday and name of month | This setting applies to the 'Date' and 'Now' result. |
