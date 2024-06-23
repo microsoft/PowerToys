@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using static MouseJump.Common.NativeMethods.Core;
 
 namespace MouseJump.Common.Models.Drawing;
 
@@ -13,8 +12,10 @@ namespace MouseJump.Common.Models.Drawing;
 /// </summary>
 public sealed class ScreenInfo
 {
-    internal ScreenInfo(HMONITOR handle, bool primary, RectangleInfo displayArea, RectangleInfo workingArea)
+    public ScreenInfo(int handle, bool primary, RectangleInfo displayArea, RectangleInfo workingArea)
     {
+        // this.Handle is a HMONITOR that has been cast to an int because we don't want
+        // to expose the HMONITOR type outside the current assembly.
         this.Handle = handle;
         this.Primary = primary;
         this.DisplayArea = displayArea ?? throw new ArgumentNullException(nameof(displayArea));

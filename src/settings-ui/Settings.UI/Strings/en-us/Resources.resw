@@ -3947,13 +3947,17 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Launch Registry Preview</value>
     <comment>"Registry Preview" is the name of the utility</comment>
   </data>
+  <data name="MouseUtils_MouseJump.Header" xml:space="preserve">
+    <value>Mouse Jump</value>
+    <comment>Refers to the utility name</comment>
+  </data>
   <data name="MouseUtils_MouseJump.Description" xml:space="preserve">
     <value>Quickly move the mouse pointer long distances.</value>
     <comment>"Mouse Jump" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
-  <data name="MouseUtils_MouseJump.Header" xml:space="preserve">
-    <value>Mouse Jump</value>
-    <comment>Refers to the utility name</comment>
+  <data name="MouseUtils_Enable_MouseJump.Header" xml:space="preserve">
+    <value>Enable Mouse Jump</value>
+    <comment>"Mouse Jump" is the name of the utility.</comment>
   </data>
   <data name="MouseUtils_MouseJump_ActivationShortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to turn on or off this mode</value>
@@ -3961,9 +3965,118 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="MouseUtils_MouseJump_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
-  <data name="MouseUtils_Enable_MouseJump.Header" xml:space="preserve">
-    <value>Enable Mouse Jump</value>
-    <comment>"Mouse Jump" is the name of the utility.</comment>
+  <data name="MouseUtils_MouseJump_ThumbnailSize.Header" xml:space="preserve">
+    <value>Thumbnail Size</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ThumbnailSize_Description_Prefix.Text" xml:space="preserve">
+    <value>Constrain thumbnail image size to a maximum of</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ThumbnailSize_Description_Suffix.Text" xml:space="preserve">
+    <value>pixels</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ThumbnailSize_Edit_Height.Header" xml:space="preserve">
+    <value>Maximum height (px)</value>
+    <comment>px = pixels</comment>
+  </data>
+  <data name="MouseUtils_MouseJump_ThumbnailSize_Edit_Width.Header" xml:space="preserve">
+    <value>Maximum width (px)</value>
+    <comment>px = pixels</comment>
+  </data>
+  <data name="MouseUtils_MouseJump_BackgroundColor1.Header" xml:space="preserve">
+    <value>Background Color 1</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_BackgroundColor1.Description" xml:space="preserve">
+    <value>The start color for the background gradient fill on the preview image</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_BackgroundColor2.Header" xml:space="preserve">
+    <value>Background Color 2</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_BackgroundColor2.Description" xml:space="preserve">
+    <value>The end color for the background gradient fill on the preview image</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_BorderThickness.Header" xml:space="preserve">
+    <value>Border Thickness</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_BorderThickness.Description" xml:space="preserve">
+    <value>The thickness (in pixels) of the border that surrounds the preview image</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_BorderColor.Header" xml:space="preserve">
+    <value>Border Color</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_BorderColor.Description" xml:space="preserve">
+    <value>The color of the border that surrounds the preview image</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_Border3dDepth.Header" xml:space="preserve">
+    <value>Border 3D Depth</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_Border3dDepth.Description" xml:space="preserve">
+    <value>The width (in pixels) of the 3d effect on the border that surrounds the preview image</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_BorderPadding.Header" xml:space="preserve">
+    <value>Border Padding</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_BorderPadding.Description" xml:space="preserve">
+    <value>The amount of padding to draw between the border that surrounds the main preview image and the screen images</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_BezelThickness.Header" xml:space="preserve">
+    <value>Bezel Thickness</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_BezelThickness.Description" xml:space="preserve">
+    <value>The thickness (in pixels) of the border that surrounds the individual screen images</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_BezelColor.Header" xml:space="preserve">
+    <value>Bezel Color</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_BezelColor.Description" xml:space="preserve">
+    <value>The color of the border that surrounds the individual screen images</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_Bezel3dDepth.Header" xml:space="preserve">
+    <value>Bezel 3D Depth</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_Bezel3dDepth.Description" xml:space="preserve">
+    <value>The width (in pixels) of the 3d effect on the border that surrounds individual screen images</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_ScreenMargin.Header" xml:space="preserve">
+    <value>Screen Margin</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_ScreenMargin.Description" xml:space="preserve">
+    <value>The width (in pixels) of the margin drawn between individual screen images</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_ScreenColor1.Header" xml:space="preserve">
+    <value>Screen Color 1</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_ScreenColor1.Description" xml:space="preserve">
+    <value>The start color for the background gradient fill on individual screen image</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_ScreenColor2.Header" xml:space="preserve">
+    <value>Screen Color 2</value>
+    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_ScreenColor2.Description" xml:space="preserve">
+    <value>The end color for the background gradient fill on individual screen image</value>
+    <comment></comment>
   </data>
   <data name="Hosts_Toggle_LoopbackDuplicates.Description" xml:space="preserve">
     <value>127.0.0.1, ::1, ...</value>
@@ -3990,23 +4103,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="AdvancedPaste_ShortcutWarning.Title" xml:space="preserve">
     <value>Using this shortcut may prevent non-text paste actions (e.g. images, files) or built-in paste plain text actions in other applications from functioning.</value>
-  </data>
-  <data name="MouseUtils_MouseJump_ThumbnailSize.Header" xml:space="preserve">
-    <value>Thumbnail Size</value>
-  </data>
-  <data name="MouseUtils_MouseJump_ThumbnailSize_Description_Prefix.Text" xml:space="preserve">
-    <value>Constrain thumbnail image size to a maximum of</value>
-  </data>
-  <data name="MouseUtils_MouseJump_ThumbnailSize_Description_Suffix.Text" xml:space="preserve">
-    <value>pixels</value>
-  </data>
-  <data name="MouseUtils_MouseJump_ThumbnailSize_Edit_Height.Header" xml:space="preserve">
-    <value>Maximum height (px)</value>
-    <comment>px = pixels</comment>
-  </data>
-  <data name="MouseUtils_MouseJump_ThumbnailSize_Edit_Width.Header" xml:space="preserve">
-    <value>Maximum width (px)</value>
-    <comment>px = pixels</comment>
   </data>
   <data name="Oobe_Peek.Description" xml:space="preserve">
     <value>A lightning fast file preview feature for Windows.</value>
