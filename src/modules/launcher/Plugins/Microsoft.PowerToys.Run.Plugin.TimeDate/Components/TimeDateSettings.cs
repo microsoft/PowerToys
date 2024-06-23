@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
@@ -117,17 +119,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     Key = nameof(FirstDayOfWeek),
                     DisplayLabel = Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek,
                     PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Combobox,
-                    ComboBoxItems = new List<KeyValuePair<string, string>>
-                    {
-                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_Setting_UseSystemSetting, "-1"),
-                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Monday, "1"),
-                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Tuesday, "2"),
-                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Wednesday, "3"),
-                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Thursday, "4"),
-                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Friday, "5"),
-                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Saturday, "6"),
-                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Sunday, "0"),
-                    },
+                    ComboBoxItems = GetSortedListForWeekDaySetting(),
                     ComboBoxValue = -1,
                 },
                 new PluginAdditionalOption()
@@ -209,6 +201,42 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             // If a setting isn't available, we use the value defined in the method GetAdditionalOptions() as fallback.
             // We can use First() instead of FirstOrDefault() because the values must exist. Otherwise, we made a mistake when defining the settings.
             return option?.ComboBoxValue ?? GetAdditionalOptions().First(x => x.Key == name).ComboBoxValue;
+        }
+
+        /// <summary>
+        /// Returns an odered list of values for the combo box of 'first day of week' setting.
+        /// The list is ordered based on the current system culture setting.
+        /// </summary>
+        /// <remarks>In the world we have three groups of countries: Saturday, Sunday, Monday</remarks>
+        /// <returns>List of values for combo box.</returns>
+        private static List<KeyValuePair<string, string>> GetSortedListForWeekDaySetting()
+        {
+            // List (Sorted for first day is Sunday)
+            var list = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_Setting_UseSystemSetting, "-1"),
+                new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Sunday, "0"),
+                new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Monday, "1"),
+                new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Tuesday, "2"),
+                new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Wednesday, "3"),
+                new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Thursday, "4"),
+                new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Friday, "5"),
+                new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Saturday, "6"),
+            };
+
+            // Order Rules
+            string[] orderRuleSaturday = new string[] { "-1", "6", "0", "1", "2", "3", "4", "5" };
+            string[] orderRuleMonday = new string[] { "-1", "1", "2", "3", "4", "5", "6", "0" };
+
+            switch (DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek)
+            {
+                case DayOfWeek.Saturday:
+                    return list.OrderBy(x => Array.IndexOf(orderRuleSaturday, x.Value)).ToList();
+                case DayOfWeek.Monday:
+                    return list.OrderBy(x => Array.IndexOf(orderRuleMonday, x.Value)).ToList();
+                default:
+                    return list;
+            }
         }
     }
 }
