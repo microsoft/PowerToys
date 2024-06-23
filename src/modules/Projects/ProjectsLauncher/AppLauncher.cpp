@@ -8,6 +8,7 @@
 
 #include <projects-common/AppUtils.h>
 #include <projects-common/MonitorEnumerator.h>
+#include <projects-common/MonitorUtils.h>
 #include <projects-common/WindowEnumerator.h>
 #include <projects-common/WindowFilter.h>
 
@@ -51,23 +52,17 @@ namespace FancyZones
         return true;
     }
 
-    inline void ScreenToWorkAreaCoords(HWND window, RECT& rect)
+    inline void ScreenToWorkAreaCoords(HWND window, HMONITOR monitor, RECT& rect)
     {
-        // First, find the correct monitor. The monitor cannot be found using the given rect itself, we must first
-        // translate it to relative workspace coordinates.
-        HMONITOR monitor = MonitorFromRect(&rect, MONITOR_DEFAULTTOPRIMARY);
         MONITORINFOEXW monitorInfo{ sizeof(MONITORINFOEXW) };
         GetMonitorInfoW(monitor, &monitorInfo);
 
         auto xOffset = monitorInfo.rcWork.left - monitorInfo.rcMonitor.left;
         auto yOffset = monitorInfo.rcWork.top - monitorInfo.rcMonitor.top;
 
-        auto referenceRect = rect;
+        DPIAware::Convert(monitor, rect);
 
-        referenceRect.left -= xOffset;
-        referenceRect.right -= xOffset;
-        referenceRect.top -= yOffset;
-        referenceRect.bottom -= yOffset;
+        auto referenceRect = RECT(rect.left - xOffset, rect.top - yOffset, rect.right - xOffset, rect.bottom - yOffset);
 
         // Now, this rect should be used to determine the monitor and thus taskbar size. This fixes
         // scenarios where the zone lies approximately between two monitors, and the taskbar is on the left.
@@ -81,20 +76,9 @@ namespace FancyZones
         rect.right -= xOffset;
         rect.top -= yOffset;
         rect.bottom -= yOffset;
-
-        const auto level = DPIAware::GetAwarenessLevel(GetWindowDpiAwarenessContext(window));
-        const bool accountForUnawareness = level < DPIAware::PER_MONITOR_AWARE;
-
-        if (accountForUnawareness && !allMonitorsHaveSameDpiScaling())
-        {
-            rect.left = max(monitorInfo.rcMonitor.left, rect.left);
-            rect.right = min(monitorInfo.rcMonitor.right - xOffset, rect.right);
-            rect.top = max(monitorInfo.rcMonitor.top, rect.top);
-            rect.bottom = min(monitorInfo.rcMonitor.bottom - yOffset, rect.bottom);
-        }
     }
 
-    inline bool SizeWindowToRect(HWND window, bool isMinimized, bool isMaximized, RECT rect) noexcept
+    inline bool SizeWindowToRect(HWND window, HMONITOR monitor, bool isMinimized, bool isMaximized, RECT rect) noexcept
     {
         WINDOWPLACEMENT placement{};
         ::GetWindowPlacement(window, &placement);
@@ -114,7 +98,7 @@ namespace FancyZones
                 placement.showCmd = SW_RESTORE;
             }
 
-            ScreenToWorkAreaCoords(window, rect);
+            ScreenToWorkAreaCoords(window, monitor, rect);
             placement.rcNormalPosition = rect;
         }
         
@@ -237,6 +221,7 @@ void Launch(const Project& project)
     std::vector<HWND> windowsBefore = WindowEnumerator::Enumerate(WindowFilter::Filter);
     std::vector<std::pair<Project::Application, HWND>> launchedWindows{};
     auto apps = Utils::Apps::GetAppsList();
+    auto monitors = MonitorUtils::IdentifyMonitors();
        
     for (const auto& app : project.apps)
     {
@@ -314,9 +299,37 @@ void Launch(const Project& project)
             continue;
         }
 
-        if (FancyZones::SizeWindowToRect(window, app.isMinimized, app.isMaximized, app.position.toRect()))
+        auto snapMonitorIter = std::find_if(project.monitors.begin(), project.monitors.end(), [&](const Project::Monitor& val) { return val.number == app.monitor; });
+        if (snapMonitorIter == project.monitors.end())
         {
-            Logger::trace(L"Placed {}", app.name);
+            Logger::error(L"No monitor saved for launching the app");
+            continue;
+        }
+
+        HMONITOR currentMonitor{};
+        UINT currentDpi = DPIAware::DEFAULT_DPI;
+        auto currentMonitorIter = std::find_if(monitors.begin(), monitors.end(), [&](const Project::Monitor& val) { return val.number == app.monitor; });
+        if (currentMonitorIter != monitors.end())
+        {
+            currentMonitor = currentMonitorIter->monitor;
+            currentDpi = currentMonitorIter->dpi;
+        }
+        else
+        {
+            currentMonitor = MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY);
+            DPIAware::GetScreenDPIForMonitor(currentMonitor, currentDpi);
+        }
+
+        RECT rect = app.position.toRect();
+        float mult = static_cast<float>(snapMonitorIter->dpi) / currentDpi;
+        rect.left = static_cast<long>(std::round(rect.left * mult));
+        rect.right = static_cast<long>(std::round(rect.right * mult));
+        rect.top = static_cast<long>(std::round(rect.top * mult));
+        rect.bottom = static_cast<long>(std::round(rect.bottom * mult));
+
+        if (FancyZones::SizeWindowToRect(window, currentMonitor, app.isMinimized, app.isMaximized, rect))
+        {
+            Logger::trace(L"Placed {} to ({},{}) [{}x{}]", app.name, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
         }
         else
         {
