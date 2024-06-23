@@ -10,7 +10,7 @@ using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 {
-    internal class AvailableResultsList
+    internal static class AvailableResultsList
     {
         /// <summary>
         /// Returns a list with all available date time formats
