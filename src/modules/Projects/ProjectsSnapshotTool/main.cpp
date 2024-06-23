@@ -128,7 +128,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
         }
 
         auto windowMonitor = MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY);
-        int monitorNumber = 0;
+        unsigned int monitorNumber = 0;
         for (const auto& monitor : project.monitors)
         {
             if (monitor.monitor == windowMonitor)

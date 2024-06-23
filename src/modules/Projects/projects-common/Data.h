@@ -32,7 +32,7 @@ struct Project
         bool isMinimized{};
         bool isMaximized{};
         Position position{};
-        int monitor{};
+        unsigned int monitor{};
     };
 
     struct Monitor
