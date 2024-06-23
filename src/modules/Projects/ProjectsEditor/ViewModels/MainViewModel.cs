@@ -158,10 +158,17 @@ namespace ProjectsEditor.ViewModels
             editedProject.Name = projectToSave.Name;
             editedProject.IsShortcutNeeded = projectToSave.IsShortcutNeeded;
             editedProject.PreviewImage = projectToSave.PreviewImage;
-            for (int appIndex = 0; appIndex < editedProject.Applications.Count; appIndex++)
+            for (int appIndex = editedProject.Applications.Count - 1; appIndex >= 0; appIndex--)
             {
-                editedProject.Applications[appIndex].IsSelected = projectToSave.Applications[appIndex].IsSelected;
-                editedProject.Applications[appIndex].CommandLineArguments = projectToSave.Applications[appIndex].CommandLineArguments;
+                if (!projectToSave.Applications[appIndex].IsSelected)
+                {
+                    editedProject.Applications.RemoveAt(appIndex);
+                }
+                else
+                {
+                    editedProject.Applications[appIndex].IsSelected = true;
+                    editedProject.Applications[appIndex].CommandLineArguments = projectToSave.Applications[appIndex].CommandLineArguments;
+                }
             }
 
             editedProject.OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs("AppsCountString"));

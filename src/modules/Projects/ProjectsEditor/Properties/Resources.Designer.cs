@@ -376,7 +376,7 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Name project.
+        ///   Looks up a localized string similar to Project name.
         /// </summary>
         public static string ProjectName {
             get {
