@@ -339,6 +339,48 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.AreEqual(expectedResult, result?.Value);
         }
 
+        [DataTestMethod]
+        [DataRow(CalendarWeekRule.FirstDay, "3")]
+        [DataRow(CalendarWeekRule.FirstFourDayWeek, "2")]
+        [DataRow(CalendarWeekRule.FirstFullWeek, "2")]
+        public void DifferentFirstWeekSettingConfigurations(CalendarWeekRule weekRule, string expectedWeekOfYear)
+        {
+            // Setup
+            DateTime timeValue = new DateTime(2021, 1, 12);
+            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue, weekRule, DayOfWeek.Sunday);
+
+            // Act
+            var resultWeekOfYear = helperResults.FirstOrDefault(x => x.Label.Equals("week of the year (calendar week, week number)", StringComparison.OrdinalIgnoreCase));
+
+            // Assert
+            Assert.AreEqual(expectedWeekOfYear, resultWeekOfYear?.Value);
+        }
+
+        [DataTestMethod]
+        [DataRow(DayOfWeek.Monday, "2", "2", "5")]
+        [DataRow(DayOfWeek.Tuesday, "3", "3", "4")]
+        [DataRow(DayOfWeek.Wednesday, "3", "3", "3")]
+        [DataRow(DayOfWeek.Thursday, "3", "3", "2")]
+        [DataRow(DayOfWeek.Friday, "3", "3", "1")]
+        [DataRow(DayOfWeek.Saturday, "2", "2", "7")]
+        [DataRow(DayOfWeek.Sunday, "2", "2", "6")]
+        public void DifferentFirstDayOfWeekSettingConfigurations(DayOfWeek dayOfWeek, string expectedWeekOfYear, string expectedWeekOfMonth, string expectedDayInWeek)
+        {
+            // Setup
+            DateTime timeValue = new DateTime(2024, 1, 12); // Friday
+            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue, CalendarWeekRule.FirstDay, dayOfWeek);
+
+            // Act
+            var resultWeekOfYear = helperResults.FirstOrDefault(x => x.Label.Equals("week of the year (calendar week, week number)", StringComparison.OrdinalIgnoreCase));
+            var resultWeekOfMonth = helperResults.FirstOrDefault(x => x.Label.Equals("week of the month", StringComparison.OrdinalIgnoreCase));
+            var resultDayInWeek = helperResults.FirstOrDefault(x => x.Label.Equals("day of the week (week day)", StringComparison.OrdinalIgnoreCase));
+
+            // Assert
+            Assert.AreEqual(expectedWeekOfYear, resultWeekOfYear?.Value);
+            Assert.AreEqual(expectedWeekOfMonth, resultWeekOfMonth?.Value);
+            Assert.AreEqual(expectedDayInWeek, resultDayInWeek?.Value);
+        }
+
         [TestCleanup]
         public void CleanUp()
         {
