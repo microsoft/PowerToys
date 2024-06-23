@@ -32,7 +32,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             DateTime dateTimeNow = timestamp ?? DateTime.Now;
             DateTime dateTimeNowUtc = dateTimeNow.ToUniversalTime();
             CalendarWeekRule firstWeekRule = FirstWeekOfYear ?? TimeAndDateHelper.GetCalendarWeekRule(TimeDateSettings.Instance.CalendarFirstWeekRule);
-            DayOfWeek firstWeekDay = FirstDayOfWeek ?? TimeAndDateHelper.GetFirstDayOfWeek(TimeDateSettings.Instance.FirstDayOfWeek);
+            DayOfWeek firstDayOfTheWeek = FirstDayOfWeek ?? TimeAndDateHelper.GetFirstDayOfWeek(TimeDateSettings.Instance.FirstDayOfWeek);
 
             results.AddRange(new[]
             {
