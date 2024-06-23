@@ -6,10 +6,9 @@
 #include <projects-common/AppUtils.h>
 #include <projects-common/Data.h>
 #include <projects-common/GuidUtils.h>
+#include <projects-common/MonitorUtils.h>
 #include <projects-common/WindowEnumerator.h>
 #include <projects-common/WindowFilter.h>
-
-#include <MonitorUtils.h>
 
 #include <common/utils/gpo.h>
 #include <common/utils/logger_helper.h>
