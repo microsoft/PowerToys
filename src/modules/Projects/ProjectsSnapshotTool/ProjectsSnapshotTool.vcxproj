@@ -124,7 +124,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="MonitorUtils.cpp" />
-    <ClCompile Include="OnThreadExecutor.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
@@ -132,7 +131,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MonitorUtils.h" />
-    <ClInclude Include="OnThreadExecutor.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
