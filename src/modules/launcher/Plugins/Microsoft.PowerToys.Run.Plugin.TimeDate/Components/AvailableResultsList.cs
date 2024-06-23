@@ -16,23 +16,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// Returns a list with all available date time formats
         /// </summary>
         /// <param name="isKeywordSearch">Is this a search with plugin activation keyword or not</param>
+        /// <param name="timeLongFormat">Required for UnitTest: Show time in long format</param>
+        /// <param name="dateLongFormat">Required for UnitTest: Show date in long format</param>
         /// <param name="timestamp">Use custom <see cref="DateTime"/> object to calculate results instead of the system date/time</param>
-        /// <param name="timeLong">Required for UnitTest: Show time in long format</param>
-        /// <param name="dateLong">Required for UnitTest: Show date in long format</param>
-        /// <param name="FirstWeekOfYear">Required for UnitTest: Use custom first week of the year instead of the plugin setting.</param>
-        /// <param name="FirstDayOfWeek">Required for UnitTest: Use custom first day of the week instead the plugin setting.</param>
+        /// <param name="firstWeekOfYear">Required for UnitTest: Use custom first week of the year instead of the plugin setting.</param>
+        /// <param name="firstDayOfWeek">Required for UnitTest: Use custom first day of the week instead the plugin setting.</param>
         /// <returns>List of results</returns>
-        internal static List<AvailableResult> GetList(bool isKeywordSearch, DateTime? timestamp = null, bool? timeLong = null, bool? dateLong = null, CalendarWeekRule? FirstWeekOfYear = null, DayOfWeek? FirstDayOfWeek = null)
+        internal static List<AvailableResult> GetList(bool isKeywordSearch, bool? timeLongFormat = null, bool? dateLongFormat = null, DateTime? timestamp = null, CalendarWeekRule? firstWeekOfYear = null, DayOfWeek? firstDayOfWeek = null)
         {
             List<AvailableResult> results = new List<AvailableResult>();
-            bool timeExtended = timeLong ?? TimeDateSettings.Instance.TimeWithSeconds;
-            bool dateExtended = dateLong ?? TimeDateSettings.Instance.DateWithWeekday;
-            bool isSystemDateTime = timestamp == null;
             Calendar calendar = CultureInfo.CurrentCulture.Calendar;
+
+            bool timeExtended = timeLongFormat ?? TimeDateSettings.Instance.TimeWithSeconds;
+            bool dateExtended = dateLongFormat ?? TimeDateSettings.Instance.DateWithWeekday;
+            bool isSystemDateTime = timestamp == null;
             DateTime dateTimeNow = timestamp ?? DateTime.Now;
             DateTime dateTimeNowUtc = dateTimeNow.ToUniversalTime();
-            CalendarWeekRule firstWeekRule = FirstWeekOfYear ?? TimeAndDateHelper.GetCalendarWeekRule(TimeDateSettings.Instance.CalendarFirstWeekRule);
-            DayOfWeek firstDayOfTheWeek = FirstDayOfWeek ?? TimeAndDateHelper.GetFirstDayOfWeek(TimeDateSettings.Instance.FirstDayOfWeek);
+            CalendarWeekRule firstWeekRule = firstWeekOfYear ?? TimeAndDateHelper.GetCalendarWeekRule(TimeDateSettings.Instance.CalendarFirstWeekRule);
+            DayOfWeek firstDayOfTheWeek = firstDayOfWeek ?? TimeAndDateHelper.GetFirstDayOfWeek(TimeDateSettings.Instance.FirstDayOfWeek);
 
             results.AddRange(new[]
             {
