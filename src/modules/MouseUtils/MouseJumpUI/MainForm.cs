@@ -8,10 +8,10 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using ManagedCommon;
-using MouseJumpUI.Common.Helpers;
-using MouseJumpUI.Common.Imaging;
-using MouseJumpUI.Common.Models.Drawing;
-using MouseJumpUI.Common.Models.Layout;
+using MouseJump.Common.Helpers;
+using MouseJump.Common.Imaging;
+using MouseJump.Common.Models.Drawing;
+using MouseJump.Common.Models.Layout;
 using MouseJumpUI.Helpers;
 
 namespace MouseJumpUI;

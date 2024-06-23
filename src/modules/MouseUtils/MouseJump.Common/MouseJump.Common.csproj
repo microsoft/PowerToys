@@ -1,15 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Version.props" />
   <PropertyGroup>
-    <AssemblyTitle>PowerToys.MouseJumpUI</AssemblyTitle>
-    <AssemblyDescription>PowerToys MouseJumpUI</AssemblyDescription>
+    <AssemblyTitle>PowerToys.MouseJump.Common</AssemblyTitle>
+    <AssemblyDescription>PowerToys MouseJump.Common</AssemblyDescription>
     <Version>$(Version).0</Version>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <UseWindowsForms>true</UseWindowsForms>
-    <StartupObject>MouseJumpUI.Program</StartupObject>
+    <UseWindowsForms>false</UseWindowsForms>
     <SelfContained>true</SelfContained>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
@@ -28,18 +27,20 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ProjectGuid>{D962A009-834F-4EEC-AABB-430DF8F98E39}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
-    <RootNamespace>MouseJumpUI</RootNamespace>
-    <AssemblyName>PowerToys.MouseJumpUI</AssemblyName>
+    <ProjectGuid>{923DF87C-CA99-4D1C-B1D2-959174E95BFA}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>MouseJump.Common</RootNamespace>
+    <AssemblyName>PowerToys.MouseJump.Common</AssemblyName>
     <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <!--
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    -->
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
-    <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
+  <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
   <PropertyGroup>
     <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
     <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
@@ -60,13 +61,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
+    <PackageReference Include="System.Drawing.Common" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
-    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
-    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
-    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
-    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
-    <ProjectReference Include="..\MouseJump.Common\MouseJump.Common.csproj" />
-  </ItemGroup>
+
 </Project>
