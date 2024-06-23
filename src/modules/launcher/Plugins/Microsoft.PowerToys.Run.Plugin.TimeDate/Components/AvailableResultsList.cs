@@ -16,11 +16,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// Returns a list with all available date time formats
         /// </summary>
         /// <param name="isKeywordSearch">Is this a search with plugin activation keyword or not</param>
+        /// <param name="timestamp">Use custom <see cref="DateTime"/> object to calculate results instead of the system date/time</param>
         /// <param name="timeLong">Required for UnitTest: Show time in long format</param>
         /// <param name="dateLong">Required for UnitTest: Show date in long format</param>
-        /// <param name="timestamp">Required for UnitTest: Use custom <see cref="DateTime"/> object to calculate results</param>
+        /// <param name="FirstWeekOfYear">Required for UnitTest: Use custom first week of the year instead of the plugin setting.</param>
+        /// <param name="FirstDayOfWeek">Required for UnitTest: Use custom first day of the week instead the plugin setting.</param>
         /// <returns>List of results</returns>
-        internal static List<AvailableResult> GetList(bool isKeywordSearch, bool? timeLong = null, bool? dateLong = null, DateTime? timestamp = null)
+        internal static List<AvailableResult> GetList(bool isKeywordSearch, DateTime? timestamp = null, bool? timeLong = null, bool? dateLong = null, CalendarWeekRule? FirstWeekOfYear = null, DayOfWeek? FirstDayOfWeek = null)
         {
             List<AvailableResult> results = new List<AvailableResult>();
             bool timeExtended = timeLong ?? TimeDateSettings.Instance.TimeWithSeconds;
@@ -29,6 +31,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             Calendar calendar = CultureInfo.CurrentCulture.Calendar;
             DateTime dateTimeNow = timestamp ?? DateTime.Now;
             DateTime dateTimeNowUtc = dateTimeNow.ToUniversalTime();
+            CalendarWeekRule firstWeekRule = FirstWeekOfYear ?? TimeAndDateHelper.GetCalendarWeekRule(TimeDateSettings.Instance.CalendarFirstWeekRule);
+            DayOfWeek firstWeekDay = FirstDayOfWeek ?? TimeAndDateHelper.GetFirstDayOfWeek(TimeDateSettings.Instance.FirstDayOfWeek);
 
             results.AddRange(new[]
             {
