@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow(1, CalendarWeekRule.FirstFullWeek)]
         [DataRow(2, CalendarWeekRule.FirstFourDayWeek)]
         [DataRow(30, null)] // wrong setting
-        public void GetCalendarWeekRule(int setting, CalendarWeekRule? valueExpected)
+        public void GetCalendarWeekRuleBasedOnPluginSetting(int setting, CalendarWeekRule? valueExpected)
         {
             // Act
             var result = TimeAndDateHelper.GetCalendarWeekRule(setting);
@@ -45,7 +45,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow(6, DayOfWeek.Saturday)]
         [DataRow(0, DayOfWeek.Sunday)]
         [DataRow(70, null)] // wrong setting
-        public void GetFirstDayOfWeek(int setting, DayOfWeek? valueExpected)
+        public void GetFirstDayOfWeekBasedOnPluginSetting(int setting, DayOfWeek? valueExpected)
         {
             // Act
             var result = TimeAndDateHelper.GetFirstDayOfWeek(setting);
