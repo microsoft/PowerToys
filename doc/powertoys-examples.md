@@ -52,4 +52,4 @@ To use Always On Top, select the window you want to keep on top and press the ke
 
 These scenarios are just a few of the ways Microsoft PowerToys can enhance your productivity and streamline your workflow. Whether you're a developer, photographer, designer, or business professional, PowerToys offers a versatile set of tools to optimize your daily tasks. By leveraging the power of PowerToys, you can save time, reduce errors, and focus on what matters most: your work.
 
-Learn more here: [https://learn.microsoft.com/en-us/windows/powertoys/](https://learn.microsoft.com/en-us/windows/powertoys/)
+Learn more here: [https://learn.microsoft.com/windows/powertoys/](https://learn.microsoft.com/windows/powertoys/)
