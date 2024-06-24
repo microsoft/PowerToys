@@ -6,7 +6,7 @@ Microsoft PowerToys is a set of utilities designed to streamline your workflow a
 
 Imagine you're a software developer working on multiple projects simultaneously. You have numerous windows open, including your IDE, terminal, browser, and documentation. Navigating between these windows can be time consuming and disruptive to your workflow.
 
-Enter FancyZones. With this PowerToy feature, you can create custom window layouts that suit your specific needs.
+This is where FancyZones comes in. With this PowerToy feature, you can create custom window layouts that suit your specific needs.
 
 ![Creating a custom layout in FancyZones](images/overview/Original/FancyZones.png)
 
@@ -40,7 +40,7 @@ As a business analyst, you may work with multiple directories and files across d
 
 PowerToys Run provides a quick and efficient way to access your favorite folders. By pressing a customizable keyboard shortcut, you can open PowerToys Run and start typing the name of the folder you need. As you type, PowerToys Run will display relevant results, allowing you to quickly navigate to your desired location without ever leaving your keyboard.
 
-## Keeping important windows always on top
+## Keeping important windows always on op
 
 Imagine you're a project manager coordinating a video conference while taking notes in a separate application. Constantly switching between the video call and your notes can be distracting and inefficient.
 
