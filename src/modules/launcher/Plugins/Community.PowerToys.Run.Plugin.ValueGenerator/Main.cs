@@ -105,7 +105,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             ArgumentNullException.ThrowIfNull(query);
 
             var results = new List<Result>();
-            if (string.IsNullOrWhiteSpace(query?.Search))
+            if (string.IsNullOrWhiteSpace(query?.Search) && !string.IsNullOrEmpty(query?.ActionKeyword))
             {
                 return GetSuggestionResults(query, results);
             }
@@ -131,6 +131,11 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             catch (FormatException e)
             {
                 Log.Debug(GetTranslatedPluginTitle() + ": " + e.Message, GetType());
+                if (string.IsNullOrEmpty(query.ActionKeyword))
+                {
+                    return results;
+                }
+
                 return GetSuggestionFuzzyResults(query, results);
             }
 
