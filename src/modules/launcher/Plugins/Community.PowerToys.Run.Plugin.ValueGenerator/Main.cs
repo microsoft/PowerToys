@@ -61,15 +61,16 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             }
         }
 
-        private static string GetIcoPath()
+        private static string GetIcoPath(bool warning = false)
         {
+            var imageName = warning ? "Warning" : "ValueGenerator";
             if (_isLightTheme)
             {
-                return "Images/ValueGenerator.light.png";
+                return $"Images/{imageName}.light.png";
             }
             else
             {
-                return "Images/ValueGenerator.dark.png";
+                return $"Images/{imageName}.dark.png";
             }
         }
 
@@ -222,7 +223,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             {
                 Title = Resources.error_title,
                 SubTitle = errorMessage,
-                IcoPath = GetIcoPath(),
+                IcoPath = GetIcoPath(warning: true),
                 Action = _ => { return true; },
             };
         }
