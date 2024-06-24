@@ -288,16 +288,17 @@ namespace ProjectsEditor.Models
 
         private Rectangle GetCommonBounds()
         {
-            double minX = Monitors.First().MonitorDpiUnawareBounds.Left;
-            double minY = Monitors.First().MonitorDpiUnawareBounds.Top;
-            double maxX = Monitors.First().MonitorDpiUnawareBounds.Right;
-            double maxY = Monitors.First().MonitorDpiUnawareBounds.Bottom;
-            foreach (var monitor in Monitors)
+            double minX = Monitors.First().MonitorDpiAwareBounds.Left;
+            double minY = Monitors.First().MonitorDpiAwareBounds.Top;
+            double maxX = Monitors.First().MonitorDpiAwareBounds.Right;
+            double maxY = Monitors.First().MonitorDpiAwareBounds.Bottom;
+            for (int monitorIndex = 1; monitorIndex < Monitors.Count; monitorIndex++)
             {
-                minX = Math.Min(minX, monitor.MonitorDpiUnawareBounds.Left);
-                minY = Math.Min(minY, monitor.MonitorDpiUnawareBounds.Top);
-                maxX = Math.Max(maxX, monitor.MonitorDpiUnawareBounds.Right);
-                maxY = Math.Max(maxY, monitor.MonitorDpiUnawareBounds.Bottom);
+                Monitor monitor = Monitors[monitorIndex];
+                minX = Math.Min(minX, monitor.MonitorDpiAwareBounds.Left);
+                minY = Math.Min(minY, monitor.MonitorDpiAwareBounds.Top);
+                maxX = Math.Max(maxX, monitor.MonitorDpiAwareBounds.Right);
+                maxY = Math.Max(maxY, monitor.MonitorDpiAwareBounds.Bottom);
             }
 
             return new Rectangle((int)minX, (int)minY, (int)(maxX - minX), (int)(maxY - minY));
