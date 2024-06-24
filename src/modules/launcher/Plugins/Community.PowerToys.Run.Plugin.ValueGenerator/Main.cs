@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
+using Community.PowerToys.Run.Plugin.ValueGenerator.Helper;
 using Community.PowerToys.Run.Plugin.ValueGenerator.Properties;
 using ManagedCommon;
 using Wox.Plugin;
@@ -59,6 +60,18 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             }
         }
 
+        private static string GetIcoPath()
+        {
+            if (_isLightTheme)
+            {
+                return "Images/ValueGenerator.light.png";
+            }
+            else
+            {
+                return "Images/ValueGenerator.dark.png";
+            }
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -90,6 +103,26 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             ArgumentNullException.ThrowIfNull(query);
 
             var results = new List<Result>();
+            if (string.IsNullOrWhiteSpace(query?.Search))
+            {
+                foreach (var generatorItem in QueryHelper.GeneratorList)
+                {
+                    results.Add(new Result
+                    {
+                        Title = generatorItem.Key,
+                        SubTitle = generatorItem.Value,
+                        IcoPath = GetIcoPath(),
+                        Action = c =>
+                        {
+                            _context.API.ChangeQuery($"# {generatorItem.Key}");
+                            return false;
+                        },
+                    });
+                }
+
+                return results;
+            }
+
             try
             {
                 IComputeRequest computeRequest = _inputParser.ParseInput(query);
@@ -110,7 +143,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             }
             catch (FormatException e)
             {
-               Log.Debug(GetTranslatedPluginTitle() + ": " + e.Message, GetType());
+                Log.Debug(GetTranslatedPluginTitle() + ": " + e.Message, GetType());
             }
 
             return results;
@@ -124,7 +157,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             {
                 ContextData = request.Result,
                 Title = request.ResultToString(),
-                IcoPath = _isLightTheme ? "Images/ValueGenerator.light.png" : "Images/ValueGenerator.dark.png",
+                IcoPath = GetIcoPath(),
                 Score = 300,
                 SubTitle = request.Description,
                 Action = c =>
@@ -156,7 +189,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             {
                 Title = Resources.error_title,
                 SubTitle = errorMessage,
-                IcoPath = _isLightTheme ? "Images/Warning.light.png" : "Images/Warning.dark.png",
+                IcoPath = GetIcoPath(),
                 Action = _ => { return true; },
             };
         }
