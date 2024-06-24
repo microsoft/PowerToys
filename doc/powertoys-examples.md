@@ -20,7 +20,7 @@ PowerRename simplifies the process of renaming multiple files at once!
 
 ![Using PowerRename to batch rename files](images/overview/Original/PowerRename.png)
 
-You can use search and replace or regular expressions to quickly rename your files based on criteria like date, sequence number, or custom text. With PowerRename, batch renaming files becomes a breeze, saving you valuable time in your post processing workflow.
+You can use search and replace, including regular expressions, to quickly rename your files based on criteria like date, sequence number, or custom text. With PowerRename, batch renaming files becomes a breeze, saving you valuable time in your post processing workflow.
 
 ## Precise color selection with Color Picker
 
