@@ -130,7 +130,7 @@ namespace FancyZones
     }
 }
 
-bool LaunchApp(const std::wstring& appPath, std::wstring commandLineArgs)
+bool LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs)
 {
     STARTUPINFO startupInfo;
     ZeroMemory(&startupInfo, sizeof(startupInfo));
@@ -139,7 +139,8 @@ bool LaunchApp(const std::wstring& appPath, std::wstring commandLineArgs)
     PROCESS_INFORMATION processInfo;
     ZeroMemory(&processInfo, sizeof(processInfo));
 
-    if (CreateProcess(appPath.c_str(), commandLineArgs.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &startupInfo, &processInfo))
+    std::wstring fullCommandLine = L"\"" + appPath + L"\" " + commandLineArgs;
+    if (CreateProcess(nullptr, fullCommandLine.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &startupInfo, &processInfo))
     {
         CloseHandle(processInfo.hProcess);
         CloseHandle(processInfo.hThread);
