@@ -157,6 +157,7 @@ namespace ProjectsEditor.ViewModels
         {
             editedProject.Name = projectToSave.Name;
             editedProject.IsShortcutNeeded = projectToSave.IsShortcutNeeded;
+            editedProject.PreviewIcons = projectToSave.PreviewIcons;
             editedProject.PreviewImage = projectToSave.PreviewImage;
             for (int appIndex = editedProject.Applications.Count - 1; appIndex >= 0; appIndex--)
             {
@@ -249,10 +250,7 @@ namespace ProjectsEditor.ViewModels
             var editPage = new ProjectEditor(this);
             SetEditedProject(selectedProject);
             Project projectEdited = new Project(selectedProject) { EditorWindowTitle = isNewlyCreated ? Properties.Resources.CreateProject : Properties.Resources.EditProject };
-            if (isNewlyCreated)
-            {
-                projectEdited.Initialize();
-            }
+            projectEdited.Initialize();
 
             editPage.DataContext = projectEdited;
             _mainWindow.ShowPage(editPage);

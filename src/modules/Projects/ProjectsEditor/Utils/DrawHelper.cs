@@ -23,10 +23,27 @@ namespace ProjectsEditor.Utils
 
         public static BitmapImage DrawPreview(Project project, Rectangle bounds)
         {
+            List<double> horizontalGaps = new List<double>();
+            List<double> verticalGaps = new List<double>();
+            double gapWidth = bounds.Width * 0.01;
+            double gapHeight = bounds.Height * 0.01;
+
             double scale = 0.1;
             int Scaled(double value)
             {
                 return (int)(value * scale);
+            }
+
+            int TransformX(double posX)
+            {
+                double gapTransform = verticalGaps.Where(x => x <= posX).Count() * gapWidth;
+                return Scaled(posX - bounds.Left + gapTransform);
+            }
+
+            int TransformY(double posY)
+            {
+                double gapTransform = horizontalGaps.Where(x => x <= posY).Count() * gapHeight;
+                return Scaled(posY - bounds.Top + gapTransform);
             }
 
             Dictionary<string, int> repeatCounter = new Dictionary<string, int>();
@@ -63,7 +80,22 @@ namespace ProjectsEditor.Utils
                 app.OnPropertyChanged(new PropertyChangedEventArgs("RepeatIndexString"));
             }
 
-            Bitmap previewBitmap = new Bitmap(Scaled(bounds.Width), Scaled(bounds.Height * 1.2));
+            foreach (MonitorSetup monitor in project.Monitors)
+            {
+                // check for vertical gap
+                if (monitor.MonitorDpiAwareBounds.Left > bounds.Left && project.Monitors.Any(x => x.MonitorDpiAwareBounds.Right <= monitor.MonitorDpiAwareBounds.Left))
+                {
+                    verticalGaps.Add(monitor.MonitorDpiAwareBounds.Left);
+                }
+
+                // check for horizontal gap
+                if (monitor.MonitorDpiAwareBounds.Top > bounds.Top && project.Monitors.Any(x => x.MonitorDpiAwareBounds.Bottom <= monitor.MonitorDpiAwareBounds.Top))
+                {
+                    horizontalGaps.Add(monitor.MonitorDpiAwareBounds.Top);
+                }
+            }
+
+            Bitmap previewBitmap = new Bitmap(Scaled(bounds.Width + (verticalGaps.Count * gapWidth)), Scaled((bounds.Height * 1.2) + (horizontalGaps.Count * gapHeight)));
             double desiredIconSize = Scaled(Math.Min(bounds.Width, bounds.Height)) * 0.3;
             using (Graphics g = Graphics.FromImage(previewBitmap))
             {
@@ -71,26 +103,32 @@ namespace ProjectsEditor.Utils
                 g.InterpolationMode = InterpolationMode.HighQualityBicubic;
                 g.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-                g.Clear(Color.FromArgb(0, 0, 0, 0));
                 Brush brush = new SolidBrush(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.FromArgb(10, 255, 255, 255) : Color.FromArgb(10, 0, 0, 0));
+
+                // draw the monitors
+                foreach (MonitorSetup monitor in project.Monitors)
+                {
+                    Brush monitorBrush = new SolidBrush(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.FromArgb(32, 7, 91, 155) : Color.FromArgb(32, 7, 91, 155));
+                    g.FillRectangle(monitorBrush, new Rectangle(TransformX(monitor.MonitorDpiAwareBounds.Left), TransformY(monitor.MonitorDpiAwareBounds.Top), Scaled(monitor.MonitorDpiAwareBounds.Width), Scaled(monitor.MonitorDpiAwareBounds.Height)));
+                }
 
                 var appsToDraw = project.Applications.Where(x => x.IsSelected && !x.Minimized);
 
                 // draw the highlighted app at the end to have its icon in the foreground for the case there are overlapping icons
                 foreach (Application app in appsToDraw.Where(x => !x.IsHighlighted))
                 {
-                    Rectangle rect = new Rectangle(Scaled(app.ScaledPosition.X - bounds.Left), Scaled(app.ScaledPosition.Y - bounds.Top), Scaled(app.ScaledPosition.Width), Scaled(app.ScaledPosition.Height));
+                    Rectangle rect = new Rectangle(TransformX(app.ScaledPosition.X), TransformY(app.ScaledPosition.Y), Scaled(app.ScaledPosition.Width), Scaled(app.ScaledPosition.Height));
                     DrawWindow(g, brush, rect, app, desiredIconSize);
                 }
 
                 foreach (Application app in appsToDraw.Where(x => x.IsHighlighted))
                 {
-                    Rectangle rect = new Rectangle(Scaled(app.ScaledPosition.X - bounds.Left), Scaled(app.ScaledPosition.Y - bounds.Top), Scaled(app.ScaledPosition.Width), Scaled(app.ScaledPosition.Height));
+                    Rectangle rect = new Rectangle(TransformX(app.ScaledPosition.X), TransformY(app.ScaledPosition.Y), Scaled(app.ScaledPosition.Width), Scaled(app.ScaledPosition.Height));
                     DrawWindow(g, brush, rect, app, desiredIconSize);
                 }
 
                 // draw the minimized windows
-                Rectangle rectMinimized = new Rectangle(0, Scaled(bounds.Height), Scaled(bounds.Width), Scaled(bounds.Height * 0.2));
+                Rectangle rectMinimized = new Rectangle(0, Scaled((bounds.Height * 1.02) + (horizontalGaps.Count * gapHeight)), Scaled(bounds.Width + (verticalGaps.Count * gapWidth)), Scaled(bounds.Height * 0.18));
                 DrawWindow(g, brush, rectMinimized, project.Applications.Where(x => x.IsSelected && x.Minimized));
             }
 

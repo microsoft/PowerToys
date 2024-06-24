@@ -10,22 +10,6 @@ namespace ProjectsEditor.Models
 {
     public class MonitorSetup : Monitor, INotifyPropertyChanged
     {
-        private BitmapImage _previewImage;
-
-        public BitmapImage PreviewImage
-        {
-            get
-            {
-                return _previewImage;
-            }
-
-            set
-            {
-                _previewImage = value;
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(PreviewImage)));
-            }
-        }
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         public void OnPropertyChanged(PropertyChangedEventArgs e)

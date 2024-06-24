@@ -184,11 +184,14 @@ namespace ProjectsEditor.Models
 
         public List<MonitorSetup> Monitors { get; set; }
 
+        private BitmapImage _previewIcons;
         private BitmapImage _previewImage;
+        private double _previewImageWidth;
 
         public Project(Project selectedProject)
         {
             Name = selectedProject.Name;
+            PreviewIcons = selectedProject.PreviewIcons;
             PreviewImage = selectedProject.PreviewImage;
             IsShortcutNeeded = selectedProject.IsShortcutNeeded;
 
@@ -197,7 +200,7 @@ namespace ProjectsEditor.Models
             Monitors = new List<MonitorSetup>();
             foreach (var item in selectedProject.Monitors.OrderBy(x => x.MonitorDpiAwareBounds.Left).ThenBy(x => x.MonitorDpiAwareBounds.Top))
             {
-                Monitors.Add(new MonitorSetup($"Screen {screenIndex}", item.MonitorInstanceId, item.MonitorNumber, item.Dpi, item.MonitorDpiAwareBounds, item.MonitorDpiUnawareBounds) { PreviewImage = item.PreviewImage });
+                Monitors.Add(new MonitorSetup($"Screen {screenIndex}", item.MonitorInstanceId, item.MonitorNumber, item.Dpi, item.MonitorDpiAwareBounds, item.MonitorDpiUnawareBounds));
                 screenIndex++;
             }
 
@@ -226,6 +229,20 @@ namespace ProjectsEditor.Models
         {
         }
 
+        public BitmapImage PreviewIcons
+        {
+            get
+            {
+                return _previewIcons;
+            }
+
+            set
+            {
+                _previewIcons = value;
+                OnPropertyChanged(new PropertyChangedEventArgs(nameof(PreviewIcons)));
+            }
+        }
+
         public BitmapImage PreviewImage
         {
             get
@@ -240,6 +257,20 @@ namespace ProjectsEditor.Models
             }
         }
 
+        public double PreviewImageWidth
+        {
+            get
+            {
+                return _previewImageWidth;
+            }
+
+            set
+            {
+                _previewImageWidth = value;
+                OnPropertyChanged(new PropertyChangedEventArgs(nameof(PreviewImageWidth)));
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         public void OnPropertyChanged(PropertyChangedEventArgs e)
@@ -249,12 +280,10 @@ namespace ProjectsEditor.Models
 
         public async void Initialize()
         {
-            PreviewImage = await Task.Run(() => DrawHelper.DrawPreviewIcons(this));
-            foreach (MonitorSetup monitor in Monitors)
-            {
-                System.Windows.Rect rect = monitor.MonitorDpiAwareBounds;
-                monitor.PreviewImage = await Task.Run(() => DrawHelper.DrawPreview(this, new Rectangle((int)rect.Left, (int)rect.Top, (int)(rect.Right - rect.Left), (int)(rect.Bottom - rect.Top))));
-            }
+            PreviewIcons = await Task.Run(() => DrawHelper.DrawPreviewIcons(this));
+            Rectangle commonBounds = GetCommonBounds();
+            PreviewImage = await Task.Run(() => DrawHelper.DrawPreview(this, commonBounds));
+            PreviewImageWidth = commonBounds.Width / (commonBounds.Height * 1.2 / 200);
         }
 
         private Rectangle GetCommonBounds()

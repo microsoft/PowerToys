@@ -210,7 +210,7 @@
                                             VerticalAlignment="Center"
                                             Margin="0,0,0,8" >
                                             <Image
-                                                Source="{Binding PreviewImage, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                                Source="{Binding PreviewIcons, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Height="20" />
                                             <TextBlock
                                                 Text="{Binding AppsCountString}"
