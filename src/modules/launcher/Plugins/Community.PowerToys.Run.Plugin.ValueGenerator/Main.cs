@@ -10,6 +10,7 @@ using System.Windows;
 using Community.PowerToys.Run.Plugin.ValueGenerator.Helper;
 using Community.PowerToys.Run.Plugin.ValueGenerator.Properties;
 using ManagedCommon;
+using Wox.Infrastructure;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -105,22 +106,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             var results = new List<Result>();
             if (string.IsNullOrWhiteSpace(query?.Search))
             {
-                foreach (var generatorItem in QueryHelper.GeneratorList)
-                {
-                    results.Add(new Result
-                    {
-                        Title = generatorItem.Key,
-                        SubTitle = generatorItem.Value,
-                        IcoPath = GetIcoPath(),
-                        Action = c =>
-                        {
-                            _context.API.ChangeQuery($"# {generatorItem.Key}");
-                            return false;
-                        },
-                    });
-                }
-
-                return results;
+                return GetSuggestionResults(query, results);
             }
 
             try
@@ -144,6 +130,27 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             catch (FormatException e)
             {
                 Log.Debug(GetTranslatedPluginTitle() + ": " + e.Message, GetType());
+                return GetSuggestionFuzzyResults(query, results);
+            }
+
+            return results;
+        }
+
+        private List<Result> GetSuggestionResults(Query query, List<Result> results)
+        {
+            foreach (var generatorItem in QueryHelper.GeneratorList)
+            {
+                results.Add(new Result
+                {
+                    Title = generatorItem.Key,
+                    SubTitle = generatorItem.Value,
+                    IcoPath = GetIcoPath(),
+                    Action = c =>
+                    {
+                        _context.API.ChangeQuery($"{query.ActionKeyword} {generatorItem.Key}");
+                        return false;
+                    },
+                });
             }
 
             return results;
@@ -181,6 +188,32 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                     return ret;
                 },
             };
+        }
+
+        private List<Result> GetSuggestionFuzzyResults(Query query, List<Result> results)
+        {
+            foreach (var generatorItem in QueryHelper.GeneratorList)
+            {
+                var matchScore = StringMatcher.FuzzySearch(query.Search, generatorItem.Key).Score;
+
+                if (matchScore > 0)
+                {
+                    results.Add(new Result
+                    {
+                        Title = generatorItem.Key,
+                        SubTitle = generatorItem.Value,
+                        IcoPath = GetIcoPath(),
+                        Score = matchScore,
+                        Action = c =>
+                        {
+                            _context.API.ChangeQuery($"{query.ActionKeyword} {generatorItem.Key}");
+                            return false;
+                        },
+                    });
+                }
+            }
+
+            return results;
         }
 
         private Result GetErrorResult(string errorMessage)
