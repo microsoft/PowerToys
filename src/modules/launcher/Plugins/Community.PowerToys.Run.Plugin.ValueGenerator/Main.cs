@@ -131,12 +131,10 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             catch (FormatException e)
             {
                 Log.Debug(GetTranslatedPluginTitle() + ": " + e.Message, GetType());
-                if (string.IsNullOrEmpty(query.ActionKeyword))
+                if (!string.IsNullOrEmpty(query.ActionKeyword))
                 {
-                    return results;
+                    return GetSuggestionFuzzyResults(query, results);
                 }
-
-                return GetSuggestionFuzzyResults(query, results);
             }
 
             return results;
