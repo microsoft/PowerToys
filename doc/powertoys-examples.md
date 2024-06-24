@@ -32,13 +32,13 @@ Color Picker allows you to select colors from anywhere on your screen with preci
 
 Simply activate the tool with a keyboard shortcut, hover over the desired color, and click to copy the color value to your clipboard. You can choose from various formats like RGB, HEX, or HSL, making it easy to integrate the selected color into your design software.
 
-## Quick access to favorite folders with PowerToys Run
+## Quick access to files, folders, and applications with PowerToys Run
 
-As a business analyst, you may work with multiple directories and files across different projects. Navigating through the file explorer to locate specific folders can be time consuming and disrupt your workflow.
+As a professional, you may work with multiple directories, files, and applications across different projects. Navigating through the file explorer or start menu to locate specific items can be time consuming and disrupt your workflow.
 
 ![Using PowerToys Run](images/overview/Original/PowerLauncher.png)
 
-PowerToys Run provides a quick and efficient way to access your favorite folders. By pressing a customizable keyboard shortcut, you can open PowerToys Run and start typing the name of the folder you need. As you type, PowerToys Run will display relevant results, allowing you to quickly navigate to your desired location without ever leaving your keyboard.
+PowerToys Run provides a quick and efficient way to access your favorite files, folders, and applications. By pressing a customizable keyboard shortcut, you can open PowerToys Run and start typing the name of what you need. As you type, PowerToys Run will display relevant results, allowing you to quickly navigate to your desired location, application, or document without ever leaving your keyboard.
 
 ## Keeping important windows always on op
 
