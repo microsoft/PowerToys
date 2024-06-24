@@ -116,9 +116,7 @@
             IsEnabled="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=OneWay}"
             IsExpanded="False">
             <tkcontrols:SettingsExpander.Items>
-                <Image
-                    Source="{x:Bind Path=ViewModel.MouseJumpPreviewImage, Mode=OneWay}"
-                />
+                <Image Source="{x:Bind Path=ViewModel.MouseJumpPreviewImage, Mode=OneWay}" />
                 <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_BackgroundColor1">
                     <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseJumpBackgroundColor1, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
@@ -129,9 +127,9 @@
                     <NumberBox
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
                         LargeChange="1"
-                        SmallChange="1"
-                        Minimum="0"
                         Maximum="25"
+                        Minimum="0"
+                        SmallChange="1"
                         SpinButtonPlacementMode="Compact"
                         Value="{x:Bind ViewModel.MouseJumpBorderThickness, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
@@ -142,9 +140,9 @@
                     <NumberBox
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
                         LargeChange="1"
-                        SmallChange="1"
-                        Minimum="0"
                         Maximum="25"
+                        Minimum="0"
+                        SmallChange="1"
                         SpinButtonPlacementMode="Compact"
                         Value="{x:Bind ViewModel.MouseJumpBorder3dDepth, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
@@ -152,9 +150,9 @@
                     <NumberBox
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
                         LargeChange="1"
-                        SmallChange="1"
-                        Minimum="0"
                         Maximum="25"
+                        Minimum="0"
+                        SmallChange="1"
                         SpinButtonPlacementMode="Compact"
                         Value="{x:Bind ViewModel.MouseJumpBorderPadding, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
@@ -162,9 +160,9 @@
                     <NumberBox
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
                         LargeChange="1"
-                        SmallChange="1"
-                        Minimum="0"
                         Maximum="25"
+                        Minimum="0"
+                        SmallChange="1"
                         SpinButtonPlacementMode="Compact"
                         Value="{x:Bind ViewModel.MouseJumpBezelThickness, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
@@ -175,9 +173,9 @@
                     <NumberBox
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
                         LargeChange="1"
-                        SmallChange="1"
-                        Minimum="0"
                         Maximum="25"
+                        Minimum="0"
+                        SmallChange="1"
                         SpinButtonPlacementMode="Compact"
                         Value="{x:Bind ViewModel.MouseJumpBezel3dDepth, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
@@ -185,9 +183,9 @@
                     <NumberBox
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
                         LargeChange="1"
-                        SmallChange="1"
-                        Minimum="0"
                         Maximum="25"
+                        Minimum="0"
+                        SmallChange="1"
                         SpinButtonPlacementMode="Compact"
                         Value="{x:Bind ViewModel.MouseJumpScreenMargin, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
