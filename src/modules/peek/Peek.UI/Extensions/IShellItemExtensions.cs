@@ -7,49 +7,41 @@ using System.IO;
 using ManagedCommon;
 using Peek.Common.Models;
 
-namespace Peek.UI.Extensions
+namespace Peek.UI.Extensions;
+
+public static class IShellItemExtensions
 {
-    public static class IShellItemExtensions
+    public static IFileSystemItem ToIFileSystemItem(this IShellItem shellItem)
     {
-        public static IFileSystemItem ToIFileSystemItem(this IShellItem shellItem)
-        {
-            string path = shellItem.GetPath();
-            string name = shellItem.GetName();
+        string path = shellItem.GetPath();
+        string name = shellItem.GetName();
 
-            return File.Exists(path) ? new FileItem(path, name) : new FolderItem(path, name);
+        return File.Exists(path) ? new FileItem(path, name) : new FolderItem(path, name, shellItem.GetParsingName());
+    }
+
+    private static string GetPath(this IShellItem shellItem) =>
+        shellItem.GetNameCore(Windows.Win32.UI.Shell.SIGDN.SIGDN_FILESYSPATH, logError: false);
+
+    private static string GetName(this IShellItem shellItem) =>
+        shellItem.GetNameCore(Windows.Win32.UI.Shell.SIGDN.SIGDN_NORMALDISPLAY, logError: true);
+
+    private static string GetParsingName(this IShellItem shellItem) =>
+        shellItem.GetNameCore(Windows.Win32.UI.Shell.SIGDN.SIGDN_DESKTOPABSOLUTEPARSING, logError: true);
+
+    private static string GetNameCore(this IShellItem shellItem, Windows.Win32.UI.Shell.SIGDN displayNameType, bool logError)
+    {
+        try
+        {
+            return shellItem.GetDisplayName(displayNameType);
         }
-
-        private static string GetPath(this IShellItem shellItem)
+        catch (Exception ex)
         {
-            string path = string.Empty;
-            try
+            if (logError)
             {
-                path = shellItem.GetDisplayName(Windows.Win32.UI.Shell.SIGDN.SIGDN_FILESYSPATH);
-            }
-            catch (Exception ex)
-            {
-                // TODO: Handle cases that do not have a file system path like Recycle Bin.
-                path = string.Empty;
-                Logger.LogError("Getting path failed. " + ex.Message);
+                Logger.LogError($"Getting {Enum.GetName(displayNameType)} failed. {ex.Message}");
             }
 
-            return path;
-        }
-
-        private static string GetName(this IShellItem shellItem)
-        {
-            string name = string.Empty;
-            try
-            {
-                name = shellItem.GetDisplayName(Windows.Win32.UI.Shell.SIGDN.SIGDN_NORMALDISPLAY);
-            }
-            catch (Exception ex)
-            {
-                name = string.Empty;
-                Logger.LogError("Getting path failed. " + ex.Message);
-            }
-
-            return name;
+            return string.Empty;
         }
     }
 }

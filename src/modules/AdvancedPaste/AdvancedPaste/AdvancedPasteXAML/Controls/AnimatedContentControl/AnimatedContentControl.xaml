@@ -1,0 +1,58 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animations="using:CommunityToolkit.WinUI.Animations"
+    xmlns:local="using:AdvancedPaste.Controls">
+
+    <Style BasedOn="{StaticResource DefaultAnimatedContentControlStyle}" TargetType="local:AnimatedContentControl" />
+
+    <Style x:Key="DefaultAnimatedContentControlStyle" TargetType="local:AnimatedContentControl">
+        <Style.Setters>
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="local:AnimatedContentControl">
+                        <Grid
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}">
+                            <ContentPresenter Content="{TemplateBinding Content}" />
+                            <Grid
+                                x:Name="PART_LoadingGrid"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                Background="Transparent"
+                                BorderThickness="4"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                Visibility="Collapsed">
+                                <!--  CornerRadius needs to be > 0  -->
+                                <Grid.BorderBrush>
+                                    <local:AnimatedBorderBrush
+                                        x:Name="PART_LoadingBrush"
+                                        IsLoading="True"
+                                        Duration="900" />
+                                </Grid.BorderBrush>
+                                <animations:Implicit.ShowAnimations>
+                                    <animations:OpacityAnimation
+                                        From="0"
+                                        To="1.0"
+                                        Duration="0:0:0.4" />
+                                </animations:Implicit.ShowAnimations>
+                                <animations:Implicit.HideAnimations>
+                                    <animations:OpacityAnimation
+                                        From="1.0"
+                                        To="0"
+                                        Duration="0:0:0.2" />
+                                </animations:Implicit.HideAnimations>
+                            </Grid>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style.Setters>
+    </Style>
+</ResourceDictionary>

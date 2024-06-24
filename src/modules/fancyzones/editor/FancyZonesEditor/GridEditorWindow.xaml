@@ -38,23 +38,28 @@
         </Grid>
         <StackPanel Margin="16">
             <StackPanel Margin="0,8,0,0">
-                <TextBlock Focusable="True" TextWrapping="Wrap">
-                    <Run FontWeight="Bold" Text="{x:Static props:Resources.SplitterName}" />
-                    <Run Text="{x:Static props:Resources.SplitterDescription}" />
+                <TextBlock
+                    Focusable="True"
+                    FontSize="12"
+                    TextWrapping="Wrap">
+                    <Run FontWeight="SemiBold" Text="{x:Static props:Resources.SplitterName}" />
+                    <Run Foreground="{DynamicResource SecondaryForegroundBrush}" Text="{x:Static props:Resources.SplitterDescription}" />
                 </TextBlock>
                 <TextBlock
                     Margin="0,8,0,0"
                     Focusable="True"
+                    FontSize="12"
                     TextWrapping="Wrap">
-                    <Run FontWeight="Bold" Text="{x:Static props:Resources.MergeName}" />
-                    <Run Text="{x:Static props:Resources.MergeDescription}" />
+                    <Run FontWeight="SemiBold" Text="{x:Static props:Resources.MergeName}" />
+                    <Run Foreground="{DynamicResource SecondaryForegroundBrush}" Text="{x:Static props:Resources.MergeDescription}" />
                 </TextBlock>
                 <TextBlock
                     Margin="0,8,0,0"
                     Focusable="True"
+                    FontSize="12"
                     TextWrapping="Wrap">
-                    <Run FontWeight="Bold" Text="{x:Static props:Resources.KeyboardControlsName}" />
-                    <Run Text="{x:Static props:Resources.KeyboardControlsDescription}" />
+                    <Run FontWeight="SemiBold" Text="{x:Static props:Resources.KeyboardControlsName}" />
+                    <Run Foreground="{DynamicResource SecondaryForegroundBrush}" Text="{x:Static props:Resources.KeyboardControlsDescription}" />
                 </TextBlock>
             </StackPanel>
             <Grid Margin="0,24,0,-36">

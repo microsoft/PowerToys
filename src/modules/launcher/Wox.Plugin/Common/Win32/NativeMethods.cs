@@ -66,7 +66,7 @@ namespace Wox.Plugin.Common.Win32
         public static extern int DwmpActivateLivePreview([MarshalAs(UnmanagedType.Bool)] bool fActivate, IntPtr hWndExclude, IntPtr hWndInsertBefore, LivePreviewTrigger lpt, IntPtr prcFinalRect);
 
         [DllImport("dwmapi.dll", PreserveSig = false)]
-        public static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
+        public static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref uint attrValue, int attrSize);
 
         [DllImport("dwmapi.dll", PreserveSig = false)]
         public static extern int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, out int pvAttribute, int cbAttribute);
@@ -80,6 +80,9 @@ namespace Wox.Plugin.Common.Win32
 
         [DllImport("user32.dll")]
         public static extern int SendMessage(IntPtr hWnd, int msg, int wParam);
+
+        [DllImport("user32.dll")]
+        public static extern int SendMessageTimeout(IntPtr hWnd, uint msg, UIntPtr wParam, IntPtr lParam, int fuFlags, int uTimeout, out int lpdwResult);
 
         [DllImport("kernel32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -490,28 +493,28 @@ namespace Wox.Plugin.Common.Win32
     public enum DwmWindowAttributes
     {
         NCRenderingEnabled = 1,
-        NCRenderingPolicy,
-        TransitionsForceDisabled,
-        AllowNCPaint,
-        CaptionButtonBounds,
-        NonClientRtlLayout,
-        ForceIconicRepresentation,
-        Flip3DPolicy,
-        ExtendedFrameBounds,
-        HasIconicBitmap,
-        DisallowPeek,
-        ExcludedFromPeek,
-        Cloak,
-        Cloaked,
-        FreezeRepresentation,
-        PassiveUpdateMode,
-        UseHostbackdropbrush,
-        UseImmersiveDarkMode,
-        WindowCornerPreference,
-        BorderColor,
-        CaptionColor,
-        TextColor,
-        VisibleFrameBorderThickness,
+        NCRenderingPolicy = 2,
+        TransitionsForceDisabled = 3,
+        AllowNCPaint = 4,
+        CaptionButtonBounds = 5,
+        NonClientRtlLayout = 6,
+        ForceIconicRepresentation = 7,
+        Flip3DPolicy = 8,
+        ExtendedFrameBounds = 9,
+        HasIconicBitmap = 10,
+        DisallowPeek = 11,
+        ExcludedFromPeek = 12,
+        Cloak = 13,
+        Cloaked = 14,
+        FreezeRepresentation = 15,
+        PassiveUpdateMode = 16,
+        UseHostbackdropbrush = 17,
+        UseImmersiveDarkMode = 20,
+        WindowCornerPreference = 33,
+        BorderColor = 34,
+        CaptionColor = 35,
+        TextColor = 36,
+        VisibleFrameBorderThickness = 37,
         Last,
     }
 

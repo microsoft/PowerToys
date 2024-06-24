@@ -83,6 +83,24 @@ steps:
 - task: VisualStudioTestPlatformInstaller@1
   displayName: Ensure VSTest Platform
 
+- task: Cache@2
+  displayName: 'Cache nuget packages (PackageReference)'
+  inputs:
+    key: '"PackageReference" | "$(Agent.OS)" | Directory.Packages.props'
+    restoreKeys: |
+       "PackageReference" | "$(Agent.OS)"
+       "PackageReference"
+    path: $(NUGET_PACKAGES)
+
+- task: Cache@2
+  displayName: 'Cache nuget packages (packages.config)'
+  inputs:
+    key: '"packages.config" | "$(Agent.OS)" | **/packages.config'
+    restoreKeys: |
+       "packages.config" | "$(Agent.OS)"
+       "packages.config"
+    path: packages
+
 - ${{ if eq(parameters.enableCaching, true) }}:
   - task: NuGetToolInstaller@1
     displayName: Install NuGet

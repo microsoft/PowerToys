@@ -27,6 +27,9 @@ Heiko has helped triaging, discussing, and creating a substantial number of issu
 ### [@Jay-o-Way](https://github.com/Jay-o-Way) - Jay
 Jay has helped triaging, discussing, creating a substantial number of issues and PRs.
 
+### [@jefflord](https://github.com/Jjefflord) - Jeff Lord
+Jeff added in multiple new features into Keyboard manager, such as key chord support and launching apps. He also contributed multiple features/fixes to PowerToys.
+
 ### [@TheJoeFin](https://github.com/TheJoeFin) - [Joe Finney](https://joefinapps.com)
 Joe has helped triaging, discussing, issues as well as fixing bugs and building features for Text Extractor.
 
@@ -34,14 +37,12 @@ Joe has helped triaging, discussing, issues as well as fixing bugs and building 
 Helping keep our spelling correct :)
 
 ### [@martinchrzan](https://github.com/martinchrzan/) - Martin Chrzan
-
 Color Picker is from Martin.
 
 ### [@mikeclayton](https://github.com/mikeclayton) - [Michael Clayton](https://michael-clayton.com)
 Michael contributed the [initial version](https://github.com/microsoft/PowerToys/issues/23216) of the Mouse Jump tool and [a number of updates](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+author%3Amikeclayton) based on his FancyMouse utility.
 
 ### [@riverar](https://github.com/riverar) - [Rafael Rivera](https://withinrafael.com/)
-
 Rafael has helped do the [upgrade from CppWinRT 1.x to 2.0](https://github.com/microsoft/PowerToys/issues/1907).  He directly provided feedback to the CppWinRT team for bugs from this migration as well.
 
 ### [@royvou](https://github.com/royvou)
@@ -153,14 +154,25 @@ Other contributors:
 ## PowerToys core team
 
 - [@crutkas](https://github.com/crutkas/) - Clint Rutkas - Lead
+- [@ethanfangg](https://github.com/ethanfangg) - Ethan Fang - Lead
 - [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon - Product Manager
-- [@ethanfangg](https://github.com/ethanfangg) - Ethan Fang - Product Manager
 - [@plante-msft](https://github.com/plante-msft) - Connor Plante - Product Manager
 - [@nguyen-dows](https://github.com/nguyen-dows) - Christopher Nguyen - Product Manager
 - [@joadoumie](https://github.com/joadoumie) - Jordi Adoumie - Product Manager
 - [@jaimecbernardo](https://github.com/jaimecbernardo) - Jaime Bernardo - Dev lead
+- [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev lead
+- [@drawbyperpetual](https://github.com/drawbyperpetual) - Anirudha Shankar - Dev
 - [@donlaci](https://github.com/donlaci) - Laszlo Nemeth - Dev
 - [@gokcekantarci](https://github.com/gokcekantarci) - Gokce Kantarci - Dev
 - [@SeraphimaZykova](https://github.com/SeraphimaZykova) - Seraphima Zykova - Dev
 - [@stefansjfw](https://github.com/stefansjfw) - Stefan Markovic - Dev
+
+# Former PowerToys core team members
+
+- [@indierawk2k2](https://github.com/indierawk2k2) - Mike Harsh - Product Manager
+- [@enricogior](https://github.com/enricogior) - Enrico Giordani - Dev Lead
+- [@bzoz](https://github.com/bzoz) - Bartosz Sosnowski - Dev
+- [@ivan100sic](https://github.com/ivan100sic) - Ivan Stošić - Dev
+- [@mykhailopylyp](https://github.com/mykhailopylyp) - Mykhailo Pylyp - Dev
+- [@taras-janea](https://github.com/taras-janea) - Taras Sich - Dev
 - [@yuyoyuppe](https://github.com/yuyoyuppe) - Andrey Nekrasov - Dev
