@@ -1036,7 +1036,7 @@ namespace PowerLauncher.ViewModel
                         uint titlebarPvAttribute = 0xFFFFFFFE;
                         _ = Wox.Plugin.Common.Win32.NativeMethods.DwmSetWindowAttribute(
                             windowSource.Handle,
-                            (int)Wox.Plugin.Common.Win32.DwmWindowAttributes.CaptionColor,
+                            (int)Wox.Plugin.Common.Win32.DwmWindowAttributes.CaptionColor, // CaptionColor attribute is only available on Windows 11.
                             ref titlebarPvAttribute,
                             Marshal.SizeOf(typeof(uint)));
                     }
