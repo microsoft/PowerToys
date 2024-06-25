@@ -61,9 +61,9 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             }
         }
 
-        private static string GetIcoPath(bool warning = false)
+        private static string GetIcoPath(bool isWarning = false)
         {
-            var imageName = warning ? "Warning" : "ValueGenerator";
+            var imageName = isWarning ? "Warning" : "ValueGenerator";
             if (_isLightTheme)
             {
                 return $"Images/{imageName}.light.png";
@@ -226,7 +226,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             {
                 Title = Resources.error_title,
                 SubTitle = errorMessage,
-                IcoPath = GetIcoPath(warning: true),
+                IcoPath = GetIcoPath(isWarning: true),
                 Action = _ => { return true; },
             };
         }
