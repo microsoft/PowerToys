@@ -24,7 +24,6 @@ All:
 - Hosts File Editor
 - File Locksmith
 - GPO
-- Paste as plain text
 - Registry Preview
 - Peek
 - MWB
@@ -32,6 +31,7 @@ All:
 - Environment Variables
 - Command Not Found
 - DSC
+- Advanced Paste
 ```
 
 ```
@@ -77,9 +77,9 @@ Group 3:
 - Awake
 - Text Extractor
 - GPO
-- Paste As Plain Text
 - Crop And Lock
 - Environment Variables
+- Advanced Paste
 ```
 
 ```
@@ -119,5 +119,5 @@ Group 6:
 - FZ Editor
 - FZ
 - Quick Accent
-- Paste As Plain Text
+- Advanced Paste
 ```
