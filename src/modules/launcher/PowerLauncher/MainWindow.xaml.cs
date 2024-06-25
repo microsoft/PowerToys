@@ -63,7 +63,7 @@ namespace PowerLauncher
 
             if (OSVersionHelper.IsWindows11())
             {
-                WindowBackdropType = Wpf.Ui.Controls.WindowBackdropType.Mica;
+                WindowBackdropType = Wpf.Ui.Controls.WindowBackdropType.Acrylic;
             }
             else
             {

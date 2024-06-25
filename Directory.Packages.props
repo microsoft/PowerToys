@@ -86,7 +86,7 @@
     <PackageVersion Include="System.ServiceProcess.ServiceController" Version="8.0.0" />
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="8.0.0" />
     <PackageVersion Include="UnicodeInformation" Version="2.6.0" />
-    <PackageVersion Include="UnitsNet" Version="4.145.0" />
+    <PackageVersion Include="UnitsNet" Version="5.50.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
     <PackageVersion Include="Vanara.PInvoke.User32" Version="3.4.11" />
     <PackageVersion Include="Vanara.PInvoke.Shell32" Version="3.4.11" />
