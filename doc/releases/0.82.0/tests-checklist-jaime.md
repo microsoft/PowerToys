@@ -321,3 +321,111 @@ Mouse Jump:
    - [ ] Open Advanced Paste window with hotkey, click Clipboard history, and click any entry (but first). Observe that entry is put on top of clipboard history. Check OS clipboard history (Win+V), and confirm that the same entry is on top of the clipboard.
    - [ ] Open Settings and Disable clipboard history. Open Advanced Paste window with hotkey and observe that Clipboard history button is disabled.
  * Disable Advanced Paste, try different Advanced Paste hotkeys and confirm that it's disabled and nothing happens.
+
+## Localization
+ Change the Windows language to a language different than English. Then verify if the following screens change their language:
+ - [ ] System tray menu items
+ - [ ] Settings
+ - [ ] OOBE (What's new)
+ - [ ] Keyboard Manager Editor
+ - [ ] Color Picker (check the tooltips)
+ - [ ] FancyZones Editor
+ - [ ] Power Rename (new WinUI 3 may not be localized)
+ - [ ] PowerToys Run ("Start typing" string is localized, for example)
+ - [ ] Image Resizer
+ - [ ] Shortcut Guide (Windows controls are localized)
+ - [ ] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
+ - [ ] Hosts File Editor
+ - [ ] File Locksmith
+ - [ ] Registry Preview
+ - [ ] Environment Variables
+
+## Color Picker
+* Enable the Color Picker in settings and ensure that the hotkey brings up Color Picker
+  - [ ] when PowerToys is running unelevated on start-up
+  - [ ] when PowerToys is running as admin on start-up
+  - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in the settings
+- [ ] Change `Activate Color Picker shortcut` and check the new shortcut is working
+- [ ] Try all three `Activation behavior`s(`Color Picker with editor mode enabled`, `Editor`, `Color Picker only`)
+- [ ] Change `Color format for clipboard` and check if the correct format is copied from the Color picker
+- [ ] Try to copy color formats to the clipboard from the Editor
+- [ ] Check `Show color name` and verify if color name is shown in the Color picker
+- [ ] Enable one new format, disable one existing format, reorder enabled formats and check if settings are populated to the Editor
+- [ ] Select a color from the history in the Editor
+- [ ] Remove color from the history in the Editor
+- [ ] Open the Color Picker from the Editor
+- [ ] Open Adjust color from the Editor
+- [ ] Check Color Picker logs for errors
+
+## Shortcut Guide
+ * Run PowerToys as user:
+   - [ ] Verify `Win + Shift + /` opens the guide
+   - [ ] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
+   - [ ] Set Shortcut Guide to start with a Windows key press and verify it works.
+ * Restore the `Win + Shift + /` hotkey.
+   - [ ] Open the guide and close it pressing `Esc`
+   - [ ] Open the guide and close it pressing and releasing the `Win` key
+ * With PowerToys running as a user, open an elevated app and keep it on foreground:
+   - [ ] Verify `Win + Shift + /` opens the guide
+   - [ ] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
+
+## Always on Top
+ - [ ] Pin/unpin a window, verify it's topmost/not topmost.
+ - [ ] Pin/unpin a window, verify the border appeared/disappeared.
+ - [ ] Switch virtual desktop, verify border doesn't show up on another desktop.
+ - [ ] Minimize and maximize pinned window, verify the border looks as usual.
+ - [ ] Change border color and thickness.
+ - [ ] Verify if sound is played according to the sound setting.
+ - [ ] Exclude app, try to pin it.
+ - [ ] Exclude already pinned app, verify it was unpinned.
+ - [ ] Try to pin the app in the Game Mode.
+
+## Screen Ruler
+ * Enable Screen Ruler. Then:
+   - [ ] Press the activation shortcut and verify the toolbar appears.
+   - [ ] Press the activation shortcut again and verify the toolbar disappears.
+   - [ ] Disable Screen Ruler and verify that the activation shortuct no longer activates the utility.
+   - [ ] Enable Screen Ruler and press the activation shortcut and verify the toolbar appears.
+   - [ ] Select the close button in the toolbar and verify it closes the utility.
+ * With Screen Ruler enabled and activated:
+   - [ ] Use the Bounds utility to measure a zone by dragging with left-click. Verify right click dismisses the utility and that the measurement was copied into the clipboard.
+   - [ ] Use the Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
+   - [ ] Use the Horizontal Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
+   - [ ] Use the Vertical Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
+   - [ ] While using a Spacing utility, verify that using the mouse scroll wheel will adjust pixel color tolerance while measuring.
+   - [ ] Open mspaint and draw 1px-thick straight line, also click with a pencil to draw a single pixel. In any Spacing mode, verify that one of line's dimension is 1, and pixel's dimensions are 1x1.
+ * In a multi-monitor setup with different dpis on each monitor:
+   - [ ] Verify that the utilities work well on each monitor, with continuous mode on and off.
+   - [ ] Without any window opened and a solid color as your background, verify the horizontal spacing matches the monitor's pixel width.
+   - [ ] Move your mouse back and forth around the edge of two monitors really quickly in each mode - verify nothing is broken.
+   
+ * Test the different settings and verify they are applied:
+   - [ ] Activation shortcut
+   - [ ] Continous mode
+   - [ ] Per color channel edge detection
+   - [ ] Pixel tolerance for edge detection
+   - [ ] Draw feet on cross
+   - [ ] Line color
+
+## Quick Accent
+ * Enable Quick Accent and open notepad. Then:
+   - [ ] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
+   - [ ] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
+   - [ ] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
+ * Test the different settings and verify they are applied:
+   - [ ] Activation key
+   - [ ] Language (for example, Currency has no accents for 'a' but has for 's')
+   - [ ] Toolbar position (test every option, some had issues before)
+   - [ ] Input delay
+   - [ ] Exclude some apps. Verify that Quick Accent is not activated for them.
+   - [ ] Sort characters by frequency.
+   - [ ] Always start on the first character when using left/right arrows as activation method.
+
+## Command Not Found
+ * Go to Command Not Found module settings
+ - [ ] If you have PowerShell 7.4 installed, confirm that Install PowerShell 7.4 button is not visible and PowerShell 7.4 is shown as detected. If you don't have PowerShell 7.4, Install it by clicking the button and confirm that it's properly installed. Check Installation logs text box bellow and confirm there are no errors.
+ - [ ] If you have Microsoft.WinGet.Client installed, confirm that Install Microsoft.WinGet.Client button is not visible and Microsoft.WinGet.Client is shown as detected. If you don't have Microsoft.WinGet.Client, Install it by clicking the button and confirm that it's properly installed. Check Installation logs text box bellow and confirm there are no errors.
+ - [ ] Install the Command Not Found module. Check Installation logs text box bellow and confirm there are no errors. Check PowerShell 7 $PROFILE file and confirm Import-Module command is added there. Start new PowerShell 7.4 session and execute "powertoys" (or "atom"). Confirm that suggestion is given to install powertoys (or atom) winget package. (If suggestion is not given, try running the same command few more times, it might take some time for the first time to load the module). Check Installation logs text box bellow and confirm there are no errors.
+ - [ ] Uninstall the module. Check Installation logs text box bellow and confirm there are no errors. Check PowerShell 7 $PROFILE file and confirm Import-Module command is removed. Start new PowerShell 7.4 session and confirm no errors are shown on start.
+ - [ ] Install module again. Uninstall PowerToys. Check PowerShell 7 $PROFILE file and confirm Import-Module command is removed after installer is done.
+

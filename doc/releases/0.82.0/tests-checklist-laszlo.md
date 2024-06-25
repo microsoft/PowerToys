@@ -1,38 +1,3 @@
-## Localization
- Change the Windows language to a language different than English. Then verify if the following screens change their language:
- - [ ] System tray menu items
- - [ ] Settings
- - [ ] OOBE (What's new)
- - [ ] Keyboard Manager Editor
- - [ ] Color Picker (check the tooltips)
- - [ ] FancyZones Editor
- - [ ] Power Rename (new WinUI 3 may not be localized)
- - [ ] PowerToys Run ("Start typing" string is localized, for example)
- - [ ] Image Resizer
- - [ ] Shortcut Guide (Windows controls are localized)
- - [ ] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
- - [ ] Hosts File Editor
- - [ ] File Locksmith
- - [ ] Registry Preview
- - [ ] Environment Variables
-
-## Color Picker
-* Enable the Color Picker in settings and ensure that the hotkey brings up Color Picker
-  - [ ] when PowerToys is running unelevated on start-up
-  - [ ] when PowerToys is running as admin on start-up
-  - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in the settings
-- [ ] Change `Activate Color Picker shortcut` and check the new shortcut is working
-- [ ] Try all three `Activation behavior`s(`Color Picker with editor mode enabled`, `Editor`, `Color Picker only`)
-- [ ] Change `Color format for clipboard` and check if the correct format is copied from the Color picker
-- [ ] Try to copy color formats to the clipboard from the Editor
-- [ ] Check `Show color name` and verify if color name is shown in the Color picker
-- [ ] Enable one new format, disable one existing format, reorder enabled formats and check if settings are populated to the Editor
-- [ ] Select a color from the history in the Editor
-- [ ] Remove color from the history in the Editor
-- [ ] Open the Color Picker from the Editor
-- [ ] Open Adjust color from the Editor
-- [ ] Check Color Picker logs for errors
-
 ## Image Resizer
 - [ ] Disable the Image Resizer and check that `Resize images` is absent in the context menu
 - [ ] Enable the Image Resizer and check that `Resize images` is present in the context menu. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
@@ -93,18 +58,6 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
     - [ ] Try some cases where focus is lost due to the shortcut. Example remapping to Alt+Tab or Alt+F4
   - [ ] Test switching between remapping while holding down modifiers - Eg. Ctrl+D->Ctrl+A and Ctrl+E->Ctrl+V, hold Ctrl and press D followed by E. Should select all and paste over it in a text editor. Similar steps for Windows key shortcuts.
 
-## Shortcut Guide
- * Run PowerToys as user:
-   - [ ] Verify `Win + Shift + /` opens the guide
-   - [ ] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
-   - [ ] Set Shortcut Guide to start with a Windows key press and verify it works.
- * Restore the `Win + Shift + /` hotkey.
-   - [ ] Open the guide and close it pressing `Esc`
-   - [ ] Open the guide and close it pressing and releasing the `Win` key
- * With PowerToys running as a user, open an elevated app and keep it on foreground:
-   - [ ] Verify `Win + Shift + /` opens the guide
-   - [ ] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
-
 ## VCM
  - [ ] Check "Hide toolbar when both camera and microphone are unmuted" and verify that it works
  - [ ] Uncheck it, mute the microphone with the hotkey and make sure the toolbar doesn't hide after a timeout
@@ -114,58 +67,6 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
  - [ ] Verify that changing "toolbar position" setting works 
  - [ ] Select an overlay image and verify that muting camera now shows the image instead of black screen. (Don't forget to restart the application which uses the camera).
  - [ ] Try to select an overlay image when PT process is elevated.
-
-## Always on Top
- - [ ] Pin/unpin a window, verify it's topmost/not topmost.
- - [ ] Pin/unpin a window, verify the border appeared/disappeared.
- - [ ] Switch virtual desktop, verify border doesn't show up on another desktop.
- - [ ] Minimize and maximize pinned window, verify the border looks as usual.
- - [ ] Change border color and thickness.
- - [ ] Verify if sound is played according to the sound setting.
- - [ ] Exclude app, try to pin it.
- - [ ] Exclude already pinned app, verify it was unpinned.
- - [ ] Try to pin the app in the Game Mode.
-
-## Screen Ruler
- * Enable Screen Ruler. Then:
-   - [ ] Press the activation shortcut and verify the toolbar appears.
-   - [ ] Press the activation shortcut again and verify the toolbar disappears.
-   - [ ] Disable Screen Ruler and verify that the activation shortuct no longer activates the utility.
-   - [ ] Enable Screen Ruler and press the activation shortcut and verify the toolbar appears.
-   - [ ] Select the close button in the toolbar and verify it closes the utility.
- * With Screen Ruler enabled and activated:
-   - [ ] Use the Bounds utility to measure a zone by dragging with left-click. Verify right click dismisses the utility and that the measurement was copied into the clipboard.
-   - [ ] Use the Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
-   - [ ] Use the Horizontal Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
-   - [ ] Use the Vertical Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
-   - [ ] While using a Spacing utility, verify that using the mouse scroll wheel will adjust pixel color tolerance while measuring.
-   - [ ] Open mspaint and draw 1px-thick straight line, also click with a pencil to draw a single pixel. In any Spacing mode, verify that one of line's dimension is 1, and pixel's dimensions are 1x1.
- * In a multi-monitor setup with different dpis on each monitor:
-   - [ ] Verify that the utilities work well on each monitor, with continuous mode on and off.
-   - [ ] Without any window opened and a solid color as your background, verify the horizontal spacing matches the monitor's pixel width.
-   - [ ] Move your mouse back and forth around the edge of two monitors really quickly in each mode - verify nothing is broken.
-   
- * Test the different settings and verify they are applied:
-   - [ ] Activation shortcut
-   - [ ] Continous mode
-   - [ ] Per color channel edge detection
-   - [ ] Pixel tolerance for edge detection
-   - [ ] Draw feet on cross
-   - [ ] Line color
-
-## Quick Accent
- * Enable Quick Accent and open notepad. Then:
-   - [ ] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
-   - [ ] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
-   - [ ] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
- * Test the different settings and verify they are applied:
-   - [ ] Activation key
-   - [ ] Language (for example, Currency has no accents for 'a' but has for 's')
-   - [ ] Toolbar position (test every option, some had issues before)
-   - [ ] Input delay
-   - [ ] Exclude some apps. Verify that Quick Accent is not activated for them.
-   - [ ] Sort characters by frequency.
-   - [ ] Always start on the first character when using left/right arrows as activation method.
 
 ## Hosts File Editor
  * Launch Host File Editor:
@@ -234,11 +135,179 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
  * Test Settings:
    - [ ] Change the rest of available settings on MWB page and verify that each setting works as described.
 
-## Command Not Found
- * Go to Command Not Found module settings
- - [ ] If you have PowerShell 7.4 installed, confirm that Install PowerShell 7.4 button is not visible and PowerShell 7.4 is shown as detected. If you don't have PowerShell 7.4, Install it by clicking the button and confirm that it's properly installed. Check Installation logs text box bellow and confirm there are no errors.
- - [ ] If you have Microsoft.WinGet.Client installed, confirm that Install Microsoft.WinGet.Client button is not visible and Microsoft.WinGet.Client is shown as detected. If you don't have Microsoft.WinGet.Client, Install it by clicking the button and confirm that it's properly installed. Check Installation logs text box bellow and confirm there are no errors.
- - [ ] Install the Command Not Found module. Check Installation logs text box bellow and confirm there are no errors. Check PowerShell 7 $PROFILE file and confirm Import-Module command is added there. Start new PowerShell 7.4 session and execute "powertoys" (or "atom"). Confirm that suggestion is given to install powertoys (or atom) winget package. (If suggestion is not given, try running the same command few more times, it might take some time for the first time to load the module). Check Installation logs text box bellow and confirm there are no errors.
- - [ ] Uninstall the module. Check Installation logs text box bellow and confirm there are no errors. Check PowerShell 7 $PROFILE file and confirm Import-Module command is removed. Start new PowerShell 7.4 session and confirm no errors are shown on start.
- - [ ] Install module again. Uninstall PowerToys. Check PowerShell 7 $PROFILE file and confirm Import-Module command is removed after installer is done.
+## FancyZones Editor
+
+- [ ] Open editor from the settings
+- [ ] Open editor with a shortcut
+- [ ] Create a new layout (grid and canvas)
+- [ ] Duplicate a template and a custom layout
+- [ ] Delete layout
+- [ ] Edit templates (number of zones, spacing, distance to highlight adjacent zones). Verify after reopening the editor that saved settings are kept the same.
+- [ ] Edit canvas layout: zones size and position, create or delete zones.
+- [ ] Edit grid layout: split, merge, resize zones.
+- [ ] Check `Save and apply` and `Cancel` buttons behavior after editing.
+- [ ] Assign a layout to each monitor.
+- [ ] Assign keys to quickly switch layouts (custom layouts only), `Win + Ctrl + Alt + number`.
+- [ ] Assign horizontal and vertical default layouts
+- [ ] Test duplicate layout focus
+   * Select any layout X in 'Templates' or 'Custom' section by click left mouse button
+   * Mouse right button click on any layout Y in 'Templates' or 'Custom' sections
+   * Duplicate it by clicking 'Create custom layout' (Templates section) or 'Duplicate' in 'Custom' section
+   * Expect the layout Y is duplicated
+
+## FancyZones
+
+### Appearance
+- [ ] Change colors, opacity and `Show zone number` options. Verify they're applied.
+
+### Excluded apps
+- [ ] Exclude some apps, verify that they're not applicable to a zone.
+
+### Dragging
+- [ ] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Start dragging a window, then press shift. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
+- [ ] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Press shift first, then start dragging a window. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
+- [ ]  `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` on. Zones are shown immediately when dragging a window and hidden when you click a non-primary mouse button or press shift.
+- [ ] `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` off. Zones are shown immediately when dragging a window, hidden when you press shift.
+- [ ] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` on. Zones aren't shown immediately, only when shift is pressed or when a non-primary mouse click changes the state.  
+- [ ] `Show zones on all monitor whilw dragging a window` - turn on,off, verify behavior.
+- [ ] Create a canvas layout with overlapping zones, check zone activation behavior with all `When multiple zones overlap` options
+- [ ] `Make dragged window transparent` - turn on, off, verify behavior
+
+### Snapping
+Disable FZ and clear `app-zone-history.json` before starting. FancyZones should be disabled, otherwise, it'll save cashed values back to the file.
+
+- [ ] Snap a window to a zone by dragging, verify `app-zone-history.json` contains info about the window position on the corresponding work area.
+- [ ] Snap a window to a zone by a keyboard shortcut, verify `app-zone-history.json` contains info about the window position on the corresponding work area.
+- [ ] Snap a window to another monitor, verify `app-zone-history.json` contains positions about zones on both monitors.
+- [ ] Snap a window to several zones, verify zone numbers in the json file are correct.
+- [ ] Snap a window to a zone, unsnap it, verify this app was removed from the json file.
+- [ ] Snap the same window to a zone on two different monitors or virtual desktops. Then unsnap from one of them, verify that info about unsnapped zone was removed from `app-zone-history.json`. Verify info about the second monitor/virtual desktop is kept.  
+- [ ] Enable `Restore the original size of windows when unsnapping`, snap window, unsnap window, verify the window changed its size to original.
+- [ ] Disable `Restore the original size of windows when unsnapping`, snap window, unsnap window, verify window size wasn't changed.
+- [ ] Disable `Restore the original size of windows when unsnapping`, snap window, enable `Restore the original size of windows when unsnapping`, unsnap window, verify window size wasn't changed. 
+- [ ] Launch PT in user mode, try to assign a window with administrator privileges to a zone. Verify the notification is shown.
+- [ ] Launch PT in administrator mode, assign a window with administrator privileges.
+* Open `Task view` , right-click on the window, check the `Show this window on all desktops` or the `Show windows from this app on all desktops` option to turn it on.
+    - [ ] Turn Show this window on all desktops on, verify you can snap this window to a zone.
+    - [ ] Turn Show windows from this app on all desktops on, verify you can snap this window to a zone.
+
+### Snapped window behavior
+- [ ] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone, change the screen resolution or scaling, verify window changed its size and position.
+- [ ] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone on the secondary monitor. Disconnect the secondary monitor (the window will be moved to the primary monitor). Reconnect the secondary monitor. Verify the window returned to its zone. 
+- [ ] `Keep windows in their zones when the screen resolution changes` off, snap a window to a zone, change the screen resolution or scaling, verify window didn't change its size and position.
+
+Enable `During zone layout changes, windows assigned to a zone will match new size/positions` and prepare layouts with 1 and 3 zones where zone size/positions are different.
+- [ ] Snap a window to zone 1, change the layout, verify window changed its size/position.
+- [ ] Snap a window to zone 3, change the layout, verify window didn't change its size/position because another layout doesn't have a zone with this zone number.
+- [ ] Snap a window to zones 1-2, change the layout, verify window changed its size/position to fit zone 1.
+- [ ] Snap a window to zones 1-2, change the layout (the window will be snapped to zone 1), then return back to the previous layout, verify the window snapped to 1-2 zones.
+- [ ] Disable `During zone layout changes, windows assigned to a zone will match new size/positions`, snap window to zone 1, change layout, verify window didn't change its size/position
+
+Enable `Move newly created windows to their last known zone`.
+- [ ] Snap a window to the primary monitor, close and reopen the window. Verify it's snapped to its zone.
+- [ ] Snap a window to zones on the primary and secondary monitors. Close and reopen the app. Verify it's snapped to the zone on the active monitor.
+- [ ] Snap a window to the secondary monitor (use a different app or unsnap the window from the zone on the primary monitor), close and reopen the window. Verify it's snapped to its zone. 
+- [ ] Snap a window, turn off FancyZones, move that window, turn FZ on. Verify window returned to its zone.
+- [ ] Move unsnapped window to a secondary monitor, switch virtual desktop and return back. Verify window didn't change its position and size.
+- [ ] Snap a window, then resize it (it's still snapped, but doesn't fit the zone). Switch the virtual desktop and return back, verify window didn't change its size.
+
+Enable `Move newly created windows to the current active monitor`.
+- [ ] Open a window that wasn't snapped anywhere, verify it's opened on the active monitor.
+- [ ] Open a window that was snapped on the current virtual desktop and current monitor, verify it's opened in its zone.
+- [ ] Open a window that was snappen on the current virtual desktop and another monitor, verify it's opened on the active monitor.
+- [ ] Open a window that was snapped on another virtual desktop, verify it's opened on the active monitor.
+
+- [ ] Enable `Allow popup windows snapping` and `Allow child windows snapping`, try to snap Notepad++ search window. Verify it can be snapped.
+- [ ] Enable `Allow popup windows snapping`, snap Teams, verify a popup window appears in its usual position.
+- [ ] Enable `Allow popup windows snapping`, snap Visual Studio Code to a zone, and open any menu. Verify the menu is where it's supposed to be and not on the top left corner of the zone.
+- [ ] Enable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer), verify it can be snapped to a zone.
+- [ ] Disable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer), verify it can't be snapped to a zone.
+
+### Switch between windows in the current zone
+Enable `Switch between windows in the current zone` (default shortcut is `Win + PgUp/PgDown`)
+- [ ] Snap several windows to one zone, verify switching works.
+- [ ] Snap several windows to one zone, switch virtual desktop, return back, verify window switching works.
+- [ ] Disable `Switch between windows in the current zone`, verify switching doesn't work.
+  
+### Override Windows Snap
+- [ ] Disable `Override Windows Snap`, verify it's disabled.
+
+Enable `Override Windows Snap`.
+Select Move windows based on `Zone index`.
+- [ ] Open the previously not snapped window, press `Win`+`LeftArrow` / `Win`+`RightArrow`, verify it's snapped to a first/last zone.
+- [ ] Verify `Win`+`LeftArrow` moves the window to a zone with the previous index.
+- [ ] Verify `Win`+`RightArrow` moves the window to a zone with the next index.
+- [ ] Verify `Win`+`ArrowUp` and `Win`+`ArrowDown` work as usual.
+
+- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`LeftArrow` doesn't move the window to any zone when the window is in the first zone.
+- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`RightArrow` doesn't move the window to any zone when the window is in the last zone.
+
+One monitor:
+- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` doesn't move the window to any zone when the window is in the first zone.
+- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`RightArrow` doesn't move the window to any zone when the window is in the last zone.
+
+Two and more monitors:
+- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` cycles window position moving it from the first zone on the current monitor to the last zone of the left (or rightmost, if the current monitor is leftmost) monitor.
+- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`RightArrow` cycles window position moving it from the last zone on the current monitor to the first zone of the right (or leftmost, if the current monitor is rightmost) monitor.
+
+Select Move windows based on `Relative position`.
+- [ ] Open the previously not snapped window, press `Win`+`Arrow`, verify it's snapped.
+- [ ] Extend the window using `Ctrl`+`Alt`+`Win`+`Arrow`. Verify the window is snapped to all zones.
+- [ ] Extend the window using `Ctrl`+`Alt`+`Win`+`Arrow` and return it back using the opposite arrow. Verify it could be reverted while you hold `Ctrl`+`Alt`+`Win`.
+
+- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`LeftArrow` cycles the window position to the left (from the leftmost zone moves to the rightmost in the same row) within one monitor.
+- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`RightArrow` cycles the window position to the right within one monitor.
+- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`UpArrow` cycles the window position up within one monitor.
+- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`DownArrow` cycles the window position down within one monitor.
+
+- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` cycles the window position to the left (from the leftmost zone moves to the rightmost in the same row) within all monitors.
+- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`RightArrow` cycles the window position to the right within all monitors.
+- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`UpArrow` cycles the window position up within all monitors.
+- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`DownArrow` cycles the window position down within all monitors.
+
+### Layout apply
+Enable `Enable quick layout switch`, assign numbers to custom layouts.
+- [ ] Switch with `Win` + `Ctrl` + `Alt` + `key`.
+- [ ] Switch with just a key while dragging a window.
+- [ ] Turn `Flash zones when switching layout` on/off, verify it's flashing/not flashing after pressing the shortcut.
+- [ ] Disable `Enable quick layout switch`, verify shortcuts don't work.
+- [ ] Disable spacing on any grid layout, verify that there is no space between zones while dragging a window.
+- [ ] Create a new virtual desktop, verify that there are the same layouts as applied to the previous virtual desktop.
+- [ ] After creating a virtual desktop apply another layout or edit the applied one. Verify that the other virtual desktop layout wasn't changed.
+- [ ] Delete an applied custom layout in the Editor, verify that there is no layout applied instead of it.
+- [ ] Apply a grid layout, change the screen resolution or scaling, verify that the assigned layout fits the screen. NOTE: canvas layout could not fit the screen if it was created on a monitor with a different resolution.
+
+### Layout reset
+* Test layout resetting.
+Before testing 
+   * Remove all virtual desktops 
+   * Remove `CurrentVirtualDesktop` from `\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\SessionInfo\1\VirtualDesktops` 
+   * Remove `VirtualDesktopIDs` from `\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\VirtualDesktops`
+
+- [ ] Test screen locking
+   * Set custom layouts on each monitor
+   * Lock screen / unplug monitor / plug monitor
+   * Verify that layouts weren't reset to defaults
+   
+- [ ] Test restart
+   * Set custom layouts on each monitor
+   * Restart the computer
+   * Verify that layouts weren't reset to defaults
+
+- [ ] Test applying default layouts on reset
+   * Set default horizontal and vertical layouts
+   * Delete `applied-layouts.json`
+   * Verify that selected default layout is applied according to configuration
+
+### Span zones across monitors
+- [ ] Switch between `Allow zones to span across monitors` on and off. Verify that layouts are applied correctly in both cases.
+
+Repeat the previous subsections steps after enabling `Allow zones to span across monitors`
+- [ ] Dragging
+- [ ] Snapping
+- [ ] Snapped window behavior
+- [ ] Switch between windows in the current zone
+- [ ] Override Windows Snap
+- [ ] Layout apply
+- [ ] Layout reset
 
