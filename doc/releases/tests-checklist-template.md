@@ -643,14 +643,6 @@ Mouse Jump:
    - [ ] Open settings and verify the module is not enabled and you can't enable it.
  * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
 
-## Paste As Plain Text
- * Copy some rich text (e.g word of the text is different color, another work is bold, underlined, etd.). Then:
-   - [ ] Paste the text using standard Windows Ctrl + V shortcut and ensure that rich text is pasted (with all colors, formatting, etc.)
-   - [ ] Paste the text using Paste As Plain Text activation shortcut and ensure that plain text without any formatting is pasted.
-   - [ ] Paste again the text using standard Windows Ctrl + V shortcut and ensure the text is now pasted plain without formatting as well.
-   - [ ] Change the activation shorctut and ensure that Paste As Plain Text is triggered using new shortcut.
-   - [ ] Disable the module and ensure that text is not being pasted using activation shortcut. 
-
 ## Registry Preview
  * Open Registry Editor, add new registry key with 1 string value and 1 binary value in e.g. HKLM/Software/Classes/PowerToysTest. Right click new registry key->export and export it to file.
  * Launch Registry Preview by right-clicking exported .reg file->'Preview'. Then:
@@ -810,3 +802,44 @@ Mouse Jump:
    - [ ] Run `winget configure .\configuration.dsc.yaml`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
    - [ ] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
    - [ ] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
+
+## Advanced Paste
+  NOTES:
+    When using Advanced Paste, make sure that window focused while starting/using Advanced paste is text editor or has text input field focused (e.g. Word).
+ * Paste As Plain Text
+   - [ ] Copy some rich text (e.g word of the text is different color, another work is bold, underlined, etd.).
+   - [ ] Paste the text using standard Windows Ctrl + V shortcut and ensure that rich text is pasted (with all colors, formatting, etc.)
+   - [ ] Paste the text using Paste As Plain Text activation shortcut and ensure that plain text without any formatting is pasted.
+   - [ ] Paste again the text using standard Windows Ctrl + V shortcut and ensure the text is now pasted plain without formatting as well.
+   - [ ] Copy some rich text again.
+   - [ ] Open Advanced Paste window using hotkey, click Paste as Plain Text button and confirm that plain text without any formatting is pasted.
+   - [ ] Copy some rich text again.
+   - [ ] Open Advanced Paste window using hotkey, press Ctrl + 1 and confirm that plain text without any formatting is pasted.
+ * Paste As Markdown
+   - [ ] Open Settings and set Paste as Markdown directly hotkey
+   - [ ] Copy some text (e.g. some HTML text - convertible to Markdown)
+   - [ ] Paste the text using set hotkey and confirm that pasted text is converted to markdown
+   - [ ] Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted Markdown text will be picked up from clipboard and converted again to nested Markdown).
+   - [ ] Open Advanced Paste window using hotkey, click Paste as markdown button and confirm that pasted text is converted to markdown
+   - [ ] Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted Markdown text will be picked up from clipboard and converted again to nested Markdown).
+   - [ ] Open Advanced Paste window using hotkey, press Ctrl + 2 and confirm that pasted text is converted to markdown
+ * Paste As JSON
+   - [ ] Open Settings and set Paste as JSON directly hotkey
+   - [ ] Copy some XML or CSV text (or any other text, it will be converted to simple JSON object)
+   - [ ] Paste the text using set hotkey and confirm that pasted text is converted to JSON
+   - [ ] Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted JSON text will be picked up from clipboard and converted again to nested JSON).
+   - [ ] Open Advanced Paste window using hotkey, click Paste as markdown button and confirm that pasted text is converted to markdown
+   - [ ] Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted JSON text will be picked up from clipboard and converted again to nested JSON).
+   - [ ] Open Advanced Paste window using hotkey, press Ctrl + 3 and confirm that pasted text is converted to markdown
+ * Paste as custom format using AI
+   - [ ] Open Settings, navigate to Enable Paste with AI and set OpenAI key.
+   - [ ] Copy some text to clipboard. Any text.
+   - [ ] Open Advanced Paste window using hotkey, and confirm that Custom intput text box is now enabled. Write "Insert smiley after every word" and press Enter. Observe that result preview shows coppied text with smileys between words. Press Enter to paste the result and observe that it is pasted.
+   - [ ] Open Advanced Paste window using hotkey. Input some query (any, feel free to play around) and press Enter. When result is shown, click regenerate button, to see if new result is generated. Select one of the results and paste. Observe that correct result is pasted.
+   - [ ] Open Settings and disable Custom format preview. Open Advanced Paste window with hotkey, enter some query and press enter. Observe that result is now pasted right away, without showing the preview first.
+   - [ ] Open Settings and Disable Enable Paste with AI. Open Advanced Paste window with hotkey and observe that Custom Input text box is now disabled.
+ * Clipboard History
+   - [ ] Open Settings and Enable clipboard history (if not enabled already). Open Advanced Paste window with hotkey, click Clipboard history and try deleting some entry. Check OS clipboard history (Win+V), and confirm that the same entry no longer exist.
+   - [ ] Open Advanced Paste window with hotkey, click Clipboard history, and click any entry (but first). Observe that entry is put on top of clipboard history. Check OS clipboard history (Win+V), and confirm that the same entry is on top of the clipboard.
+   - [ ] Open Settings and Disable clipboard history. Open Advanced Paste window with hotkey and observe that Clipboard history button is disabled.
+ * Disable Advanced Paste, try different Advanced Paste hotkeys and confirm that it's disabled and nothing happens.
