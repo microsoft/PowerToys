@@ -12,7 +12,7 @@
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <SelfContained>true</SelfContained>
-    <Platforms>AnyCPU;x64</Platforms>
+    <Platforms>AnyCPU;x64;ARM64</Platforms>
   </PropertyGroup>
 
   <!-- SelfContained=true requires RuntimeIdentifier to be set -->
