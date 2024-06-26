@@ -4,7 +4,7 @@
 #include <winrt/Windows.Management.Deployment.h>
 #include <winrt/Windows.ApplicationModel.Core.h>
 
-#include <iostream>
+#include <shellapi.h>
 
 #include <projects-common/AppUtils.h>
 #include <projects-common/MonitorEnumerator.h>
@@ -14,6 +14,8 @@
 
 #include <common/Display/dpi_aware.h>
 #include <common/utils/winapi_error.h>
+
+#include <RegistryUtils.h>
 
 using namespace winrt;
 using namespace Windows::Foundation;
@@ -155,6 +157,30 @@ bool LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs)
     return false;
 }
 
+bool LaunchUsingUriProtocolName(const std::wstring& uriProtocolName, const std::wstring& commandLineArgs)
+{
+    std::wstring command = std::wstring(uriProtocolName + (commandLineArgs.starts_with(L":") ? L"" : L":") + commandLineArgs);
+    HINSTANCE result = ShellExecute(
+        nullptr,
+        L"open",
+        command.c_str(),
+        nullptr,
+        nullptr,
+        SW_SHOWNORMAL
+    );
+
+    // If the function succeeds, it returns a value greater than 32.
+    if (result > reinterpret_cast<HINSTANCE>(32))
+    {
+		return true;
+	}
+    else
+    {
+		Logger::error(L"Failed to launch process. {}", get_last_error_or_default(GetLastError()));
+        return false;
+	}
+}
+
 bool LaunchPackagedApp(const std::wstring& packageFullName)
 {
     try
@@ -190,16 +216,31 @@ bool LaunchPackagedApp(const std::wstring& packageFullName)
 
 bool Launch(const Project::Application& app)
 {
+    // TODO: verify app path is up to date.
+    // Packaged apps have version in the path, it will be outdated after update.
+     
     bool launched;
     if (!app.packageFullName.empty() && app.commandLineArgs.empty())
     {
-        Logger::trace(L"Launching packaged {}", app.name);
+        Logger::trace(L"Launching packaged without command line args {}", app.name);
         launched = LaunchPackagedApp(app.packageFullName);
     }
-    else
+    else if (!app.packageFullName.empty() && !app.commandLineArgs.empty())
     {
-        // TODO: verify app path is up to date. 
-        // Packaged apps have version in the path, it will be outdated after update.
+        auto names = RegistryUtils::GetUriProtocolNames(app.packageFullName);
+        if (!names.empty())
+        {
+            Logger::trace(L"Launching packaged by protocol with command line args {}", app.name);
+            launched = LaunchUsingUriProtocolName(names[0], app.commandLineArgs);
+		}
+        else
+        {
+            Logger::info(L"Uri protocol names not found for {}", app.packageFullName);
+        }
+	}
+    
+    if (!launched)
+    {
         Logger::trace(L"Launching {} at {}", app.name, app.path);
 
         DWORD dwAttrib = GetFileAttributesW(app.path.c_str());
