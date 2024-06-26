@@ -149,6 +149,8 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                     Title = generatorItem.Key,
                     SubTitle = generatorItem.Value,
                     IcoPath = GetIcoPath(),
+                    ToolTipData = new ToolTipData(generatorItem.Key, generatorItem.Value),
+                    ToolTipVisibility = Visibility.Visible,
                     Action = c =>
                     {
                         _context.API.ChangeQuery($"{query.ActionKeyword} {generatorItem.Key}");
@@ -208,6 +210,8 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                         SubTitle = generatorItem.Value,
                         IcoPath = GetIcoPath(),
                         Score = matchScore,
+                        ToolTipData = new ToolTipData(generatorItem.Key, generatorItem.Value),
+                        ToolTipVisibility = Visibility.Visible,
                         Action = c =>
                         {
                             _context.API.ChangeQuery($"{query.ActionKeyword} {generatorItem.Key}");
