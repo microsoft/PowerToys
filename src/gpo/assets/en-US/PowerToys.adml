@@ -160,6 +160,17 @@ This policy has a lower priority than the policy "File Explorer add-ons: Configu
       <string id="ConfigureEnabledUtilityFancyZones">FancyZones: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileLocksmith">File Locksmith: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerPreview">File Explorer add-ons: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerSVGPreview">SVG file preview: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerMarkdownPreview">Markdown file preview: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerMonacoPreview">Source code file preview: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerPDFPreview">PDF file preview: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerGcodePreview">Gcode file preview: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerSVGThumbnails">SVG file thumbnail: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerPDFThumbnails">PDF file thumbnail: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerGcodeThumbnails">Gcode file thumbnail: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerSTLThumbnails">STL file thumbnail: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerQOIPreview">QOI file preview: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerQOIThumbnails">QOI file thumbnail: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityHostsFileEditor">Hosts file editor: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityImageResizer">Image Resizer: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityKeyboardManager">Keyboard Manager: Configure enabled state</string>
@@ -186,17 +197,6 @@ This policy has a lower priority than the policy "File Explorer add-ons: Configu
       <string id="PowerToysRunAllPluginsEnabledState">Configure enabled state for all plugins</string>
       <string id="PowerToysRunIndividualPluginEnabledState">Configure enabled state for individual plugins</string>
       <string id="AllowPowerToysAdvancedPasteOnlineAIModels">Advanced Paste: Allow using online AI models</string>
-      <string id="ConfigureEnabledUtilityFileExplorerSVGPreview">SVG file preview: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityFileExplorerMarkdownPreview">Markdown file preview: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityFileExplorerMonacoPreview">Source code file preview: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityFileExplorerPDFPreview">PDF file preview: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityFileExplorerGcodePreview">Gcode file preview: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityFileExplorerSVGThumbnails">SVG file thumbnail: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityFileExplorerPDFThumbnails">PDF file thumbnail: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityFileExplorerGcodeThumbnails">Gcode file thumbnail: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityFileExplorerSTLThumbnails">STL file thumbnail: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityFileExplorerQOIPreview">QOI file preview: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityFileExplorerQOIThumbnails">QOI file thumbnail: Configure enabled state</string>
     </stringTable>
 
     <presentationTable>
