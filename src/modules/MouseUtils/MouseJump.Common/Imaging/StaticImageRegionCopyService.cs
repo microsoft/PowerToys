@@ -12,7 +12,7 @@ namespace MouseJump.Common.Imaging;
 /// Implements an IImageRegionCopyService that uses the specified image as the copy source.
 /// This is used for testing the DrawingHelper rather than as part of the main application.
 /// </summary>
-internal sealed class StaticImageRegionCopyService : IImageRegionCopyService
+public sealed class StaticImageRegionCopyService : IImageRegionCopyService
 {
     public StaticImageRegionCopyService(Image sourceImage)
     {

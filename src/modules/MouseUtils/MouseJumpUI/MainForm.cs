@@ -16,7 +16,7 @@ using MouseJumpUI.Helpers;
 
 namespace MouseJumpUI;
 
-internal partial class MainForm : Form
+internal sealed partial class MainForm : Form
 {
     public MainForm(SettingsHelper settingsHelper)
     {
