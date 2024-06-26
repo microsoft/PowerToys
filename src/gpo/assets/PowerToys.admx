@@ -5,7 +5,7 @@
   <policyNamespaces>
     <target prefix="powertoys" namespace="Microsoft.Policies.PowerToys" />
   </policyNamespaces>
-  <resources minRequiredRevision="1.11"/><!-- Last changed with PowerToys v0.82.0 -->
+  <resources minRequiredRevision="1.11"/><!-- Last changed with PowerToys v0.83.0 -->
   <supportedOn>
     <definitions>
       <definition name="SUPPORTED_POWERTOYS_0_64_0" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0)"/>
@@ -19,7 +19,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_78_0" displayName="$(string.SUPPORTED_POWERTOYS_0_78_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_81_0" displayName="$(string.SUPPORTED_POWERTOYS_0_81_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_81_1" displayName="$(string.SUPPORTED_POWERTOYS_0_81_1)"/>
-      <definition name="SUPPORTED_POWERTOYS_0_82_0" displayName="$(string.SUPPORTED_POWERTOYS_0_82_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_83_0" displayName="$(string.SUPPORTED_POWERTOYS_0_83_0)"/>
     </definitions>
   </supportedOn>
   <categories>
@@ -31,6 +31,9 @@
       <parentCategory ref="PowerToys" />
     </category>
     <category name="AdvancedPaste" displayName="$(string.AdvancedPaste)">
+      <parentCategory ref="PowerToys" />
+    </category>
+    <category name="FilePreviewers" displayName="$(string.FilePreviewers)">
       <parentCategory ref="PowerToys" />
     </category>
   </categories>
@@ -137,119 +140,9 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerPreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerPreview">
+    <policy name="ConfigureEnabledUtilityFileExplorerPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerPreview)" explainText="$(string.ConfigureEnabledUtilityDescriptionFileExplorerPreview)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerPreview">
       <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_82_0" />
-      <enabledValue>
-        <decimal value="1" />
-      </enabledValue>
-      <disabledValue>
-        <decimal value="0" />
-      </disabledValue>
-    </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerSVGPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerSVGPreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerSVGPreview">
-      <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
-      <enabledValue>
-        <decimal value="1" />
-      </enabledValue>
-      <disabledValue>
-        <decimal value="0" />
-      </disabledValue>
-    </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerMarkdownPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerMarkdownPreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerMarkdownPreview">
-      <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
-      <enabledValue>
-        <decimal value="1" />
-      </enabledValue>
-      <disabledValue>
-        <decimal value="0" />
-      </disabledValue>
-    </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerMonacoPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerMonacoPreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerMonacoPreview">
-      <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
-      <enabledValue>
-        <decimal value="1" />
-      </enabledValue>
-      <disabledValue>
-        <decimal value="0" />
-      </disabledValue>
-    </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerPDFPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerPDFPreview)" explainText="$(string.ConfigureEnabledUtilityDescriptionPDFPreviewHandler)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerPDFPreview">
-      <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
-      <enabledValue>
-        <decimal value="1" />
-      </enabledValue>
-      <disabledValue>
-        <decimal value="0" />
-      </disabledValue>
-    </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerGcodePreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerGcodePreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerGcodePreview">
-      <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
-      <enabledValue>
-        <decimal value="1" />
-      </enabledValue>
-      <disabledValue>
-        <decimal value="0" />
-      </disabledValue>
-    </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerSVGThumbnails" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerSVGThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerSVGThumbnails">
-      <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
-      <enabledValue>
-        <decimal value="1" />
-      </enabledValue>
-      <disabledValue>
-        <decimal value="0" />
-      </disabledValue>
-    </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerPDFThumbnails" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerPDFThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerPDFThumbnails">
-      <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
-      <enabledValue>
-        <decimal value="1" />
-      </enabledValue>
-      <disabledValue>
-        <decimal value="0" />
-      </disabledValue>
-    </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerGcodeThumbnails" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerGcodeThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerGcodeThumbnails">
-      <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
-      <enabledValue>
-        <decimal value="1" />
-      </enabledValue>
-      <disabledValue>
-        <decimal value="0" />
-      </disabledValue>
-    </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerQOIPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerQOIPreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerQOIPreview">
-      <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_76_0" />
-      <enabledValue>
-        <decimal value="1" />
-      </enabledValue>
-      <disabledValue>
-        <decimal value="0" />
-      </disabledValue>
-    </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerQOIThumbnails" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerQOIThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerQOIThumbnails">
-      <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_76_0" />
-      <enabledValue>
-        <decimal value="1" />
-      </enabledValue>
-      <disabledValue>
-        <decimal value="0" />
-      </disabledValue>
-    </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerSTLThumbnails" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerSTLThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerSTLThumbnails">
-      <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_83_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>
@@ -507,6 +400,116 @@
     <policy name="AllowPowerToysAdvancedPasteOnlineAIModels" class="Both" displayName="$(string.AllowPowerToysAdvancedPasteOnlineAIModels)" explainText="$(string.AllowPowerToysAdvancedPasteOnlineAIModelsDescription)" key="Software\Policies\PowerToys" valueName="AllowPowerToysAdvancedPasteOnlineAIModels">
       <parentCategory ref="AdvancedPaste" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_81_1" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerSVGPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerSVGPreview)" explainText="$(string.ConfigureEnabledFilePreviewerDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerSVGPreview">
+      <parentCategory ref="FilePreviewers" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerMarkdownPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerMarkdownPreview)" explainText="$(string.ConfigureEnabledFilePreviewerDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerMarkdownPreview">
+      <parentCategory ref="FilePreviewers" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerMonacoPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerMonacoPreview)" explainText="$(string.ConfigureEnabledFilePreviewerDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerMonacoPreview">
+      <parentCategory ref="FilePreviewers" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerPDFPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerPDFPreview)" explainText="$(string.ConfigureEnabledFilePreviewerDescriptionPDFPreviewHandler)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerPDFPreview">
+      <parentCategory ref="FilePreviewers" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerGcodePreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerGcodePreview)" explainText="$(string.ConfigureEnabledFilePreviewerDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerGcodePreview">
+      <parentCategory ref="FilePreviewers" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerSVGThumbnails" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerSVGThumbnails)" explainText="$(string.ConfigureEnabledFilePreviewerDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerSVGThumbnails">
+      <parentCategory ref="FilePreviewers" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerPDFThumbnails" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerPDFThumbnails)" explainText="$(string.ConfigureEnabledFilePreviewerDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerPDFThumbnails">
+      <parentCategory ref="FilePreviewers" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerGcodeThumbnails" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerGcodeThumbnails)" explainText="$(string.ConfigureEnabledFilePreviewerDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerGcodeThumbnails">
+      <parentCategory ref="FilePreviewers" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerQOIPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerQOIPreview)" explainText="$(string.ConfigureEnabledFilePreviewerDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerQOIPreview">
+      <parentCategory ref="FilePreviewers" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_76_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerQOIThumbnails" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerQOIThumbnails)" explainText="$(string.ConfigureEnabledFilePreviewerDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerQOIThumbnails">
+      <parentCategory ref="FilePreviewers" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_76_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerSTLThumbnails" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerSTLThumbnails)" explainText="$(string.ConfigureEnabledFilePreviewerDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerSTLThumbnails">
+      <parentCategory ref="FilePreviewers" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>
