@@ -3,10 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -16,6 +19,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using MouseJump.Common.Helpers;
 using MouseJump.Common.Imaging;
+using MouseJump.Common.Models.Drawing;
 using MouseJump.Common.Models.Styles;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -116,6 +120,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private static Bitmap LoadImageResource(string filename)
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var assemblyName = new AssemblyName(assembly.FullName ?? throw new InvalidOperationException());
+            var resourceName = $"Microsoft.{assemblyName.Name}.{filename.Replace("/", ".")}";
+            var resourceNames = assembly.GetManifestResourceNames();
+            if (!resourceNames.Contains(resourceName))
+            {
+                throw new InvalidOperationException($"Embedded resource '{resourceName}' does not exist.");
+            }
+
+            var stream = assembly.GetManifestResourceStream(resourceName)
+                ?? throw new InvalidOperationException();
+            var image = (Bitmap)Image.FromStream(stream);
+            return image;
+        }
+
+        private static Lazy<Bitmap> MouseJumpDesktopImage => new(
+            () => MouseUtilsViewModel.LoadImageResource("UI/Images/MouseJump-Desktop.png")
+        );
+
         public ImageSource MouseJumpPreviewImage
         {
             get
@@ -161,13 +186,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                                 this.MouseJumpScreenColor2)
                         )
                     ));
-                var screens = ScreenHelper.GetAllScreens()
-                    .Select(screen => screen.DisplayArea).ToList();
+                var screens = new List<RectangleInfo>()
+                {
+                    new(5120, 349, 1920, 1080),
+                    new(0, 0, 5120, 1440),
+                };
                 var previewLayout = LayoutHelper.GetPreviewLayout(
                     previewStyle: previewStyle,
                     screens: screens,
                     activatedLocation: new(0, 0));
-                var imageCopyService = new DesktopImageRegionCopyService();
+
+                using var desktopImage = MouseUtilsViewModel.MouseJumpDesktopImage.Value;
+                var imageCopyService = new StaticImageRegionCopyService(desktopImage);
                 using var previewImage = DrawingHelper.RenderPreview(
                     previewLayout,
                     imageCopyService);
