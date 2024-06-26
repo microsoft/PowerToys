@@ -142,18 +142,18 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
 
         private List<Result> GetSuggestionResults(Query query, List<Result> results)
         {
-            foreach (var generatorItem in QueryHelper.GeneratorList)
+            foreach (var generatorData in QueryHelper.GeneratorDataList)
             {
                 results.Add(new Result
                 {
-                    Title = generatorItem.Key,
-                    SubTitle = generatorItem.Value,
+                    Title = generatorData.GetResultTitle(),
+                    SubTitle = generatorData.GetResultSubtitle(),
                     IcoPath = GetIcoPath(),
-                    ToolTipData = new ToolTipData(generatorItem.Key, generatorItem.Value),
+                    ToolTipData = new ToolTipData(generatorData.GetResultTitle(), generatorData.GetResultSubtitle()),
                     ToolTipVisibility = Visibility.Visible,
                     Action = c =>
                     {
-                        _context.API.ChangeQuery($"{query.ActionKeyword} {generatorItem.Key}");
+                        _context.API.ChangeQuery($"{query.ActionKeyword} {generatorData.Keyword}");
                         return false;
                     },
                 });
@@ -198,23 +198,23 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
 
         private List<Result> GetSuggestionFuzzyResults(Query query, List<Result> results)
         {
-            foreach (var generatorItem in QueryHelper.GeneratorList)
+            foreach (var generatorData in QueryHelper.GeneratorDataList)
             {
-                var matchScore = StringMatcher.FuzzySearch(query.Search, generatorItem.Key).Score;
+                var matchScore = StringMatcher.FuzzySearch(query.Search, generatorData.Keyword).Score;
 
                 if (matchScore > 0)
                 {
                     results.Add(new Result
                     {
-                        Title = generatorItem.Key,
-                        SubTitle = generatorItem.Value,
+                        Title = generatorData.GetResultTitle(),
+                        SubTitle = generatorData.GetResultSubtitle(),
                         IcoPath = GetIcoPath(),
                         Score = matchScore,
-                        ToolTipData = new ToolTipData(generatorItem.Key, generatorItem.Value),
+                        ToolTipData = new ToolTipData(generatorData.GetResultTitle(), generatorData.GetResultSubtitle()),
                         ToolTipVisibility = Visibility.Visible,
                         Action = c =>
                         {
-                            _context.API.ChangeQuery($"{query.ActionKeyword} {generatorItem.Key}");
+                            _context.API.ChangeQuery($"{query.ActionKeyword} {generatorData.Keyword}");
                             return false;
                         },
                     });
