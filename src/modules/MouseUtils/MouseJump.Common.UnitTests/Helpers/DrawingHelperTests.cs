@@ -58,8 +58,8 @@ public static class DrawingHelperTests
                         new(0, 500, 500, 500),
                     },
                     activatedLocation: new(x: 50, y: 50),
-                    desktopImageFilename: "Common/Helpers/_test-4grid-desktop.png",
-                    expectedImageFilename: "Common/Helpers/_test-4grid-expected.png"),
+                    desktopImageFilename: "Helpers/_test-4grid-desktop.png",
+                    expectedImageFilename: "Helpers/_test-4grid-expected.png"),
             };
             /* win 11 */
             yield return new object[]
@@ -72,8 +72,8 @@ public static class DrawingHelperTests
                         new(0, 0, 5120, 1440),
                     },
                     activatedLocation: new(x: 50, y: 50),
-                    desktopImageFilename: "Common/Helpers/_test-win11-desktop.png",
-                    expectedImageFilename: "Common/Helpers/_test-win11-expected.png"),
+                    desktopImageFilename: "Helpers/_test-win11-desktop.png",
+                    expectedImageFilename: "Helpers/_test-win11-expected.png"),
             };
         }
 
