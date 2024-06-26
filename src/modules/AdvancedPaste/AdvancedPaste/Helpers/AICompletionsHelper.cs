@@ -69,7 +69,7 @@ namespace AdvancedPaste.Helpers
             return string.Empty;
         }
 
-        public string GetAICompletion(string systemInstructions, string userMessage)
+        private Response<Completions> GetAICompletion(string systemInstructions, string userMessage)
         {
             OpenAIClient azureAIClient = new OpenAIClient(_openAIKey);
 
@@ -90,7 +90,7 @@ namespace AdvancedPaste.Helpers
                 Console.WriteLine("Cut off due to length constraints");
             }
 
-            return response.Value.Choices[0].Text;
+            return response;
         }
 
         public AICompletionsResponse AIFormatString(string inputInstructions, string inputString)
@@ -109,10 +109,12 @@ Output:
 ";
 
             string aiResponse = null;
+            Response<Completions> rawAIResponse = null;
             int apiRequestStatus = (int)HttpStatusCode.OK;
             try
             {
-                aiResponse = this.GetAICompletion(systemInstructions, userMessage);
+                rawAIResponse = this.GetAICompletion(systemInstructions, userMessage);
+                aiResponse = rawAIResponse.Value.Choices[0].Text;
             }
             catch (Azure.RequestFailedException error)
             {
@@ -126,6 +128,16 @@ Output:
                 PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteGenerateCustomErrorEvent(error.Message));
                 apiRequestStatus = -1;
             }
+
+            int promptTokens = -1;
+            int completionTokens = -1;
+            if (rawAIResponse != null)
+            {
+                promptTokens = rawAIResponse.Value.Usage.PromptTokens;
+                completionTokens = rawAIResponse.Value.Usage.CompletionTokens;
+            }
+
+            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteGenerateCustomFormatEvent(promptTokens, completionTokens, "gpt-3.5-turbo-instruct"));
 
             return new AICompletionsResponse(aiResponse, apiRequestStatus);
         }

@@ -231,6 +231,7 @@ namespace AdvancedPaste.Pages
             var item = e.ClickedItem as ClipboardItem;
             if (item is not null)
             {
+                PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteClipboardItemClicked());
                 if (!string.IsNullOrEmpty(item.Content))
                 {
                     ClipboardHelper.SetClipboardTextContent(item.Content);
