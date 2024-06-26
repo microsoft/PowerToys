@@ -836,6 +836,7 @@ LPW
 lpwndpl
 LReader
 LRESULT
+LSTATUS
 lstrcmp
 lstrcmpi
 lstrlen
