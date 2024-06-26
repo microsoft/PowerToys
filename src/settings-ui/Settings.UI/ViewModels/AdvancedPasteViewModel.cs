@@ -304,6 +304,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool CloseAfterLosingFocus
+        {
+            get => _advancedPasteSettings.Properties.CloseAfterLosingFocus;
+            set
+            {
+                if (value != _advancedPasteSettings.Properties.CloseAfterLosingFocus)
+                {
+                    _advancedPasteSettings.Properties.CloseAfterLosingFocus = value;
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool IsConflictingCopyShortcut
         {
             get
@@ -328,11 +341,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             // Using InvariantCulture as this is an IPC message
             SendConfigMSG(
-                   string.Format(
-                       CultureInfo.InvariantCulture,
-                       "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
-                       AdvancedPasteSettings.ModuleName,
-                       JsonSerializer.Serialize(_advancedPasteSettings)));
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                    AdvancedPasteSettings.ModuleName,
+                    JsonSerializer.Serialize(_advancedPasteSettings)));
         }
 
         public void RefreshEnabledState()
