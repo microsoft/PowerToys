@@ -215,11 +215,8 @@ bool LaunchPackagedApp(const std::wstring& packageFullName)
 }
 
 bool Launch(const Project::Application& app)
-{
-    // TODO: verify app path is up to date.
-    // Packaged apps have version in the path, it will be outdated after update.
-     
-    bool launched;
+{ 
+    bool launched { false };
     if (!app.packageFullName.empty() && app.commandLineArgs.empty())
     {
         Logger::trace(L"Launching packaged without command line args {}", app.name);
@@ -257,7 +254,7 @@ bool Launch(const Project::Application& app)
     return launched;
 }
 
-void Launch(const Project& project)
+Project Launch(Project project)
 {
     // Get the set of windows before launching the app
     std::vector<HWND> windowsBefore = WindowEnumerator::Enumerate(WindowFilter::Filter);
@@ -265,8 +262,22 @@ void Launch(const Project& project)
     auto apps = Utils::Apps::GetAppsList();
     auto monitors = MonitorUtils::IdentifyMonitors();
        
-    for (const auto& app : project.apps)
+    for (auto& app : project.apps)
     {
+        // Packaged apps have version in the path, it will be outdated after update.
+        // We need make sure the current package is up to date.
+        if (!app.packageFullName.empty())
+        {
+            auto installedApp = std::find_if(apps.begin(), apps.end(), [&](const Utils::Apps::AppData& val) { return val.name == app.name; });
+            if (installedApp != apps.end() && app.packageFullName != installedApp->packageFullName)
+            {
+                std::wstring exeFileName = app.path.substr(app.path.find_last_of(L"\\") + 1);
+				app.packageFullName = installedApp->packageFullName;
+                app.path = installedApp->installPath + L"\\" + exeFileName;
+                Logger::trace(L"Updated package full name for {}: {}", app.name, app.packageFullName);
+			}
+		}
+
         if (Launch(app))
         {
             launchedWindows.push_back({ app, nullptr });
@@ -378,4 +389,6 @@ void Launch(const Project& project)
             Logger::error(L"Failed placing {}", app.name);
         }
     }
+
+    return project;
 }

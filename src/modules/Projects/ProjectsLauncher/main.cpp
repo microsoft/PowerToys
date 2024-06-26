@@ -76,7 +76,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     Logger::info(L"Launch Project {} : {}", projectToLaunch.name, projectToLaunch.id);
 
     // launch apps
-    Launch(projectToLaunch);
+    projectToLaunch = Launch(projectToLaunch);
     
     // update last-launched time
     time_t launchedTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
