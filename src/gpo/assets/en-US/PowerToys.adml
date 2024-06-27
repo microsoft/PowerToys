@@ -24,7 +24,7 @@
       <string id="SUPPORTED_POWERTOYS_0_81_0">PowerToys version 0.81.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_81_1">PowerToys version 0.81.1 or later</string>
 
-      <string id="ConfigureGlobalUtilityEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
+      <string id="ConfigureAllUtilityGlobalEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
 
 If you enable this setting, all utilities will be always enabled and the user won't be able to disable it.
 
@@ -128,7 +128,7 @@ If you enable or don't configure this policy, the user takes control over the en
 
 If you disable this policy, the user won't be able to enable Enable paste with AI Advanced Paste setting and use Advanced Paste AI prompt nor set up the Open AI key in PowerToys Settings.
 </string>
-      <string id="ConfigureGlobalUtilityEnabledState">Configure global utility enabled state</string>
+      <string id="ConfigureAllUtilityGlobalEnabledState">Configure global utility enabled state</string>
       <string id="ConfigureEnabledUtilityAdvancedPaste">Advanced Paste: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityAlwaysOnTop">Always On Top: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityAwake">Awake: Configure enabled state</string>
