@@ -91,6 +91,7 @@ namespace AdvancedPaste
             NativeEventWaiter.WaitForEventLoop(interop.Constants.ShowAdvancedPasteSharedEvent(), OnAdvancedPasteHotkey);
             NativeEventWaiter.WaitForEventLoop(interop.Constants.AdvancedPasteMarkdownEvent(), OnAdvancedPasteMarkdownHotkey);
             NativeEventWaiter.WaitForEventLoop(interop.Constants.AdvancedPasteJsonEvent(), OnAdvancedPasteJsonHotkey);
+            OnAdvancedPasteHotkey();
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
