@@ -105,5 +105,14 @@ namespace ProjectsEditor
             bool newValue = SelectAllCheckBox.IsChecked == true;
             _mainViewModel.UpdateIsSelectedStates(project, newValue);
         }
+
+        private void SelectAllOnMonitorCheckBox_Modified(object sender, RoutedEventArgs e)
+        {
+            Project project = this.DataContext as Project;
+            CheckBox checkBox = (CheckBox)sender;
+            string monitorInfo = (string)checkBox.Tag;
+            bool newValue = checkBox.IsChecked == true;
+            _mainViewModel.UpdateIsSelectedStates(project, monitorInfo, newValue);
+        }
     }
 }

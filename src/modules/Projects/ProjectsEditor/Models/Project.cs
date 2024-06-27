@@ -151,7 +151,8 @@ namespace ProjectsEditor.Models
                 ILookup<MonitorSetup, Application> apps = Applications.Where(x => !x.Minimized).ToLookup(x => x.MonitorSetup);
                 foreach (var appItem in apps.OrderBy(x => x.Key.MonitorDpiUnawareBounds.Left).ThenBy(x => x.Key.MonitorDpiUnawareBounds.Top))
                 {
-                    applicationsListed.Add(appItem.Key.MonitorInfo);
+                    MonitorHeaderRow mhr = new MonitorHeaderRow { MonitorName = appItem.Key.MonitorInfo, SelectString = Properties.Resources.SelectAllAppsOnMonitor + " " + appItem.Key.MonitorInfo };
+                    applicationsListed.Add(mhr);
                     foreach (Application app in appItem)
                     {
                         applicationsListed.Add(app);
@@ -161,7 +162,8 @@ namespace ProjectsEditor.Models
                 var minimizedApps = Applications.Where(x => x.Minimized);
                 if (minimizedApps.Any())
                 {
-                    applicationsListed.Add("Minimized Apps");
+                    MonitorHeaderRow mhr = new MonitorHeaderRow { MonitorName = Properties.Resources.Minimized_Apps, SelectString = Properties.Resources.SelectAllMinimizedApps };
+                    applicationsListed.Add(mhr);
                     foreach (Application app in minimizedApps)
                     {
                         applicationsListed.Add(app);

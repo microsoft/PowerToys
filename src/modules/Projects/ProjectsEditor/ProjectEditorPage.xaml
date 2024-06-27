@@ -13,14 +13,30 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
 
         <DataTemplate x:Key="headerTemplate">
-            <Border>
-                <TextBlock
-                    Text="{Binding .}"
-                    Foreground="{DynamicResource PrimaryForegroundBrush}"
-                    FontSize="14"
-                    FontWeight="Normal"
-                    Margin="0,20,20,5"
-                    VerticalAlignment="Center"/>
+            <Border
+                HorizontalAlignment="Stretch">
+                <DockPanel
+                    HorizontalAlignment="Stretch"
+                    >
+                    <TextBlock
+                        DockPanel.Dock="Left"
+                        Text="{Binding MonitorName}"
+                        Foreground="{DynamicResource PrimaryForegroundBrush}"
+                        FontSize="14"
+                        FontWeight="Normal"
+                        Margin="0,0,20,0"
+                        VerticalAlignment="Center"/>
+                    <CheckBox
+                        DockPanel.Dock="Right"
+                        HorizontalAlignment="Right"
+                        x:Name="SelectAllOnMonitorCheckBox"
+                        Tag="{Binding MonitorName}"
+                        Margin="10,0,0,0"
+                        FontSize="14"
+                        Content="{Binding SelectString}"
+                        Checked="SelectAllOnMonitorCheckBox_Modified"
+                        Unchecked="SelectAllOnMonitorCheckBox_Modified"/>
+                </DockPanel>
             </Border>
         </DataTemplate>
         <DataTemplate x:Key="appTemplate">

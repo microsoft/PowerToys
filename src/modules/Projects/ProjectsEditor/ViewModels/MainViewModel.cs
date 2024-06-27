@@ -367,5 +367,26 @@ namespace ProjectsEditor.ViewModels
             project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.IsAnySelected)));
             project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.CanBeSaved)));
         }
+
+        internal void UpdateIsSelectedStates(Project project, string monitorInfo, bool newValue)
+        {
+            IEnumerable<Application> apps;
+            if (monitorInfo == Properties.Resources.Minimized_Apps)
+            {
+                apps = project.Applications.Where(app => app.Minimized);
+            }
+            else
+            {
+                Monitor monitor = project.Monitors.Where(x => x.MonitorInfo == monitorInfo).Single();
+                apps = project.Applications.Where(app => !app.Minimized && app.MonitorNumber == monitor.MonitorNumber);
+            }
+
+            foreach (Application app in apps)
+            {
+                app.IsSelected = newValue;
+            }
+
+            project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.IsAnySelected)));
+        }
     }
 }

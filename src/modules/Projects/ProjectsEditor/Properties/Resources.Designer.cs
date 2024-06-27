@@ -259,6 +259,15 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Minimized Apps.
+        /// </summary>
+        public static string Minimized_Apps {
+            get {
+                return ResourceManager.GetString("Minimized_Apps", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to minutes ago.
         /// </summary>
         public static string MinutesAgo {
@@ -444,6 +453,24 @@ namespace ProjectsEditor.Properties {
         public static string SecondsAgo {
             get {
                 return ResourceManager.GetString("SecondsAgo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select All Apps on.
+        /// </summary>
+        public static string SelectAllAppsOnMonitor {
+            get {
+                return ResourceManager.GetString("SelectAllAppsOnMonitor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select All Minimized Apps.
+        /// </summary>
+        public static string SelectAllMinimizedApps {
+            get {
+                return ResourceManager.GetString("SelectAllMinimizedApps", resourceCulture);
             }
         }
         

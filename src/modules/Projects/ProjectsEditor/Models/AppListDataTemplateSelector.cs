@@ -18,7 +18,7 @@ namespace ProjectsEditor.Models
 
         public override System.Windows.DataTemplate SelectTemplate(object item, System.Windows.DependencyObject container)
         {
-            if (item is string)
+            if (item is MonitorHeaderRow)
             {
                 return HeaderTemplate;
             }
