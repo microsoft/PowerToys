@@ -118,8 +118,8 @@
     <value>Online documentation</value>
   </data>
   <data name="EXIT_MENU_TEXT" xml:space="preserve">
-    <value>Close</value>
-    <comment>Close as a verb, as in Close the application</comment>
+    <value>Exit</value>
+    <comment>Exit is a verb, as in Exit the application</comment>
   </data>
   <data name="SUBMIT_BUG_TEXT" xml:space="preserve">
     <value>Create bug report file</value>

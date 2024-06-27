@@ -121,7 +121,8 @@
     <value>Checked</value>
   </data>
   <data name="AWAKE_EXIT" xml:space="preserve">
-    <value>Close</value>
+    <value>Exit</value>
+    <comment>is a verb</comment>
   </data>
   <data name="AWAKE_1_HOUR" xml:space="preserve">
     <value>1 hour</value>

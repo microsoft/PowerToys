@@ -3867,7 +3867,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Online documentation</value>
   </data>
   <data name="DocsTooltip.Text" xml:space="preserve">
-    <value>Go to online documentation on MS Learn</value>
+    <value>Go to online documentation on Microsoft Learn</value>
   </data>
   <data name="FZEditorString" xml:space="preserve">
     <value>FancyZones Editor</value>
