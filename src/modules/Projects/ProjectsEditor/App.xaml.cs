@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading;
 using System.Windows;
 using ManagedCommon;
 using ProjectsEditor.Common;
@@ -16,6 +17,8 @@ namespace ProjectsEditor
     /// </summary>
     public partial class App : Application, IDisposable
     {
+        private static Mutex mutex;
+
         public static ProjectsEditorIO ProjectsEditorIO { get; private set; }
 
         private MainWindow _mainWindow;
@@ -33,16 +36,25 @@ namespace ProjectsEditor
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
+            Logger.InitializeLogger("\\Projects\\Logs");
+            AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+
+            const string appName = "Local\\PowerToys_Projects_Editor_InstanceMutex";
+            bool createdNew;
+            mutex = new Mutex(true, appName, out createdNew);
+            if (!createdNew)
+            {
+                Logger.LogWarning("Another instance of Projects Editor is already running. Exiting this instance.");
+                Shutdown(0);
+                return;
+            }
+
             if (PowerToys.GPOWrapperProjection.GPOWrapper.GetConfiguredProjectsEnabledValue() == PowerToys.GPOWrapperProjection.GpoRuleConfigured.Disabled)
             {
                 Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
                 Shutdown(0);
                 return;
             }
-
-            AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
-
-            Logger.InitializeLogger("\\Projects\\Logs");
 
             _themeManager = new ThemeManager(this);
 
@@ -78,12 +90,13 @@ namespace ProjectsEditor
 
         private void OnExit(object sender, ExitEventArgs e)
         {
+            mutex?.ReleaseMutex();
             Dispose();
         }
 
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs args)
         {
-            // TODO: log the error and show an error message
+            Logger.LogError("Unhandled exception occurred", args.ExceptionObject as Exception);
         }
 
         protected virtual void Dispose(bool disposing)
