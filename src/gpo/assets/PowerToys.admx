@@ -39,7 +39,7 @@
   <policies>
 
  <!--The name (id) of the policy is different to sort it as first policy in edit dialog. The order is sorted alphabetically based on the "name" property.-->
-    <policy name="ConfigureAllUtilityGlobalEnabledState" class="Both" displayName="$(string.ConfigureGlobalUtilityEnabledState)" explainText="$(string.ConfigureGlobalUtilityEnabledStateDescription)" key="Software\Policies\PowerToys" valueName="ConfigureGlobalUtilityEnabledState">
+    <policy name="ConfigureAllUtilityGlobalEnabledState" class="Both" displayName="$(string.ConfigureAllUtilityGlobalEnabledState)" explainText="$(string.ConfigureAllUtilityGlobalEnabledStateDescription)" key="Software\Policies\PowerToys" valueName="ConfigureGlobalUtilityEnabledState">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_75_0" />
       <enabledValue>
