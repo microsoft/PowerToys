@@ -103,7 +103,7 @@
                     </TextBlock>
                     <CheckBox
                         Grid.Column="5"
-                        IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                        IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         Checked="CheckBox_Checked"
                         Unchecked="CheckBox_Checked"
                         Margin="10"/>
@@ -151,21 +151,41 @@
                 Foreground="{DynamicResource PrimaryForegroundBrush}"
                 VerticalAlignment="Center"/>
         </StackPanel>
-        <StackPanel Grid.Row="1" Orientation="Vertical">
-            <TextBlock Text="{x:Static props:Resources.ProjectName}" FontSize="14" FontWeight="Normal" Foreground="{DynamicResource PrimaryForegroundBrush}"/>
-            <TextBox
-                x:Name="EditNameTextBox"
-                Width="320"
-                Text="{Binding Name, Mode=TwoWay}"
-                Background="{DynamicResource SecondaryBackgroundBrush}"
-                BorderBrush="{DynamicResource PrimaryBorderBrush}"
-                BorderThickness="2"
-                Margin="0,6,0,6"
-                HorizontalAlignment="Left"
-                GotFocus="EditNameTextBox_GotFocus"
-                TextChanged="EditNameTextBox_TextChanged"
-                KeyDown="EditNameTextBoxKeyDown" />
-        </StackPanel>
+        <DockPanel Grid.Row="1">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" >
+                <Button x:Name="DeleteButton"
+                    Margin="10,0,0,0"
+                    Height="36"
+                    Padding="24,0,24,0"
+                    Content="{x:Static props:Resources.DeleteSelected}"
+                    Background="{DynamicResource SecondaryBackgroundBrush}"
+                    AutomationProperties.Name="{x:Static props:Resources.Cancel}"
+                    IsEnabled="{Binding IsAnySelected, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                    Click="RemoveSelectedButtonClicked"/>
+                <CheckBox
+                    x:Name="SelectAllCheckBox"
+                    Margin="10,0,0,0"
+                    FontSize="14"
+                    Content="{x:Static props:Resources.SelectedAllInProject}"
+                    Checked="SelectAllCheckBox_Modified"
+                    Unchecked="SelectAllCheckBox_Modified"/>
+            </StackPanel>
+            <StackPanel DockPanel.Dock="Left" Orientation="Vertical">
+                <TextBlock Text="{x:Static props:Resources.ProjectName}" FontSize="14" FontWeight="Normal" Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+                <TextBox
+                    x:Name="EditNameTextBox"
+                    Width="320"
+                    Text="{Binding Name, Mode=TwoWay}"
+                    Background="{DynamicResource SecondaryBackgroundBrush}"
+                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                    BorderThickness="2"
+                    Margin="0,6,0,6"
+                    HorizontalAlignment="Left"
+                    GotFocus="EditNameTextBox_GotFocus"
+                    TextChanged="EditNameTextBox_TextChanged"
+                    KeyDown="EditNameTextBoxKeyDown" />
+            </StackPanel>
+        </DockPanel>
         <Border
             Grid.Row="2"
             HorizontalAlignment="Stretch"
@@ -189,7 +209,7 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <ItemsControl
-                        ItemsSource="{Binding ApplicationsListed, Mode=OneWay}"
+                        ItemsSource="{Binding ApplicationsListed, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                         ItemTemplateSelector="{StaticResource AppListDataTemplateSelector}">
                     </ItemsControl>
                 </Grid>

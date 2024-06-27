@@ -169,6 +169,15 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Remove Selected Apps.
+        /// </summary>
+        public static string DeleteSelected {
+            get {
+                return ResourceManager.GetString("DeleteSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Edit.
         /// </summary>
         public static string Edit {
@@ -435,6 +444,15 @@ namespace ProjectsEditor.Properties {
         public static string SecondsAgo {
             get {
                 return ResourceManager.GetString("SecondsAgo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select All Apps in Project.
+        /// </summary>
+        public static string SelectedAllInProject {
+            get {
+                return ResourceManager.GetString("SelectedAllInProject", resourceCulture);
             }
         }
         

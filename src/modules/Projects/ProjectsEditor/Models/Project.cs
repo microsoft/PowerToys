@@ -121,7 +121,7 @@ namespace ProjectsEditor.Models
 
         public bool CanBeSaved
         {
-            get => Name.Length > 0 && Applications.Where(x => x.IsSelected).Any();
+            get => Name.Length > 0 && Applications.Count > 0;
         }
 
         private bool _isPopupVisible;
@@ -177,10 +177,12 @@ namespace ProjectsEditor.Models
         {
             get
             {
-                int count = Applications.Where(x => x.IsSelected).Count();
+                int count = Applications.Count;
                 return count.ToString(CultureInfo.InvariantCulture) + " " + (count == 1 ? Properties.Resources.App : Properties.Resources.Apps);
             }
         }
+
+        public bool IsAnySelected { get => Applications?.Any(x => x.IsSelected) == true; }
 
         public List<MonitorSetup> Monitors { get; set; }
 
@@ -216,7 +218,7 @@ namespace ProjectsEditor.Models
                     PackageFullName = item.PackageFullName,
                     Minimized = item.Minimized,
                     Maximized = item.Maximized,
-                    IsSelected = item.IsSelected,
+                    IsSelected = false,
                     MonitorNumber = item.MonitorNumber,
                     IsNotFound = item.IsNotFound,
                     Position = new Application.WindowPosition() { X = item.Position.X, Y = item.Position.Y, Height = item.Position.Height, Width = item.Position.Width },

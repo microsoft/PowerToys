@@ -88,7 +88,7 @@ namespace ProjectsEditor.ViewModels
                     return false;
                 }
 
-                return x.Applications.Any(app => app.IsSelected && app.AppName.Contains(_searchTerm, StringComparison.InvariantCultureIgnoreCase));
+                return x.Applications.Any(app => app.AppName.Contains(_searchTerm, StringComparison.InvariantCultureIgnoreCase));
             });
         }
 
@@ -159,18 +159,7 @@ namespace ProjectsEditor.ViewModels
             editedProject.IsShortcutNeeded = projectToSave.IsShortcutNeeded;
             editedProject.PreviewIcons = projectToSave.PreviewIcons;
             editedProject.PreviewImage = projectToSave.PreviewImage;
-            for (int appIndex = editedProject.Applications.Count - 1; appIndex >= 0; appIndex--)
-            {
-                if (!projectToSave.Applications[appIndex].IsSelected)
-                {
-                    editedProject.Applications.RemoveAt(appIndex);
-                }
-                else
-                {
-                    editedProject.Applications[appIndex].IsSelected = true;
-                    editedProject.Applications[appIndex].CommandLineArguments = projectToSave.Applications[appIndex].CommandLineArguments;
-                }
-            }
+            editedProject.Applications = projectToSave.Applications;
 
             editedProject.OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs("AppsCountString"));
             editedProject.Initialize();
@@ -359,6 +348,24 @@ namespace ProjectsEditor.ViewModels
             {
                 project.IsPopupVisible = false;
             }
+        }
+
+        internal void UpdateIsSelectedStates(Project project, bool newValue)
+        {
+            foreach (Application app in project.Applications)
+            {
+                app.IsSelected = newValue;
+            }
+
+            project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.IsAnySelected)));
+        }
+
+        internal void RemoveSelectedApps(Project project)
+        {
+            project.Applications.RemoveAll(app => app.IsSelected);
+            project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.ApplicationsListed)));
+            project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.IsAnySelected)));
+            project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.CanBeSaved)));
         }
     }
 }

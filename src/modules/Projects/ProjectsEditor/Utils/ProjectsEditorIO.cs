@@ -117,7 +117,7 @@ namespace ProjectsEditor.Utils
                     CommandLineArguments = app.CommandLineArguments,
                     Maximized = app.Maximized,
                     Minimized = app.Minimized,
-                    IsSelected = true,
+                    IsSelected = false,
                     IsNotFound = false,
                     Position = new Models.Application.WindowPosition()
                     {
@@ -161,27 +161,24 @@ namespace ProjectsEditor.Utils
 
                 foreach (var app in project.Applications)
                 {
-                    if (app.IsSelected)
+                    wrapper.Applications.Add(new ProjectsData.ApplicationWrapper
                     {
-                        wrapper.Applications.Add(new ProjectsData.ApplicationWrapper
+                        Application = app.AppName,
+                        ApplicationPath = app.AppPath,
+                        Title = app.AppTitle,
+                        PackageFullName = app.PackageFullName,
+                        CommandLineArguments = app.CommandLineArguments,
+                        Maximized = app.Maximized,
+                        Minimized = app.Minimized,
+                        Position = new ProjectsData.ApplicationWrapper.WindowPositionWrapper
                         {
-                            Application = app.AppName,
-                            ApplicationPath = app.AppPath,
-                            Title = app.AppTitle,
-                            PackageFullName = app.PackageFullName,
-                            CommandLineArguments = app.CommandLineArguments,
-                            Maximized = app.Maximized,
-                            Minimized = app.Minimized,
-                            Position = new ProjectsData.ApplicationWrapper.WindowPositionWrapper
-                            {
-                                X = app.Position.X,
-                                Y = app.Position.Y,
-                                Height = app.Position.Height,
-                                Width = app.Position.Width,
-                            },
-                            Monitor = app.MonitorNumber,
-                        });
-                    }
+                            X = app.Position.X,
+                            Y = app.Position.Y,
+                            Height = app.Position.Height,
+                            Width = app.Position.Width,
+                        },
+                        Monitor = app.MonitorNumber,
+                    });
                 }
 
                 foreach (var monitor in project.Monitors)
