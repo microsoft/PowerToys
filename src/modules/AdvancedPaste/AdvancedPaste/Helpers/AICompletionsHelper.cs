@@ -33,6 +33,8 @@ namespace AdvancedPaste.Helpers
 
         private string _openAIKey;
 
+        private string _modelName = "gpt-3.5-turbo-instruct";
+
         public bool IsAIEnabled => !string.IsNullOrEmpty(this._openAIKey);
 
         public AICompletionsHelper()
@@ -76,7 +78,7 @@ namespace AdvancedPaste.Helpers
             var response = azureAIClient.GetCompletions(
                 new CompletionsOptions()
                 {
-                    DeploymentName = "gpt-3.5-turbo-instruct",
+                    DeploymentName = _modelName,
                     Prompts =
                     {
                         systemInstructions + "\n\n" + userMessage,
@@ -115,6 +117,10 @@ Output:
             {
                 rawAIResponse = this.GetAICompletion(systemInstructions, userMessage);
                 aiResponse = rawAIResponse.Value.Choices[0].Text;
+
+                int promptTokens = rawAIResponse.Value.Usage.PromptTokens;
+                int completionTokens = rawAIResponse.Value.Usage.CompletionTokens;
+                PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteGenerateCustomFormatEvent(promptTokens, completionTokens, _modelName));
             }
             catch (Azure.RequestFailedException error)
             {
@@ -128,16 +134,6 @@ Output:
                 PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteGenerateCustomErrorEvent(error.Message));
                 apiRequestStatus = -1;
             }
-
-            int promptTokens = -1;
-            int completionTokens = -1;
-            if (rawAIResponse != null)
-            {
-                promptTokens = rawAIResponse.Value.Usage.PromptTokens;
-                completionTokens = rawAIResponse.Value.Usage.CompletionTokens;
-            }
-
-            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteGenerateCustomFormatEvent(promptTokens, completionTokens, "gpt-3.5-turbo-instruct"));
 
             return new AICompletionsResponse(aiResponse, apiRequestStatus);
         }
