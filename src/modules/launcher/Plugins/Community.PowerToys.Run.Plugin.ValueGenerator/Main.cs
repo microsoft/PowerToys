@@ -232,6 +232,8 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             {
                 Title = Resources.error_title,
                 SubTitle = errorMessage,
+                ToolTipData = new ToolTipData(Resources.error_title, errorMessage),
+                ToolTipVisibility = Visibility.Visible,
                 IcoPath = GetIcoPath(isWarning: true),
                 Action = _ => { return true; },
             };
