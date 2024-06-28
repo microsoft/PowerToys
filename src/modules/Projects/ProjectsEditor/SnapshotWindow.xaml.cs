@@ -40,6 +40,7 @@ namespace ProjectsEditor
 
         private void SnapshotButtonClicked(object sender, RoutedEventArgs e)
         {
+            Close();
             _mainViewModel.AddNewProject();
         }
 
