@@ -4198,4 +4198,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="FileExplorerPreview_ShortDescription" xml:space="preserve">
     <value>Custom preview handlers for Windows File Explorer</value>
   </data>
+  <data name="FileExplorerPreview_DashboardTitle" xml:space="preserve">
+    <value>File Explorer add-ons</value>
+  </data>
 </root>

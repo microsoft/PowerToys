@@ -21,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MouseHighlighter:
                 case ModuleType.MouseJump:
                 case ModuleType.MousePointerCrosshairs: return $"MouseUtils_{moduleType}/Header";
-                case ModuleType.PowerPreview: return "FileExplorerPreview/ModuleTitle";
+                case ModuleType.PowerPreview: return "FileExplorerPreview_DashboardTitle";
                 default: return $"{moduleType}/ModuleTitle";
             }
         }
