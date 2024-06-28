@@ -5,6 +5,7 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using ColorPicker.Helpers;
 using ColorPicker.ViewModels;
 
@@ -40,6 +41,48 @@ namespace ColorPicker.Views
                     HistoryColors.ScrollIntoView(colorEditorViewModel.SelectedColor);
                 }
             };
+        }
+
+        private void HistoryColors_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            var scrollViewer = FindVisualChild<ScrollViewer>(HistoryColors);
+
+            if (scrollViewer != null)
+            {
+                if (e.Delta > 0)
+                {
+                    scrollViewer.LineLeft();
+                }
+                else
+                {
+                    scrollViewer.LineRight();
+                }
+
+                e.Handled = true;
+            }
+        }
+
+        private static T FindVisualChild<T>(DependencyObject obj)
+            where T : DependencyObject
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(obj, i);
+                if (child != null && child is T tChild)
+                {
+                    return tChild;
+                }
+                else
+                {
+                    T childOfChild = FindVisualChild<T>(child);
+                    if (childOfChild != null)
+                    {
+                        return childOfChild;
+                    }
+                }
+            }
+
+            return null;
         }
 
         /*
