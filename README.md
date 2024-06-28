@@ -107,8 +107,8 @@ In this release, we focused on stability and improvements.
 
  - New feature added to PowerRename to allow using sequences of random characters and UUIDs when renaming files. Thanks [@jhirvioja](https://github.com/jhirvioja)!
  - Improvements in the Paste As JSON feature to better handle other CSV delimiters and converting from ini files. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Bug fixes and stability
  - Fixed UI issues that were reported after upgrading to WPF UI on Color Picker and PowerToys Run.
+ - Bug fixes and stability.
 
 ### Advanced Paste
 
@@ -145,7 +145,7 @@ In this release, we focused on stability and improvements.
 ### Hosts File Editor
 
  - Improved spacing definitions in the UI so that hosts name are not hidden when resizing and icons are well aligned. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Added horizontal scroll instead of wrapping in the additional lines dialog. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Changed the additional lines dialog to show the horizontal scrollbar instead of wrapping contents. Thanks [@htcfreek](https://github.com/htcfreek)!
  - Improved the duplication check's logic to improve performance and take into account features that were introduced after it. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Installer
@@ -166,7 +166,6 @@ In this release, we focused on stability and improvements.
 
 ### PowerToys Run
 
- - Made the PowerToys Run search bar opaque to prevent the title bar accent from showing through its transparency. (This was a hotfix for 0.81)
  - Removed full stops from the plugin descriptions for consistency in the UI. Thanks [@HydroH](https://github.com/HydroH)!
  - Fixed UI scaling for different dpi scenarios.
  - Fixed crash on a racing condition when updating UWP icon paths in the Program plugin. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
@@ -185,7 +184,7 @@ In this release, we focused on stability and improvements.
 
 ### Screen Ruler
 
- - Updated the default activation hotkey to Win+Control+Shift+M, in order to not conflict with the built-in Windows Explorer shortcut that restores minimized windows (Win+Shift+M). Thanks [@nx-frost](https://github.com/nx-frost)!
+ - Updated the default activation hotkey to Win+Control+Shift+M, in order to not conflict with the Windows shortcut that restores minimized windows (Win+Shift+M). Thanks [@nx-frost](https://github.com/nx-frost)!
 
 ### Settings
 
