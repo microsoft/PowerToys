@@ -1333,7 +1333,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Windows.CsWinRT 2.0.4
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.2428
 - Microsoft.Windows.SDK.Contracts 10.0.19041.1
-- Microsoft.WindowsAppSDK 1.5.240311000
+- Microsoft.WindowsAppSDK 1.5.240428000
 - Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
 - Microsoft.Xaml.Behaviors.Wpf 1.1.39
 - ModernWpfUI 0.9.4
@@ -1355,7 +1355,7 @@ EXHIBIT A -Mozilla Public License.
 - System.Data.SqlClient 4.8.6
 - System.Diagnostics.EventLog 8.0.0
 - System.Diagnostics.PerformanceCounter 8.0.0
-- System.Drawing.Common 8.0.5
+- System.Drawing.Common 8.0.6
 - System.IO.Abstractions 17.2.3
 - System.IO.Abstractions.TestingHelpers 17.2.3
 - System.Management 8.0.0
@@ -1365,7 +1365,7 @@ EXHIBIT A -Mozilla Public License.
 - System.ServiceProcess.ServiceController 8.0.0
 - System.Text.Encoding.CodePages 8.0.0
 - UnicodeInformation 2.6.0
-- UnitsNet 4.145.0
+- UnitsNet 5.50.0
 - UTF.Unknown 2.5.1
 - Vanara.PInvoke.Shell32 3.4.11
 - Vanara.PInvoke.User32 3.4.11

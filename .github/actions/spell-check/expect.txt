@@ -127,6 +127,7 @@ bootstrapper
 BOOTSTRAPPERINSTALLFOLDER
 bostrot
 BOTTOMALIGN
+boxmodel
 BPBF
 bpmf
 bpp
@@ -152,6 +153,7 @@ Cangjie
 CANRENAME
 CAPTUREBLT
 CAPTURECHANGED
+CARETBLINKING
 CAtl
 cch
 CCHDEVICENAME
@@ -253,6 +255,7 @@ CREATESCHEDULEDTASK
 CREATESTRUCT
 CREATEWINDOWFAILED
 CRECT
+CRH
 critsec
 Crossdevice
 CRSEL
@@ -1342,6 +1345,9 @@ RRF
 rrr
 rsop
 Rsp
+rstringalnum
+rstringalpha
+rstringdigit
 Rstrtmgr
 RTB
 RTLREADING
@@ -1354,6 +1360,7 @@ runtimeclass
 runtimeobject
 runtimepack
 runtimes
+ruuid
 rvm
 rwin
 rwl

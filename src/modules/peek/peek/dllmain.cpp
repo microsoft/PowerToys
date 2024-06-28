@@ -187,7 +187,7 @@ private:
         }
 
         // Enumerate all Shell Windows to compare the window handle against.
-        IUnknownPtr spEnum{};
+        IUnknownPtr spEnum{}; // _com_ptr_t; no Release required.
         result = spShellWindows->_NewEnum(&spEnum);
         if (result != S_OK || spEnum == nullptr)
         {
@@ -195,7 +195,7 @@ private:
             return true; // Might as well assume it's possible it's an explorer window.
         }
 
-        IEnumVARIANTPtr spEnumVariant{};
+        IEnumVARIANTPtr spEnumVariant{}; // _com_ptr_t; no Release required.
         result = spEnum.QueryInterface(__uuidof(spEnumVariant), &spEnumVariant);
         if (result != S_OK || spEnumVariant == nullptr)
         {
@@ -219,8 +219,6 @@ private:
                     {
                         VariantClear(&variantElement);
                         spWebBrowserApp->Release();
-                        spEnumVariant->Release();
-                        spEnum->Release();
                         return true;
                     }
                 }
@@ -229,8 +227,6 @@ private:
             VariantClear(&variantElement);
         }
 
-        spEnumVariant->Release();
-        spEnum->Release();
         return false;
     }
 

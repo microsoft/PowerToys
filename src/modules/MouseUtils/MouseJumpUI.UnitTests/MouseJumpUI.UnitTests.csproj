@@ -29,6 +29,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Common\Helpers\_test-4grid-desktop.png" />
+    <EmbeddedResource Include="Common\Helpers\_test-4grid-expected.png" />
+    <EmbeddedResource Include="Common\Helpers\_test-win11-desktop.png" />
+    <EmbeddedResource Include="Common\Helpers\_test-win11-expected.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\MouseJumpUI\MouseJumpUI.csproj" />
   </ItemGroup>
 

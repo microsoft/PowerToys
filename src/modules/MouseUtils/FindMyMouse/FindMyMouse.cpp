@@ -65,6 +65,7 @@ protected:
 
     bool m_destroyed = false;
     FindMyMouseActivationMethod m_activationMethod = FIND_MY_MOUSE_DEFAULT_ACTIVATION_METHOD;
+    bool m_includeWinKey = FIND_MY_MOUSE_DEFAULT_INCLUDE_WIN_KEY;
     bool m_doNotActivateOnGameMode = FIND_MY_MOUSE_DEFAULT_DO_NOT_ACTIVATE_ON_GAME_MODE;
     int m_sonarRadius = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_RADIUS;
     int m_sonarZoomFactor = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_INITIAL_ZOOM;
@@ -146,6 +147,7 @@ private:
     void OnMouseTimer();
 
     void DetectShake();
+    bool KeyboardInputCanActivate();
 
     void StartSonar();
     void StopSonar();
@@ -352,7 +354,7 @@ void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
         break;
 
     case SonarState::ControlUp1:
-        if (pressed)
+        if (pressed && KeyboardInputCanActivate())
         {
             auto now = GetTickCount64();
             auto doubleClickInterval = now - m_lastKeyTime;
@@ -436,6 +438,12 @@ void SuperSonar<D>::DetectShake()
         StartSonar();
     }
 
+}
+
+template<typename D>
+bool SuperSonar<D>::KeyboardInputCanActivate()
+{
+    return !m_includeWinKey || (GetAsyncKeyState(VK_LWIN) & 0x8000) || (GetAsyncKeyState(VK_RWIN) & 0x8000);
 }
 
 template<typename D>
@@ -762,6 +770,7 @@ public:
             m_backgroundColor = settings.backgroundColor;
             m_spotlightColor = settings.spotlightColor;
             m_activationMethod = settings.activationMethod;
+            m_includeWinKey = settings.includeWinKey;
             m_doNotActivateOnGameMode = settings.doNotActivateOnGameMode;
             m_fadeDuration = settings.animationDurationMs > 0 ? settings.animationDurationMs : 1;
             m_finalAlphaNumerator = settings.overlayOpacity;
@@ -791,6 +800,7 @@ public:
                     m_backgroundColor = localSettings.backgroundColor;
                     m_spotlightColor = localSettings.spotlightColor;
                     m_activationMethod = localSettings.activationMethod;
+                    m_includeWinKey = localSettings.includeWinKey;
                     m_doNotActivateOnGameMode = localSettings.doNotActivateOnGameMode;
                     m_fadeDuration = localSettings.animationDurationMs > 0 ? localSettings.animationDurationMs : 1;
                     m_finalAlphaNumerator = localSettings.overlayOpacity;
