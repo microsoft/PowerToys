@@ -484,11 +484,38 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Move the windows you want to include to the project into the desired position. There will be later a possibility to deselect the windows you don&apos;t want to include to the project..
+        /// </summary>
+        public static string SnapshotDescription {
+            get {
+                return ResourceManager.GetString("SnapshotDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Snapshot Creator.
+        /// </summary>
+        public static string SnapshotWindowTitle {
+            get {
+                return ResourceManager.GetString("SnapshotWindowTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Sort by.
         /// </summary>
         public static string SortBy {
             get {
                 return ResourceManager.GetString("SortBy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Take Snapshot.
+        /// </summary>
+        public static string Take_Snapshot {
+            get {
+                return ResourceManager.GetString("Take_Snapshot", resourceCulture);
             }
         }
         

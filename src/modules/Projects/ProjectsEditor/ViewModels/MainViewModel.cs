@@ -22,6 +22,8 @@ namespace ProjectsEditor.ViewModels
     public class MainViewModel : INotifyPropertyChanged, IDisposable
     {
         private ProjectsEditorIO _projectsEditorIO;
+        private SnapshotWindow _snapshotWindow;
+        private List<OverlayWindow> _overlayWindows = new List<OverlayWindow>();
 
         public ObservableCollection<Project> Projects { get; set; } = new ObservableCollection<Project>();
 
@@ -217,6 +219,7 @@ namespace ProjectsEditor.ViewModels
 
         public async void AddNewProject()
         {
+            CancelSnapshot();
             await Task.Run(() => RunSnapshotTool());
             if (_projectsEditorIO.ParseProjects(this).Result == true && Projects.Count != 0)
             {
@@ -387,6 +390,40 @@ namespace ProjectsEditor.ViewModels
             }
 
             project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.IsAnySelected)));
+        }
+
+        internal void EnterSnapshotMode()
+        {
+            _mainWindow.WindowState = System.Windows.WindowState.Minimized;
+            _overlayWindows.Clear();
+            var screens = System.Windows.Forms.Screen.AllScreens;
+            foreach (var screen in screens)
+            {
+                OverlayWindow overlayWindow = new OverlayWindow();
+                overlayWindow.Top = screen.Bounds.Top;
+                overlayWindow.Left = screen.Bounds.Left;
+                overlayWindow.Width = screen.Bounds.Width;
+                overlayWindow.Height = screen.Bounds.Height;
+                overlayWindow.ShowActivated = true;
+                overlayWindow.Topmost = true;
+                overlayWindow.Show();
+                _overlayWindows.Add(overlayWindow);
+            }
+
+            _snapshotWindow = new SnapshotWindow(this);
+            _snapshotWindow.ShowActivated = true;
+            _snapshotWindow.Topmost = true;
+            _snapshotWindow.Show();
+        }
+
+        internal void CancelSnapshot()
+        {
+            foreach (OverlayWindow overlayWindow in _overlayWindows)
+            {
+                overlayWindow.Close();
+            }
+
+            _mainWindow.WindowState = System.Windows.WindowState.Normal;
         }
     }
 }
