@@ -369,6 +369,7 @@ namespace ProjectsEditor.ViewModels
             project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.ApplicationsListed)));
             project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.IsAnySelected)));
             project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.CanBeSaved)));
+            project.Initialize();
         }
 
         internal void UpdateIsSelectedStates(Project project, string monitorInfo, bool newValue)
