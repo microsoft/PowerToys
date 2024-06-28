@@ -1,13 +1,14 @@
 #pragma once
 
-#include <windows.h>
 #include <atlbase.h>
 #include <ShlObj.h>
 #include <propvarutil.h>
 
 #include <filesystem>
 
+#include <common/logger/logger.h>
 #include <common/utils/process_path.h>
+#include <common/utils/winapi_error.h>
 
 namespace Utils
 {
@@ -41,6 +42,7 @@ namespace Utils
             HRESULT hr = SHGetKnownFolderItem(FOLDERID_AppsFolder, KF_FLAG_DEFAULT, nullptr, IID_PPV_ARGS(&folder));
             if (FAILED(hr))
             {
+                Logger::error(L"Failed to get known apps folder: {}", get_last_error_or_default(hr));
                 return result;
             }
 
@@ -48,6 +50,7 @@ namespace Utils
             hr = folder->BindToHandler(nullptr, BHID_EnumItems, IID_PPV_ARGS(&enumItems));
             if (FAILED(hr))
             {
+                Logger::error(L"Failed to bind to enum items handler: {}", get_last_error_or_default(hr));
                 return result;
             }
 
@@ -57,8 +60,10 @@ namespace Utils
                 CComPtr<IShellItem> item = items;
                 CComHeapPtr<wchar_t> name;
 
-                if (FAILED(item->GetDisplayName(SIGDN_NORMALDISPLAY, &name)))
+                hr = item->GetDisplayName(SIGDN_NORMALDISPLAY, &name);
+                if (FAILED(hr))
                 {
+                    Logger::error(L"Failed to get display name for app: {}", get_last_error_or_default(hr));
                     continue;
                 }
 
@@ -68,8 +73,10 @@ namespace Utils
 
                 // properties
                 CComPtr<IPropertyStore> store;
-                if (FAILED(item->BindToHandler(NULL, BHID_PropertyStore, IID_PPV_ARGS(&store))))
+                hr = item->BindToHandler(NULL, BHID_PropertyStore, IID_PPV_ARGS(&store));
+                if (FAILED(hr))
                 {
+                    Logger::error(L"Failed to bind to property store handler: {}", get_last_error_or_default(hr));
                     continue;
                 }
 
@@ -78,8 +85,10 @@ namespace Utils
                 for (DWORD i = 0; i < count; i++)
                 {
                     PROPERTYKEY pk;
-                    if (FAILED(store->GetAt(i, &pk)))
+                    hr = store->GetAt(i, &pk);
+                    if (FAILED(hr))
                     {
+                        Logger::error(L"Failed to get property key: {}", get_last_error_or_default(hr));
                         continue;
                     }
 
@@ -93,7 +102,8 @@ namespace Utils
                     {
                         PROPVARIANT pv;
                         PropVariantInit(&pv);
-                        if (SUCCEEDED(store->GetValue(pk, &pv)))
+                        hr = store->GetValue(pk, &pv);
+                        if (SUCCEEDED(hr))
                         {
                             CComHeapPtr<wchar_t> propVariantString;
                             propVariantString.Allocate(512);
@@ -108,6 +118,10 @@ namespace Utils
                             {
                                 data.installPath = propVariantString.m_pData;
                             }
+                        }
+                        else
+                        {
+                            Logger::error(L"Failed to get property value: {}", get_last_error_or_default(hr));
                         }
 
                         if (!data.packageFullName.empty() && !data.installPath.empty())
@@ -133,20 +147,20 @@ namespace Utils
 
         inline std::optional<AppData> GetApp(const std::wstring& appPath, const AppList& apps)
         {
+            std::wstring appPathUpper(appPath);
+            std::transform(appPathUpper.begin(), appPathUpper.end(), appPathUpper.begin(), towupper);
+
+            // edge case, "Windows Software Development Kit" has the same app path as "File Explorer"
+            if (appPathUpper == NonLocalizable::FileExplorerPath)
+            {
+                return AppData{
+                    .name = NonLocalizable::FileExplorerName,
+                    .installPath = appPath,
+                };
+            }
+            
             for (const auto& appData : apps)
             {
-                std::wstring appPathUpper(appPath);
-                std::transform(appPathUpper.begin(), appPathUpper.end(), appPathUpper.begin(), towupper);
-
-                // edge case, "Windows Software Development Kit" has the same app path as "File Explorer"
-                if (appPathUpper == NonLocalizable::FileExplorerPath)
-                {
-                    return AppData{
-                        .name = NonLocalizable::FileExplorerName,
-                        .installPath = appPath,
-                    };
-                }
-
                 if (!appData.installPath.empty())
                 {
                     std::wstring installPathUpper(appData.installPath);
@@ -166,7 +180,6 @@ namespace Utils
                 }
             }
 
-            // TODO: not all installed apps found
             return AppData{
                 .installPath = appPath
             };
