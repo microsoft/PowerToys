@@ -19,13 +19,13 @@ namespace ProjectsEditor.Utils
             List<Rectangle> screenBounds = new List<Rectangle>();
 
             var primaryScreen = System.Windows.Forms.Screen.PrimaryScreen;
-            GetDpiOnScreen(primaryScreen, out uint dpiX_Primary, out uint dpi_YPrimary);
+            GetDpiOnScreen(primaryScreen, out uint dpiX_Primary, out uint dpiY_Primary);
 
             foreach (var screen in System.Windows.Forms.Screen.AllScreens)
             {
                 GetDpiOnScreen(screen, out uint dpiX, out uint dpiY);
 
-                screenBounds.Add(new Rectangle((int)(screen.Bounds.Left * 96 / dpiX_Primary), (int)(screen.Bounds.Top * 96 / dpi_YPrimary), (int)(screen.Bounds.Width * 96 / dpiX), (int)(screen.Bounds.Height * 96 / dpiY)));
+                screenBounds.Add(new Rectangle((int)(screen.Bounds.Left * 96 / dpiX_Primary), (int)(screen.Bounds.Top * 96 / dpiY_Primary), (int)(screen.Bounds.Width * 96 / dpiX), (int)(screen.Bounds.Height * 96 / dpiY)));
             }
 
             return screenBounds;
