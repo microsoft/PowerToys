@@ -146,10 +146,10 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             {
                 results.Add(new Result
                 {
-                    Title = generatorData.GetResultTitle(),
-                    SubTitle = generatorData.GetResultSubtitle(),
+                    Title = QueryHelper.GetResultTitle(generatorData),
+                    SubTitle = QueryHelper.GetResultSubtitle(generatorData),
                     IcoPath = GetIcoPath(),
-                    ToolTipData = new ToolTipData(generatorData.GetResultTitle(), generatorData.GetResultSubtitle()),
+                    ToolTipData = new ToolTipData(QueryHelper.GetResultTitle(generatorData), QueryHelper.GetResultSubtitle(generatorData)),
                     ToolTipVisibility = Visibility.Visible,
                     QueryTextDisplay = generatorData.Keyword,
                     Action = c =>
@@ -207,11 +207,11 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                 {
                     results.Add(new Result
                     {
-                        Title = generatorData.GetResultTitle(),
-                        SubTitle = generatorData.GetResultSubtitle(),
+                        Title = QueryHelper.GetResultTitle(generatorData),
+                        SubTitle = QueryHelper.GetResultSubtitle(generatorData),
                         IcoPath = GetIcoPath(),
                         Score = matchScore,
-                        ToolTipData = new ToolTipData(generatorData.GetResultTitle(), generatorData.GetResultSubtitle()),
+                        ToolTipData = new ToolTipData(QueryHelper.GetResultTitle(generatorData), QueryHelper.GetResultSubtitle(generatorData)),
                         ToolTipVisibility = Visibility.Visible,
                         QueryTextDisplay = generatorData.Keyword,
                         Action = c =>

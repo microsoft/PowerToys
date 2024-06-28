@@ -11,15 +11,5 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
         public string Description { get; set; }
 
         public string Example { get; set; }
-
-        public string GetResultTitle()
-        {
-            return $"{Keyword} - {Description}";
-        }
-
-        public string GetResultSubtitle()
-        {
-            return $"Example: {Example}";
-        }
     }
 }
