@@ -150,6 +150,9 @@
   <data name="Delete" xml:space="preserve">
     <value>Remove</value>
   </data>
+  <data name="DeleteSelected" xml:space="preserve">
+    <value>Remove Selected Apps</value>
+  </data>
   <data name="Delete_Project_Dialog_Announce" xml:space="preserve">
     <value>Delete project dialog.</value>
   </data>
@@ -179,6 +182,9 @@
   </data>
   <data name="MainTitle" xml:space="preserve">
     <value>Projects demo app</value>
+  </data>
+  <data name="Minimized_Apps" xml:space="preserve">
+    <value>Minimized Apps</value>
   </data>
   <data name="MinutesAgo" xml:space="preserve">
     <value>minutes ago</value>
@@ -242,6 +248,15 @@
   </data>
   <data name="SecondsAgo" xml:space="preserve">
     <value>seconds ago</value>
+  </data>
+  <data name="SelectAllAppsOnMonitor" xml:space="preserve">
+    <value>Select All Apps on</value>
+  </data>
+  <data name="SelectAllMinimizedApps" xml:space="preserve">
+    <value>Select All Minimized Apps</value>
+  </data>
+  <data name="SelectedAllInProject" xml:space="preserve">
+    <value>Select All Apps in Project</value>
   </data>
   <data name="SortBy" xml:space="preserve">
     <value>Sort by</value>

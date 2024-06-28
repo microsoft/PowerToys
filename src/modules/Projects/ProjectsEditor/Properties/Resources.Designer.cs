@@ -169,6 +169,15 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Remove Selected Apps.
+        /// </summary>
+        public static string DeleteSelected {
+            get {
+                return ResourceManager.GetString("DeleteSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Edit.
         /// </summary>
         public static string Edit {
@@ -246,6 +255,15 @@ namespace ProjectsEditor.Properties {
         public static string MainTitle {
             get {
                 return ResourceManager.GetString("MainTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Minimized Apps.
+        /// </summary>
+        public static string Minimized_Apps {
+            get {
+                return ResourceManager.GetString("Minimized_Apps", resourceCulture);
             }
         }
         
@@ -435,6 +453,33 @@ namespace ProjectsEditor.Properties {
         public static string SecondsAgo {
             get {
                 return ResourceManager.GetString("SecondsAgo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select All Apps on.
+        /// </summary>
+        public static string SelectAllAppsOnMonitor {
+            get {
+                return ResourceManager.GetString("SelectAllAppsOnMonitor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select All Minimized Apps.
+        /// </summary>
+        public static string SelectAllMinimizedApps {
+            get {
+                return ResourceManager.GetString("SelectAllMinimizedApps", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select All Apps in Project.
+        /// </summary>
+        public static string SelectedAllInProject {
+            get {
+                return ResourceManager.GetString("SelectedAllInProject", resourceCulture);
             }
         }
         

@@ -48,8 +48,7 @@ namespace ProjectsEditor.Utils
 
             Dictionary<string, int> repeatCounter = new Dictionary<string, int>();
 
-            var selectedApps = project.Applications.Where(x => x.IsSelected);
-            foreach (Application app in selectedApps)
+            foreach (Application app in project.Applications)
             {
                 if (repeatCounter.TryGetValue(app.AppPath, out int value))
                 {
@@ -64,12 +63,12 @@ namespace ProjectsEditor.Utils
             }
 
             // remove those repeatIndexes, which are single 1-es (no repetitions) by setting them to 0
-            foreach (Application app in selectedApps.Where(x => repeatCounter[x.AppPath] == 1))
+            foreach (Application app in project.Applications.Where(x => repeatCounter[x.AppPath] == 1))
             {
                 app.RepeatIndex = 0;
             }
 
-            foreach (Application app in project.Applications.Where(x => !x.IsSelected))
+            foreach (Application app in project.Applications)
             {
                 app.RepeatIndex = 0;
             }
@@ -96,7 +95,7 @@ namespace ProjectsEditor.Utils
             }
 
             Bitmap previewBitmap = new Bitmap(Scaled(bounds.Width + (verticalGaps.Count * gapWidth)), Scaled((bounds.Height * 1.2) + (horizontalGaps.Count * gapHeight)));
-            double desiredIconSize = Scaled(Math.Min(bounds.Width, bounds.Height)) * 0.3;
+            double desiredIconSize = Scaled(Math.Min(bounds.Width, bounds.Height)) * 0.25;
             using (Graphics g = Graphics.FromImage(previewBitmap))
             {
                 g.SmoothingMode = SmoothingMode.AntiAlias;
@@ -112,7 +111,7 @@ namespace ProjectsEditor.Utils
                     g.FillRectangle(monitorBrush, new Rectangle(TransformX(monitor.MonitorDpiAwareBounds.Left), TransformY(monitor.MonitorDpiAwareBounds.Top), Scaled(monitor.MonitorDpiAwareBounds.Width), Scaled(monitor.MonitorDpiAwareBounds.Height)));
                 }
 
-                var appsToDraw = project.Applications.Where(x => x.IsSelected && !x.Minimized);
+                var appsToDraw = project.Applications.Where(x => !x.Minimized);
 
                 // draw the highlighted app at the end to have its icon in the foreground for the case there are overlapping icons
                 foreach (Application app in appsToDraw.Where(x => !x.IsHighlighted))
@@ -124,12 +123,13 @@ namespace ProjectsEditor.Utils
                 foreach (Application app in appsToDraw.Where(x => x.IsHighlighted))
                 {
                     Rectangle rect = new Rectangle(TransformX(app.ScaledPosition.X), TransformY(app.ScaledPosition.Y), Scaled(app.ScaledPosition.Width), Scaled(app.ScaledPosition.Height));
-                    DrawWindow(g, brush, rect, app, desiredIconSize);
+                    Brush brushForHighlight = new SolidBrush(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.FromArgb(192, 255, 255, 255) : Color.FromArgb(192, 0, 0, 0));
+                    DrawWindow(g, brushForHighlight, rect, app, desiredIconSize);
                 }
 
                 // draw the minimized windows
                 Rectangle rectMinimized = new Rectangle(0, Scaled((bounds.Height * 1.02) + (horizontalGaps.Count * gapHeight)), Scaled(bounds.Width + (verticalGaps.Count * gapWidth)), Scaled(bounds.Height * 0.18));
-                DrawWindow(g, brush, rectMinimized, project.Applications.Where(x => x.IsSelected && x.Minimized));
+                DrawWindow(g, brush, rectMinimized, project.Applications.Where(x => x.Minimized));
             }
 
             using (var memory = new MemoryStream())
@@ -264,8 +264,7 @@ namespace ProjectsEditor.Utils
 
         public static BitmapImage DrawPreviewIcons(Project project)
         {
-            var selectedApps = project.Applications.Where(x => x.IsSelected);
-            int appsCount = selectedApps.Count();
+            int appsCount = project.Applications.Count;
             if (appsCount == 0)
             {
                 return null;
@@ -278,7 +277,7 @@ namespace ProjectsEditor.Utils
                 graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
                 graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
                 int appIndex = 0;
-                foreach (var app in selectedApps)
+                foreach (var app in project.Applications)
                 {
                     try
                     {

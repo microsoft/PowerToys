@@ -121,7 +121,7 @@ namespace ProjectsEditor.Models
 
         public bool CanBeSaved
         {
-            get => Name.Length > 0 && Applications.Where(x => x.IsSelected).Any();
+            get => Name.Length > 0 && Applications.Count > 0;
         }
 
         private bool _isPopupVisible;
@@ -151,7 +151,8 @@ namespace ProjectsEditor.Models
                 ILookup<MonitorSetup, Application> apps = Applications.Where(x => !x.Minimized).ToLookup(x => x.MonitorSetup);
                 foreach (var appItem in apps.OrderBy(x => x.Key.MonitorDpiUnawareBounds.Left).ThenBy(x => x.Key.MonitorDpiUnawareBounds.Top))
                 {
-                    applicationsListed.Add(appItem.Key.MonitorInfo);
+                    MonitorHeaderRow headerRow = new MonitorHeaderRow { MonitorName = appItem.Key.MonitorInfo, SelectString = Properties.Resources.SelectAllAppsOnMonitor + " " + appItem.Key.MonitorInfo };
+                    applicationsListed.Add(headerRow);
                     foreach (Application app in appItem)
                     {
                         applicationsListed.Add(app);
@@ -161,7 +162,8 @@ namespace ProjectsEditor.Models
                 var minimizedApps = Applications.Where(x => x.Minimized);
                 if (minimizedApps.Any())
                 {
-                    applicationsListed.Add("Minimized Apps");
+                    MonitorHeaderRow headerRow = new MonitorHeaderRow { MonitorName = Properties.Resources.Minimized_Apps, SelectString = Properties.Resources.SelectAllMinimizedApps };
+                    applicationsListed.Add(headerRow);
                     foreach (Application app in minimizedApps)
                     {
                         applicationsListed.Add(app);
@@ -177,10 +179,12 @@ namespace ProjectsEditor.Models
         {
             get
             {
-                int count = Applications.Where(x => x.IsSelected).Count();
+                int count = Applications.Count;
                 return count.ToString(CultureInfo.InvariantCulture) + " " + (count == 1 ? Properties.Resources.App : Properties.Resources.Apps);
             }
         }
+
+        public bool IsAnySelected { get => Applications?.Any(x => x.IsSelected) == true; }
 
         public List<MonitorSetup> Monitors { get; set; }
 
@@ -216,7 +220,7 @@ namespace ProjectsEditor.Models
                     PackageFullName = item.PackageFullName,
                     Minimized = item.Minimized,
                     Maximized = item.Maximized,
-                    IsSelected = item.IsSelected,
+                    IsSelected = false,
                     MonitorNumber = item.MonitorNumber,
                     IsNotFound = item.IsNotFound,
                     Position = new Application.WindowPosition() { X = item.Position.X, Y = item.Position.Y, Height = item.Position.Height, Width = item.Position.Width },
