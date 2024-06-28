@@ -37,5 +37,22 @@ namespace ProjectsEditor.Utils
 
         [DllImport("user32.dll")]
         public static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
+
+        public enum DpiType
+        {
+            EFFECTIVE = 0,
+            ANGULAR = 1,
+            RAW = 2,
+        }
+
+        [DllImport("User32.dll")]
+        public static extern IntPtr MonitorFromPoint([In] System.Drawing.Point pt, [In] uint dwFlags);
+
+        [DllImport("Shcore.dll")]
+        public static extern IntPtr GetDpiForMonitor([In] IntPtr hmonitor, [In] DpiType dpiType, [Out] out uint dpiX, [Out] out uint dpiY);
+
+        public const int _S_OK = 0;
+        public const int _MONITOR_DEFAULTTONEAREST = 2;
+        public const int _E_INVALIDARG = -2147024809;
     }
 }

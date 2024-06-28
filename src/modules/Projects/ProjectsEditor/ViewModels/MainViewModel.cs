@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Timers;
 using ManagedCommon;
@@ -397,14 +398,13 @@ namespace ProjectsEditor.ViewModels
         {
             _mainWindow.WindowState = System.Windows.WindowState.Minimized;
             _overlayWindows.Clear();
-            var screens = System.Windows.Forms.Screen.AllScreens;
-            foreach (var screen in screens)
+            foreach (var bounds in MonitorHelper.GetDpiUnawareScreenBounds())
             {
                 OverlayWindow overlayWindow = new OverlayWindow();
-                overlayWindow.Top = screen.Bounds.Top;
-                overlayWindow.Left = screen.Bounds.Left;
-                overlayWindow.Width = screen.Bounds.Width;
-                overlayWindow.Height = screen.Bounds.Height;
+                overlayWindow.Top = bounds.Top;
+                overlayWindow.Left = bounds.Left;
+                overlayWindow.Width = bounds.Width;
+                overlayWindow.Height = bounds.Height;
                 overlayWindow.ShowActivated = true;
                 overlayWindow.Topmost = true;
                 overlayWindow.Show();
