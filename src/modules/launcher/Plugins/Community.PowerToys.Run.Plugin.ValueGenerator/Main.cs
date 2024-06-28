@@ -151,9 +151,10 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                     IcoPath = GetIcoPath(),
                     ToolTipData = new ToolTipData(generatorData.GetResultTitle(), generatorData.GetResultSubtitle()),
                     ToolTipVisibility = Visibility.Visible,
+                    QueryTextDisplay = generatorData.Keyword,
                     Action = c =>
                     {
-                        _context.API.ChangeQuery($"{query.ActionKeyword} {generatorData.Keyword}");
+                        _context.API.ChangeQuery($"{query.ActionKeyword} {generatorData.Keyword}", true);
                         return false;
                     },
                 });
@@ -212,9 +213,10 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                         Score = matchScore,
                         ToolTipData = new ToolTipData(generatorData.GetResultTitle(), generatorData.GetResultSubtitle()),
                         ToolTipVisibility = Visibility.Visible,
+                        QueryTextDisplay = generatorData.Keyword,
                         Action = c =>
                         {
-                            _context.API.ChangeQuery($"{query.ActionKeyword} {generatorData.Keyword}");
+                            _context.API.ChangeQuery($"{query.ActionKeyword} {generatorData.Keyword}", true);
                             return false;
                         },
                     });
