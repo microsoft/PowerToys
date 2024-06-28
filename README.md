@@ -118,6 +118,7 @@ In this release, we focused on stability and improvements.
  - Added support to convert from ini in the Paste as JSON feature. Thanks [@htcfreek](https://github.com/htcfreek)!
  - Fixed a memory leak caused by images not being properly cleaned out from clipboard history.
  - Added an option to hide the UI when it loses focus. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Improved telemetry to get better data about token usage and if clipboard history is a popular feature. Thanks [@craigloewen-msft](https://github.com/craigloewen-msft)!
 
 ### Color Picker
 
