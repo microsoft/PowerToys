@@ -580,9 +580,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerToys.Settings.DSC.Sche
 		{020A7474-3601-4160-A159-D7B70B77B15F} = {020A7474-3601-4160-A159-D7B70B77B15F}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MouseJump.Common", "src\modules\MouseUtils\MouseJump.Common\MouseJump.Common.csproj", "{F35E1EF3-C2AE-4407-8029-92B8F2B4A382}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MouseJump.Common", "src\modules\MouseUtils\MouseJump.Common\MouseJump.Common.csproj", "{F35E1EF3-C2AE-4407-8029-92B8F2B4A382}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MouseJump.Common.UnitTests", "src\modules\MouseUtils\MouseJump.Common.UnitTests\MouseJump.Common.UnitTests.csproj", "{6A10C2B0-92AE-4928-996B-FCF55D2E3F39}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MouseJump.Common.UnitTests", "src\modules\MouseUtils\MouseJump.Common.UnitTests\MouseJump.Common.UnitTests.csproj", "{6A10C2B0-92AE-4928-996B-FCF55D2E3F39}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
