@@ -107,7 +107,7 @@ In this release, we focused on stability and improvements.
 
  - New feature added to PowerRename to allow using sequences of random characters and UUIDs when renaming files. Thanks [@jhirvioja](https://github.com/jhirvioja)!
  - Improvements in the Paste As JSON feature to better handle other CSV delimiters and converting from ini files. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Fixed many crashes that were reported to Microsoft servers.
+ - Bug fixes and stability
  - Fixed UI issues that were reported after upgrading to WPF UI on Color Picker and PowerToys Run.
 
 ### Advanced Paste
