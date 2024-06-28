@@ -24,12 +24,15 @@ namespace AdvancedPaste.Settings
 
         public bool SendPasteKeyCombination { get; private set; }
 
+        public bool CloseAfterLosingFocus { get; private set; }
+
         public UserSettings()
         {
             _settingsUtils = new SettingsUtils();
 
             ShowCustomPreview = true;
             SendPasteKeyCombination = true;
+            CloseAfterLosingFocus = false;
 
             LoadSettingsFromJson();
 
@@ -61,6 +64,7 @@ namespace AdvancedPaste.Settings
                         {
                             ShowCustomPreview = settings.Properties.ShowCustomPreview;
                             SendPasteKeyCombination = settings.Properties.SendPasteKeyCombination;
+                            CloseAfterLosingFocus = settings.Properties.CloseAfterLosingFocus;
                         }
 
                         retry = false;

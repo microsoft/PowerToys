@@ -3763,8 +3763,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AdvancedPaste_EnableAISettingsGroup.Header" xml:space="preserve">
     <value>Paste with AI</value>
   </data>
-  <data name="AdvancedPaste_ClipboardHistorySettingsGroup.Header" xml:space="preserve">
-    <value>Clipboard history</value>
+  <data name="AdvancedPaste_BehaviorSettingsGroup.Header" xml:space="preserve">
+    <value>Behavior</value>
   </data>
   <data name="AdvancedPaste_ShowCustomPreviewSettingsCard.Header" xml:space="preserve">
     <value>Custom format preview</value>
@@ -4191,5 +4191,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="AdvancedPaste_EnableAIDialog_NoteAICreditsErrorText.Text" xml:space="preserve">
     <value>If you do not have credits you will see an 'API key quota exceeded' error</value>
+  </data>
+  <data name="AdvancedPaste_CloseAfterLosingFocus.Header" xml:space="preserve">
+    <value>Automatically close the AdvancedPaste window after it loses focus</value>
+    <comment>AdvancedPaste is a product name, do not loc</comment>
   </data>
 </root>
