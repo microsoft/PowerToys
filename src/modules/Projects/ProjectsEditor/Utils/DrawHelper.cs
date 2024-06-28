@@ -95,7 +95,7 @@ namespace ProjectsEditor.Utils
             }
 
             Bitmap previewBitmap = new Bitmap(Scaled(bounds.Width + (verticalGaps.Count * gapWidth)), Scaled((bounds.Height * 1.2) + (horizontalGaps.Count * gapHeight)));
-            double desiredIconSize = Scaled(Math.Min(bounds.Width, bounds.Height)) * 0.3;
+            double desiredIconSize = Scaled(Math.Min(bounds.Width, bounds.Height)) * 0.25;
             using (Graphics g = Graphics.FromImage(previewBitmap))
             {
                 g.SmoothingMode = SmoothingMode.AntiAlias;
@@ -123,7 +123,8 @@ namespace ProjectsEditor.Utils
                 foreach (Application app in appsToDraw.Where(x => x.IsHighlighted))
                 {
                     Rectangle rect = new Rectangle(TransformX(app.ScaledPosition.X), TransformY(app.ScaledPosition.Y), Scaled(app.ScaledPosition.Width), Scaled(app.ScaledPosition.Height));
-                    DrawWindow(g, brush, rect, app, desiredIconSize);
+                    Brush brushForHighlight = new SolidBrush(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.FromArgb(192, 255, 255, 255) : Color.FromArgb(192, 0, 0, 0));
+                    DrawWindow(g, brushForHighlight, rect, app, desiredIconSize);
                 }
 
                 // draw the minimized windows
