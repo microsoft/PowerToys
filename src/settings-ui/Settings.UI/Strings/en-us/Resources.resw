@@ -3983,7 +3983,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>px = pixels</comment>
   </data>
   <data name="MouseUtils_MouseJump_BackgroundColor1.Header" xml:space="preserve">
-    <value>Background Color 1</value>
+    <value>Background color 1</value>
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BackgroundColor1.Description" xml:space="preserve">
@@ -3991,7 +3991,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BackgroundColor2.Header" xml:space="preserve">
-    <value>Background Color 2</value>
+    <value>Background color 2</value>
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BackgroundColor2.Description" xml:space="preserve">
@@ -3999,7 +3999,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BorderThickness.Header" xml:space="preserve">
-    <value>Border Thickness</value>
+    <value>Border thickness</value>
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BorderThickness.Description" xml:space="preserve">
@@ -4007,7 +4007,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BorderColor.Header" xml:space="preserve">
-    <value>Border Color</value>
+    <value>Border color</value>
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BorderColor.Description" xml:space="preserve">
@@ -4015,7 +4015,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_Border3dDepth.Header" xml:space="preserve">
-    <value>Border 3D Depth</value>
+    <value>Border 3D depth</value>
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_Border3dDepth.Description" xml:space="preserve">
@@ -4023,7 +4023,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BorderPadding.Header" xml:space="preserve">
-    <value>Border Padding</value>
+    <value>Border padding</value>
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BorderPadding.Description" xml:space="preserve">
@@ -4031,7 +4031,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BezelThickness.Header" xml:space="preserve">
-    <value>Bezel Thickness</value>
+    <value>Bezel thickness</value>
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BezelThickness.Description" xml:space="preserve">
@@ -4039,7 +4039,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BezelColor.Header" xml:space="preserve">
-    <value>Bezel Color</value>
+    <value>Bezel color</value>
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BezelColor.Description" xml:space="preserve">
@@ -4047,7 +4047,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_Bezel3dDepth.Header" xml:space="preserve">
-    <value>Bezel 3D Depth</value>
+    <value>Bezel 3D depth</value>
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_Bezel3dDepth.Description" xml:space="preserve">
@@ -4055,7 +4055,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_ScreenMargin.Header" xml:space="preserve">
-    <value>Screen Margin</value>
+    <value>Screen spacing</value>
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_ScreenMargin.Description" xml:space="preserve">
@@ -4063,7 +4063,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_ScreenColor1.Header" xml:space="preserve">
-    <value>Screen Color 1</value>
+    <value>Screen color 1</value>
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_ScreenColor1.Description" xml:space="preserve">
@@ -4071,7 +4071,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_ScreenColor2.Header" xml:space="preserve">
-    <value>Screen Color 2</value>
+    <value>Screen color 2</value>
     <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_ScreenColor2.Description" xml:space="preserve">

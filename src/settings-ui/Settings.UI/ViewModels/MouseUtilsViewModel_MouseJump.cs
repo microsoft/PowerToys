@@ -147,8 +147,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 var previewStyle = new PreviewStyle(
                     canvasSize: new(
-                        width: this.MouseJumpThumbnailSize.Width,
-                        height: this.MouseJumpThumbnailSize.Height
+                        width: 640,
+                        height: 480
                     ),
                     canvasStyle: new(
                         marginStyle: new(0),
@@ -188,8 +188,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     ));
                 var screens = new List<RectangleInfo>()
                 {
-                    new(5120, 349, 1920, 1080),
-                    new(0, 0, 5120, 1440),
+                    // keep in sync with MouseJump-Desktop.png
+                    new(412, 111, 177, 110),
+                    new(0, 0, 412, 221),
                 };
                 var previewLayout = LayoutHelper.GetPreviewLayout(
                     previewStyle: previewStyle,
