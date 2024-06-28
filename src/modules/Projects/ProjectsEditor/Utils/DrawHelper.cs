@@ -103,6 +103,7 @@ namespace ProjectsEditor.Utils
                 g.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
                 Brush brush = new SolidBrush(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.FromArgb(10, 255, 255, 255) : Color.FromArgb(10, 0, 0, 0));
+                Brush brushForHighlight = new SolidBrush(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.FromArgb(192, 255, 255, 255) : Color.FromArgb(192, 0, 0, 0));
 
                 // draw the monitors
                 foreach (MonitorSetup monitor in project.Monitors)
@@ -123,13 +124,12 @@ namespace ProjectsEditor.Utils
                 foreach (Application app in appsToDraw.Where(x => x.IsHighlighted))
                 {
                     Rectangle rect = new Rectangle(TransformX(app.ScaledPosition.X), TransformY(app.ScaledPosition.Y), Scaled(app.ScaledPosition.Width), Scaled(app.ScaledPosition.Height));
-                    Brush brushForHighlight = new SolidBrush(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.FromArgb(192, 255, 255, 255) : Color.FromArgb(192, 0, 0, 0));
                     DrawWindow(g, brushForHighlight, rect, app, desiredIconSize);
                 }
 
                 // draw the minimized windows
                 Rectangle rectMinimized = new Rectangle(0, Scaled((bounds.Height * 1.02) + (horizontalGaps.Count * gapHeight)), Scaled(bounds.Width + (verticalGaps.Count * gapWidth)), Scaled(bounds.Height * 0.18));
-                DrawWindow(g, brush, rectMinimized, project.Applications.Where(x => x.Minimized));
+                DrawWindow(g, brush, brushForHighlight, rectMinimized, project.Applications.Where(x => x.Minimized));
             }
 
             using (var memory = new MemoryStream())
@@ -200,7 +200,7 @@ namespace ProjectsEditor.Utils
             }
         }
 
-        public static void DrawWindow(Graphics graphics, Brush brush, Rectangle bounds, IEnumerable<Application> apps)
+        public static void DrawWindow(Graphics graphics, Brush brush, Brush brushForHighlight, Rectangle bounds, IEnumerable<Application> apps)
         {
             int appsCount = apps.Count();
             if (appsCount == 0)
@@ -223,13 +223,13 @@ namespace ProjectsEditor.Utils
                 if (apps.Where(x => x.IsHighlighted).Any())
                 {
                     graphics.DrawPath(new Pen(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.White : Color.DarkGray, graphics.VisibleClipBounds.Height / 50), path);
+                    graphics.FillPath(brushForHighlight, path);
                 }
                 else
                 {
                     graphics.DrawPath(new Pen(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.FromArgb(128, 82, 82, 82) : Color.FromArgb(128, 160, 160, 160), graphics.VisibleClipBounds.Height / 200), path);
+                    graphics.FillPath(brush, path);
                 }
-
-                graphics.FillPath(brush, path);
             }
 
             double iconSize = Math.Min(bounds.Width, bounds.Height) * 0.5;
