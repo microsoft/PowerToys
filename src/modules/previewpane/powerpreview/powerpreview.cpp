@@ -230,59 +230,70 @@ void PowerPreviewModule::apply_settings(const PowerToysSettings::PowerToyValues&
 {
     bool notifyShell = false;
 
-    if (m_enabled)
+    // check gpo for Power Preview module
+    const auto enabled_gpo_rule = powertoys_gpo::getConfiguredFileExplorerPreviewEnabledValue();
+    const auto enabled_gpo_is_configured = enabled_gpo_rule == powertoys_gpo::gpo_rule_configured_enabled || enabled_gpo_rule == powertoys_gpo::gpo_rule_configured_disabled;
+    const auto is_enabled = enabled_gpo_is_configured ? enabled_gpo_rule == powertoys_gpo::gpo_rule_configured_enabled : m_enabled;
+
+    if (enabled_gpo_rule == powertoys_gpo::gpo_rule_configured_unavailable)
     {
-        for (auto& fileExplorerModule : m_fileExplorerModules)
+        Logger::warn(L"Couldn't read the gpo rule for Power Preview");
+    }
+    if (enabled_gpo_rule == powertoys_gpo::gpo_rule_configured_wrong_value)
+    {
+        Logger::warn(L"gpo rule for Power Preview is set to an unknown value");
+    }
+
+    for (auto& fileExplorerModule : m_fileExplorerModules)
+    {
+        const auto toggle = settings.get_bool_value(fileExplorerModule.settingName);
+        const auto gpo_rule = fileExplorerModule.checkModuleGPOEnabledRuleFunction();
+        const auto gpo_is_configured = gpo_rule == powertoys_gpo::gpo_rule_configured_enabled || gpo_rule == powertoys_gpo::gpo_rule_configured_disabled;
+
+        if (gpo_rule == powertoys_gpo::gpo_rule_configured_unavailable)
         {
-            const auto toggle = settings.get_bool_value(fileExplorerModule.settingName);
-            const auto gpo_rule = fileExplorerModule.checkModuleGPOEnabledRuleFunction();
-            const auto gpo_is_configured = gpo_rule == powertoys_gpo::gpo_rule_configured_enabled || gpo_rule == powertoys_gpo::gpo_rule_configured_disabled;
+            Logger::warn(L"Couldn't read the gpo rule for Power Preview module {}", fileExplorerModule.settingName);
+        }
+        if (gpo_rule == powertoys_gpo::gpo_rule_configured_wrong_value)
+        {
+            Logger::warn(L"gpo rule for Power Preview module {} is set to an unknown value", fileExplorerModule.settingName);
+        }
 
-            if (gpo_rule == powertoys_gpo::gpo_rule_configured_unavailable)
-            {
-                Logger::warn(L"Couldn't read the gpo rule for Power Preview module {}", fileExplorerModule.settingName);
-            }
-            if (gpo_rule == powertoys_gpo::gpo_rule_configured_wrong_value)
-            {
-                Logger::warn(L"gpo rule for Power Preview module {} is set to an unknown value", fileExplorerModule.settingName);
-            }
+        // Skip if no need to update
+        if (!toggle.has_value() && !gpo_is_configured)
+        {
+            continue;
+        }
 
-            // Skip if no need to update
-            if (!toggle.has_value() && !gpo_is_configured)
-            {
-                continue;
-            }
+        bool module_new_state = false;
+        if (toggle.has_value())
+        {
+            module_new_state = *toggle && is_enabled;
+        }
+        if (gpo_is_configured)
+        {
+            // gpo rule overrides settings state
+            module_new_state = gpo_rule == powertoys_gpo::gpo_rule_configured_enabled;
+        }
 
-            bool module_new_state = false;
-            if (toggle.has_value())
-            {
-                module_new_state = *toggle;
-            }
-            if (gpo_is_configured)
-            {
-                // gpo rule overrides settings state
-                module_new_state = gpo_rule == powertoys_gpo::gpo_rule_configured_enabled;
-            }
+        // Skip if no need to update
+        if (module_new_state == fileExplorerModule.registryChanges.isApplied())
+        {
+            continue;
+        }
 
-            // Skip if no need to update
-            if (module_new_state == fileExplorerModule.registryChanges.isApplied())
-            {
-                continue;
-            }
+        // (Un)Apply registry changes depending on the new setting value
+        const bool updated = module_new_state ? fileExplorerModule.registryChanges.apply() : fileExplorerModule.registryChanges.unApply();
 
-            // (Un)Apply registry changes depending on the new setting value
-            const bool updated = module_new_state ? fileExplorerModule.registryChanges.apply() : fileExplorerModule.registryChanges.unApply();
-
-            if (updated)
-            {
-                notifyShell = true;
-                Trace::PowerPreviewSettingsUpdated(fileExplorerModule.settingName.c_str(), !*toggle, *toggle, true);
-            }
-            else
-            {
-                Logger::error(L"Couldn't {} file explorer module {} during apply_settings", *toggle ? L"enable " : L"disable", fileExplorerModule.settingName);
-                Trace::PowerPreviewSettingsUpdateFailed(fileExplorerModule.settingName.c_str(), !*toggle, *toggle, true);
-            }
+        if (updated)
+        {
+            notifyShell = true;
+            Trace::PowerPreviewSettingsUpdated(fileExplorerModule.settingName.c_str(), !*toggle, *toggle, true);
+        }
+        else
+        {
+            Logger::error(L"Couldn't {} file explorer module {} during apply_settings", *toggle ? L"enable " : L"disable", fileExplorerModule.settingName);
+            Trace::PowerPreviewSettingsUpdateFailed(fileExplorerModule.settingName.c_str(), !*toggle, *toggle, true);
         }
     }
     if (notifyShell)
