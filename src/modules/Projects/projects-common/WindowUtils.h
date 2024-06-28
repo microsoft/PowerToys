@@ -22,6 +22,7 @@ namespace WindowUtils
         const char SplashClassName[] = "MsoSplash";
         const wchar_t CoreWindow[] = L"WINDOWS.UI.CORE.COREWINDOW";
         const wchar_t SearchUI[] = L"SEARCHUI.EXE";
+        const wchar_t HelpWindow[] = L"C:\\WINDOWS\\HH.EXE";
         const wchar_t ProjectsSnapshotTool[] = L"POWERTOYS.PROJECTSSNAPSHOTTOOL";
         const wchar_t ProjectsEditor[] = L"POWERTOYS.PROJECTSEDITOR";
         const wchar_t ProjectsLauncher[] = L"POWERTOYS.PROJECTSLAUNCHER";
@@ -53,7 +54,12 @@ namespace WindowUtils
         std::wstring processPathUpper = processPath;
         CharUpperBuffW(processPathUpper.data(), static_cast<DWORD>(processPathUpper.length()));
 
-        static std::vector<std::wstring> defaultExcludedFolders = { NonLocalizable::SystemAppsFolder, NonLocalizable::System, NonLocalizable::System32, NonLocalizable::SystemWOW64 };
+        static std::vector<std::wstring> defaultExcludedFolders = { 
+            NonLocalizable::SystemAppsFolder, 
+            NonLocalizable::System, 
+            NonLocalizable::System32, 
+            NonLocalizable::SystemWOW64 
+        };
         if (find_folder_in_path(processPathUpper, defaultExcludedFolders))
         {
             return true;
@@ -71,7 +77,14 @@ namespace WindowUtils
             return true;
         }
 
-        static std::vector<std::wstring> defaultExcludedApps = { NonLocalizable::CoreWindow, NonLocalizable::SearchUI, NonLocalizable::ProjectsEditor, NonLocalizable::ProjectsLauncher, NonLocalizable::ProjectsSnapshotTool };
+        static std::vector<std::wstring> defaultExcludedApps = { 
+            NonLocalizable::CoreWindow, 
+            NonLocalizable::SearchUI, 
+            NonLocalizable::HelpWindow,
+            NonLocalizable::ProjectsEditor, 
+            NonLocalizable::ProjectsLauncher, 
+            NonLocalizable::ProjectsSnapshotTool, 
+        };
         return (check_excluded_app(window, processPathUpper, defaultExcludedApps));
     }
 
