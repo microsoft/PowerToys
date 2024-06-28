@@ -91,22 +91,6 @@
     <None Include="Assets\New\Square44x44Logo.png" />
     <None Include="Assets\New\StoreLogo.png" />
     <None Include="Assets\New\Wide310x150Logo.png" />
-    <None Include="Assets\New\new.ico" />
-    <None Include="Assets\New\new_folder.ico" />
-    <None Include="Assets\New\SmallTile.png" />
-    <None Include="Assets\New\SplashScreen.png" />
-    <None Include="Assets\New\Square150x150Logo.png" />
-    <None Include="Assets\New\Square44x44Logo.png" />
-    <None Include="Assets\New\StoreLogo.png" />
-    <None Include="Assets\New\Wide310x150Logo.png" />
-    <None Include="Assets\New\new.ico" />
-    <None Include="Assets\New\new_folder.ico" />
-    <None Include="Assets\New\SmallTile.png" />
-    <None Include="Assets\New\SplashScreen.png" />
-    <None Include="Assets\New\Square150x150Logo.png" />
-    <None Include="Assets\New\Square44x44Logo.png" />
-    <None Include="Assets\New\StoreLogo.png" />
-    <None Include="Assets\New\Wide310x150Logo.png" />
     <None Include="Assets\New\new.ico">
       <Filter>Asset Files</Filter>
     </None>
@@ -265,6 +249,66 @@
     <None Include="Assets\New\**">
       <Filter>Asset Files</Filter>
     </None>
+    <None Include="Assets\New\**">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\New\**">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\New\**">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\New\**">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\New\**">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\New\**">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\New\**">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\New\**">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\New\**">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\New\**">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\New\**">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\New\**">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\New\**">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\New\**">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\New\**">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\New\**">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\New\**">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\New\**">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\New\**">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\New\**">
+      <Filter>Asset Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -283,10 +327,27 @@
     <Filter Include="Generated Files">
       <UniqueIdentifier>{a998f674-d126-488b-8457-7673fe986f94}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Template Examples">
+      <UniqueIdentifier>{b442cb0f-9f62-46e8-b269-fefa8ceacb21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Template Examples\Project folder">
+      <UniqueIdentifier>{e7904759-7b6c-4609-9c6d-e3eae3cb866c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Generated Files/new.rc">
       <Filter>Generated Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="TemplateExamples\Project folder\Readme.md">
+      <Filter>Template Examples\Project folder</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="TemplateExamples\Markdown file.md">
+      <Filter>Template Examples</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="TemplateExamples\PowerShell script.ps1">
+      <Filter>Template Examples</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>
