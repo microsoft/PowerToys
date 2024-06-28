@@ -17,7 +17,7 @@ namespace ProjectsEditor
     /// </summary>
     public partial class App : Application, IDisposable
     {
-        private static Mutex mutex;
+        private static Mutex _instanceMutex;
 
         public static ProjectsEditorIO ProjectsEditorIO { get; private set; }
 
@@ -41,10 +41,11 @@ namespace ProjectsEditor
 
             const string appName = "Local\\PowerToys_Projects_Editor_InstanceMutex";
             bool createdNew;
-            mutex = new Mutex(true, appName, out createdNew);
+            _instanceMutex = new Mutex(true, appName, out createdNew);
             if (!createdNew)
             {
                 Logger.LogWarning("Another instance of Projects Editor is already running. Exiting this instance.");
+                _instanceMutex = null;
                 Shutdown(0);
                 return;
             }
@@ -90,7 +91,11 @@ namespace ProjectsEditor
 
         private void OnExit(object sender, ExitEventArgs e)
         {
-            mutex?.ReleaseMutex();
+            if (_instanceMutex != null)
+            {
+                _instanceMutex.ReleaseMutex();
+            }
+
             Dispose();
         }
 
@@ -106,6 +111,7 @@ namespace ProjectsEditor
                 if (disposing)
                 {
                     _themeManager?.Dispose();
+                    _instanceMutex?.Dispose();
                 }
 
                 _isDisposed = true;
