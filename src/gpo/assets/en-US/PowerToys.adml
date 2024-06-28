@@ -10,7 +10,7 @@
       <string id="InstallerUpdates">Installer and Updates</string>
       <string id="PowerToysRun">PowerToys Run</string>
       <string id="AdvancedPaste">Advanced Paste</string>
-      <string id="FilePreviewers">File Previewers</string>
+      <string id="FileExplorerAddOns">File Explorer add-ons</string>
 
       <string id="SUPPORTED_POWERTOYS_0_64_0">PowerToys version 0.64.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_68_0">PowerToys version 0.68.0 or later</string>
@@ -127,7 +127,7 @@ If you enable or don't configure this policy, the user takes control over the en
 
 If you disable this policy, the user won't be able to enable Enable paste with AI Advanced Paste setting and use Advanced Paste AI prompt nor set up the Open AI key in PowerToys Settings.
 </string>
-      <string id="ConfigureEnabledFilePreviewerDescription">This policy configures the enabled state for a File Explorer add-on.
+      <string id="ConfigureEnabledFileExplorerAddOnDescription">This policy configures the enabled state for a File Explorer add-on.
 
 If you enable this setting, the add-on will be always enabled and the user won't be able to disable it.
 
@@ -137,7 +137,7 @@ If you don't configure this setting, users are able to enable or disable the add
 
 This policy has a lower priority than the policy "File Explorer add-ons: Configure enabled state" and will not enable an add-on if the higher priority policy is set to Disabled.
 </string>
-      <string id="ConfigureEnabledFilePreviewerDescriptionPDFPreviewHandler">(Note: There have been reports of incompatibility between the PDF Preview Handler and Outlook)
+      <string id="ConfigureEnabledFileExplorerAddOnDescriptionPDFPreviewHandler">(Note: There have been reports of incompatibility between the PDF Preview Handler and Outlook)
 
 This policy configures the enabled state for a File Explorer add-on.
 
