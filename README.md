@@ -166,7 +166,7 @@ In this release, we focused on stability and improvements.
 
 ### PowerToys Run
 
- - Removed full stops from the plugin descriptions for consistency in the UI. Thanks [@HydroH](https://github.com/HydroH)!
+ - Improved the plugin descriptions for consistency in the UI. Thanks [@HydroH](https://github.com/HydroH)!
  - Fixed UI scaling for different dpi scenarios.
  - Fixed crash on a racing condition when updating UWP icon paths in the Program plugin. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Fixed PowerToys Run hanging when trying to close an unresponsive window in the WindowWalker plugin. Thanks [@GhostVaibhav](https://github.com/GhostVaibhav)!
