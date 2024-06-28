@@ -223,7 +223,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Exampli: {0}.
+        ///   Looks up a localized string similar to Example: {0}.
         /// </summary>
         public static string generator_example {
             get {

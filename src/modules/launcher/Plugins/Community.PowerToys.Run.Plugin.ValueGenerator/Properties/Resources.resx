@@ -173,7 +173,7 @@
     <comment>Usage example: "md5 &lt;your input&gt;"</comment>
   </data>
   <data name="generator_example" xml:space="preserve">
-    <value>Exampli: {0}</value>
+    <value>Example: {0}</value>
     <comment>The arg following is the usage example</comment>
   </data>
   <data name="or" xml:space="preserve">
