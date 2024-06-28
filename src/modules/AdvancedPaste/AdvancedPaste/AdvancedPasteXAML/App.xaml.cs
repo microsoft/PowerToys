@@ -3,15 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
+using AdvancedPaste.Settings;
 using AdvancedPaste.ViewModels;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Graphics;
 using WinUIEx;
 using static AdvancedPaste.Helpers.NativeMethods;
@@ -47,6 +46,7 @@ namespace AdvancedPaste
             Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory).ConfigureServices((context, services) =>
             {
                 services.AddSingleton<OptionsViewModel>();
+                services.AddSingleton<IUserSettings, UserSettings>();
             }).Build();
 
             viewModel = GetService<OptionsViewModel>();
