@@ -1045,6 +1045,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
+
+            // Skip saving settings for UI properties
+            if (propertyName == nameof(ShowInfobarCannotDragDropAsAdmin) ||
+                propertyName == nameof(ShowInfobarRunAsAdminText))
+            {
+                return;
+            }
+
             SettingsUtils.SaveSettings(Settings.ToJsonString(), MouseWithoutBordersSettings.ModuleName);
 
             if (propertyName == nameof(UseService))
@@ -1070,6 +1078,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         internal void UninstallService()
         {
             SendCustomAction("uninstall_service");
+        }
+
+        public bool ShowInfobarCannotDragDropAsAdmin
+        {
+            get { return IsElevated && IsEnabled; }
+        }
+
+        public bool ShowInfobarRunAsAdminText
+        {
+            get { return !CanToggleUseService && IsEnabled; }
         }
     }
 }
