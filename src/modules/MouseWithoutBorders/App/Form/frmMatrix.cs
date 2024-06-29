@@ -797,6 +797,11 @@ namespace MouseWithoutBorders
                 checkBoxHideLogo.Enabled = false;
             }
 
+            // Note(@htcfrek): Disable checkboxes of settings that we don't support in the PowerToys implementation
+            checkBoxDisableCAD.Enabled = false;
+            checkBoxHideLogo.Enabled = false;
+            checkBoxSendLog.Enabled = false;
+
             checkBoxShareClipboard.Checked = Setting.Values.ShareClipboard;
 
             if (!Setting.Values.ShareClipboard)
