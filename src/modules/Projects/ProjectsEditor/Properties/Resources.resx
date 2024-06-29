@@ -259,7 +259,7 @@
     <value>Select All Apps in Project</value>
   </data>
   <data name="SnapshotDescription" xml:space="preserve">
-    <value>Move the windows you want to include to the project into the desired position. There will be later a possibility to deselect the windows you don't want to include to the project.</value>
+    <value>Edit your layout and click "Capture" when finished.</value>
   </data>
   <data name="SnapshotWindowTitle" xml:space="preserve">
     <value>Snapshot Creator</value>
@@ -268,7 +268,7 @@
     <value>Sort by</value>
   </data>
   <data name="Take_Snapshot" xml:space="preserve">
-    <value>Take Snapshot</value>
+    <value>Capture</value>
   </data>
   <data name="WriteArgs" xml:space="preserve">
     <value>Write arguments here</value>

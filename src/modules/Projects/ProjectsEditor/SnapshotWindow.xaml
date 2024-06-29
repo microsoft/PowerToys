@@ -9,14 +9,19 @@
         mc:Ignorable="d"
         Background="{DynamicResource PrimaryBackgroundBrush}"
         Title="{x:Static props:Resources.SnapshotWindowTitle}"
-        Width="250"
-        Height="200"
+        Width="350"
+        Height="140"
         ResizeMode="NoResize"
         ui:TitleBar.Background="{DynamicResource PrimaryBackgroundBrush}"
         ui:TitleBar.InactiveBackground="{DynamicResource TertiaryBackgroundBrush}"
         ui:WindowHelper.UseModernWindowStyle="True"
-        Closing="Window_Closing">
-    <Grid>
+        WindowStartupLocation="CenterScreen"
+        Closing="Window_Closing"
+        BorderThickness="5"
+        BorderBrush="Red">
+    <Grid
+        Margin="5"
+        Background="Transparent">
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"/>
             <RowDefinition Height="Auto"/>
@@ -27,7 +32,6 @@
         </Grid.ColumnDefinitions>
         <TextBlock
             Grid.ColumnSpan="2"
-            TextWrapping="WrapWithOverflow"
             Margin="5"
             Foreground="{DynamicResource PrimaryForegroundBrush}"
             Text="{x:Static props:Resources.SnapshotDescription}" />

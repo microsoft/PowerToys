@@ -484,7 +484,7 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Move the windows you want to include to the project into the desired position. There will be later a possibility to deselect the windows you don&apos;t want to include to the project..
+        ///   Looks up a localized string similar to Edit your layout and click &quot;Capture&quot; when finished..
         /// </summary>
         public static string SnapshotDescription {
             get {
@@ -511,7 +511,7 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Take Snapshot.
+        ///   Looks up a localized string similar to Capture.
         /// </summary>
         public static string Take_Snapshot {
             get {
