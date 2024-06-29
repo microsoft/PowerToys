@@ -150,7 +150,6 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                     SubTitle = QueryHelper.GetResultSubtitle(generatorData),
                     IcoPath = GetIcoPath(),
                     ToolTipData = new ToolTipData(QueryHelper.GetResultTitle(generatorData), QueryHelper.GetResultSubtitle(generatorData)),
-                    ToolTipVisibility = Visibility.Visible,
                     QueryTextDisplay = generatorData.Keyword,
                     Action = c =>
                     {
@@ -212,7 +211,6 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                         IcoPath = GetIcoPath(),
                         Score = matchScore,
                         ToolTipData = new ToolTipData(QueryHelper.GetResultTitle(generatorData), QueryHelper.GetResultSubtitle(generatorData)),
-                        ToolTipVisibility = Visibility.Visible,
                         QueryTextDisplay = generatorData.Keyword,
                         Action = c =>
                         {
@@ -233,7 +231,6 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                 Title = Resources.error_title,
                 SubTitle = errorMessage,
                 ToolTipData = new ToolTipData(Resources.error_title, errorMessage),
-                ToolTipVisibility = Visibility.Visible,
                 IcoPath = GetIcoPath(isWarning: true),
                 Action = _ => { return true; },
             };
