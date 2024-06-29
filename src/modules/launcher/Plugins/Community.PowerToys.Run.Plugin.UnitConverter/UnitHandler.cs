@@ -86,10 +86,19 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
             if (fromUnit != null && toUnit != null)
             {
-                return UnitsNet.UnitConverter.Convert(convertModel.Value, fromUnit, toUnit);
-            }
 
-            return double.NaN;
+            {
+                // Check the standard and adjust the toUnit accordingly
+                if (convertModel.Standard == "IEC")
+                {
+                    // Convert toUnit to IEC equivalent if necessary
+                    toUnit = ConvertToIECUnit(toUnit);
+                }
+                else if (convertModel.Standard == "ITU")
+                {
+                    // Convert toUnit to ITU equivalent if necessary
+                    toUnit = ConvertToITUUnit(toUnit);
+                }
         }
 
         /// <summary>
