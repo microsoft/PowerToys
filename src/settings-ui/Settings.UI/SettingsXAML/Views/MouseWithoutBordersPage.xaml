@@ -170,9 +170,9 @@
 
                     <InfoBar
                         x:Uid="MouseWithoutBorders_CannotDragDropAsAdmin"
-                        IsClosable="True"
-                        IsOpen="{x:Bind ViewModel.IsElevated, Mode=OneWay}"
-                        IsTabStop="True"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.ShowInfobarCannotDragDropAsAdmin, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.ShowInfobarCannotDragDropAsAdmin, Mode=OneWay}"
                         Severity="Informational" />
 
 
@@ -191,14 +191,14 @@
                     <InfoBar
                         x:Uid="MouseWithoutBorders_RunAsAdminText"
                         IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.CanToggleUseService, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
-                        IsTabStop="True"
+                        IsOpen="{x:Bind ViewModel.ShowInfobarRunAsAdminText, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.ShowInfobarRunAsAdminText, Mode=OneWay}"
                         Severity="Informational" />
                     <InfoBar
                         x:Uid="MouseWithoutBorders_ServiceUserUninstallWarning"
-                        IsClosable="True"
-                        IsOpen="True"
-                        IsTabStop="True"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
                         Severity="Warning" />
                     <tkcontrols:SettingsCard
                         x:Uid="MouseWithoutBorders_UninstallService"
