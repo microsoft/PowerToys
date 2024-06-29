@@ -5,15 +5,15 @@
 	
 	& '.\PowerShell script.ps1' 
 
-	You can do this by entering P and the hit the TAB key followed by ENTER
+	You can do this by entering the first letter 'P' and the hit the TAB key followed by ENTER
 #>
 
 
-# All planets sorted by distance from the sun
+# All planets sorted by the distance from the sun.
 $all_planets = @("Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune")
 
 
-# Define a function hello_all_planets, which iterates over all_planets 
+# Define a function hello_all_planets, which iterates over all_planets. 
 $hello_all_planets = {
 	foreach ($current_planet in $all_planets) { 
 		# Write Hello, Mercury! etc. 
@@ -24,6 +24,6 @@ $hello_all_planets = {
 <#
 	Call the hello_all_planets function that we defined above. 
 	
-	Note: If this line &$hello_all_planets wasn't there nothing would happen, eventhough we defined the function.
+	Note: If the line &$hello_all_planets wasn't there nothing would happen, eventhough we defined the function.
 #>
 &$hello_all_planets
