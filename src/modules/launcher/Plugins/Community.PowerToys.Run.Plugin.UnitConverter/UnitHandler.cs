@@ -100,7 +100,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     toUnit = ConvertToITUUnit(toUnit);
                 }
 
-                return return UnitsNet.UnitConverter.Convert(convertModel.Value, fromUnit, toUnit);
+                return UnitsNet.UnitConverter.Convert(convertModel.Value, fromUnit, toUnit);
         }
             
                 return double.NaN;
