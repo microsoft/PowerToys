@@ -43,7 +43,13 @@ namespace ColorPicker.Views
             };
         }
 
-        private void HistoryColors_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        /// <summary>
+        /// Handles the mouse wheel scroll event on the HistoryColors ListView.
+        /// Scrolls the ListView horizontally based on the direction of the mouse wheel scroll.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The mouse wheel event data.</param>
+        private void HistoryColors_OnMouseWheelScroll(object sender, System.Windows.Input.MouseWheelEventArgs e)
         {
             var scrollViewer = FindVisualChild<ScrollViewer>(HistoryColors);
 
@@ -62,6 +68,12 @@ namespace ColorPicker.Views
             }
         }
 
+        /// <summary>
+        /// Finds a visual child of a specified type within a given dependency object.
+        /// </summary>
+        /// <typeparam name="T">The type of the child element to find.</typeparam>
+        /// <param name="obj">The parent dependency object.</param>
+        /// <returns>The first child element of the specified type, or null if no such element is found.</returns>
         private static T FindVisualChild<T>(DependencyObject obj)
             where T : DependencyObject
         {
