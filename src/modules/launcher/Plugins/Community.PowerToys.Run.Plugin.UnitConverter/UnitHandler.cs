@@ -99,7 +99,13 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     // Convert toUnit to ITU equivalent if necessary
                     toUnit = ConvertToITUUnit(toUnit);
                 }
+
+                return return UnitsNet.UnitConverter.Convert(convertModel.Value, fromUnit, toUnit);
         }
+            
+                return double.NaN;
+        }
+        
 
         /// <summary>
         /// Given ConvertModel returns collection of possible results.
