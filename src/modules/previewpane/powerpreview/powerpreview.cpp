@@ -183,20 +183,24 @@ void PowerPreviewModule::enable()
 // Disable active preview handlers.
 void PowerPreviewModule::disable()
 {
-    for (auto& fileExplorerModule : m_fileExplorerModules)
-    {
-        if (!fileExplorerModule.registryChanges.unApply())
-        {
-            Logger::error(L"Couldn't disable file explorer module {} during module disable() call", fileExplorerModule.settingName);
-        }
-    }
-
     if (m_enabled)
     {
         Trace::EnabledPowerPreview(false);
     }
 
     m_enabled = false;
+
+    try
+    {
+        PowerToysSettings::PowerToyValues settings =
+            PowerToysSettings::PowerToyValues::load_from_settings_file(PowerPreviewModule::get_key());
+
+        apply_settings(settings);
+    }
+    catch (std::exception const& e)
+    {
+        Trace::InitSetErrorLoadingFile(e.what());
+    }
 }
 
 // Returns if the powertoys is enabled
