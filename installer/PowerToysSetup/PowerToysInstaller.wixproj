@@ -69,6 +69,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <LinkerAdditionalOptions>-v -sh -sw1108</LinkerAdditionalOptions>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="NewPlusTemplates.wxs" />
     <Compile Include="CustomDialogs\PTInstallDirDlg.wxs" />
     <Compile Include="CustomDialogs\PTLicenseDlg.wxs" />
     <Compile Include="CustomDialogs\WixUI_PTInstallDir.wxs" />

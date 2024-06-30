@@ -60,11 +60,7 @@ Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListNa
 
 #New+
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName NewPlusAssetsFiles -wxsFilePath $PSScriptRoot\NewPlus.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\New"""
-Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName NewPlusTemplateFiles -wxsFilePath $PSScriptRoot\NewPlus.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\NewPlusTemplates"" -isNewPlusTemplates 1"
-Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName NewPlusTemplateSubFiles -wxsFilePath $PSScriptRoot\NewPlus.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\NewPlusTemplates\Project-folder"" -isNewPlusTemplates 1"
 Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""NewPlusAssetsFiles"" -wxsFilePath $PSScriptRoot\NewPlus.wxs -regroot $registryroot"
-Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""NewPlusTemplateFiles"" -wxsFilePath $PSScriptRoot\NewPlus.wxs -regroot $registryroot"
-Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""NewPlusTemplateSubFiles"" -wxsFilePath $PSScriptRoot\NewPlus.wxs -regroot $registryroot"
 
 #Peek
 Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson """" -fileListName PeekAssetsFiles -wxsFilePath $PSScriptRoot\Peek.wxs -depsPath ""$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Peek\"""
