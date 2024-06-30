@@ -61,6 +61,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
+    <PackageReference Include="System.Drawing.Common" />
   </ItemGroup>
 
 </Project>
