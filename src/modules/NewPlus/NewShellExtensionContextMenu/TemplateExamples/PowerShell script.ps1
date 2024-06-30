@@ -24,6 +24,6 @@ $hello_all_planets = {
 <#
 	Call the hello_all_planets function that we defined above. 
 	
-	Note: If the line &$hello_all_planets wasn't there nothing would happen, eventhough we defined the function.
+	Note: If the line &$hello_all_planets wasn't there nothing would happen, even though we defined the function.
 #>
 &$hello_all_planets
