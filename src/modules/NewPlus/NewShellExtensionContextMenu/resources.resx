@@ -126,7 +126,7 @@
     <comment>The menu item in the context menu that enables user to open the folder that contains their templates.</comment>
   </data>
   <data name="default_template_sub_folder_name_where_templates_are_stored" xml:space="preserve">
-    <value>New+ Templates</value>
+    <value>Templates</value>
     <comment>Default subfolder name where templates are stored.</comment>
   </data>
 </root>

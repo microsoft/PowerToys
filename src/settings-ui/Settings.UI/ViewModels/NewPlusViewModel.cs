@@ -23,17 +23,17 @@ using static Microsoft.PowerToys.Settings.UI.Helpers.ShellGetFolder;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class NewViewModel : Observable
+    public class NewPlusViewModel : Observable
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private readonly ISettingsUtils _settingsUtils;
 
-        private NewSettings Settings { get; set; }
+        private NewPlusSettings Settings { get; set; }
 
-        private const string ModuleName = NewSettings.ModuleName;
+        private const string ModuleName = NewPlusSettings.ModuleName;
 
-        public NewViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public NewPlusViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
@@ -44,14 +44,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             try
             {
-                Settings = _settingsUtils.GetSettings<NewSettings>(ModuleName);
+                Settings = _settingsUtils.GetSettings<NewPlusSettings>(ModuleName);
             }
             catch (Exception e)
             {
                 Logger.LogError($"Exception encountered while reading {ModuleName} settings.", e);
 
                 // This code path should never happen
-                Settings = new NewSettings();
+                Settings = new NewPlusSettings();
                 Settings.InitializeWithDefaultSettings();
                 SaveSettingsToJson();
             }
@@ -72,22 +72,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 // Get the enabled state from GPO.
                 _enabledStateIsGPOConfigured = true;
-                _isNewEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _isNewPlusEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
             }
             else
             {
-                _isNewEnabled = GeneralSettingsConfig.Enabled.NewPlus;
+                _isNewPlusEnabled = GeneralSettingsConfig.Enabled.NewPlus;
             }
         }
 
         public bool IsEnabled
         {
-            get => _isNewEnabled;
+            get => _isNewPlusEnabled;
             set
             {
-                if (_isNewEnabled != value)
+                if (_isNewPlusEnabled != value)
                 {
-                    _isNewEnabled = value;
+                    _isNewPlusEnabled = value;
 
                     GeneralSettingsConfig.Enabled.NewPlus = value;
                     OnPropertyChanged(nameof(IsEnabled));
@@ -160,7 +160,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
-        private bool _isNewEnabled;
+        private bool _isNewPlusEnabled;
         private string _templateLocation;
         private bool _hideFileExtension;
 

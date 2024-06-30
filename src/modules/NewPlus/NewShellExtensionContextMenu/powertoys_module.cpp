@@ -36,7 +36,7 @@ public:
 
     virtual const wchar_t* get_key() override
     {
-        // This setting key must match EnabledModules.cs [JsonPropertyName("New")]
+        // This setting key must match EnabledModules.cs [JsonPropertyName("NewPlus")]
         return newplus::constants::non_localizable::powertoy_key;
     }
 

@@ -11,15 +11,15 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class NewPage : Page, IRefreshablePage
+    public sealed partial class NewPlusPage : Page, IRefreshablePage
     {
-        private NewViewModel ViewModel { get; set; }
+        private NewPlusViewModel ViewModel { get; set; }
 
-        public NewPage()
+        public NewPlusPage()
         {
             InitializeComponent();
             var settings_utils = new SettingsUtils();
-            ViewModel = new NewViewModel(settings_utils, SettingsRepository<GeneralSettings>.GetInstance(settings_utils), ShellPage.SendDefaultIPCMessage);
+            ViewModel = new NewPlusViewModel(settings_utils, SettingsRepository<GeneralSettings>.GetInstance(settings_utils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
         }
 

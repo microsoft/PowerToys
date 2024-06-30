@@ -4,9 +4,9 @@
 
 namespace newplus::constants::non_localizable
 {
-    constexpr WCHAR powertoy_key[] = L"New";
+    constexpr WCHAR powertoy_key[] = L"NewPlus";
 
-    constexpr WCHAR powertoy_name[] = L"New";
+    constexpr WCHAR powertoy_name[] = L"NewPlus";
 
     constexpr WCHAR settings_json_data_file_path[] = L"\\settings.json";
 
@@ -20,13 +20,13 @@ namespace newplus::constants::non_localizable
     
     constexpr WCHAR module_name[] = L"NewPlus.ShellExtension";
 
-    constexpr WCHAR new_icon_light_resource_relative_path[] = L"\\Assets\\New\\New_light.ico";
+    constexpr WCHAR new_icon_light_resource_relative_path[] = L"\\Assets\\NewPlus\\New_light.ico";
 
-    constexpr WCHAR new_icon_dark_resource_relative_path[] = L"\\Assets\\New\\New_dark.ico";
+    constexpr WCHAR new_icon_dark_resource_relative_path[] = L"\\Assets\\NewPlus\\New_dark.ico";
 
-    constexpr WCHAR open_templates_icon_light_resource_relative_path[] = L"\\Assets\\New\\Open_templates_light.ico";
+    constexpr WCHAR open_templates_icon_light_resource_relative_path[] = L"\\Assets\\NewPlus\\Open_templates_light.ico";
 
-    constexpr WCHAR open_templates_icon_dark_resource_relative_path[] = L"\\Assets\\New\\Open_templates_dark.ico";
+    constexpr WCHAR open_templates_icon_dark_resource_relative_path[] = L"\\Assets\\NewPlus\\Open_templates_dark.ico";
 
     constexpr WCHAR desktop_ini_filename[] = L"desktop.ini";
 }

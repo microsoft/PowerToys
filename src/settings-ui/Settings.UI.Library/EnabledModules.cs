@@ -464,7 +464,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         private bool newPlus;
 
-        [JsonPropertyName("New")] // This key must match newplus::constants::non_localizable
+        [JsonPropertyName("NewPlus")] // This key must match newplus::constants::non_localizable
         public bool NewPlus
         {
             get => newPlus;

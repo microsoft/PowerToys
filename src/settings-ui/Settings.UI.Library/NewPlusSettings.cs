@@ -12,9 +12,9 @@ using Settings.UI.Library.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class NewSettings : ISettingsConfig
+    public class NewPlusSettings : ISettingsConfig
     {
-        public const string ModuleName = "New";
+        public const string ModuleName = "NewPlus";
 
         public void InitializeWithDefaultSettings()
         {

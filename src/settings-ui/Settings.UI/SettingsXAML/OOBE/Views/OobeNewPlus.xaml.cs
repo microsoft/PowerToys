@@ -13,14 +13,14 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class OobeNew : Page
+    public sealed partial class OobeNewPlus : Page
     {
         public OobePowerToysModule ViewModel { get; set; }
 
-        public OobeNew()
+        public OobeNewPlus()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.New]);
+            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.NewPlus]);
             DataContext = ViewModel;
         }
 
@@ -28,7 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         {
             if (OobeShellPage.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(NewPage));
+                OobeShellPage.OpenMainWindowCallback(typeof(NewPlusPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();

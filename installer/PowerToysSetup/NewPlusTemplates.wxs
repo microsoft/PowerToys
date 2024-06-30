@@ -11,7 +11,7 @@
 
 		<!-- Example templates -->
 		<DirectoryRef Id="LocalAppDataProductFolder">
-			<Directory Id="NewPlusInstallFolder" Name="New+">
+			<Directory Id="NewPlusInstallFolder" Name="NewPlus">
 				<Directory Id="NewPlusTemplatesInstallFolder" Name="Templates">
 					<Directory Id="NewPlusTemplatesSubInstallFolder" Name="Project folder"/>
 				</Directory>

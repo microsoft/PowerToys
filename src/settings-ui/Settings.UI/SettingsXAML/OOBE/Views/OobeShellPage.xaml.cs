@@ -202,9 +202,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 IsNew = true,
             });
 
-            Modules.Insert((int)PowerToysModules.New, new OobePowerToysModule()
+            Modules.Insert((int)PowerToysModules.NewPlus, new OobePowerToysModule()
             {
-                ModuleName = "New",
+                ModuleName = "NewPlus",
                 IsNew = true,
             });
         }
@@ -285,7 +285,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "Hosts": NavigationFrame.Navigate(typeof(OobeHosts)); break;
                     case "RegistryPreview": NavigationFrame.Navigate(typeof(OobeRegistryPreview)); break;
                     case "Peek": NavigationFrame.Navigate(typeof(OobePeek)); break;
-                    case "New": NavigationFrame.Navigate(typeof(OobeNew)); break;
+                    case "NewPlus": NavigationFrame.Navigate(typeof(OobeNewPlus)); break;
                 }
             }
         }

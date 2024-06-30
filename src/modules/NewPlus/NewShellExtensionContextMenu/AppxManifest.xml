@@ -13,7 +13,7 @@
 	<Properties>
 		<DisplayName>PowerToys New+</DisplayName>
 		<PublisherDisplayName>Microsoft</PublisherDisplayName>
-		<Logo>Assets\New\StoreLogo.png</Logo>
+		<Logo>Assets\NewPlus\StoreLogo.png</Logo>
 		<uap10:AllowExternalContent>true</uap10:AllowExternalContent>
 	</Properties>
 	<Resources>
@@ -28,9 +28,9 @@
 	</Capabilities>
 	<Applications>
 		<Application Id="Microsoft.PowerToys.NewPlusContextMenu" Executable="NewPlus.exe" uap10:TrustLevel="mediumIL" uap10:RuntimeBehavior="win32App">
-			<uap:VisualElements AppListEntry="none" DisplayName="PowerToys New+" Description="New+ File Explorer Context Menu" BackgroundColor="transparent" Square150x150Logo="Assets\New\Square150x150Logo.png" Square44x44Logo="Assets\New\Square44x44Logo.png">
-				<uap:DefaultTile Wide310x150Logo="Assets\New\Wide310x150Logo.png" Square310x310Logo="Assets\New\LargeTile.png" Square71x71Logo="Assets\New\SmallTile.png"></uap:DefaultTile>
-				<uap:SplashScreen Image="Assets\New\SplashScreen.png" />
+			<uap:VisualElements AppListEntry="none" DisplayName="PowerToys New+" Description="New+ File Explorer Context Menu" BackgroundColor="transparent" Square150x150Logo="Assets\NewPlus\Square150x150Logo.png" Square44x44Logo="Assets\NewPlus\Square44x44Logo.png">
+				<uap:DefaultTile Wide310x150Logo="Assets\NewPlus\Wide310x150Logo.png" Square310x310Logo="Assets\NewPlus\LargeTile.png" Square71x71Logo="Assets\NewPlus\SmallTile.png"></uap:DefaultTile>
+				<uap:SplashScreen Image="Assets\NewPlus\SplashScreen.png" />
 			</uap:VisualElements>
 			<Extensions>
 				<desktop4:Extension Category="windows.fileExplorerContextMenus">

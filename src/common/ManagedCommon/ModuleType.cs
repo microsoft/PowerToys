@@ -30,6 +30,6 @@ namespace ManagedCommon
         MeasureTool,
         ShortcutGuide,
         PowerOCR,
-        New,
+        NewPlus,
     }
 }

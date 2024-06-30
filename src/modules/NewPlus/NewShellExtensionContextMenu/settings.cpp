@@ -189,7 +189,7 @@ std::wstring NewSettings::GetTemplateLocationDefaultPath()
     static const std::wstring default_template_sub_folder_name =
         GET_RESOURCE_STRING_FALLBACK(
             IDS_DEFAULT_TEMPLATE_SUB_FOLDER_NAME_WHERE_TEMPLATES_ARE_STORED,
-            L"New+ Templates");
+            L"Templates");
 
     static const std::wstring full_path = PTSettingsHelper::get_module_save_folder_location(
                                               newplus::constants::non_localizable::powertoy_key) +
