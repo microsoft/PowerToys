@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using global::PowerToys.GPOWrapper;
@@ -56,6 +58,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _enabledStateIsGPOConfigured = true;
             }
 
+            // Update PATH environment variable to get pwsh.exe on further calls.
+            Environment.SetEnvironmentVariable("PATH", (Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine) ?? string.Empty) + ";" + (Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty), EnvironmentVariableTarget.Process);
+
             CheckCommandNotFoundRequirements();
         }
 
@@ -75,6 +80,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         private bool _isPowerShell7Detected;
+
+        private bool isPowerShellPreviewDetected;
+        private string powerShellPreviewPath;
 
         public bool IsPowerShell7Detected
         {
@@ -124,9 +132,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _enabledStateIsGPOConfigured;
         }
 
-        public bool IsArm64Arch
+        public string RunPowerShellOrPreviewScript(string powershellExecutable, string powershellArguments, bool hidePowerShellWindow = false)
         {
-            get => RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64;
+            if (isPowerShellPreviewDetected)
+            {
+                return RunPowerShellScript(Path.Combine(powerShellPreviewPath, "pwsh-preview.cmd"), powershellArguments, hidePowerShellWindow);
+            }
+            else
+            {
+                return RunPowerShellScript(powershellExecutable, powershellArguments, hidePowerShellWindow);
+            }
         }
 
         public string RunPowerShellScript(string powershellExecutable, string powershellArguments, bool hidePowerShellWindow = false)
@@ -160,6 +175,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void CheckCommandNotFoundRequirements()
         {
+            isPowerShellPreviewDetected = false;
             var ps1File = AssemblyDirectory + "\\Assets\\Settings\\Scripts\\CheckCmdNotFoundRequirements.ps1";
             var arguments = $"-NoProfile -NonInteractive -ExecutionPolicy Unrestricted -File \"{ps1File}\"";
             var result = RunPowerShellScript("pwsh.exe", arguments, true);
@@ -179,11 +195,38 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsPowerShell7Detected = false;
             }
 
+            if (!IsPowerShell7Detected)
+            {
+                // powerShell Preview might be installed, check it.
+                try
+                {
+                    // we have to search for the directory where the PowerShell preview command is located. It is added to the PATH environment variable, so we have to search for it there
+                    foreach (string pathCandidate in Environment.GetEnvironmentVariable("PATH").Split(';'))
+                    {
+                        if (File.Exists(Path.Combine(pathCandidate, "pwsh-preview.cmd")))
+                        {
+                            result = RunPowerShellScript(Path.Combine(pathCandidate, "pwsh-preview.cmd"), arguments, true);
+                            if (result.Contains("PowerShell 7.4 or greater detected."))
+                            {
+                                isPowerShellPreviewDetected = true;
+                                IsPowerShell7Detected = true;
+                                powerShellPreviewPath = pathCandidate;
+                                break;
+                            }
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    // nothing to do. No additional PowerShell installation found
+                }
+            }
+
             if (result.Contains("WinGet Client module detected."))
             {
                 IsWinGetClientModuleDetected = true;
             }
-            else if (result.Contains("WinGet Client module not detected."))
+            else if (result.Contains("WinGet Client module not detected.") || result.Contains("WinGet Client module needs to be updated."))
             {
                 IsWinGetClientModuleDetected = false;
             }
@@ -192,7 +235,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 IsCommandNotFoundModuleInstalled = true;
             }
-            else if (result.Contains("Command Not Found module is not registered in the profile file."))
+            else if (result.Contains("Command Not Found module is not registered in the profile file.") || result.Contains("Outdated version of Command Not Found module found in the profile file."))
             {
                 IsCommandNotFoundModuleInstalled = false;
             }
@@ -204,7 +247,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var ps1File = AssemblyDirectory + "\\Assets\\Settings\\Scripts\\InstallPowerShell7.ps1";
             var arguments = $"-NoProfile -ExecutionPolicy Unrestricted -File \"{ps1File}\"";
-            var result = RunPowerShellScript("powershell.exe", arguments);
+            var result = RunPowerShellOrPreviewScript("powershell.exe", arguments);
             if (result.Contains("Powershell 7 successfully installed."))
             {
                 IsPowerShell7Detected = true;
@@ -220,8 +263,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var ps1File = AssemblyDirectory + "\\Assets\\Settings\\Scripts\\InstallWinGetClientModule.ps1";
             var arguments = $"-NoProfile -ExecutionPolicy Unrestricted -File \"{ps1File}\"";
-            var result = RunPowerShellScript("pwsh.exe", arguments);
-            if (result.Contains("WinGet Client module detected."))
+            var result = RunPowerShellOrPreviewScript("pwsh.exe", arguments);
+            if (result.Contains("WinGet Client module detected.") || result.Contains("WinGet Client module updated."))
             {
                 IsWinGetClientModuleDetected = true;
             }
@@ -237,9 +280,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var ps1File = AssemblyDirectory + "\\Assets\\Settings\\Scripts\\EnableModule.ps1";
             var arguments = $"-NoProfile -ExecutionPolicy Unrestricted -File \"{ps1File}\" -scriptPath \"{AssemblyDirectory}\\..\"";
-            var result = RunPowerShellScript("pwsh.exe", arguments);
+            var result = RunPowerShellOrPreviewScript("pwsh.exe", arguments);
 
-            if (result.Contains("Module is already registered in the profile file.") || result.Contains("Module was successfully registered in the profile file."))
+            if (result.Contains("Module is already registered in the profile file.")
+                || result.Contains("Module was successfully registered in the profile file.")
+                || result.Contains("Module was successfully upgraded in the profile file."))
             {
                 IsCommandNotFoundModuleInstalled = true;
                 PowerToysTelemetry.Log.WriteEvent(new CmdNotFoundInstallEvent());
@@ -252,7 +297,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var ps1File = AssemblyDirectory + "\\Assets\\Settings\\Scripts\\DisableModule.ps1";
             var arguments = $"-NoProfile -ExecutionPolicy Unrestricted -File \"{ps1File}\"";
-            var result = RunPowerShellScript("pwsh.exe", arguments);
+            var result = RunPowerShellOrPreviewScript("pwsh.exe", arguments);
 
             if (result.Contains("Removed the Command Not Found reference from the profile file.") || result.Contains("No instance of Command Not Found was found in the profile file."))
             {

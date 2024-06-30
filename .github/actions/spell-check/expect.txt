@@ -29,6 +29,7 @@ AFFINETRANSFORM
 AFX
 AGGREGATABLE
 AHybrid
+AKV
 ALarger
 ALLAPPS
 ALLINPUT
@@ -38,6 +39,7 @@ ALPHATYPE
 AModifier
 AMPROPERTY
 AMPROPSETID
+amr
 ANDSCANS
 animatedvisuals
 ansicolor
@@ -53,7 +55,7 @@ Apm
 APPBARDATA
 appdata
 APPEXECLINK
-appium
+Appium
 Applicationcan
 appmanifest
 APPNAME
@@ -195,6 +197,7 @@ CMock
 CMONITORS
 cmpgt
 cne
+CNF
 coclass
 codeofconduct
 codereview
@@ -247,6 +250,7 @@ CREATESCHEDULEDTASK
 CREATESTRUCT
 CREATEWINDOWFAILED
 CRECT
+CRH
 critsec
 Crossdevice
 CRSEL
@@ -420,6 +424,7 @@ ENTERSIZEMOVE
 ENU
 EOAC
 epu
+EPO
 ERASEBKGND
 EREOF
 EResize
@@ -488,6 +493,7 @@ Filterkeyboard
 Filterx
 findfast
 FIXEDFILEINFO
+flac
 flyouts
 FOF
 FOFX
@@ -889,6 +895,7 @@ MINIMIZEBOX
 MINIMIZEEND
 MINIMIZESTART
 miniz
+Mip
 Miracast
 mjpg
 mkdn
@@ -927,6 +934,7 @@ mscorlib
 msdata
 msedge
 MSGFLT
+msiexec
 MSIFASTINSTALL
 MSIHANDLE
 msiquery
@@ -1026,6 +1034,7 @@ NOSIZE
 NOTIFICATIONSDLL
 NOTIFYICONDATAW
 NOTIMPL
+notlike
 NOTOPMOST
 NOTRACK
 NOTSRCCOPY
@@ -1107,6 +1116,7 @@ pcb
 pcch
 pcelt
 pch
+pchast
 PCIDLIST
 PCWSTR
 pdisp
@@ -1608,6 +1618,8 @@ TRAYMOUSEMESSAGE
 triaging
 TRK
 trl
+trx
+tsa
 Tsd
 TServer
 TStr
@@ -1709,10 +1721,12 @@ vscdb
 vsconfig
 VSCROLL
 vsetq
+VSINSTALLDIR
 VSM
 vso
 vsonline
 vstemplate
+vstest
 VSTHRD
 VSTT
 vswhere

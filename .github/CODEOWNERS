@@ -1,0 +1,16 @@
+# Protect `.github` folder except the spell-check rules inside it. (The exception happens by not defining any owner user or group for the path.)
+# Protection of the spell-check rules makes no sense as it needs to be changed in nearly every PR.
+/.github/ @crutkas @DHowett @ethanfangg
+/.github/actions/spell-check/
+
+# locking down pipeline folder
+/.pipelines @crutkas @DHowett @ethanfangg
+
+# locking down nuget config
+nuget.config  @crutkas @DHowett @ethanfangg
+packages.config  @crutkas @DHowett @ethanfangg
+
+# locking down files that should not change
+LICENSE @crutkas @DHowett @ethanfangg
+SECURITY.MD @crutkas @DHowett @ethanfangg
+CODE_OF_CONDUCT.MD @crutkas @DHowett @ethanfangg

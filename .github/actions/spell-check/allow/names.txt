@@ -10,7 +10,6 @@ markdownpreviewhandler
 mousewithoutborders
 mwb
 oobe
-pasteplain
 poweraccent
 powerlauncher
 POWEROCR
@@ -29,6 +28,7 @@ videoconference
 
 # USERS
 
+Adoumie
 Advaith
 alekhyareddy
 Aleks
@@ -46,14 +46,17 @@ chrdavis
 Chrzan
 clayton
 Coplen
+craigloewen
 crutkas
 damienleroy
 davidegiacometti
 debian
 Delimarsky
 Deondre
+DHowett
 ductdo
 Essey
+ethanfangg
 frankychen
 gabime
 Galaxi
@@ -71,6 +74,7 @@ htcfreek
 Huynh
 Jaswal
 jefflord
+Jordi
 jyuwono
 Kamra
 Kantarci
@@ -87,7 +91,9 @@ martinchrzan
 martinmoene
 Melman
 Mikhayelyan
+msft
 Myrvold
+nathancartlidge
 Nemeth
 nielslaute
 oldnewthing
@@ -126,7 +132,10 @@ Yuniardi
 yuyoyuppe
 Zoltan
 Zykova
-
+Kairu
+Deibisu
+riri
+quachpas
 
 # OTHERS
 
@@ -135,6 +144,7 @@ Controlz
 cortana
 fancymouse
 firefox
+gpt
 Inkscape
 Markdig
 modernwpf
@@ -143,6 +153,7 @@ mozilla
 mspaint
 Newtonsoft
 onenote
+openai
 Quickime
 regedit
 roslyn

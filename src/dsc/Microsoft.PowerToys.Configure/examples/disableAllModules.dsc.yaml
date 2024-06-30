@@ -1,0 +1,71 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+properties:
+  resources:
+    - resource: Microsoft.PowerToys.Configure/PowerToysConfigure
+      directives:
+        description: Configure PowerToys
+      settings:
+        AdvancedPaste:
+          Enabled: false
+        AlwaysOnTop:
+          Enabled: false
+        Awake:
+          Enabled: false
+        ColorPicker:
+          Enabled: false
+        CropAndLock:
+          Enabled: false
+        EnvironmentVariables:
+          Enabled: false
+        FancyZones:
+          Enabled: false
+        FileLocksmith:
+          Enabled: false
+        ImageResizer:
+          Enabled: false
+        KeyboardManager:
+          Enabled: false
+        FindMyMouse:
+          Enabled: false
+        MouseHighlighter:
+          Enabled: false
+        MouseJump:
+          Enabled: false
+        MousePointerCrosshairs:
+          Enabled: false
+        MouseWithoutBorders:
+          Enabled: false
+        Peek:
+          Enabled: false
+        PowerRename:
+          Enabled: false
+        PowerLauncher:
+          Enabled: false
+        PowerAccent:
+          Enabled: false
+        PowerPreview:
+          EnableSvgPreview: false
+          EnableSvgThumbnail: false
+          EnableMdPreview: false
+          EnableMonacoPreview: false
+          EnablePdfPreview: false
+          EnablePdfThumbnail: false
+          EnableGcodePreview: false
+          EnableGcodeThumbnail: false
+          EnableStlThumbnail: false
+          EnableQoiPreview: false
+          EnableQoiThumbnail: false
+        PowerOcr:
+          Enabled: false
+        ShortcutGuide:
+          Enabled: false
+        VideoConference:
+          Enabled: false
+        MeasureTool:
+          Enabled: false
+        Hosts:
+          Enabled: false
+        RegistryPreview:
+          Enabled: false
+
+  configurationVersion: 0.2.0

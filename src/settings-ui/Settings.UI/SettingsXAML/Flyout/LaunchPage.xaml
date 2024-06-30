@@ -40,7 +40,7 @@
 
             <Grid Padding="36,32,36,0">
                 <TextBlock
-                    x:Uid="ShortcutsTxt"
+                    x:Uid="QuickAccessTxt"
                     VerticalAlignment="Center"
                     Style="{StaticResource BodyStrongTextBlockStyle}" />
                 <Button

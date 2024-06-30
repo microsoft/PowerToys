@@ -30,6 +30,7 @@ namespace Common.UI
             CropAndLock,
             EnvironmentVariables,
             Dashboard,
+            AdvancedPaste,
         }
 
         private static string SettingsWindowNameToString(SettingsWindow value)
@@ -65,7 +66,7 @@ namespace Common.UI
                 case SettingsWindow.MeasureTool:
                     return "MeasureTool";
                 case SettingsWindow.PowerOCR:
-                    return "PowerOCR";
+                    return "PowerOcr";
                 case SettingsWindow.RegistryPreview:
                     return "RegistryPreview";
                 case SettingsWindow.CropAndLock:
@@ -74,6 +75,8 @@ namespace Common.UI
                     return "EnvironmentVariables";
                 case SettingsWindow.Dashboard:
                     return "Dashboard";
+                case SettingsWindow.AdvancedPaste:
+                    return "AdvancedPaste";
                 default:
                     {
                         return string.Empty;

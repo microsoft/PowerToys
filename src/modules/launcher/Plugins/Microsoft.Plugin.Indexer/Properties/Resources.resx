@@ -151,7 +151,7 @@
     <value>Fail to open folder at</value>
   </data>
   <data name="Microsoft_plugin_indexer_plugin_description" xml:space="preserve">
-    <value>Searches files and folders.</value>
+    <value>Searches files and folders</value>
   </data>
   <data name="Microsoft_plugin_indexer_plugin_name" xml:space="preserve">
     <value>Windows Search</value>
@@ -164,5 +164,14 @@
   </data>
   <data name="Microsoft_plugin_indexer_run_as_user" xml:space="preserve">
     <value>Run as different user (Ctrl+Shift+U)</value>
+  </data>
+  <data name="excluded_patterns_label" xml:space="preserve">
+    <value>Excluded patterns</value>
+  </data>
+  <data name="excluded_patterns_description" xml:space="preserve">
+    <value>Prevents files and folders showing up in search results if pattern is matched. Add one pattern per line.</value>
+  </data>
+  <data name="excluded_patterns_placeholder" xml:space="preserve">
+    <value>Example: *.exe</value>
   </data>
 </root>

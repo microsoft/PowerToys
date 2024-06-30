@@ -1,0 +1,270 @@
+﻿<Page
+    x:Class="RegistryPreviewUILib.RegistryPreviewMainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    mc:Ignorable="d">
+
+    <Grid
+        x:Name="gridPreview"
+        Grid.Row="1"
+        Width="Auto"
+        Height="Auto"
+        Margin="12"
+        x:FieldModifier="public"
+        Loaded="GridPreview_Loaded"
+        TabFocusNavigation="Cycle">
+        <Grid.Resources>
+            <Style x:Key="GridCardStyle" TargetType="Border">
+                <Style.Setters>
+                    <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                    <Setter Property="CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+                </Style.Setters>
+            </Style>
+        </Grid.Resources>
+        <Grid.ColumnDefinitions>
+            <!--  Left, Splitter, Right  -->
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="8" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <!--  CommandBar, Tree, Splitter, List  -->
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="8" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border
+            Grid.Row="0"
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            Margin="0,0,0,12"
+            Style="{StaticResource GridCardStyle}">
+
+            <CommandBar
+                Name="commandBar"
+                HorizontalAlignment="Left"
+                DefaultLabelPosition="Right">
+
+                <AppBarButton
+                    x:Name="openButton"
+                    x:Uid="OpenButton"
+                    Click="OpenButton_Click"
+                    Icon="{ui:FontIcon Glyph=&#xe8e5;}">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="O" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton
+                    x:Name="refreshButton"
+                    x:Uid="RefreshButton"
+                    Click="RefreshButton_Click"
+                    Icon="{ui:FontIcon Glyph=&#xe72c;}">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="F5" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarSeparator />
+                <AppBarButton
+                    x:Name="saveButton"
+                    x:Uid="SaveButton"
+                    Click="SaveButton_Click"
+                    Icon="{ui:FontIcon Glyph=&#xe74e;}"
+                    IsEnabled="False">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="S" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton
+                    x:Name="saveAsButton"
+                    x:Uid="SaveAsButton"
+                    Click="SaveAsButton_Click"
+                    Icon="{ui:FontIcon Glyph=&#xe792;}"
+                    IsEnabled="True">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="S" Modifiers="Control,Shift" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarSeparator />
+                <AppBarButton
+                    x:Name="editButton"
+                    x:Uid="EditButton"
+                    Click="EditButton_Click"
+                    Icon="{ui:FontIcon Glyph=&#xe8a7;}">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="E" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton
+                    x:Name="writeButton"
+                    x:Uid="WriteButton"
+                    Click="WriteButton_Click"
+                    Icon="{ui:FontIcon Glyph=&#xe72d;}">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="W" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton
+                    x:Name="registryButton"
+                    x:Uid="RegistryButton"
+                    Click="RegistryButton_Click"
+                    Icon="{ui:FontIcon Glyph=&#xe8ad;}">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="R" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton
+                    x:Name="registryJumpToKeyButton"
+                    x:Uid="RegistryJumpToKeyButton"
+                    Click="RegistryJumpToKeyButton_Click"
+                    IsEnabled="True">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="R" Modifiers="Control,Shift" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+            </CommandBar>
+        </Border>
+
+        <TextBox
+            x:Name="textBox"
+            x:Uid="textBox"
+            Grid.Row="1"
+            Grid.RowSpan="3"
+            Grid.Column="0"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            AcceptsReturn="True"
+            CanBeScrollAnchor="False"
+            CornerRadius="{StaticResource OverlayCornerRadius}"
+            FontFamily="Cascadia Mono, Consolas, Courier New"
+            IsSpellCheckEnabled="False"
+            IsTabStop="True"
+            IsTextPredictionEnabled="False"
+            PlaceholderText="{Binding PlaceholderText}"
+            ScrollViewer.HorizontalScrollBarVisibility="Visible"
+            ScrollViewer.IsHorizontalRailEnabled="True"
+            ScrollViewer.IsVerticalRailEnabled="True"
+            ScrollViewer.VerticalScrollBarVisibility="Visible"
+            TabIndex="0"
+            TextWrapping="NoWrap" />
+
+        <Border
+            Grid.Row="1"
+            Grid.Column="2"
+            Style="{StaticResource GridCardStyle}">
+            <TreeView
+                x:Name="treeView"
+                AllowDrop="False"
+                AllowFocusOnInteraction="True"
+                CanDragItems="False"
+                CanReorderItems="False"
+                IsEnabled="True"
+                IsTabStop="False"
+                ItemInvoked="TreeView_ItemInvoked"
+                ScrollViewer.BringIntoViewOnFocusChange="True"
+                ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                ScrollViewer.HorizontalScrollMode="Enabled"
+                ScrollViewer.VerticalScrollBarVisibility="Visible"
+                ScrollViewer.VerticalScrollMode="Auto"
+                TabIndex="1">
+                <TreeView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel
+                            VerticalAlignment="Center"
+                            IsTabStop="False"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                            <Image
+                                MaxWidth="16"
+                                MaxHeight="16"
+                                Source="{Binding Path=Content.Image}"
+                                ToolTipService.ToolTip="{Binding Path=Content.ToolTipText}" />
+                            <TextBlock Text="{Binding Path=Content.Name}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+        </Border>
+
+        <Border
+            Grid.Row="3"
+            Grid.Column="2"
+            Style="{StaticResource GridCardStyle}">
+            <tk7controls:DataGrid
+                x:Name="dataGrid"
+                AllowDrop="False"
+                AreRowDetailsFrozen="True"
+                AutoGenerateColumns="False"
+                CanDrag="False"
+                HeadersVisibility="Column"
+                IsReadOnly="True"
+                IsTabStop="true"
+                ItemsSource="{x:Bind listRegistryValues}"
+                RowDetailsVisibilityMode="Collapsed"
+                SelectionMode="Single"
+                TabIndex="2">
+                <tk7controls:DataGrid.Columns>
+                    <tk7controls:DataGridTemplateColumn
+                        x:Uid="NameColumn"
+                        Width="Auto"
+                        IsReadOnly="True">
+                        <tk7controls:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel
+                                    Margin="4"
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="8">
+                                    <Image
+                                        MaxWidth="16"
+                                        MaxHeight="16"
+                                        IsTabStop="False"
+                                        Source="{Binding ImageUri}"
+                                        ToolTipService.ToolTip="{Binding ToolTipText}" />
+                                    <TextBlock
+                                        IsTabStop="False"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                        Text="{Binding Name}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </tk7controls:DataGridTemplateColumn.CellTemplate>
+                    </tk7controls:DataGridTemplateColumn>
+                    <tk7controls:DataGridTextColumn
+                        x:Uid="TypeColumn"
+                        Width="Auto"
+                        Binding="{Binding Type}"
+                        FontSize="{StaticResource CaptionTextBlockFontSize}" />
+                    <tk7controls:DataGridTextColumn
+                        x:Uid="ValueColumn"
+                        Width="Auto"
+                        Binding="{Binding Value}"
+                        FontSize="{StaticResource CaptionTextBlockFontSize}" />
+                </tk7controls:DataGrid.Columns>
+            </tk7controls:DataGrid>
+        </Border>
+
+        <tkcontrols:GridSplitter
+            x:Name="verticalSplitter"
+            Grid.Row="1"
+            Grid.RowSpan="3"
+            Grid.Column="1"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Stretch"
+            IsTabStop="False" />
+        <tkcontrols:GridSplitter
+            x:Name="horizontalSplitter"
+            Grid.Row="2"
+            Grid.Column="2"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Center"
+            IsTabStop="False" />
+    </Grid>
+</Page>
