@@ -186,7 +186,7 @@ Note: Enabling this policy does not prevent policy defined mapping rules from wo
 If you enable this policy, you can define IP Address mapping rules that the user can't change or disable.
 Please enter one mapping per line in the format: "hostname IP"
 
-If you disable or don't configure this policy, no predefined ruels are applied.
+If you disable or don't configure this policy, no predefined rules are applied.
 </string>
 
       <string id="ConfigureGlobalUtilityEnabledState">Configure global utility enabled state</string>
