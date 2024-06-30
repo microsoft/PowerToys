@@ -122,7 +122,7 @@ You can set the enabled state for all plugins not configured by this policy usin
 
 Note: Changes require a restart of PowerToys Run.
 </string>
-      <string id="AllowPowerToysAdvancedPasteOnlineAIModelsDescription">This policy configures the enabled disable state for using Advanced Paste online AI models.
+      <string id="AllowPowerToysAdvancedPasteOnlineAIModelsDescription">This policy allows you to disable Advanced Paste online AI models.
 
 If you enable or don't configure this policy, the user takes control over the enabled state of the Enable paste with AI Advanced Paste setting.
 
@@ -174,7 +174,7 @@ If you disable this policy, the user won't be able to enable Enable paste with A
       <string id="PowerToysRunIndividualPluginEnabledState">Configure enabled state for individual plugins</string>
       <string id="ConfigureEnabledUtilityFileExplorerQOIPreview">QOI file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerQOIThumbnails">QOI file thumbnail: Configure enabled state</string>
-      <string id="AllowPowerToysAdvancedPasteOnlineAIModels">Advanced Paste: Allow using online AI models</string>
+      <string id="AllowPowerToysAdvancedPasteOnlineAIModels">Allow using online AI models</string>
     </stringTable>
 
     <presentationTable>
