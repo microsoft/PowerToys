@@ -14,7 +14,9 @@ Param(
     # launcher plugins are being loaded into launcher process,
     # so there are some additional dependencies to skip
     [Parameter(Mandatory = $False, Position = 5)]
-    [bool]$isLauncherPlugin
+    [bool]$isLauncherPlugin,
+    [Parameter(Mandatory = $False, Position = 5)]
+    [bool]$isNewPlusTemplates
 )
 
 $fileWxs = Get-Content $wxsFilePath;
@@ -53,6 +55,10 @@ $fileExclusionList = $fileExclusionList | Where-Object {$_ -notin $dllsToIgnore}
 if ($isLauncherPlugin -eq $True) {
     $fileInclusionList += @("*.deps.json")
     $fileExclusionList += @("Ijwhost.dll", "PowerToys.Common.UI.dll", "PowerToys.GPOWrapper.dll", "PowerToys.GPOWrapperProjection.dll", "PowerToys.PowerLauncher.Telemetry.dll", "PowerToys.ManagedCommon.dll", "PowerToys.Settings.UI.Lib.dll", "Wox.Infrastructure.dll", "Wox.Plugin.dll")
+}
+
+if ($isNewPlusTemplates -eq $True) {
+    $fileInclusionList = @("*.*")
 }
 
 $fileList = Get-ChildItem $fileDepsRoot -Include $fileInclusionList -Exclude $fileExclusionList -File -Name

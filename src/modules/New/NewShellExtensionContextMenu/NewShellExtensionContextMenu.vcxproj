@@ -248,23 +248,23 @@ MakeAppx.exe pack /d . /p $(OutDir)NewPlusPackage.msix /nv</Command>
   <ItemGroup>
     <None Include="dll.def" />
     <None Include="packages.config" />
-    <CopyFileToFolders Include="TemplateExamples\Markdown file.md">
+    <CopyFileToFolders Include="TemplateExamples\Markdown-file.md">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\TemplateExamples</DestinationFolders>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\TemplateExamples</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\NewPlusTemplates</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\NewPlusTemplates</DestinationFolders>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="TemplateExamples\PowerShell script.ps1">
+    <CopyFileToFolders Include="TemplateExamples\PowerShell-script.ps1">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\TemplateExamples</DestinationFolders>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\TemplateExamples</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\NewPlusTemplates</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\NewPlusTemplates</DestinationFolders>
     </CopyFileToFolders>
     <CopyFileToFolders Include="TemplateExamples\Project folder\Readme.md">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\TemplateExamples\Project folder</DestinationFolders>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\TemplateExamples\Project folder</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\NewPlusTemplates\Project-folder</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\NewPlusTemplates\Project-folder</DestinationFolders>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
