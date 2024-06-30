@@ -211,7 +211,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                         IcoPath = GetIcoPath(),
                         Score = matchScore,
                         ToolTipData = new ToolTipData(QueryHelper.GetResultTitle(generatorData), QueryHelper.GetResultSubtitle(generatorData)),
-                    QueryTextDisplay = generatorData.Keyword + " ",
+                        QueryTextDisplay = generatorData.Keyword + " ",
                         Action = c =>
                         {
                             _context.API.ChangeQuery($"{query.ActionKeyword} {generatorData.Keyword} ", true);

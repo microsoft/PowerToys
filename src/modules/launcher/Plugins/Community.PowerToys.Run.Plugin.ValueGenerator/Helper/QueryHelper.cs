@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using Community.PowerToys.Run.Plugin.ValueGenerator.Properties;
 
 namespace Community.PowerToys.Run.Plugin.ValueGenerator.Helper
 {
@@ -16,30 +17,30 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.Helper
         /// <summary>
         /// a list of all value generator descriptions
         /// </summary>
-        private static readonly CompositeFormat GeneratorDescriptionUuid = System.Text.CompositeFormat.Parse(Properties.Resources.generator_description_uuid);
-        private static readonly CompositeFormat GeneratorDescriptionUuidv1 = System.Text.CompositeFormat.Parse(Properties.Resources.generator_description_uuidv1);
-        private static readonly CompositeFormat GeneratorDescriptionUuidv3 = System.Text.CompositeFormat.Parse(Properties.Resources.generator_description_uuidv3);
-        private static readonly CompositeFormat GeneratorDescriptionUuidv4 = System.Text.CompositeFormat.Parse(Properties.Resources.generator_description_uuidv4);
-        private static readonly CompositeFormat GeneratorDescriptionUuidv5 = System.Text.CompositeFormat.Parse(Properties.Resources.generator_description_uuidv5);
-        private static readonly CompositeFormat GeneratorDescriptionHash = System.Text.CompositeFormat.Parse(Properties.Resources.generator_description_hash);
-        private static readonly CompositeFormat GeneratorDescriptionBase64 = System.Text.CompositeFormat.Parse(Properties.Resources.generator_description_base64);
-        private static readonly CompositeFormat GeneratorDescriptionBase64d = System.Text.CompositeFormat.Parse(Properties.Resources.generator_description_base64d);
-        private static readonly CompositeFormat GeneratorDescriptionUrl = System.Text.CompositeFormat.Parse(Properties.Resources.generator_description_url);
-        private static readonly CompositeFormat GeneratorDescriptionUrld = System.Text.CompositeFormat.Parse(Properties.Resources.generator_description_urld);
-        private static readonly CompositeFormat GeneratorDescriptionEscData = System.Text.CompositeFormat.Parse(Properties.Resources.generator_description_esc_data);
-        private static readonly CompositeFormat GeneratorDescriptionUescData = System.Text.CompositeFormat.Parse(Properties.Resources.generator_description_uesc_data);
-        private static readonly CompositeFormat GeneratorDescriptionEscHex = System.Text.CompositeFormat.Parse(Properties.Resources.generator_description_esc_hex);
-        private static readonly CompositeFormat GeneratorDescriptionUescHex = System.Text.CompositeFormat.Parse(Properties.Resources.generator_description_uesc_hex);
-        private static readonly CompositeFormat GeneratorDescriptionYourInput = System.Text.CompositeFormat.Parse(Properties.Resources.generator_description_your_input);
-        private static readonly CompositeFormat GeneratorExample = System.Text.CompositeFormat.Parse(Properties.Resources.generator_example);
-        private static readonly CompositeFormat Or = System.Text.CompositeFormat.Parse(Properties.Resources.or);
+        private static readonly string GeneratorDescriptionUuid = Resources.generator_description_uuid;
+        private static readonly string GeneratorDescriptionUuidv1 = Resources.generator_description_uuidv1;
+        private static readonly string GeneratorDescriptionUuidv3 = Resources.generator_description_uuidv3;
+        private static readonly string GeneratorDescriptionUuidv4 = Resources.generator_description_uuidv4;
+        private static readonly string GeneratorDescriptionUuidv5 = Resources.generator_description_uuidv5;
+        private static readonly string GeneratorDescriptionHash = Resources.generator_description_hash;
+        private static readonly string GeneratorDescriptionBase64 = Resources.generator_description_base64;
+        private static readonly string GeneratorDescriptionBase64d = Resources.generator_description_base64d;
+        private static readonly string GeneratorDescriptionUrl = Resources.generator_description_url;
+        private static readonly string GeneratorDescriptionUrld = Resources.generator_description_urld;
+        private static readonly string GeneratorDescriptionEscData = Resources.generator_description_esc_data;
+        private static readonly string GeneratorDescriptionUescData = Resources.generator_description_uesc_data;
+        private static readonly string GeneratorDescriptionEscHex = Resources.generator_description_esc_hex;
+        private static readonly string GeneratorDescriptionUescHex = Resources.generator_description_uesc_hex;
+        private static readonly string GeneratorDescriptionYourInput = Resources.generator_description_your_input;
+        private static readonly string GeneratorExample = Resources.generator_example;
+        private static readonly string Or = Resources.or;
 
-        private static string GetStringFormat(CompositeFormat value, string arg)
+        private static string GetStringFormat(string value, string arg)
         {
             return string.Format(CultureInfo.CurrentCulture, value, arg);
         }
 
-        private static string GetStringFormat(CompositeFormat value)
+        private static string GetStringFormat(string value)
         {
             return string.Format(CultureInfo.CurrentCulture, value);
         }
