@@ -675,7 +675,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
-                // If SharClipboard is disabled the file transfer does not work and the setting is disabled. => Don't save toggle state.
+                // If ShareClipboard is disabled the file transfer does not work and the setting is disabled. => Don't save toggle state.
                 if (Settings.Properties.ShareClipboard == false)
                 {
                     return;
