@@ -211,12 +211,14 @@
                     <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_WrapMouse">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_WrapMouse_ToggleSwitch" IsOn="{x:Bind ViewModel.WrapMouse, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ShareClipboard">
+                    <tkcontrols:SettingsExpander x:Uid="MouseWithoutBorders_ShareClipboard" IsExpanded="True">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_ShareClipboard_ToggleSwitch" IsOn="{x:Bind ViewModel.ShareClipboard, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_TransferFile">
-                        <ToggleSwitch x:Uid="MouseWithoutBorders_TransferFile_ToggleSwitch" IsOn="{x:Bind ViewModel.TransferFile, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_TransferFile" IsEnabled="{x:Bind ViewModel.IsTransferFileCardEnabled, Mode=OneWay}">
+                                <ToggleSwitch x:Uid="MouseWithoutBorders_TransferFile_ToggleSwitch" IsOn="{x:Bind ViewModel.TransferFile, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                     <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_HideMouseAtScreenEdge">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_HideMouseAtScreenEdge_ToggleSwitch" IsOn="{x:Bind ViewModel.HideMouseAtScreenEdge, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>

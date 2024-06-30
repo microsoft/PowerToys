@@ -660,6 +660,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     Settings.Properties.ShareClipboard = value;
                     NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(TransferFile));
+                    NotifyPropertyChanged(nameof(IsTransferFileCardEnabled));
                 }
             }
         }
@@ -668,17 +670,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return Settings.Properties.TransferFile;
+                return Settings.Properties.TransferFile && Settings.Properties.ShareClipboard;
             }
 
             set
             {
+                // If SharClipboard is disabled the file transfer does not work and the setting is disabled. => Don't save toggle state.
+                if (Settings.Properties.ShareClipboard == false)
+                {
+                    return;
+                }
+
                 if (Settings.Properties.TransferFile != value)
                 {
                     Settings.Properties.TransferFile = value;
                     NotifyPropertyChanged();
                 }
             }
+        }
+
+        public bool IsTransferFileCardEnabled
+        {
+            get => ShareClipboard;
         }
 
         public bool HideMouseAtScreenEdge
@@ -1045,6 +1058,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
+
+            // SKip json update on updating visibility properties
+            if (propertyName == nameof(IsTransferFileCardEnabled))
+            {
+                return;
+            }
+
             SettingsUtils.SaveSettings(Settings.ToJsonString(), MouseWithoutBordersSettings.ModuleName);
 
             if (propertyName == nameof(UseService))
