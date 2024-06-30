@@ -58,6 +58,7 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
         _selectedIndex = index;
         characters.SelectedIndex = _selectedIndex;
         characterName.Text = _powerAccent.CharacterDescriptions[_selectedIndex];
+        characters.ScrollIntoView(character);
     }
 
     private void PowerAccent_OnChangeDisplay(bool isActive, string[] chars)
