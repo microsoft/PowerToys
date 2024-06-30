@@ -173,6 +173,21 @@ If you disable this policy, the setting is disabled and the IP Address is not va
 
 If you don't configure this policy, the user takes control over the setting and can enable or disable it.
 </string>
+      <string id="MwbDisableUserDefinedIpMappingRulesDescription">This policy configures if the user can define IP Address mapping rules.
+
+If you enable this policy, the setting is disabled and the user can't define rules or use existing ones.
+
+If you disable or don't configure this policy, the user takes control over the setting.
+
+Note: Enabling this policy does not prevent policy defined mapping rules from working.
+</string>
+      <string id="MwbPolicyDefinedIpMappingRulesDescription">This policy allows you to define IP Address mapping rules.
+
+If you enable this policy, you can define IP Address mapping rules that the user can't change or disable.
+Please enter one mapping per line in the format: "hostname IP"
+
+If you disable or don't configure this policy, no predefined ruels are applied.
+</string>
 
       <string id="ConfigureGlobalUtilityEnabledState">Configure global utility enabled state</string>
       <string id="ConfigureEnabledUtilityAdvancedPaste">Advanced Paste: Configure enabled state</string>
@@ -227,11 +242,16 @@ If you don't configure this policy, the user takes control over the setting and 
       <string id="MwbDisallowBlockingScreensaver">Disallow blocking screensaver on other machines</string>
       <string id="MwbSameSubnetOnly">Connect only in same subnet</string>
       <string id="MwbValidateRemoteIp">Validate remote machine IP Address</string>
+      <string id="MwbDisableUserDefinedIpMappingRules">Disable user defined IP Address mapping rules</string>
+      <string id="MwbPolicyDefinedIpMappingRules">Predefined IP Address mapping rules</string>
     </stringTable>
 
     <presentationTable>
       <presentation id="PowerToysRunIndividualPluginEnabledState">
         <listBox refId="PowerToysRunIndividualPluginEnabledList">List of managed plugins:</listBox>
+      </presentation>
+      <presentation id="MwbPolicyDefinedIpMappingRules">
+        <multiTextBox refId="MwbPolicyDefinedIpMappingsList">List of IP Address mappings:</multiTextBox>
       </presentation>
     </presentationTable>
 

@@ -567,5 +567,23 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
+    <policy name="MwbDisableUserDefinedIpMappingRules" class="Both" displayName="$(string.MwbDisableUserDefinedIpMappingRules)" explainText="$(string.MwbDisableUserDefinedIpMappingRulesDescription)" key="Software\Policies\PowerToys" valueName="MwbDisableUserDefinedIpMappingRules">
+      <parentCategory ref="MouseWithoutBorders" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_83_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="MwbPolicyDefinedIpMappingRules" class="Both" displayName="$(string.MwbPolicyDefinedIpMappingRules)" explainText="$(string.MwbPolicyDefinedIpMappingRulesDescription)" presentation="$(presentation.MwbPolicyDefinedIpMappingRules)" key="Software\Policies\PowerToys">
+      <parentCategory ref="MouseWithoutBorders" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_83_0" />
+      <elements>
+	    <!--Max length 16383 is the limit of the REG_MULTI_SZ value.-->
+        <multiText id="MwbPolicyDefinedIpMappingsList" valueName="MwbPolicyDefinedIpMappingRules" maxLength="16383" required="true"/>
+      </elements>
+    </policy>
   </policies>
 </policyDefinitions>
