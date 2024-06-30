@@ -150,10 +150,10 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                     SubTitle = QueryHelper.GetResultSubtitle(generatorData),
                     IcoPath = GetIcoPath(),
                     ToolTipData = new ToolTipData(QueryHelper.GetResultTitle(generatorData), QueryHelper.GetResultSubtitle(generatorData)),
-                    QueryTextDisplay = generatorData.Keyword,
+                    QueryTextDisplay = generatorData.Keyword + " ",
                     Action = c =>
                     {
-                        _context.API.ChangeQuery($"{query.ActionKeyword} {generatorData.Keyword}", true);
+                        _context.API.ChangeQuery($"{query.ActionKeyword} {generatorData.Keyword} ", true);
                         return false;
                     },
                 });
@@ -200,7 +200,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
         {
             foreach (var generatorData in QueryHelper.GeneratorDataList)
             {
-                var matchScore = StringMatcher.FuzzySearch(query.Search, generatorData.Keyword).Score;
+                var matchScore = StringMatcher.FuzzySearch(query.Search.Trim(), generatorData.Keyword).Score;
 
                 if (matchScore > 0)
                 {
@@ -211,10 +211,10 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                         IcoPath = GetIcoPath(),
                         Score = matchScore,
                         ToolTipData = new ToolTipData(QueryHelper.GetResultTitle(generatorData), QueryHelper.GetResultSubtitle(generatorData)),
-                        QueryTextDisplay = generatorData.Keyword,
+                    QueryTextDisplay = generatorData.Keyword + " ",
                         Action = c =>
                         {
-                            _context.API.ChangeQuery($"{query.ActionKeyword} {generatorData.Keyword}", true);
+                            _context.API.ChangeQuery($"{query.ActionKeyword} {generatorData.Keyword} ", true);
                             return false;
                         },
                     });
