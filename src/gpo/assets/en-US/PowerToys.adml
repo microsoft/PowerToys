@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.10" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.11" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <displayName>PowerToys</displayName>
   <description>PowerToys</description>
   <resources>
@@ -10,6 +10,7 @@
       <string id="InstallerUpdates">Installer and Updates</string>
       <string id="PowerToysRun">PowerToys Run</string>
       <string id="AdvancedPaste">Advanced Paste</string>
+      <string id="MouseWithoutBorders">Mouse Without Borders</string>
 
       <string id="SUPPORTED_POWERTOYS_0_64_0">PowerToys version 0.64.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_68_0">PowerToys version 0.68.0 or later</string>
@@ -22,6 +23,7 @@
       <string id="SUPPORTED_POWERTOYS_0_78_0">PowerToys version 0.78.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_81_0">PowerToys version 0.81.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_81_1">PowerToys version 0.81.1 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_83_0">PowerToys version 0.83.0 or later</string>
 
       <string id="ConfigureGlobalUtilityEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
 
@@ -127,6 +129,51 @@ If you enable or don't configure this policy, the user takes control over the en
 
 If you disable this policy, the user won't be able to enable Enable paste with AI Advanced Paste setting and use Advanced Paste AI prompt nor set up the Open AI key in PowerToys Settings.
 </string>
+
+      <string id="MwbClipboardSharingEnabledDescription">This policy configures if the user can share the clipboard between machines.
+
+If you enable or don't configure this policy, the user takes control over the clipboard sharing setting.
+
+If you disable this policy, the user won't be able to enable the clipboard sharing setting.
+</string>
+      <string id="MwbFileTransferEnabledDescription">This policy configures if the user can transfer files between machines.
+
+If you enable or don't configure this policy, the user takes control over the file sharing setting.
+
+If you disable this policy, the user won't be able to enable the file sharing Settings.
+
+Note: The file sharing feature depends on the clipboard sharing feature. Disabling clipboard sharing automatically disables file sharing too.
+</string>
+      <string id="MwbUseOriginalUserInterfaceDescription">This policy configures if the user can use the old Mouse Without Borders user interface.
+
+If you enable or don't configure this policy, the user takes control over the setting and can enable or disable the old user interface.
+
+If you disable this policy, the user won't be able to enable the old user interface.
+</string>
+      <string id="MwbDisallowBlockingScreensaverDescription">This policy configures if the user is allowed to disable the screensaver on the remote machines.
+
+If you enable this policy, the user won't be able to enable the "block screensaver" screensaver setting and the screensaver is not blocked.
+
+If you disable or don't configure this policy, the user takes control over the setting and can block the screensaver.
+</string>
+
+      <string id="MwbSameSubnetOnlyDescription">This policy configures if connections are only allowed in the same subnet.
+
+If you enable this policy, the setting is enabled and only connections in the same subnet are allowed.
+
+If you disable this policy, the setting is disabled and all connections are allowed.
+
+If you don't configure this policy, the user takes control over the setting and can enable or disable it.
+</string>
+      <string id="MwbValidateRemoteIpDescription">This policy configures if reverse DNS lookup is used to validate the remote machine IP Address.
+
+If you enable this policy, the setting is enabled and the IP Address is validated.
+
+If you disable this policy, the setting is disabled and the IP Address is not validated.
+
+If you don't configure this policy, the user takes control over the setting and can enable or disable it.
+</string>
+
       <string id="ConfigureGlobalUtilityEnabledState">Configure global utility enabled state</string>
       <string id="ConfigureEnabledUtilityAdvancedPaste">Advanced Paste: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityAlwaysOnTop">Always On Top: Configure enabled state</string>
@@ -174,6 +221,12 @@ If you disable this policy, the user won't be able to enable Enable paste with A
       <string id="ConfigureEnabledUtilityFileExplorerQOIPreview">QOI file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerQOIThumbnails">QOI file thumbnail: Configure enabled state</string>
       <string id="AllowPowerToysAdvancedPasteOnlineAIModels">Advanced Paste: Allow using online AI models</string>
+      <string id="MwbClipboardSharingEnabled">Clipboard sharing enabled</string>
+      <string id="MwbFileTransferEnabled">File transfer enabled</string>
+      <string id="MwbUseOriginalUserInterface">Original user interface is available</string>
+      <string id="MwbDisallowBlockingScreensaver">Disallow blocking screensaver on other machines</string>
+      <string id="MwbSameSubnetOnly">Connect only in same subnet</string>
+      <string id="MwbValidateRemoteIp">Validate remote machine IP Address</string>
     </stringTable>
 
     <presentationTable>
