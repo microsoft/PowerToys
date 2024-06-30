@@ -176,8 +176,8 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPasteOnlineAIModelsValue());
     }
-    GpoRuleConfigured GPOWrapper::GetConfiguredNewEnabledValue()
+    GpoRuleConfigured GPOWrapper::GetConfiguredNewPlusEnabledValue()
     {
-        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredNewEnabledValue());
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredNewPlusEnabledValue());
     }
 }

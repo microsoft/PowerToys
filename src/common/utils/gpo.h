@@ -59,7 +59,7 @@ namespace powertoys_gpo {
     const std::wstring POLICY_CONFIGURE_ENABLED_ENVIRONMENT_VARIABLES = L"ConfigureEnabledUtilityEnvironmentVariables";
     const std::wstring POLICY_CONFIGURE_ENABLED_QOI_PREVIEW = L"ConfigureEnabledUtilityFileExplorerQOIPreview";
     const std::wstring POLICY_CONFIGURE_ENABLED_QOI_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerQOIThumbnails";
-    const std::wstring POLICY_CONFIGURE_ENABLED_NEW = L"ConfigureEnabledUtilityNewPlus";
+    const std::wstring POLICY_CONFIGURE_ENABLED_NEWPLUS = L"ConfigureEnabledUtilityNewPlus";
 
     // The registry value names for PowerToys installer and update policies.
     const std::wstring POLICY_DISABLE_PER_USER_INSTALLATION = L"PerUserInstallationDisabled";
@@ -477,8 +477,8 @@ namespace powertoys_gpo {
         return getUtilityEnabledValue(POLICY_ALLOW_ADVANCED_PASTE_ONLINE_AI_MODELS);
     }
 
-    inline gpo_rule_configured_t getConfiguredNewEnabledValue()
+    inline gpo_rule_configured_t getConfiguredNewPlusEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_NEW);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_NEWPLUS);
     }
 }

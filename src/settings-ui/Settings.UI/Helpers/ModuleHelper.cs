@@ -133,7 +133,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MeasureTool: return GPOWrapper.GetConfiguredScreenRulerEnabledValue();
                 case ModuleType.ShortcutGuide: return GPOWrapper.GetConfiguredShortcutGuideEnabledValue();
                 case ModuleType.PowerOCR: return GPOWrapper.GetConfiguredTextExtractorEnabledValue();
-                case ModuleType.NewPlus: return GPOWrapper.GetConfiguredNewEnabledValue();
+                case ModuleType.NewPlus: return GPOWrapper.GetConfiguredNewPlusEnabledValue();
                 default: return GpoRuleConfigured.Unavailable;
             }
         }

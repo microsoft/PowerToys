@@ -42,7 +42,7 @@ public:
 
     virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
     {
-        return powertoys_gpo::getConfiguredNewEnabledValue();
+        return powertoys_gpo::getConfiguredNewPlusEnabledValue();
     }
 
     virtual bool get_config(_Out_ PWSTR buffer, _Out_ int* buffer_size) override

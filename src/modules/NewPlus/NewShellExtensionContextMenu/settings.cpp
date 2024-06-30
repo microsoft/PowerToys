@@ -147,7 +147,7 @@ void NewSettings::ParseJson()
 
 bool NewSettings::GetEnabled()
 {
-    auto gpoSetting = powertoys_gpo::getConfiguredNewEnabledValue();
+    auto gpoSetting = powertoys_gpo::getConfiguredNewPlusEnabledValue();
     if (gpoSetting == powertoys_gpo::gpo_rule_configured_enabled)
     {
         return true;
