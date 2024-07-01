@@ -50,7 +50,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredQoiPreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredQoiThumbnailsEnabledValue();
         static GpoRuleConfigured GetAllowedAdvancedPasteOnlineAIModelsValue();
-        static winrt::hstring GPOWrapper::GetConfiguredMwbPolicyDefinedIpMappingRules();
+        /* static winrt::hstring GPOWrapper::GetConfiguredMwbPolicyDefinedIpMappingRules(); */
     };
 }
 
