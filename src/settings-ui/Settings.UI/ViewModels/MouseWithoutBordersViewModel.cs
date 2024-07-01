@@ -767,6 +767,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public string Name2IpListFromPolicy
+        {
+            // Due to https://github.com/microsoft/microsoft-ui-xaml/issues/1826, we must
+            // add back \n chars on set and remove them on get for the widget
+            // to make its behavior consistent with the old UI and MWB internal code.
+            // get => GPOWrapper.GetConfiguredMwbPolicyDefinedIpMappingRules().Replace("\r\n", "\r");
+            get => "ddd 111\r\nxxx 222\r\n".Replace("\r\n", "\r");
+        }
+
+        public bool Name2IpListFromPolicyIsConfigured => !string.IsNullOrWhiteSpace(Name2IpListFromPolicy);
+
         public bool SameSubnetOnly
         {
             get

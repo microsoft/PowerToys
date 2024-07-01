@@ -294,6 +294,24 @@
                 <controls:SettingsGroup x:Uid="MouseWithoutBorders_AdvancedSettings_Group" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander x:Uid="MouseWithoutBorders_IPAddressMapping" IsExpanded="True">
                         <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard
+                                x:Uid="MouseWithoutBorders_Name2IpListFromPolicyInfo"
+                                HorizontalContentAlignment="Stretch"
+                                Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}"
+                                ContentAlignment="Vertical"
+                                Visibility="{x:Bind ViewModel.Name2IpListFromPolicyIsConfigured, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <TextBox
+                                    x:Uid="MouseWithoutBorders_PolicyIPAddressMapping_TextBoxControl"
+                                    MinWidth="240"
+                                    MaxHeight="160"
+                                    AcceptsReturn="True"
+                                    IsReadOnly="True"
+                                    ScrollViewer.IsVerticalRailEnabled="True"
+                                    ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                    ScrollViewer.VerticalScrollMode="Enabled"
+                                    Text="{x:Bind ViewModel.Name2IpListFromPolicy, Mode=OneWay}"
+                                    TextWrapping="Wrap" />
+                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
                                 <TextBox
                                     x:Uid="MouseWithoutBorders_IPAddressMapping_TextBoxControl"
