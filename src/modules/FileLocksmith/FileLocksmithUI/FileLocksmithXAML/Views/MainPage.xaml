@@ -141,27 +141,15 @@
                                             IsTextSelectionEnabled="True"
                                             Text="{x:Bind user}" />
                                     </tkcontrols:SettingsCard>
-                                    <tkcontrols:SettingsCard ContentAlignment="Vertical">
+                                    <tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard.Header>
-                                            <TextBlock>
-                                                <Run x:Uid="Files" />
-                                                <Run Text="(" /><Run Text="{x:Bind files, Converter={StaticResource fileCountConverter}}" /><Run Text=")" />
-                                            </TextBlock>
+                                            <Button Padding="0" Click="ProcessFilesList_Click">
+                                                <TextBlock>
+                                                    <Run x:Uid="Files" />
+                                                    <Run Text="(" /><Run Text="{x:Bind files, Converter={StaticResource fileCountConverter}}" /><Run Text=")" />
+                                                </TextBlock>
+                                            </Button>
                                         </tkcontrols:SettingsCard.Header>
-                                        <ItemsRepeater ItemsSource="{x:Bind files}">
-                                            <ItemsRepeater.ItemTemplate>
-                                                <DataTemplate x:DataType="x:String">
-                                                    <TextBlock
-                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                        IsTextSelectionEnabled="True"
-                                                        Style="{StaticResource CaptionTextBlockStyle}"
-                                                        Text="{Binding}"
-                                                        TextTrimming="CharacterEllipsis"
-                                                        TextWrapping="NoWrap"
-                                                        ToolTipService.ToolTip="{Binding}" />
-                                                </DataTemplate>
-                                            </ItemsRepeater.ItemTemplate>
-                                        </ItemsRepeater>
                                     </tkcontrols:SettingsCard>
                                 </tkcontrols:SettingsExpander.Items>
                             </tkcontrols:SettingsExpander>
@@ -199,6 +187,11 @@
                 IsTextSelectionEnabled="True"
                 Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}"
                 TextWrapping="Wrap" />
+        </ContentDialog>
+        <ContentDialog x:Name="ProcessFilesListDialog" x:Uid="ProcessFilesListDialog">
+            <ScrollViewer>
+                <TextBlock x:Uid="ProcessFilesListDialogTextBlock" x:Name="ProcessFilesListDialogTextBlock" IsTextSelectionEnabled="True"/>
+            </ScrollViewer>
         </ContentDialog>
     </Grid>
 </Page>

@@ -130,6 +130,13 @@
   <data name="Files.Text" xml:space="preserve">
     <value>Files</value>
   </data>
+  <data name="ProcessFilesListDialog.Title" xml:space="preserve">
+    <value>Files</value>
+  </data>
+  <data name="ProcessFilesListDialog.CloseButtonText" xml:space="preserve">
+    <value>Close</value>
+    <comment>As in, close a dialog prompt.</comment>
+  </data>
   <data name="PathsTooltipDescription.Text" xml:space="preserve">
     <value>Click to see the entire list of paths.</value>
     <comment>Paths as in file paths that were selected for the utility to check.</comment>
