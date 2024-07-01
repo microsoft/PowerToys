@@ -676,7 +676,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             set
             {
                 // If ShareClipboard is disabled the file transfer does not work and the setting is disabled. => Don't save toggle state.
-                if (Settings.Properties.ShareClipboard == false)
+                if (ShareClipboard == false)
                 {
                     return;
                 }
@@ -1059,7 +1059,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             OnPropertyChanged(propertyName);
 
-            // SKip json update on updating visibility properties
+            // Skip json update on updating visibility properties
             if (propertyName == nameof(IsTransferFileCardEnabled))
             {
                 return;
