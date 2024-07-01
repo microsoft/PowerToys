@@ -3,6 +3,7 @@
 #include <fstream>
 #include <unordered_map>
 #include <string>
+#include <regex>
 
 std::wstring gpo_rule_configured_to_string(powertoys_gpo::gpo_rule_configured_t gpo_rule)
 {
@@ -19,6 +20,19 @@ std::wstring gpo_rule_configured_to_string(powertoys_gpo::gpo_rule_configured_t 
         return L"enabled";
     default:
         return L"Unrecognized gpo_rule_configured_t value.";
+    }
+}
+
+std::wstring gpo_string_to_string(const std::wstring &gpo_value)
+{
+    if (gpo_value == L"")
+    {
+        return L"not_configured";
+    }
+    else
+    {
+        std::wstring value = std::regex_replace(gpo_value, std::wregex(L"\r\n"), std::wstring(L"|"));
+        return std::wstring(value.begin(), value.end());
     }
 }
 
@@ -68,4 +82,5 @@ void ReportGPOValues(const std::filesystem::path& tmpDir)
     report << "getConfiguredQoiPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredQoiPreviewEnabledValue()) << std::endl;
     report << "getConfiguredQoiThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredQoiThumbnailsEnabledValue()) << std::endl;
     report << "getAllowedAdvancedPasteOnlineAIModelsValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowedAdvancedPasteOnlineAIModelsValue()) << std::endl;
+    report << "getConfiguredMwbPolicyDefinedIpMappingRules: " << gpo_string_to_string(powertoys_gpo::getConfiguredMwbPolicyDefinedIpMappingRules()) << std::endl;
 }

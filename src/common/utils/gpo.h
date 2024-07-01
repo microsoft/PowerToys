@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include <optional>
+#include <vector>
 
 namespace powertoys_gpo {
     enum gpo_rule_configured_t {
@@ -71,11 +72,23 @@ namespace powertoys_gpo {
     const std::wstring POLICY_ALLOW_EXPERIMENTATION = L"AllowExperimentation";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER_ALL_PLUGINS = L"PowerLauncherAllPluginsEnabledState";
     const std::wstring POLICY_ALLOW_ADVANCED_PASTE_ONLINE_AI_MODELS = L"AllowPowerToysAdvancedPasteOnlineAIModels";
+    const std::wstring POLICY_MWB_POLICY_DEFINED_IP_MAPPING_RULES = L"MwbPolicyDefinedIpMappingRules";
 
-    inline std::optional<std::wstring> readRegistryStringValue(HKEY hRootKey, const std::wstring& subKey, const std::wstring& value_name)
+    inline std::optional<std::wstring> readRegistryStringValue(HKEY hRootKey, const std::wstring& subKey, const std::wstring& value_name, const DWORD value_type = REG_SZ)
     {
+        // Set value type
         DWORD reg_value_type = REG_SZ;
         DWORD reg_flags = RRF_RT_REG_SZ;
+        if (value_type == REG_MULTI_SZ)
+        {
+            reg_value_type = REG_MULTI_SZ;
+            reg_flags = RRF_RT_REG_MULTI_SZ;
+        }
+        else if (value_type != REG_SZ)
+        {
+            OutputDebugStringW(L"invalid_argument(Wrong value type. Only REG_SZ and REG_MULTI_SZ supported.)");
+            throw std::exception();
+        }
 
         DWORD string_buffer_capacity;
         // Request required buffer capacity / string length
@@ -97,8 +110,25 @@ namespace powertoys_gpo {
             return std::nullopt;
         }
 
-        // Convert buffer to std::wstring, delete buffer and return REG_SZ value
-        std::wstring string_value = temp_buffer;
+        // Convert buffer to std::wstring
+        std::wstring string_value = L"";
+        if (reg_value_type == REG_MULTI_SZ)
+        {
+            // If it is REG_MULTI_SZ handle this way
+            wchar_t* currentString = temp_buffer;
+            while (*currentString != L'\0')
+            {
+                string_value = string_value + L"\r\n" + currentString;
+                currentString += wcslen(currentString) + 1; // Move to the next string
+            }
+        }
+        else
+        {
+            // If it is REG_SZ handle this way
+            string_value = temp_buffer;
+        }
+
+        // delete buffer, return string value
         delete temp_buffer;
         return string_value;
     }
@@ -474,5 +504,25 @@ namespace powertoys_gpo {
     inline gpo_rule_configured_t getAllowedAdvancedPasteOnlineAIModelsValue()
     {
         return getUtilityEnabledValue(POLICY_ALLOW_ADVANCED_PASTE_ONLINE_AI_MODELS);
+    }
+
+    inline std::wstring getConfiguredMwbPolicyDefinedIpMappingRules()
+    {
+        // Important: HKLM has priority over HKCU
+        auto mapping_rules = readRegistryStringValue(HKEY_LOCAL_MACHINE, POLICIES_PATH, POLICY_MWB_POLICY_DEFINED_IP_MAPPING_RULES, REG_MULTI_SZ);
+        if (!mapping_rules.has_value())
+        {
+            mapping_rules = readRegistryStringValue(HKEY_CURRENT_USER, POLICIES_PATH, POLICY_MWB_POLICY_DEFINED_IP_MAPPING_RULES, REG_MULTI_SZ);
+        }
+
+        // return value
+        if (mapping_rules.has_value())
+        {
+            return mapping_rules.value();
+        }
+        else
+        {
+            return std::wstring ();
+        }
     }
 }

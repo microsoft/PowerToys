@@ -176,4 +176,8 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPasteOnlineAIModelsValue());
     }
+    winrt::hstring GPOWrapper::GetConfiguredMwbPolicyDefinedIpMappingRules()
+    {
+        return powertoys_gpo::getConfiguredMwbPolicyDefinedIpMappingRules().c_str();
+    }
 }
