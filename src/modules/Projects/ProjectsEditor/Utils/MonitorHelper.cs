@@ -3,47 +3,40 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace ProjectsEditor.Utils
 {
-    internal sealed class MonitorHelper
+    public class MonitorHelper
     {
-        internal static List<Rectangle> GetDpiUnawareScreenBounds()
+        private const int DpiAwarenessContextUnaware = -1;
+
+        private Screen[] screens;
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr SetThreadDpiAwarenessContext(IntPtr dpiContext);
+
+        private void SaveDpiUnawareScreens()
         {
-            List<Rectangle> screenBounds = new List<Rectangle>();
-
-            var primaryScreen = System.Windows.Forms.Screen.PrimaryScreen;
-            GetDpiOnScreen(primaryScreen, out uint dpiX_Primary, out uint dpiY_Primary);
-
-            foreach (var screen in System.Windows.Forms.Screen.AllScreens)
-            {
-                GetDpiOnScreen(screen, out uint dpiX, out uint dpiY);
-
-                screenBounds.Add(new Rectangle((int)(screen.Bounds.Left * 96 / dpiX_Primary), (int)(screen.Bounds.Top * 96 / dpiY_Primary), (int)(screen.Bounds.Width * 96 / dpiX), (int)(screen.Bounds.Height * 96 / dpiY)));
-            }
-
-            return screenBounds;
+            SetThreadDpiAwarenessContext(DpiAwarenessContextUnaware);
+            screens = Screen.AllScreens;
         }
 
-        private static void GetDpiOnScreen(Screen screen, out uint dpiX, out uint dpiY)
+        private Screen[] GetDpiUnawareScreenBounds()
         {
-            var point = new System.Drawing.Point(screen.Bounds.Left + 1, screen.Bounds.Top + 1);
-            var hmonitor = NativeMethods.MonitorFromPoint(point, NativeMethods._MONITOR_DEFAULTTONEAREST);
+            Thread dpiUnawareThread = new Thread(new ThreadStart(SaveDpiUnawareScreens));
+            dpiUnawareThread.Start();
+            dpiUnawareThread.Join();
 
-            switch (NativeMethods.GetDpiForMonitor(hmonitor, NativeMethods.DpiType.EFFECTIVE, out dpiX, out dpiY).ToInt32())
-            {
-                case NativeMethods._S_OK: break;
-                default:
-                    dpiX = 96;
-                    dpiY = 96;
-                    break;
-            }
+            return screens;
+        }
+
+        public static Screen[] GetDpiUnawareScreens()
+        {
+            MonitorHelper monitorHelper = new MonitorHelper();
+            return monitorHelper.GetDpiUnawareScreenBounds();
         }
     }
 }

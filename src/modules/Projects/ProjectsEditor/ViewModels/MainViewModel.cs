@@ -398,8 +398,9 @@ namespace ProjectsEditor.ViewModels
         {
             _mainWindow.WindowState = System.Windows.WindowState.Minimized;
             _overlayWindows.Clear();
-            foreach (var bounds in MonitorHelper.GetDpiUnawareScreenBounds())
+            foreach (var screen in MonitorHelper.GetDpiUnawareScreens())
             {
+                var bounds = screen.Bounds;
                 OverlayWindow overlayWindow = new OverlayWindow();
                 overlayWindow.Top = bounds.Top;
                 overlayWindow.Left = bounds.Left;
