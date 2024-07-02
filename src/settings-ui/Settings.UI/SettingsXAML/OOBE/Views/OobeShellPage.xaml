@@ -122,6 +122,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}"
                     Tag="MouseWithoutBorders" />
                 <NavigationViewItem
+                    x:Uid="NewPlus_Product_Name"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}"
+                    Tag="NewPlus" />
+                <NavigationViewItem
                     x:Uid="Shell_Peek"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Peek.png}"
                     Tag="Peek" />

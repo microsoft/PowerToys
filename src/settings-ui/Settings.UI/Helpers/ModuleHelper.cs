@@ -68,6 +68,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MeasureTool: return generalSettingsConfig.Enabled.MeasureTool;
                 case ModuleType.ShortcutGuide: return generalSettingsConfig.Enabled.ShortcutGuide;
                 case ModuleType.PowerOCR: return generalSettingsConfig.Enabled.PowerOcr;
+                case ModuleType.NewPlus: return generalSettingsConfig.Enabled.NewPlus;
                 default: return false;
             }
         }
@@ -100,6 +101,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MeasureTool: generalSettingsConfig.Enabled.MeasureTool = isEnabled; break;
                 case ModuleType.ShortcutGuide: generalSettingsConfig.Enabled.ShortcutGuide = isEnabled; break;
                 case ModuleType.PowerOCR: generalSettingsConfig.Enabled.PowerOcr = isEnabled; break;
+                case ModuleType.NewPlus: generalSettingsConfig.Enabled.NewPlus = isEnabled; break;
             }
         }
 
@@ -131,6 +133,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MeasureTool: return GPOWrapper.GetConfiguredScreenRulerEnabledValue();
                 case ModuleType.ShortcutGuide: return GPOWrapper.GetConfiguredShortcutGuideEnabledValue();
                 case ModuleType.PowerOCR: return GPOWrapper.GetConfiguredTextExtractorEnabledValue();
+                case ModuleType.NewPlus: return GPOWrapper.GetConfiguredNewPlusEnabledValue();
                 default: return GpoRuleConfigured.Unavailable;
             }
         }
@@ -163,6 +166,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.MeasureTool => typeof(MeasureToolPage),
                 ModuleType.ShortcutGuide => typeof(ShortcutGuidePage),
                 ModuleType.PowerOCR => typeof(PowerOcrPage),
+                ModuleType.NewPlus => typeof(NewPlusPage),
                 _ => typeof(DashboardPage), // never called, all values listed above
             };
         }

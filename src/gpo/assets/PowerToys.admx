@@ -19,6 +19,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_78_0" displayName="$(string.SUPPORTED_POWERTOYS_0_78_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_81_0" displayName="$(string.SUPPORTED_POWERTOYS_0_81_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_81_1" displayName="$(string.SUPPORTED_POWERTOYS_0_81_1)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_82_0" displayName="$(string.SUPPORTED_POWERTOYS_0_82_0)"/>
     </definitions>
   </supportedOn>
   <categories>
@@ -319,6 +320,16 @@
     <policy name="ConfigureEnabledUtilityMouseWithoutBorders" class="Both" displayName="$(string.ConfigureEnabledUtilityMouseWithoutBorders)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityMouseWithoutBorders">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_70_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityNewPlus" class="Both" displayName="$(string.ConfigureEnabledUtilityNewPlus)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityNewPlus">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_82_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>

@@ -22,6 +22,7 @@
       <string id="SUPPORTED_POWERTOYS_0_78_0">PowerToys version 0.78.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_81_0">PowerToys version 0.81.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_81_1">PowerToys version 0.81.1 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_82_0">PowerToys version 0.82.0 or later</string>
 
       <string id="ConfigureGlobalUtilityEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
 
@@ -154,6 +155,7 @@ If you disable this policy, the user won't be able to enable Enable paste with A
       <string id="ConfigureEnabledUtilityMouseJump">Mouse Jump: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMousePointerCrosshairs">Mouse Pointer Crosshairs: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMouseWithoutBorders">Mouse Without Borders: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityNewPlus">New+: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPeek">Peek: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPowerRename">Power Rename: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPowerLauncher">PowerToys Run: Configure enabled state</string>

@@ -1,7 +1,7 @@
 #pragma once
 #include <windows.h>
 
-enum class AppTheme
+enum class Theme
 {
     Dark = 0,
     Light = 1
@@ -9,6 +9,10 @@ enum class AppTheme
 
 struct ThemeHelpers
 {
-    static AppTheme GetAppTheme();
-    static void ThemeHelpers::SetImmersiveDarkMode(HWND window, bool enabled);
+    static Theme GetAppTheme();
+    static Theme GetSystemTheme();
+    static void SetImmersiveDarkMode(HWND window, bool enabled);
+
+protected:
+    static Theme ThemeRegistryHelper(LPCWSTR theme_key);
 };
