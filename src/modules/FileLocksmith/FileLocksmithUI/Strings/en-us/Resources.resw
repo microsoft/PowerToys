@@ -171,4 +171,8 @@
     <value>Administrator: File Locksmith</value>
     <comment>Title of the window when running as administrator.</comment>
   </data>
+  <data name="ShowProcessFiles.Text" xml:space="preserve">
+    <value>Show files</value>
+    <comment>Show files for the selected process</comment>
+  </data>
 </root>

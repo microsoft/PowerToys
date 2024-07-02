@@ -26,7 +26,7 @@ namespace PowerToys.FileLocksmithUI.Views
             await SelectedFilesListDialog.ShowAsync();
         }
 
-        private async void ProcessFilesList_Click(object sender, RoutedEventArgs e)
+        private async void ShowProcessFiles_Click(object sender, RoutedEventArgs e)
         {
             var processResult = (ProcessResult)((FrameworkElement)sender).DataContext;
             ProcessFilesListDialogTextBlock.Text = string.Join(Environment.NewLine, processResult.files);

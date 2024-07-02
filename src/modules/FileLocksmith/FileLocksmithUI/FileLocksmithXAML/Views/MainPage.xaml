@@ -143,13 +143,14 @@
                                     </tkcontrols:SettingsCard>
                                     <tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard.Header>
-                                            <Button Padding="0" Click="ProcessFilesList_Click">
-                                                <TextBlock>
-                                                    <Run x:Uid="Files" />
-                                                    <Run Text="(" /><Run Text="{x:Bind files, Converter={StaticResource fileCountConverter}}" /><Run Text=")" />
-                                                </TextBlock>
-                                            </Button>
+                                            <TextBlock>
+                                                <Run x:Uid="Files" />
+                                                <Run Text="(" /><Run Text="{x:Bind files, Converter={StaticResource fileCountConverter}}" /><Run Text=")" />
+                                            </TextBlock>
                                         </tkcontrols:SettingsCard.Header>
+                                        <Button Click="ShowProcessFiles_Click">
+                                            <TextBlock x:Uid="ShowProcessFiles" />
+                                        </Button>
                                     </tkcontrols:SettingsCard>
                                 </tkcontrols:SettingsExpander.Items>
                             </tkcontrols:SettingsExpander>
@@ -190,7 +191,10 @@
         </ContentDialog>
         <ContentDialog x:Name="ProcessFilesListDialog" x:Uid="ProcessFilesListDialog">
             <ScrollViewer>
-                <TextBlock x:Uid="ProcessFilesListDialogTextBlock" x:Name="ProcessFilesListDialogTextBlock" IsTextSelectionEnabled="True"/>
+                <TextBlock
+                    x:Name="ProcessFilesListDialogTextBlock"
+                    x:Uid="ProcessFilesListDialogTextBlock"
+                    IsTextSelectionEnabled="True" />
             </ScrollViewer>
         </ContentDialog>
     </Grid>
