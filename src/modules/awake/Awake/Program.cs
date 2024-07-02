@@ -71,7 +71,7 @@ namespace Awake
                 Exit(Core.Constants.AppName + " is already running! Exiting the application.", 1, _exitSignal, true);
             }
 
-            Logger.LogInfo($"Launching {Core.Constants.AppName}...");
+            Logger.LogInfo($"Opening {Core.Constants.AppName}...");
             Logger.LogInfo(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion);
             Logger.LogInfo($"Build: {BuildId}");
             Logger.LogInfo($"OS: {Environment.OSVersion}");

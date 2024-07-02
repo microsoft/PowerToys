@@ -17,7 +17,7 @@ public static class WindowUtilities
     {
         if (IsOCROverlayCreated())
         {
-            Logger.LogWarning("Tried to launch the overlay, but it has been already created.");
+            Logger.LogWarning("Tried to open the overlay, but it has been already created.");
             return;
         }
 

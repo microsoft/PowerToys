@@ -161,10 +161,10 @@
                 </Button>
                 <!--<AppBarSeparator />
                 <Button
-                    x:Name="QuitBtn"
+                    x:Name="CloseBtn"
                     Style="{StaticResource FlyoutButtonStyle}"
-                    ToolTipService.ToolTip="Quit"
-                    Click="QuitButton_Click">
+                    ToolTipService.ToolTip="Close"
+                    Click="CloseButton_Click">
                     <FontIcon FontSize="16" Glyph="&#xe894;" />
                 </Button>-->
             </StackPanel>

@@ -399,14 +399,14 @@ struct ProcessInfo
 
 inline std::optional<ProcessInfo> RunNonElevatedFailsafe(const std::wstring& file, const std::wstring& params, const std::wstring& working_dir, DWORD handleAccess = 0)
 {
-    bool launched = RunNonElevatedEx(file, params, working_dir);
-    if (!launched)
+    bool opened = RunNonElevatedEx(file, params, working_dir);
+    if (!opened)
     {
         Logger::warn(L"RunNonElevatedEx() failed. Trying fallback");
         std::wstring action_runner_path = get_module_folderpath() + L"\\PowerToys.ActionRunner.exe";
         std::wstring newParams = fmt::format(L"-run-non-elevated -target \"{}\" {}", file, params);
-        launched = run_non_elevated(action_runner_path, newParams, nullptr, working_dir.c_str());
-        if (launched)
+        opened = run_non_elevated(action_runner_path, newParams, nullptr, working_dir.c_str());
+        if (opened)
         {
             Logger::trace(L"Started {}", file);
         }
