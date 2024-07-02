@@ -119,15 +119,15 @@
   </resheader>
   <data name="Attribution_Rooler.Text" xml:space="preserve">
     <value>Inspired by Rooler</value>
-    <comment>Rooler is a name of the tool.</comment>
+    <comment>{Locked="Rooler"}</comment>
   </data>
   <data name="Shell_VideoConference.Content" xml:space="preserve">
     <value>Video Conference Mute</value>
-    <comment>Navigation view item name for Video Conference</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Shell_MeasureTool.Content" xml:space="preserve">
     <value>Screen Ruler</value>
-    <comment>Product name: Navigation view item name for Screen Ruler</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="MeasureTool.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
@@ -135,11 +135,11 @@
   </data>
   <data name="MeasureTool.ModuleDescription" xml:space="preserve">
     <value>Screen Ruler is a quick and easy way to measure pixels on your screen.</value>
-    <comment>"Screen Ruler" is the name of the utility</comment>
+    <comment>{Locked="Screen Ruler"}</comment>
   </data>
   <data name="MeasureTool.ModuleTitle" xml:space="preserve">
     <value>Screen Ruler</value>
-    <comment>"Screen Ruler" is the name of the utility</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="MeasureTool_ActivationSettings.Header" xml:space="preserve">
     <value>Activation</value>
@@ -153,7 +153,6 @@
   </data>
   <data name="MeasureTool_ActivationShortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to bring up the command bar</value>
-    <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
   <data name="MeasureTool_DefaultMeasureStyle.Header" xml:space="preserve">
     <value>Default measure style</value>
@@ -269,7 +268,7 @@
   </data>
   <data name="MouseWithoutBorders_AddFirewallRuleButtonControl.Header" xml:space="preserve">
     <value>Add a firewall rule for Mouse Without Borders</value>
-    <comment>"Mouse Without Borders" is a product name</comment>
+    <comment>{Locked="Mouse Without Borders"}</comment>
   </data>
   <data name="MouseWithoutBorders_AddFirewallRuleButtonControl.Description" xml:space="preserve">
     <value>Adding a firewall rule might help solve connection issues.</value>
@@ -279,12 +278,14 @@
   </data>
   <data name="MouseWithoutBorders_ServiceUserUninstallWarning.Title" xml:space="preserve">
     <value>If PowerToys is installed as a user, uninstalling/upgrading may require the Mouse Without Borders service to be removed manually later.</value>
+    <comment>{Locked="Mouse Without Borders"}</comment>
   </data>
   <data name="MouseWithoutBorders_ServiceSettings.Header" xml:space="preserve">
     <value>Service</value>
   </data>
   <data name="MouseWithoutBorders_Toggle_Enable.Header" xml:space="preserve">
     <value>Enable Mouse Without Borders</value>
+    <comment>{Locked="Mouse Without Borders"}</comment>
   </data>
   <data name="MouseWithoutBorders.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
@@ -292,11 +293,11 @@
   </data>
   <data name="MouseWithoutBorders.ModuleDescription" xml:space="preserve">
     <value>Mouse Without Borders is a quick and easy way to move your cursor across multiple devices.</value>
-    <comment>"Mouse Without Borders" is the name of the utility</comment>
+    <comment>{Locked="Mouse Without Borders"}</comment>
   </data>
   <data name="MouseWithoutBorders.ModuleTitle" xml:space="preserve">
     <value>Mouse Without Borders</value>
-    <comment>"Mouse Without Borders" is the name of the utility</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="MouseWithoutBorders_UseService.Header" xml:space="preserve">
     <value>Use Service</value>
@@ -348,12 +349,14 @@
   </data>
   <data name="MouseWithoutBorders_ShowOriginalUI.Header" xml:space="preserve">
     <value>Show the original Mouse Without Borders UI</value>
+    <comment>{Locked="Mouse Without Borders"}</comment>
   </data>
   <data name="MouseWithoutBorders_ShowOriginalUI.Description" xml:space="preserve">
     <value>This is accessible from the system tray and requires a restart.</value>
   </data>
   <data name="MouseWithoutBorders_ShareClipboard.Description" xml:space="preserve">
     <value>If share clipboard stops working, Ctrl+Alt+Del then Esc may solve the problem.</value>
+    <comment>Ctrl, Alt, Del, Esc are keyboard keys</comment>
   </data>
   <data name="MouseWithoutBorders_TransferFile.Description" xml:space="preserve">
     <value>If a file (&lt;100MB) is copied, it will be transferred to the remote machine clipboard.</value>
@@ -363,16 +366,18 @@
   </data>
   <data name="MouseWithoutBorders_DrawMouseCursor.Description" xml:space="preserve">
     <value>Mouse cursor may not be visible in Windows 10 and later versions of Windows when there is no physical mouse attached.</value>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="MouseWithoutBorders_ValidateRemoteMachineIP.Description" xml:space="preserve">
     <value>Reverse DNS lookup to validate machine IP Address.</value>
   </data>
   <data name="MouseWithoutBorders_SameSubnetOnly.Description" xml:space="preserve">
     <value>Only connect to machines in the same intranet NNN.NNN.*.* (only works when both machines have IPv4 enabled)</value>
+    <comment>{Locked="NNN.NNN.*.*"}</comment>
   </data>
   <data name="MouseWithoutBorders_IPAddressMapping_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: MyLaptop 192.168.0.24</value>
-    <comment>Don't translate MyLaptop</comment>
+    <comment>{Locked="MyLaptop 192.168.0.24"}</comment>
   </data>
   <data name="MouseWithoutBorders_IPAddressMapping.Header" xml:space="preserve">
     <value>IP address mapping</value>
@@ -428,10 +433,11 @@
   </data>
   <data name="MouseWithoutBorders_ToggleEasyMouseShortcut.Header" xml:space="preserve">
     <value>Shortcut to toggle Easy Mouse.</value>
-    <comment>Ctrl and Alt are the keyboard keys</comment>
+    <comment>{Locked="Easy Mouse"}</comment>
   </data>
   <data name="MouseWithoutBorders_ToggleEasyMouseShortcut.Description" xml:space="preserve">
-    <value>Only works if EasyMouse is set to Enabled or Disabled.</value>
+    <value>Only works if Easy Mouse is set to Enabled or Disabled.</value>
+    <comment>{Locked="Easy Mouse"}</comment>
   </data>
   <data name="MouseWithoutBorders_ToggleEasyMouseShortcut_Disabled.Content" xml:space="preserve">
     <value>Disabled</value>
@@ -446,11 +452,11 @@
   </data>
   <data name="MouseWithoutBorders_SwitchBetweenMachineShortcut_F1.Content" xml:space="preserve">
     <value>F1, F2, F3, F4</value>
-    <comment>Don't localize. These are keyboard keys</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="MouseWithoutBorders_SwitchBetweenMachineShortcut_1.Content" xml:space="preserve">
     <value>1, 2, 3, 4</value>
-    <comment>Don't localize. These are keyboard keys</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="MouseWithoutBorders_SwitchBetweenMachineShortcut_Disabled.Content" xml:space="preserve">
     <value>Disabled</value>
@@ -482,9 +488,11 @@
   </data>
   <data name="VideoConference_Enable.Header" xml:space="preserve">
     <value>Enable Video Conference Mute</value>
+    <comment>{Locked="Video Conference Mute"}</comment>
   </data>
   <data name="VideoConference.ModuleDescription" xml:space="preserve">
     <value>Video Conference Mute is a quick and easy way to do a global "mute" of both your microphone and webcam. Disabling this module or closing PowerToys will unmute the microphone and camera.</value>
+    <comment>{Locked="Video Conference Mute"}</comment>
   </data>
   <data name="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
     <value>Mute camera &amp; microphone</value>
@@ -566,12 +574,14 @@
   </data>
   <data name="VideoConference.ModuleTitle" xml:space="preserve">
     <value>Video Conference Mute</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="VideoConference_Camera.Header" xml:space="preserve">
     <value>Camera</value>
   </data>
   <data name="VideoConference_Camera.Description" xml:space="preserve">
     <value>To use this feature, make sure to select PowerToys VideoConference Mute as your camera source in your apps.</value>
+    <comment>{Locked="Video Conference Mute"}</comment>
   </data>
   <data name="VideoConference_Microphone.Header" xml:space="preserve">
     <value>Microphone</value>
@@ -612,23 +622,23 @@
   </data>
   <data name="Shell_Awake.Content" xml:space="preserve">
     <value>Awake</value>
-    <comment>Product name: Navigation view item name for Awake</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Shell_PowerLauncher.Content" xml:space="preserve">
     <value>PowerToys Run</value>
-    <comment>Product name: Navigation view item name for PowerToys Run</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Shell_PowerRename.Content" xml:space="preserve">
     <value>PowerRename</value>
-    <comment>Product name: Navigation view item name for PowerRename</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Shell_ShortcutGuide.Content" xml:space="preserve">
     <value>Shortcut Guide</value>
-    <comment>Product name: Navigation view item name for Shortcut Guide</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Shell_PowerPreview.Content" xml:space="preserve">
     <value>File Explorer add-ons</value>
-    <comment>Product name: Navigation view item name for File Explorer.  Please use File Explorer as in the context of File Explorer in Windows</comment>
+    <comment>Translate "File Explorer" as Windows does</comment>
   </data>
   <data name="Shell_FancyZones.Content" xml:space="preserve">
     <value>FancyZones</value>
@@ -636,23 +646,23 @@
   </data>
   <data name="Shell_ImageResizer.Content" xml:space="preserve">
     <value>Image Resizer</value>
-    <comment>Product name: Navigation view item name for Image Resizer</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Shell_ColorPicker.Content" xml:space="preserve">
     <value>Color Picker</value>
-    <comment>Product name: Navigation view item name for Color Picker</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Shell_KeyboardManager.Content" xml:space="preserve">
     <value>Keyboard Manager</value>
-    <comment>Product name: Navigation view item name for Keyboard Manager</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Shell_MouseWithoutBorders.Content" xml:space="preserve">
     <value>Mouse Without Borders</value>
-    <comment>Product name: Navigation view item name for Mouse Without Borders</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Shell_MouseUtilities.Content" xml:space="preserve">
     <value>Mouse utilities</value>
-    <comment>Product name: Navigation view item name for Mouse utilities</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Shell_NavigationMenu_Announce_Collapse" xml:space="preserve">
     <value>Navigation closed</value>
@@ -747,14 +757,14 @@
   </data>
   <data name="KeyboardManager_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Keyboard Manager</value>
-    <comment>do not loc, product name</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="ColorPicker.ModuleDescription" xml:space="preserve">
     <value>Quick and simple system-wide color picker.</value>
   </data>
   <data name="ColorPicker_EnableColorPicker.Header" xml:space="preserve">
     <value>Enable Color Picker</value>
-    <comment>do not loc the Product name.  Do you want this feature on / off</comment>
+    <comment>{Locked="Color Picker"}</comment>
   </data>
   <data name="ColorPicker_ChangeCursor.Content" xml:space="preserve">
     <value>Change cursor when picking a color</value>
@@ -764,7 +774,7 @@
   </data>
   <data name="PowerLauncher_EnablePowerLauncher.Header" xml:space="preserve">
     <value>Enable PowerToys Run</value>
-    <comment>do not loc the Product name.  Do you want this feature on / off</comment>
+    <comment>{Locked="PowerToys Run"}</comment>
   </data>
   <data name="PowerLauncher_SearchResults.Header" xml:space="preserve">
     <value>Search &amp; results</value>
@@ -804,6 +814,7 @@
   </data>
   <data name="PowerLauncher_OpenPowerLauncher.Header" xml:space="preserve">
     <value>Open PowerToys Run</value>
+    <comment>{Locked="PowerToys Run"}</comment>
   </data>
   <data name="PowerLauncher_OpenFileLocation.Header" xml:space="preserve">
     <value>Open file location</value>
@@ -829,6 +840,7 @@
   </data>
   <data name="PowerLauncher_UseCentralizedKeyboardHook.Description" xml:space="preserve">
     <value>Try this if there are issues with the shortcut (PowerToys Run might not get focus when triggered from an elevated window)</value>
+    <comment>{Locked="PowerToys Run"}</comment>
   </data>
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
@@ -944,6 +956,7 @@
   </data>
   <data name="FancyZones_OverrideSnapHotkeys.Description" xml:space="preserve">
     <value>This overrides the Windows Snap shortcut (Win + arrow) to move windows between zones</value>
+    <comment>{Locked="Win"}</comment>
   </data>
   <data name="FancyZones_ShiftDragCheckBoxControl_Header.Content" xml:space="preserve">
     <value>Hold Shift key to activate zones while dragging a window</value>
@@ -1056,7 +1069,7 @@
   </data>
   <data name="PowerRename_Toggle_Enable.Header" xml:space="preserve">
     <value>Enable PowerRename</value>
-    <comment>do not loc the Product name.  Do you want this feature on / off</comment>
+    <comment>{Locked="PowerRename"}</comment>
   </data>
   <data name="RadioButtons_Name_Theme.Text" xml:space="preserve">
     <value>Settings theme</value>
@@ -1066,6 +1079,7 @@
   </data>
   <data name="PowerRename_Toggle_ContextMenu.Header" xml:space="preserve">
     <value>Show PowerRename in</value>
+    <comment>{Locked="PowerRename"}</comment>
   </data>
   <data name="PowerRename_Toggle_StandardContextMenu.Content" xml:space="preserve">
     <value>Default and extended context menu</value>
@@ -1084,15 +1098,14 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_MD.Header" xml:space="preserve">
     <value>Markdown</value>
-    <comment>File type, do not translate</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_MD.Description" xml:space="preserve">
     <value>.md, .markdown, .mdown, .mkdn, .mkd, .mdwn, .mdtxt, .mdtext</value>
     <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Header" xml:space="preserve">
-    <value>Source code files (Monaco)</value>
-    <comment>File type, do not translate</comment>
+    <value>Source code files</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Description" xml:space="preserve">
     <value>.txt, .cpp, .py, .json, .xml, .csproj, ...</value>
@@ -1100,7 +1113,7 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Header" xml:space="preserve">
     <value>Scalable Vector Graphics</value>
-    <comment>File type, do not translate</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Description" xml:space="preserve">
     <value>.svg</value>
@@ -1111,6 +1124,7 @@
   </data>
   <data name="FileExplorerPreview_Preview_SVG_Color_Mode_Default.Content" xml:space="preserve">
     <value>Windows default</value>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="FileExplorerPreview_Preview_SVG_Color_Solid_Color.Content" xml:space="preserve">
     <value>Solid color</value>
@@ -1186,6 +1200,7 @@
   </data>
   <data name="FileExplorerPreview.ModuleDescription" xml:space="preserve">
     <value>These settings allow you to manage your Windows File Explorer custom preview handlers.</value>
+    <comment>Translate "File Explorer" as the Windows app does</comment>
   </data>
   <data name="PowerRename_AutoCompleteHeader.Header" xml:space="preserve">
     <value>Auto-complete</value>
@@ -1204,6 +1219,7 @@
   </data>
   <data name="ShortcutGuide.ModuleDescription" xml:space="preserve">
     <value>Shows a help overlay with Windows shortcuts.</value>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="ShortcutGuide_PressTimeForGlobalWindowsShortcuts.Header" xml:space="preserve">
     <value>Press duration before showing global Windows shortcuts (ms)</value>
@@ -1214,15 +1230,18 @@
   </data>
   <data name="ShortcutGuide_ActivationMethod.Description" xml:space="preserve">
     <value>Use a shortcut or press the Windows key for some time to activate</value>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut.Content" xml:space="preserve">
     <value>Custom shortcut</value>
   </data>
   <data name="Radio_ShortcutGuide_ActivationMethod_LongPressWindowsKey.Content" xml:space="preserve">
     <value>Hold down Windows key</value>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="ShortcutGuide_PressWinKeyWarning.Title" xml:space="preserve">
     <value>In some edge cases Shortcut Guide might not function correctly when using this activation method</value>
+    <comment>{Locked="Shortcut Guide"}</comment>
   </data>
   <data name="Appearance_Behavior.Header" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
@@ -1238,7 +1257,7 @@
   </data>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
     <value>Enable Shortcut Guide</value>
-    <comment>do not loc the Product name. Do you want this feature on / off</comment>
+    <comment>{Locked="Shortcut Guide"}</comment>
   </data>
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
     <value>Background opacity (%)</value>
@@ -1248,10 +1267,11 @@
   </data>
   <data name="ShortcutGuide_DisabledApps.Description" xml:space="preserve">
     <value>Turns off Shortcut Guide when these applications have focus - add one application name per line</value>
+    <comment>{Locked="Shortcut Guide"}</comment>
   </data>
   <data name="ShortcutGuide_DisabledApps_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: outlook.exe</value>
-    <comment>Don't translate outlook.exe</comment>
+    <comment>{Locked="outlook.exe"}</comment>
   </data>
   <data name="ImageResizer_CustomSizes.Header" xml:space="preserve">
     <value>Image sizes</value>
@@ -1302,6 +1322,7 @@
   </data>
   <data name="ImageResizer_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Image Resizer</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="ImageResizer_AddSizeButton.Content" xml:space="preserve">
     <value>Add new size</value>
@@ -1323,7 +1344,7 @@
   </data>
   <data name="File.Header" xml:space="preserve">
     <value>File</value>
-    <comment>as in a computer file</comment>
+    <comment>noun, as in a computer file</comment>
   </data>
   <data name="Default.Content" xml:space="preserve">
     <value>Default</value>
@@ -1408,9 +1429,11 @@
   </data>
   <data name="Off.Content" xml:space="preserve">
     <value>Off</value>
+    <comment>custom string for ToggleSwitch</comment>
   </data>
   <data name="On.Content" xml:space="preserve">
     <value>On</value>
+    <comment>custom string for ToggleSwitch</comment>
   </data>
   <data name="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link.Content" xml:space="preserve">
     <value>Learn more about administrator mode</value>
@@ -1442,6 +1465,7 @@
   </data>
   <data name="FileExplorerPreview.ModuleTitle" xml:space="preserve">
     <value>File Explorer</value>
+    <comment>Translate "File Explorer" as the Windows app does</comment>
   </data>
   <data name="FileExplorerPreview_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>File Explorer</value>
@@ -1449,32 +1473,39 @@
   </data>
   <data name="ImageResizer.ModuleTitle" xml:space="preserve">
     <value>Image Resizer</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="KeyboardManager.ModuleTitle" xml:space="preserve">
     <value>Keyboard Manager</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="ColorPicker.ModuleTitle" xml:space="preserve">
     <value>Color Picker</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="PowerLauncher.ModuleTitle" xml:space="preserve">
     <value>PowerToys Run</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="PowerToys_Run_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>PowerToys Run</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="PowerRename.ModuleTitle" xml:space="preserve">
     <value>PowerRename</value>
-    <comment>do not loc the product name</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="PowerRename_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>PowerRename</value>
-    <comment>do not loc</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="ShortcutGuide.ModuleTitle" xml:space="preserve">
     <value>Shortcut Guide</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="Shortcut_Guide_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut Guide</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="General_Repository.Text" xml:space="preserve">
     <value>GitHub repository</value>
@@ -1487,6 +1518,7 @@
   </data>
   <data name="General_SettingsBackupInfo_DateHeader.Text" xml:space="preserve">
     <value>Created at:</value>
+    <comment>E.g., Food was served 'at' noon.</comment>
   </data>
   <data name="General_SettingsBackupAndRestoreStatusInfo.Header" xml:space="preserve">
     <value>Backup information</value>
@@ -1535,6 +1567,7 @@
   </data>
   <data name="KeyboardManager_RemapKeyboardButton.Description" xml:space="preserve">
     <value>Remap keys to other keys, shortcuts or text snippets</value>
+    <comment>key as in keyboard key</comment>
   </data>
   <data name="KeyboardManager_RemapShortcutsButton.Description" xml:space="preserve">
     <value>Remap shortcuts to other shortcuts, keys or text snippets for all or specific applications</value>
@@ -1542,7 +1575,7 @@
   <data name="General.ModuleDescription" xml:space="preserve">
     <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.
 Made with 💗 by Microsoft and the PowerToys community.</value>
-    <comment>Windows refers to the OS</comment>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="FancyZones_SpanZonesAcrossMonitors.Header" xml:space="preserve">
     <value>Allow zones to span across monitors</value>
@@ -1583,6 +1616,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="FileExplorerPreview_PreviewPane.Header" xml:space="preserve">
     <value>Preview Pane</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_PreviewPane.Description" xml:space="preserve">
     <value>Select the file types which must be rendered in the Preview Pane. Ensure that Preview Pane is open by toggling the view with Alt + P in File Explorer.</value>
@@ -1596,11 +1630,11 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="FileExplorerPreview_PreviewHandlerOutlookIncompatibility.Title" xml:space="preserve">
     <value>Enabling the preview handlers will override other preview handlers already installed - there have been reports of incompatibility between Outlook and the PDF Preview Handler.</value>
-    <comment>Outlook is the name of a Microsoft product</comment>
+    <comment>{Locked="Outlook"}</comment>
   </data>
   <data name="FileExplorerPreview_ThumbnailsMightNotAppearOnRemoteFolders.Title" xml:space="preserve">
     <value>Thumbnails might not appear on paths managed by cloud storage solutions like OneDrive, since these solutions may get their thumbnails from the cloud instead of generating them locally.</value>
-    <comment>OneDrive is the name of a Microsoft product</comment>
+    <comment>{Locked="OneDrive"}</comment>
   </data>
   <data name="FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: outlook.exe</value>
@@ -1614,7 +1648,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="Radio_Theme_Dark.Content" xml:space="preserve">
     <value>Dark</value>
-    <comment>Dark refers to color, not weight</comment>
   </data>
   <data name="Radio_Theme_Light.Content" xml:space="preserve">
     <value>Light</value>
@@ -1622,11 +1655,11 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="Radio_Theme_Default.Content" xml:space="preserve">
     <value>Windows default</value>
-    <comment>Windows refers to the Operating system</comment>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="Windows_Color_Settings.Content" xml:space="preserve">
     <value>Windows color settings</value>
-    <comment>Windows refers to the Operating system</comment>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="ColorPicker_CopiedColorRepresentation.Header" xml:space="preserve">
     <value>Default color format</value>
@@ -1666,18 +1699,17 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="FancyZones_Windows.Header" xml:space="preserve">
     <value>Windows</value>
-    <comment>Refers to a set of application windows, not the product name</comment>
+    <comment>Refers to a set of application windows, not the OS product name</comment>
   </data>
   <data name="PowerRename_BehaviorHeader.Header" xml:space="preserve">
     <value>Behavior</value>
   </data>
   <data name="PowerRename_Toggle_UseBoostLib.Header" xml:space="preserve">
     <value>Use Boost library</value>
-    <comment>Boost is a product name, should not be translated</comment>
+    <comment>{Locked="Boost"}</comment>
   </data>
   <data name="PowerRename_Toggle_UseBoostLib.Description" xml:space="preserve">
     <value>Provides extended features but may use different regex syntax</value>
-    <comment>Boost is a product name, should not be translated</comment>
   </data>
   <data name="MadeWithOssLove.Text" xml:space="preserve">
     <value>Made with 💗 by Microsoft and the PowerToys community.</value>
@@ -1714,6 +1746,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="ColorFormatUpdate" xml:space="preserve">
     <value>Update</value>
+    <comment>verb</comment>
   </data>
   <data name="CustomColorFormatDefaultName" xml:space="preserve">
     <value>My Format</value>
@@ -1747,6 +1780,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="Help_black_key" xml:space="preserve">
     <value>black key</value>
+    <comment>as in "CMYK"</comment>
   </data>
   <data name="Help_hue" xml:space="preserve">
     <value>hue</value>
@@ -1834,6 +1868,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="ColorFormatEditorHelpline3.Text" xml:space="preserve">
     <value>Example:  %ReX means red value in hex uppercase two digits format.</value>
+    <comment>{Locked="%ReX"}</comment>
   </data>
   <data name="ColorPicker_ShowColorName.Header" xml:space="preserve">
     <value>Show color name</value>
@@ -1933,6 +1968,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="Run_AllPluginsDisabled.Title" xml:space="preserve">
     <value>PowerToys Run can't provide any results without plugins</value>
+    <comment>{Locked="PowerToys Run"}</comment>
   </data>
   <data name="Run_AllPluginsDisabled.Message" xml:space="preserve">
     <value>Enable at least one plugin to get started</value>
@@ -1948,11 +1984,10 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="Run_PositionHeader.Header" xml:space="preserve">
     <value>Preferred monitor position</value>
-    <comment>as in Show PowerToys Run on primary monitor</comment>
   </data>
   <data name="Run_PositionHeader.Description" xml:space="preserve">
     <value>If multiple monitors are in use, PowerToys Run can be launched on the desired monitor</value>
-    <comment>as in Show PowerToys Run on primary monitor</comment>
+    <comment>{Locked="PowerToys Run"} as in Show PowerToys Run on primary monitor</comment>
   </data>
   <data name="Run_Radio_Position_Cursor.Content" xml:space="preserve">
     <value>Monitor with mouse cursor</value>
@@ -2031,12 +2066,14 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="Launch_ColorPicker.Content" xml:space="preserve">
     <value>Launch Color Picker</value>
+    <comment>{Locked="Color Picker"}</comment>
   </data>
   <data name="Oobe_LearnMore.Text" xml:space="preserve">
     <value>Learn more about</value>
   </data>
   <data name="Oobe_ColorPicker.Description" xml:space="preserve">
     <value>Color Picker is a system-wide color selection tool for Windows that enables you to pick colors from any currently running application and automatically copies it in a configurable format to your clipboard.</value>
+    <comment>{Locked="Color Picker"}</comment>
   </data>
   <data name="Oobe_FancyZones.Description" xml:space="preserve">
     <value>FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.</value>
@@ -2044,33 +2081,42 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="Oobe_FileLocksmith.Description" xml:space="preserve">
     <value>File Locksmith lists which processes are using the selected files or directories and allows closing those processes.</value>
+    <comment>{Locked="File Locksmith"}</comment>
   </data>
   <data name="Oobe_FileExplorer.Description" xml:space="preserve">
     <value>PowerToys introduces add-ons to the Windows File Explorer that will enable files like Markdown (.md), PDF (.pdf), SVG (.svg), STL (.stl), G-code (.gcode) and developer files to be viewed in the preview pane. It introduces File Explorer thumbnail support for a number of these file types as well.</value>
   </data>
   <data name="Oobe_ImageResizer.Description" xml:space="preserve">
     <value>Image Resizer is a Windows shell extension for simple bulk image-resizing.</value>
+    <comment>{Locked="Image Resizer"}</comment>
   </data>
   <data name="Oobe_KBM.Description" xml:space="preserve">
     <value>Keyboard Manager allows you to customize the keyboard to be more productive by remapping keys and creating your own keyboard shortcuts.</value>
+    <comment>{Locked="Keyboard Manager"}</comment>
   </data>
   <data name="Oobe_MouseWithoutBorders.Description" xml:space="preserve">
     <value>Mouse Without Borders enables using the mouse pointer, keyboard, clipboard and drag and drop between machines in the same local network.</value>
+    <comment>{Locked="Mouse Without Borders"}</comment>
   </data>
   <data name="Oobe_PowerRename.Description" xml:space="preserve">
     <value>PowerRename enables you to perform simple bulk renaming, searching and replacing file names.</value>
+    <comment>{Locked="PowerRename"}</comment>
   </data>
   <data name="Oobe_Run.Description" xml:space="preserve">
     <value>PowerToys Run is a quick launcher for power users that contains some additional features without sacrificing performance.</value>
+    <comment>{Locked="PowerToys Run"}</comment>
   </data>
   <data name="Oobe_MeasureTool.Description" xml:space="preserve">
     <value>Screen Ruler is a quick and easy way to measure pixels on your screen.</value>
+    <comment>{Locked="Screen Ruler"}</comment>
   </data>
   <data name="Oobe_ShortcutGuide.Description" xml:space="preserve">
     <value>Shortcut Guide presents the user with a listing of available shortcuts for the current state of the desktop.</value>
+    <comment>{Locked="Shortcut Guide"}</comment>
   </data>
   <data name="Oobe_VideoConference.Description" xml:space="preserve">
     <value>Video Conference Mute allows users to quickly mute the microphone and turn off the camera while on a conference call with a single keystroke, regardless of what application has focus on your computer.</value>
+    <comment>{Locked="Video Conference Mute"}</comment>
   </data>
   <data name="Oobe_MouseUtils.Description" xml:space="preserve">
     <value>A collection of utilities to enhance your mouse.</value>
@@ -2080,15 +2126,18 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.
 
 Take a moment to preview the various utilities listed or view our comprehensive documentation.</value>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
     <value>Documentation on Microsoft Learn</value>
+    <comment>{Locked="Microsoft Learn"}</comment>
   </data>
   <data name="ReleaseNotes.Content" xml:space="preserve">
     <value>Release notes</value>
   </data>
   <data name="Oobe_ColorPicker_HowToUse.Text" xml:space="preserve">
     <value>to open Color Picker.</value>
+    <comment>{Locked="Color Picker"}</comment>
   </data>
   <data name="Oobe_ColorPicker_TipsAndTricks.Text" xml:space="preserve">
     <value>To select a color with more precision, **scroll the mouse wheel** to zoom in.</value>
@@ -2105,12 +2154,14 @@ Take a moment to preview the various utilities listed or view our comprehensive 
   </data>
   <data name="Oobe_FileLocksmith_HowToUse.Text" xml:space="preserve">
     <value>In File Explorer, right-click one or more selected files and select **Unlock with File Locksmith** from the context menu.</value>
+    <comment>{Locked="File Locksmith"}</comment>
   </data>
   <data name="Oobe_FileLocksmith_TipsAndTricks.Text" xml:space="preserve">
     <value>Press the **Restart as administrator** button from the File Locksmith UI to also get information on elevated processes that might be using the files.</value>
+    <comment>{Locked="File Locksmith"}</comment>
   </data>
   <data name="Oobe_FileExplorer_HowToEnable.Text" xml:space="preserve">
-    <value>Select **View** which is located at the top of File Explorer, followed by **Show**, and then **Preview pane**. 
+    <value>Select **View**, followed by **Preview pane**. 
 From there, simply click on one of the supported files in the File Explorer and observe the content on the preview pane!</value>
   </data>
   <data name="Oobe_HowToCreateMappings.Text" xml:space="preserve">
@@ -2127,12 +2178,14 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_ImageResizer_HowToLaunch.Text" xml:space="preserve">
     <value>In File Explorer, right-click one or more image files and select **Resize with Image Resizer** from the context menu.</value>
+    <comment>{Locked="Image Resizer"}</comment>
   </data>
   <data name="Oobe_ImageResizer_TipsAndTricks.Text" xml:space="preserve">
     <value>Want a custom size? You can add them in the PowerToys Settings!</value>
   </data>
   <data name="Oobe_KBM_HowToCreateMappings.Text" xml:space="preserve">
-    <value>Launch **PowerToys Settings**, navigate to the Keyboard Manager menu, and select either **Remap a key** or **Remap a shortcut**.</value>
+    <value>Launch **PowerToys Settings**, navigate to Keyboard Manager and select either **Remap a key** or **Remap a shortcut**.</value>
+    <comment>{Locked="Keyboard Manager"}</comment>
   </data>
   <data name="Oobe_KBM_TipsAndTricks.Text" xml:space="preserve">
     <value>Want to only have a shortcut work for a single application? Use the Target App field when creating the shortcut remapping.</value>
@@ -2142,21 +2195,26 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_MouseWithoutBorders_TipsAndTricks.Text" xml:space="preserve">
     <value>Use the service option in Settings to install a service enabling Mouse Without Borders to function even in the lock screen.</value>
+    <comment>{Locked="Mouse Without Borders"}</comment>
   </data>
   <data name="Oobe_PowerRename_HowToUse.Text" xml:space="preserve">
     <value>In File Explorer, right-click one or more selected files and select **Rename with PowerRename** from the context menu.</value>
+    <comment>{Locked="PowerRename"}</comment>
   </data>
   <data name="Oobe_PowerRename_TipsAndTricks.Text" xml:space="preserve">
     <value>PowerRename supports searching for files using regular expressions to enable more advanced renaming functionalities.</value>
+    <comment>{Locked="PowerRename"}</comment>
   </data>
   <data name="Oobe_Run_HowToLaunch.Text" xml:space="preserve">
     <value>to open Run and just start typing.</value>
   </data>
   <data name="Oobe_Run_TipsAndTricks.Text" xml:space="preserve">
     <value>PowerToys Run supports various action keys to funnel search queries for a specific subset of results. Typing `&lt;` searches for running processes only, `?` will search only for file, or `.` for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.</value>
+    <comment>{Locked="PowerToys Run"}</comment>
   </data>
   <data name="Oobe_ShortcutGuide_HowToLaunch.Text" xml:space="preserve">
     <value>to open Shortcut Guide, press it again to close or press **Esc**.</value>
+    <comment>{Locked="Shortcut Guide"}</comment>
   </data>
   <data name="Oobe_TipsAndTricks.Text" xml:space="preserve">
     <value>Tips &amp; tricks</value>
@@ -2175,52 +2233,54 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_MeasureTool_Activation.Text" xml:space="preserve">
     <value>to bring up the Screen Ruler command bar.</value>
+    <comment>{Locked="Screen Ruler"}</comment>
   </data>
   <data name="Oobe_MeasureTool_HowToLaunch.Text" xml:space="preserve">
     <value>The Bounds mode lets you select a specific area to measure. You can also shift-drag an area to persist in on screen. The various Spacing modes allows tracing similar pixels along horizontal and vertical axes with a customizable pixel tolerance threshold (use settings or mouse wheel to adjust it).</value>
   </data>
   <data name="Oobe_MeasureTool.Title" xml:space="preserve">
     <value>Screen Ruler</value>
-    <comment>Do not localize this string</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_ColorPicker.Title" xml:space="preserve">
     <value>Color Picker</value>
-    <comment>Do not localize this string</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_FancyZones.Title" xml:space="preserve">
     <value>FancyZones</value>
-    <comment>{Locked="FancyZones"}</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_FileLocksmith.Title" xml:space="preserve">
     <value>File Locksmith</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_ImageResizer.Title" xml:space="preserve">
     <value>Image Resizer</value>
-    <comment>Do not localize this string</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_KBM.Title" xml:space="preserve">
     <value>Keyboard Manager</value>
-    <comment>Do not localize this string</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_MouseWithoutBorders.Title" xml:space="preserve">
     <value>Mouse Without Borders</value>
-    <comment>Product name. Do not localize this string</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_PowerRename.Title" xml:space="preserve">
     <value>PowerRename</value>
-    <comment>Do not localize this string</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_Run.Title" xml:space="preserve">
     <value>PowerToys Run</value>
-    <comment>Do not localize this string</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_ShortcutGuide.Title" xml:space="preserve">
     <value>Shortcut Guide</value>
-    <comment>Do not localize this string</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_VideoConference.Title" xml:space="preserve">
     <value>Video Conference Mute</value>
-    <comment>Do not localize this string</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_Overview.Title" xml:space="preserve">
     <value>Welcome</value>
@@ -2242,7 +2302,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_WhatsNew_DetailedReleaseNotesLink.Text" xml:space="preserve">
     <value>See more detailed release notes on GitHub</value>
-    <comment>Don't loc "GitHub", it's the name of a product</comment>
+    <comment>{Locked="GitHub"}</comment>
   </data>
   <data name="OOBE_Settings.Content" xml:space="preserve">
     <value>Open Settings</value>
@@ -2269,13 +2329,14 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Awake.ModuleTitle" xml:space="preserve">
     <value>Awake</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="Awake.ModuleDescription" xml:space="preserve">
     <value>A convenient way to keep your PC awake on-demand.</value>
   </data>
   <data name="Awake_EnableSettingsCard.Header" xml:space="preserve">
     <value>Enable Awake</value>
-    <comment>Awake is a product name, do not loc</comment>
+    <comment>{Locked="Awake"}</comment>
   </data>
   <data name="Awake_NoKeepAwakeSelector.Content" xml:space="preserve">
     <value>Keep using the selected power plan</value>
@@ -2318,16 +2379,19 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_Awake.Title" xml:space="preserve">
     <value>Awake</value>
-    <comment>Module name, do not loc</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_Awake.Description" xml:space="preserve">
     <value>Awake is a Windows tool designed to keep your PC awake on-demand without having to manage its power settings. This behavior can be helpful when running time-consuming tasks while ensuring that your PC does not go to sleep or turn off its screens.</value>
+    <comment>{Locked="Awake"}</comment>
   </data>
   <data name="Oobe_Awake_HowToUse.Text" xml:space="preserve">
     <value>Open **PowerToys Settings** and enable Awake</value>
+    <comment>{Locked="Awake"}</comment>
   </data>
   <data name="Oobe_Awake_TipsAndTricks.Text" xml:space="preserve">
     <value>You can always change modes quickly by **right-clicking the Awake icon** in the system tray.</value>
+    <comment>{Locked="Awake"}</comment>
   </data>
   <data name="General_FailedToDownloadTheNewVersion.Title" xml:space="preserve">
     <value>An error occurred trying to install this update:</value>
@@ -2391,7 +2455,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="No" xml:space="preserve">
     <value>No</value>
-    <comment>Label of a cancel button</comment>
+    <comment>Label of a Cancel button</comment>
   </data>
   <data name="Delete_Dialog_Description" xml:space="preserve">
     <value>Are you sure you want to delete this item?</value>
@@ -2405,6 +2469,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Awake_ModeSettingsCard.Description" xml:space="preserve">
     <value>Manage the state of your device when Awake is active</value>
+    <comment>{Locked="Awake"}</comment>
   </data>
   <data name="ExcludedApps.Header" xml:space="preserve">
     <value>Excluded apps</value>
@@ -2428,19 +2493,19 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="LearnMore_Awake.Text" xml:space="preserve">
     <value>Learn more about Awake</value>
-    <comment>Awake is a product name, do not loc</comment>
+    <comment>{Locked="Awake"}</comment>
   </data>
   <data name="LearnMore_CmdNotFound.Text" xml:space="preserve">
     <value>Learn more about Command Not Found</value>
-    <comment> Command Not Found is the name of the module. </comment>
+    <comment>{Locked="Command Not Found"}</comment>
   </data>
   <data name="SecondaryLink_Awake.Text" xml:space="preserve">
     <value>Den Delimarsky's work on creating Awake</value>
-    <comment>Awake is a product name, do not loc</comment>
+    <comment>{Locked="Den Delimarsky", "Awake"}</comment>
   </data>
   <data name="LearnMore_ColorPicker.Text" xml:space="preserve">
     <value>Learn more about Color Picker</value>
-    <comment>Color Picker is a product name, do not loc</comment>
+    <comment>{Locked="Color Picker"}</comment>
   </data>
   <data name="LearnMore_FancyZones.Text" xml:space="preserve">
     <value>Learn more about FancyZones</value>
@@ -2448,58 +2513,59 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="LearnMore_FileLocksmith.Text" xml:space="preserve">
     <value>Learn more about File Locksmith</value>
+    <comment>{Locked="File Locksmith"}</comment>
   </data>
   <data name="LearnMore_ImageResizer.Text" xml:space="preserve">
     <value>Learn more about Image Resizer</value>
-    <comment>Image Resizer is a product name, do not loc</comment>
+    <comment>{Locked="Image Resizer"}</comment>
   </data>
   <data name="LearnMore_KBM.Text" xml:space="preserve">
     <value>Learn more about Keyboard Manager</value>
-    <comment>Keyboard Manager is a product name, do not loc</comment>
+    <comment>{Locked="Keyboard Manager"}</comment>
   </data>
   <data name="LearnMore_MouseUtils.Text" xml:space="preserve">
     <value>Learn more about Mouse utilities</value>
-    <comment>Mouse utilities is a product name, do not loc</comment>
+    <comment>{Locked="Mouse Utilities"}</comment>
   </data>
   <data name="LearnMore_AdvancedPaste.Text" xml:space="preserve">
     <value>Learn more about Advanced Paste</value>
-    <comment> Advanced Paste is the name of the module. </comment>
+    <comment>{Locked="Advanced Paste"}</comment>
   </data>
   <data name="LearnMore_MouseWithoutBorders.Text" xml:space="preserve">
     <value>Learn more about Mouse Without Borders</value>
-    <comment>Mouse Without Borders is the name of the module. </comment>
+    <comment>{Locked="Mouse Without Borders"}</comment>
   </data>
   <data name="LearnMore_PowerPreview.Text" xml:space="preserve">
     <value>Learn more about File Explorer add-ons</value>
-    <comment>File Explorer is a product name, localize as Windows does</comment>
+    <comment>"File Explorer" is a product name, localize as Windows does</comment>
   </data>
   <data name="LearnMore_Peek.Text" xml:space="preserve">
     <value>Learn more about Peek</value>
-    <comment>Peek is a product name, do not loc</comment>
+    <comment>{Locked="Peek"}</comment>
   </data>
   <data name="LearnMore_PowerRename.Text" xml:space="preserve">
     <value>Learn more about PowerRename</value>
-    <comment>PowerRename is a product name, do not loc</comment>
+    <comment>{Locked="PowerRename"}</comment>
   </data>
   <data name="LearnMore_Run.Text" xml:space="preserve">
     <value>Learn more about PowerToys Run</value>
-    <comment>PowerToys Run is a product name, do not loc</comment>
+    <comment>{Locked="PowerToys Run"}</comment>
   </data>
   <data name="LearnMore_MeasureTool.Text" xml:space="preserve">
     <value>Learn more about Screen Ruler</value>
-    <comment>Screen Ruler is a product name, do not loc</comment>
+    <comment>{Locked="Screen Ruler"}</comment>
   </data>
   <data name="LearnMore_ShortcutGuide.Text" xml:space="preserve">
     <value>Learn more about Shortcut Guide</value>
-    <comment>Shortcut Guide is a product name, do not loc</comment>
+    <comment>{Locked="Shortcut Guide"}</comment>
   </data>
   <data name="LearnMore_VCM.Text" xml:space="preserve">
     <value>Learn more about Video Conference Mute</value>
-    <comment>Video Conference Mute is a product name, do not loc</comment>
+    <comment>{Locked="Video Conference Mute"}</comment>
   </data>
   <data name="Oobe_FileExplorer.Title" xml:space="preserve">
     <value>File Explorer add-ons</value>
-    <comment>Do not localize this string</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_MouseUtils.Title" xml:space="preserve">
     <value>Mouse utilities</value>
@@ -2507,7 +2573,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_MouseUtils_FindMyMouse.Text" xml:space="preserve">
     <value>Find My Mouse</value>
-    <comment>Mouse as in the hardware peripheral</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_MouseUtils_FindMyMouse_Description.Text" xml:space="preserve">
     <value>Focus the mouse pointer pressing the Ctrl key twice, using a custom shortcut or shaking the mouse.</value>
@@ -2515,7 +2581,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_MouseUtils_MouseHighlighter.Text" xml:space="preserve">
     <value>Mouse Highlighter</value>
-    <comment>Mouse as in the hardware peripheral.</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_MouseUtils_MouseHighlighter_Description.Text" xml:space="preserve">
     <value>Use a keyboard shortcut to highlight left and right mouse clicks.</value>
@@ -2523,7 +2589,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
-    <comment>Mouse as in the hardware peripheral.</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_MouseUtils_MousePointerCrosshairs_Description.Text" xml:space="preserve">
     <value>Draw crosshairs centered around the mouse pointer.</value>
@@ -2531,7 +2597,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_MouseUtils_MouseJump.Text" xml:space="preserve">
     <value>Mouse Jump</value>
-    <comment>Mouse as in the hardware peripheral.</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_MouseUtils_MouseJump_Description.Text" xml:space="preserve">
     <value>Jump the mouse pointer quickly to anywhere on your desktop.</value>
@@ -2539,9 +2605,11 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Launch_Run.Content" xml:space="preserve">
     <value>Launch PowerToys Run</value>
+    <comment>{Locked="PowerToys Run"}</comment>
   </data>
   <data name="Launch_ShortcutGuide.Content" xml:space="preserve">
     <value>Launch Shortcut Guide</value>
+    <comment>{Locked="Shortcut Guide"}</comment>
   </data>
   <data name="ColorPicker_ColorFormat_ToggleSwitch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Show format in editor</value>
@@ -2627,7 +2695,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="ImageResizer_DefaultSize_NewSizePrefix" xml:space="preserve">
     <value>New size</value>
-    <comment>First part of the default name of new sizes that can be added in PT's settings ui.</comment>
+    <comment>First part of the default name of new sizes that can be added in PT's settings UI</comment>
   </data>
   <data name="Awake_IntervalSettingsCard.Header" xml:space="preserve">
     <value>Interval before returning to the previous awakeness state</value>
@@ -2647,11 +2715,11 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="MouseUtils_FindMyMouse.Description" xml:space="preserve">
     <value>Find My Mouse highlights the position of the cursor when pressing the Ctrl key twice, using a custom shortcut or when shaking the mouse.</value>
-    <comment>"Ctrl" is a keyboard key. "Find My Mouse" is the name of the utility</comment>
+    <comment>{Locked="Find My Mouse"} "Ctrl" is a keyboard key</comment>
   </data>
   <data name="MouseUtils_Enable_FindMyMouse.Header" xml:space="preserve">
     <value>Enable Find My Mouse</value>
-    <comment>"Find My Mouse" is the name of the utility.</comment>
+    <comment>{Locked="Find My Mouse"}</comment>
   </data>
   <data name="MouseUtils_FindMyMouse_ActivationMethod.Header" xml:space="preserve">
     <value>Activation method</value>
@@ -2676,6 +2744,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="MouseUtils_FindMyMouse_ExcludedApps_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: outlook.exe</value>
+    <comment>{Locked="outlook.exe"}</comment>
   </data>
   <data name="MouseUtils_Prevent_Activation_On_Game_Mode.Content" xml:space="preserve">
     <value>Do not activate when Game Mode is on</value>
@@ -2718,8 +2787,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>The minimum distance for mouse shaking activation, for adjusting sensitivity</value>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingIntervalMs.Header" xml:space="preserve">
-    <value>Shake Interval (ms)</value>
-    <comment>ms = milliseconds</comment>
+    <value>Shake interval (ms)</value>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingIntervalMs.Description" xml:space="preserve">
     <value>The span of time during which we track mouse movement to detect shaking, for adjusting sensitivity</value>
@@ -2732,22 +2800,21 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="MouseUtils_MouseHighlighter.Header" xml:space="preserve">
     <value>Mouse Highlighter</value>
-    <comment>Refers to the utility name</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter.Description" xml:space="preserve">
     <value>Mouse Highlighter mode will highlight mouse clicks.</value>
-    <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
+    <comment>{Locked="Mouse Highlighter"} is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
   <data name="MouseUtils_Enable_MouseHighlighter.Header" xml:space="preserve">
     <value>Enable Mouse Highlighter</value>
-    <comment>"Find My Mouse" is the name of the utility.</comment>
+    <comment>{Locked="Find My Mouse"}</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
   <data name="MouseUtils_MouseHighlighter_ActivationShortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to turn on or off this mode</value>
-    <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_PrimaryButtonClickColor.Header" xml:space="preserve">
     <value>Primary button highlight color</value>
@@ -2777,15 +2844,15 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="MouseUtils_MousePointerCrosshairs.Header" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
-    <comment>Refers to the utility name</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="MouseUtils_MousePointerCrosshairs.Description" xml:space="preserve">
     <value>Mouse Pointer Crosshairs draws crosshairs centered on the mouse pointer.</value>
-    <comment>"Mouse Pointer Crosshairs" is the name of the utility. Mouse is the hardware mouse.</comment>
+    <comment>{Locked="Mouse Pointer Crosshairs"} is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
   <data name="MouseUtils_Enable_MousePointerCrosshairs.Header" xml:space="preserve">
     <value>Enable Mouse Pointer Crosshairs</value>
-    <comment>"Mouse Pointer Crosshairs" is the name of the utility.</comment>
+    <comment>{Locked="Mouse Pointer Crosshairs"}</comment>
   </data>
   <data name="MouseUtils_MousePointerCrosshairs_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
@@ -2826,6 +2893,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="FancyZones_Radio_Default_Theme.Content" xml:space="preserve">
     <value>Windows default</value>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="ColorModeHeader.Header" xml:space="preserve">
     <value>App theme</value>
@@ -2850,17 +2918,19 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE.Header" xml:space="preserve">
     <value>Geometric Code</value>
-    <comment>File type, do not translate</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE.Description" xml:space="preserve">
     <value>Only .gcode files with embedded thumbnails are supported</value>
+    <comment>{Locked=".gcode"}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_GCODE.Header" xml:space="preserve">
     <value>Geometric Code</value>
-    <comment>File type, do not translate</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_GCODE.Description" xml:space="preserve">
     <value>Only .gcode files with embedded thumbnails are supported</value>
+    <comment>{Locked=".gcode"}</comment>
   </data>
   <data name="FancyZones_NumberColor.Header" xml:space="preserve">
     <value>Number color</value>
@@ -2878,26 +2948,26 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="CropAndLock.ModuleDescription" xml:space="preserve">
     <value>Crop And Lock allows you to crop a current application into a smaller window or just create a thumbnail. Focus the target window and press the shortcut to start cropping.</value>
-    <comment>"Crop And Lock" is the name of the utility</comment>
+    <comment>{Locked="Crop And Lock"}</comment>
   </data>
   <data name="CropAndLock.ModuleTitle" xml:space="preserve">
     <value>Crop And Lock </value>
-    <comment>"Crop And Lock" is the name of the utility</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="CropAndLock_Activation_GroupSettings.Header" xml:space="preserve">
     <value>Activation</value>
   </data>
   <data name="CropAndLock_EnableToggleControl_HeaderText.Header" xml:space="preserve">
     <value>Enable Crop And Lock</value>
-    <comment>"Crop And Lock" is the name of the utility</comment>
+    <comment>{Locked="Crop And Lock"}</comment>
   </data>
   <data name="Shell_CropAndLock.Content" xml:space="preserve">
     <value>Crop And Lock</value>
-    <comment>"Crop And Lock" is the name of the utility</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="LearnMore_CropAndLock.Text" xml:space="preserve">
     <value>Learn more about Crop And Lock</value>
-    <comment>"Crop And Lock" is the name of the utility</comment>
+    <comment>{Locked="Crop And Lock"}</comment>
   </data>
   <data name="CropAndLock_ReparentActivation_Shortcut.Header" xml:space="preserve">
     <value>Reparent shortcut</value>
@@ -2917,7 +2987,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Oobe_CropAndLock.Title" xml:space="preserve">
     <value>Crop And Lock</value>
-    <comment>"Crop And Lock" is the name of the utility</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_CropAndLock.Description" xml:space="preserve">
     <value>Crop And Lock allows you to crop a current application into a smaller window or just create a thumbnail. Focus the target window and press the shortcut to start cropping.</value>
@@ -3042,17 +3112,19 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Shell_Peek.Content" xml:space="preserve">
     <value>Peek</value>
-    <comment>Product name: Navigation view item name for Peek</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Peek.ModuleTitle" xml:space="preserve">
     <value>Peek</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="Peek.ModuleDescription" xml:space="preserve">
     <value>Peek is a quick and easy way to preview files. Select a file in File Explorer and press the shortcut to open the file preview.</value>
+    <comment>{Locked="Peek"}</comment>
   </data>
   <data name="Peek_EnablePeek.Header" xml:space="preserve">
     <value>Enable Peek</value>
-    <comment>Peek is a product name, do not loc</comment>
+    <comment>{Locked="Peek"}</comment>
   </data>
   <data name="Peek_BehaviorHeader.Header" xml:space="preserve">
     <value>Behavior</value>
@@ -3062,11 +3134,11 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Peek_AlwaysRunNotElevated.Description" xml:space="preserve">
     <value>Tries to run Peek without elevated permissions, to fix access to network shares. You need to disable and re-enable Peek for changes to this value to take effect.</value>
-    <comment>Peek is a product name, do not loc</comment>
+    <comment>{Locked="Peek"}</comment>
   </data>
   <data name="Peek_CloseAfterLosingFocus.Header" xml:space="preserve">
     <value>Automatically close the Peek window after it loses focus</value>
-    <comment>Peek is a product name, do not loc</comment>
+    <comment>{Locked="Peek"}</comment>
   </data>
   <data name="FancyZones_DisableRoundCornersOnWindowSnap.Content" xml:space="preserve">
     <value>Disable round corners when window is snapped</value>
@@ -3106,13 +3178,15 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="LearnMore_QuickAccent.Text" xml:space="preserve">
     <value>Learn more about Quick Accent</value>
-    <comment>Quick Accent is a product name, do not loc</comment>
+    <comment>{Locked="Quick Accent"}</comment>
   </data>
   <data name="QuickAccent_EnableQuickAccent.Header" xml:space="preserve">
     <value>Enable Quick Accent</value>
+    <comment>{Locked="Quick Accent"}</comment>
   </data>
   <data name="Shell_QuickAccent.Content" xml:space="preserve">
     <value>Quick Accent</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="QuickAccent.ModuleDescription" xml:space="preserve">
     <value>Quick Accent is an alternative way to type accented characters, useful for when a keyboard doesn't support that specific accent.
@@ -3122,6 +3196,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent.ModuleTitle" xml:space="preserve">
     <value>Quick Accent</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="QuickAccent.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
@@ -3208,13 +3283,15 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Oobe_QuickAccent.Description" xml:space="preserve">
     <value>Quick Accent is an easy way to write letters with accents, like on a smartphone.</value>
+    <comment>{Locked="Quick Accent"}</comment>
   </data>
   <data name="Oobe_QuickAccent.Title" xml:space="preserve">
     <value>Quick Accent</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_QuickAccent_HowToUse.Text" xml:space="preserve">
     <value>Open **PowerToys Settings** and enable Quick Accent. While holding the key for the character you want to add an accent to, press the Activation Key and an overlay to select the accented character will appear.</value>
-    <comment>key refers to a physical key on a keyboard</comment>
+    <comment>{Locked="Quick Accent"} key refers to a physical key on a keyboard</comment>
   </data>
   <data name="QuickAccent_Activation_GroupSettings.Header" xml:space="preserve">
     <value>Activation</value>
@@ -3291,12 +3368,14 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_ExcludedApps_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: Teams.exe</value>
+    <comment>{Locked="teams.exe"}</comment>
   </data>
   <data name="LearnMore_TextExtractor.Text" xml:space="preserve">
     <value>Learn more about Text Extractor</value>
+    <comment>{Locked="Text extractor"}</comment>
   </data>
   <data name="TextExtractor_Cancel" xml:space="preserve">
-    <value>cancel</value>
+    <value>Cancel</value>
   </data>
   <data name="General_SettingsBackupAndRestore_NothingToBackup" xml:space="preserve">
     <value>A new backup was not created because no settings have been changed since last backup.</value>
@@ -3361,33 +3440,42 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="TextExtractor.ModuleDescription" xml:space="preserve">
     <value>Text Extractor is a convenient way to copy text from anywhere on screen</value>
+    <comment>{Locked="Text Extractor"}</comment>
   </data>
   <data name="TextExtractor.ModuleTitle" xml:space="preserve">
     <value>Text Extractor</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="TextExtractor_EnableToggleControl_HeaderText.Header" xml:space="preserve">
     <value>Enable Text Extractor</value>
+    <comment>{Locked="Text Extractor"}</comment>
   </data>
   <data name="TextExtractor_SupportedLanguages.Title" xml:space="preserve">
     <value>Text Extractor can only recognize languages that have the OCR pack installed.</value>
+    <comment>{Locked="Text Extractor"}, OCR = Optical Character Recognition</comment>
   </data>
   <data name="TextExtractor_UseSnippingToolWarning.Title" xml:space="preserve">
-    <value>It is recommended to use the Snipping Tool instead of the TextExtractor module.</value>
+    <value>It is recommended to use the Snipping Tool instead of Text Extractor.</value>
+    <comment>{Locked="Text extractor"}</comment>
   </data>
   <data name="TextExtractor_SupportedLanguages_Link.Content" xml:space="preserve">
     <value>Learn more about supported languages</value>
   </data>
   <data name="Shell_TextExtractor.Content" xml:space="preserve">
     <value>Text Extractor</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="Launch_TextExtractor.Content" xml:space="preserve">
     <value>Launch Text Extractor</value>
+    <comment>{Locked="Text Extractor"}</comment>
   </data>
   <data name="Oobe_TextExtractor.Title" xml:space="preserve">
     <value>Text Extractor</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_TextExtractor_HowToUse.Text" xml:space="preserve">
     <value>to open Text Extractor and then selecting a region to copy the text from.</value>
+    <comment>{Locked="Text extractor"}</comment>
   </data>
   <data name="Oobe_TextExtractor_TipsAndTricks.Text" xml:space="preserve">
     <value>Hold the shift key to move the selection region around.</value>
@@ -3397,6 +3485,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Oobe_TextExtractor.Description" xml:space="preserve">
     <value>Text Extractor works like Snipping Tool, but copies the text out of the selected region using OCR and puts it on the clipboard.</value>
+    <comment>{Locked="Text extractor"}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Monaco_Try_Format.Description" xml:space="preserve">
     <value>Applies to json and xml. Files remain unchanged.</value>
@@ -3409,10 +3498,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Run_ConflictingKeywordInfo_Link.Content" xml:space="preserve">
     <value>Learn more about conflicting activation commands</value>
-  </data>
-  <data name="MeasureTool_ContinuousCapture_Information.Title" xml:space="preserve">
-    <value>The continuous capture mode will consume more resources when in use. Also, measurements will be excluded from screenshots and screen capture.</value>
-    <comment>pointer as in mouse pointer. Resources refer to things like CPU, GPU, RAM</comment>
   </data>
   <data name="QuickAccent_Description_Indicator.Header" xml:space="preserve">
     <value>Show the Unicode code and name of the currently selected character</value>
@@ -3556,20 +3641,20 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Welsh</value>
   </data>
   <data name="Hosts.ModuleDescription" xml:space="preserve">
-    <value>Quick and simple utility for managing hosts file.</value>
-    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+    <value>Quick and simple utility for managing Hosts file.</value>
+    <comment>{Locked="Hosts"}</comment>
   </data>
   <data name="Hosts.ModuleTitle" xml:space="preserve">
     <value>Hosts File Editor</value>
-    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Shell_Hosts.Content" xml:space="preserve">
     <value>Hosts File Editor</value>
-    <comment>Products name: Navigation view item name for Hosts File Editor</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Hosts_EnableToggleControl_HeaderText.Header" xml:space="preserve">
     <value>Enable Hosts File Editor</value>
-    <comment>"Hosts File Editor" is the name of the utility</comment>
+    <comment>{Locked="Hosts File Editor"}</comment>
   </data>
   <data name="Hosts_Toggle_ShowStartupWarning.Header" xml:space="preserve">
     <value>Show a warning at startup</value>
@@ -3579,15 +3664,15 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Hosts_LaunchButtonControl.Description" xml:space="preserve">
     <value>Manage your hosts file</value>
-    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+    <comment>{Locked="Hosts"}</comment>
   </data>
   <data name="Hosts_LaunchButtonControl.Header" xml:space="preserve">
-    <value>Launch Hosts File Editor</value>
-    <comment>"Hosts File Editor" is a product name</comment>
+    <value>Launch Host File Editor</value>
+    <comment>{Locked="Hosts File Editor"}</comment>
   </data>
   <data name="Hosts_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Launch Hosts File Editor</value>
-    <comment>"Hosts File Editor" is a product name</comment>
+    <value>Launch Host File Editor</value>
+    <comment>{Locked="Hosts File Editor"}</comment>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Header" xml:space="preserve">
     <value>Position of additional content</value>
@@ -3603,19 +3688,19 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Launch_Hosts.Content" xml:space="preserve">
     <value>Launch Hosts File Editor</value>
-    <comment>"Hosts File Editor" is the name of the utility</comment>
+    <comment>{Locked="Hosts File Editor"}</comment>
   </data>
   <data name="LearnMore_Hosts.Text" xml:space="preserve">
     <value>Learn more about Hosts File Editor</value>
-    <comment>"Hosts File Editor" is the name of the utility</comment>
+    <comment>{Locked="Hosts File Editor"}</comment>
   </data>
   <data name="Oobe_Hosts.Description" xml:space="preserve">
     <value>Hosts File Editor is a quick and simple utility for managing hosts file.</value>
-    <comment>"Hosts File Editor" is the name of the utility</comment>
+    <comment>{Locked="Hosts File Editor"}</comment>
   </data>
   <data name="Oobe_Hosts.Title" xml:space="preserve">
     <value>Hosts File Editor</value>
-    <comment>"Hosts File Editor" is the name of the utility</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Hosts_Toggle_LaunchAdministrator.Description" xml:space="preserve">
     <value>Needs to be launched as administrator in order to make changes to the hosts file</value>
@@ -3628,12 +3713,15 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="EnvironmentVariables.ModuleTitle" xml:space="preserve">
     <value>Environment Variables</value>
+    <comment>Name, translate the same as the windows app</comment>
   </data>
   <data name="Shell_EnvironmentVariables.Content" xml:space="preserve">
     <value>Environment Variables</value>
+    <comment>Translate "Environment Variables" as Windows does</comment>
   </data>
   <data name="EnvironmentVariables_EnableToggleControl_HeaderText.Header" xml:space="preserve">
     <value>Enable Environment Variables</value>
+    <comment>Translate "Environment Variables" as Windows does</comment>
   </data>
   <data name="EnvironmentVariables_Activation_GroupSettings.Header" xml:space="preserve">
     <value>Activation</value>
@@ -3643,18 +3731,23 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="EnvironmentVariables_LaunchButtonControl.Header" xml:space="preserve">
     <value>Launch Environment Variables</value>
+    <comment>Translate "Environment Variables" as Windows does</comment>
   </data>
   <data name="EnvironmentVariables_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Launch Environment Variables</value>
+    <comment>Translate "Environment Variables" as Windows does</comment>
   </data>
   <data name="Launch_EnvironmentVariables.Content" xml:space="preserve">
     <value>Launch Environment Variables</value>
+    <comment>Translate "Environment Variables" as Windows does</comment>
   </data>
   <data name="LearnMore_EnvironmentVariables.Text" xml:space="preserve">
     <value>Learn more about Environment Variables</value>
+    <comment>Translate "Environment Variables" as Windows does</comment>
   </data>
   <data name="Oobe_EnvironmentVariables.Description" xml:space="preserve">
     <value>Environment Variables is a quick utility for managing environment variables.</value>
+    <comment>Translate "Environment Variables" as Windows does</comment>
   </data>
   <data name="Oobe_EnvironmentVariables.Title" xml:space="preserve">
     <value>Environment Variables</value>
@@ -3675,14 +3768,15 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="FileLocksmith.ModuleTitle" xml:space="preserve">
     <value>File Locksmith</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="Shell_FileLocksmith.Content" xml:space="preserve">
     <value>File Locksmith</value>
-    <comment>Product name: Navigation view item name for FileLocksmith</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileLocksmith_Enable_FileLocksmith.Header" xml:space="preserve">
     <value>Enable File Locksmith</value>
-    <comment>File Locksmith is the name of the utility</comment>
+    <comment>{Locked="File Locksmith"}</comment>
   </data>
   <data name="FileLocksmith_Toggle_StandardContextMenu.Content" xml:space="preserve">
     <value>Default and extended context menu</value>
@@ -3692,6 +3786,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="FileLocksmith_Toggle_ContextMenu.Header" xml:space="preserve">
     <value>Show File Locksmith in</value>
+    <comment>{Locked="File Locksmith"}</comment>
   </data>
   <data name="FileLocksmith_ShellIntegration.Header" xml:space="preserve">
     <value>Shell integration</value>
@@ -3718,6 +3813,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Alternate_OOBE_ColorPicker_Title.Text" xml:space="preserve">
     <value>Color Picker</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="Alternate_OOBE_Description.Text" xml:space="preserve">
     <value>Here are a few shortcuts to get you started:</value>
@@ -3727,12 +3823,14 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Alternate_OOBE_FancyZones_Title.Text" xml:space="preserve">
     <value>FancyZones</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="Alternate_OOBE_Run_Description.Text" xml:space="preserve">
     <value>Get access to your files and more:</value>
   </data>
   <data name="Alternate_OOBE_Run_Title.Text" xml:space="preserve">
     <value>PowerToys Run</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="General_Experimentation.Header" xml:space="preserve">
     <value>Experimentation</value>
@@ -3746,13 +3844,15 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Shell_AdvancedPaste.Content" xml:space="preserve">
     <value>Advanced Paste</value>
-    <comment>Product name: Navigation view item name for Advanced Paste</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="AdvancedPaste.ModuleDescription" xml:space="preserve">
     <value>Advanced Paste is a tool to put your clipboard content into any format you need. It can paste as plain text, markdown, or json directly with the UX or with a direct keystroke invoke. These are fully locally executed. In addition, it has an AI powered option that is 100% opt-in and requires an Open AI key.</value>
+    <comment>{Locked="Advanced Paste"}</comment>
   </data>
   <data name="AdvancedPaste.ModuleTitle" xml:space="preserve">
     <value>Advanced Paste</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="AdvancedPaste_Cancel" xml:space="preserve">
     <value>cancel</value>
@@ -3795,15 +3895,15 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Shell_CmdNotFound.Content" xml:space="preserve">
     <value>Command Not Found</value>
-    <comment>Product name: Navigation view item name for Command Not Found</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="CmdNotFound.ModuleDescription" xml:space="preserve">
     <value>A PowerShell module that detects an error thrown by a command and suggests a relevant WinGet package to install, if available.</value>
-    <comment>"Command Not Found" is a product name</comment>
+    <comment>{Locked="Command Not Found"}</comment>
   </data>
   <data name="CmdNotFound.ModuleTitle" xml:space="preserve">
     <value>Command Not Found</value>
-    <comment>"Command Not Found" is a product name</comment>
+    <comment>{Locked="Command Not Found"}</comment>
   </data>
   <data name="InstalledLabel.Text" xml:space="preserve">
     <value>Installed</value>
@@ -3818,14 +3918,14 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>The following components are required</value>
   </data>
   <data name="CmdNotFound_PowerShellDetection.Header" xml:space="preserve">
-    <value>PowerShell 7.4 or greater</value>
+    <value>PowerShell 7.4 or later</value>
   </data>
   <data name="CmdNotFound_WinGetClientDetection.Header" xml:space="preserve">
     <value>WinGet Client PowerShell module</value>
   </data>
   <data name="CmdNotFound_Enable.Header" xml:space="preserve">
     <value>Command Not Found</value>
-    <comment>"Command Not Found" is a product name</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="CmdNotFound_Enable.Description" xml:space="preserve">
     <value>Add this module to the PowerShell 7 profile script so that it is enabled with every new session</value>
@@ -3850,14 +3950,15 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Oobe_CmdNotFound.Description" xml:space="preserve">
     <value>Command Not Found detects an error thrown by a command in PowerShell and suggests a relevant WinGet package to install, if available.</value>
-    <comment>"Command Not Found" is a product name</comment>
+    <comment>{Locked="Command Not Found"}</comment>
   </data>
   <data name="Oobe_CmdNotFound.Title" xml:space="preserve">
     <value>Command Not Found</value>
-    <comment>"Command Not Found" is a product name</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_CmdNotFound_HowToUse.Text" xml:space="preserve">
     <value>If a command returns an error, the module will suggest a WinGet package that may provide the relevant executable.</value>
+    <comment>{Locked="WinGet"}</comment>
   </data>
   <data name="AllAppsTxt.Text" xml:space="preserve">
     <value>All apps</value>
@@ -3867,6 +3968,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="BackLabel.Text" xml:space="preserve">
     <value>Back</value>
+    <comment>as in "go back"</comment>
   </data>
   <data name="BugReportBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Bug report</value>
@@ -3882,7 +3984,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="FZEditorString" xml:space="preserve">
     <value>FancyZones Editor</value>
-    <comment>Do not localize this string</comment>
+    <comment>{Locked="FancyZones"}</comment>
   </data>
   <data name="MoreBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>More</value>
@@ -3916,14 +4018,15 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="RegistryPreview.ModuleTitle" xml:space="preserve">
     <value>Registry Preview</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="Shell_RegistryPreview.Content" xml:space="preserve">
     <value>Registry Preview</value>
-    <comment>Product name: Navigation view item name for Registry Preview</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="RegistryPreview_Enable_RegistryPreview.Header" xml:space="preserve">
     <value>Enable Registry Preview</value>
-    <comment>Registry Preview is the name of the utility</comment>
+    <comment>{Locked="Registry Preview"}</comment>
   </data>
   <data name="Oobe_RegistryPreview_HowToUse.Text" xml:space="preserve">
     <value>In File Explorer, right-click a .REG file and select **Preview** from the context menu.</value>
@@ -3933,27 +4036,27 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Oobe_RegistryPreview.Description" xml:space="preserve">
     <value>Registry Preview is a quick little utility to visualize and edit complex Windows Registry files.</value>
-    <comment>{Locked="Windows"}</comment>
+    <comment>{Locked="Registry Preview", "Windows"}</comment>
   </data>
   <data name="Oobe_RegistryPreview.Title" xml:space="preserve">
     <value>Registry Preview</value>
-    <comment>Do not localize this string</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="LearnMore_RegistryPreview.Text" xml:space="preserve">
     <value>Learn more about Registry Preview</value>
-    <comment>Registry Preview is a product name, do not loc</comment>
+    <comment>{Locked="Registry Preview"}</comment>
   </data>
   <data name="Launch_RegistryPreview.Content" xml:space="preserve">
     <value>Launch Registry Preview</value>
-    <comment>"Registry Preview" is the name of the utility</comment>
+    <comment>{Locked="Registry Preview"}</comment>
   </data>
   <data name="MouseUtils_MouseJump.Description" xml:space="preserve">
     <value>Quickly move the mouse pointer long distances.</value>
-    <comment>"Mouse Jump" is the name of the utility. Mouse is the hardware mouse.</comment>
+    <comment>Mouse is the hardware mouse.</comment>
   </data>
   <data name="MouseUtils_MouseJump.Header" xml:space="preserve">
     <value>Mouse Jump</value>
-    <comment>Refers to the utility name</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="MouseUtils_MouseJump_ActivationShortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to turn on or off this mode</value>
@@ -3963,11 +4066,11 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="MouseUtils_Enable_MouseJump.Header" xml:space="preserve">
     <value>Enable Mouse Jump</value>
-    <comment>"Mouse Jump" is the name of the utility.</comment>
+    <comment>{Locked="Mouse Jump"}</comment>
   </data>
   <data name="Hosts_Toggle_LoopbackDuplicates.Description" xml:space="preserve">
     <value>127.0.0.1, ::1, ...</value>
-    <comment>"127.0.0.1 and ::1" are well known loopback addresses, do not loc</comment>
+    <comment>{Locked="127.0.0.1", "::1"} are well known loopback addresses, do not loc</comment>
   </data>
   <data name="Hosts_Toggle_LoopbackDuplicates.Header" xml:space="preserve">
     <value>Consider loopback addresses as duplicates</value>
@@ -3986,7 +4089,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="RegistryPreview_DefaultRegApp.Description" xml:space="preserve">
     <value>Make Registry Preview default app for opening .reg files</value>
-    <comment>Registry Preview is app name. Do not localize.</comment>
+    <comment>{Locked="Registry Preview"}</comment>
   </data>
   <data name="AdvancedPaste_ShortcutWarning.Title" xml:space="preserve">
     <value>Using this shortcut may prevent non-text paste actions (e.g. images, files) or built-in paste plain text actions in other applications from functioning.</value>
@@ -4014,6 +4117,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Oobe_Peek.Title" xml:space="preserve">
     <value>Peek</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_Peek_HowToUse.Text" xml:space="preserve">
     <value>to preview the file that's currently selected in File Explorer.</value>
@@ -4025,17 +4129,19 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Security key</value>
   </data>
   <data name="Hosts_Encoding.Description" xml:space="preserve">
-    <value>Choose the encoding of the hosts file</value>
-    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+    <value>Choose the encoding of the Hosts file</value>
+    <comment>{Locked="Hosts"}</comment>
   </data>
   <data name="Hosts_Encoding.Header" xml:space="preserve">
     <value>Encoding</value>
   </data>
   <data name="Hosts_Encoding_Utf8.Content" xml:space="preserve">
     <value>UTF-8</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="Hosts_Encoding_Utf8Bom.Content" xml:space="preserve">
     <value>UTF-8 with BOM</value>
+    <comment>{Locked="UTF-8", "BOM"}</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_AlwaysColor.Header" xml:space="preserve">
     <value>Always highlight color</value>
@@ -4094,7 +4200,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>.txt, .cpp, .py, .json, .xml, .csproj, ...</value>
   </data>
   <data name="Peek_SourceCode_Header.Header" xml:space="preserve">
-    <value>Source code files (Monaco)</value>
+    <value>Source code files</value>
   </data>
   <data name="Peek_SourceCode_TryFormat.Description" xml:space="preserve">
     <value>Applies to json and xml. Files remain unchanged.</value>
@@ -4177,7 +4283,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>{Locked="pt"}</comment>
   </data>
   <data name="FileExplorerPreview_Toggle_Monaco_Font_Size.Header" xml:space="preserve">
-    <value>Font size </value>
+    <value>Font size</value>
   </data>
   <data name="Peek_SourceCode_FontSize.Description" xml:space="preserve">
     <value>Font size of the editor in pt. Recommended: 14pt</value>
