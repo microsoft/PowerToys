@@ -10,6 +10,9 @@
 #include <projects-common/WindowEnumerator.h>
 #include <projects-common/WindowFilter.h>
 
+#include <JsonUtils.h>
+#include <NameUtils.h>
+
 #include <common/utils/gpo.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/UnhandledExceptionHandler.h>
@@ -46,47 +49,11 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
     }
 
     // read previously saved projects 
-    std::vector<Project> projects;
-    try
-    {
-        auto savedProjectsJson = json::from_file(fileName);
-        if (savedProjectsJson.has_value())
-        {
-            auto savedProjects = JsonUtils::ProjectsListJSON::FromJson(savedProjectsJson.value());
-            if (savedProjects.has_value())
-            {
-                projects = savedProjects.value();
-            }
-        }
-    }
-    catch (std::exception ex)
-    {
-        Logger::error("Error reading projects file. {}", ex.what());
-    }
+    std::vector<Project> projects = ProjectsJsonUtils::Read(fileName);
     
-    // new project name
-    std::wstring defaultNamePrefix = L"Project"; // TODO: localizable
-    int nextProjectIndex = 0;
-    for (const auto& proj : projects)
-    {
-        const std::wstring& name = proj.name;
-        if (name.starts_with(defaultNamePrefix))
-        {
-            try
-            {
-                int index = std::stoi(name.substr(defaultNamePrefix.length() + 1));
-                if (nextProjectIndex < index)
-                {
-                    nextProjectIndex = index;
-                }
-            }
-            catch (std::exception) {}
-        }
-    }
-
-    std::wstring projectName = defaultNamePrefix + L" " + std::to_wstring(nextProjectIndex + 1);
+    // create new project
     time_t creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    Project project{ .id = CreateGuidString(), .name = projectName, .creationTime = creationTime };
+    Project project{ .id = CreateGuidString(), .name = ProjectNameUtils::CreateProjectName(projects), .creationTime = creationTime };
     Logger::trace(L"Creating project {}:{}", project.name, project.id);
 
     // save monitor configuration
@@ -159,7 +126,8 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
     }
 
     projects.push_back(project);
-    json::to_file(fileName, JsonUtils::ProjectsListJSON::ToJson(projects));
+    ProjectsJsonUtils::Write(fileName, projects);
     Logger::trace(L"Project {}:{} created", project.name, project.id);
+
     return 0;
 }
