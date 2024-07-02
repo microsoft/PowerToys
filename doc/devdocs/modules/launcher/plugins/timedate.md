@@ -71,12 +71,14 @@ The following formats are currently available:
 - All available settings for the plugin are defined in the [`TimeDateSettings`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/TimeDateSettings.cs) class of the plugin. The settings can be accessed everywhere in the plugin code via the static class instance `TimeDateSettings.Instance`.
 - We have the following settings that the user can configure to change the behavior of the plugin:
 
-	| Key | Default value | Name | Description |
-	|--------------|-----------|------------|------------|
-	| `OnlyDateTimeNowGlobal` | `true` | Show only 'Time', 'Date', and 'Now' result for system time on global queries | Regardless of this setting, for global queries the first word of the query has to be a complete match. |
-	| `TimeWithSeconds` | `false` | Show time with seconds | This setting applies to the 'Time' and 'Now' result. |
-	| `DateWithWeekday` | `false` | Show date with weekday and name of month | This setting applies to the 'Date' and 'Now' result. |
-	| `HideNumberMessageOnGlobalQuery` | `false` | Hide 'Invalid number input' error message on global queries | |
+	| Key | Type | Default value | Name | Description |
+	|--------------|--------------|-----------|------------|------------|
+	| `CalendarFirstWeekRule` | Combo box | `-1` (Use system settings) | First week of the year | Configure the calendar rule for the first week of the year. |
+	| `FirstDayOfWeek` | Combo box | `-1` (Use system settings) | First day of the week | |
+	| `OnlyDateTimeNowGlobal` | Checkbox | `true` | Show only 'Time', 'Date', and 'Now' result for system time on global queries | Regardless of this setting, for global queries the first word of the query has to be a complete match. |
+	| `TimeWithSeconds` | Checkbox | `false` | Show time with seconds | This setting applies to the 'Time' and 'Now' result. |
+	| `DateWithWeekday` | Checkbox | `false` | Show date with weekday and name of month | This setting applies to the 'Date' and 'Now' result. |
+	| `HideNumberMessageOnGlobalQuery` | Checkbox | `false` | Hide 'Invalid number input' error message on global queries | |
 	
 
 ## Classes
@@ -97,6 +99,7 @@ The following formats are currently available:
 
 ### [`TimeAndDateHelper.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/TimeAndDateHelper.cs)
 - The [`TimeAndDateHelper`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/TimeAndDateHelper.cs) class contains methods to format/convert date and time formats/strings.
+- And it contains methods to return the `first week day` and `first week of the year rule` based on the current plugin settings.
 
 ### [`TimeDateSettings.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/TimeDateSettings.cs)
 - The [`TimeDateSettings`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/TimeDateSettings.cs) class provides access to all optional plugin settings.
@@ -129,11 +132,6 @@ On global queries the high score returned by `FuzzySearch` has negative impacts 
 ## [Unit Tests](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests)
 We have a [Unit Test project](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests) that executes various test to ensure that the plugin works as expected.
 
-### [`TimeDateResultTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/TimeDateResultTests.cs)
-- The [`TimeDateResultTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/TimeDateResultTests.cs) class contains tests to validate that the time and date values are correctly formatted/calculated.
-- That we can execute the tests at any time on any machine, we use a specified date/time value and set the thread culture always to `en-us` while executing the tests.
-- Some tests contain checks that calculate the expected result at runtime instead of using an expected value written fix in the code. This is done to get valid results on every machine at any time.
-
 ### [`ImageTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/ImageTests.cs)
 - The [`ImageTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/ImageTests.cs) class contains tests to validate that each result shows the expected and correct image.
 - That we can execute the tests at any time on any machine, we set the thread culture always to `en-us` while executing the tests.
@@ -148,3 +146,12 @@ We have a [Unit Test project](/src/modules/launcher/Plugins/Microsoft.PowerToys.
 ### [`StringParserTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/StringParserTests.cs)
 - The [`StringParserTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/StringParserTests.cs) class contains tests to validate that the typed string gets converted correctly into a `DateTime` object.
 - That we can execute the tests at any time on any machine, we set the thread culture always to `en-us` while executing the tests.
+
+### [`TimeAndDateHelperTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/TimeAndDateHelperTests.cs)
+- The [`TimeAndDateHelperTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/TimeAndDateHelperTests.cs) class contains tests to validate important methods form the `TimeAndDateHelper` class that are not used for string parsing.
+
+### [`TimeDateResultTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/TimeDateResultTests.cs)
+- The [`TimeDateResultTests.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/TimeDateResultTests.cs) class contains tests to validate that the time and date values are correctly formatted/calculated.
+- That we can execute the tests at any time on any machine, we use a specified date/time value and set the thread culture always to `en-us` while executing the tests.
+- Some tests use custom settings for the first day of week and the first week of year. (This is done in the tests for the affected results to validate them for different settings/cultures.)
+- Some tests contain checks that calculate the expected result at runtime instead of using an expected value written fix in the code. This is done to get valid results on every machine at any time.

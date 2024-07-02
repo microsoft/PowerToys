@@ -439,6 +439,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use system setting.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_Setting_UseSystemSetting {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Setting_UseSystemSetting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Show date with weekday and name of month.
         /// </summary>
         internal static string Microsoft_plugin_timedate_SettingDateWithWeekday {
@@ -453,6 +462,123 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         internal static string Microsoft_plugin_timedate_SettingDateWithWeekday_Description {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_SettingDateWithWeekday_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to First day of the week.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SettingFirstDayOfWeek {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingFirstDayOfWeek", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Friday.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SettingFirstDayOfWeek_Friday {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingFirstDayOfWeek_Friday", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Monday.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SettingFirstDayOfWeek_Monday {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingFirstDayOfWeek_Monday", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saturday.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SettingFirstDayOfWeek_Saturday {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingFirstDayOfWeek_Saturday", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sunday.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SettingFirstDayOfWeek_Sunday {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingFirstDayOfWeek_Sunday", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Thursday.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SettingFirstDayOfWeek_Thursday {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingFirstDayOfWeek_Thursday", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tuesday.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SettingFirstDayOfWeek_Tuesday {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingFirstDayOfWeek_Tuesday", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wednesday.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SettingFirstDayOfWeek_Wednesday {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingFirstDayOfWeek_Wednesday", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to First week of the year.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SettingFirstWeekRule {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingFirstWeekRule", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Configure the calendar rule for the first week of the year..
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SettingFirstWeekRule_Description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingFirstWeekRule_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to First day of year.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SettingFirstWeekRule_FirstDay {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingFirstWeekRule_FirstDay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to First four day week.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFourDayWeek {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFourDayWeek", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to First full week.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFullWeek {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFullWeek", resourceCulture);
             }
         }
         

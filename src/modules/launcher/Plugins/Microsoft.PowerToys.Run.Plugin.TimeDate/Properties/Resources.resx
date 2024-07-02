@@ -315,4 +315,46 @@
   <data name="Microsoft_plugin_timedate_Unix_Milliseconds" xml:space="preserve">
     <value>Unix epoch time in milliseconds</value>
   </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek" xml:space="preserve">
+    <value>First day of the week</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek_Friday" xml:space="preserve">
+    <value>Friday</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek_Monday" xml:space="preserve">
+    <value>Monday</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek_Saturday" xml:space="preserve">
+    <value>Saturday</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek_Sunday" xml:space="preserve">
+    <value>Sunday</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek_Thursday" xml:space="preserve">
+    <value>Thursday</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek_Tuesday" xml:space="preserve">
+    <value>Tuesday</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek_Wednesday" xml:space="preserve">
+    <value>Wednesday</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstWeekRule" xml:space="preserve">
+    <value>First week of the year</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstWeekRule_Description" xml:space="preserve">
+    <value>Configure the calendar rule for the first week of the year.</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstWeekRule_FirstDay" xml:space="preserve">
+    <value>First day of year</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFourDayWeek" xml:space="preserve">
+    <value>First four day week</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFullWeek" xml:space="preserve">
+    <value>First full week</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Setting_UseSystemSetting" xml:space="preserve">
+    <value>Use system setting</value>
+  </data>
 </root>
