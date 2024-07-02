@@ -72,6 +72,13 @@ namespace powertoys_gpo {
     const std::wstring POLICY_ALLOW_EXPERIMENTATION = L"AllowExperimentation";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER_ALL_PLUGINS = L"PowerLauncherAllPluginsEnabledState";
     const std::wstring POLICY_ALLOW_ADVANCED_PASTE_ONLINE_AI_MODELS = L"AllowPowerToysAdvancedPasteOnlineAIModels";
+    const std::wstring POLICY_MWB_CLIPBOARD_SHARING_ENABLED = L"MwbClipboardSharingEnabled";
+    const std::wstring POLICY_MWB_FILE_TRANSFER_ENABLED = L"MwbFileTransferEnabled";
+    const std::wstring POLICY_MWB_USE_ORIGINAL_USER_INTERFACE = L"MwbUseOriginalUserInterface";
+    const std::wstring POLICY_MWB_DISALLOW_BLOCKING_SCREENSAVER = L"MwbDisallowBlockingScreensaver";
+    const std::wstring POLICY_MWB_SAME_SUBNET_ONLY = L"MwbSameSubnetOnly";
+    const std::wstring POLICY_MWB_VALIDATE_REMOTE_IP = L"MwbValidateRemoteIp";
+    const std::wstring POLICY_MWB_DISABLE_USER_DEFINED_IP_MAPPING_RULES = L"MwbDisableUserDefinedIpMappingRules";
     const std::wstring POLICY_MWB_POLICY_DEFINED_IP_MAPPING_RULES = L"MwbPolicyDefinedIpMappingRules";
 
     inline std::optional<std::wstring> readRegistryStringValue(HKEY hRootKey, const std::wstring& subKey, const std::wstring& value_name, const bool is_multi_line_text = false)
@@ -499,6 +506,41 @@ namespace powertoys_gpo {
     inline gpo_rule_configured_t getAllowedAdvancedPasteOnlineAIModelsValue()
     {
         return getUtilityEnabledValue(POLICY_ALLOW_ADVANCED_PASTE_ONLINE_AI_MODELS);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMwbClipboardSharingEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_MWB_CLIPBOARD_SHARING_ENABLED);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMwbFileTransferEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_MWB_FILE_TRANSFER_ENABLED);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMwbUseOriginalUserInterfaceValue()
+    {
+        return getUtilityEnabledValue(POLICY_MWB_USE_ORIGINAL_USER_INTERFACE);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMwbDisallowBlockingScreensaverValue()
+    {
+        return getUtilityEnabledValue(POLICY_MWB_DISALLOW_BLOCKING_SCREENSAVER);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMwbSameSubnetOnlyValue()
+    {
+        return getUtilityEnabledValue(POLICY_MWB_SAME_SUBNET_ONLY);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMwbValidateRemoteIpValue()
+    {
+        return getUtilityEnabledValue(POLICY_MWB_VALIDATE_REMOTE_IP);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMwbDisableUserDefinedIpMappingRulesValue()
+    {
+        return getUtilityEnabledValue(POLICY_MWB_DISABLE_USER_DEFINED_IP_MAPPING_RULES);
     }
 
     inline std::wstring getConfiguredMwbPolicyDefinedIpMappingRules()
