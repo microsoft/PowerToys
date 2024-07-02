@@ -13,7 +13,6 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using ABI.PowerToys.GPOWrapper;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -499,7 +498,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void InitializePolicyValues()
         {
-            // Policies supporting only enbaled state
+            // Policies supporting only enabled state
             _disallowBlockingScreensaverGpoConfiguration = GPOWrapper.GetConfiguredMwbDisallowBlockingScreensaverValue();
             _disallowBlockingScreensaverIsGPOConfigured = GPOWrapper.GetConfiguredMwbDisallowBlockingScreensaverValue() == GpoRuleConfigured.Enabled;
             _disableUserDefinedIpMappingRulesGpoConfiguration = GPOWrapper.GetConfiguredMwbDisableUserDefinedIpMappingRulesValue();
