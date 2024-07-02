@@ -5,6 +5,7 @@
 #include <winrt/Windows.ApplicationModel.Core.h>
 
 #include <shellapi.h>
+#include <ShellScalingApi.h>
 
 #include <projects-common/AppUtils.h>
 #include <projects-common/MonitorEnumerator.h>

@@ -1,15 +1,9 @@
 #pragma once
 
-#include <Windows.h>
-#include <ShellScalingApi.h>
-
-#include <algorithm>
-
 #include <common/Display/dpi_aware.h>
 #include <common/utils/excluded_apps.h>
 #include <common/utils/window.h>
 
-// FancyZones WindowUtils
 namespace WindowUtils
 {
     // Non-Localizable strings
@@ -32,6 +26,11 @@ namespace WindowUtils
     inline bool IsRoot(HWND window) noexcept
     {
         return GetAncestor(window, GA_ROOT) == window;
+    }
+
+    inline bool IsMinimized(HWND window)
+    {
+        return IsIconic(window);
     }
 
     inline bool IsMaximized(HWND window) noexcept
@@ -106,15 +105,6 @@ namespace WindowUtils
         }
 
         return rect;
-    }
-}
-
-// addition for Projects
-namespace WindowUtils
-{
-    inline bool IsMinimized(HWND window)
-    {
-        return IsIconic(window);
     }
 
     #define MAX_TITLE_LENGTH 255
