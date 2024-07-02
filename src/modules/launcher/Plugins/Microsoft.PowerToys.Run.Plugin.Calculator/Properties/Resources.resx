@@ -167,4 +167,11 @@
   <data name="wox_plugin_calculator_replace_input_description" xml:space="preserve">
     <value>When using direct activation, appending '=' to the expression will replace the input with the calculated result (e.g. '=5*3-2=' will change the query to '=13').</value>
   </data>
+  <data name="wox_plugin_calculator_ignore_regional_formatting" xml:space="preserve">
+    <value>Ignore difference between decimal and group separators</value>
+  </data>
+  <data name="wox_plugin_calculator_ignore_regional_formatting_description" xml:space="preserve">
+    <value>Ignores difference between '{0}' and '{1}', treating the last of them as the decimal separator</value>
+    <comment>{0} and {1} are placeholders and will be replaced in code</comment>
+  </data>
 </root>

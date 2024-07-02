@@ -50,7 +50,17 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         /// <returns>translated string</returns>
         public string Translate(string input)
         {
-            return Translate(input, sourceCulture, targetCulture, splitRegexForSource);
+            return Translate(input, sourceCulture, targetCulture, splitRegexForSource, false);
+        }
+
+        /// <summary>
+        /// Translate from source to target culture.
+        /// </summary>
+        /// <param name="input">input string to translate</param>
+        /// <returns>translated string</returns>
+        public string Translate(string input, bool ignoreRegionalFormatting)
+        {
+            return Translate(input, sourceCulture, targetCulture, splitRegexForSource, ignoreRegionalFormatting);
         }
 
         /// <summary>
@@ -60,10 +70,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         /// <returns>source culture string</returns>
         public string TranslateBack(string input)
         {
-            return Translate(input, targetCulture, sourceCulture, splitRegexForTarget);
+            return Translate(input, targetCulture, sourceCulture, splitRegexForTarget, false);
         }
 
-        private static string Translate(string input, CultureInfo cultureFrom, CultureInfo cultureTo, Regex splitRegex)
+        private static string Translate(string input, CultureInfo cultureFrom, CultureInfo cultureTo, Regex splitRegex, bool ignoreRegionalFormatting)
         {
             var outputBuilder = new StringBuilder();
             var hexRegex = new Regex(@"(?:(0x[\da-fA-F]+))");
@@ -119,9 +129,21 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                     }
 
                     decimal number;
+                    var token_bis = token;
+
+                    if (ignoreRegionalFormatting)
+                    {
+                        if (!string.IsNullOrEmpty(token))
+                        {
+                            var separatorRegex = new Regex(@"[^\d](?=.*[^\d])");
+                            token_bis = separatorRegex.Replace(token, string.Empty);
+                            var separatorRegex2 = new Regex(@"[^\d]");
+                            token_bis = separatorRegex2.Replace(token_bis, cultureFrom.NumberFormat.NumberDecimalSeparator);
+                        }
+                    }
 
                     outputBuilder.Append(
-                        decimal.TryParse(token, NumberStyles.Number, cultureFrom, out number)
+                        decimal.TryParse(token_bis, NumberStyles.Number, cultureFrom, out number)
                         ? (new string('0', leadingZeroCount) + number.ToString(cultureTo))
                         : token);
                 }
