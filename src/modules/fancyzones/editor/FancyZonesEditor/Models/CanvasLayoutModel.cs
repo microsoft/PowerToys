@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Windows;
+using FancyZonesEditorCommon.Data;
 
 namespace FancyZonesEditor.Models
 {
@@ -11,9 +12,6 @@ namespace FancyZonesEditor.Models
     //  Free form Layout Model, which specifies independent zone rects
     public class CanvasLayoutModel : LayoutModel
     {
-        // Non-localizable strings
-        public const string ModelTypeID = "canvas";
-
         // Default distance from the top and left borders to the zone.
         private const int DefaultOffset = 100;
 

@@ -31,11 +31,6 @@ namespace Microsoft.FancyZonesEditor.UITests.Utils
             }
         }
 
-        ~IOTestHelper()
-        {
-            RestoreData();
-        }
-
         public void RestoreData()
         {
             if (_data != string.Empty)

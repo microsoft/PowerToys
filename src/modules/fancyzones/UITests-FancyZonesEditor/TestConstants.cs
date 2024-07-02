@@ -3,20 +3,20 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using static FancyZonesEditorCommon.Data.Constants;
+using FancyZonesEditorCommon.Data;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
     public static class TestConstants
     {
-        public static readonly Dictionary<TemplateLayout, string> TemplateLayoutNames = new Dictionary<TemplateLayout, string>()
+        public static readonly Dictionary<LayoutType, string> TemplateLayoutNames = new Dictionary<LayoutType, string>()
         {
-            { TemplateLayout.Empty, "No layout" },
-            { TemplateLayout.Focus, "Focus" },
-            { TemplateLayout.Rows, "Rows" },
-            { TemplateLayout.Columns, "Columns" },
-            { TemplateLayout.Grid, "Grid" },
-            { TemplateLayout.PriorityGrid, "PriorityGrid" },
+            { LayoutType.Blank, "No layout" },
+            { LayoutType.Focus, "Focus" },
+            { LayoutType.Rows, "Rows" },
+            { LayoutType.Columns, "Columns" },
+            { LayoutType.Grid, "Grid" },
+            { LayoutType.PriorityGrid, "Priority Grid" },
         };
     }
 }
