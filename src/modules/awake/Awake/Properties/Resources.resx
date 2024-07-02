@@ -159,4 +159,28 @@
   <data name="AWAKE_UNCHECKED" xml:space="preserve">
     <value>Unchecked</value>
   </data>
+  <data name="AWAKE_CMD_HELP_CONFIG_OPTION" xml:space="preserve">
+    <value>Specifies whether Awake will be using the PowerToys configuration file for managing the state.</value>
+  </data>
+  <data name="AWAKE_CMD_HELP_DISPLAY_OPTION" xml:space="preserve">
+    <value>Determines whether the display should be kept awake.</value>
+  </data>
+  <data name="AWAKE_CMD_HELP_EXPIREAT_OPTION" xml:space="preserve">
+    <value>Determines the end date and time when Awake will back off and let the system manage the current sleep and display state.</value>
+  </data>
+  <data name="AWAKE_CMD_HELP_PID_OPTION" xml:space="preserve">
+    <value>Bind the execution of Awake to another process. When the process ends, the system will resume managing the current sleep and display state.</value>
+  </data>
+  <data name="AWAKE_CMD_HELP_TIME_OPTION" xml:space="preserve">
+    <value>Determines the interval (in seconds) during which the computer is kept awake.</value>
+  </data>
+  <data name="AWAKE_EXIT_BINDINGHOOK_MESSAGE" xml:space="preserve">
+    <value>Terminating from process binding hook.</value>
+  </data>
+  <data name="AWAKE_EXIT_MESSAGE" xml:space="preserve">
+    <value>Exiting from the internal termination handler.</value>
+  </data>
+  <data name="AWAKE_EXIT_SIGNAL_MESSAGE" xml:space="preserve">
+    <value>Received a signal to end the process. Making sure we quit...</value>
+  </data>
 </root>

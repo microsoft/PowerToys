@@ -8,9 +8,20 @@ namespace Awake.Core.Native
     internal sealed class Constants
     {
         internal const uint WM_COMMAND = 0x111;
-        internal const uint WM_USER = 0x400;
+        internal const uint WM_USER = 0x400U;
         internal const uint WM_GETTEXT = 0x000D;
         internal const uint WM_CLOSE = 0x0010;
+        internal const int WM_DESTROY = 0x0002;
+        internal const int WM_MOUSEUP = 0x0202;
+        internal const int WM_RBUTTONUP = 0x0205;
+        internal const int WM_LBUTTONDOWN = 0x0201;
+        internal const int WM_RBUTTONDOWN = 0x0204;
+        internal const int WM_TRAYICON = (int)(WM_USER + 1);
+        internal const int WM_LBUTTONUP = 0x0202;
+        internal const int WM_QUIT = 0x0012;
+        internal const int WH_MOUSE_LL = 14;
+        internal const int WM_NCLBUTTONDOWN = 0x00A1;
+        internal const int WM_CANCELMODE = 0x001F;
 
         // Popup menu constants.
         internal const uint MF_BYPOSITION = 1024;
@@ -28,5 +39,25 @@ namespace Awake.Core.Native
         internal const int STD_OUTPUT_HANDLE = -11;
         internal const uint GENERIC_WRITE = 0x40000000;
         internal const uint GENERIC_READ = 0x80000000;
+
+        internal const int NIF_ICON = 0x00000002;
+        internal const int NIF_MESSAGE = 0x00000001;
+        internal const int NIF_TIP = 0x00000004;
+        internal const int NIF_INFO = 0x00000010;
+        internal const int NIM_ADD = 0x00000000;
+        internal const int NIM_DELETE = 0x00000002;
+
+        internal const uint PM_REMOVE = 0x0001;
+
+        internal const int SW_HIDE = 0;
+
+        internal const uint TPM_LEFTALIGN = 0x0000;
+        internal const uint TPM_BOTTOMALIGN = 0x0020;
+        internal const uint TPM_LEFTBUTTON = 0x0000;
+
+        internal const uint MNS_CHECKORBMP = 0x04000000;
+        internal const uint MNS_AUTODISMISS = 0x10000000;
+        internal const uint MNS_NOTIFYBYPOS = 0x08000000;
+        internal const uint MIM_STYLE = 0x00000010;
     }
 }
