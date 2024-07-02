@@ -63,14 +63,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Constants.h" />
-    <ClInclude Include="IPC.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="Trace.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="IPC.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="Trace.cpp" />
     <ClCompile Include="FileLocksmithLib.cpp" />
