@@ -20,6 +20,7 @@
 #include <processthreadsapi.h>
 #include <UserEnv.h>
 #include <winnt.h>
+#include <unordered_set>
 
 using namespace std;
 
@@ -953,6 +954,25 @@ LExit:
     return WcaFinalize(er);
 }
 
+static HRESULT GetPrevInstallPath(std::optional<std::wstring>& installPath)
+{
+    LPWSTR currentScope = nullptr;
+    const HRESULT hr = WcaGetProperty(L"InstallScope", &currentScope);
+
+    if (SUCCEEDED(hr))
+    {
+        try
+        {
+            installPath = GetMsiPackageInstalledPath(std::wstring{ currentScope } == L"perUser");
+        }
+        catch (...)
+        {
+        }
+    }
+
+    return hr;
+}
+
 UINT __stdcall DetectPrevInstallPathCA(MSIHANDLE hInstall)
 {
     HRESULT hr = S_OK;
@@ -960,19 +980,14 @@ UINT __stdcall DetectPrevInstallPathCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "DetectPrevInstallPathCA");
     MsiSetPropertyW(hInstall, L"PREVIOUSINSTALLFOLDER", L"");
 
-    LPWSTR currentScope = nullptr;
-    hr = WcaGetProperty(L"InstallScope", &currentScope);
+    std::optional<std::wstring> prevInstallPath;
+    hr = GetPrevInstallPath(prevInstallPath);
 
-    try
+    if (prevInstallPath)
     {
-        if (auto install_path = GetMsiPackageInstalledPath(std::wstring{ currentScope } == L"perUser"))
-        {
-            MsiSetPropertyW(hInstall, L"PREVIOUSINSTALLFOLDER", install_path->data());
-        }
+        MsiSetPropertyW(hInstall, L"PREVIOUSINSTALLFOLDER", prevInstallPath->data());
     }
-    catch (...)
-    {
-    }
+
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
     return WcaFinalize(er);
 }
@@ -1210,81 +1225,109 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
 {
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
+    std::optional<std::wstring> prevInstallPath;
+
     hr = WcaInitialize(hInstall, "TerminateProcessesCA");
+    ExitOnFailure(hr, "Failed to initialize");
 
-    std::vector<DWORD> processes;
-    const size_t maxProcesses = 4096;
-    DWORD bytes = maxProcesses * sizeof(processes[0]);
-    processes.resize(maxProcesses);
+    hr = GetPrevInstallPath(prevInstallPath);
+    ExitOnFailure(hr, "Failed to get prev install path");
 
-    if (!EnumProcesses(processes.data(), bytes, &bytes))
+    Logger::debug(L"TerminateProcessesCA: PrevInstallPath={}", prevInstallPath.value_or(L""));
+
+    if (prevInstallPath)
     {
-        return 1;
-    }
-    processes.resize(bytes / sizeof(processes[0]));
+        std::vector<DWORD> processes;
+        const size_t maxProcesses = 4096;
+        DWORD bytes = maxProcesses * sizeof(processes[0]);
+        processes.resize(maxProcesses);
 
-    std::array<std::wstring_view, 32> processesToTerminate = {
-        L"PowerToys.PowerLauncher.exe",
-        L"PowerToys.Settings.exe",
-        L"PowerToys.AdvancedPaste.exe",
-        L"PowerToys.Awake.exe",
-        L"PowerToys.FancyZones.exe",
-        L"PowerToys.FancyZonesEditor.exe",
-        L"PowerToys.FileLocksmithUI.exe",
-        L"PowerToys.MouseJumpUI.exe",
-        L"PowerToys.ColorPickerUI.exe",
-        L"PowerToys.AlwaysOnTop.exe",
-        L"PowerToys.RegistryPreview.exe",
-        L"PowerToys.Hosts.exe",
-        L"PowerToys.PowerRename.exe",
-        L"PowerToys.ImageResizer.exe",
-        L"PowerToys.GcodeThumbnailProvider.exe",
-        L"PowerToys.PdfThumbnailProvider.exe",
-        L"PowerToys.MonacoPreviewHandler.exe",
-        L"PowerToys.MarkdownPreviewHandler.exe",
-        L"PowerToys.StlThumbnailProvider.exe",
-        L"PowerToys.SvgThumbnailProvider.exe",
-        L"PowerToys.GcodePreviewHandler.exe",
-        L"PowerToys.QoiPreviewHandler.exe",
-        L"PowerToys.PdfPreviewHandler.exe",
-        L"PowerToys.QoiThumbnailProvider.exe",
-        L"PowerToys.SvgPreviewHandler.exe",
-        L"PowerToys.Peek.UI.exe",
-        L"PowerToys.MouseWithoutBorders.exe",
-        L"PowerToys.MouseWithoutBordersHelper.exe",
-        L"PowerToys.MouseWithoutBordersService.exe",
-        L"PowerToys.CropAndLock.exe",
-        L"PowerToys.EnvironmentVariables.exe",
-        L"PowerToys.exe",
-    };
-
-    for (const auto procID : processes)
-    {
-        if (!procID)
+        if (!EnumProcesses(processes.data(), bytes, &bytes))
         {
-            continue;
+            Logger::warn(L"TerminateProcessesCA: Cannot enumerate processes");
+            return 1;
         }
-        wchar_t processName[MAX_PATH] = L"<unknown>";
+        processes.resize(bytes / sizeof(processes[0]));
 
-        HANDLE hProcess{ OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | PROCESS_TERMINATE, FALSE, procID) };
-        if (!hProcess)
-        {
-            continue;
-        }
-        HMODULE hMod;
-        DWORD cbNeeded;
+        const std::unordered_set<std::wstring_view> processesToTerminate{
+            L"PowerToys.PowerLauncher.exe",
+            L"PowerToys.Settings.exe",
+            L"PowerToys.AdvancedPaste.exe",
+            L"PowerToys.Awake.exe",
+            L"PowerToys.FancyZones.exe",
+            L"PowerToys.FancyZonesEditor.exe",
+            L"PowerToys.FileLocksmithUI.exe",
+            L"PowerToys.MouseJumpUI.exe",
+            L"PowerToys.ColorPickerUI.exe",
+            L"PowerToys.AlwaysOnTop.exe",
+            L"PowerToys.RegistryPreview.exe",
+            L"PowerToys.Hosts.exe",
+            L"PowerToys.PowerRename.exe",
+            L"PowerToys.ImageResizer.exe",
+            L"PowerToys.GcodeThumbnailProvider.exe",
+            L"PowerToys.PdfThumbnailProvider.exe",
+            L"PowerToys.MonacoPreviewHandler.exe",
+            L"PowerToys.MarkdownPreviewHandler.exe",
+            L"PowerToys.StlThumbnailProvider.exe",
+            L"PowerToys.SvgThumbnailProvider.exe",
+            L"PowerToys.GcodePreviewHandler.exe",
+            L"PowerToys.QoiPreviewHandler.exe",
+            L"PowerToys.PdfPreviewHandler.exe",
+            L"PowerToys.QoiThumbnailProvider.exe",
+            L"PowerToys.SvgPreviewHandler.exe",
+            L"PowerToys.Peek.UI.exe",
+            L"PowerToys.MouseWithoutBorders.exe",
+            L"PowerToys.MouseWithoutBordersHelper.exe",
+            L"PowerToys.MouseWithoutBordersService.exe",
+            L"PowerToys.CropAndLock.exe",
+            L"PowerToys.EnvironmentVariables.exe",
+            L"PowerToys.exe",
+        };
 
-        if (!EnumProcessModules(hProcess, &hMod, sizeof(hMod), &cbNeeded))
+        for (const auto procID : processes)
         {
-            CloseHandle(hProcess);
-            continue;
-        }
-        GetModuleBaseNameW(hProcess, hMod, processName, sizeof(processName) / sizeof(wchar_t));
-
-        for (const auto processToTerminate : processesToTerminate)
-        {
-            if (processName == processToTerminate)
+            if (!procID)
             {
+                continue;
+            }
+            wchar_t processName[MAX_PATH] = L"<unknown>";
+
+            HANDLE hProcess{ OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | PROCESS_TERMINATE, FALSE, procID) };
+            if (!hProcess)
+            {
+                continue;
+            }
+            HMODULE hMod;
+            DWORD cbNeeded;
+
+            if (!EnumProcessModules(hProcess, &hMod, sizeof(hMod), &cbNeeded))
+            {
+                CloseHandle(hProcess);
+                continue;
+            }
+            GetModuleBaseNameW(hProcess, hMod, processName, sizeof(processName) / sizeof(wchar_t));
+
+            if (processesToTerminate.contains(processName))
+            {
+                wchar_t fileName[MAX_PATH] = L"<unknown>";
+                if (GetModuleFileNameEx(hProcess, NULL, fileName, MAX_PATH) == 0)
+                {
+                    Logger::warn(L"TerminateProcessesCA: Not killing process as cannot identify filename; {}/{}", procID, processName);
+                    CloseHandle(hProcess);
+                    continue;
+                }
+
+                const auto rel = fs::relative(fs::path(fileName), *prevInstallPath);
+
+                if (rel.empty() || rel.native()[0] == '.')
+                {
+                    Logger::debug(L"TerminateProcessesCA: Not killing process as not running in PrevInstallPath; {}/{}/{}", procID, processName, fileName);
+                    CloseHandle(hProcess);
+                    continue;
+                }
+
+                Logger::debug(L"TerminateProcessesCA: Killing PowerToys process {}/{}/{}", procID, processName, fileName);
+
                 const DWORD timeout = 500;
                 auto windowEnumerator = [](HWND hwnd, LPARAM procIDPtr) -> BOOL {
                     auto targetProcID = *reinterpret_cast<const DWORD*>(procIDPtr);
@@ -1302,11 +1345,13 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
                 TerminateProcess(hProcess, 0);
                 break;
             }
+            CloseHandle(hProcess);
         }
-        CloseHandle(hProcess);
     }
 
+LExit:
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+
     return WcaFinalize(er);
 }
 
