@@ -17,6 +17,18 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.UnitTest.Helper
         [DataRow(@"HKLM\\Test", true, @"HKLM", "Test")]
         [DataRow(@"HKLM\Test\\TestTest", true, @"HKLM\Test", "TestTest")]
         [DataRow(@"HKLM\Test\\\TestTest", true, @"HKLM\Test", @"\TestTest")]
+        [DataRow("HKLM/\"Software\"/", false, @"HKLM\Software\", "")]
+        [DataRow("HKLM/\"Software\"//test", true, @"HKLM\Software", "test")]
+        [DataRow("HKLM/\"Software\"//test/123", true, @"HKLM\Software", "test/123")]
+        [DataRow("HKLM/\"Software\"//test\\123", true, @"HKLM\Software", @"test\123")]
+        [DataRow("HKLM/\"Software\"/test", false, @"HKLM\Software\test", "")]
+        [DataRow("HKLM\\Software\\\"test\"", false, @"HKLM\Software\test", "")]
+        [DataRow("HKLM\\\"Software\"\\\"test\"", false, @"HKLM\Software\test", "")]
+        [DataRow("HKLM\\\"Software\"\\\"test/software\"", false, @"HKLM\Software\test/software", "")]
+        [DataRow("HKLM\\\"Software\"/\"test\"\\hello", false, @"HKLM\Software\test\hello", "")]
+        [DataRow("HKLM\\\"Software\"\\\"test\"\\hello\\\\\"some/value\"", true, @"HKLM\Software\test\hello", "some/value")]
+        [DataRow("HKLM\\\"Software\"\\\"test\"/hello\\\\\"some/value\"", true, @"HKLM\Software\test\hello", "some/value")]
+        [DataRow("HKLM\\\"Software\"\\\"test\"\\hello\\\\some\\value", true, @"HKLM\Software\test\hello", @"some\value")]
         public void GetQueryPartsTest(string query, bool expectedHasValueName, string expectedQueryKey, string expectedQueryValueName)
         {
             var hasValueName = QueryHelper.GetQueryParts(query, out var queryKey, out var queryValueName);
