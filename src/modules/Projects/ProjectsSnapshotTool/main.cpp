@@ -89,7 +89,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
         }
 
         auto data = Utils::Apps::GetApp(processPath, apps);
-        if (!data.has_value())
+        if (!data.has_value() || data->name.empty())
         {
             continue;
         }
