@@ -627,6 +627,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(ShowPolicyConfiguredInfoForBehaviorSettings));
                     OnPropertyChanged(nameof(ShowPolicyConfiguredInfoForName2IPSetting));
                     OnPropertyChanged(nameof(ShowPolicyConfiguredInfoForOriginalUiSetting));
+                    OnPropertyChanged(nameof(Name2IpListPolicyIsConfigured));
 
                     Task.Run(async () =>
                     {
