@@ -32,7 +32,7 @@ namespace Microsoft.FancyZones.UnitTests.Utils
                 }
                 else
                 {
-                    // Launch FancyZones
+                    // Open FancyZones
                     string? path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                     path += FancyZonesPath;
 

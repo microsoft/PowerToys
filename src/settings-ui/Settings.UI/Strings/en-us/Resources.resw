@@ -902,7 +902,7 @@
   </data>
   <data name="FancyZones_HotkeyEditorControl.Header" xml:space="preserve">
     <value>Open layout editor</value>
-    <comment>Shortcut to launch the FancyZones layout editor application</comment>
+    <comment>Shortcut to open the FancyZones layout editor application</comment>
   </data>
   <data name="FancyZones_WindowSwitching_GroupSettings.Header" xml:space="preserve">
     <value>Switch between windows in the current zone</value>
@@ -921,11 +921,11 @@
   </data>
   <data name="FancyZones_LaunchEditorButtonControl.Header" xml:space="preserve">
     <value>Launch layout editor</value>
-    <comment>launches the FancyZones layout editor application</comment>
+    <comment>opens the FancyZones layout editor application</comment>
   </data>
   <data name="FancyZones_LaunchEditorButtonControl.Description" xml:space="preserve">
     <value>Set and manage your layouts</value>
-    <comment>launches the FancyZones layout editor application</comment>
+    <comment>opens the FancyZones layout editor application</comment>
   </data>
   <data name="FancyZones_MakeDraggedWindowTransparentCheckBoxControl.Content" xml:space="preserve">
     <value>Make dragged window transparent</value>

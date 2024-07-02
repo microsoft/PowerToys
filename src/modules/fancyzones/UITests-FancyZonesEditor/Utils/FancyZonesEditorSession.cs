@@ -42,7 +42,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         {
             try
             {
-                // Launch FancyZonesEditor
+                // Open FancyZonesEditor
                 string? path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 path += FancyZonesEditorPath;
 

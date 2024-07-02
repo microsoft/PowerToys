@@ -179,7 +179,7 @@ private:
     WorkAreaConfiguration m_workAreaConfiguration;
     DraggingState m_draggingState;
 
-    wil::unique_handle m_terminateEditorEvent; // Handle of FancyZonesEditor.exe we launch and wait on
+    wil::unique_handle m_terminateEditorEvent; // Handle of FancyZonesEditor.exe we open and wait on
 
     OnThreadExecutor m_dpiUnawareThread;
 
@@ -545,7 +545,7 @@ void FancyZones::ToggleEditor() noexcept
     ShellExecuteEx(&sei);
     Trace::FancyZones::EditorLaunched(1);
 
-    // Launch the editor on a background thread
+    // Open the editor on a background thread
     // Wait for the editor's process to exit
     // Post back to the main thread to update
     std::thread waitForEditorThread([window = m_window, processHandle = sei.hProcess, terminateEditorEvent = m_terminateEditorEvent.get()]() {

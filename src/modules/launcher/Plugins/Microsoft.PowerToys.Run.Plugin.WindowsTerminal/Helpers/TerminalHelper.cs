@@ -11,11 +11,11 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
     public static class TerminalHelper
     {
         /// <summary>
-        /// Return the arguments for launch Windows Terminal
+        /// Return the arguments for open Windows Terminal
         /// </summary>
         /// <param name="profileName">Name of the Terminal profile</param>
-        /// <param name="openNewTab">Whether to launch the profile in a new tab</param>
-        /// <param name="openQuake">Whether to launch the profile in the quake window</param>
+        /// <param name="openNewTab">Whether to open the profile in a new tab</param>
+        /// <param name="openQuake">Whether to open the profile in the quake window</param>
         public static string GetArguments(string profileName, bool openNewTab, bool openQuake)
         {
             var argsPrefix = string.Empty;
