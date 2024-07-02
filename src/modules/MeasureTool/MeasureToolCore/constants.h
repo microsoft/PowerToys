@@ -1,5 +1,6 @@
 #pragma once
 
+#include <windef.h>
 #include <chrono>
 
 namespace consts
@@ -18,4 +19,6 @@ namespace consts
     /* Offset to not try not to use the cursor immediate pixels in measuring, but it seems only necessary for continuous mode. */
     constexpr inline long CURSOR_OFFSET_AMOUNT_X = 4;
     constexpr inline long CURSOR_OFFSET_AMOUNT_Y = 4;
+
+    constexpr inline LPARAM MOUSEEVENTF_FROMTOUCH = 0xFF515700;
 }

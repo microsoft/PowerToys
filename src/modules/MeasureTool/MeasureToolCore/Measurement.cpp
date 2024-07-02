@@ -2,6 +2,8 @@
 
 #include "Measurement.h"
 
+#include <iostream>
+
 Measurement::Measurement(RECT winRect)
 {
     rect.left = static_cast<float>(winRect.left);
@@ -89,3 +91,41 @@ Measurement::PrintResult Measurement::Print(wchar_t* buf,
 
     return result;
 }
+
+void Measurement::PrintToStream(std::wostream& stream,
+                                const bool prependNewLine,
+                                const bool printWidth,
+                                const bool printHeight,
+                                const Unit units) const
+{
+    if (prependNewLine)
+    {
+        stream << std::endl;
+    }
+
+    if (printWidth)
+    {
+        stream << Width(units);
+        if (printHeight)
+        {
+            stream << L" \x00D7 ";
+        }
+    }
+
+    if (printHeight)
+    {
+        stream << Height(units);
+    }
+
+    switch (units)
+    {
+    case Measurement::Unit::Inch:
+        stream << L" in";
+
+        break;
+    case Measurement::Unit::Centimetre:
+        stream << L" cm";
+        break;
+    }
+}
+
