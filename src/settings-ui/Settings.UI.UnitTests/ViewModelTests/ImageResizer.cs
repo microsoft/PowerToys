@@ -233,10 +233,10 @@ namespace ViewModelTests
             // Assert
             ImageSize newTestSize = viewModel.Sizes.First(x => x.Id == 0);
             Assert.AreEqual(newTestSize.Name, "New size 1");
-            Assert.AreEqual(newTestSize.Fit, (int)ResizeFit.Fit);
+            Assert.AreEqual(newTestSize.Fit, ResizeFit.Fit);
             Assert.AreEqual(newTestSize.Width, 854);
             Assert.AreEqual(newTestSize.Height, 480);
-            Assert.AreEqual(newTestSize.Unit, (int)ResizeUnit.Pixel);
+            Assert.AreEqual(newTestSize.Unit, ResizeUnit.Pixel);
         }
 
         [TestMethod]
@@ -287,10 +287,10 @@ namespace ViewModelTests
             {
                 Id = 0,
                 Name = "Test",
-                Fit = (int)ResizeFit.Fit,
+                Fit = ResizeFit.Fit,
                 Width = 30,
                 Height = 30,
-                Unit = (int)ResizeUnit.Pixel,
+                Unit = ResizeUnit.Pixel,
             };
 
             double negativeWidth = -2.0;
