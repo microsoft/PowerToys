@@ -154,7 +154,7 @@
   <data name="Reload.Text" xml:space="preserve">
     <value>Reload</value>
   </data>
-  <data name="RestartAsAdmin.Text" xml:space="preserve">
+  <data name="RestartAsAdminBtn.Content" xml:space="preserve">
     <value>Restart as administrator</value>
   </data>
   <data name="User.Header" xml:space="preserve">
@@ -163,5 +163,8 @@
   <data name="AppAdminTitle" xml:space="preserve">
     <value>Administrator: File Locksmith</value>
     <comment>Title of the window when running as administrator.</comment>
+  </data>
+  <data name="NotRunningAsAdminInfoBar.Message" xml:space="preserve">
+    <value>Some results might be missing because of insufficient permissions.</value>
   </data>
 </root>

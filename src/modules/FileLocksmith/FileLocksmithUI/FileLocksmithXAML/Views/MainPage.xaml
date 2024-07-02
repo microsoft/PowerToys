@@ -23,6 +23,8 @@
             FalseValue="Visible"
             GreaterThan="0"
             TrueValue="Collapsed" />
+
+        <tkconverters:BoolNegationConverter x:Key="boolNegationConverter" />
         <converters:FileCountConverter x:Key="fileCountConverter" />
         <converters:PidToIconConverter x:Key="pidToIconConverter" />
         <converters:UserToSystemWarningVisibilityConverter x:Key="userToSystemWarningVisibilityConverter" />
@@ -38,6 +40,7 @@
     <Grid RowSpacing="8">
         <Grid.RowDefinitions>
             <RowDefinition x:Name="ButtonsRow" Height="Auto" />
+            <RowDefinition x:Name="InfoBarRow" Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -56,34 +59,32 @@
                 </ToolTipService.ToolTip>
             </Button>
 
-            <StackPanel
+            <Button
                 HorizontalAlignment="Right"
-                Orientation="Horizontal"
-                Spacing="8">
-                <Button
-                    Command="{Binding LoadProcessesCommand}"
-                    Content="{ui:FontIcon Glyph=&#xe72c;,
-                                          FontSize=16}"
-                    Style="{StaticResource SubtleButtonStyle}">
-                    <ToolTipService.ToolTip>
-                        <TextBlock x:Uid="Reload" />
-                    </ToolTipService.ToolTip>
-                </Button>
-                <Button
-                    x:Name="RestartAsAdminBtn"
-                    Command="{Binding RestartElevatedCommand}"
-                    Content="{ui:FontIcon Glyph=&#xe7ef;,
-                                          FontSize=16}"
-                    Style="{StaticResource SubtleButtonStyle}"
-                    Visibility="{x:Bind ViewModel.IsElevated, Converter={StaticResource boolToVisibilityConverter}}">
-                    <ToolTipService.ToolTip>
-                        <TextBlock x:Uid="RestartAsAdmin" />
-                    </ToolTipService.ToolTip>
-                </Button>
-            </StackPanel>
+                Command="{Binding LoadProcessesCommand}"
+                Content="{ui:FontIcon Glyph=&#xe72c;,
+                                      FontSize=16}"
+                Style="{StaticResource SubtleButtonStyle}">
+                <ToolTipService.ToolTip>
+                    <TextBlock x:Uid="Reload" />
+                </ToolTipService.ToolTip>
+            </Button>
         </Grid>
 
-        <Grid Grid.Row="1">
+        <InfoBar
+            x:Uid="NotRunningAsAdminInfoBar"
+            Grid.Row="1"
+            Margin="16,0"
+            IsClosable="False"
+            IsOpen="{x:Bind ViewModel.IsElevated, Converter={StaticResource boolNegationConverter}, Mode=OneWay}"
+            IsTabStop="{x:Bind ViewModel.IsElevated, Converter={StaticResource boolNegationConverter}, Mode=OneWay}"
+            Severity="Informational">
+            <InfoBar.ActionButton>
+                <Button x:Uid="RestartAsAdminBtn" Command="{Binding RestartElevatedCommand}" />
+            </InfoBar.ActionButton>
+        </InfoBar>
+
+        <Grid Grid.Row="2">
             <Grid Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource boolToVisibilityConverter}, Mode=OneWay}">
                 <ListView
                     x:Name="ProcessesListView"
