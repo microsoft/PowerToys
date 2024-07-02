@@ -313,26 +313,26 @@
                             <InfoBar
                                 x:Uid="GPO_SettingIsManaged"
                                 IsClosable="False"
-                                IsOpen="{x:Bind ViewModel.Name2IpListFromPolicyIsConfigured, Mode=OneWay}"
-                                IsTabStop="{x:Bind ViewModel.Name2IpListFromPolicyIsConfigured, Mode=OneWay}"
+                                IsOpen="{x:Bind ViewModel.Name2IpListPolicyIsConfigured, Mode=OneWay}"
+                                IsTabStop="{x:Bind ViewModel.Name2IpListPolicyIsConfigured, Mode=OneWay}"
                                 Severity="Informational">
                                 <!--InfoBar.IconSource>
                                     <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
                                 </InfoBar.IconSource-->
                             </InfoBar>
                             <InfoBar
-                                x:Uid="MouseWithoutBorders_Name2IpListFromPolicyInfo"
+                                x:Uid="MouseWithoutBorders_PolicyIPAddressMappingInfo"
                                 Margin="0,0,0,0"
                                 IsClosable="False"
-                                IsOpen="{x:Bind ViewModel.Name2IpListFromPolicyIsConfigured, Mode=OneWay}"
-                                IsTabStop="{x:Bind ViewModel.Name2IpListFromPolicyIsConfigured, Mode=OneWay}"
+                                IsOpen="{x:Bind ViewModel.Name2IpListPolicyIsConfigured, Mode=OneWay}"
+                                IsTabStop="{x:Bind ViewModel.Name2IpListPolicyIsConfigured, Mode=OneWay}"
                                 Severity="Informational">
                                 <InfoBar.IconSource>
                                     <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
                                 </InfoBar.IconSource>
                                 <InfoBar.Content>
                                     <TextBox
-                                        x:Uid="MouseWithoutBorders_PolicyIPAddressMapping_TextBoxControl"
+                                        x:Uid="MouseWithoutBorders_PolicyIPAddressMappingInfo_TextBoxControl"
                                         MinWidth="240"
                                         MinHeight="80"
                                         MaxHeight="160"
@@ -342,7 +342,7 @@
                                         ScrollViewer.IsVerticalRailEnabled="True"
                                         ScrollViewer.VerticalScrollBarVisibility="Visible"
                                         ScrollViewer.VerticalScrollMode="Enabled"
-                                        Text="{x:Bind ViewModel.Name2IpListFromPolicy, Mode=OneWay}"
+                                        Text="{x:Bind ViewModel.Name2IpListPolicyData, Mode=OneWay}"
                                         TextWrapping="Wrap" />
                                 </InfoBar.Content>
                             </InfoBar>

@@ -74,20 +74,15 @@ namespace powertoys_gpo {
     const std::wstring POLICY_ALLOW_ADVANCED_PASTE_ONLINE_AI_MODELS = L"AllowPowerToysAdvancedPasteOnlineAIModels";
     const std::wstring POLICY_MWB_POLICY_DEFINED_IP_MAPPING_RULES = L"MwbPolicyDefinedIpMappingRules";
 
-    inline std::optional<std::wstring> readRegistryStringValue(HKEY hRootKey, const std::wstring& subKey, const std::wstring& value_name, const DWORD value_type = REG_SZ)
+    inline std::optional<std::wstring> readRegistryStringValue(HKEY hRootKey, const std::wstring& subKey, const std::wstring& value_name, const bool is_multi_line_text = false)
     {
         // Set value type
         DWORD reg_value_type = REG_SZ;
         DWORD reg_flags = RRF_RT_REG_SZ;
-        if (value_type == REG_MULTI_SZ)
+        if (is_multi_line_text)
         {
             reg_value_type = REG_MULTI_SZ;
             reg_flags = RRF_RT_REG_MULTI_SZ;
-        }
-        else if (value_type != REG_SZ)
-        {
-            OutputDebugStringW(L"invalid_argument(Wrong value type. Only REG_SZ and REG_MULTI_SZ supported.)");
-            throw std::exception();
         }
 
         DWORD string_buffer_capacity;
@@ -509,10 +504,10 @@ namespace powertoys_gpo {
     inline std::wstring getConfiguredMwbPolicyDefinedIpMappingRules()
     {
         // Important: HKLM has priority over HKCU
-        auto mapping_rules = readRegistryStringValue(HKEY_LOCAL_MACHINE, POLICIES_PATH, POLICY_MWB_POLICY_DEFINED_IP_MAPPING_RULES, REG_MULTI_SZ);
+        auto mapping_rules = readRegistryStringValue(HKEY_LOCAL_MACHINE, POLICIES_PATH, POLICY_MWB_POLICY_DEFINED_IP_MAPPING_RULES, true);
         if (!mapping_rules.has_value())
         {
-            mapping_rules = readRegistryStringValue(HKEY_CURRENT_USER, POLICIES_PATH, POLICY_MWB_POLICY_DEFINED_IP_MAPPING_RULES, REG_MULTI_SZ);
+            mapping_rules = readRegistryStringValue(HKEY_CURRENT_USER, POLICIES_PATH, POLICY_MWB_POLICY_DEFINED_IP_MAPPING_RULES, true);
         }
 
         // return value

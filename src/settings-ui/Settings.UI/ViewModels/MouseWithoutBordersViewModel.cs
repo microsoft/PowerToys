@@ -162,6 +162,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
 
+        // Configuration policy variables
+        private GpoRuleConfigured _clipboardSharingEnabledGpoConfiguration;
+        private bool _clipboardSharingEnabledIsGPOConfigured;
+        private GpoRuleConfigured _fileTransferEnabledGpoConfiguration;
+        private bool _fileTransferEnabledIsGPOConfigured;
+        private GpoRuleConfigured _useOriginalUserInterfaceGpoConfiguration;
+        private bool _useOriginalUserInterfaceIsGPOConfigured;
+        private GpoRuleConfigured _disallowBlockingScreensaverGpoConfiguration;
+        private bool _disallowBlockingScreensaverIsGPOConfigured;
+        private GpoRuleConfigured _sameSubnetOnlyGpoConfiguration;
+        private bool _sameSubnetOnlyIsGPOConfigured;
+        private GpoRuleConfigured _validateRemoteIpGpoConfiguration;
+        private bool _validateRemoteIpIsGPOConfigured;
+        private GpoRuleConfigured _disableUserDefinedIpMappingRulesGpoConfiguration;
+        private bool _disableUserDefinedIpMappingRulesIsGPOConfigured;
+        private string _policyDefinedIpMappingRulesGPOData;
+        private bool _policyDefinedIpMappingRulesIsGPOConfigured;
+
         public string MachineHostName
         {
             get
@@ -384,6 +402,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             InitializeEnabledValue();
+            InitializePolicyValues();
 
             // MouseWithoutBorders settings may be changed by the logic in the utility as machines connect. We need to get a fresh version everytime instead of using a repository.
             MouseWithoutBordersSettings moduleSettings;
@@ -463,6 +482,38 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.MouseWithoutBorders;
             }
+        }
+
+        private void InitializePolicyValues()
+        {
+            /*                        private GpoRuleConfigured _clipboardSharingEnabledGpoConfiguration;
+            private bool _clipboardSharingEnabledIsGPOConfigured;
+            private GpoRuleConfigured _fileTransferEnabledGpoConfiguration;
+            private bool _fileTransferEnabledIsGPOConfigured;
+            private GpoRuleConfigured _useOriginalUserInterfaceGpoConfiguration;
+            private bool _useOriginalUserInterfaceIsGPOConfigured;
+            private GpoRuleConfigured _disallowBlockingScreensaverGpoConfiguration;
+            private bool _disallowBlockingScreensaverIsGPOConfigured;
+            private GpoRuleConfigured _sameSubnetOnlyGpoConfiguration;
+            private bool _sameSubnetOnlyIsGPOConfigured;
+            private GpoRuleConfigured _validateRemoteIpGpoConfiguration;
+            private bool _validateRemoteIpIsGPOConfigured;
+
+
+
+            // Policies supporting only enbaled state
+            _disableUserDefinedIpMappingRulesGpoConfiguration;
+            _disableUserDefinedIpMappingRulesIsGPOConfigured;
+
+        // Policies supporting only disabled state
+
+
+        // Policies supporting enabled and disabled state
+            */
+
+            // Special policies
+            _policyDefinedIpMappingRulesGPOData = "ddd 111\r\nxxx 222\r\n";
+            _policyDefinedIpMappingRulesIsGPOConfigured = !string.IsNullOrWhiteSpace(_policyDefinedIpMappingRulesGPOData);
         }
 
         private void LoadViewModelFromSettings(MouseWithoutBordersSettings moduleSettings)
@@ -767,16 +818,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public string Name2IpListFromPolicy
+        public string Name2IpListPolicyData
         {
             // Due to https://github.com/microsoft/microsoft-ui-xaml/issues/1826, we must
             // add back \n chars on set and remove them on get for the widget
             // to make its behavior consistent with the old UI and MWB internal code.
             // get => GPOWrapper.GetConfiguredMwbPolicyDefinedIpMappingRules().Replace("\r\n", "\r");
-            get => "ddd 111\r\nxxx 222\r\n".Replace("\r\n", "\r");
+            get => _policyDefinedIpMappingRulesGPOData.Replace("\r\n", "\r");
         }
 
-        public bool Name2IpListFromPolicyIsConfigured => !string.IsNullOrWhiteSpace(Name2IpListFromPolicy);
+        public bool Name2IpListPolicyIsConfigured => _policyDefinedIpMappingRulesIsGPOConfigured;
 
         public bool SameSubnetOnly
         {
