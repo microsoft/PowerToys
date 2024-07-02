@@ -82,5 +82,12 @@ void ReportGPOValues(const std::filesystem::path& tmpDir)
     report << "getConfiguredQoiPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredQoiPreviewEnabledValue()) << std::endl;
     report << "getConfiguredQoiThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredQoiThumbnailsEnabledValue()) << std::endl;
     report << "getAllowedAdvancedPasteOnlineAIModelsValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowedAdvancedPasteOnlineAIModelsValue()) << std::endl;
+    report << "getConfiguredMwbClipboardSharingEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbClipboardSharingEnabledValue()) << std::endl;
+    report << "getConfiguredMwbFileTransferEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbFileTransferEnabledValue()) << std::endl;
+    report << "getConfiguredMwbUseOriginalUserInterfaceValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbUseOriginalUserInterfaceValue()) << std::endl;
+    report << "getConfiguredMwbDisallowBlockingScreensaverValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbDisallowBlockingScreensaverValue()) << std::endl;
+    report << "getConfiguredMwbSameSubnetOnlyValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbSameSubnetOnlyValue()) << std::endl;
+    report << "getConfiguredMwbValidateRemoteIpValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbValidateRemoteIpValue()) << std::endl;
+    report << "getConfiguredMwbDisableUserDefinedIpMappingRulesValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbDisableUserDefinedIpMappingRulesValue()) << std::endl;
     report << "getConfiguredMwbPolicyDefinedIpMappingRules: " << gpo_string_to_string(powertoys_gpo::getConfiguredMwbPolicyDefinedIpMappingRules()) << std::endl;
 }
