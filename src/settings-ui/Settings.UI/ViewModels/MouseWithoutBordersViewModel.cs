@@ -516,7 +516,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _sameSubnetOnlyGpoConfiguration = GPOWrapper.GetConfiguredMwbSameSubnetOnlyValue();
             _sameSubnetOnlyIsGPOConfigured = GPOWrapper.GetConfiguredMwbSameSubnetOnlyValue() == GpoRuleConfigured.Enabled || GpoRuleConfigured.Disabled;
             _validateRemoteIpGpoConfiguration = GPOWrapper.GetConfiguredMwbValidateRemoteIpValue();
-            _validateRemoteIpIsGPOConfigured = GPOWrapper.GetConfiguredMwbSameSubnetOnlyValue() == GpoRuleConfigured.Enabled || GpoRuleConfigured.Disabled;
+            _validateRemoteIpIsGPOConfigured = GPOWrapper.GetConfiguredMwbValidateRemoteIpValue() == GpoRuleConfigured.Enabled || GpoRuleConfigured.Disabled;
 
             // Special policies
             _policyDefinedIpMappingRulesGPOData = "ddd 111\r\nxxx 222\r\n";
