@@ -208,13 +208,26 @@
                         IsEnabled="{x:Bind ViewModel.CanUninstallService, Mode=OneWay}" />
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="MouseWithoutBorders_Settings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <InfoBar
+                        x:Uid="GPO_SomeSettingsAreManaged"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.ShowPolicyConfiguredInfoForBehaviorSettings, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.ShowPolicyConfiguredInfoForBehaviorSettings, Mode=OneWay}"
+                        Severity="Informational">
+                        <!--InfoBar.IconSource>
+                                    <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                                </InfoBar.IconSource-->
+                    </InfoBar>
                     <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_WrapMouse">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_WrapMouse_ToggleSwitch" IsOn="{x:Bind ViewModel.WrapMouse, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsExpander x:Uid="MouseWithoutBorders_ShareClipboard" IsExpanded="True">
+                    <tkcontrols:SettingsExpander
+                        x:Uid="MouseWithoutBorders_ShareClipboard"
+                        IsEnabled="{x:Bind ViewModel.CardForShareClipboardSettingIsEnabled, Mode=OneWay}"
+                        IsExpanded="True">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_ShareClipboard_ToggleSwitch" IsOn="{x:Bind ViewModel.ShareClipboard, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_TransferFile" IsEnabled="{x:Bind ViewModel.IsTransferFileCardEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_TransferFile" IsEnabled="{x:Bind ViewModel.CardForTransferFileSettingIsEnabled, Mode=OneWay}">
                                 <ToggleSwitch x:Uid="MouseWithoutBorders_TransferFile_ToggleSwitch" IsOn="{x:Bind ViewModel.TransferFile, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
@@ -225,13 +238,13 @@
                     <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_DrawMouseCursor">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_DrawMouseCursor_ToggleSwitch" IsOn="{x:Bind ViewModel.DrawMouseCursor, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ValidateRemoteMachineIP">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ValidateRemoteMachineIP" IsEnabled="{x:Bind ViewModel.CardForValidateRemoteIpSettingIsEnabled, Mode=OneWay}">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_ValidateRemoteMachineIP_ToggleSwitch" IsOn="{x:Bind ViewModel.ValidateRemoteMachineIP, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_SameSubnetOnly">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_SameSubnetOnly" IsEnabled="{x:Bind ViewModel.CardForSameSubnetOnlySettingIsEnabled, Mode=OneWay}">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_SameSubnetOnly_ToggleSwitch" IsOn="{x:Bind ViewModel.SameSubnetOnly, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_BlockScreenSaverOnOtherMachines">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_BlockScreenSaverOnOtherMachines" IsEnabled="{x:Bind ViewModel.CardForBlockScreensaverSettingIsEnabled, Mode=OneWay}">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_BlockScreenSaverOnOtherMachines_ToggleSwitch" IsOn="{x:Bind ViewModel.BlockScreenSaverOnOtherMachines, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_MoveMouseRelatively">
@@ -297,7 +310,7 @@
                             <tkcontrols:SettingsCard
                                 HorizontalContentAlignment="Stretch"
                                 ContentAlignment="Vertical"
-                                IsEnabled="false">
+                                IsEnabled="{x:Bind ViewModel.CardForName2IpSettingIsEnabled, Mode=OneWay}">
                                 <TextBox
                                     x:Uid="MouseWithoutBorders_IPAddressMapping_TextBoxControl"
                                     MinWidth="240"
@@ -313,8 +326,8 @@
                             <InfoBar
                                 x:Uid="GPO_SettingIsManaged"
                                 IsClosable="False"
-                                IsOpen="{x:Bind ViewModel.Name2IpListPolicyIsConfigured, Mode=OneWay}"
-                                IsTabStop="{x:Bind ViewModel.Name2IpListPolicyIsConfigured, Mode=OneWay}"
+                                IsOpen="{x:Bind ViewModel.ShowPolicyConfiguredInfoForName2IPSetting, Mode=OneWay}"
+                                IsTabStop="{x:Bind ViewModel.ShowPolicyConfiguredInfoForName2IPSetting, Mode=OneWay}"
                                 Severity="Informational">
                                 <!--InfoBar.IconSource>
                                     <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
@@ -358,9 +371,19 @@
                     <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ShowOriginalUI">
                         <ToggleSwitch
                             x:Uid="MouseWithoutBorders_ShowOriginalUI_ToggleSwitch"
-                            IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
+                            IsEnabled="{x:Bind ViewModel.CardForOriginalUiSettingIsEnabled, Mode=OneWay}"
                             IsOn="{x:Bind ViewModel.ShowOriginalUI, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_SettingIsManaged"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.ShowPolicyConfiguredInfoForOriginalUiSetting, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.ShowPolicyConfiguredInfoForOriginalUiSetting, Mode=OneWay}"
+                        Severity="Informational">
+                        <!--InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource-->
+                    </InfoBar>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
