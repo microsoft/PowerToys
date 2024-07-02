@@ -1375,6 +1375,7 @@ SCID
 Scip
 scipbe
 Scode
+screensaver
 screenshots
 scrollviewer
 sddl
