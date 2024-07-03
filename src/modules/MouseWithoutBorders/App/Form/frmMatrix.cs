@@ -845,6 +845,12 @@ namespace MouseWithoutBorders
 
             comboBoxEasyMouse.Text = Setting.Values.HotKeyToggleEasyMouse == 0 ? "Disable" : new string(new char[] { (char)Setting.Values.HotKeyToggleEasyMouse });
 #endif
+
+            // Applay policy configuretions
+            pictureBoxMouseWithoutBorders.Visible = true;
+            groupBoxName2IPPolicyList.Visible = false;
+            textBoxMachineName2IPPolicyList.Visible = false;
+            textBoxMachineName2IPPolicyList.Text = "ddd 111\r\nxxx 222\r\n";
         }
 
         private void RadioButton_CheckedChanged(object sender, EventArgs e)
