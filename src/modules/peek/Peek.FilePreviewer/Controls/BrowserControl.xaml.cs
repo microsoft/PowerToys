@@ -145,7 +145,7 @@ namespace Peek.FilePreviewer.Controls
                 PreviewBrowser.DefaultBackgroundColor = Color.FromArgb(0, 0, 0, 0);
 
                 PreviewBrowser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
-                PreviewBrowser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+                PreviewBrowser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
                 PreviewBrowser.CoreWebView2.Settings.AreDevToolsEnabled = false;
                 PreviewBrowser.CoreWebView2.Settings.AreHostObjectsAllowed = false;
                 PreviewBrowser.CoreWebView2.Settings.IsGeneralAutofillEnabled = false;
