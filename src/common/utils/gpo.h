@@ -254,47 +254,47 @@ namespace powertoys_gpo {
 
     inline gpo_rule_configured_t getConfiguredSvgPreviewEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_SVG_PREVIEW);
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_SVG_PREVIEW);
     }
 
     inline gpo_rule_configured_t getConfiguredMarkdownPreviewEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_MARKDOWN_PREVIEW);
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_MARKDOWN_PREVIEW);
     }
 
     inline gpo_rule_configured_t getConfiguredMonacoPreviewEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_MONACO_PREVIEW);
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_MONACO_PREVIEW);
     }
 
     inline gpo_rule_configured_t getConfiguredPdfPreviewEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_PDF_PREVIEW);
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_PDF_PREVIEW);
     }
 
     inline gpo_rule_configured_t getConfiguredGcodePreviewEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_GCODE_PREVIEW);
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_GCODE_PREVIEW);
     }
 
     inline gpo_rule_configured_t getConfiguredSvgThumbnailsEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_SVG_THUMBNAILS);
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_SVG_THUMBNAILS);
     }
 
     inline gpo_rule_configured_t getConfiguredPdfThumbnailsEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_PDF_THUMBNAILS);
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_PDF_THUMBNAILS);
     }
 
     inline gpo_rule_configured_t getConfiguredGcodeThumbnailsEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_GCODE_THUMBNAILS);
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_GCODE_THUMBNAILS);
     }
 
     inline gpo_rule_configured_t getConfiguredStlThumbnailsEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_STL_THUMBNAILS);
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_STL_THUMBNAILS);
     }
 
     inline gpo_rule_configured_t getConfiguredHostsFileEditorEnabledValue()
@@ -464,12 +464,12 @@ namespace powertoys_gpo {
 
     inline gpo_rule_configured_t getConfiguredQoiPreviewEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_QOI_PREVIEW);
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_QOI_PREVIEW);
     }
 
     inline gpo_rule_configured_t getConfiguredQoiThumbnailsEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_QOI_THUMBNAILS);
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_QOI_THUMBNAILS);
     }
 
     inline gpo_rule_configured_t getAllowedAdvancedPasteOnlineAIModelsValue()
