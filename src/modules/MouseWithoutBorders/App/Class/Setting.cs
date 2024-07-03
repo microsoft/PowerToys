@@ -489,6 +489,11 @@ namespace MouseWithoutBorders.Class
         {
             get
             {
+                if (GPOWrapper.GetConfiguredMwbDisallowBlockingScreensaverValue() == GpoRuleConfigured.Enabled)
+                {
+                    return false;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     return _properties.BlockScreenSaverOnOtherMachines;
@@ -497,12 +502,21 @@ namespace MouseWithoutBorders.Class
 
             set
             {
+                if (BlockScreenSaverIsGpoConfigured)
+                {
+                    return;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     _properties.BlockScreenSaverOnOtherMachines = value;
                 }
             }
         }
+
+        [CmdConfigureIgnore]
+        [JsonIgnore]
+        internal bool BlockScreenSaverIsGpoConfigured => GPOWrapper.GetConfiguredMwbDisallowBlockingScreensaverValue() == GpoRuleConfigured.Enabled;
 
         internal bool MoveMouseRelatively
         {
@@ -831,7 +845,7 @@ namespace MouseWithoutBorders.Class
         {
             get
             {
-                if (Name2IpIsGpoConfigured)
+                if (GPOWrapper.GetConfiguredMwbDisableUserDefinedIpMappingRulesValue() == GpoRuleConfigured.Enabled)
                 {
                     return string.Empty;
                 }
@@ -866,7 +880,7 @@ namespace MouseWithoutBorders.Class
 
         [CmdConfigureIgnore]
         [JsonIgnore]
-        internal bool Name2IpPolicyListIsGpoConfigured => !string.IsNullOrWhiteSpace(Name2IPPolicyList);
+        internal bool Name2IpPolicyListIsGpoConfigured => !string.IsNullOrWhiteSpace(Name2IpPolicyList);
 
         internal bool FirstCtrlShiftS
         {

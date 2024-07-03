@@ -846,12 +846,13 @@ namespace MouseWithoutBorders
             comboBoxEasyMouse.Text = Setting.Values.HotKeyToggleEasyMouse == 0 ? "Disable" : new string(new char[] { (char)Setting.Values.HotKeyToggleEasyMouse });
 #endif
 
-            // Applay policy configuration on UI elements
+            // Apply policy configuration on UI elements
+            // Has to be the last action
             if (Setting.Values.Name2IpIsGpoConfigured)
             {
-                groupBoxDNS.Text = groupBoxDNS.Text + " [Managed]";
-                groupBoxDNS.ForeColor = Color.BlueViolet;
                 textBoxMachineName2IP.ReadOnly = true;
+                groupBoxDNS.ForeColor = Color.DimGray;
+                groupBoxDNS.Text += " [Managed]";
             }
 
             if (Setting.Values.Name2IpPolicyListIsGpoConfigured)
@@ -860,6 +861,12 @@ namespace MouseWithoutBorders
                 groupBoxName2IPPolicyList.Visible = true;
                 textBoxMachineName2IPPolicyList.Visible = true;
                 textBoxMachineName2IPPolicyList.Text = Setting.Values.Name2IpPolicyList;
+            }
+
+            if (Setting.Values.BlockScreenSaverIsGpoConfigured)
+            {
+                checkBoxBlockScreenSaver.Enabled = false;
+                checkBoxBlockScreenSaver.Text += " [Managed]";
             }
         }
 
