@@ -330,18 +330,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool pastePlain = true;
+        private bool advancedPaste = true;
 
-        [JsonPropertyName("PastePlain")]
-        public bool PastePlain
+        [JsonPropertyName("AdvancedPaste")]
+        public bool AdvancedPaste
         {
-            get => pastePlain;
+            get => advancedPaste;
             set
             {
-                if (pastePlain != value)
+                if (advancedPaste != value)
                 {
                     LogTelemetryEvent(value);
-                    pastePlain = value;
+                    advancedPaste = value;
                     NotifyChange();
                 }
             }

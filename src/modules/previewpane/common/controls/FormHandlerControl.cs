@@ -120,6 +120,12 @@ namespace Common
         /// </summary>
         public void UpdateWindowBounds(IntPtr hwnd, Rectangle newBounds)
         {
+            if (this.Disposing || this.IsDisposed)
+            {
+                // For unclear reasons, this can be called when handling an error and the form has already been disposed.
+                return;
+            }
+
             // We must set the WS_CHILD style to change the form to a control within the Explorer preview pane
             int windowStyle = NativeMethods.GetWindowLong(Handle, gwlStyle);
             if ((windowStyle & wsChild) == 0)

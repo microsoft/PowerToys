@@ -61,7 +61,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Searches your local OneNote notebooks. This plugin requires the OneNote desktop app which is included in Microsoft Office..
+        ///   Looks up a localized string similar to Searches your local OneNote notebooks. This plugin requires the OneNote desktop app which is included in Microsoft Office.
         /// </summary>
         internal static string PluginDescription {
             get {

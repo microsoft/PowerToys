@@ -69,7 +69,7 @@ namespace KeyboardEventHandlers
                     key_count = std::get<Shortcut>(it->second).Size();
                 }
 
-                LPINPUT keyEventList = new INPUT[size_t(key_count)]{};
+                std::vector<INPUT> keyEventList;
 
                 // Handle remaps to VK_WIN_BOTH
                 DWORD target;
@@ -92,35 +92,31 @@ namespace KeyboardEventHandlers
                 {
                     if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
                     {
-                        Helpers::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, static_cast<WORD>(target), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(target), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
                     }
                     else
                     {
-                        Helpers::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, static_cast<WORD>(target), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(target), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
                     }
                 }
                 else
                 {
-                    int i = 0;
                     Shortcut targetShortcut = std::get<Shortcut>(it->second);
                     if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
                     {
-                        Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
-                        i++;
-                        Helpers::SetModifierKeyEvents(targetShortcut, ModifierKey::Disabled, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        Helpers::SetModifierKeyEvents(targetShortcut, ModifierKey::Disabled, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
                         // Dummy key is not required here since SetModifierKeyEvents will only add key-up events for the modifiers here, and the action key key-up is already sent before it
                     }
                     else
                     {
                         // Dummy key is not required here since SetModifierKeyEvents will only add key-down events for the modifiers here, and the action key key-down is already sent after it
-                        Helpers::SetModifierKeyEvents(targetShortcut, ModifierKey::Disabled, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
-                        Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
-                        i++;
+                        Helpers::SetModifierKeyEvents(targetShortcut, ModifierKey::Disabled, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
                     }
                 }
 
-                UINT res = ii.SendVirtualInput(key_count, keyEventList, sizeof(INPUT));
-                delete[] keyEventList;
+                ii.SendVirtualInput(keyEventList);
 
                 if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
                 {
@@ -194,14 +190,12 @@ namespace KeyboardEventHandlers
                         return 1;
                     }
                 }
-                int key_count = 2;
-                LPINPUT keyEventList = new INPUT[size_t(key_count)]();
-                Helpers::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
-                Helpers::SetKeyEvent(keyEventList, 1, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                std::vector<INPUT> keyEventList;
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
 
                 lock.unlock();
-                UINT res = ii.SendVirtualInput(key_count, keyEventList, sizeof(INPUT));
-                delete[] keyEventList;
+                ii.SendVirtualInput(keyEventList);
 
                 // Reset the long press flag when the key has been lifted.
                 if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
@@ -329,8 +323,7 @@ namespace KeyboardEventHandlers
                         continue;
                     }
 
-                    size_t key_count = 0;
-                    LPINPUT keyEventList = nullptr;
+                    std::vector<INPUT> keyEventList;
 
                     // Remember which win key was pressed initially
                     if (ii.GetVirtualKeyState(VK_RWIN))
@@ -401,7 +394,6 @@ namespace KeyboardEventHandlers
                             myThread.detach();
                         }
 
-
                         Logger::trace(L"ChordKeyboardHandler:returning..");
                         return 1;
                     }
@@ -415,40 +407,26 @@ namespace KeyboardEventHandlers
                         if (commonKeys == src_size - 1)
                         {
                             // key down for all new shortcut keys except the common modifiers
-                            key_count = dest_size - commonKeys;
-                            keyEventList = new INPUT[key_count]{};
-                            int i = 0;
-                            Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first);
-                            Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                            i++;
+                            keyEventList = std::vector<INPUT>{};
+                            Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.winKeyInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first);
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                         }
                         else
                         {
-                            // Dummy key, key up for all the original shortcut modifier keys and key down for all the new shortcut keys but common keys in each are not repeated
-                            key_count = KeyboardManagerConstants::DUMMY_KEY_EVENT_SIZE + (src_size - 1) + (dest_size) - (2 * static_cast<size_t>(commonKeys));
-                            if (isAltRightKeyInvoked)
-                            {
-                                key_count++;
-                            }
-                            keyEventList = new INPUT[key_count]{};
-
                             // Send a dummy key event to prevent modifier press+release from being triggered. Example: Win+A->Ctrl+V, press Win+A, since Win will be released here we need to send a dummy event before it
-                            int i = 0;
-                            Helpers::SetDummyKeyEvent(keyEventList, i, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            Helpers::SetDummyKeyEvent(keyEventList, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
 
                             if (isAltRightKeyInvoked)
                             {
-                                Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetCtrlKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                                i++;
+                                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetCtrlKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                             }
 
                             // Release original shortcut state (release in reverse order of shortcut to be accurate)
-                            Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut));
+                            Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut));
 
                             // Set new shortcut key down state
-                            Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first);
-                            Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);                            
-                            i++;
+                            Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.winKeyInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first);
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                         }
 
                         // Modifier state reset might be required for this key depending on the shortcut's action and target modifiers - ex: Win+Caps -> Ctrl+A
@@ -463,31 +441,23 @@ namespace KeyboardEventHandlers
                     }
                     else if (remapToKey)
                     {
-                        // Dummy key, key up for all the original shortcut modifier keys and key down for remapped key
-                        key_count = KeyboardManagerConstants::DUMMY_KEY_EVENT_SIZE + (src_size - 1) + dest_size;
-
                         // Do not send Disable key
                         if (std::get<DWORD>(it->second.targetShortcut) == CommonSharedConstants::VK_DISABLED)
                         {
-                            key_count--;
                             // Since the original shortcut's action key is pressed, set it to true
                             it->second.isOriginalActionKeyPressed = true;
                         }
 
-                        keyEventList = new INPUT[key_count]{};
-
                         // Send a dummy key event to prevent modifier press+release from being triggered. Example: Win+A->V, press Win+A, since Win will be released here we need to send a dummy event before it
-                        int i = 0;
-                        Helpers::SetDummyKeyEvent(keyEventList, i, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        Helpers::SetDummyKeyEvent(keyEventList, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
 
                         // Release original shortcut state (release in reverse order of shortcut to be accurate)
-                        Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
 
                         // Set target key down state
                         if (std::get<DWORD>(it->second.targetShortcut) != CommonSharedConstants::VK_DISABLED)
                         {
-                            Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut))), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                            i++;
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut))), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                         }
 
                         // Modifier state reset might be required for this key depending on the shortcut's action and target modifier - ex: Win+Caps -> Ctrl
@@ -499,29 +469,14 @@ namespace KeyboardEventHandlers
                     // Remapped to text
                     else
                     {
-                        key_count = KeyboardManagerConstants::DUMMY_KEY_EVENT_SIZE + src_size;
+                        auto& remapping = std::get<std::wstring>(it->second.targetShortcut);
 
-                        auto remapping = std::get<std::wstring>(it->second.targetShortcut);
-                        const UINT inputEventCount = static_cast<UINT>(remapping.length() * 2);
-                        key_count += inputEventCount;
-
-                        keyEventList = new INPUT[key_count]{};
-
-                        int i = 0;
-                        Helpers::SetDummyKeyEvent(keyEventList, i, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        Helpers::SetDummyKeyEvent(keyEventList, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
 
                         // Release original shortcut state (release in reverse order of shortcut to be accurate)
-                        Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
 
-                        for (size_t idx = 0; idx < inputEventCount; ++idx)
-                        {
-                            auto& input = keyEventList[idx + i];
-                            input.type = INPUT_KEYBOARD;
-                            const bool upEvent = idx & 0x1;
-                            input.ki.dwFlags = KEYEVENTF_UNICODE | (upEvent ? KEYEVENTF_KEYUP : 0);
-                            input.ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
-                            input.ki.wScan = remapping[idx >> 1];
-                        }
+                        Helpers::SetTextKeyEvents(keyEventList, remapping);
                     }
 
                     it->second.isShortcutInvoked = true;
@@ -531,12 +486,9 @@ namespace KeyboardEventHandlers
                         state.SetActivatedApp(*activatedApp);
                     }
 
-                    Logger::trace(L"ChordKeyboardHandler:key_count:{}", key_count);
+                    Logger::trace(L"ChordKeyboardHandler:keyEventList.size:{}", keyEventList.size());
 
-                    UINT res = ii.SendVirtualInput(static_cast<UINT>(key_count), keyEventList, sizeof(INPUT));
-                    delete[] keyEventList;
-
-                    // Send daily telemetry event for Keyboard Manager key activation.
+                    ii.SendVirtualInput(keyEventList);
                     if (activatedApp.has_value())
                     {
                         if (remapToKey)
@@ -618,99 +570,49 @@ namespace KeyboardEventHandlers
                 if ((it->first.CheckWinKey(data->lParam->vkCode) || it->first.CheckCtrlKey(data->lParam->vkCode) || it->first.CheckAltKey(data->lParam->vkCode) || it->first.CheckShiftKey(data->lParam->vkCode)) && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
                 {
                     // Release new shortcut, and set original shortcut keys except the one released
-                    size_t key_count = 0;
-                    LPINPUT keyEventList = nullptr;
+                    std::vector<INPUT> keyEventList;
                     if (remapToShortcut && !isRunProgram)
                     {
-                        // if the released key is present in both shortcuts' modifiers (i.e part of the common modifiers)
-                        if (std::get<Shortcut>(it->second.targetShortcut).CheckWinKey(data->lParam->vkCode) || std::get<Shortcut>(it->second.targetShortcut).CheckCtrlKey(data->lParam->vkCode) || std::get<Shortcut>(it->second.targetShortcut).CheckAltKey(data->lParam->vkCode) || std::get<Shortcut>(it->second.targetShortcut).CheckShiftKey(data->lParam->vkCode))
-                        {
-                            // release all new shortcut keys and the common released modifier except the other common modifiers, and add all original shortcut modifiers except the common ones, and dummy key
-                            key_count = (dest_size - commonKeys) + (src_size - 1 - commonKeys) + KeyboardManagerConstants::DUMMY_KEY_EVENT_SIZE;
-                        }
-                        else
-                        {
-                            // release all new shortcut keys except the common modifiers and add all original shortcut modifiers except the common ones, and dummy key
-                            key_count = (dest_size - 1) + (src_size - 2) - (2 * static_cast<size_t>(commonKeys)) + KeyboardManagerConstants::DUMMY_KEY_EVENT_SIZE;
-                        }
-
-                        if (isAltRightKeyInvoked && data->lParam->vkCode == VK_RMENU)
-                        {
-                            key_count++;
-                        }
-
                         // If the target shortcut's action key is pressed, then it should be released
-                        bool isActionKeyPressed = false;
-                        if (ii.GetVirtualKeyState((std::get<Shortcut>(it->second.targetShortcut).GetActionKey())))
-                        {
-                            isActionKeyPressed = true;
-                            key_count += 1;
-                        }
-
-                        keyEventList = new INPUT[key_count]{};
+                        bool isActionKeyPressed = ii.GetVirtualKeyState(std::get<Shortcut>(it->second.targetShortcut).GetActionKey());
 
                         // Release new shortcut state (release in reverse order of shortcut to be accurate)
-                        int i = 0;
                         if (isActionKeyPressed)
                         {
-                            Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                            i++;
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                         }
 
-                        Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first, data->lParam->vkCode);
+                        Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.winKeyInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first, data->lParam->vkCode);
 
                         if (!isAltRightKeyInvoked)
                         {
-                            Logger::error("{} @ {}", __func__, __LINE__);
                             // Set original shortcut key down state except the action key and the released modifier since the original action key may or may not be held down. If it is held down it will generate it's own key message
-                            Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut), data->lParam->vkCode);
+                            Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut), data->lParam->vkCode);
                         }
                         else if (isAltRightKeyInvoked && data->lParam->vkCode == VK_RMENU && state.GetPreviousModifierKey().size() == 0)
                         {
                             isAltRightKeyInvoked = false;
-                            Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetCtrlKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                            i++;
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetCtrlKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                         }
 
                         // Send a dummy key event to prevent modifier press+release from being triggered. Example: Win+Ctrl+A->Ctrl+V, press Win+Ctrl+A and release A then Ctrl, since Win will be pressed here we need to send a dummy event after it
-                        Helpers::SetDummyKeyEvent(keyEventList, i, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        Helpers::SetDummyKeyEvent(keyEventList, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                     }
                     else if (remapToKey)
                     {
-                        // 1 for releasing new key and original shortcut modifiers except the one released and dummy key
-                        key_count = dest_size + src_size - 2 + KeyboardManagerConstants::DUMMY_KEY_EVENT_SIZE;
-                        bool isTargetKeyPressed = false;
-
-                        // Do not send Disable key up
-                        if (std::get<DWORD>(it->second.targetShortcut) == CommonSharedConstants::VK_DISABLED)
-                        {
-                            key_count--;
-                        }
-                        else if (ii.GetVirtualKeyState(Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut))))
-                        {
-                            isTargetKeyPressed = true;
-                        }
-                        else
-                        {
-                            isTargetKeyPressed = false;
-                            key_count--;
-                        }
-
-                        keyEventList = new INPUT[key_count]{};
+                        bool isTargetKeyPressed = (std::get<DWORD>(it->second.targetShortcut) != CommonSharedConstants::VK_DISABLED) && ii.GetVirtualKeyState(Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut)));
 
                         // Release new key state
-                        int i = 0;
                         if (std::get<DWORD>(it->second.targetShortcut) != CommonSharedConstants::VK_DISABLED && isTargetKeyPressed)
                         {
-                            Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut))), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                            i++;
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut))), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                         }
 
                         // Ensures that after releasing both the action key and AltGr, Ctrl does not remain falsely pressed.
                         if (!isAltRightKeyInvoked)
                         {
                             // Set original shortcut key down state except the action key and the released modifier since the original action key may or may not be held down. If it is held down it will generate it's own key message
-                            Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, Shortcut(), data->lParam->vkCode);
+                            Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, Shortcut(), data->lParam->vkCode);
                         }
                         else if (isAltRightKeyInvoked && data->lParam->vkCode == VK_RMENU && state.GetPreviousModifierKey().size() == 0)
                         {
@@ -718,7 +620,7 @@ namespace KeyboardEventHandlers
                         }
 
                         // Send a dummy key event to prevent modifier press+release from being triggered. Example: Win+Ctrl+A->V, press Win+Ctrl+A and release A then Ctrl, since Win will be pressed here we need to send a dummy event after it
-                        Helpers::SetDummyKeyEvent(keyEventList, i, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        Helpers::SetDummyKeyEvent(keyEventList, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                     }
 
                     if (!isAltRightKeyInvoked || (isAltRightKeyInvoked && data->lParam->vkCode == VK_RMENU && state.GetPreviousModifierKey().size() == 0))
@@ -741,12 +643,7 @@ namespace KeyboardEventHandlers
                         state.SetPreviousActionKey(0);
                     }
 
-                    // key count can be 0 if both shortcuts have same modifiers and the action key is not held down. delete will throw an error if keyEventList is empty
-                    if (key_count > 0)
-                    {
-                        UINT res = ii.SendVirtualInput(static_cast<UINT>(key_count), keyEventList, sizeof(INPUT));
-                        delete[] keyEventList;
-                    }
+                    ii.SendVirtualInput(keyEventList);
                     return 1;
                 }
 
@@ -759,13 +656,11 @@ namespace KeyboardEventHandlers
                         // Check if the pressed key is the previous action key and if the pressed key is the action key. If not, first release current shortcut and repeat the process to continue searching in the shortcut table
                         if (state.GetPreviousActionKey() != 0 && state.GetPreviousActionKey() != data->lParam->vkCode && data->lParam->vkCode != it->first.GetActionKey())
                         {
-                            size_t key_count = 1;
-                            LPINPUT keyEventList = nullptr;
+                            std::vector<INPUT> keyEventList;
 
                             if (remapToShortcut && !it->first.HasChord())
                             {
-                                keyEventList = new INPUT[key_count]{};
-                                Helpers::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
 
                                 if (std::get<Shortcut>(it->second.targetShortcut).GetCtrlKey() == NULL && std::get<Shortcut>(it->second.targetShortcut).GetAltKey() == NULL && std::get<Shortcut>(it->second.targetShortcut).GetShiftKey() == NULL)
                                 {
@@ -774,9 +669,7 @@ namespace KeyboardEventHandlers
                             }
                             else if (remapToShortcut && it->first.HasChord())
                             {
-                                key_count = (dest_size) + (src_size + 1) - (2 * static_cast<size_t>(commonKeys));
-                                keyEventList = new INPUT[key_count]{};
-                                Helpers::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
 
                                 if (std::get<Shortcut>(it->second.targetShortcut).GetCtrlKey() == NULL && std::get<Shortcut>(it->second.targetShortcut).GetAltKey() == NULL && std::get<Shortcut>(it->second.targetShortcut).GetShiftKey() == NULL)
                                 {
@@ -785,8 +678,7 @@ namespace KeyboardEventHandlers
                             }
                             else if (remapToKey)
                             {
-                                keyEventList = new INPUT[key_count]{};
-                                Helpers::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, static_cast<WORD>(state.GetPreviousActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(state.GetPreviousActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
 
                                 auto maybeTargetKey = std::get_if<DWORD>(&it->second.targetShortcut);
 
@@ -796,8 +688,7 @@ namespace KeyboardEventHandlers
                                 }
                             }
 
-                            UINT res = ii.SendVirtualInput(static_cast<UINT>(key_count), keyEventList, sizeof(INPUT));
-                            delete[] keyEventList;
+                            ii.SendVirtualInput(keyEventList);
                             continue;
                         }
                         // In case of mapping to disable do not send anything
@@ -808,86 +699,62 @@ namespace KeyboardEventHandlers
                             return 1;
                         }
 
-                        size_t key_count = 1;
-                        LPINPUT keyEventList = nullptr;
+                        std::vector<INPUT> keyEventList;
                         if (remapToShortcut)
                         {
-                            keyEventList = new INPUT[key_count]{};
-                            Helpers::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                         }
                         else if (remapToKey)
                         {
-                            keyEventList = new INPUT[key_count]{};
-                            Helpers::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, static_cast<WORD>(Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut))), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut))), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                         }
                         else if (remapToText)
                         {
-                            auto remapping = std::get<std::wstring>(it->second.targetShortcut);
-                            const UINT inputEventCount = static_cast<UINT>(remapping.length() * 2);
-                            key_count = inputEventCount;
-                            keyEventList = new INPUT[key_count]{};
-
-                            for (size_t idx = 0; idx < inputEventCount; ++idx)
-                            {
-                                auto& input = keyEventList[idx];
-                                input.type = INPUT_KEYBOARD;
-                                const bool upEvent = idx & 0x1;
-                                input.ki.dwFlags = KEYEVENTF_UNICODE | (upEvent ? KEYEVENTF_KEYUP : 0);
-                                input.ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
-                                input.ki.wScan = remapping[idx >> 1];
-                            }
+                            auto& remapping = std::get<std::wstring>(it->second.targetShortcut);
+                            Helpers::SetTextKeyEvents(keyEventList, remapping);
                         }
 
-                        UINT res = ii.SendVirtualInput(static_cast<UINT>(key_count), keyEventList, sizeof(INPUT));
-                        delete[] keyEventList;
+                        ii.SendVirtualInput(keyEventList);
+
 
                         // Set the previous action key with the action key of the invoked shortcut
                         if (state.GetPreviousActionKey() == 0)
                         {
                             state.SetPreviousActionKey(it->first.GetActionKey());
                         }
-
                         return 1;
                     }
 
                     // Case 3: If the action key is released from the original shortcut, keep modifiers of the new shortcut until some other key event which doesn't apply to the original shortcut
                     if (!remapToText && ((!it->first.HasChord() && data->lParam->vkCode == it->first.GetActionKey()) || (it->first.HasChord() && data->lParam->vkCode == it->first.GetSecondKey()) || (state.GetPreviousActionKey() != 0)) && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
                     {
+                        std::vector<INPUT> keyEventList;
                         // Check if the released key is the previous action key. If not, continue
                         if (state.GetPreviousActionKey() != 0 && data->lParam->vkCode != it->first.GetActionKey())
                         {
                             continue;
                         }
 
-                        size_t key_count = 1;
-                        LPINPUT keyEventList = nullptr;
-
                         if (remapToShortcut && !it->first.HasChord())
                         {
                             // Just lift the action key for no chords.
-                            keyEventList = new INPUT[key_count]{};
-                            Helpers::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                         }
                         else if (remapToShortcut && it->first.HasChord())
                         {
                             // If it has a chord, we'll want a full clean contemplated in the else, since you can't really repeat chords by pressing the end key again.
 
                             // Key up for all new shortcut keys, key down for original shortcut modifiers and current key press but common keys aren't repeated
-                            key_count = (dest_size) + (src_size + 1) - (2 * static_cast<size_t>(commonKeys));
-                            int i = 0;
-
-                            keyEventList = new INPUT[key_count]{};
-                            Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                            i++;
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
 
                             // Release new shortcut state (release in reverse order of shortcut to be accurate)
-                            Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first);
+                            Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.winKeyInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first);
 
                             // Ensures that after releasing both the action key and AltGr, Ctrl does not remain falsely pressed.
                             if (!isAltRightKeyInvoked)
                             {
                                 // Set old shortcut key down state
-                                Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut));
+                                Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut));
                                 // Reset the remap state
                                 it->second.isShortcutInvoked = false;
                                 it->second.winKeyInvoked = ModifierKey::Disabled;
@@ -922,30 +789,22 @@ namespace KeyboardEventHandlers
                             // If the keyboard state is clear, we release the target key but do not reset the remap state
                             if (isKeyboardStateClear)
                             {
-                                keyEventList = new INPUT[key_count]{};
-                                Helpers::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, static_cast<WORD>(Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut))), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut))), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                             }
                             else
                             {
                                 // If any other key is pressed, then the keyboard state must be reverted back to the physical keys.
                                 // This is to take cases like Ctrl+A->D remap and user presses B+Ctrl+A and releases A, or Ctrl+A+B and releases A
 
-                                // 1 for releasing new key and original shortcut modifiers, and dummy key
-                                key_count = dest_size + (src_size - 1) + KeyboardManagerConstants::DUMMY_KEY_EVENT_SIZE;
-
-                                keyEventList = new INPUT[key_count]{};
-
                                 // Release new key state
-                                int i = 0;
-                                Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut))), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                                i++;
+                                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut))), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
 
                                 // Ensures that after releasing both the action key and AltGr, Ctrl does not remain falsely pressed.
                                 if (!isAltRightKeyInvoked || it->first.GetCtrlKey() != VK_LCONTROL)
                                 {
                                     Logger::error("{} @ {}", __func__, __LINE__);
                                     // Set original shortcut key down state except the action key
-                                    Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                    Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                                     // Reset the remap state
                                     it->second.isShortcutInvoked = false;
                                     it->second.winKeyInvoked = ModifierKey::Disabled;
@@ -953,7 +812,7 @@ namespace KeyboardEventHandlers
                                 }
 
                                 // Send a dummy key event to prevent modifier press+release from being triggered. Example: Win+A->V, press Shift+Win+A and release A, since Win will be pressed here we need to send a dummy event after it
-                                Helpers::SetDummyKeyEvent(keyEventList, i, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                Helpers::SetDummyKeyEvent(keyEventList, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
 
                                 // If app specific shortcut has finished invoking, reset the target application
                                 if (activatedApp != KeyboardManagerConstants::NoActivatedApp)
@@ -963,8 +822,7 @@ namespace KeyboardEventHandlers
                             }
                         }
 
-                        UINT res = ii.SendVirtualInput(static_cast<UINT>(key_count), keyEventList, sizeof(INPUT));
-                        delete[] keyEventList;
+                        ii.SendVirtualInput(keyEventList);
 
                         // Check if the released key is the previous action key. If so, reset previous action key
                         if (state.GetPreviousActionKey() != 0 && state.GetPreviousActionKey() == data->lParam->vkCode)
@@ -1009,8 +867,7 @@ namespace KeyboardEventHandlers
                                 ResetIfModifierKeyForLowerLevelKeyHandlers(ii, data->lParam->vkCode, std::get<Shortcut>(it->second.targetShortcut).GetActionKey());
                             }
 
-                            size_t key_count;
-                            LPINPUT keyEventList = nullptr;
+                            std::vector<INPUT> keyEventList;
 
                             // Check if a new remapping should be applied
                             Shortcut currentlyPressed = it->first;
@@ -1023,41 +880,25 @@ namespace KeyboardEventHandlers
                                 if (newRemapping.RemapToKey())
                                 {
                                     DWORD to = std::get<0>(newRemapping.targetShortcut);
-                                    bool isLastKeyStillPressed = ii.GetVirtualKeyState(static_cast<WORD>(from.actionKey));
-                                    key_count = static_cast<size_t>(from.Size()) - 1 + 1 + (isLastKeyStillPressed ? 1 : 0);
-                                    keyEventList = new INPUT[key_count]{};
-                                    int i = 0;
-                                    Helpers::SetModifierKeyEvents(from, it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                    Helpers::SetModifierKeyEvents(from, it->second.winKeyInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                                     if (ii.GetVirtualKeyState(static_cast<WORD>(from.actionKey)))
                                     {
                                         // If the action key from the last shortcut is still being pressed, release it.
-                                        Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(from.actionKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                                        i++;
+                                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(from.actionKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                                     }
-                                    Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(to), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(to), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                                 }
                                 else
                                 {
                                     Shortcut to = std::get<Shortcut>(newRemapping.targetShortcut);
-                                    bool isLastKeyStillPressed = ii.GetVirtualKeyState(static_cast<WORD>(from.actionKey));
-
-                                    size_t temp_key_count_calculation = static_cast<size_t>(from.Size()) - 1;
-                                    temp_key_count_calculation += static_cast<size_t>(to.Size()) - 1;
-                                    temp_key_count_calculation -= static_cast<size_t>(2) * from.GetCommonModifiersCount(to);
-                                    key_count = temp_key_count_calculation + 1 + (isLastKeyStillPressed ? 1 : 0);
-                                    keyEventList = new INPUT[key_count]{};
-
-                                    int i = 0;
-                                    Helpers::SetModifierKeyEvents(from, it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, to);
+                                    Helpers::SetModifierKeyEvents(from, it->second.winKeyInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, to);
                                     if (ii.GetVirtualKeyState(static_cast<WORD>(from.actionKey)))
                                     {
                                         // If the action key from the last shortcut is still being pressed, release it.
-                                        Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(from.actionKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                                        i++;
+                                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(from.actionKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                                     }
-
-                                    Helpers::SetModifierKeyEvents(to, it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, from);
-                                    Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(to.actionKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                    Helpers::SetModifierKeyEvents(to, it->second.winKeyInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, from);
+                                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(to.actionKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                                     newRemapping.isShortcutInvoked = true;
                                 }
 
@@ -1072,41 +913,27 @@ namespace KeyboardEventHandlers
                             }
                             else
                             {
-                                // Key up for all new shortcut keys, key down for original shortcut modifiers and current key press but common keys aren't repeated
-                                key_count = (dest_size) + (src_size - 1) - (2 * static_cast<size_t>(commonKeys));
-
                                 // If the target shortcut's action key is pressed, then it should be released and original shortcut's action key should be set
-                                bool isActionKeyPressed = false;
-                                if (ii.GetVirtualKeyState((std::get<Shortcut>(it->second.targetShortcut).GetActionKey())))
-                                {
-                                    isActionKeyPressed = true;
-                                    key_count += 2;
-                                }
-
-                                keyEventList = new INPUT[key_count]{};
+                                bool isActionKeyPressed = ii.GetVirtualKeyState(std::get<Shortcut>(it->second.targetShortcut).GetActionKey());
 
                                 // Release new shortcut state (release in reverse order of shortcut to be accurate)
-                                int i = 0;
                                 if (isActionKeyPressed)
                                 {
-                                    Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                                    i++;
+                                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                                 }
-                                Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first);
+                                Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.winKeyInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first);
 
                                 // Set old shortcut key down state
-                                Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut));
+                                Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut));
 
                                 // key down for original shortcut action key with shortcut flag so that we don't invoke the same shortcut remap again
                                 if (isActionKeyPressed)
                                 {
-                                    Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(it->first.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                                    i++;
+                                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(it->first.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                                 }
 
                                 // Send current key pressed without shortcut flag so that it can be reprocessed in case the physical keys pressed are a different remapped shortcut
-                                Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(data->lParam->vkCode), 0, 0);
-                                i++;
+                                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(data->lParam->vkCode), 0, 0);
 
                                 // Do not send a dummy key as we want the current key press to behave as normal i.e. it can do press+release functionality if required. Required to allow a shortcut to Win key remap invoked directly after shortcut to shortcut is released to open start menu
                             }
@@ -1122,8 +949,7 @@ namespace KeyboardEventHandlers
                                 state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
                             }
 
-                            UINT res = ii.SendVirtualInput(static_cast<UINT>(key_count), keyEventList, sizeof(INPUT));
-                            delete[] keyEventList;
+                            ii.SendVirtualInput(keyEventList);
                             return 1;
                         }
                         else
@@ -1158,29 +984,20 @@ namespace KeyboardEventHandlers
 
                             if (isRemapToDisable || !isOriginalActionKeyPressed)
                             {
-                                // Key down for original shortcut modifiers and action key, and current key press
-                                size_t key_count = src_size + 1;
-
-                                LPINPUT keyEventList = new INPUT[key_count]{};
+                                std::vector<INPUT> keyEventList;
 
                                 // Set original shortcut key down state
-                                int i = 0;
-                                Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+
                                 // Send the original action key only if it is physically pressed. For remappings to keys other than disabled we already check earlier that it is not pressed in this scenario. For remap to disable
                                 if (isRemapToDisable && isOriginalActionKeyPressed)
                                 {
                                     // Set original action key
-                                    Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(it->first.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                                    i++;
-                                }
-                                else
-                                {
-                                    key_count--;
+                                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(it->first.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                                 }
 
                                 // Send current key pressed without shortcut flag so that it can be reprocessed in case the physical keys pressed are a different remapped shortcut
-                                Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(data->lParam->vkCode), 0, 0);
-                                i++;
+                                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(data->lParam->vkCode), 0, 0);
 
                                 // Do not send a dummy key as we want the current key press to behave as normal i.e. it can do press+release functionality if required. Required to allow a shortcut to Win key remap invoked directly after another shortcut to key remap is released to open start menu
 
@@ -1195,8 +1012,7 @@ namespace KeyboardEventHandlers
                                     state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
                                 }
 
-                                UINT res = ii.SendVirtualInput(static_cast<UINT>(key_count), keyEventList, sizeof(INPUT));
-                                delete[] keyEventList;
+                                ii.SendVirtualInput(keyEventList);
                                 return 1;
                             }
                             else
@@ -1957,13 +1773,11 @@ namespace KeyboardEventHandlers
             // If the argument is either of the Ctrl/Shift/Alt modifier key codes
             if (Helpers::IsModifierKey(key) && !(key == VK_LWIN || key == VK_RWIN || key == CommonSharedConstants::VK_WIN_BOTH))
             {
-                int key_count = 1;
-                LPINPUT keyEventList = new INPUT[size_t(key_count)]{};
+                std::vector<INPUT> keyEventList;
 
                 // Use the suppress flag to ensure these are not intercepted by any remapped keys or shortcuts
-                Helpers::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, static_cast<WORD>(key), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG);
-                UINT res = ii.SendVirtualInput(static_cast<UINT>(key_count), keyEventList, sizeof(INPUT));
-                delete[] keyEventList;
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(key), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG);
+                ii.SendVirtualInput(keyEventList);
             }
         }
     }
@@ -1988,21 +1802,9 @@ namespace KeyboardEventHandlers
             return 0;
         }
 
-        const size_t keyCount = remapping->length();
-        const UINT eventCount = static_cast<UINT>(keyCount * 2);
-        auto keyEventList = std::make_unique<INPUT[]>(keyCount * 2);
-
-        for (size_t i = 0; i < eventCount; ++i)
-        {
-            auto& input = keyEventList[i];
-            input.type = INPUT_KEYBOARD;
-            const bool upEvent = i & 0x1;
-            input.ki.dwFlags = KEYEVENTF_UNICODE | (upEvent ? KEYEVENTF_KEYUP : 0);
-            input.ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
-            input.ki.wScan = (*remapping)[i >> 1];
-        }
-
-        UINT res = ii.SendVirtualInput(eventCount, keyEventList.get(), sizeof(INPUT));
+        std::vector<INPUT> keyEventList;
+        Helpers::SetTextKeyEvents(keyEventList, *remapping);
+        ii.SendVirtualInput(keyEventList);
 
         return 1;
     }

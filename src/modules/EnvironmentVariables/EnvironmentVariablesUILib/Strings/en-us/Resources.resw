@@ -127,7 +127,7 @@
     <value>New profile</value>
   </data>
   <data name="ProfilesDescriptionLbl.Text" xml:space="preserve">
-    <value>You can create profiles to quickly apply a set of preconfigured variables</value>
+    <value>Create profiles to quickly apply a set of preconfigured variables. Profile variables have precedence over User and System variables.</value>
   </data>
   <data name="ProfilesLbl.Text" xml:space="preserve">
     <value>Profiles</value>
@@ -194,7 +194,7 @@
     <value>Add</value>
   </data>
   <data name="AppliedVariablesDescriptionLbl.Text" xml:space="preserve">
-    <value>List of applied variables</value>
+    <value>Applied variables list shows the current state of the environment, including Profile, User, and System variables.</value>
   </data>
   <data name="AppliedVariablesLbl.Text" xml:space="preserve">
     <value>Applied variables</value>
@@ -242,7 +242,7 @@
     <value>Add variable</value>
   </data>
   <data name="DefaultVariablesDescriptionLbl.Text" xml:space="preserve">
-    <value>Add, remove or edit USER and SYSTEM variables</value>
+    <value>Add, edit, or remove User and System variables.</value>
   </data>
   <data name="EditItem.Text" xml:space="preserve">
     <value>Edit</value>

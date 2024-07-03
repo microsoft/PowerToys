@@ -121,7 +121,7 @@
     <value>Calculator</value>
   </data>
   <data name="wox_plugin_calculator_plugin_description" xml:space="preserve">
-    <value>Calculates mathematical equations (e.g. 5*3-2).</value>
+    <value>Calculates mathematical equations (e.g. 5*3-2)</value>
   </data>
   <data name="wox_plugin_calculator_not_a_number" xml:space="preserve">
     <value>Calculation result is not a valid number (NaN)</value>
