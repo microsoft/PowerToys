@@ -327,6 +327,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _isEnabled = value;
                     OnPropertyChanged(nameof(IsEnabled));
+                    OnPropertyChanged(nameof(SomePreviewPaneEnabledGposConfigured));
+                    OnPropertyChanged(nameof(SomeThumbnailEnabledGposConfigured));
 
                     // Set the status in the general settings
                     GeneralSettingsConfig.Enabled.PowerPreview = value;
@@ -346,9 +348,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return _svgRenderEnabledStateIsGPOConfigured || _mdRenderEnabledStateIsGPOConfigured
+                return IsEnabled && (_svgRenderEnabledStateIsGPOConfigured || _mdRenderEnabledStateIsGPOConfigured
                     || _monacoRenderEnabledStateIsGPOConfigured || _pdfRenderEnabledStateIsGPOConfigured
-                    || _gcodeRenderEnabledStateIsGPOConfigured || _qoiRenderEnabledStateIsGPOConfigured;
+                    || _gcodeRenderEnabledStateIsGPOConfigured || _qoiRenderEnabledStateIsGPOConfigured);
             }
         }
 
@@ -356,9 +358,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return _svgThumbnailEnabledStateIsGPOConfigured || _pdfThumbnailEnabledStateIsGPOConfigured
+                return IsEnabled && (_svgThumbnailEnabledStateIsGPOConfigured || _pdfThumbnailEnabledStateIsGPOConfigured
                     || _gcodeThumbnailEnabledStateIsGPOConfigured || _stlThumbnailEnabledStateIsGPOConfigured
-                    || _qoiThumbnailEnabledStateIsGPOConfigured;
+                    || _qoiThumbnailEnabledStateIsGPOConfigured);
             }
         }
 

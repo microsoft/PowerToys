@@ -272,13 +272,16 @@ void PowerPreviewModule::apply_settings(const PowerToysSettings::PowerToyValues&
         bool module_new_state = false;
         if (toggle.has_value())
         {
-            module_new_state = *toggle && is_enabled;
+            module_new_state = *toggle;
         }
         if (gpo_is_configured)
         {
             // gpo rule overrides settings state
             module_new_state = gpo_rule == powertoys_gpo::gpo_rule_configured_enabled;
         }
+
+        //Don't start previewer if the File Explorer module is disabled
+        module_new_state = module_new_state && is_enabled;
 
         // Skip if no need to update
         if (module_new_state == fileExplorerModule.registryChanges.isApplied())
