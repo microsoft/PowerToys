@@ -16,12 +16,12 @@ namespace Utils
 	{
         namespace NonLocalizable
         {
-            const wchar_t* PackageFullNameProp = L"System.AppUserModel.PackageFullName";
-            const wchar_t* PackageInstallPathProp = L"System.AppUserModel.PackageInstallPath";
-            const wchar_t* InstallPathProp = L"System.Link.TargetParsingPath";
+            constexpr const wchar_t* PackageFullNameProp = L"System.AppUserModel.PackageFullName";
+            constexpr const wchar_t* PackageInstallPathProp = L"System.AppUserModel.PackageInstallPath";
+            constexpr const wchar_t* InstallPathProp = L"System.Link.TargetParsingPath";
 
-            const wchar_t* FileExplorerName = L"File Explorer";
-            const wchar_t* FileExplorerPath = L"C:\\WINDOWS\\EXPLORER.EXE";
+            constexpr const wchar_t* FileExplorerName = L"File Explorer";
+            constexpr const wchar_t* FileExplorerPath = L"C:\\WINDOWS\\EXPLORER.EXE";
         }
 
 		struct AppData

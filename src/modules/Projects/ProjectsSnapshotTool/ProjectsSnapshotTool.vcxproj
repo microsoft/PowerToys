@@ -127,12 +127,14 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="SnapshotUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="JsonUtils.h" />
     <ClInclude Include="NameUtils.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SnapshotUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
