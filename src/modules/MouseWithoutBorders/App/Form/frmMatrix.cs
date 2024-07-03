@@ -846,11 +846,20 @@ namespace MouseWithoutBorders
             comboBoxEasyMouse.Text = Setting.Values.HotKeyToggleEasyMouse == 0 ? "Disable" : new string(new char[] { (char)Setting.Values.HotKeyToggleEasyMouse });
 #endif
 
-            // Applay policy configuretions
-            pictureBoxMouseWithoutBorders.Visible = true;
-            groupBoxName2IPPolicyList.Visible = false;
-            textBoxMachineName2IPPolicyList.Visible = false;
-            textBoxMachineName2IPPolicyList.Text = "ddd 111\r\nxxx 222\r\n";
+            // Applay policy configuration on UI elements
+            if (Setting.Values.Name2IPIsGpoConfigured)
+            {
+                groupBoxDNS.Text = groupBoxDNS.Text + " [Managed]";
+                textBoxDNS.ReadOnly = true;
+            }
+
+            if (Setting.Values.Name2IPPolicyListIsGpoConfigured)
+            {
+                pictureBoxMouseWithoutBorders.Visible = true;
+                groupBoxName2IPPolicyList.Visible = false;
+                textBoxMachineName2IPPolicyList.Visible = false;
+                textBoxMachineName2IPPolicyList.Text = Setting.Values.Name2IPPolicyList;
+            }
         }
 
         private void RadioButton_CheckedChanged(object sender, EventArgs e)

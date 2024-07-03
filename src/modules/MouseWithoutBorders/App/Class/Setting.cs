@@ -12,8 +12,10 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
@@ -829,6 +831,11 @@ namespace MouseWithoutBorders.Class
         {
             get
             {
+                if (Name2IPIsGpoConfigured)
+                {
+                    return string.Empty;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     return _properties.Name2IP.Value;
@@ -837,12 +844,29 @@ namespace MouseWithoutBorders.Class
 
             set
             {
+                if (Name2IPIsGpoConfigured)
+                {
+                    return;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     _properties.Name2IP.Value = value;
                 }
             }
         }
+
+        [CmdConfigureIgnore]
+        [JsonIgnore]
+        internal bool Name2IPIsGpoConfigured => GPOWrapper.GetConfiguredMwbDisableUserDefinedIpMappingRulesValue() == GpoRuleConfigured.Enabled;
+
+        [CmdConfigureIgnore]
+        [JsonIgnore]
+        internal string Name2IPPolicyList => "ddd 111\r\nxxx 222\r\n";
+
+        [CmdConfigureIgnore]
+        [JsonIgnore]
+        internal bool Name2IPPolicyListIsGpoConfigured => !string.IsNullOrWhiteSpace(Name2IPPolicyList);
 
         internal bool FirstCtrlShiftS
         {
