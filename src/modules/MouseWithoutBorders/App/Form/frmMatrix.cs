@@ -883,7 +883,7 @@ namespace MouseWithoutBorders
 
             if (Setting.Values.Name2IpIsGpoConfigured)
             {
-                textBoxMachineName2IP.ReadOnly = true;
+                textBoxMachineName2IP.Enabled = false;
                 groupBoxDNS.ForeColor = Color.DimGray;
                 groupBoxDNS.Text += " [Managed]";
             }
