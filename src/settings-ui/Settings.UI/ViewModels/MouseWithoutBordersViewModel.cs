@@ -500,23 +500,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             // Policies supporting only enabled state
             _disallowBlockingScreensaverGpoConfiguration = GPOWrapper.GetConfiguredMwbDisallowBlockingScreensaverValue();
-            _disallowBlockingScreensaverIsGPOConfigured = GPOWrapper.GetConfiguredMwbDisallowBlockingScreensaverValue() == GpoRuleConfigured.Enabled;
+            _disallowBlockingScreensaverIsGPOConfigured = _disallowBlockingScreensaverGpoConfiguration == GpoRuleConfigured.Enabled;
             _disableUserDefinedIpMappingRulesGpoConfiguration = GPOWrapper.GetConfiguredMwbDisableUserDefinedIpMappingRulesValue();
-            _disableUserDefinedIpMappingRulesIsGPOConfigured = GPOWrapper.GetConfiguredMwbDisableUserDefinedIpMappingRulesValue() == GpoRuleConfigured.Enabled;
+            _disableUserDefinedIpMappingRulesIsGPOConfigured = _disableUserDefinedIpMappingRulesGpoConfiguration == GpoRuleConfigured.Enabled;
 
             // Policies supporting only disabled state
             _clipboardSharingEnabledGpoConfiguration = GPOWrapper.GetConfiguredMwbClipboardSharingEnabledValue();
-            _clipboardSharingEnabledIsGPOConfigured = GPOWrapper.GetConfiguredMwbClipboardSharingEnabledValue() == GpoRuleConfigured.Disabled;
+            _clipboardSharingEnabledIsGPOConfigured = _clipboardSharingEnabledGpoConfiguration == GpoRuleConfigured.Disabled;
             _fileTransferEnabledGpoConfiguration = GPOWrapper.GetConfiguredMwbFileTransferEnabledValue();
-            _fileTransferEnabledIsGPOConfigured = GPOWrapper.GetConfiguredMwbFileTransferEnabledValue() == GpoRuleConfigured.Disabled;
+            _fileTransferEnabledIsGPOConfigured = _fileTransferEnabledGpoConfiguration == GpoRuleConfigured.Disabled;
             _useOriginalUserInterfaceGpoConfiguration = GPOWrapper.GetConfiguredMwbUseOriginalUserInterfaceValue();
-            _useOriginalUserInterfaceIsGPOConfigured = GPOWrapper.GetConfiguredMwbUseOriginalUserInterfaceValue() == GpoRuleConfigured.Disabled;
+            _useOriginalUserInterfaceIsGPOConfigured = _useOriginalUserInterfaceGpoConfiguration == GpoRuleConfigured.Disabled;
 
             // Policies supporting enabled and disabled state
             _sameSubnetOnlyGpoConfiguration = GPOWrapper.GetConfiguredMwbSameSubnetOnlyValue();
-            _sameSubnetOnlyIsGPOConfigured = GPOWrapper.GetConfiguredMwbSameSubnetOnlyValue() == GpoRuleConfigured.Enabled || GPOWrapper.GetConfiguredMwbSameSubnetOnlyValue() == GpoRuleConfigured.Disabled;
+            _sameSubnetOnlyIsGPOConfigured = _sameSubnetOnlyGpoConfiguration == GpoRuleConfigured.Enabled || _sameSubnetOnlyGpoConfiguration == GpoRuleConfigured.Disabled;
             _validateRemoteIpGpoConfiguration = GPOWrapper.GetConfiguredMwbValidateRemoteIpValue();
-            _validateRemoteIpIsGPOConfigured = GPOWrapper.GetConfiguredMwbValidateRemoteIpValue() == GpoRuleConfigured.Enabled || GPOWrapper.GetConfiguredMwbValidateRemoteIpValue() == GpoRuleConfigured.Disabled;
+            _validateRemoteIpIsGPOConfigured = _validateRemoteIpGpoConfiguration == GpoRuleConfigured.Enabled || _validateRemoteIpGpoConfiguration == GpoRuleConfigured.Disabled;
 
             // Special policies
             _policyDefinedIpMappingRulesGPOData = "ddd 111\r\nxxx 222\r\n";
