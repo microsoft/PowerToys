@@ -61,7 +61,7 @@ namespace PowerToys
             static GpoRuleConfigured GetConfiguredMwbSameSubnetOnlyValue();
             static GpoRuleConfigured GetConfiguredMwbValidateRemoteIpValue();
             static GpoRuleConfigured GetConfiguredMwbDisableUserDefinedIpMappingRulesValue();
-            /* static winrt::hstring GPOWrapper::GetConfiguredMwbPolicyDefinedIpMappingRules(); */
+            static String GetConfiguredMwbPolicyDefinedIpMappingRules();
         }
     }
 }

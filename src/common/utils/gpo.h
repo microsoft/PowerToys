@@ -120,7 +120,8 @@ namespace powertoys_gpo {
             wchar_t* currentString = temp_buffer;
             while (*currentString != L'\0')
             {
-                string_value = string_value + L"\r\n" + currentString;
+                // If first entry then assign the string, else add to the string
+                string_value = (string_value == L"") ? currentString : (string_value + L"\r\n" + currentString);
                 currentString += wcslen(currentString) + 1; // Move to the next string
             }
         }

@@ -204,12 +204,12 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMwbDisableUserDefinedIpMappingRulesValue());
     }
-    /* winrt::hstring GPOWrapper::GetConfiguredMwbPolicyDefinedIpMappingRules()
+    winrt::hstring GPOWrapper::GetConfiguredMwbPolicyDefinedIpMappingRules()
     {
         // Assuming powertoys_gpo::getConfiguredMwbPolicyDefinedIpMappingRules() returns a std::wstring
         std::wstring rules = powertoys_gpo::getConfiguredMwbPolicyDefinedIpMappingRules();
 
         // Convert std::wstring to winrt::hstring
         return to_hstring(rules.c_str());
-    } */
+    }
 }

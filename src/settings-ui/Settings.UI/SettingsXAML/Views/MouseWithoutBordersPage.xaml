@@ -323,42 +323,60 @@
                                     Text="{x:Bind ViewModel.Name2IP, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     TextWrapping="Wrap" />
                             </tkcontrols:SettingsCard>
-                            <InfoBar
-                                x:Uid="GPO_SettingIsManaged"
-                                IsClosable="False"
-                                IsOpen="{x:Bind ViewModel.ShowPolicyConfiguredInfoForName2IPSetting, Mode=OneWay}"
-                                IsTabStop="{x:Bind ViewModel.ShowPolicyConfiguredInfoForName2IPSetting, Mode=OneWay}"
-                                Severity="Informational">
-                                <!--InfoBar.IconSource>
+                            <tkcontrols:SettingsCard
+                                Padding="0"
+                                HorizontalContentAlignment="Stretch"
+                                Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}"
+                                ContentAlignment="Vertical"
+                                Visibility="{x:Bind ViewModel.ShowPolicyConfiguredInfoForName2IPSetting, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <InfoBar
+                                    x:Uid="GPO_SettingIsManaged"
+                                    Background="Transparent"
+                                    BorderBrush="Transparent"
+                                    IsClosable="False"
+                                    IsOpen="True"
+                                    IsTabStop="{x:Bind ViewModel.ShowPolicyConfiguredInfoForName2IPSetting, Mode=OneWay}"
+                                    Severity="Informational">
+                                    <!--InfoBar.IconSource>
                                     <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
                                 </InfoBar.IconSource-->
-                            </InfoBar>
-                            <InfoBar
-                                x:Uid="MouseWithoutBorders_PolicyIPAddressMappingInfo"
-                                Margin="0,0,0,0"
-                                IsClosable="False"
-                                IsOpen="{x:Bind ViewModel.Name2IpListPolicyIsConfigured, Mode=OneWay}"
-                                IsTabStop="{x:Bind ViewModel.Name2IpListPolicyIsConfigured, Mode=OneWay}"
-                                Severity="Informational">
-                                <InfoBar.IconSource>
-                                    <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                                </InfoBar.IconSource>
-                                <InfoBar.Content>
-                                    <TextBox
-                                        x:Uid="MouseWithoutBorders_PolicyIPAddressMappingInfo_TextBoxControl"
-                                        MinWidth="240"
-                                        MinHeight="80"
-                                        MaxHeight="160"
-                                        Margin="0,0,44,16"
-                                        AcceptsReturn="True"
-                                        IsReadOnly="True"
-                                        ScrollViewer.IsVerticalRailEnabled="True"
-                                        ScrollViewer.VerticalScrollBarVisibility="Visible"
-                                        ScrollViewer.VerticalScrollMode="Enabled"
-                                        Text="{x:Bind ViewModel.Name2IpListPolicyData, Mode=OneWay}"
-                                        TextWrapping="Wrap" />
-                                </InfoBar.Content>
-                            </InfoBar>
+                                </InfoBar>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Margin="0,1,0,0"
+                                Padding="0"
+                                HorizontalContentAlignment="Stretch"
+                                Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}"
+                                ContentAlignment="Vertical"
+                                Visibility="{x:Bind ViewModel.Name2IpListPolicyIsConfigured, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <InfoBar
+                                    x:Uid="MouseWithoutBorders_PolicyIPAddressMappingInfo"
+                                    Background="Transparent"
+                                    BorderBrush="Transparent"
+                                    IsClosable="False"
+                                    IsOpen="True"
+                                    IsTabStop="{x:Bind ViewModel.Name2IpListPolicyIsConfigured, Mode=OneWay}"
+                                    Severity="Informational">
+                                    <InfoBar.IconSource>
+                                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                                    </InfoBar.IconSource>
+                                    <InfoBar.Content>
+                                        <TextBox
+                                            x:Uid="MouseWithoutBorders_PolicyIPAddressMappingInfo_TextBoxControl"
+                                            MinWidth="240"
+                                            MinHeight="80"
+                                            MaxHeight="160"
+                                            Margin="0,0,44,16"
+                                            AcceptsReturn="True"
+                                            IsReadOnly="True"
+                                            ScrollViewer.IsVerticalRailEnabled="True"
+                                            ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                            ScrollViewer.VerticalScrollMode="Enabled"
+                                            Text="{x:Bind ViewModel.Name2IpListPolicyData, Mode=OneWay}"
+                                            TextWrapping="Wrap" />
+                                    </InfoBar.Content>
+                                </InfoBar>
+                            </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>

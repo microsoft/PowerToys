@@ -519,7 +519,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _validateRemoteIpIsGPOConfigured = _validateRemoteIpGpoConfiguration == GpoRuleConfigured.Enabled || _validateRemoteIpGpoConfiguration == GpoRuleConfigured.Disabled;
 
             // Special policies
-            _policyDefinedIpMappingRulesGPOData = "ddd 111\r\nxxx 222\r\n";
+            _policyDefinedIpMappingRulesGPOData = GPOWrapper.GetConfiguredMwbPolicyDefinedIpMappingRules();
             _policyDefinedIpMappingRulesIsGPOConfigured = !string.IsNullOrWhiteSpace(_policyDefinedIpMappingRulesGPOData);
         }
 

@@ -876,7 +876,7 @@ namespace MouseWithoutBorders.Class
 
         [CmdConfigureIgnore]
         [JsonIgnore]
-        internal string Name2IpPolicyList => "ddd 111\r\nxxx 222";
+        internal string Name2IpPolicyList => GPOWrapper.GetConfiguredMwbPolicyDefinedIpMappingRules();
 
         [CmdConfigureIgnore]
         [JsonIgnore]
