@@ -887,7 +887,7 @@ namespace MouseWithoutBorders.Class
 
                 if (!string.IsNullOrEmpty(Setting.Values.Name2IP))
                 {
-                    string combinedName2ipList = Setting.Values.Name2IPPolicyList + Separator + Setting.Values.Name2IP;
+                    string combinedName2ipList = Setting.Values.Name2IpPolicyList + Separator + Setting.Values.Name2IP;
                     string[] name2ip = combinedName2ipList.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
                     string[] nameNip;
 

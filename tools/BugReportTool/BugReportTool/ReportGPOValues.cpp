@@ -31,8 +31,7 @@ std::wstring gpo_string_to_string(const std::wstring &gpo_value)
     }
     else
     {
-        std::wstring value = std::regex_replace(gpo_value, std::wregex(L"\r\n"), std::wstring(L"|"));
-        return std::wstring(value.begin(), value.end());
+        return std::regex_replace(gpo_value, std::wregex(L"\r\n"), std::wstring(L"|"));
     }
 }
 

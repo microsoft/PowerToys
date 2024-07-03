@@ -831,7 +831,7 @@ namespace MouseWithoutBorders.Class
         {
             get
             {
-                if (Name2IPIsGpoConfigured)
+                if (Name2IpIsGpoConfigured)
                 {
                     return string.Empty;
                 }
@@ -844,7 +844,7 @@ namespace MouseWithoutBorders.Class
 
             set
             {
-                if (Name2IPIsGpoConfigured)
+                if (Name2IpIsGpoConfigured)
                 {
                     return;
                 }
@@ -858,15 +858,15 @@ namespace MouseWithoutBorders.Class
 
         [CmdConfigureIgnore]
         [JsonIgnore]
-        internal bool Name2IPIsGpoConfigured => GPOWrapper.GetConfiguredMwbDisableUserDefinedIpMappingRulesValue() == GpoRuleConfigured.Enabled;
+        internal bool Name2IpIsGpoConfigured => GPOWrapper.GetConfiguredMwbDisableUserDefinedIpMappingRulesValue() == GpoRuleConfigured.Enabled;
 
         [CmdConfigureIgnore]
         [JsonIgnore]
-        internal string Name2IPPolicyList => "ddd 111\r\nxxx 222";
+        internal string Name2IpPolicyList => "ddd 111\r\nxxx 222";
 
         [CmdConfigureIgnore]
         [JsonIgnore]
-        internal bool Name2IPPolicyListIsGpoConfigured => !string.IsNullOrWhiteSpace(Name2IPPolicyList);
+        internal bool Name2IpPolicyListIsGpoConfigured => !string.IsNullOrWhiteSpace(Name2IPPolicyList);
 
         internal bool FirstCtrlShiftS
         {

@@ -847,19 +847,19 @@ namespace MouseWithoutBorders
 #endif
 
             // Applay policy configuration on UI elements
-            if (Setting.Values.Name2IPIsGpoConfigured)
+            if (Setting.Values.Name2IpIsGpoConfigured)
             {
                 groupBoxDNS.Text = groupBoxDNS.Text + " [Managed]";
                 groupBoxDNS.ForeColor = Color.BlueViolet;
                 textBoxMachineName2IP.ReadOnly = true;
             }
 
-            if (Setting.Values.Name2IPPolicyListIsGpoConfigured)
+            if (Setting.Values.Name2IpPolicyListIsGpoConfigured)
             {
                 pictureBoxMouseWithoutBorders.Visible = false;
                 groupBoxName2IPPolicyList.Visible = true;
                 textBoxMachineName2IPPolicyList.Visible = true;
-                textBoxMachineName2IPPolicyList.Text = Setting.Values.Name2IPPolicyList;
+                textBoxMachineName2IPPolicyList.Text = Setting.Values.Name2IpPolicyList;
             }
         }
 

@@ -1192,7 +1192,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
-
             SettingsUtils.SaveSettings(Settings.ToJsonString(), MouseWithoutBordersSettings.ModuleName);
 
             if (propertyName == nameof(UseService))
