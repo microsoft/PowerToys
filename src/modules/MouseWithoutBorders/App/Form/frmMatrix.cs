@@ -850,14 +850,15 @@ namespace MouseWithoutBorders
             if (Setting.Values.Name2IPIsGpoConfigured)
             {
                 groupBoxDNS.Text = groupBoxDNS.Text + " [Managed]";
-                textBoxDNS.ReadOnly = true;
+                groupBoxDNS.ForeColor = Color.BlueViolet;
+                textBoxMachineName2IP.ReadOnly = true;
             }
 
             if (Setting.Values.Name2IPPolicyListIsGpoConfigured)
             {
-                pictureBoxMouseWithoutBorders.Visible = true;
-                groupBoxName2IPPolicyList.Visible = false;
-                textBoxMachineName2IPPolicyList.Visible = false;
+                pictureBoxMouseWithoutBorders.Visible = false;
+                groupBoxName2IPPolicyList.Visible = true;
+                textBoxMachineName2IPPolicyList.Visible = true;
                 textBoxMachineName2IPPolicyList.Text = Setting.Values.Name2IPPolicyList;
             }
         }

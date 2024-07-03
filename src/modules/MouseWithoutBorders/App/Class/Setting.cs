@@ -862,7 +862,7 @@ namespace MouseWithoutBorders.Class
 
         [CmdConfigureIgnore]
         [JsonIgnore]
-        internal string Name2IPPolicyList => "ddd 111\r\nxxx 222\r\n";
+        internal string Name2IPPolicyList => "ddd 111\r\nxxx 222";
 
         [CmdConfigureIgnore]
         [JsonIgnore]

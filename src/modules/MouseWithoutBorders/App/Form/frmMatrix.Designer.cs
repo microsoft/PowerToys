@@ -1003,6 +1003,7 @@ namespace MouseWithoutBorders
             this.groupBoxName2IPPolicyList.TabStop = false;
             this.groupBoxName2IPPolicyList.Text = " Policy defined machine name to IP address mappings [Managed]";
             this.groupBoxName2IPPolicyList.Visible = false;
+            this.groupBoxName2IPPolicyList.ForeColor = Color.BlueViolet;
             //
             // textBoxMachineName2IPPolicyList
             // 
@@ -1136,7 +1137,6 @@ namespace MouseWithoutBorders
             this.groupBoxDNS.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion
