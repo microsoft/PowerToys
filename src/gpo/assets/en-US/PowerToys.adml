@@ -54,8 +54,6 @@ If you disable this setting, the utility will be always disabled and the user wo
 
 If you don't configure this setting, users are able to enable or disable the utility and any individual add-ons.
 
-The individual enabled state policies for the individual add-ons will override this policy.
-
 This policy has a higher priority than the policy "Configure global utility enabled state" and overrides it.
 </string>
       <string id="DisablePerUserInstallationDescription">This policy configures whether per-user PowerToys installation is allowed or not.
@@ -137,7 +135,7 @@ If you disable this setting, the add-on will be always disabled and the user won
 
 If you don't configure this setting, users are able to enable or disable the add-on.
 
-This policy has a higher priority than the policy "File Explorer add-ons: Configure enabled state" and overrides it.
+The policy "File Explorer add-ons: Configure enabled state" will override this policy.
 </string>
       <string id="ConfigureEnabledFileExplorerAddOnDescriptionPDFPreviewHandler">(Note: There have been reports of incompatibility between the PDF Preview Handler and Outlook)
 
@@ -149,7 +147,7 @@ If you disable this setting, the add-on will be always disabled and the user won
 
 If you don't configure this setting, users are able to enable or disable the add-on.
 
-This policy has a higher priority than the policy "File Explorer add-ons: Configure enabled state" and overrides it.
+The policy "File Explorer add-ons: Configure enabled state" will override this policy.
 </string>
       <string id="ConfigureGlobalUtilityEnabledState">Configure global utility enabled state</string>
       <string id="ConfigureEnabledUtilityAdvancedPaste">Advanced Paste: Configure enabled state</string>
