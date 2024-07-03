@@ -848,6 +848,39 @@ namespace MouseWithoutBorders
 
             // Apply policy configuration on UI elements
             // Has to be the last action
+            if (Setting.Values.ShareClipboardIsGpoConfigured)
+            {
+                checkBoxShareClipboard.Enabled = false;
+                checkBoxShareClipboard.Text += " [Managed]";
+
+                // transfer file setting depends on clipboard sharing
+                checkBoxTransferFile.Enabled = false;
+            }
+
+            if (Setting.Values.TransferFileIsGpoConfigured)
+            {
+                checkBoxTransferFile.Enabled = false;
+                checkBoxTransferFile.Text += " [Managed]";
+            }
+
+            if (Setting.Values.BlockScreenSaverIsGpoConfigured)
+            {
+                checkBoxBlockScreenSaver.Enabled = false;
+                checkBoxBlockScreenSaver.Text += " [Managed]";
+            }
+
+            if (Setting.Values.SameSubNetOnlyIsGpoConfigured)
+            {
+                checkBoxSameSubNet.Enabled = false;
+                checkBoxSameSubNet.Text += " [Managed]";
+            }
+
+            if (Setting.Values.ReverseLookupIsGpoConfigured)
+            {
+                checkBoxReverseLookup.Enabled = false;
+                checkBoxReverseLookup.Text += " [Managed]";
+            }
+
             if (Setting.Values.Name2IpIsGpoConfigured)
             {
                 textBoxMachineName2IP.ReadOnly = true;
@@ -861,12 +894,6 @@ namespace MouseWithoutBorders
                 groupBoxName2IPPolicyList.Visible = true;
                 textBoxMachineName2IPPolicyList.Visible = true;
                 textBoxMachineName2IPPolicyList.Text = Setting.Values.Name2IpPolicyList;
-            }
-
-            if (Setting.Values.BlockScreenSaverIsGpoConfigured)
-            {
-                checkBoxBlockScreenSaver.Enabled = false;
-                checkBoxBlockScreenSaver.Text += " [Managed]";
             }
         }
 

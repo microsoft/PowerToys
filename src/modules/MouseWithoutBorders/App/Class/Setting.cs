@@ -261,6 +261,11 @@ namespace MouseWithoutBorders.Class
         {
             get
             {
+                if (GPOWrapper.GetConfiguredMwbClipboardSharingEnabledValue() == GpoRuleConfigured.Disabled)
+                {
+                    return false;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     return _properties.ShareClipboard;
@@ -269,6 +274,11 @@ namespace MouseWithoutBorders.Class
 
             set
             {
+                if (ShareClipboardIsGpoConfigured)
+                {
+                    return;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     _properties.ShareClipboard = value;
@@ -276,10 +286,19 @@ namespace MouseWithoutBorders.Class
             }
         }
 
+        [CmdConfigureIgnore]
+        [JsonIgnore]
+        internal bool ShareClipboardIsGpoConfigured => GPOWrapper.GetConfiguredMwbClipboardSharingEnabledValue() == GpoRuleConfigured.Disabled;
+
         internal bool TransferFile
         {
             get
             {
+                if (GPOWrapper.GetConfiguredMwbFileTransferEnabledValue() == GpoRuleConfigured.Disabled)
+                {
+                    return false;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     return _properties.TransferFile;
@@ -288,9 +307,18 @@ namespace MouseWithoutBorders.Class
 
             set
             {
+                if (TransferFileIsGpoConfigured)
+                {
+                    return;
+                }
+
                 _properties.TransferFile = value;
             }
         }
+
+        [CmdConfigureIgnore]
+        [JsonIgnore]
+        internal bool TransferFileIsGpoConfigured => GPOWrapper.GetConfiguredMwbFileTransferEnabledValue() == GpoRuleConfigured.Disabled;
 
         internal bool MatrixOneRow
         {
@@ -807,6 +835,15 @@ namespace MouseWithoutBorders.Class
         {
             get
             {
+                if (GPOWrapper.GetConfiguredMwbValidateRemoteIpValue() == GpoRuleConfigured.Enabled)
+                {
+                    return true;
+                }
+                else if (GPOWrapper.GetConfiguredMwbValidateRemoteIpValue() == GpoRuleConfigured.Disabled)
+                {
+                    return false;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     return _properties.ValidateRemoteMachineIP;
@@ -815,6 +852,11 @@ namespace MouseWithoutBorders.Class
 
             set
             {
+                if (ReverseLookupIsGpoConfigured)
+                {
+                    return;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     _properties.ValidateRemoteMachineIP = value;
@@ -822,10 +864,23 @@ namespace MouseWithoutBorders.Class
             }
         }
 
+        [CmdConfigureIgnore]
+        [JsonIgnore]
+        internal bool ReverseLookupIsGpoConfigured => GPOWrapper.GetConfiguredMwbValidateRemoteIpValue() == GpoRuleConfigured.Enabled || GPOWrapper.GetConfiguredMwbValidateRemoteIpValue() == GpoRuleConfigured.Disabled;
+
         internal bool SameSubNetOnly
         {
             get
             {
+                if (GPOWrapper.GetConfiguredMwbSameSubnetOnlyValue() == GpoRuleConfigured.Enabled)
+                {
+                    return true;
+                }
+                else if (GPOWrapper.GetConfiguredMwbSameSubnetOnlyValue() == GpoRuleConfigured.Disabled)
+                {
+                    return false;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     return _properties.SameSubnetOnly;
@@ -834,12 +889,21 @@ namespace MouseWithoutBorders.Class
 
             set
             {
+                if (SameSubNetOnlyIsGpoConfigured)
+                {
+                    return;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     _properties.SameSubnetOnly = value;
                 }
             }
         }
+
+        [CmdConfigureIgnore]
+        [JsonIgnore]
+        internal bool SameSubNetOnlyIsGpoConfigured => GPOWrapper.GetConfiguredMwbSameSubnetOnlyValue() == GpoRuleConfigured.Enabled || GPOWrapper.GetConfiguredMwbSameSubnetOnlyValue() == GpoRuleConfigured.Disabled;
 
         internal string Name2IP
         {
@@ -988,6 +1052,11 @@ namespace MouseWithoutBorders.Class
         {
             get
             {
+                if (GPOWrapper.GetConfiguredMwbUseOriginalUserInterfaceValue() == GpoRuleConfigured.Disabled)
+                {
+                    return false;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     return _properties.ShowOriginalUI;
@@ -996,6 +1065,11 @@ namespace MouseWithoutBorders.Class
 
             set
             {
+                if (GPOWrapper.GetConfiguredMwbUseOriginalUserInterfaceValue() == GpoRuleConfigured.Disabled)
+                {
+                    return;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     _properties.ShowOriginalUI = value;
