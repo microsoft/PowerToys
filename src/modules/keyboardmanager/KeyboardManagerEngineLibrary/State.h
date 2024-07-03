@@ -43,6 +43,12 @@ public:
     // Gets the previous modifier key
     std::vector<DWORD> GetPreviousModifierKey();
 
+    // Check a key if exist in previous modifier key vector
+    bool FindPreviousModifierKey(const DWORD prevKey);
+
     // Resets the previous modifier key
-    void ResetPreviousModifierKey();
+    void ResetPreviousModifierKey(const DWORD prevKey);
+
+    // Clear all previous modifier key
+    void ClearPreviousModifierKey();
 };

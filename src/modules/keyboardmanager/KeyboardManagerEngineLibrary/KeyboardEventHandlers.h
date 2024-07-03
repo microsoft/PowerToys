@@ -89,5 +89,5 @@ namespace KeyboardEventHandlers
     bool CheckPreviousModifierKey(const ShortcutRemapTable::iterator it, std::vector<DWORD> previousKeys);
 
     // Function to set previous modifier key to state
-    void SetPreviousModifierKey(const ShortcutRemapTable::iterator it, State& state);
+    void SetPreviousModifierKey(const ShortcutRemapTable::iterator it, const DWORD key, State& state);
 };

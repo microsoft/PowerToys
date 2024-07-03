@@ -98,8 +98,25 @@ std::vector<DWORD> State::GetPreviousModifierKey()
     return previousModifierKey;
 }
 
+// Check a key if exist in previous modifier key vector
+bool State::FindPreviousModifierKey(const DWORD prevKey)
+{
+    if (std::find(previousModifierKey.begin(), previousModifierKey.end(), prevKey) != previousModifierKey.end())
+    {
+        return true;
+    }
+
+    return false;
+}
+
 // Resets the previous modifier key
-void State::ResetPreviousModifierKey()
+void State::ResetPreviousModifierKey(const DWORD prevKey)
+{
+    previousModifierKey.erase(std::remove(previousModifierKey.begin(), previousModifierKey.end(), prevKey), previousModifierKey.end());
+}
+
+// Clear all previous modifier key
+void State::ClearPreviousModifierKey()
 {
     previousModifierKey.clear();
 }
