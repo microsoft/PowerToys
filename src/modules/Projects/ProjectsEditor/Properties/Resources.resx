@@ -147,6 +147,9 @@
   <data name="DaysAgo" xml:space="preserve">
     <value>days ago</value>
   </data>
+  <data name="DefaultProjectNamePrefix" xml:space="preserve">
+    <value>Project</value>
+  </data>
   <data name="Delete" xml:space="preserve">
     <value>Remove</value>
   </data>
