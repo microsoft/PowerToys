@@ -7,7 +7,6 @@
 #include <projects-common/MonitorUtils.h>
 
 #include <JsonUtils.h>
-#include <NameUtils.h>
 #include <SnapshotUtils.h>
 
 #include <common/utils/gpo.h>
@@ -45,12 +44,9 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
         fileName = fileNameParam;
     }
 
-    // read previously saved projects 
-    std::vector<Project> projects = ProjectsJsonUtils::Read(fileName);
-    
     // create new project
     time_t creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    Project project{ .id = CreateGuidString(), .name = ProjectNameUtils::CreateProjectName(projects), .creationTime = creationTime };
+    Project project{ .id = CreateGuidString(), .creationTime = creationTime };
     Logger::trace(L"Creating project {}:{}", project.name, project.id);
 
     project.monitors = MonitorUtils::IdentifyMonitors();
@@ -69,8 +65,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
         return monitorNumber;
     });
 
-    projects.push_back(project);
-    ProjectsJsonUtils::Write(fileName, projects);
+    ProjectsJsonUtils::Write(JsonUtils::TempProjectsFile(), project);
     Logger::trace(L"Project {}:{} created", project.name, project.id);
 
     return 0;

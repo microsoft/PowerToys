@@ -81,6 +81,12 @@ namespace JsonUtils
         return std::wstring(settingsFolderPath) + L"\\projects.json";
     }
 
+    inline std::wstring TempProjectsFile()
+    {
+        std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
+        return std::wstring(settingsFolderPath) + L"\\temp-project.json";
+    }
+
     namespace ProjectJSON
     {
         namespace ApplicationJSON

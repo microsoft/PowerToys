@@ -42,4 +42,16 @@ namespace ProjectsJsonUtils
             Logger::error("Error writing projects file. {}", ex.what());
         }
     }
+
+    inline void Write(const std::wstring& fileName, const Project& project)
+    {
+        try
+        {
+            json::to_file(fileName, JsonUtils::ProjectJSON::ToJson(project));
+        }
+        catch (std::exception ex)
+        {
+            Logger::error("Error writing projects file. {}", ex.what());
+        }
+    }
 }
