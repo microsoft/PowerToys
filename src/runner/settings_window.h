@@ -23,6 +23,7 @@ enum class ESettingsWindowNames
     RegistryPreview,
     CropAndLock,
     EnvironmentVariables,
+    AdvancedPaste,
 };
 
 std::string ESettingsWindowNames_to_string(ESettingsWindowNames value);

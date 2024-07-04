@@ -83,6 +83,12 @@
             Source="{x:Bind DrivePreviewer.Preview, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(DrivePreviewer, Previewer.State), Mode=OneWay}" />
 
+        <controls:SpecialFolderPreview
+            x:Name="SpecialFolderPreview"
+            LoadingState="{x:Bind SpecialFolderPreviewer.State, Mode=OneWay}"
+            Source="{x:Bind SpecialFolderPreviewer.Preview, Mode=OneWay}"
+            Visibility="{x:Bind IsPreviewVisible(SpecialFolderPreviewer, Previewer.State), Mode=OneWay}" />
+
         <controls:UnsupportedFilePreview
             x:Name="UnsupportedFilePreview"
             LoadingState="{x:Bind UnsupportedFilePreviewer.State, Mode=OneWay}"

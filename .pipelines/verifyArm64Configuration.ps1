@@ -33,7 +33,10 @@ if($arm64SlnConfigs.Length -lt 2) {
 
 # List projects only.
 $projects = $solutionFile.ProjectsInOrder | Where-Object {
-    $_.ProjectType -eq "KnownToBeMSBuildFormat"
+    $_.ProjectType -eq "KnownToBeMSBuildFormat" -and
+    $_.ProjectName -ne "EnvironmentVariablesUILib" -and  # UI Lib to be shipped as a nuget too, so it will be built for Any CPU
+    $_.ProjectName -ne "HostsUILib" -and                 # UI Lib to be shipped as a nuget too, so it will be built for Any CPU
+    $_.ProjectName -ne "RegistryPreviewUILib"            # UI Lib to be shipped as a nuget too, so it will be built for Any CPU
 };
 
 # Enumerate through the projects and add any project with a mismatched platform and project configuration

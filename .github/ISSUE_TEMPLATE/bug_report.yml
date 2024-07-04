@@ -47,6 +47,7 @@ body:
     multiple: true
     options:
       - General
+      - Advanced Paste
       - Always on Top
       - Awake
       - ColorPicker
@@ -64,7 +65,6 @@ body:
       - Keyboard Manager
       - Mouse Utilities
       - Mouse Without Borders
-      - Paste as Plain Text
       - Peek
       - PowerRename
       - PowerToys Run

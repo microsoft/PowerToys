@@ -14,6 +14,7 @@
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Management.Deployment.h>
+#include <winrt/Windows.Security.Credentials.h>
 
 #include <wtsapi32.h>
 #include <processthreadsapi.h>
@@ -138,6 +139,23 @@ LExit:
     return SUCCEEDED(hr);
 }
 
+static std::filesystem::path GetUserPowerShellModulesPath()
+{
+    PWSTR myDocumentsBlockPtr;
+
+    if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &myDocumentsBlockPtr)))
+    {
+        const std::wstring myDocuments{ myDocumentsBlockPtr };
+        CoTaskMemFree(myDocumentsBlockPtr);
+        return std::filesystem::path(myDocuments) / "PowerShell" / "Modules";
+    }
+    else
+    {
+        CoTaskMemFree(myDocumentsBlockPtr);
+        return {};
+    }
+}
+
 UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
 {
     HRESULT hr = S_OK;
@@ -161,7 +179,7 @@ UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
     BOOL isSystemUser = IsLocalSystem();
 
     if (isSystemUser) {
-    
+
         auto action = [&commandLine](HANDLE userToken) {
             STARTUPINFO startupInfo{ .cb = sizeof(STARTUPINFO),  .wShowWindow = SW_SHOWNORMAL };
             PROCESS_INFORMATION processInformation;
@@ -316,6 +334,125 @@ LExit:
     return WcaFinalize(er);
 }
 
+const wchar_t* DSC_CONFIGURE_PSD1_NAME = L"Microsoft.PowerToys.Configure.psd1";
+const wchar_t* DSC_CONFIGURE_PSM1_NAME = L"Microsoft.PowerToys.Configure.psm1";
+
+UINT __stdcall InstallDSCModuleCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    std::wstring installationFolder;
+
+    hr = WcaInitialize(hInstall, "InstallDSCModuleCA");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get installFolder.");
+
+    {
+        const auto baseModulesPath = GetUserPowerShellModulesPath();
+        if (baseModulesPath.empty())
+        {
+            hr = E_FAIL;
+            ExitOnFailure(hr, "Unable to determine Powershell modules path");
+        }
+
+        const auto modulesPath = baseModulesPath / L"Microsoft.PowerToys.Configure" / get_product_version();
+
+        std::error_code errorCode;
+        fs::create_directories(modulesPath, errorCode);
+        if (errorCode)
+        {
+            hr = E_FAIL;
+            ExitOnFailure(hr, "Unable to create Powershell modules folder");
+        }
+
+        for (const auto* filename : { DSC_CONFIGURE_PSD1_NAME, DSC_CONFIGURE_PSM1_NAME })
+        {
+            fs::copy_file(fs::path(installationFolder) / "DSCModules" / filename, modulesPath / filename, fs::copy_options::overwrite_existing, errorCode);
+
+            if (errorCode)
+            {
+                hr = E_FAIL;
+                ExitOnFailure(hr, "Unable to copy Powershell modules file");
+            }
+        }
+    }
+
+LExit:
+    if (SUCCEEDED(hr))
+    {
+        er = ERROR_SUCCESS;
+        Logger::info(L"DSC module was installed!");
+    }
+    else
+    {
+        er = ERROR_INSTALL_FAILURE;
+        Logger::error(L"Couldn't install DSC module!");
+    }
+
+    return WcaFinalize(er);
+}
+
+UINT __stdcall UninstallDSCModuleCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+
+    hr = WcaInitialize(hInstall, "UninstallDSCModuleCA");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    {
+        const auto baseModulesPath = GetUserPowerShellModulesPath();
+        if (baseModulesPath.empty())
+        {
+            hr = E_FAIL;
+            ExitOnFailure(hr, "Unable to determine Powershell modules path");
+        }
+
+        const auto powerToysModulePath = baseModulesPath / L"Microsoft.PowerToys.Configure";
+        const auto versionedModulePath = powerToysModulePath / get_product_version();
+
+        std::error_code errorCode;
+
+        for (const auto* filename : { DSC_CONFIGURE_PSD1_NAME, DSC_CONFIGURE_PSM1_NAME })
+        {
+            fs::remove(versionedModulePath / filename, errorCode);
+
+            if (errorCode)
+            {
+                hr = E_FAIL;
+                ExitOnFailure(hr, "Unable to delete DSC file");
+            }
+        }
+
+        for (const auto* modulePath : { &versionedModulePath, &powerToysModulePath })
+        {
+            fs::remove(*modulePath, errorCode);
+
+            if (errorCode)
+            {
+                hr = E_FAIL;
+                ExitOnFailure(hr, "Unable to delete DSC folder");
+            }
+        }
+    }
+
+LExit:
+    if (SUCCEEDED(hr))
+    {
+        er = ERROR_SUCCESS;
+        Logger::info(L"DSC module was uninstalled!");
+    }
+    else
+    {
+        er = ERROR_INSTALL_FAILURE;
+        Logger::error(L"Couldn't uninstall DSC module!");
+    }
+
+    return WcaFinalize(er);
+}
+
 UINT __stdcall InstallEmbeddedMSIXCA(MSIHANDLE hInstall)
 {
     HRESULT hr = S_OK;
@@ -433,6 +570,31 @@ UINT __stdcall RemoveWindowsServiceByName(std::wstring serviceName)
     return ERROR_SUCCESS;
 }
 
+UINT __stdcall UnsetAdvancedPasteAPIKeyCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+
+    try
+    {
+        winrt::Windows::Security::Credentials::PasswordVault vault;
+        winrt::Windows::Security::Credentials::PasswordCredential cred;
+
+        hr = WcaInitialize(hInstall, "UnsetAdvancedPasteAPIKey");
+        ExitOnFailure(hr, "Failed to initialize");
+
+        cred = vault.Retrieve(L"https://platform.openai.com/api-keys", L"PowerToys_AdvancedPaste_OpenAIKey");
+        vault.Remove(cred);
+    }
+    catch (...)
+    {
+    }
+
+LExit:
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
 UINT __stdcall UninstallCommandNotFoundModuleCA(MSIHANDLE hInstall)
 {
     HRESULT hr = S_OK;
@@ -446,9 +608,43 @@ UINT __stdcall UninstallCommandNotFoundModuleCA(MSIHANDLE hInstall)
     hr = getInstallFolder(hInstall, installationFolder);
     ExitOnFailure(hr, "Failed to get installFolder.");
 
+#ifdef _M_ARM64
+    command = "powershell.exe";
+    command += " ";
+    command += "-NoProfile -NonInteractive -NoLogo -WindowStyle Hidden -ExecutionPolicy Unrestricted";
+    command += " -Command ";
+    command += "\"[Environment]::SetEnvironmentVariable('PATH', [Environment]::GetEnvironmentVariable('PATH', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('PATH', 'User'), 'Process');";
+    command += "pwsh.exe -NoProfile -NonInteractive -NoLogo -WindowStyle Hidden -ExecutionPolicy Unrestricted -File '" + winrt::to_string(installationFolder) + "\\WinUI3Apps\\Assets\\Settings\\Scripts\\DisableModule.ps1" + "'\"";
+#else
     command = "pwsh.exe";
     command += " ";
     command += "-NoProfile -NonInteractive -NoLogo -WindowStyle Hidden -ExecutionPolicy Unrestricted -File \"" + winrt::to_string(installationFolder) + "\\WinUI3Apps\\Assets\\Settings\\Scripts\\DisableModule.ps1" + "\"";
+#endif
+
+
+    system(command.c_str());
+
+LExit:
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+UINT __stdcall UpgradeCommandNotFoundModuleCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    std::wstring installationFolder;
+    std::string command;
+
+    hr = WcaInitialize(hInstall, "UpgradeCommandNotFoundModule");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get installFolder.");
+
+    command = "pwsh.exe";
+    command += " ";
+    command += "-NoProfile -NonInteractive -NoLogo -WindowStyle Hidden -ExecutionPolicy Unrestricted -File \"" + winrt::to_string(installationFolder) + "\\WinUI3Apps\\Assets\\Settings\\Scripts\\UpgradeModule.ps1" + "\"";
 
     system(command.c_str());
 
@@ -1027,9 +1223,10 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
     }
     processes.resize(bytes / sizeof(processes[0]));
 
-    std::array<std::wstring_view, 31> processesToTerminate = {
+    std::array<std::wstring_view, 32> processesToTerminate = {
         L"PowerToys.PowerLauncher.exe",
         L"PowerToys.Settings.exe",
+        L"PowerToys.AdvancedPaste.exe",
         L"PowerToys.Awake.exe",
         L"PowerToys.FancyZones.exe",
         L"PowerToys.FancyZonesEditor.exe",

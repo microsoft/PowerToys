@@ -29,6 +29,7 @@ AFFINETRANSFORM
 AFX
 AGGREGATABLE
 AHybrid
+AKV
 ALarger
 ALLAPPS
 ALLINPUT
@@ -94,6 +95,7 @@ AUTOUPDATE
 AValid
 awakeness
 AWAYMODE
+azcliversion
 azman
 backtracer
 bbwe
@@ -118,11 +120,13 @@ BLURREGION
 bmi
 bms
 BNumber
+BODGY
 BOKMAL
 bootstrapper
 BOOTSTRAPPERINSTALLFOLDER
 bostrot
 BOTTOMALIGN
+boxmodel
 BPBF
 bpmf
 bpp
@@ -148,6 +152,7 @@ Cangjie
 CANRENAME
 CAPTUREBLT
 CAPTURECHANGED
+CARETBLINKING
 CAtl
 cch
 CCHDEVICENAME
@@ -162,6 +167,7 @@ CENTERALIGN
 ceq
 certlm
 certmgr
+cfp
 cguid
 CHANGECBCHAIN
 changecursor
@@ -196,6 +202,7 @@ CMock
 CMONITORS
 cmpgt
 cne
+CNF
 coclass
 codeofconduct
 codereview
@@ -248,6 +255,7 @@ CREATESCHEDULEDTASK
 CREATESTRUCT
 CREATEWINDOWFAILED
 CRECT
+CRH
 critsec
 Crossdevice
 CRSEL
@@ -421,6 +429,7 @@ ENTERSIZEMOVE
 ENU
 EOAC
 epu
+EPO
 ERASEBKGND
 EREOF
 EResize
@@ -748,6 +757,7 @@ KEYEVENTF
 KEYIMAGE
 keynum
 keyremaps
+keyvault
 KILLFOCUS
 killrunner
 Knownfolders
@@ -891,6 +901,7 @@ MINIMIZEBOX
 MINIMIZEEND
 MINIMIZESTART
 miniz
+Mip
 Miracast
 mjpg
 mkdn
@@ -1331,6 +1342,9 @@ RRF
 rrr
 rsop
 Rsp
+rstringalnum
+rstringalpha
+rstringdigit
 Rstrtmgr
 RTB
 RTLREADING
@@ -1345,6 +1359,7 @@ runtimeclass
 runtimeobject
 runtimepack
 runtimes
+ruuid
 rvm
 rwin
 rwl
@@ -1614,6 +1629,7 @@ triaging
 TRK
 trl
 trx
+tsa
 Tsd
 TServer
 TStr
