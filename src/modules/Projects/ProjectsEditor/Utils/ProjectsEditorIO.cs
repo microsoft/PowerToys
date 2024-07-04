@@ -46,24 +46,20 @@ namespace ProjectsEditor.Utils
             }
         }
 
-        public ParsingResult ParseProject(string fileName, out Project project)
+        public ParsingResult ParseTempProject(out Project project)
         {
             project = null;
             try
             {
-                ProjectsData parser = new ProjectsData();
-                if (!File.Exists(fileName))
+                TempProjectData parser = new TempProjectData();
+                if (!File.Exists(parser.File))
                 {
                     Logger.LogWarning($"ParseProject method. Projects storage file not found: {parser.File}");
-                    return new ParsingResult(true);
+                    return new ParsingResult(false);
                 }
 
-                ProjectsData.ProjectsListWrapper projects = parser.Read(fileName);
-                if (!ExtractProject(projects, out project))
-                {
-                    Logger.LogWarning($"ParseProject method. Projects storage file content could not be set. Reason: {Properties.Resources.Error_Parsing_Message}");
-                    return new ParsingResult(false, ProjectsEditor.Properties.Resources.Error_Parsing_Message);
-                }
+                project = GetProjectFromWrapper(parser.Read(parser.File));
+                parser.DeleteTempFile();
 
                 return new ParsingResult(true);
             }
@@ -74,25 +70,7 @@ namespace ProjectsEditor.Utils
             }
         }
 
-        private bool ExtractProject(ProjectsData.ProjectsListWrapper projects, out Project project)
-        {
-            project = null;
-            if (projects.Projects == null)
-            {
-                return false;
-            }
-
-            if (projects.Projects.Count != 1)
-            {
-                return false;
-            }
-
-            ProjectsData.ProjectWrapper projectWrapper = projects.Projects[0];
-            project = GetProjectFromWrapper(projectWrapper);
-            return true;
-        }
-
-        private Project GetProjectFromWrapper(ProjectsData.ProjectWrapper project)
+        private Project GetProjectFromWrapper(ProjectData.ProjectWrapper project)
         {
             Project newProject = new Project()
             {
@@ -144,24 +122,24 @@ namespace ProjectsEditor.Utils
         {
             ProjectsData serializer = new ProjectsData();
             ProjectsData.ProjectsListWrapper projectsWrapper = new ProjectsData.ProjectsListWrapper { };
-            projectsWrapper.Projects = new List<ProjectsData.ProjectWrapper>();
+            projectsWrapper.Projects = new List<ProjectData.ProjectWrapper>();
 
             foreach (Project project in projects)
             {
-                ProjectsData.ProjectWrapper wrapper = new ProjectsData.ProjectWrapper
+                ProjectData.ProjectWrapper wrapper = new ProjectData.ProjectWrapper
                 {
                     Id = project.Id,
                     Name = project.Name,
                     CreationTime = project.CreationTime,
                     IsShortcutNeeded = project.IsShortcutNeeded,
                     LastLaunchedTime = project.LastLaunchedTime,
-                    Applications = new List<ProjectsData.ApplicationWrapper> { },
-                    MonitorConfiguration = new List<ProjectsData.MonitorConfigurationWrapper> { },
+                    Applications = new List<ProjectData.ApplicationWrapper> { },
+                    MonitorConfiguration = new List<ProjectData.MonitorConfigurationWrapper> { },
                 };
 
                 foreach (var app in project.Applications)
                 {
-                    wrapper.Applications.Add(new ProjectsData.ApplicationWrapper
+                    wrapper.Applications.Add(new ProjectData.ApplicationWrapper
                     {
                         Application = app.AppName,
                         ApplicationPath = app.AppPath,
@@ -170,7 +148,7 @@ namespace ProjectsEditor.Utils
                         CommandLineArguments = app.CommandLineArguments,
                         Maximized = app.Maximized,
                         Minimized = app.Minimized,
-                        Position = new ProjectsData.ApplicationWrapper.WindowPositionWrapper
+                        Position = new ProjectData.ApplicationWrapper.WindowPositionWrapper
                         {
                             X = app.Position.X,
                             Y = app.Position.Y,
@@ -183,20 +161,20 @@ namespace ProjectsEditor.Utils
 
                 foreach (var monitor in project.Monitors)
                 {
-                    wrapper.MonitorConfiguration.Add(new ProjectsData.MonitorConfigurationWrapper
+                    wrapper.MonitorConfiguration.Add(new ProjectData.MonitorConfigurationWrapper
                     {
                         Id = monitor.MonitorName,
                         InstanceId = monitor.MonitorInstanceId,
                         MonitorNumber = monitor.MonitorNumber,
                         Dpi = monitor.Dpi,
-                        MonitorRectDpiAware = new ProjectsData.MonitorConfigurationWrapper.MonitorRectWrapper
+                        MonitorRectDpiAware = new ProjectData.MonitorConfigurationWrapper.MonitorRectWrapper
                         {
                             Left = (int)monitor.MonitorDpiAwareBounds.Left,
                             Top = (int)monitor.MonitorDpiAwareBounds.Top,
                             Width = (int)monitor.MonitorDpiAwareBounds.Width,
                             Height = (int)monitor.MonitorDpiAwareBounds.Height,
                         },
-                        MonitorRectDpiUnaware = new ProjectsData.MonitorConfigurationWrapper.MonitorRectWrapper
+                        MonitorRectDpiUnaware = new ProjectData.MonitorConfigurationWrapper.MonitorRectWrapper
                         {
                             Left = (int)monitor.MonitorDpiUnawareBounds.Left,
                             Top = (int)monitor.MonitorDpiUnawareBounds.Top,
