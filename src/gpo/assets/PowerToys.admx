@@ -581,8 +581,8 @@
       <parentCategory ref="MouseWithoutBorders" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_83_0" />
       <elements>
-	    <!--Max length 16383 is the limit of the REG_MULTI_SZ value.-->
-        <multiText id="MwbPolicyDefinedIpMappingsList" valueName="MwbPolicyDefinedIpMappingRules" maxLength="16383" required="true"/>
+        <!--Max length means here max length per line. We support 65 characters per line. (A string containing the hostname, a space and an IPv6 Address is max. 55 characters long.)-->
+        <multiText id="MwbPolicyDefinedIpMappingsList" valueName="MwbPolicyDefinedIpMappingRules" maxLength="65" required="true"/>
       </elements>
     </policy>
   </policies>
