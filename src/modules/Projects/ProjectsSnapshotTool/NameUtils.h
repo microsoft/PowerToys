@@ -1,16 +1,15 @@
 #pragma once
 
-#include <string>
-#include <vector>
-
 #include <projects-common/Data.h>
+
+#include <common/utils/resources.h>
+#include "Generated Files/resource.h"
 
 namespace ProjectNameUtils
 {
     inline std::wstring CreateProjectName(const std::vector<Project>& projects)
     {
-        // new project name
-        std::wstring defaultNamePrefix = L"Project"; // TODO: localizable
+        std::wstring defaultNamePrefix = GET_RESOURCE_STRING(IDS_DEFAULTPROJECTNAMEPREFIX);
         int nextProjectIndex = 0;
         for (const auto& proj : projects)
         {

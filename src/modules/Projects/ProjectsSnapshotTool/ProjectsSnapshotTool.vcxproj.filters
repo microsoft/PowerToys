@@ -18,9 +18,6 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="NameUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -28,6 +25,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SnapshotUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.base.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -44,9 +44,17 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="ProjectsSnapshotToolResources.base.rc">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="ProjectsSnapshotTool.rc">
+    <EmbeddedResource Include="Resource.resx">
+      <Filter>Resource Files</Filter>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Generated Files/ProjectsSnapshotToolResources.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
