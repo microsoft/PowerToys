@@ -55,7 +55,7 @@ namespace PowerAccent.Core
         {
             return lang switch
             {
-                Language.ALL => GetDefaultLetterKeyALL(letter), // ALL
+                Language.ALL => GetDefaultLetterKeyALL(letter), // All
                 Language.BG => GetDefaultLetterKeyBG(letter), // Bulgarian
                 Language.CA => GetDefaultLetterKeyCA(letter), // Catalan
                 Language.CRH => GetDefaultLetterKeyCRH(letter), // Crimean Tatar
