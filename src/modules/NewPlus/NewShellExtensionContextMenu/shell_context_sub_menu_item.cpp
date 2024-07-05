@@ -40,18 +40,19 @@ IFACEMETHODIMP shell_context_sub_menu_item::GetCanonicalName(_Out_ GUID* guidCom
 }
 IFACEMETHODIMP shell_context_sub_menu_item::GetState(_In_opt_ IShellItemArray* selection, _In_ BOOL, _Out_ EXPCMDSTATE* returned_state)
 {
-    DWORD object_count = 0;
-    selection->GetCount(&object_count);
+    //DWORD object_count = 0;
+    //selection->GetCount(&object_count);
 
-    if (object_count == 1)
-    {
-        *returned_state = ECS_ENABLED;
-    }
-    else
-    {
-        *returned_state = ECS_HIDDEN;
-    }
+    //if (object_count == 1)
+    //{
+    //    *returned_state = ECS_ENABLED;
+    //}
+    //else
+    //{
+    //    *returned_state = ECS_HIDDEN;
+    //}
 
+    *returned_state = ECS_ENABLED;
     return S_OK;
 }
 
