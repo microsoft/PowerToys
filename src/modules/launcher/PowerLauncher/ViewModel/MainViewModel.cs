@@ -1033,7 +1033,7 @@ namespace PowerLauncher.ViewModel
                     {
                         // NOTE: https://learn.microsoft.com/en-us/windows/win32/api/dwmapi/ne-dwmapi-dwmwindowattribute
                         // Specifying DWMWA_COLOR_DEFAULT (value 0xFFFFFFFF) for the color will reset the window back to using the system's default behavior for the caption color.
-                        uint titlebarPvAttribute = 0xFFFFFFFE;
+                        uint titlebarPvAttribute = 0xFFFFFFFF;
                         _ = Wox.Plugin.Common.Win32.NativeMethods.DwmSetWindowAttribute(
                             windowSource.Handle,
                             (int)Wox.Plugin.Common.Win32.DwmWindowAttributes.CaptionColor, // CaptionColor attribute is only available on Windows 11.
