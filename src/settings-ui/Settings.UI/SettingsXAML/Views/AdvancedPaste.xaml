@@ -43,7 +43,9 @@
                         IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                         Severity="Informational">
-                        <InfoBar IconSource="{ui:FontIconSource Glyph=&#xE72E;}" />
+                        <InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource>
                     </InfoBar>
 
                     <controls:SettingsGroup x:Uid="AdvancedPaste_EnableAISettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
@@ -81,7 +83,9 @@
                             IsOpen="{x:Bind ViewModel.ShowOnlineAIModelsGpoConfiguredInfoBar, Mode=OneWay}"
                             IsTabStop="{x:Bind ViewModel.ShowOnlineAIModelsGpoConfiguredInfoBar, Mode=OneWay}"
                             Severity="Informational">
-                            <InfoBar IconSource="{ui:FontIconSource Glyph=&#xE72E;}" />
+                            <InfoBar.IconSource>
+                                <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                            </InfoBar.IconSource>
                         </InfoBar>
                     </controls:SettingsGroup>
 
@@ -98,7 +102,9 @@
                             IsOpen="{x:Bind ViewModel.ShowClipboardHistoryIsGpoConfiguredInfoBar, Mode=OneWay}"
                             IsTabStop="{x:Bind ViewModel.ShowClipboardHistoryIsGpoConfiguredInfoBar, Mode=OneWay}"
                             Severity="Informational">
-                            <InfoBar IconSource="{ui:FontIconSource Glyph=&#xE72E;}" />
+                            <InfoBar.IconSource>
+                                <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                            </InfoBar.IconSource>
                         </InfoBar>
                         <tkcontrols:SettingsCard x:Uid="AdvancedPaste_CloseAfterLosingFocus" HeaderIcon="{ui:FontIcon Glyph=&#xED1A;}">
                             <ToggleSwitch IsOn="{x:Bind ViewModel.CloseAfterLosingFocus, Mode=TwoWay}" />
