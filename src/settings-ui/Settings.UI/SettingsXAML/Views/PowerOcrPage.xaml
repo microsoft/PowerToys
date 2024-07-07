@@ -16,6 +16,13 @@
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
                 Orientation="Vertical"
                 Spacing="2">
+                <InfoBar
+                    x:Uid="TextExtractor_UseSnippingToolWarning"
+                    Margin="{x:Bind ViewModel.SnippingToolInfoBarMargin, Mode=OneWay}"
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.IsWin11OrGreater, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.IsWin11OrGreater, Mode=OneWay}"
+                    Severity="Informational" />
                 <tkcontrols:SettingsCard
                     x:Uid="TextExtractor_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExtractor.png}"
@@ -23,17 +30,15 @@
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
                 <InfoBar
-                    x:Uid="TextExtractor_UseSnippingToolWarning"
-                    IsClosable="False"
-                    IsOpen="{x:Bind ViewModel.IsWin11OrGreater, Mode=OneWay}"
-                    IsTabStop="{x:Bind ViewModel.IsWin11OrGreater, Mode=OneWay}"
-                    Severity="Informational" />
-                <InfoBar
                     x:Uid="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    Severity="Informational" />
+                    Severity="Informational">
+                    <InfoBar.IconSource>
+                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                    </InfoBar.IconSource>
+                </InfoBar>
                 <InfoBar
                     x:Uid="TextExtractor_SupportedLanguages"
                     IsClosable="False"
