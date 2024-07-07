@@ -140,7 +140,7 @@ IFACEMETHODIMP template_folder_context_menu_item::GetTitle(_In_opt_ IShellItemAr
 
 IFACEMETHODIMP template_folder_context_menu_item::GetIcon(_In_opt_ IShellItemArray*, _Outptr_result_nullonfailure_ PWSTR* icon)
 {
-    return SHStrDup(utilities::get_open_templates_icon_resource_filepath(module_instance_handle, ThemeHelpers::GetSystemTheme()).c_str(), icon);
+    return SHStrDup(utilities::get_open_templates_icon_resource_filepath(module_instance_handle, ThemeHelpers::GetAppTheme()).c_str(), icon);
 }
 
 IFACEMETHODIMP template_folder_context_menu_item::Invoke(_In_opt_ IShellItemArray* selection, _In_opt_ IBindCtx*) noexcept
