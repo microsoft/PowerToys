@@ -42,14 +42,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                var mfHandle = NativeMethods.LoadLibrary("mf.dll");
+                return true;
+
+                /* var mfHandle = NativeMethods.LoadLibrary("mf.dll");
                 bool mfAvailable = mfHandle != IntPtr.Zero;
                 if (mfAvailable)
                 {
                     NativeMethods.FreeLibrary(mfHandle);
                 }
 
-                return this != null && File.Exists("PowerToys.VideoConferenceModule.dll") && mfAvailable;
+                return this != null && File.Exists("PowerToys.VideoConferenceModule.dll") && mfAvailable; */
             }
         }
 
