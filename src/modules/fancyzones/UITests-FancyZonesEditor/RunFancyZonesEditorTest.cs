@@ -168,12 +168,10 @@ namespace UITests_FancyZonesEditor
             Assert.IsNotNull(_session?.Session?.FindElementsByName("Edit 'Grid'")); // verify it's opened for the correct layout
         }
 
-        /*
         [TestMethod]
         public void OpenContextMenu() // verify the context menu is opened
         {
             Assert.IsNotNull(_session?.OpenContextMenu(TestConstants.TemplateLayoutNames[Constants.TemplateLayout.Columns]));
         }
-        */
     }
 }
