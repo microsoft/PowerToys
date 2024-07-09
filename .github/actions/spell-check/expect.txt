@@ -57,6 +57,7 @@ appdata
 APPEXECLINK
 Appium
 Applicationcan
+APPLICATIONFRAMEHOST
 appmanifest
 APPNAME
 appref
