@@ -51,7 +51,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                     IcoPath = $"Images\\shutdown.{iconTheme}.png",
                     Action = c =>
                     {
-                        return ResultHelper.ExecuteCommand(confirmCommands, Resources.Microsoft_plugin_sys_shutdown_computer_confirmation, () => Helper.OpenInShell("shutdown", "/sg /hybrid /t 0"));
+                        return ResultHelper.ExecuteCommand(confirmCommands, Resources.Microsoft_plugin_sys_shutdown_computer_confirmation, () => Helper.OpenInShell("shutdown", "/s /hybrid /t 0"));
                     },
                 },
                 new Result
