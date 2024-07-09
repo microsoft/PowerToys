@@ -184,8 +184,6 @@ namespace ProjectsEditor.Models
             }
         }
 
-        public bool IsAnySelected { get => Applications?.Any(x => x.IsSelected) == true; }
-
         public List<MonitorSetup> Monitors { get; set; }
 
         private BitmapImage _previewIcons;
@@ -220,7 +218,6 @@ namespace ProjectsEditor.Models
                     PackageFullName = item.PackageFullName,
                     Minimized = item.Minimized,
                     Maximized = item.Maximized,
-                    IsSelected = false,
                     MonitorNumber = item.MonitorNumber,
                     IsNotFound = item.IsNotFound,
                     Position = new Application.WindowPosition() { X = item.Position.X, Y = item.Position.Y, Height = item.Position.Height, Width = item.Position.Width },

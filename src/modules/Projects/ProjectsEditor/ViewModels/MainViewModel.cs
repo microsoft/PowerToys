@@ -354,46 +354,6 @@ namespace ProjectsEditor.ViewModels
             }
         }
 
-        internal void UpdateIsSelectedStates(Project project, bool newValue)
-        {
-            foreach (Application app in project.Applications)
-            {
-                app.IsSelected = newValue;
-            }
-
-            project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.IsAnySelected)));
-        }
-
-        internal void RemoveSelectedApps(Project project)
-        {
-            project.Applications.RemoveAll(app => app.IsSelected);
-            project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.ApplicationsListed)));
-            project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.IsAnySelected)));
-            project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.CanBeSaved)));
-            project.Initialize();
-        }
-
-        internal void UpdateIsSelectedStates(Project project, string monitorInfo, bool newValue)
-        {
-            IEnumerable<Application> apps;
-            if (monitorInfo == Properties.Resources.Minimized_Apps)
-            {
-                apps = project.Applications.Where(app => app.Minimized);
-            }
-            else
-            {
-                Monitor monitor = project.Monitors.Where(x => x.MonitorInfo == monitorInfo).Single();
-                apps = project.Applications.Where(app => !app.Minimized && app.MonitorNumber == monitor.MonitorNumber);
-            }
-
-            foreach (Application app in apps)
-            {
-                app.IsSelected = newValue;
-            }
-
-            project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.IsAnySelected)));
-        }
-
         internal void EnterSnapshotMode()
         {
             _mainWindow.WindowState = System.Windows.WindowState.Minimized;

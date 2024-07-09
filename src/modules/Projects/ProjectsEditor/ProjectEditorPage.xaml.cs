@@ -24,27 +24,11 @@ namespace ProjectsEditor
             InitializeComponent();
         }
 
-        private void CheckBox_Checked(object sender, RoutedEventArgs e)
-        {
-            CheckBox checkBox = sender as CheckBox;
-            Models.Application application = checkBox.DataContext as Models.Application;
-            Models.Project project = application.Parent;
-            project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.CanBeSaved)));
-            project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.IsAnySelected)));
-            project.Initialize();
-        }
-
         private void SaveButtonClicked(object sender, RoutedEventArgs e)
         {
             Project projectToSave = this.DataContext as Project;
             _mainViewModel.SaveProject(projectToSave);
             _mainViewModel.SwitchToMainView();
-        }
-
-        private void RemoveSelectedButtonClicked(object sender, RoutedEventArgs e)
-        {
-            Project projectToSave = this.DataContext as Project;
-            _mainViewModel.RemoveSelectedApps(projectToSave);
         }
 
         private void CancelButtonClicked(object sender, RoutedEventArgs e)
@@ -97,22 +81,6 @@ namespace ProjectsEditor
             Project project = this.DataContext as Project;
             project.Name = EditNameTextBox.Text;
             project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.CanBeSaved)));
-        }
-
-        private void SelectAllCheckBox_Modified(object sender, RoutedEventArgs e)
-        {
-            Project project = this.DataContext as Project;
-            bool newValue = SelectAllCheckBox.IsChecked == true;
-            _mainViewModel.UpdateIsSelectedStates(project, newValue);
-        }
-
-        private void SelectAllOnMonitorCheckBox_Modified(object sender, RoutedEventArgs e)
-        {
-            Project project = this.DataContext as Project;
-            CheckBox checkBox = (CheckBox)sender;
-            string monitorInfo = (string)checkBox.Tag;
-            bool newValue = checkBox.IsChecked == true;
-            _mainViewModel.UpdateIsSelectedStates(project, monitorInfo, newValue);
         }
     }
 }
