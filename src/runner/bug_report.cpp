@@ -87,7 +87,7 @@ void InitializeReportBugLinkAsync()
             return static_cast<char>(c);
         });
 
-        std::string additionalInfo = "OS Build Version: " + GetOSVersion() + "%0a" + ".NET Version: " + GetDotNetVersion() + "\n";
+        std::string additionalInfo = "OS Build Version: " + GetOSVersion() + "%0a" + ".NET Version: " + GetDotNetVersion() + "%0a%0a";
         GeneralSettings generalSettings = get_general_settings();
         std::string isElevatedRun = generalSettings.isElevated ? "Running as admin: Yes" : "Running as admin: No";
 
@@ -97,7 +97,7 @@ void InitializeReportBugLinkAsync()
 
         std::string installScope = current_install_scope == InstallScope::PerUser ? "Installation : User" : "Installation : System";
 
-        additionalInfo += windowsSettings + "\n" + installScope + "\n" + isElevatedRun;
+        additionalInfo += windowsSettings + "%0a" + installScope + "%0a" + isElevatedRun;
 
         gitHubURL = "https://github.com/gokcekantarci/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CNeeds-Triage&template=bug_report.yml" +
                     std::string("&version=") + version +
@@ -290,11 +290,11 @@ std::string ReportWindowsSettings()
     }
     catch (...)
     {
-        return "Failed to get windows settings\n";
+        return "Failed to get windows settings %0a";
     }
 
-    result = "Preferred user language: " + WideStringToString(userLanguage) + "\n";
-    result += "User locale: " + WideStringToString(userLocale) + "\n";
+    result = "Preferred user language: " + WideStringToString(userLanguage) + "%0a";
+    result += "User locale: " + WideStringToString(userLocale) + "%0a";
 
     return result;
 }

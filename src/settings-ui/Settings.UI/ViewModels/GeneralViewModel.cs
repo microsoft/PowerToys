@@ -11,14 +11,11 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Windows;
-using System.Windows.Interop;
-using System.Windows.Threading;
 using CommunityToolkit.Common;
 using CommunityToolkit.Mvvm.Input;
 using global::PowerToys.GPOWrapper;
@@ -30,8 +27,9 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Win32;
+using Windows.Globalization;
 using Windows.System.Profile;
-using Windows.UI.Core;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -199,6 +197,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private string reportBugLink = "https://aka.ms/powerToysReportBug";
 
+        public enum InstallScope
+        {
+            PerMachine = 0,
+            PerUser,
+        }
+
+        private const string InstallScopeRegKey = @"Software\Classes\powertoys\";
+
         // Gets or sets a value indicating whether run powertoys on start-up.
         public string ReportBugLink
         {
@@ -214,9 +220,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             string gitHubURL = string.Empty;
             var version = HttpUtility.UrlEncode(Helper.GetProductVersion().TrimStart('v'));
-            var otherSoftwareText = "OS Build Version: " + GetOSVersion() + "\n.NET Version: " + GetDotNetVersion();
-            var otherSoftware = HttpUtility.UrlEncode(otherSoftwareText);
-            var isElevatedRun = IsElevated ? "Yes" : "No";
+
+            var otherSoftwareText = "OS Build Version: " + GetOSVersion() + "\n.NET Version: " + GetDotNetVersion() + "\n\n";
+            var additionalInfo = HttpUtility.UrlEncode(otherSoftwareText);
+            var isElevatedRun = IsElevated ? "Running as admin: Yes" : "Running as admin: No";
+            var windowsSettings = ReportWindowsSettings();
+
+            var current_install_scope = GetCurrentInstallScope();
+
+            var installScope = current_install_scope == InstallScope.PerUser ? "Installation : User" : "Installation : System";
+
+            additionalInfo += windowsSettings + "%0a" + installScope + "%0a" + isElevatedRun;
 
             var loadingMessage = new LoadingMessage();
             loadingMessage.XamlRoot = App.GetSettingsWindow().Content.XamlRoot;
@@ -243,10 +257,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     // Bug report task completed
                     string reportResult = await bugReportTask;
 
-                    gitHubURL = "https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CNeeds-Triage&template=bug_report.yml" +
+                    gitHubURL = "https://github.com/gokcekantarci/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CNeeds-Triage&template=bug_report.yml" +
                         "&version=" + version +
-                        "&otherSoftware=" + otherSoftware +
-                        "&isElevated=" + HttpUtility.UrlEncode(isElevatedRun);
+                        "&additionalInfo=" + additionalInfo;
 
                     var dialog = new ContentDialog
                     {
@@ -431,6 +444,53 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             return osVersion.ToString();
+        }
+
+        public static string ReportWindowsSettings()
+        {
+            string userLanguage;
+            string userLocale;
+            string result;
+
+            try
+            {
+                var languages = ApplicationLanguages.Languages;
+                userLanguage = new Language(languages[0]).DisplayName;
+
+                userLocale = CultureInfo.CurrentCulture.Name;
+            }
+            catch (Exception)
+            {
+                return "Failed to get windows settings\n";
+            }
+
+            result = "Preferred user language: " + userLanguage + "%0a";
+            result += "User locale: " + userLocale + "%0a";
+
+            return result;
+        }
+
+        public static InstallScope GetCurrentInstallScope()
+        {
+            // Check HKLM first
+            if (Registry.LocalMachine.OpenSubKey(InstallScopeRegKey) != null)
+            {
+                return InstallScope.PerMachine;
+            }
+
+            // If not found, check HKCU
+            var userKey = Registry.CurrentUser.OpenSubKey(InstallScopeRegKey);
+            if (userKey != null)
+            {
+                var installScope = userKey.GetValue("InstallScope") as string;
+                userKey.Close();
+                if (!string.IsNullOrEmpty(installScope) && installScope.Contains("perUser"))
+                {
+                    return InstallScope.PerUser;
+                }
+            }
+
+            return InstallScope.PerMachine; // Default if no specific registry key found
         }
 
         public bool Startup
