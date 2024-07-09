@@ -36,6 +36,15 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
         return -1;
     }
 
+    // Set general COM security levels.
+    comInitHres = CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
+    if (FAILED(comInitHres))
+    {
+        Logger::error(L"Failed to initialize security. Error code: {}", get_last_error_or_default(comInitHres));
+        CoUninitialize();
+        return -1;
+    }
+
     std::wstring fileName = JsonUtils::ProjectsFile();
     std::string cmdLineStr(cmdLine);
     if (!cmdLineStr.empty())
