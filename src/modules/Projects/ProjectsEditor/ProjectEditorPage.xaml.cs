@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using ProjectsEditor.Data;
 using ProjectsEditor.Models;
 using ProjectsEditor.ViewModels;
 
@@ -27,13 +28,24 @@ namespace ProjectsEditor
         private void SaveButtonClicked(object sender, RoutedEventArgs e)
         {
             Project projectToSave = this.DataContext as Project;
-            _mainViewModel.SaveProject(projectToSave);
+            if (projectToSave.EditorWindowTitle == Properties.Resources.CreateProject)
+            {
+                _mainViewModel.AddNewProject(projectToSave);
+            }
+            else
+            {
+                _mainViewModel.SaveProject(projectToSave);
+            }
+
             _mainViewModel.SwitchToMainView();
         }
 
         private void CancelButtonClicked(object sender, RoutedEventArgs e)
         {
-            _mainViewModel.CancelLastEdit();
+            // delete the temp file created by the snapshot tool
+            TempProjectData parser = new TempProjectData();
+            parser.DeleteTempFile();
+
             _mainViewModel.SwitchToMainView();
         }
 

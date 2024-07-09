@@ -8,9 +8,9 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Timers;
 using ManagedCommon;
@@ -127,7 +127,6 @@ namespace ProjectsEditor.ViewModels
         }
 
         private Project editedProject;
-        private bool isEditedProjectNewlyCreated;
         private string projectNameBeingEdited;
         private MainWindow _mainWindow;
         private System.Timers.Timer lastUpdatedTimer;
@@ -218,45 +217,62 @@ namespace ProjectsEditor.ViewModels
             project.Name = projectNameBeingEdited;
         }
 
-        public async void AddNewProject()
+        public async void SnapNewProject()
         {
             CancelSnapshot();
-            await Task.Run(() => RunSnapshotTool());
-            if (_projectsEditorIO.ParseProjects(this).Result == true && Projects.Count != 0)
-            {
-                int repeatCounter = 1;
-                string newName = Projects.Count != 0 ? Projects.Last().Name : "Project 1"; // TODO: localizable project name
-                while (Projects.Where(x => x.Name.Equals(Projects.Last().Name, StringComparison.Ordinal)).Count() > 1)
-                {
-                    Projects.Last().Name = $"{newName} ({repeatCounter})";
-                    repeatCounter++;
-                }
 
-                _projectsEditorIO.SerializeProjects(Projects.ToList());
-                EditProject(Projects.Last(), true);
+            await Task.Run(() => RunSnapshotTool());
+
+            Project project = new Project();
+            if (_projectsEditorIO.ParseTempProject(out project).Result)
+            {
+                EditProject(project, true);
             }
         }
 
         public void EditProject(Project selectedProject, bool isNewlyCreated = false)
         {
-            isEditedProjectNewlyCreated = isNewlyCreated;
             var editPage = new ProjectEditor(this);
             SetEditedProject(selectedProject);
-            Project projectEdited = new Project(selectedProject) { EditorWindowTitle = isNewlyCreated ? Properties.Resources.CreateProject : Properties.Resources.EditProject };
-            projectEdited.Initialize();
 
-            editPage.DataContext = projectEdited;
+            if (isNewlyCreated)
+            {
+                // generate a default name for the new project
+                string defaultNamePrefix = Properties.Resources.DefaultProjectNamePrefix;
+                int nextProjectIndex = 0;
+                foreach (var proj in Projects)
+                {
+                    if (proj.Name.StartsWith(defaultNamePrefix, StringComparison.CurrentCulture))
+                    {
+                        try
+                        {
+                            int index = int.Parse(proj.Name[(defaultNamePrefix.Length + 1)..], CultureInfo.CurrentCulture);
+                            if (nextProjectIndex < index)
+                            {
+                                nextProjectIndex = index;
+                            }
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
+                }
+
+                selectedProject.Name = defaultNamePrefix + " " + (nextProjectIndex + 1).ToString(CultureInfo.CurrentCulture);
+            }
+
+            selectedProject.EditorWindowTitle = isNewlyCreated ? Properties.Resources.CreateProject : Properties.Resources.EditProject;
+            selectedProject.Initialize();
+
+            editPage.DataContext = selectedProject;
             _mainWindow.ShowPage(editPage);
             lastUpdatedTimer.Stop();
         }
 
-        public void CancelLastEdit()
+        public void AddNewProject(Project project)
         {
-            if (isEditedProjectNewlyCreated)
-            {
-                Projects.Remove(editedProject);
-                _projectsEditorIO.SerializeProjects(Projects.ToList());
-            }
+            Projects.Add(project);
+            _projectsEditorIO.SerializeProjects(Projects.ToList());
         }
 
         public void DeleteProject(Project selectedProject)

@@ -1,14 +1,13 @@
 #include "pch.h"
 
 #include <chrono>
-#include <iostream>
 
-#include <projects-common/AppUtils.h>
 #include <projects-common/Data.h>
 #include <projects-common/GuidUtils.h>
 #include <projects-common/MonitorUtils.h>
-#include <projects-common/WindowEnumerator.h>
-#include <projects-common/WindowFilter.h>
+
+#include <JsonUtils.h>
+#include <SnapshotUtils.h>
 
 #include <common/utils/gpo.h>
 #include <common/utils/logger_helper.h>
@@ -45,88 +44,13 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
         fileName = fileNameParam;
     }
 
-    // read previously saved projects 
-    std::vector<Project> projects;
-    try
-    {
-        auto savedProjectsJson = json::from_file(fileName);
-        if (savedProjectsJson.has_value())
-        {
-            auto savedProjects = JsonUtils::ProjectsListJSON::FromJson(savedProjectsJson.value());
-            if (savedProjects.has_value())
-            {
-                projects = savedProjects.value();
-            }
-        }
-    }
-    catch (std::exception ex)
-    {
-        Logger::error("Error reading projects file. {}", ex.what());
-    }
-    
-    // new project name
-    std::wstring defaultNamePrefix = L"Project"; // TODO: localizable
-    int nextProjectIndex = 0;
-    for (const auto& proj : projects)
-    {
-        const std::wstring& name = proj.name;
-        if (name.starts_with(defaultNamePrefix))
-        {
-            try
-            {
-                int index = std::stoi(name.substr(defaultNamePrefix.length() + 1));
-                if (nextProjectIndex < index)
-                {
-                    nextProjectIndex = index;
-                }
-            }
-            catch (std::exception) {}
-        }
-    }
-
-    std::wstring projectName = defaultNamePrefix + L" " + std::to_wstring(nextProjectIndex + 1);
+    // create new project
     time_t creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    Project project{ .id = CreateGuidString(), .name = projectName, .creationTime = creationTime };
+    Project project{ .id = CreateGuidString(), .creationTime = creationTime };
     Logger::trace(L"Creating project {}:{}", project.name, project.id);
 
-    // save monitor configuration
     project.monitors = MonitorUtils::IdentifyMonitors();
-
-    // get list of windows
-    auto windows = WindowEnumerator::Enumerate(WindowFilter::Filter);
-
-    // get installed apps list
-    auto apps = Utils::Apps::GetAppsList();
-
-    for (const auto& window : windows)
-    {
-        // filter by window rect size
-        RECT rect = WindowUtils::GetWindowRect(window);
-        if (rect.right - rect.left <= 0 || rect.bottom - rect.top <= 0)
-        {
-            continue;
-        }
-
-        // filter by window title
-        std::wstring title = WindowUtils::GetWindowTitle(window);
-        if (title.empty())
-        {
-            continue;
-        }
-
-        // filter by app path
-        std::wstring processPath = get_process_path_waiting_uwp(window);
-        if (processPath.empty() || WindowUtils::IsExcludedByDefault(window, processPath, title))
-        {
-            continue;
-        }
-
-        auto data = Utils::Apps::GetApp(processPath, apps);
-        if (!data.has_value())
-        {
-            continue;
-        }
-
+    project.apps = SnapshotUtils::GetApps([&](HWND window) -> unsigned int {
         auto windowMonitor = MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY);
         unsigned int monitorNumber = 0;
         for (const auto& monitor : project.monitors)
@@ -138,28 +62,11 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
             }
         }
 
-        Project::Application app {
-            .name = data.value().name,
-            .title = title,
-            .path = processPath,
-            .packageFullName = data.value().packageFullName,
-            .commandLineArgs = L"",
-            .isMinimized = WindowUtils::IsMinimized(window),
-            .isMaximized = WindowUtils::IsMaximized(window),
-            .position = Project::Application::Position {
-                .x = rect.left,
-                .y = rect.top,
-                .width = rect.right - rect.left,
-                .height = rect.bottom - rect.top,
-            },
-            .monitor = monitorNumber,
-        };
+        return monitorNumber;
+    });
 
-        project.apps.push_back(app);
-    }
-
-    projects.push_back(project);
-    json::to_file(fileName, JsonUtils::ProjectsListJSON::ToJson(projects));
+    ProjectsJsonUtils::Write(JsonUtils::TempProjectsFile(), project);
     Logger::trace(L"Project {}:{} created", project.name, project.id);
+
     return 0;
 }

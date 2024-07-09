@@ -151,6 +151,15 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Project.
+        /// </summary>
+        public static string DefaultProjectNamePrefix {
+            get {
+                return ResourceManager.GetString("DefaultProjectNamePrefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Remove.
         /// </summary>
         public static string Delete {

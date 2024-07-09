@@ -1,28 +1,23 @@
 #pragma once
 
-#include <Windows.h>
-#include <ShellScalingApi.h>
-
-#include <algorithm>
-
 #include <common/Display/dpi_aware.h>
 #include <common/utils/excluded_apps.h>
 #include <common/utils/window.h>
 
-// FancyZones WindowUtils
 namespace WindowUtils
 {
     // Non-Localizable strings
     namespace NonLocalizable
     {
-        const wchar_t SystemAppsFolder[] = L"SYSTEMAPPS";
-        const wchar_t System[] = L"WINDOWS/SYSTEM";
-        const wchar_t System32[] = L"SYSTEM32";
-        const wchar_t SystemWOW64[] = L"SYSTEMWOW64";
         const char SplashClassName[] = "MsoSplash";
+        
+        const wchar_t SystemAppsFolder[] = L"SYSTEMAPPS";
+        
         const wchar_t CoreWindow[] = L"WINDOWS.UI.CORE.COREWINDOW";
         const wchar_t SearchUI[] = L"SEARCHUI.EXE";
-        const wchar_t HelpWindow[] = L"C:\\WINDOWS\\HH.EXE";
+        const wchar_t HelpWindow[] = L"WINDOWS\\HH.EXE";
+        const wchar_t ApplicationFrameHost[] = L"WINDOWS\\SYSTEM32\\APPLICATIONFRAMEHOST.EXE";
+        
         const wchar_t ProjectsSnapshotTool[] = L"POWERTOYS.PROJECTSSNAPSHOTTOOL";
         const wchar_t ProjectsEditor[] = L"POWERTOYS.PROJECTSEDITOR";
         const wchar_t ProjectsLauncher[] = L"POWERTOYS.PROJECTSLAUNCHER";
@@ -31,6 +26,11 @@ namespace WindowUtils
     inline bool IsRoot(HWND window) noexcept
     {
         return GetAncestor(window, GA_ROOT) == window;
+    }
+
+    inline bool IsMinimized(HWND window)
+    {
+        return IsIconic(window);
     }
 
     inline bool IsMaximized(HWND window) noexcept
@@ -55,10 +55,7 @@ namespace WindowUtils
         CharUpperBuffW(processPathUpper.data(), static_cast<DWORD>(processPathUpper.length()));
 
         static std::vector<std::wstring> defaultExcludedFolders = { 
-            NonLocalizable::SystemAppsFolder, 
-            NonLocalizable::System, 
-            NonLocalizable::System32, 
-            NonLocalizable::SystemWOW64 
+            NonLocalizable::SystemAppsFolder,
         };
         if (find_folder_in_path(processPathUpper, defaultExcludedFolders))
         {
@@ -108,15 +105,6 @@ namespace WindowUtils
         }
 
         return rect;
-    }
-}
-
-// addition for Projects
-namespace WindowUtils
-{
-    inline bool IsMinimized(HWND window)
-    {
-        return IsIconic(window);
     }
 
     #define MAX_TITLE_LENGTH 255
