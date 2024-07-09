@@ -95,7 +95,6 @@ namespace ProjectsEditor.Utils
                     CommandLineArguments = app.CommandLineArguments,
                     Maximized = app.Maximized,
                     Minimized = app.Minimized,
-                    IsSelected = false,
                     IsNotFound = false,
                     Position = new Models.Application.WindowPosition()
                     {

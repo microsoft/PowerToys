@@ -71,22 +71,6 @@ namespace ProjectsEditor.Models
             }
         }
 
-        private bool _isSelected;
-
-        [JsonIgnore]
-        public bool IsSelected
-        {
-            get => _isSelected;
-            set
-            {
-                if (_isSelected != value)
-                {
-                    _isSelected = value;
-                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsSelected)));
-                }
-            }
-        }
-
         [JsonIgnore]
         public bool IsHighlighted { get; set; }
 
