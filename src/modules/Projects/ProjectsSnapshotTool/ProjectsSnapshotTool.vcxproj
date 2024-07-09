@@ -134,7 +134,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="JsonUtils.h" />
-    <ClInclude Include="NameUtils.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.base.h" />
     <ClInclude Include="SnapshotUtils.h" />
