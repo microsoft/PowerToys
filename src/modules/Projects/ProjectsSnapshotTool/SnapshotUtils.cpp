@@ -12,6 +12,11 @@
 
 namespace SnapshotUtils
 {
+    namespace NonLocalizable
+    {
+        const std::wstring ApplicationFrameHost = L"ApplicationFrameHost.exe";
+    }
+
     class WbemHelper
     {
     public:
@@ -169,18 +174,37 @@ namespace SnapshotUtils
             }
 
             // filter by app path
-            std::wstring processPath = get_process_path_waiting_uwp(window);
+            std::wstring processPath = get_process_path(window);
             if (processPath.empty() || WindowUtils::IsExcludedByDefault(window, processPath, title))
             {
+                Logger::debug(L"Excluded by default: {}, {}", title, processPath);
                 continue;
             }
 
             DWORD pid{};
             GetWindowThreadProcessId(window, &pid);
 
+            // fix for the packaged apps that are not caught when minimized, e.g., Settings.
+            if (processPath.ends_with(NonLocalizable::ApplicationFrameHost))
+            {
+                for (auto otherWindow : windows)
+                {
+                    DWORD otherPid{};
+                    GetWindowThreadProcessId(otherWindow, &otherPid);
+
+                    // searching for the window with the same title but different PID
+                    if (pid != otherPid && title == WindowUtils::GetWindowTitle(otherWindow))
+                    {
+                        processPath = get_process_path(otherPid);
+						break;
+                    }
+                }
+            }
+
             auto data = Utils::Apps::GetApp(processPath, installedApps);
             if (!data.has_value() || data->name.empty())
             {
+                Logger::debug(L"Installed app not found: {}, {}", title, processPath);
                 continue;
             }
 
