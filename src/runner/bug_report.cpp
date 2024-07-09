@@ -1,17 +1,26 @@
 #include "pch.h"
 #include "bug_report.h"
 #include "Generated files/resource.h"
+#include <common/notifications/NotificationUtil.h>
 #include <common/utils/exec.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
+#include <common/utils/registry.h>
+#include <common/utils/elevation.h>
 #include <common/version/version.h>
 #include <runner/general_settings.h>
+
+#include <winrt/Windows.System.UserProfile.h>
+#include <winrt/Windows.Globalization.h>
+
+
 #include <regex>
 #include <thread>
 #include <atomic>
 #include <future>
 
 using namespace std;
+using namespace registry::install_scope;
 namespace fs = std::filesystem;
 
 std::atomic_bool isBugReportThreadRunning = false;
@@ -50,98 +59,25 @@ std::string LaunchBugReport()
             // Find the newest bug report file on the desktop
             bugReportFileName = FindNewestBugReportFile();
         }
-        else
-        {
-            bugReportFileName = "Failed to start bug report tool.";
-        }
 
         isBugReportThreadRunning.store(false);
     }
     return bugReportFileName;
 }
 
-BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM /*lParam*/)
-{
-    DWORD pid;
-    GetWindowThreadProcessId(hwnd, &pid);
-    if (pid == GetCurrentProcessId())
-    {
-        wchar_t className[256];
-        GetClassName(hwnd, className, 256);
-        if (wcscmp(className, L"#32770") == 0) // #32770 is the class name for MessageBox
-        {
-            wchar_t title[256];
-            GetWindowText(hwnd, title, 256);
-            if (wcscmp(title, L"BugReport") == 0)
-            {
-                hwndMessageBox = hwnd;
-                return FALSE; // Stop enumerating windows
-            }
-        }
-    }
-    return TRUE; // Continue enumerating windows
-}
-
-HWND GetMessageBoxHandle()
-{
-    hwndMessageBox = nullptr;
-    EnumWindows(EnumWindowsProc, 0);
-    return hwndMessageBox;
-}
-
-DWORD WINAPI ShowCancelableMessageBox(LPVOID /*lpParam*/)
-{
-    int msgBoxID = MessageBox(nullptr, L"Generating bug report, please wait...", L"BugReport", MB_OKCANCEL | MB_ICONINFORMATION);
-
-    if (msgBoxID == IDCANCEL)
-    {
-        cancelPromise.set_value();
-        canceled.store(true);
-    }
-
-    return 0;
-}
-
 void InitializeReportBugLinkAsync()
 {
     std::string gitHubURL;
-
-    canceled.store(false);
-    cancelPromise = std::promise<void>();
-    auto cancelFuture = cancelPromise.get_future();
-
-    std::atomic<bool> bugReportCompleted{ false };
     std::string bugReportResult;
 
+    notifications::show_toast(GET_RESOURCE_STRING(IDS_BUGREPORT_TEXT), GET_RESOURCE_STRING(IDS_BUGREPORT_TITLE));
+
     // Launch the bug report task
-    auto bugReportTask = std::async(std::launch::async, [&bugReportCompleted, &bugReportResult] {
+    auto bugReportTask = std::async(std::launch::async, [&bugReportResult] {
         bugReportResult = LaunchBugReport();
-        bugReportCompleted.store(true);
+    });
 
-        HWND hwnd = GetMessageBoxHandle();
-        if (hwnd != nullptr)
-        {
-            SendMessage(hwnd, WM_CLOSE, 0, 0);
-        }
-    });    
-
-    // Show the message box in a separate thread
-    HANDLE hThread = CreateThread(nullptr, 0, ShowCancelableMessageBox, nullptr, 0, nullptr);
-
-    // Wait for either the bug report to finish or the user to take action
-    while (!bugReportCompleted.load())
-    {
-        if (cancelFuture.wait_for(std::chrono::milliseconds(100)) == std::future_status::ready)
-        {
-            break;
-        }
-    }    
-
-    // Ensure bug report task completion
-    if (!bugReportCompleted.load())
-    {
-        bugReportTask.wait();
-    }  
+    bugReportTask.wait();
     
     if (!bugReportResult.empty())
     {
@@ -151,28 +87,29 @@ void InitializeReportBugLinkAsync()
             return static_cast<char>(c);
         });
 
-        std::string otherSoftware = "OS Build Version: " + GetOSVersion() + "%0a" + ".NET Version: " + GetDotNetVersion();
+        std::string additionalInfo = "OS Build Version: " + GetOSVersion() + "%0a" + ".NET Version: " + GetDotNetVersion() + "\n";
         GeneralSettings generalSettings = get_general_settings();
-        std::string isElevatedRun = generalSettings.isElevated ? "Yes" : "No";
+        std::string isElevatedRun = generalSettings.isElevated ? "Running as admin: Yes" : "Running as admin: No";
 
-        gitHubURL = "https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CNeeds-Triage&template=bug_report.yml" +
+        std::string windowsSettings = ReportWindowsSettings();
+
+        const InstallScope current_install_scope = get_current_install_scope();
+
+        std::string installScope = current_install_scope == InstallScope::PerUser ? "Installation : User" : "Installation : System";
+
+        additionalInfo += windowsSettings + "\n" + installScope + "\n" + isElevatedRun;
+
+        gitHubURL = "https://github.com/gokcekantarci/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CNeeds-Triage&template=bug_report.yml" +
                     std::string("&version=") + version +
-                    std::string("&otherSoftware=") + otherSoftware +
-                    std::string("&isElevated=") + isElevatedRun;
+                    std::string("&additionalInfo=") + additionalInfo;
 
-        std::wstring wideBugReportResult = stringToWideString(bugReportResult);
-        MessageBox(nullptr, L"Bug report generated on your desktop. Please attach the file to the GitHub issue.", wideBugReportResult.c_str(), MB_OKCANCEL | MB_ICONINFORMATION);
+        std::wstring wideBugReportResult = L"Bug report generated on your desktop. Please attach the file to the GitHub issue.\n\n" + stringToWideString(bugReportResult);
+        MessageBox(nullptr, wideBugReportResult.c_str(), L"Bug Report", MB_OKCANCEL | MB_ICONINFORMATION);
     }
     else
     {
+        MessageBox(nullptr, L"Failed to start bug report tool.", L"Bug Report", MB_OKCANCEL | MB_ICONINFORMATION);
         gitHubURL = "https://aka.ms/powerToysReportBug";
-    }
-
-    // Wait for the message box thread to complete
-    if (hThread != nullptr)
-    {
-        WaitForSingleObject(hThread, INFINITE);
-        CloseHandle(hThread);
     }
 
     // Open the URL
@@ -332,4 +269,32 @@ std::string GetModuleFolderPath()
     GetModuleFileNameA(NULL, buffer, MAX_PATH);
     std::string::size_type pos = std::string(buffer).find_last_of("\\/");
     return std::string(buffer).substr(0, pos);
+}
+
+std::string ReportWindowsSettings()
+{
+    std::wstring userLanguage;
+    std::wstring userLocale;
+    std::string result;
+
+    try
+    {
+        const auto lang = winrt::Windows::System::UserProfile::GlobalizationPreferences::Languages().GetAt(0);
+        userLanguage = winrt::Windows::Globalization::Language{ lang }.DisplayName().c_str();
+        wchar_t localeName[LOCALE_NAME_MAX_LENGTH]{};
+        if (!LCIDToLocaleName(GetThreadLocale(), localeName, LOCALE_NAME_MAX_LENGTH, 0))
+        {
+            throw -1;
+        }
+        userLocale = localeName;
+    }
+    catch (...)
+    {
+        return "Failed to get windows settings\n";
+    }
+
+    result = "Preferred user language: " + WideStringToString(userLanguage) + "\n";
+    result += "User locale: " + WideStringToString(userLocale) + "\n";
+
+    return result;
 }

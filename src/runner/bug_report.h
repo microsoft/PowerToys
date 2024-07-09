@@ -13,7 +13,6 @@ std::string GetOSVersion();
 std::string GetModuleFolderPath();
 std::string WideStringToString(const std::wstring& wstr);
 std::wstring stringToWideString(const std::string& str);
-void ShowLoadingMessage();
-void CancelBugReport(std::promise<void>& cancelPromise);
+std::string ReportWindowsSettings();
 
 extern std::atomic_bool isBugReportThreadRunning;

@@ -33,15 +33,6 @@ body:
   validations:
     required: true
 
-- id: isElevated
-  type: input
-  attributes:
-    label: Running as admin
-    description: Are you running PowerToys as Admin?
-    placeholder: Yes
-  validations:
-    required: true
-
 - type: dropdown
   attributes:
     label: Area(s) with issue?
@@ -102,6 +93,19 @@ body:
   attributes:
     label: ❌ Actual Behavior
     placeholder: What happened instead?
+  validations:
+    required: false
+    
+- id: additionalInfo
+  type: textarea
+  attributes:
+    label: Additional Information
+    placeholder: |
+      OS version
+      .Net version
+      Preferred System Language
+      User or System Installation
+      Running as admin
   validations:
     required: false
 
