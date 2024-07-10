@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "FancyZonesWindowProcessing.h"
 
+#include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/VirtualDesktop.h>
 #include <FancyZonesLib/WindowUtils.h>
@@ -63,6 +64,12 @@ FancyZonesWindowProcessing::ProcessabilityType FancyZonesWindowProcessing::Defin
     {
         return ProcessabilityType::NotCurrentVirtualDesktop;
     }
+
+    // Ignore windows launched by Projects
+    if (FancyZonesWindowProperties::RetrieveFilteringProperties(window))
+    {
+		return ProcessabilityType::LaunchedByProjects;
+	}
 
     return ProcessabilityType::Processable;
 }

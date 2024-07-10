@@ -13,7 +13,8 @@ namespace FancyZonesWindowProcessing
         NonProcessablePopupWindow,
         ChildWindow,
         Excluded,
-        NotCurrentVirtualDesktop
+        NotCurrentVirtualDesktop,
+        LaunchedByProjects
     };
     
     ProcessabilityType DefineWindowType(HWND window) noexcept;
