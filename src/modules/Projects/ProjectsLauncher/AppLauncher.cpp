@@ -17,6 +17,7 @@
 #include <common/utils/winapi_error.h>
 
 #include <RegistryUtils.h>
+#include <WindowProperties/ProjectsWindowPropertyUtils.h>
 
 using namespace winrt;
 using namespace Windows::Foundation;
@@ -383,6 +384,7 @@ Project Launch(Project project)
 
         if (FancyZones::SizeWindowToRect(window, currentMonitor, app.isMinimized, app.isMaximized, rect))
         {
+            ProjectsWindowProperties::StampProjectsLaunchedProperty(window);
             Logger::trace(L"Placed {} to ({},{}) [{}x{}]", app.name, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
         }
         else

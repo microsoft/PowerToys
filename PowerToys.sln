@@ -607,6 +607,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProjectsModuleInterface", "
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProjectsLib", "src\modules\Projects\ProjectsLib\ProjectsLib.vcxproj", "{B31FCC55-B5A4-4EA7-B414-2DCEAE6AF332}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WindowProperties", "WindowProperties", "{14CB58B7-D280-4A7A-95DE-4B2DF14EA000}"
+	ProjectSection(SolutionItems) = preProject
+		src\modules\Projects\WindowProperties\ProjectsWindowPropertyUtils.h = src\modules\Projects\WindowProperties\ProjectsWindowPropertyUtils.h
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -3664,6 +3669,7 @@ Global
 		{BE126CBB-AE12-406A-9837-A05ACFCA57A7} = {A2221D7E-55E7-4BEA-90D1-4F162D670BBF}
 		{45285DF2-9742-4ECA-9AC9-58951FC26489} = {A2221D7E-55E7-4BEA-90D1-4F162D670BBF}
 		{B31FCC55-B5A4-4EA7-B414-2DCEAE6AF332} = {A2221D7E-55E7-4BEA-90D1-4F162D670BBF}
+		{14CB58B7-D280-4A7A-95DE-4B2DF14EA000} = {A2221D7E-55E7-4BEA-90D1-4F162D670BBF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
