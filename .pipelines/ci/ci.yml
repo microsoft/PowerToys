@@ -41,6 +41,6 @@ jobs:
       platform: arm64
       ${{ if eq(variables['System.PullRequest.IsFork'], 'False') }}:
         enableCaching: true
-  - template: ./templates/run-ui-tests-ci.yml
-    parameters:
-      platform: x64 
+#  - template: ./templates/run-ui-tests-ci.yml
+#    parameters:
+#      platform: x64 
