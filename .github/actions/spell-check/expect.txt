@@ -95,6 +95,7 @@ AUTOUPDATE
 AValid
 awakeness
 AWAYMODE
+azcliversion
 azman
 backtracer
 bbwe
@@ -119,6 +120,7 @@ BLURREGION
 bmi
 bms
 BNumber
+BODGY
 BOKMAL
 bootstrapper
 BOOTSTRAPPERINSTALLFOLDER
@@ -165,6 +167,7 @@ CENTERALIGN
 ceq
 certlm
 certmgr
+cfp
 cguid
 CHANGECBCHAIN
 changecursor
@@ -754,6 +757,7 @@ KEYEVENTF
 KEYIMAGE
 keynum
 keyremaps
+keyvault
 KILLFOCUS
 killrunner
 Knownfolders
