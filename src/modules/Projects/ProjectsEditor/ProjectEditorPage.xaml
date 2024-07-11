@@ -6,12 +6,22 @@
         xmlns:props="clr-namespace:ProjectsEditor.Properties"
         xmlns:local="clr-namespace:ProjectsEditor"
         xmlns:models="clr-namespace:ProjectsEditor.Models"
+        xmlns:controls="clr-namespace:ProjectsEditor.Controls"
         mc:Ignorable="d"
         Title="Project Editor"
         Background="{DynamicResource PrimaryBackgroundBrush}">
     <Page.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
 
+        <Style x:Key="TextBlockEnabledStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}" />
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False" >
+                    <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
         <DataTemplate x:Key="headerTemplate">
             <Border
                 HorizontalAlignment="Stretch">
@@ -29,81 +39,220 @@
             <Border
                 Background="{DynamicResource SecondaryBackgroundBrush}"
                 MouseEnter="AppBorder_MouseEnter"
-                MouseLeave="AppBorder_MouseLeave">
-                <Grid Margin="5">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="3*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock
-                        Text="&#xE7BA;"
-                        Foreground="#EED202"
-                        FontSize="14"
-                        FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                        FontWeight="Normal"
-                        Margin="5 0 0 0"
-                        ToolTip="{x:Static props:Resources.NotFoundTooltip}"
-                        Visibility="{Binding IsNotFound, Converter={StaticResource BoolToVis}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-                        VerticalAlignment="Center"/>
-                    <Image
-                        Grid.Column="1"
-                        Width="20"
-                        Height="20"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Margin="10"
-                        Source="{Binding IconBitmapImage}"/>
-                    <TextBlock
-                        Grid.Column="2"
-                        Text="{Binding RepeatIndexString, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-                        Foreground="{DynamicResource PrimaryForegroundBrush}"
-                        FontSize="14"
-                        FontWeight="Normal"
-                        Width="20"
-                        VerticalAlignment="Center"/>
-                    <TextBlock
-                        Grid.Column="3"
-                        Text="{Binding AppName}"
-                        Foreground="{DynamicResource PrimaryForegroundBrush}"
-                        FontSize="14"
-                        FontWeight="Normal"
-                        VerticalAlignment="Center"/>
-                    <TextBox
-                        x:Name="CommandLineTextBox"
-                        Grid.Column="4"
-                        Text="{Binding CommandLineArguments, Mode=TwoWay}"
-                        Foreground="{DynamicResource PrimaryForegroundBrush}"
-                        Background="{DynamicResource TertiaryBackgroundBrush}"
-                        BorderThickness="0"
-                        FontSize="14"
-                        FontWeight="Normal"
-                        VerticalContentAlignment="Center" />
-                    <TextBlock
-                        Grid.Column="4"
-                        IsHitTestVisible="False"
-                        Text="{x:Static props:Resources.WriteArgs}"
-                        Foreground="{DynamicResource SecondaryForegroundBrush}"
-                        Background="{DynamicResource TertiaryBackgroundBrush}"
-                        FontSize="14"
-                        FontWeight="Normal"
-                        VerticalAlignment="Center"
-                        Margin="12,0,12,0">
-                        <TextBlock.Style>
-                            <Style TargetType="{x:Type TextBlock}">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Text, ElementName=CommandLineTextBox}" Value="">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                </Grid>
+                MouseLeave="AppBorder_MouseLeave"
+                Margin="1">
+                <Expander
+                    Margin="0 0 20 0"
+                    FlowDirection="RightToLeft"
+                    IsExpanded="{Binding IsExpanded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    IsEnabled="{Binding IsIncluded, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
+                    <Expander.Header>
+                        <Grid 
+                            FlowDirection="LeftToRight" 
+                            HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Text="&#xE7BA;"
+                                Foreground="#EED202"
+                                FontSize="14"
+                                FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                FontWeight="Normal"
+                                Margin="5 0 0 0"
+                                ToolTip="{x:Static props:Resources.NotFoundTooltip}"
+                                Visibility="{Binding IsNotFound, Converter={StaticResource BoolToVis}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                VerticalAlignment="Center"/>
+                            <Image
+                                Grid.Column="1"
+                                Width="20"
+                                Height="20"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Margin="10"
+                                Source="{Binding IconBitmapImage}"/>
+                            <TextBlock
+                                Grid.Column="2"
+                                Text="{Binding RepeatIndexString, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                FontSize="14"
+                                FontWeight="Normal"
+                                Width="20"
+                                VerticalAlignment="Center"/>
+                            <StackPanel
+                                Grid.Column="3"
+                                VerticalAlignment="Center">
+                                <TextBlock
+                                    Text="{Binding AppName}"
+                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                    FontSize="14"
+                                    FontWeight="Normal"
+                                    />
+                                <TextBlock
+                                    Text="{Binding AppMainParams, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                    Visibility="{Binding IsAppMainParamVisible, Converter={StaticResource BoolToVis}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                    FontSize="12"
+                                    FontWeight="Normal"
+                                    />
+                            </StackPanel>
+                            <controls:ResetIsEnabled
+                                Grid.Column="4">
+                                <Button
+                                    Padding="24 6"
+                                    Margin="10 5"
+                                    Width="120"
+                                    Content="{Binding DeleteButtonContent, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Background="{DynamicResource TertiaryBackgroundBrush}"
+                                    AutomationProperties.Name="{x:Static props:Resources.Delete}"
+                                    IsEnabled="True"
+                                    Click="DeleteButtonClicked">
+                                </Button>
+                            </controls:ResetIsEnabled>
+                        </Grid>
+                    </Expander.Header>
+                    <Grid
+                        FlowDirection="LeftToRight"
+                        Margin="-20 0 0 0"
+                        HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}"
+                        Background="{DynamicResource QuaternaryBackgroundBrush}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <DockPanel
+                            Margin="100 5 0 0">
+                            <TextBlock
+                                Text="{x:Static props:Resources.CliArguments}"
+                                Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                FontSize="14"
+                                FontWeight="Normal"
+                                VerticalAlignment="Center" />
+                            <TextBox
+                                Margin="15 0 50 0"
+                                x:Name="CommandLineTextBox"
+                                Text="{Binding CommandLineArguments, Mode=TwoWay}"
+                                Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                Background="{DynamicResource TertiaryBackgroundBrush}"
+                                BorderThickness="0"
+                                FontSize="14"
+                                FontWeight="Normal"
+                                VerticalContentAlignment="Center"
+                                HorizontalAlignment="Stretch"
+                                TextChanged="CommandLineTextBox_TextChanged"/>
+                        </DockPanel>
+                        <StackPanel
+                            Orientation="Horizontal"
+                            Grid.Row="1"
+                            Margin="100 5 0 0">
+                            <CheckBox
+                                Content="{x:Static props:Resources.LaunchAsAdmin}"
+                                IsChecked="{Binding LaunchesAsAdmin, Mode=TwoWay}"
+                                MinWidth="10"/>
+                            <CheckBox
+                                Margin="15 0 0 0"
+                                Content="{x:Static props:Resources.Maximized}"
+                                IsChecked="{Binding Maximized, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                MinWidth="10"
+                                Checked="MaximizedChecked"/>
+                            <CheckBox
+                                Margin="15 0 0 0"
+                                Content="{x:Static props:Resources.Minimized}"
+                                IsChecked="{Binding Minimized, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                MinWidth="10"
+                                Checked="MinimizedChecked"/>
+                        </StackPanel>
+                        <StackPanel
+                            Orientation="Horizontal"
+                            Grid.Row="2"
+                            Margin="100 5 0 0">
+                            <TextBlock
+                                Style="{StaticResource TextBlockEnabledStyle}"
+                                Text="{x:Static props:Resources.Left}"
+                                IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                FontSize="14"
+                                FontWeight="Normal"
+                                VerticalAlignment="Center" />
+                            <TextBox
+                                Margin="15 0 0 0"
+                                x:Name="LeftTextBox"
+                                Text="{Binding Position.X, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                Background="{DynamicResource TertiaryBackgroundBrush}"
+                                BorderThickness="0"
+                                FontSize="14"
+                                FontWeight="Normal"
+                                VerticalContentAlignment="Center"
+                                HorizontalAlignment="Stretch"
+                                TextChanged="LeftTextBox_TextChanged"/>
+                            <TextBlock
+                                Text="{x:Static props:Resources.Top}"
+                                Margin="15 0 0 0"
+                                Style="{StaticResource TextBlockEnabledStyle}"
+                                IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                FontSize="14"
+                                FontWeight="Normal"
+                                VerticalAlignment="Center" />
+                            <TextBox
+                                Margin="15 0 0 0"
+                                x:Name="TopTextBox"
+                                Text="{Binding Position.Y, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                Background="{DynamicResource TertiaryBackgroundBrush}"
+                                BorderThickness="0"
+                                FontSize="14"
+                                FontWeight="Normal"
+                                VerticalContentAlignment="Center"
+                                HorizontalAlignment="Stretch"
+                                TextChanged="TopTextBox_TextChanged"/>
+                            <TextBlock
+                                Text="{x:Static props:Resources.Width}"
+                                Margin="15 0 0 0"
+                                Style="{StaticResource TextBlockEnabledStyle}"
+                                IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                FontSize="14"
+                                FontWeight="Normal"
+                                VerticalAlignment="Center" />
+                            <TextBox
+                                Margin="15 0 0 0"
+                                x:Name="WidthTextBox"
+                                Text="{Binding Position.Width, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                Background="{DynamicResource TertiaryBackgroundBrush}"
+                                BorderThickness="0"
+                                FontSize="14"
+                                FontWeight="Normal"
+                                VerticalContentAlignment="Center"
+                                HorizontalAlignment="Stretch"
+                                TextChanged="WidthTextBox_TextChanged"/>
+                            <TextBlock
+                                Text="{x:Static props:Resources.Height}"
+                                Margin="15 0 0 0"
+                                Style="{StaticResource TextBlockEnabledStyle}"
+                                IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                FontSize="14"
+                                FontWeight="Normal"
+                                VerticalAlignment="Center" />
+                            <TextBox
+                                Margin="15 0 0 0"
+                                x:Name="HeightTextBox"
+                                Text="{Binding Position.Height, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                Background="{DynamicResource TertiaryBackgroundBrush}"
+                                BorderThickness="0"
+                                FontSize="14"
+                                FontWeight="Normal"
+                                VerticalContentAlignment="Center"
+                                HorizontalAlignment="Stretch"
+                                TextChanged="HeightTextBox_TextChanged"/>
+                        </StackPanel>
+                    </Grid>
+                </Expander>
             </Border>
         </DataTemplate>
         <models:AppListDataTemplateSelector

@@ -209,20 +209,23 @@ namespace ProjectsEditor.Models
             Applications = new List<Application>();
             foreach (var item in selectedProject.Applications)
             {
-                Applications.Add(new Application()
+                Application newApp = new Application()
                 {
                     AppName = item.AppName,
                     AppPath = item.AppPath,
                     AppTitle = item.AppTitle,
                     CommandLineArguments = item.CommandLineArguments,
                     PackageFullName = item.PackageFullName,
+                    LaunchesAsAdmin = item.LaunchesAsAdmin,
                     Minimized = item.Minimized,
                     Maximized = item.Maximized,
                     MonitorNumber = item.MonitorNumber,
                     IsNotFound = item.IsNotFound,
                     Position = new Application.WindowPosition() { X = item.Position.X, Y = item.Position.Y, Height = item.Position.Height, Width = item.Position.Width },
                     Parent = this,
-                });
+                };
+                newApp.InitializationFinished();
+                Applications.Add(newApp);
             }
         }
 
@@ -303,6 +306,14 @@ namespace ProjectsEditor.Models
             }
 
             return new Rectangle((int)minX, (int)minY, (int)(maxX - minX), (int)(maxY - minY));
+        }
+
+        internal void CloseExpanders()
+        {
+            foreach (Application app in Applications)
+            {
+                app.IsExpanded = false;
+            }
         }
     }
 }

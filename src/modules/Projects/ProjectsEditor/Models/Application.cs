@@ -22,6 +22,8 @@ namespace ProjectsEditor.Models
 {
     public class Application : INotifyPropertyChanged, IDisposable
     {
+        private bool _isInitialized;
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         public Project Parent { get; set; }
@@ -47,9 +49,80 @@ namespace ProjectsEditor.Models
 
         public string CommandLineArguments { get; set; }
 
-        public bool Minimized { get; set; }
+        private bool _launchesAsAdmin;
 
-        public bool Maximized { get; set; }
+        public bool LaunchesAsAdmin
+        {
+            get => _launchesAsAdmin;
+            set
+            {
+                _launchesAsAdmin = value;
+                OnPropertyChanged(new PropertyChangedEventArgs(nameof(AppMainParams)));
+            }
+        }
+
+        internal void SwitchDeletion()
+        {
+            IsIncluded = !IsIncluded;
+            RedrawPreviewImage();
+        }
+
+        private void RedrawPreviewImage()
+        {
+            if (_isInitialized)
+            {
+                Parent.Initialize();
+            }
+        }
+
+        private bool _minimized;
+
+        public bool Minimized
+        {
+            get => _minimized;
+            set
+            {
+                _minimized = value;
+                OnPropertyChanged(new PropertyChangedEventArgs(nameof(Minimized)));
+                OnPropertyChanged(new PropertyChangedEventArgs(nameof(EditPositionEnabled)));
+                RedrawPreviewImage();
+            }
+        }
+
+        private bool _maximized;
+
+        public bool Maximized
+        {
+            get => _maximized;
+            set
+            {
+                _maximized = value;
+                OnPropertyChanged(new PropertyChangedEventArgs(nameof(Maximized)));
+                OnPropertyChanged(new PropertyChangedEventArgs(nameof(EditPositionEnabled)));
+                RedrawPreviewImage();
+            }
+        }
+
+        public bool EditPositionEnabled { get => !Minimized && !Maximized; }
+
+        private string _appMainParams;
+
+        public string AppMainParams
+        {
+            get
+            {
+                _appMainParams = _launchesAsAdmin ? Properties.Resources.Admin : string.Empty;
+                if (!string.IsNullOrWhiteSpace(CommandLineArguments))
+                {
+                    _appMainParams += (_appMainParams == string.Empty ? string.Empty : " | ") + Properties.Resources.Args + ": " + CommandLineArguments;
+                }
+
+                OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsAppMainParamVisible)));
+                return _appMainParams;
+            }
+        }
+
+        public bool IsAppMainParamVisible { get => !string.IsNullOrWhiteSpace(_appMainParams); }
 
         private bool _isNotFound;
 
@@ -82,7 +155,7 @@ namespace ProjectsEditor.Models
         {
             get
             {
-                return RepeatIndex == 0 ? string.Empty : RepeatIndex.ToString(CultureInfo.InvariantCulture);
+                return RepeatIndex <= 1 ? string.Empty : RepeatIndex.ToString(CultureInfo.InvariantCulture);
             }
         }
 
@@ -201,7 +274,17 @@ namespace ProjectsEditor.Models
             }
         }
 
-        public WindowPosition Position { get; set; }
+        private WindowPosition _position;
+
+        public WindowPosition Position
+        {
+            get => _position;
+            set
+            {
+                _position = value;
+                _scaledPosition = null;
+            }
+        }
 
         private WindowPosition? _scaledPosition;
 
@@ -247,6 +330,11 @@ namespace ProjectsEditor.Models
             PropertyChanged?.Invoke(this, e);
         }
 
+        public void InitializationFinished()
+        {
+            _isInitialized = true;
+        }
+
         private bool? _isPackagedApp;
 
         public string PackagedId { get; set; }
@@ -287,9 +375,62 @@ namespace ProjectsEditor.Models
             }
         }
 
+        private bool _isExpanded;
+
+        public bool IsExpanded
+        {
+            get => _isExpanded;
+            set
+            {
+                if (_isExpanded != value)
+                {
+                    _isExpanded = value;
+                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsExpanded)));
+                }
+            }
+        }
+
+        public string DeleteButtonContent { get => _isIncluded ? Properties.Resources.Delete : Properties.Resources.AddBack; }
+
+        private bool _isIncluded = true;
+
+        public bool IsIncluded
+        {
+            get => _isIncluded;
+            set
+            {
+                if (_isIncluded != value)
+                {
+                    _isIncluded = value;
+                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsIncluded)));
+                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(DeleteButtonContent)));
+                    if (!_isIncluded)
+                    {
+                        IsExpanded = false;
+                    }
+                }
+            }
+        }
+
         public void Dispose()
         {
             GC.SuppressFinalize(this);
+        }
+
+        internal void CommandLineTextChanged(string newCommandLineValue)
+        {
+            CommandLineArguments = newCommandLineValue;
+            OnPropertyChanged(new PropertyChangedEventArgs(nameof(AppMainParams)));
+        }
+
+        internal void MaximizedChecked()
+        {
+            Minimized = false;
+        }
+
+        internal void MinimizedChecked()
+        {
+            Maximized = false;
         }
     }
 }

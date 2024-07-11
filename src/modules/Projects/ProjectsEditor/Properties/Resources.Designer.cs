@@ -61,6 +61,24 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Add Back.
+        /// </summary>
+        public static string AddBack {
+            get {
+                return ResourceManager.GetString("AddBack", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Admin.
+        /// </summary>
+        public static string Admin {
+            get {
+                return ResourceManager.GetString("Admin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to app.
         /// </summary>
         public static string App {
@@ -106,11 +124,29 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Args.
+        /// </summary>
+        public static string Args {
+            get {
+                return ResourceManager.GetString("Args", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cancel.
         /// </summary>
         public static string Cancel {
             get {
                 return ResourceManager.GetString("Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CLI arguments.
+        /// </summary>
+        public static string CliArguments {
+            get {
+                return ResourceManager.GetString("CliArguments", resourceCulture);
             }
         }
         
@@ -223,6 +259,15 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Height.
+        /// </summary>
+        public static string Height {
+            get {
+                return ResourceManager.GetString("Height", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to hours ago.
         /// </summary>
         public static string HoursAgo {
@@ -259,11 +304,47 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Launch as Admin.
+        /// </summary>
+        public static string LaunchAsAdmin {
+            get {
+                return ResourceManager.GetString("LaunchAsAdmin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Left.
+        /// </summary>
+        public static string Left {
+            get {
+                return ResourceManager.GetString("Left", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Projects demo app.
         /// </summary>
         public static string MainTitle {
             get {
                 return ResourceManager.GetString("MainTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Maximized.
+        /// </summary>
+        public static string Maximized {
+            get {
+                return ResourceManager.GetString("Maximized", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Minimized.
+        /// </summary>
+        public static string Minimized {
+            get {
+                return ResourceManager.GetString("Minimized", resourceCulture);
             }
         }
         
@@ -525,6 +606,24 @@ namespace ProjectsEditor.Properties {
         public static string Take_Snapshot {
             get {
                 return ResourceManager.GetString("Take_Snapshot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Top.
+        /// </summary>
+        public static string Top {
+            get {
+                return ResourceManager.GetString("Top", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Width.
+        /// </summary>
+        public static string Width {
+            get {
+                return ResourceManager.GetString("Width", resourceCulture);
             }
         }
         

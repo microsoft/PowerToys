@@ -14,21 +14,24 @@ using System.Linq;
 using System.Windows.Media.Imaging;
 using ManagedCommon;
 using ProjectsEditor.Models;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace ProjectsEditor.Utils
 {
     public class DrawHelper
     {
         private static Font font = new("Tahoma", 24);
+        private static double scale = 0.1;
+        private static double gapWidth;
+        private static double gapHeight;
 
         public static BitmapImage DrawPreview(Project project, Rectangle bounds)
         {
             List<double> horizontalGaps = new List<double>();
             List<double> verticalGaps = new List<double>();
-            double gapWidth = bounds.Width * 0.01;
-            double gapHeight = bounds.Height * 0.01;
+            gapWidth = bounds.Width * 0.01;
+            gapHeight = bounds.Height * 0.01;
 
-            double scale = 0.1;
             int Scaled(double value)
             {
                 return (int)(value * scale);
@@ -46,9 +49,25 @@ namespace ProjectsEditor.Utils
                 return Scaled(posY - bounds.Top + gapTransform);
             }
 
+            Rectangle GetAppRect(Application app)
+            {
+                if (app.Maximized)
+                {
+                    Project project = app.Parent;
+                    var monitor = project.Monitors.Where(x => x.MonitorNumber == app.MonitorNumber).FirstOrDefault();
+                    return new Rectangle(TransformX(monitor.MonitorDpiAwareBounds.Left), TransformY(monitor.MonitorDpiAwareBounds.Top), Scaled(monitor.MonitorDpiAwareBounds.Width), Scaled(monitor.MonitorDpiAwareBounds.Height));
+                }
+                else
+                {
+                    return new Rectangle(TransformX(app.ScaledPosition.X), TransformY(app.ScaledPosition.Y), Scaled(app.ScaledPosition.Width), Scaled(app.ScaledPosition.Height));
+                }
+            }
+
             Dictionary<string, int> repeatCounter = new Dictionary<string, int>();
 
-            foreach (Application app in project.Applications)
+            var appsIncluded = project.Applications.Where(x => x.IsIncluded);
+
+            foreach (Application app in appsIncluded)
             {
                 if (repeatCounter.TryGetValue(app.AppPath, out int value))
                 {
@@ -62,13 +81,7 @@ namespace ProjectsEditor.Utils
                 app.RepeatIndex = repeatCounter[app.AppPath];
             }
 
-            // remove those repeatIndexes, which are single 1-es (no repetitions) by setting them to 0
-            foreach (Application app in project.Applications.Where(x => repeatCounter[x.AppPath] == 1))
-            {
-                app.RepeatIndex = 0;
-            }
-
-            foreach (Application app in project.Applications)
+            foreach (Application app in project.Applications.Where(x => !x.IsIncluded))
             {
                 app.RepeatIndex = 0;
             }
@@ -112,18 +125,18 @@ namespace ProjectsEditor.Utils
                     g.FillRectangle(monitorBrush, new Rectangle(TransformX(monitor.MonitorDpiAwareBounds.Left), TransformY(monitor.MonitorDpiAwareBounds.Top), Scaled(monitor.MonitorDpiAwareBounds.Width), Scaled(monitor.MonitorDpiAwareBounds.Height)));
                 }
 
-                var appsToDraw = project.Applications.Where(x => !x.Minimized);
+                var appsToDraw = appsIncluded.Where(x => !x.Minimized);
 
                 // draw the highlighted app at the end to have its icon in the foreground for the case there are overlapping icons
                 foreach (Application app in appsToDraw.Where(x => !x.IsHighlighted))
                 {
-                    Rectangle rect = new Rectangle(TransformX(app.ScaledPosition.X), TransformY(app.ScaledPosition.Y), Scaled(app.ScaledPosition.Width), Scaled(app.ScaledPosition.Height));
+                    Rectangle rect = GetAppRect(app);
                     DrawWindow(g, brush, rect, app, desiredIconSize);
                 }
 
                 foreach (Application app in appsToDraw.Where(x => x.IsHighlighted))
                 {
-                    Rectangle rect = new Rectangle(TransformX(app.ScaledPosition.X), TransformY(app.ScaledPosition.Y), Scaled(app.ScaledPosition.Width), Scaled(app.ScaledPosition.Height));
+                    Rectangle rect = GetAppRect(app);
                     DrawWindow(g, brushForHighlight, rect, app, desiredIconSize);
                 }
 
@@ -180,7 +193,7 @@ namespace ProjectsEditor.Utils
             try
             {
                 graphics.DrawIcon(app.Icon, iconBounds);
-                if (app.RepeatIndex > 0)
+                if (app.RepeatIndex > 1)
                 {
                     string indexString = app.RepeatIndex.ToString(CultureInfo.InvariantCulture);
                     int indexSize = (int)(iconBounds.Width * 0.5);

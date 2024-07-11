@@ -161,7 +161,7 @@ namespace ProjectsEditor.ViewModels
             editedProject.IsShortcutNeeded = projectToSave.IsShortcutNeeded;
             editedProject.PreviewIcons = projectToSave.PreviewIcons;
             editedProject.PreviewImage = projectToSave.PreviewImage;
-            editedProject.Applications = projectToSave.Applications;
+            editedProject.Applications = projectToSave.Applications.Where(x => x.IsIncluded).ToList();
 
             editedProject.OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs("AppsCountString"));
             editedProject.Initialize();
@@ -233,7 +233,12 @@ namespace ProjectsEditor.ViewModels
         public void EditProject(Project selectedProject, bool isNewlyCreated = false)
         {
             var editPage = new ProjectEditor(this);
+
             SetEditedProject(selectedProject);
+            if (!isNewlyCreated)
+            {
+                selectedProject = new Project(selectedProject);
+            }
 
             if (isNewlyCreated)
             {

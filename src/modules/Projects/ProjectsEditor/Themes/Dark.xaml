@@ -14,6 +14,7 @@
     <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FF242424" />
     <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FF2b2b2b" />
     <SolidColorBrush x:Key="TertiaryBackgroundBrush" Color="#FF373737" />
+    <SolidColorBrush x:Key="QuaternaryBackgroundBrush" Color="#FF272727" />
     <SolidColorBrush x:Key="MonitorViewBackgroundBrush" Color="#FF161616" />
     <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FF9a9a9a" />
