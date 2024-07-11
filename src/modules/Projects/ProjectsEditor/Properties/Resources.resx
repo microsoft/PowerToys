@@ -117,6 +117,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AddBack" xml:space="preserve">
+    <value>Add Back</value>
+  </data>
+  <data name="Admin" xml:space="preserve">
+    <value>Admin</value>
+  </data>
   <data name="App" xml:space="preserve">
     <value>app</value>
   </data>
@@ -132,8 +138,15 @@
   <data name="Are_You_Sure_Description" xml:space="preserve">
     <value>Are you sure you want to delete this project?</value>
   </data>
+  <data name="Args" xml:space="preserve">
+    <value>Args</value>
+    <comment>Arguments</comment>
+  </data>
   <data name="Cancel" xml:space="preserve">
     <value>Cancel</value>
+  </data>
+  <data name="CliArguments" xml:space="preserve">
+    <value>CLI arguments</value>
   </data>
   <data name="Created" xml:space="preserve">
     <value>Created</value>
@@ -171,6 +184,9 @@
   <data name="Error_Parsing_Message" xml:space="preserve">
     <value>Error parsing projects data.</value>
   </data>
+  <data name="Height" xml:space="preserve">
+    <value>Height</value>
+  </data>
   <data name="HoursAgo" xml:space="preserve">
     <value>hours ago</value>
   </data>
@@ -180,11 +196,24 @@
   <data name="Launch" xml:space="preserve">
     <value>Launch</value>
   </data>
+  <data name="LaunchAsAdmin" xml:space="preserve">
+    <value>Launch as Admin</value>
+  </data>
   <data name="Launch_args" xml:space="preserve">
     <value>Launch args</value>
   </data>
+  <data name="Left" xml:space="preserve">
+    <value>Left</value>
+    <comment>the left x coordinate</comment>
+  </data>
   <data name="MainTitle" xml:space="preserve">
     <value>Projects demo app</value>
+  </data>
+  <data name="Maximized" xml:space="preserve">
+    <value>Maximized</value>
+  </data>
+  <data name="Minimized" xml:space="preserve">
+    <value>Minimized</value>
   </data>
   <data name="Minimized_Apps" xml:space="preserve">
     <value>Minimized Apps</value>
@@ -272,6 +301,13 @@
   </data>
   <data name="Take_Snapshot" xml:space="preserve">
     <value>Capture</value>
+  </data>
+  <data name="Top" xml:space="preserve">
+    <value>Top</value>
+    <comment>the top y coordinate</comment>
+  </data>
+  <data name="Width" xml:space="preserve">
+    <value>Width</value>
   </data>
   <data name="WriteArgs" xml:space="preserve">
     <value>Write arguments here</value>

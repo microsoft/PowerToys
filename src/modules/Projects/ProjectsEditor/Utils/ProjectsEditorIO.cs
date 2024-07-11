@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using ManagedCommon;
 using ProjectsEditor.Data;
@@ -85,7 +86,7 @@ namespace ProjectsEditor.Utils
 
             foreach (var app in project.Applications)
             {
-                newProject.Applications.Add(new Models.Application()
+                Models.Application newApp = new Models.Application()
                 {
                     AppName = app.Application,
                     AppPath = app.ApplicationPath,
@@ -93,6 +94,7 @@ namespace ProjectsEditor.Utils
                     PackageFullName = app.PackageFullName,
                     Parent = newProject,
                     CommandLineArguments = app.CommandLineArguments,
+                    LaunchesAsAdmin = app.LaunchesAsAdmin,
                     Maximized = app.Maximized,
                     Minimized = app.Minimized,
                     IsNotFound = false,
@@ -104,7 +106,9 @@ namespace ProjectsEditor.Utils
                         Y = app.Position.Y,
                     },
                     MonitorNumber = app.Monitor,
-                });
+                };
+                newApp.InitializationFinished();
+                newProject.Applications.Add(newApp);
             }
 
             foreach (var monitor in project.MonitorConfiguration)
@@ -136,7 +140,7 @@ namespace ProjectsEditor.Utils
                     MonitorConfiguration = new List<ProjectData.MonitorConfigurationWrapper> { },
                 };
 
-                foreach (var app in project.Applications)
+                foreach (var app in project.Applications.Where(x => x.IsIncluded))
                 {
                     wrapper.Applications.Add(new ProjectData.ApplicationWrapper
                     {
@@ -145,6 +149,7 @@ namespace ProjectsEditor.Utils
                         Title = app.AppTitle,
                         PackageFullName = app.PackageFullName,
                         CommandLineArguments = app.CommandLineArguments,
+                        LaunchesAsAdmin = app.LaunchesAsAdmin,
                         Maximized = app.Maximized,
                         Minimized = app.Minimized,
                         Position = new ProjectData.ApplicationWrapper.WindowPositionWrapper

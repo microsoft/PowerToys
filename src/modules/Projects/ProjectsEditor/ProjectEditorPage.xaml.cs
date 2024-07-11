@@ -27,7 +27,9 @@ namespace ProjectsEditor
 
         private void SaveButtonClicked(object sender, RoutedEventArgs e)
         {
+            _mainViewModel.SwitchToMainView();
             Project projectToSave = this.DataContext as Project;
+            projectToSave.CloseExpanders();
             if (projectToSave.EditorWindowTitle == Properties.Resources.CreateProject)
             {
                 _mainViewModel.AddNewProject(projectToSave);
@@ -36,8 +38,6 @@ namespace ProjectsEditor
             {
                 _mainViewModel.SaveProject(projectToSave);
             }
-
-            _mainViewModel.SwitchToMainView();
         }
 
         private void CancelButtonClicked(object sender, RoutedEventArgs e)
@@ -49,13 +49,21 @@ namespace ProjectsEditor
             _mainViewModel.SwitchToMainView();
         }
 
+        private void DeleteButtonClicked(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            Models.Application app = button.DataContext as Models.Application;
+            app.SwitchDeletion();
+        }
+
         private void EditNameTextBoxKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
                 e.Handled = true;
                 Project project = this.DataContext as Project;
-                project.Name = EditNameTextBox.Text;
+                TextBox textBox = sender as TextBox;
+                project.Name = textBox.Text;
             }
             else if (e.Key == Key.Escape)
             {
@@ -91,8 +99,90 @@ namespace ProjectsEditor
         private void EditNameTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             Project project = this.DataContext as Project;
-            project.Name = EditNameTextBox.Text;
+            TextBox textBox = sender as TextBox;
+            project.Name = textBox.Text;
             project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.CanBeSaved)));
+        }
+
+        private void LeftTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            TextBox textBox = sender as TextBox;
+            Models.Application application = textBox.DataContext as Models.Application;
+            int newPos;
+            if (!int.TryParse(textBox.Text, out newPos))
+            {
+                newPos = 0;
+            }
+
+            application.Position = new Models.Application.WindowPosition() { X = newPos, Y = application.Position.Y, Width = application.Position.Width, Height = application.Position.Height };
+            Project project = application.Parent;
+            project.Initialize();
+        }
+
+        private void TopTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            TextBox textBox = sender as TextBox;
+            Models.Application application = textBox.DataContext as Models.Application;
+            int newPos;
+            if (!int.TryParse(textBox.Text, out newPos))
+            {
+                newPos = 0;
+            }
+
+            application.Position = new Models.Application.WindowPosition() { X = application.Position.X, Y = newPos, Width = application.Position.Width, Height = application.Position.Height };
+            Project project = application.Parent;
+            project.Initialize();
+        }
+
+        private void WidthTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            TextBox textBox = sender as TextBox;
+            Models.Application application = textBox.DataContext as Models.Application;
+            int newPos;
+            if (!int.TryParse(textBox.Text, out newPos))
+            {
+                newPos = 0;
+            }
+
+            application.Position = new Models.Application.WindowPosition() { X = application.Position.X, Y = application.Position.Y, Width = newPos, Height = application.Position.Height };
+            Project project = application.Parent;
+            project.Initialize();
+        }
+
+        private void HeightTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            TextBox textBox = sender as TextBox;
+            Models.Application application = textBox.DataContext as Models.Application;
+            int newPos;
+            if (!int.TryParse(textBox.Text, out newPos))
+            {
+                newPos = 0;
+            }
+
+            application.Position = new Models.Application.WindowPosition() { X = application.Position.X, Y = application.Position.Y, Width = application.Position.Width, Height = newPos };
+            Project project = application.Parent;
+            project.Initialize();
+        }
+
+        private void CommandLineTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            TextBox textBox = sender as TextBox;
+            Models.Application application = textBox.DataContext as Models.Application;
+            application.CommandLineTextChanged(textBox.Text);
+        }
+
+        private void MaximizedChecked(object sender, RoutedEventArgs e)
+        {
+            CheckBox checkBox = sender as CheckBox;
+            Models.Application application = checkBox.DataContext as Models.Application;
+            application.MaximizedChecked();
+        }
+
+        private void MinimizedChecked(object sender, RoutedEventArgs e)
+        {
+            CheckBox checkBox = sender as CheckBox;
+            Models.Application application = checkBox.DataContext as Models.Application;
+            application.MinimizedChecked();
         }
     }
 }

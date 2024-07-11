@@ -33,6 +33,8 @@ namespace ProjectsEditor.Data
 
             public string CommandLineArguments { get; set; }
 
+            public bool LaunchesAsAdmin { get; set; }
+
             public bool Minimized { get; set; }
 
             public bool Maximized { get; set; }
