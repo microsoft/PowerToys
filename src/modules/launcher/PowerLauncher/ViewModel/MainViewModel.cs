@@ -1016,7 +1016,8 @@ namespace PowerLauncher.ViewModel
                 var window = Application.Current.MainWindow;
                 Wpf.Ui.Controls.WindowBackdrop.RemoveBackground(window);
 
-                if (OSVersionHelper.IsWindows11())
+                // Setting uint titlebarPvAttribute = 0xFFFFFFFE; works on 22H2 or higher, 21H2 (aka SV1) this value causes a crash
+                if (OSVersionHelper.IsGreaterThanWindows11_21H2())
                 {
                     // Taken from WPFUI's fix for the title bar issue. We should be able to remove this fix when WPF UI 4 is integrated.
                     // https://github.com/lepoco/wpfui/pull/1122/files#diff-196b404f4db09632665ef546da6c8e57302b2f3e3d082eb4b5c295ae3482d94a
@@ -1034,6 +1035,7 @@ namespace PowerLauncher.ViewModel
                         // NOTE: https://learn.microsoft.com/en-us/windows/win32/api/dwmapi/ne-dwmapi-dwmwindowattribute
                         // Specifying DWMWA_COLOR_DEFAULT (value 0xFFFFFFFF) for the color will reset the window back to using the system's default behavior for the caption color.
                         uint titlebarPvAttribute = 0xFFFFFFFE;
+
                         _ = Wox.Plugin.Common.Win32.NativeMethods.DwmSetWindowAttribute(
                             windowSource.Handle,
                             (int)Wox.Plugin.Common.Win32.DwmWindowAttributes.CaptionColor, // CaptionColor attribute is only available on Windows 11.
