@@ -166,7 +166,7 @@ extends:
           inputs:
             solution: '**\PowerToys.sln'
             vsVersion: 17.0
-            msbuildArgs: -restore -graph /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+            msbuildArgs: -restore -graph /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild-1-main.binlog
             platform: $(BuildPlatform)
             configuration: $(BuildConfiguration)
             clean: true
@@ -187,7 +187,7 @@ extends:
           inputs:
             solution: '**\HostsUILib.csproj'
             vsVersion: 17.0
-            msbuildArgs: /p:CIBuild=true -t:pack /bl:$(Build.SourcesDirectory)\msbuild.binlog
+            msbuildArgs: /p:CIBuild=true -t:pack /bl:$(Build.SourcesDirectory)\msbuild-2-hosts.binlog
             configuration: $(BuildConfiguration)
             maximumCpuCount: true
 
@@ -196,7 +196,7 @@ extends:
           inputs:
             solution: '**\EnvironmentVariablesUILib.csproj'
             vsVersion: 17.0
-            msbuildArgs: /p:CIBuild=true -t:pack /bl:$(Build.SourcesDirectory)\msbuild.binlog
+            msbuildArgs: /p:CIBuild=true -t:pack /bl:$(Build.SourcesDirectory)\msbuild-3-env-var.binlog
             configuration: $(BuildConfiguration)
             maximumCpuCount: true
 
@@ -205,7 +205,7 @@ extends:
           inputs:
             solution: '**\RegistryPreviewUILib.csproj'
             vsVersion: 17.0
-            msbuildArgs: /p:CIBuild=true -t:pack /bl:$(Build.SourcesDirectory)\msbuild.binlog
+            msbuildArgs: /p:CIBuild=true -t:pack /bl:$(Build.SourcesDirectory)\msbuild-4-reg-prev.binlog
             configuration: $(BuildConfiguration)
             maximumCpuCount: true
 
@@ -248,7 +248,7 @@ extends:
           inputs:
             solution: '**/tools/BugReportTool/BugReportTool.sln'
             vsVersion: 17.0
-            msbuildArgs: -restore -graph /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+            msbuildArgs: -restore -graph /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild-5-bugreport.binlog
             platform: $(BuildPlatform)
             configuration: $(BuildConfiguration)
             clean: true
@@ -259,7 +259,7 @@ extends:
           inputs:
             solution: '**/tools/WebcamReportTool/WebcamReportTool.sln'
             vsVersion: 17.0
-            msbuildArgs: -restore -graph /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+            msbuildArgs: -restore -graph /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild-6-webcamreport.binlog
             platform: $(BuildPlatform)
             configuration: $(BuildConfiguration)
             clean: true
@@ -270,7 +270,7 @@ extends:
           inputs:
             solution: '**/tools/StylesReportTool/StylesReportTool.sln'
             vsVersion: 17.0
-            msbuildArgs: -restore -graph /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+            msbuildArgs: -restore -graph /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild-7-styles.binlog
             platform: $(BuildPlatform)
             configuration: $(BuildConfiguration)
             clean: true
@@ -451,7 +451,7 @@ extends:
       ## END MAIN
 
         - pwsh: |-
-            Move-Item msbuild.binlog "$(Build.ArtifactStagingDirectory)/"
+            Move-Item msbuild*.binlog "$(Build.ArtifactStagingDirectory)/"
           displayName: Stage binlog into artifact directory
           condition: always()
 
