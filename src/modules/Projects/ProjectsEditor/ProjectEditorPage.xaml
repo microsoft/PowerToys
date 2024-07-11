@@ -41,8 +41,8 @@
                 MouseEnter="AppBorder_MouseEnter"
                 MouseLeave="AppBorder_MouseLeave"
                 Margin="1">
-                <Expander 
-                    Margin="5,5,25,5"
+                <Expander
+                    Margin="0 0 20 0"
                     FlowDirection="RightToLeft"
                     IsExpanded="{Binding IsExpanded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     IsEnabled="{Binding IsIncluded, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
@@ -116,8 +116,10 @@
                         </Grid>
                     </Expander.Header>
                     <Grid
-                        FlowDirection="LeftToRight" 
-                        HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}">
+                        FlowDirection="LeftToRight"
+                        Margin="-20 0 0 0"
+                        HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}"
+                        Background="{DynamicResource QuaternaryBackgroundBrush}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="*"/>
@@ -132,7 +134,7 @@
                                 FontWeight="Normal"
                                 VerticalAlignment="Center" />
                             <TextBox
-                                Margin="15 0 0 0"
+                                Margin="15 0 50 0"
                                 x:Name="CommandLineTextBox"
                                 Text="{Binding CommandLineArguments, Mode=TwoWay}"
                                 Foreground="{DynamicResource PrimaryForegroundBrush}"
