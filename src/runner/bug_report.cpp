@@ -99,7 +99,7 @@ void InitializeReportBugLinkAsync()
 
         additionalInfo += windowsSettings + "%0a" + installScope + "%0a" + isElevatedRun;
 
-        gitHubURL = "https://github.com/gokcekantarci/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CNeeds-Triage&template=bug_report.yml" +
+        gitHubURL = "https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CNeeds-Triage&template=bug_report.yml" +
                     std::string("&version=") + version +
                     std::string("&additionalInfo=") + additionalInfo;
 
