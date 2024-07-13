@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.UI;
@@ -10,6 +12,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Peek.Common.Constants;
+using Peek.Common.Helpers;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
@@ -67,6 +70,25 @@ namespace Peek.FilePreviewer.Controls
             }
         }
 
+        public static readonly DependencyProperty CustomContextMenuProperty = DependencyProperty.Register(
+            nameof(CustomContextMenu),
+            typeof(bool),
+            typeof(BrowserControl),
+            null);
+
+        public bool CustomContextMenu
+        {
+            get
+            {
+                return (bool)GetValue(CustomContextMenuProperty);
+            }
+
+            set
+            {
+                SetValue(CustomContextMenuProperty, value);
+            }
+        }
+
         public BrowserControl()
         {
             this.InitializeComponent();
@@ -78,6 +100,7 @@ namespace Peek.FilePreviewer.Controls
             if (PreviewBrowser.CoreWebView2 != null)
             {
                 PreviewBrowser.CoreWebView2.DOMContentLoaded -= CoreWebView2_DOMContentLoaded;
+                PreviewBrowser.CoreWebView2.ContextMenuRequested -= CoreWebView2_ContextMenuRequested;
             }
         }
 
@@ -164,6 +187,7 @@ namespace Peek.FilePreviewer.Controls
 
                 PreviewBrowser.CoreWebView2.DOMContentLoaded += CoreWebView2_DOMContentLoaded;
                 PreviewBrowser.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
+                PreviewBrowser.CoreWebView2.ContextMenuRequested += CoreWebView2_ContextMenuRequested;
             }
             catch (Exception ex)
             {
@@ -171,6 +195,46 @@ namespace Peek.FilePreviewer.Controls
             }
 
             Navigate();
+        }
+
+        private void CoreWebView2_ContextMenuRequested(CoreWebView2 sender, CoreWebView2ContextMenuRequestedEventArgs args)
+        {
+            var menuItems = args.MenuItems;
+
+            if (menuItems.IsReadOnly)
+            {
+                return;
+            }
+
+            CoreWebView2ContextMenuItem CreateCommandMenuItem(string resourceId, string commandName)
+            {
+                var label = ResourceLoaderInstance.ResourceLoader.GetString(resourceId);
+                var commandMenuItem = sender.Environment.CreateContextMenuItem(label, null, CoreWebView2ContextMenuItemKind.Command);
+                commandMenuItem.CustomItemSelected += async (_, _) =>
+                {
+                    await sender.ExecuteScriptAsync($"{commandName}()");
+                };
+                return commandMenuItem;
+            }
+
+            // When using Monaco, we show menu items that call the appropriate JS functions -
+            // WebView2 isn't able to show a "Copy" menu item of its own.
+            // When not using Monaco, we keep the "Copy" menu item from WebView2's default context menu.
+            List<CoreWebView2ContextMenuItem> GetMenuItemsToShow() =>
+                CustomContextMenu
+                    ? [
+                        CreateCommandMenuItem("ContextMenu_Copy", "runCopyCommand"),
+                        CreateCommandMenuItem("ContextMenu_ToggleTextWrapping", "runToggleTextWrapCommand"),
+                    ]
+                    : menuItems.Where(menuItem => menuItem.Name == "copy").ToList();
+
+            var menuItemsToShow = GetMenuItemsToShow();
+
+            menuItems.Clear();
+            foreach (var menuItemToShow in menuItemsToShow)
+            {
+                menuItems.Add(menuItemToShow);
+            }
         }
 
         private void CoreWebView2_DOMContentLoaded(CoreWebView2 sender, CoreWebView2DOMContentLoadedEventArgs args)
@@ -202,7 +266,7 @@ namespace Peek.FilePreviewer.Controls
             }
         }
 
-        private async void PreviewBrowser_NavigationStarting(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs args)
+        private async void PreviewBrowser_NavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
         {
             if (_navigatedUri == null)
             {
@@ -218,7 +282,7 @@ namespace Peek.FilePreviewer.Controls
             }
         }
 
-        private void PreviewWV2_NavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
+        private void PreviewWV2_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
             if (args.IsSuccess)
             {
