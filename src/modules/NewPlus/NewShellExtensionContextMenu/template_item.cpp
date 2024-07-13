@@ -17,14 +17,21 @@ template_item::template_item(const std::filesystem::path entry)
     path = entry;
 }
 
-std::wstring template_item::get_menu_title(const bool show_extention) const
+std::wstring template_item::get_menu_title(const bool show_extention, const bool show_starting_digits) const
 {
-    if (show_extention || !path.has_extension())
+    std::wstring title = path.filename();
+
+    if (!show_starting_digits)
     {
-        return path.filename();
+        // Hide starting digits, spaces, and .
+        title.erase(0, min(title.find_first_not_of(L"0123456789 ."), title.size()));
     }
 
-    std::wstring title = path.filename();
+    if (show_extention || !path.has_extension())
+    {
+        return title;
+    }
+
     std::wstring ext = path.extension();
     title = title.substr(0, title.length() - ext.length());
 

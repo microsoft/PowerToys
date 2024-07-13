@@ -104,6 +104,11 @@ public:
         Logger::info("New+ hide file extension {}", hide_file_extension);
     }
 
+    virtual void hide_starting_digits(bool hide_starting_digits)
+    {
+        Logger::info("New+ hide starting digits {}", hide_starting_digits);
+    }
+
     virtual void template_location(std::wstring path_location)
     {
         Logger::info("New+ template location");

@@ -20,7 +20,10 @@ shell_context_sub_menu_item::shell_context_sub_menu_item(const template_item* te
 
 IFACEMETHODIMP shell_context_sub_menu_item::GetTitle(_In_opt_ IShellItemArray* items, _Outptr_result_nullonfailure_ PWSTR* title)
 {
-    return SHStrDup(this->template_entry->get_menu_title(!utilities::get_newplus_hide_extension()).c_str(), title);
+    return SHStrDup(this->template_entry->get_menu_title(
+        !utilities::get_newplus_setting_hide_extension(),
+        !utilities::get_newplus_setting_hide_starting_digits()
+    ).c_str(), title);
 }
 
 IFACEMETHODIMP shell_context_sub_menu_item::GetIcon(_In_opt_ IShellItemArray*, _Outptr_result_nullonfailure_ PWSTR* icon)

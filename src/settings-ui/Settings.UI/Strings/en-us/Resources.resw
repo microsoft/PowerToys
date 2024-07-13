@@ -4244,8 +4244,16 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Display options label</comment>
   </data>
   <data name="NewPlus_Hide_File_Extension_Toggle.Header" xml:space="preserve">
-    <value>Hide file extension from list items</value>
-    <comment>File extension settings toggle</comment>
+    <value>Hide template filename extension</value>
+    <comment>Template file name extension settings toggle</comment>
+  </data>
+  <data name="NewPlus_Hide_Starting_Digits_Toggle.Header" xml:space="preserve">
+    <value>Hide template filename starting digits, spaces, and dots</value>
+    <comment>Template filename starting digits settings toggle</comment>
+  </data>
+  <data name="NewPlus_Hide_Starting_Digits_Description.Text" xml:space="preserve">
+    <value>This option is useful when using digits, spaces and dots at the beginning of filenames to control the display order of templates</value>
+    <comment>Template filename starting digits settings toggle</comment>
   </data>
   <data name="NewPlus.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>

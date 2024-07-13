@@ -29,6 +29,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("HideFileExtension")]
         public bool HideFileExtension { get; set; }
 
+        [JsonPropertyName("HideStartingDigits")]
+        public bool HideStartingDigits { get; set; }
+
         [JsonPropertyName("TemplateLocation")]
         public string TemplateLocation { get; set; }
 

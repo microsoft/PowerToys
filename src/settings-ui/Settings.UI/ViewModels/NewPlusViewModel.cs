@@ -58,6 +58,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // Initialize properties
             _hideFileExtension = Settings.HideFileExtension;
+            _hideStartingDigits = Settings.HideStartingDigits;
             _templateLocation = Settings.TemplateLocation;
             InitializeEnabledValue();
 
@@ -136,6 +137,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool HideStartingDigits
+        {
+            get => _hideStartingDigits;
+            set
+            {
+                if (_hideStartingDigits != value)
+                {
+                    _hideStartingDigits = value;
+                    Settings.HideStartingDigits = value;
+                    OnPropertyChanged(nameof(HideStartingDigits));
+
+                    NotifySettingsChanged();
+
+                    SaveSettingsToJson();
+                }
+            }
+        }
+
         public bool IsEnabledGpoConfigured
         {
             get => _enabledStateIsGPOConfigured;
@@ -163,6 +182,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isNewPlusEnabled;
         private string _templateLocation;
         private bool _hideFileExtension;
+        private bool _hideStartingDigits;
 
         public void RefreshEnabledState()
         {

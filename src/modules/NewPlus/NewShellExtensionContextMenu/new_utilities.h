@@ -77,9 +77,14 @@ namespace newplus::utilities
         return NewSettingsInstance().GetTemplateLocation();
     }
 
-    inline bool get_newplus_hide_extension()
+    inline bool get_newplus_setting_hide_extension()
     {
         return NewSettingsInstance().GetHideFileExtension();
+    }
+
+    inline bool get_newplus_setting_hide_starting_digits()
+    {
+        return NewSettingsInstance().GetHideStartingDigits();
     }
 
     inline void create_folder_if_not_exist(const std::filesystem::path path)

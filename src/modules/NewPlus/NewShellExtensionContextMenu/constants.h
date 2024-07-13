@@ -12,6 +12,8 @@ namespace newplus::constants::non_localizable
 
     constexpr WCHAR settings_json_key_hide_file_extension[] = L"HideFileExtension";
 
+    constexpr WCHAR settings_json_key_hide_starting_digits[] = L"HideStartingDigits";
+
     constexpr WCHAR settings_json_key_template_location[] = L"TemplateLocation";
 
     constexpr WCHAR context_menu_package_name[] = L"NewPlusContextMenu";

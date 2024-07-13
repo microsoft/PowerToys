@@ -43,6 +43,9 @@ void NewSettings::Save()
     new_settings_json_data.SetNamedValue(newplus::constants::non_localizable::settings_json_key_hide_file_extension,
                                          json::value(new_settings.hide_file_extension));
 
+    new_settings_json_data.SetNamedValue(newplus::constants::non_localizable::settings_json_key_hide_starting_digits,
+                                         json::value(new_settings.hide_starting_digits));
+
     new_settings_json_data.SetNamedValue(newplus::constants::non_localizable::settings_json_key_template_location,
                                          json::value(new_settings.template_location));
 
@@ -132,6 +135,12 @@ void NewSettings::ParseJson()
                     newplus::constants::non_localizable::settings_json_key_hide_file_extension);
             }
 
+            if (json::has(new_settings_json, newplus::constants::non_localizable::settings_json_key_hide_starting_digits, json::JsonValueType::Boolean))
+            {
+                new_settings.hide_starting_digits = new_settings_json.GetNamedBoolean(
+                    newplus::constants::non_localizable::settings_json_key_hide_starting_digits);
+            }
+
             if (json::has(new_settings_json, newplus::constants::non_localizable::settings_json_key_template_location, json::JsonValueType::String))
             {
                 new_settings.template_location = new_settings_json.GetNamedString(
@@ -172,6 +181,16 @@ bool NewSettings::GetHideFileExtension() const
 void NewSettings::SetHideFileExtension(const bool hide_file_extension)
 {
     new_settings.hide_file_extension = hide_file_extension;
+}
+
+bool NewSettings::GetHideStartingDigits() const
+{
+    return new_settings.hide_starting_digits;
+}
+
+void NewSettings::SetHideStartingDigits(const bool hide_starting_digits)
+{
+    new_settings.hide_starting_digits = hide_starting_digits;
 }
 
 std::wstring NewSettings::GetTemplateLocation() const

@@ -10,6 +10,8 @@ public:
     bool GetEnabled();
     bool GetHideFileExtension() const;
     void SetHideFileExtension(const bool hide_file_extension);
+    bool GetHideStartingDigits() const;
+    void SetHideStartingDigits(const bool hide_starting_digits);
     std::wstring GetTemplateLocation() const;
     void SetTemplateLocation(const std::wstring template_location);
 
@@ -22,6 +24,7 @@ private:
         // These values are not used
         bool enabled{ false };
         bool hide_file_extension{ true };
+        bool hide_starting_digits{ true };
         std::wstring template_location;
     };
 
