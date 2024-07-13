@@ -201,6 +201,11 @@ namespace SnapshotUtils
                 }
             }
 
+            if (WindowFilter::FilterPopup(window))
+            {
+                continue;
+            }
+
             auto data = Utils::Apps::GetApp(processPath, installedApps);
             if (!data.has_value() || data->name.empty())
             {
