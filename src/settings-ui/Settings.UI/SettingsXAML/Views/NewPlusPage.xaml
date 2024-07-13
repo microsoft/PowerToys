@@ -45,8 +45,7 @@
                         <tkcontrols:SettingsCard.Description>
                             <StackPanel>
                                 <TextBlock Text="{x:Bind ViewModel.TemplateLocation, Mode=OneWay}" />
-                                <!--  TODO: update New+ aka.ms link  -->
-                                <HyperlinkButton x:Uid="NewPlus_Templates_Location_Learn_More" NavigateUri="https://github.com/microsoft/PowerToys/wiki" />
+                                <HyperlinkButton x:Uid="NewPlus_Templates_Location_Learn_More" NavigateUri="https://aka.ms/PowerToysOverview_NewPlus_TemplatesLocation" />
                             </StackPanel>
                         </tkcontrols:SettingsCard.Description>
 
@@ -63,8 +62,7 @@
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <!--  TODO: update aka.ms link  -->
-            <controls:PageLink x:Uid="NewPlus_Learn_More" Link="https://github.com/microsoft/PowerToys/wiki" />
+            <controls:PageLink x:Uid="NewPlus_Learn_More" Link="https://aka.ms/PowerToysOverview_NewPlus" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
             <controls:PageLink Link="https://www.linkedin.com/in/christian-gaardmark/" Text="Christian Gaardmark" />
