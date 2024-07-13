@@ -96,8 +96,6 @@ public:
 
     virtual bool is_enabled() override
     {
-        Logger::info("New+ is enabled");
-
         return powertoy_new_enabled;
     }
 

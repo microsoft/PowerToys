@@ -60,6 +60,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MouseJump: return generalSettingsConfig.Enabled.MouseJump;
                 case ModuleType.MousePointerCrosshairs: return generalSettingsConfig.Enabled.MousePointerCrosshairs;
                 case ModuleType.MouseWithoutBorders: return generalSettingsConfig.Enabled.MouseWithoutBorders;
+                case ModuleType.NewPlus: return generalSettingsConfig.Enabled.NewPlus;
                 case ModuleType.Peek: return generalSettingsConfig.Enabled.Peek;
                 case ModuleType.PowerRename: return generalSettingsConfig.Enabled.PowerRename;
                 case ModuleType.PowerLauncher: return generalSettingsConfig.Enabled.PowerLauncher;
@@ -68,7 +69,6 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MeasureTool: return generalSettingsConfig.Enabled.MeasureTool;
                 case ModuleType.ShortcutGuide: return generalSettingsConfig.Enabled.ShortcutGuide;
                 case ModuleType.PowerOCR: return generalSettingsConfig.Enabled.PowerOcr;
-                case ModuleType.NewPlus: return generalSettingsConfig.Enabled.NewPlus;
                 default: return false;
             }
         }
@@ -93,6 +93,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MouseJump: generalSettingsConfig.Enabled.MouseJump = isEnabled; break;
                 case ModuleType.MousePointerCrosshairs: generalSettingsConfig.Enabled.MousePointerCrosshairs = isEnabled; break;
                 case ModuleType.MouseWithoutBorders: generalSettingsConfig.Enabled.MouseWithoutBorders = isEnabled; break;
+                case ModuleType.NewPlus: generalSettingsConfig.Enabled.NewPlus = isEnabled; break;
                 case ModuleType.Peek: generalSettingsConfig.Enabled.Peek = isEnabled; break;
                 case ModuleType.PowerRename: generalSettingsConfig.Enabled.PowerRename = isEnabled; break;
                 case ModuleType.PowerLauncher: generalSettingsConfig.Enabled.PowerLauncher = isEnabled; break;
@@ -101,7 +102,6 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MeasureTool: generalSettingsConfig.Enabled.MeasureTool = isEnabled; break;
                 case ModuleType.ShortcutGuide: generalSettingsConfig.Enabled.ShortcutGuide = isEnabled; break;
                 case ModuleType.PowerOCR: generalSettingsConfig.Enabled.PowerOcr = isEnabled; break;
-                case ModuleType.NewPlus: generalSettingsConfig.Enabled.NewPlus = isEnabled; break;
             }
         }
 
@@ -125,6 +125,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MouseJump: return GPOWrapper.GetConfiguredMouseJumpEnabledValue();
                 case ModuleType.MousePointerCrosshairs: return GPOWrapper.GetConfiguredMousePointerCrosshairsEnabledValue();
                 case ModuleType.MouseWithoutBorders: return GPOWrapper.GetConfiguredMouseWithoutBordersEnabledValue();
+                case ModuleType.NewPlus: return GPOWrapper.GetConfiguredNewPlusEnabledValue();
                 case ModuleType.Peek: return GPOWrapper.GetConfiguredPeekEnabledValue();
                 case ModuleType.PowerRename: return GPOWrapper.GetConfiguredPowerRenameEnabledValue();
                 case ModuleType.PowerLauncher: return GPOWrapper.GetConfiguredPowerLauncherEnabledValue();
@@ -133,7 +134,6 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MeasureTool: return GPOWrapper.GetConfiguredScreenRulerEnabledValue();
                 case ModuleType.ShortcutGuide: return GPOWrapper.GetConfiguredShortcutGuideEnabledValue();
                 case ModuleType.PowerOCR: return GPOWrapper.GetConfiguredTextExtractorEnabledValue();
-                case ModuleType.NewPlus: return GPOWrapper.GetConfiguredNewPlusEnabledValue();
                 default: return GpoRuleConfigured.Unavailable;
             }
         }
@@ -158,6 +158,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.MouseJump => typeof(MouseUtilsPage),
                 ModuleType.MousePointerCrosshairs => typeof(MouseUtilsPage),
                 ModuleType.MouseWithoutBorders => typeof(MouseWithoutBordersPage),
+                ModuleType.NewPlus => typeof(NewPlusPage),
                 ModuleType.Peek => typeof(PeekPage),
                 ModuleType.PowerRename => typeof(PowerRenamePage),
                 ModuleType.PowerLauncher => typeof(PowerLauncherPage),
@@ -166,7 +167,6 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.MeasureTool => typeof(MeasureToolPage),
                 ModuleType.ShortcutGuide => typeof(ShortcutGuidePage),
                 ModuleType.PowerOCR => typeof(PowerOcrPage),
-                ModuleType.NewPlus => typeof(NewPlusPage),
                 _ => typeof(DashboardPage), // never called, all values listed above
             };
         }
