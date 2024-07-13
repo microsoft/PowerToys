@@ -24,7 +24,7 @@ std::wstring template_item::get_menu_title(const bool show_extention, const bool
     if (!show_starting_digits)
     {
         // Hide starting digits, spaces, and .
-        title.erase(0, min(title.find_first_not_of(L"0123456789 ."), title.size()));
+        title = remove_starting_digits_from_filename(title);
     }
 
     if (show_extention || !path.has_extension())
@@ -36,6 +36,26 @@ std::wstring template_item::get_menu_title(const bool show_extention, const bool
     title = title.substr(0, title.length() - ext.length());
 
     return title;
+}
+
+std::wstring template_item::get_target_filename(const bool include_starting_digits) const
+{
+    std::wstring filename = path.filename();
+
+    if (!include_starting_digits)
+    {
+        // Remove starting digits, spaces, and .
+        filename = remove_starting_digits_from_filename(filename);
+    }
+
+    return filename;
+}
+
+std::wstring template_item::remove_starting_digits_from_filename(std::wstring filename) const
+{
+    filename.erase(0, min(filename.find_first_not_of(L"0123456789 ."), filename.size()));
+
+    return filename;
 }
 
 std::wstring template_item::get_explorer_icon() const
