@@ -36,6 +36,8 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [WebSearchShortcut](https://github.com/Daydreamer-riri/PowerToys-Run-WebSearchShortcut) | [Riri](https://github.com/Daydreamer-riri) | Select a specific search engine to perform searches. |
 | [UnicodeInput](https://github.com/nathancartlidge/powertoys-run-unicode) | [nathancartlidge](https://github.com/nathancartlidge) | Copy Unicode characters to the clipboard |
 | [PowerHexInspector](https://github.com/NaroZeol/PowerHexInspector) | [NaroZeol](https://github.com/NaroZeol) | Peek other forms of an input number |
+| [GitHubRepo](https://github.com/8LWXpg/PowerToysRun-GitHubRepo) | [8LWXpg](https://github.com/8LWXpg) | Search and open GitHub repositories |
+| [ProcessKiller](https://github.com/8LWXpg/PowerToysRun-ProcessKiller) | [8LWXpg](https://github.com/8LWXpg) | Search and kill processes |
 
 ## Extending software plugins
 
