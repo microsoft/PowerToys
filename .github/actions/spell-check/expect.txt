@@ -1757,6 +1757,7 @@ vswhere
 Vtbl
 WANTPALM
 wbem
+Wbemidl
 wbemuuid
 WBounds
 Wca
