@@ -218,7 +218,7 @@ namespace SnapshotUtils
                 .title = title,
                 .path = processPath,
                 .packageFullName = data.value().packageFullName,
-                .commandLineArgs = GetCommandLineArgs(pid, wbemHelper),
+                .commandLineArgs = L"", // GetCommandLineArgs(pid, wbemHelper),
                 .isMinimized = WindowUtils::IsMinimized(window),
                 .isMaximized = WindowUtils::IsMaximized(window),
                 .position = Project::Application::Position{
