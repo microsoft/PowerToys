@@ -153,10 +153,9 @@
                             <CheckBox
                                 Content="{x:Static props:Resources.LaunchAsAdmin}"
                                 IsChecked="{Binding LaunchesAsAdmin, Mode=TwoWay}"
-                                Visibility="Collapsed"
                                 MinWidth="10"/>
                             <CheckBox
-                                Margin="0 0 0 0"
+                                Margin="15 0 0 0"
                                 Content="{x:Static props:Resources.Maximized}"
                                 IsChecked="{Binding Maximized, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                 MinWidth="10"
