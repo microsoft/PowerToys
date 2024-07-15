@@ -224,6 +224,7 @@ namespace Peek.FilePreviewer.Controls
                 CustomContextMenu
                     ? [
                         CreateCommandMenuItem("ContextMenu_Copy", "runCopyCommand"),
+                        sender.Environment.CreateContextMenuItem(string.Empty, null, CoreWebView2ContextMenuItemKind.Separator),
                         CreateCommandMenuItem("ContextMenu_ToggleTextWrapping", "runToggleTextWrapCommand"),
                     ]
                     : menuItems.Where(menuItem => menuItem.Name == "copy").ToList();
