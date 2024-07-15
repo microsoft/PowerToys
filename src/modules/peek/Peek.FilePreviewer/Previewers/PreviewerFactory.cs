@@ -53,6 +53,10 @@ namespace Peek.FilePreviewer.Previewers
             {
                 return new DrivePreviewer(item);
             }
+            else if (SpecialFolderPreviewer.IsItemSupported(item))
+            {
+                return new SpecialFolderPreviewer(item);
+            }
 
             // Other previewer types check their supported file types here
             return CreateDefaultPreviewer(item);

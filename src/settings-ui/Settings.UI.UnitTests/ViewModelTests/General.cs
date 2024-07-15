@@ -53,7 +53,6 @@ namespace ViewModelTests
                 runAsUserText: "GeneralSettings_RunningAsUserText",
                 isElevated: false,
                 isAdmin: false,
-                updateTheme: UpdateUIThemeMethod,
                 ipcMSGCallBackFunc: sendMockIPCConfigMSG,
                 ipcMSGRestartAsAdminMSGCallBackFunc: sendRestartAdminIPCMessage,
                 ipcMSGCheckForUpdatesCallBackFunc: sendCheckForUpdatesIPCMessage,
@@ -83,7 +82,6 @@ namespace ViewModelTests
                 "GeneralSettings_RunningAsUserText",
                 false,
                 false,
-                UpdateUIThemeMethod,
                 sendMockIPCConfigMSG,
                 sendRestartAdminIPCMessage,
                 sendCheckForUpdatesIPCMessage,
@@ -120,7 +118,6 @@ namespace ViewModelTests
                 "GeneralSettings_RunningAsUserText",
                 false,
                 false,
-                UpdateUIThemeMethod,
                 sendMockIPCConfigMSG,
                 sendRestartAdminIPCMessage,
                 sendCheckForUpdatesIPCMessage,
@@ -152,7 +149,6 @@ namespace ViewModelTests
                 "GeneralSettings_RunningAsUserText",
                 false,
                 false,
-                UpdateUIThemeMethod,
                 sendMockIPCConfigMSG,
                 sendRestartAdminIPCMessage,
                 sendCheckForUpdatesIPCMessage,
@@ -186,7 +182,6 @@ namespace ViewModelTests
                 "GeneralSettings_RunningAsUserText",
                 false,
                 false,
-                UpdateUIThemeMethod,
                 sendMockIPCConfigMSG,
                 sendRestartAdminIPCMessage,
                 sendCheckForUpdatesIPCMessage,
@@ -217,7 +212,6 @@ namespace ViewModelTests
                 "GeneralSettings_RunningAsUserText",
                 false,
                 false,
-                UpdateUIThemeMethod,
                 sendMockIPCConfigMSG,
                 sendRestartAdminIPCMessage,
                 sendCheckForUpdatesIPCMessage,
@@ -242,11 +236,6 @@ namespace ViewModelTests
             Assert.IsTrue(modules.PowerRename);
             Assert.IsTrue(modules.PowerLauncher);
             Assert.IsTrue(modules.ColorPicker);
-        }
-
-        public static int UpdateUIThemeMethod(string themeName)
-        {
-            return 0;
         }
     }
 }

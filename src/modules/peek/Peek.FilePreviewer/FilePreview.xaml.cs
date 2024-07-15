@@ -53,6 +53,7 @@ namespace Peek.FilePreviewer
         [NotifyPropertyChangedFor(nameof(ArchivePreviewer))]
         [NotifyPropertyChangedFor(nameof(ShellPreviewHandlerPreviewer))]
         [NotifyPropertyChangedFor(nameof(DrivePreviewer))]
+        [NotifyPropertyChangedFor(nameof(SpecialFolderPreviewer))]
         [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
         private IPreviewer? previewer;
 
@@ -104,6 +105,8 @@ namespace Peek.FilePreviewer
         public IShellPreviewHandlerPreviewer? ShellPreviewHandlerPreviewer => Previewer as IShellPreviewHandlerPreviewer;
 
         public IDrivePreviewer? DrivePreviewer => Previewer as IDrivePreviewer;
+
+        public ISpecialFolderPreviewer? SpecialFolderPreviewer => Previewer as ISpecialFolderPreviewer;
 
         public IUnsupportedFilePreviewer? UnsupportedFilePreviewer => Previewer as IUnsupportedFilePreviewer;
 
@@ -161,15 +164,6 @@ namespace Peek.FilePreviewer
                 ArchivePreview.Visibility = Visibility.Collapsed;
                 DrivePreview.Visibility = Visibility.Collapsed;
                 UnsupportedFilePreview.Visibility = Visibility.Collapsed;
-
-                ImagePreview.FlowDirection = FlowDirection.LeftToRight;
-                VideoPreview.FlowDirection = FlowDirection.LeftToRight;
-
-                AudioPreview.FlowDirection = FlowDirection.LeftToRight;
-                BrowserPreview.FlowDirection = FlowDirection.LeftToRight;
-                ArchivePreview.FlowDirection = FlowDirection.LeftToRight;
-                DrivePreview.FlowDirection = FlowDirection.LeftToRight;
-                UnsupportedFilePreview.FlowDirection = FlowDirection.LeftToRight;
 
                 return;
             }
@@ -231,7 +225,6 @@ namespace Peek.FilePreviewer
             VideoPreview.MediaPlayer.Pause();
             VideoPreview.MediaPlayer.Source = null;
             VideoPreview.Source = null;
-
             AudioPreview.Source = null;
             ImagePreview.Source = null;
             ArchivePreview.Source = null;

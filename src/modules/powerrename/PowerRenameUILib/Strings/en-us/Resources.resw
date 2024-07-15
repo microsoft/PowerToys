@@ -151,7 +151,7 @@
     <value>Replace with</value>
   </data>
   <data name="CounterCheatSheet_Title.Text" xml:space="preserve">
-    <value>Replace using advanced counter syntax.</value>
+    <value>Replace using advanced counter syntax</value>
   </data>
   <data name="CounterCheatSheet_Simple" xml:space="preserve">
     <value>A simple counter that you can use anywhere in a replace string.</value>
@@ -295,10 +295,10 @@
     <value>Capitalize each word</value>
   </data>
   <data name="ToggleButton_EnumItems.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Enumerate items</value>
+    <value>Enumeration features</value>
   </data>
   <data name="ToggleButton_EnumItems.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Enumerate items</value>
+    <value>Enumeration features</value>
   </data>
   <data name="SelectAllCheckBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Select or deselect all</value>
@@ -362,5 +362,26 @@
   </data>
   <data name="RenameParts_ExtensionOnly.Content" xml:space="preserve">
     <value>Extension only</value>
+  </data>
+  <data name="RandomizerCheatSheet_Alnum" xml:space="preserve">
+    <value>Random string with uppercase letters, lowercase letters and 0-9 digits, customized length.</value>
+  </data>
+  <data name="RandomizerCheatSheet_Alpha" xml:space="preserve">
+    <value>Random string with uppercase letters and lowercase letters, customized length.</value>
+  </data>
+  <data name="RandomizerCheatSheet_Digit" xml:space="preserve">
+    <value>Random string with 0-9 digits, customized length.</value>
+  </data>
+  <data name="RandomizerCheatSheet_Title.Text" xml:space="preserve">
+    <value>Replace using random values</value>
+  </data>
+  <data name="RandomizerCheatSheet_Uuid" xml:space="preserve">
+    <value>Random UUID according to v4 specification.</value>
+  </data>
+  <data name="ToggleButton_RandItems.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Random string features</value>
+  </data>
+  <data name="ToggleButton_RandItems.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Random string features</value>
   </data>
 </root>

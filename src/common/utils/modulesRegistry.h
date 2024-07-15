@@ -262,7 +262,7 @@ inline registry::ChangeSet getRegistryPreviewChangeSet(const std::wstring instal
     changes.push_back({ scope, L"Software\\Classes\\regfile\\shell\\preview\\command", std::nullopt, command });
 
     std::wstring icon_path = installationDir;
-    icon_path.append(L"\\WinUI3Apps\\Assets\\RegistryPreview\\app.ico");
+    icon_path.append(L"\\WinUI3Apps\\Assets\\RegistryPreview\\RegistryPreview.ico");
     changes.push_back({ scope, L"Software\\Classes\\regfile\\shell\\preview", L"icon", icon_path });
 
     return { changes };

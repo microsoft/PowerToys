@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Version.props" />
-  
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
@@ -16,20 +16,43 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
-    <RootNamespace>Hosts</RootNamespace>
     <AssemblyName>PowerToys.Hosts</AssemblyName>
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>
-    <ApplicationIcon>Assets/Hosts/Hosts.ico</ApplicationIcon>
     <SelfContained>true</SelfContained>
+    <ApplicationIcon>Assets/Hosts/Hosts.ico</ApplicationIcon>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>PowerToys.Hosts.pri</ProjectPriFileName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\Hosts\AppList.scale-100.png" />
+    <None Remove="Assets\Hosts\AppList.scale-125.png" />
+    <None Remove="Assets\Hosts\AppList.scale-150.png" />
+    <None Remove="Assets\Hosts\AppList.scale-200.png" />
+    <None Remove="Assets\Hosts\AppList.scale-400.png" />
+  </ItemGroup>
+
+  <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">
+    <Message Text="Executing CopyPRIFileToOutputDir task" Importance="High" />
+
+    <ItemGroup>
+      <PRIFile Include="$(OutDir)**\PowerToys.Hosts.pri" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(PRIFile)" DestinationFolder="$(OutDir)" />
+
+    <Message Text="Copied CopyPRIFileToOutputDir files" Importance="High" />
+  </Target>
 
   <ItemGroup>
     <Page Remove="HostsXAML\App.xaml" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="HostsXAML\App.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\Hosts\Hosts.ico" />
   </ItemGroup>
 
   <!-- SelfContained=true requires RuntimeIdentifier to be set -->
@@ -46,38 +69,38 @@
     <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
-  <ItemGroup>
-    <None Remove="Assets\Hosts\AppList.scale-100.png" />
-    <None Remove="Assets\Hosts\AppList.scale-125.png" />
-    <None Remove="Assets\Hosts\AppList.scale-150.png" />
-    <None Remove="Assets\Hosts\AppList.scale-200.png" />
-    <None Remove="Assets\Hosts\AppList.scale-400.png" />
-  </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWinRT" />
-    <PackageReference Include="CommunityToolkit.Mvvm" />
-    <PackageReference Include="CommunityToolkit.WinUI.Converters" />
-    <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
-    <PackageReference Include="CommunityToolkit.WinUI.Collections" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
-    <PackageReference Include="System.IO.Abstractions" />
     <PackageReference Include="WinUIEx" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
+  <!-- 
+    Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
+    Tools extension to be activated for this project even if the Windows App SDK Nuget
+    package has not yet been restored.
+  -->
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
-    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
+    <ProjectReference Include="..\HostsUILib\HostsUILib.csproj" />
   </ItemGroup>
-
+  <!-- 
+    Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution 
+    Explorer "Package and Publish" context menu entry to be enabled for this project even if 
+    the Windows App SDK Nuget package has not yet been restored.
+  -->
+  <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
+  </PropertyGroup>
 </Project>

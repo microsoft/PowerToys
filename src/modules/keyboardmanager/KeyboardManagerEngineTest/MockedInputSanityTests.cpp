@@ -33,20 +33,22 @@ namespace RemappingLogicTests
         TEST_METHOD (MockedInput_ShouldSetKeyboardState_OnKeyEvent)
         {
             // Send key down and key up for A key (0x41) and check keyboard state both times
-            const int nInputs = 1;
-            INPUT input[nInputs] = {};
-            input[0].type = INPUT_KEYBOARD;
-            input[0].ki.wVk = 0x41;
+            std::vector<INPUT> inputs1{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+            };
 
             // Send A keydown
-            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(inputs1);
 
             // A key state should be true
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), true);
-            input[0].ki.dwFlags = KEYEVENTF_KEYUP;
+
+            std::vector<INPUT> inputs2{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A', .dwFlags = KEYEVENTF_KEYUP } },
+            };
 
             // Send A keyup
-            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(inputs2);
 
             // A key state should be false
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
