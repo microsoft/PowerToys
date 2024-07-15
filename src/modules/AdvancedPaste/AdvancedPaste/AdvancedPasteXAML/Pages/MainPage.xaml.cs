@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
@@ -86,6 +87,11 @@ namespace AdvancedPaste.Pages
 
                 _dispatcherQueue.TryEnqueue(async () =>
                 {
+                    // Clear to avoid leaks due to Garbage Collection not clearing the bitmap from memory. Fix for https://github.com/microsoft/PowerToys/issues/33423
+                    clipboardHistory.Where(x => x.Image is not null)
+                                    .ToList()
+                                    .ForEach(x => x.Image.ClearValue(BitmapImage.UriSourceProperty));
+
                     clipboardHistory.Clear();
 
                     foreach (var item in items)
@@ -225,6 +231,7 @@ namespace AdvancedPaste.Pages
             var item = e.ClickedItem as ClipboardItem;
             if (item is not null)
             {
+                PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteClipboardItemClicked());
                 if (!string.IsNullOrEmpty(item.Content))
                 {
                     ClipboardHelper.SetClipboardTextContent(item.Content);

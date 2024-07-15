@@ -661,3 +661,20 @@ bool LastModifiedTime(const std::wstring& filePath, FILETIME* lpFileTime)
     }
     return false;
 }
+
+std::wstring CreateGuidStringWithoutBrackets()
+{
+    GUID guid;
+    if (CoCreateGuid(&guid) == S_OK)
+    {
+        OLECHAR* guidString;
+        if (StringFromCLSID(guid, &guidString) == S_OK)
+        {
+            std::wstring guidStr{ guidString };
+            CoTaskMemFree(guidString);
+            return guidStr.substr(1, guidStr.length() - 2);
+        }
+    }
+
+    return L"";
+}

@@ -25,12 +25,11 @@ namespace AdvancedPaste.ViewModels
     public partial class OptionsViewModel : ObservableObject
     {
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        private readonly IUserSettings _userSettings;
 
         private App app = App.Current as App;
 
         private AICompletionsHelper aiHelper;
-
-        private UserSettings _userSettings;
 
         public DataPackageView ClipboardData { get; set; }
 
@@ -50,10 +49,10 @@ namespace AdvancedPaste.ViewModels
         [NotifyPropertyChangedFor(nameof(InputTxtBoxErrorText))]
         private int _apiRequestStatus;
 
-        public OptionsViewModel()
+        public OptionsViewModel(IUserSettings userSettings)
         {
             aiHelper = new AICompletionsHelper();
-            _userSettings = new UserSettings();
+            _userSettings = userSettings;
 
             IsCustomAIEnabled = IsClipboardDataText && aiHelper.IsAIEnabled;
 

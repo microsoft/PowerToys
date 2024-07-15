@@ -76,9 +76,16 @@ namespace Microsoft.PowerToys.Settings.UI
         /// </summary>
         public App()
         {
-            Logger.InitializeLogger("\\Settings\\Logs");
+            Logger.InitializeLogger(@"\Settings\Logs");
 
-            this.InitializeComponent();
+            InitializeComponent();
+
+            UnhandledException += App_UnhandledException;
+        }
+
+        private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            Logger.LogError("Unhandled exception", e.Exception);
         }
 
         public static void OpenSettingsWindow(Type type = null, bool ensurePageIsSelected = false)
