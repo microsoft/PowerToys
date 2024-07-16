@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -30,7 +29,6 @@ namespace Awake.Core
     {
         private static NotifyIconData _notifyIconData;
         private static ManualResetEvent? _exitSignal;
-        private static IntPtr _hookID = IntPtr.Zero;
 
         private static IntPtr _trayMenu;
 
@@ -64,7 +62,7 @@ namespace Awake.Core
             {
                 CbSize = (uint)Marshal.SizeOf(typeof(MenuInfo)),
                 FMask = Native.Constants.MIM_STYLE,
-                DwStyle = Native.Constants.MNS_AUTODISMISS | Native.Constants.MNS_NOTIFYBYPOS,
+                DwStyle = Native.Constants.MNS_AUTODISMISS,
             };
             Bridge.SetMenuInfo(hMenu, ref menuInfo);
 
@@ -167,8 +165,6 @@ namespace Awake.Core
 
         private static int WndProc(IntPtr hWnd, uint message, IntPtr wParam, IntPtr lParam)
         {
-            Logger.LogInfo($"{message.ToString(CultureInfo.InvariantCulture)} W: {wParam} L: {lParam}");
-
             switch (message)
             {
                 case Native.Constants.WM_USER:
@@ -179,18 +175,6 @@ namespace Awake.Core
                     }
 
                     break;
-                case (uint)TrayCommands.TC_EXIT:
-                    Manager.CompleteExit(0, _exitSignal, true);
-                    break;
-                case (uint)TrayCommands.TC_DISPLAY_SETTING:
-                    Manager.SetDisplay();
-                    break;
-                case (uint)TrayCommands.TC_MODE_INDEFINITE:
-                    Manager.SetIndefiniteKeepAwake();
-                    break;
-                case (uint)TrayCommands.TC_MODE_PASSIVE:
-                    Manager.SetPassiveKeepAwake();
-                    break;
                 case Native.Constants.WM_DESTROY:
                     // Clean up resources when the window is destroyed
                     Bridge.PostQuitMessage(0);
@@ -198,28 +182,37 @@ namespace Awake.Core
                 case Native.Constants.WM_COMMAND:
                     int trayCommandsSize = Enum.GetNames(typeof(TrayCommands)).Length;
 
-                    if (message == (int)Native.Constants.WM_COMMAND)
+                    long targetCommandIndex = wParam.ToInt64() & 0xFFFF;
+
+                    switch (targetCommandIndex)
                     {
-                        long targetCommandIndex = wParam.ToInt64() & 0xFFFF;
-
-                        switch (targetCommandIndex)
-                        {
-                            default:
-                                if (targetCommandIndex >= trayCommandsSize)
+                        case (uint)TrayCommands.TC_EXIT:
+                            Manager.CompleteExit(0, _exitSignal, true);
+                            break;
+                        case (uint)TrayCommands.TC_DISPLAY_SETTING:
+                            Manager.SetDisplay();
+                            break;
+                        case (uint)TrayCommands.TC_MODE_INDEFINITE:
+                            Manager.SetIndefiniteKeepAwake();
+                            break;
+                        case (uint)TrayCommands.TC_MODE_PASSIVE:
+                            Manager.SetPassiveKeepAwake();
+                            break;
+                        default:
+                            if (targetCommandIndex >= trayCommandsSize)
+                            {
+                                AwakeSettings settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName);
+                                if (settings.Properties.CustomTrayTimes.Count == 0)
                                 {
-                                    AwakeSettings settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName);
-                                    if (settings.Properties.CustomTrayTimes.Count == 0)
-                                    {
-                                        settings.Properties.CustomTrayTimes.AddRange(Manager.GetDefaultTrayOptions());
-                                    }
-
-                                    int index = (int)targetCommandIndex - (int)TrayCommands.TC_TIME;
-                                    uint targetTime = (uint)settings.Properties.CustomTrayTimes.ElementAt(index).Value;
-                                    Manager.SetTimedKeepAwake(targetTime);
+                                    settings.Properties.CustomTrayTimes.AddRange(Manager.GetDefaultTrayOptions());
                                 }
 
-                                break;
-                        }
+                                int index = (int)targetCommandIndex - (int)TrayCommands.TC_TIME;
+                                uint targetTime = (uint)settings.Properties.CustomTrayTimes.ElementAt(index).Value;
+                                Manager.SetTimedKeepAwake(targetTime);
+                            }
+
+                            break;
                     }
 
                     break;
@@ -272,9 +265,10 @@ namespace Awake.Core
         public static void SetTray(string text, bool keepDisplayOn, AwakeMode mode, Dictionary<string, int> trayTimeShortcuts, bool startedFromPowerToys)
         {
             // Clear the existing tray menu
-            if (TrayMenu != IntPtr.Zero && Bridge.DestroyMenu(TrayMenu))
+            if (TrayMenu != IntPtr.Zero && !Bridge.DestroyMenu(TrayMenu))
             {
-                Logger.LogError("Failed to destroy menu.");
+                int errorCode = Marshal.GetLastWin32Error();
+                Logger.LogError($"Failed to destroy menu: {errorCode}");
             }
 
             // Create a new tray menu

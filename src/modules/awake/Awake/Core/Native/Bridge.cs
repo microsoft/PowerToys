@@ -15,8 +15,6 @@ namespace Awake.Core.Native
         [UnmanagedFunctionPointer(CallingConvention.Winapi, SetLastError = true)]
         internal delegate int WndProcDelegate(IntPtr hWnd, uint message, IntPtr wParam, IntPtr lParam);
 
-        internal delegate bool EnumThreadDelegate(IntPtr hWnd, IntPtr lParam);
-
         [DllImport("Powrprof.dll", SetLastError = true)]
         internal static extern bool GetPwrCapabilities(out SystemPowerCapabilities lpSystemPowerCapabilities);
 
@@ -65,6 +63,7 @@ namespace Awake.Core.Native
         internal static extern IntPtr SendMessage(IntPtr hWnd, uint msg, nuint wParam, nint lParam);
 
         [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DestroyMenu(IntPtr hMenu);
 
         [DllImport("user32.dll")]
@@ -75,9 +74,6 @@ namespace Awake.Core.Native
 
         [DllImport("shell32.dll")]
         internal static extern bool Shell_NotifyIcon(int dwMessage, ref NotifyIconData pnid);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        internal static extern bool DestroyIcon(IntPtr hIcon);
 
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool TranslateMessage(ref Msg lpMsg);
@@ -98,14 +94,8 @@ namespace Awake.Core.Native
         internal static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
         [DllImport("user32.dll")]
-        internal static extern bool TrackPopupMenu(IntPtr hMenu, uint uFlags, int x, int y, int nReserved, IntPtr hWnd, IntPtr prcRect);
-
-        [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool GetCursorPos(out Point lpPoint);
-
-        [DllImport("user32.dll")]
-        internal static extern IntPtr GetForegroundWindow();
 
         [DllImport("user32.dll")]
         internal static extern bool ScreenToClient(IntPtr hWnd, ref Point lpPoint);

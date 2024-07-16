@@ -7,8 +7,8 @@ namespace Awake.Core.Native
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Win32 API convention.")]
     internal sealed class Constants
     {
-        internal const uint WM_COMMAND = 0x111;
-        internal const uint WM_USER = 0x400U;
+        internal const uint WM_COMMAND = 0x0111;
+        internal const uint WM_USER = 0x0400U;
         internal const uint WM_GETTEXT = 0x000D;
         internal const uint WM_CLOSE = 0x0010;
         internal const int WM_DESTROY = 0x0002;
@@ -54,6 +54,7 @@ namespace Awake.Core.Native
         internal const uint TPM_LEFTALIGN = 0x0000;
         internal const uint TPM_BOTTOMALIGN = 0x0020;
         internal const uint TPM_LEFTBUTTON = 0x0000;
+        internal const uint TPM_RIGHTBUTTON = 0x0002;
 
         internal const uint MNS_CHECKORBMP = 0x04000000;
         internal const uint MNS_AUTODISMISS = 0x10000000;
