@@ -313,6 +313,15 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Launch &amp; Edit.
+        /// </summary>
+        public static string LaunchEdit {
+            get {
+                return ResourceManager.GetString("LaunchEdit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Left.
         /// </summary>
         public static string Left {
@@ -507,6 +516,15 @@ namespace ProjectsEditor.Properties {
         public static string Recently {
             get {
                 return ResourceManager.GetString("Recently", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Revert.
+        /// </summary>
+        public static string Revert {
+            get {
+                return ResourceManager.GetString("Revert", resourceCulture);
             }
         }
         

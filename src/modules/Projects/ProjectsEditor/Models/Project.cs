@@ -124,6 +124,21 @@ namespace ProjectsEditor.Models
             get => Name.Length > 0 && Applications.Count > 0;
         }
 
+        private bool _isRevertEnabled;
+
+        public bool IsRevertEnabled
+        {
+            get => _isRevertEnabled;
+            set
+            {
+                if (_isRevertEnabled != value)
+                {
+                    _isRevertEnabled = value;
+                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsRevertEnabled)));
+                }
+            }
+        }
+
         private bool _isPopupVisible;
 
         [JsonIgnore]

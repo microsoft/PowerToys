@@ -142,7 +142,7 @@ namespace ProjectsEditor.Utils
 
                 // draw the minimized windows
                 Rectangle rectMinimized = new Rectangle(0, Scaled((bounds.Height * 1.02) + (horizontalGaps.Count * gapHeight)), Scaled(bounds.Width + (verticalGaps.Count * gapWidth)), Scaled(bounds.Height * 0.18));
-                DrawWindow(g, brush, brushForHighlight, rectMinimized, project.Applications.Where(x => x.Minimized));
+                DrawWindow(g, brush, brushForHighlight, rectMinimized, appsIncluded.Where(x => x.Minimized));
             }
 
             using (var memory = new MemoryStream())
