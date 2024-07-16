@@ -1364,6 +1364,7 @@ EXHIBIT A -Mozilla Public License.
 - System.Security.Cryptography.ProtectedData 8.0.0
 - System.ServiceProcess.ServiceController 8.0.0
 - System.Text.Encoding.CodePages 8.0.0
+- System.Text.Json 8.0.4
 - UnicodeInformation 2.6.0
 - UnitsNet 5.50.0
 - UTF.Unknown 2.5.1
