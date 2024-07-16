@@ -152,7 +152,7 @@
                             Margin="100 5 0 0">
                             <CheckBox
                                 Content="{x:Static props:Resources.LaunchAsAdmin}"
-                                IsChecked="{Binding LaunchesAsAdmin, Mode=TwoWay}"
+                                IsChecked="{Binding IsElevated, Mode=TwoWay}"
                                 MinWidth="10"/>
                             <CheckBox
                                 Margin="15 0 0 0"

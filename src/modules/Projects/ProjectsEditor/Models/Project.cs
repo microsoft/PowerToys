@@ -216,7 +216,7 @@ namespace ProjectsEditor.Models
                     AppTitle = item.AppTitle,
                     CommandLineArguments = item.CommandLineArguments,
                     PackageFullName = item.PackageFullName,
-                    LaunchesAsAdmin = item.LaunchesAsAdmin,
+                    IsElevated = item.IsElevated,
                     Minimized = item.Minimized,
                     Maximized = item.Maximized,
                     MonitorNumber = item.MonitorNumber,

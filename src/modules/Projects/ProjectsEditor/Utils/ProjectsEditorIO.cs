@@ -94,7 +94,7 @@ namespace ProjectsEditor.Utils
                     PackageFullName = app.PackageFullName,
                     Parent = newProject,
                     CommandLineArguments = app.CommandLineArguments,
-                    LaunchesAsAdmin = app.LaunchesAsAdmin,
+                    IsElevated = app.IsElevated,
                     Maximized = app.Maximized,
                     Minimized = app.Minimized,
                     IsNotFound = false,
@@ -149,7 +149,7 @@ namespace ProjectsEditor.Utils
                         Title = app.AppTitle,
                         PackageFullName = app.PackageFullName,
                         CommandLineArguments = app.CommandLineArguments,
-                        LaunchesAsAdmin = app.LaunchesAsAdmin,
+                        IsElevated = app.IsElevated,
                         Maximized = app.Maximized,
                         Minimized = app.Minimized,
                         Position = new ProjectData.ApplicationWrapper.WindowPositionWrapper

@@ -29,6 +29,7 @@ struct Project
         std::wstring path;
         std::wstring packageFullName;
         std::wstring commandLineArgs;
+        bool isElevated{};
         bool isMinimized{};
         bool isMaximized{};
         Position position{};
@@ -137,6 +138,7 @@ namespace JsonUtils
                 const static wchar_t* AppPackageFullNameID = L"package-full-name";
                 const static wchar_t* AppTitleID = L"title";
                 const static wchar_t* CommandLineArgsID = L"command-line-arguments";
+                const static wchar_t* ElevatedID = L"is-elevated";
                 const static wchar_t* MinimizedID = L"minimized";
                 const static wchar_t* MaximizedID = L"maximized";
                 const static wchar_t* PositionID = L"position";
@@ -151,6 +153,7 @@ namespace JsonUtils
                 json.SetNamedValue(NonLocalizable::AppTitleID, json::value(data.title));
                 json.SetNamedValue(NonLocalizable::AppPackageFullNameID, json::value(data.packageFullName));
                 json.SetNamedValue(NonLocalizable::CommandLineArgsID, json::value(data.commandLineArgs));
+                json.SetNamedValue(NonLocalizable::ElevatedID, json::value(data.isElevated));
                 json.SetNamedValue(NonLocalizable::MinimizedID, json::value(data.isMinimized));
                 json.SetNamedValue(NonLocalizable::MaximizedID, json::value(data.isMaximized));
                 json.SetNamedValue(NonLocalizable::PositionID, PositionJSON::ToJson(data.position));
@@ -177,6 +180,12 @@ namespace JsonUtils
                     }
                     
                     result.commandLineArgs = json.GetNamedString(NonLocalizable::CommandLineArgsID);
+
+                    if (json.HasKey(NonLocalizable::ElevatedID))
+                    {
+                        result.isElevated = json.GetNamedBoolean(NonLocalizable::ElevatedID);
+                    }
+                    
                     result.isMaximized = json.GetNamedBoolean(NonLocalizable::MaximizedID);
                     result.isMinimized = json.GetNamedBoolean(NonLocalizable::MinimizedID);
                     result.monitor = static_cast<int>(json.GetNamedNumber(NonLocalizable::MonitorID));
