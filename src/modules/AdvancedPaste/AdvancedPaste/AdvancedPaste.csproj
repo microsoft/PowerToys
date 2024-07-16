@@ -62,7 +62,7 @@
     <PackageReference Include="Azure.AI.OpenAI" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="CommunityToolkit.WinUI.Animations" />
-	<PackageReference Include="CommunityToolkit.WinUI.Converters" />
+    <PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
@@ -74,7 +74,8 @@
     <!-- HACK: To align Microsoft.Bcl.AsyncInterfaces.dll version with PowerToys.Settings.csproj. -->
     <PackageReference Include="StreamJsonRpc" />
     <PackageReference Include="WinUIEx" />
-
+    <!-- HACK: To make sure the version pulled in by Microsoft.Extensions.Hosting is current. -->
+    <PackageReference Include="System.Text.Json" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
