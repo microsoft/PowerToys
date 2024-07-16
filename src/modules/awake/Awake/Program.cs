@@ -298,7 +298,7 @@ namespace Awake
                     .Select(e => e.EventArgs)
                     .Subscribe(HandleAwakeConfigChange);
 
-                TrayHelper.SetTray(Core.Constants.FullAppName, Manager.ModuleSettings!.GetSettings<AwakeSettings>(Core.Constants.AppName) ?? new AwakeSettings(), _startedFromPowerToys);
+                TrayHelper.SetTray(Manager.ModuleSettings!.GetSettings<AwakeSettings>(Core.Constants.AppName) ?? new AwakeSettings(), _startedFromPowerToys);
 
                 // Initially the file might not be updated, so we need to start processing
                 // settings right away.
@@ -363,7 +363,7 @@ namespace Awake
                             }
                     }
 
-                    TrayHelper.SetTray(Core.Constants.FullAppName, settings, _startedFromPowerToys);
+                    TrayHelper.SetTray(settings, _startedFromPowerToys);
                 }
                 else
                 {

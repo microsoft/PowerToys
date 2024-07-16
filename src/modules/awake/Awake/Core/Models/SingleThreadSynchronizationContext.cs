@@ -11,7 +11,7 @@ namespace Awake.Core.Models
     internal sealed class SingleThreadSynchronizationContext : SynchronizationContext
     {
         private readonly Queue<Tuple<SendOrPostCallback, object>> queue =
-            new Queue<Tuple<SendOrPostCallback, object>>();
+            new();
 
 #pragma warning disable CS8765 // Nullability of type of parameter doesn't match overridden member (possibly because of nullability attributes).
         public override void Post(SendOrPostCallback d, object state)
@@ -26,23 +26,25 @@ namespace Awake.Core.Models
 
         public void BeginMessageLoop()
         {
-            lock (queue)
+            while (true)
             {
-                while (true)
+                Tuple<SendOrPostCallback, object> work;
+                lock (queue)
                 {
-                    if (queue.Count == 0)
+                    while (queue.Count == 0)
                     {
                         Monitor.Wait(queue);
                     }
 
-                    var work = queue.Dequeue();
-                    if (work == null)
-                    {
-                        break;
-                    }
-
-                    work.Item1(work.Item2);
+                    work = queue.Dequeue();
                 }
+
+                if (work == null)
+                {
+                    break;
+                }
+
+                work.Item1(work.Item2);
             }
         }
 

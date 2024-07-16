@@ -252,60 +252,92 @@ namespace Awake.Core
             syncContext.BeginMessageLoop();
         }
 
-        internal static void SetTray(string text, AwakeSettings settings, bool startedFromPowerToys)
+        internal static void SetTray(AwakeSettings settings, bool startedFromPowerToys)
         {
             SetTray(
-                text,
                 settings.Properties.KeepDisplayOn,
                 settings.Properties.Mode,
                 settings.Properties.CustomTrayTimes,
                 startedFromPowerToys);
         }
 
-        public static void SetTray(string text, bool keepDisplayOn, AwakeMode mode, Dictionary<string, int> trayTimeShortcuts, bool startedFromPowerToys)
+        public static void SetTray(bool keepDisplayOn, AwakeMode mode, Dictionary<string, int> trayTimeShortcuts, bool startedFromPowerToys)
         {
-            // Clear the existing tray menu
+            ClearExistingTrayMenu();
+            CreateNewTrayMenu(startedFromPowerToys, keepDisplayOn, mode);
+
+            InsertAwakeModeMenuItems(mode);
+
+            EnsureDefaultTrayTimeShortcuts(trayTimeShortcuts);
+            CreateAwakeTimeSubMenu(trayTimeShortcuts);
+        }
+
+        private static void ClearExistingTrayMenu()
+        {
             if (TrayMenu != IntPtr.Zero && !Bridge.DestroyMenu(TrayMenu))
             {
                 int errorCode = Marshal.GetLastWin32Error();
                 Logger.LogError($"Failed to destroy menu: {errorCode}");
             }
+        }
 
-            // Create a new tray menu
+        private static void CreateNewTrayMenu(bool startedFromPowerToys, bool keepDisplayOn, AwakeMode mode)
+        {
             TrayMenu = Bridge.CreatePopupMenu();
-
-            if (TrayMenu != IntPtr.Zero)
+            if (TrayMenu == IntPtr.Zero)
             {
-                if (!startedFromPowerToys)
-                {
-                    // Insert menu items for exiting Awake if not started from PowerToys
-                    Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING, (uint)TrayCommands.TC_EXIT, Resources.AWAKE_EXIT);
-                    Bridge.InsertMenu(TrayMenu, 1, Native.Constants.MF_BYPOSITION | Native.Constants.MF_SEPARATOR, 0, string.Empty);
-                }
-
-                // Insert menu item for toggling display setting
-                Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING | (keepDisplayOn ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED) | (mode == AwakeMode.PASSIVE ? Native.Constants.MF_DISABLED : Native.Constants.MF_ENABLED), (uint)TrayCommands.TC_DISPLAY_SETTING, Resources.AWAKE_KEEP_SCREEN_ON);
+                return;
             }
 
-            // Ensure there are default tray time shortcuts
+            if (!startedFromPowerToys)
+            {
+                InsertMenuItem(0, TrayCommands.TC_EXIT, Resources.AWAKE_EXIT);
+                InsertSeparator(1);
+            }
+
+            InsertMenuItem(0, TrayCommands.TC_DISPLAY_SETTING, Resources.AWAKE_KEEP_SCREEN_ON, keepDisplayOn, mode == AwakeMode.PASSIVE);
+        }
+
+        private static void InsertMenuItem(int position, TrayCommands command, string text, bool checkedState = false, bool disabled = false)
+        {
+            uint state = Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING;
+            state |= checkedState ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED;
+            state |= disabled ? Native.Constants.MF_DISABLED : Native.Constants.MF_ENABLED;
+
+            Bridge.InsertMenu(TrayMenu, (uint)position, state, (uint)command, text);
+        }
+
+        private static void InsertSeparator(int position)
+        {
+            Bridge.InsertMenu(TrayMenu, (uint)position, Native.Constants.MF_BYPOSITION | Native.Constants.MF_SEPARATOR, 0, string.Empty);
+        }
+
+        private static void EnsureDefaultTrayTimeShortcuts(Dictionary<string, int> trayTimeShortcuts)
+        {
             if (trayTimeShortcuts.Count == 0)
             {
                 trayTimeShortcuts.AddRange(Manager.GetDefaultTrayOptions());
             }
+        }
 
-            // Create a submenu for awake time options
+        private static void CreateAwakeTimeSubMenu(Dictionary<string, int> trayTimeShortcuts)
+        {
             var awakeTimeMenu = Bridge.CreatePopupMenu();
             for (int i = 0; i < trayTimeShortcuts.Count; i++)
             {
                 Bridge.InsertMenu(awakeTimeMenu, (uint)i, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING, (uint)TrayCommands.TC_TIME + (uint)i, trayTimeShortcuts.ElementAt(i).Key);
             }
 
-            // Insert menu items for different awake modes
-            Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_SEPARATOR, 0, string.Empty);
-            Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING | (mode == AwakeMode.PASSIVE ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_PASSIVE, Resources.AWAKE_OFF);
-            Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING | (mode == AwakeMode.INDEFINITE ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_INDEFINITE, Resources.AWAKE_KEEP_INDEFINITELY);
-            Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_POPUP | (mode == AwakeMode.TIMED ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)awakeTimeMenu, Resources.AWAKE_KEEP_ON_INTERVAL);
-            Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING | Native.Constants.MF_DISABLED | (mode == AwakeMode.EXPIRABLE ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_EXPIRABLE, Resources.AWAKE_KEEP_UNTIL_EXPIRATION);
+            Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_POPUP, (uint)awakeTimeMenu, Resources.AWAKE_KEEP_ON_INTERVAL);
+        }
+
+        private static void InsertAwakeModeMenuItems(AwakeMode mode)
+        {
+            InsertSeparator(0);
+
+            InsertMenuItem(0, TrayCommands.TC_MODE_PASSIVE, Resources.AWAKE_OFF, mode == AwakeMode.PASSIVE);
+            InsertMenuItem(0, TrayCommands.TC_MODE_INDEFINITE, Resources.AWAKE_KEEP_INDEFINITELY, mode == AwakeMode.INDEFINITE);
+            InsertMenuItem(0, TrayCommands.TC_MODE_EXPIRABLE, Resources.AWAKE_KEEP_UNTIL_EXPIRATION, mode == AwakeMode.EXPIRABLE, true);
         }
     }
 }
