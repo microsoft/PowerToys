@@ -149,7 +149,7 @@ namespace AdvancedPaste.Helpers
                         // A CSV line is valid, if the delimiter occurs more or equal times in every line compared to the first data line. (More because sometimes the delimiter occurs in a data string.)
                         if (line.Count(x => x == delim) >= delimCount)
                         {
-                            csv.Add(line.Split(delim));
+                            csv.Add(Regex.Split(line, delim + @"(?=(?:[^""]*""[^""]*"")*(?![^""]*""))"));
                         }
                         else
                         {
