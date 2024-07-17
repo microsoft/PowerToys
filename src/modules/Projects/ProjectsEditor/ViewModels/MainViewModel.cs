@@ -245,11 +245,13 @@ namespace ProjectsEditor.ViewModels
             project.Name = projectBeforeLaunch.Name;
             project.IsRevertEnabled = true;
             editPage.DataContext = project;
+            project.Initialize();
         }
 
         internal void RevertLaunch()
         {
             editPage.DataContext = projectBeforeLaunch;
+            projectBeforeLaunch.Initialize();
         }
 
         public void EditProject(Project selectedProject, bool isNewlyCreated = false)
