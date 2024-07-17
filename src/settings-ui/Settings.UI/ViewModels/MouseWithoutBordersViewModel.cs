@@ -104,6 +104,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Settings.Properties.UseService = value;
                     OnPropertyChanged(nameof(UseService));
                     OnPropertyChanged(nameof(CanUninstallService));
+                    OnPropertyChanged(nameof(ShowInfobarRunAsAdminText));
 
                     // Must block here until the process exits
                     Task.Run(async () =>
@@ -624,6 +625,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _isEnabled = value;
                     GeneralSettingsConfig.Enabled.MouseWithoutBorders = value;
                     OnPropertyChanged(nameof(IsEnabled));
+                    OnPropertyChanged(nameof(ShowInfobarRunAsAdminText));
+                    OnPropertyChanged(nameof(ShowInfobarCannotDragDropAsAdmin));
                     OnPropertyChanged(nameof(ShowPolicyConfiguredInfoForBehaviorSettings));
                     OnPropertyChanged(nameof(ShowPolicyConfiguredInfoForName2IPSetting));
                     OnPropertyChanged(nameof(ShowPolicyConfiguredInfoForOriginalUiSetting));
@@ -1192,6 +1195,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
+
+            // Skip saving settings for UI properties
+            if (propertyName == nameof(ShowInfobarCannotDragDropAsAdmin) ||
+                propertyName == nameof(ShowInfobarRunAsAdminText))
+            {
+                return;
+            }
+
             SettingsUtils.SaveSettings(Settings.ToJsonString(), MouseWithoutBordersSettings.ModuleName);
 
             if (propertyName == nameof(UseService))
@@ -1227,6 +1238,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     || _clipboardSharingEnabledIsGPOConfigured || _fileTransferEnabledIsGPOConfigured
                     || _sameSubnetOnlyIsGPOConfigured || _validateRemoteIpIsGPOConfigured);
             }
+        }
+
+        public bool ShowInfobarCannotDragDropAsAdmin
+        {
+            get { return IsElevated && IsEnabled; }
+        }
+
+        public bool ShowInfobarRunAsAdminText
+        {
+            get { return !CanToggleUseService && IsEnabled; }
         }
     }
 }

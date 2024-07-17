@@ -478,6 +478,8 @@ namespace MouseWithoutBorders.Class
             }
         }
 
+        // Note(@htcfreek): Settings UI CheckBox is disabled in frmMatrix.cs > FrmMatrix_Load()
+        // Note(@htcfreek): If this settings gets implemented in the future we need a Group Policy for it!
         internal bool DisableCAD
         {
             get
@@ -486,6 +488,8 @@ namespace MouseWithoutBorders.Class
             }
         }
 
+        // Note(@htcfreek): Settings UI CheckBox is disabled in frmMatrix.cs > FrmMatrix_Load()
+        // Note(@htcfreek): If this settings gets implemented in the future we need a Group Policy for it!
         internal bool HideLogonLogo
         {
             get
@@ -1101,6 +1105,7 @@ namespace MouseWithoutBorders.Class
             }
         }
 
+        // Note(@htcfreek): Settings UI CheckBox is disabled in frmMatrix.cs > FrmMatrix_Load()
         internal bool SendErrorLogV2
         {
             get
