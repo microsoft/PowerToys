@@ -134,53 +134,25 @@ namespace FancyZones
     }
 }
 
-bool LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs)
+bool LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated)
 {
-    STARTUPINFO startupInfo;
-    ZeroMemory(&startupInfo, sizeof(startupInfo));
-    startupInfo.cb = sizeof(startupInfo);
+    SHELLEXECUTEINFO sei = { 0 };
+    sei.cbSize = sizeof(SHELLEXECUTEINFO);
+    sei.hwnd = nullptr;
+    sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE;
+    sei.lpVerb = elevated ? L"runas" : L"open";
+    sei.lpFile = appPath.c_str();
+    sei.lpParameters = commandLineArgs.c_str();
+    sei.lpDirectory = nullptr;
+    sei.nShow = SW_SHOWNORMAL;
 
-    PROCESS_INFORMATION processInfo;
-    ZeroMemory(&processInfo, sizeof(processInfo));
-
-    std::wstring fullCommandLine = L"\"" + appPath + L"\" " + commandLineArgs;
-    if (CreateProcess(nullptr, fullCommandLine.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &startupInfo, &processInfo))
-    {
-        CloseHandle(processInfo.hProcess);
-        CloseHandle(processInfo.hThread);
-
-        return true;
-    }
-    else
+    if (!ShellExecuteEx(&sei))
     {
         Logger::error(L"Failed to launch process. {}", get_last_error_or_default(GetLastError()));
+        return false;
     }
 
-    return false;
-}
-
-bool LaunchUsingUriProtocolName(const std::wstring& uriProtocolName, const std::wstring& commandLineArgs)
-{
-    std::wstring command = std::wstring(uriProtocolName + (commandLineArgs.starts_with(L":") ? L"" : L":") + commandLineArgs);
-    HINSTANCE result = ShellExecute(
-        nullptr,
-        L"open",
-        command.c_str(),
-        nullptr,
-        nullptr,
-        SW_SHOWNORMAL
-    );
-
-    // If the function succeeds, it returns a value greater than 32.
-    if (result > reinterpret_cast<HINSTANCE>(32))
-    {
-		return true;
-	}
-    else
-    {
-		Logger::error(L"Failed to launch process. {}", get_last_error_or_default(GetLastError()));
-        return false;
-	}
+    return true;
 }
 
 bool LaunchPackagedApp(const std::wstring& packageFullName)
@@ -219,24 +191,29 @@ bool LaunchPackagedApp(const std::wstring& packageFullName)
 bool Launch(const Project::Application& app)
 { 
     bool launched { false };
-    if (!app.packageFullName.empty() && app.commandLineArgs.empty())
+    if (!app.packageFullName.empty() && app.commandLineArgs.empty() && !app.isElevated)
     {
-        Logger::trace(L"Launching packaged without command line args {}", app.name);
+        Logger::trace(L"Launching packaged app {}", app.name);
         launched = LaunchPackagedApp(app.packageFullName);
     }
-    else if (!app.packageFullName.empty() && !app.commandLineArgs.empty())
+
+    if (!launched && !app.packageFullName.empty())
     {
         auto names = RegistryUtils::GetUriProtocolNames(app.packageFullName);
         if (!names.empty())
         {
             Logger::trace(L"Launching packaged by protocol with command line args {}", app.name);
-            launched = LaunchUsingUriProtocolName(names[0], app.commandLineArgs);
-		}
+
+            std::wstring uriProtocolName = names[0];
+            std::wstring command = std::wstring(uriProtocolName + (app.commandLineArgs.starts_with(L":") ? L"" : L":") + app.commandLineArgs);
+   
+            launched = LaunchApp(command, L"", app.isElevated);
+        }
         else
         {
             Logger::info(L"Uri protocol names not found for {}", app.packageFullName);
         }
-	}
+    }
     
     if (!launched)
     {
@@ -249,7 +226,7 @@ bool Launch(const Project::Application& app)
             return false;
         }
 
-        launched = LaunchApp(app.path, app.commandLineArgs);
+        launched = LaunchApp(app.path, app.commandLineArgs, app.isElevated);
     }
 
     Logger::trace(L"{} {} at {}", app.name, (launched ? L"launched" : L"not launched"), app.path);

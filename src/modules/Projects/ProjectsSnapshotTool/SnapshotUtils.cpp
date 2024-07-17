@@ -147,6 +147,32 @@ namespace SnapshotUtils
         return commandLineArgs;
     }
 
+    bool IsProcessElevated(DWORD processID)
+    {
+        HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, processID);
+        if (!hProcess)
+        {
+            return false;
+        }
+
+        HANDLE hToken = NULL;
+        if (!OpenProcessToken(hProcess, TOKEN_QUERY, &hToken))
+        {
+            return false;
+        }
+
+        TOKEN_ELEVATION elevation;
+        DWORD cbSize = sizeof(TOKEN_ELEVATION);
+        if (!GetTokenInformation(hToken, TokenElevation, &elevation, sizeof(elevation), &cbSize))
+        {
+            CloseHandle(hToken);
+            return false;
+        }
+
+        CloseHandle(hToken);
+        return elevation.TokenIsElevated;
+    }
+
     std::vector<Project::Application> GetApps(const std::function<unsigned int(HWND)> getMonitorNumberFromWindowHandle)
     {
         std::vector<Project::Application> apps{};
@@ -219,6 +245,7 @@ namespace SnapshotUtils
                 .path = processPath,
                 .packageFullName = data.value().packageFullName,
                 .commandLineArgs = L"", // GetCommandLineArgs(pid, wbemHelper),
+                .isElevated = IsProcessElevated(pid),
                 .isMinimized = WindowUtils::IsMinimized(window),
                 .isMaximized = WindowUtils::IsMaximized(window),
                 .position = Project::Application::Position{

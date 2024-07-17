@@ -47,14 +47,14 @@ namespace ProjectsEditor.Models
 
         public string CommandLineArguments { get; set; }
 
-        private bool _launchesAsAdmin;
+        private bool _isElevated;
 
-        public bool LaunchesAsAdmin
+        public bool IsElevated
         {
-            get => _launchesAsAdmin;
+            get => _isElevated;
             set
             {
-                _launchesAsAdmin = value;
+                _isElevated = value;
                 OnPropertyChanged(new PropertyChangedEventArgs(nameof(AppMainParams)));
             }
         }
@@ -109,7 +109,7 @@ namespace ProjectsEditor.Models
         {
             get
             {
-                _appMainParams = _launchesAsAdmin ? Properties.Resources.Admin : string.Empty;
+                _appMainParams = _isElevated ? Properties.Resources.Admin : string.Empty;
                 if (!string.IsNullOrWhiteSpace(CommandLineArguments))
                 {
                     _appMainParams += (_appMainParams == string.Empty ? string.Empty : " | ") + Properties.Resources.Args + ": " + CommandLineArguments;

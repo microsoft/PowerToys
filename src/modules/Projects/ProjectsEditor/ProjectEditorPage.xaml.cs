@@ -18,7 +18,7 @@ namespace ProjectsEditor
     /// </summary>
     public partial class ProjectEditor : Page
     {
-        private const double ScrollSpeed = 20;
+        private const double ScrollSpeed = 15;
         private MainViewModel _mainViewModel;
 
         public ProjectEditor(MainViewModel mainViewModel)
