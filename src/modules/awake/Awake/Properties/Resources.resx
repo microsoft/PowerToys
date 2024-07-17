@@ -183,4 +183,16 @@
   <data name="AWAKE_EXIT_SIGNAL_MESSAGE" xml:space="preserve">
     <value>Received a signal to end the process. Making sure we quit...</value>
   </data>
+  <data name="AWAKE_TRAY_TEXT_EXPIRATION" xml:space="preserve">
+    <value>Expiring</value>
+  </data>
+  <data name="AWAKE_TRAY_TEXT_INDEFINITE" xml:space="preserve">
+    <value>Indefinite</value>
+  </data>
+  <data name="AWAKE_TRAY_TEXT_OFF" xml:space="preserve">
+    <value>Passive</value>
+  </data>
+  <data name="AWAKE_TRAY_TEXT_TIMED" xml:space="preserve">
+    <value>Timed</value>
+  </data>
 </root>

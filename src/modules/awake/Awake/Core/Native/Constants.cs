@@ -46,6 +46,7 @@ namespace Awake.Core.Native
         internal const int NIF_INFO = 0x00000010;
         internal const int NIM_ADD = 0x00000000;
         internal const int NIM_DELETE = 0x00000002;
+        internal const int NIM_MODIFY = 0x00000001;
 
         internal const uint PM_REMOVE = 0x0001;
 

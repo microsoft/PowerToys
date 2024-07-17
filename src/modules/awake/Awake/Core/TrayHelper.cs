@@ -34,9 +34,14 @@ namespace Awake.Core
 
         private static IntPtr TrayMenu { get => _trayMenu; set => _trayMenu = value; }
 
+        private static IntPtr _hiddenWindowHandle;
+
+        internal static IntPtr HiddenWindowHandle { get => _hiddenWindowHandle; private set => _hiddenWindowHandle = value; }
+
         static TrayHelper()
         {
             TrayMenu = IntPtr.Zero;
+            HiddenWindowHandle = IntPtr.Zero;
         }
 
         public static void InitializeTray(string text, Icon icon, ManualResetEvent? exitSignal)
@@ -85,7 +90,6 @@ namespace Awake.Core
             {
                 RunOnMainThread(() =>
                 {
-                    // Register window class
                     WndClassEx wcex = new()
                     {
                         CbSize = (uint)Marshal.SizeOf(typeof(WndClassEx)),
@@ -98,17 +102,16 @@ namespace Awake.Core
                         HCursor = IntPtr.Zero,
                         HbrBackground = IntPtr.Zero,
                         LpszMenuName = string.Empty,
-                        LpszClassName = "Awake.MessageWindow",
+                        LpszClassName = Constants.TrayWindowId,
                         HIconSm = IntPtr.Zero,
                     };
 
                     Bridge.RegisterClassEx(ref wcex);
 
-                    // Create window
                     hWnd = Bridge.CreateWindowEx(
                         0,
-                        "Awake.MessageWindow",
-                        "PowerToys Awake",
+                        Constants.TrayWindowId,
+                        text,
                         0x00CF0000 | 0x00000001 | 0x00000008, // WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_MINIMIZEBOX
                         0,
                         0,
@@ -123,35 +126,68 @@ namespace Awake.Core
                     {
                         int errorCode = Marshal.GetLastWin32Error();
                         throw new Win32Exception(errorCode, "Failed to add tray icon. Error code: " + errorCode);
-
-                        // return; // Exit the method if window creation fails
                     }
 
-                    _notifyIconData = new NotifyIconData
-                    {
-                        CbSize = Marshal.SizeOf(typeof(NotifyIconData)),
-                        HWnd = hWnd,
-                        UId = 1000,
-                        UFlags = Native.Constants.NIF_ICON | Native.Constants.NIF_TIP | Native.Constants.NIF_MESSAGE,
-                        UCallbackMessage = (int)Native.Constants.WM_USER,
-                        HIcon = icon.Handle,
-                        SzTip = text,
-                    };
+                    // Keep this as a reference because we will need it when we update
+                    // the tray icon in the future.
+                    HiddenWindowHandle = hWnd;
 
-                    // Show and update window
                     Bridge.ShowWindow(hWnd, 0); // SW_HIDE
                     Bridge.UpdateWindow(hWnd);
 
-                    if (!Bridge.Shell_NotifyIcon(Native.Constants.NIM_ADD, ref _notifyIconData))
-                    {
-                        int errorCode = Marshal.GetLastWin32Error();
-                        throw new Win32Exception(errorCode, "Failed to add tray icon. Error code: " + errorCode);
-                    }
+                    SetShellIcon(hWnd, text, icon);
 
-                    // Run the message loop
                     RunMessageLoop();
                 });
             });
+        }
+
+        internal static void SetShellIcon(IntPtr hWnd, string text, Icon? icon, TrayIconAction action = TrayIconAction.Add)
+        {
+            int message = Native.Constants.NIM_ADD;
+
+            switch (action)
+            {
+                case TrayIconAction.Update:
+                    message = Native.Constants.NIM_MODIFY;
+                    break;
+                case TrayIconAction.Delete:
+                    message = Native.Constants.NIM_DELETE;
+                    break;
+                case TrayIconAction.Add:
+                default:
+                    break;
+            }
+
+            if (action == TrayIconAction.Add || action == TrayIconAction.Update)
+            {
+                _notifyIconData = new NotifyIconData
+                {
+                    CbSize = Marshal.SizeOf(typeof(NotifyIconData)),
+                    HWnd = hWnd,
+                    UId = 1000,
+                    UFlags = Native.Constants.NIF_ICON | Native.Constants.NIF_TIP | Native.Constants.NIF_MESSAGE,
+                    UCallbackMessage = (int)Native.Constants.WM_USER,
+                    HIcon = icon!.Handle,
+                    SzTip = text,
+                };
+            }
+            else
+            {
+                _notifyIconData = new NotifyIconData
+                {
+                    CbSize = Marshal.SizeOf(typeof(NotifyIconData)),
+                    HWnd = hWnd,
+                    UId = 1000,
+                    UFlags = 0,
+                };
+            }
+
+            if (!Bridge.Shell_NotifyIcon(message, ref _notifyIconData))
+            {
+                int errorCode = Marshal.GetLastWin32Error();
+                throw new Win32Exception(errorCode, $"Failed to change tray icon. Action: {action} and error code: {errorCode}");
+            }
         }
 
         private static void RunMessageLoop()
@@ -292,10 +328,10 @@ namespace Awake.Core
             if (!startedFromPowerToys)
             {
                 InsertMenuItem(0, TrayCommands.TC_EXIT, Resources.AWAKE_EXIT);
-                InsertSeparator(1);
             }
 
             InsertMenuItem(0, TrayCommands.TC_DISPLAY_SETTING, Resources.AWAKE_KEEP_SCREEN_ON, keepDisplayOn, mode == AwakeMode.PASSIVE);
+            InsertSeparator(1);
         }
 
         private static void InsertMenuItem(int position, TrayCommands command, string text, bool checkedState = false, bool disabled = false)

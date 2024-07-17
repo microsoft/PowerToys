@@ -5,7 +5,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Reactive.Linq;
@@ -147,6 +149,8 @@ namespace Awake.Core
                     currentSettings.Properties.KeepDisplayOn = keepDisplayOn;
                     ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
                 }
+
+                TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_INDEFINITE}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/awake.ico")), TrayIconAction.Update);
             }
             catch (Exception ex)
             {
@@ -166,6 +170,8 @@ namespace Awake.Core
             {
                 Logger.LogInfo($"Starting expirable log for {expireAt}");
                 _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
+
+                TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_EXPIRATION}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/awake.ico")), TrayIconAction.Update);
 
                 Observable.Timer(expireAt - DateTimeOffset.Now).Subscribe(
                 _ =>
@@ -215,8 +221,9 @@ namespace Awake.Core
             CancelExistingThread();
 
             Logger.LogInfo($"Timed keep awake started for {seconds} seconds.");
-
             _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
+
+            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/awake.ico")), TrayIconAction.Update);
 
             Observable.Timer(TimeSpan.FromSeconds(seconds)).Subscribe(
             _ =>
@@ -256,11 +263,13 @@ namespace Awake.Core
         {
             SetPassiveKeepAwake();
 
-            IntPtr windowHandle = GetHiddenWindow();
-
-            if (windowHandle != IntPtr.Zero)
+            if (TrayHelper.HiddenWindowHandle != IntPtr.Zero)
             {
-                Bridge.SendMessage(windowHandle, Native.Constants.WM_CLOSE, 0, 0);
+                // Delete the icon.
+                TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, string.Empty, null, TrayIconAction.Delete);
+
+                // Close the message window that we used for the tray.
+                Bridge.SendMessage(TrayHelper.HiddenWindowHandle, Native.Constants.WM_CLOSE, 0, 0);
             }
 
             if (force)
@@ -271,7 +280,7 @@ namespace Awake.Core
             try
             {
                 exitSignal?.Set();
-                Bridge.DestroyWindow(windowHandle);
+                Bridge.DestroyWindow(TrayHelper.HiddenWindowHandle);
             }
             catch (Exception ex)
             {
@@ -301,47 +310,6 @@ namespace Awake.Core
                 Logger.LogError($"Could not get registry key for the build number. Error: {ex.Message}");
                 return string.Empty;
             }
-        }
-
-        [SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Function returns DWORD value that identifies the current thread, but we do not need it.")]
-        internal static IEnumerable<IntPtr> EnumerateWindowsForProcess(int processId)
-        {
-            var handles = new List<IntPtr>();
-            var hCurrentWnd = IntPtr.Zero;
-
-            do
-            {
-                hCurrentWnd = Bridge.FindWindowEx(IntPtr.Zero, hCurrentWnd, null as string, null);
-                Bridge.GetWindowThreadProcessId(hCurrentWnd, out uint targetProcessId);
-
-                if (targetProcessId == processId)
-                {
-                    handles.Add(hCurrentWnd);
-                }
-            }
-            while (hCurrentWnd != IntPtr.Zero);
-
-            return handles;
-        }
-
-        [SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "In this context, the string is only converted to a hex value.")]
-        internal static IntPtr GetHiddenWindow()
-        {
-            IEnumerable<IntPtr> windowHandles = EnumerateWindowsForProcess(Environment.ProcessId);
-            var domain = AppDomain.CurrentDomain.GetHashCode().ToString("x");
-            string targetClass = $"{Constants.TrayWindowId}{domain}";
-
-            foreach (var handle in windowHandles)
-            {
-                StringBuilder className = new(256);
-                int classQueryResult = Bridge.GetClassName(handle, className, className.Capacity);
-                if (classQueryResult != 0 && className.ToString().StartsWith(targetClass, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return handle;
-                }
-            }
-
-            return IntPtr.Zero;
         }
 
         internal static Dictionary<string, int> GetDefaultTrayOptions()
@@ -374,6 +342,8 @@ namespace Awake.Core
                         currentSettings.Properties.Mode = AwakeMode.PASSIVE;
                         ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
                     }
+
+                    TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_OFF}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/awake.ico")), TrayIconAction.Update);
                 }
                 catch (Exception ex)
                 {

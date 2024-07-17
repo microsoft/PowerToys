@@ -232,6 +232,42 @@ namespace Awake.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Expiring.
+        /// </summary>
+        internal static string AWAKE_TRAY_TEXT_EXPIRATION {
+            get {
+                return ResourceManager.GetString("AWAKE_TRAY_TEXT_EXPIRATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indefinite.
+        /// </summary>
+        internal static string AWAKE_TRAY_TEXT_INDEFINITE {
+            get {
+                return ResourceManager.GetString("AWAKE_TRAY_TEXT_INDEFINITE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Passive.
+        /// </summary>
+        internal static string AWAKE_TRAY_TEXT_OFF {
+            get {
+                return ResourceManager.GetString("AWAKE_TRAY_TEXT_OFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Timed.
+        /// </summary>
+        internal static string AWAKE_TRAY_TEXT_TIMED {
+            get {
+                return ResourceManager.GetString("AWAKE_TRAY_TEXT_TIMED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unchecked.
         /// </summary>
         internal static string AWAKE_UNCHECKED {
