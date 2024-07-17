@@ -26,6 +26,7 @@ The build ID moniker is made up of two components - a reference to a [Halo](http
 - [#12714](https://github.com/microsoft/PowerToys/issues/12714) Adds the option to keep track of Awake state through tray tooltip.
 - Removes the dependency on `System.Windows.Forms` and instead uses native Windows APIs to create the tray icon.
 - Removes redundant/unused code that impacted application performance.
+- Updates dependent packages to their latest versions (`Microsoft.Windows.CsWinRT` and `System.Reactive`).
 
 ### `ATRIOX_04132023` (April 13, 2023)
 
