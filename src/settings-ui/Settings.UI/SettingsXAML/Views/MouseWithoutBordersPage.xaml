@@ -170,9 +170,9 @@
 
                     <InfoBar
                         x:Uid="MouseWithoutBorders_CannotDragDropAsAdmin"
-                        IsClosable="True"
-                        IsOpen="{x:Bind ViewModel.IsElevated, Mode=OneWay}"
-                        IsTabStop="True"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.ShowInfobarCannotDragDropAsAdmin, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.ShowInfobarCannotDragDropAsAdmin, Mode=OneWay}"
                         Severity="Informational" />
 
 
@@ -191,14 +191,14 @@
                     <InfoBar
                         x:Uid="MouseWithoutBorders_RunAsAdminText"
                         IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.CanToggleUseService, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
-                        IsTabStop="True"
+                        IsOpen="{x:Bind ViewModel.ShowInfobarRunAsAdminText, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.ShowInfobarRunAsAdminText, Mode=OneWay}"
                         Severity="Informational" />
                     <InfoBar
                         x:Uid="MouseWithoutBorders_ServiceUserUninstallWarning"
-                        IsClosable="True"
-                        IsOpen="True"
-                        IsTabStop="True"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
                         Severity="Warning" />
                     <tkcontrols:SettingsCard
                         x:Uid="MouseWithoutBorders_UninstallService"
@@ -243,7 +243,7 @@
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="MouseWithoutBorders_KeyboardShortcuts_Group" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_EasyMouseOption">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_EasyMouseOption" HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.EasyMouseOptionIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="MouseWithoutBorders_EasyMouseOption_Disabled" />
                             <ComboBoxItem x:Uid="MouseWithoutBorders_EasyMouseOption_Enabled" />
@@ -280,7 +280,7 @@
                             HotkeySettings="{x:Bind Path=ViewModel.ReconnectShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_SwitchBetweenMachineShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE92E;}">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_SwitchBetweenMachineShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.SelectedSwitchBetweenMachineShortcutOptionsIndex, Mode=TwoWay}">
                             <!--  These should be in the same order as the array items in MouseWithoutBordersViewModel.cs  -->
                             <ComboBoxItem x:Uid="MouseWithoutBorders_SwitchBetweenMachineShortcut_F1" />
