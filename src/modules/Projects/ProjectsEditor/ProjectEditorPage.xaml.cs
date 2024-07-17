@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,6 +18,7 @@ namespace ProjectsEditor
     /// </summary>
     public partial class ProjectEditor : Page
     {
+        private const double ScrollSpeed = 20;
         private MainViewModel _mainViewModel;
 
         public ProjectEditor(MainViewModel mainViewModel)
@@ -199,6 +201,14 @@ namespace ProjectsEditor
         private void RevertButtonClicked(object sender, RoutedEventArgs e)
         {
             _mainViewModel.RevertLaunch();
+        }
+
+        private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            ScrollViewer scrollViewer = sender as ScrollViewer;
+            double scrollAmount = Math.Sign(e.Delta) * ScrollSpeed;
+            scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - scrollAmount);
+            e.Handled = true;
         }
     }
 }
