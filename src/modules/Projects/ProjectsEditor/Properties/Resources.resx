@@ -199,6 +199,9 @@
   <data name="LaunchAsAdmin" xml:space="preserve">
     <value>Launch as Admin</value>
   </data>
+  <data name="LaunchEdit" xml:space="preserve">
+    <value>Launch &amp; Edit</value>
+  </data>
   <data name="Launch_args" xml:space="preserve">
     <value>Launch args</value>
   </data>
@@ -268,6 +271,9 @@
   </data>
   <data name="Recently" xml:space="preserve">
     <value>recently</value>
+  </data>
+  <data name="Revert" xml:space="preserve">
+    <value>Revert</value>
   </data>
   <data name="Save_project" xml:space="preserve">
     <value>Save project</value>

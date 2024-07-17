@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using ManagedCommon;
+using ProjectsEditor.Data;
 using ProjectsEditor.Models;
 using ProjectsEditor.Utils;
 using static ProjectsEditor.Data.ProjectsData;
@@ -23,8 +24,15 @@ namespace ProjectsEditor.ViewModels
     public class MainViewModel : INotifyPropertyChanged, IDisposable
     {
         private ProjectsEditorIO _projectsEditorIO;
+        private ProjectEditor editPage;
         private SnapshotWindow _snapshotWindow;
         private List<OverlayWindow> _overlayWindows = new List<OverlayWindow>();
+        private bool _isExistingProjectLaunched;
+        private Project editedProject;
+        private Project projectBeforeLaunch;
+        private string projectNameBeingEdited;
+        private MainWindow _mainWindow;
+        private Timer lastUpdatedTimer;
 
         public ObservableCollection<Project> Projects { get; set; } = new ObservableCollection<Project>();
 
@@ -126,11 +134,6 @@ namespace ProjectsEditor.ViewModels
             PropertyChanged?.Invoke(this, e);
         }
 
-        private Project editedProject;
-        private string projectNameBeingEdited;
-        private MainWindow _mainWindow;
-        private System.Timers.Timer lastUpdatedTimer;
-
         public MainViewModel(ProjectsEditorIO projectsEditorIO)
         {
             _projectsEditorIO = projectsEditorIO;
@@ -226,13 +229,32 @@ namespace ProjectsEditor.ViewModels
             Project project = new Project();
             if (_projectsEditorIO.ParseTempProject(out project).Result)
             {
-                EditProject(project, true);
+                if (_isExistingProjectLaunched)
+                {
+                    UpdateProject(project);
+                }
+                else
+                {
+                    EditProject(project, true);
+                }
             }
+        }
+
+        private void UpdateProject(Project project)
+        {
+            project.Name = projectBeforeLaunch.Name;
+            project.IsRevertEnabled = true;
+            editPage.DataContext = project;
+        }
+
+        internal void RevertLaunch()
+        {
+            editPage.DataContext = projectBeforeLaunch;
         }
 
         public void EditProject(Project selectedProject, bool isNewlyCreated = false)
         {
-            var editPage = new ProjectEditor(this);
+            editPage = new ProjectEditor(this);
 
             SetEditedProject(selectedProject);
             if (!isNewlyCreated)
@@ -278,6 +300,7 @@ namespace ProjectsEditor.ViewModels
         {
             Projects.Add(project);
             _projectsEditorIO.SerializeProjects(Projects.ToList());
+            OnPropertyChanged(new PropertyChangedEventArgs(nameof(ProjectsView)));
         }
 
         public void DeleteProject(Project selectedProject)
@@ -353,10 +376,10 @@ namespace ProjectsEditor.ViewModels
             p.WaitForExit();
         }
 
-        private void RunLauncher(string projectId)
+        private void RunLauncher(string projectIdOrFilename)
         {
             Process p = new Process();
-            p.StartInfo = new ProcessStartInfo(@".\PowerToys.ProjectsLauncher.exe", projectId);
+            p.StartInfo = new ProcessStartInfo(@".\PowerToys.ProjectsLauncher.exe", projectIdOrFilename);
             p.StartInfo.CreateNoWindow = true;
             p.Start();
             p.WaitForExit();
@@ -375,8 +398,9 @@ namespace ProjectsEditor.ViewModels
             }
         }
 
-        internal void EnterSnapshotMode()
+        internal void EnterSnapshotMode(bool isExistingProjectLaunched)
         {
+            _isExistingProjectLaunched = isExistingProjectLaunched;
             _mainWindow.WindowState = System.Windows.WindowState.Minimized;
             _overlayWindows.Clear();
             foreach (var screen in MonitorHelper.GetDpiUnawareScreens())
@@ -407,6 +431,19 @@ namespace ProjectsEditor.ViewModels
             }
 
             _mainWindow.WindowState = System.Windows.WindowState.Normal;
+        }
+
+        internal void LaunchAndEdit(Project project)
+        {
+            LaunchEditedProject(project);
+            projectBeforeLaunch = new Project(project);
+            EnterSnapshotMode(true);
+        }
+
+        private void LaunchEditedProject(Project project)
+        {
+            _projectsEditorIO.SerializeTempProject(project);
+            RunLauncher(TempProjectData.File);
         }
     }
 }

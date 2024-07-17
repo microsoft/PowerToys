@@ -8,7 +8,7 @@ namespace ProjectsEditor.Data
 {
     public class TempProjectData : ProjectData
     {
-        public string File
+        public static string File
         {
             get
             {
@@ -16,7 +16,7 @@ namespace ProjectsEditor.Data
             }
         }
 
-        public void DeleteTempFile()
+        public static void DeleteTempFile()
         {
             if (System.IO.File.Exists(File))
             {

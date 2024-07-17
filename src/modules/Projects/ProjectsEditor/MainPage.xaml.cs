@@ -25,7 +25,7 @@ namespace ProjectsEditor
 
         private /*async*/ void NewProjectButton_Click(object sender, RoutedEventArgs e)
         {
-            _mainViewModel.EnterSnapshotMode();
+            _mainViewModel.EnterSnapshotMode(false);
         }
 
         private void EditButtonClicked(object sender, RoutedEventArgs e)

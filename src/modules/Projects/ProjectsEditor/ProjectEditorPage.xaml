@@ -21,7 +21,15 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
-        
+        <Style x:Key="ButtonEnabledStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}" />
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False" >
+                    <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
         <DataTemplate x:Key="headerTemplate">
             <Border
                 HorizontalAlignment="Stretch">
@@ -265,6 +273,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -316,17 +325,43 @@
             HorizontalAlignment="Stretch"
             Background="{DynamicResource MonitorViewBackgroundBrush}"
             CornerRadius="5">
-            <Image
-                Width="{Binding PreviewImageWidth, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-                Height="200"
-                Source="{Binding PreviewImage, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-                Stretch="Fill"
-                Margin="2"/>
+            <DockPanel>
+                <Image
+                    DockPanel.Dock="Top"
+                    Width="{Binding PreviewImageWidth, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                    Height="200"
+                    Source="{Binding PreviewImage, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                    Stretch="Fill"
+                    Margin="2"/>
+                <Button
+                    DockPanel.Dock="Right"
+                    x:Name="RevertButton"
+                    Margin="0,0,20,10"
+                    Height="36"
+                    Padding="24,0,24,0"
+                    IsEnabled="{Binding IsRevertEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                    Content="{x:Static props:Resources.Revert}"
+                    Background="{DynamicResource SecondaryBackgroundBrush}"
+                    AutomationProperties.Name="{x:Static props:Resources.Revert}"
+                    HorizontalAlignment="Right"
+                    Click="RevertButtonClicked"/>
+                <Button
+                    DockPanel.Dock="Right"
+                    x:Name="LaunchEditButton"
+                    Margin="0,0,10,10"
+                    Height="36"
+                    Padding="24,0,24,0"
+                    Content="{x:Static props:Resources.LaunchEdit}"
+                    Background="{DynamicResource SecondaryBackgroundBrush}"
+                    AutomationProperties.Name="{x:Static props:Resources.LaunchEdit}"
+                    HorizontalAlignment="Right"
+                    Click="LaunchEditButtonClicked"/>
+            </DockPanel>
         </Border>
         <ScrollViewer
             Margin="0,10,0,0"
             VerticalScrollBarVisibility="Auto"
-            Grid.Row="3">
+            Grid.Row="4">
             <StackPanel Orientation="Vertical">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -340,7 +375,7 @@
                 </Grid>
             </StackPanel>
         </ScrollViewer>
-        <DockPanel Grid.Row="4" Margin="0,20,0,20">
+        <DockPanel Grid.Row="5" Margin="0,20,0,20">
             <CheckBox
                 DockPanel.Dock="Left"
                 Content="{x:Static props:Resources.CreateShortcut}"

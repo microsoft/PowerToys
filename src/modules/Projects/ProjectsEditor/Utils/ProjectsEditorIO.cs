@@ -52,15 +52,15 @@ namespace ProjectsEditor.Utils
             project = null;
             try
             {
-                TempProjectData parser = new TempProjectData();
-                if (!File.Exists(parser.File))
+                ProjectData parser = new ProjectData();
+                if (!File.Exists(TempProjectData.File))
                 {
-                    Logger.LogWarning($"ParseProject method. Projects storage file not found: {parser.File}");
+                    Logger.LogWarning($"ParseProject method. Projects storage file not found: {TempProjectData.File}");
                     return new ParsingResult(false);
                 }
 
-                project = GetProjectFromWrapper(parser.Read(parser.File));
-                parser.DeleteTempFile();
+                project = GetProjectFromWrapper(parser.Read(TempProjectData.File));
+                TempProjectData.DeleteTempFile();
 
                 return new ParsingResult(true);
             }
@@ -121,7 +121,7 @@ namespace ProjectsEditor.Utils
             return newProject;
         }
 
-        public void SerializeProjects(List<Project> projects)
+        public void SerializeProjects(List<Project> projects, bool useTempFile = false)
         {
             ProjectsData serializer = new ProjectsData();
             ProjectsData.ProjectsListWrapper projectsWrapper = new ProjectsData.ProjectsListWrapper { };
@@ -194,7 +194,7 @@ namespace ProjectsEditor.Utils
             try
             {
                 IOUtils ioUtils = new IOUtils();
-                ioUtils.WriteFile(serializer.File, serializer.Serialize(projectsWrapper));
+                ioUtils.WriteFile(useTempFile ? TempProjectData.File : serializer.File, serializer.Serialize(projectsWrapper));
             }
             catch (Exception e)
             {
@@ -218,6 +218,11 @@ namespace ProjectsEditor.Utils
         {
             mainViewModel.Projects = new System.Collections.ObjectModel.ObservableCollection<Project> { };
             return AddProjects(mainViewModel, projects);
+        }
+
+        internal void SerializeTempProject(Project project)
+        {
+            SerializeProjects(new List<Project>() { project }, true);
         }
     }
 }

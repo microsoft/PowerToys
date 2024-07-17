@@ -43,8 +43,7 @@ namespace ProjectsEditor
         private void CancelButtonClicked(object sender, RoutedEventArgs e)
         {
             // delete the temp file created by the snapshot tool
-            TempProjectData parser = new TempProjectData();
-            parser.DeleteTempFile();
+            TempProjectData.DeleteTempFile();
 
             _mainViewModel.SwitchToMainView();
         }
@@ -91,6 +90,11 @@ namespace ProjectsEditor
         {
             Border border = sender as Border;
             Models.Application app = border.DataContext as Models.Application;
+            if (app == null)
+            {
+                return;
+            }
+
             app.IsHighlighted = false;
             Project project = app.Parent;
             project.Initialize();
@@ -183,6 +187,18 @@ namespace ProjectsEditor
             CheckBox checkBox = sender as CheckBox;
             Models.Application application = checkBox.DataContext as Models.Application;
             application.MinimizedChecked();
+        }
+
+        private void LaunchEditButtonClicked(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            Project project = button.DataContext as Project;
+            _mainViewModel.LaunchAndEdit(project);
+        }
+
+        private void RevertButtonClicked(object sender, RoutedEventArgs e)
+        {
+            _mainViewModel.RevertLaunch();
         }
     }
 }
