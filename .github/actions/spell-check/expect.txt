@@ -88,6 +88,7 @@ atlstr
 ATRIOX
 aumid
 Authenticode
+AUTODISMISS
 AUTOHIDE
 AUTOMATIONPROPERTIES
 Autorun
@@ -105,6 +106,7 @@ bhid
 BIF
 bigbar
 bigobj
+BINDINGHOOK
 binlog
 BITMAPFILEHEADER
 bitmapimage
@@ -148,6 +150,7 @@ BYPOSITION
 CALG
 callbackptr
 calpwstr
+CANCELMODE
 Cangjie
 CANRENAME
 CAPTUREBLT
@@ -171,6 +174,7 @@ cfp
 cguid
 CHANGECBCHAIN
 changecursor
+CHECKORBMP
 CHILDACTIVATE
 CHILDWINDOW
 cidl
@@ -428,8 +432,8 @@ ENDSESSION
 ENTERSIZEMOVE
 ENU
 EOAC
-epu
 EPO
+epu
 ERASEBKGND
 EREOF
 EResize
@@ -464,6 +468,7 @@ EXITSIZEMOVE
 exlist
 EXPCMDFLAGS
 EXPCMDSTATE
+EXPIREAT
 explr
 exppowertoys
 exptas
@@ -500,6 +505,7 @@ findfast
 FIXEDFILEINFO
 flac
 flyouts
+FMask
 FOF
 FOFX
 FOLDERID
@@ -774,6 +780,8 @@ lcl
 Lclean
 Ldone
 ldx
+LEFTALIGN
+LEFTBUTTON
 LEFTSCROLLBAR
 lego
 LError
@@ -811,6 +819,7 @@ LOWORD
 lparam
 LPBITMAPINFOHEADER
 LPCITEMIDLIST
+lpcmi
 LPCMINVOKECOMMANDINFO
 LPCREATESTRUCT
 LPCRECT
@@ -835,6 +844,7 @@ lptpm
 LPTR
 LPTSTR
 LPW
+lpwcx
 lpwndpl
 LReader
 LRESULT
@@ -852,10 +862,10 @@ lwin
 LZero
 majortype
 makecab
-MAKELANGID
 MAKEINTRESOURCE
 MAKEINTRESOURCEA
 MAKEINTRESOURCEW
+MAKELANGID
 makepri
 manifestdependency
 MAPPEDTOSAMEKEY
@@ -1038,6 +1048,8 @@ NOSEARCH
 NOSENDCHANGING
 NOSIZE
 NOTIFICATIONSDLL
+NOTIFYBYPOS
+NOTIFYICONDATA
 NOTIFYICONDATAW
 NOTIMPL
 notlike
@@ -1161,6 +1173,7 @@ ploca
 plocm
 pluginsmodel
 PMSIHANDLE
+pnid
 Pnp
 Popups
 POPUPWINDOW
@@ -1329,6 +1342,7 @@ rgf
 rgn
 rgs
 RIDEV
+RIGHTBUTTON
 RIGHTSCROLLBAR
 riid
 ringbuffer
@@ -1624,6 +1638,7 @@ touchpad
 tracelogging
 traies
 transicc
+TRAYICON
 TRAYMOUSEMESSAGE
 triaging
 TRK
@@ -1642,9 +1657,11 @@ TYPESHORTCUT
 UAC
 UAL
 uap
+UCallback
 udit
 uefi
 uesc
+UFlags
 UHash
 UIA
 UIEx
