@@ -26,14 +26,6 @@ namespace Awake
 {
     internal sealed class Program
     {
-        // PowerToys Awake build code name. Used for exact logging
-        // that does not map to PowerToys broad version schema to pinpoint
-        // internal issues easier.
-        // Format of the build ID is: CODENAME_MMDDYYYY, where MMDDYYYY
-        // is representative of the date when the last change was made before
-        // the pull request is issued.
-        private static readonly string BuildId = "DAISY023_04102024";
-
         private static readonly ManualResetEvent _exitSignal = new(false);
 
         private static Mutex? _mutex;
@@ -75,7 +67,7 @@ namespace Awake
 
             Logger.LogInfo($"Launching {Core.Constants.AppName}...");
             Logger.LogInfo(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion);
-            Logger.LogInfo($"Build: {BuildId}");
+            Logger.LogInfo($"Build: {Core.Constants.BuildId}");
             Logger.LogInfo($"OS: {Environment.OSVersion}");
             Logger.LogInfo($"OS Build: {Manager.GetOperatingSystemBuild()}");
 

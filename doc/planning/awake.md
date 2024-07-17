@@ -1,12 +1,12 @@
 ---
-last-update: 3-20-2022
+last-update: 7-16-2024
 ---
 
 # PowerToys Awake Changelog
 
 ## Builds
 
-The build ID can be found in `Program.cs` in the `BuildId` variable - it is a unique identifier for the current builds that allows better diagnostics (we can look up the build ID from the logs) and offers a way to triage Awake-specific issues faster independent of the PowerToys version. The build ID does not carry any significance beyond that within the PowerToys code base.
+The build ID can be found in `Core\Constants.cs` in the `BuildId` variable - it is a unique identifier for the current builds that allows better diagnostics (we can look up the build ID from the logs) and offers a way to triage Awake-specific issues faster independent of the PowerToys version. The build ID does not carry any significance beyond that within the PowerToys code base.
 
 The build ID moniker is made up of two components - a reference to a [Halo](https://en.wikipedia.org/wiki/Halo_(franchise)) character, and the date when the work on the specific build started in the format of `MMDDYYYY`.
 
@@ -19,8 +19,13 @@ The build ID moniker is made up of two components - a reference to a [Halo](http
 
 ### `DAISY023_04102024` (April 10, 2024)
 
+>[!NOTE]
+>See pull request: [Awake Update - `DAISY023_04102024`](https://github.com/microsoft/PowerToys/pull/32378)
+
 - [#33630](https://github.com/microsoft/PowerToys/issues/33630) When in the UI and you select `0` as hours and `0` as minutes in `TIMED` awake mode, the UI becomes non-responsive whenever you try to get back to timed after it rolls back to `PASSIVE`.
 - [#12714](https://github.com/microsoft/PowerToys/issues/12714) Adds the option to keep track of Awake state through tray tooltip.
+- Removes the dependency on `System.Windows.Forms` and instead uses native Windows APIs to create the tray icon.
+- Removes redundant/unused code that impacted application performance.
 
 ### `ATRIOX_04132023` (April 13, 2023)
 
