@@ -362,6 +362,7 @@
         <ScrollViewer
             Margin="0,10,0,0"
             VerticalScrollBarVisibility="Auto"
+            PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
             Grid.Row="4">
             <StackPanel Orientation="Vertical">
                 <Grid>
