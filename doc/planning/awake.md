@@ -12,9 +12,15 @@ The build ID moniker is made up of two components - a reference to a [Halo](http
 
 | Build ID                                                  | Build Date       |
 |:----------------------------------------------------------|:-----------------|
+| [`DAISY023_04102024`](#DAISY023_04102024-april-10-2024)   | April 10, 2024   |
 | [`ATRIOX_04132023`](#ATRIOX_04132023-april-13-2023)       | April 13, 2023   |
 | [`LIBRARIAN_03202022`](#librarian_03202022-march-20-2022) | March 20, 2022   |
 | `ARBITER_01312022`                                        | January 31, 2022 |
+
+### `DAISY023_04102024` (April 10, 2024)
+
+- [#33630](https://github.com/microsoft/PowerToys/issues/33630) When in the UI and you select `0` as hours and `0` as minutes in `TIMED` awake mode, the UI becomes non-responsive whenever you try to get back to timed after it rolls back to `PASSIVE`.
+- [#12714](https://github.com/microsoft/PowerToys/issues/12714) Adds the option to keep track of Awake state through tray tooltip.
 
 ### `ATRIOX_04132023` (April 13, 2023)
 
