@@ -386,11 +386,8 @@
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.AddFirewallRuleEventHandler}"
                         IsClickEnabled="True" />
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ShowOriginalUI">
-                        <ToggleSwitch
-                            x:Uid="MouseWithoutBorders_ShowOriginalUI_ToggleSwitch"
-                            IsEnabled="{x:Bind ViewModel.CardForOriginalUiSettingIsEnabled, Mode=OneWay}"
-                            IsOn="{x:Bind ViewModel.ShowOriginalUI, Mode=TwoWay}" />
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ShowOriginalUI" IsEnabled="{x:Bind ViewModel.CardForOriginalUiSettingIsEnabled, Mode=OneWay}">
+                        <ToggleSwitch x:Uid="MouseWithoutBorders_ShowOriginalUI_ToggleSwitch" IsOn="{x:Bind ViewModel.ShowOriginalUI, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_SettingIsManaged"
