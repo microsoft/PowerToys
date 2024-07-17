@@ -300,6 +300,8 @@ namespace ProjectsEditor.ViewModels
 
         public void AddNewProject(Project project)
         {
+            project.Applications.RemoveAll(app => !app.IsIncluded);
+            project.Initialize();
             Projects.Add(project);
             _projectsEditorIO.SerializeProjects(Projects.ToList());
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(ProjectsView)));
