@@ -12,10 +12,8 @@ using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using ManagedCommon;
-using Windows.ApplicationModel.Core;
 using Windows.Management.Deployment;
 
 namespace ProjectsEditor.Models
@@ -171,21 +169,12 @@ namespace ProjectsEditor.Models
                 {
                     try
                     {
-                        if (!File.Exists(AppPath) && IsPackagedApp)
+                        if (IsPackagedApp)
                         {
-                            Task<AppListEntry> task = Task.Run<AppListEntry>(async () => await GetAppByPackageFamilyNameAsync());
-                            AppListEntry packApp = task.Result;
-                            if (packApp == null)
-                            {
-                                IsNotFound = true;
-                                _icon = new Icon(@"images\DefaultIcon.ico");
-                            }
-                            else
-                            {
-                                string filename = Path.GetFileName(AppPath);
-                                string newExeLocation = Path.Combine(packApp.AppInfo.Package.InstalledPath, filename);
-                                _icon = Icon.ExtractAssociatedIcon(newExeLocation);
-                            }
+                            Uri uri = GetAppLogoByPackageFamilyName();
+                            var bitmap = new Bitmap(uri.LocalPath);
+                            var iconHandle = bitmap.GetHicon();
+                            _icon = Icon.FromHandle(iconHandle);
                         }
                         else
                         {
@@ -204,7 +193,7 @@ namespace ProjectsEditor.Models
             }
         }
 
-        public async Task<AppListEntry> GetAppByPackageFamilyNameAsync()
+        public Uri GetAppLogoByPackageFamilyName()
         {
             var pkgManager = new PackageManager();
             var pkg = pkgManager.FindPackagesForUser(string.Empty, PackagedId).FirstOrDefault();
@@ -214,19 +203,7 @@ namespace ProjectsEditor.Models
                 return null;
             }
 
-            var apps = await pkg.GetAppListEntriesAsync();
-            if (apps == null || apps.Count == 0)
-            {
-                return null;
-            }
-
-            AppListEntry firstApp = apps[0];
-
-            // RandomAccessStreamReference stream = firstApp.AppInfo.DisplayInfo.GetLogo(new Windows.Foundation.Size(64, 64));
-            // IRandomAccessStreamWithContentType content = await stream.OpenReadAsync();
-            // BitmapImage bitmapImage = new BitmapImage();
-            // bitmapImage.StreamSource = (Stream)content;
-            return firstApp;
+            return pkg.Logo;
         }
 
         private BitmapImage _iconBitmapImage;
