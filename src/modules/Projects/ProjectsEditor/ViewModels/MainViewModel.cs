@@ -300,6 +300,7 @@ namespace ProjectsEditor.ViewModels
         {
             Projects.Add(project);
             _projectsEditorIO.SerializeProjects(Projects.ToList());
+            OnPropertyChanged(new PropertyChangedEventArgs(nameof(ProjectsView)));
         }
 
         public void DeleteProject(Project selectedProject)
