@@ -1328,7 +1328,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
 - Microsoft.Web.WebView2 1.0.2365.46
 - Microsoft.Win32.SystemEvents 8.0.0
-- Microsoft.Windows.Compatibility 8.0.1
+- Microsoft.Windows.Compatibility 8.0.7
 - Microsoft.Windows.CsWin32 0.2.46-beta
 - Microsoft.Windows.CsWinRT 2.0.4
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.2428
@@ -1364,6 +1364,7 @@ EXHIBIT A -Mozilla Public License.
 - System.Security.Cryptography.ProtectedData 8.0.0
 - System.ServiceProcess.ServiceController 8.0.0
 - System.Text.Encoding.CodePages 8.0.0
+- System.Text.Json 8.0.4
 - UnicodeInformation 2.6.0
 - UnitsNet 5.50.0
 - UTF.Unknown 2.5.1

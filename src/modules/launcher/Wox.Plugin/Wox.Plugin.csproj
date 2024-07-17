@@ -59,6 +59,8 @@
       <!-- This package is a dependency of System.Management, but we need to set it here so we can exclude the assets, so it doesn't conflict with the 8.0.1 dll coming from .NET SDK. -->
       <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
     </PackageReference>
+    <!-- HACK: To make sure the version pulled in by Microsoft.Extensions.Hosting is current. -->
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>
