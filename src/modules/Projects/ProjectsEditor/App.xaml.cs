@@ -66,14 +66,6 @@ namespace ProjectsEditor
 
             var parseResult = ProjectsEditorIO.ParseProjects(_mainViewModel);
 
-            string[] args = Environment.GetCommandLineArgs();
-            if (args != null && args.Length > 1)
-            {
-                Logger.LogInfo($"Started with a parameter: {args[1]}. Trying to launch that project.");
-                _mainViewModel.LaunchProject(args[1]);
-                return;
-            }
-
             // normal start of editor
             if (_mainWindow == null)
             {

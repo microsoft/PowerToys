@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 using ProjectsEditor.Data;
 using ProjectsEditor.Models;
 using ProjectsEditor.Utils;
@@ -33,6 +34,7 @@ namespace ProjectsEditor.ViewModels
         private string projectNameBeingEdited;
         private MainWindow _mainWindow;
         private Timer lastUpdatedTimer;
+        private ProjectsSettings settings;
 
         public ObservableCollection<Project> Projects { get; set; } = new ObservableCollection<Project>();
 
@@ -124,6 +126,8 @@ namespace ProjectsEditor.ViewModels
             {
                 _orderByIndex = value;
                 OnPropertyChanged(new PropertyChangedEventArgs(nameof(ProjectsView)));
+                settings.Properties.SortBy = (ProjectsProperties.SortByProperty)value;
+                settings.Save(new SettingsUtils());
             }
         }
 
@@ -136,6 +140,8 @@ namespace ProjectsEditor.ViewModels
 
         public MainViewModel(ProjectsEditorIO projectsEditorIO)
         {
+            settings = Utils.Settings.ReadSettings();
+            _orderByIndex = (int)settings.Properties.SortBy;
             _projectsEditorIO = projectsEditorIO;
             lastUpdatedTimer = new System.Timers.Timer();
             lastUpdatedTimer.Interval = 1000;

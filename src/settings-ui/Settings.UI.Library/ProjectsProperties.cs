@@ -9,6 +9,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class ProjectsProperties
     {
+        public enum SortByProperty
+        {
+            LastLaunched,
+            Created,
+            Name,
+        }
+
         public static readonly HotkeySettings DefaultHotkeyValue = new HotkeySettings(true, false, false, true, 0x4F);
 
         public ProjectsProperties()
@@ -18,6 +25,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("hotkey")]
         public KeyboardKeysProperty Hotkey { get; set; }
+
+        [JsonPropertyName("sortby")]
+        public SortByProperty SortBy { get; set; }
 
         public string ToJsonString()
         {
