@@ -59,6 +59,8 @@ namespace ProjectsEditor.Models
             }
         }
 
+        public bool CanLaunchElevated { get; set; }
+
         internal void SwitchDeletion()
         {
             IsIncluded = !IsIncluded;

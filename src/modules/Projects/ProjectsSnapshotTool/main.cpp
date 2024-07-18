@@ -77,5 +77,6 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
     ProjectsJsonUtils::Write(JsonUtils::TempProjectsFile(), project);
     Logger::trace(L"Project {}:{} created", project.name, project.id);
 
+    CoUninitialize();
     return 0;
 }
