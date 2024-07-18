@@ -169,7 +169,7 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Create Shortcut.
+        ///   Looks up a localized string similar to Create Desktop Shortcut.
         /// </summary>
         public static string CreateShortcut {
             get {

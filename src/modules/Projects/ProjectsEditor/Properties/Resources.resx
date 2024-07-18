@@ -155,7 +155,7 @@
     <value>Create project</value>
   </data>
   <data name="CreateShortcut" xml:space="preserve">
-    <value>Create Shortcut</value>
+    <value>Create Desktop Shortcut</value>
   </data>
   <data name="DaysAgo" xml:space="preserve">
     <value>days ago</value>
