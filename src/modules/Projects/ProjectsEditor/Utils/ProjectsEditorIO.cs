@@ -95,6 +95,7 @@ namespace ProjectsEditor.Utils
                     Parent = newProject,
                     CommandLineArguments = app.CommandLineArguments,
                     IsElevated = app.IsElevated,
+                    CanLaunchElevated = app.CanLaunchElevated,
                     Maximized = app.Maximized,
                     Minimized = app.Minimized,
                     IsNotFound = false,
@@ -150,6 +151,7 @@ namespace ProjectsEditor.Utils
                         PackageFullName = app.PackageFullName,
                         CommandLineArguments = app.CommandLineArguments,
                         IsElevated = app.IsElevated,
+                        CanLaunchElevated = app.CanLaunchElevated,
                         Maximized = app.Maximized,
                         Minimized = app.Minimized,
                         Position = new ProjectData.ApplicationWrapper.WindowPositionWrapper

@@ -19,6 +19,7 @@ namespace Utils
             constexpr const wchar_t* PackageFullNameProp = L"System.AppUserModel.PackageFullName";
             constexpr const wchar_t* PackageInstallPathProp = L"System.AppUserModel.PackageInstallPath";
             constexpr const wchar_t* InstallPathProp = L"System.Link.TargetParsingPath";
+            constexpr const wchar_t* HostEnvironmentProp = L"System.AppUserModel.HostEnvironment";
 
             constexpr const wchar_t* FileExplorerName = L"File Explorer";
             constexpr const wchar_t* FileExplorerPath = L"C:\\WINDOWS\\EXPLORER.EXE";
@@ -29,6 +30,7 @@ namespace Utils
             std::wstring name;
             std::wstring installPath;
             std::wstring packageFullName;
+            bool canLaunchElevated = false;
 		};
 
 		using AppList = std::vector<AppData>;
@@ -98,35 +100,46 @@ namespace Utils
                     std::wstring prop(pkName.m_pData);
                     if (prop == NonLocalizable::PackageFullNameProp ||
                         prop == NonLocalizable::PackageInstallPathProp ||
-                        prop == NonLocalizable::InstallPathProp)
+                        prop == NonLocalizable::InstallPathProp || 
+                        prop == NonLocalizable::HostEnvironmentProp)
                     {
                         PROPVARIANT pv;
                         PropVariantInit(&pv);
                         hr = store->GetValue(pk, &pv);
                         if (SUCCEEDED(hr))
                         {
-                            CComHeapPtr<wchar_t> propVariantString;
-                            propVariantString.Allocate(512);
-                            PropVariantToString(pv, propVariantString, 512);
-                            PropVariantClear(&pv);
+                            if (prop == NonLocalizable::HostEnvironmentProp)
+                            {
+                                CComHeapPtr<int> propVariantInt;
+                                propVariantInt.Allocate(1);
+                                PropVariantToInt32(pv, propVariantInt);
 
-                            if (prop == NonLocalizable::PackageFullNameProp)
-                            {
-                                data.packageFullName = propVariantString.m_pData;
+                                if (prop == NonLocalizable::HostEnvironmentProp)
+                                {
+                                    data.canLaunchElevated = *propVariantInt.m_pData != 1;
+                                }
                             }
-                            else if (prop == NonLocalizable::PackageInstallPathProp || prop == NonLocalizable::InstallPathProp)
+                            else
                             {
-                                data.installPath = propVariantString.m_pData;
+                                CComHeapPtr<wchar_t> propVariantString;
+                                propVariantString.Allocate(512);
+                                PropVariantToString(pv, propVariantString, 512);
+
+                                if (prop == NonLocalizable::PackageFullNameProp)
+                                {
+                                    data.packageFullName = propVariantString.m_pData;
+                                }
+                                else if (prop == NonLocalizable::PackageInstallPathProp || prop == NonLocalizable::InstallPathProp)
+                                {
+                                    data.installPath = propVariantString.m_pData;
+                                }
                             }
+
+                            PropVariantClear(&pv);
                         }
                         else
                         {
                             Logger::error(L"Failed to get property value: {}", get_last_error_or_default(hr));
-                        }
-
-                        if (!data.packageFullName.empty() && !data.installPath.empty())
-                        {
-                            break;
                         }
                     }
                 }

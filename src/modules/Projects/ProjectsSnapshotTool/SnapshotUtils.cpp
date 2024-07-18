@@ -246,6 +246,7 @@ namespace SnapshotUtils
                 .packageFullName = data.value().packageFullName,
                 .commandLineArgs = L"", // GetCommandLineArgs(pid, wbemHelper),
                 .isElevated = IsProcessElevated(pid),
+                .canLaunchElevated = data.value().canLaunchElevated,
                 .isMinimized = WindowUtils::IsMinimized(window),
                 .isMaximized = WindowUtils::IsMaximized(window),
                 .position = Project::Application::Position{

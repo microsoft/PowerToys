@@ -35,6 +35,8 @@ namespace ProjectsEditor.Data
 
             public bool IsElevated { get; set; }
 
+            public bool CanLaunchElevated { get; set; }
+
             public bool Minimized { get; set; }
 
             public bool Maximized { get; set; }

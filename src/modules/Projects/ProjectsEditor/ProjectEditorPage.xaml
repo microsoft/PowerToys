@@ -161,6 +161,7 @@
                             <CheckBox
                                 Content="{x:Static props:Resources.LaunchAsAdmin}"
                                 IsChecked="{Binding IsElevated, Mode=TwoWay}"
+                                IsEnabled="{Binding CanLaunchElevated, Mode=OneWay}"
                                 MinWidth="10"/>
                             <CheckBox
                                 Margin="15 0 0 0"
