@@ -10,6 +10,8 @@
 #include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
 
+#include <ProjectsLib/trace.h>
+
 #include <shellapi.h>
 
 #include "resource.h"
@@ -33,7 +35,7 @@ BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lp
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
-        // TODO: Trace::RegisterProvider();
+        Trace::RegisterProvider();
         break;
 
     case DLL_THREAD_ATTACH:
@@ -41,7 +43,7 @@ BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lp
         break;
 
     case DLL_PROCESS_DETACH:
-        // TODO: Trace::UnregisterProvider();
+        Trace::UnregisterProvider();
         break;
     }
     return TRUE;
@@ -104,8 +106,6 @@ public:
             parse_hotkeys(values);
 
             auto settingsObject = values.get_raw_json();
-            // TODO: telemetry
-
             values.save_to_settings_file();
         }
         catch (std::exception&)
@@ -159,7 +159,7 @@ public:
     virtual void send_settings_telemetry() override
     {
         Logger::info("Send settings telemetry");
-        // TODO
+        Trace::Projects::SettingsTelemetry(m_hotkey);
     }
 
     ProjectsModuleInterface()
@@ -176,8 +176,7 @@ private:
         Logger::info("Enable");
         m_enabled = true;
 
-        // Log telemetry
-        // TODO: Trace::Projects::EnableProjects(true);
+        Trace::Projects::Enable(true);
 
         unsigned long powertoys_pid = GetCurrentProcessId();
         std::wstring executable_args = L"";
@@ -208,10 +207,9 @@ private:
     {
         Logger::info("Disable");
         m_enabled = false;
-        // Log telemetry
         if (traceEvent)
         {
-            // TODO: Trace::Projects::EnableProjects(false);
+            Trace::Projects::Enable(false);
         }
 
         if (m_toggleEditorEvent)
