@@ -11,6 +11,7 @@
 #include <common/utils/winapi_error.h>
 
 #include <ProjectsLib/trace.h>
+#include <ProjectsLib/ProjectsData.h>
 
 #include <shellapi.h>
 
@@ -158,8 +159,58 @@ public:
 
     virtual void send_settings_telemetry() override
     {
-        Logger::info("Send settings telemetry");
+        Logger::info("Send Projects telemetry");
         Trace::Projects::SettingsTelemetry(m_hotkey);
+
+		// read projects for telemetry
+        std::vector<ProjectsData::Project> projects;
+        try
+        {
+            auto savedProjectsJson = json::from_file(ProjectsData::ProjectsFile());
+            if (savedProjectsJson.has_value())
+            {
+                auto savedProjects = ProjectsData::ProjectsListJSON::FromJson(savedProjectsJson.value());
+                if (savedProjects.has_value())
+                {
+                    projects = savedProjects.value();
+                }
+                else
+                {
+                    return;
+                }
+            }
+        }
+        catch (std::exception ex)
+        {
+            return;
+        }
+
+        // number of projects
+        Trace::Projects::NumberOfProjects(projects.size());
+        if (projects.size() > 0)
+        {
+            // number of monitors in the latest saved configuration
+            std::sort(projects.begin(), projects.end(), [](const ProjectsData::Project& a, const ProjectsData::Project& b) {
+                return a.creationTime > b.creationTime;
+            });
+			Trace::Projects::MonitorConfiguration(projects.rend()->monitors.size());
+
+            // command line args usage
+            bool usingCLI = false;
+            for (const auto& project : projects)
+            {
+                for (const auto& app : project.apps)
+                {
+                    if (!app.commandLineArgs.empty())
+                    {
+						usingCLI = true;
+						break;
+					}
+                }
+            }
+
+            Trace::Projects::CLIUsage(usingCLI);
+		}
     }
 
     ProjectsModuleInterface()

@@ -49,3 +49,33 @@ void Trace::Projects::SettingsTelemetry(const PowertoyModuleIface::HotkeyEx& hot
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingWideString(hotKeyStr.c_str(), "HotKey"));
 }
+
+void Trace::Projects::NumberOfProjects(size_t number) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "Projects_NumberOfProjects",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingUInt64(number, "NumberOfProjects"));
+}
+
+void Trace::Projects::MonitorConfiguration(size_t numberOfMonitors) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "Projects_MonitorConfiguration",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingUInt64(numberOfMonitors, "NumberOfMonitors"));
+}
+
+void Trace::Projects::CLIUsage(bool usingCLI) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "Projects_CLIUsage",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingBoolean(usingCLI, "UsingCLI"));
+}
