@@ -12,5 +12,5 @@
 
 # locking down files that should not change
 ./LICENSE @crutkas @DHowett @ethanfangg
-./SECURITY.MD @crutkas @DHowett @ethanfangg
-./CODE_OF_CONDUCT.MD @crutkas @DHowett @ethanfangg
+./SECURITY.md @crutkas @DHowett @ethanfangg
+./CODE_OF_CONDUCT.md @crutkas @DHowett @ethanfangg
