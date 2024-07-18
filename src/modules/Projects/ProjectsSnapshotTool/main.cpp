@@ -2,9 +2,10 @@
 
 #include <chrono>
 
-#include <projects-common/Data.h>
 #include <projects-common/GuidUtils.h>
 #include <projects-common/MonitorUtils.h>
+
+#include <ProjectsLib/ProjectsData.h>
 
 #include <JsonUtils.h>
 #include <SnapshotUtils.h>
@@ -45,7 +46,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
         return -1;
     }
 
-    std::wstring fileName = JsonUtils::ProjectsFile();
+    std::wstring fileName = ProjectsData::ProjectsFile();
     std::string cmdLineStr(cmdLine);
     if (!cmdLineStr.empty())
     {
@@ -55,7 +56,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
 
     // create new project
     time_t creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    Project project{ .id = CreateGuidString(), .creationTime = creationTime };
+    ProjectsData::Project project { .id = CreateGuidString(), .creationTime = creationTime };
     Logger::trace(L"Creating project {}:{}", project.name, project.id);
 
     project.monitors = MonitorUtils::IdentifyMonitors();
@@ -74,7 +75,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
         return monitorNumber;
     });
 
-    ProjectsJsonUtils::Write(JsonUtils::TempProjectsFile(), project);
+    ProjectsJsonUtils::Write(ProjectsData::TempProjectsFile(), project);
     Logger::trace(L"Project {}:{} created", project.name, project.id);
 
     CoUninitialize();

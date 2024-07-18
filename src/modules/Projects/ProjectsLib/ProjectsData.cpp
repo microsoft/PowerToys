@@ -1,92 +1,30 @@
-#pragma once
-
-#include <string>
-#include <optional>
-#include <shlobj.h>
+#include "pch.h"
+#include "ProjectsData.h"
 
 #include <common/SettingsAPI/settings_helpers.h>
-#include <common/utils/json.h>
-
-struct Project
-{
-    struct Application
-    {
-        struct Position
-        {
-            int x;
-            int y;
-            int width;
-            int height;
-
-            RECT toRect() const noexcept
-            {
-                return RECT{.left = x, .top = y, .right = x + width, .bottom = y + height };
-            }
-        };
-
-        std::wstring name;
-        std::wstring title;
-        std::wstring path;
-        std::wstring packageFullName;
-        std::wstring commandLineArgs;
-        bool isElevated{};
-        bool canLaunchElevated{};
-        bool isMinimized{};
-        bool isMaximized{};
-        Position position{};
-        unsigned int monitor{};
-    };
-
-    struct Monitor
-    {
-        struct MonitorRect
-        {
-            int top;
-            int left;
-            int width;
-            int height;
-        };
-
-        HMONITOR monitor{};
-        std::wstring id;
-        std::wstring instanceId;
-        unsigned int number{};
-        unsigned int dpi{};
-        MonitorRect monitorRectDpiAware{};
-        MonitorRect monitorRectDpiUnaware{};
-    };
-
-    std::wstring id;
-    std::wstring name;
-    time_t creationTime;
-    std::optional<time_t> lastLaunchedTime;
-    bool isShortcutNeeded;
-    std::vector<Monitor> monitors;
-    std::vector<Application> apps;
-};
-
-struct ProjectsList
-{
-    std::vector<Project> projects;
-};
 
 namespace NonLocalizable
 {
     const inline wchar_t ModuleKey[] = L"Projects";
 }
 
-namespace JsonUtils
+namespace ProjectsData
 {
-    inline std::wstring ProjectsFile()
+    std::wstring ProjectsFile()
     {
         std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
         return std::wstring(settingsFolderPath) + L"\\projects.json";
     }
 
-    inline std::wstring TempProjectsFile()
+    std::wstring TempProjectsFile()
     {
         std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
         return std::wstring(settingsFolderPath) + L"\\temp-project.json";
+    }
+
+    RECT Project::Application::Position::toRect() const noexcept
+    {
+        return RECT{ .left = x, .top = y, .right = x + width, .bottom = y + height };
     }
 
     namespace ProjectJSON
@@ -103,7 +41,7 @@ namespace JsonUtils
                     const static wchar_t* HeightID = L"height";
                 }
 
-                inline json::JsonObject ToJson(const Project::Application::Position& position)
+                json::JsonObject ToJson(const Project::Application::Position& position)
                 {
                     json::JsonObject json{};
                     json.SetNamedValue(NonLocalizable::XAxisID, json::value(position.x));
@@ -113,7 +51,7 @@ namespace JsonUtils
                     return json;
                 }
 
-                inline std::optional<Project::Application::Position> FromJson(const json::JsonObject& json)
+                std::optional<Project::Application::Position> FromJson(const json::JsonObject& json)
                 {
                     Project::Application::Position result;
                     try
@@ -147,7 +85,7 @@ namespace JsonUtils
                 const static wchar_t* MonitorID = L"monitor";
             }
 
-            inline json::JsonObject ToJson(const Project::Application& data)
+            json::JsonObject ToJson(const Project::Application& data)
             {
                 json::JsonObject json{};
                 json.SetNamedValue(NonLocalizable::AppNameID, json::value(data.name));
@@ -165,7 +103,7 @@ namespace JsonUtils
                 return json;
             }
 
-            inline std::optional<Project::Application> FromJson(const json::JsonObject& json)
+            std::optional<Project::Application> FromJson(const json::JsonObject& json)
             {
                 Project::Application result;
                 try
@@ -181,7 +119,7 @@ namespace JsonUtils
                     {
                         result.packageFullName = json.GetNamedString(NonLocalizable::AppPackageFullNameID);
                     }
-                    
+
                     result.commandLineArgs = json.GetNamedString(NonLocalizable::CommandLineArgsID);
 
                     if (json.HasKey(NonLocalizable::ElevatedID))
@@ -191,9 +129,9 @@ namespace JsonUtils
 
                     if (json.HasKey(NonLocalizable::CanLaunchElevatedID))
                     {
-						result.canLaunchElevated = json.GetNamedBoolean(NonLocalizable::CanLaunchElevatedID);
-					}
-                    
+                        result.canLaunchElevated = json.GetNamedBoolean(NonLocalizable::CanLaunchElevatedID);
+                    }
+
                     result.isMaximized = json.GetNamedBoolean(NonLocalizable::MaximizedID);
                     result.isMinimized = json.GetNamedBoolean(NonLocalizable::MinimizedID);
                     result.monitor = static_cast<int>(json.GetNamedNumber(NonLocalizable::MonitorID));
@@ -229,7 +167,7 @@ namespace JsonUtils
                     const static wchar_t* HeightID = L"height";
                 }
 
-                inline json::JsonObject ToJson(const Project::Monitor::MonitorRect& data)
+                json::JsonObject ToJson(const Project::Monitor::MonitorRect& data)
                 {
                     json::JsonObject json{};
                     json.SetNamedValue(NonLocalizable::TopID, json::value(data.top));
@@ -240,7 +178,7 @@ namespace JsonUtils
                     return json;
                 }
 
-                inline std::optional<Project::Monitor::MonitorRect> FromJson(const json::JsonObject& json)
+                std::optional<Project::Monitor::MonitorRect> FromJson(const json::JsonObject& json)
                 {
                     Project::Monitor::MonitorRect result;
                     try
@@ -269,7 +207,7 @@ namespace JsonUtils
                 const static wchar_t* MonitorRectDpiUnawareID = L"monitor-rect-dpi-unaware";
             }
 
-            inline json::JsonObject ToJson(const Project::Monitor& data)
+            json::JsonObject ToJson(const Project::Monitor& data)
             {
                 json::JsonObject json{};
                 json.SetNamedValue(NonLocalizable::MonitorID, json::value(data.id));
@@ -282,7 +220,7 @@ namespace JsonUtils
                 return json;
             }
 
-            inline std::optional<Project::Monitor> FromJson(const json::JsonObject& json)
+            std::optional<Project::Monitor> FromJson(const json::JsonObject& json)
             {
                 Project::Monitor result;
                 try
@@ -326,7 +264,7 @@ namespace JsonUtils
             const static wchar_t* AppsID = L"applications";
         }
 
-        inline json::JsonObject ToJson(const Project& data)
+        json::JsonObject ToJson(const Project& data)
         {
             json::JsonObject json{};
 
@@ -355,7 +293,7 @@ namespace JsonUtils
             return json;
         }
 
-        inline std::optional<Project> FromJson(const json::JsonObject& json)
+        std::optional<Project> FromJson(const json::JsonObject& json)
         {
             Project result{};
 
@@ -364,7 +302,7 @@ namespace JsonUtils
                 result.id = json.GetNamedString(NonLocalizable::IdID);
                 result.name = json.GetNamedString(NonLocalizable::NameID);
                 result.creationTime = static_cast<time_t>(json.GetNamedNumber(NonLocalizable::CreationTimeID));
-                
+
                 if (json.HasKey(NonLocalizable::LastLaunchedTimeID))
                 {
                     result.lastLaunchedTime = static_cast<time_t>(json.GetNamedNumber(NonLocalizable::LastLaunchedTimeID));
@@ -374,19 +312,25 @@ namespace JsonUtils
                 auto appsArray = json.GetNamedArray(NonLocalizable::AppsID);
                 for (uint32_t i = 0; i < appsArray.Size(); ++i)
                 {
-                    if (auto obj = ApplicationJSON::FromJson(appsArray.GetObjectAt(i)); obj.has_value())
+                    auto obj = ApplicationJSON::FromJson(appsArray.GetObjectAt(i));
+                    if (!obj.has_value())
                     {
-                        result.apps.push_back(obj.value());
+                        return std::nullopt;
                     }
+
+                    result.apps.push_back(obj.value());
                 }
 
                 auto monitorsArray = json.GetNamedArray(NonLocalizable::MonitorConfigurationID);
                 for (uint32_t i = 0; i < monitorsArray.Size(); ++i)
                 {
-                    if (auto obj = MonitorJSON::FromJson(monitorsArray.GetObjectAt(i)); obj.has_value())
+                    auto obj = MonitorJSON::FromJson(monitorsArray.GetObjectAt(i));
+                    if (!obj.has_value())
                     {
-                        result.monitors.push_back(obj.value());
+                        return std::nullopt;
                     }
+
+                    result.monitors.push_back(obj.value());
                 }
             }
             catch (const winrt::hresult_error&)
@@ -405,7 +349,7 @@ namespace JsonUtils
             const static wchar_t* ProjectsID = L"projects";
         }
 
-        inline json::JsonObject ToJson(const std::vector<Project>& data)
+        json::JsonObject ToJson(const std::vector<Project>& data)
         {
             json::JsonObject json{};
             json::JsonArray projectsArray{};
@@ -419,7 +363,7 @@ namespace JsonUtils
             return json;
         }
 
-        inline std::optional<std::vector<Project>> FromJson(const json::JsonObject& json)
+        std::optional<std::vector<Project>> FromJson(const json::JsonObject& json)
         {
             std::vector<Project> result{};
 
@@ -428,9 +372,14 @@ namespace JsonUtils
                 auto array = json.GetNamedArray(NonLocalizable::ProjectsID);
                 for (uint32_t i = 0; i < array.Size(); ++i)
                 {
-                    if (auto obj = ProjectJSON::FromJson(array.GetObjectAt(i)); obj.has_value())
+                    auto obj = ProjectJSON::FromJson(array.GetObjectAt(i));
+                    if (obj.has_value())
                     {
                         result.push_back(obj.value());
+                    }
+                    else
+                    {
+                        return std::nullopt;
                     }
                 }
             }

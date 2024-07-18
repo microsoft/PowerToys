@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include <projects-common/Data.h>
+#include <ProjectsLib/ProjectsData.h>
 
 #include <AppLauncher.h>
 
@@ -34,17 +34,29 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
     // read projects
-    std::vector<Project> projects;
+    std::vector<ProjectsData::Project> projects;
     try
     {
-        auto savedProjectsJson = json::from_file(JsonUtils::ProjectsFile());
+        auto savedProjectsJson = json::from_file(ProjectsData::ProjectsFile());
         if (savedProjectsJson.has_value())
         {
-            auto savedProjects = JsonUtils::ProjectsListJSON::FromJson(savedProjectsJson.value());
+            auto savedProjects = ProjectsData::ProjectsListJSON::FromJson(savedProjectsJson.value());
             if (savedProjects.has_value())
             {
                 projects = savedProjects.value();
             }
+            else
+            {
+                // TODO: show error message
+                Logger::critical("Incorrect Projects file");
+                return 1;
+            }
+        }
+        else
+        {
+            // TODO: show error message
+            Logger::critical("Incorrect Projects file");
+            return 1;
         }
     }
     catch (std::exception ex)
@@ -59,7 +71,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         return 1;
     }
 
-    Project projectToLaunch{};
+    ProjectsData::Project projectToLaunch{};
     std::string idStr(cmdline);
     std::wstring id(idStr.begin(), idStr.end());
     if (!id.empty())
@@ -96,7 +108,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
             break;
         }
     }
-    json::to_file(JsonUtils::ProjectsFile(), JsonUtils::ProjectsListJSON::ToJson(projects));
+    json::to_file(ProjectsData::ProjectsFile(), ProjectsData::ProjectsListJSON::ToJson(projects));
 
     CoUninitialize();
     return 0;

@@ -1,4 +1,4 @@
-
+#include <shlobj.h>
 
 inline std::optional<GUID> GuidFromString(const std::wstring& str) noexcept
 {

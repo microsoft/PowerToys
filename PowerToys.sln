@@ -594,7 +594,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "projects-common", "projects-common", "{BE126CBB-AE12-406A-9837-A05ACFCA57A7}"
 	ProjectSection(SolutionItems) = preProject
 		src\modules\Projects\projects-common\AppUtils.h = src\modules\Projects\projects-common\AppUtils.h
-		src\modules\Projects\projects-common\Data.h = src\modules\Projects\projects-common\Data.h
 		src\modules\Projects\projects-common\GuidUtils.h = src\modules\Projects\projects-common\GuidUtils.h
 		src\modules\Projects\projects-common\MonitorUtils.h = src\modules\Projects\projects-common\MonitorUtils.h
 		src\modules\Projects\projects-common\VirtualDesktop.h = src\modules\Projects\projects-common\VirtualDesktop.h

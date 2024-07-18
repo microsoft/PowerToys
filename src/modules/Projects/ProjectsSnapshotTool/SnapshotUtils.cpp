@@ -173,9 +173,9 @@ namespace SnapshotUtils
         return elevation.TokenIsElevated;
     }
 
-    std::vector<Project::Application> GetApps(const std::function<unsigned int(HWND)> getMonitorNumberFromWindowHandle)
+    std::vector<ProjectsData::Project::Application> GetApps(const std::function<unsigned int(HWND)> getMonitorNumberFromWindowHandle)
     {
-        std::vector<Project::Application> apps{};
+        std::vector<ProjectsData::Project::Application> apps{};
 
         auto installedApps = Utils::Apps::GetAppsList();
         auto windows = WindowEnumerator::Enumerate(WindowFilter::Filter);
@@ -239,7 +239,7 @@ namespace SnapshotUtils
                 continue;
             }
 
-            Project::Application app{
+            ProjectsData::Project::Application app{
                 .name = data.value().name,
                 .title = title,
                 .path = processPath,
@@ -249,7 +249,7 @@ namespace SnapshotUtils
                 .canLaunchElevated = data.value().canLaunchElevated,
                 .isMinimized = WindowUtils::IsMinimized(window),
                 .isMaximized = WindowUtils::IsMaximized(window),
-                .position = Project::Application::Position{
+                .position = ProjectsData::Project::Application::Position{
                     .x = rect.left,
                     .y = rect.top,
                     .width = rect.right - rect.left,

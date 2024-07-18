@@ -188,7 +188,7 @@ bool LaunchPackagedApp(const std::wstring& packageFullName)
     return false;
 }
 
-bool Launch(const Project::Application& app)
+bool Launch(const ProjectsData::Project::Application& app)
 { 
     bool launched { false };
     if (!app.packageFullName.empty() && app.commandLineArgs.empty() && !app.isElevated)
@@ -233,11 +233,11 @@ bool Launch(const Project::Application& app)
     return launched;
 }
 
-Project Launch(Project project)
+ProjectsData::Project Launch(ProjectsData::Project project)
 {
     // Get the set of windows before launching the app
     std::vector<HWND> windowsBefore = WindowEnumerator::Enumerate(WindowFilter::Filter);
-    std::vector<std::pair<Project::Application, HWND>> launchedWindows{};
+    std::vector<std::pair<ProjectsData::Project::Application, HWND>> launchedWindows{};
     auto apps = Utils::Apps::GetAppsList();
     auto monitors = MonitorUtils::IdentifyMonitors();
        
@@ -280,7 +280,7 @@ Project Launch(Project project)
                 }
 
                 // set the window
-                auto res = std::find_if(launchedWindows.begin(), launchedWindows.end(), [&](const std::pair<Project::Application, HWND>& val) { return val.first.name == app->name && val.second == nullptr; });
+                auto res = std::find_if(launchedWindows.begin(), launchedWindows.end(), [&](const std::pair<ProjectsData::Project::Application, HWND>& val) { return val.first.name == app->name && val.second == nullptr; });
                 if (res != launchedWindows.end())
                 {
                     res->second = window;
@@ -289,7 +289,7 @@ Project Launch(Project project)
         }
 
         // check if all windows were found
-        auto res = std::find_if(launchedWindows.begin(), launchedWindows.end(), [&](const std::pair<Project::Application, HWND>& val) { return val.second == nullptr; });
+        auto res = std::find_if(launchedWindows.begin(), launchedWindows.end(), [&](const std::pair<ProjectsData::Project::Application, HWND>& val) { return val.second == nullptr; });
         if (res == launchedWindows.end())
         {
             Logger::trace(L"All windows found.");
@@ -314,7 +314,7 @@ Project Launch(Project project)
                 continue;
             }
 
-            auto res = std::find_if(launchedWindows.begin(), launchedWindows.end(), [&](const std::pair<Project::Application, HWND>& val) { return val.second == nullptr && val.first.name == app->name; });
+            auto res = std::find_if(launchedWindows.begin(), launchedWindows.end(), [&](const std::pair<ProjectsData::Project::Application, HWND>& val) { return val.second == nullptr && val.first.name == app->name; });
             if (res != launchedWindows.end())
             {
                 res->second = window;
@@ -331,7 +331,7 @@ Project Launch(Project project)
             continue;
         }
 
-        auto snapMonitorIter = std::find_if(project.monitors.begin(), project.monitors.end(), [&](const Project::Monitor& val) { return val.number == app.monitor; });
+        auto snapMonitorIter = std::find_if(project.monitors.begin(), project.monitors.end(), [&](const ProjectsData::Project::Monitor& val) { return val.number == app.monitor; });
         if (snapMonitorIter == project.monitors.end())
         {
             Logger::error(L"No monitor saved for launching the app");
@@ -340,7 +340,7 @@ Project Launch(Project project)
 
         HMONITOR currentMonitor{};
         UINT currentDpi = DPIAware::DEFAULT_DPI;
-        auto currentMonitorIter = std::find_if(monitors.begin(), monitors.end(), [&](const Project::Monitor& val) { return val.number == app.monitor; });
+        auto currentMonitorIter = std::find_if(monitors.begin(), monitors.end(), [&](const ProjectsData::Project::Monitor& val) { return val.number == app.monitor; });
         if (currentMonitorIter != monitors.end())
         {
             currentMonitor = currentMonitorIter->monitor;

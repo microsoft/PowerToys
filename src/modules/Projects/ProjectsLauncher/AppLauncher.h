@@ -1,6 +1,6 @@
 #pragma once
 
-#include <projects-common/Data.h>
+#include <ProjectsLib/ProjectsData.h>
 
-bool Launch(const Project::Application& app);
-Project Launch(Project project);
+bool Launch(const ProjectsData::Project::Application& app);
+ProjectsData::Project Launch(ProjectsData::Project project);
