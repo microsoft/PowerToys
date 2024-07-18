@@ -169,17 +169,29 @@ namespace ProjectsEditor.ViewModels
             editedProject.OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs("AppsCountString"));
             editedProject.Initialize();
             _projectsEditorIO.SerializeProjects(Projects.ToList());
-            if (editedProject.IsShortcutNeeded)
-            {
-                CreateShortcut(editedProject);
-            }
+            ApplyShortcut(editedProject);
         }
 
-        private void CreateShortcut(Project project)
+        private void ApplyShortcut(Project project)
         {
             string basePath = AppDomain.CurrentDomain.BaseDirectory;
             string shortcutAddress = Path.Combine(FolderUtils.Desktop(), project.Name + ".lnk");
             string shortcutIconFilename = Path.Combine(FolderUtils.Temp(), project.Id + ".ico");
+
+            if (!project.IsShortcutNeeded)
+            {
+                if (File.Exists(shortcutIconFilename))
+                {
+                    File.Delete(shortcutIconFilename);
+                }
+
+                if (File.Exists(shortcutAddress))
+                {
+                    File.Delete(shortcutAddress);
+                }
+
+                return;
+            }
 
             Bitmap icon = ProjectIcon.DrawIcon(ProjectIcon.IconTextFromProjectName(project.Name));
             ProjectIcon.SaveIcon(icon, shortcutIconFilename);
@@ -244,12 +256,16 @@ namespace ProjectsEditor.ViewModels
         {
             project.Name = projectBeforeLaunch.Name;
             project.IsRevertEnabled = true;
+            CheckShortcutPresence(project);
             editPage.DataContext = project;
+            project.Initialize();
         }
 
         internal void RevertLaunch()
         {
+            CheckShortcutPresence(projectBeforeLaunch);
             editPage.DataContext = projectBeforeLaunch;
+            projectBeforeLaunch.Initialize();
         }
 
         public void EditProject(Project selectedProject, bool isNewlyCreated = false)
@@ -291,16 +307,28 @@ namespace ProjectsEditor.ViewModels
             selectedProject.EditorWindowTitle = isNewlyCreated ? Properties.Resources.CreateProject : Properties.Resources.EditProject;
             selectedProject.Initialize();
 
+            CheckShortcutPresence(selectedProject);
+
             editPage.DataContext = selectedProject;
             _mainWindow.ShowPage(editPage);
             lastUpdatedTimer.Stop();
         }
 
+        private void CheckShortcutPresence(Project project)
+        {
+            string basePath = AppDomain.CurrentDomain.BaseDirectory;
+            string shortcutAddress = Path.Combine(FolderUtils.Desktop(), project.Name + ".lnk");
+            project.IsShortcutNeeded = File.Exists(shortcutAddress);
+        }
+
         public void AddNewProject(Project project)
         {
+            project.Applications.RemoveAll(app => !app.IsIncluded);
+            project.Initialize();
             Projects.Add(project);
             _projectsEditorIO.SerializeProjects(Projects.ToList());
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(ProjectsView)));
+            ApplyShortcut(project);
         }
 
         public void DeleteProject(Project selectedProject)
