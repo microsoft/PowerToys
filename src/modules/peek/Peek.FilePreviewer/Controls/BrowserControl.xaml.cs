@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using ManagedCommon;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
@@ -17,9 +18,11 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
 
+using Control = System.Windows.Controls.Control;
+
 namespace Peek.FilePreviewer.Controls
 {
-    public sealed partial class BrowserControl : UserControl, IDisposable
+    public sealed partial class BrowserControl : Microsoft.UI.Xaml.Controls.UserControl, IDisposable
     {
         /// <summary>
         /// Helper private Uri where we cache the last navigated page
@@ -197,44 +200,84 @@ namespace Peek.FilePreviewer.Controls
             Navigate();
         }
 
-        private void CoreWebView2_ContextMenuRequested(CoreWebView2 sender, CoreWebView2ContextMenuRequestedEventArgs args)
+        private List<Control> GetContextMenuItems(CoreWebView2 sender, CoreWebView2ContextMenuRequestedEventArgs args)
         {
             var menuItems = args.MenuItems;
 
             if (menuItems.IsReadOnly)
             {
-                return;
+                return [];
             }
 
-            CoreWebView2ContextMenuItem CreateCommandMenuItem(string resourceId, string commandName)
+            if (CustomContextMenu)
             {
-                var label = ResourceLoaderInstance.ResourceLoader.GetString(resourceId);
-                var commandMenuItem = sender.Environment.CreateContextMenuItem(label, null, CoreWebView2ContextMenuItemKind.Command);
-                commandMenuItem.CustomItemSelected += async (_, _) =>
+                MenuItem CreateCommandMenuItem(string resourceId, string commandName)
                 {
-                    await sender.ExecuteScriptAsync($"{commandName}()");
-                };
-                return commandMenuItem;
+                    MenuItem commandMenuItem = new()
+                    {
+                        Header = ResourceLoaderInstance.ResourceLoader.GetString(resourceId),
+                        IsEnabled = true,
+                    };
+
+                    commandMenuItem.Click += async (s, ex) =>
+                    {
+                        await sender.ExecuteScriptAsync($"{commandName}()");
+                    };
+
+                    return commandMenuItem;
+                }
+
+                // When using Monaco, we show menu items that call the appropriate JS functions -
+                // WebView2 isn't able to show a "Copy" menu item of its own.
+                return [
+                           CreateCommandMenuItem("ContextMenu_Copy", "runCopyCommand"),
+                           new Separator(),
+                           CreateCommandMenuItem("ContextMenu_ToggleTextWrapping", "runToggleTextWrapCommand"),
+                       ];
             }
-
-            // When using Monaco, we show menu items that call the appropriate JS functions -
-            // WebView2 isn't able to show a "Copy" menu item of its own.
-            // When not using Monaco, we keep the "Copy" menu item from WebView2's default context menu.
-            List<CoreWebView2ContextMenuItem> GetMenuItemsToShow() =>
-                CustomContextMenu
-                    ? [
-                        CreateCommandMenuItem("ContextMenu_Copy", "runCopyCommand"),
-                        sender.Environment.CreateContextMenuItem(string.Empty, null, CoreWebView2ContextMenuItemKind.Separator),
-                        CreateCommandMenuItem("ContextMenu_ToggleTextWrapping", "runToggleTextWrapCommand"),
-                    ]
-                    : menuItems.Where(menuItem => menuItem.Name == "copy").ToList();
-
-            var menuItemsToShow = GetMenuItemsToShow();
-
-            menuItems.Clear();
-            foreach (var menuItemToShow in menuItemsToShow)
+            else
             {
-                menuItems.Add(menuItemToShow);
+                MenuItem CreateMenuItemFromWebViewMenuItem(CoreWebView2ContextMenuItem webViewMenuItem)
+                {
+                    MenuItem menuItem = new()
+                    {
+                        Header = webViewMenuItem.Label.Replace('&', '_'),  // replace with '_' so it is underlined in the label
+                        IsEnabled = webViewMenuItem.IsEnabled,
+                        InputGestureText = webViewMenuItem.ShortcutKeyDescription,
+                    };
+
+                    menuItem.Click += (_, _) =>
+                    {
+                        args.SelectedCommandId = webViewMenuItem.CommandId;
+                    };
+
+                    return menuItem;
+                }
+
+                // When not using Monaco, we keep the "Copy" menu item from WebView2's default context menu.
+                return menuItems.Where(menuItem => menuItem.Name == "copy")
+                                .Select(CreateMenuItemFromWebViewMenuItem)
+                                .ToList<Control>();
+            }
+        }
+
+        private void CoreWebView2_ContextMenuRequested(CoreWebView2 sender, CoreWebView2ContextMenuRequestedEventArgs args)
+        {
+            var deferral = args.GetDeferral();
+            args.Handled = true;
+
+            var menuItems = GetContextMenuItems(sender, args);
+
+            if (menuItems.Count != 0)
+            {
+                var contextMenu = new ContextMenu();
+                contextMenu.Closed += (_, _) => deferral.Complete();
+                contextMenu.IsOpen = true;
+
+                foreach (var menuItem in menuItems)
+                {
+                    contextMenu.Items.Add(menuItem);
+                }
             }
         }
 
