@@ -84,6 +84,8 @@ namespace ProjectsEditor.Data
 
             public bool IsShortcutNeeded { get; set; }
 
+            public bool IsMoveAppsBehaviourSelected { get; set; }
+
             public List<MonitorConfigurationWrapper> MonitorConfiguration { get; set; }
 
             public List<ApplicationWrapper> Applications { get; set; }

@@ -79,6 +79,15 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Launch new app instances.
+        /// </summary>
+        public static string AlwaysLaunch {
+            get {
+                return ResourceManager.GetString("AlwaysLaunch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to app.
         /// </summary>
         public static string App {
@@ -381,6 +390,15 @@ namespace ProjectsEditor.Properties {
         public static string MonthsAgo {
             get {
                 return ResourceManager.GetString("MonthsAgo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Move apps if present.
+        /// </summary>
+        public static string MoveIfExist {
+            get {
+                return ResourceManager.GetString("MoveIfExist", resourceCulture);
             }
         }
         

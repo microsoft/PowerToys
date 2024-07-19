@@ -277,6 +277,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal">
             <Button
@@ -377,7 +378,20 @@
                 </Grid>
             </StackPanel>
         </ScrollViewer>
-        <DockPanel Grid.Row="5" Margin="0,20,0,20">
+        <StackPanel
+            Grid.Row="5"
+            Orientation="Horizontal"
+            Margin="0 5 0 0">
+            <CheckBox
+                Content="{x:Static props:Resources.MoveIfExist}" 
+                FontSize="14" 
+                FontWeight="Normal" 
+                Margin="0,0,0,0" 
+                Foreground="{DynamicResource PrimaryForegroundBrush}"
+                IsChecked="{Binding IsMoveAppsBehaviourSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                VerticalAlignment="Center"/>
+        </StackPanel>
+        <DockPanel Grid.Row="6" Margin="0,20,0,20">
             <CheckBox
                 DockPanel.Dock="Left"
                 Content="{x:Static props:Resources.CreateShortcut}"
