@@ -1359,7 +1359,7 @@ EXHIBIT A -Mozilla Public License.
 - System.IO.Abstractions 17.2.3
 - System.IO.Abstractions.TestingHelpers 17.2.3
 - System.Management 8.0.0
-- System.Reactive 6.0.0-preview.9
+- System.Reactive 6.0.1
 - System.Runtime.Caching 8.0.0
 - System.Security.Cryptography.ProtectedData 8.0.0
 - System.ServiceProcess.ServiceController 8.0.0
