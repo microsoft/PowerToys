@@ -307,6 +307,10 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
 
             if (!File.Exists(checksumsFilename))
             {
+#pragma warning disable CA1863 // "CompositeFormat" verwenden
+                MessageBox.Show(string.Format(CultureInfo.InvariantCulture, ResourceHelper.GetResource("Hashes.Verify.Dialog.MissingFile"), checksumsFilename), ResourceHelper.GetResource("Hashes.Verify.Dialog.Title"), MessageBoxButton.OK);
+#pragma warning restore CA1863 // "CompositeFormat" verwenden
+
                 return false;
             }
 
@@ -355,10 +359,22 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
 
                 string hashFilename = filename + fileExtension;
 
-                return File.Exists(hashFilename) && File.ReadAllText(hashFilename) == hash;
+                if (!File.Exists(hashFilename))
+                {
+#pragma warning disable CA1863 // "CompositeFormat" verwenden
+                    MessageBox.Show(string.Format(CultureInfo.InvariantCulture, ResourceHelper.GetResource("Hashes.Verify.Dialog.MissingFile"), hashFilename), ResourceHelper.GetResource("Hashes.Verify.Dialog.Title"), MessageBoxButton.OK);
+#pragma warning restore CA1863 // "CompositeFormat" verwenden
+
+                    return false;
+                }
+
+                if (File.ReadAllText(hashFilename) != hash)
+                {
+                    return false;
+                }
             }
 
-            throw new InvalidOperationException();
+            return true;
         }
 
         public static string GetUUID(HashCallingAction hashCallingAction)

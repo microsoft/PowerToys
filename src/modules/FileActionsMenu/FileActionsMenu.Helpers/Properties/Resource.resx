@@ -236,6 +236,9 @@
   <data name="Hashes.Verify.Dialog.Fail" xml:space="preserve">
     <value>One or more checksums are invalid</value>
   </data>
+  <data name="Hashes.Verify.Dialog.MissingFile" xml:space="preserve">
+    <value>The file {0} was not found, so the hash couldn't be verified.</value>
+  </data>
   <data name="Hashes.Verify.Dialog.Success" xml:space="preserve">
     <value>All checksums are valid</value>
   </data>
