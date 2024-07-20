@@ -15,12 +15,6 @@ public static class IShellItemExtensions
     {
         string path = shellItem.GetPath();
         string name = shellItem.GetName();
-    public static class IShellItemExtensions
-    {
-        public static IFileSystemItem ToIFileSystemItem(this IShellItem shellItem)
-        {
-            string path = shellItem.GetPath();
-            string name = shellItem.GetName();
 
         return File.Exists(path) ? new FileItem(path, name) : new FolderItem(path, name, shellItem.GetParsingName());
     }
