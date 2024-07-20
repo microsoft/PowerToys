@@ -12,10 +12,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+	<PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="System.IO.Abstractions" />
-    <PackageReference Include="Microsoft.Windows.CsWinRT">
-      <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
-    </PackageReference>
   </ItemGroup>
 
   <PropertyGroup>
