@@ -45,9 +45,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
             TelemetryHelper.LogEvent(new FileActionsMenuMergeContentActionInvokedEvent() { HasDifferentExtensions = hasDifferentExtensions }, SelectedItems);
 
             SaveFileDialog saveFileDialog = new();
-            saveFileDialog.Filter = ResourceHelper.GetResource("File_Content_Actions.MergeFiles.Dialog.Filter") + "|*.*";
             saveFileDialog.Title = ResourceHelper.GetResource("File_Content_Actions.MergeFiles.Dialog.Title");
-            saveFileDialog.DefaultExt = ".*";
             saveFileDialog.InitialDirectory = Path.GetDirectoryName(SelectedItems[0]);
             DialogResult result = saveFileDialog.ShowDialog();
 
