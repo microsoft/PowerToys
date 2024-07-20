@@ -5,6 +5,7 @@
 using System;
 using System.Globalization;
 using System.Media;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using FileActionsMenu.Helpers.Telemetry;
@@ -95,10 +96,56 @@ namespace FileActionsMenu.Helpers
         [STAThread]
         public async Task Conflict(string fileName, Action onReplace, Action onIgnore)
         {
-            SystemSounds.Exclamation.Play();
             TaskCompletionSource taskCompletionSource = new();
 
             _conflictTaskDialog?.Close();
+
+            // Add newline after 45 characters to prevent cutoffs (Thanks copilot)
+            string AddNewlines(string input, int maxLength)
+            {
+                string[] parts = input.Split('\\');
+                string result = string.Empty;
+                string currentLine = string.Empty;
+
+                foreach (string part in parts)
+                {
+                    if (currentLine.Length + part.Length + 1 > maxLength)
+                    {
+                        if (currentLine.Length > 0)
+                        {
+                            result += currentLine + "\\" + Environment.NewLine;
+                        }
+
+                        string tempPart = part;
+
+                        while (tempPart.Length > maxLength)
+                        {
+                            result += tempPart.AsSpan(0, maxLength).ToString() + Environment.NewLine;
+                            tempPart = tempPart.Substring(maxLength);
+                        }
+
+                        currentLine = tempPart;
+                    }
+                    else
+                    {
+                        if (currentLine.Length > 0)
+                        {
+                            currentLine += "\\";
+                        }
+
+                        currentLine += part;
+                    }
+                }
+
+                if (currentLine.Length > 0)
+                {
+                    result += currentLine;
+                }
+
+                return result;
+            }
+
+            fileName = AddNewlines(fileName, 45);
 
 #pragma warning disable CA1863 // Use 'CompositeFormat'
             _conflictTaskDialog = new()
@@ -146,6 +193,7 @@ namespace FileActionsMenu.Helpers
             {
                 await _firstDialogOpened.Task;
                 Task.Delay(1000).Wait();
+                SystemSounds.Exclamation.Play();
                 _conflictTaskDialog.Show();
             });
 
