@@ -73,7 +73,11 @@ namespace FileActionsMenu.Helpers
                 _conflictTaskDialog?.Close();
             };
             _taskDialog.StandardButtons = Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardButtons.None;
-            Task.Run(() => _taskDialog.Show());
+            Task.Run(() =>
+            {
+                _firstDialogOpened.SetResult();
+                _taskDialog.Show();
+            });
         }
 
         public void UpdateProgress(int current, string fileName)
@@ -138,10 +142,17 @@ namespace FileActionsMenu.Helpers
             _progressBar.State = TaskDialogProgressBarState.Paused;
             _conflictTaskDialog.Controls.Add(replaceButton);
             _conflictTaskDialog.Controls.Add(ignoreButton);
-            _ = Task.Run(_conflictTaskDialog.Show);
+            _ = Task.Run(async () =>
+            {
+                await _firstDialogOpened.Task;
+                Task.Delay(1000).Wait();
+                _conflictTaskDialog.Show();
+            });
 
             await taskCompletionSource.Task;
         }
+
+        private TaskCompletionSource _firstDialogOpened = new();
 
         public void Dispose()
         {
