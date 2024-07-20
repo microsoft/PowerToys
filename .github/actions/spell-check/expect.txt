@@ -203,6 +203,7 @@ CMINVOKECOMMANDINFO
 CMINVOKECOMMANDINFOEX
 CMock
 CMONITORS
+cmph
 cmpgt
 cne
 CNF
@@ -247,6 +248,7 @@ copiedcolorrepresentation
 cotaskmem
 COULDNOT
 countof
+cph
 CPower
 cppblog
 cppruntime
@@ -768,6 +770,7 @@ keyremaps
 keyvault
 KILLFOCUS
 killrunner
+kmph
 Knownfolders
 KSPROPERTY
 Kybd

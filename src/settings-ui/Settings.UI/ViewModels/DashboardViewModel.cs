@@ -88,10 +88,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void LoadKBMSettingsFromJson()
         {
-            KeyboardManagerProfile kbmProfile = GetKBMProfile();
-            _kbmItem.RemapKeys = kbmProfile?.RemapKeys.InProcessRemapKeys;
-            _kbmItem.RemapShortcuts = KeyboardManagerViewModel.CombineShortcutLists(kbmProfile?.RemapShortcuts.GlobalRemapShortcuts, kbmProfile?.RemapShortcuts.AppSpecificRemapShortcuts);
-            dispatcher.Invoke(new Action(() => UpdateKBMItems()));
+            try
+            {
+                KeyboardManagerProfile kbmProfile = GetKBMProfile();
+                _kbmItem.RemapKeys = kbmProfile?.RemapKeys.InProcessRemapKeys;
+                _kbmItem.RemapShortcuts = KeyboardManagerViewModel.CombineShortcutLists(kbmProfile?.RemapShortcuts.GlobalRemapShortcuts, kbmProfile?.RemapShortcuts.AppSpecificRemapShortcuts);
+                dispatcher.Invoke(new Action(() => UpdateKBMItems()));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to load KBM settings: {ex.Message}");
+            }
         }
 
         private void UpdateKBMItems()
