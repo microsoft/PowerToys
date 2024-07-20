@@ -22,6 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             PasteAsJsonShortcut = new();
             ShowCustomPreview = true;
             SendPasteKeyCombination = true;
+            CloseAfterLosingFocus = false;
         }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
@@ -30,6 +31,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         [CmdConfigureIgnore]
         public bool SendPasteKeyCombination { get; set; }
+
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool CloseAfterLosingFocus { get; set; }
 
         [JsonPropertyName("advanced-paste-ui-hotkey")]
         public HotkeySettings AdvancedPasteUIShortcut { get; set; }

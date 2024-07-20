@@ -76,7 +76,7 @@ extends:
           NODE_OPTIONS: --max_old_space_size=16384
           IsPipeline: 1 # The installer uses this to detect whether it should pick up localizations
           SkipCppCodeAnalysis: 1 # Skip the code analysis to speed up release CI. It runs on PR CI, anyway
-          IsExperimentationLive: 1 # The build and installer use this to turn on experimentation
+          # IsExperimentationLive: 1 # The build and installer use this to turn on experimentation
         steps:
         - checkout: self
           clean: true

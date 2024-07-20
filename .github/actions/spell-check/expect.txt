@@ -96,6 +96,7 @@ AUTOUPDATE
 AValid
 awakeness
 AWAYMODE
+azcliversion
 azman
 backtracer
 bbwe
@@ -120,6 +121,7 @@ BLURREGION
 bmi
 bms
 BNumber
+BODGY
 BOKMAL
 bootstrapper
 BOOTSTRAPPERINSTALLFOLDER
@@ -166,6 +168,7 @@ CENTERALIGN
 ceq
 certlm
 certmgr
+cfp
 CEscaped
 cguid
 CHANGECBCHAIN
@@ -199,6 +202,7 @@ CMINVOKECOMMANDINFO
 CMINVOKECOMMANDINFOEX
 CMock
 CMONITORS
+cmph
 cmpgt
 cne
 CNF
@@ -243,6 +247,7 @@ copiedcolorrepresentation
 cotaskmem
 COULDNOT
 countof
+cph
 CPower
 cppblog
 cppruntime
@@ -757,8 +762,10 @@ KEYEVENTF
 KEYIMAGE
 keynum
 keyremaps
+keyvault
 KILLFOCUS
 killrunner
+kmph
 Knownfolders
 ksh
 KSPROPERTY
@@ -1345,6 +1352,9 @@ RRF
 rrr
 rsop
 Rsp
+rstringalnum
+rstringalpha
+rstringdigit
 Rstrtmgr
 RTB
 RTLREADING
@@ -1359,6 +1369,7 @@ runtimeclass
 runtimeobject
 runtimepack
 runtimes
+ruuid
 rvm
 rwin
 rwl

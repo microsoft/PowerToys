@@ -24,10 +24,10 @@ jobs:
     NODE_OPTIONS: --max_old_space_size=16384
   pool:
     demands: ImageOverride -equals SHINE-VS17-Latest
-    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-      name: SHINE-OSS-L
-    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+    ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
       name: SHINE-INT-L
+    ${{ else }}:
+      name: SHINE-OSS-L
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10
