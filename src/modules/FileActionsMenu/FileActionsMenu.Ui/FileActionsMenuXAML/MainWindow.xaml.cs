@@ -205,15 +205,7 @@ namespace FileActionsMenu.Ui
                                 }
 
                                 _cancelClose = true;
-
-                                // Prevent unchecking the checked item
-                                if (checkableAction.IsChecked)
-                                {
-                                    _cancelCheckableEvent = true;
-                                    ((ToggleMenuFlyoutItem)sender)!.IsChecked = true;
-                                    _cancelCheckableEvent = false;
-                                    return;
-                                }
+                                _cancelCheckableEvent = true;
 
                                 checkableAction.IsChecked = toggleMenuItem.IsChecked;
 
@@ -227,6 +219,9 @@ namespace FileActionsMenu.Ui
                                         }
                                     }
                                 }
+
+                                toggleMenuItem.IsChecked = true;
+                                _cancelCheckableEvent = false;
                             };
 
                             if (cm is MenuFlyout menuFlyout)
