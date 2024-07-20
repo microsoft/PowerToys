@@ -4,11 +4,13 @@
 #include <comdef.h>
 #include <Wbemidl.h>
 
+#include <common/utils/elevation.h>
+#include <common/utils/process_path.h>
+#include <common/notifications/NotificationUtil.h>
+
 #include <projects-common/AppUtils.h>
 #include <projects-common/WindowEnumerator.h>
 #include <projects-common/WindowFilter.h>
-
-#include <common/utils/process_path.h>
 
 namespace SnapshotUtils
 {
@@ -149,28 +151,20 @@ namespace SnapshotUtils
 
     bool IsProcessElevated(DWORD processID)
     {
-        HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, processID);
-        if (!hProcess)
+        wil::unique_handle hProcess{ OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, processID) };
+        wil::unique_handle token;
+
+        if (OpenProcessToken(hProcess.get(), TOKEN_QUERY, &token))
         {
-            return false;
+            TOKEN_ELEVATION elevation;
+            DWORD size;
+            if (GetTokenInformation(token.get(), TokenElevation, &elevation, sizeof(elevation), &size))
+            {
+                return elevation.TokenIsElevated != 0;
+            }
         }
 
-        HANDLE hToken = NULL;
-        if (!OpenProcessToken(hProcess, TOKEN_QUERY, &hToken))
-        {
-            return false;
-        }
-
-        TOKEN_ELEVATION elevation;
-        DWORD cbSize = sizeof(TOKEN_ELEVATION);
-        if (!GetTokenInformation(hToken, TokenElevation, &elevation, sizeof(elevation), &cbSize))
-        {
-            CloseHandle(hToken);
-            return false;
-        }
-
-        CloseHandle(hToken);
-        return elevation.TokenIsElevated;
+        return false;
     }
 
     std::vector<ProjectsData::Project::Application> GetApps(const std::function<unsigned int(HWND)> getMonitorNumberFromWindowHandle)
@@ -199,16 +193,30 @@ namespace SnapshotUtils
                 continue;
             }
 
+            DWORD pid{};
+            GetWindowThreadProcessId(window, &pid);
+
             // filter by app path
             std::wstring processPath = get_process_path(window);
-            if (processPath.empty() || WindowUtils::IsExcludedByDefault(window, processPath, title))
+            if (processPath.empty())
             {
-                Logger::debug(L"Excluded by default: {}, {}", title, processPath);
+                // When PT runs not as admin, it can't get the process path of the window of the elevated process.
+                // Notify the user that running as admin is required to process elevated windows.
+                if (!is_process_elevated() && IsProcessElevated(pid))
+                {
+                    notifications::WarnIfElevationIsRequired(GET_RESOURCE_STRING(IDS_PROJECTS),
+                                                             GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED),
+                                                             GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED_LEARN_MORE),
+                                                             GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED_DIALOG_DONT_SHOW_AGAIN));
+                }
+
                 continue;
             }
 
-            DWORD pid{};
-            GetWindowThreadProcessId(window, &pid);
+            if (WindowUtils::IsExcludedByDefault(window, processPath, title))
+            {
+                continue;
+            }
 
             // fix for the packaged apps that are not caught when minimized, e.g., Settings.
             if (processPath.ends_with(NonLocalizable::ApplicationFrameHost))

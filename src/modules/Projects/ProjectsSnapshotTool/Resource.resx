@@ -120,4 +120,16 @@
   <data name="DefaultProjectNamePrefix" xml:space="preserve">
     <value>Project</value>
   </data>
+  <data name="Projects" xml:space="preserve">
+    <value>Projects</value>
+  </data>
+  <data name="System_Foreground_Elevated" xml:space="preserve">
+    <value>We've detected an application running with administrator privileges. This will prevent certain interactions with these applications.</value>
+  </data>
+  <data name="System_Foreground_Elevated_Dialog_Dont_Show_Again" xml:space="preserve">
+    <value>Don't show again</value>
+  </data>
+  <data name="System_Foreground_Elevated_Learn_More" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
 </root>
