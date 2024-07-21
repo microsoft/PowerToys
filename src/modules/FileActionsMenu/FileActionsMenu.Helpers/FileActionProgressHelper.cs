@@ -180,6 +180,16 @@ namespace FileActionsMenu.Helpers
                 _conflictTaskDialog.Close();
                 PowerToysTelemetry.Log.WriteEvent(new FileActionsMenuProgressConflictEvent() { ReplaceChosen = false });
             };
+            TaskDialogButton cancelButton = new()
+            {
+                Text = ResourceHelper.GetResource("Progress.Cancel"),
+            };
+            cancelButton.Click += (sender, e) =>
+            {
+                taskCompletionSource.SetResult();
+                _taskDialog.Close(Microsoft.WindowsAPICodePack.Dialogs.TaskDialogResult.Cancel);
+                _conflictTaskDialog?.Close();
+            };
             _conflictTaskDialog.Closing += (sender, e) =>
             {
                 if (!taskCompletionSource.Task.IsCompleted)
@@ -191,6 +201,7 @@ namespace FileActionsMenu.Helpers
             _progressBar.State = TaskDialogProgressBarState.Paused;
             _conflictTaskDialog.Controls.Add(replaceButton);
             _conflictTaskDialog.Controls.Add(ignoreButton);
+            _conflictTaskDialog.Controls.Add(cancelButton);
             _ = Task.Run(async () =>
             {
                 await _firstDialogOpened.Task;
