@@ -149,7 +149,8 @@ namespace AdvancedPaste.Helpers
                             continue;
                         }
 
-                        // A CSV line is valid, if the delimiter occurs equal times in every line compared to the first data line.
+                        // A CSV line is valid, if the delimiter occurs equal times in every line compared to the first data line
+                        // and if every line contains no or an even count of quotation marks.
                         if (Regex.Count(line, delim + CsvDelimSepRegexStr) == delimCount && int.IsEvenInteger(line.Count(x => x == '"')))
                         {
                             csv.Add(Regex.Split(line, delim + CsvDelimSepRegexStr, RegexOptions.IgnoreCase));
