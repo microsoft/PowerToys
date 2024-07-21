@@ -149,8 +149,8 @@ namespace AdvancedPaste.Helpers
                             continue;
                         }
 
-                        // A CSV line is valid, if the delimiter occurs more or equal times in every line compared to the first data line. (More because sometimes the delimiter occurs in a data string.)
-                        if (Regex.Count(line, delim + CsvDelimSepRegexStr) == delimCount && int.IsEvenInteger(Regex.Count(line, delim + CsvDelimSepRegexStr)))
+                        // A CSV line is valid, if the delimiter occurs equal times in every line compared to the first data line.
+                        if (Regex.Count(line, delim + CsvDelimSepRegexStr) == delimCount && int.IsEvenInteger(line.Count(x => x == '"')))
                         {
                             csv.Add(Regex.Split(line, delim + CsvDelimSepRegexStr, RegexOptions.IgnoreCase));
                         }
@@ -227,7 +227,7 @@ namespace AdvancedPaste.Helpers
                     }
 
                     // The delimiter is found if the count is bigger as from the last selected delimiter
-                    // and if the next csv line does not exist or has the same number or more occurrences of the delimiter.
+                    // and if the next csv line does not exist or has the same number of occurrences of the delimiter.
                     // (We check the next line to prevent false positives.)
                     if (cntFirstLine > delimiterCount && (cntNextLine == 0 || cntNextLine == cntFirstLine))
                     {
