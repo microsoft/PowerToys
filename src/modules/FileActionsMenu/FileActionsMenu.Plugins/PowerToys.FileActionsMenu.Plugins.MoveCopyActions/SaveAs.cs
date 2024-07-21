@@ -38,7 +38,7 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
                 CheckWriteAccess = true,
                 FileName = Path.GetFileName(SelectedItems[0]),
                 InitialDirectory = Path.GetDirectoryName(SelectedItems[0]) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-                OverwritePrompt = true,
+                OverwritePrompt = false,
             };
 
             if (dialog.ShowDialog() == DialogResult.OK)
