@@ -307,9 +307,9 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
 
             if (!File.Exists(checksumsFilename))
             {
-#pragma warning disable CA1863 // "CompositeFormat" verwenden
+#pragma warning disable CA1863 // Use "CompositeFormat"
                 MessageBox.Show(string.Format(CultureInfo.InvariantCulture, ResourceHelper.GetResource("Hashes.Verify.Dialog.MissingFile"), checksumsFilename), ResourceHelper.GetResource("Hashes.Verify.Dialog.Title"), MessageBoxButton.OK);
-#pragma warning restore CA1863 // "CompositeFormat" verwenden
+#pragma warning restore CA1863 // Use "CompositeFormat"
 
                 return false;
             }
@@ -361,9 +361,9 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
 
                 if (!File.Exists(hashFilename))
                 {
-#pragma warning disable CA1863 // "CompositeFormat" verwenden
+#pragma warning disable CA1863 // Use "CompositeFormat"
                     MessageBox.Show(string.Format(CultureInfo.InvariantCulture, ResourceHelper.GetResource("Hashes.Verify.Dialog.MissingFile"), hashFilename), ResourceHelper.GetResource("Hashes.Verify.Dialog.Title"), MessageBoxButton.OK);
-#pragma warning restore CA1863 // "CompositeFormat" verwenden
+#pragma warning restore CA1863 // Use "CompositeFormat"
 
                     return false;
                 }
