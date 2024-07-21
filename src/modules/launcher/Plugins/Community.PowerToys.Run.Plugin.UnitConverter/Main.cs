@@ -64,7 +64,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 Title = result.ToString(null),
                 IcoPath = _icon_path,
                 Score = 300,
-                SubTitle = string.Format(CultureInfo.CurrentCulture, CopyToClipboard, result.QuantityInfo.Name),
+                SubTitle = (result.UnitNameFrom == "usounce" ? "From US Ounce - " : (result.UnitNameFrom == "imperialounce" ? "From Imperial Ounce - " : string.Empty)) + string.Format(CultureInfo.CurrentCulture, CopyToClipboard, result.QuantityInfo.Name),
                 Action = c =>
                 {
                     var ret = false;

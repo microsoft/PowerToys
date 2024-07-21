@@ -12,14 +12,17 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
         public double ConvertedValue { get; }
 
-        public string UnitName { get; }
+        public string UnitNameFrom { get; }
+
+        public string UnitNameTo { get; }
 
         public QuantityInfo QuantityInfo { get; }
 
-        public UnitConversionResult(double convertedValue, string unitName, QuantityInfo quantityInfo)
+        public UnitConversionResult(double convertedValue, string unitNameFrom, string unitNameTo, QuantityInfo quantityInfo)
         {
             ConvertedValue = convertedValue;
-            UnitName = unitName;
+            UnitNameFrom = unitNameFrom;
+            UnitNameTo = unitNameTo;
             QuantityInfo = quantityInfo;
         }
 
@@ -30,7 +33,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 provider = System.Globalization.CultureInfo.CurrentCulture;
             }
 
-            return ConvertedValue.ToString(Format, provider) + " " + UnitName;
+            return ConvertedValue.ToString(Format, provider) + " " + UnitNameTo;
         }
     }
 }
