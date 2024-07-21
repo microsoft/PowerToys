@@ -411,8 +411,8 @@ namespace PowerLauncher
 
         private void InitializePosition()
         {
-            Top = WindowTop();
-            Left = WindowLeft();
+            MoveToDesiredPosition();
+
             _settings.WindowTop = Top;
             _settings.WindowLeft = Left;
         }
@@ -434,9 +434,29 @@ namespace PowerLauncher
             }
             else
             {
-                Top = WindowTop();
-                Left = WindowLeft();
+                MoveToDesiredPosition();
             }
+        }
+
+        private void MoveToDesiredPosition()
+        {
+            // Hack: After switching to PerMonitorV2, this operation seems to require a three-step operation
+            // to ensure a stable position: First move to top-left of desired screen, then centralize twice.
+            // More straightforward ways of doing this don't seem to work well for unclear reasons, but possibly related to
+            // https://github.com/dotnet/wpf/issues/4127
+            // In any case, there does not seem to be any big practical downside to doing it this way. As a bonus, it can be
+            // done in pure WPF without any native calls and without too much DPI-based fiddling.
+            // In terms of the hack itself, removing any of these three steps seems to fail in certain scenarios only,
+            // so be careful with testing!
+            var desiredScreen = GetScreen();
+
+            // Move to top-left of desired screen.
+            Top = desiredScreen.WorkingArea.Top;
+            Left = desiredScreen.WorkingArea.Left;
+
+            // Centralize twice.
+            WindowsInteropHelper.MoveToScreenCenter(this, desiredScreen);
+            WindowsInteropHelper.MoveToScreenCenter(this, desiredScreen);
         }
 
         private void OnLocationChanged(object sender, EventArgs e)
@@ -446,28 +466,6 @@ namespace PowerLauncher
                 _settings.WindowLeft = Left;
                 _settings.WindowTop = Top;
             }
-        }
-
-        /// <summary>
-        /// Calculates X co-ordinate of main window top left corner.
-        /// </summary>
-        /// <returns>X co-ordinate of main window top left corner</returns>
-        private double WindowLeft()
-        {
-            var screen = GetScreen();
-            var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.X, 0);
-            var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
-            var left = ((dip2.X - ActualWidth) / 2) + dip1.X;
-            return left;
-        }
-
-        private double WindowTop()
-        {
-            var screen = GetScreen();
-            var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Y);
-            var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
-            var top = ((dip2.Y - SearchBox.ActualHeight) / 4) + dip1.Y;
-            return top;
         }
 
         private Screen GetScreen()

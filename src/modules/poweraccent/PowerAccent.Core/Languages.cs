@@ -10,6 +10,7 @@ namespace PowerAccent.Core
     public enum Language
     {
         ALL,
+        BG,
         CA,
         CRH,
         CUR,
@@ -54,7 +55,8 @@ namespace PowerAccent.Core
         {
             return lang switch
             {
-                Language.ALL => GetDefaultLetterKeyALL(letter), // ALL
+                Language.ALL => GetDefaultLetterKeyALL(letter), // All
+                Language.BG => GetDefaultLetterKeyBG(letter), // Bulgarian
                 Language.CA => GetDefaultLetterKeyCA(letter), // Catalan
                 Language.CRH => GetDefaultLetterKeyCRH(letter), // Crimean Tatar
                 Language.CUR => GetDefaultLetterKeyCUR(letter), // Currency
@@ -103,7 +105,8 @@ namespace PowerAccent.Core
         {
             if (!_allLanguagesCache.TryGetValue(letter, out string[] cachedValue))
             {
-                cachedValue = GetDefaultLetterKeyCA(letter)
+                cachedValue = GetDefaultLetterKeyBG(letter)
+                .Union(GetDefaultLetterKeyCA(letter))
                 .Union(GetDefaultLetterKeyCRH(letter))
                 .Union(GetDefaultLetterKeyCUR(letter))
                 .Union(GetDefaultLetterKeyCY(letter))
@@ -194,6 +197,16 @@ namespace PowerAccent.Core
                 LetterKey.VK_DIVIDE_ => new[] { "÷", "√" },
                 LetterKey.VK_MULTIPLY_ => new[] { "×", "⋅" },
                 LetterKey.VK_PLUS => new[] { "≤", "≥", "≠", "≈", "≙", "⊕", "⊗", "∓", "≅", "≡" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
+        // Bulgarian
+        private static string[] GetDefaultLetterKeyBG(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_I => new[] { "й" },
                 _ => Array.Empty<string>(),
             };
         }

@@ -37,6 +37,30 @@
     <None Include="Resources.resx">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="Assets\FileLocksmith\FileLocksmith.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\FileLocksmith\LargeTile.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\FileLocksmith\SmallTile.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\FileLocksmith\SplashScreen.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\FileLocksmith\Square44x44Logo.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\FileLocksmith\Square150x150Logo.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\FileLocksmith\storelogo.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\FileLocksmith\Wide310x150Logo.png">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="FileLocksmithContextMenu.base.rc">
