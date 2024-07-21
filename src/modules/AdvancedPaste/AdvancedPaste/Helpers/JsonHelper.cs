@@ -24,7 +24,7 @@ namespace AdvancedPaste.Helpers
         private static readonly char[] CsvDelimArry = [',', ';', '\t'];
         private static readonly Regex CsvSepIdentifierRegex = new Regex(@"^sep=(.)$", RegexOptions.IgnoreCase);
 
-        // Split on every occurence of the delimiter except if it is enclosed by " and ignore two " as escaped "
+        // Split on every occurrence of the delimiter except if it is enclosed by " and ignore two " as escaped "
         private static readonly string CsvDelimSepRegexStr = @"(?=(?:[^""]*""[^""]*"")*(?![^""]*""))";
 
         internal static string ToJsonFromXmlOrCsv(DataPackageView clipboardData)
