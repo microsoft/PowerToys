@@ -34,7 +34,7 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
             FolderBrowserDialog dialog = new()
             {
                 AddToRecent = false,
-                Description = "Copy to",
+                Description = ResourceHelper.GetResource("Move_Copy_Actions.CopyTo.Title"),
                 UseDescriptionForTitle = true,
                 AutoUpgradeEnabled = true,
                 ShowNewFolderButton = true,
@@ -44,7 +44,7 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
             if (dialog.ShowDialog() == DialogResult.OK)
             {
                 bool cancelled = false;
-                FileActionProgressHelper fileActionProgressHelper = new("Copying files", SelectedItems.Length, () => { cancelled = true; });
+                FileActionProgressHelper fileActionProgressHelper = new(ResourceHelper.GetResource("Move_Copy_Actions.CopyTo.Progress"), SelectedItems.Length, () => { cancelled = true; });
 
                 int i = -1;
                 foreach (string item in SelectedItems)
@@ -119,7 +119,7 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
             foreach (FileInfo file in files)
             {
                 string tempPath = Path.Combine(destDirName, file.Name);
-                file.CopyTo(tempPath, false);
+                file.CopyTo(tempPath, true);
             }
 
             if (copySubDirs)

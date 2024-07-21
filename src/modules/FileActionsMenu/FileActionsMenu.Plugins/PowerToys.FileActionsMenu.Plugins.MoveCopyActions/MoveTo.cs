@@ -34,7 +34,7 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
             FolderBrowserDialog dialog = new()
             {
                 AddToRecent = false,
-                Description = "Move to",
+                Description = ResourceHelper.GetResource("Move_Copy_Actions.MoveTo.Title"),
                 UseDescriptionForTitle = true,
                 AutoUpgradeEnabled = true,
                 ShowNewFolderButton = true,
@@ -44,7 +44,7 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
             if (dialog.ShowDialog() == DialogResult.OK)
             {
                 bool cancelled = false;
-                FileActionProgressHelper fileActionProgressHelper = new("Moving files", SelectedItems.Length, () => { cancelled = true; });
+                FileActionProgressHelper fileActionProgressHelper = new(ResourceHelper.GetResource("Move_Copy_Actions.MoveTo.Progress"), SelectedItems.Length, () => { cancelled = true; });
 
                 int i = -1;
                 foreach (string item in SelectedItems)
@@ -87,7 +87,14 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
 
                         if (Directory.Exists(destination))
                         {
-                            await fileActionProgressHelper.Conflict(item, () => Directory.Move(item, destination), () => { });
+                            await fileActionProgressHelper.Conflict(
+                                item,
+                                () =>
+                                {
+                                    Directory.Delete(destination, true);
+                                    Directory.Move(item, destination);
+                                },
+                                () => { });
                         }
                         else
                         {

@@ -66,12 +66,14 @@ namespace FileActionsMenu.Helpers
                 onCancel();
                 _taskDialog.Close();
                 _conflictTaskDialog?.Close();
+                _conflictTaskDialog = null;
             };
 
             _taskDialog.Closing += (sender, e) =>
             {
                 onCancel();
                 _conflictTaskDialog?.Close();
+                _conflictTaskDialog = null;
             };
             _taskDialog.StandardButtons = Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardButtons.None;
             Task.Run(() =>

@@ -267,11 +267,17 @@
   <data name="Image_Clipboard_Actions.Title" xml:space="preserve">
     <value>Image clipboard actions</value>
   </data>
+  <data name="Move_Copy_Actions.CopyTo.Progress" xml:space="preserve">
+    <value>Copying files</value>
+  </data>
   <data name="Move_Copy_Actions.CopyTo.Title" xml:space="preserve">
     <value>Copy to</value>
   </data>
   <data name="Move_Copy_Actions.Description" xml:space="preserve">
     <value />
+  </data>
+  <data name="Move_Copy_Actions.MoveTo.Progress" xml:space="preserve">
+    <value>Moving files</value>
   </data>
   <data name="Move_Copy_Actions.MoveTo.Title" xml:space="preserve">
     <value>Move to</value>

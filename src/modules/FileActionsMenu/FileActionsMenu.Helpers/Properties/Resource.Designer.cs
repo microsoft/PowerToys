@@ -475,6 +475,15 @@ namespace FileActionsMenu.Helpers.Properties {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Copying files ähnelt.
+        /// </summary>
+        internal static string Move_Copy_Actions_CopyTo_Progress {
+            get {
+                return ResourceManager.GetString("Move_Copy_Actions.CopyTo.Progress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Copy to ähnelt.
         /// </summary>
         internal static string Move_Copy_Actions_CopyTo_Title {
@@ -489,6 +498,15 @@ namespace FileActionsMenu.Helpers.Properties {
         internal static string Move_Copy_Actions_Description {
             get {
                 return ResourceManager.GetString("Move_Copy_Actions.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Moving files ähnelt.
+        /// </summary>
+        internal static string Move_Copy_Actions_MoveTo_Progress {
+            get {
+                return ResourceManager.GetString("Move_Copy_Actions.MoveTo.Progress", resourceCulture);
             }
         }
         
