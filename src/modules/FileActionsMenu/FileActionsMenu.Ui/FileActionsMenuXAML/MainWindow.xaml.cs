@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using FileActionsMenu.Helpers;
 using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using Microsoft.PowerToys.Telemetry;
@@ -64,7 +65,7 @@ namespace FileActionsMenu.Ui
 
             _menu.Items.Add(new MenuFlyoutItem()
             {
-                Text = "PowerToys File Actions menu",
+                Text = ResourceHelper.GetResource("ModuleName"),
                 IsEnabled = false,
             });
             _menu.Items.Add(new MenuFlyoutSeparator());

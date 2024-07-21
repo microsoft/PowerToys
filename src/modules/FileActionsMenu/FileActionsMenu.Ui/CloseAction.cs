@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Threading.Tasks;
+using FileActionsMenu.Helpers;
 using FileActionsMenu.Interfaces;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -16,7 +17,7 @@ namespace FileActionsMenu.Ui
     {
         public string[] SelectedItems { get => []; set => _ = value; }
 
-        public string Title => "Close menu";
+        public string Title => ResourceHelper.GetResource("Close");
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

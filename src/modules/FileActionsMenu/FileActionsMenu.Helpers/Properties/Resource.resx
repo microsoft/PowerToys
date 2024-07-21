@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Close" xml:space="preserve">
+    <value>Close menu</value>
+  </data>
   <data name="Executable_Actions.Description" xml:space="preserve">
     <value>Adds actions for .exe and .dll files.</value>
     <comment>{Locked=".exe",".dll"}</comment>
@@ -267,6 +270,9 @@
   <data name="Image_Clipboard_Actions.Title" xml:space="preserve">
     <value>Image clipboard actions</value>
   </data>
+  <data name="ModuleName" xml:space="preserve">
+    <value>PowerToys File Actions menu</value>
+  </data>
   <data name="Move_Copy_Actions.CopyTo.Progress" xml:space="preserve">
     <value>Copying files</value>
   </data>
@@ -274,7 +280,7 @@
     <value>Copy to</value>
   </data>
   <data name="Move_Copy_Actions.Description" xml:space="preserve">
-    <value />
+    <value>Actions related to copying and moving files</value>
   </data>
   <data name="Move_Copy_Actions.MoveTo.Progress" xml:space="preserve">
     <value>Moving files</value>
