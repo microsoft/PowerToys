@@ -1686,6 +1686,7 @@ USESHOWWINDOW
 USESTDHANDLES
 USRDLL
 UType
+uuidv
 uwp
 uxtheme
 vabdq
