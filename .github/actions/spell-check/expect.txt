@@ -1378,6 +1378,7 @@ SCID
 Scip
 scipbe
 Scode
+screensaver
 screenshots
 scrollviewer
 sddl
@@ -1685,6 +1686,7 @@ USESHOWWINDOW
 USESTDHANDLES
 USRDLL
 UType
+uuidv
 uwp
 uxtheme
 vabdq

@@ -4207,4 +4207,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>The Command Not Found module is force enabled by your organization.</value>>
     <comment>"Command Not Found" is a product name</comment>
   </data>
+  <data name="MouseWithoutBorders_PolicyIPAddressMappingInfo.Title" xml:space="preserve">
+    <value>Rules defined by your organization</value>
+  </data>
+  <data name="MouseWithoutBorders_PolicyIPAddressMappingInfo_TextBoxControl.Description" xml:space="preserve">
+    <value>You can not change, remove or disable these enforced rules.</value>
+  </data>
 </root>
