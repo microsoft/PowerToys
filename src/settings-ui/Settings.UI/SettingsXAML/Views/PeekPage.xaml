@@ -35,7 +35,7 @@
                     <tkcontrols:SettingsCard x:Uid="Peek_AlwaysRunNotElevated" HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.AlwaysRunNotElevated, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="Peek_CloseAfterLosingFocus">
+                    <tkcontrols:SettingsCard x:Uid="Peek_CloseAfterLosingFocus" HeaderIcon="{ui:FontIcon Glyph=&#xED1A;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.CloseAfterLosingFocus, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
