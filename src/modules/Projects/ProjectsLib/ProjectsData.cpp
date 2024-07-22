@@ -13,13 +13,13 @@ namespace ProjectsData
     std::wstring ProjectsFile()
     {
         std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
-        return std::wstring(settingsFolderPath) + L"\\projects.json";
+        return settingsFolderPath + L"\\projects.json";
     }
 
     std::wstring TempProjectsFile()
     {
         std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
-        return std::wstring(settingsFolderPath) + L"\\temp-project.json";
+        return settingsFolderPath + L"\\temp-project.json";
     }
 
     RECT Project::Application::Position::toRect() const noexcept
