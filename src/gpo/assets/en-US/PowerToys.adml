@@ -149,7 +149,7 @@ If you disable this setting, the add-on will be always disabled and the user won
 
 If you don't configure this setting, users are able to enable or disable the add-on.
 
-The policy "File Explorer add-ons: Configure enabled state" will override this policy.
+Note: If you disable the policy "File Explorer add-ons: Configure enabled state" all File Explorer Add-ons are disabled.
 </string>
       <string id="MwbClipboardSharingEnabledDescription">This policy configures if the user can share the clipboard between machines.
 
