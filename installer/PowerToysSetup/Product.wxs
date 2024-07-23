@@ -455,11 +455,21 @@
         <Directory Id="ApplicationProgramsFolder" Name="PowerToys (Preview)"/>
       </Directory>
       <Directory Id="DesktopFolder" Name="Desktop" />
-      <Directory Id="LocalAppDataFolder">
+      <?if $(var.PerUser) = "false" ?>
+        <Directory Id="LocalAppDataFolder">
+          <Directory Id="LocalAppDataManufacturerFolder" Name="Microsoft">
+            <Directory Id="LocalAppDataProductFolder" Name="PowerToys" />
+          </Directory>
+        </Directory>
+      <?endif?>
+    </Directory>
+    <?if $(var.PerUser) = "true" ?>
+      <!-- LocalAppDataFolder is already defined for user installation so we need to use DirectoryRef instead of redefining the directory. -->
+      <DirectoryRef Id="LocalAppDataFolder">
         <Directory Id="LocalAppDataManufacturerFolder" Name="Microsoft">
           <Directory Id="LocalAppDataProductFolder" Name="PowerToys" />
         </Directory>
-      </Directory>
-    </Directory>
+      </DirectoryRef>
+    <?endif?>
   </Fragment>
 </Wix>
