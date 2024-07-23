@@ -159,9 +159,8 @@ namespace Awake.Core
                     break;
             }
 
-            if (action == TrayIconAction.Add || action == TrayIconAction.Update)
-            {
-                _notifyIconData = new NotifyIconData
+            _notifyIconData = action == TrayIconAction.Add || action == TrayIconAction.Update
+                ? new NotifyIconData
                 {
                     CbSize = Marshal.SizeOf(typeof(NotifyIconData)),
                     HWnd = hWnd,
@@ -170,18 +169,14 @@ namespace Awake.Core
                     UCallbackMessage = (int)Native.Constants.WM_USER,
                     HIcon = icon!.Handle,
                     SzTip = text,
-                };
-            }
-            else
-            {
-                _notifyIconData = new NotifyIconData
+                }
+                : new NotifyIconData
                 {
                     CbSize = Marshal.SizeOf(typeof(NotifyIconData)),
                     HWnd = hWnd,
                     UId = 1000,
                     UFlags = 0,
                 };
-            }
 
             if (!Bridge.Shell_NotifyIcon(message, ref _notifyIconData))
             {
