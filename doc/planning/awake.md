@@ -24,6 +24,7 @@ The build ID moniker is made up of two components - a reference to a [Halo](http
 
 - [#33630](https://github.com/microsoft/PowerToys/issues/33630) When in the UI and you select `0` as hours and `0` as minutes in `TIMED` awake mode, the UI becomes non-responsive whenever you try to get back to timed after it rolls back to `PASSIVE`.
 - [#12714](https://github.com/microsoft/PowerToys/issues/12714) Adds the option to keep track of Awake state through tray tooltip.
+- [#11996](https://github.com/microsoft/PowerToys/issues/11996) Adds custom icons support for mode changes in Awake.
 - Removes the dependency on `System.Windows.Forms` and instead uses native Windows APIs to create the tray icon.
 - Removes redundant/unused code that impacted application performance.
 - Updates dependent packages to their latest versions (`Microsoft.Windows.CsWinRT` and `System.Reactive`).
