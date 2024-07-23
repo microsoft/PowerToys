@@ -1076,6 +1076,7 @@ numberbox
 nwc
 Objbase
 objidl
+occurrence
 ocr
 Ocrsettings
 odbccp
@@ -1383,6 +1384,7 @@ SCID
 Scip
 scipbe
 Scode
+screensaver
 screenshots
 scrollviewer
 sddl
@@ -1692,6 +1694,7 @@ USESHOWWINDOW
 USESTDHANDLES
 USRDLL
 UType
+uuidv
 uwp
 uxtheme
 vabdq

@@ -4275,4 +4275,10 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Oobe_NewPlus_TipsAndTricks.Text" xml:space="preserve">
     <value>You can have multiple templates of the same file type, and you can even template folders!</value>
   </data>  
+  <data name="MouseWithoutBorders_PolicyIPAddressMappingInfo.Title" xml:space="preserve">
+    <value>Rules defined by your organization</value>
+  </data>
+  <data name="MouseWithoutBorders_PolicyIPAddressMappingInfo_TextBoxControl.Description" xml:space="preserve">
+    <value>You can not change, remove or disable these enforced rules.</value>
+  </data>
 </root>
