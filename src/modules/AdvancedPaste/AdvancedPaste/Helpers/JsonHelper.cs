@@ -24,8 +24,12 @@ namespace AdvancedPaste.Helpers
         private static readonly char[] CsvDelimArry = [',', ';', '\t'];
         private static readonly Regex CsvSepIdentifierRegex = new Regex(@"^sep=(.)$", RegexOptions.IgnoreCase);
 
-        // Split on every occurrence of the delimiter except if it is enclosed by " and ignore two " as escaped "
+        // CSV: Split on every occurrence of the delimiter except if it is enclosed by " and ignore two " as escaped "
         private static readonly string CsvDelimSepRegexStr = @"(?=(?:[^""]*""[^""]*"")*(?![^""]*""))";
+
+        // CSV: Regex to remove/replace quotation marks
+        private static readonly Regex CsvRemoveQuotationMarksRegex = new Regex(@"^""(?!"")|(?<!"")""$|^""""$");
+        private static readonly Regex CsvReplaceQuotationMarksRegex = new Regex(@"^""{3}(?!"")|(?<!"")""{3}$|""{2}");
 
         internal static string ToJsonFromXmlOrCsv(DataPackageView clipboardData)
         {
@@ -134,7 +138,7 @@ namespace AdvancedPaste.Helpers
             {
                 if (string.IsNullOrEmpty(jsonText))
                 {
-                    var csv = new List<string[]>();
+                    var csv = new List<IEnumerable<string>>();
 
                     string[] lines = text.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -153,7 +157,8 @@ namespace AdvancedPaste.Helpers
                         // and if every line contains no or an even count of quotation marks.
                         if (Regex.Count(line, delim + CsvDelimSepRegexStr) == delimCount && int.IsEvenInteger(line.Count(x => x == '"')))
                         {
-                            csv.Add(Regex.Split(line, delim + CsvDelimSepRegexStr, RegexOptions.IgnoreCase));
+                            string[] dataCells = Regex.Split(line, delim + CsvDelimSepRegexStr, RegexOptions.IgnoreCase);
+                            csv.Add(dataCells.Select(x => ReplaceQuotationMarksInCsvData(x)));
                         }
                         else
                         {
@@ -243,6 +248,17 @@ namespace AdvancedPaste.Helpers
             {
                 throw new FormatException("Invalid CSV format: Failed to detect the delimiter.");
             }
+        }
+
+        private static string ReplaceQuotationMarksInCsvData(string str)
+        {
+            // Remove first and last occurence of single quotation mark and remove quotation marks of an empty data set ("").
+            str = CsvRemoveQuotationMarksRegex.Replace(str, string.Empty);
+
+            // Replace first three* OR last three* OR pairs of two quotation marks with a single quotation mark. (* If exactly three occurences.)
+            str = CsvReplaceQuotationMarksRegex.Replace(str, "\"");
+
+            return str;
         }
     }
 }
