@@ -251,6 +251,11 @@ namespace AdvancedPaste.Helpers
             }
         }
 
+        /// <summary>
+        /// Remove and replace quotation marks used as control sequences. (Enclosing quotation marks and escaping quotation marks.)
+        /// </summary>
+        /// <param name="str">CSV cell data to manipulate.</param>
+        /// <returns>Manipulated string.</returns>
         private static string ReplaceQuotationMarksInCsvData(string str)
         {
             // Remove first and last single quotation mark and remove quotation marks of an empty data set ("").
