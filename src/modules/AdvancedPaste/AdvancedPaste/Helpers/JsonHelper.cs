@@ -256,8 +256,9 @@ namespace AdvancedPaste.Helpers
             // Remove first and last single quotation mark and remove quotation marks of an empty data set ("").
             str = CsvRemoveSingleQuotationMarksRegex.Replace(str, string.Empty);
 
-            // Remove first quotation mark if followed by pairs of two quotation marks.
-            // And remove last quotation mark if preced by pairs of two quotation marks.
+            // Remove first quotation mark if followed by pairs of quotation marks only.
+            // And remove last quotation mark if precede by pairs of quotation marks only.
+            // (Make odd count even for start sequence and end sequence.)
             str = CsvRemoveStartAndEndQuotationMarksRegex.Replace(str, string.Empty);
 
             // Replace pairs of two quotation marks with a single quotation mark.
