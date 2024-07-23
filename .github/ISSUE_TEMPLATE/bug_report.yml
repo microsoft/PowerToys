@@ -103,7 +103,7 @@ body:
     placeholder: |
       OS version
       .Net version
-      Preferred System Language
+      System Language
       User or System Installation
       Running as admin
   validations:

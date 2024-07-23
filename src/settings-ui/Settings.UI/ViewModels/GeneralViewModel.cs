@@ -464,8 +464,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return "Failed to get windows settings\n";
             }
 
-            result = "Preferred user language: " + userLanguage + "%0a";
-            result += "User locale: " + userLocale + "%0a";
+            result = "System Language: " + userLanguage + "%0a";
+            result += "User Locale: " + userLocale + "%0a";
 
             return result;
         }

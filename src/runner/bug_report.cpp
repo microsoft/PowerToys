@@ -293,8 +293,8 @@ std::string ReportWindowsSettings()
         return "Failed to get windows settings %0a";
     }
 
-    result = "Preferred user language: " + WideStringToString(userLanguage) + "%0a";
-    result += "User locale: " + WideStringToString(userLocale) + "%0a";
+    result = "System Language: " + WideStringToString(userLanguage) + "%0a";
+    result += "User Locale: " + WideStringToString(userLocale) + "%0a";
 
     return result;
 }
