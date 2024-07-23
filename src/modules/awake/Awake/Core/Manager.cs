@@ -260,9 +260,15 @@ namespace Awake.Core
             }
         }
 
+        /// <summary>
+        /// Performs a clean exit from Awake.
+        /// </summary>
+        /// <param name="exitCode">Exit code to exit with.</param>
+        /// <param name="exitSignal">Exit signal tracking the state.</param>
+        /// <param name="force">Determines whether to force exit and post a quitting message.</param>
         internal static void CompleteExit(int exitCode, ManualResetEvent? exitSignal, bool force = false)
         {
-            SetPassiveKeepAwake();
+            SetPassiveKeepAwake(updateSettings: false);
 
             if (TrayHelper.HiddenWindowHandle != IntPtr.Zero)
             {
@@ -289,6 +295,10 @@ namespace Awake.Core
             }
         }
 
+        /// <summary>
+        /// Gets the operating system for logging purposes.
+        /// </summary>
+        /// <returns>Returns the string representing the current OS build.</returns>
         internal static string GetOperatingSystemBuild()
         {
             try
@@ -313,18 +323,26 @@ namespace Awake.Core
             }
         }
 
+        /// <summary>
+        /// Generates the default system tray options in situations where no custom options are provided.
+        /// </summary>
+        /// <returns>Returns a dictionary of default Awake timed interval options.</returns>
         internal static Dictionary<string, int> GetDefaultTrayOptions()
         {
             Dictionary<string, int> optionsList = new()
             {
                 { string.Format(CultureInfo.InvariantCulture, AwakeMinutes, 30), 1800 },
-                { Resources.AWAKE_1_HOUR, 3600 },
+                { string.Format(CultureInfo.InvariantCulture, AwakeHours, 1), 3600 },
                 { string.Format(CultureInfo.InvariantCulture, AwakeHours, 2), 7200 },
             };
             return optionsList;
         }
 
-        internal static void SetPassiveKeepAwake()
+        /// <summary>
+        /// Resets the computer to standard power settings.
+        /// </summary>
+        /// <param name="updateSettings">In certain cases, such as exits, we want to make sure that settings are not reset for the passive mode but rather retained based on previous execution. Default is to save settings, but otherwise it can be overriden.</param>
+        internal static void SetPassiveKeepAwake(bool updateSettings = true)
         {
             Logger.LogInfo($"Operating in passive mode (computer's standard power plan). No custom keep awake settings enabled.");
 
@@ -332,7 +350,7 @@ namespace Awake.Core
 
             CancelExistingThread();
 
-            if (IsUsingPowerToysConfig)
+            if (IsUsingPowerToysConfig && updateSettings)
             {
                 try
                 {
@@ -353,6 +371,9 @@ namespace Awake.Core
             }
         }
 
+        /// <summary>
+        /// Sets the display settings.
+        /// </summary>
         internal static void SetDisplay()
         {
             if (IsUsingPowerToysConfig)

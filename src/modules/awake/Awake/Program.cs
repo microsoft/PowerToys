@@ -267,33 +267,34 @@ namespace Awake
         {
             try
             {
+                var directory = Path.GetDirectoryName(settingsPath)!;
+                var fileName = Path.GetFileName(settingsPath);
+
                 _watcher = new FileSystemWatcher
                 {
-                    Path = Path.GetDirectoryName(settingsPath)!,
+                    Path = directory,
                     EnableRaisingEvents = true,
                     NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime,
-                    Filter = Path.GetFileName(settingsPath),
+                    Filter = fileName,
                 };
 
-                IObservable<System.Reactive.EventPattern<FileSystemEventArgs>>? changedObservable = Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
+                var mergedObservable = Observable.Merge(
+                    Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
                         h => _watcher.Changed += h,
-                        h => _watcher.Changed -= h);
+                        h => _watcher.Changed -= h),
+                    Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
+                        h => _watcher.Created += h,
+                        h => _watcher.Created -= h));
 
-                IObservable<System.Reactive.EventPattern<FileSystemEventArgs>>? createdObservable = Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
-                        cre => _watcher.Created += cre,
-                        cre => _watcher.Created -= cre);
-
-                IObservable<System.Reactive.EventPattern<FileSystemEventArgs>>? mergedObservable = Observable.Merge(changedObservable, createdObservable);
-
-                mergedObservable.Throttle(TimeSpan.FromMilliseconds(25))
+                mergedObservable
+                    .Throttle(TimeSpan.FromMilliseconds(25))
                     .SubscribeOn(TaskPoolScheduler.Default)
                     .Select(e => e.EventArgs)
                     .Subscribe(HandleAwakeConfigChange);
 
-                TrayHelper.SetTray(Manager.ModuleSettings!.GetSettings<AwakeSettings>(Core.Constants.AppName) ?? new AwakeSettings(), _startedFromPowerToys);
+                var settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Core.Constants.AppName) ?? new AwakeSettings();
+                TrayHelper.SetTray(settings, _startedFromPowerToys);
 
-                // Initially the file might not be updated, so we need to start processing
-                // settings right away.
                 ProcessSettings();
             }
             catch (Exception ex)
@@ -304,69 +305,53 @@ namespace Awake
 
         private static void HandleAwakeConfigChange(FileSystemEventArgs fileEvent)
         {
-            Logger.LogInfo("Detected a settings file change. Updating configuration...");
-            ProcessSettings();
+            try
+            {
+                Logger.LogInfo("Detected a settings file change. Updating configuration...");
+                ProcessSettings();
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"Could not handle Awake configuration change. Error: {e.Message}");
+            }
         }
 
         private static void ProcessSettings()
         {
             try
             {
-                AwakeSettings settings = _settingsUtils!.GetSettings<AwakeSettings>(Core.Constants.AppName);
+                var settings = _settingsUtils!.GetSettings<AwakeSettings>(Core.Constants.AppName) ?? throw new InvalidOperationException("Settings are null.");
+                Logger.LogInfo($"Identified custom time shortcuts for the tray: {settings.Properties.CustomTrayTimes.Count}");
 
-                if (settings != null)
+                switch (settings.Properties.Mode)
                 {
-                    Logger.LogInfo($"Identified custom time shortcuts for the tray: {settings.Properties.CustomTrayTimes.Count}");
+                    case AwakeMode.PASSIVE:
+                        Manager.SetPassiveKeepAwake();
+                        break;
 
-                    switch (settings.Properties.Mode)
-                    {
-                        case AwakeMode.PASSIVE:
-                            {
-                                Manager.SetPassiveKeepAwake();
-                                break;
-                            }
+                    case AwakeMode.INDEFINITE:
+                        Manager.SetIndefiniteKeepAwake(settings.Properties.KeepDisplayOn);
+                        break;
 
-                        case AwakeMode.INDEFINITE:
-                            {
-                                Manager.SetIndefiniteKeepAwake(settings.Properties.KeepDisplayOn);
-                                break;
-                            }
+                    case AwakeMode.TIMED:
+                        uint computedTime = (settings.Properties.IntervalHours * 60 * 60) + (settings.Properties.IntervalMinutes * 60);
+                        Manager.SetTimedKeepAwake(computedTime, settings.Properties.KeepDisplayOn);
+                        break;
 
-                        case AwakeMode.TIMED:
-                            {
-                                uint computedTime = (settings.Properties.IntervalHours * 60 * 60) + (settings.Properties.IntervalMinutes * 60);
-                                Manager.SetTimedKeepAwake(computedTime, settings.Properties.KeepDisplayOn);
+                    case AwakeMode.EXPIRABLE:
+                        Manager.SetExpirableKeepAwake(settings.Properties.ExpirationDateTime, settings.Properties.KeepDisplayOn);
+                        break;
 
-                                break;
-                            }
-
-                        case AwakeMode.EXPIRABLE:
-                            {
-                                Manager.SetExpirableKeepAwake(settings.Properties.ExpirationDateTime, settings.Properties.KeepDisplayOn);
-
-                                break;
-                            }
-
-                        default:
-                            {
-                                string? errorMessage = "Unknown mode of operation. Check config file.";
-                                Logger.LogError(errorMessage);
-                                break;
-                            }
-                    }
-
-                    TrayHelper.SetTray(settings, _startedFromPowerToys);
+                    default:
+                        Logger.LogError("Unknown mode of operation. Check config file.");
+                        break;
                 }
-                else
-                {
-                    string? errorMessage = "Settings are null.";
-                    Logger.LogError(errorMessage);
-                }
+
+                TrayHelper.SetTray(settings, _startedFromPowerToys);
             }
             catch (Exception ex)
             {
-                string? errorMessage = $"There was a problem reading the configuration file. Error: {ex.GetType()} {ex.Message}";
-                Logger.LogError(errorMessage);
+                Logger.LogError($"There was a problem reading the configuration file. Error: {ex.GetType()} {ex.Message}");
             }
         }
     }

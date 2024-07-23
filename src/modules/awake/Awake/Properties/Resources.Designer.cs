@@ -61,24 +61,6 @@ namespace Awake.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 1 hour.
-        /// </summary>
-        internal static string AWAKE_1_HOUR {
-            get {
-                return ResourceManager.GetString("AWAKE_1_HOUR", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to 1 minute.
-        /// </summary>
-        internal static string AWAKE_1_MINUTE {
-            get {
-                return ResourceManager.GetString("AWAKE_1_MINUTE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Checked.
         /// </summary>
         internal static string AWAKE_CHECKED {
