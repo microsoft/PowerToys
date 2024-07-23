@@ -266,7 +266,7 @@ namespace AdvancedPaste.Helpers
             // (Removes enclosing quotation marks around the cell data.)
             str = CsvRemoveStartAndEndQuotationMarksRegex.Replace(str, string.Empty);
 
-            // Replace pairs of two quotation marks with a single quotation mark.
+            // Replace pairs of two quotation marks with a single quotation mark. (Escaped quotation marks.)
             str = CsvReplaceDoubleQuotationMarksRegex.Replace(str, "\"");
 
             return str;
