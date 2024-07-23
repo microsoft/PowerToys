@@ -341,7 +341,7 @@ namespace Awake.Core
         /// <summary>
         /// Resets the computer to standard power settings.
         /// </summary>
-        /// <param name="updateSettings">In certain cases, such as exits, we want to make sure that settings are not reset for the passive mode but rather retained based on previous execution. Default is to save settings, but otherwise it can be overriden.</param>
+        /// <param name="updateSettings">In certain cases, such as exits, we want to make sure that settings are not reset for the passive mode but rather retained based on previous execution. Default is to save settings, but otherwise it can be overridden.</param>
         internal static void SetPassiveKeepAwake(bool updateSettings = true)
         {
             Logger.LogInfo($"Operating in passive mode (computer's standard power plan). No custom keep awake settings enabled.");
