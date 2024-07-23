@@ -84,7 +84,7 @@ namespace ProjectsEditor.Data
 
             public bool IsShortcutNeeded { get; set; }
 
-            public bool IsMoveAppsBehaviourSelected { get; set; }
+            public bool MoveExistingWindows { get; set; }
 
             public List<MonitorConfigurationWrapper> MonitorConfiguration { get; set; }
 

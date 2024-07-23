@@ -49,7 +49,7 @@ namespace ProjectsEditor.Models
 
         public bool IsShortcutNeeded { get; set; }
 
-        public bool IsMoveAppsBehaviourSelected { get; set; }
+        public bool MoveExistingWindows { get; set; }
 
         public string LastLaunched
         {
@@ -213,7 +213,7 @@ namespace ProjectsEditor.Models
             PreviewIcons = selectedProject.PreviewIcons;
             PreviewImage = selectedProject.PreviewImage;
             IsShortcutNeeded = selectedProject.IsShortcutNeeded;
-            IsMoveAppsBehaviourSelected = selectedProject.IsMoveAppsBehaviourSelected;
+            MoveExistingWindows = selectedProject.MoveExistingWindows;
 
             int screenIndex = 1;
 

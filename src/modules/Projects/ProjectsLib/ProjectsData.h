@@ -58,6 +58,7 @@ namespace ProjectsData
         time_t creationTime;
         std::optional<time_t> lastLaunchedTime;
         bool isShortcutNeeded;
+        bool moveExistingWindows;
         std::vector<Monitor> monitors;
         std::vector<Application> apps;
     };

@@ -134,6 +134,72 @@ namespace FancyZones
     }
 }
 
+namespace
+{
+    using LaunchedApps = std::vector<std::pair<ProjectsData::Project::Application, HWND>>;
+
+    LaunchedApps Prepare(std::vector<ProjectsData::Project::Application>& apps, const Utils::Apps::AppList& installedApps)
+    {
+        LaunchedApps launchedApps{};
+        launchedApps.reserve(apps.size());
+
+        for (auto& app : apps)
+        {
+            // Packaged apps have version in the path, it will be outdated after update.
+            // We need make sure the current package is up to date.
+            if (!app.packageFullName.empty())
+            {
+                auto installedApp = std::find_if(installedApps.begin(), installedApps.end(), [&](const Utils::Apps::AppData& val) { return val.name == app.name; });
+                if (installedApp != installedApps.end() && app.packageFullName != installedApp->packageFullName)
+                {
+                    std::wstring exeFileName = app.path.substr(app.path.find_last_of(L"\\") + 1);
+                    app.packageFullName = installedApp->packageFullName;
+                    app.path = installedApp->installPath + L"\\" + exeFileName;
+                    Logger::trace(L"Updated package full name for {}: {}", app.name, app.packageFullName);
+                }
+            }
+
+            launchedApps.push_back({ app, nullptr });
+        }
+
+        return launchedApps;
+    }
+
+    bool AllWindowsFound(const LaunchedApps& launchedApps)
+    {
+        return std::find_if(launchedApps.begin(), launchedApps.end(), 
+            [&](const std::pair<ProjectsData::Project::Application, HWND>& val) {
+                return val.second == nullptr;
+            }) == launchedApps.end();
+    };
+
+    void AddOpenedWindows(LaunchedApps& launchedApps, const std::vector<HWND>& windows, const Utils::Apps::AppList& installedApps)
+    {
+        for (HWND window : windows)
+        {
+            auto installedAppData = Utils::Apps::GetApp(window, installedApps);
+            if (!installedAppData.has_value())
+            {
+                continue;
+            }
+
+            auto iter = std::find_if(launchedApps.begin(), launchedApps.end(), [&](const std::pair<ProjectsData::Project::Application, HWND>& val) {
+                return val.second == nullptr && installedAppData.value().name == val.first.name;
+            });
+
+            if (iter != launchedApps.end())
+            {
+                iter->second = window;
+            }
+
+            if (AllWindowsFound(launchedApps))
+            {
+                break;
+            }
+        }
+    }
+}
+
 bool LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated)
 {
     SHELLEXECUTEINFO sei = { 0 };
@@ -237,60 +303,40 @@ ProjectsData::Project Launch(ProjectsData::Project project)
 {
     // Get the set of windows before launching the app
     std::vector<HWND> windowsBefore = WindowEnumerator::Enumerate(WindowFilter::Filter);
-    std::vector<std::pair<ProjectsData::Project::Application, HWND>> launchedWindows{};
-    auto apps = Utils::Apps::GetAppsList();
+    auto installedApps = Utils::Apps::GetAppsList();
     auto monitors = MonitorUtils::IdentifyMonitors();
-       
-    for (auto& app : project.apps)
-    {
-        // Packaged apps have version in the path, it will be outdated after update.
-        // We need make sure the current package is up to date.
-        if (!app.packageFullName.empty())
-        {
-            auto installedApp = std::find_if(apps.begin(), apps.end(), [&](const Utils::Apps::AppData& val) { return val.name == app.name; });
-            if (installedApp != apps.end() && app.packageFullName != installedApp->packageFullName)
-            {
-                std::wstring exeFileName = app.path.substr(app.path.find_last_of(L"\\") + 1);
-				app.packageFullName = installedApp->packageFullName;
-                app.path = installedApp->installPath + L"\\" + exeFileName;
-                Logger::trace(L"Updated package full name for {}: {}", app.name, app.packageFullName);
-			}
-		}
+    auto launchedApps = Prepare(project.apps, installedApps);
 
-        if (Launch(app))
+    // If the moveExistingWindows setting is applied
+    // move existing windows if any to the correct position
+    if (project.moveExistingWindows)
+    {
+        AddOpenedWindows(launchedApps, windowsBefore, installedApps);
+    }
+
+    // Launch apps
+    for (auto& app : launchedApps)
+    {
+        if (!app.second)
         {
-            launchedWindows.push_back({ app, nullptr });
+            if (!Launch(app.first))
+            {
+                Logger::error(L"Failed to launch {}", app.first.name);
+            }
         }
     }
     
     // Get newly opened windows after launching apps, keep retrying for 5 seconds
-    for (int attempt = 0; attempt < 50; attempt++)
+    for (int attempt = 0; attempt < 50 && !AllWindowsFound(launchedApps); attempt++)
     {
         std::vector<HWND> windowsAfter = WindowEnumerator::Enumerate(WindowFilter::Filter);
-        for (HWND window : windowsAfter)
-        {
-            // Find the new window
-            if (std::find(windowsBefore.begin(), windowsBefore.end(), window) == windowsBefore.end())
-            {
-                // find the corresponding app in the list
-                auto app = Utils::Apps::GetApp(window, apps);
-                if (!app.has_value())
-                {
-                    continue;
-                }
-
-                // set the window
-                auto res = std::find_if(launchedWindows.begin(), launchedWindows.end(), [&](const std::pair<ProjectsData::Project::Application, HWND>& val) { return val.first.name == app->name && val.second == nullptr; });
-                if (res != launchedWindows.end())
-                {
-                    res->second = window;
-                }
-            }
-        }
+        std::vector<HWND> windowsDiff{};
+        std::copy_if(windowsAfter.begin(), windowsAfter.end(), std::back_inserter(windowsDiff), 
+            [&](HWND window) { return std::find(windowsBefore.begin(), windowsBefore.end(), window) == windowsBefore.end(); });
+        AddOpenedWindows(launchedApps, windowsDiff, installedApps);
 
         // check if all windows were found
-        auto res = std::find_if(launchedWindows.begin(), launchedWindows.end(), [&](const std::pair<ProjectsData::Project::Application, HWND>& val) { return val.second == nullptr; });
-        if (res == launchedWindows.end())
+        if (AllWindowsFound(launchedApps))
         {
             Logger::trace(L"All windows found.");
             break;
@@ -302,28 +348,14 @@ ProjectsData::Project Launch(ProjectsData::Project project)
         }
     }
 
-    // Check single-instance app windows if they were launched before
-    if (launchedWindows.empty())
+    // Check single-instance app windows 
+    if (!AllWindowsFound(launchedApps))
     {
-        auto windows = WindowEnumerator::Enumerate(WindowFilter::Filter);
-        for (HWND window : windows)
-        {
-            auto app = Utils::Apps::GetApp(window, apps);
-            if (!app.has_value())
-            {
-                continue;
-            }
-
-            auto res = std::find_if(launchedWindows.begin(), launchedWindows.end(), [&](const std::pair<ProjectsData::Project::Application, HWND>& val) { return val.second == nullptr && val.first.name == app->name; });
-            if (res != launchedWindows.end())
-            {
-                res->second = window;
-            }
-        }
+        AddOpenedWindows(launchedApps, WindowEnumerator::Enumerate(WindowFilter::Filter), installedApps);
     }
 
     // Place windows
-    for (const auto& [app, window] : launchedWindows)
+    for (const auto& [app, window] : launchedApps)
     {
         if (window == nullptr)
         {

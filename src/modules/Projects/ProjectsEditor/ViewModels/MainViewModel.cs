@@ -168,7 +168,7 @@ namespace ProjectsEditor.ViewModels
         {
             editedProject.Name = projectToSave.Name;
             editedProject.IsShortcutNeeded = projectToSave.IsShortcutNeeded;
-            editedProject.IsMoveAppsBehaviourSelected = projectToSave.IsMoveAppsBehaviourSelected;
+            editedProject.MoveExistingWindows = projectToSave.MoveExistingWindows;
             editedProject.PreviewIcons = projectToSave.PreviewIcons;
             editedProject.PreviewImage = projectToSave.PreviewImage;
             editedProject.Applications = projectToSave.Applications.Where(x => x.IsIncluded).ToList();

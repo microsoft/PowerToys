@@ -80,7 +80,7 @@ namespace ProjectsEditor.Utils
                 CreationTime = project.CreationTime,
                 LastLaunchedTime = project.LastLaunchedTime,
                 IsShortcutNeeded = project.IsShortcutNeeded,
-                IsMoveAppsBehaviourSelected = project.IsMoveAppsBehaviourSelected,
+                MoveExistingWindows = project.MoveExistingWindows,
                 Monitors = new List<MonitorSetup>() { },
                 Applications = new List<Models.Application> { },
             };
@@ -137,7 +137,7 @@ namespace ProjectsEditor.Utils
                     Name = project.Name,
                     CreationTime = project.CreationTime,
                     IsShortcutNeeded = project.IsShortcutNeeded,
-                    IsMoveAppsBehaviourSelected = project.IsMoveAppsBehaviourSelected,
+                    MoveExistingWindows = project.MoveExistingWindows,
                     LastLaunchedTime = project.LastLaunchedTime,
                     Applications = new List<ProjectData.ApplicationWrapper> { },
                     MonitorConfiguration = new List<ProjectData.MonitorConfigurationWrapper> { },

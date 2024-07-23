@@ -388,7 +388,7 @@
                 FontWeight="Normal" 
                 Margin="0,0,0,0" 
                 Foreground="{DynamicResource PrimaryForegroundBrush}"
-                IsChecked="{Binding IsMoveAppsBehaviourSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                IsChecked="{Binding MoveExistingWindows, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 VerticalAlignment="Center"/>
         </StackPanel>
         <DockPanel Grid.Row="6" Margin="0,20,0,20">
