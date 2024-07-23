@@ -21,7 +21,7 @@ using Microsoft.PowerToys.Telemetry;
 //     2023- Included in PowerToys.
 // </history>
 using MouseWithoutBorders.Class;
-using MouseWithoutBorders.Form;
+using MouseWithoutBorders.Properties;
 using Timer = System.Windows.Forms.Timer;
 
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.frmScreen.#ShowMouseWithoutBordersUiOnWinLogonDesktop(System.Boolean)", Justification = "Dotnet port with style preservation")]
@@ -617,7 +617,7 @@ namespace MouseWithoutBorders
             {
                 Graphics g;
                 Pen p;
-                Bitmap bm = new(imgListIcon.Images[0]);
+                Bitmap bm = Images.notify_default;
 
                 /*
                 if (curIcon == Common.ICON_ONE)

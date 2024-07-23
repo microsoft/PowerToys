@@ -24,7 +24,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly string[] _languageOptions =
         {
             "ALL",
+            "BG",
             "CA",
+            "CRH",
             "CUR",
             "HR",
             "CZ",
@@ -41,6 +43,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "HE",
             "HU",
             "IS",
+            "IPA",
             "IT",
             "KU",
             "LT",

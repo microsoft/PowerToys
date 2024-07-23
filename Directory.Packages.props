@@ -28,32 +28,32 @@
     <PackageVersion Include="Mages" Version="2.0.2" />
     <PackageVersion Include="Markdig.Signed" Version="0.34.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.7" />
     <PackageVersion Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.336902" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
     <PackageVersion Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
     <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2365.46" />
     <!-- Package Microsoft.Win32.SystemEvents added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Drawing.Common but the 8.0.1 version wasn't published to nuget. -->
     <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Windows.Compatibility" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.Windows.Compatibility" Version="8.0.7" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.2.46-beta" />
     <!-- CsWinRT version needs to be set to have a WinRT.Runtime.dll at the same version contained inside the NET SDK we're currently building on CI. -->
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.0.4" />
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.2428" />
     <PackageVersion Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.1" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.5.240311000" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.5.240428000" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
     <PackageVersion Include="ModernWpfUI" Version="0.9.4" />
     <!-- Moq to stay below v4.20 due to behavior change. need to be sure fixed -->
     <PackageVersion Include="Moq" Version="4.18.4" />
-    <PackageVersion Include="MSTest.TestAdapter" Version="3.2.0" />
-    <PackageVersion Include="MSTest.TestFramework" Version="3.2.0" />
+    <PackageVersion Include="MSTest.TestAdapter" Version="3.5.0" />
+    <PackageVersion Include="MSTest.TestFramework" Version="3.5.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageVersion Include="NLog" Version="5.0.4" />
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.3.8" />
@@ -75,7 +75,7 @@
     <PackageVersion Include="System.Diagnostics.EventLog" Version="8.0.0" />
     <!-- Package System.Diagnostics.PerformanceCounter added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Data.OleDb but the 8.0.1 version wasn't published to nuget. -->
     <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="8.0.0" />
-    <PackageVersion Include="System.Drawing.Common" Version="8.0.5" />
+    <PackageVersion Include="System.Drawing.Common" Version="8.0.6" />
     <PackageVersion Include="System.IO.Abstractions" Version="17.2.3" />
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="17.2.3" />
     <PackageVersion Include="System.Management" Version="8.0.0" />
@@ -85,8 +85,9 @@
     <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
     <PackageVersion Include="System.ServiceProcess.ServiceController" Version="8.0.0" />
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="8.0.0" />
+    <PackageVersion Include="System.Text.Json" Version="8.0.4" />
     <PackageVersion Include="UnicodeInformation" Version="2.6.0" />
-    <PackageVersion Include="UnitsNet" Version="4.145.0" />
+    <PackageVersion Include="UnitsNet" Version="5.50.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
     <PackageVersion Include="Vanara.PInvoke.User32" Version="3.4.11" />
     <PackageVersion Include="Vanara.PInvoke.Shell32" Version="3.4.11" />

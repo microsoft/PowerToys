@@ -33,6 +33,8 @@ namespace AdvancedPaste.Helpers
 
         private string _openAIKey;
 
+        private string _modelName = "gpt-3.5-turbo-instruct";
+
         public bool IsAIEnabled => !string.IsNullOrEmpty(this._openAIKey);
 
         public AICompletionsHelper()
@@ -69,14 +71,14 @@ namespace AdvancedPaste.Helpers
             return string.Empty;
         }
 
-        public string GetAICompletion(string systemInstructions, string userMessage)
+        private Response<Completions> GetAICompletion(string systemInstructions, string userMessage)
         {
             OpenAIClient azureAIClient = new OpenAIClient(_openAIKey);
 
             var response = azureAIClient.GetCompletions(
                 new CompletionsOptions()
                 {
-                    DeploymentName = "gpt-3.5-turbo-instruct",
+                    DeploymentName = _modelName,
                     Prompts =
                     {
                         systemInstructions + "\n\n" + userMessage,
@@ -90,7 +92,7 @@ namespace AdvancedPaste.Helpers
                 Console.WriteLine("Cut off due to length constraints");
             }
 
-            return response.Value.Choices[0].Text;
+            return response;
         }
 
         public AICompletionsResponse AIFormatString(string inputInstructions, string inputString)
@@ -109,10 +111,16 @@ Output:
 ";
 
             string aiResponse = null;
+            Response<Completions> rawAIResponse = null;
             int apiRequestStatus = (int)HttpStatusCode.OK;
             try
             {
-                aiResponse = this.GetAICompletion(systemInstructions, userMessage);
+                rawAIResponse = this.GetAICompletion(systemInstructions, userMessage);
+                aiResponse = rawAIResponse.Value.Choices[0].Text;
+
+                int promptTokens = rawAIResponse.Value.Usage.PromptTokens;
+                int completionTokens = rawAIResponse.Value.Usage.CompletionTokens;
+                PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteGenerateCustomFormatEvent(promptTokens, completionTokens, _modelName));
             }
             catch (Azure.RequestFailedException error)
             {

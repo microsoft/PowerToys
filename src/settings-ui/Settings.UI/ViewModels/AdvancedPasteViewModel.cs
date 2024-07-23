@@ -108,6 +108,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _isEnabled = value;
                     OnPropertyChanged(nameof(IsEnabled));
+                    OnPropertyChanged(nameof(ShowOnlineAIModelsGpoConfiguredInfoBar));
+                    OnPropertyChanged(nameof(ShowClipboardHistoryIsGpoConfiguredInfoBar));
 
                     // Set the status of AdvancedPaste in the general settings
                     GeneralSettingsConfig.Enabled.AdvancedPaste = value;
@@ -149,7 +151,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ShowOnlineAIModelsGpoConfiguredInfoBar
         {
-            get => _onlineAIModelsDisallowedByGPO && _enabledGpoRuleConfiguration != GpoRuleConfigured.Disabled;
+            get => _onlineAIModelsDisallowedByGPO && _isEnabled;
         }
 
         private bool IsClipboardHistoryEnabled()
@@ -214,6 +216,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool ClipboardHistoryDisabledByGPO
         {
             get => IsClipboardHistoryDisabledByGPO();
+        }
+
+        public bool ShowClipboardHistoryIsGpoConfiguredInfoBar
+        {
+            get => IsClipboardHistoryDisabledByGPO() && _isEnabled;
         }
 
         public HotkeySettings AdvancedPasteUIShortcut
@@ -297,6 +304,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool CloseAfterLosingFocus
+        {
+            get => _advancedPasteSettings.Properties.CloseAfterLosingFocus;
+            set
+            {
+                if (value != _advancedPasteSettings.Properties.CloseAfterLosingFocus)
+                {
+                    _advancedPasteSettings.Properties.CloseAfterLosingFocus = value;
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool IsConflictingCopyShortcut
         {
             get
@@ -321,17 +341,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             // Using InvariantCulture as this is an IPC message
             SendConfigMSG(
-                   string.Format(
-                       CultureInfo.InvariantCulture,
-                       "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
-                       AdvancedPasteSettings.ModuleName,
-                       JsonSerializer.Serialize(_advancedPasteSettings)));
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                    AdvancedPasteSettings.ModuleName,
+                    JsonSerializer.Serialize(_advancedPasteSettings)));
         }
 
         public void RefreshEnabledState()
         {
             InitializeEnabledValue();
             OnPropertyChanged(nameof(IsEnabled));
+            OnPropertyChanged(nameof(ShowOnlineAIModelsGpoConfiguredInfoBar));
+            OnPropertyChanged(nameof(ShowClipboardHistoryIsGpoConfiguredInfoBar));
         }
 
         protected virtual void Dispose(bool disposing)

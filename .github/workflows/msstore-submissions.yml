@@ -5,56 +5,80 @@ on:
   release:
     types: [published]
 
+permissions:
+  id-token: write
+
 jobs:
 
   microsoft_store:
     name: Publish Microsoft Store
+    environment: store
     runs-on: ubuntu-latest
     steps:
+      - name: BODGY - Set up Gnome Keyring for future Cert Auth
+        run: |-
+          sudo apt-get install -y gnome-keyring
+          export $(dbus-launch --sh-syntax)
+          export $(echo 'anypass_just_to_unlock' | gnome-keyring-daemon --unlock)
+          export $(echo 'anypass_just_to_unlock' | gnome-keyring-daemon --start --components=gpg,pkcs11,secrets,ssh)
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: true
+
       - name: Get latest URL from public releases
         id: releaseVars
         run: |
           release=$(curl https://api.github.com/repos/Microsoft/PowerToys/releases | jq '[.[]|select(.name | contains("Release"))][0]')
           assets=$(jq -n "$release" | jq '.assets')
-          powerToysSetup=$(jq -n "$assets" | jq '[.[]|select(.name | contains("PowerToysSetup"))]')
-          echo ::set-output name=powerToysInstallerX64Url::$(jq -n "$powerToysSetup" | jq -r '[.[]|select(.name | contains("x64"))][0].browser_download_url')
-          echo ::set-output name=powerToysInstallerArm64Url::$(jq -n "$powerToysSetup" | jq -r '[.[]|select(.name | contains("arm64"))][0].browser_download_url')
+          powerToysSetup=$(jq -n "$assets" | jq '[.[]|select(.name | contains("PowerToysUserSetup"))]')
+          echo powerToysInstallerX64Url=$(jq -n "$powerToysSetup" | jq -r '[.[]|select(.name | contains("x64"))][0].browser_download_url') >> $GITHUB_OUTPUT
+          echo powerToysInstallerArm64Url=$(jq -n "$powerToysSetup" | jq -r '[.[]|select(.name | contains("arm64"))][0].browser_download_url') >> $GITHUB_OUTPUT
+
+      - uses: microsoft/setup-msstore-cli@v1
+
+      - name: Fetch Store Credential
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |-
+            az keyvault secret download --vault-name ${{ secrets.AZURE_KEYVAULT_NAME }} -n ${{ secrets.AZURE_AUTH_CERT_NAME }} -f cert.pfx.b64
+            base64 -d < cert.pfx.b64 > cert.pfx
 
       - name: Configure Store Credentials
-        uses: microsoft/store-submission@v1
-        with:
-          command: configure
-          type: win32
-          seller-id: ${{ secrets.SELLER_ID }}
-          product-id: ${{ secrets.PRODUCT_ID }}
-          tenant-id: ${{ secrets.TENANT_ID }}
-          client-id: ${{ secrets.CLIENT_ID }}
-          client-secret: ${{ secrets.CLIENT_SECRET }}
+        run: |-
+          msstore reconfigure -cfp cert.pfx -c ${{ secrets.AZURE_CLIENT_ID }} -t ${{ secrets.AZURE_TENANT_ID }} -s ${{ secrets.SELLER_ID }}
 
       - name: Update draft submission
-        uses: microsoft/store-submission@v1
-        with:
-          command: update
-          product-update: '{
-              "packages":[
-                  {
-                    "packageUrl":"${{ steps.releaseVars.outputs.powerToysInstallerX64Url }}",
-                    "languages":["zh-hans", "zh-hant", "en", "cs", "nl", "fr", "pt", "pt-br", "de", "hu", "it", "ja", "ko", "pl", "ru", "es", "tr"],
-                    "architectures":["X64"],
-                    "installerParameters":"/quiet /norestart",
-                    "isSilentInstall":true
-                  },
-                  {
-                    "packageUrl":"${{ steps.releaseVars.outputs.powerToysInstallerArm64Url }}",
-                    "languages":["zh-hans", "zh-hant", "en", "cs", "nl", "fr", "pt", "pt-br", "de", "hu", "it", "ja", "ko", "pl", "ru", "es", "tr"],
-                    "architectures":["Arm64"],
-                    "installerParameters":"/quiet /norestart",
-                    "isSilentInstall":true
-                  }
-              ]
-            }'
+        run: |-
+          msstore submission update ${{ secrets.PRODUCT_ID }} '{
+            "packages":[
+                {
+                  "packageUrl":"${{ steps.releaseVars.outputs.powerToysInstallerX64Url }}",
+                  "languages":["zh-hans", "zh-hant", "en", "cs", "nl", "fr", "pt", "pt-br", "de", "hu", "it", "ja", "ko", "pl", "ru", "es", "tr"],
+                  "architectures":["X64"],
+                  "installerParameters":"/quiet /norestart",
+                  "isSilentInstall":true
+                },
+                {
+                  "packageUrl":"${{ steps.releaseVars.outputs.powerToysInstallerArm64Url }}",
+                  "languages":["zh-hans", "zh-hant", "en", "cs", "nl", "fr", "pt", "pt-br", "de", "hu", "it", "ja", "ko", "pl", "ru", "es", "tr"],
+                  "architectures":["Arm64"],
+                  "installerParameters":"/quiet /norestart",
+                  "isSilentInstall":true
+                }
+            ]
+          }'
 
       - name: Publish Submission
-        uses: microsoft/store-submission@v1
-        with: 
-          command: publish
+        run: |-
+          msstore submission publish ${{ secrets.PRODUCT_ID }}
+
+      - name: Clean up auth certificate
+        if: always()
+        run: |-
+          rm -f cert.pfx cert.pfx.b64

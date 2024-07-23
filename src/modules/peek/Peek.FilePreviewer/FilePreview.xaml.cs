@@ -53,6 +53,7 @@ namespace Peek.FilePreviewer
         [NotifyPropertyChangedFor(nameof(ArchivePreviewer))]
         [NotifyPropertyChangedFor(nameof(ShellPreviewHandlerPreviewer))]
         [NotifyPropertyChangedFor(nameof(DrivePreviewer))]
+        [NotifyPropertyChangedFor(nameof(SpecialFolderPreviewer))]
         [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
         private IPreviewer? previewer;
 
@@ -104,6 +105,8 @@ namespace Peek.FilePreviewer
         public IShellPreviewHandlerPreviewer? ShellPreviewHandlerPreviewer => Previewer as IShellPreviewHandlerPreviewer;
 
         public IDrivePreviewer? DrivePreviewer => Previewer as IDrivePreviewer;
+
+        public ISpecialFolderPreviewer? SpecialFolderPreviewer => Previewer as ISpecialFolderPreviewer;
 
         public IUnsupportedFilePreviewer? UnsupportedFilePreviewer => Previewer as IUnsupportedFilePreviewer;
 

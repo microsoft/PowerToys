@@ -72,7 +72,7 @@ In order to test the remapping logic, a mocked keyboard input handler had to be 
 The [`MockedInput`](https://github.com/microsoft/PowerToys/blob/main/src/modules/keyboardmanager/test/MockedInput.h) class uses a 256 size `bool` vector to store the key state for each key code. Identifying the foreground process is mocked by simply setting and getting a string value for the name of the current process.
 
 [To mock the `SendInput` method](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/test/MockedInput.cpp#L10-L110), the steps for processing the input are as follows. This implementation is based on public documentation for SendInput and the behavior of key messages and keyboard hooks:
-- Iterate over all the inputs in the INPUT array argument
+- Iterate over all the inputs in the `INPUT` vector argument.
 - If the event is a key up event, then it is considered [`WM_SYSKEYUP`](https://learn.microsoft.com/windows/win32/inputdev/wm-syskeyup) if Alt is held down, otherwise it is `WM_KEYUP`.
 - If the event is a key down event, then it is considered [`WM_SYSKEYDOWN`](https://learn.microsoft.com/windows/win32/inputdev/wm-syskeydown) if either Alt is held down or if it is F10, otherwise it is `WM_KEYDOWN`.
 - An optional function which can be set on the `MockedInput` handler can be used to test for the number of times a key event is received by the system with a particular condition using [`sendVirtualInputCallCondition`](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/test/MockedInput.cpp#L48-L52).

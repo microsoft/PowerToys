@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Net;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
@@ -20,14 +19,13 @@ namespace AdvancedPaste.Controls
     public sealed partial class PromptBox : Microsoft.UI.Xaml.Controls.UserControl
     {
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-
-        private UserSettings _userSettings;
+        private readonly IUserSettings _userSettings;
 
         public static readonly DependencyProperty PromptProperty = DependencyProperty.Register(
-          nameof(Prompt),
-          typeof(string),
-          typeof(PromptBox),
-          new PropertyMetadata(defaultValue: string.Empty));
+            nameof(Prompt),
+            typeof(string),
+            typeof(PromptBox),
+            new PropertyMetadata(defaultValue: string.Empty));
 
         public OptionsViewModel ViewModel { get; private set; }
 
@@ -38,10 +36,10 @@ namespace AdvancedPaste.Controls
         }
 
         public static readonly DependencyProperty PlaceholderTextProperty = DependencyProperty.Register(
-         nameof(PlaceholderText),
-         typeof(string),
-         typeof(PromptBox),
-         new PropertyMetadata(defaultValue: string.Empty));
+            nameof(PlaceholderText),
+            typeof(string),
+            typeof(PromptBox),
+            new PropertyMetadata(defaultValue: string.Empty));
 
         public string PlaceholderText
         {
@@ -50,10 +48,10 @@ namespace AdvancedPaste.Controls
         }
 
         public static readonly DependencyProperty FooterProperty = DependencyProperty.Register(
-        nameof(Footer),
-        typeof(object),
-        typeof(PromptBox),
-        new PropertyMetadata(defaultValue: null));
+            nameof(Footer),
+            typeof(object),
+            typeof(PromptBox),
+            new PropertyMetadata(defaultValue: null));
 
         public object Footer
         {
@@ -65,7 +63,7 @@ namespace AdvancedPaste.Controls
         {
             this.InitializeComponent();
 
-            _userSettings = new UserSettings();
+            _userSettings = App.GetService<IUserSettings>();
 
             ViewModel = App.GetService<OptionsViewModel>();
         }
@@ -79,8 +77,6 @@ namespace AdvancedPaste.Controls
         private void GenerateCustom()
         {
             Logger.LogTrace();
-
-            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteGenerateCustomFormatEvent());
 
             VisualStateManager.GoToState(this, "LoadingState", true);
             string inputInstructions = InputTxtBox.Text;

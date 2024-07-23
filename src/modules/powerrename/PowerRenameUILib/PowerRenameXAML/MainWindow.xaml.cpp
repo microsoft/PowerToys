@@ -203,6 +203,12 @@ namespace winrt::PowerRenameUI::implementation
         m_CounterShortcuts.Append(winrt::make<PatternSnippet>(L"${padding=8}", manager.MainResourceMap().GetValue(L"Resources/CounterCheatSheet_Padding").ValueAsString()));
         m_CounterShortcuts.Append(winrt::make<PatternSnippet>(L"${increment=3,padding=4,start=900}", manager.MainResourceMap().GetValue(L"Resources/CounterCheatSheet_Complex").ValueAsString()));
 
+        m_RandomizerShortcuts = winrt::single_threaded_observable_vector<PowerRenameUI::PatternSnippet>();
+        m_RandomizerShortcuts.Append(winrt::make<PatternSnippet>(L"${rstringalnum=9}", manager.MainResourceMap().GetValue(L"Resources/RandomizerCheatSheet_Alnum").ValueAsString()));
+        m_RandomizerShortcuts.Append(winrt::make<PatternSnippet>(L"${rstringalpha=13}", manager.MainResourceMap().GetValue(L"Resources/RandomizerCheatSheet_Alpha").ValueAsString()));
+        m_RandomizerShortcuts.Append(winrt::make<PatternSnippet>(L"${rstringdigit=36}", manager.MainResourceMap().GetValue(L"Resources/RandomizerCheatSheet_Digit").ValueAsString()));
+        m_RandomizerShortcuts.Append(winrt::make<PatternSnippet>(L"${ruuidv4}", manager.MainResourceMap().GetValue(L"Resources/RandomizerCheatSheet_Uuid").ValueAsString()));
+
         InitializeComponent();
 
         listView_ExplorerItems().ApplyTemplate();
@@ -283,6 +289,7 @@ namespace winrt::PowerRenameUI::implementation
 
         button_rename().IsEnabled(false);
         toggleButton_enumItems().IsChecked(true);
+        toggleButton_randItems().IsChecked(false);
         InitAutoComplete();
         SearchReplaceChanged();
         InvalidateItemListViewState();
@@ -749,6 +756,15 @@ namespace winrt::PowerRenameUI::implementation
             UpdateFlag(EnumerateItems, UpdateFlagCommand::Reset);
         });
 
+        // CheckBox RandomizeItems
+        toggleButton_randItems().Checked([&](auto const&, auto const&) {
+            ValidateFlags(RandomizeItems);
+            UpdateFlag(RandomizeItems, UpdateFlagCommand::Set);
+        });
+        toggleButton_randItems().Unchecked([&](auto const&, auto const&) {
+            UpdateFlag(RandomizeItems, UpdateFlagCommand::Reset);
+        });
+
         // ButtonSettings
         button_settings().Click([&](auto const&, auto const&) {
             OpenSettingsApp();
@@ -943,6 +959,10 @@ namespace winrt::PowerRenameUI::implementation
         if (flags & EnumerateItems)
         {
             toggleButton_enumItems().IsChecked(true);
+        }
+        if (flags & RandomizeItems)
+        {
+            toggleButton_randItems().IsChecked(true);
         }
         if (flags & ExcludeFiles)
         {
