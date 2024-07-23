@@ -10,7 +10,6 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Windows.Media;
-using Point = System.Windows.Point;
 
 namespace PowerLauncher.Helper
 {
@@ -188,30 +187,29 @@ namespace PowerLauncher.Helper
             _ = NativeMethods.SetWindowLong(hwnd, GWL_EX_STYLE, NativeMethods.GetWindowLong(hwnd, GWL_EX_STYLE) | WS_EX_TOOLWINDOW);
         }
 
-        /// <summary>
-        /// Transforms pixels to Device Independent Pixels used by WPF
-        /// </summary>
-        /// <param name="visual">current window, required to get presentation source</param>
-        /// <param name="unitX">horizontal position in pixels</param>
-        /// <param name="unitY">vertical position in pixels</param>
-        /// <returns>point containing device independent pixels</returns>
-        public static Point TransformPixelsToDIP(Visual visual, double unitX, double unitY)
+        public static void MoveToScreenCenter(Window window, Screen screen)
         {
-            Matrix matrix;
-            var source = PresentationSource.FromVisual(visual);
-            if (source != null)
+            var workingArea = screen.WorkingArea;
+            var matrix = GetCompositionTarget(window).TransformFromDevice;
+            var dpiX = matrix.M11;
+            var dpiY = matrix.M22;
+
+            window.Left = (dpiX * workingArea.Left) + (((dpiX * workingArea.Width) - window.Width) / 2);
+            window.Top = (dpiY * workingArea.Top) + (((dpiY * workingArea.Height) - window.Height) / 2);
+        }
+
+        private static CompositionTarget GetCompositionTarget(Visual visual)
+        {
+            var presentationSource = PresentationSource.FromVisual(visual);
+            if (presentationSource != null)
             {
-                matrix = source.CompositionTarget.TransformFromDevice;
+                return presentationSource.CompositionTarget;
             }
             else
             {
-                using (var src = new HwndSource(default))
-                {
-                    matrix = src.CompositionTarget.TransformFromDevice;
-                }
+                using var hwndSource = new HwndSource(default);
+                return hwndSource.CompositionTarget;
             }
-
-            return new Point((int)(matrix.M11 * unitX), (int)(matrix.M22 * unitY));
         }
 
         [StructLayout(LayoutKind.Sequential)]

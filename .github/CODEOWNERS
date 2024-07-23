@@ -4,7 +4,7 @@
 /.github/actions/spell-check/
 
 # locking down pipeline folder
-/.pipelines @crutkas @DHowett @ethanfangg
+/.pipelines/ @crutkas @DHowett @ethanfangg
 
 # locking down nuget config
 nuget.config  @crutkas @DHowett @ethanfangg
@@ -12,5 +12,5 @@ packages.config  @crutkas @DHowett @ethanfangg
 
 # locking down files that should not change
 LICENSE @crutkas @DHowett @ethanfangg
-SECURITY.MD @crutkas @DHowett @ethanfangg
-CODE_OF_CONDUCT.MD @crutkas @DHowett @ethanfangg
+SECURITY.md @crutkas @DHowett @ethanfangg
+CODE_OF_CONDUCT.md @crutkas @DHowett @ethanfangg
