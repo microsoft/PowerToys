@@ -29,7 +29,7 @@ namespace AdvancedPaste.Helpers
 
         // CSV: Regex to remove/replace quotation marks
         private static readonly Regex CsvRemoveSingleQuotationMarksRegex = new Regex(@"^""(?!"")|(?<!"")""$|^""""$");
-        private static readonly Regex CsvRemoveStartAndEndQuotationMarksRegex = new Regex(@"^""(?=(""{2})+[^""])|(?<=[^""](""{2})+)""$");
+        private static readonly Regex CsvRemoveStartAndEndQuotationMarksRegex = new Regex(@"^""(?=(""{2})+)|(?<=(""{2})+)""$");
         private static readonly Regex CsvReplaceDoubleQuotationMarksRegex = new Regex(@"""{2}");
 
         internal static string ToJsonFromXmlOrCsv(DataPackageView clipboardData)
@@ -261,9 +261,9 @@ namespace AdvancedPaste.Helpers
             // Remove first and last single quotation mark and remove quotation marks of an empty data set ("").
             str = CsvRemoveSingleQuotationMarksRegex.Replace(str, string.Empty);
 
-            // Remove first quotation mark if followed by pairs of quotation marks only.
-            // And remove last quotation mark if precede by pairs of quotation marks only.
-            // (Make odd count even for start sequence and end sequence.)
+            // Remove first quotation mark if followed by pairs of quotation marks.
+            // And remove last quotation mark if precede by pairs of quotation marks.
+            // (Removes enclosing quotation marks around the cell data.)
             str = CsvRemoveStartAndEndQuotationMarksRegex.Replace(str, string.Empty);
 
             // Replace pairs of two quotation marks with a single quotation mark.
