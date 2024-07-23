@@ -90,6 +90,8 @@
     <PackageReference Include="StreamJsonRpc" />
     <!-- HACK: Microsoft.Extensions.Hosting is referenced, even if it is not used, to force dll versions to be the same as in other projects. Really only needed since the Experimentation APIs that are added in CI reference some net standard 2.0 assemblies. -->
     <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <!-- HACK: To make sure the version pulled in by Microsoft.Extensions.Hosting is current. -->
+    <PackageReference Include="System.Text.Json" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
   <!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
