@@ -135,24 +135,27 @@ namespace Awake.Core
 
             _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
-            try
-            {
-                var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
-                var settingsChanged = currentSettings.Properties.Mode != AwakeMode.INDEFINITE ||
-                                      currentSettings.Properties.KeepDisplayOn != keepDisplayOn;
+            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_INDEFINITE}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/StateIcons/indefinite.ico")), TrayIconAction.Update);
 
-                if (settingsChanged)
+            if (IsUsingPowerToysConfig)
+            {
+                try
                 {
-                    currentSettings.Properties.Mode = AwakeMode.INDEFINITE;
-                    currentSettings.Properties.KeepDisplayOn = keepDisplayOn;
-                    ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
-                }
+                    var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                    var settingsChanged = currentSettings.Properties.Mode != AwakeMode.INDEFINITE ||
+                                          currentSettings.Properties.KeepDisplayOn != keepDisplayOn;
 
-                TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_INDEFINITE}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/StateIcons/indefinite.ico")), TrayIconAction.Update);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to handle indefinite keep awake command: {ex.Message}");
+                    if (settingsChanged)
+                    {
+                        currentSettings.Properties.Mode = AwakeMode.INDEFINITE;
+                        currentSettings.Properties.KeepDisplayOn = keepDisplayOn;
+                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to handle indefinite keep awake command: {ex.Message}");
+                }
             }
         }
 
