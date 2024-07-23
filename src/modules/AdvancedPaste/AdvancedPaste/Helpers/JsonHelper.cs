@@ -258,12 +258,12 @@ namespace AdvancedPaste.Helpers
         /// <returns>Manipulated string.</returns>
         private static string ReplaceQuotationMarksInCsvData(string str)
         {
-            // Remove first and last single quotation mark and remove quotation marks of an empty data set ("").
+            // Remove first and last single quotation mark (enclosing quotation marks) and remove quotation marks of an empty data set ("").
             str = CsvRemoveSingleQuotationMarksRegex.Replace(str, string.Empty);
 
-            // Remove first quotation mark if followed by pairs of quotation marks.
-            // And remove last quotation mark if precede by pairs of quotation marks.
-            // (Removes enclosing quotation marks around the cell data.)
+            // Remove first quotation mark if followed by pairs of quotation marks
+            // and remove last quotation mark if precede by pairs of quotation marks.
+            // (Removes enclosing quotation marks around the cell data for data like /"""abc"""/.)
             str = CsvRemoveStartAndEndQuotationMarksRegex.Replace(str, string.Empty);
 
             // Replace pairs of two quotation marks with a single quotation mark. (Escaped quotation marks.)
