@@ -28,8 +28,9 @@ namespace AdvancedPaste.Helpers
         private static readonly string CsvDelimSepRegexStr = @"(?=(?:[^""]*""[^""]*"")*(?![^""]*""))";
 
         // CSV: Regex to remove/replace quotation marks
-        private static readonly Regex CsvRemoveQuotationMarksRegex = new Regex(@"^""(?!"")|(?<!"")""$|^""""$");
-        private static readonly Regex CsvReplaceQuotationMarksRegex = new Regex(@"^""{3}(?!"")|(?<!"")""{3}$|""{2}");
+        private static readonly Regex CsvRemoveSingleQuotationMarksRegex = new Regex(@"^""(?!"")|(?<!"")""$|^""""$");
+        private static readonly Regex CsvRemoveStartAndEndQuotationMarksRegex = new Regex(@"^""(?=(""{2})+[^""])|(?<=[^""](""{2})+)""$");
+        private static readonly Regex CsvReplaceDoubleQuotationMarksRegex = new Regex(@"""{2}");
 
         internal static string ToJsonFromXmlOrCsv(DataPackageView clipboardData)
         {
@@ -252,11 +253,15 @@ namespace AdvancedPaste.Helpers
 
         private static string ReplaceQuotationMarksInCsvData(string str)
         {
-            // Remove first and last occurence of single quotation mark and remove quotation marks of an empty data set ("").
-            str = CsvRemoveQuotationMarksRegex.Replace(str, string.Empty);
+            // Remove first and last single quotation mark and remove quotation marks of an empty data set ("").
+            str = CsvRemoveSingleQuotationMarksRegex.Replace(str, string.Empty);
 
-            // Replace first three* OR last three* OR pairs of two quotation marks with a single quotation mark. (* If exactly three occurences.)
-            str = CsvReplaceQuotationMarksRegex.Replace(str, "\"");
+            // Remove first quotation mark if followed by pairs of two quotation marks.
+            // And remove last quotation mark if preced by pairs of two quotation marks.
+            str = CsvRemoveStartAndEndQuotationMarksRegex.Replace(str, string.Empty);
+
+            // Replace pairs of two quotation marks with a single quotation mark.
+            str = CsvReplaceDoubleQuotationMarksRegex.Replace(str, "\"");
 
             return str;
         }
