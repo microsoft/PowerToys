@@ -150,7 +150,6 @@ BYPOSITION
 CALG
 callbackptr
 calpwstr
-CANCELMODE
 Cangjie
 CANRENAME
 CAPTUREBLT
@@ -174,7 +173,6 @@ cfp
 cguid
 CHANGECBCHAIN
 changecursor
-CHECKORBMP
 CHILDACTIVATE
 CHILDWINDOW
 cidl
@@ -225,7 +223,6 @@ comdlg
 comexp
 cominterop
 commandline
-COMMANDTITLE
 commctrl
 commdlg
 compmgmt
@@ -491,7 +488,6 @@ FILEFLAGSMASK
 FILELOCKSMITH
 FILELOCKSMITHCONTEXTMENU
 FILELOCKSMITHEXT
-FILELOCKSMITHLIB
 FILELOCKSMITHLIBINTEROP
 FILEMUSTEXIST
 FILEOP
@@ -529,7 +525,6 @@ GCLP
 gdi
 gdiplus
 GDISCALED
-gdnbaselines
 GEmoji
 GETCLIENTAREAANIMATION
 GETDESKWALLPAPER
@@ -549,7 +544,6 @@ gpedit
 gpo
 GPOCA
 gpp
-GPT
 gpu
 GSM
 gtm
@@ -709,7 +703,6 @@ INSTALLSTARTMENUSHORTCUT
 INSTALLSTATE
 Inste
 Intelli
-interactable
 Interlop
 INTRESOURCE
 INVALIDARG
@@ -738,7 +731,6 @@ IWeb
 IWIC
 iwr
 IYUV
-JArray
 jfi
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
@@ -770,7 +762,6 @@ KILLFOCUS
 killrunner
 kmph
 Knownfolders
-ksh
 KSPROPERTY
 Kybd
 languagesjson
@@ -808,7 +799,6 @@ LOADFROMFILE
 LOBYTE
 LOCALDISPLAY
 LOCALPACKAGE
-localport
 LOCALSYSTEM
 LOCATIONCHANGE
 LOGFONT
@@ -888,7 +878,6 @@ mdwn
 MEDIASUBTYPE
 mediatype
 mef
-MENUBREAK
 MENUITEMINFO
 MENUITEMINFOW
 MERGECOPY
@@ -1051,7 +1040,6 @@ NOSEARCH
 NOSENDCHANGING
 NOSIZE
 NOTIFICATIONSDLL
-NOTIFYBYPOS
 NOTIFYICONDATA
 NOTIFYICONDATAW
 NOTIMPL
@@ -1076,7 +1064,6 @@ numberbox
 nwc
 Objbase
 objidl
-occurrence
 ocr
 Ocrsettings
 odbccp
@@ -1090,7 +1077,6 @@ oldtheme
 oleaut
 OLECHAR
 onebranch
-OOBEPT
 opencode
 OPENFILENAME
 opensource
@@ -1114,7 +1100,6 @@ OVERLAPPEDWINDOW
 overlaywindow
 Oversampling
 OWNDC
-OWNERDRAW
 Packagemanager
 PACL
 PAINTSTRUCT
@@ -1128,7 +1113,6 @@ PARTIALCONFIRMATIONDIALOGTITLE
 PATCOPY
 pathcch
 PATHMUSTEXIST
-Pathto
 PATINVERT
 PATPAINT
 PAUDIO
@@ -1270,8 +1254,6 @@ QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
 QUNS
-qwertyuiopasdfghjklzxcvbnm
-qwrtyuiopsghjklzxvnm
 raf
 RAII
 RAlt
@@ -1288,7 +1270,6 @@ RECTDESTINATION
 rectp
 RECTSOURCE
 recyclebin
-redirectedfrom
 Redist
 redistributable
 reencode
@@ -1346,7 +1327,6 @@ rgf
 rgn
 rgs
 RIDEV
-RIGHTBUTTON
 RIGHTSCROLLBAR
 riid
 ringbuffer
@@ -1371,8 +1351,6 @@ runas
 rundll
 rungameid
 RUNLEVEL
-runsettings
-runspace
 runtimeclass
 runtimeobject
 runtimepack
@@ -1606,7 +1584,6 @@ TDevice
 telem
 telephon
 templatenamespace
-testhost
 testprocess
 TEXCOORD
 TEXTEXTRACTOR
@@ -1631,7 +1608,6 @@ tlb
 tlbimp
 TMPVAR
 TNP
-toggleswitch
 Toolhelp
 toolkitconverters
 Toolset
@@ -1643,7 +1619,6 @@ touchpad
 tracelogging
 traies
 transicc
-TRAYICON
 TRAYMOUSEMESSAGE
 triaging
 TRK
