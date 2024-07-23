@@ -1318,7 +1318,7 @@ EXHIBIT A -Mozilla Public License.
 - Mages 2.0.2
 - Markdig.Signed 0.34.0
 - Microsoft.CodeAnalysis.NetAnalyzers 8.0.0
-- Microsoft.Data.Sqlite 8.0.0
+- Microsoft.Data.Sqlite 8.0.7
 - Microsoft.Extensions.DependencyInjection 8.0.0
 - Microsoft.Extensions.Hosting 8.0.0
 - Microsoft.Extensions.Hosting.WindowsServices 8.0.0
