@@ -183,13 +183,46 @@ namespace
                 continue;
             }
 
-            auto iter = std::find_if(launchedApps.begin(), launchedApps.end(), [&](const std::pair<ProjectsData::Project::Application, HWND>& val) {
-                return val.second == nullptr && installedAppData.value().name == val.first.name;
-            });
-
-            if (iter != launchedApps.end())
+            auto insertionIter = launchedApps.end();
+            for (auto iter = launchedApps.begin(); iter != launchedApps.end(); ++iter)
             {
-                iter->second = window;
+                if (iter->second == nullptr && installedAppData.value().name == iter->first.name)
+                {
+                    insertionIter = iter;
+                }
+
+                // keep the window at the same position if it's already opened
+                WINDOWPLACEMENT placement{};
+                ::GetWindowPlacement(window, &placement);
+                HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY);
+                UINT dpi = DPIAware::DEFAULT_DPI;
+                DPIAware::GetScreenDPIForMonitor(monitor, dpi);
+
+                float x = static_cast<float>(placement.rcNormalPosition.left);
+                float y = static_cast<float>(placement.rcNormalPosition.top); 
+                float width = static_cast<float>(placement.rcNormalPosition.right - placement.rcNormalPosition.left);
+                float height = static_cast<float>(placement.rcNormalPosition.bottom - placement.rcNormalPosition.top);
+
+                DPIAware::InverseConvert(monitor, x, y);
+                DPIAware::InverseConvert(monitor, width, height);
+
+                ProjectsData::Project::Application::Position windowPosition{ 
+                    .x = static_cast<int>(std::round(x)), 
+                    .y = static_cast<int>(std::round(y)),  
+                    .width = static_cast<int>(std::round(width)), 
+                    .height = static_cast<int>(std::round(height)), 
+                };
+                if (iter->first.position == windowPosition)
+                {
+                    Logger::debug(L"{} window already found at {} {}.", iter->first.name, iter->first.position.x, iter->first.position.y);
+					insertionIter = iter;
+					break;
+				}
+			}
+
+            if (insertionIter != launchedApps.end())
+            {
+                insertionIter->second = window;
             }
 
             if (AllWindowsFound(launchedApps))

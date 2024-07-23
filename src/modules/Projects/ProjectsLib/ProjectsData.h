@@ -19,6 +19,11 @@ namespace ProjectsData
                 int height;
 
                 RECT toRect() const noexcept;
+
+                inline bool operator==(const Position& other) const noexcept
+                {
+                    return x == other.x && y == other.y && width == other.width && height == other.height;
+                }
             };
 
             std::wstring name;
