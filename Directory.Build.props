@@ -7,7 +7,7 @@
     <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
     <AssemblyProduct>PowerToys</AssemblyProduct>
     <PackageTags>PowerToys</PackageTags>
-	<Product>PowerToys</Product>
+    <Product>PowerToys</Product>
 
     <NeutralLanguage>en-US</NeutralLanguage>
     <Platforms>x64;ARM64</Platforms>
