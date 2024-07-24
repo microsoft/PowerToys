@@ -1,5 +1,5 @@
-﻿<!-- many vars are set in Directory.Build.props in root -->
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- many vars are set in Directory.Build.props in root -->
   <Import Project="..\..\Version.props" />
   <Import Project="..\..\DotNet.props" />
 	
