@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\Version.props" />
-  <Import Project="..\..\DotNet.props" />
+  <Import Project="..\..\Common.Dotnet.props" />
 
   <PropertyGroup>
     <UseWPF>true</UseWPF>

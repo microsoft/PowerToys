@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <!-- many vars are set in Directory.Build.props in root -->
   <Import Project="..\..\..\Version.props" />
-  <Import Project="..\..\..\DotNet.props" />
+  <Import Project="..\..\..\Common.Dotnet.props" />
   <Import Project="..\..\..\Common.Dotnet.TargetFramework.HasVersion.props" />
   <Import Project="..\..\..\Common.Selfcontained.props" />
-  <Import Project="..\..\..\WPF.props" />
+  <Import Project="..\..\..\Common.wpf.props" />
 
   <PropertyGroup>
     <AssemblyTitle>PowerToys.Run</AssemblyTitle>

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <!-- Some items may be set in Directory.Build.props in root -->
   <Import Project="..\..\Version.props" />
-  <Import Project="..\..\DotNet.props" />
+  <Import Project="..\..\Common.Dotnet.props" />
 
   <PropertyGroup>
     <Description>PowerToys ManagedCommon</Description>
