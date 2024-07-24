@@ -1387,6 +1387,7 @@ SDKDDK
 sdns
 searchterm
 secpol
+Selfcontained
 SENDCHANGE
 sendinput
 sendvirtualinput
