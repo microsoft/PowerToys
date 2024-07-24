@@ -3,6 +3,7 @@
   <Import Project="..\..\..\Version.props" />
   <Import Project="..\..\..\DotNet.props" />
   <Import Project="..\..\..\Common.Dotnet.TargetFramework.HasVersion.props" />
+  <Import Project="..\..\..\Common.Selfcontained.props" />
   <Import Project="..\..\..\WPF.props" />
 
   <PropertyGroup>

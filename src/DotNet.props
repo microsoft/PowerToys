@@ -12,12 +12,20 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <WarningLevel>4</WarningLevel>
+	<NoWarn></NoWarn>
+	<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	<WarningsNotAsErrors>CA1720</WarningsNotAsErrors>
   </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <DefineConstants>RELEASE;TRACE</DefineConstants>
     <DebugType>pdbonly</DebugType>
     <ErrorReport>prompt</ErrorReport>
     <Optimize>true</Optimize>
     <WarningLevel>4</WarningLevel>
+	<NoWarn></NoWarn>
+	<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	<WarningsNotAsErrors>CA1720</WarningsNotAsErrors>
   </PropertyGroup>
+	
 </Project>

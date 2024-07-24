@@ -9,15 +9,5 @@
 	<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 	<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 	<GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-	<SelfContained>true</SelfContained>
-	<AssetTargetFallback>uap10.0.19041</AssetTargetFallback>
-  </PropertyGroup>
-
-	<!-- SelfContained=true requires RuntimeIdentifier to be set -->
-  <PropertyGroup Condition="'$(Platform)'=='x64'">
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
-    <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
   </PropertyGroup>
 </Project>
