@@ -1,17 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Version.props" />
   <Import Project="..\..\..\DotNet.props" />
-
-	<PropertyGroup>
-    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
-    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+  <Import Project="..\..\..\Common.Dotnet.TargetFramework.HasVersion.props" />
+	
+  <PropertyGroup>
     <ProjectGuid>{090CD7B7-3B0C-4D1D-BC98-83EB5D799BC1}</ProjectGuid>
     <RootNamespace>Microsoft.ColorPicker.UnitTests</RootNamespace>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
     <OutputType>Library</OutputType>
-    <Version>$(Version).0</Version>
   </PropertyGroup>
 
   <PropertyGroup>

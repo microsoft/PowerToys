@@ -2,8 +2,9 @@
   <!-- many vars are set in Directory.Build.props in root -->
   <Import Project="..\..\..\Version.props" />
   <Import Project="..\..\..\DotNet.props" />
+  <Import Project="..\..\..\Common.Dotnet.TargetFramework.HasVersion.props" />
   <Import Project="..\..\..\WPF.props" />
-	
+
   <PropertyGroup>
     <AssemblyTitle>PowerToys.Run</AssemblyTitle>
     <StartupObject>PowerLauncher.App</StartupObject>
