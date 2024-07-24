@@ -23,6 +23,9 @@ namespace Utils
 
             constexpr const wchar_t* FileExplorerName = L"File Explorer";
             constexpr const wchar_t* FileExplorerPath = L"C:\\WINDOWS\\EXPLORER.EXE";
+            constexpr const wchar_t* PowerToys = L"PowerToys.exe";
+            constexpr const wchar_t* PowerToysSettingsUpper = L"POWERTOYS.SETTINGS.EXE";
+            constexpr const wchar_t* PowerToysSettings = L"PowerToys.Settings.exe";
         }
 
 		struct AppData
@@ -158,6 +161,32 @@ namespace Utils
             return IterateAppsFolder();
         }
 
+        inline const std::wstring& GetCurrentFolder()
+        {
+            static std::wstring currentFolder;
+            if (currentFolder.empty())
+            {
+                TCHAR buffer[MAX_PATH] = { 0 };
+                GetModuleFileName(NULL, buffer, MAX_PATH);
+                std::wstring::size_type pos = std::wstring(buffer).find_last_of(L"\\/");
+                currentFolder = std::wstring(buffer).substr(0, pos);
+            }
+            
+            return currentFolder;
+        }
+
+        inline const std::wstring& GetCurrentFolderUpper()
+        {
+            static std::wstring currentFolderUpper;
+            if (currentFolderUpper.empty())
+            {
+                currentFolderUpper = GetCurrentFolder();
+                std::transform(currentFolderUpper.begin(), currentFolderUpper.end(), currentFolderUpper.begin(), towupper);
+            }
+
+            return currentFolderUpper;
+        }
+
         inline std::optional<AppData> GetApp(const std::wstring& appPath, const AppList& apps)
         {
             std::wstring appPathUpper(appPath);
@@ -170,6 +199,25 @@ namespace Utils
                     .name = NonLocalizable::FileExplorerName,
                     .installPath = appPath,
                 };
+            }
+
+            // PowerToys
+            if (appPathUpper.contains(GetCurrentFolderUpper()))
+            {
+                if (appPathUpper.contains(NonLocalizable::PowerToysSettingsUpper))
+                {
+                    return AppData {
+                        .name = NonLocalizable::PowerToysSettings,
+                        .installPath = GetCurrentFolder() + L"\\" + NonLocalizable::PowerToys
+                    };
+                }
+                else
+                {   
+                    return AppData {
+                        .name = std::filesystem::path(appPath).stem(),
+                        .installPath = appPath,
+                    };
+                }
             }
             
             for (const auto& appData : apps)
