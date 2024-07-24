@@ -2,7 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Version>0.0.1</Version>
-	<Authors>Microsoft Corporation</Authors>
     <DevEnvironment>Local</DevEnvironment>
 
     <!-- Forcing for every DLL on by default -->
