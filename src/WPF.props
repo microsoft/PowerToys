@@ -11,7 +11,6 @@
 	<GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
 	<SelfContained>true</SelfContained>
 	<AssetTargetFallback>uap10.0.19041</AssetTargetFallback>
-	<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
   </PropertyGroup>
 
 	<!-- SelfContained=true requires RuntimeIdentifier to be set -->
