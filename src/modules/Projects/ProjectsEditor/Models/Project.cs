@@ -300,11 +300,11 @@ namespace ProjectsEditor.Models
             PropertyChanged?.Invoke(this, e);
         }
 
-        public async void Initialize()
+        public async void Initialize(Theme currentTheme)
         {
             PreviewIcons = await Task.Run(() => DrawHelper.DrawPreviewIcons(this));
             Rectangle commonBounds = GetCommonBounds();
-            PreviewImage = await Task.Run(() => DrawHelper.DrawPreview(this, commonBounds));
+            PreviewImage = await Task.Run(() => DrawHelper.DrawPreview(this, commonBounds, currentTheme));
             PreviewImageWidth = commonBounds.Width / (commonBounds.Height * 1.2 / 200);
         }
 

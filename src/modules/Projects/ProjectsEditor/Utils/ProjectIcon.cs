@@ -8,6 +8,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using ManagedCommon;
 
 namespace ProjectsEditor.Utils
 {
@@ -48,10 +49,10 @@ namespace ProjectsEditor.Utils
             return result;
         }
 
-        public static Bitmap DrawIcon(string text)
+        public static Bitmap DrawIcon(string text, Theme currentTheme)
         {
-            Brush background = Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? DarkThemeIconBackground : LightThemeIconBackground;
-            Brush foreground = Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? DarkThemeIconForeground : LightThemeIconForeground;
+            Brush background = currentTheme == Theme.Dark ? DarkThemeIconBackground : LightThemeIconBackground;
+            Brush foreground = currentTheme == Theme.Dark ? DarkThemeIconForeground : LightThemeIconForeground;
             Bitmap bitmap = new Bitmap(IconSize, IconSize);
 
             using (Graphics graphics = Graphics.FromImage(bitmap))

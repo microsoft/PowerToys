@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
+using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using ProjectsEditor.Data;
@@ -153,7 +154,7 @@ namespace ProjectsEditor.ViewModels
         {
             foreach (Project project in Projects)
             {
-                project.Initialize();
+                project.Initialize(App.ThemeManager.GetCurrentTheme());
             }
 
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(ProjectsView)));
@@ -174,7 +175,7 @@ namespace ProjectsEditor.ViewModels
             editedProject.Applications = projectToSave.Applications.Where(x => x.IsIncluded).ToList();
 
             editedProject.OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs("AppsCountString"));
-            editedProject.Initialize();
+            editedProject.Initialize(App.ThemeManager.GetCurrentTheme());
             _projectsEditorIO.SerializeProjects(Projects.ToList());
             ApplyShortcut(editedProject);
         }
@@ -200,7 +201,7 @@ namespace ProjectsEditor.ViewModels
                 return;
             }
 
-            Bitmap icon = ProjectIcon.DrawIcon(ProjectIcon.IconTextFromProjectName(project.Name));
+            Bitmap icon = ProjectIcon.DrawIcon(ProjectIcon.IconTextFromProjectName(project.Name), App.ThemeManager.GetCurrentTheme());
             ProjectIcon.SaveIcon(icon, shortcutIconFilename);
 
             try
@@ -265,14 +266,14 @@ namespace ProjectsEditor.ViewModels
             project.IsRevertEnabled = true;
             CheckShortcutPresence(project);
             editPage.DataContext = project;
-            project.Initialize();
+            project.Initialize(App.ThemeManager.GetCurrentTheme());
         }
 
         internal void RevertLaunch()
         {
             CheckShortcutPresence(projectBeforeLaunch);
             editPage.DataContext = projectBeforeLaunch;
-            projectBeforeLaunch.Initialize();
+            projectBeforeLaunch.Initialize(App.ThemeManager.GetCurrentTheme());
         }
 
         public void EditProject(Project selectedProject, bool isNewlyCreated = false)
@@ -312,7 +313,7 @@ namespace ProjectsEditor.ViewModels
             }
 
             selectedProject.EditorWindowTitle = isNewlyCreated ? Properties.Resources.CreateProject : Properties.Resources.EditProject;
-            selectedProject.Initialize();
+            selectedProject.Initialize(App.ThemeManager.GetCurrentTheme());
 
             CheckShortcutPresence(selectedProject);
 
@@ -331,7 +332,7 @@ namespace ProjectsEditor.ViewModels
         public void AddNewProject(Project project)
         {
             project.Applications.RemoveAll(app => !app.IsIncluded);
-            project.Initialize();
+            project.Initialize(App.ThemeManager.GetCurrentTheme());
             Projects.Add(project);
             _projectsEditorIO.SerializeProjects(Projects.ToList());
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(ProjectsView)));

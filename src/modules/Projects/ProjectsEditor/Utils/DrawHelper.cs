@@ -14,7 +14,6 @@ using System.Linq;
 using System.Windows.Media.Imaging;
 using ManagedCommon;
 using ProjectsEditor.Models;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace ProjectsEditor.Utils
 {
@@ -25,7 +24,7 @@ namespace ProjectsEditor.Utils
         private static double gapWidth;
         private static double gapHeight;
 
-        public static BitmapImage DrawPreview(Project project, Rectangle bounds)
+        public static BitmapImage DrawPreview(Project project, Rectangle bounds, Theme currentTheme)
         {
             List<double> horizontalGaps = new List<double>();
             List<double> verticalGaps = new List<double>();
@@ -115,13 +114,13 @@ namespace ProjectsEditor.Utils
                 g.InterpolationMode = InterpolationMode.HighQualityBicubic;
                 g.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-                Brush brush = new SolidBrush(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.FromArgb(10, 255, 255, 255) : Color.FromArgb(10, 0, 0, 0));
-                Brush brushForHighlight = new SolidBrush(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.FromArgb(192, 255, 255, 255) : Color.FromArgb(192, 0, 0, 0));
+                Brush brush = new SolidBrush(currentTheme == Theme.Dark ? Color.FromArgb(10, 255, 255, 255) : Color.FromArgb(10, 0, 0, 0));
+                Brush brushForHighlight = new SolidBrush(currentTheme == Theme.Dark ? Color.FromArgb(192, 255, 255, 255) : Color.FromArgb(192, 0, 0, 0));
 
                 // draw the monitors
                 foreach (MonitorSetup monitor in project.Monitors)
                 {
-                    Brush monitorBrush = new SolidBrush(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.FromArgb(32, 7, 91, 155) : Color.FromArgb(32, 7, 91, 155));
+                    Brush monitorBrush = new SolidBrush(currentTheme == Theme.Dark ? Color.FromArgb(32, 7, 91, 155) : Color.FromArgb(32, 7, 91, 155));
                     g.FillRectangle(monitorBrush, new Rectangle(TransformX(monitor.MonitorDpiAwareBounds.Left), TransformY(monitor.MonitorDpiAwareBounds.Top), Scaled(monitor.MonitorDpiAwareBounds.Width), Scaled(monitor.MonitorDpiAwareBounds.Height)));
                 }
 
@@ -131,18 +130,18 @@ namespace ProjectsEditor.Utils
                 foreach (Application app in appsToDraw.Where(x => !x.IsHighlighted))
                 {
                     Rectangle rect = GetAppRect(app);
-                    DrawWindow(g, brush, rect, app, desiredIconSize);
+                    DrawWindow(g, brush, rect, app, desiredIconSize, currentTheme);
                 }
 
                 foreach (Application app in appsToDraw.Where(x => x.IsHighlighted))
                 {
                     Rectangle rect = GetAppRect(app);
-                    DrawWindow(g, brushForHighlight, rect, app, desiredIconSize);
+                    DrawWindow(g, brushForHighlight, rect, app, desiredIconSize, currentTheme);
                 }
 
                 // draw the minimized windows
                 Rectangle rectMinimized = new Rectangle(0, Scaled((bounds.Height * 1.02) + (horizontalGaps.Count * gapHeight)), Scaled(bounds.Width + (verticalGaps.Count * gapWidth)), Scaled(bounds.Height * 0.18));
-                DrawWindow(g, brush, brushForHighlight, rectMinimized, appsIncluded.Where(x => x.Minimized));
+                DrawWindow(g, brush, brushForHighlight, rectMinimized, appsIncluded.Where(x => x.Minimized), currentTheme);
             }
 
             using (var memory = new MemoryStream())
@@ -161,7 +160,7 @@ namespace ProjectsEditor.Utils
             }
         }
 
-        public static void DrawWindow(Graphics graphics, Brush brush, Rectangle bounds, Application app, double desiredIconSize)
+        public static void DrawWindow(Graphics graphics, Brush brush, Rectangle bounds, Application app, double desiredIconSize, Theme currentTheme)
         {
             if (graphics == null)
             {
@@ -177,11 +176,11 @@ namespace ProjectsEditor.Utils
             {
                 if (app.IsHighlighted)
                 {
-                    graphics.DrawPath(new Pen(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.White : Color.DarkGray, graphics.VisibleClipBounds.Height / 50), path);
+                    graphics.DrawPath(new Pen(currentTheme == Theme.Dark ? Color.White : Color.DarkGray, graphics.VisibleClipBounds.Height / 50), path);
                 }
                 else
                 {
-                    graphics.DrawPath(new Pen(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.FromArgb(128, 82, 82, 82) : Color.FromArgb(128, 160, 160, 160), graphics.VisibleClipBounds.Height / 200), path);
+                    graphics.DrawPath(new Pen(currentTheme == Theme.Dark ? Color.FromArgb(128, 82, 82, 82) : Color.FromArgb(128, 160, 160, 160), graphics.VisibleClipBounds.Height / 200), path);
                 }
 
                 graphics.FillPath(brush, path);
@@ -213,7 +212,7 @@ namespace ProjectsEditor.Utils
             }
         }
 
-        public static void DrawWindow(Graphics graphics, Brush brush, Brush brushForHighlight, Rectangle bounds, IEnumerable<Application> apps)
+        public static void DrawWindow(Graphics graphics, Brush brush, Brush brushForHighlight, Rectangle bounds, IEnumerable<Application> apps, Theme currentTheme)
         {
             int appsCount = apps.Count();
             if (appsCount == 0)
@@ -235,12 +234,12 @@ namespace ProjectsEditor.Utils
             {
                 if (apps.Where(x => x.IsHighlighted).Any())
                 {
-                    graphics.DrawPath(new Pen(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.White : Color.DarkGray, graphics.VisibleClipBounds.Height / 50), path);
+                    graphics.DrawPath(new Pen(currentTheme == Theme.Dark ? Color.White : Color.DarkGray, graphics.VisibleClipBounds.Height / 50), path);
                     graphics.FillPath(brushForHighlight, path);
                 }
                 else
                 {
-                    graphics.DrawPath(new Pen(Common.ThemeManager.GetCurrentTheme() == Common.Theme.Dark ? Color.FromArgb(128, 82, 82, 82) : Color.FromArgb(128, 160, 160, 160), graphics.VisibleClipBounds.Height / 200), path);
+                    graphics.DrawPath(new Pen(currentTheme == Theme.Dark ? Color.FromArgb(128, 82, 82, 82) : Color.FromArgb(128, 160, 160, 160), graphics.VisibleClipBounds.Height / 200), path);
                     graphics.FillPath(brush, path);
                 }
             }

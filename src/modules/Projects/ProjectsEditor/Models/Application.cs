@@ -71,7 +71,7 @@ namespace ProjectsEditor.Models
         {
             if (_isInitialized)
             {
-                Parent.Initialize();
+                Parent.Initialize(App.ThemeManager.GetCurrentTheme());
             }
         }
 

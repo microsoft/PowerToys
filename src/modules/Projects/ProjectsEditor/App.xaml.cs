@@ -5,8 +5,8 @@
 using System;
 using System.Threading;
 using System.Windows;
+using Common.UI;
 using ManagedCommon;
-using ProjectsEditor.Common;
 using ProjectsEditor.Utils;
 using ProjectsEditor.ViewModels;
 
@@ -25,7 +25,7 @@ namespace ProjectsEditor
 
         private MainViewModel _mainViewModel;
 
-        private ThemeManager _themeManager;
+        public static ThemeManager ThemeManager { get; set; }
 
         private bool _isDisposed;
 
@@ -57,7 +57,7 @@ namespace ProjectsEditor
                 return;
             }
 
-            _themeManager = new ThemeManager(this);
+            ThemeManager = new ThemeManager(this);
 
             if (_mainViewModel == null)
             {
@@ -102,7 +102,7 @@ namespace ProjectsEditor
             {
                 if (disposing)
                 {
-                    _themeManager?.Dispose();
+                    ThemeManager?.Dispose();
                     _instanceMutex?.Dispose();
                 }
 

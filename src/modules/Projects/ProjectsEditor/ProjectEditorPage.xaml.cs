@@ -85,7 +85,7 @@ namespace ProjectsEditor
             Models.Application app = border.DataContext as Models.Application;
             app.IsHighlighted = true;
             Project project = app.Parent;
-            project.Initialize();
+            project.Initialize(App.ThemeManager.GetCurrentTheme());
         }
 
         private void AppBorder_MouseLeave(object sender, MouseEventArgs e)
@@ -99,7 +99,7 @@ namespace ProjectsEditor
 
             app.IsHighlighted = false;
             Project project = app.Parent;
-            project.Initialize();
+            project.Initialize(App.ThemeManager.GetCurrentTheme());
         }
 
         private void EditNameTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -122,7 +122,7 @@ namespace ProjectsEditor
 
             application.Position = new Models.Application.WindowPosition() { X = newPos, Y = application.Position.Y, Width = application.Position.Width, Height = application.Position.Height };
             Project project = application.Parent;
-            project.Initialize();
+            project.Initialize(App.ThemeManager.GetCurrentTheme());
         }
 
         private void TopTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -137,7 +137,7 @@ namespace ProjectsEditor
 
             application.Position = new Models.Application.WindowPosition() { X = application.Position.X, Y = newPos, Width = application.Position.Width, Height = application.Position.Height };
             Project project = application.Parent;
-            project.Initialize();
+            project.Initialize(App.ThemeManager.GetCurrentTheme());
         }
 
         private void WidthTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -152,7 +152,7 @@ namespace ProjectsEditor
 
             application.Position = new Models.Application.WindowPosition() { X = application.Position.X, Y = application.Position.Y, Width = newPos, Height = application.Position.Height };
             Project project = application.Parent;
-            project.Initialize();
+            project.Initialize(App.ThemeManager.GetCurrentTheme());
         }
 
         private void HeightTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -167,7 +167,7 @@ namespace ProjectsEditor
 
             application.Position = new Models.Application.WindowPosition() { X = application.Position.X, Y = application.Position.Y, Width = application.Position.Width, Height = newPos };
             Project project = application.Parent;
-            project.Initialize();
+            project.Initialize(App.ThemeManager.GetCurrentTheme());
         }
 
         private void CommandLineTextBox_TextChanged(object sender, TextChangedEventArgs e)
