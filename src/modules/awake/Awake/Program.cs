@@ -333,6 +333,7 @@ namespace Awake
                         if (settings.Properties.ExpirationDateTime <= DateTimeOffset.Now)
                         {
                             settings.Properties.ExpirationDateTime = DateTimeOffset.Now.AddMinutes(5);
+                            _settingsUtils.SaveSettings(JsonSerializer.Serialize(settings), Core.Constants.AppName);
                         }
 
                         Manager.SetExpirableKeepAwake(settings.Properties.ExpirationDateTime, settings.Properties.KeepDisplayOn);
