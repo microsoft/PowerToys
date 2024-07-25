@@ -16,10 +16,7 @@ namespace std
         size_t operator()(const GUID& Value) const
         {
             RPC_STATUS status = RPC_S_OK;
-            #pragma warning(push)
-            #pragma warning(disable : 26492)
             return ::UuidHash(&const_cast<GUID&>(Value), &status);
-            #pragma warning(pop)
         }
     };
 }

@@ -65,14 +65,14 @@ std::wstring template_item::get_explorer_icon() const
 
 std::filesystem::path template_item::copy_object_to(const HWND window_handle, const std::filesystem::path destination) const
 {
-    // SHFILEOPSTRUCT wants the path to be terminated with two NULLs,
-    // so we use wcscpy because wcscpy_s writes non-NULLs into the rest of the buffer.
+    // SHFILEOPSTRUCT wants the from and to paths to be terminated with two NULLs,
     wchar_t double_terminated_path_from[MAX_PATH + 1] = { 0 };
+    wcsncpy_s(double_terminated_path_from, this->path.c_str(), this->path.string().length());
+    double_terminated_path_from[this->path.string().length() + 1] = 0;
+
     wchar_t double_terminated_path_to[MAX_PATH + 1] = { 0 };
-#pragma warning(suppress : 4996) // don't complain about wcscpy deprecation
-    wcscpy(double_terminated_path_from, this->path.c_str());
-#pragma warning(suppress : 4996) // don't complain about wcscpy deprecation
-    wcscpy(double_terminated_path_to, destination.c_str());
+    wcsncpy_s(double_terminated_path_to, destination.c_str(), destination.string().length());
+    double_terminated_path_to[destination.string().length() + 1] = 0;
 
     SHFILEOPSTRUCT file_operation_params = { 0 };
     file_operation_params.wFunc = FO_COPY;
@@ -81,7 +81,7 @@ std::filesystem::path template_item::copy_object_to(const HWND window_handle, co
     file_operation_params.pTo = double_terminated_path_to;
     file_operation_params.fFlags = FOF_RENAMEONCOLLISION | FOF_ALLOWUNDO | FOF_NOCONFIRMMKDIR | FOF_NOCOPYSECURITYATTRIBS | FOF_WANTMAPPINGHANDLE;
 
-    int result = SHFileOperation(&file_operation_params);
+    const int result = SHFileOperation(&file_operation_params);
 
     if (!file_operation_params.hNameMappings)
     {

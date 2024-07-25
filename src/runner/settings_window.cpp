@@ -683,7 +683,7 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
     case ESettingsWindowNames::AdvancedPaste:
         return "AdvancedPaste";
     case ESettingsWindowNames::NewPlus:
-        return "AdvancedPaste";
+        return "NewPlus";
     default:
     {
         Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
