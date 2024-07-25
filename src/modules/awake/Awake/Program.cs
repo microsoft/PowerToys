@@ -328,6 +328,13 @@ namespace Awake
                         break;
 
                     case AwakeMode.EXPIRABLE:
+                        // When we are loading from the settings file, let's make sure that we never
+                        // get users in a state where the expirable keep-awake is in the past.
+                        if (settings.Properties.ExpirationDateTime <= DateTimeOffset.Now)
+                        {
+                            settings.Properties.ExpirationDateTime = DateTimeOffset.Now.AddMinutes(5);
+                        }
+
                         Manager.SetExpirableKeepAwake(settings.Properties.ExpirationDateTime, settings.Properties.KeepDisplayOn);
                         break;
 
