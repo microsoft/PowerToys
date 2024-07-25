@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include <optional>
+#include <vector>
 
 namespace powertoys_gpo {
     enum gpo_rule_configured_t {
@@ -71,11 +72,25 @@ namespace powertoys_gpo {
     const std::wstring POLICY_ALLOW_EXPERIMENTATION = L"AllowExperimentation";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER_ALL_PLUGINS = L"PowerLauncherAllPluginsEnabledState";
     const std::wstring POLICY_ALLOW_ADVANCED_PASTE_ONLINE_AI_MODELS = L"AllowPowerToysAdvancedPasteOnlineAIModels";
+    const std::wstring POLICY_MWB_CLIPBOARD_SHARING_ENABLED = L"MwbClipboardSharingEnabled";
+    const std::wstring POLICY_MWB_FILE_TRANSFER_ENABLED = L"MwbFileTransferEnabled";
+    const std::wstring POLICY_MWB_USE_ORIGINAL_USER_INTERFACE = L"MwbUseOriginalUserInterface";
+    const std::wstring POLICY_MWB_DISALLOW_BLOCKING_SCREENSAVER = L"MwbDisallowBlockingScreensaver";
+    const std::wstring POLICY_MWB_SAME_SUBNET_ONLY = L"MwbSameSubnetOnly";
+    const std::wstring POLICY_MWB_VALIDATE_REMOTE_IP = L"MwbValidateRemoteIp";
+    const std::wstring POLICY_MWB_DISABLE_USER_DEFINED_IP_MAPPING_RULES = L"MwbDisableUserDefinedIpMappingRules";
+    const std::wstring POLICY_MWB_POLICY_DEFINED_IP_MAPPING_RULES = L"MwbPolicyDefinedIpMappingRules";
 
-    inline std::optional<std::wstring> readRegistryStringValue(HKEY hRootKey, const std::wstring& subKey, const std::wstring& value_name)
+    inline std::optional<std::wstring> readRegistryStringValue(HKEY hRootKey, const std::wstring& subKey, const std::wstring& value_name, const bool is_multi_line_text = false)
     {
+        // Set value type
         DWORD reg_value_type = REG_SZ;
         DWORD reg_flags = RRF_RT_REG_SZ;
+        if (is_multi_line_text)
+        {
+            reg_value_type = REG_MULTI_SZ;
+            reg_flags = RRF_RT_REG_MULTI_SZ;
+        }
 
         DWORD string_buffer_capacity;
         // Request required buffer capacity / string length
@@ -97,8 +112,26 @@ namespace powertoys_gpo {
             return std::nullopt;
         }
 
-        // Convert buffer to std::wstring, delete buffer and return REG_SZ value
-        std::wstring string_value = temp_buffer;
+        // Convert buffer to std::wstring
+        std::wstring string_value = L"";
+        if (reg_value_type == REG_MULTI_SZ)
+        {
+            // If it is REG_MULTI_SZ handle this way
+            wchar_t* currentString = temp_buffer;
+            while (*currentString != L'\0')
+            {
+                // If first entry then assign the string, else add to the string
+                string_value = (string_value == L"") ? currentString : (string_value + L"\r\n" + currentString);
+                currentString += wcslen(currentString) + 1; // Move to the next string
+            }
+        }
+        else
+        {
+            // If it is REG_SZ handle this way
+            string_value = temp_buffer;
+        }
+
+        // delete buffer, return string value
         delete temp_buffer;
         return string_value;
     }
@@ -474,5 +507,60 @@ namespace powertoys_gpo {
     inline gpo_rule_configured_t getAllowedAdvancedPasteOnlineAIModelsValue()
     {
         return getUtilityEnabledValue(POLICY_ALLOW_ADVANCED_PASTE_ONLINE_AI_MODELS);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMwbClipboardSharingEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_MWB_CLIPBOARD_SHARING_ENABLED);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMwbFileTransferEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_MWB_FILE_TRANSFER_ENABLED);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMwbUseOriginalUserInterfaceValue()
+    {
+        return getUtilityEnabledValue(POLICY_MWB_USE_ORIGINAL_USER_INTERFACE);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMwbDisallowBlockingScreensaverValue()
+    {
+        return getUtilityEnabledValue(POLICY_MWB_DISALLOW_BLOCKING_SCREENSAVER);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMwbSameSubnetOnlyValue()
+    {
+        return getUtilityEnabledValue(POLICY_MWB_SAME_SUBNET_ONLY);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMwbValidateRemoteIpValue()
+    {
+        return getUtilityEnabledValue(POLICY_MWB_VALIDATE_REMOTE_IP);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMwbDisableUserDefinedIpMappingRulesValue()
+    {
+        return getUtilityEnabledValue(POLICY_MWB_DISABLE_USER_DEFINED_IP_MAPPING_RULES);
+    }
+
+    inline std::wstring getConfiguredMwbPolicyDefinedIpMappingRules()
+    {
+        // Important: HKLM has priority over HKCU
+        auto mapping_rules = readRegistryStringValue(HKEY_LOCAL_MACHINE, POLICIES_PATH, POLICY_MWB_POLICY_DEFINED_IP_MAPPING_RULES, true);
+        if (!mapping_rules.has_value())
+        {
+            mapping_rules = readRegistryStringValue(HKEY_CURRENT_USER, POLICIES_PATH, POLICY_MWB_POLICY_DEFINED_IP_MAPPING_RULES, true);
+        }
+
+        // return value
+        if (mapping_rules.has_value())
+        {
+            return mapping_rules.value();
+        }
+        else
+        {
+            return std::wstring ();
+        }
     }
 }
