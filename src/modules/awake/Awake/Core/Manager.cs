@@ -350,6 +350,8 @@ namespace Awake.Core
 
             CancelExistingThread();
 
+            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_OFF}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/StateIcons/disabled.ico")), TrayIconAction.Update);
+
             if (IsUsingPowerToysConfig && updateSettings)
             {
                 try
@@ -361,8 +363,6 @@ namespace Awake.Core
                         currentSettings.Properties.Mode = AwakeMode.PASSIVE;
                         ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
                     }
-
-                    TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_OFF}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/StateIcons/disabled.ico")), TrayIconAction.Update);
                 }
                 catch (Exception ex)
                 {
