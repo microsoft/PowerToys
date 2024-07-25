@@ -79,7 +79,7 @@
     <PackageVersion Include="System.IO.Abstractions" Version="17.2.3" />
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="17.2.3" />
     <PackageVersion Include="System.Management" Version="8.0.0" />
-    <PackageVersion Include="System.Reactive" Version="6.0.0-preview.9" />
+    <PackageVersion Include="System.Reactive" Version="6.0.1" />
     <PackageVersion Include="System.Runtime.Caching" Version="8.0.0" />
     <!-- Package System.Security.Cryptography.ProtectedData added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Data.OleDb but the 8.0.1 version wasn't published to nuget. -->
     <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
