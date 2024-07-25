@@ -367,7 +367,7 @@ private:
     // Hotkey to invoke the module
     HotkeyEx m_hotkey{
         .modifiersMask = MOD_SHIFT | MOD_WIN,
-        .vkCode = 0x50, // P key;
+        .vkCode = 0x4F, // O key;
     };
 };
 
