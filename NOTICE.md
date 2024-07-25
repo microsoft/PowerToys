@@ -1331,7 +1331,6 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Windows.CsWin32 0.2.46-beta
 - Microsoft.Windows.CsWinRT 2.0.4
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.2428
-- Microsoft.Windows.SDK.Contracts 10.0.19041.1
 - Microsoft.WindowsAppSDK 1.5.240428000
 - Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
 - Microsoft.Xaml.Behaviors.Wpf 1.1.39
@@ -1366,7 +1365,5 @@ EXHIBIT A -Mozilla Public License.
 - UnicodeInformation 2.6.0
 - UnitsNet 5.50.0
 - UTF.Unknown 2.5.1
-- Vanara.PInvoke.Shell32 3.4.11
-- Vanara.PInvoke.User32 3.4.11
 - WinUIEx 2.2.0
 - WPF-UI 3.0.0
