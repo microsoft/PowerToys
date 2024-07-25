@@ -215,24 +215,13 @@ namespace Awake
                 {
                     try
                     {
-                        DateTime expirationDateTime = DateTime.Parse(expireAt, CultureInfo.CurrentCulture);
-                        if (expirationDateTime > DateTime.Now)
-                        {
-                            // We want to have a dedicated expirable keep-awake logic instead of
-                            // converting the target date to seconds and then passing to SetupTimedKeepAwake
-                            // because that way we're accounting for the user potentially changing their clock
-                            // while Awake is running.
-                            Logger.LogInfo($"Operating in thread ID {Environment.CurrentManagedThreadId}.");
-                            Manager.SetExpirableKeepAwake(expirationDateTime, displayOn);
-                        }
-                        else
-                        {
-                            Logger.LogInfo($"Target date is not in the future, therefore there is nothing to wait for.");
-                        }
+                        DateTimeOffset expirationDateTime = DateTimeOffset.Parse(expireAt, CultureInfo.CurrentCulture);
+                        Logger.LogInfo($"Operating in thread ID {Environment.CurrentManagedThreadId}.");
+                        Manager.SetExpirableKeepAwake(expirationDateTime, displayOn);
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError($"Could not parse date string {expireAt} into a viable date.");
+                        Logger.LogError($"Could not parse date string {expireAt} into a DateTimeOffset object.");
                         Logger.LogError(ex.Message);
                     }
                 }
