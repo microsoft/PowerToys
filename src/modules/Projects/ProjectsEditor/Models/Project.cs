@@ -166,7 +166,7 @@ namespace ProjectsEditor.Models
                 ILookup<MonitorSetup, Application> apps = Applications.Where(x => !x.Minimized).ToLookup(x => x.MonitorSetup);
                 foreach (var appItem in apps.OrderBy(x => x.Key.MonitorDpiUnawareBounds.Left).ThenBy(x => x.Key.MonitorDpiUnawareBounds.Top))
                 {
-                    MonitorHeaderRow headerRow = new MonitorHeaderRow { MonitorName = appItem.Key.MonitorInfo, SelectString = Properties.Resources.SelectAllAppsOnMonitor + " " + appItem.Key.MonitorInfo };
+                    MonitorHeaderRow headerRow = new MonitorHeaderRow { MonitorName = "Screen " + appItem.Key.MonitorNumber, SelectString = Properties.Resources.SelectAllAppsOnMonitor + " " + appItem.Key.MonitorInfo };
                     applicationsListed.Add(headerRow);
                     foreach (Application app in appItem)
                     {
