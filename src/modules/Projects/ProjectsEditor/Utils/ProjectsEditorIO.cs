@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Windows;
 using ManagedCommon;
 using ProjectsEditor.Data;
 using ProjectsEditor.Models;
@@ -47,80 +46,27 @@ namespace ProjectsEditor.Utils
             }
         }
 
-        public ParsingResult ParseTempProject(out Project project)
+        public Project ParseTempProject()
         {
-            project = null;
             try
             {
                 ProjectData parser = new ProjectData();
                 if (!File.Exists(TempProjectData.File))
                 {
                     Logger.LogWarning($"ParseProject method. Projects storage file not found: {TempProjectData.File}");
-                    return new ParsingResult(false);
+                    return null;
                 }
 
-                project = GetProjectFromWrapper(parser.Read(TempProjectData.File));
+                Project project = new Project(parser.Read(TempProjectData.File));
                 TempProjectData.DeleteTempFile();
 
-                return new ParsingResult(true);
+                return project;
             }
             catch (Exception e)
             {
                 Logger.LogError($"ParseProject method. Exception while parsing storage file: {e.Message}");
-                return new ParsingResult(false, e.Message);
+                return null;
             }
-        }
-
-        private Project GetProjectFromWrapper(ProjectData.ProjectWrapper project)
-        {
-            Project newProject = new Project()
-            {
-                Id = project.Id,
-                Name = project.Name,
-                CreationTime = project.CreationTime,
-                LastLaunchedTime = project.LastLaunchedTime,
-                IsShortcutNeeded = project.IsShortcutNeeded,
-                MoveExistingWindows = project.MoveExistingWindows,
-                Monitors = new List<MonitorSetup>() { },
-                Applications = new List<Models.Application> { },
-            };
-
-            foreach (var app in project.Applications)
-            {
-                Models.Application newApp = new Models.Application()
-                {
-                    AppName = app.Application,
-                    AppPath = app.ApplicationPath,
-                    AppTitle = app.Title,
-                    PackageFullName = app.PackageFullName,
-                    Parent = newProject,
-                    CommandLineArguments = app.CommandLineArguments,
-                    IsElevated = app.IsElevated,
-                    CanLaunchElevated = app.CanLaunchElevated,
-                    Maximized = app.Maximized,
-                    Minimized = app.Minimized,
-                    IsNotFound = false,
-                    Position = new Models.Application.WindowPosition()
-                    {
-                        Height = app.Position.Height,
-                        Width = app.Position.Width,
-                        X = app.Position.X,
-                        Y = app.Position.Y,
-                    },
-                    MonitorNumber = app.Monitor,
-                };
-                newApp.InitializationFinished();
-                newProject.Applications.Add(newApp);
-            }
-
-            foreach (var monitor in project.MonitorConfiguration)
-            {
-                Rect dpiAware = new Rect(monitor.MonitorRectDpiAware.Left, monitor.MonitorRectDpiAware.Top, monitor.MonitorRectDpiAware.Width, monitor.MonitorRectDpiAware.Height);
-                Rect dpiUnaware = new Rect(monitor.MonitorRectDpiUnaware.Left, monitor.MonitorRectDpiUnaware.Top, monitor.MonitorRectDpiUnaware.Width, monitor.MonitorRectDpiUnaware.Height);
-                newProject.Monitors.Add(new MonitorSetup(monitor.Id, monitor.InstanceId, monitor.MonitorNumber, monitor.Dpi, dpiAware, dpiUnaware));
-            }
-
-            return newProject;
         }
 
         public void SerializeProjects(List<Project> projects, bool useTempFile = false)
@@ -211,7 +157,7 @@ namespace ProjectsEditor.Utils
         {
             foreach (var project in projects.Projects)
             {
-                mainViewModel.Projects.Add(GetProjectFromWrapper(project));
+                mainViewModel.Projects.Add(new Project(project));
             }
 
             mainViewModel.Initialize();

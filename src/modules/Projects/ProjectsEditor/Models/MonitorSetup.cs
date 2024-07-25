@@ -4,7 +4,6 @@
 
 using System.ComponentModel;
 using System.Windows;
-using System.Windows.Media.Imaging;
 
 namespace ProjectsEditor.Models
 {
@@ -23,6 +22,11 @@ namespace ProjectsEditor.Models
 
         public MonitorSetup(string monitorName, string monitorInstanceId, int number, int dpi, Rect dpiAwareBounds, Rect dpiUnawareBounds)
             : base(monitorName, monitorInstanceId, number, dpi, dpiAwareBounds, dpiUnawareBounds)
+        {
+        }
+
+        public MonitorSetup(MonitorSetup other)
+            : base(other.MonitorName, other.MonitorInstanceId, other.MonitorNumber, other.Dpi, other.MonitorDpiAwareBounds, other.MonitorDpiUnawareBounds)
         {
         }
     }

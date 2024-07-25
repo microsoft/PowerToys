@@ -6,15 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using ManagedCommon;
+using ProjectsEditor.Data;
 using ProjectsEditor.Utils;
 
 namespace ProjectsEditor.Models
@@ -24,7 +22,7 @@ namespace ProjectsEditor.Models
         [JsonIgnore]
         public string EditorWindowTitle { get; set; }
 
-        public string Id { get; set; }
+        public string Id { get; }
 
         private string _name;
 
@@ -43,9 +41,9 @@ namespace ProjectsEditor.Models
             }
         }
 
-        public long CreationTime { get; set; } // in seconds
+        public long CreationTime { get; } // in seconds
 
-        public long LastLaunchedTime { get; set; } // in seconds
+        public long LastLaunchedTime { get; } // in seconds
 
         public bool IsShortcutNeeded { get; set; }
 
@@ -201,7 +199,7 @@ namespace ProjectsEditor.Models
             }
         }
 
-        public List<MonitorSetup> Monitors { get; set; }
+        public List<MonitorSetup> Monitors { get; }
 
         private BitmapImage _previewIcons;
         private BitmapImage _previewImage;
@@ -209,6 +207,7 @@ namespace ProjectsEditor.Models
 
         public Project(Project selectedProject)
         {
+            Id = selectedProject.Id;
             Name = selectedProject.Name;
             PreviewIcons = selectedProject.PreviewIcons;
             PreviewImage = selectedProject.PreviewImage;
@@ -220,7 +219,7 @@ namespace ProjectsEditor.Models
             Monitors = new List<MonitorSetup>();
             foreach (var item in selectedProject.Monitors.OrderBy(x => x.MonitorDpiAwareBounds.Left).ThenBy(x => x.MonitorDpiAwareBounds.Top))
             {
-                Monitors.Add(new MonitorSetup($"Screen {screenIndex}", item.MonitorInstanceId, item.MonitorNumber, item.Dpi, item.MonitorDpiAwareBounds, item.MonitorDpiUnawareBounds));
+                Monitors.Add(item);
                 screenIndex++;
             }
 
@@ -247,8 +246,51 @@ namespace ProjectsEditor.Models
             }
         }
 
-        public Project()
+        public Project(ProjectData.ProjectWrapper project)
         {
+            Id = project.Id;
+            Name = project.Name;
+            CreationTime = project.CreationTime;
+            LastLaunchedTime = project.LastLaunchedTime;
+            IsShortcutNeeded = project.IsShortcutNeeded;
+            MoveExistingWindows = project.MoveExistingWindows;
+            Monitors = new List<MonitorSetup>() { };
+            Applications = new List<Models.Application> { };
+
+            foreach (var app in project.Applications)
+            {
+                Models.Application newApp = new Models.Application()
+                {
+                    AppName = app.Application,
+                    AppPath = app.ApplicationPath,
+                    AppTitle = app.Title,
+                    PackageFullName = app.PackageFullName,
+                    Parent = this,
+                    CommandLineArguments = app.CommandLineArguments,
+                    IsElevated = app.IsElevated,
+                    CanLaunchElevated = app.CanLaunchElevated,
+                    Maximized = app.Maximized,
+                    Minimized = app.Minimized,
+                    IsNotFound = false,
+                    Position = new Models.Application.WindowPosition()
+                    {
+                        Height = app.Position.Height,
+                        Width = app.Position.Width,
+                        X = app.Position.X,
+                        Y = app.Position.Y,
+                    },
+                    MonitorNumber = app.Monitor,
+                };
+                newApp.InitializationFinished();
+                Applications.Add(newApp);
+            }
+
+            foreach (var monitor in project.MonitorConfiguration)
+            {
+                System.Windows.Rect dpiAware = new System.Windows.Rect(monitor.MonitorRectDpiAware.Left, monitor.MonitorRectDpiAware.Top, monitor.MonitorRectDpiAware.Width, monitor.MonitorRectDpiAware.Height);
+                System.Windows.Rect dpiUnaware = new System.Windows.Rect(monitor.MonitorRectDpiUnaware.Left, monitor.MonitorRectDpiUnaware.Top, monitor.MonitorRectDpiUnaware.Width, monitor.MonitorRectDpiUnaware.Height);
+                Monitors.Add(new MonitorSetup(monitor.Id, monitor.InstanceId, monitor.MonitorNumber, monitor.Dpi, dpiAware, dpiUnaware));
+            }
         }
 
         public BitmapImage PreviewIcons

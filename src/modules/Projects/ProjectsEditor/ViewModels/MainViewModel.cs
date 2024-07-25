@@ -13,10 +13,10 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Windows;
 using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using ProjectsEditor.Data;
 using ProjectsEditor.Models;
 using ProjectsEditor.Utils;
 using static ProjectsEditor.Data.ProjectsData;
@@ -246,8 +246,8 @@ namespace ProjectsEditor.ViewModels
 
             await Task.Run(() => RunSnapshotTool());
 
-            Project project = new Project();
-            if (_projectsEditorIO.ParseTempProject(out project).Result)
+            Project project = _projectsEditorIO.ParseTempProject();
+            if (project != null)
             {
                 if (_isExistingProjectLaunched)
                 {
