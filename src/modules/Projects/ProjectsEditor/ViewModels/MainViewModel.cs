@@ -400,25 +400,40 @@ namespace ProjectsEditor.ViewModels
 
         private void RunSnapshotTool(string filename = null)
         {
-            Process p = new Process();
-            p.StartInfo = new ProcessStartInfo(@".\PowerToys.ProjectsSnapshotTool.exe");
-            p.StartInfo.CreateNoWindow = true;
+            Process process = new Process();
+            process.StartInfo = new ProcessStartInfo(@".\PowerToys.ProjectsSnapshotTool.exe");
+            process.StartInfo.CreateNoWindow = true;
             if (!string.IsNullOrEmpty(filename))
             {
-                p.StartInfo.Arguments = filename;
+                process.StartInfo.Arguments = filename;
             }
 
-            p.Start();
-            p.WaitForExit();
+            try
+            {
+                process.Start();
+                process.WaitForExit();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred: {ex.Message}");
+            }
         }
 
         private void RunLauncher(string projectIdOrFilename)
         {
-            Process p = new Process();
-            p.StartInfo = new ProcessStartInfo(@".\PowerToys.ProjectsLauncher.exe", projectIdOrFilename);
-            p.StartInfo.CreateNoWindow = true;
-            p.Start();
-            p.WaitForExit();
+            Process process = new Process();
+            process.StartInfo = new ProcessStartInfo(@".\PowerToys.ProjectsLauncher.exe", projectIdOrFilename);
+            process.StartInfo.CreateNoWindow = true;
+
+            try
+            {
+                process.Start();
+                process.WaitForExit();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred: {ex.Message}");
+            }
         }
 
         public void Dispose()
@@ -469,17 +484,11 @@ namespace ProjectsEditor.ViewModels
             _mainWindow.WindowState = System.Windows.WindowState.Normal;
         }
 
-        internal void LaunchAndEdit(Project project)
+        internal async void LaunchAndEdit(Project project)
         {
-            LaunchEditedProject(project);
+            await Task.Run(() => RunLauncher(project.Id));
             projectBeforeLaunch = new Project(project);
             EnterSnapshotMode(true);
-        }
-
-        private void LaunchEditedProject(Project project)
-        {
-            _projectsEditorIO.SerializeTempProject(project);
-            RunLauncher(TempProjectData.File);
         }
     }
 }
