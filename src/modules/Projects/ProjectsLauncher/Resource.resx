@@ -117,4 +117,20 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Empty_file" xml:space="preserve">
+    <value>File {0} is empty.</value>
+  </data>
+  <data name="File_reading_error" xml:space="preserve">
+    <value>Error reading file {0}.</value>
+  </data>
+  <data name="Incorrect_file_error" xml:space="preserve">
+    <value>Incorrect {0} file.</value>
+  </data>
+  <data name="Projects" xml:space="preserve">
+    <value>Projects</value>
+    <comment>Name of the module</comment>
+  </data>
+  <data name="Project_not_found" xml:space="preserve">
+    <value>Project {0} not found.</value>
+  </data>
 </root>
