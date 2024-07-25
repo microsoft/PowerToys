@@ -59,12 +59,12 @@
 
   <ItemGroup>
     <None Remove="Assets\Awake\Awake.ico" />
-    <None Remove="Assets\StateIcons\disabled.ico" />
-    <None Remove="Assets\StateIcons\expirable.ico" />
-    <None Remove="Assets\StateIcons\indefinite.ico" />
-    <None Remove="Assets\StateIcons\normal.ico" />
-    <None Remove="Assets\StateIcons\scheduled.ico" />
-    <None Remove="Assets\StateIcons\timed.ico" />
+    <None Remove="Assets\Awake\disabled.ico" />
+    <None Remove="Assets\Awake\expirable.ico" />
+    <None Remove="Assets\Awake\indefinite.ico" />
+    <None Remove="Assets\Awake\normal.ico" />
+    <None Remove="Assets\Awake\scheduled.ico" />
+    <None Remove="Assets\Awake\timed.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -96,22 +96,22 @@
     <Content Include="Assets\Awake\Awake.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\StateIcons\disabled.ico">
+    <Content Include="Assets\Awake\disabled.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\StateIcons\expirable.ico">
+    <Content Include="Assets\Awake\expirable.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\StateIcons\indefinite.ico">
+    <Content Include="Assets\Awake\indefinite.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\StateIcons\normal.ico">
+    <Content Include="Assets\Awake\normal.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\StateIcons\scheduled.ico">
+    <Content Include="Assets\Awake\scheduled.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\StateIcons\timed.ico">
+    <Content Include="Assets\Awake\timed.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
