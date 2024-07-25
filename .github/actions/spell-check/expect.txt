@@ -88,7 +88,6 @@ atlstr
 ATRIOX
 aumid
 Authenticode
-AUTODISMISS
 AUTOHIDE
 AUTOMATIONPROPERTIES
 Autorun
@@ -106,7 +105,6 @@ bhid
 BIF
 bigbar
 bigobj
-BINDINGHOOK
 binlog
 BITMAPFILEHEADER
 bitmapimage
@@ -467,7 +465,6 @@ EXITSIZEMOVE
 exlist
 EXPCMDFLAGS
 EXPCMDSTATE
-EXPIREAT
 explr
 exppowertoys
 exptas
@@ -774,8 +771,6 @@ lcl
 Lclean
 Ldone
 ldx
-LEFTALIGN
-LEFTBUTTON
 LEFTSCROLLBAR
 lego
 LError

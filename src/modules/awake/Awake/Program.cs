@@ -108,7 +108,7 @@ namespace Awake
                 IsRequired = false,
             };
 
-            var expireAtOption = new Option<string>(AliasesExpireAtOption, () => string.Empty, Resources.AWAKE_CMD_HELP_EXPIREAT_OPTION)
+            var expireAtOption = new Option<string>(AliasesExpireAtOption, () => string.Empty, Resources.AWAKE_CMD_HELP_EXPIRE_AT_OPTION)
             {
                 Arity = ArgumentArity.ZeroOrOne,
                 IsRequired = false,
@@ -245,7 +245,7 @@ namespace Awake
                 RunnerHelper.WaitForPowerToysRunner(pid, () =>
                 {
                     Logger.LogInfo($"Triggered PID-based exit handler for PID {pid}.");
-                    Exit(Resources.AWAKE_EXIT_BINDINGHOOK_MESSAGE, 0, _exitSignal, true);
+                    Exit(Resources.AWAKE_EXIT_BINDING_HOOK_MESSAGE, 0, _exitSignal, true);
                 });
             }
 

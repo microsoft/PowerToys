@@ -67,14 +67,14 @@ namespace Awake.Core
             {
                 CbSize = (uint)Marshal.SizeOf(typeof(MenuInfo)),
                 FMask = Native.Constants.MIM_STYLE,
-                DwStyle = Native.Constants.MNS_AUTODISMISS,
+                DwStyle = Native.Constants.MNS_AUTO_DISMISS,
             };
             Bridge.SetMenuInfo(hMenu, ref menuInfo);
 
             // Display the context menu at the cursor position
             Bridge.TrackPopupMenuEx(
                   hMenu,
-                  Native.Constants.TPM_LEFTALIGN | Native.Constants.TPM_BOTTOMALIGN | Native.Constants.TPM_LEFTBUTTON,
+                  Native.Constants.TPM_LEFT_ALIGN | Native.Constants.TPM_BOTTOMALIGN | Native.Constants.TPM_LEFT_BUTTON,
                   cursorPos.X,
                   cursorPos.Y,
                   hWnd,
