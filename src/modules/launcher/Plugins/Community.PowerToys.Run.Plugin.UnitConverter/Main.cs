@@ -57,7 +57,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 .ToList();
         }
 
-        private string GetOunceUnitNameString(UnitConversionResult result)
+        private string GetUnitNameString(UnitConversionResult result)
         {
             return result.UnitNameFrom switch
             {
@@ -72,7 +72,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             string subTitleText = string.Format(CultureInfo.CurrentCulture, CopyToClipboard, result.QuantityInfo.Name);
             if (result.UnitNameFrom == "usounce" || result.UnitNameFrom == "imperialounce")
             {
-                string ounceName = GetOunceUnitNameString(result);
+                string ounceName = GetUnitNameString(result);
                 subTitleText = subTitleText.Insert(0, string.Format(CultureInfo.CurrentCulture, ConvertFromOunce, ounceName) + " - ");
             }
 
