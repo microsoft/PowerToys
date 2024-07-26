@@ -103,6 +103,11 @@
     <Compile Update="Form\Settings\SetupPage5.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="Properties\Images.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Images.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Update="MouseWithoutBorders.exe.manifest">
@@ -242,6 +247,12 @@
     <EmbeddedResource Remove="Form\Settings\SettingsPage2.resx" />
     <EmbeddedResource Remove="Form\Settings\SettingsPage3.resx" />
     <EmbeddedResource Remove="Form\Settings\SettingsPage4.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Images.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Images.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>

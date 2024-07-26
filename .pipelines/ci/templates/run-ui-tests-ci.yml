@@ -9,10 +9,10 @@ jobs:
   variables:
     SrcPath: $(Build.Repository.LocalPath)
   pool:
-    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-      name: SHINE-OSS-Testing-x64
-    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+    ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
       name: SHINE-INT-Testing-x64
+    ${{ else }}:
+      name: SHINE-OSS-Testing-x64
   steps:
   - checkout: self
     fetchDepth: 1

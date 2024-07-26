@@ -148,7 +148,7 @@
     <comment>"Hosts File Editor" is the name of the utility</comment>
   </data>
   <data name="Plugin_Description" xml:space="preserve">
-    <value>Opens PowerToys utilities and settings.</value>
+    <value>Opens PowerToys utilities and settings</value>
   </data>
   <data name="Plugin_Name" xml:space="preserve">
     <value>PowerToys</value>

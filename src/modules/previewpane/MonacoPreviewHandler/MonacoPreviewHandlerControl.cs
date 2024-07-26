@@ -396,11 +396,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             _html = FilePreviewCommon.MonacoHelper.ReadIndexHtml();
             _html = _html.Replace("[[PT_LANG]]", _vsCodeLangSet, StringComparison.InvariantCulture);
             _html = _html.Replace("[[PT_WRAP]]", _settings.Wrap ? "1" : "0", StringComparison.InvariantCulture);
+            _html = _html.Replace("[[PT_CONTEXTMENU]]", "1", StringComparison.InvariantCulture);
             _html = _html.Replace("[[PT_THEME]]", Settings.GetTheme(), StringComparison.InvariantCulture);
             _html = _html.Replace("[[PT_STICKY_SCROLL]]", _settings.StickyScroll ? "1" : "0", StringComparison.InvariantCulture);
             _html = _html.Replace("[[PT_FONT_SIZE]]", _settings.FontSize.ToString(CultureInfo.InvariantCulture), StringComparison.InvariantCulture);
             _html = _html.Replace("[[PT_CODE]]", _base64FileCode, StringComparison.InvariantCulture);
-            _html = _html.Replace("[[PT_STICKY_SCROLL]]", _settings.StickyScroll ? "1" : "0", StringComparison.InvariantCulture);
             _html = _html.Replace("[[PT_URL]]", FilePreviewCommon.MonacoHelper.VirtualHostName, StringComparison.InvariantCulture);
         }
 

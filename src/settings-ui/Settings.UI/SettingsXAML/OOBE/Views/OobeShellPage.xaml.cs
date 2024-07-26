@@ -5,7 +5,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
-using AllExperiments;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
@@ -52,13 +51,16 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private static ISettingsUtils settingsUtils = new SettingsUtils();
 
-        private bool ExperimentationToggleSwitchEnabled { get; set; } = true;
+        /* NOTE: Experimentation for OOBE is currently turned off on server side. Keeping this code in a comment to allow future experiments.
+          private bool ExperimentationToggleSwitchEnabled { get; set; } = true;
+        */
 
         public OobeShellPage()
         {
             InitializeComponent();
 
-            ExperimentationToggleSwitchEnabled = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.EnableExperimentation;
+            // NOTE: Experimentation for OOBE is currently turned off on server side. Keeping this code in a comment to allow future experiments.
+            // ExperimentationToggleSwitchEnabled = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.EnableExperimentation;
             SetTitleBar();
             DataContext = ViewModel;
             OobeShellHandler = this;
@@ -230,7 +232,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             {
                 switch (selectedItem.Tag)
                 {
-                    case "Overview":
+                    case "Overview": NavigationFrame.Navigate(typeof(OobeOverview)); break;
+                    /* NOTE: Experimentation for OOBE is currently turned off on server side. Keeping this code in a comment to allow future experiments.
                         if (ExperimentationToggleSwitchEnabled && GPOWrapper.GetAllowExperimentationValue() != GpoRuleConfigured.Disabled)
                         {
                             switch (AllExperiments.Experiments.LandingPageExperiment)
@@ -250,7 +253,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                             NavigationFrame.Navigate(typeof(OobeOverview));
                             break;
                         }
-
+                    */
                     case "WhatsNew": NavigationFrame.Navigate(typeof(OobeWhatsNew)); break;
                     case "AdvancedPaste": NavigationFrame.Navigate(typeof(OobeAdvancedPaste)); break;
                     case "AlwaysOnTop": NavigationFrame.Navigate(typeof(OobeAlwaysOnTop)); break;

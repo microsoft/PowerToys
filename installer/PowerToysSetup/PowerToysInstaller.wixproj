@@ -185,4 +185,12 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
   <Target Name="BeforeBuild">
     <HeatDirectory Directory="..\..\src\common\FilePreviewCommon\Assets\Monaco\monacoSRC" PreprocessorVariable="var.MonacoSRCHarvestPath" OutputFile="MonacoSRC.wxs" ComponentGroupName="MonacoSRCHeatGenerated" DirectoryRefId="MonacoPreviewHandlerMonacoSRCFolder" AutogenerateGuids="false" GenerateGuidsNow="true" ToolPath="$(WixToolPath)" RunAsSeparateProcess="true" SuppressFragments="false" SuppressRegistry="false" SuppressRootDirectory="true"/>
   </Target>
+
+  <!-- Prevents NU1503 -->
+  <Target Name="_IsProjectRestoreSupported" Returns="@(_ValidProjectsForRestore)">
+    <ItemGroup>
+      <_ValidProjectsForRestore Include="$(MSBuildProjectFullPath)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="Restore" />
 </Project>
