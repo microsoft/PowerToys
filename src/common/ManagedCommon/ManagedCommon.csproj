@@ -15,6 +15,9 @@
   <ItemGroup>
     <PackageReference Include="System.IO.Abstractions" />
     <PackageReference Include="System.Management" />
+    <PackageReference Include="System.Net.Http" />
+    <PackageReference Include="System.Text.RegularExpressions" />
+    <PackageReference Include="System.Private.Uri" />
   </ItemGroup>
 
   <ItemGroup>
