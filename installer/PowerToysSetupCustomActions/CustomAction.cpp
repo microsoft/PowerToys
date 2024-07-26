@@ -38,6 +38,48 @@ const DWORD USERNAME_LEN = UNLEN + 1; // User Name + '\0'
 static const wchar_t* POWERTOYS_EXE_COMPONENT = L"{A2C66D91-3485-4D00-B04D-91844E6B345B}";
 static const wchar_t* POWERTOYS_UPGRADE_CODE = L"{42B84BF7-5FBF-473B-9C8B-049DC16F7708}";
 
+constexpr inline const wchar_t* DataDiagnosticsRegKey = L"Software\\Classes\\PowerToys";
+constexpr inline const wchar_t* DataDiagnosticsRegValueName = L"AllowDataDiagnostics";
+
+#define TraceLoggingWriteWrapper(provider, eventName, ...)   \
+    if (isDataDiagnosticEnabled())                          \
+    {                                                        \
+        TraceLoggingWrite(provider, eventName, __VA_ARGS__); \
+    }
+
+inline bool isDataDiagnosticEnabled()
+{
+    HKEY key{};
+    if (RegOpenKeyExW(HKEY_CURRENT_USER,
+        DataDiagnosticsRegKey,
+        0,
+        KEY_READ,
+        &key) != ERROR_SUCCESS)
+    {
+        return false;
+    }
+
+    bool isDataDiagnosticsEnabled;
+    DWORD boolSize = static_cast<DWORD>(sizeof(bool));
+
+    if (RegGetValueW(
+        key,
+        DataDiagnosticsRegValueName,
+        nullptr,
+        RRF_RT_REG_QWORD,
+        nullptr,
+        &isDataDiagnosticsEnabled,
+        &boolSize) != ERROR_SUCCESS)
+    {
+        RegCloseKey(key);
+        return false;
+    }
+    RegCloseKey(key);
+
+    return isDataDiagnosticsEnabled;
+}
+
+
 HRESULT getInstallFolder(MSIHANDLE hInstall, std::wstring& installationDir)
 {
     DWORD len = 0;
@@ -793,7 +835,7 @@ UINT __stdcall TelemetryLogInstallSuccessCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "TelemetryLogInstallSuccessCA");
     ExitOnFailure(hr, "Failed to initialize");
 
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "Install_Success",
         TraceLoggingWideString(get_product_version().c_str(), "Version"),
@@ -814,7 +856,7 @@ UINT __stdcall TelemetryLogInstallCancelCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "TelemetryLogInstallCancelCA");
     ExitOnFailure(hr, "Failed to initialize");
 
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "Install_Cancel",
         TraceLoggingWideString(get_product_version().c_str(), "Version"),
@@ -835,7 +877,7 @@ UINT __stdcall TelemetryLogInstallFailCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "TelemetryLogInstallFailCA");
     ExitOnFailure(hr, "Failed to initialize");
 
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "Install_Fail",
         TraceLoggingWideString(get_product_version().c_str(), "Version"),
@@ -856,7 +898,7 @@ UINT __stdcall TelemetryLogUninstallSuccessCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "TelemetryLogUninstallSuccessCA");
     ExitOnFailure(hr, "Failed to initialize");
 
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "UnInstall_Success",
         TraceLoggingWideString(get_product_version().c_str(), "Version"),
@@ -877,7 +919,7 @@ UINT __stdcall TelemetryLogUninstallCancelCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "TelemetryLogUninstallCancelCA");
     ExitOnFailure(hr, "Failed to initialize");
 
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "UnInstall_Cancel",
         TraceLoggingWideString(get_product_version().c_str(), "Version"),
@@ -898,7 +940,7 @@ UINT __stdcall TelemetryLogUninstallFailCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "TelemetryLogUninstallFailCA");
     ExitOnFailure(hr, "Failed to initialize");
 
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "UnInstall_Fail",
         TraceLoggingWideString(get_product_version().c_str(), "Version"),
@@ -919,7 +961,7 @@ UINT __stdcall TelemetryLogRepairCancelCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "TelemetryLogRepairCancelCA");
     ExitOnFailure(hr, "Failed to initialize");
 
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "Repair_Cancel",
         TraceLoggingWideString(get_product_version().c_str(), "Version"),
@@ -940,7 +982,7 @@ UINT __stdcall TelemetryLogRepairFailCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "TelemetryLogRepairFailCA");
     ExitOnFailure(hr, "Failed to initialize");
 
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "Repair_Fail",
         TraceLoggingWideString(get_product_version().c_str(), "Version"),

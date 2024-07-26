@@ -59,7 +59,10 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xsd:schema id="root"
+    xmlns=""
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
@@ -2084,6 +2087,36 @@ Take a moment to preview the various utilities listed or view our comprehensive 
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
     <value>Documentation on Microsoft Learn</value>
   </data>
+  <data name="Oobe_Overview_Telemetry_Title.Text" xml:space="preserve">
+    <value>Help us make PowerToys better</value>
+  </data>
+  <data name="Oobe_Overview_Telemetry_Desc.Text" xml:space="preserve">
+    <value>Diagnostics &amp; feedback helps us to improve PowerToys and keep it secure, up to date, and working as expected</value>
+  </data>
+  <data name="Oobe_Overview_DiagnosticsAndFeedback_Link.Content" xml:space="preserve">
+    <value>Learn more about the information PowerToys logs &amp; how it gets used</value>
+  </data>
+  <data name="Oobe_Overview_EnableDataDiagnostics.Header" xml:space="preserve">
+    <value>Diagnostic data</value>
+  </data>
+  <data name="Oobe_Overview_EnableDataDiagnostics.Description" xml:space="preserve">
+    <value>Helps inform bug fixes, performance, and product decisions</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_InfoBar.Title" xml:space="preserve">
+    <value>Turn on diagnostic data to help us improve PowerToys?</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_InfoBar_Desc.Content" xml:space="preserve">
+    <value>PowerToys diagnostic data is completely optional.</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_InfoBar_Button_Enable.Content" xml:space="preserve">
+    <value>Enable</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_Enabled_InfoBar_Title" xml:space="preserve">
+    <value>Thank you for helping to make PowerToys better!</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_Enabled_InfoBar_Desc" xml:space="preserve">
+    <value>You can change this at any time from settings.</value>
+  </data>
   <data name="ReleaseNotes.Content" xml:space="preserve">
     <value>Release notes</value>
   </data>
@@ -3746,6 +3779,21 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
     <value>Allow experimentation with new features</value>
+  </data>
+  <data name="General_DiagnosticsAndFeedback.Header" xml:space="preserve">
+    <value>Diagnostics &amp; feedback</value>
+  </data>
+  <data name="GeneralPage_DiagnosticsAndFeedback_Link.Content" xml:space="preserve">
+    <value>Learn more about the information we log &amp; how it gets used</value>
+  </data>
+  <data name="DataDiagnostics_SettingIsGPOManaged_InfoBar.Title" xml:space="preserve">
+    <value>PowerToys diagnostic data is disabled because your organization has blocked permissions to change this setting.</value>
+  </data>
+  <data name="GeneralPage_EnableDataDiagnostics.Header" xml:space="preserve">
+    <value>Diagnostic data</value>
+  </data>
+  <data name="GeneralPage_EnableDataDiagnostics.Description" xml:space="preserve">
+    <value>Telemetry helps inform bug fixes, performance, and improvements</value>
   </data>
   <data name="Shell_AdvancedPaste.Content" xml:space="preserve">
     <value>Advanced Paste</value>

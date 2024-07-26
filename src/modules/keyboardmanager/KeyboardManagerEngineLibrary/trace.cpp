@@ -2,6 +2,8 @@
 #include "trace.h"
 #include <common/interop/keyboard_layout.h>
 
+#include <common/Telemetry/TraceBase.h>
+
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,
     "Microsoft.PowerToys",
@@ -9,20 +11,10 @@ TRACELOGGING_DEFINE_PROVIDER(
     (0x38e8889b, 0x9731, 0x53f5, 0xe9, 0x01, 0xe8, 0xa7, 0xc1, 0x75, 0x30, 0x74),
     TraceLoggingOptionProjectTelemetry());
 
-void Trace::RegisterProvider() noexcept
-{
-    TraceLoggingRegister(g_hProvider);
-}
-
-void Trace::UnregisterProvider() noexcept
-{
-    TraceLoggingUnregister(g_hProvider);
-}
-
 // Log if a key to key remap has been invoked today.
 void Trace::DailyKeyToKeyRemapInvoked() noexcept
 {
-        TraceLoggingWrite(
+        TraceLoggingWriteWrapper(
             g_hProvider,
             "KeyboardManager_DailyKeyToKeyRemapInvoked",
             ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -32,7 +24,7 @@ void Trace::DailyKeyToKeyRemapInvoked() noexcept
 // Log if a key to shortcut remap has been invoked today.
 void Trace::DailyKeyToShortcutRemapInvoked() noexcept
 {
-        TraceLoggingWrite(
+        TraceLoggingWriteWrapper(
             g_hProvider,
             "KeyboardManager_DailyKeyToShortcutRemapInvoked",
             ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -42,7 +34,7 @@ void Trace::DailyKeyToShortcutRemapInvoked() noexcept
 // Log if a shortcut to key remap has been invoked today.
 void Trace::DailyShortcutToKeyRemapInvoked() noexcept
 {
-        TraceLoggingWrite(
+        TraceLoggingWriteWrapper(
             g_hProvider,
             "KeyboardManager_DailyShortcutToKeyRemapInvoked",
             ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -52,7 +44,7 @@ void Trace::DailyShortcutToKeyRemapInvoked() noexcept
 // Log if a shortcut to shortcut remap has been invoked today.
 void Trace::DailyShortcutToShortcutRemapInvoked() noexcept
 {
-        TraceLoggingWrite(
+        TraceLoggingWriteWrapper(
             g_hProvider,
             "KeyboardManager_DailyShortcutToShortcutRemapInvoked",
             ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -62,7 +54,7 @@ void Trace::DailyShortcutToShortcutRemapInvoked() noexcept
 // Log if an app specific shortcut to key remap has been invoked today.
 void Trace::DailyAppSpecificShortcutToKeyRemapInvoked() noexcept
 {
-        TraceLoggingWrite(
+        TraceLoggingWriteWrapper(
             g_hProvider,
             "KeyboardManager_DailyAppSpecificShortcutToKeyRemapInvoked",
             ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -72,7 +64,7 @@ void Trace::DailyAppSpecificShortcutToKeyRemapInvoked() noexcept
 // Log if an app specific shortcut to shortcut remap has been invoked today.
 void Trace::DailyAppSpecificShortcutToShortcutRemapInvoked() noexcept
 {
-        TraceLoggingWrite(
+        TraceLoggingWriteWrapper(
             g_hProvider,
             "KeyboardManager_DailyAppSpecificShortcutToShortcutRemapInvoked",
             ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -84,7 +76,7 @@ void Trace::KeyRemapInvoked(bool isKeyToKey) noexcept
 {
     if (isKeyToKey)
     {
-        TraceLoggingWrite(
+        TraceLoggingWriteWrapper(
             g_hProvider,
             "KeyboardManager_KeyToKeyRemapInvoked",
             ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -92,7 +84,7 @@ void Trace::KeyRemapInvoked(bool isKeyToKey) noexcept
     }
     else
     {
-        TraceLoggingWrite(
+        TraceLoggingWriteWrapper(
             g_hProvider,
             "KeyboardManager_KeyToShortcutRemapInvoked",
             ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -107,7 +99,7 @@ void Trace::ShortcutRemapInvoked(bool isShortcutToShortcut, bool isAppSpecific) 
     {
         if (isShortcutToShortcut)
         {
-            TraceLoggingWrite(
+            TraceLoggingWriteWrapper(
                 g_hProvider,
                 "KeyboardManager_AppSpecificShortcutToShortcutRemapInvoked",
                 ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -115,7 +107,7 @@ void Trace::ShortcutRemapInvoked(bool isShortcutToShortcut, bool isAppSpecific) 
         }
         else
         {
-            TraceLoggingWrite(
+            TraceLoggingWriteWrapper(
                 g_hProvider,
                 "KeyboardManager_AppSpecificShortcutToKeyRemapInvoked",
                 ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -126,7 +118,7 @@ void Trace::ShortcutRemapInvoked(bool isShortcutToShortcut, bool isAppSpecific) 
     {
         if (isShortcutToShortcut)
         {
-            TraceLoggingWrite(
+            TraceLoggingWriteWrapper(
                 g_hProvider,
                 "KeyboardManager_OSLevelShortcutToShortcutRemapInvoked",
                 ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -134,7 +126,7 @@ void Trace::ShortcutRemapInvoked(bool isShortcutToShortcut, bool isAppSpecific) 
         }
         else
         {
-            TraceLoggingWrite(
+            TraceLoggingWriteWrapper(
                 g_hProvider,
                 "KeyboardManager_OSLevelShortcutToKeyRemapInvoked",
                 ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -184,7 +176,7 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
         if (keyRemap.second.index() == 0) // 0 - Remapping to key
         {
             DWORD keyRemappedTo = std::get<DWORD>(keyRemap.second);
-            TraceLoggingWrite(
+            TraceLoggingWriteWrapper(
                 g_hProvider,
                 "KeyboardManager_KeyRemapConfigurationLoaded",
                 ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -198,7 +190,7 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
         else if (keyRemap.second.index() == 1) // 1 - Remapping to shortcut
         {
             Shortcut shortcutRemappedTo = std::get<Shortcut>(keyRemap.second);
-            TraceLoggingWrite(
+            TraceLoggingWriteWrapper(
                 g_hProvider,
                 "KeyboardManager_KeyRemapConfigurationLoaded",
                 ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -221,7 +213,7 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
         if (shortcutRemap.second.targetShortcut.index() == 0) // 0 - Remapping to key
         {
             DWORD keyRemappedTo = std::get<DWORD>(shortcutRemap.second.targetShortcut);
-            TraceLoggingWrite(
+            TraceLoggingWriteWrapper(
                 g_hProvider,
                 "KeyboardManager_ShortcutRemapConfigurationLoaded",
                 ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -245,7 +237,7 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
                 // Don't include Start app or Open URI mappings in this telemetry.
                 continue;
             }
-            TraceLoggingWrite(
+            TraceLoggingWriteWrapper(
                 g_hProvider,
                 "KeyboardManager_ShortcutRemapConfigurationLoaded",
                 ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -277,7 +269,7 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
             if (shortcutRemap.second.targetShortcut.index() == 0) // 0 - Remapping to key
             {
                 DWORD keyRemappedTo = std::get<DWORD>(shortcutRemap.second.targetShortcut);
-                TraceLoggingWrite(
+                TraceLoggingWriteWrapper(
                     g_hProvider,
                     "KeyboardManager_AppSpecificShortcutRemapConfigurationLoaded",
                     ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -303,7 +295,7 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
                     // Don't include Start app or Open URI mappings in this telemetry.
                     continue;
                 }
-                TraceLoggingWrite(
+                TraceLoggingWriteWrapper(
                     g_hProvider,
                     "KeyboardManager_AppSpecificShortcutRemapConfigurationLoaded",
                     ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -332,7 +324,7 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
 // Log an error while trying to send remappings telemetry.
 void Trace::ErrorSendingKeyAndShortcutRemapLoadedConfiguration() noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "KeyboardManager_ErrorSendingKeyAndShortcutRemapLoadedConfiguration",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -343,7 +335,7 @@ void Trace::ErrorSendingKeyAndShortcutRemapLoadedConfiguration() noexcept
 // Log if an error occurs in KBM
 void Trace::Error(const DWORD errorCode, std::wstring errorMessage, std::wstring methodName) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "KeyboardManager_Error",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),

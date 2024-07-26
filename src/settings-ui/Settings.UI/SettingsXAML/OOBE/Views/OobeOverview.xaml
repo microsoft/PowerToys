@@ -5,6 +5,8 @@
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
 
     <controls:OOBEPageControl x:Uid="Oobe_Overview" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/PTHero.png">
@@ -16,6 +18,28 @@
                     <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview" Style="{StaticResource TextButtonStyle}">
                         <TextBlock x:Uid="Oobe_Overview_DescriptionLinkText" TextWrapping="Wrap" />
                     </HyperlinkButton>
+                </StackPanel>
+
+                <StackPanel
+                    Orientation="Vertical"
+                    Spacing="12"
+                    Visibility="{x:Bind ShowDataDiagnosticsSetting, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <TextBlock
+                        x:Uid="Oobe_Overview_Telemetry_Title"
+                        Margin="0,30,0,0"
+                        Style="{StaticResource TitleTextBlockStyle}" />
+                    <TextBlock x:Uid="Oobe_Overview_Telemetry_Desc" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <HyperlinkButton
+                        x:Uid="Oobe_Overview_DiagnosticsAndFeedback_Link"
+                        Margin="-8,0,0,0"
+                        NavigateUri="https://aka.ms/powertoys-data-and-privacy-documentation" />
+
+                    <tkcontrols:SettingsCard
+                        x:Uid="Oobe_Overview_EnableDataDiagnostics"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE9D9;}"
+                        IsEnabled="{x:Bind ShowDataDiagnosticsSetting, Mode=OneWay}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind EnableDataDiagnostics, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                 </StackPanel>
             </StackPanel>
         </controls:OOBEPageControl.PageContent>

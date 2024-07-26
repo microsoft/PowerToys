@@ -13,11 +13,34 @@
     <Grid Margin="0,24,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <StackPanel
+        <InfoBar
+            x:Name="DataDiagnosticsInfoBar"
+            x:Uid="Oobe_WhatsNew_DataDiagnostics_InfoBar"
             Grid.Row="0"
+            VerticalAlignment="Top"
+            IsClosable="True"
+            IsOpen="{x:Bind IsDataDiagnosticsInfoBarEnabled, Mode=OneWay}"
+            IsTabStop="{x:Bind IsDataDiagnosticsInfoBarEnabled, Mode=OneWay}"
+            Severity="Informational">
+            <InfoBar.Content>
+                <StackPanel Spacing="16">
+                    <HyperlinkButton
+                        x:Name="DataDiagnosticsInfoBarDesc"
+                        x:Uid="Oobe_WhatsNew_DataDiagnostics_InfoBar_Desc" 
+                        NavigateUri="https://aka.ms/powertoys-data-and-privacy-documentation"/>
+                </StackPanel>
+            </InfoBar.Content>
+            <InfoBar.ActionButton>
+                <Button x:Uid="Oobe_WhatsNew_DataDiagnostics_InfoBar_Button_Enable" Click="EnableDataDiagnostics_Click" />
+            </InfoBar.ActionButton>
+        </InfoBar>
+
+        <StackPanel
+            Grid.Row="1"
             Margin="32,0,0,16"
             VerticalAlignment="Top"
             Orientation="Vertical">
@@ -33,7 +56,7 @@
         <InfoBar
             x:Name="ErrorInfoBar"
             x:Uid="Oobe_WhatsNew_LoadingError"
-            Grid.Row="1"
+            Grid.Row="2"
             VerticalAlignment="Top"
             IsClosable="False"
             IsOpen="False"
@@ -42,14 +65,14 @@
         <InfoBar
             x:Name="ProxyWarningInfoBar"
             x:Uid="Oobe_WhatsNew_ProxyAuthenticationWarning"
-            Grid.Row="1"
+            Grid.Row="2"
             VerticalAlignment="Top"
             IsClosable="False"
             IsOpen="False"
             IsTabStop="True"
             Severity="Warning" />
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
             <Grid Margin="32,24,32,24">
                 <ProgressRing
                     x:Name="LoadingProgressRing"

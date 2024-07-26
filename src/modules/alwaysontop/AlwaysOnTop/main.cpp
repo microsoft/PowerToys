@@ -58,13 +58,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
         });
     }
 
-    Trace::RegisterProvider();
+    Trace::AlwaysOnTop::RegisterProvider();
 
     AlwaysOnTop app(!pid.empty());
 
     run_message_loop();
 
-    Trace::UnregisterProvider();
+    Trace::AlwaysOnTop::UnregisterProvider();
     
     return 0;
 }

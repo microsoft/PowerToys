@@ -58,6 +58,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredMwbValidateRemoteIpValue();
         static GpoRuleConfigured GetConfiguredMwbDisableUserDefinedIpMappingRulesValue();
         static winrt::hstring GPOWrapper::GetConfiguredMwbPolicyDefinedIpMappingRules();
+        static GpoRuleConfigured GetAllowDataDiagnosticsValue();
     };
 }
 

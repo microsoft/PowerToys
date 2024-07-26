@@ -362,6 +362,26 @@
                         IsTabStop="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay}"
                         Severity="Informational" />
                 </controls:SettingsGroup>
+                <controls:SettingsGroup x:Uid="General_DiagnosticsAndFeedback" Visibility="Visible">
+                    <StackPanel>
+                        <HyperlinkButton
+                            x:Uid="GeneralPage_DiagnosticsAndFeedback_Link"
+                            Margin="-8,0,0,0"
+                            NavigateUri="https://aka.ms/powertoys-data-and-privacy-documentation" />
+                        <InfoBar
+                            x:Uid="DataDiagnostics_SettingIsGPOManaged_InfoBar"
+                            IsClosable="False"
+                            IsOpen="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}"
+                            IsTabStop="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}"
+                            Severity="Informational" />
+                        <tkcontrols:SettingsCard
+                            x:Uid="GeneralPage_EnableDataDiagnostics"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE9D9;}"
+                            IsEnabled="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableDataDiagnostics, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                    </StackPanel>
+                </controls:SettingsGroup>
             </StackPanel>
 
         </controls:SettingsPageControl.ModuleContent>

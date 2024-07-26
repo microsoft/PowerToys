@@ -13,6 +13,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -140,6 +141,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _autoDownloadUpdatesIsGpoDisabled = GPOWrapper.GetDisableAutomaticUpdateDownloadValue() == GpoRuleConfigured.Enabled;
             _experimentationIsGpoDisallowed = GPOWrapper.GetAllowExperimentationValue() == GpoRuleConfigured.Disabled;
             _showWhatsNewAfterUpdatesIsGpoDisabled = GPOWrapper.GetDisableShowWhatsNewAfterUpdatesValue() == GpoRuleConfigured.Enabled;
+            _enableDataDiagnosticsIsGpoDisallowed = GPOWrapper.GetAllowDataDiagnosticsValue() == GpoRuleConfigured.Disabled;
+
+            if (_enableDataDiagnosticsIsGpoDisallowed)
+            {
+                _enableDataDiagnostics = false;
+            }
+            else
+            {
+                _enableDataDiagnostics = DataDiagnostics.GetValue();
+            }
 
             if (dispatcherAction != null)
             {
@@ -163,6 +174,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _showWhatsNewAfterUpdatesIsGpoDisabled;
         private bool _enableExperimentation;
         private bool _experimentationIsGpoDisallowed;
+        private bool _enableDataDiagnostics;
+        private bool _enableDataDiagnosticsIsGpoDisallowed;
 
         private UpdatingSettings.UpdatingState _updatingState = UpdatingSettings.UpdatingState.UpToDate;
         private string _newAvailableVersion = string.Empty;
@@ -392,9 +405,32 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool EnableDataDiagnostics
+        {
+            get
+            {
+                return _enableDataDiagnostics;
+            }
+
+            set
+            {
+                if (_enableDataDiagnostics != value)
+                {
+                    _enableDataDiagnostics = value;
+
+                    DataDiagnostics.SetValue(_enableDataDiagnostics);
+                }
+            }
+        }
+
         public bool IsExperimentationGpoDisallowed
         {
             get => _experimentationIsGpoDisallowed;
+        }
+
+        public bool IsDataDiagnosticsGPOManaged
+        {
+            get => _enableDataDiagnosticsIsGpoDisallowed;
         }
 
         public string SettingsBackupAndRestoreDir
@@ -995,6 +1031,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 NotifyPropertyChanged(nameof(IsDownloadAllowed));
             }
+        }
+
+        internal void RefreshSettingsOnExternalChange()
+        {
+            EnableDataDiagnostics = DataDiagnostics.GetValue();
+
+            NotifyPropertyChanged(nameof(EnableDataDiagnostics));
         }
     }
 }
