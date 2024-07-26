@@ -5,6 +5,8 @@ properties:
       directives:
         description: Configure PowerToys
       settings:
+        AdvancedPaste:
+          Enabled: true
         AlwaysOnTop:
           Enabled: true
         Awake:
@@ -62,8 +64,6 @@ properties:
         MeasureTool:
           Enabled: true
         Hosts:
-          Enabled: true
-        PastePlain:
           Enabled: true
         RegistryPreview:
           Enabled: true

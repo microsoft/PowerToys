@@ -204,6 +204,18 @@ public
             return gcnew String(CommonSharedConstants::SHOW_COLOR_PICKER_SHARED_EVENT);
         }
 
+        static String ^ ShowAdvancedPasteSharedEvent() {
+            return gcnew String(CommonSharedConstants::SHOW_ADVANCED_PASTE_SHARED_EVENT);
+        }
+
+        static String ^ AdvancedPasteMarkdownEvent() {
+            return gcnew String(CommonSharedConstants::ADVANCED_PASTE_MARKDOWN_EVENT);
+        }
+
+        static String ^ AdvancedPasteJsonEvent() {
+            return gcnew String(CommonSharedConstants::ADVANCED_PASTE_JSON_EVENT);
+        }
+
         static String ^ ShowPowerOCRSharedEvent() {
             return gcnew String(CommonSharedConstants::SHOW_POWEROCR_SHARED_EVENT);
         }

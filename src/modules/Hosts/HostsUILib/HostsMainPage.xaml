@@ -412,23 +412,23 @@
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="models:Entry">
                         <Grid
+                            Margin="0"
                             AutomationProperties.Name="{x:Bind Address, Mode=OneWay}"
                             Background="Transparent"
                             ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="256" />
+                                <ColumnDefinition Width="*" MinWidth="150" />
                                 <!--  Address  -->
-                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" MinWidth="120" />
                                 <!--  Comment  -->
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="20" />
                                 <!--  Status  -->
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="20" />
                                 <!--  Duplicate  -->
                                 <ColumnDefinition Width="Auto" />
                                 <!--  ToggleSwitch  -->
                                 <ColumnDefinition Width="Auto" />
                                 <!--  DeleteEntry  -->
-                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <TextBlock
                                 Grid.Column="0"
@@ -511,7 +511,7 @@
                                 Grid.Column="4"
                                 Width="40"
                                 MinWidth="0"
-                                HorizontalAlignment="Right"
+                                HorizontalAlignment="Center"
                                 GotFocus="Entries_GotFocus"
                                 IsOn="{x:Bind Active, Mode=TwoWay}"
                                 OffContent=""
@@ -705,10 +705,13 @@
                 Padding="16,0"
                 HorizontalAlignment="Stretch"
                 AcceptsReturn="True"
+                ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                ScrollViewer.HorizontalScrollMode="Auto"
+                ScrollViewer.IsHorizontalRailEnabled="True"
                 ScrollViewer.IsVerticalRailEnabled="True"
                 ScrollViewer.VerticalScrollBarVisibility="Visible"
                 ScrollViewer.VerticalScrollMode="Enabled"
-                TextWrapping="Wrap" />
+                TextWrapping="NoWrap" />
         </ContentDialog>
 
         <TeachingTip

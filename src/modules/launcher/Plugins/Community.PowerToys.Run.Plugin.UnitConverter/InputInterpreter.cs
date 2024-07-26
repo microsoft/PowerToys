@@ -180,6 +180,22 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         }
 
         /// <summary>
+        /// Converts spelling "kph" to "km/h"
+        /// </summary>
+        public static void KPHHandler(ref string[] split)
+        {
+            split[1] = split[1].Replace("cph", "cm/h", System.StringComparison.CurrentCultureIgnoreCase);
+            split[1] = split[1].Replace("kph", "km/h", System.StringComparison.CurrentCultureIgnoreCase);
+            split[1] = split[1].Replace("kmph", "km/h", System.StringComparison.CurrentCultureIgnoreCase);
+            split[1] = split[1].Replace("cmph", "cm/h", System.StringComparison.CurrentCultureIgnoreCase);
+
+            split[3] = split[3].Replace("cph", "cm/h", System.StringComparison.CurrentCultureIgnoreCase);
+            split[3] = split[3].Replace("kph", "km/h", System.StringComparison.CurrentCultureIgnoreCase);
+            split[3] = split[3].Replace("kmph", "km/h", System.StringComparison.CurrentCultureIgnoreCase);
+            split[3] = split[3].Replace("cmph", "cm/h", System.StringComparison.CurrentCultureIgnoreCase);
+        }
+
+        /// <summary>
         /// Converts spelling "metre" to "meter", also for centimetre and other variants
         /// </summary>
         public static void MetreToMeter(ref string[] split)
@@ -239,6 +255,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             InputInterpreter.DegreePrefixer(ref split);
             InputInterpreter.MetreToMeter(ref split);
             InputInterpreter.FeetToFt(ref split);
+            InputInterpreter.KPHHandler(ref split);
             InputInterpreter.GallonHandler(ref split, CultureInfo.CurrentCulture);
             if (!double.TryParse(split[0], out double value))
             {

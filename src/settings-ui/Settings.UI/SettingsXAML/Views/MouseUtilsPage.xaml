@@ -12,7 +12,7 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
     <Page.Resources>
-        <converters:FindMyMouseActivationIntToVisibilityConverter x:Key="FindMyMouseActivationIntToVisibilityConverter" />
+        <converters:IndexBitFieldToVisibilityConverter x:Key="IndexBitFieldToVisibilityConverter" />
         <tkconverters:BoolToVisibilityConverter
             x:Key="BoolToInvertedVisibilityConverter"
             FalseValue="Visible"
@@ -46,7 +46,12 @@
                             <ComboBoxItem x:Uid="MouseUtils_FindMyMouse_ActivationCustomizedShortcut" />
                         </ComboBox>
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_ShakingMinimumDistance" Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationIntToVisibilityConverter}, Mode=OneWay, ConverterParameter=2}">
+                            <tkcontrols:SettingsCard ContentAlignment="Left" Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource IndexBitFieldToVisibilityConverter}, Mode=OneWay, ConverterParameter=0x3}">
+                                <!--  Visible for both Press Left Control twice and Press Right Control twice activation methods  -->
+                                <CheckBox x:Uid="MouseUtils_Include_Win_Key" IsChecked="{x:Bind ViewModel.FindMyMouseIncludeWinKey, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_ShakingMinimumDistance" Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource IndexBitFieldToVisibilityConverter}, Mode=OneWay, ConverterParameter=0x4}">
+                                <!--  Visible for the Shake Mouse activation method  -->
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="1000"
@@ -56,7 +61,8 @@
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.FindMyMouseShakingMinimumDistance, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_ShakingIntervalMs" Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationIntToVisibilityConverter}, Mode=OneWay, ConverterParameter=2}">
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_ShakingIntervalMs" Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource IndexBitFieldToVisibilityConverter}, Mode=OneWay, ConverterParameter=0x4}">
+                                <!--  Visible for the Shake Mouse activation method  -->
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="1000"
@@ -66,7 +72,8 @@
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.FindMyMouseShakingIntervalMs, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_ShakingFactor" Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationIntToVisibilityConverter}, Mode=OneWay, ConverterParameter=2}">
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_ShakingFactor" Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource IndexBitFieldToVisibilityConverter}, Mode=OneWay, ConverterParameter=0x4}">
+                                <!--  Visible for the Shake Mouse activation method  -->
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="100"
@@ -79,7 +86,8 @@
                             <tkcontrols:SettingsCard
                                 x:Uid="MouseUtils_FindMyMouse_ActivationShortcut"
                                 HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
-                                Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationIntToVisibilityConverter}, Mode=OneWay, ConverterParameter=3}">
+                                Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource IndexBitFieldToVisibilityConverter}, Mode=OneWay, ConverterParameter=0x8}">
+                                <!--  Visible for the Shortcut activation method  -->
                                 <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.FindMyMouseActivationShortcut, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">

@@ -133,7 +133,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Opens PowerToys utilities and settings..
+        ///   Looks up a localized string similar to Opens PowerToys utilities and settings.
         /// </summary>
         internal static string Plugin_Description {
             get {

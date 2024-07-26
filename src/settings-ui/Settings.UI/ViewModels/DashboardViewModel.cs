@@ -88,10 +88,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void LoadKBMSettingsFromJson()
         {
-            KeyboardManagerProfile kbmProfile = GetKBMProfile();
-            _kbmItem.RemapKeys = kbmProfile?.RemapKeys.InProcessRemapKeys;
-            _kbmItem.RemapShortcuts = KeyboardManagerViewModel.CombineShortcutLists(kbmProfile?.RemapShortcuts.GlobalRemapShortcuts, kbmProfile?.RemapShortcuts.AppSpecificRemapShortcuts);
-            dispatcher.Invoke(new Action(() => UpdateKBMItems()));
+            try
+            {
+                KeyboardManagerProfile kbmProfile = GetKBMProfile();
+                _kbmItem.RemapKeys = kbmProfile?.RemapKeys.InProcessRemapKeys;
+                _kbmItem.RemapShortcuts = KeyboardManagerViewModel.CombineShortcutLists(kbmProfile?.RemapShortcuts.GlobalRemapShortcuts, kbmProfile?.RemapShortcuts.AppSpecificRemapShortcuts);
+                dispatcher.Invoke(new Action(() => UpdateKBMItems()));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to load KBM settings: {ex.Message}");
+            }
         }
 
         private void UpdateKBMItems()
@@ -146,6 +153,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             return moduleType switch
             {
+                ModuleType.AdvancedPaste => GetModuleItemsAdvancedPaste(),
                 ModuleType.AlwaysOnTop => GetModuleItemsAlwaysOnTop(),
                 ModuleType.Awake => GetModuleItemsAwake(),
                 ModuleType.ColorPicker => GetModuleItemsColorPicker(),
@@ -161,7 +169,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.MouseJump => GetModuleItemsMouseJump(),
                 ModuleType.MousePointerCrosshairs => GetModuleItemsMousePointerCrosshairs(),
                 ModuleType.MouseWithoutBorders => GetModuleItemsMouseWithoutBorders(),
-                ModuleType.PastePlain => GetModuleItemsPastePlain(),
                 ModuleType.Peek => GetModuleItemsPeek(),
                 ModuleType.PowerRename => GetModuleItemsPowerRename(),
                 ModuleType.PowerLauncher => GetModuleItemsPowerLauncher(),
@@ -359,13 +366,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
-        private ObservableCollection<DashboardModuleItem> GetModuleItemsPastePlain()
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsAdvancedPaste()
         {
-            ISettingsRepository<PastePlainSettings> moduleSettingsRepository = SettingsRepository<PastePlainSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<AdvancedPasteSettings> moduleSettingsRepository = SettingsRepository<AdvancedPasteSettings>.GetInstance(new SettingsUtils());
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("PastePlain_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.ActivationShortcut.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AdvancedPasteUI_Shortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.AdvancedPasteUIShortcut.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("PasteAsPlainText_Shortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.PasteAsPlainTextShortcut.GetKeysList() },
             };
+
+            if (moduleSettingsRepository.SettingsConfig.Properties.PasteAsMarkdownShortcut.GetKeysList().Count > 0)
+            {
+                list.Add(new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("PasteAsMarkdown_Shortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.PasteAsMarkdownShortcut.GetKeysList() });
+            }
+
+            if (moduleSettingsRepository.SettingsConfig.Properties.PasteAsJsonShortcut.GetKeysList().Count > 0)
+            {
+                list.Add(new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("PasteAsJson_Shortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.PasteAsJsonShortcut.GetKeysList() });
+            }
+
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
