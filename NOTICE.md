@@ -1324,7 +1324,6 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Extensions.Hosting.WindowsServices 8.0.0
 - Microsoft.Extensions.Logging 8.0.0
 - Microsoft.Extensions.Logging.Abstractions 8.0.0
-- Microsoft.NET.Test.Sdk 17.10.0
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
 - Microsoft.Web.WebView2 1.0.2365.46
 - Microsoft.Win32.SystemEvents 8.0.0
@@ -1338,8 +1337,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Xaml.Behaviors.Wpf 1.1.39
 - ModernWpfUI 0.9.4
 - Moq 4.18.4
-- MSTest.TestAdapter 3.5.0
-- MSTest.TestFramework 3.5.0
+- MSTest 3.5.0
 - NLog.Extensions.Logging 5.3.8
 - NLog.Schema 5.2.8
 - ReverseMarkdown 4.1.0
