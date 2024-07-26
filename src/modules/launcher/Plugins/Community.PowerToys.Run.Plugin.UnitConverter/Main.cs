@@ -69,37 +69,11 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
         private Result GetResult(UnitConversionResult result)
         {
+            string subTitleText = string.Format(CultureInfo.CurrentCulture, CopyToClipboard, result.QuantityInfo.Name);
             if (result.UnitNameFrom == "usounce" || result.UnitNameFrom == "imperialounce")
             {
                 string ounceName = GetOunceUnitNameString(result);
-                return new Result
-                {
-                    ContextData = result,
-                    Title = result.ToString(null),
-                    IcoPath = _icon_path,
-                    Score = 300,
-                    SubTitle = string.Format(CultureInfo.CurrentCulture, ConvertFromOunce, ounceName) + " - " + string.Format(CultureInfo.CurrentCulture, CopyToClipboard, result.QuantityInfo.Name),
-                    Action = c =>
-                    {
-                        var ret = false;
-                        var thread = new Thread(() =>
-                        {
-                            try
-                            {
-                                Clipboard.SetText(result.ConvertedValue.ToString(UnitConversionResult.Format, CultureInfo.CurrentCulture));
-                                ret = true;
-                            }
-                            catch (ExternalException)
-                            {
-                                MessageBox.Show(Properties.Resources.copy_failed);
-                            }
-                        });
-                        thread.SetApartmentState(ApartmentState.STA);
-                        thread.Start();
-                        thread.Join();
-                        return ret;
-                    },
-                };
+                subTitleText = subTitleText.Insert(0, string.Format(CultureInfo.CurrentCulture, ConvertFromOunce, ounceName) + " - ");
             }
 
             return new Result
@@ -108,7 +82,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 Title = result.ToString(null),
                 IcoPath = _icon_path,
                 Score = 300,
-                SubTitle = string.Format(CultureInfo.CurrentCulture, CopyToClipboard, result.QuantityInfo.Name),
+                SubTitle = subTitleText,
                 Action = c =>
                 {
                     var ret = false;
