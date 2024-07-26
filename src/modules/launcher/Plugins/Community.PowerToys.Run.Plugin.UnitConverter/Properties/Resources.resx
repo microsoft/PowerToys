@@ -120,6 +120,9 @@
   <data name="context_menu_copy" xml:space="preserve">
     <value>Copy (Enter)</value>
   </data>
+  <data name="convert_from_ounce" xml:space="preserve">
+    <value>From {0}</value>
+  </data>
   <data name="copy_failed" xml:space="preserve">
     <value>Copy failed</value>
   </data>

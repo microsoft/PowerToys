@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnitsNet;
 
 namespace Community.PowerToys.Run.Plugin.UnitConverter
@@ -11,6 +12,14 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
     public static class UnitHandler
     {
         private static readonly int _roundingFractionalDigits = 4;
+
+        private static readonly string[] _ounceRepresentation =
+        {
+            "ounce",
+            "oz",
+            "o.z.",
+            "o.z",
+        };
 
         private static readonly QuantityInfo[] _included = new QuantityInfo[]
         {
@@ -93,6 +102,20 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         }
 
         /// <summary>
+        /// Given ConvertModel and a QuantityInfo adds a result to the possible results.
+        /// </summary>
+        public static void ConvertAndAddToResult(ConvertModel convertModel, QuantityInfo quantityInfo, List<UnitConversionResult> results)
+        {
+            double convertedValue = UnitHandler.ConvertInput(convertModel, quantityInfo);
+
+            if (!double.IsNaN(convertedValue))
+            {
+                UnitConversionResult result = new UnitConversionResult(Round(convertedValue), convertModel.FromUnit, convertModel.ToUnit, quantityInfo);
+                results.Add(result);
+            }
+        }
+
+        /// <summary>
         /// Given ConvertModel returns collection of possible results.
         /// </summary>
         /// <returns>The converted value as a double.</returns>
@@ -101,66 +124,36 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             var results = new List<UnitConversionResult>();
             foreach (var quantityInfo in _included)
             {
-                if (quantityInfo == Volume.Info && (convertModel.FromUnit == "ounce" || convertModel.ToUnit == "ounce"))
+                if (quantityInfo == Volume.Info && (_ounceRepresentation.Contains(convertModel.FromUnit) || _ounceRepresentation.Contains(convertModel.ToUnit)))
                 {
-                    if (convertModel.FromUnit == "ounce")
+                    if (_ounceRepresentation.Contains(convertModel.FromUnit))
                     {
+                        string temp = convertModel.FromUnit;
+
                         convertModel.FromUnit = "usounce";
-
-                        double convertedValue = UnitHandler.ConvertInput(convertModel, quantityInfo);
-
-                        if (!double.IsNaN(convertedValue))
-                        {
-                            UnitConversionResult result = new UnitConversionResult(Round(convertedValue), convertModel.FromUnit, convertModel.ToUnit, quantityInfo);
-                            results.Add(result);
-                        }
+                        ConvertAndAddToResult(convertModel, quantityInfo, results);
 
                         convertModel.FromUnit = "imperialounce";
+                        ConvertAndAddToResult(convertModel, quantityInfo, results);
 
-                        convertedValue = UnitHandler.ConvertInput(convertModel, quantityInfo);
-
-                        if (!double.IsNaN(convertedValue))
-                        {
-                            UnitConversionResult result = new UnitConversionResult(Round(convertedValue), convertModel.FromUnit, convertModel.ToUnit, quantityInfo);
-                            results.Add(result);
-                        }
-
-                        convertModel.FromUnit = "ounce";
+                        convertModel.FromUnit = temp;
                     }
                     else
                     {
+                        string temp = convertModel.ToUnit;
+
                         convertModel.ToUnit = "usounce";
-
-                        double convertedValue = UnitHandler.ConvertInput(convertModel, quantityInfo);
-
-                        if (!double.IsNaN(convertedValue))
-                        {
-                            UnitConversionResult result = new UnitConversionResult(Round(convertedValue), convertModel.FromUnit, convertModel.ToUnit, quantityInfo);
-                            results.Add(result);
-                        }
+                        ConvertAndAddToResult(convertModel, quantityInfo, results);
 
                         convertModel.ToUnit = "imperialounce";
+                        ConvertAndAddToResult(convertModel, quantityInfo, results);
 
-                        convertedValue = UnitHandler.ConvertInput(convertModel, quantityInfo);
-
-                        if (!double.IsNaN(convertedValue))
-                        {
-                            UnitConversionResult result = new UnitConversionResult(Round(convertedValue), convertModel.FromUnit, convertModel.ToUnit, quantityInfo);
-                            results.Add(result);
-                        }
-
-                        convertModel.ToUnit = "ounce";
+                        convertModel.ToUnit = temp;
                     }
                 }
                 else
                 {
-                    double convertedValue = UnitHandler.ConvertInput(convertModel, quantityInfo);
-
-                    if (!double.IsNaN(convertedValue))
-                    {
-                        UnitConversionResult result = new UnitConversionResult(Round(convertedValue), convertModel.FromUnit, convertModel.ToUnit, quantityInfo);
-                        results.Add(result);
-                    }
+                    ConvertAndAddToResult(convertModel, quantityInfo, results);
                 }
             }
 

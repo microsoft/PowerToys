@@ -29,6 +29,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         private bool _disposed;
 
         private static readonly CompositeFormat CopyToClipboard = System.Text.CompositeFormat.Parse(Properties.Resources.copy_to_clipboard);
+        private static readonly CompositeFormat ConvertFromOunce = System.Text.CompositeFormat.Parse(Properties.Resources.convert_from_ounce);
 
         public void Init(PluginInitContext context)
         {
@@ -56,15 +57,58 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 .ToList();
         }
 
+        private string GetOunceUnitNameString(UnitConversionResult result)
+        {
+            return result.UnitNameFrom switch
+            {
+                "usounce" => "US ounce",
+                "imperialounce" => "Imperial ounce",
+                _ => string.Empty,
+            };
+        }
+
         private Result GetResult(UnitConversionResult result)
         {
+            if (result.UnitNameFrom == "usounce" || result.UnitNameFrom == "imperialounce")
+            {
+                string ounceName = GetOunceUnitNameString(result);
+                return new Result
+                {
+                    ContextData = result,
+                    Title = result.ToString(null),
+                    IcoPath = _icon_path,
+                    Score = 300,
+                    SubTitle = string.Format(CultureInfo.CurrentCulture, ConvertFromOunce, ounceName) + " - " + string.Format(CultureInfo.CurrentCulture, CopyToClipboard, result.QuantityInfo.Name),
+                    Action = c =>
+                    {
+                        var ret = false;
+                        var thread = new Thread(() =>
+                        {
+                            try
+                            {
+                                Clipboard.SetText(result.ConvertedValue.ToString(UnitConversionResult.Format, CultureInfo.CurrentCulture));
+                                ret = true;
+                            }
+                            catch (ExternalException)
+                            {
+                                MessageBox.Show(Properties.Resources.copy_failed);
+                            }
+                        });
+                        thread.SetApartmentState(ApartmentState.STA);
+                        thread.Start();
+                        thread.Join();
+                        return ret;
+                    },
+                };
+            }
+
             return new Result
             {
                 ContextData = result,
                 Title = result.ToString(null),
                 IcoPath = _icon_path,
                 Score = 300,
-                SubTitle = (result.UnitNameFrom == "usounce" ? "From US Ounce - " : (result.UnitNameFrom == "imperialounce" ? "From Imperial Ounce - " : string.Empty)) + string.Format(CultureInfo.CurrentCulture, CopyToClipboard, result.QuantityInfo.Name),
+                SubTitle = string.Format(CultureInfo.CurrentCulture, CopyToClipboard, result.QuantityInfo.Name),
                 Action = c =>
                 {
                     var ret = false;
