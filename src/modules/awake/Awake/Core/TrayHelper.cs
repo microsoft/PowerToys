@@ -4,12 +4,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using Awake.Core.Models;
 using Awake.Core.Native;
 using Awake.Properties;
@@ -27,147 +27,348 @@ namespace Awake.Core
     /// </remarks>
     internal static class TrayHelper
     {
+        private static NotifyIconData _notifyIconData;
+        private static ManualResetEvent? _exitSignal;
+
         private static IntPtr _trayMenu;
 
         private static IntPtr TrayMenu { get => _trayMenu; set => _trayMenu = value; }
 
-        private static NotifyIcon TrayIcon { get; set; }
+        private static IntPtr _hiddenWindowHandle;
+
+        internal static IntPtr HiddenWindowHandle { get => _hiddenWindowHandle; private set => _hiddenWindowHandle = value; }
 
         static TrayHelper()
         {
-            TrayIcon = new NotifyIcon();
+            TrayMenu = IntPtr.Zero;
+            HiddenWindowHandle = IntPtr.Zero;
         }
 
-        public static void InitializeTray(string text, Icon icon, ManualResetEvent? exitSignal, ContextMenuStrip? contextMenu = null)
+        public static void InitializeTray(string text, Icon icon, ManualResetEvent? exitSignal)
         {
-            Task.Factory.StartNew(
-                (tray) =>
-                {
-                    try
-                    {
-                        Logger.LogInfo("Setting up the tray.");
-                        if (tray != null)
-                        {
-                            ((NotifyIcon)tray).Text = text;
-                            ((NotifyIcon)tray).Icon = icon;
-                            ((NotifyIcon)tray).ContextMenuStrip = contextMenu;
-                            ((NotifyIcon)tray).Visible = true;
-                            ((NotifyIcon)tray).MouseClick += TrayClickHandler;
-                            Application.AddMessageFilter(new TrayMessageFilter(exitSignal));
-                            Application.Run();
-                            Logger.LogInfo("Tray setup complete.");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError($"An error occurred initializing the tray. {ex.Message}");
-                        Logger.LogError($"{ex.StackTrace}");
-                    }
-                },
-                TrayIcon);
+            _exitSignal = exitSignal;
+
+            CreateHiddenWindow(icon, text);
         }
 
-        /// <summary>
-        /// Function used to construct the context menu in the tray natively.
-        /// </summary>
-        /// <remarks>
-        /// We need to use the Windows API here instead of the common control exposed
-        /// by NotifyIcon because the one that is built into the Windows Forms stack
-        /// hasn't been updated in a while and is looking like Office XP. That introduces
-        /// scalability and coloring changes on any OS past Windows XP.
-        /// </remarks>
-        /// <param name="sender">The sender that triggers the handler.</param>
-        /// <param name="e">MouseEventArgs instance containing mouse click event information.</param>
-        private static void TrayClickHandler(object? sender, MouseEventArgs e)
+        private static void ShowContextMenu(IntPtr hWnd)
         {
-            IntPtr windowHandle = Manager.GetHiddenWindow();
+            Bridge.SetForegroundWindow(hWnd);
 
-            if (windowHandle != IntPtr.Zero)
+            // Get the handle to the context menu associated with the tray icon
+            IntPtr hMenu = TrayMenu;
+
+            // Get the current cursor position
+            Bridge.GetCursorPos(out Models.Point cursorPos);
+
+            Bridge.ScreenToClient(hWnd, ref cursorPos);
+
+            MenuInfo menuInfo = new()
             {
-                Bridge.SetForegroundWindow(windowHandle);
-                Bridge.TrackPopupMenuEx(TrayMenu, 0, Cursor.Position.X, Cursor.Position.Y, windowHandle, IntPtr.Zero);
+                CbSize = (uint)Marshal.SizeOf(typeof(MenuInfo)),
+                FMask = Native.Constants.MIM_STYLE,
+                DwStyle = Native.Constants.MNS_AUTO_DISMISS,
+            };
+            Bridge.SetMenuInfo(hMenu, ref menuInfo);
+
+            // Display the context menu at the cursor position
+            Bridge.TrackPopupMenuEx(
+                  hMenu,
+                  Native.Constants.TPM_LEFT_ALIGN | Native.Constants.TPM_BOTTOMALIGN | Native.Constants.TPM_LEFT_BUTTON,
+                  cursorPos.X,
+                  cursorPos.Y,
+                  hWnd,
+                  IntPtr.Zero);
+        }
+
+        private static void CreateHiddenWindow(Icon icon, string text)
+        {
+            IntPtr hWnd = IntPtr.Zero;
+
+            // Start the message loop asynchronously
+            Task.Run(() =>
+            {
+                RunOnMainThread(() =>
+                {
+                    WndClassEx wcex = new()
+                    {
+                        CbSize = (uint)Marshal.SizeOf(typeof(WndClassEx)),
+                        Style = 0,
+                        LpfnWndProc = Marshal.GetFunctionPointerForDelegate<Bridge.WndProcDelegate>(WndProc),
+                        CbClsExtra = 0,
+                        CbWndExtra = 0,
+                        HInstance = Marshal.GetHINSTANCE(typeof(Program).Module),
+                        HIcon = IntPtr.Zero,
+                        HCursor = IntPtr.Zero,
+                        HbrBackground = IntPtr.Zero,
+                        LpszMenuName = string.Empty,
+                        LpszClassName = Constants.TrayWindowId,
+                        HIconSm = IntPtr.Zero,
+                    };
+
+                    Bridge.RegisterClassEx(ref wcex);
+
+                    hWnd = Bridge.CreateWindowEx(
+                        0,
+                        Constants.TrayWindowId,
+                        text,
+                        0x00CF0000 | 0x00000001 | 0x00000008, // WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_MINIMIZEBOX
+                        0,
+                        0,
+                        0,
+                        0,
+                        unchecked(-3),
+                        IntPtr.Zero,
+                        Marshal.GetHINSTANCE(typeof(Program).Module),
+                        IntPtr.Zero);
+
+                    if (hWnd == IntPtr.Zero)
+                    {
+                        int errorCode = Marshal.GetLastWin32Error();
+                        throw new Win32Exception(errorCode, "Failed to add tray icon. Error code: " + errorCode);
+                    }
+
+                    // Keep this as a reference because we will need it when we update
+                    // the tray icon in the future.
+                    HiddenWindowHandle = hWnd;
+
+                    Bridge.ShowWindow(hWnd, 0); // SW_HIDE
+                    Bridge.UpdateWindow(hWnd);
+
+                    SetShellIcon(hWnd, text, icon);
+
+                    RunMessageLoop();
+                });
+            });
+        }
+
+        internal static void SetShellIcon(IntPtr hWnd, string text, Icon? icon, TrayIconAction action = TrayIconAction.Add)
+        {
+            int message = Native.Constants.NIM_ADD;
+
+            switch (action)
+            {
+                case TrayIconAction.Update:
+                    message = Native.Constants.NIM_MODIFY;
+                    break;
+                case TrayIconAction.Delete:
+                    message = Native.Constants.NIM_DELETE;
+                    break;
+                case TrayIconAction.Add:
+                default:
+                    break;
+            }
+
+            _notifyIconData = action == TrayIconAction.Add || action == TrayIconAction.Update
+                ? new NotifyIconData
+                {
+                    CbSize = Marshal.SizeOf(typeof(NotifyIconData)),
+                    HWnd = hWnd,
+                    UId = 1000,
+                    UFlags = Native.Constants.NIF_ICON | Native.Constants.NIF_TIP | Native.Constants.NIF_MESSAGE,
+                    UCallbackMessage = (int)Native.Constants.WM_USER,
+                    HIcon = icon!.Handle,
+                    SzTip = text,
+                }
+                : new NotifyIconData
+                {
+                    CbSize = Marshal.SizeOf(typeof(NotifyIconData)),
+                    HWnd = hWnd,
+                    UId = 1000,
+                    UFlags = 0,
+                };
+
+            if (!Bridge.Shell_NotifyIcon(message, ref _notifyIconData))
+            {
+                int errorCode = Marshal.GetLastWin32Error();
+                throw new Win32Exception(errorCode, $"Failed to change tray icon. Action: {action} and error code: {errorCode}");
             }
         }
 
-        internal static void SetTray(string text, AwakeSettings settings, bool startedFromPowerToys)
+        private static void RunMessageLoop()
+        {
+            while (Bridge.GetMessage(out Msg msg, IntPtr.Zero, 0, 0))
+            {
+                Bridge.TranslateMessage(ref msg);
+                Bridge.DispatchMessage(ref msg);
+            }
+        }
+
+        private static int WndProc(IntPtr hWnd, uint message, IntPtr wParam, IntPtr lParam)
+        {
+            switch (message)
+            {
+                case Native.Constants.WM_USER:
+                    if (lParam == (IntPtr)Native.Constants.WM_LBUTTONDOWN || lParam == (IntPtr)Native.Constants.WM_RBUTTONDOWN)
+                    {
+                        // Show the context menu associated with the tray icon
+                        ShowContextMenu(hWnd);
+                    }
+
+                    break;
+                case Native.Constants.WM_DESTROY:
+                    // Clean up resources when the window is destroyed
+                    Bridge.PostQuitMessage(0);
+                    break;
+                case Native.Constants.WM_COMMAND:
+                    int trayCommandsSize = Enum.GetNames(typeof(TrayCommands)).Length;
+
+                    long targetCommandIndex = wParam.ToInt64() & 0xFFFF;
+
+                    switch (targetCommandIndex)
+                    {
+                        case (uint)TrayCommands.TC_EXIT:
+                            Manager.CompleteExit(0, _exitSignal, true);
+                            break;
+                        case (uint)TrayCommands.TC_DISPLAY_SETTING:
+                            Manager.SetDisplay();
+                            break;
+                        case (uint)TrayCommands.TC_MODE_INDEFINITE:
+                            Manager.SetIndefiniteKeepAwake();
+                            break;
+                        case (uint)TrayCommands.TC_MODE_PASSIVE:
+                            Manager.SetPassiveKeepAwake();
+                            break;
+                        default:
+                            if (targetCommandIndex >= trayCommandsSize)
+                            {
+                                AwakeSettings settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName);
+                                if (settings.Properties.CustomTrayTimes.Count == 0)
+                                {
+                                    settings.Properties.CustomTrayTimes.AddRange(Manager.GetDefaultTrayOptions());
+                                }
+
+                                int index = (int)targetCommandIndex - (int)TrayCommands.TC_TIME;
+                                uint targetTime = (uint)settings.Properties.CustomTrayTimes.ElementAt(index).Value;
+                                Manager.SetTimedKeepAwake(targetTime);
+                            }
+
+                            break;
+                    }
+
+                    break;
+                default:
+                    // Let the default window procedure handle other messages
+                    return Bridge.DefWindowProc(hWnd, message, wParam, lParam);
+            }
+
+            return Bridge.DefWindowProc(hWnd, message, wParam, lParam);
+        }
+
+        internal static void RunOnMainThread(Action action)
+        {
+            var syncContext = new SingleThreadSynchronizationContext();
+            SynchronizationContext.SetSynchronizationContext(syncContext);
+
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+            syncContext.Post(
+            _ =>
+            {
+                try
+                {
+                    action();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Error: " + e.Message);
+                }
+                finally
+                {
+                    syncContext.EndMessageLoop();
+                }
+            },
+            null);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+            syncContext.BeginMessageLoop();
+        }
+
+        internal static void SetTray(AwakeSettings settings, bool startedFromPowerToys)
         {
             SetTray(
-                text,
                 settings.Properties.KeepDisplayOn,
                 settings.Properties.Mode,
                 settings.Properties.CustomTrayTimes,
                 startedFromPowerToys);
         }
 
-        public static void SetTray(string text, bool keepDisplayOn, AwakeMode mode, Dictionary<string, int> trayTimeShortcuts, bool startedFromPowerToys)
+        public static void SetTray(bool keepDisplayOn, AwakeMode mode, Dictionary<string, int> trayTimeShortcuts, bool startedFromPowerToys)
         {
-            if (TrayMenu != IntPtr.Zero)
-            {
-                var destructionStatus = Bridge.DestroyMenu(TrayMenu);
-                if (destructionStatus != true)
-                {
-                    Logger.LogError("Failed to destroy menu.");
-                }
-            }
+            ClearExistingTrayMenu();
+            CreateNewTrayMenu(startedFromPowerToys, keepDisplayOn, mode);
 
+            InsertAwakeModeMenuItems(mode);
+
+            EnsureDefaultTrayTimeShortcuts(trayTimeShortcuts);
+            CreateAwakeTimeSubMenu(trayTimeShortcuts);
+        }
+
+        private static void ClearExistingTrayMenu()
+        {
+            if (TrayMenu != IntPtr.Zero && !Bridge.DestroyMenu(TrayMenu))
+            {
+                int errorCode = Marshal.GetLastWin32Error();
+                Logger.LogError($"Failed to destroy menu: {errorCode}");
+            }
+        }
+
+        private static void CreateNewTrayMenu(bool startedFromPowerToys, bool keepDisplayOn, AwakeMode mode)
+        {
             TrayMenu = Bridge.CreatePopupMenu();
-
-            if (TrayMenu != IntPtr.Zero)
+            if (TrayMenu == IntPtr.Zero)
             {
-                if (!startedFromPowerToys)
-                {
-                    // If Awake is started from PowerToys, the correct way to exit it is disabling it from Settings.
-                    Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING, (uint)TrayCommands.TC_EXIT, Resources.AWAKE_EXIT);
-                    Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_SEPARATOR, 0, string.Empty);
-                }
-
-                Bridge.InsertMenu(TrayMenu, 0,  Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING | (keepDisplayOn ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED) | (mode == AwakeMode.PASSIVE ? Native.Constants.MF_DISABLED : Native.Constants.MF_ENABLED), (uint)TrayCommands.TC_DISPLAY_SETTING, Resources.AWAKE_KEEP_SCREEN_ON);
+                return;
             }
 
-            // In case there are no tray shortcuts defined for the application default to a
-            // reasonable initial set.
+            if (!startedFromPowerToys)
+            {
+                InsertMenuItem(0, TrayCommands.TC_EXIT, Resources.AWAKE_EXIT);
+            }
+
+            InsertMenuItem(0, TrayCommands.TC_DISPLAY_SETTING, Resources.AWAKE_KEEP_SCREEN_ON, keepDisplayOn, mode == AwakeMode.PASSIVE);
+            InsertSeparator(1);
+        }
+
+        private static void InsertMenuItem(int position, TrayCommands command, string text, bool checkedState = false, bool disabled = false)
+        {
+            uint state = Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING;
+            state |= checkedState ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED;
+            state |= disabled ? Native.Constants.MF_DISABLED : Native.Constants.MF_ENABLED;
+
+            Bridge.InsertMenu(TrayMenu, (uint)position, state, (uint)command, text);
+        }
+
+        private static void InsertSeparator(int position)
+        {
+            Bridge.InsertMenu(TrayMenu, (uint)position, Native.Constants.MF_BYPOSITION | Native.Constants.MF_SEPARATOR, 0, string.Empty);
+        }
+
+        private static void EnsureDefaultTrayTimeShortcuts(Dictionary<string, int> trayTimeShortcuts)
+        {
             if (trayTimeShortcuts.Count == 0)
             {
                 trayTimeShortcuts.AddRange(Manager.GetDefaultTrayOptions());
             }
+        }
 
+        private static void CreateAwakeTimeSubMenu(Dictionary<string, int> trayTimeShortcuts)
+        {
             var awakeTimeMenu = Bridge.CreatePopupMenu();
             for (int i = 0; i < trayTimeShortcuts.Count; i++)
             {
                 Bridge.InsertMenu(awakeTimeMenu, (uint)i, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING, (uint)TrayCommands.TC_TIME + (uint)i, trayTimeShortcuts.ElementAt(i).Key);
             }
 
-            Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_SEPARATOR, 0, string.Empty);
-
-            Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING | (mode == AwakeMode.PASSIVE ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_PASSIVE, Resources.AWAKE_OFF);
-            Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING | (mode == AwakeMode.INDEFINITE ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_INDEFINITE, Resources.AWAKE_KEEP_INDEFINITELY);
-            Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_POPUP | (mode == AwakeMode.TIMED ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)awakeTimeMenu, Resources.AWAKE_KEEP_ON_INTERVAL);
-            Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING | Native.Constants.MF_DISABLED | (mode == AwakeMode.EXPIRABLE ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_EXPIRABLE, Resources.AWAKE_KEEP_UNTIL_EXPIRATION);
-
-            TrayIcon.Text = text;
+            Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_POPUP, (uint)awakeTimeMenu, Resources.AWAKE_KEEP_ON_INTERVAL);
         }
 
-        private sealed class CheckButtonToolStripMenuItemAccessibleObject : ToolStripItem.ToolStripItemAccessibleObject
+        private static void InsertAwakeModeMenuItems(AwakeMode mode)
         {
-            private readonly CheckButtonToolStripMenuItem _menuItem;
+            InsertSeparator(0);
 
-            public CheckButtonToolStripMenuItemAccessibleObject(CheckButtonToolStripMenuItem menuItem)
-                : base(menuItem)
-            {
-                _menuItem = menuItem;
-            }
-
-            public override AccessibleRole Role => AccessibleRole.CheckButton;
-
-            public override string Name => _menuItem.Text + ", " + Role + ", " + (_menuItem.Checked ? Resources.AWAKE_CHECKED : Resources.AWAKE_UNCHECKED);
-        }
-
-        private sealed class CheckButtonToolStripMenuItem : ToolStripMenuItem
-        {
-            protected override AccessibleObject CreateAccessibilityInstance()
-            {
-                return new CheckButtonToolStripMenuItemAccessibleObject(this);
-            }
+            InsertMenuItem(0, TrayCommands.TC_MODE_PASSIVE, Resources.AWAKE_OFF, mode == AwakeMode.PASSIVE);
+            InsertMenuItem(0, TrayCommands.TC_MODE_INDEFINITE, Resources.AWAKE_KEEP_INDEFINITELY, mode == AwakeMode.INDEFINITE);
+            InsertMenuItem(0, TrayCommands.TC_MODE_EXPIRABLE, Resources.AWAKE_KEEP_UNTIL_EXPIRATION, mode == AwakeMode.EXPIRABLE, true);
         }
     }
 }

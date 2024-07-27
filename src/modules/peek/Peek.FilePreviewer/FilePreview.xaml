@@ -62,6 +62,7 @@
         <controls:BrowserControl
             x:Name="BrowserPreview"
             x:Load="True"
+            CustomContextMenu="{x:Bind BrowserPreviewer.CustomContextMenu, Mode=OneWay}"
             DOMContentLoaded="BrowserPreview_DOMContentLoaded"
             FlowDirection="LeftToRight"
             IsDevFilePreview="{x:Bind BrowserPreviewer.IsDevFilePreview, Mode=OneWay}"

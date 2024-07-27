@@ -151,7 +151,7 @@ In this release, we focused on stability and improvements.
 ### Installer
 
  - Fixed the remaining install failures when the folders the DSC module is to be installed in isn't accessible by the WiX installer for user scope installations.
- - Fixed an issue causing ARM 64 uninstall process to not correctly finding powershell 7 to run uninstall scripts.
+ - Fixed an issue causing ARM64 uninstall process to not correctly find powershell 7 to run uninstall scripts.
 
 ### Peek
 

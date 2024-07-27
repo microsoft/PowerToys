@@ -1334,7 +1334,7 @@ EXHIBIT A -Mozilla Public License.
 - Mages 2.0.2
 - Markdig.Signed 0.34.0
 - Microsoft.CodeAnalysis.NetAnalyzers 8.0.0
-- Microsoft.Data.Sqlite 8.0.0
+- Microsoft.Data.Sqlite 8.0.7
 - Microsoft.Extensions.DependencyInjection 8.0.0
 - Microsoft.Extensions.Hosting 8.0.0
 - Microsoft.Extensions.Hosting.WindowsServices 8.0.0
@@ -1355,8 +1355,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Xaml.Behaviors.Wpf 1.1.39
 - ModernWpfUI 0.9.4
 - Moq 4.18.4
-- MSTest.TestAdapter 3.2.0
-- MSTest.TestFramework 3.2.0
+- MSTest 3.5.0
 - NLog.Extensions.Logging 5.3.8
 - NLog.Schema 5.2.8
 - ReverseMarkdown 4.1.0
@@ -1377,7 +1376,7 @@ EXHIBIT A -Mozilla Public License.
 - System.IO.Abstractions.TestingHelpers 17.2.3
 - System.IO.Hashing 8.0.0
 - System.Management 8.0.0
-- System.Reactive 6.0.0-preview.9
+- System.Reactive 6.0.1
 - System.Runtime.Caching 8.0.0
 - System.Security.Cryptography.ProtectedData 8.0.0
 - System.ServiceProcess.ServiceController 8.0.0
