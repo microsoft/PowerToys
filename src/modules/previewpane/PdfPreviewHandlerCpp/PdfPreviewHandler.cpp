@@ -147,6 +147,7 @@ IFACEMETHODIMP PdfPreviewHandler::SetRect(const RECT* prc)
                 }
             }
         }
+        m_rcParent = *prc;
         hr = S_OK;
     }
     return hr;
