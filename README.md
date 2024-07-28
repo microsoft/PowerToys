@@ -8,8 +8,8 @@
 
 | Architecture | Solution (Main) | Solution (Stable) | Installer (Main) |
 |--------------|-----------------|-------------------|------------------|
-| x64 | [![Build Status for Main](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=main&jobName=Build%20x64%20Release)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=main&jobName=Build%20x64%20Release) | [![Build Status for Stable](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=stable&jobName=Build%20x64%20Release)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=stable) | [![Build Status Installer pipeline](https://dev.azure.com/microsoft/Dart/_apis/build/status/PowerToys/PowerToys%20Signed%20YAML%20Release%20Build?branchName=main&jobName=Build&configuration=Build%20Release_x64)](https://dev.azure.com/microsoft/Dart/_build/latest?definitionId=76541&branchName=main) |
-| ARM64 | [![Build Status for Main](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=main&jobName=Build%20arm64%20Release)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=main) | [![Build Status for Main](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=main&jobName=Build%20arm64%20Release)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=stable) | [![Build Status Installer pipeline](https://dev.azure.com/microsoft/Dart/_apis/build/status/PowerToys/PowerToys%20Signed%20YAML%20Release%20Build?branchName=main&jobName=Build&configuration=Build%20Release_arm64)](https://dev.azure.com/microsoft/Dart/_build/latest?definitionId=76541&branchName=main) |
+| x64 | [![Build Status for Main](https://dev.azure.com/shine-oss/PowerToys/_apis/build/status%2FPowerToys%20CI?branchName=main&jobName=Build%20x64%20Release)](https://dev.azure.com/shine-oss/PowerToys/_build/latest?definitionId=3&branchName=main) | [![Build Status for Stable](https://dev.azure.com/shine-oss/PowerToys/_apis/build/status%2FPowerToys%20CI?branchName=stable&jobName=Build%20x64%20Release)](https://dev.azure.com/shine-oss/PowerToys/_build/latest?definitionId=3&branchName=stable) | [![Build Status Installer pipeline](https://dev.azure.com/microsoft/Dart/_apis/build/status/PowerToys/PowerToys%20Signed%20YAML%20Release%20Build?branchName=main&jobName=Build&configuration=Build%20Release_x64)](https://dev.azure.com/microsoft/Dart/_build/latest?definitionId=76541&branchName=main) |
+| ARM64 | [![Build Status for Main](https://dev.azure.com/shine-oss/PowerToys/_apis/build/status%2FPowerToys%20CI?branchName=main&jobName=Build%20arm64%20Release)](https://dev.azure.com/shine-oss/PowerToys/_build/latest?definitionId=3&branchName=main) | [![Build Status for Stable](https://dev.azure.com/shine-oss/PowerToys/_apis/build/status%2FPowerToys%20CI?branchName=main&jobName=Build%20arm64%20Release)](https://dev.azure.com/shine-oss/PowerToys/_build/latest?definitionId=3&branchName=main) | [![Build Status Installer pipeline](https://dev.azure.com/microsoft/Dart/_apis/build/status/PowerToys/PowerToys%20Signed%20YAML%20Release%20Build?branchName=main&jobName=Build&configuration=Build%20Release_arm64)](https://dev.azure.com/microsoft/Dart/_build/latest?definitionId=76541&branchName=main) |
 
 ## About
 
@@ -43,17 +43,17 @@ Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and cl
 <!-- items that need to be updated release to release -->
 [github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.83%22
 [github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.82%22
-[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.82.0/PowerToysUserSetup-0.82.0-x64.exe
-[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.82.0/PowerToysUserSetup-0.82.0-arm64.exe
-[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.82.0/PowerToysSetup-0.82.0-x64.exe
-[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.82.0/PowerToysSetup-0.82.0-arm64.exe
+[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.82.1/PowerToysUserSetup-0.82.1-x64.exe 
+[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.82.1/PowerToysUserSetup-0.82.1-arm64.exe 
+[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.82.1/PowerToysSetup-0.82.1-x64.exe 
+[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.82.1/PowerToysSetup-0.82.1-arm64.exe
  
 |  Description   | Filename | sha256 hash |
 |----------------|----------|-------------|
-| Per user - x64       | [PowerToysUserSetup-0.82.0-x64.exe][ptUserX64] | 295E2A4622C7E347D3E1BAEA6B36BECC328B566496678F1F87DE3F8A12A7F89A |
-| Per user - ARM64     | [PowerToysUserSetup-0.82.0-arm64.exe][ptUserArm64] | 55D25D068C6148F0A15C7806B9F813224ABA9C461943F42BB2A8B0E22D28240C |
-| Machine wide - x64   | [PowerToysSetup-0.82.0-x64.exe][ptMachineX64] | 01B59C00BB43C25BEFEF274755875717AB4DEAB57C0354AB96CF5B1DA4837C9A |
-| Machine wide - ARM64 | [PowerToysSetup-0.82.0-arm64.exe][ptMachineArm64] | 1F642B50962516127793C4D3556BF4FC24B9738BAC2F362CAA3BFF8B0C3AF97F |
+| Per user - x64       | [PowerToysUserSetup-0.82.1-x64.exe][ptUserX64] | B594C9A32125079186DCE776431E2DC77B896774D2AEE2ACF51BAB8791683485 |
+| Per user - ARM64     | [PowerToysUserSetup-0.82.1-arm64.exe][ptUserArm64] | 41C1D9C0E8FA7EFFCE6F605C92C143AE933F8C999A2933A4D9D1115B16F14F67 |
+| Machine wide - x64   | [PowerToysSetup-0.82.1-x64.exe][ptMachineX64] | B8FA7E7C8F88B69E070E234F561D32807634E2E9D782EDBB9DC35F3A454F2264 |
+| Machine wide - ARM64 | [PowerToysSetup-0.82.1-arm64.exe][ptMachineArm64] | 58F22306F22CF9878C6DDE6AC128388DF4DFF78B76165E38A695490E55B3C8C4 |
 
 This is our preferred method.
 
@@ -151,7 +151,7 @@ In this release, we focused on stability and improvements.
 ### Installer
 
  - Fixed the remaining install failures when the folders the DSC module is to be installed in isn't accessible by the WiX installer for user scope installations.
- - Fixed an issue causing ARM 64 uninstall process to not correctly finding powershell 7 to run uninstall scripts.
+ - Fixed an issue causing ARM64 uninstall process to not correctly find powershell 7 to run uninstall scripts.
 
 ### Peek
 

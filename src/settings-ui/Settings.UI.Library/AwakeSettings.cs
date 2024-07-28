@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
@@ -12,12 +13,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class AwakeSettings : BasePTModuleSettings, ISettingsConfig, ICloneable
     {
         public const string ModuleName = "Awake";
-        public const string ModuleVersion = "0.0.2";
 
         public AwakeSettings()
         {
             Name = ModuleName;
-            Version = ModuleVersion;
+            Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             Properties = new AwakeProperties();
         }
 

@@ -25,6 +25,8 @@ namespace FileLocksmithUI
             Logger.InitializeLogger("\\File Locksmith\\FileLocksmithUI\\Logs");
 
             this.InitializeComponent();
+
+            UnhandledException += App_UnhandledException;
         }
 
         /// <summary>
@@ -53,6 +55,11 @@ namespace FileLocksmithUI
 
             _window = new MainWindow(isElevated);
             _window.Activate();
+        }
+
+        private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            Logger.LogError("Unhandled exception", e.Exception);
         }
 
         private Window _window;

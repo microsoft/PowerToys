@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.10" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.11" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <policyNamespaces>
     <target prefix="powertoys" namespace="Microsoft.Policies.PowerToys" />
   </policyNamespaces>
-  <resources minRequiredRevision="1.10"/><!-- Last changed with PowerToys v0.81.1 -->
+  <resources minRequiredRevision="1.11"/><!-- Last changed with PowerToys v0.83.0 -->
   <supportedOn>
     <definitions>
       <definition name="SUPPORTED_POWERTOYS_0_64_0" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0)"/>
@@ -19,6 +19,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_78_0" displayName="$(string.SUPPORTED_POWERTOYS_0_78_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_81_0" displayName="$(string.SUPPORTED_POWERTOYS_0_81_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_81_1" displayName="$(string.SUPPORTED_POWERTOYS_0_81_1)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_83_0" displayName="$(string.SUPPORTED_POWERTOYS_0_83_0)"/>
     </definitions>
   </supportedOn>
   <categories>
@@ -32,10 +33,17 @@
     <category name="AdvancedPaste" displayName="$(string.AdvancedPaste)">
       <parentCategory ref="PowerToys" />
     </category>
+    <category name="MouseWithoutBorders" displayName="$(string.MouseWithoutBorders)">
+      <parentCategory ref="PowerToys" />
+    </category>
+    <category name="GeneralSettings" displayName="$(string.GeneralSettings)">
+      <parentCategory ref="PowerToys" />
+    </category>
   </categories>
   <policies>
 
-    <policy name="ConfigureGlobalUtilityEnabledState" class="Both" displayName="$(string.ConfigureGlobalUtilityEnabledState)" explainText="$(string.ConfigureGlobalUtilityEnabledStateDescription)" key="Software\Policies\PowerToys" valueName="ConfigureGlobalUtilityEnabledState">
+ <!--The name (id) of the policy is different to sort it as first policy in edit dialog. The order is sorted alphabetically based on the "name" property.-->
+    <policy name="ConfigureAllUtilityGlobalEnabledState" class="Both" displayName="$(string.ConfigureAllUtilityGlobalEnabledState)" explainText="$(string.ConfigureAllUtilityGlobalEnabledStateDescription)" key="Software\Policies\PowerToys" valueName="ConfigureGlobalUtilityEnabledState">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_75_0" />
       <enabledValue>
@@ -467,7 +475,7 @@
       </disabledValue>
     </policy>
     <policy name="AllowExperimentation" class="Both" displayName="$(string.AllowExperimentation)" explainText="$(string.AllowExperimentationDescription)" key="Software\Policies\PowerToys" valueName="AllowExperimentation">
-      <parentCategory ref="PowerToys" />
+      <parentCategory ref="GeneralSettings" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_68_0" />
       <enabledValue>
         <decimal value="1" />
@@ -502,6 +510,84 @@
       <disabledValue>
         <decimal value="0" />
       </disabledValue>
+    </policy>
+    <policy name="MwbClipboardSharingEnabled" class="Both" displayName="$(string.MwbClipboardSharingEnabled)" explainText="$(string.MwbClipboardSharingEnabledDescription)" key="Software\Policies\PowerToys" valueName="MwbClipboardSharingEnabled">
+      <parentCategory ref="MouseWithoutBorders" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_83_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="MwbFileTransferEnabled" class="Both" displayName="$(string.MwbFileTransferEnabled)" explainText="$(string.MwbFileTransferEnabledDescription)" key="Software\Policies\PowerToys" valueName="MwbFileTransferEnabled">
+      <parentCategory ref="MouseWithoutBorders" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_83_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="MwbUseOriginalUserInterface" class="Both" displayName="$(string.MwbUseOriginalUserInterface)" explainText="$(string.MwbUseOriginalUserInterfaceDescription)" key="Software\Policies\PowerToys" valueName="MwbUseOriginalUserInterface">
+      <parentCategory ref="MouseWithoutBorders" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_83_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="MwbDisallowBlockingScreensaver" class="Both" displayName="$(string.MwbDisallowBlockingScreensaver)" explainText="$(string.MwbDisallowBlockingScreensaverDescription)" key="Software\Policies\PowerToys" valueName="MwbDisallowBlockingScreensaver">
+      <parentCategory ref="MouseWithoutBorders" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_83_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="MwbSameSubnetOnly" class="Both" displayName="$(string.MwbSameSubnetOnly)" explainText="$(string.MwbSameSubnetOnlyDescription)" key="Software\Policies\PowerToys" valueName="MwbSameSubnetOnly">
+      <parentCategory ref="MouseWithoutBorders" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_83_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="MwbValidateRemoteIp" class="Both" displayName="$(string.MwbValidateRemoteIp)" explainText="$(string.MwbValidateRemoteIpDescription)" key="Software\Policies\PowerToys" valueName="MwbValidateRemoteIp">
+      <parentCategory ref="MouseWithoutBorders" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_83_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="MwbDisableUserDefinedIpMappingRules" class="Both" displayName="$(string.MwbDisableUserDefinedIpMappingRules)" explainText="$(string.MwbDisableUserDefinedIpMappingRulesDescription)" key="Software\Policies\PowerToys" valueName="MwbDisableUserDefinedIpMappingRules">
+      <parentCategory ref="MouseWithoutBorders" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_83_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="MwbPolicyDefinedIpMappingRules" class="Both" displayName="$(string.MwbPolicyDefinedIpMappingRules)" explainText="$(string.MwbPolicyDefinedIpMappingRulesDescription)" presentation="$(presentation.MwbPolicyDefinedIpMappingRules)" key="Software\Policies\PowerToys">
+      <parentCategory ref="MouseWithoutBorders" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_83_0" />
+      <elements>
+        <!--Max length means here max length per line. We support 65 characters per line. (A string containing the hostname, a space and an IPv6 Address is max. 55 characters long.)-->
+        <multiText id="MwbPolicyDefinedIpMappingsList" valueName="MwbPolicyDefinedIpMappingRules" maxLength="65" required="true"/>
+      </elements>
     </policy>
   </policies>
 </policyDefinitions>
