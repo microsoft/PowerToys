@@ -36,7 +36,12 @@ namespace Microsoft.PowerToys.PreviewHandler.Qoi
                     Rectangle s = new Rectangle(left, top, right - left, bottom - top);
 
                     _previewHandlerControl = new QoiPreviewHandlerControl();
-                    _previewHandlerControl.SetWindow(hwnd, s);
+
+                    if (!_previewHandlerControl.SetWindow(hwnd, s))
+                    {
+                        return;
+                    }
+
                     _previewHandlerControl.DoPreview(filePath);
 
                     NativeEventWaiter.WaitForEventLoop(

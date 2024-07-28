@@ -61,11 +61,12 @@ namespace Common
         void SetRect(Rectangle windowBounds);
 
         /// <summary>
-        /// Sets the parent window of the previewer window, as well as the area within the parent to be used for the previewer window..
+        /// Sets the parent window of the previewer window, as well as the area within the parent to be used for the previewer window.
         /// </summary>
         /// <param name="hwnd">Pointer to the parent window handle.</param>
         /// <param name="rect">Instance of Rectangle defining the area.</param>
-        void SetWindow(IntPtr hwnd, Rectangle rect);
+        /// <returns><see langword="true"/> if the operation was successful; otherwise, <see langword="false"/>.</returns>
+        bool SetWindow(IntPtr hwnd, Rectangle rect);
 
         /// <summary>
         /// Called by Preview Handler to start the preview.

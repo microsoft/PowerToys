@@ -35,7 +35,12 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
                     Rectangle s = new Rectangle(left, top, right - left, bottom - top);
 
                     _previewHandlerControl = new PdfPreviewHandlerControl();
-                    _previewHandlerControl.SetWindow(hwnd, s);
+
+                    if (!_previewHandlerControl.SetWindow(hwnd, s))
+                    {
+                        return;
+                    }
+
                     _previewHandlerControl.DoPreview(filePath);
 
                     NativeEventWaiter.WaitForEventLoop(
