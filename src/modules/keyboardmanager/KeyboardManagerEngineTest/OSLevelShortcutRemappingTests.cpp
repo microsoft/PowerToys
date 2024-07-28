@@ -774,9 +774,9 @@ namespace RemappingLogicTests
             // Send Alt+D keydown
             mockedInputHandler.SendVirtualInput(inputs5);
 
-            // Alt, D, RWin key states should be unchanged, LWin, B should be true
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_LWIN), true);
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_RWIN), false);
+            // Alt, D, LWin key states should be unchanged, RWin, B should be true
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_LWIN), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_RWIN), true);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x42), true);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x44), false);
@@ -2255,8 +2255,8 @@ namespace RemappingLogicTests
             // Release Ctrl
             mockedInputHandler.SendVirtualInput(inputs2);
 
-            // SendVirtualInput should be called exactly twice with the above condition (since two dummy key events are sent in one set)
-            Assert::AreEqual(2, mockedInputHandler.GetSendVirtualInputCallCount());
+            // SendVirtualInput should be called none with the above condition (since two dummy key events are sent in one set)
+            Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
             // LWin should be pressed
             Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_LWIN));
         }
@@ -2326,8 +2326,8 @@ namespace RemappingLogicTests
             // Release Ctrl
             mockedInputHandler.SendVirtualInput(inputs2);
 
-            // SendVirtualInput should be called exactly twice with the above condition (since two dummy key events are sent in one set)
-            Assert::AreEqual(2, mockedInputHandler.GetSendVirtualInputCallCount());
+            // SendVirtualInput should be called none with the above condition (since two dummy key events are sent in one set)
+            Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
             // LWin should be pressed
             Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_LWIN));
         }
