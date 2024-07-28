@@ -24,7 +24,6 @@ All:
 - Hosts File Editor
 - File Locksmith
 - GPO
-- Paste as plain text
 - Registry Preview
 - Peek
 - MWB
@@ -32,46 +31,11 @@ All:
 - Environment Variables
 - Command Not Found
 - DSC
+- Advanced Paste
 ```
 
 ```
 Group 1:
-- Keyboard Manager
-- PowerRename
-- PowerToys Run
-- Shortcut Guide
-- OOBE
-- Mouse Utils
-- VCM
-- AlwaysOnTop
-- Hosts File Editor
-- File Locksmith
-- Registry Preview
-- Peek
-- Environment Variables
-- DSC
-```
-
-```
-Group 2:
-- Image Resizer
-- PowerRename
-- PowerToys Run
-- OOBE
-- Mouse Utils
-- Awake
-- Text Extractor
-- File Locksmith
-- GPO
-- Paste As Plain Text
-- MWB
-- Crop And Lock
-- Environment Variables
-- Command Not Found
-```
-
-```
-Group 3:
 - Localization
 - General
 - Color Picker
@@ -90,6 +54,42 @@ Group 3:
 ```
 
 ```
+Group 2:
+- Keyboard Manager
+- PowerRename
+- PowerToys Run
+- Shortcut Guide
+- OOBE
+- Mouse Utils
+- VCM
+- AlwaysOnTop
+- Hosts File Editor
+- File Locksmith
+- Registry Preview
+- Peek
+- Environment Variables
+- DSC
+```
+
+```
+Group 3:
+- Image Resizer
+- PowerRename
+- PowerToys Run
+- OOBE
+- Mouse Utils
+- Awake
+- Text Extractor
+- File Locksmith
+- GPO
+- MWB
+- Crop And Lock
+- Environment Variables
+- Command Not Found
+- Advanced Paste
+```
+
+```
 Group 4:
 - Install
 - Functional
@@ -99,9 +99,9 @@ Group 4:
 - File Explorer Add-ons
 - Awake
 - Screen Ruler
-- Paste As Plain Text
 - Crop And Lock
 - DSC
+- Advanced Paste
 ```
 
 ```
