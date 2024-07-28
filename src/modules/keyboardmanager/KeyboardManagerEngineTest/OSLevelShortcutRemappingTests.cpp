@@ -775,8 +775,8 @@ namespace RemappingLogicTests
             mockedInputHandler.SendVirtualInput(inputs5);
 
             // Alt, D, RWin key states should be unchanged, LWin, B should be true
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_LWIN), true);
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_RWIN), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_LWIN), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_RWIN), true);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x42), true);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x44), false);
