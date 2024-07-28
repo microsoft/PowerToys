@@ -659,7 +659,7 @@ Mouse Jump:
    - [ ] Try to launch Registry Preview from it's Settings page and ensure that it is launched properly.
    - [ ] Try to launch Registry Preview from it's OOBE page and ensure that it is launched properly.
    - [ ] Enable Default app setting. Verify that .reg files are opened with Registry Preview by default. Disable Default app setting. Verify that Registry Editor is now default app.
-   
+
 ## Peek
  * Open different files to check that they're shown properly
    - [ ] Image

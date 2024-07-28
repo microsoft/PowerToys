@@ -50,7 +50,7 @@ Group 1:
 - GPO
 - Peek
 - MWB
-- Command Not Found
+- Advanced Paste
 ```
 
 ```
@@ -100,8 +100,8 @@ Group 4:
 - Awake
 - Screen Ruler
 - Crop And Lock
+- Command Not Found
 - DSC
-- Advanced Paste
 ```
 
 ```
