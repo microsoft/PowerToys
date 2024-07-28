@@ -229,6 +229,16 @@ namespace KeyboardEventHandlers
         {
             const auto it = reMap.find(itShortcut);
 
+            // Remember which modifier key was pressed initially
+            if (data->lParam->vkCode == VK_RWIN || data->lParam->vkCode == VK_RCONTROL || data->lParam->vkCode == VK_RMENU || data->lParam->vkCode == VK_RSHIFT)
+            {
+                it->second.modifierKeyInvoked = ModifierKey::Right;
+            }
+            else if (data->lParam->vkCode == VK_LWIN || data->lParam->vkCode == VK_LCONTROL || data->lParam->vkCode == VK_LMENU || data->lParam->vkCode == VK_LSHIFT)
+            {
+                it->second.modifierKeyInvoked = ModifierKey::Left;
+            }
+
             // If a shortcut is currently in the invoked state then skip till the shortcut that is currently invoked
             if (isShortcutInvoked && !it->second.isShortcutInvoked)
             {
@@ -301,16 +311,6 @@ namespace KeyboardEventHandlers
                     }
 
                     std::vector<INPUT> keyEventList;
-
-                    // Remember which modifier key was pressed initially
-                    if (ii.GetVirtualKeyState(VK_RWIN) || ii.GetVirtualKeyState(VK_RCONTROL) || ii.GetVirtualKeyState(VK_RMENU) || ii.GetVirtualKeyState(VK_RSHIFT))
-                    {
-                        it->second.modifierKeyInvoked = ModifierKey::Right;
-                    }
-                    else if (ii.GetVirtualKeyState(VK_LWIN) || ii.GetVirtualKeyState(VK_LCONTROL) || ii.GetVirtualKeyState(VK_LMENU) || ii.GetVirtualKeyState(VK_LSHIFT))
-                    {
-                        it->second.modifierKeyInvoked = ModifierKey::Left;
-                    }
 
                     if (isRunProgram)
                     {
