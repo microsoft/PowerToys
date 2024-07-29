@@ -36,6 +36,8 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [WebSearchShortcut](https://github.com/Daydreamer-riri/PowerToys-Run-WebSearchShortcut) | [Riri](https://github.com/Daydreamer-riri) | Select a specific search engine to perform searches. |
 | [UnicodeInput](https://github.com/nathancartlidge/powertoys-run-unicode) | [nathancartlidge](https://github.com/nathancartlidge) | Copy Unicode characters to the clipboard |
 | [PowerHexInspector](https://github.com/NaroZeol/PowerHexInspector) | [NaroZeol](https://github.com/NaroZeol) | Peek other forms of an input number |
+| [GitHubRepo](https://github.com/8LWXpg/PowerToysRun-GitHubRepo) | [8LWXpg](https://github.com/8LWXpg) | Search and open GitHub repositories |
+| [ProcessKiller](https://github.com/8LWXpg/PowerToysRun-ProcessKiller) | [8LWXpg](https://github.com/8LWXpg) | Search and kill processes |
 
 ## Extending software plugins
 
@@ -47,6 +49,7 @@ Below are community created plugins that target a website or software.  They are
 | [Edge Workspaces](https://github.com/quachpas/PowerToys-Run-EdgeWorkspaces) | [quachpas](https://github.com/quachpas) | Open Microsoft Edge workspaces|
 | [Everything](https://github.com/lin-ycv/EverythingPowerToys) | [Yu Chieh (Victor) Lin](https://github.com/Lin-ycv) | Get search results from Everything |
 | [GitKraken](https://github.com/davidegiacometti/PowerToys-Run-GitKraken) | [davidegiacometti](https://github.com/davidegiacometti) | Open GitKraken repositories |
+| [RDP](https://github.com/anthony81799/PowerToysRun-RDP)) | [anthony81799](https://github.com/anthony81799) | Open Remote Desktop connections |
 | [Visual Studio Recents](https://github.com/davidegiacometti/PowerToys-Run-VisualStudio) | [davidegiacometti](https://github.com/davidegiacometti) | Open Visual Studio recents |
 | [WinGet](https://github.com/bostrot/PowerToysRunPluginWinget) | [bostrot](https://github.com/bostrot) | Search and install packages from WinGet |
 | [Scoop](https://github.com/Quriz/PowerToysRunScoop) | [Quriz](https://github.com/Quriz) | Search and install packages from Scoop |

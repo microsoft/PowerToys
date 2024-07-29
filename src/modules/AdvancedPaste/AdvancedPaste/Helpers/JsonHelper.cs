@@ -24,6 +24,14 @@ namespace AdvancedPaste.Helpers
         private static readonly char[] CsvDelimArry = [',', ';', '\t'];
         private static readonly Regex CsvSepIdentifierRegex = new Regex(@"^sep=(.)$", RegexOptions.IgnoreCase);
 
+        // CSV: Split on every occurrence of the delimiter except if it is enclosed by " and ignore two " as escaped "
+        private static readonly string CsvDelimSepRegexStr = @"(?=(?:[^""]*""[^""]*"")*(?![^""]*""))";
+
+        // CSV: Regex to remove/replace quotation marks
+        private static readonly Regex CsvRemoveSingleQuotationMarksRegex = new Regex(@"^""(?!"")|(?<!"")""$|^""""$");
+        private static readonly Regex CsvRemoveStartAndEndQuotationMarksRegex = new Regex(@"^""(?=(""{2})+)|(?<=(""{2})+)""$");
+        private static readonly Regex CsvReplaceDoubleQuotationMarksRegex = new Regex(@"""{2}");
+
         internal static string ToJsonFromXmlOrCsv(DataPackageView clipboardData)
         {
             Logger.LogTrace();
@@ -131,7 +139,7 @@ namespace AdvancedPaste.Helpers
             {
                 if (string.IsNullOrEmpty(jsonText))
                 {
-                    var csv = new List<string[]>();
+                    var csv = new List<IEnumerable<string>>();
 
                     string[] lines = text.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -146,10 +154,12 @@ namespace AdvancedPaste.Helpers
                             continue;
                         }
 
-                        // A CSV line is valid, if the delimiter occurs more or equal times in every line compared to the first data line. (More because sometimes the delimiter occurs in a data string.)
-                        if (line.Count(x => x == delim) >= delimCount)
+                        // A CSV line is valid, if the delimiter occurs equal times in every line compared to the first data line
+                        // and if every line contains no or an even count of quotation marks.
+                        if (Regex.Count(line, delim + CsvDelimSepRegexStr) == delimCount && int.IsEvenInteger(line.Count(x => x == '"')))
                         {
-                            csv.Add(line.Split(delim));
+                            string[] dataCells = Regex.Split(line, delim + CsvDelimSepRegexStr, RegexOptions.IgnoreCase);
+                            csv.Add(dataCells.Select(x => ReplaceQuotationMarksInCsvData(x)));
                         }
                         else
                         {
@@ -205,7 +215,7 @@ namespace AdvancedPaste.Helpers
                     // We get the count from the second line, as the first one only contains the character definition and not a CSV data line.
                     char delimChar = matchChar.Groups[1].Value.Trim()[0];
                     delimiter = delimChar;
-                    delimiterCount = csvLines[1].Count(x => x == delimChar);
+                    delimiterCount = Regex.Count(csvLines[1], delimChar + CsvDelimSepRegexStr, RegexOptions.IgnoreCase);
                 }
             }
 
@@ -214,19 +224,19 @@ namespace AdvancedPaste.Helpers
                 // Try to select the correct delimiter based on the first two CSV lines from a list of predefined delimiters.
                 foreach (char c in CsvDelimArry)
                 {
-                    int cntFirstLine = csvLines[0].Count(x => x == c);
+                    int cntFirstLine = Regex.Count(csvLines[0], c + CsvDelimSepRegexStr, RegexOptions.IgnoreCase);
                     int cntNextLine = 0; // Default to 0 that the 'second line' check is always true.
 
                     // Additional count if we have more than one line
                     if (csvLines.Length >= 2)
                     {
-                        cntNextLine = csvLines[1].Count(x => x == c);
+                        cntNextLine = Regex.Count(csvLines[1], c + CsvDelimSepRegexStr, RegexOptions.IgnoreCase);
                     }
 
                     // The delimiter is found if the count is bigger as from the last selected delimiter
-                    // and if the next csv line does not exist or has the same number or more occurrences of the delimiter.
+                    // and if the next csv line does not exist or has the same number of occurrences of the delimiter.
                     // (We check the next line to prevent false positives.)
-                    if (cntFirstLine > delimiterCount && (cntNextLine == 0 || cntNextLine >= cntFirstLine))
+                    if (cntFirstLine > delimiterCount && (cntNextLine == 0 || cntNextLine == cntFirstLine))
                     {
                         delimiter = c;
                         delimiterCount = cntFirstLine;
@@ -239,6 +249,27 @@ namespace AdvancedPaste.Helpers
             {
                 throw new FormatException("Invalid CSV format: Failed to detect the delimiter.");
             }
+        }
+
+        /// <summary>
+        /// Remove and replace quotation marks used as control sequences. (Enclosing quotation marks and escaping quotation marks.)
+        /// </summary>
+        /// <param name="str">CSV cell data to manipulate.</param>
+        /// <returns>Manipulated string.</returns>
+        private static string ReplaceQuotationMarksInCsvData(string str)
+        {
+            // Remove first and last single quotation mark (enclosing quotation marks) and remove quotation marks of an empty data set ("").
+            str = CsvRemoveSingleQuotationMarksRegex.Replace(str, string.Empty);
+
+            // Remove first quotation mark if followed by pairs of quotation marks
+            // and remove last quotation mark if precede by pairs of quotation marks.
+            // (Removes enclosing quotation marks around the cell data for data like /"""abc"""/.)
+            str = CsvRemoveStartAndEndQuotationMarksRegex.Replace(str, string.Empty);
+
+            // Replace pairs of two quotation marks with a single quotation mark. (Escaped quotation marks.)
+            str = CsvReplaceDoubleQuotationMarksRegex.Replace(str, "\"");
+
+            return str;
         }
     }
 }

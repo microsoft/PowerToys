@@ -6,11 +6,11 @@ namespace Awake.Core.Models
 {
     internal enum TrayCommands : uint
     {
-        TC_DISPLAY_SETTING = Native.Constants.WM_USER + 1,
-        TC_MODE_PASSIVE = Native.Constants.WM_USER + 2,
-        TC_MODE_INDEFINITE = Native.Constants.WM_USER + 3,
-        TC_MODE_EXPIRABLE = Native.Constants.WM_USER + 4,
-        TC_EXIT = Native.Constants.WM_USER + 100,
-        TC_TIME = Native.Constants.WM_USER + 101,
+        TC_DISPLAY_SETTING = Native.Constants.WM_USER + 0x2,
+        TC_MODE_PASSIVE = Native.Constants.WM_USER + 0x3,
+        TC_MODE_INDEFINITE = Native.Constants.WM_USER + 0x4,
+        TC_MODE_EXPIRABLE = Native.Constants.WM_USER + 0x5,
+        TC_EXIT = Native.Constants.WM_USER + 0x64,
+        TC_TIME = Native.Constants.WM_USER + 0x65,
     }
 }
