@@ -169,6 +169,17 @@ namespace Awake
             // Start the monitor thread that will be used to track the current state.
             Manager.StartMonitor();
 
+            TrayHelper.InitializeTray(Core.Constants.FullAppName, new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/awake.ico")), _exitSignal);
+
+            var eventHandle = new EventWaitHandle(false, EventResetMode.ManualReset, interop.Constants.AwakeExitEvent());
+            new Thread(() =>
+            {
+                if (WaitHandle.WaitAny([_exitSignal, eventHandle]) == 1)
+                {
+                    Exit(Resources.AWAKE_EXIT_SIGNAL_MESSAGE, 0, _exitSignal, true);
+                }
+            }).Start();
+
             if (usePtConfig)
             {
                 // Configuration file is used, therefore we disregard any other command-line parameter
@@ -177,17 +188,6 @@ namespace Awake
 
                 try
                 {
-                    var eventHandle = new EventWaitHandle(false, EventResetMode.ManualReset, interop.Constants.AwakeExitEvent());
-                    new Thread(() =>
-                    {
-                        if (WaitHandle.WaitAny([_exitSignal, eventHandle]) == 1)
-                        {
-                            Exit(Resources.AWAKE_EXIT_SIGNAL_MESSAGE, 0, _exitSignal, true);
-                        }
-                    }).Start();
-
-                    TrayHelper.InitializeTray(Core.Constants.FullAppName, new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/awake.ico")), _exitSignal);
-
                     string? settingsPath = _settingsUtils!.GetSettingsFilePath(Core.Constants.AppName);
 
                     Logger.LogInfo($"Reading configuration file: {settingsPath}");
@@ -217,7 +217,7 @@ namespace Awake
                     {
                         DateTimeOffset expirationDateTime = DateTimeOffset.Parse(expireAt, CultureInfo.CurrentCulture);
                         Logger.LogInfo($"Operating in thread ID {Environment.CurrentManagedThreadId}.");
-                        Manager.SetExpirableKeepAwake(expirationDateTime, displayOn);
+                        Manager.SetExpirableKeepAwake(expirationDateTime, displayOn, _exitSignal);
                     }
                     catch (Exception ex)
                     {
@@ -235,7 +235,7 @@ namespace Awake
                     }
                     else
                     {
-                        Manager.SetTimedKeepAwake(timeLimit, displayOn);
+                        Manager.SetTimedKeepAwake(timeLimit, displayOn, _exitSignal);
                     }
                 }
             }

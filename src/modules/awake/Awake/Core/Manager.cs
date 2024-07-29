@@ -159,7 +159,7 @@ namespace Awake.Core
             }
         }
 
-        internal static void SetExpirableKeepAwake(DateTimeOffset expireAt, bool keepDisplayOn = true)
+        internal static void SetExpirableKeepAwake(DateTimeOffset expireAt, bool keepDisplayOn = true, ManualResetEvent? exitSignal = null)
         {
             Logger.LogInfo($"Expirable keep-awake. Expected expiration date/time: {expireAt} with display on setting set to {keepDisplayOn}.");
 
@@ -179,7 +179,15 @@ namespace Awake.Core
                 {
                     Logger.LogInfo($"Completed expirable keep-awake.");
                     CancelExistingThread();
-                    SetPassiveKeepAwake();
+
+                    if (IsUsingPowerToysConfig)
+                    {
+                        SetPassiveKeepAwake();
+                    }
+                    else
+                    {
+                        exitSignal?.Set();
+                    }
                 },
                 _tokenSource.Token);
             }
@@ -213,7 +221,7 @@ namespace Awake.Core
             }
         }
 
-        internal static void SetTimedKeepAwake(uint seconds, bool keepDisplayOn = true)
+        internal static void SetTimedKeepAwake(uint seconds, bool keepDisplayOn = true, ManualResetEvent? exitSignal = null)
         {
             Logger.LogInfo($"Timed keep-awake. Expected runtime: {seconds} seconds with display on setting set to {keepDisplayOn}.");
 
@@ -231,7 +239,17 @@ namespace Awake.Core
             {
                 Logger.LogInfo($"Completed timed thread.");
                 CancelExistingThread();
-                SetPassiveKeepAwake();
+
+                if (IsUsingPowerToysConfig)
+                {
+                    // If we're using PowerToys settings, we need to make sure that
+                    // we just switch over the Passive Keep-Awake.
+                    SetPassiveKeepAwake();
+                }
+                else
+                {
+                    exitSignal?.Set();
+                }
             },
             _tokenSource.Token);
 

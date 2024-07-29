@@ -53,32 +53,42 @@ namespace Awake.Core
 
         private static void ShowContextMenu(IntPtr hWnd)
         {
-            Bridge.SetForegroundWindow(hWnd);
-
-            // Get the handle to the context menu associated with the tray icon
-            IntPtr hMenu = TrayMenu;
-
-            // Get the current cursor position
-            Bridge.GetCursorPos(out Models.Point cursorPos);
-
-            Bridge.ScreenToClient(hWnd, ref cursorPos);
-
-            MenuInfo menuInfo = new()
+            if (TrayMenu != IntPtr.Zero)
             {
-                CbSize = (uint)Marshal.SizeOf(typeof(MenuInfo)),
-                FMask = Native.Constants.MIM_STYLE,
-                DwStyle = Native.Constants.MNS_AUTO_DISMISS,
-            };
-            Bridge.SetMenuInfo(hMenu, ref menuInfo);
+                Bridge.SetForegroundWindow(hWnd);
 
-            // Display the context menu at the cursor position
-            Bridge.TrackPopupMenuEx(
-                  hMenu,
-                  Native.Constants.TPM_LEFT_ALIGN | Native.Constants.TPM_BOTTOMALIGN | Native.Constants.TPM_LEFT_BUTTON,
-                  cursorPos.X,
-                  cursorPos.Y,
-                  hWnd,
-                  IntPtr.Zero);
+                // Get the handle to the context menu associated with the tray icon
+                IntPtr hMenu = TrayMenu;
+
+                // Get the current cursor position
+                Bridge.GetCursorPos(out Models.Point cursorPos);
+
+                Bridge.ScreenToClient(hWnd, ref cursorPos);
+
+                MenuInfo menuInfo = new()
+                {
+                    CbSize = (uint)Marshal.SizeOf(typeof(MenuInfo)),
+                    FMask = Native.Constants.MIM_STYLE,
+                    DwStyle = Native.Constants.MNS_AUTO_DISMISS,
+                };
+                Bridge.SetMenuInfo(hMenu, ref menuInfo);
+
+                // Display the context menu at the cursor position
+                Bridge.TrackPopupMenuEx(
+                      hMenu,
+                      Native.Constants.TPM_LEFT_ALIGN | Native.Constants.TPM_BOTTOMALIGN | Native.Constants.TPM_LEFT_BUTTON,
+                      cursorPos.X,
+                      cursorPos.Y,
+                      hWnd,
+                      IntPtr.Zero);
+            }
+            else
+            {
+                // Tray menu was not initialized. Log the issue.
+                // This is normal when operating in "standalone mode" - that is, detached
+                // from the PowerToys configuration file.
+                Logger.LogError("Tried to create a context menu while the TrayMenu object is a null pointer. Normal when used in standalone mode.");
+            }
         }
 
         private static void CreateHiddenWindow(Icon icon, string text)
@@ -219,7 +229,7 @@ namespace Awake.Core
                     {
                         case (uint)TrayCommands.TC_EXIT:
                             {
-                                Manager.CompleteExit(0, _exitSignal, true);
+                                _exitSignal?.Set();
                                 break;
                             }
 
