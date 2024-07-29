@@ -2,7 +2,9 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureNuGetPackageBuildImports"
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
-  <Import Project="$(SolutionDir)src\Version.props" />
+  <!-- Non-uniformed solution here, we need to move installer into src dir -->
+  <Import Project="$(SolutionDir)\..\src\Version.props" />
+
   <PropertyGroup Condition="'$(Platform)' == 'x64'">
     <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\Assets\Monaco\monacoSRC</DefineConstants>
     <!-- THIS IS AN INNER LOOP OPTIMIZATION
