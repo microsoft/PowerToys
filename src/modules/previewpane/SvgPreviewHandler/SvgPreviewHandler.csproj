@@ -1,4 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(SolutionDir)src\Version.props" />
+  
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWindowsForms>true</UseWindowsForms>
@@ -32,8 +34,6 @@
     <RootNamespace>Microsoft.PowerToys.PreviewHandler.Svg</RootNamespace>
     <AssemblyName>PowerToys.SvgPreviewHandler</AssemblyName>
   </PropertyGroup>
-
-  <Import Project="..\..\..\Version.props" />
 
   <ItemGroup>
     <Compile Update="Properties\Resource.Designer.cs">

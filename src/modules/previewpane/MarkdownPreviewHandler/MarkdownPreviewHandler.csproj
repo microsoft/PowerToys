@@ -1,4 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(SolutionDir)src\Version.props" />
+  
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWindowsForms>true</UseWindowsForms>
@@ -31,8 +33,6 @@
     <RootNamespace>Microsoft.PowerToys.PreviewHandler.Markdown</RootNamespace>
     <AssemblyName>PowerToys.MarkdownPreviewHandler</AssemblyName>
   </PropertyGroup>
-
-  <Import Project="..\..\..\Version.props" />
 
   <ItemGroup>
     <Compile Update="MarkdownPreviewHandlerControl.cs" />

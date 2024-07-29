@@ -1,13 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\..\Version.props" />
-
+  <Import Project="$(SolutionDir)src\Version.props" />
+  
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
     <ProjectGuid>{5043CECE-E6A7-4867-9CBE-02D27D83747A}</ProjectGuid>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.WindowsSettings</RootNamespace>
     <AssemblyName>Microsoft.PowerToys.Run.Plugin.WindowsSettings</AssemblyName>
-    <Version>$(Version).0</Version>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <UseWindowsForms>true</UseWindowsForms>

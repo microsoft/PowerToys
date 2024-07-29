@@ -1,4 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(SolutionDir)src\Version.props" />
+  
   <PropertyGroup>
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyTitle>PowerToys.PreviewHandlerCommon</AssemblyTitle>
@@ -17,8 +19,6 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <AssemblyName>PowerToys.PreviewHandlerCommon</AssemblyName>
   </PropertyGroup>
-
-  <Import Project="..\..\..\Version.props" />
 
   <ItemGroup>
     <Compile Update="examplehandler\CustomControlTest.cs" />

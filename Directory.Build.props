@@ -6,6 +6,8 @@
     <AssemblyCopyright>Copyright (C) Microsoft Corporation. All rights reserved.</AssemblyCopyright>
     <AssemblyProduct>PowerToys</AssemblyProduct>
     <Company>Microsoft Corporation</Company>
+    <Authors>Microsoft Corporation</Authors>
+    <Product>PowerToys</Product>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Platforms>x64;ARM64</Platforms>
     <PackageTags>PowerToys</PackageTags>

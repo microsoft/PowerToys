@@ -1,4 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(SolutionDir)src\Version.props" />
+
   <PropertyGroup>
     <AssemblyTitle>UnitTests-PdfPreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys UnitTests-PdfPreviewHandler</AssemblyDescription>
@@ -17,8 +19,6 @@
     <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
     <IsCodedUITest>False</IsCodedUITest>
   </PropertyGroup>
-
-  <Import Project="..\..\..\Version.props" />
 
   <ItemGroup>
     <None Remove="HelperFiles\dummy-password.pdf" />

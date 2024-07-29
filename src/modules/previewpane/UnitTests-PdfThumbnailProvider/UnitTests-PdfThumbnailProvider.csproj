@@ -1,4 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(SolutionDir)src\Version.props" />
+
   <PropertyGroup>
     <AssemblyTitle>UnitTests-PdfThumbnailProvider</AssemblyTitle>
     <AssemblyDescription>PowerToys UnitTests-PdfThumbnailProvider</AssemblyDescription>
@@ -18,8 +20,6 @@
     <IsCodedUITest>False</IsCodedUITest>
     <TestProjectType>UnitTest</TestProjectType>
   </PropertyGroup>
-
-  <Import Project="..\..\..\Version.props" />
 
   <ItemGroup>
     <None Remove="HelperFiles\sample.pdf" />

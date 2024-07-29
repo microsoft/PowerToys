@@ -1,9 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\Version.props" />
+  <Import Project="$(SolutionDir)src\Version.props" />
   <PropertyGroup>
     <AssemblyTitle>PowerToys.MouseJumpUI</AssemblyTitle>
     <AssemblyDescription>PowerToys MouseJumpUI</AssemblyDescription>
-    <Version>$(Version).0</Version>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>

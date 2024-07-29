@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\Version.props" />
+  <Import Project="$(SolutionDir)src\Version.props" />
 
   <PropertyGroup>
     <AssemblyTitle>PowerToys.PowerOCR</AssemblyTitle>

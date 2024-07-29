@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(SolutionDir)src\Version.props" />
   <PropertyGroup>
     <AssemblyTitle>UnitTests-SvgPreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys UnitTests-SvgPreviewHandler</AssemblyDescription>
@@ -18,8 +19,6 @@
     <IsCodedUITest>False</IsCodedUITest>
     <TestProjectType>UnitTest</TestProjectType>
   </PropertyGroup>
-
-  <Import Project="..\..\..\Version.props" />
 
   <ItemGroup>
     <None Remove="HelperFiles\file1.svg" />

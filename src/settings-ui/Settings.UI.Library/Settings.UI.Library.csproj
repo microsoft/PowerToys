@@ -1,14 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <Import Project="..\..\Version.props" />
+  <Import Project="$(SolutionDir)src\Version.props" />
 
     <PropertyGroup>
         <TargetFrameworks>net8.0-windows</TargetFrameworks>
         <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
         <TargetFramework>net8.0-windows</TargetFramework>
-        <Version>$(Version).0</Version>
-        <Authors>Microsoft Corporation</Authors>
-        <Product>PowerToys</Product>
         <Description>PowerToys Settings UI Library</Description>
         <AssemblyName>PowerToys.Settings.UI.Lib</AssemblyName>
         <SelfContained>true</SelfContained>
