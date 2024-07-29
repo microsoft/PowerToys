@@ -172,7 +172,7 @@ namespace Awake.Core
                 Logger.LogInfo($"Starting expirable log for {expireAt}");
                 _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
-                TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_EXPIRATION}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/expirable.ico")), TrayIconAction.Update);
+                TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_EXPIRATION} - {expireAt}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/expirable.ico")), TrayIconAction.Update);
 
                 Observable.Timer(expireAt - DateTimeOffset.Now).Subscribe(
                 _ =>
@@ -234,24 +234,34 @@ namespace Awake.Core
 
             TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/timed.ico")), TrayIconAction.Update);
 
-            Observable.Timer(TimeSpan.FromSeconds(seconds)).Subscribe(
-            _ =>
-            {
-                Logger.LogInfo($"Completed timed thread.");
-                CancelExistingThread();
+            var intervalObservable = Observable.Interval(TimeSpan.FromSeconds(1));
+            var timerObservable = Observable.Timer(TimeSpan.FromSeconds(seconds));
 
-                if (IsUsingPowerToysConfig)
+            var combinedObservable = Observable.CombineLatest(intervalObservable, timerObservable.StartWith(0), (elapsedSeconds, _) => elapsedSeconds + 1);
+
+            combinedObservable.Subscribe(
+                elapsedSeconds =>
                 {
-                    // If we're using PowerToys settings, we need to make sure that
-                    // we just switch over the Passive Keep-Awake.
-                    SetPassiveKeepAwake();
-                }
-                else
+                    var timeRemaining = seconds - (uint)elapsedSeconds;
+                    TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}]\n{TimeSpan.FromSeconds(timeRemaining).ToHumanReadableString()}", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/timed.ico")), TrayIconAction.Update);
+                },
+                () =>
                 {
-                    CompleteExit(Environment.ExitCode);
-                }
-            },
-            _tokenSource.Token);
+                    Console.WriteLine("Completed timed thread.");
+                    CancelExistingThread();
+
+                    if (IsUsingPowerToysConfig)
+                    {
+                        // If we're using PowerToys settings, we need to make sure that
+                        // we just switch over the Passive Keep-Awake.
+                        SetPassiveKeepAwake();
+                    }
+                    else
+                    {
+                        CompleteExit(Environment.ExitCode);
+                    }
+                },
+                _tokenSource.Token);
 
             if (IsUsingPowerToysConfig)
             {
