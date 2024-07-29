@@ -28,7 +28,6 @@ namespace Awake.Core
     internal static class TrayHelper
     {
         private static NotifyIconData _notifyIconData;
-        private static ManualResetEvent? _exitSignal;
 
         private static IntPtr _trayMenu;
 
@@ -44,10 +43,8 @@ namespace Awake.Core
             HiddenWindowHandle = IntPtr.Zero;
         }
 
-        public static void InitializeTray(string text, Icon icon, ManualResetEvent? exitSignal)
+        public static void InitializeTray(string text, Icon icon)
         {
-            _exitSignal = exitSignal;
-
             CreateHiddenWindow(icon, text);
         }
 
@@ -229,7 +226,7 @@ namespace Awake.Core
                     {
                         case (uint)TrayCommands.TC_EXIT:
                             {
-                                _exitSignal?.Set();
+                                Manager.CompleteExit(Environment.ExitCode);
                                 break;
                             }
 

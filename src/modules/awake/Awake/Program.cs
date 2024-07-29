@@ -26,8 +26,6 @@ namespace Awake
 {
     internal sealed class Program
     {
-        private static readonly ManualResetEvent _exitSignal = new(false);
-
         private static Mutex? _mutex;
         private static FileSystemWatcher? _watcher;
         private static SettingsUtils? _settingsUtils;
@@ -56,13 +54,13 @@ namespace Awake
 
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAwakeEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
-                Exit("PowerToys.Awake tried to start with a group policy setting that disables the tool. Please contact your system administrator.", 1, _exitSignal, true);
+                Exit("PowerToys.Awake tried to start with a group policy setting that disables the tool. Please contact your system administrator.", 1);
                 return 0;
             }
 
             if (!instantiated)
             {
-                Exit(Core.Constants.AppName + " is already running! Exiting the application.", 1, _exitSignal, true);
+                Exit(Core.Constants.AppName + " is already running! Exiting the application.", 1);
             }
 
             Logger.LogInfo($"Launching {Core.Constants.AppName}...");
@@ -132,15 +130,14 @@ namespace Awake
         private static bool ExitHandler(ControlType ctrlType)
         {
             Logger.LogInfo($"Exited through handler with control type: {ctrlType}");
-            Exit(Resources.AWAKE_EXIT_MESSAGE, Environment.ExitCode, _exitSignal);
+            Exit(Resources.AWAKE_EXIT_MESSAGE, Environment.ExitCode);
             return false;
         }
 
-        private static void Exit(string message, int exitCode, ManualResetEvent exitSignal, bool force = false)
+        private static void Exit(string message, int exitCode)
         {
             Logger.LogInfo(message);
-
-            Manager.CompleteExit(exitCode, exitSignal, force);
+            Manager.CompleteExit(exitCode);
         }
 
         private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid, string expireAt)
@@ -169,15 +166,13 @@ namespace Awake
             // Start the monitor thread that will be used to track the current state.
             Manager.StartMonitor();
 
-            TrayHelper.InitializeTray(Core.Constants.FullAppName, new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/awake.ico")), _exitSignal);
+            TrayHelper.InitializeTray(Core.Constants.FullAppName, new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/awake.ico")));
 
             var eventHandle = new EventWaitHandle(false, EventResetMode.ManualReset, interop.Constants.AwakeExitEvent());
             new Thread(() =>
             {
-                if (WaitHandle.WaitAny([_exitSignal, eventHandle]) == 1)
-                {
-                    Exit(Resources.AWAKE_EXIT_SIGNAL_MESSAGE, 0, _exitSignal, true);
-                }
+                WaitHandle.WaitAny([eventHandle]);
+                Exit(Resources.AWAKE_EXIT_SIGNAL_MESSAGE, 0);
             }).Start();
 
             if (usePtConfig)
@@ -217,7 +212,7 @@ namespace Awake
                     {
                         DateTimeOffset expirationDateTime = DateTimeOffset.Parse(expireAt, CultureInfo.CurrentCulture);
                         Logger.LogInfo($"Operating in thread ID {Environment.CurrentManagedThreadId}.");
-                        Manager.SetExpirableKeepAwake(expirationDateTime, displayOn, _exitSignal);
+                        Manager.SetExpirableKeepAwake(expirationDateTime, displayOn);
                     }
                     catch (Exception ex)
                     {
@@ -235,7 +230,7 @@ namespace Awake
                     }
                     else
                     {
-                        Manager.SetTimedKeepAwake(timeLimit, displayOn, _exitSignal);
+                        Manager.SetTimedKeepAwake(timeLimit, displayOn);
                     }
                 }
             }
@@ -245,11 +240,9 @@ namespace Awake
                 RunnerHelper.WaitForPowerToysRunner(pid, () =>
                 {
                     Logger.LogInfo($"Triggered PID-based exit handler for PID {pid}.");
-                    Exit(Resources.AWAKE_EXIT_BINDING_HOOK_MESSAGE, 0, _exitSignal, true);
+                    Exit(Resources.AWAKE_EXIT_BINDING_HOOK_MESSAGE, 0);
                 });
             }
-
-            _exitSignal.WaitOne();
         }
 
         private static void ScaffoldConfiguration(string settingsPath)

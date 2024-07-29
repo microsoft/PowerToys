@@ -186,7 +186,7 @@ namespace Awake.Core
                     }
                     else
                     {
-                        exitSignal?.Set();
+                        CompleteExit(Environment.ExitCode);
                     }
                 },
                 _tokenSource.Token);
@@ -248,7 +248,7 @@ namespace Awake.Core
                 }
                 else
                 {
-                    exitSignal?.Set();
+                    CompleteExit(Environment.ExitCode);
                 }
             },
             _tokenSource.Token);
@@ -282,9 +282,7 @@ namespace Awake.Core
         /// Performs a clean exit from Awake.
         /// </summary>
         /// <param name="exitCode">Exit code to exit with.</param>
-        /// <param name="exitSignal">Exit signal tracking the state.</param>
-        /// <param name="force">Determines whether to force exit and post a quitting message.</param>
-        internal static void CompleteExit(int exitCode, ManualResetEvent? exitSignal, bool force = false)
+        internal static void CompleteExit(int exitCode)
         {
             SetPassiveKeepAwake(updateSettings: false);
 
@@ -295,22 +293,12 @@ namespace Awake.Core
 
                 // Close the message window that we used for the tray.
                 Bridge.SendMessage(TrayHelper.HiddenWindowHandle, Native.Constants.WM_CLOSE, 0, 0);
-            }
 
-            if (force)
-            {
-                Bridge.PostQuitMessage(exitCode);
-            }
-
-            try
-            {
-                exitSignal?.Set();
                 Bridge.DestroyWindow(TrayHelper.HiddenWindowHandle);
             }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Exit signal error ${ex}");
-            }
+
+            Bridge.PostQuitMessage(exitCode);
+            Environment.Exit(exitCode);
         }
 
         /// <summary>
