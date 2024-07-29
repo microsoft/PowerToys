@@ -48,6 +48,7 @@
                 AutomationProperties.Name="{x:Static p:Resources.Color_History}"
                 ItemsSource="{Binding ColorsHistory}"
                 KeyboardNavigation.DirectionalNavigation="Contained"
+                MouseWheel="HistoryColors_OnMouseWheelScroll"
                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
                 SelectedIndex="{Binding SelectedColorIndex}"
                 SelectionMode="Extended"
