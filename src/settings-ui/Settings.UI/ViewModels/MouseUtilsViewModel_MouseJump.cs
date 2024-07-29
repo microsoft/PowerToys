@@ -21,6 +21,7 @@ using MouseJump.Common.Helpers;
 using MouseJump.Common.Imaging;
 using MouseJump.Common.Models.Drawing;
 using MouseJump.Common.Models.Styles;
+using MouseJumpUI.Common.Models.Settings;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -80,10 +81,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsJumpEnabledGpoConfigured
-        {
-            get => _jumpEnabledStateIsGPOConfigured;
-        }
+        public bool IsJumpEnabledGpoConfigured => _jumpEnabledStateIsGPOConfigured;
 
         public HotkeySettings MouseJumpActivationShortcut
         {
@@ -145,59 +143,71 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                var previewStyle = new PreviewStyle(
-                    canvasSize: new(
-                        width: 640,
-                        height: 480
-                    ),
-                    canvasStyle: new(
-                        marginStyle: new(0),
-                        borderStyle: new(
-                            color: ConfigHelper.DeserializeFromConfigColorString(
-                                this.MouseJumpBorderColor),
-                            all: this.MouseJumpBorderThickness,
-                            depth: this.MouseJumpBorder3dDepth
-                        ),
-                        paddingStyle: new(
-                            all: this.MouseJumpBorderPadding
-                        ),
-                        backgroundStyle: new(
-                            color1: ConfigHelper.DeserializeFromConfigColorString(
-                                this.MouseJumpBackgroundColor1),
-                            color2: ConfigHelper.DeserializeFromConfigColorString(
-                                this.MouseJumpBackgroundColor2)
-                        )
-                    ),
-                    screenStyle: new(
-                        marginStyle: new(
-                            all: this.MouseJumpScreenMargin
-                        ),
-                        borderStyle: new(
-                            color: ConfigHelper.DeserializeFromConfigColorString(
-                                this.MouseJumpBezelColor),
-                            all: this.MouseJumpBezelThickness,
-                            depth: this.MouseJumpBezel3dDepth
-                        ),
-                        paddingStyle: new(0),
-                        backgroundStyle: new(
-                            color1: ConfigHelper.DeserializeFromConfigColorString(
-                                this.MouseJumpScreenColor1),
-                            color2: ConfigHelper.DeserializeFromConfigColorString(
-                                this.MouseJumpScreenColor2)
-                        )
-                    ));
+                // keep these in sync with the layout of MouseJump-Desktop.png
+                var desktopSize = new SizeInfo(
+                    width: 640,
+                    height: 480);
                 var screens = new List<RectangleInfo>()
                 {
-                    // keep in sync with MouseJump-Desktop.png
                     new(412, 111, 177, 110),
                     new(0, 0, 412, 221),
                 };
+
+                var previewType = Enum.TryParse<PreviewType>(this.MouseJumpPreviewType, true, out var previewTypeResult)
+                    ? previewTypeResult
+                    : PreviewType.Bezelled;
+                var previewStyle = previewType switch
+                {
+                    PreviewType.Compact => StyleHelper.CompactPreviewStyle.WithCanvasSize(desktopSize),
+                    PreviewType.Bezelled => StyleHelper.BezelledPreviewStyle.WithCanvasSize(desktopSize),
+                    PreviewType.Custom => new PreviewStyle(
+                        canvasSize: desktopSize,
+                        canvasStyle: new(
+                            marginStyle: new(0),
+                            borderStyle: new(
+                                color: ConfigHelper.DeserializeFromConfigColorString(
+                                    this.MouseJumpBorderColor),
+                                all: this.MouseJumpBorderThickness,
+                                depth: this.MouseJumpBorder3dDepth
+                            ),
+                            paddingStyle: new(
+                                all: this.MouseJumpBorderPadding
+                            ),
+                            backgroundStyle: new(
+                                color1: ConfigHelper.DeserializeFromConfigColorString(
+                                    this.MouseJumpBackgroundColor1),
+                                color2: ConfigHelper.DeserializeFromConfigColorString(
+                                    this.MouseJumpBackgroundColor2)
+                            )
+                        ),
+                        screenStyle: new(
+                            marginStyle: new(
+                                all: this.MouseJumpScreenMargin
+                            ),
+                            borderStyle: new(
+                                color: ConfigHelper.DeserializeFromConfigColorString(
+                                    this.MouseJumpBezelColor),
+                                all: this.MouseJumpBezelThickness,
+                                depth: this.MouseJumpBezel3dDepth
+                            ),
+                            paddingStyle: new(0),
+                            backgroundStyle: new(
+                                color1: ConfigHelper.DeserializeFromConfigColorString(
+                                    this.MouseJumpScreenColor1),
+                                color2: ConfigHelper.DeserializeFromConfigColorString(
+                                    this.MouseJumpScreenColor2)
+                            )
+                        )),
+                    _ => throw new InvalidOperationException(
+                        $"Unhandled {nameof(MouseJumpPreviewType)} '{previewType}'"),
+                };
+
                 var previewLayout = LayoutHelper.GetPreviewLayout(
                     previewStyle: previewStyle,
                     screens: screens,
                     activatedLocation: new(0, 0));
 
-                using var desktopImage = MouseUtilsViewModel.MouseJumpDesktopImage.Value;
+                var desktopImage = MouseUtilsViewModel.MouseJumpDesktopImage.Value;
                 var imageCopyService = new StaticImageRegionCopyService(desktopImage);
                 using var previewImage = DrawingHelper.RenderPreview(
                     previewLayout,
@@ -215,6 +225,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 bitmap.DecodePixelHeight = previewImage.Height;
                 bitmap.SetSource(rnd);
                 return bitmap;
+            }
+        }
+
+        public string MouseJumpPreviewType
+        {
+            get
+            {
+                return MouseJumpSettingsConfig.Properties.PreviewType;
+            }
+
+            set
+            {
+                if (value != MouseJumpSettingsConfig.Properties.PreviewType)
+                {
+                    MouseJumpSettingsConfig.Properties.PreviewType = value;
+                    NotifyMouseJumpPropertyChanged();
+                    NotifyMouseJumpPropertyChanged(nameof(this.MouseJumpPreviewImage));
+                }
             }
         }
 

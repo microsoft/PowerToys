@@ -3982,101 +3982,95 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Maximum width (px)</value>
     <comment>px = pixels</comment>
   </data>
+  <data name="MouseUtils_MouseJump_Appearance.Header" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="MouseUtils_MouseJump_PreviewType.Header" xml:space="preserve">
+    <value>Preview Style</value>
+  </data>
+  <data name="MouseUtils_MouseJump_PreviewType.Description" xml:space="preserve">
+    <value>Select a predefined style, or apply a custom one</value>
+  </data>
   <data name="MouseUtils_MouseJump_BackgroundColor1.Header" xml:space="preserve">
     <value>Background color 1</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BackgroundColor1.Description" xml:space="preserve">
     <value>The start color for the background gradient fill on the preview image</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BackgroundColor2.Header" xml:space="preserve">
     <value>Background color 2</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BackgroundColor2.Description" xml:space="preserve">
     <value>The end color for the background gradient fill on the preview image</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BorderThickness.Header" xml:space="preserve">
     <value>Border thickness</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BorderThickness.Description" xml:space="preserve">
     <value>The thickness (in pixels) of the border that surrounds the preview image</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BorderColor.Header" xml:space="preserve">
     <value>Border color</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BorderColor.Description" xml:space="preserve">
     <value>The color of the border that surrounds the preview image</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_Border3dDepth.Header" xml:space="preserve">
     <value>Border 3D depth</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_Border3dDepth.Description" xml:space="preserve">
     <value>The width (in pixels) of the 3d effect on the border that surrounds the preview image</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BorderPadding.Header" xml:space="preserve">
     <value>Border padding</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BorderPadding.Description" xml:space="preserve">
     <value>The amount of padding to draw between the border that surrounds the main preview image and the screen images</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BezelThickness.Header" xml:space="preserve">
     <value>Bezel thickness</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BezelThickness.Description" xml:space="preserve">
     <value>The thickness (in pixels) of the border that surrounds the individual screen images</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BezelColor.Header" xml:space="preserve">
     <value>Bezel color</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_BezelColor.Description" xml:space="preserve">
     <value>The color of the border that surrounds the individual screen images</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_Bezel3dDepth.Header" xml:space="preserve">
     <value>Bezel 3D depth</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_Bezel3dDepth.Description" xml:space="preserve">
     <value>The width (in pixels) of the 3d effect on the border that surrounds individual screen images</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_ScreenMargin.Header" xml:space="preserve">
     <value>Screen spacing</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_ScreenMargin.Description" xml:space="preserve">
     <value>The width (in pixels) of the margin drawn between individual screen images</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_ScreenColor1.Header" xml:space="preserve">
     <value>Screen color 1</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_ScreenColor1.Description" xml:space="preserve">
     <value>The start color for the background gradient fill on individual screen image</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_ScreenColor2.Header" xml:space="preserve">
     <value>Screen color 2</value>
-    <comment></comment>
   </data>
   <data name="MouseUtils_MouseJump_ScreenColor2.Description" xml:space="preserve">
     <value>The end color for the background gradient fill on individual screen image</value>
-    <comment></comment>
+  </data>
+  <data name="MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_Title" xml:space="preserve">
+    <value>Copy to Custom preview style</value>
+  </data>
+  <data name="MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_Text" xml:space="preserve">
+    <value>This will replace the current settings in the Custom preview style.</value>
+  </data>
+  <data name="MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_PrimaryButtonText" xml:space="preserve">
+    <value>Copy</value>
   </data>
   <data name="Hosts_Toggle_LoopbackDuplicates.Description" xml:space="preserve">
     <value>127.0.0.1, ::1, ...</value>

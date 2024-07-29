@@ -26,6 +26,17 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             set;
         }
 
+        /// <summary>
+        /// Gets or sets the preview type.
+        /// Allowed values are "compact", "bezelled", "custom"
+        /// </summary>
+        [JsonPropertyName("preview_type")]
+        public string PreviewType
+        {
+            get;
+            set;
+        }
+
         [JsonPropertyName("background_color_1")]
         public string BackgroundColor1
         {

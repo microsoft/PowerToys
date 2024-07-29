@@ -11,6 +11,16 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <converters:MouseJumpPreviewTypeConverter x:Key="MouseJumpPreviewTypeConverter" />
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.Segmented/Segmented/Segmented.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
     <controls:SettingsGroup x:Uid="MouseUtils_MouseJump">
 
         <tkcontrols:SettingsCard
@@ -111,90 +121,132 @@
         </tkcontrols:SettingsCard>
 
         <tkcontrols:SettingsExpander
-            x:Uid="Appearance_Behavior"
+            x:Uid="MouseUtils_MouseJump_Appearance"
             HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
             IsEnabled="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=OneWay}"
             IsExpanded="False">
             <tkcontrols:SettingsExpander.Items>
                 <Image Source="{x:Bind Path=ViewModel.MouseJumpPreviewImage, Mode=OneWay}" />
-                <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_BackgroundColor1">
-                    <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseJumpBackgroundColor1, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
-                <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_BackgroundColor2">
-                    <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseJumpBackgroundColor2, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
-                <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_BorderThickness">
-                    <NumberBox
-                        MinWidth="{StaticResource SettingActionControlMinWidth}"
-                        LargeChange="1"
-                        Maximum="25"
-                        Minimum="0"
-                        SmallChange="1"
-                        SpinButtonPlacementMode="Compact"
-                        Value="{x:Bind ViewModel.MouseJumpBorderThickness, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
-                <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_BorderColor">
-                    <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseJumpBorderColor, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
-                <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_Border3dDepth">
-                    <NumberBox
-                        MinWidth="{StaticResource SettingActionControlMinWidth}"
-                        LargeChange="1"
-                        Maximum="25"
-                        Minimum="0"
-                        SmallChange="1"
-                        SpinButtonPlacementMode="Compact"
-                        Value="{x:Bind ViewModel.MouseJumpBorder3dDepth, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
-                <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_BorderPadding">
-                    <NumberBox
-                        MinWidth="{StaticResource SettingActionControlMinWidth}"
-                        LargeChange="1"
-                        Maximum="25"
-                        Minimum="0"
-                        SmallChange="1"
-                        SpinButtonPlacementMode="Compact"
-                        Value="{x:Bind ViewModel.MouseJumpBorderPadding, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
-                <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_BezelThickness">
-                    <NumberBox
-                        MinWidth="{StaticResource SettingActionControlMinWidth}"
-                        LargeChange="1"
-                        Maximum="25"
-                        Minimum="0"
-                        SmallChange="1"
-                        SpinButtonPlacementMode="Compact"
-                        Value="{x:Bind ViewModel.MouseJumpBezelThickness, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
-                <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_BezelColor">
-                    <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseJumpBezelColor, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
-                <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_Bezel3dDepth">
-                    <NumberBox
-                        MinWidth="{StaticResource SettingActionControlMinWidth}"
-                        LargeChange="1"
-                        Maximum="25"
-                        Minimum="0"
-                        SmallChange="1"
-                        SpinButtonPlacementMode="Compact"
-                        Value="{x:Bind ViewModel.MouseJumpBezel3dDepth, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
-                <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_ScreenMargin">
-                    <NumberBox
-                        MinWidth="{StaticResource SettingActionControlMinWidth}"
-                        LargeChange="1"
-                        Maximum="25"
-                        Minimum="0"
-                        SmallChange="1"
-                        SpinButtonPlacementMode="Compact"
-                        Value="{x:Bind ViewModel.MouseJumpScreenMargin, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
-                <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_ScreenColor1">
-                    <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseJumpScreenColor1, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
-                <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_ScreenColor2">
-                    <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseJumpScreenColor2, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
+                <StackPanel>
+                    <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_PreviewType">
+                        <StackPanel Orientation="Horizontal" >
+                            <tkcontrols:Segmented
+                                x:Name="PreviewTypeSetting"
+                                SelectedIndex="{x:Bind ViewModel.MouseJumpPreviewType, Mode=TwoWay, Converter={StaticResource MouseJumpPreviewTypeConverter}}"
+                                SelectionMode="Single"
+                                SelectionChanged="PreviewTypeSetting_SelectionChanged"
+                                Style="{StaticResource ButtonSegmentedStyle}">
+                                <tkcontrols:SegmentedItem>Compact</tkcontrols:SegmentedItem>
+                                <tkcontrols:SegmentedItem>Bezelled</tkcontrols:SegmentedItem>
+                                <tkcontrols:SegmentedItem>Custom</tkcontrols:SegmentedItem>
+                            </tkcontrols:Segmented>
+                            <Button
+                                x:Name="CopyStyleToCustom"
+                                IsEnabled="{Binding SelectedIndex, ElementName=MouseUtils_MouseJump_PreviewType}"
+                                Content="Copy to Custom preview style"
+                                Margin="20,0,0,0"
+                                Click="CopyStyleToCustom_Click"
+                            />
+                        </StackPanel>
+                    </tkcontrols:SettingsCard>
+                    <StackPanel
+                        x:Name="CustomStyleSettings">
+                        <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_BackgroundColor1">
+                            <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseJumpBackgroundColor1, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_BackgroundColor2">
+                            <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseJumpBackgroundColor2, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_BorderThickness">
+                            <NumberBox
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                LargeChange="1"
+                                Maximum="25"
+                                Minimum="0"
+                                SmallChange="1"
+                                SpinButtonPlacementMode="Compact"
+                                Value="{x:Bind ViewModel.MouseJumpBorderThickness, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_BorderColor">
+                            <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseJumpBorderColor, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_Border3dDepth">
+                            <NumberBox
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                LargeChange="1"
+                                Maximum="25"
+                                Minimum="0"
+                                SmallChange="1"
+                                SpinButtonPlacementMode="Compact"
+                                Value="{x:Bind ViewModel.MouseJumpBorder3dDepth, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_BorderPadding">
+                            <NumberBox
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                LargeChange="1"
+                                Maximum="25"
+                                Minimum="0"
+                                SmallChange="1"
+                                SpinButtonPlacementMode="Compact"
+                                Value="{x:Bind ViewModel.MouseJumpBorderPadding, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_BezelThickness">
+                            <NumberBox
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                LargeChange="1"
+                                Maximum="25"
+                                Minimum="0"
+                                SmallChange="1"
+                                SpinButtonPlacementMode="Compact"
+                                Value="{x:Bind ViewModel.MouseJumpBezelThickness, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_BezelColor">
+                            <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseJumpBezelColor, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_Bezel3dDepth">
+                            <NumberBox
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                LargeChange="1"
+                                Maximum="25"
+                                Minimum="0"
+                                SmallChange="1"
+                                SpinButtonPlacementMode="Compact"
+                                Value="{x:Bind ViewModel.MouseJumpBezel3dDepth, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_ScreenMargin">
+                            <NumberBox
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                LargeChange="1"
+                                Maximum="25"
+                                Minimum="0"
+                                SmallChange="1"
+                                SpinButtonPlacementMode="Compact"
+                                Value="{x:Bind ViewModel.MouseJumpScreenMargin, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_ScreenColor1">
+                            <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseJumpScreenColor1, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_ScreenColor2">
+                            <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseJumpScreenColor2, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+
+                        <ContentDialog
+                            x:Name="MouseUtils_MouseJump_CopyToCustomStyle_MessageBox"
+                            x:Uid="MouseUtils_MouseJump_CopyToCustomStyle_MessageBox"
+                            IsPrimaryButtonEnabled="{Binding IsValid, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            PrimaryButtonStyle="{ThemeResource AccentButtonStyle}">
+                            <StackPanel>
+                                <TextBlock
+                                    x:Uid="MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_Text"
+                                    Margin="12,0,0,0"
+                                    FontWeight="SemiBold"
+                                    Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                    Style="{StaticResource CaptionTextBlockStyle}" />
+                            </StackPanel>
+                        </ContentDialog>
+
+                    </StackPanel>
+                </StackPanel>
             </tkcontrols:SettingsExpander.Items>
         </tkcontrols:SettingsExpander>
 

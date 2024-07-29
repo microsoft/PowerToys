@@ -11,6 +11,17 @@ namespace MouseJump.Common.Helpers;
 
 public static class ConfigHelper
 {
+    public static Color? ToUnnamedColor(Color? value)
+    {
+        if (!value.HasValue)
+        {
+            return null;
+        }
+
+        var color = value.Value;
+        return Color.FromArgb(color.A, color.R, color.G, color.B);
+    }
+
     public static string? SerializeToConfigColorString(Color? value)
     {
         if (!value.HasValue)
