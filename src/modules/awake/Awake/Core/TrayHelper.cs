@@ -326,7 +326,11 @@ namespace Awake.Core
             }
 
             InsertMenuItem(0, TrayCommands.TC_DISPLAY_SETTING, Resources.AWAKE_KEEP_SCREEN_ON, keepDisplayOn, mode == AwakeMode.PASSIVE);
-            InsertSeparator(1);
+
+            if (!startedFromPowerToys)
+            {
+                InsertSeparator(1);
+            }
         }
 
         private static void InsertMenuItem(int position, TrayCommands command, string text, bool checkedState = false, bool disabled = false)
