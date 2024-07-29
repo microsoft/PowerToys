@@ -246,7 +246,7 @@ steps:
   inputs:
     testResultsFormat: VSTest
     testResultsFiles: '**/*.trx'
-  condition: always()
+  condition: ne(variables['BuildPlatform'],'arm64')
 
 # Native dlls
 - task: VSTest@2
