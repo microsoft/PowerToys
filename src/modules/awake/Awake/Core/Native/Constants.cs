@@ -41,12 +41,12 @@ namespace Awake.Core.Native
         internal const int NIM_MODIFY = 0x00000001;
 
         // Track Popup Menu Flags
-        internal const uint TPM_LEFTALIGN = 0x0000;
+        internal const uint TPM_LEFT_ALIGN = 0x0000;
         internal const uint TPM_BOTTOMALIGN = 0x0020;
-        internal const uint TPM_LEFTBUTTON = 0x0000;
+        internal const uint TPM_LEFT_BUTTON = 0x0000;
 
         // Menu Item Info Flags
-        internal const uint MNS_AUTODISMISS = 0x10000000;
+        internal const uint MNS_AUTO_DISMISS = 0x10000000;
         internal const uint MIM_STYLE = 0x00000010;
     }
 }

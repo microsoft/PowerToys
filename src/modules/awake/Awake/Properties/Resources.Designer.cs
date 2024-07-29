@@ -90,9 +90,9 @@ namespace Awake.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Determines the end date and time when Awake will back off and let the system manage the current sleep and display state..
         /// </summary>
-        internal static string AWAKE_CMD_HELP_EXPIREAT_OPTION {
+        internal static string AWAKE_CMD_HELP_EXPIRE_AT_OPTION {
             get {
-                return ResourceManager.GetString("AWAKE_CMD_HELP_EXPIREAT_OPTION", resourceCulture);
+                return ResourceManager.GetString("AWAKE_CMD_HELP_EXPIRE_AT_OPTION", resourceCulture);
             }
         }
         
@@ -126,9 +126,9 @@ namespace Awake.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Terminating from process binding hook..
         /// </summary>
-        internal static string AWAKE_EXIT_BINDINGHOOK_MESSAGE {
+        internal static string AWAKE_EXIT_BINDING_HOOK_MESSAGE {
             get {
-                return ResourceManager.GetString("AWAKE_EXIT_BINDINGHOOK_MESSAGE", resourceCulture);
+                return ResourceManager.GetString("AWAKE_EXIT_BINDING_HOOK_MESSAGE", resourceCulture);
             }
         }
         

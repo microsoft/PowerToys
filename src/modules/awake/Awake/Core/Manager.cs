@@ -135,7 +135,7 @@ namespace Awake.Core
 
             _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
-            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_INDEFINITE}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/StateIcons/indefinite.ico")), TrayIconAction.Update);
+            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_INDEFINITE}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/indefinite.ico")), TrayIconAction.Update);
 
             if (IsUsingPowerToysConfig)
             {
@@ -172,7 +172,7 @@ namespace Awake.Core
                 Logger.LogInfo($"Starting expirable log for {expireAt}");
                 _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
-                TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_EXPIRATION}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/StateIcons/expirable.ico")), TrayIconAction.Update);
+                TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_EXPIRATION}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/expirable.ico")), TrayIconAction.Update);
 
                 Observable.Timer(expireAt - DateTimeOffset.Now).Subscribe(
                 _ =>
@@ -224,7 +224,7 @@ namespace Awake.Core
             Logger.LogInfo($"Timed keep awake started for {seconds} seconds.");
             _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
-            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/StateIcons/timed.ico")), TrayIconAction.Update);
+            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/timed.ico")), TrayIconAction.Update);
 
             Observable.Timer(TimeSpan.FromSeconds(seconds)).Subscribe(
             _ =>
@@ -350,7 +350,7 @@ namespace Awake.Core
 
             CancelExistingThread();
 
-            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_OFF}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/StateIcons/disabled.ico")), TrayIconAction.Update);
+            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_OFF}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/disabled.ico")), TrayIconAction.Update);
 
             if (IsUsingPowerToysConfig && updateSettings)
             {
