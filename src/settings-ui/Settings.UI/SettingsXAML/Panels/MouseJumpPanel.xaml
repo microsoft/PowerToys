@@ -129,12 +129,12 @@
                 <Image Source="{x:Bind Path=ViewModel.MouseJumpPreviewImage, Mode=OneWay}" />
                 <StackPanel>
                     <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_PreviewType">
-                        <StackPanel Orientation="Horizontal" >
+                        <StackPanel Orientation="Horizontal">
                             <tkcontrols:Segmented
                                 x:Name="PreviewTypeSetting"
                                 SelectedIndex="{x:Bind ViewModel.MouseJumpPreviewType, Mode=TwoWay, Converter={StaticResource MouseJumpPreviewTypeConverter}}"
-                                SelectionMode="Single"
                                 SelectionChanged="PreviewTypeSetting_SelectionChanged"
+                                SelectionMode="Single"
                                 Style="{StaticResource ButtonSegmentedStyle}">
                                 <tkcontrols:SegmentedItem>Compact</tkcontrols:SegmentedItem>
                                 <tkcontrols:SegmentedItem>Bezelled</tkcontrols:SegmentedItem>
@@ -142,15 +142,13 @@
                             </tkcontrols:Segmented>
                             <Button
                                 x:Name="CopyStyleToCustom"
-                                IsEnabled="{Binding SelectedIndex, ElementName=MouseUtils_MouseJump_PreviewType}"
-                                Content="Copy to Custom preview style"
                                 Margin="20,0,0,0"
                                 Click="CopyStyleToCustom_Click"
-                            />
+                                Content="Copy to Custom preview style"
+                                IsEnabled="{Binding SelectedIndex, ElementName=MouseUtils_MouseJump_PreviewType}" />
                         </StackPanel>
                     </tkcontrols:SettingsCard>
-                    <StackPanel
-                        x:Name="CustomStyleSettings">
+                    <StackPanel x:Name="CustomStyleSettings">
                         <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_BackgroundColor1">
                             <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseJumpBackgroundColor1, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
