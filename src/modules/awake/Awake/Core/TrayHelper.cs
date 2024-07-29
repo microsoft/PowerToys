@@ -218,32 +218,47 @@ namespace Awake.Core
                     switch (targetCommandIndex)
                     {
                         case (uint)TrayCommands.TC_EXIT:
-                            Manager.CompleteExit(0, _exitSignal, true);
-                            break;
-                        case (uint)TrayCommands.TC_DISPLAY_SETTING:
-                            Manager.SetDisplay();
-                            break;
-                        case (uint)TrayCommands.TC_MODE_INDEFINITE:
-                            Manager.SetIndefiniteKeepAwake();
-                            break;
-                        case (uint)TrayCommands.TC_MODE_PASSIVE:
-                            Manager.SetPassiveKeepAwake();
-                            break;
-                        default:
-                            if (targetCommandIndex >= trayCommandsSize)
                             {
-                                AwakeSettings settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName);
-                                if (settings.Properties.CustomTrayTimes.Count == 0)
-                                {
-                                    settings.Properties.CustomTrayTimes.AddRange(Manager.GetDefaultTrayOptions());
-                                }
-
-                                int index = (int)targetCommandIndex - (int)TrayCommands.TC_TIME;
-                                uint targetTime = (uint)settings.Properties.CustomTrayTimes.ElementAt(index).Value;
-                                Manager.SetTimedKeepAwake(targetTime);
+                                Manager.CompleteExit(0, _exitSignal, true);
+                                break;
                             }
 
-                            break;
+                        case (uint)TrayCommands.TC_DISPLAY_SETTING:
+                            {
+                                Manager.SetDisplay();
+                                break;
+                            }
+
+                        case (uint)TrayCommands.TC_MODE_INDEFINITE:
+                            {
+                                AwakeSettings settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName);
+                                Manager.SetIndefiniteKeepAwake(keepDisplayOn: settings.Properties.KeepDisplayOn);
+                                break;
+                            }
+
+                        case (uint)TrayCommands.TC_MODE_PASSIVE:
+                            {
+                                Manager.SetPassiveKeepAwake();
+                                break;
+                            }
+
+                        default:
+                            {
+                                if (targetCommandIndex >= trayCommandsSize)
+                                {
+                                    AwakeSettings settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName);
+                                    if (settings.Properties.CustomTrayTimes.Count == 0)
+                                    {
+                                        settings.Properties.CustomTrayTimes.AddRange(Manager.GetDefaultTrayOptions());
+                                    }
+
+                                    int index = (int)targetCommandIndex - (int)TrayCommands.TC_TIME;
+                                    uint targetTime = (uint)settings.Properties.CustomTrayTimes.ElementAt(index).Value;
+                                    Manager.SetTimedKeepAwake(targetTime, keepDisplayOn: settings.Properties.KeepDisplayOn);
+                                }
+
+                                break;
+                            }
                     }
 
                     break;
