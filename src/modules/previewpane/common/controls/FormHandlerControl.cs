@@ -73,9 +73,9 @@ namespace Common
         }
 
         /// <inheritdoc />
-        public void SetRect(Rectangle windowBounds)
+        public bool SetRect(Rectangle windowBounds)
         {
-            this.UpdateWindowBounds(parentHwnd, windowBounds);
+            return this.UpdateWindowBounds(parentHwnd, windowBounds);
         }
 
         /// <inheritdoc />
@@ -120,9 +120,9 @@ namespace Common
         /// </summary>
         public bool UpdateWindowBounds(IntPtr hwnd, Rectangle newBounds)
         {
-            if (hwnd == IntPtr.Zero)
+            if (hwnd == IntPtr.Zero || !NativeMethods.IsWindow(hwnd))
             {
-                // If the HWND is NULL the desktop window will be used as parent.
+                // If the HWND is IntPtr.Zero the desktop window will be used as parent.
                 return false;
             }
 

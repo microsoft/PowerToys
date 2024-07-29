@@ -58,7 +58,8 @@ namespace Common
         /// Directs the control to change the area within the parent hwnd that it draws into.
         /// </summary>
         /// <param name="windowBounds">Instance of Rectangle defining the area.</param>
-        void SetRect(Rectangle windowBounds);
+        /// <returns><see langword="true"/> if the operation was successful; otherwise, <see langword="false"/>.</returns>
+        bool SetRect(Rectangle windowBounds);
 
         /// <summary>
         /// Sets the parent window of the previewer window, as well as the area within the parent to be used for the previewer window.
