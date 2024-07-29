@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\Version.props" />
+  
 
   <PropertyGroup>
     <AssemblyTitle>PowerToys.FileLocksmith</AssemblyTitle>

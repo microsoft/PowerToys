@@ -18,7 +18,7 @@
     <IsCodedUITest>False</IsCodedUITest>
   </PropertyGroup>
 
-  <Import Project="..\..\..\Version.props" />
+  
 
   <ItemGroup>
     <None Remove="HelperFiles\sample.qoi" />

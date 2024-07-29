@@ -32,7 +32,7 @@
     <AssemblyName>PowerToys.PdfPreviewHandler</AssemblyName>
   </PropertyGroup>
 
-  <Import Project="..\..\..\Version.props" />
+  
 
   <ItemGroup>
     <Compile Update="PdfPreviewHandlerControl.cs" />

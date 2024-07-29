@@ -32,7 +32,7 @@
     <AssemblyName>PowerToys.MarkdownPreviewHandler</AssemblyName>
   </PropertyGroup>
 
-  <Import Project="..\..\..\Version.props" />
+  
 
   <ItemGroup>
     <Compile Update="MarkdownPreviewHandlerControl.cs" />

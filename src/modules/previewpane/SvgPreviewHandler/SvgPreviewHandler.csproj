@@ -33,7 +33,7 @@
     <AssemblyName>PowerToys.SvgPreviewHandler</AssemblyName>
   </PropertyGroup>
 
-  <Import Project="..\..\..\Version.props" />
+  
 
   <ItemGroup>
     <Compile Update="Properties\Resource.Designer.cs">
