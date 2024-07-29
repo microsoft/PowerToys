@@ -17,7 +17,6 @@
 
   <PropertyGroup>
     <!-- Properties for nuget package. -->
-    <Authors>Microsoft Corporation</Authors>
     <Description>Implements the UI control for the PowerToys Hosts File Editor Utility</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>

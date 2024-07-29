@@ -15,7 +15,7 @@
     <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <SelfContained>true</SelfContained>
-    <Version>$(Version).0</Version>
+    
   </PropertyGroup>
 
   <!-- SelfContained=true requires RuntimeIdentifier to be set -->

@@ -10,7 +10,7 @@
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
     <OutputType>Library</OutputType>
-    <Version>$(Version).0</Version>
+    
   </PropertyGroup>
 
   <PropertyGroup>
