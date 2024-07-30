@@ -39,6 +39,12 @@ namespace Awake.Core
 
         private static readonly BlockingCollection<ExecutionState> _stateQueue;
 
+        // Core icons used for the tray
+        private static readonly Icon _timedIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/timed.ico"));
+        private static readonly Icon _expirableIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/expirable.ico"));
+        private static readonly Icon _indefiniteIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/indefinite.ico"));
+        private static readonly Icon _disabledIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/disabled.ico"));
+
         private static CancellationTokenSource _tokenSource;
 
         private static SettingsUtils? _moduleSettings;
@@ -135,7 +141,7 @@ namespace Awake.Core
 
             _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
-            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_INDEFINITE}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/indefinite.ico")), TrayIconAction.Update);
+            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_INDEFINITE}]", _indefiniteIcon, TrayIconAction.Update);
 
             if (IsUsingPowerToysConfig)
             {
@@ -159,7 +165,7 @@ namespace Awake.Core
             }
         }
 
-        internal static void SetExpirableKeepAwake(DateTimeOffset expireAt, bool keepDisplayOn = true, ManualResetEvent? exitSignal = null)
+        internal static void SetExpirableKeepAwake(DateTimeOffset expireAt, bool keepDisplayOn = true)
         {
             Logger.LogInfo($"Expirable keep-awake. Expected expiration date/time: {expireAt} with display on setting set to {keepDisplayOn}.");
 
@@ -172,7 +178,7 @@ namespace Awake.Core
                 Logger.LogInfo($"Starting expirable log for {expireAt}");
                 _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
-                TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_EXPIRATION} - {expireAt}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/expirable.ico")), TrayIconAction.Update);
+                TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_EXPIRATION} - {expireAt}]", _expirableIcon, TrayIconAction.Update);
 
                 Observable.Timer(expireAt - DateTimeOffset.Now).Subscribe(
                 _ =>
@@ -186,6 +192,7 @@ namespace Awake.Core
                     }
                     else
                     {
+                        Logger.LogInfo("Exiting after expirable keep awake.");
                         CompleteExit(Environment.ExitCode);
                     }
                 },
@@ -221,7 +228,7 @@ namespace Awake.Core
             }
         }
 
-        internal static void SetTimedKeepAwake(uint seconds, bool keepDisplayOn = true, ManualResetEvent? exitSignal = null)
+        internal static void SetTimedKeepAwake(uint seconds, bool keepDisplayOn = true)
         {
             Logger.LogInfo($"Timed keep-awake. Expected runtime: {seconds} seconds with display on setting set to {keepDisplayOn}.");
 
@@ -232,7 +239,7 @@ namespace Awake.Core
             Logger.LogInfo($"Timed keep awake started for {seconds} seconds.");
             _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
-            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/timed.ico")), TrayIconAction.Update);
+            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}]", _timedIcon, TrayIconAction.Update);
 
             var timerObservable = Observable.Timer(TimeSpan.FromSeconds(seconds));
             var intervalObservable = Observable.Interval(TimeSpan.FromSeconds(1)).TakeUntil(timerObservable);
@@ -243,7 +250,10 @@ namespace Awake.Core
                 elapsedSeconds =>
                 {
                     var timeRemaining = seconds - (uint)elapsedSeconds;
-                    TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}]\n{TimeSpan.FromSeconds(timeRemaining).ToHumanReadableString()}", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/timed.ico")), TrayIconAction.Update);
+                    if (timeRemaining >= 0)
+                    {
+                        TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}]\n{TimeSpan.FromSeconds(timeRemaining).ToHumanReadableString()}", _timedIcon, TrayIconAction.Update);
+                    }
                 },
                 () =>
                 {
@@ -258,6 +268,7 @@ namespace Awake.Core
                     }
                     else
                     {
+                        Logger.LogInfo("Exiting after timed keep-awake.");
                         CompleteExit(Environment.ExitCode);
                     }
                 },
@@ -366,7 +377,7 @@ namespace Awake.Core
 
             CancelExistingThread();
 
-            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_OFF}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/disabled.ico")), TrayIconAction.Update);
+            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_OFF}]", _disabledIcon, TrayIconAction.Update);
 
             if (IsUsingPowerToysConfig && updateSettings)
             {

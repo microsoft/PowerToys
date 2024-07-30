@@ -166,29 +166,39 @@ namespace Awake.Core
                     break;
             }
 
-            _notifyIconData = action == TrayIconAction.Add || action == TrayIconAction.Update
-                ? new NotifyIconData
+            if (action == TrayIconAction.Add || action == TrayIconAction.Update)
+            {
+                _notifyIconData = new NotifyIconData
                 {
                     CbSize = Marshal.SizeOf(typeof(NotifyIconData)),
                     HWnd = hWnd,
                     UId = 1000,
                     UFlags = Native.Constants.NIF_ICON | Native.Constants.NIF_TIP | Native.Constants.NIF_MESSAGE,
                     UCallbackMessage = (int)Native.Constants.WM_USER,
-                    HIcon = icon!.Handle,
+                    HIcon = icon?.Handle ?? IntPtr.Zero,
                     SzTip = text,
-                }
-                : new NotifyIconData
+                };
+            }
+            else if (action == TrayIconAction.Delete)
+            {
+                _notifyIconData = new NotifyIconData
                 {
                     CbSize = Marshal.SizeOf(typeof(NotifyIconData)),
                     HWnd = hWnd,
                     UId = 1000,
                     UFlags = 0,
                 };
+            }
 
             if (!Bridge.Shell_NotifyIcon(message, ref _notifyIconData))
             {
                 int errorCode = Marshal.GetLastWin32Error();
                 throw new Win32Exception(errorCode, $"Failed to change tray icon. Action: {action} and error code: {errorCode}");
+            }
+
+            if (action == TrayIconAction.Delete)
+            {
+                _notifyIconData = default;
             }
         }
 
