@@ -45,6 +45,8 @@ namespace Awake
         internal static readonly string[] AliasesPidOption = ["--pid", "-p"];
         internal static readonly string[] AliasesExpireAtOption = ["--expire-at", "-e"];
 
+        private static readonly Icon _defaultAwakeIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/awake.ico"));
+
         private static int Main(string[] args)
         {
             _settingsUtils = new SettingsUtils();
@@ -177,7 +179,7 @@ namespace Awake
             // Start the monitor thread that will be used to track the current state.
             Manager.StartMonitor();
 
-            TrayHelper.InitializeTray(Core.Constants.FullAppName, new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/awake.ico")));
+            TrayHelper.InitializeTray(Core.Constants.FullAppName, _defaultAwakeIcon);
 
             var eventHandle = new EventWaitHandle(false, EventResetMode.ManualReset, interop.Constants.AwakeExitEvent());
             new Thread(() =>
