@@ -18,5 +18,6 @@ void Trace::EnablePowerOCR(const bool enabled) noexcept
         "PowerOCR_EnablePowerOCR",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(enabled, "Enabled"));
 }

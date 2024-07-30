@@ -29,9 +29,14 @@ namespace Microsoft.PowerToys.Telemetry
     public class TelemetryBase : EventSource
     {
         /// <summary>
+        /// The event category DropPii tag.
+        /// </summary>
+        public const EventTags DropPii = (EventTags)0x02000000;
+
+        /// <summary>
         /// The event tag for this event source.
         /// </summary>
-        public const EventTags ProjectTelemetryTagProductAndServicePerformance = (EventTags)0x0u;
+        public const EventTags ProjectTelemetryTagProductAndServicePerformance = (EventTags)0x0u | DropPii;
 
         /// <summary>
         /// The event keyword for this event source.

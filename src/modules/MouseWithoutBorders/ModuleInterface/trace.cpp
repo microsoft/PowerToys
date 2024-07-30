@@ -23,6 +23,7 @@ void Trace::MouseWithoutBorders::Enable(bool enabled) noexcept
         EventEnableMouseWithoutBordersKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(enabled, EventEnabledKey));
 }
 
@@ -33,6 +34,7 @@ void Trace::MouseWithoutBorders::ToggleServiceRegistration(bool enabled) noexcep
         "MouseWithoutBorders_ToggleServiceRegistration",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(enabled, EventEnabledKey));
 }
 
@@ -42,7 +44,8 @@ void Trace::MouseWithoutBorders::Activate() noexcept
         g_hProvider,
         "MouseWithoutBorders_Activate",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
 // Log that the user tried to activate the editor
@@ -52,5 +55,6 @@ void Trace::MouseWithoutBorders::AddFirewallRule() noexcept
         g_hProvider,
         "MouseWithoutBorders_AddFirewallRule",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }

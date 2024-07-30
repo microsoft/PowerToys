@@ -18,6 +18,7 @@ void Trace::EnableFindMyMouse(const bool enabled) noexcept
         "FindMyMouse_EnableFindMyMouse",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(enabled, "Enabled"));
 }
 
@@ -28,5 +29,6 @@ void Trace::MousePointerFocused() noexcept
         g_hProvider,
         "FindMyMouse_MousePointerFocused",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }

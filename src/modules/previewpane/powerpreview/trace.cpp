@@ -29,7 +29,8 @@ void Trace::EnabledPowerPreview(bool enabled)
         TraceLoggingBoolean(enabled, "Enabled"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
 void Trace::PowerPreviewSettingsUpdated(LPCWSTR SettingsName, bool oldState, bool newState, bool globalState)
@@ -43,7 +44,8 @@ void Trace::PowerPreviewSettingsUpdated(LPCWSTR SettingsName, bool oldState, boo
         TraceLoggingBoolean(globalState, "Global_File_Explorer_Settings_State"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
 void Trace::PowerPreviewSettingsUpdateFailed(LPCWSTR SettingsName, bool oldState, bool newState, bool globalState)
@@ -57,7 +59,8 @@ void Trace::PowerPreviewSettingsUpdateFailed(LPCWSTR SettingsName, bool oldState
         TraceLoggingBoolean(globalState, "Global_File_Explorer_Settings_State"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
 void Trace::SetConfigInvalidJSON(const char* exceptionMessage)
@@ -68,7 +71,8 @@ void Trace::SetConfigInvalidJSON(const char* exceptionMessage)
         TraceLoggingString(exceptionMessage, "ExceptionMessage"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
 void Trace::Destroyed()
@@ -78,10 +82,11 @@ void Trace::Destroyed()
         "PowerPreview_TweakUISettings_Destroyed",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
-void Trace::InitSetErrorLoadingFile(const char* exceptionMessage) 
+void Trace::InitSetErrorLoadingFile(const char* exceptionMessage)
 {
     TraceLoggingWriteWrapper(
         g_hProvider,
@@ -89,6 +94,6 @@ void Trace::InitSetErrorLoadingFile(const char* exceptionMessage)
         TraceLoggingString(exceptionMessage, "ExceptionMessage"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
-

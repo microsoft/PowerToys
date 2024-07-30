@@ -18,6 +18,7 @@ void Trace::EnableRegistryPreview(_In_ bool enabled) noexcept
         "RegistryPreview_EnableRegistryPreview",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(enabled, "Enabled"));
 }
 
@@ -28,5 +29,6 @@ void Trace::ActivateEditor() noexcept
         g_hProvider,
         "RegistryPreview_Activate",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }

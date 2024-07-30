@@ -18,5 +18,6 @@ void Trace::EnableCmdNotFoundGpo(const bool enabled) noexcept
         "CmdNotFound_EnableCmdNotFound",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(enabled, "Enabled"));
 }

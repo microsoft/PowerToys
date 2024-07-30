@@ -18,6 +18,7 @@ void Trace::CropAndLock::Enable(bool enabled) noexcept
         "CropAndLock_EnableCropAndLock",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(enabled, "Enabled"));
 }
 
@@ -27,7 +28,8 @@ void Trace::CropAndLock::ActivateReparent() noexcept
         g_hProvider,
         "CropAndLock_ActivateReparent",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
 void Trace::CropAndLock::ActivateThumbnail() noexcept
@@ -36,7 +38,8 @@ void Trace::CropAndLock::ActivateThumbnail() noexcept
         g_hProvider,
         "CropAndLock_ActivateThumbnail",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
 void Trace::CropAndLock::CreateReparentWindow() noexcept
@@ -45,7 +48,8 @@ void Trace::CropAndLock::CreateReparentWindow() noexcept
         g_hProvider,
         "CropAndLock_CreateReparentWindow",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
 void Trace::CropAndLock::CreateThumbnailWindow() noexcept
@@ -54,7 +58,8 @@ void Trace::CropAndLock::CreateThumbnailWindow() noexcept
         g_hProvider,
         "CropAndLock_CreateThumbnailWindow",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
 // Event to send settings telemetry.
@@ -79,7 +84,7 @@ void Trace::CropAndLock::SettingsTelemetry(PowertoyModuleIface::Hotkey& reparent
         "CropAndLock_Settings",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingWideString(hotKeyStrReparent.c_str(), "ReparentHotKey"),
-        TraceLoggingWideString(hotKeyStrThumbnail.c_str(), "ThumbnailHotkey")
-    );
+        TraceLoggingWideString(hotKeyStrThumbnail.c_str(), "ThumbnailHotkey"));
 }

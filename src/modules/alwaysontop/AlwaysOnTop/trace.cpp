@@ -25,6 +25,7 @@ void Trace::AlwaysOnTop::Enable(bool enabled) noexcept
         EventEnableAlwaysOnTopKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(enabled, EventEnabledKey));
 }
 
@@ -34,7 +35,8 @@ void Trace::AlwaysOnTop::PinWindow() noexcept
         g_hProvider,
         EventPinWindowKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
 void Trace::AlwaysOnTop::UnpinWindow() noexcept
@@ -43,5 +45,6 @@ void Trace::AlwaysOnTop::UnpinWindow() noexcept
         g_hProvider,
         EventUnpinWindowKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }

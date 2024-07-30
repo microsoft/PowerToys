@@ -16,6 +16,7 @@ void Trace::AdvancedPaste_Enable(const bool enabled) noexcept
         "AdvancedPaste_EnableAdvancedPaste",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(enabled, "Enabled"));
 }
 
@@ -27,6 +28,7 @@ void Trace::AdvancedPaste_Invoked(std::wstring mode) noexcept
         "AdvancedPaste_InvokeAdvancedPaste",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingValue(mode.c_str(), "Mode"));
 }
 
@@ -38,6 +40,7 @@ void Trace::AdvancedPaste_Error(const DWORD errorCode, std::wstring errorMessage
         "AdvancedPaste_Error",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingValue(methodName.c_str(), "MethodName"),
         TraceLoggingValue(errorCode, "ErrorCode"),
         TraceLoggingValue(errorMessage.c_str(), "ErrorMessage"));
@@ -83,10 +86,10 @@ void Trace::AdvancedPaste_SettingsTelemetry(const PowertoyModuleIface::Hotkey& p
         "AdvancedPaste_Settings",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingWideString(pastePlainHotkeyStr.c_str(), "PastePlainHotkey"),
         TraceLoggingWideString(advancedPasteUIHotkeyStr.c_str(), "AdvancedPasteUIHotkey"),
         TraceLoggingWideString(pasteMarkdownHotkeyStr.c_str(), "PasteMarkdownHotkey"),
         TraceLoggingWideString(pasteJsonHotkeyStr.c_str(), "PasteJsonHotkey"),
-        TraceLoggingBoolean(preview_custom_format_output, "ShowCustomPreview")
-    );
+        TraceLoggingBoolean(preview_custom_format_output, "ShowCustomPreview"));
 }

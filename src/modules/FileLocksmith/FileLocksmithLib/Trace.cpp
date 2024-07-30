@@ -18,6 +18,7 @@ void Trace::EnableFileLocksmith(_In_ bool enabled) noexcept
         "FileLocksmith_EnableFileLocksmith",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(enabled, "Enabled"));
 }
 
@@ -27,7 +28,8 @@ void Trace::Invoked() noexcept
         g_hProvider,
         "FileLocksmith_Invoked",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
 void Trace::InvokedRet(_In_ HRESULT hr) noexcept
@@ -37,7 +39,8 @@ void Trace::InvokedRet(_In_ HRESULT hr) noexcept
         "FileLocksmith_InvokedRet",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingHResult(hr),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
 void Trace::QueryContextMenuError(_In_ HRESULT hr) noexcept
@@ -47,5 +50,6 @@ void Trace::QueryContextMenuError(_In_ HRESULT hr) noexcept
         "FileLocksmith_QueryContextMenuError",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingHResult(hr),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }

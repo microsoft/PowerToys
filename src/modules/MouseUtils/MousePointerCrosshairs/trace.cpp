@@ -18,6 +18,7 @@ void Trace::EnableMousePointerCrosshairs(const bool enabled) noexcept
         "MousePointerCrosshairs_EnableMousePointerCrosshairs",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(enabled, "Enabled"));
 }
 
@@ -28,5 +29,6 @@ void Trace::StartDrawingCrosshairs() noexcept
         g_hProvider,
         "MousePointerCrosshairs_StartDrawingCrosshairs",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }

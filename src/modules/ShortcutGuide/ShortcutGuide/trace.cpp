@@ -19,7 +19,8 @@ void Trace::SendGuideSession(const __int64 duration_ms, const wchar_t* close_typ
         TraceLoggingWideString(close_type, "CloseType"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
 void Trace::SendSettings(ShortcutGuideSettings settings) noexcept
@@ -36,5 +37,6 @@ void Trace::SendSettings(ShortcutGuideSettings settings) noexcept
         TraceLoggingInt32(settings.windowsKeyPressTimeForTaskbarIconShortcuts, "WindowsKeyPressTimeForTaskbarIconShortcuts"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }

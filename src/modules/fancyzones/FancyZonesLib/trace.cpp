@@ -117,6 +117,7 @@ void Trace::FancyZones::EnableFancyZones(bool enabled) noexcept
         EventEnableFancyZonesKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(enabled, EventEnabledKey));
 }
 
@@ -127,6 +128,7 @@ void Trace::FancyZones::OnKeyDown(DWORD vkCode, bool win, bool control, bool inM
         EventKeyDownKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingValue(vkCode, PressedKeyCodeKey),
         TraceLoggingBoolean(win, PressedWindowKey),
         TraceLoggingBoolean(control, PressedControlKey),
@@ -208,6 +210,7 @@ void Trace::FancyZones::DataChanged() noexcept
         EventZoneSettingsChangedKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingInt32(appsHistorySize, AppsInHistoryCountKey),
         TraceLoggingInt32(static_cast<int>(customZones.size()), CustomZoneSetCountKey),
         TraceLoggingInt32Array(customZonesArray.get(), static_cast<uint16_t>(customZones.size()), NumberOfZonesForEachCustomZoneSetKey),
@@ -223,6 +226,7 @@ void Trace::FancyZones::EditorLaunched(int value) noexcept
         EventEditorLaunchKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingInt32(value, EditorLaunchValueKey));
 }
 
@@ -234,6 +238,7 @@ void Trace::FancyZones::Error(const DWORD errorCode, std::wstring errorMessage, 
         "FancyZones_Error",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingValue(methodName.c_str(), "MethodName"),
         TraceLoggingValue(errorCode, "ErrorCode"),
         TraceLoggingValue(errorMessage.c_str(), "ErrorMessage"));
@@ -246,6 +251,7 @@ void Trace::FancyZones::QuickLayoutSwitched(bool shortcutUsed) noexcept
         EventQuickLayoutSwitchKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(shortcutUsed, QuickLayoutSwitchedWithShortcutUsed));
 }
 
@@ -257,6 +263,7 @@ void Trace::FancyZones::SnapNewWindowIntoZone(Layout* activeLayout, const Layout
         EventSnapNewWindowIntoZone,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingValue(reinterpret_cast<void*>(activeLayout), ActiveSetKey),
         TraceLoggingValue(zoneInfo.NumberOfZones, NumberOfZonesKey),
         TraceLoggingValue(zoneInfo.NumberOfWindows, NumberOfWindowsKey));
@@ -270,6 +277,7 @@ void Trace::FancyZones::KeyboardSnapWindowToZone(Layout* activeLayout, const Lay
         EventKeyboardSnapWindowToZone,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingValue(reinterpret_cast<void*>(activeLayout), ActiveSetKey),
         TraceLoggingValue(zoneInfo.NumberOfZones, NumberOfZonesKey),
         TraceLoggingValue(zoneInfo.NumberOfWindows, NumberOfWindowsKey));
@@ -296,6 +304,7 @@ void Trace::SettingsTelemetry(const Settings& settings) noexcept
         EventSettingsKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(settings.shiftDrag, ShiftDragKey),
         TraceLoggingBoolean(settings.mouseSwitch, MouseSwitchKey),
         TraceLoggingBoolean(settings.displayOrWorkAreaChange_moveWindows, MoveWindowsOnDisplayChangeKey),
@@ -333,7 +342,8 @@ void Trace::VirtualDesktopChanged() noexcept
         g_hProvider,
         EventDesktopChangedKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
 void Trace::WorkArea::KeyUp(WPARAM wParam) noexcept
@@ -343,6 +353,7 @@ void Trace::WorkArea::KeyUp(WPARAM wParam) noexcept
         EventWorkAreaKeyUpKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingValue(wParam, KeyboardValueKey));
 }
 
@@ -354,6 +365,7 @@ void Trace::WorkArea::MoveOrResizeStarted(_In_opt_ Layout* activeLayout, const L
         EventMoveOrResizeStartedKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingValue(reinterpret_cast<void*>(activeLayout), ActiveSetKey),
         TraceLoggingValue(zoneInfo.NumberOfZones, NumberOfZonesKey),
         TraceLoggingValue(zoneInfo.NumberOfWindows, NumberOfWindowsKey));
@@ -367,6 +379,7 @@ void Trace::WorkArea::MoveOrResizeEnd(_In_opt_ Layout* activeLayout, const Layou
         EventMoveOrResizeEndedKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingValue(reinterpret_cast<void*>(activeLayout), ActiveSetKey),
         TraceLoggingValue(zoneInfo.NumberOfZones, NumberOfZonesKey),
         TraceLoggingValue(zoneInfo.NumberOfWindows, NumberOfWindowsKey));
@@ -380,6 +393,7 @@ void Trace::WorkArea::CycleActiveZoneSet(_In_opt_ Layout* activeLayout, const La
         EventCycleActiveZoneSetKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingValue(reinterpret_cast<void*>(activeLayout), ActiveSetKey),
         TraceLoggingValue(zoneInfo.NumberOfZones, NumberOfZonesKey),
         TraceLoggingValue(zoneInfo.NumberOfWindows, NumberOfWindowsKey),

@@ -18,6 +18,7 @@ void Trace::EnablePeek(const bool enabled) noexcept
         "Peek_EnablePeek",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(enabled, "Enabled"));
 }
 
@@ -28,7 +29,8 @@ void Trace::PeekInvoked() noexcept
         g_hProvider,
         "Peek_InvokePeek",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
 // Event to send settings telemetry.
@@ -46,5 +48,6 @@ void Trace::SettingsTelemetry(PowertoyModuleIface::Hotkey& hotkey) noexcept
         "Peek_Settings",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingWideString(hotKeyStr.c_str(), "HotKey"));
 }

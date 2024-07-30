@@ -18,6 +18,7 @@ void Trace::KeyRemapCount(const DWORD keyToKeyCount, const DWORD keyToShortcutCo
         "KeyboardManager_KeyRemapCount",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingValue(keyToKeyCount + keyToShortcutCount, "KeyRemapCount"),
         TraceLoggingValue(keyToKeyCount, "KeyToKeyRemapCount"),
         TraceLoggingValue(keyToShortcutCount, "KeyToShortcutRemapCount"),
@@ -32,6 +33,7 @@ void Trace::OSLevelShortcutRemapCount(const DWORD shortcutToShortcutCount, const
         "KeyboardManager_OSLevelShortcutRemapCount",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingValue(shortcutToShortcutCount + shortcutToKeyCount, "OSLevelShortcutRemapCount"),
         TraceLoggingValue(shortcutToShortcutCount, "OSLevelShortcutToShortcutRemapCount"),
         TraceLoggingValue(shortcutToKeyCount, "OSLevelShortcutToKeyRemapCount"));
@@ -45,6 +47,7 @@ void Trace::AppSpecificShortcutRemapCount(const DWORD shortcutToShortcutCount, c
         "KeyboardManager_AppSpecificShortcutRemapCount",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingValue(shortcutToShortcutCount + shortcutToKeyCount, "AppSpecificShortcutRemapCount"),
         TraceLoggingValue(shortcutToShortcutCount, "AppSpecificShortcutToShortcutRemapCount"),
         TraceLoggingValue(shortcutToKeyCount, "AppSpecificShortcutToKeyRemapCount"));
@@ -58,6 +61,7 @@ void Trace::Error(const DWORD errorCode, std::wstring errorMessage, std::wstring
         "KeyboardManager_Error",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingValue(methodName.c_str(), "MethodName"),
         TraceLoggingValue(errorCode, "ErrorCode"),
         TraceLoggingValue(errorMessage.c_str(), "ErrorMessage"));

@@ -18,5 +18,6 @@ void Trace::EnableKeyboardManager(const bool enabled) noexcept
         "KeyboardManager_EnableKeyboardManager",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(enabled, "Enabled"));
 }
