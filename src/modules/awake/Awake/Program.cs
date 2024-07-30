@@ -52,6 +52,8 @@ namespace Awake
 
             Logger.InitializeLogger(Path.Combine("\\", Core.Constants.AppName, "Logs"));
 
+            AppDomain.CurrentDomain.UnhandledException += AwakeUnhandledExceptionCatcher;
+
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAwakeEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
                 Exit("PowerToys.Awake tried to start with a group policy setting that disables the tool. Please contact your system administrator.", 1);
@@ -125,6 +127,15 @@ namespace Awake
             rootCommand.SetHandler(HandleCommandLineArguments, configOption, displayOption, timeOption, pidOption, expireAtOption);
 
             return rootCommand.InvokeAsync(args).Result;
+        }
+
+        private static void AwakeUnhandledExceptionCatcher(object sender, UnhandledExceptionEventArgs e)
+        {
+            if (e.ExceptionObject is Exception exception)
+            {
+                Logger.LogError(exception.ToString());
+                Logger.LogError(exception.StackTrace);
+            }
         }
 
         private static bool ExitHandler(ControlType ctrlType)
