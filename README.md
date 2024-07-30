@@ -122,6 +122,9 @@ In this release, we focused on stability and improvements.
  - Removed the dependency on Windows Forms and used native Win32 APIs instead for the tray icon. Thanks [@dend](https://github.com/dend) and [@BrianPeek](https://github.com/BrianPeek)!
  - Fixed an issue where the UI would become non-responsive after selecting no time for the timed mode. Thanks [@dend](https://github.com/dend)!
  - Refactored code for easier maintenance. Thanks [@dend](https://github.com/dend)!
+ - The tray icon will now be shown when running Awake standalone to signal mode. Thanks [@dend](https://github.com/dend)!
+ - The tray icon tooltip shows how much time is left on the timer. Thanks [@dend](https://github.com/dend)!
+ - Added DPI awareness to the tray icon context menu. Thanks [@dend](https://github.com/dend)!
 
 ### Color Picker
 
