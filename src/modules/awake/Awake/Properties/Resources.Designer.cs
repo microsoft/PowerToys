@@ -277,7 +277,7 @@ namespace Awake.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Timed.
+        ///   Looks up a localized string similar to Interval.
         /// </summary>
         internal static string AWAKE_TRAY_TEXT_TIMED {
             get {

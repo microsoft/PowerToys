@@ -322,7 +322,7 @@ namespace Awake.Core
             InsertAwakeModeMenuItems(mode);
 
             EnsureDefaultTrayTimeShortcuts(trayTimeShortcuts);
-            CreateAwakeTimeSubMenu(trayTimeShortcuts);
+            CreateAwakeTimeSubMenu(trayTimeShortcuts, mode == AwakeMode.TIMED);
         }
 
         private static void ClearExistingTrayMenu()
@@ -377,7 +377,7 @@ namespace Awake.Core
             }
         }
 
-        private static void CreateAwakeTimeSubMenu(Dictionary<string, int> trayTimeShortcuts)
+        private static void CreateAwakeTimeSubMenu(Dictionary<string, int> trayTimeShortcuts, bool isChecked = false)
         {
             var awakeTimeMenu = Bridge.CreatePopupMenu();
             for (int i = 0; i < trayTimeShortcuts.Count; i++)
@@ -385,7 +385,7 @@ namespace Awake.Core
                 Bridge.InsertMenu(awakeTimeMenu, (uint)i, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING, (uint)TrayCommands.TC_TIME + (uint)i, trayTimeShortcuts.ElementAt(i).Key);
             }
 
-            Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_POPUP, (uint)awakeTimeMenu, Resources.AWAKE_KEEP_ON_INTERVAL);
+            Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_POPUP | (isChecked == true ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)awakeTimeMenu, Resources.AWAKE_KEEP_ON_INTERVAL);
         }
 
         private static void InsertAwakeModeMenuItems(AwakeMode mode)

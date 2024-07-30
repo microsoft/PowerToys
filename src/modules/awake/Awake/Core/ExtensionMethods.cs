@@ -29,7 +29,7 @@ namespace Awake.Core
             int seconds = timeSpan.Seconds;
 
             // Format the string based on the presence of days, hours, minutes, and seconds
-            return $"{days:D2}{Properties.Resources.AWAKE_LABEL_DAYS}, {hours:D2}{Properties.Resources.AWAKE_LABEL_HOURS}, {minutes:D2}{Properties.Resources.AWAKE_LABEL_MINUTES}, {seconds:D2}{Properties.Resources.AWAKE_LABEL_SECONDS}";
+            return $"{days:D2}{Properties.Resources.AWAKE_LABEL_DAYS} {hours:D2}{Properties.Resources.AWAKE_LABEL_HOURS} {minutes:D2}{Properties.Resources.AWAKE_LABEL_MINUTES} {seconds:D2}{Properties.Resources.AWAKE_LABEL_SECONDS}";
         }
     }
 }
