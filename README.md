@@ -157,7 +157,7 @@ In this release, we focused on stability and improvements.
  - Fixed wrong initial position of the PowerToys Run when switching between monitors with different dpi values.
  - Started allowing interchangeable use of / and \ in the registry plugin paths.
  - Added support to automatic sign-in after rebooting with the System plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Added suggested use example results to the Value Generator plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Added suggested use example results to the Value Generator plugin. Thanks [@azlkiniue](https://github.com/azlkiniue)!
 
 ### Quick Accent
 
