@@ -187,6 +187,22 @@
     <value>Passive</value>
   </data>
   <data name="AWAKE_TRAY_TEXT_TIMED" xml:space="preserve">
-    <value>Timed</value>
+    <value>Interval</value>
+  </data>
+  <data name="AWAKE_LABEL_DAYS" xml:space="preserve">
+    <value>d</value>
+    <comment>Used to display number of days in the system tray tooltip.</comment>
+  </data>
+  <data name="AWAKE_LABEL_HOURS" xml:space="preserve">
+    <value>h</value>
+    <comment>Used to display number of hours in the system tray tooltip.</comment>
+  </data>
+  <data name="AWAKE_LABEL_MINUTES" xml:space="preserve">
+    <value>m</value>
+    <comment>Used to display number of minutes in the system tray tooltip.</comment>
+  </data>
+  <data name="AWAKE_LABEL_SECONDS" xml:space="preserve">
+    <value>s</value>
+    <comment>Used to display number of seconds in the system tray tooltip.</comment>
   </data>
 </root>
