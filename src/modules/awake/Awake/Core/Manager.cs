@@ -234,8 +234,8 @@ namespace Awake.Core
 
             TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}]", new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/timed.ico")), TrayIconAction.Update);
 
-            var intervalObservable = Observable.Interval(TimeSpan.FromSeconds(1));
             var timerObservable = Observable.Timer(TimeSpan.FromSeconds(seconds));
+            var intervalObservable = Observable.Interval(TimeSpan.FromSeconds(1)).TakeUntil(timerObservable);
 
             var combinedObservable = Observable.CombineLatest(intervalObservable, timerObservable.StartWith(0), (elapsedSeconds, _) => elapsedSeconds + 1);
 
