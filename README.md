@@ -142,7 +142,7 @@ In this release, we focused on stability and improvements.
 ### Mouse Without Borders
 
  - Disabled non supported options in the old Mouse Without Borders UI. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Added new GPO policies to block the use of some features. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Added new GPO policies to control the use of some features. Thanks [@htcfreek](https://github.com/htcfreek)!
 
 ### Peek
 
