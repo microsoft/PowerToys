@@ -41,19 +41,19 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and click on `Assets` at the bottom to show the files available in the release. Please use the appropriate PowerToys installer that matches your machine's architecture and install scope. For most, it is `x64` and per-user.
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.83%22
-[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.82%22
-[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.82.1/PowerToysUserSetup-0.82.1-x64.exe 
-[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.82.1/PowerToysUserSetup-0.82.1-arm64.exe 
-[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.82.1/PowerToysSetup-0.82.1-x64.exe 
-[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.82.1/PowerToysSetup-0.82.1-arm64.exe
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.84%22
+[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.83%22
+[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.83.0/PowerToysUserSetup-0.83.0-x64.exe 
+[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.83.0/PowerToysUserSetup-0.83.0-arm64.exe 
+[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.83.0/PowerToysSetup-0.83.0-x64.exe 
+[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.83.0/PowerToysSetup-0.83.0-arm64.exe
  
 |  Description   | Filename | sha256 hash |
 |----------------|----------|-------------|
-| Per user - x64       | [PowerToysUserSetup-0.82.1-x64.exe][ptUserX64] | B594C9A32125079186DCE776431E2DC77B896774D2AEE2ACF51BAB8791683485 |
-| Per user - ARM64     | [PowerToysUserSetup-0.82.1-arm64.exe][ptUserArm64] | 41C1D9C0E8FA7EFFCE6F605C92C143AE933F8C999A2933A4D9D1115B16F14F67 |
-| Machine wide - x64   | [PowerToysSetup-0.82.1-x64.exe][ptMachineX64] | B8FA7E7C8F88B69E070E234F561D32807634E2E9D782EDBB9DC35F3A454F2264 |
-| Machine wide - ARM64 | [PowerToysSetup-0.82.1-arm64.exe][ptMachineArm64] | 58F22306F22CF9878C6DDE6AC128388DF4DFF78B76165E38A695490E55B3C8C4 |
+| Per user - x64       | [PowerToysUserSetup-0.83.0-x64.exe][ptUserX64] | C78E24F21C611F2BD774D8460ADD4B9AC8519085CA1253941CB46129331AB8C8 |
+| Per user - ARM64     | [PowerToysUserSetup-0.83.0-arm64.exe][ptUserArm64] | BA1C16003D55587D523A41B960D4A03718123CA37577D5F2A75E151D7653E6D3 |
+| Machine wide - x64   | [PowerToysSetup-0.83.0-x64.exe][ptMachineX64] | 7EC435A10849187D21A383E56A69213C1FF110B7FECA65900D9319D2F8162F35 |
+| Machine wide - ARM64 | [PowerToysSetup-0.83.0-arm64.exe][ptMachineArm64] | 5E147424D1D12DFCA88DC4AA0657B7CC1F3B02812F1EBA3E564FAF691908D840 |
 
 This is our preferred method.
 
@@ -99,131 +99,112 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.82 - June 2024 Update
+### 0.83 - July 2024 Update
 
 In this release, we focused on stability and improvements.
 
 **Highlights**
 
- - New feature added to PowerRename to allow using sequences of random characters and UUIDs when renaming files. Thanks [@jhirvioja](https://github.com/jhirvioja)!
- - Improvements in the Paste As JSON feature to better handle other CSV delimiters and converting from ini files. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Fixed UI issues that were reported after upgrading to WPF UI on Color Picker and PowerToys Run.
- - Bug fixes and stability.
+ - Awake Quality of Life changes, including changing the tray icon to reflect the current mode. Thanks [@dend](https://github.com/dend)!
+ - Changes to general GPO policies and new policies for Mouse Without Borders. The names for some intune policy configuration sets might need to be updated as seen in https://github.com/MicrosoftDocs/windows-dev-docs/pull/5045/files . Thanks [@htcfreek](https://github.com/htcfreek)!
+
+### General
+ - Reordered GPO policies, making it easier to find some policies. Thanks [@htcfreek](https://github.com/htcfreek)!
 
 ### Advanced Paste
 
- - Fixed an issue causing external applications triggering Advanced Paste. (This was a hotfix for 0.81)
- - Added a GPO rule to disallow using online models in Advanced Paste. (This was a hotfix for 0.81)
- - Improved CSV delimiter handling and plain text parsing for the Paste as JSON feature. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Added support to convert from ini in the Paste as JSON feature. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Fixed a memory leak caused by images not being properly cleaned out from clipboard history.
- - Added an option to hide the UI when it loses focus. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Improved telemetry to get better data about token usage and if clipboard history is a popular feature. Thanks [@craigloewen-msft](https://github.com/craigloewen-msft)!
+ - Fixed CSV parser to support double quotes and escape delimiters when pasting as JSON. Thanks [@GhostVaibhav](https://github.com/GhostVaibhav)!
+ - Improved double quote handling in the CSV parser when pasting as JSON. Thanks [@htcfreek](https://github.com/htcfreek)!
+
+### Awake
+
+ - Different modes will now show different icons in the system tray. Thanks [@dend](https://github.com/dend), and [@niels9001](https://github.com/niels9001) for the icon design!
+ - Removed the dependency on Windows Forms and used native Win32 APIs instead for the tray icon. Thanks [@dend](https://github.com/dend) and [@BrianPeek](https://github.com/BrianPeek)!
+ - Fixed an issue where the UI would become non-responsive after selecting no time for the timed mode. Thanks [@dend](https://github.com/dend)!
+ - Refactored code for easier maintenance. Thanks [@dend](https://github.com/dend)!
+ - The tray icon will now be shown when running Awake standalone to signal mode. Thanks [@dend](https://github.com/dend)!
+ - The tray icon tooltip shows how much time is left on the timer. Thanks [@dend](https://github.com/dend)!
+ - Added DPI awareness to the tray icon context menu. Thanks [@dend](https://github.com/dend)!
 
 ### Color Picker
 
- - Fixed the opaque background corners in the picker that were introduced after the upgrade to WPFUI.
-
-### Developer Files Preview (Monaco)
-
- - Improved the syntax highlight for .gitignore files. Thanks [@PesBandi](https://github.com/PesBandi)!
- - Checking for the sticky scroll option in code behind was being done twice. Removed one of the checks. Thanks [@downarowiczd](https://github.com/downarowiczd)!
-
-### Environment Variables Editor
-
- - Added clarity to the UI section tooltips. Thanks [@anson-poon](https://github.com/anson-poon)!
+ - Added support to using the mouse wheel to scroll through the color history. Thanks [@Fefedu973](https://github.com/Fefedu973)!
 
 ### File Explorer add-ons
 
- - Fixed a crash when the preview handlers received a 64-bit handle from the OS. Thanks [@z4pf1sh](https://github.com/z4pf1sh)!
- - Fixed a crash when trying to update window bounds and File Explorer already disposed the preview.
+ - Allow copying from the right-click menu in Monaco and Markdown previewers.
 
-### Find My Mouse
+### File Locksmith
 
- - Added the option to have to use the Windows + Control keys to activate. Thanks [@Gentoli](https://github.com/Gentoli)!
-
-### Hosts File Editor
-
- - Improved spacing definitions in the UI so that hosts name are not hidden when resizing and icons are well aligned. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Changed the additional lines dialog to show the horizontal scrollbar instead of wrapping contents. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Improved the duplication check's logic to improve performance and take into account features that were introduced after it. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed a crash when there were a big number of entries being shown by moving the opened files of a process to another dialog.
 
 ### Installer
 
- - Fixed the remaining install failures when the folders the DSC module is to be installed in isn't accessible by the WiX installer for user scope installations.
- - Fixed an issue causing ARM64 uninstall process to not correctly find powershell 7 to run uninstall scripts.
+ - Fixed the path where DSC module files were installed for the user-scope installer. (This was a hotfix for 0.82)
+
+### Mouse Without Borders
+
+ - Disabled non supported options in the old Mouse Without Borders UI. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Added new GPO policies to control the use of some features. Thanks [@htcfreek](https://github.com/htcfreek)!
 
 ### Peek
 
- - Prevent activating Peek when the user is renaming a file. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Added support to preview special folders like Recycle Bin and My PC instead of throwing an error.
- - Fixed a crash caused by double releasing a COM object from the module interface.
-
-### Power Rename
-
- - Improved apostrophe character handling for the Capitalize and Titlecase renaming flags. Thanks [@anthonymonforte](https://github.com/anthonymonforte)!
- - Added a feature to allow using sequences of random characters or UUIDs when renaming files. Thanks [@jhirvioja](https://github.com/jhirvioja)!
+ - Allow copying from the right-click menu in Dev files and Markdown previews.
 
 ### PowerToys Run
 
- - Improved the plugin descriptions for consistency in the UI. Thanks [@HydroH](https://github.com/HydroH)!
- - Fixed UI scaling for different dpi scenarios.
- - Fixed crash on a racing condition when updating UWP icon paths in the Program plugin. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Fixed PowerToys Run hanging when trying to close an unresponsive window in the WindowWalker plugin. Thanks [@GhostVaibhav](https://github.com/GhostVaibhav)!
- - Fixed the example in the UnitConverter description to reduce confusion with the inches abbreviation (now uses "to" instead of "in"). Thanks [@acekirkpatrick](https://github.com/acekirkpatrick)!
- - Brought the acrylic background back and applied a proper fix to the titlebar accent showing through transparency.
- - Fixed an issue causing the transparency from the UI disappearing after some time.
+ - Fixed a crash on Windows 11 build 22000. (This was a hotfix for 0.82)
+ - Blocked a transparency fix code from running on Windows 10, since it was causing graphical glitches. (This was a hotfix for 0.82)
+ - Accept speed abbreviations like kilometers per hour (kmph) in the Unit Converter plugin. Thanks [@GhostVaibhav](https://github.com/GhostVaibhav)!
+ - Added settings to configure behavior of the "First week of year" and "First day of week" calculations in the DateTime plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Fixed wrong initial position of the PowerToys Run when switching between monitors with different dpi values.
+ - Started allowing interchangeable use of / and \ in the registry plugin paths.
+ - Added support to automatic sign-in after rebooting with the System plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Added suggested use example results to the Value Generator plugin. Thanks [@azlkiniue](https://github.com/azlkiniue)!
 
 ### Quick Accent
 
- - Added support for the Crimean Tatar character set. Thanks [@cor-bee](https://github.com/cor-bee)!
- - Added the Numero symbol and double acute accent character. Thanks [@PesBandi](https://github.com/PesBandi)!
- - Added the International Phonetic Alphabet characters. Thanks [@PesBandi](https://github.com/PesBandi)!
- - Fixed the character description center positioning. Thanks [@PesBandi](https://github.com/PesBandi)!
- - Added feminine and masculine ordinal indicator characters to the Portuguese character set. Thanks [@octastylos-pseudodipteros](https://github.com/octastylos-pseudodipteros)!
+ - Added support for the Bulgarian character set. Thanks [@octastylos-pseudodipteros](https://github.com/octastylos-pseudodipteros)!
 
-### Screen Ruler
+### Runner
 
- - Updated the default activation hotkey to Win+Control+Shift+M, in order to not conflict with the Windows shortcut that restores minimized windows (Win+Shift+M). Thanks [@nx-frost](https://github.com/nx-frost)!
+ - Add code to handle release tags with an upper V when trying to detect new updates. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Settings
 
- - Disabled the UI to enable/disable clipboard history in the Advanced Paste settings page when clipboard history is disabled by GPO in the system. (This was a hotfix for 0.81)
- - Updated Advanced Paste's Settings and OOBE page to clarify that the AI use is optional and opt-in. (This was a hotfix for 0.81)
- - Corrected a spelling fix in Advanced Paste's settings page. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Added localization support for the "Configure OpenAI Key" button in Advanced Paste's settings page. Thanks [@zetaloop](https://github.com/zetaloop)!
- - Fixed extra GPO warnings being shown in Advanced Paste's settings page even if the module is disabled. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Fixed a crash when a PowerToys Run plugin icon path is badly formed.
- - Disabled the experimentation paths in code behind to improve performance, since there's no current experimentation going on.
+ - Fixed the UI spacing in the "update available" card. Thanks [@Agnibaan](https://github.com/Agnibaan)!
+ - Fixed the information bars in the Mouse Without Borders settings page to hide when the module is disabled. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Improved consistency of the icons used in the Mouse Without Borders settings page. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Improved action keyword information bar padding in the PowerToys Run plugins section. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Fixed a crash in the dashboard when Keyboard Manager Editor settings file became locked.
 
 ### Documentation
 
- - Adjusted the readme and release notes to clarify use of AI on Advanced Paste. (This was a hotfix for 0.81)
- - Added the Edge Workspaces plugin to PowerToys Run thirdPartyRunPlugins.md docs. Thanks [@quachpas](https://github.com/quachpas)!
- - Removed the deprecated Guid plugin from PowerToys Run thirdPartyRunPlugins.md docs. Thanks [@abduljawada](https://github.com/abduljawada)!
- - Added the PowerHexInspector plugin to PowerToys Run thirdPartyRunPlugins.md docs. Thanks [@NaroZeol](https://github.com/NaroZeol)!
- - Fixed a broken link in the communication-with-modules.md file. Thanks [@PesBandi](https://github.com/PesBandi)! 
- - Updated COMMUNITY.md with missing and former members.
+ - Added the RDP plugin to PowerToys Run thirdPartyRunPlugins.md docs. Thanks [@anthony81799](https://github.com/anthony81799)!
+ - Added the GitHubRepo and ProcessKiller plugins to PowerToys Run thirdPartyRunPlugins.md docs. Thanks [@8LWXpg](https://github.com/8LWXpg)!
+ - Fixed a typo in the 0.82.0 release notes in README. Thanks [@walex999](https://github.com/walex999)!
 
 ### Development
 
- - Fixed ci UI tests to point to the correct Visual Studio vstest location after a Visual Studio upgrade. (This was a hotfix for 0.81)
- - Updated System.Drawing.Common to 8.0.6 to fix CI builds after the .NET 8.0.6 upgrade was released.
- - Removed an incorrect file reference to long removed documentation from the solution file. Thanks [@Kissaki](https://github.com/Kissaki)!
- - Upgraded Windows App SDK to 1.5.3.
- - Removed use of the BinaryFormatter API from Mouse Without Borders, which is expected to be deprecated in .NET 9.
- - The user scope installer is now sent to the Microsoft store instead of the machine scope installer.
- - Refactored Mouse Jump's internal code to allow for a future introduction of customizable appearance features. Thanks [@mikeclayton](https://github.com/mikeclayton)!
- - Removed a noisy error from spell check ci runs.
- - Improved the ci agent pool selection code.
- - Updated Xamlstyler.console to 3.2404.2. Thanks [@Jvr2022](https://github.com/Jvr2022)!
- - Updated UnitsNet to 5.50.0 Thanks [@Jvr2022](https://github.com/Jvr2022)!
- - Replaced LPINPUT with std::vector of INPUT instances in Keyboard Manager internal code. Thanks [@masaru-iritani](https://github.com/masaru-iritani)!
- - Improved the Microsoft Store submission ci action to use the proper cli and authentication.
+ - Disabled FancyZone UI tests, to unblock PRs. We plan to bring them back in the future. (This was a hotfix for 0.82)
+ - Fixed an issue where flakiness in CI was causing the installer custom actions DLL from being signed. (This was a hotfix for 0.82)
+ - Upgraded the Microsoft.Windows.Compatibility dependency to 8.0.7.
+ - Upgraded the System.Text.Json dependency to 8.0.4.
+ - Upgraded the Microsoft.Data.Sqlite dependency to 8.0.7.
+ - Upgraded the MSBuildCache dependency to 0.1.283-preview. Thanks [@dfederm](https://github.com/dfederm)!
+ - Removed an unneeded /Zm compiler flag from Keyboard Manager Editor common build flags.
+ - Fixed the winget publish action to handle upper case V in the tag name. Thanks [@mdanish-kh](https://github.com/mdanish-kh)!
+ - Removed wildcard items from vcxproj files. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Removed the similar issues bot GitHub actions. Thanks [@craigloewen-msft](https://github.com/craigloewen-msft)!
+ - Fixed CODEOWNERS to better protect changes in some files.
+ - Switched machines being used in CI and pointed status badges in README to the new machines.
+ - Fixed NU1503 build warnings when building PowerToys. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Use the MSTest meta dependency for running the tests instead of the individual testing packages. Thanks [@stan-sz](https://github.com/stan-sz)!
+ - Added missing CppWinRT references.
 
-#### What is being planned for version 0.83
+#### What is being planned for version 0.84
 
-For [v0.83][github-next-release-work], we'll work on the items below:
+For [v0.84][github-next-release-work], we'll work on the items below:
 
  - Stability / bug fixes
  - New utility: Dev Projects
