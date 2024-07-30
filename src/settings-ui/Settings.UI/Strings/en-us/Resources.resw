@@ -3143,6 +3143,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Projects_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
+  <data name="Projects_LaunchEditorButtonControl.Description" xml:space="preserve">
+    <value>Create and manage projects</value>
+  </data>
+  <data name="Projects_LaunchEditorButtonControl.Header" xml:space="preserve">
+    <value>Launch editor</value>
+  </data>
   <data name="LearnMore_Projects.Text" xml:space="preserve">
     <value>Learn more about the Projects utility</value>
     <comment> Projects is the name of the module. </comment>

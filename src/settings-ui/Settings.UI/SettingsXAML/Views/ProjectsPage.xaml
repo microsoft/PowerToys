@@ -29,12 +29,18 @@
                     Severity="Informational" />
                 <controls:SettingsGroup x:Uid="Projects_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
 
-                    <tkcontrols:SettingsExpander
+                    <tkcontrols:SettingsCard
                         x:Uid="Projects_ActivationShortcut"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
-                        IsExpanded="True">
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=TwoWay}" />
-                    </tkcontrols:SettingsExpander>
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
+                        x:Uid="Projects_LaunchEditorButtonControl"
+                        ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
+                        Command="{x:Bind ViewModel.LaunchEditorEventHandler}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
+                        IsClickEnabled="True" />
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

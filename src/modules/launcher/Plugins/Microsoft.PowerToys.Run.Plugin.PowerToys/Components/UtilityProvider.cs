@@ -190,7 +190,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
                 generalSettings.Enabled.Projects,
                 (_) =>
                 {
-                    using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowEnvironmentVariablesSharedEvent());
+                    using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ProjectsLaunchEditorEvent());
                     eventHandle.Set();
                     return true;
                 }));

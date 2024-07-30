@@ -433,9 +433,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsProjects()
         {
+            ISettingsRepository<ProjectsSettings> moduleSettingsRepository = SettingsRepository<ProjectsSettings>.GetInstance(new SettingsUtils());
+            var settings = moduleSettingsRepository.SettingsConfig;
+
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleTextItem() { Label = resourceLoader.GetString("Projects_ShortDescription") },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("Projects_ShortDescription"), Shortcut = settings.Properties.Hotkey.Value.GetKeysList() },
+                new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("Projects_LaunchEditorButtonControl/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("FancyZones_LaunchEditorButtonControl/Description"), ButtonGlyph = "\uEB3C", ButtonClickHandler = ProjectsLaunchClicked },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -507,6 +511,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             // send message to launch the zones editor;
             SendConfigMSG("{\"action\":{\"FancyZones\":{\"action_name\":\"ToggledFZEditor\", \"value\":\"\"}}}");
+        }
+
+        private void ProjectsLaunchClicked(object sender, RoutedEventArgs e)
+        {
+            // send message to launch the projects editor;
+            SendConfigMSG("{\"action\":{\"Projects\":{\"action_name\":\"LaunchEditor\", \"value\":\"\"}}}");
         }
 
         private void KbmKeyLaunchClicked(object sender, RoutedEventArgs e)

@@ -6,12 +6,11 @@ using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using Common.UI;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -24,6 +23,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private ProjectsSettings Settings { get; set; }
 
         private Func<string, int> SendConfigMSG { get; }
+
+        public ButtonClickCommand LaunchEditorEventHandler { get; set; }
 
         public ProjectsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<ProjectsSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
@@ -47,6 +48,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
+
+            LaunchEditorEventHandler = new ButtonClickCommand(LaunchEditor);
+        }
+
+        private void LaunchEditor()
+        {
+            // send message to launch the zones editor;
+            SendConfigMSG("{\"action\":{\"Projects\":{\"action_name\":\"LaunchEditor\", \"value\":\"\"}}}");
         }
 
         private void InitializeEnabledValue()

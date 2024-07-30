@@ -16,6 +16,7 @@
 #include <shellapi.h>
 
 #include "resource.h"
+#include <common/utils/EventWaiter.h>
 
 // Non-localizable
 const std::wstring projectsLauncherPath = L"PowerToys.ProjectsLauncher.exe";
@@ -53,6 +54,8 @@ BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lp
 class ProjectsModuleInterface : public PowertoyModuleIface
 {
 public:
+    EventWaiter m_toggleEditorEventWaiter;
+
     // Return the localized display name of the powertoy
     virtual PCWSTR get_name() override
     {
@@ -219,6 +222,24 @@ public:
         app_key = L"Projects";
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", "Projects");
         init_settings();
+
+        m_toggleEditorEvent = CreateDefaultEvent(CommonSharedConstants::PROJECTS_LAUNCH_EDITOR_EVENT);
+        if (!m_toggleEditorEvent)
+        {
+            Logger::error(L"Failed to create launch editor event");
+            auto message = get_last_error_message(GetLastError());
+            if (message.has_value())
+            {
+                Logger::error(message.value());
+            }
+        }
+        m_toggleEditorEventWaiter = EventWaiter(CommonSharedConstants::PROJECTS_LAUNCH_EDITOR_EVENT, [&](int err) {
+            if (err == ERROR_SUCCESS)
+            {
+                Logger::trace(L"{} event was signaled", CommonSharedConstants::PROJECTS_LAUNCH_EDITOR_EVENT);
+                launch_editor();
+            }
+        });
     }
 
 private:
