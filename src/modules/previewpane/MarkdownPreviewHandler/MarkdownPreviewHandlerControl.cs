@@ -143,7 +143,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                         await _browser.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
                         _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Deny);
                         _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
-                        _browser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+                        _browser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
                         _browser.CoreWebView2.Settings.AreDevToolsEnabled = false;
                         _browser.CoreWebView2.Settings.AreHostObjectsAllowed = false;
                         _browser.CoreWebView2.Settings.IsGeneralAutofillEnabled = false;
@@ -159,6 +159,23 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                             if (new Uri(e.Request.Uri) != _localFileURI)
                             {
                                 e.Response = _browser.CoreWebView2.Environment.CreateWebResourceResponse(null, 403, "Forbidden", null);
+                            }
+                        };
+
+                        _browser.CoreWebView2.ContextMenuRequested += (object sender, CoreWebView2ContextMenuRequestedEventArgs args) =>
+                        {
+                            var menuItems = args.MenuItems;
+
+                            if (!menuItems.IsReadOnly)
+                            {
+                                var copyMenuItem = menuItems.FirstOrDefault(menuItem => menuItem.Name == "copy");
+
+                                menuItems.Clear();
+
+                                if (copyMenuItem != null)
+                                {
+                                    menuItems.Add(copyMenuItem);
+                                }
                             }
                         };
 

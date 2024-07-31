@@ -318,4 +318,12 @@
     <value>Length: {0}</value>
     <comment>{0} is the duration of the audio read from file metadata</comment>
   </data>
+  <data name="ContextMenu_Copy" xml:space="preserve">
+    <value>Copy</value>
+    <comment>Copy selected text to clipboard</comment>
+  </data>
+  <data name="ContextMenu_ToggleTextWrapping" xml:space="preserve">
+    <value>Toggle text wrapping</value>
+    <comment>Toggle whether text in pane is word-wrapped</comment>
+  </data>
 </root>

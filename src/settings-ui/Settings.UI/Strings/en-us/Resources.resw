@@ -4199,4 +4199,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Automatically close the AdvancedPaste window after it loses focus</value>
     <comment>AdvancedPaste is a product name, do not loc</comment>
   </data>
+  <data name="MouseWithoutBorders_PolicyIPAddressMappingInfo.Title" xml:space="preserve">
+    <value>Rules defined by your organization</value>
+  </data>
+  <data name="MouseWithoutBorders_PolicyIPAddressMappingInfo_TextBoxControl.Description" xml:space="preserve">
+    <value>You can not change, remove or disable these enforced rules.</value>
+  </data>
 </root>
