@@ -30,8 +30,8 @@
                 <StackPanel Spacing="16">
                     <HyperlinkButton
                         x:Name="DataDiagnosticsInfoBarDesc"
-                        x:Uid="Oobe_WhatsNew_DataDiagnostics_InfoBar_Desc" 
-                        NavigateUri="https://aka.ms/powertoys-data-and-privacy-documentation"/>
+                        x:Uid="Oobe_WhatsNew_DataDiagnostics_InfoBar_Desc"
+                        NavigateUri="https://aka.ms/powertoys-data-and-privacy-documentation" />
                 </StackPanel>
             </InfoBar.Content>
             <InfoBar.ActionButton>
