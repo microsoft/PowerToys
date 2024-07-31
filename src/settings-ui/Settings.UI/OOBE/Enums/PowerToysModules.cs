@@ -32,5 +32,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         Hosts,
         WhatsNew,
         RegistryPreview,
+        NewPlus,
     }
 }

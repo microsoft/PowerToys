@@ -154,6 +154,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"WinUI3Apps/PowerToys.FileLocksmithExt.dll",
             L"WinUI3Apps/PowerToys.RegistryPreviewExt.dll",
             L"WinUI3Apps/PowerToys.MeasureToolModuleInterface.dll",
+            L"WinUI3Apps/PowerToys.NewPlus.ShellExtension.dll",
             L"WinUI3Apps/PowerToys.HostsModuleInterface.dll",
             L"WinUI3Apps/PowerToys.Peek.dll",
             L"WinUI3Apps/PowerToys.EnvironmentVariablesModuleInterface.dll",

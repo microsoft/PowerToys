@@ -49,7 +49,7 @@ static ThemeListener theme_listener{};
 static void handleTheme()
 {
     auto theme = theme_listener.AppTheme;
-    auto isDark = theme == AppTheme::Dark;
+    auto isDark = theme == Theme::Dark;
     Logger::info(L"Theme is now {}", isDark ? L"Dark" : L"Light");
     if (hwndEditKeyboardNativeWindow != nullptr)
     {
@@ -137,7 +137,7 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
         windowClass.lpfnWndProc = EditKeyboardWindowProc;
         windowClass.hInstance = hInst;
         windowClass.lpszClassName = szWindowClass;
-        windowClass.hbrBackground = CreateSolidBrush((ThemeHelpers::GetAppTheme() == AppTheme::Dark) ? 0x00000000 : 0x00FFFFFF);
+        windowClass.hbrBackground = CreateSolidBrush((ThemeHelpers::GetAppTheme() == Theme::Dark) ? 0x00000000 : 0x00FFFFFF);
         windowClass.hIcon = static_cast<HICON>(LoadImageW(
             windowClass.hInstance,
             MAKEINTRESOURCE(IDS_KEYBOARDMANAGER_ICON),

@@ -181,6 +181,11 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}" />
 
                 <NavigationViewItem
+                    x:Uid="NewPlus_Product_Name"
+                    helpers:NavHelper.NavigateTo="views:NewPlusPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}" />
+
+                <NavigationViewItem
                     x:Uid="Shell_Peek"
                     helpers:NavHelper.NavigateTo="views:PeekPage"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Peek.png}" />
