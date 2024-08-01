@@ -6,7 +6,7 @@
 #include <Windows.h>
 
 void InitializeReportBugLinkAsync();
-std::string LaunchBugReport();
+bool LaunchBugReport();
 std::string FindNewestBugReportFile();
 std::string GetDotNetVersion();
 std::string GetOSVersion();

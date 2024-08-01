@@ -13,116 +13,171 @@
 #include <winrt/Windows.System.UserProfile.h>
 #include <winrt/Windows.Globalization.h>
 
-
 #include <regex>
 #include <thread>
 #include <atomic>
-#include <future>
 
 using namespace std;
 using namespace registry::install_scope;
 namespace fs = std::filesystem;
 
 std::atomic_bool isBugReportThreadRunning = false;
-std::mutex LockObject;
-std::promise<void> cancelPromise;
-static std::atomic<bool> canceled{ false };
-static HWND hwndMessageBox = nullptr;
 
-std::string LaunchBugReport()
+std::string bugReportResult;
+
+bool LaunchBugReport()
 {
-    std::string bugReportFileName;
     std::wstring bug_report_path = get_module_folderpath();
     bug_report_path += L"\\Tools\\PowerToys.BugReportTool.exe";
+    Logger::info("Starting the bug report tool from {}", WideStringToString(bug_report_path));
 
-    bool expected_isBugReportThreadRunning = false;
-    if (isBugReportThreadRunning.compare_exchange_strong(expected_isBugReportThreadRunning, true))
+    bool success = true;
+
+    try
     {
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE };
         sei.lpFile = bug_report_path.c_str();
         sei.nShow = SW_HIDE;
+
         if (ShellExecuteExW(&sei))
         {
-            while (WaitForSingleObject(sei.hProcess, 100) == WAIT_TIMEOUT)
-            {
-                if (canceled.load())
-                {
-                    TerminateProcess(sei.hProcess, 0);
-                    CloseHandle(sei.hProcess);
-                    isBugReportThreadRunning.store(false);
-                    return "";
-                }
-            }
+            WaitForSingleObject(sei.hProcess, INFINITE);
             CloseHandle(sei.hProcess);
 
             // Find the newest bug report file on the desktop
-            bugReportFileName = FindNewestBugReportFile();
+            bugReportResult = FindNewestBugReportFile();
+            Logger::info("Bug report generated: {}", bugReportResult);
         }
+        else
+        {
+            bugReportResult = "Failed to start bug report tool.";
+            auto message = get_last_error_message(GetLastError());
 
-        isBugReportThreadRunning.store(false);
+            if (message.has_value())
+            {
+                bugReportResult = "Failed to start bug report tool. Internal error: " + WideStringToString(message.value());
+            }
+            else
+            {
+                bugReportResult = "Failed to start bug report tool with unknown error.";
+            }
+            success = false;
+        }
     }
-    return bugReportFileName;
+    catch (std::exception& ex)
+    {
+        bugReportResult = std::string{ ex.what() };
+        Logger::error("Exception caught in LaunchBugReport: {}", ex.what());
+        success = false;
+    }
+
+    isBugReportThreadRunning.store(false);
+
+    return success;
 }
 
 void InitializeReportBugLinkAsync()
 {
-    std::string gitHubURL;
-    std::string bugReportResult;
+    bool expected_isBugReportThreadRunning = false;
 
-    notifications::show_toast(GET_RESOURCE_STRING(IDS_BUGREPORT_TEXT), GET_RESOURCE_STRING(IDS_BUGREPORT_TITLE));
-
-    // Launch the bug report task
-    auto bugReportTask = std::async(std::launch::async, [&bugReportResult] {
-        bugReportResult = LaunchBugReport();
-    });
-
-    bugReportTask.wait();
-    
-    if (!bugReportResult.empty())
+    try
     {
-        std::wstring wVersion = get_product_version();
-        std::string version;
-        std::transform(wVersion.begin() + 1, wVersion.end(), std::back_inserter(version), [](wchar_t c) {
-            return static_cast<char>(c);
-        });
+        if (isBugReportThreadRunning.compare_exchange_strong(expected_isBugReportThreadRunning, true))
+        {
+            std::thread([] {
+                std::string gitHubURL;
+                bool launchBugReportResult;
 
-        std::string additionalInfo = "OS Build Version: " + GetOSVersion() + "%0a" + ".NET Version: " + GetDotNetVersion() + "%0a%0a";
-        GeneralSettings generalSettings = get_general_settings();
-        std::string isElevatedRun = generalSettings.isElevated ? "Running as admin: Yes" : "Running as admin: No";
+                notifications::show_toast(GET_RESOURCE_STRING(IDS_BUGREPORT_TEXT), GET_RESOURCE_STRING(IDS_BUGREPORT_TITLE));
 
-        std::string windowsSettings = ReportWindowsSettings();
+                // Launch the bug report task
+                auto bugReportTask = std::async(std::launch::async, [&launchBugReportResult] {
+                    launchBugReportResult = LaunchBugReport();
+                });
 
-        const InstallScope current_install_scope = get_current_install_scope();
+                bugReportTask.wait();
 
-        std::string installScope = current_install_scope == InstallScope::PerUser ? "Installation : User" : "Installation : System";
+                if (launchBugReportResult && !bugReportResult.empty())
+                {
+                    Logger::info("Bug report successfully generated.");
 
-        additionalInfo += windowsSettings + "%0a" + installScope + "%0a" + isElevatedRun;
+                    std::wstring wVersion = get_product_version();
+                    std::string version;
+                    std::transform(wVersion.begin() + 1, wVersion.end(), std::back_inserter(version), [](wchar_t c) {
+                        return static_cast<char>(c);
+                    });
 
-        gitHubURL = "https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CNeeds-Triage&template=bug_report.yml" +
-                    std::string("&version=") + version +
-                    std::string("&additionalInfo=") + additionalInfo;
+                    std::string additionalInfo = "OS Build Version: " + GetOSVersion() + "%0a" + ".NET Version: " + GetDotNetVersion() + "%0a%0a";
+                    GeneralSettings generalSettings = get_general_settings();
+                    std::string isElevatedRun = generalSettings.isElevated ? "Running as admin: Yes" : "Running as admin: No";
 
-        std::wstring wideBugReportResult = L"Bug report generated on your desktop. Please attach the file to the GitHub issue.\n\n" + stringToWideString(bugReportResult);
-        MessageBox(nullptr, wideBugReportResult.c_str(), L"Bug Report", MB_OKCANCEL | MB_ICONINFORMATION);
+                    std::string windowsSettings = ReportWindowsSettings();
+
+                    const InstallScope current_install_scope = get_current_install_scope();
+
+                    std::string installScope = current_install_scope == InstallScope::PerUser ? "Installation : User" : "Installation : System";
+
+                    additionalInfo += windowsSettings + "%0a" + installScope + "%0a" + isElevatedRun;
+
+                    gitHubURL = "https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CNeeds-Triage&template=bug_report.yml" +
+                                std::string("&version=") + version +
+                                std::string("&additionalInfo=") + additionalInfo;
+
+                    std::wstring wideBugReportResult = L"Bug report generated on your desktop. Please attach the file to the GitHub issue.\n\n" + stringToWideString(bugReportResult);
+                    MessageBox(nullptr, wideBugReportResult.c_str(), L"Bug Report", MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND);
+                }
+                else
+                {
+                    std::wstring message;
+
+                    if (bugReportResult.empty())
+                    {
+                        message = L" Failed to generate bug report. bugReportResult is empty.";
+                    }
+                    else
+                    {
+
+                        // Convert std::string to std::wstring
+                        std::wstring wideBugReportResult = stringToWideString(bugReportResult);
+
+                        // Prepare the message
+                        message = L"LaunchBugReport failed: " + wideBugReportResult;
+
+                    }
+                    
+                    Logger::error(message);
+
+                    MessageBox(nullptr, message.c_str(), L"Bug Report", MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
+                    gitHubURL = "https://aka.ms/powerToysReportBug";
+                }
+
+                // Open the URL
+                std::wstring wGitHubURL(gitHubURL.begin(), gitHubURL.end());
+                ShellExecuteW(nullptr, L"open", wGitHubURL.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+            }).detach();
+        }
+        else
+        {
+            Logger::warn("Bug report thread is already running.");
+        }
     }
-    else
+    catch (std::exception& ex)
     {
-        MessageBox(nullptr, L"Failed to start bug report tool.", L"Bug Report", MB_OKCANCEL | MB_ICONINFORMATION);
-        gitHubURL = "https://aka.ms/powerToysReportBug";
+        Logger::error("Exception in InitializeReportBugLinkAsync: {}", ex.what());
     }
-
-    // Open the URL
-    std::wstring wGitHubURL(gitHubURL.begin(), gitHubURL.end());
-    ShellExecuteW(nullptr, L"open", wGitHubURL.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
 }
 
 std::string FindNewestBugReportFile()
 {
     char* desktopPathC;
     size_t len;
+
+    Logger::info("Searching for the newest bug report file on the desktop.");
+
     if (_dupenv_s(&desktopPathC, &len, "USERPROFILE") != 0 || desktopPathC == nullptr)
     {
+        Logger::error("Failed to get USERPROFILE environment variable.");
         return "";
     }
 
@@ -134,6 +189,8 @@ std::string FindNewestBugReportFile()
 
     if (!fs::exists(desktopDir) || !fs::is_directory(desktopDir))
     {
+        Logger::error("Desktop directory not found or is not a directory: {}", desktopPath);
+
         return "";
     }
 
@@ -142,7 +199,7 @@ std::string FindNewestBugReportFile()
 
     for (const auto& entry : fs::directory_iterator(desktopDir))
     {
-        if (entry.is_regular_file() && entry.path().filename().string().find("PowerToysReport_") == 0)
+        if (entry.is_regular_file() && entry.path().filename().wstring().find(L"PowerToysReport_") == 0)
         {
             std::time_t fileTime = fs::last_write_time(entry).time_since_epoch().count();
             if (fileTime > newestTime)
@@ -151,6 +208,15 @@ std::string FindNewestBugReportFile()
                 newestFile = entry.path().string();
             }
         }
+    }
+
+    if (newestFile.empty())
+    {
+        Logger::warn("No bug report files found on the desktop.");
+    }
+    else
+    {
+        Logger::info("Newest bug report file found: " + newestFile);
     }
 
     return newestFile;
