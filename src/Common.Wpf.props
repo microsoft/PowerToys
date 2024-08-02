@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Some items may be set in Directory.Build.props in root -->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Condition="exists('Common.Dotnet.props')" Project="Common.Dotnet.props" />
+  <PropertyGroup>
+	<UseWPF>true</UseWPF>
+	<UseWindowsForms>False</UseWindowsForms>
+	<OutputType>WinExe</OutputType>
+	<ApplicationManifest>app.manifest</ApplicationManifest>
+	<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+	<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+	<GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+  </PropertyGroup>
+</Project>

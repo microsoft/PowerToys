@@ -177,6 +177,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Packages.props = Directory.Packages.props
 		Solution.props = Solution.props
 		src\Version.props = src\Version.props
+		src\Common.Dotnet.props = src\Common.Dotnet.props
+		src\Common.Wpf.CsWinRT.props = src\Common.Wpf.CsWinRT.props
+		src\Common.Wpf.props = src\Common.Wpf.props
 		src\Common.SelfContained.props = src\Common.SelfContained.props
 	EndProjectSection
 EndProject
