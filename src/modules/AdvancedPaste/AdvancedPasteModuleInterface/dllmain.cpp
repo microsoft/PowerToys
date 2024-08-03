@@ -286,7 +286,7 @@ private:
 
     void launch_process_and_named_pipe()
     {
-        const auto pipe_name = get_pipe_name(L"powertoys_advancedpaste_");
+        const auto pipe_name = get_pipe_name(L"powertoys_advanced_paste_");
 
         if (!pipe_name)
         {
