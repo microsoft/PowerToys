@@ -196,6 +196,42 @@ namespace Awake.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to d.
+        /// </summary>
+        internal static string AWAKE_LABEL_DAYS {
+            get {
+                return ResourceManager.GetString("AWAKE_LABEL_DAYS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to h.
+        /// </summary>
+        internal static string AWAKE_LABEL_HOURS {
+            get {
+                return ResourceManager.GetString("AWAKE_LABEL_HOURS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to m.
+        /// </summary>
+        internal static string AWAKE_LABEL_MINUTES {
+            get {
+                return ResourceManager.GetString("AWAKE_LABEL_MINUTES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to s.
+        /// </summary>
+        internal static string AWAKE_LABEL_SECONDS {
+            get {
+                return ResourceManager.GetString("AWAKE_LABEL_SECONDS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} minutes.
         /// </summary>
         internal static string AWAKE_MINUTES {
@@ -241,7 +277,7 @@ namespace Awake.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Timed.
+        ///   Looks up a localized string similar to Interval.
         /// </summary>
         internal static string AWAKE_TRAY_TEXT_TIMED {
             get {
