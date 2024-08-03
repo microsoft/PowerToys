@@ -5,12 +5,12 @@
 using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Security.Credentials;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -76,6 +76,52 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             else
             {
                 EnableAIDialog.IsPrimaryButtonEnabled = false;
+            }
+        }
+
+        public async void DeleteCustomActionButton_Click(object sender, RoutedEventArgs e)
+        {
+            var deleteRowButton = (Button)sender;
+
+            if (deleteRowButton != null)
+            {
+                var customAction = (AdvancedPasteCustomAction)deleteRowButton.DataContext;
+                var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+
+                ContentDialog dialog = new();
+                dialog.XamlRoot = RootPage.XamlRoot;
+                dialog.Title = customAction.Name;
+                dialog.PrimaryButtonText = resourceLoader.GetString("Yes");
+                dialog.CloseButtonText = resourceLoader.GetString("No");
+                dialog.DefaultButton = ContentDialogButton.Primary;
+                dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Dialog_Description") };
+                dialog.PrimaryButtonClick += (_, _) => ViewModel.TryDeleteCustomAction(customAction.Id);
+                await dialog.ShowAsync();
+            }
+        }
+
+        private void AddCustomActionButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                ViewModel.AddCustomActionRow(ResourceLoaderInstance.ResourceLoader.GetString("AdvancedPasteUI_NewCustomActionPrefix"));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Exception encountered when adding a new custom action.", ex);
+            }
+        }
+
+        private void CustomActionsListView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+        {
+            if (ViewModel.IsListViewFocusRequested)
+            {
+                // Set focus to the last item in the ListView
+                int size = CustomActionsListView.Items.Count;
+                ((ListViewItem)CustomActionsListView.ContainerFromIndex(size - 1)).Focus(FocusState.Programmatic);
+
+                // Reset the focus requested flag
+                ViewModel.IsListViewFocusRequested = false;
             }
         }
     }

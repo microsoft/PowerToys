@@ -5,6 +5,7 @@
     xmlns:controls="using:AdvancedPaste.Controls"
     xmlns:converters="using:AdvancedPaste.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:library="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:local="using:AdvancedPaste.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
@@ -13,6 +14,11 @@
     mc:Ignorable="d">
     <Page.Resources>
         <converters:ListViewIndexConverter x:Name="listViewIndexConverter" />
+        <converters:CountToVisibilityConverter x:Name="countToVisibilityConverter" />
+        <converters:CountToDoubleConverter
+            x:Name="customActionsCountToMinHeightConverter"
+            ValueIfNonZero="40"
+            ValueIfZero="0" />
         <Style
             x:Key="PaddingLessFlyoutPresenterStyle"
             BasedOn="{StaticResource DefaultFlyoutPresenterStyle}"
@@ -103,13 +109,16 @@
             BorderThickness="0,1,0,0"
             RowSpacing="4">
             <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" MinHeight="{x:Bind ViewModel.CustomActions.Count, Mode=OneWay, Converter={StaticResource customActionsCountToMinHeightConverter}}" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <ListView
                 x:Name="PasteOptionsListView"
+                Grid.Row="0"
                 VerticalAlignment="Bottom"
                 IsItemClickEnabled="True"
                 ItemClick="PasteOptionsListView_ItemClick"
@@ -166,10 +175,58 @@
                 Grid.Row="1"
                 Height="1"
                 HorizontalAlignment="Stretch"
+                Fill="{ThemeResource DividerStrokeColorDefaultBrush}"
+                Visibility="{x:Bind ViewModel.CustomActions.Count, Mode=OneWay, Converter={StaticResource countToVisibilityConverter}}" />
+
+            <ListView
+                x:Name="CustomActionsListView"
+                Grid.Row="2"
+                VerticalAlignment="Top"
+                IsEnabled="{x:Bind ViewModel.IsCustomAIEnabled, Mode=OneWay}"
+                IsItemClickEnabled="True"
+                ItemClick="CustomActionsListView_ItemClick"
+                ItemContainerTransitions="{x:Null}"
+                ItemsSource="{x:Bind ViewModel.CustomActions, Mode=OneWay}"
+                ScrollViewer.VerticalScrollBarVisibility="Visible"
+                ScrollViewer.VerticalScrollMode="Auto"
+                SelectionMode="None"
+                TabIndex="1">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="library:AdvancedPasteCustomAction">
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <ToolTipService.ToolTip>
+                                <TextBlock>
+                                    <Run Text="{x:Bind Prompt}" />
+                                </TextBlock>
+                            </ToolTipService.ToolTip>
+                            <FontIcon
+                                Margin="0,0,0,0"
+                                VerticalAlignment="Center"
+                                AutomationProperties.AccessibilityView="Raw"
+                                FontSize="16"
+                                Glyph="&#xe945;" />
+                            <TextBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                x:Phase="1"
+                                Text="{x:Bind Name}" />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <Rectangle
+                Grid.Row="3"
+                Height="1"
+                HorizontalAlignment="Stretch"
                 Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
             <!--  x:Uid="ClipboardHistoryButton"  -->
             <Button
-                Grid.Row="2"
+                Grid.Row="4"
                 Height="32"
                 Margin="4,0,4,4"
                 Padding="{StaticResource ButtonPadding}"

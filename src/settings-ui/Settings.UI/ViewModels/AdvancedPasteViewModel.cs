@@ -3,7 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Text.Json;
 using System.Timers;
 using global::PowerToys.GPOWrapper;
@@ -35,6 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GpoRuleConfigured _onlineAIModelsGpoRuleConfiguration;
         private bool _onlineAIModelsDisallowedByGPO;
         private bool _isEnabled;
+        private ObservableCollection<AdvancedPasteCustomAction> _customActions = [];
 
         private Func<string, int> SendConfigMSG { get; }
 
@@ -58,6 +62,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _advancedPasteSettings = advancedPasteSettingsRepository.SettingsConfig;
 
+            _customActions = _advancedPasteSettings.Properties.CustomActions.Value;
+
             InitializeEnabledValue();
 
             // set the callback functions value to handle outgoing IPC message.
@@ -67,6 +73,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _delayedTimer.Interval = SaveSettingsDelayInMs;
             _delayedTimer.Elapsed += DelayedTimer_Tick;
             _delayedTimer.AutoReset = false;
+
+            foreach (var customAction in _customActions)
+            {
+                customAction.PropertyChanged += OnCustomActionPropertyChanged;
+            }
         }
 
         private void InitializeEnabledValue()
@@ -119,6 +130,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
         }
+
+        public ObservableCollection<AdvancedPasteCustomAction> CustomActions
+        {
+            get => _customActions;
+            set
+            {
+                if (_customActions != value)
+                {
+                    _customActions = value;
+                    SaveCustomActions();
+                    OnPropertyChanged(nameof(CustomActions));
+                }
+            }
+        }
+
+        public bool IsListViewFocusRequested { get; set; }
 
         private bool OpenAIKeyExists()
         {
@@ -234,8 +261,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(AdvancedPasteUIShortcut));
                     OnPropertyChanged(nameof(IsConflictingCopyShortcut));
 
-                    _settingsUtils.SaveSettings(_advancedPasteSettings.ToJsonString(), AdvancedPasteSettings.ModuleName);
-                    NotifySettingsChanged();
+                    SaveAndNotifySettings();
                 }
             }
         }
@@ -251,8 +277,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(PasteAsPlainTextShortcut));
                     OnPropertyChanged(nameof(IsConflictingCopyShortcut));
 
-                    _settingsUtils.SaveSettings(_advancedPasteSettings.ToJsonString(), AdvancedPasteSettings.ModuleName);
-                    NotifySettingsChanged();
+                    SaveAndNotifySettings();
                 }
             }
         }
@@ -268,8 +293,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(PasteAsMarkdownShortcut));
                     OnPropertyChanged(nameof(IsConflictingCopyShortcut));
 
-                    _settingsUtils.SaveSettings(_advancedPasteSettings.ToJsonString(), AdvancedPasteSettings.ModuleName);
-                    NotifySettingsChanged();
+                    SaveAndNotifySettings();
                 }
             }
         }
@@ -285,8 +309,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(PasteAsJsonShortcut));
                     OnPropertyChanged(nameof(IsConflictingCopyShortcut));
 
-                    _settingsUtils.SaveSettings(_advancedPasteSettings.ToJsonString(), AdvancedPasteSettings.ModuleName);
-                    NotifySettingsChanged();
+                    SaveAndNotifySettings();
                 }
             }
         }
@@ -401,6 +424,58 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             catch (Exception)
             {
             }
+        }
+
+        internal void AddCustomActionRow(string namePrefix)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(namePrefix);
+
+            var maxUsedId = _customActions.Select(customAction => customAction.Id)
+                                          .DefaultIfEmpty(-1)
+                                          .Max();
+
+            var maxUsedPrefix = _customActions.Select(customAction => customAction.Name)
+                                              .Where(name => name.StartsWith(namePrefix, StringComparison.InvariantCulture))
+                                              .Select(name => int.TryParse(name.AsSpan(namePrefix.Length), out int number) ? number : 0)
+                                              .DefaultIfEmpty(0)
+                                              .Max();
+
+            AdvancedPasteCustomAction newCustomAction = new()
+            {
+                Id = maxUsedId + 1,
+                Name = $"{namePrefix} {maxUsedPrefix + 1}",
+            };
+
+            newCustomAction.PropertyChanged += OnCustomActionPropertyChanged;
+            _customActions.Add(newCustomAction);
+            SaveCustomActions();
+
+            // Set the focus requested flag to indicate that an add operation has occurred during the ContainerContentChanging event
+            IsListViewFocusRequested = true;
+        }
+
+        internal void TryDeleteCustomAction(int id)
+        {
+            var customAction = _customActions.FirstOrDefault(customAction => customAction.Id == id);
+
+            if (customAction != null)
+            {
+                _customActions.Remove(customAction);
+                SaveCustomActions();
+            }
+        }
+
+        private void SaveCustomActions() => SaveAndNotifySettings();
+
+        private void SaveAndNotifySettings()
+        {
+            _settingsUtils.SaveSettings(_advancedPasteSettings.ToJsonString(), AdvancedPasteSettings.ModuleName);
+            NotifySettingsChanged();
+        }
+
+        private void OnCustomActionPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            SaveCustomActions();
         }
     }
 }

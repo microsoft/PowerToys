@@ -66,6 +66,13 @@ namespace AdvancedPaste.Controls
             _userSettings = App.GetService<IUserSettings>();
 
             ViewModel = App.GetService<OptionsViewModel>();
+            ViewModel.CustomActionActivated += ViewModel_CustomActionActivated;
+        }
+
+        private void ViewModel_CustomActionActivated(object sender, Models.TextEventArgs e)
+        {
+            InputTxtBox.Text = e.Text;
+            GenerateCustom();
         }
 
         private void Grid_Loaded(object sender, RoutedEventArgs e)

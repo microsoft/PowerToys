@@ -6,12 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.ViewModels;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -177,6 +177,14 @@ namespace AdvancedPaste.Pages
                             break;
                         }
                 }
+            }
+        }
+
+        private void CustomActionsListView_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            if (e.ClickedItem is AdvancedPasteCustomAction customAction)
+            {
+                ViewModel.ActivateCustomAction(customAction);
             }
         }
 

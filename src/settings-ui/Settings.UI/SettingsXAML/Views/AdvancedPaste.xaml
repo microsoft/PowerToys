@@ -5,8 +5,10 @@
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    x:Name="RootPage"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
     <Page.Resources>
@@ -100,33 +102,115 @@
                     </controls:SettingsGroup>
 
                     <controls:SettingsGroup x:Uid="AdvancedPaste_Direct_Access_Hotkeys_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                        <tkcontrols:SettingsExpander
-                            x:Uid="AdvancedPasteUI_Shortcut"
-                            HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
-                            IsExpanded="True">
+                        <tkcontrols:SettingsCard x:Uid="AdvancedPasteUI_Actions" HeaderIcon="{ui:FontIcon Glyph=&#xE792;}">
+                            <Button
+                                x:Uid="AdvancedPasteUI_AddCustomActionButton"
+                                Click="AddCustomActionButton_Click"
+                                Style="{ThemeResource AccentButtonStyle}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="AdvancedPasteUI_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                             <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.AdvancedPasteUIShortcut, Mode=TwoWay}" />
-                            <tkcontrols:SettingsExpander.Items>
-                                <tkcontrols:SettingsCard Visibility="Collapsed">
-                                    <!--  There's a bug that makes it so that the first shortcut control inside an expander doesn't work. We add this dummy one so the other entries aren't affected.  -->
-                                    <TextBox />
-                                </tkcontrols:SettingsCard>
-                                <tkcontrols:SettingsCard x:Uid="PasteAsPlainText_Shortcut">
-                                    <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.PasteAsPlainTextShortcut, Mode=TwoWay}" />
-                                </tkcontrols:SettingsCard>
-                                <tkcontrols:SettingsCard x:Uid="PasteAsMarkdown_Shortcut">
-                                    <controls:ShortcutControl
-                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                        AllowDisable="True"
-                                        HotkeySettings="{x:Bind Path=ViewModel.PasteAsMarkdownShortcut, Mode=TwoWay}" />
-                                </tkcontrols:SettingsCard>
-                                <tkcontrols:SettingsCard x:Uid="PasteAsJson_Shortcut">
-                                    <controls:ShortcutControl
-                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                        AllowDisable="True"
-                                        HotkeySettings="{x:Bind Path=ViewModel.PasteAsJsonShortcut, Mode=TwoWay}" />
-                                </tkcontrols:SettingsCard>
-                            </tkcontrols:SettingsExpander.Items>
-                        </tkcontrols:SettingsExpander>
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="PasteAsPlainText_Shortcut">
+                            <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.PasteAsPlainTextShortcut, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="PasteAsMarkdown_Shortcut">
+                            <controls:ShortcutControl
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                AllowDisable="True"
+                                HotkeySettings="{x:Bind Path=ViewModel.PasteAsMarkdownShortcut, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="PasteAsJson_Shortcut">
+                            <controls:ShortcutControl
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                AllowDisable="True"
+                                HotkeySettings="{x:Bind Path=ViewModel.PasteAsJsonShortcut, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <ListView
+                            x:Name="CustomActionsListView"
+                            x:Uid="CustomActionsListView"
+                            ContainerContentChanging="CustomActionsListView_ContainerContentChanging"
+                            ItemsSource="{x:Bind ViewModel.CustomActions, Mode=TwoWay}"
+                            SelectionMode="None">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    <Setter Property="Padding" Value="0" />
+                                    <Setter Property="Margin" Value="0" />
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:AdvancedPasteCustomAction">
+                                    <tkcontrols:SettingsCard Header="{x:Bind Name, Mode=OneWay}">
+                                        <tkcontrols:SettingsCard.Resources />
+                                        <tkcontrols:SettingsCard.Description>
+                                            <StackPanel
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Margin="0,4,0,0"
+                                                Orientation="Horizontal">
+                                                <TextBlock
+                                                    Margin="0,0,4,0"
+                                                    Style="{ThemeResource SecondaryTextStyle}"
+                                                    Text="{x:Bind Prompt, Mode=OneWay}" />
+                                            </StackPanel>
+                                        </tkcontrols:SettingsCard.Description>
+                                        <StackPanel
+                                            Grid.Column="2"
+                                            HorizontalAlignment="Right"
+                                            Orientation="Horizontal"
+                                            Spacing="8">
+                                            <Button
+                                                x:Uid="EditButton"
+                                                Width="40"
+                                                Height="36"
+                                                Content="&#xE70F;"
+                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                Style="{StaticResource SubtleButtonStyle}">
+                                                <ToolTipService.ToolTip>
+                                                    <TextBlock x:Uid="EditTooltip" />
+                                                </ToolTipService.ToolTip>
+                                                <Button.Flyout>
+                                                    <Flyout x:Uid="CustomAction_Edit" ShouldConstrainToRootBounds="False">
+                                                        <StackPanel Spacing="16">
+                                                            <TextBox
+                                                                x:Uid="AdvancedPasteUI_CustomAction_Name"
+                                                                Width="240"
+                                                                HorizontalAlignment="Left"
+                                                                Text="{x:Bind Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                            <TextBox
+                                                                x:Uid="AdvancedPasteUI_CustomAction_Prompt"
+                                                                Width="240"
+                                                                Height="200"
+                                                                HorizontalAlignment="Left"
+                                                                AcceptsReturn="true"
+                                                                Text="{x:Bind Prompt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                    </Flyout>
+                                                </Button.Flyout>
+                                            </Button>
+                                            <controls:ShortcutControl AllowDisable="True" HotkeySettings="{x:Bind Path=Shortcut, Mode=TwoWay}" />
+                                            <Button
+                                                x:Name="RemoveButton"
+                                                x:Uid="RemoveButton"
+                                                Width="40"
+                                                Height="36"
+                                                Click="DeleteCustomActionButton_Click"
+                                                CommandParameter="{Binding Id}"
+                                                Content="&#xE74D;"
+                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                Style="{StaticResource SubtleButtonStyle}">
+                                                <ToolTipService.ToolTip>
+                                                    <TextBlock x:Uid="RemoveTooltip" />
+                                                </ToolTipService.ToolTip>
+                                            </Button>
+                                        </StackPanel>
+                                    </tkcontrols:SettingsCard>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
                         <InfoBar
                             x:Uid="AdvancedPaste_ShortcutWarning"
                             IsClosable="False"

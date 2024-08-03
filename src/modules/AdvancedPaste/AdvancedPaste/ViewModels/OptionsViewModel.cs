@@ -5,6 +5,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
@@ -49,6 +50,11 @@ namespace AdvancedPaste.ViewModels
         [NotifyPropertyChangedFor(nameof(InputTxtBoxErrorText))]
         private int _apiRequestStatus;
 
+        [ObservableProperty]
+        private ObservableCollection<AdvancedPasteCustomAction> _customActions;
+
+        public event EventHandler<TextEventArgs> CustomActionActivated;
+
         public OptionsViewModel(IUserSettings userSettings)
         {
             aiHelper = new AICompletionsHelper();
@@ -57,6 +63,8 @@ namespace AdvancedPaste.ViewModels
             IsCustomAIEnabled = IsClipboardDataText && aiHelper.IsAIEnabled;
 
             ApiRequestStatus = (int)HttpStatusCode.OK;
+
+            CustomActions = _userSettings.CustomActions;
 
             GeneratedResponses = new ObservableCollection<string>();
             GeneratedResponses.CollectionChanged += (s, e) =>
@@ -201,7 +209,12 @@ namespace AdvancedPaste.ViewModels
         [RelayCommand]
         public void PasteCustom()
         {
-            PasteCustomFunction(GeneratedResponses[CurrentResponseIndex]);
+            var text = GeneratedResponses.ElementAtOrDefault(CurrentResponseIndex);
+
+            if (text != null)
+            {
+                PasteCustomFunction(GeneratedResponses[CurrentResponseIndex]);
+            }
         }
 
         // Command to select the previous custom format
@@ -306,6 +319,38 @@ namespace AdvancedPaste.ViewModels
             }
         }
 
+        internal void ExecuteCustomAction(int id, bool pasteAlways = false)
+        {
+            Logger.LogTrace();
+
+            var customAction = _userSettings.CustomActions.FirstOrDefault(customAction => customAction.Id == id);
+
+            if (customAction != null)
+            {
+                GenerateCustomFunction(customAction.Prompt).ContinueWith(
+                t =>
+                {
+                    try
+                    {
+                        SetClipboardContentAndHideWindow(t.Result);
+
+                        if (pasteAlways || _userSettings.SendPasteKeyCombination)
+                        {
+                            ClipboardHelper.SendPasteKeyCombination();
+                        }
+                    }
+                    catch
+                    {
+                    }
+                },
+                TaskScheduler.FromCurrentSynchronizationContext());
+            }
+            else
+            {
+                Logger.LogWarning("Received request for unknown custom action");
+            }
+        }
+
         internal async Task<string> GenerateCustomFunction(string inputInstructions)
         {
             Logger.LogTrace();
@@ -401,6 +446,11 @@ namespace AdvancedPaste.ViewModels
             SettingsUtils utils = new SettingsUtils();
             var query = utils.GetSettings<CustomQuery>(Constants.AdvancedPasteModuleName, Constants.LastQueryJsonFileName);
             return query;
+        }
+
+        internal void ActivateCustomAction(AdvancedPasteCustomAction customAction)
+        {
+            CustomActionActivated?.Invoke(this, new TextEventArgs(customAction.Prompt));
         }
 
         private bool IsClipboardHistoryEnabled()

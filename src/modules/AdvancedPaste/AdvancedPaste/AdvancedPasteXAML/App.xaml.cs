@@ -3,6 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Settings;
 using AdvancedPaste.ViewModels;
@@ -14,6 +18,7 @@ using Microsoft.UI.Xaml;
 using Windows.Graphics;
 using WinUIEx;
 using static AdvancedPaste.Helpers.NativeMethods;
+using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -74,7 +79,7 @@ namespace AdvancedPaste
         /// Invoked when the application is launched.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
-        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             var cmdArgs = Environment.GetCommandLineArgs();
             if (cmdArgs?.Length > 1)
@@ -88,9 +93,46 @@ namespace AdvancedPaste
                 }
             }
 
-            NativeEventWaiter.WaitForEventLoop(interop.Constants.ShowAdvancedPasteSharedEvent(), OnAdvancedPasteHotkey);
-            NativeEventWaiter.WaitForEventLoop(interop.Constants.AdvancedPasteMarkdownEvent(), OnAdvancedPasteMarkdownHotkey);
-            NativeEventWaiter.WaitForEventLoop(interop.Constants.AdvancedPasteJsonEvent(), OnAdvancedPasteJsonHotkey);
+            if (cmdArgs?.Length > 2)
+            {
+                ProcessNamedPipe(cmdArgs[2]);
+            }
+        }
+
+        private void ProcessNamedPipe(string pipeName)
+        {
+            var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+
+            var connectTimeout = TimeSpan.FromSeconds(10);
+            Action<string> messageHandler = message => dispatcherQueue.TryEnqueue(() => OnNamedPipeMessage(message));
+
+            Task.Run(async () =>
+            {
+                await NamedPipeProcessor.ProcessNamedPipeAsync(pipeName, connectTimeout, messageHandler, CancellationToken.None);
+            });
+        }
+
+        private void OnNamedPipeMessage(string message)
+        {
+            var messageParts = message.Split();
+            var messageType = messageParts.First();
+
+            if (messageType == interop.Constants.AdvancedPasteShowUIMessage())
+            {
+                OnAdvancedPasteHotkey();
+            }
+            else if (messageType == interop.Constants.AdvancedPasteMarkdownMessage())
+            {
+                OnAdvancedPasteMarkdownHotkey();
+            }
+            else if (messageType == interop.Constants.AdvancedPasteJsonMessage())
+            {
+                OnAdvancedPasteJsonHotkey();
+            }
+            else if (messageType == interop.Constants.AdvancedPasteCustomActionMessage())
+            {
+                OnAdvancedPasteCustomActionHotkey(messageParts);
+            }
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -132,6 +174,27 @@ namespace AdvancedPaste
             }
 
             window.SetFocus();
+        }
+
+        private void OnAdvancedPasteCustomActionHotkey(string[] messageParts)
+        {
+            if (messageParts.Length != 2)
+            {
+                Logger.LogWarning("Unexpected custom action message");
+            }
+            else
+            {
+                viewModel.GetClipboardData();
+
+                if (!int.TryParse(messageParts[1], CultureInfo.InvariantCulture, out int id))
+                {
+                    Logger.LogWarning($"Unexpected custom action message id {messageParts[1]}");
+                }
+                else
+                {
+                    viewModel.ExecuteCustomAction(id, true);
+                }
+            }
         }
 
         private void MoveWindowToActiveMonitor()
