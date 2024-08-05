@@ -6,6 +6,7 @@ namespace ProjectsData
 {
     std::wstring ProjectsFile();
     std::wstring TempProjectsFile();
+    std::wstring LaunchProjectsFile();
 
     struct Project
     {
@@ -72,6 +73,34 @@ namespace ProjectsData
     {
         std::vector<Project> projects;
     };
+
+    struct AppLaunchInfo
+    {
+        std::wstring name;
+        std::wstring path;
+        std::wstring state;
+    };
+
+    namespace AppLaunchInfoJSON
+    {
+        json::JsonObject ToJson(const AppLaunchInfo& data);
+    }
+
+    namespace AppLaunchInfoListJSON
+    {
+        json::JsonObject ToJson(const std::vector<AppLaunchInfo>& data);
+    }
+
+    struct AppLaunchData
+    {
+        std::vector<AppLaunchInfo> appLaunchInfoList;
+        int launcherProcessID = 0;
+    };
+
+    namespace AppLaunchDataJSON
+    {
+        json::JsonObject ToJson(const AppLaunchData& data);
+    }
 
     namespace ProjectJSON
     {

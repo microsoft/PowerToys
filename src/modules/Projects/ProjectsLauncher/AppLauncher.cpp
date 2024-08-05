@@ -105,7 +105,7 @@ namespace FancyZones
             ScreenToWorkAreaCoords(window, monitor, rect);
             placement.rcNormalPosition = rect;
         }
-        
+
         placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
 
         auto result = ::SetWindowPlacement(window, &placement);
@@ -136,7 +136,7 @@ namespace FancyZones
 
 namespace
 {
-    using LaunchedApps = std::vector<std::pair<ProjectsData::Project::Application, HWND>>;
+    using LaunchedApps = std::vector<std::tuple<ProjectsData::Project::Application, HWND, std::wstring>>;
 
     LaunchedApps Prepare(std::vector<ProjectsData::Project::Application>& apps, const Utils::Apps::AppList& installedApps)
     {
@@ -159,22 +159,42 @@ namespace
                 }
             }
 
-            launchedApps.push_back({ app, nullptr });
+            launchedApps.push_back({ app, nullptr, L"waiting" });
         }
 
         return launchedApps;
     }
 
+    auto launchFileName = ProjectsData::LaunchProjectsFile();
+
+    void UpdateLaunchStatus(LaunchedApps launchedApps)
+    {
+        ProjectsData::AppLaunchData appData = ProjectsData::AppLaunchData();
+        appData.appLaunchInfoList.reserve(launchedApps.size());
+        appData.launcherProcessID = GetCurrentProcessId();
+        for (auto& app : launchedApps)
+        {
+            ProjectsData::AppLaunchInfo appLaunchInfo = ProjectsData::AppLaunchInfo();
+            appLaunchInfo.name = get<0>(app).name;
+            appLaunchInfo.path = get<0>(app).path;
+            appLaunchInfo.state = get<2>(app);
+
+            appData.appLaunchInfoList.push_back(appLaunchInfo);
+        }
+
+        json::to_file(launchFileName, ProjectsData::AppLaunchDataJSON::ToJson(appData));
+    }
+
     bool AllWindowsFound(const LaunchedApps& launchedApps)
     {
-        return std::find_if(launchedApps.begin(), launchedApps.end(), 
-            [&](const std::pair<ProjectsData::Project::Application, HWND>& val) {
-                return val.second == nullptr;
-            }) == launchedApps.end();
+        return std::find_if(launchedApps.begin(), launchedApps.end(), [&](const std::tuple<ProjectsData::Project::Application, HWND, std::wstring>& val) {
+                   return std::get<1>(val) == nullptr;
+               }) == launchedApps.end();
     };
 
-    void AddOpenedWindows(LaunchedApps& launchedApps, const std::vector<HWND>& windows, const Utils::Apps::AppList& installedApps)
+    bool AddOpenedWindows(LaunchedApps& launchedApps, const std::vector<HWND>& windows, const Utils::Apps::AppList& installedApps)
     {
+        bool statusChanged = false;
         for (HWND window : windows)
         {
             auto installedAppData = Utils::Apps::GetApp(window, installedApps);
@@ -186,7 +206,7 @@ namespace
             auto insertionIter = launchedApps.end();
             for (auto iter = launchedApps.begin(); iter != launchedApps.end(); ++iter)
             {
-                if (iter->second == nullptr && installedAppData.value().name == iter->first.name)
+                if (std::get<1>(*iter) == nullptr && installedAppData.value().name == std::get<0>(*iter).name)
                 {
                     insertionIter = iter;
                 }
@@ -199,30 +219,32 @@ namespace
                 DPIAware::GetScreenDPIForMonitor(monitor, dpi);
 
                 float x = static_cast<float>(placement.rcNormalPosition.left);
-                float y = static_cast<float>(placement.rcNormalPosition.top); 
+                float y = static_cast<float>(placement.rcNormalPosition.top);
                 float width = static_cast<float>(placement.rcNormalPosition.right - placement.rcNormalPosition.left);
                 float height = static_cast<float>(placement.rcNormalPosition.bottom - placement.rcNormalPosition.top);
 
                 DPIAware::InverseConvert(monitor, x, y);
                 DPIAware::InverseConvert(monitor, width, height);
 
-                ProjectsData::Project::Application::Position windowPosition{ 
-                    .x = static_cast<int>(std::round(x)), 
-                    .y = static_cast<int>(std::round(y)),  
-                    .width = static_cast<int>(std::round(width)), 
-                    .height = static_cast<int>(std::round(height)), 
+                ProjectsData::Project::Application::Position windowPosition{
+                    .x = static_cast<int>(std::round(x)),
+                    .y = static_cast<int>(std::round(y)),
+                    .width = static_cast<int>(std::round(width)),
+                    .height = static_cast<int>(std::round(height)),
                 };
-                if (iter->first.position == windowPosition)
+                if (std::get<0>(*iter).position == windowPosition)
                 {
-                    Logger::debug(L"{} window already found at {} {}.", iter->first.name, iter->first.position.x, iter->first.position.y);
-					insertionIter = iter;
-					break;
-				}
-			}
+                    Logger::debug(L"{} window already found at {} {}.", std::get<0>(*iter).name, std::get<0>(*iter).position.x, std::get<0>(*iter).position.y);
+                    insertionIter = iter;
+                    break;
+                }
+            }
 
             if (insertionIter != launchedApps.end())
             {
-                insertionIter->second = window;
+                std::get<1>(*insertionIter) = window;
+                std::get<2>(*insertionIter) = L"launched";
+                statusChanged = true;
             }
 
             if (AllWindowsFound(launchedApps))
@@ -230,6 +252,7 @@ namespace
                 break;
             }
         }
+        return statusChanged;
     }
 }
 
@@ -288,8 +311,8 @@ bool LaunchPackagedApp(const std::wstring& packageFullName)
 }
 
 bool Launch(const ProjectsData::Project::Application& app)
-{ 
-    bool launched { false };
+{
+    bool launched{ false };
     if (!app.packageFullName.empty() && app.commandLineArgs.empty() && !app.isElevated)
     {
         Logger::trace(L"Launching packaged app {}", app.name);
@@ -305,7 +328,7 @@ bool Launch(const ProjectsData::Project::Application& app)
 
             std::wstring uriProtocolName = names[0];
             std::wstring command = std::wstring(uriProtocolName + (app.commandLineArgs.starts_with(L":") ? L"" : L":") + app.commandLineArgs);
-   
+
             launched = LaunchApp(command, L"", app.isElevated);
         }
         else
@@ -313,7 +336,7 @@ bool Launch(const ProjectsData::Project::Application& app)
             Logger::info(L"Uri protocol names not found for {}", app.packageFullName);
         }
     }
-    
+
     if (!launched)
     {
         Logger::trace(L"Launching {} at {}", app.name, app.path);
@@ -332,41 +355,69 @@ bool Launch(const ProjectsData::Project::Application& app)
     return launched;
 }
 
+void Launch_UI()
+{
+    Logger::trace(L"Starting ProjectsLauncherUI");
+
+    SHELLEXECUTEINFOW sei{ sizeof(sei) };
+    sei.fMask = SEE_MASK_NOCLOSEPROCESS;
+    sei.lpFile = L"PowerToys.ProjectsLauncherUI.exe";
+    sei.nShow = SW_SHOWNORMAL;
+    if (ShellExecuteExW(&sei))
+    {
+        Logger::trace("Successfully started the ProjectsLauncherUI");
+    }
+    else
+    {
+        Logger::error(L"ProjectsLauncherUI failed to start. {}", get_last_error_or_default(GetLastError()));
+    }
+}
+
 ProjectsData::Project Launch(ProjectsData::Project project)
 {
+    std::filesystem::remove(launchFileName);
+    Launch_UI();
+
     // Get the set of windows before launching the app
     std::vector<HWND> windowsBefore = WindowEnumerator::Enumerate(WindowFilter::Filter);
     auto installedApps = Utils::Apps::GetAppsList();
     auto monitors = MonitorUtils::IdentifyMonitors();
     auto launchedApps = Prepare(project.apps, installedApps);
 
+    UpdateLaunchStatus(launchedApps);
+
     // If the moveExistingWindows setting is applied
     // move existing windows if any to the correct position
     if (project.moveExistingWindows)
     {
         AddOpenedWindows(launchedApps, windowsBefore, installedApps);
+        UpdateLaunchStatus(launchedApps);
     }
 
     // Launch apps
     for (auto& app : launchedApps)
     {
-        if (!app.second)
+        if (!std::get<1>(app))
         {
-            if (!Launch(app.first))
+            if (!Launch(std::get<0>(app)))
             {
-                Logger::error(L"Failed to launch {}", app.first.name);
+                Logger::error(L"Failed to launch {}", std::get<0>(app).name);
+                std::get<2>(app) = L"failed";
+                UpdateLaunchStatus(launchedApps);
             }
         }
     }
-    
+
     // Get newly opened windows after launching apps, keep retrying for 5 seconds
     for (int attempt = 0; attempt < 50 && !AllWindowsFound(launchedApps); attempt++)
     {
         std::vector<HWND> windowsAfter = WindowEnumerator::Enumerate(WindowFilter::Filter);
         std::vector<HWND> windowsDiff{};
-        std::copy_if(windowsAfter.begin(), windowsAfter.end(), std::back_inserter(windowsDiff), 
-            [&](HWND window) { return std::find(windowsBefore.begin(), windowsBefore.end(), window) == windowsBefore.end(); });
-        AddOpenedWindows(launchedApps, windowsDiff, installedApps);
+        std::copy_if(windowsAfter.begin(), windowsAfter.end(), std::back_inserter(windowsDiff), [&](HWND window) { return std::find(windowsBefore.begin(), windowsBefore.end(), window) == windowsBefore.end(); });
+        if (AddOpenedWindows(launchedApps, windowsDiff, installedApps))
+        {
+            UpdateLaunchStatus(launchedApps);
+        }
 
         // check if all windows were found
         if (AllWindowsFound(launchedApps))
@@ -381,14 +432,17 @@ ProjectsData::Project Launch(ProjectsData::Project project)
         }
     }
 
-    // Check single-instance app windows 
+    // Check single-instance app windows
     if (!AllWindowsFound(launchedApps))
     {
-        AddOpenedWindows(launchedApps, WindowEnumerator::Enumerate(WindowFilter::Filter), installedApps);
+        if (AddOpenedWindows(launchedApps, WindowEnumerator::Enumerate(WindowFilter::Filter), installedApps))
+        {
+            UpdateLaunchStatus(launchedApps);
+        }
     }
 
     // Place windows
-    for (const auto& [app, window] : launchedApps)
+    for (const auto& [app, window, status] : launchedApps)
     {
         if (window == nullptr)
         {

@@ -22,6 +22,12 @@ namespace ProjectsData
         return settingsFolderPath + L"\\temp-project.json";
     }
 
+    std::wstring LaunchProjectsFile()
+    {
+        std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
+        return settingsFolderPath + L"\\launch-project.json";
+    }
+    
     RECT Project::Application::Position::toRect() const noexcept
     {
         return RECT{ .left = x, .top = y, .right = x + width, .bottom = y + height };
@@ -400,6 +406,63 @@ namespace ProjectsData
             }
 
             return result;
+        }
+    }
+
+    namespace AppLaunchInfoJSON
+    {
+        namespace NonLocalizable
+        {
+            const static wchar_t* NameID = L"name";
+            const static wchar_t* PathID = L"path";
+            const static wchar_t* StateID = L"state";
+        }
+
+        json::JsonObject ToJson(const AppLaunchInfo& data)
+        {
+            json::JsonObject json{};
+            json.SetNamedValue(NonLocalizable::NameID, json::value(data.name));
+            json.SetNamedValue(NonLocalizable::PathID, json::value(data.path));
+            json.SetNamedValue(NonLocalizable::StateID, json::value(data.state));
+            return json;
+        }
+    }
+
+    namespace AppLaunchInfoListJSON
+    {
+        namespace NonLocalizable
+        {
+            const static wchar_t* AppLaunchInfoID = L"applaunchinfos";
+        }
+
+        json::JsonObject ToJson(const std::vector<AppLaunchInfo>& data)
+        {
+            json::JsonObject json{};
+            json::JsonArray appLaunchInfoArray{};
+            for (const auto& appLaunchInfo : data)
+            {
+                appLaunchInfoArray.Append(AppLaunchInfoJSON::ToJson(appLaunchInfo));
+            }
+
+            json.SetNamedValue(NonLocalizable::AppLaunchInfoID, appLaunchInfoArray);
+            return json;
+        }
+    }
+
+    namespace AppLaunchDataJSON
+    {
+        namespace NonLocalizable
+        {
+            const static wchar_t* AppsID = L"apps";
+            const static wchar_t* ProcessID = L"processid";
+        }
+
+        json::JsonObject ToJson(const AppLaunchData& data)
+        {
+            json::JsonObject json{};
+            json.SetNamedValue(NonLocalizable::AppsID, AppLaunchInfoListJSON::ToJson(data.appLaunchInfoList));
+            json.SetNamedValue(NonLocalizable::ProcessID, json::value(data.launcherProcessID));
+            return json;
         }
     }
 }
