@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\..\Version.props" />
+  
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.OneNote</RootNamespace>
     <AssemblyName>Microsoft.PowerToys.Run.Plugin.OneNote</AssemblyName>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>$(Version).0</Version>
+    
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>

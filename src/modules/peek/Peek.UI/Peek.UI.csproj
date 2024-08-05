@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\Version.props" />
+  
   <PropertyGroup>
     <AssemblyName>PowerToys.Peek.UI</AssemblyName>
     <AssemblyTitle>PowerToys.Peek.UI</AssemblyTitle>

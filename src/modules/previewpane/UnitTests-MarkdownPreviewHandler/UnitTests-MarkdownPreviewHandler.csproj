@@ -19,7 +19,7 @@
     <IsCodedUITest>False</IsCodedUITest>
   </PropertyGroup>
 
-  <Import Project="..\..\..\Version.props" />
+  
 
   <ItemGroup>
   </ItemGroup>

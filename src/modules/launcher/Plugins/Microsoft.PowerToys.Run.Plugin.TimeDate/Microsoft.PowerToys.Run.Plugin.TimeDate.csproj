@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\..\Version.props" />
+  
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -7,7 +7,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.TimeDate</RootNamespace>
     <AssemblyName>Microsoft.PowerToys.Run.Plugin.TimeDate</AssemblyName>
-    <Version>$(Version).0</Version>
+    
     <useWPF>true</useWPF>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
