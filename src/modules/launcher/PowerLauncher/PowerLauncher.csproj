@@ -1,47 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import 
-    Condition="exists('$(SolutionDir)src\Common.Wpf.CsWinRT.props')" 
-    Project="$(SolutionDir)src\Common.Wpf.CsWinRT.props" />
-  <Import 
-    Condition="exists('$(SolutionDir)src\Common.SelfContained.props')" 
-    Project="$(SolutionDir)src\Common.SelfContained.props" />
+  <Import Project="$(SolutionDir)src\Common.Wpf.CsWinRT.props" />
+  <Import Project="$(SolutionDir)src\Common.SelfContained.props" />
 
   <PropertyGroup>
     <AssemblyTitle>PowerToys.Run</AssemblyTitle>
     <StartupObject>PowerLauncher.App</StartupObject>
     <ApplicationIcon>Assets\PowerLauncher\RunResource.ico</ApplicationIcon>
-    <AssetTargetFallback>uap10.0.19041</AssetTargetFallback>
+    <AssetTargetFallback>uap10.0.19041</AssetTargetFallback> <!-- FOLLOW UP: This feels like it should be part of something else -->
     <Description>PowerToys PowerLauncher</Description>
     <AssemblyName>PowerToys.PowerLauncher</AssemblyName>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
-    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <SelfContained>true</SelfContained>
-  </PropertyGroup>
-
-  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
-  <PropertyGroup Condition="'$(Platform)'=='x64'">
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
-    <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Optimize>false</Optimize>
-  </PropertyGroup>
-
-
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <DefineConstants>TRACE;RELEASE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
 
   <ItemGroup>
