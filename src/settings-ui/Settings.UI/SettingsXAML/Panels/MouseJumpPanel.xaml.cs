@@ -27,20 +27,34 @@ namespace Microsoft.PowerToys.Settings.UI.Panels
             var selectedPreviewType = this.GetSelectedPreviewType();
             var customPreviewTypeSelected = selectedPreviewType == PreviewType.Custom;
             this.CopyStyleToCustom.IsEnabled = !customPreviewTypeSelected;
-            this.CustomStyleSettings.Visibility = customPreviewTypeSelected
+            var customControlVisibility = customPreviewTypeSelected
                 ? Visibility.Visible
                 : Visibility.Collapsed;
+            this.MouseUtils_MouseJump_BackgroundColor1.Visibility = customControlVisibility;
+            this.MouseUtils_MouseJump_BackgroundColor2.Visibility = customControlVisibility;
+            this.MouseUtils_MouseJump_BorderThickness.Visibility = customControlVisibility;
+            this.MouseUtils_MouseJump_BorderColor.Visibility = customControlVisibility;
+            this.MouseUtils_MouseJump_Border3dDepth.Visibility = customControlVisibility;
+            this.MouseUtils_MouseJump_BorderPadding.Visibility = customControlVisibility;
+            this.MouseUtils_MouseJump_BezelThickness.Visibility = customControlVisibility;
+            this.MouseUtils_MouseJump_BezelColor.Visibility = customControlVisibility;
+            this.MouseUtils_MouseJump_Bezel3dDepth.Visibility = customControlVisibility;
+            this.MouseUtils_MouseJump_ScreenMargin.Visibility = customControlVisibility;
+            this.MouseUtils_MouseJump_ScreenColor1.Visibility = customControlVisibility;
+            this.MouseUtils_MouseJump_ScreenColor2.Visibility = customControlVisibility;
         }
 
         private /* async */ void CopyStyleToCustom_Click(object sender, RoutedEventArgs e)
         {
+            /*
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
             var messageBox = this.MouseUtils_MouseJump_CopyToCustomStyle_MessageBox;
             messageBox.Title = resourceLoader.GetString("MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_Title");
             messageBox.PrimaryButtonText = resourceLoader.GetString("MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_PrimaryButtonText");
             messageBox.PrimaryButtonCommand = new RelayCommand(this.MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_PrimaryButtonCommand);
-            /* await messageBox.ShowAsync(); */
+            // await messageBox.ShowAsync();
             this.MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_PrimaryButtonCommand();
+            */
         }
 
         private void MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_PrimaryButtonCommand()
