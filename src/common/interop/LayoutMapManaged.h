@@ -8,8 +8,8 @@ namespace winrt::interop::implementation
     {
         LayoutMapManaged() = default;
 
-        hstring GetKeyName(int32_t key);
-        int32_t GetKeyValue(hstring const& name);
+        hstring GetKeyName(uint32_t key);
+        uint32_t GetKeyValue(hstring const& name);
         void Updatelayout();
 
         private:
