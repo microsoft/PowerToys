@@ -1,0 +1,7 @@
+namespace interop
+{
+    [default_interface] static runtimeclass Constants {
+        static String AppDataPath();
+        static String PowerLauncherSharedEvent();
+    }
+}

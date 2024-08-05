@@ -30,11 +30,11 @@
     <ClInclude Include="shared_constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="two_way_pipe_message_ipc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="keyboard_layout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -47,14 +47,14 @@
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Constants.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="interop.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -65,6 +65,9 @@
   </ItemGroup>
   <ItemGroup>
     <Midl Include="Hotkey.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="Constants.idl">
       <Filter>Source Files</Filter>
     </Midl>
   </ItemGroup>

@@ -1,14 +1,11 @@
-namespace PowerToys
+namespace interop
 {
-    namespace interop
+    struct Hotkey
     {
-        struct Hotkey
-        {
-            Boolean Win;
-            Boolean Ctrl;
-            Boolean Shift;
-            Boolean Alt;
-            UInt8 Key;
-        };
-    }
+        Boolean Win;
+        Boolean Ctrl;
+        Boolean Shift;
+        Boolean Alt;
+        UInt8 Key;
+    };
 }

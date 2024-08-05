@@ -26,7 +26,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{F055103B-F80B-4D0C-BF48-057C55620033}</ProjectGuid>
-    <RootNamespace>PowerToysInterop</RootNamespace>
+    <RootNamespace>interop</RootNamespace>
     <ProjectName>PowerToys.Interop</ProjectName>
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
@@ -87,7 +87,7 @@
       <AdditionalOptions>%(AdditionalOptions) /bigobj /Zc:twoPhase- </AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WindowsApp.lib;shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <ModuleDefinitionFile>PowerToys.Interop.def</ModuleDefinitionFile>
@@ -96,6 +96,9 @@
   <ItemGroup>
     <ClInclude Include="..\..\modules\videoconference\VideoConferenceShared\MicrophoneDevice.h" />
     <ClInclude Include="..\..\modules\videoconference\VideoConferenceShared\VideoCaptureDeviceList.h" />
+    <ClInclude Include="Constants.h">
+      <DependentUpon>KeyboardListener.idl</DependentUpon>
+    </ClInclude>
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="shared_constants.h" />
@@ -103,6 +106,9 @@
   <ItemGroup>
     <ClCompile Include="..\..\modules\videoconference\VideoConferenceShared\MicrophoneDevice.cpp" />
     <ClCompile Include="..\..\modules\videoconference\VideoConferenceShared\VideoCaptureDeviceList.cpp" />
+    <ClCompile Include="Constants.cpp">
+      <DependentUpon>KeyboardListener.idl</DependentUpon>
+    </ClCompile>
     <ClCompile Include="keyboard_layout.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -119,6 +125,7 @@
     <None Include="PropertySheet.props" />
   </ItemGroup>
   <ItemGroup>
+    <Midl Include="Constants.idl" />
     <Midl Include="Hotkey.idl" />
   </ItemGroup>
   <ImportGroup Label="ExtensionTargets" />
