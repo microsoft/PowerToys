@@ -1,37 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(SolutionDir)src\Common.Dotnet.props" />
+  <Import Project="$(SolutionDir)src\Common.SelfContained.props" />
 
-  
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
     <ProjectGuid>{8451ECDD-2EA4-4966-BB0A-7BBC40138E80}</ProjectGuid>
-    <UseWPF>true</UseWPF>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Wox.Plugin</RootNamespace>
     <AssemblyName>Wox.Plugin</AssemblyName>
-    
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WoxPlugin</OutputPath>
-  </PropertyGroup>
-
-
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DebugSymbols>true</DebugSymbols>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Optimize>false</Optimize>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
 
   <PropertyGroup>
