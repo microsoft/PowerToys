@@ -50,9 +50,5 @@
     <PackageReference Include="MSTest" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\PowerToys.Interop.vcxproj" />
-  </ItemGroup>
-
 
 </Project>
