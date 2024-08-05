@@ -1,5 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  
+    <!-- Look at Directory.Build.props in root for common stuff as well -->
+    <Import 
+        Condition="exists('$(SolutionDir)src\Common.SelfContained.props')" 
+        Project="$(SolutionDir)src\Common.SelfContained.props" />
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
@@ -17,7 +21,6 @@
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <!-- OutputPath looks like this because it has to be called both by settings and publish.cmd -->
     <OutputPath>..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
-    <SelfContained>true</SelfContained>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
   </PropertyGroup>
@@ -32,14 +35,6 @@
   <ItemGroup>
     <ApplicationDefinition Include="SettingsXAML\App.xaml" />
   </ItemGroup>
-
-  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
-  <PropertyGroup Condition="'$(Platform)'=='x64'">
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
-    <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
-  </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <NoWarn></NoWarn>

@@ -1,5 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import 
+    Condition="exists('$(SolutionDir)src\Common.SelfContained.props')" 
+    Project="$(SolutionDir)src\Common.SelfContained.props" />
+
   <PropertyGroup>
     <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
@@ -14,17 +18,8 @@
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <SelfContained>true</SelfContained>
-    
   </PropertyGroup>
 
-  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
-  <PropertyGroup Condition="'$(Platform)'=='x64'">
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
-    <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DefineConstants>TRACE;DEBUG;SHOW_ON_WINLOGON CODE_ANALYSIS CUSTOMIZE_LOGON_SCREEN</DefineConstants>
     <UseVSHostingProcess>false</UseVSHostingProcess>

@@ -1,26 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  
+    <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import 
+    Condition="exists('$(SolutionDir)src\Common.SelfContained.props')" 
+    Project="$(SolutionDir)src\Common.SelfContained.props" />
+
   <PropertyGroup>
     <AssemblyTitle>PowerToys.MouseJumpUI</AssemblyTitle>
     <AssemblyDescription>PowerToys MouseJumpUI</AssemblyDescription>
-    
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <UseWindowsForms>true</UseWindowsForms>
     <StartupObject>MouseJumpUI.Program</StartupObject>
-    <SelfContained>true</SelfContained>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
-  <PropertyGroup Condition="'$(Platform)'=='x64'">
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
-    <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup>

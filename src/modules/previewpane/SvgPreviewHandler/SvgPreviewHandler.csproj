@@ -1,4 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import 
+      Condition="exists('$(SolutionDir)src\Common.SelfContained.props')" 
+      Project="$(SolutionDir)src\Common.SelfContained.props" />
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWindowsForms>true</UseWindowsForms>
@@ -16,15 +20,6 @@
     <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
-    <SelfContained>true</SelfContained>
-  </PropertyGroup>
-
-  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
-  <PropertyGroup Condition="'$(Platform)'=='x64'">
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
-    <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -32,8 +27,6 @@
     <RootNamespace>Microsoft.PowerToys.PreviewHandler.Svg</RootNamespace>
     <AssemblyName>PowerToys.SvgPreviewHandler</AssemblyName>
   </PropertyGroup>
-
-  
 
   <ItemGroup>
     <Compile Update="Properties\Resource.Designer.cs">
