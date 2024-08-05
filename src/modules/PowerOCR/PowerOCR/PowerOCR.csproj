@@ -1,45 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import 
-    Condition="exists('$(SolutionDir)src\Common.SelfContained.props')" 
-    Project="$(SolutionDir)src\Common.SelfContained.props" />
+  <Import Project="$(SolutionDir)src\Common.Wpf.CsWinRT.props" />
+  <Import Project="$(SolutionDir)src\Common.SelfContained.props" />
 
   <PropertyGroup>
     <AssemblyTitle>PowerToys.PowerOCR</AssemblyTitle>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <Nullable>enable</Nullable>
-    <UseWPF>true</UseWPF>
-    <UseWindowsForms>true</UseWindowsForms>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <ProjectGuid>{25C91A4E-BA4E-467A-85CD-8B62545BF674}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
-    <ApplicationIcon>PowerOCRLogo.ico</ApplicationIcon>
-    <PackageIcon>PowerOCRLogo.png</PackageIcon>
     <RootNamespace>PowerOCR</RootNamespace>
     <AssemblyName>PowerToys.PowerOCR</AssemblyName>
-    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
-    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms> <!-- used for screen / DPI stuff -->
+    <ProjectGuid>{25C91A4E-BA4E-467A-85CD-8B62545BF674}</ProjectGuid>
+    <ApplicationIcon>PowerOCRLogo.ico</ApplicationIcon>
+    <PackageIcon>PowerOCRLogo.png</PackageIcon>
     <ProjectTypeGuids>{2150E333-8FDC-42A3-9474-1A3956D46DE8}</ProjectTypeGuids>
-    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <Optimize>true</Optimize>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <Optimize>false</Optimize>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode> <!-- FOLLOWUP: Should this be set for all WPF Apps -->
   </PropertyGroup>
 
   <ItemGroup>
-	  <Resource Include="PowerOCRLogo.ico" />
-	  <Resource Include="PowerOCRLogo.png" />
+    <Resource Include="PowerOCRLogo.ico" />
+    <Resource Include="PowerOCRLogo.png" />
   </ItemGroup>
 	
   <ItemGroup>
