@@ -432,7 +432,7 @@ namespace ProjectsData
     {
         namespace NonLocalizable
         {
-            const static wchar_t* AppLaunchInfoID = L"applaunchinfos";
+            const static wchar_t* AppLaunchInfoID = L"appLaunchInfos";
         }
 
         json::JsonObject ToJson(const std::vector<AppLaunchInfo>& data)
@@ -454,7 +454,7 @@ namespace ProjectsData
         namespace NonLocalizable
         {
             const static wchar_t* AppsID = L"apps";
-            const static wchar_t* ProcessID = L"processid";
+            const static wchar_t* ProcessID = L"processId";
         }
 
         json::JsonObject ToJson(const AppLaunchData& data)

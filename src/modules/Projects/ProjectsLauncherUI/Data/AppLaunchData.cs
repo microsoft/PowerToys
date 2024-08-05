@@ -31,7 +31,7 @@ namespace ProjectsLauncherUI.Data
             [JsonPropertyName("apps")]
             public AppLaunchInfoListWrapper AppLaunchInfos { get; set; }
 
-            [JsonPropertyName("processid")]
+            [JsonPropertyName("processId")]
             public int LauncherProcessID { get; set; }
         }
     }
