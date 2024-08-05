@@ -99,6 +99,8 @@
     <ClInclude Include="Constants.h">
       <DependentUpon>KeyboardListener.idl</DependentUpon>
     </ClInclude>
+    <ClInclude Include="keyboard_layout.h" />
+    <ClInclude Include="keyboard_layout_impl.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="shared_constants.h" />
