@@ -6,6 +6,10 @@
 
 namespace winrt::interop::implementation
 {
+    uint32_t Constants::VK_WIN_BOTH()
+    {
+        return CommonSharedConstants::VK_WIN_BOTH;
+    }
     hstring Constants::AppDataPath()
     {
         PWSTR local_app_path;

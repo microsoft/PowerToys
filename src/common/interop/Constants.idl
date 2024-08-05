@@ -1,6 +1,7 @@
 namespace interop
 {
     [default_interface] static runtimeclass Constants {
+        static UInt32 VK_WIN_BOTH {get; };
         static String AppDataPath();
         static String PowerLauncherSharedEvent();
         static String PowerLauncherCentralizedHookSharedEvent();

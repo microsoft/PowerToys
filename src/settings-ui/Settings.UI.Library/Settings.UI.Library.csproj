@@ -35,6 +35,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.Windows.CsWinRT" />
         <PackageReference Include="System.IO.Abstractions" />
     </ItemGroup>
 

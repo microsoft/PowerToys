@@ -6,6 +6,7 @@ namespace winrt::interop::implementation
     {
         Constants() = default;
 
+        static uint32_t VK_WIN_BOTH();
         static hstring AppDataPath();
         static hstring PowerLauncherSharedEvent();
         static hstring PowerLauncherCentralizedHookSharedEvent();
