@@ -21,5 +21,3 @@
 
 #include <Shobjidl.h>
 #include <Shlwapi.h>
-
-#include <common/Telemetry/ProjectTelemetry.h>

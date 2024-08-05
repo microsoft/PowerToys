@@ -6,4 +6,3 @@
 #include <vector>
 #include <algorithm>
 #include <stdlib.h>
-#include <ProjectTelemetry.h>

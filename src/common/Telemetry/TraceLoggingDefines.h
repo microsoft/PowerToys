@@ -4,3 +4,4 @@
 #define ProjectTelemetryPrivacyDataTag(tag) TraceLoggingUInt64((tag), "Ignore")
 #define ProjectTelemetryTag_ProductAndServicePerformance 0x0u
 #define PROJECT_KEYWORD_MEASURE 0x0
+#define MICROSOFT_EVENTTAG_DROP_PII 0x02000000

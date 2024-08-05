@@ -1,11 +1,10 @@
 #pragma once
 
-class Trace
+#include <common/Telemetry/TraceBase.h>
+
+class Trace : public telemetry::TraceBase
 {
 public:
-    static void RegisterProvider() noexcept;
-    static void UnregisterProvider() noexcept;
-
     // Log number of key remaps when the user uses Edit Keyboard and saves settings
     static void KeyRemapCount(const DWORD keyToKeyCount, const DWORD keyToShortcutCount, const DWORD keyToTextCount) noexcept;
 

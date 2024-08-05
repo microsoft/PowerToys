@@ -2,6 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.Views;
@@ -14,9 +17,46 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
     {
         public OobePowerToysModule ViewModel { get; set; }
 
+        private bool _enableDataDiagnostics;
+
+        public bool EnableDataDiagnostics
+        {
+            get
+            {
+                return _enableDataDiagnostics;
+            }
+
+            set
+            {
+                if (_enableDataDiagnostics != value)
+                {
+                    _enableDataDiagnostics = value;
+
+                    DataDiagnostics.SetValue(_enableDataDiagnostics);
+
+                    this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+                    {
+                        ShellPage.ShellHandler?.SignalGeneralDataUpdate();
+                    });
+                }
+            }
+        }
+
+        public bool ShowDataDiagnosticsSetting => GetIsDataDiagnosticsInfoBarEnabled();
+
+        private bool GetIsDataDiagnosticsInfoBarEnabled()
+        {
+            var isDataDiagnosticsGpoDisallowed = GPOWrapper.GetAllowDataDiagnosticsValue() == GpoRuleConfigured.Disabled;
+
+            return !isDataDiagnosticsGpoDisallowed;
+        }
+
         public OobeOverview()
         {
             this.InitializeComponent();
+
+            _enableDataDiagnostics = DataDiagnostics.GetValue();
+
             ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.Overview]);
             DataContext = ViewModel;
         }

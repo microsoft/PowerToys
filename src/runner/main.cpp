@@ -435,6 +435,13 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
             openScoobe = false;
         }
 
+        bool dataDiagnosticsDisabledByGpo = powertoys_gpo::getAllowDataDiagnosticsValue() == powertoys_gpo::gpo_rule_configured_disabled;
+        if (dataDiagnosticsDisabledByGpo)
+        {
+            Logger::info(L"Data diagnostics: Data diagnostics is disabled by GPO.");
+            PTSettingsHelper::save_data_diagnostics(false);
+        }
+
         if (elevated && with_dont_elevate_arg && !run_elevated_setting)
         {
             Logger::info("Scheduling restart as non elevated");

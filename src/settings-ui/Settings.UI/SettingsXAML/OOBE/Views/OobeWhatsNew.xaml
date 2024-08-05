@@ -6,6 +6,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     Loaded="Page_Loaded"
     mc:Ignorable="d">
 
@@ -13,11 +15,57 @@
     <Grid Margin="0,24,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
+        <tkcontrols:SettingsCard
+            x:Name="WhatsNewDataDiagnosticsInfoBar"
+            x:Uid="Oobe_WhatsNew_DataDiagnostics_InfoBar"
+            Margin="0,-24,0,0"
+            Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}"
+            IsTabStop="{x:Bind ShowDataDiagnosticsInfoBar, Mode=OneWay}"
+            Visibility="{x:Bind ShowDataDiagnosticsInfoBar, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <tkcontrols:SettingsCard.HeaderIcon>
+                <FontIcon Foreground="{ThemeResource InfoBarInformationalSeverityIconBackground}" Glyph="&#xF167;" />
+            </tkcontrols:SettingsCard.HeaderIcon>
+            <tkcontrols:SettingsCard.Description>
+                <StackPanel>
+                    <TextBlock x:Name="WhatsNewDataDiagnosticsInfoBarDescText">
+                        <Hyperlink NavigateUri="https://aka.ms/powertoys-data-and-privacy-documentation">
+                            <Run x:Uid="Oobe_WhatsNew_DataDiagnostics_InfoBar_Desc" />
+                        </Hyperlink>
+                    </TextBlock>
+                    <TextBlock x:Name="WhatsNewDataDiagnosticsInfoBarDescTextYesClicked" Visibility="Collapsed">
+                        <Run x:Uid="Oobe_WhatsNew_DataDiagnostics_Yes_Click_InfoBar_Desc" />
+                        <Hyperlink Click="DataDiagnostics_OpenSettings_Click">
+                            <Run x:Uid="Oobe_WhatsNew_DataDiagnostics_Yes_Click_OpenSettings_Text" />
+                        </Hyperlink>
+                    </TextBlock>
+                </StackPanel>
+            </tkcontrols:SettingsCard.Description>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button
+                    x:Name="DataDiagnosticsButtonYes"
+                    x:Uid="Oobe_WhatsNew_DataDiagnostics_Button_Yes"
+                    Click="DataDiagnostics_InfoBar_YesNo_Click"
+                    CommandParameter="Yes" />
+                <HyperlinkButton
+                    x:Name="DataDiagnosticsButtonNo"
+                    x:Uid="Oobe_WhatsNew_DataDiagnostics_Button_No"
+                    Click="DataDiagnostics_InfoBar_YesNo_Click"
+                    CommandParameter="No" />
+                <Button
+                    Margin="16,0,0,0"
+                    Click="DataDiagnostics_InfoBar_Close_Click"
+                    Content="{ui:FontIcon Glyph=&#xE894;,
+                                          FontSize=16}"
+                    Style="{StaticResource SubtleButtonStyle}" />
+            </StackPanel>
+        </tkcontrols:SettingsCard>
+
         <StackPanel
-            Grid.Row="0"
+            Grid.Row="1"
             Margin="32,0,0,16"
             VerticalAlignment="Top"
             Orientation="Vertical">
@@ -33,7 +81,7 @@
         <InfoBar
             x:Name="ErrorInfoBar"
             x:Uid="Oobe_WhatsNew_LoadingError"
-            Grid.Row="1"
+            Grid.Row="2"
             VerticalAlignment="Top"
             IsClosable="False"
             IsOpen="False"
@@ -42,14 +90,14 @@
         <InfoBar
             x:Name="ProxyWarningInfoBar"
             x:Uid="Oobe_WhatsNew_ProxyAuthenticationWarning"
-            Grid.Row="1"
+            Grid.Row="2"
             VerticalAlignment="Top"
             IsClosable="False"
             IsOpen="False"
             IsTabStop="True"
             Severity="Warning" />
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
             <Grid Margin="32,24,32,24">
                 <ProgressRing
                     x:Name="LoadingProgressRing"
