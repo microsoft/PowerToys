@@ -1,11 +1,13 @@
 <Project>
-
+  <Import Condition="exists('src\Version.props')" Project="src\Version.props" />
   <PropertyGroup>
     <Copyright>Copyright (C) Microsoft Corporation. All rights reserved.</Copyright>
-    <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
     <AssemblyCopyright>Copyright (C) Microsoft Corporation. All rights reserved.</AssemblyCopyright>
     <AssemblyProduct>PowerToys</AssemblyProduct>
+    <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
     <Company>Microsoft Corporation</Company>
+    <Authors>Microsoft Corporation</Authors>
+    <Product>PowerToys</Product>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Platforms>x64;ARM64</Platforms>
     <PackageTags>PowerToys</PackageTags>
@@ -17,11 +19,9 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
-    <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
+    <Version>$(Version).0</Version>
+	<RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 

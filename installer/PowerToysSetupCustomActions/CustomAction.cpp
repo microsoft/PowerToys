@@ -357,7 +357,7 @@ UINT __stdcall InstallDSCModuleCA(MSIHANDLE hInstall)
             ExitOnFailure(hr, "Unable to determine Powershell modules path");
         }
 
-        const auto modulesPath = baseModulesPath / L"Microsoft.PowerToys.Configure" / get_product_version(false);
+        const auto modulesPath = baseModulesPath / L"Microsoft.PowerToys.Configure" / (get_product_version(false) + L".0");
 
         std::error_code errorCode;
         fs::create_directories(modulesPath, errorCode);
@@ -411,7 +411,7 @@ UINT __stdcall UninstallDSCModuleCA(MSIHANDLE hInstall)
         }
 
         const auto powerToysModulePath = baseModulesPath / L"Microsoft.PowerToys.Configure";
-        const auto versionedModulePath = powerToysModulePath / get_product_version(false);
+        const auto versionedModulePath = powerToysModulePath / (get_product_version(false) + L".0");
 
         std::error_code errorCode;
 

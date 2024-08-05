@@ -19,7 +19,7 @@
     <TestProjectType>UnitTest</TestProjectType>
   </PropertyGroup>
 
-  <Import Project="..\..\..\Version.props" />
+  
 
   <ItemGroup>
     <None Remove="HelperFiles\file1.svg" />

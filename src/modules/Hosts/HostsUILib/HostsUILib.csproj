@@ -1,6 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Condition="exists('..\..\..\Version.props')" Project="..\..\..\Version.props" />
-
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>net8.0-windows10.0.20348</TargetFramework>
@@ -19,7 +17,6 @@
 
   <PropertyGroup>
     <!-- Properties for nuget package. -->
-    <Authors>Microsoft Corporation</Authors>
     <Description>Implements the UI control for the PowerToys Hosts File Editor Utility</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>

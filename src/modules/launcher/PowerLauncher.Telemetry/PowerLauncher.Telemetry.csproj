@@ -1,11 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\Version.props" />
+  
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
-    
-    
-    <Version>$(Version).0</Version>
-    <Authors>Microsoft Corporation</Authors>
     <Description>PowerToys PowerLauncher Telemetry</Description>
     <AssemblyName>PowerToys.PowerLauncher.Telemetry</AssemblyName>
   </PropertyGroup>
