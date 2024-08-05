@@ -1,48 +1,28 @@
 #pragma once
+#include "KeyboardHook.g.h"
 
-#include <cinttypes>
-
-using namespace System::Threading;
-using namespace System::Collections::Generic;
-
-namespace interop
+namespace winrt::interop::implementation
 {
-public
-    ref struct KeyboardEvent
+    struct KeyboardHook : KeyboardHookT<KeyboardHook>
     {
-        WPARAM message;
-        int key;
-        uint64_t dwExtraInfo;
-    };
+        // KeyboardHook() = default;
 
-public
-    delegate void KeyboardEventCallback(KeyboardEvent ^ ev);
-public
-    delegate bool IsActiveCallback();
-public
-    delegate bool FilterKeyboardEvent(KeyboardEvent ^ ev);
-
-public
-    ref class KeyboardHook
-    {
-    public:
-        KeyboardHook(
-            KeyboardEventCallback ^ keyboardEventCallback,
-            IsActiveCallback ^ isActiveCallback,
-            FilterKeyboardEvent ^ filterKeyboardEvent);
-        ~KeyboardHook();
-
+        KeyboardHook(winrt::interop::KeyboardEventCallback const& keyboardEventCallback, winrt::interop::IsActiveCallback const& isActiveCallback, winrt::interop::FilterKeyboardEvent const& filterKeyboardEvent);
         void Start();
+        void Close();
 
     private:
-        delegate LRESULT HookProcDelegate(int nCode, WPARAM wParam, LPARAM lParam);
-        KeyboardEventCallback ^ keyboardEventCallback;
-        IsActiveCallback ^ isActiveCallback;
-        FilterKeyboardEvent ^ filterKeyboardEvent;
-        HHOOK hookHandle;
-        HookProcDelegate ^ hookProc;
-
-        LRESULT __clrcall HookProc(int nCode, WPARAM wParam, LPARAM lParam);
+        winrt::interop::KeyboardEventCallback keyboardEventCallback;
+        winrt::interop::IsActiveCallback isActiveCallback;
+        winrt::interop::FilterKeyboardEvent filterKeyboardEvent;
+        HHOOK hookHandle = nullptr;
+        static LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);
+        static inline KeyboardHook* s_instance = nullptr; // Only support one instance of KeyboardHook
     };
-
+}
+namespace winrt::interop::factory_implementation
+{
+    struct KeyboardHook : KeyboardHookT<KeyboardHook, implementation::KeyboardHook>
+    {
+    };
 }

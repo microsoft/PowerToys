@@ -99,6 +99,9 @@
     <ClInclude Include="Constants.h">
       <DependentUpon>KeyboardListener.idl</DependentUpon>
     </ClInclude>
+    <ClInclude Include="KeyboardHook.h">
+      <DependentUpon>KeyboardHook.idl</DependentUpon>
+    </ClInclude>
     <ClInclude Include="keyboard_layout.h" />
     <ClInclude Include="keyboard_layout_impl.h" />
     <ClInclude Include="LayoutMapManaged.h">
@@ -113,6 +116,9 @@
     <ClCompile Include="..\..\modules\videoconference\VideoConferenceShared\VideoCaptureDeviceList.cpp" />
     <ClCompile Include="Constants.cpp">
       <DependentUpon>KeyboardListener.idl</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="KeyboardHook.cpp">
+      <DependentUpon>KeyboardHook.idl</DependentUpon>
     </ClCompile>
     <ClCompile Include="keyboard_layout.cpp" />
     <ClCompile Include="LayoutMapManaged.cpp">
@@ -135,6 +141,7 @@
   <ItemGroup>
     <Midl Include="Constants.idl" />
     <Midl Include="Hotkey.idl" />
+    <Midl Include="KeyboardHook.idl" />
     <Midl Include="LayoutMapManaged.idl" />
   </ItemGroup>
   <ImportGroup Label="ExtensionTargets" />

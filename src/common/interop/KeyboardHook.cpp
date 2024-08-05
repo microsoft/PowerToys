@@ -1,73 +1,72 @@
 #include "pch.h"
 #include "KeyboardHook.h"
-#include <exception>
-#include <msclr/marshal.h>
-#include <msclr/marshal_cppstd.h>
+#include "KeyboardHook.g.cpp"
 #include <common/debug_control.h>
 #include <common/utils/winapi_error.h>
 
-using namespace interop;
-using namespace System::Runtime::InteropServices;
-using namespace System;
-using namespace System::Diagnostics;
-
-KeyboardHook::KeyboardHook(
-    KeyboardEventCallback ^ keyboardEventCallback,
-    IsActiveCallback ^ isActiveCallback,
-    FilterKeyboardEvent ^ filterKeyboardEvent)
+namespace winrt::interop::implementation
 {
-    this->keyboardEventCallback = keyboardEventCallback;
-    this->isActiveCallback = isActiveCallback;
-    this->filterKeyboardEvent = filterKeyboardEvent;
-}
+    KeyboardHook::KeyboardHook(winrt::interop::KeyboardEventCallback const& keyboardEventCallback, winrt::interop::IsActiveCallback const& isActiveCallback, winrt::interop::FilterKeyboardEvent const& filterKeyboardEvent)
+    {
+        assert(s_instance == nullptr);
+        s_instance = this;
+        this->keyboardEventCallback = keyboardEventCallback;
+        this->isActiveCallback = isActiveCallback;
+        this->filterKeyboardEvent = filterKeyboardEvent;
+    }
 
-KeyboardHook::~KeyboardHook()
-{
-    // Unregister low level hook procedure
-    UnhookWindowsHookEx(hookHandle);
-}
+    void KeyboardHook::Close()
+    {
+        if (hookHandle)
+        {
+            if (UnhookWindowsHookEx(hookHandle))
+            {
+                hookHandle = nullptr;
+            }
+        }
+        s_instance = nullptr;
+    }
 
-void KeyboardHook::Start()
-{
-    hookProc = gcnew HookProcDelegate(this, &KeyboardHook::HookProc);
+    void KeyboardHook::Start()
+    {
 #if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
-    const bool hookDisabled = IsDebuggerPresent();
+        const bool hookDisabled = IsDebuggerPresent();
 #else
-    const bool hookDisabled = false;
+        const bool hookDisabled = false;
 #endif
-    if (!hookDisabled)
-    {
-        // register low level hook procedure
-        hookHandle = SetWindowsHookEx(
-            WH_KEYBOARD_LL,
-            (HOOKPROC)(void*)Marshal::GetFunctionPointerForDelegate(hookProc),
-            0,
-            0);
-        if (hookHandle == nullptr)
+        if (!hookDisabled)
         {
-            DWORD errorCode = GetLastError();
-            show_last_error_message(L"SetWindowsHookEx", errorCode, L"PowerToys - Interop");
+            // register low level hook procedure
+            hookHandle = SetWindowsHookEx(
+                WH_KEYBOARD_LL,
+                HookProc,
+                0,
+                0);
+            if (hookHandle == nullptr)
+            {
+                DWORD errorCode = GetLastError();
+                show_last_error_message(L"SetWindowsHookEx", errorCode, L"PowerToys - Interop");
+            }
         }
     }
-}
-
-LRESULT __clrcall KeyboardHook::HookProc(int nCode, WPARAM wParam, LPARAM lParam)
-{
-    if (nCode == HC_ACTION && isActiveCallback->Invoke())
+    LRESULT KeyboardHook::HookProc(int nCode, WPARAM wParam, LPARAM lParam)
     {
-        KeyboardEvent ^ ev = gcnew KeyboardEvent();
-        ev->message = wParam;
-        ev->key = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam)->vkCode;
-        ev->dwExtraInfo = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam)->dwExtraInfo;
-
-        // Ignore the keyboard hook if the FilterkeyboardEvent returns false.
-        if ((filterKeyboardEvent != nullptr && !filterKeyboardEvent->Invoke(ev)))
+        if (s_instance != nullptr && nCode == HC_ACTION && s_instance->isActiveCallback())
         {
-            return CallNextHookEx(hookHandle, nCode, wParam, lParam);
-        }
+            KeyboardEvent ev;
+            ev.message = wParam;
+            ev.key = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam)->vkCode;
+            ev.dwExtraInfo = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam)->dwExtraInfo;
 
-        keyboardEventCallback->Invoke(ev);
-        return 1;
+            // Ignore the keyboard hook if the FilterkeyboardEvent returns false.
+            if ((s_instance->filterKeyboardEvent != nullptr && !s_instance->filterKeyboardEvent(ev)))
+            {
+                return CallNextHookEx(NULL, nCode, wParam, lParam);
+            }
+
+            s_instance->keyboardEventCallback(ev);
+            return 1;
+        }
+        return CallNextHookEx(NULL, nCode, wParam, lParam);
     }
-    return CallNextHookEx(hookHandle, nCode, wParam, lParam);
 }

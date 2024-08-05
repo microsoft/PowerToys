@@ -148,6 +148,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
             }
         }
 
-        public const uint VirtualKeyWindows = interop.Constants.VK_WIN_BOTH;
+        public static uint VirtualKeyWindows = interop.Constants.VK_WIN_BOTH;
     }
 }
