@@ -1,0 +1,9 @@
+namespace interop
+{
+    [default_interface] runtimeclass LayoutMapManaged {
+        LayoutMapManaged();
+        String GetKeyName(Int32 key);
+        Int32 GetKeyValue(String name);
+        void Updatelayout();
+    }
+}

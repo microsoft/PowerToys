@@ -1,0 +1,19 @@
+#include "pch.h"
+#include "LayoutMapManaged.h"
+#include "LayoutMapManaged.g.cpp"
+
+namespace winrt::interop::implementation
+{
+    hstring LayoutMapManaged::GetKeyName(int32_t key)
+    {
+        return hstring{ _map->GetKeyName(key) };
+    }
+    int32_t LayoutMapManaged::GetKeyValue(hstring const& name)
+    {
+        return _map->GetKeyFromName(std::wstring(name));
+    }
+    void LayoutMapManaged::Updatelayout()
+    {
+        _map->UpdateLayout();
+    }
+}

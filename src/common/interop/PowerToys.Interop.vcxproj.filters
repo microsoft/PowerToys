@@ -39,6 +39,9 @@
     <ClInclude Include="keyboard_layout_impl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LayoutMapManaged.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="keyboard_layout.cpp">
@@ -55,6 +58,9 @@
     </ClCompile>
     <ClCompile Include="Constants.cpp">
       <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LayoutMapManaged.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -74,6 +80,9 @@
       <Filter>Source Files</Filter>
     </Midl>
     <Midl Include="Constants.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="LayoutMapManaged.idl">
       <Filter>Source Files</Filter>
     </Midl>
   </ItemGroup>
