@@ -79,7 +79,7 @@ namespace Common.UI
                 case SettingsWindow.AdvancedPaste:
                     return "AdvancedPaste";
                 case SettingsWindow.Projects:
-                    return "Projects";
+                    return "App Layouts";
                 default:
                     {
                         return string.Empty;

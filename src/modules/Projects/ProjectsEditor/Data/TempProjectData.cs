@@ -12,7 +12,7 @@ namespace ProjectsEditor.Data
         {
             get
             {
-                return FolderUtils.DataFolder() + "\\temp-project.json";
+                return FolderUtils.DataFolder() + "\\temp-applayout.json";
             }
         }
 

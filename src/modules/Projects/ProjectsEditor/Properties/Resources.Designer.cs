@@ -124,7 +124,7 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Are you sure you want to delete this project?.
+        ///   Looks up a localized string similar to Are you sure you want to delete this App Layout?.
         /// </summary>
         public static string Are_You_Sure_Description {
             get {
@@ -169,7 +169,7 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Create project.
+        ///   Looks up a localized string similar to Create layout.
         /// </summary>
         public static string CreateProject {
             get {
@@ -196,7 +196,7 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Project.
+        ///   Looks up a localized string similar to App Layout.
         /// </summary>
         public static string DefaultProjectNamePrefix {
             get {
@@ -214,7 +214,7 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Delete project dialog..
+        ///   Looks up a localized string similar to Delete App Layout dialog..
         /// </summary>
         public static string Delete_Project_Dialog_Announce {
             get {
@@ -250,7 +250,7 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Edit project.
+        ///   Looks up a localized string similar to Edit App Layout.
         /// </summary>
         public static string EditProject {
             get {
@@ -259,7 +259,7 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error parsing projects data..
+        ///   Looks up a localized string similar to Error parsing App Layout data..
         /// </summary>
         public static string Error_Parsing_Message {
             get {
@@ -340,7 +340,7 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Projects demo app.
+        ///   Looks up a localized string similar to App Layouts Editor.
         /// </summary>
         public static string MainTitle {
             get {
@@ -421,7 +421,7 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to New project.
+        ///   Looks up a localized string similar to New App Layout.
         /// </summary>
         public static string New_project {
             get {
@@ -430,7 +430,7 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There are no saved projects..
+        ///   Looks up a localized string similar to There are no saved App Layouts..
         /// </summary>
         public static string No_Projects_Message {
             get {
@@ -439,7 +439,7 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No projects match the current search..
+        ///   Looks up a localized string similar to No App Layouts match the current search..
         /// </summary>
         public static string NoProjectsMatch {
             get {
@@ -502,7 +502,7 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Pin Project to Taskbar.
+        ///   Looks up a localized string similar to Pin App Layout to Taskbar.
         /// </summary>
         public static string PinToTaskbar {
             get {
@@ -511,7 +511,7 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Project name.
+        ///   Looks up a localized string similar to App Layout name.
         /// </summary>
         public static string ProjectName {
             get {
@@ -520,7 +520,7 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Projects.
+        ///   Looks up a localized string similar to App Layouts.
         /// </summary>
         public static string Projects {
             get {
@@ -547,7 +547,7 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Save project.
+        ///   Looks up a localized string similar to Save App Layout.
         /// </summary>
         public static string Save_project {
             get {
@@ -565,7 +565,7 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Search for projects or apps.
+        ///   Looks up a localized string similar to Search for App Layouts or apps.
         /// </summary>
         public static string SearchExplanation {
             get {
@@ -601,7 +601,7 @@ namespace ProjectsEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Select All Apps in Project.
+        ///   Looks up a localized string similar to Select All Apps in App Layout.
         /// </summary>
         public static string SelectedAllInProject {
             get {

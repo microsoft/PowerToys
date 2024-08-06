@@ -55,7 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private void LaunchEditor()
         {
             // send message to launch the zones editor;
-            SendConfigMSG("{\"action\":{\"Projects\":{\"action_name\":\"LaunchEditor\", \"value\":\"\"}}}");
+            SendConfigMSG("{\"action\":{\"App Layouts\":{\"action_name\":\"LaunchEditor\", \"value\":\"\"}}}");
         }
 
         private void InitializeEnabledValue()

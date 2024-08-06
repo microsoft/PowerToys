@@ -36,7 +36,7 @@ namespace ProjectsEditor
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            Logger.InitializeLogger("\\Projects\\Logs");
+            Logger.InitializeLogger("\\App Layouts\\Logs");
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
             const string appName = "Local\\PowerToys_Projects_Editor_InstanceMutex";
@@ -44,7 +44,7 @@ namespace ProjectsEditor
             _instanceMutex = new Mutex(true, appName, out createdNew);
             if (!createdNew)
             {
-                Logger.LogWarning("Another instance of Projects Editor is already running. Exiting this instance.");
+                Logger.LogWarning("Another instance of App Layouts Editor is already running. Exiting this instance.");
                 _instanceMutex = null;
                 Shutdown(0);
                 return;

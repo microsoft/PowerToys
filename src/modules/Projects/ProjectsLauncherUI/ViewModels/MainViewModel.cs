@@ -35,7 +35,7 @@ namespace ProjectsLauncherUI.ViewModels
         {
             LoadAppLaunchInfos();
             string fileName = Path.GetFileName(AppLaunchData.File);
-            _watcher = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper.GetFileWatcher("Projects", fileName, () => AppLaunchInfoStateChanged());
+            _watcher = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper.GetFileWatcher("App Layouts", fileName, () => AppLaunchInfoStateChanged());
         }
 
         private void AppLaunchInfoStateChanged()

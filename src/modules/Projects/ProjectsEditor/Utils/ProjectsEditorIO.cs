@@ -26,14 +26,14 @@ namespace ProjectsEditor.Utils
                 ProjectsData parser = new ProjectsData();
                 if (!File.Exists(parser.File))
                 {
-                    Logger.LogWarning($"Projects storage file not found: {parser.File}");
+                    Logger.LogWarning($"App Layouts storage file not found: {parser.File}");
                     return new ParsingResult(true);
                 }
 
                 ProjectsData.ProjectsListWrapper projects = parser.Read(parser.File);
                 if (!SetProjects(mainViewModel, projects))
                 {
-                    Logger.LogWarning($"Projects storage file content could not be set. Reason: {Properties.Resources.Error_Parsing_Message}");
+                    Logger.LogWarning($"App Layouts storage file content could not be set. Reason: {Properties.Resources.Error_Parsing_Message}");
                     return new ParsingResult(false, ProjectsEditor.Properties.Resources.Error_Parsing_Message);
                 }
 
@@ -53,7 +53,7 @@ namespace ProjectsEditor.Utils
                 ProjectData parser = new ProjectData();
                 if (!File.Exists(TempProjectData.File))
                 {
-                    Logger.LogWarning($"ParseProject method. Projects storage file not found: {TempProjectData.File}");
+                    Logger.LogWarning($"ParseProject method. App Layouts storage file not found: {TempProjectData.File}");
                     return null;
                 }
 

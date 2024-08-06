@@ -140,7 +140,7 @@
                 <NavigationViewItem
                     x:Uid="Shell_Projects"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Projects.png}"
-                    Tag="Projects" />
+                    Tag="App Layouts" />
                 <NavigationViewItem
                     x:Uid="Shell_RegistryPreview"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/RegistryPreview.png}"

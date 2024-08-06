@@ -139,7 +139,7 @@
     <value>Are you sure?</value>
   </data>
   <data name="Are_You_Sure_Description" xml:space="preserve">
-    <value>Are you sure you want to delete this project?</value>
+    <value>Are you sure you want to delete this App Layout?</value>
   </data>
   <data name="Args" xml:space="preserve">
     <value>Args</value>
@@ -155,7 +155,7 @@
     <value>Created</value>
   </data>
   <data name="CreateProject" xml:space="preserve">
-    <value>Create project</value>
+    <value>Create layout</value>
   </data>
   <data name="CreateShortcut" xml:space="preserve">
     <value>Create Desktop Shortcut</value>
@@ -164,7 +164,7 @@
     <value>days ago</value>
   </data>
   <data name="DefaultProjectNamePrefix" xml:space="preserve">
-    <value>Project</value>
+    <value>App Layout</value>
   </data>
   <data name="Delete" xml:space="preserve">
     <value>Remove</value>
@@ -173,19 +173,19 @@
     <value>Remove Selected Apps</value>
   </data>
   <data name="Delete_Project_Dialog_Announce" xml:space="preserve">
-    <value>Delete project dialog.</value>
+    <value>Delete App Layout dialog.</value>
   </data>
   <data name="Edit" xml:space="preserve">
     <value>Edit</value>
   </data>
   <data name="EditProject" xml:space="preserve">
-    <value>Edit project</value>
+    <value>Edit App Layout</value>
   </data>
   <data name="Edit_Project_Open_Announce" xml:space="preserve">
     <value>opened</value>
   </data>
   <data name="Error_Parsing_Message" xml:space="preserve">
-    <value>Error parsing projects data.</value>
+    <value>Error parsing App Layout data.</value>
   </data>
   <data name="Height" xml:space="preserve">
     <value>Height</value>
@@ -213,7 +213,7 @@
     <comment>the left x coordinate</comment>
   </data>
   <data name="MainTitle" xml:space="preserve">
-    <value>Projects demo app</value>
+    <value>App Layouts Editor</value>
   </data>
   <data name="Maximized" xml:space="preserve">
     <value>Maximized</value>
@@ -240,16 +240,16 @@
     <value>never</value>
   </data>
   <data name="New_project" xml:space="preserve">
-    <value>New project</value>
+    <value>New App Layout</value>
   </data>
   <data name="NoProjectsMatch" xml:space="preserve">
-    <value>No projects match the current search.</value>
+    <value>No App Layouts match the current search.</value>
   </data>
   <data name="NotFoundTooltip" xml:space="preserve">
     <value>The application cannot be found</value>
   </data>
   <data name="No_Projects_Message" xml:space="preserve">
-    <value>There are no saved projects.</value>
+    <value>There are no saved App Layouts.</value>
   </data>
   <data name="OneHourAgo" xml:space="preserve">
     <value>an hour ago</value>
@@ -267,13 +267,13 @@
     <value>one year ago</value>
   </data>
   <data name="PinToTaskbar" xml:space="preserve">
-    <value>Pin Project to Taskbar</value>
+    <value>Pin App Layout to Taskbar</value>
   </data>
   <data name="ProjectName" xml:space="preserve">
-    <value>Project name</value>
+    <value>App Layout name</value>
   </data>
   <data name="Projects" xml:space="preserve">
-    <value>Projects</value>
+    <value>App Layouts</value>
   </data>
   <data name="Recently" xml:space="preserve">
     <value>recently</value>
@@ -282,13 +282,13 @@
     <value>Revert</value>
   </data>
   <data name="Save_project" xml:space="preserve">
-    <value>Save project</value>
+    <value>Save App Layout</value>
   </data>
   <data name="Search" xml:space="preserve">
     <value>Search</value>
   </data>
   <data name="SearchExplanation" xml:space="preserve">
-    <value>Search for projects or apps</value>
+    <value>Search for App Layouts or apps</value>
   </data>
   <data name="SecondsAgo" xml:space="preserve">
     <value>seconds ago</value>
@@ -300,7 +300,7 @@
     <value>Select All Minimized Apps</value>
   </data>
   <data name="SelectedAllInProject" xml:space="preserve">
-    <value>Select All Apps in Project</value>
+    <value>Select All Apps in App Layout</value>
   </data>
   <data name="SnapshotDescription" xml:space="preserve">
     <value>Edit your layout and click "Capture" when finished.</value>

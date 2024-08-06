@@ -14,7 +14,7 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/UnhandledExceptionHandler.h>
 
-const std::wstring moduleName = L"Projects\\ProjectsSnapshotTool";
+const std::wstring moduleName = L"App Layouts\\ProjectsSnapshotTool";
 const std::wstring internalPath = L"";
 
 int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cmdShow)

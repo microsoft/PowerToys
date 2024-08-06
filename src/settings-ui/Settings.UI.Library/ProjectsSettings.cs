@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class ProjectsSettings : BasePTModuleSettings, ISettingsConfig
     {
-        public const string ModuleName = "Projects";
+        public const string ModuleName = "App Layouts";
         public const string ModuleVersion = "0.0.1";
         private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
         {

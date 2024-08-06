@@ -362,7 +362,7 @@ namespace ProjectsEditor.ViewModels
         {
             if (!Projects.Where(x => x.Id == projectId).Any())
             {
-                Logger.LogWarning($"Project to launch not find. Id: {projectId}");
+                Logger.LogWarning($"App Layout to launch not found. Id: {projectId}");
                 return;
             }
 
@@ -379,7 +379,7 @@ namespace ProjectsEditor.ViewModels
 
             if (exitAfterLaunch)
             {
-                Logger.LogInfo($"Launched the project {project.Name}. Exiting.");
+                Logger.LogInfo($"Launched the App Layout {project.Name}. Exiting.");
                 Environment.Exit(0);
             }
         }

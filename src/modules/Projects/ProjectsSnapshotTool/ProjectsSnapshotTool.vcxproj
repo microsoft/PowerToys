@@ -160,7 +160,9 @@
     <None Include="ProjectsSnapshotToolResources.base.rc" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resource.resx" />
+    <EmbeddedResource Include="Resource.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />

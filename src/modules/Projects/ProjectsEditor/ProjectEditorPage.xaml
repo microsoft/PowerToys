@@ -8,7 +8,7 @@
         xmlns:models="clr-namespace:ProjectsEditor.Models"
         xmlns:controls="clr-namespace:ProjectsEditor.Controls"
         mc:Ignorable="d"
-        Title="Project Editor"
+        Title="App Layout Editor"
         Background="{DynamicResource PrimaryBackgroundBrush}">
     <Page.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />

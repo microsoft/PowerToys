@@ -516,7 +516,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private void ProjectsLaunchClicked(object sender, RoutedEventArgs e)
         {
             // send message to launch the projects editor;
-            SendConfigMSG("{\"action\":{\"Projects\":{\"action_name\":\"LaunchEditor\", \"value\":\"\"}}}");
+            SendConfigMSG("{\"action\":{\"App Layouts\":{\"action_name\":\"LaunchEditor\", \"value\":\"\"}}}");
         }
 
         private void KbmKeyLaunchClicked(object sender, RoutedEventArgs e)

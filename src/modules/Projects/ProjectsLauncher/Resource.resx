@@ -127,10 +127,10 @@
     <value>Incorrect {0} file.</value>
   </data>
   <data name="Projects" xml:space="preserve">
-    <value>Projects</value>
+    <value>App Layouts</value>
     <comment>Name of the module</comment>
   </data>
   <data name="Project_not_found" xml:space="preserve">
-    <value>Project {0} not found.</value>
+    <value>App Layout {0} not found.</value>
   </data>
 </root>

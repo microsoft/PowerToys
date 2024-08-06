@@ -16,7 +16,7 @@ namespace ProjectsEditor.Data
         {
             get
             {
-                return FolderUtils.DataFolder() + "\\projects.json";
+                return FolderUtils.DataFolder() + "\\applayouts.json";
             }
         }
 

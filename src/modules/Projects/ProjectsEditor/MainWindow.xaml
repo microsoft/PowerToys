@@ -14,7 +14,7 @@
     ui:WindowHelper.UseModernWindowStyle="True"
     MinWidth="700"
     MinHeight="680"
-    AutomationProperties.Name="Projects Editor"
+    AutomationProperties.Name="App Layouts Editor"
     Closing="OnClosing"
     ContentRendered="OnContentRendered"
     ResizeMode="CanResize"

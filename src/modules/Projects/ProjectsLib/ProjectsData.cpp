@@ -5,7 +5,7 @@
 
 namespace NonLocalizable
 {
-    const inline wchar_t ModuleKey[] = L"Projects";
+    const inline wchar_t ModuleKey[] = L"App Layouts";
 }
 
 namespace ProjectsData
@@ -13,19 +13,19 @@ namespace ProjectsData
     std::wstring ProjectsFile()
     {
         std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
-        return settingsFolderPath + L"\\projects.json";
+        return settingsFolderPath + L"\\applayouts.json";
     }
 
     std::wstring TempProjectsFile()
     {
         std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
-        return settingsFolderPath + L"\\temp-project.json";
+        return settingsFolderPath + L"\\temp-applayout.json";
     }
 
     std::wstring LaunchProjectsFile()
     {
         std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
-        return settingsFolderPath + L"\\launch-project.json";
+        return settingsFolderPath + L"\\launch-applayout.json";
     }
     
     RECT Project::Application::Position::toRect() const noexcept

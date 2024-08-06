@@ -34,7 +34,7 @@ namespace ProjectsLauncherUI
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            Logger.InitializeLogger("\\Projects\\Logs");
+            Logger.InitializeLogger("\\App Layouts\\Logs");
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
             const string appName = "Local\\PowerToys_Projects_Launcher_InstanceMutex";

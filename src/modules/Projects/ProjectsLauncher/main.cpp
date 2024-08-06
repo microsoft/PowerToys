@@ -13,7 +13,7 @@
 #include <common/utils/UnhandledExceptionHandler.h>
 #include <common/utils/resources.h>
 
-const std::wstring moduleName = L"Projects\\ProjectsLauncher";
+const std::wstring moduleName = L"App Layouts\\ProjectsLauncher";
 const std::wstring internalPath = L"";
 
 int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cmdShow)
@@ -29,7 +29,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 
     if (is_process_elevated())
     {
-        Logger::warn("Projects Launcher is elevated, restart");
+        Logger::warn("App Layouts Launcher is elevated, restart");
 
         constexpr DWORD exe_path_size = 0xFFFF;
         auto exe_path = std::make_unique<wchar_t[]>(exe_path_size);
@@ -68,32 +68,32 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
             }
             else
             {
-                Logger::critical("Incorrect Projects file");
-                std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), L"projects.json");
+                Logger::critical("Incorrect App Layouts file");
+                std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), L"applayouts.json");
                 MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_PROJECTS).c_str(), MB_ICONERROR | MB_OK);
                 return 1;
             }
         }
         else
         {
-            Logger::critical("Incorrect Projects file");
-            std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), L"projects.json");
+            Logger::critical("Incorrect App Layouts file");
+            std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), L"applayouts.json");
             MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_PROJECTS).c_str(), MB_ICONERROR | MB_OK);
             return 1;
         }
     }
     catch (std::exception ex)
     {
-        Logger::critical("Exception on reading projects: {}", ex.what());
-        std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_FILE_READING_ERROR), L"projects.json");
+        Logger::critical("Exception on reading App Layout: {}", ex.what());
+        std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_FILE_READING_ERROR), L"applayouts.json");
         MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_PROJECTS).c_str(), MB_ICONERROR | MB_OK);
         return 1;
     }
 
     if (projects.empty())
     {
-        Logger::warn("Projects file is empty");
-        std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_EMPTY_FILE), L"projects.json");
+        Logger::warn("App Layouts file is empty");
+        std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_EMPTY_FILE), L"applayouts.json");
         MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_PROJECTS).c_str(), MB_ICONERROR | MB_OK);
         return 1;
     }
@@ -115,13 +115,13 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 
     if (projectToLaunch.id.empty())
     {
-        Logger::critical(L"Project {} not found", id);
+        Logger::critical(L"App Layout {} not found", id);
         std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_PROJECT_NOT_FOUND), id);
         MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_PROJECTS).c_str(), MB_ICONERROR | MB_OK);
         return 1;
     }
 
-    Logger::info(L"Launch Project {} : {}", projectToLaunch.name, projectToLaunch.id);
+    Logger::info(L"Launch App Layout {} : {}", projectToLaunch.name, projectToLaunch.id);
 
     // launch apps
     projectToLaunch = Launch(projectToLaunch);

@@ -93,7 +93,7 @@ public:
         // Create a Settings object.
         PowerToysSettings::Settings settings(hinstance, get_name());
         settings.set_description(GET_RESOURCE_STRING(IDS_PROJECTS_SETTINGS_DESC));
-        settings.set_overview_link(L"https://aka.ms/PowerToysOverview_Projects");
+        settings.set_overview_link(L"https://aka.ms/PowerToysOverview_AppLayouts");
 
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
@@ -128,14 +128,14 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
-        Logger::info("Projects enabling");
+        Logger::info("App Layouts enabling");
         Enable();
     }
 
     // Disable the powertoy
     virtual void disable()
     {
-        Logger::info("Projects disabling");
+        Logger::info("App Layouts disabling");
         Disable(true);
     }
 
@@ -162,7 +162,7 @@ public:
 
     virtual void send_settings_telemetry() override
     {
-        Logger::info("Send Projects telemetry");
+        Logger::info("Send App Layouts telemetry");
         Trace::Projects::SettingsTelemetry(m_hotkey);
 
 		// read projects for telemetry
@@ -219,8 +219,8 @@ public:
     ProjectsModuleInterface()
     {
         app_name = GET_RESOURCE_STRING(IDS_PROJECTS_NAME);
-        app_key = L"Projects";
-        LoggerHelpers::init_logger(app_key, L"ModuleInterface", "Projects");
+        app_key = L"App Layouts";
+        LoggerHelpers::init_logger(app_key, L"ModuleInterface", "App Layouts");
         init_settings();
 
         m_toggleEditorEvent = CreateDefaultEvent(CommonSharedConstants::PROJECTS_LAUNCH_EDITOR_EVENT);
@@ -352,7 +352,7 @@ private:
 
     void launch_editor()
     {
-        Logger::trace(L"Starting ProjectsEditor");
+        Logger::trace(L"Starting App Layouts Editor");
 
         /*unsigned long powertoys_pid = GetCurrentProcessId();
         std::wstring executable_args = L"";
@@ -365,11 +365,11 @@ private:
         //sei.lpParameters = executable_args.data();
         if (ShellExecuteExW(&sei))
         {
-            Logger::trace("Successfully started the ProjectsEditor");
+            Logger::trace("Successfully started the App Layouts Editor");
         }
         else
         {
-            Logger::error(L"ProjectsEditor failed to start. {}", get_last_error_or_default(GetLastError()));
+            Logger::error(L"App Layouts Editor failed to start. {}", get_last_error_or_default(GetLastError()));
         }
 
         m_hProcess = sei.hProcess;

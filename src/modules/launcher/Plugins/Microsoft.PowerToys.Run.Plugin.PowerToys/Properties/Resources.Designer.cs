@@ -151,7 +151,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Projects.
+        ///   Looks up a localized string similar to App Layouts.
         /// </summary>
         internal static string Projects {
             get {
