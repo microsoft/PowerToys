@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="$(SolutionDir)src\Common.Dotnet.props" />
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\..\Common.Dotnet.props" />
 
   <PropertyGroup>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.OneNote</RootNamespace>

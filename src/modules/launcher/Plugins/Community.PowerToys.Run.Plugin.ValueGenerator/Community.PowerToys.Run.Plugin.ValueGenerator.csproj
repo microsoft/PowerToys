@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->  
-  <Import Project="$(SolutionDir)src\Common.Dotnet.props" />
+  <Import Project="..\..\..\..\Common.Dotnet.props" />
 
   <PropertyGroup>
     <ProjectGuid>{D095BE44-1F2E-463E-A494-121892A75EA2}</ProjectGuid>
