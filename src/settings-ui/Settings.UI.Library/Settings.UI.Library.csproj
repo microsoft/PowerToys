@@ -1,13 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <!-- Look at Directory.Build.props in root for common stuff as well -->
+	<!-- Look at Directory.Build.props in root for common stuff as well -->
+	
+	<PropertyGroup>
+		<!-- Putting this first as rest is caught by the common.dotnet import -->
+		<!-- Without this first, the project will throw an error -->
+		<TargetFrameworks>net8.0-windows</TargetFrameworks>
+	</PropertyGroup>
+    
     <Import Project="$(SolutionDir)src\Common.Dotnet.props" />
 	<Import Project="$(SolutionDir)src\Common.SelfContained.props" />
-    <PropertyGroup>
-		<!-- FOLLOWUP: Second i touch these, stuff starts failing ... why -->
-		<!-- FOLLOWUP: Why does this have Frameworks and Framework -->
-        <TargetFrameworks>net8.0-windows</TargetFrameworks>
-        <TargetFramework>net8.0-windows</TargetFramework>
-		
+    
+	<PropertyGroup>		
         <Description>PowerToys Settings UI Library</Description>
         <AssemblyName>PowerToys.Settings.UI.Lib</AssemblyName>
     </PropertyGroup>
