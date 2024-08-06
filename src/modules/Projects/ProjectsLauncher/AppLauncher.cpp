@@ -388,11 +388,12 @@ ProjectsData::Project Launch(ProjectsData::Project project)
 
     // If the moveExistingWindows setting is applied
     // move existing windows if any to the correct position
-    if (project.moveExistingWindows)
-    {
-        AddOpenedWindows(launchedApps, windowsBefore, installedApps);
-        UpdateLaunchStatus(launchedApps);
-    }
+    // feature is canceled
+    // if (project.moveExistingWindows)
+    // {
+    //    AddOpenedWindows(launchedApps, windowsBefore, installedApps);
+    //    UpdateLaunchStatus(launchedApps);
+    // }
 
     // Launch apps
     for (auto& app : launchedApps)

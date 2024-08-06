@@ -381,7 +381,8 @@
         <StackPanel
             Grid.Row="5"
             Orientation="Horizontal"
-            Margin="0 5 0 0">
+            Margin="0 5 0 0"
+            Visibility="Collapsed">
             <CheckBox
                 Content="{x:Static props:Resources.MoveIfExist}" 
                 FontSize="14" 
