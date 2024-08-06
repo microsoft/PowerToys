@@ -30,6 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
+      <PackageReference Include="Microsoft.Windows.CsWinRT" />
       <PackageReference Include="CommunityToolkit.Mvvm" />
       <PackageReference Include="CommunityToolkit.WinUI.Converters" />
       <PackageReference Include="Microsoft.WindowsAppSDK" />

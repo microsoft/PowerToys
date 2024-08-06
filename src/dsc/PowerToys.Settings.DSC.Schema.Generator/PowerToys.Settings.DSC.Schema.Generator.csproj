@@ -42,6 +42,9 @@
         <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
         <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
     </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Windows.CsWinRT" />
+    </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
