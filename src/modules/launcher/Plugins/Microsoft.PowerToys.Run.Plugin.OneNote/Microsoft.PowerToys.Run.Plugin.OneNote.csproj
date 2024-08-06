@@ -46,6 +46,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="Interop.Microsoft.Office.Interop.OneNote" />
     <PackageReference Include="LazyCache" />
     <PackageReference Include="Microsoft.Windows.CsWin32">

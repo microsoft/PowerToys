@@ -48,6 +48,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="NLog.Schema" />
     <PackageReference Include="hyjiacan.pinyin4net" />
     <PackageReference Include="System.Diagnostics.EventLog">
