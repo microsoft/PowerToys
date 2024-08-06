@@ -15,6 +15,9 @@
     <ProjectReference Include="..\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
+  </ItemGroup>
 
   <!-- Experimentation is live, forcing inclusion -->
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
