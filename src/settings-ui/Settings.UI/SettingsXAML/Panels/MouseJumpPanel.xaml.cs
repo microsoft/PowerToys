@@ -3,7 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.PowerToys.Settings.UI.Helpers;
+using System.Collections.Generic;
+using System.Linq;
+using CommunityToolkit.WinUI;
+using CommunityToolkit.WinUI.Controls;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -19,6 +22,49 @@ namespace Microsoft.PowerToys.Settings.UI.Panels
         public MouseJumpPanel()
         {
             InitializeComponent();
+        }
+
+        private void PreviewImage_Loaded(object sender, RoutedEventArgs e)
+        {
+            bool TryFindFrameworkElement(SettingsCard settingsCard, string partName, out FrameworkElement result)
+            {
+                result = settingsCard.FindDescendants()
+                    .OfType<FrameworkElement>()
+                    .FirstOrDefault(
+                        x => x.Name == partName);
+                return result is not null;
+            }
+
+            /*
+                apply a variation of the "Left" VisualState for SettingsCards
+                see https://github.com/CommunityToolkit/Windows/blob/9c7642ff35eaaa51a404f9bcd04b10c7cf851921/components/SettingsControls/src/SettingsCard/SettingsCard.xaml#L334-L347
+            */
+
+            var settingsCard = (SettingsCard)sender;
+
+            var partNames = new List<string>
+            {
+                "PART_HeaderIconPresenterHolder",
+                "PART_DescriptionPresenter",
+                "PART_HeaderPresenter",
+                "PART_ActionIconPresenter",
+            };
+            foreach (var partName in partNames)
+            {
+                if (!TryFindFrameworkElement(settingsCard, partName, out var element))
+                {
+                    continue;
+                }
+
+                element.Visibility = Visibility.Collapsed;
+            }
+
+            if (TryFindFrameworkElement(settingsCard, "PART_ContentPresenter", out var content))
+            {
+                Grid.SetRow(content, 1);
+                Grid.SetColumn(content, 1);
+                content.HorizontalAlignment = HorizontalAlignment.Center;
+            }
         }
 
         private void PreviewTypeSetting_SelectionChanged(object sender, SelectionChangedEventArgs e)

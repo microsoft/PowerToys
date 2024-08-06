@@ -3994,6 +3994,15 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="MouseUtils_MouseJump_PreviewType.Description" xml:space="preserve">
     <value>Select a predefined style, or apply a custom one</value>
   </data>
+  <data name="MouseUtils_MouseJump_PreviewType_Compact.Text" xml:space="preserve">
+    <value>Compact</value>
+  </data>
+  <data name="MouseUtils_MouseJump_PreviewType_Bezelled.Text" xml:space="preserve">
+    <value>Bezelled</value>
+  </data>
+  <data name="MouseUtils_MouseJump_PreviewType_Custom.Text" xml:space="preserve">
+    <value>Custom</value>
+  </data>
   <data name="MouseUtils_MouseJump_BackgroundColor1.Header" xml:space="preserve">
     <value>Background color 1</value>
   </data>
