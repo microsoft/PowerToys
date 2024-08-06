@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <!-- Look at Directory.Build.props in root for common stuff as well -->
-    <Import 
-        Condition="exists('$(SolutionDir)src\Common.SelfContained.props')" 
-        Project="$(SolutionDir)src\Common.SelfContained.props" />
+    <Import Project="$(SolutionDir)src\Common.SelfContained.props" />
     <PropertyGroup>
+		<!-- FOLLOWUP: Second i touch these, stuff starts failing ... why -->
+		<!-- FOLLOWUP: Why does this have Frameworks and Framework -->
         <TargetFrameworks>net8.0-windows</TargetFrameworks>
         <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
         <TargetFramework>net8.0-windows</TargetFramework>
