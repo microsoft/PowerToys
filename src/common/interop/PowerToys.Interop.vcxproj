@@ -87,7 +87,7 @@
       <AdditionalOptions>%(AdditionalOptions) /bigobj /Zc:twoPhase- </AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>WindowsApp.lib;shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WindowsApp.lib;shell32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <ModuleDefinitionFile>PowerToys.Interop.def</ModuleDefinitionFile>
@@ -96,6 +96,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\modules\videoconference\VideoConferenceShared\MicrophoneDevice.h" />
     <ClInclude Include="..\..\modules\videoconference\VideoConferenceShared\VideoCaptureDeviceList.h" />
+    <ClInclude Include="async_message_queue.h" />
     <ClInclude Include="CommonManaged.h">
       <DependentUpon>CommonManaged.idl</DependentUpon>
     </ClInclude>
@@ -113,6 +114,8 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="shared_constants.h" />
+    <ClInclude Include="two_way_pipe_message_ipc.h" />
+    <ClInclude Include="two_way_pipe_message_ipc_impl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\modules\videoconference\VideoConferenceShared\MicrophoneDevice.cpp" />
@@ -133,6 +136,7 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="two_way_pipe_message_ipc.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="interop.rc" />
