@@ -12,6 +12,13 @@ steps:
   submodules: true
   clean: true
 
+- task: PowerShell@2
+  displayName: Verify Notice.md and Nuget packages match
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyNoticeMdAgainstNugetPackages.ps1'
+    arguments: -path '$(build.sourcesdirectory)\'
+    pwsh: true
+
 - task: UseDotNet@2
   displayName: 'Use .NET 6 SDK'
   inputs:
