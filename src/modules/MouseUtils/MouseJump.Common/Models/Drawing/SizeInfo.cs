@@ -42,6 +42,13 @@ public sealed class SizeInfo
             height: Math.Clamp(this.Height, 0, max.Height));
     }
 
+    public SizeInfo Clamp(decimal maxWidth, decimal maxHeight)
+    {
+        return new(
+            width: Math.Clamp(this.Width, 0, maxWidth),
+            height: Math.Clamp(this.Height, 0, maxHeight));
+    }
+
     public SizeInfo Enlarge(BorderStyle border) =>
         new(
             this.Width + border.Horizontal,

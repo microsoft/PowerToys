@@ -23,7 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Panels
 
         private void PreviewTypeSetting_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // format controls based on whether the "Custom" preview type is selected
+            // hide or display controls based on whether the "Custom" preview type is selected
             var selectedPreviewType = this.GetSelectedPreviewType();
             var customPreviewTypeSelected = selectedPreviewType == PreviewType.Custom;
             this.CopyStyleToCustom.IsEnabled = !customPreviewTypeSelected;

@@ -127,7 +127,11 @@
             IsExpanded="False">
             <tkcontrols:SettingsExpander.Items>
                 <tkcontrols:SettingsCard
-                    HorizontalAlignment="Center">
+                    Height="300"
+                    HorizontalAlignment="Center"
+                    MaxHeight="300"
+                    MinHeight="300"
+                    VerticalAlignment="Center">
                     <Image Source="{x:Bind Path=ViewModel.MouseJumpPreviewImage, Mode=OneWay}" />
                 </tkcontrols:SettingsCard>
                 <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseJump_PreviewType" x:Name="MouseUtils_MouseJump_PreviewType">

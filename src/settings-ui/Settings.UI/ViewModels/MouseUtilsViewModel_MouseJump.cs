@@ -143,15 +143,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                // keep these in sync with the layout of MouseJump-Desktop.png
-                var desktopSize = new SizeInfo(
-                    width: 640,
-                    height: 480);
+                // keep these in sync with the layout of "Images\MouseJump-Desktop.png"
                 var screens = new List<RectangleInfo>()
                 {
-                    new(412, 111, 177, 110),
-                    new(0, 0, 412, 221),
+                    /*
+                        these magic numbers are the pixel dimensions of the individual screens on the
+                        fake desktop image - "Images\MouseJump-Desktop.png" - used to generate the
+                        preview image in the Settings UI properties page for Mouse Jump. if you update
+                        the fake desktop image be sure to update these values as well.
+                    */
+                    new(635, 172, 272, 168),
+                    new(0, 0, 635, 339),
                 };
+                var desktopSize = LayoutHelper.GetCombinedScreenBounds(screens).Size;
+                /*
+                    magic number 283 is the content height left in the settings card after removing the top and bottom chrome:
+
+                        300px settings card height - 1px top border - 7px top margin - 8px bottom margin - 1px bottom border = 283px image height
+
+                    this ensures we get a preview image scaled at 100% so borders etc are shown at exact pixel sizes in the preview
+                */
+                var canvasSize = new SizeInfo(desktopSize.Width, 283).Clamp(desktopSize);
 
                 var previewType = Enum.TryParse<PreviewType>(this.MouseJumpPreviewType, true, out var previewTypeResult)
                     ? previewTypeResult
@@ -161,7 +173,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     PreviewType.Compact => StyleHelper.CompactPreviewStyle.WithCanvasSize(desktopSize),
                     PreviewType.Bezelled => StyleHelper.BezelledPreviewStyle.WithCanvasSize(desktopSize),
                     PreviewType.Custom => new PreviewStyle(
-                        canvasSize: desktopSize,
+                        canvasSize: canvasSize,
                         canvasStyle: new(
                             marginStyle: new(0),
                             borderStyle: new(

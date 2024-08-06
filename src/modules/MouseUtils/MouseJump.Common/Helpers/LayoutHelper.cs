@@ -91,7 +91,7 @@ public static class LayoutHelper
         return builder.Build();
     }
 
-    private static RectangleInfo GetCombinedScreenBounds(List<RectangleInfo> screens)
+    public static RectangleInfo GetCombinedScreenBounds(List<RectangleInfo> screens)
     {
         return screens.Skip(1).Aggregate(
             seed: screens.First(),
