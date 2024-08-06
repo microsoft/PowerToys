@@ -3,12 +3,12 @@
 
 namespace winrt::PowerToys::FileLocksmithLib::Interop::implementation
 {
-    ProcessResult::ProcessResult(hstring const& name, uint32_t pid, hstring const& user, winrt::Windows::Foundation::Collections::IVector<hstring> const& files)
+    ProcessResult::ProcessResult(hstring const& name, uint32_t pid, hstring const& user, array_view<hstring const> files)
     {
         _name = name;
         _pid = pid;
         _user = user;
-        _files = files;
+        _files = { files.begin(), files.end() };
     }
     hstring ProcessResult::name()
     {
@@ -22,8 +22,8 @@ namespace winrt::PowerToys::FileLocksmithLib::Interop::implementation
     {
         return _user;
     }
-    winrt::Windows::Foundation::Collections::IVector<hstring> ProcessResult::files()
+    com_array<hstring> ProcessResult::files()
     {
-        return _files;
+        return winrt::com_array<hstring>{ _files.begin(), _files.end() };
     }
 }
