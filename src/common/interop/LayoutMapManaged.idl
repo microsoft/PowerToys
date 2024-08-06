@@ -1,9 +1,12 @@
-namespace interop
+namespace PowerToys
 {
-    [default_interface] runtimeclass LayoutMapManaged {
-        LayoutMapManaged();
-        String GetKeyName(UInt32 key);
-        UInt32 GetKeyValue(String name);
-        void Updatelayout();
+    namespace Interop
+    {
+        [default_interface] runtimeclass LayoutMapManaged {
+            LayoutMapManaged();
+            String GetKeyName(UInt32 key);
+            UInt32 GetKeyValue(String name);
+            void Updatelayout();
+        }
     }
 }

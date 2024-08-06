@@ -1,7 +1,7 @@
 #pragma once
 #include "CommonManaged.g.h"
 
-namespace winrt::interop::implementation
+namespace winrt::PowerToys::Interop::implementation
 {
     struct CommonManaged : CommonManagedT<CommonManaged>
     {
@@ -12,7 +12,7 @@ namespace winrt::interop::implementation
         static winrt::Windows::Foundation::Collections::IVector<hstring> GetAllVideoCaptureDeviceNames();
     };
 }
-namespace winrt::interop::factory_implementation
+namespace winrt::PowerToys::Interop::factory_implementation
 {
     struct CommonManaged : CommonManagedT<CommonManaged, implementation::CommonManaged>
     {

@@ -1,6 +1,6 @@
 #pragma once
 #include "Constants.g.h"
-namespace winrt::interop::implementation
+namespace winrt::PowerToys::Interop::implementation
 {
     struct Constants : ConstantsT<Constants>
     {
@@ -42,7 +42,7 @@ namespace winrt::interop::implementation
     };
 }
 
-namespace winrt::interop::factory_implementation
+namespace winrt::PowerToys::Interop::factory_implementation
 {
     struct Constants : ConstantsT<Constants, implementation::Constants>
     {

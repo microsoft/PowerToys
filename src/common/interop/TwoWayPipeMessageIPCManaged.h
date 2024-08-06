@@ -2,13 +2,13 @@
 #include "TwoWayPipeMessageIPCManaged.g.h"
 #include "two_way_pipe_message_ipc.h"
 
-namespace winrt::interop::implementation
+namespace winrt::PowerToys::Interop::implementation
 {
     struct TwoWayPipeMessageIPCManaged : TwoWayPipeMessageIPCManagedT<TwoWayPipeMessageIPCManaged>
     {
         TwoWayPipeMessageIPCManaged() = default;
 
-        TwoWayPipeMessageIPCManaged(hstring const& inputPipeName, hstring const& outputPipeName, winrt::interop::TwoWayPipeIPCReadCallback const& _callback);
+        TwoWayPipeMessageIPCManaged(hstring const& inputPipeName, hstring const& outputPipeName, winrt::PowerToys::Interop::TwoWayPipeIPCReadCallback const& _callback);
         void Send(hstring const& msg);
         void Start();
         void End();
@@ -20,7 +20,7 @@ namespace winrt::interop::implementation
         std::function<void(const std::wstring& msg)> _internalReadCallback;
     };
 }
-namespace winrt::interop::factory_implementation
+namespace winrt::PowerToys::Interop::factory_implementation
 {
     struct TwoWayPipeMessageIPCManaged : TwoWayPipeMessageIPCManagedT<TwoWayPipeMessageIPCManaged, implementation::TwoWayPipeMessageIPCManaged>
     {

@@ -5,7 +5,7 @@
 #include "../../modules/videoconference/VideoConferenceShared/MicrophoneDevice.h"
 #include "../../modules/videoconference/VideoConferenceShared/VideoCaptureDeviceList.h"
 
-namespace winrt::interop::implementation
+namespace winrt::PowerToys::Interop::implementation
 {
     hstring CommonManaged::GetProductVersion()
     {

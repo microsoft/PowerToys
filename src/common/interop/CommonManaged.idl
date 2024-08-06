@@ -1,8 +1,11 @@
-namespace interop
+namespace PowerToys
 {
-    [default_interface] static runtimeclass CommonManaged {
-        static String GetProductVersion();
-        static Windows.Foundation.Collections.IVector<String> GetAllActiveMicrophoneDeviceNames();
-        static Windows.Foundation.Collections.IVector<String> GetAllVideoCaptureDeviceNames();
+    namespace Interop
+    {
+        [default_interface] static runtimeclass CommonManaged {
+            static String GetProductVersion();
+            static Windows.Foundation.Collections.IVector<String> GetAllActiveMicrophoneDeviceNames();
+            static Windows.Foundation.Collections.IVector<String> GetAllVideoCaptureDeviceNames();
+        }
     }
 }

@@ -2,7 +2,7 @@
 #include "LayoutMapManaged.g.h"
 #include "keyboard_layout.h"
 
-namespace winrt::interop::implementation
+namespace winrt::PowerToys::Interop::implementation
 {
     struct LayoutMapManaged : LayoutMapManagedT<LayoutMapManaged>
     {
@@ -16,7 +16,7 @@ namespace winrt::interop::implementation
         std::unique_ptr<LayoutMap> _map = std::make_unique<LayoutMap>();
     };
 }
-namespace winrt::interop::factory_implementation
+namespace winrt::PowerToys::Interop::factory_implementation
 {
     struct LayoutMapManaged : LayoutMapManagedT<LayoutMapManaged, implementation::LayoutMapManaged>
     {

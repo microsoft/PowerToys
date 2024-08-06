@@ -2,7 +2,7 @@
 #include "LayoutMapManaged.h"
 #include "LayoutMapManaged.g.cpp"
 
-namespace winrt::interop::implementation
+namespace winrt::PowerToys::Interop::implementation
 {
     hstring LayoutMapManaged::GetKeyName(uint32_t key)
     {

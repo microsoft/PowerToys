@@ -26,7 +26,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{F055103B-F80B-4D0C-BF48-057C55620033}</ProjectGuid>
-    <RootNamespace>interop</RootNamespace>
+    <RootNamespace>PowerToys.Interop</RootNamespace>
     <ProjectName>PowerToys.Interop</ProjectName>
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>

@@ -4,9 +4,9 @@
 #include <common/debug_control.h>
 #include <common/utils/winapi_error.h>
 
-namespace winrt::interop::implementation
+namespace winrt::PowerToys::Interop::implementation
 {
-    KeyboardHook::KeyboardHook(winrt::interop::KeyboardEventCallback const& keyboardEventCallback, winrt::interop::IsActiveCallback const& isActiveCallback, winrt::interop::FilterKeyboardEvent const& filterKeyboardEvent)
+    KeyboardHook::KeyboardHook(winrt::PowerToys::Interop::KeyboardEventCallback const& keyboardEventCallback, winrt::PowerToys::Interop::IsActiveCallback const& isActiveCallback, winrt::PowerToys::Interop::FilterKeyboardEvent const& filterKeyboardEvent)
     {
         assert(s_instance == nullptr);
         s_instance = this;
