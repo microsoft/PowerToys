@@ -25,6 +25,15 @@ namespace ProjectsEditor
         {
             MainViewModel = mainViewModel;
             mainViewModel.SetMainWindow(this);
+
+            WindowInteropHelper windowInteropHelper = new WindowInteropHelper(this);
+            System.Windows.Forms.Screen screen = System.Windows.Forms.Screen.FromHandle(windowInteropHelper.Handle);
+            double dpi = MonitorHelper.GetScreenDpiFromScreen(screen);
+            this.Height = screen.WorkingArea.Height / dpi * 0.90;
+            this.Width = screen.WorkingArea.Width / dpi * 0.75;
+            this.Top = screen.WorkingArea.Top + (int)(screen.WorkingArea.Height / dpi * 0.05);
+            this.Left = screen.WorkingArea.Left + (int)(screen.WorkingArea.Width / dpi * 0.125);
+
             InitializeComponent();
 
             _mainPage = new MainPage(mainViewModel);

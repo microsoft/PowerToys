@@ -38,5 +38,13 @@ namespace ProjectsEditor.Utils
             MonitorHelper monitorHelper = new MonitorHelper();
             return monitorHelper.GetDpiUnawareScreenBounds();
         }
+
+        internal static double GetScreenDpiFromScreen(Screen screen)
+        {
+            var pnt = new System.Drawing.Point(screen.Bounds.Left + 1, screen.Bounds.Top + 1);
+            var mon = NativeMethods.MonitorFromPoint(pnt, 2/*MONITOR_DEFAULTTONEAREST*/);
+            NativeMethods.GetDpiForMonitor(mon, NativeMethods.DpiType.EFFECTIVE, out uint dpiX, out uint dpiY);
+            return dpiX / 96.0;
+        }
     }
 }
