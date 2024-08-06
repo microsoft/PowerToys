@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -9,12 +10,16 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library;
 
-public sealed class AdvancedPasteCustomAction : INotifyPropertyChanged
+public sealed class AdvancedPasteCustomAction : INotifyPropertyChanged, ICloneable
 {
     private int _id;
     private string _name = string.Empty;
     private string _prompt = string.Empty;
     private HotkeySettings _shortcut = new();
+    private bool _isShown;
+    private bool _canMoveUp;
+    private bool _canMoveDown;
+    private bool _isValid;
 
     [JsonPropertyName("id")]
     public int Id
@@ -40,6 +45,7 @@ public sealed class AdvancedPasteCustomAction : INotifyPropertyChanged
             {
                 _name = value;
                 OnPropertyChanged();
+                UpdateIsValid();
             }
         }
     }
@@ -54,6 +60,7 @@ public sealed class AdvancedPasteCustomAction : INotifyPropertyChanged
             {
                 _prompt = value;
                 OnPropertyChanged();
+                UpdateIsValid();
             }
         }
     }
@@ -64,14 +71,68 @@ public sealed class AdvancedPasteCustomAction : INotifyPropertyChanged
         get => _shortcut;
         set
         {
-            if (value == null)
-            {
-                value = new();
-            }
-
             if (_shortcut != value)
             {
-                _shortcut = value;
+                // We null-coalesce here rather than outside this branch as we want to raise PropertyChanged when the setter is called
+                // with null; the ShortcutControl depends on this.
+                _shortcut = value ?? new();
+
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    [JsonPropertyName("isShown")]
+    public bool IsShown
+    {
+        get => _isShown;
+        set
+        {
+            if (_isShown != value)
+            {
+                _isShown = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    [JsonIgnore]
+    public bool CanMoveUp
+    {
+        get => _canMoveUp;
+        set
+        {
+            if (_canMoveUp != value)
+            {
+                _canMoveUp = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    [JsonIgnore]
+    public bool CanMoveDown
+    {
+        get => _canMoveDown;
+        set
+        {
+            if (_canMoveDown != value)
+            {
+                _canMoveDown = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    [JsonIgnore]
+    public bool IsValid
+    {
+        get => _isValid;
+        private set
+        {
+            if (_isValid != value)
+            {
+                _isValid = value;
                 OnPropertyChanged();
             }
         }
@@ -79,10 +140,44 @@ public sealed class AdvancedPasteCustomAction : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler PropertyChanged;
 
+    public string ToJsonString() => JsonSerializer.Serialize(this);
+
+    public object Clone()
+    {
+        AdvancedPasteCustomAction clone = new();
+        clone.Update(this);
+        return clone;
+    }
+
+    public void Update(AdvancedPasteCustomAction other)
+    {
+        Id = other.Id;
+        Name = other.Name;
+        Prompt = other.Prompt;
+        Shortcut = other.GetShortcutClone();
+        IsShown = other.IsShown;
+        CanMoveUp = other.CanMoveUp;
+        CanMoveDown = other.CanMoveDown;
+    }
+
     private void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    public string ToJsonString() => JsonSerializer.Serialize(this);
+    private HotkeySettings GetShortcutClone()
+    {
+        object shortcut = null;
+        if (Shortcut.TryToCmdRepresentable(out string shortcutString))
+        {
+            _ = HotkeySettings.TryParseFromCmd(shortcutString, out shortcut);
+        }
+
+        return (shortcut as HotkeySettings) ?? new HotkeySettings();
+    }
+
+    private void UpdateIsValid()
+    {
+        IsValid = !string.IsNullOrWhiteSpace(Name) && !string.IsNullOrWhiteSpace(Prompt);
+    }
 }

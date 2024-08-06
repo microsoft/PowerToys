@@ -126,91 +126,71 @@
                                 AllowDisable="True"
                                 HotkeySettings="{x:Bind Path=ViewModel.PasteAsJsonShortcut, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
-                        <ListView
-                            x:Name="CustomActionsListView"
-                            x:Uid="CustomActionsListView"
-                            ContainerContentChanging="CustomActionsListView_ContainerContentChanging"
-                            ItemsSource="{x:Bind ViewModel.CustomActions, Mode=TwoWay}"
-                            SelectionMode="None">
-                            <ListView.ItemContainerStyle>
-                                <Style TargetType="ListViewItem">
-                                    <Setter Property="HorizontalAlignment" Value="Stretch" />
-                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                                    <Setter Property="Padding" Value="0" />
-                                    <Setter Property="Margin" Value="0" />
-                                </Style>
-                            </ListView.ItemContainerStyle>
-                            <ListView.ItemTemplate>
-                                <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:AdvancedPasteCustomAction">
-                                    <tkcontrols:SettingsCard Header="{x:Bind Name, Mode=OneWay}">
-                                        <tkcontrols:SettingsCard.Resources />
-                                        <tkcontrols:SettingsCard.Description>
-                                            <StackPanel
-                                                Grid.Row="1"
+                        <ItemsControl
+                            x:Name="CustomActions"
+                            x:Uid="CustomActions"
+                            HorizontalAlignment="Stretch"
+                            IsTabStop="False"
+                            ItemsSource="{x:Bind ViewModel.CustomActions, Mode=OneWay}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:AdvancedPasteCustomAction">
+                                    <tkcontrols:SettingsCard
+                                        Margin="0,0,0,2"
+                                        Click="EditCustomActionButton_Click"
+                                        Description="{x:Bind Prompt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        Header="{x:Bind Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        IsActionIconVisible="False"
+                                        IsClickEnabled="True">
+                                        <tkcontrols:SettingsCard.Resources>
+                                            <x:Double x:Key="SettingsCardActionButtonWidth">0</x:Double>
+                                        </tkcontrols:SettingsCard.Resources>
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <ToggleSwitch
+                                                x:Uid="Enable_CustomAction"
+                                                AutomationProperties.HelpText="{x:Bind Name}"
+                                                IsOn="{x:Bind IsShown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                OffContent=""
+                                                OnContent="" />
+                                            <controls:ShortcutControl
+                                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                AllowDisable="True"
+                                                HotkeySettings="{x:Bind Path=Shortcut, Mode=TwoWay}" />
+                                            <Button
+                                                x:Uid="More_Options_Button"
                                                 Grid.Column="1"
-                                                Margin="0,4,0,0"
-                                                Orientation="Horizontal">
-                                                <TextBlock
-                                                    Margin="0,0,4,0"
-                                                    Style="{ThemeResource SecondaryTextStyle}"
-                                                    Text="{x:Bind Prompt, Mode=OneWay}" />
-                                            </StackPanel>
-                                        </tkcontrols:SettingsCard.Description>
-                                        <StackPanel
-                                            Grid.Column="2"
-                                            HorizontalAlignment="Right"
-                                            Orientation="Horizontal"
-                                            Spacing="8">
-                                            <Button
-                                                x:Uid="EditButton"
-                                                Width="40"
-                                                Height="36"
-                                                Content="&#xE70F;"
+                                                VerticalAlignment="Center"
+                                                Content="&#xE712;"
                                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                 Style="{StaticResource SubtleButtonStyle}">
-                                                <ToolTipService.ToolTip>
-                                                    <TextBlock x:Uid="EditTooltip" />
-                                                </ToolTipService.ToolTip>
                                                 <Button.Flyout>
-                                                    <Flyout x:Uid="CustomAction_Edit" ShouldConstrainToRootBounds="False">
-                                                        <StackPanel Spacing="16">
-                                                            <TextBox
-                                                                x:Uid="AdvancedPasteUI_CustomAction_Name"
-                                                                Width="240"
-                                                                HorizontalAlignment="Left"
-                                                                Text="{x:Bind Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                                            <TextBox
-                                                                x:Uid="AdvancedPasteUI_CustomAction_Prompt"
-                                                                Width="240"
-                                                                Height="200"
-                                                                HorizontalAlignment="Left"
-                                                                AcceptsReturn="true"
-                                                                Text="{x:Bind Prompt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                TextWrapping="Wrap" />
-                                                        </StackPanel>
-                                                    </Flyout>
+                                                    <MenuFlyout>
+                                                        <MenuFlyoutItem
+                                                            x:Uid="MoveUp"
+                                                            Click="ReorderButtonUp_Click"
+                                                            Icon="{ui:FontIcon Glyph=&#xE74A;}"
+                                                            IsEnabled="{x:Bind CanMoveUp, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                        <MenuFlyoutItem
+                                                            x:Uid="MoveDown"
+                                                            Click="ReorderButtonDown_Click"
+                                                            Icon="{ui:FontIcon Glyph=&#xE74B;}"
+                                                            IsEnabled="{x:Bind CanMoveDown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                        <MenuFlyoutSeparator />
+                                                        <MenuFlyoutItem
+                                                            x:Uid="RemoveItem"
+                                                            Click="DeleteCustomActionButton_Click"
+                                                            Icon="{ui:FontIcon Glyph=&#xE74D;}"
+                                                            IsEnabled="true" />
+                                                    </MenuFlyout>
                                                 </Button.Flyout>
-                                            </Button>
-                                            <controls:ShortcutControl AllowDisable="True" HotkeySettings="{x:Bind Path=Shortcut, Mode=TwoWay}" />
-                                            <Button
-                                                x:Name="RemoveButton"
-                                                x:Uid="RemoveButton"
-                                                Width="40"
-                                                Height="36"
-                                                Click="DeleteCustomActionButton_Click"
-                                                CommandParameter="{Binding Id}"
-                                                Content="&#xE74D;"
-                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                                Style="{StaticResource SubtleButtonStyle}">
                                                 <ToolTipService.ToolTip>
-                                                    <TextBlock x:Uid="RemoveTooltip" />
+                                                    <TextBlock x:Uid="More_Options_ButtonTooltip" />
                                                 </ToolTipService.ToolTip>
                                             </Button>
                                         </StackPanel>
                                     </tkcontrols:SettingsCard>
                                 </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                         <InfoBar
                             x:Uid="AdvancedPaste_ShortcutWarning"
                             IsClosable="False"
@@ -285,6 +265,32 @@
                         TextChanged="AdvancedPaste_EnableAIDialogOpenAIApiKey_TextChanged" />
                 </Grid>
             </Grid>
+        </ContentDialog>
+        <ContentDialog
+            x:Name="CustomActionDialog"
+            x:Uid="CustomActionDialog"
+            Closed="CustomActionDialog_Closed"
+            IsPrimaryButtonEnabled="{Binding IsValid, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+            IsSecondaryButtonEnabled="True"
+            PrimaryButtonStyle="{ThemeResource AccentButtonStyle}">
+            <ContentDialog.DataContext>
+                <models:AdvancedPasteCustomAction />
+            </ContentDialog.DataContext>
+            <StackPanel Spacing="16">
+                <TextBox
+                    x:Uid="AdvancedPasteUI_CustomAction_Name"
+                    Width="340"
+                    HorizontalAlignment="Left"
+                    Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox
+                    x:Uid="AdvancedPasteUI_CustomAction_Prompt"
+                    Width="340"
+                    Height="280"
+                    HorizontalAlignment="Left"
+                    AcceptsReturn="true"
+                    Text="{Binding Prompt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    TextWrapping="Wrap" />
+            </StackPanel>
         </ContentDialog>
     </Grid>
 </Page>

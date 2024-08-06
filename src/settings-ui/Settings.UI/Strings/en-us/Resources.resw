@@ -2018,6 +2018,21 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="AdvancedPasteUI_CustomAction_Prompt.Header" xml:space="preserve">
     <value>Prompt</value>
   </data>
+  <data name="CustomActionDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="AddCustomAction" xml:space="preserve">
+    <value>Add custom action</value>
+  </data>
+  <data name="CustomActionSave" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="EditCustomAction" xml:space="preserve">
+    <value>Edit custom action</value>
+  </data>
+  <data name="CustomActionUpdate" xml:space="preserve">
+    <value>Update</value>
+  </data>
   <data name="PasteAsMarkdown_Shortcut.Header" xml:space="preserve">
     <value>Paste as Markdown directly</value>
   </data>

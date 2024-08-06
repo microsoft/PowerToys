@@ -94,7 +94,10 @@ namespace AdvancedPaste.Settings
                                 CustomActions.Clear();
                                 foreach (var customAction in settings.Properties.CustomActions.Value)
                                 {
-                                    CustomActions.Add(customAction);
+                                    if (customAction.IsShown && customAction.IsValid)
+                                    {
+                                        CustomActions.Add(customAction);
+                                    }
                                 }
                             }
 
