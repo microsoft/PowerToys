@@ -96,6 +96,9 @@
   <ItemGroup>
     <ClInclude Include="..\..\modules\videoconference\VideoConferenceShared\MicrophoneDevice.h" />
     <ClInclude Include="..\..\modules\videoconference\VideoConferenceShared\VideoCaptureDeviceList.h" />
+    <ClInclude Include="CommonManaged.h">
+      <DependentUpon>CommonManaged.idl</DependentUpon>
+    </ClInclude>
     <ClInclude Include="Constants.h">
       <DependentUpon>KeyboardListener.idl</DependentUpon>
     </ClInclude>
@@ -114,6 +117,9 @@
   <ItemGroup>
     <ClCompile Include="..\..\modules\videoconference\VideoConferenceShared\MicrophoneDevice.cpp" />
     <ClCompile Include="..\..\modules\videoconference\VideoConferenceShared\VideoCaptureDeviceList.cpp" />
+    <ClCompile Include="CommonManaged.cpp">
+      <DependentUpon>CommonManaged.idl</DependentUpon>
+    </ClCompile>
     <ClCompile Include="Constants.cpp">
       <DependentUpon>KeyboardListener.idl</DependentUpon>
     </ClCompile>
@@ -139,6 +145,7 @@
     <None Include="PropertySheet.props" />
   </ItemGroup>
   <ItemGroup>
+    <Midl Include="CommonManaged.idl" />
     <Midl Include="Constants.idl" />
     <Midl Include="Hotkey.idl" />
     <Midl Include="KeyboardHook.idl" />
