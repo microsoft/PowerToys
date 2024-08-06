@@ -38,13 +38,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             resourceLoader = ResourceLoaderInstance.ResourceLoader;
             FlyoutMenuItems = new ObservableCollection<FlyoutMenuItem>();
 
+            AddFlyoutMenuItem(ModuleType.AppLayouts);
             AddFlyoutMenuItem(ModuleType.ColorPicker);
             AddFlyoutMenuItem(ModuleType.EnvironmentVariables);
             AddFlyoutMenuItem(ModuleType.FancyZones);
             AddFlyoutMenuItem(ModuleType.Hosts);
             AddFlyoutMenuItem(ModuleType.PowerLauncher);
             AddFlyoutMenuItem(ModuleType.PowerOCR);
-            AddFlyoutMenuItem(ModuleType.Projects);
             AddFlyoutMenuItem(ModuleType.RegistryPreview);
             AddFlyoutMenuItem(ModuleType.MeasureTool);
             AddFlyoutMenuItem(ModuleType.ShortcutGuide);
@@ -90,7 +90,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.FancyZones => SettingsRepository<FancyZonesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.ToString(),
                 ModuleType.PowerLauncher => SettingsRepository<PowerLauncherSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenPowerLauncher.ToString(),
                 ModuleType.PowerOCR => SettingsRepository<PowerOcrSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
-                ModuleType.Projects => SettingsRepository<ProjectsSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.Hotkey.Value.ToString(),
+                ModuleType.AppLayouts => SettingsRepository<ProjectsSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.Hotkey.Value.ToString(),
                 ModuleType.MeasureTool => SettingsRepository<MeasureToolSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
                 ModuleType.ShortcutGuide => GetShortcutGuideToolTip(),
                 _ => string.Empty,

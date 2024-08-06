@@ -70,6 +70,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AlwaysOnTop.png}"
                     Tag="AlwaysOnTop" />
                 <NavigationViewItem
+                    x:Uid="Shell_Projects"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Projects.png}"
+                    Tag="App Layouts" />
+                <NavigationViewItem
                     x:Uid="Shell_Awake"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Awake.png}"
                     Tag="Awake" />
@@ -137,10 +141,6 @@
                     x:Uid="Shell_QuickAccent"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}"
                     Tag="QuickAccent" />
-                <NavigationViewItem
-                    x:Uid="Shell_Projects"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Projects.png}"
-                    Tag="App Layouts" />
                 <NavigationViewItem
                     x:Uid="Shell_RegistryPreview"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/RegistryPreview.png}"

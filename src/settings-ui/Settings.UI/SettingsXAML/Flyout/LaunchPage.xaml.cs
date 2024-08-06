@@ -116,7 +116,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                     break;
 
-                case ModuleType.Projects: // Launch Projects Editor
+                case ModuleType.AppLayouts: // Launch Projects Editor
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ProjectsLaunchEditorEvent()))
                     {
                         eventHandle.Set();

@@ -8,6 +8,7 @@ namespace ManagedCommon
     {
         AdvancedPaste,
         AlwaysOnTop,
+        AppLayouts,
         Awake,
         ColorPicker,
         CropAndLock,
@@ -26,7 +27,6 @@ namespace ManagedCommon
         PowerRename,
         PowerLauncher,
         PowerAccent,
-        Projects,
         RegistryPreview,
         MeasureTool,
         ShortcutGuide,

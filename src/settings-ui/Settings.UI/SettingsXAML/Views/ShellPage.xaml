@@ -116,6 +116,11 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AlwaysOnTop.png}" />
 
                 <NavigationViewItem
+                    x:Uid="Shell_Projects"
+                    helpers:NavHelper.NavigateTo="views:ProjectsPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Projects.png}" />
+
+                <NavigationViewItem
                     x:Uid="Shell_Awake"
                     helpers:NavHelper.NavigateTo="views:AwakePage"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Awake.png}" />
@@ -198,11 +203,6 @@
                     x:Uid="Shell_QuickAccent"
                     helpers:NavHelper.NavigateTo="views:PowerAccentPage"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}" />
-
-                <NavigationViewItem
-                    x:Uid="Shell_Projects"
-                    helpers:NavHelper.NavigateTo="views:ProjectsPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Projects.png}" />
 
                 <NavigationViewItem
                     x:Uid="Shell_RegistryPreview"
