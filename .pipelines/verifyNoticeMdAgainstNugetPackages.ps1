@@ -39,7 +39,7 @@ $totalList = $projFiles | ForEach-Object -Parallel {
     if($nugetTemp -is [array] -and $nugetTemp.count -gt 3)
     {
         # Need to debug this script? Uncomment this line.
-        Write-Host $csproj "`r`n" $nugetTemp "`r`n"
+        # Write-Host $csproj "`r`n" $nugetTemp "`r`n"
         $temp = New-Object System.Collections.ArrayList
         $temp.AddRange($nugetTemp)
         $temp.RemoveRange(0, 3)
