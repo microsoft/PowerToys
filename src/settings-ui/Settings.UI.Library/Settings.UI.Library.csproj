@@ -1,20 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <!-- Look at Directory.Build.props in root for common stuff as well -->
-    <Import Project="$(SolutionDir)src\Common.SelfContained.props" />
+    <Import Project="$(SolutionDir)src\Common.Dotnet.props" />
+	<Import Project="$(SolutionDir)src\Common.SelfContained.props" />
     <PropertyGroup>
 		<!-- FOLLOWUP: Second i touch these, stuff starts failing ... why -->
 		<!-- FOLLOWUP: Why does this have Frameworks and Framework -->
         <TargetFrameworks>net8.0-windows</TargetFrameworks>
-        <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
         <TargetFramework>net8.0-windows</TargetFramework>
+		
         <Description>PowerToys Settings UI Library</Description>
         <AssemblyName>PowerToys.Settings.UI.Lib</AssemblyName>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-        <DefineConstants>DEBUG;TRACE</DefineConstants>
-        <DebugType>full</DebugType>
-        <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>
 
     <ItemGroup>
