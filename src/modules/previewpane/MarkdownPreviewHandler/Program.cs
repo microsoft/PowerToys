@@ -5,7 +5,7 @@
 using System.Globalization;
 using System.Windows.Threading;
 using Common.UI;
-using interop;
+using PowerToys.Interop;
 
 namespace Microsoft.PowerToys.PreviewHandler.Markdown
 {

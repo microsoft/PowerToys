@@ -14,7 +14,7 @@
 
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
   <PropertyGroup>
-    <CsWinRTIncludes>interop</CsWinRTIncludes>
+    <CsWinRTIncludes>PowerToys.Interop</CsWinRTIncludes>
     <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>

@@ -58,8 +58,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             Settings = videoConferenceSettingsRepository.SettingsConfig;
 
-            CameraNames = interop.CommonManaged.GetAllVideoCaptureDeviceNames();
-            MicrophoneNames = interop.CommonManaged.GetAllActiveMicrophoneDeviceNames();
+            CameraNames = global::PowerToys.Interop.CommonManaged.GetAllVideoCaptureDeviceNames();
+            MicrophoneNames = global::PowerToys.Interop.CommonManaged.GetAllActiveMicrophoneDeviceNames();
             MicrophoneNames.Insert(0, "[All]");
 
             var shouldSaveSettings = false;
