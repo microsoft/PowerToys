@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <!-- Look at Directory.Build.props in root for common stuff as well -->
-	<Import Project="$(SolutionDir)src\Common.Dotnet.props" />
-	<Import Project="$(SolutionDir)src\Common.SelfContained.props" />
+	<Import Project="..\..\Common.Dotnet.props" />
+	<Import Project="..\..\Common.SelfContained.props" />
 	
     <PropertyGroup>
         <OutputType>Exe</OutputType>
