@@ -23,7 +23,8 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{c604b37e-9d0e-4484-8778-e8b31b0e1b3a}</ProjectGuid>
-    <RootNamespace>FileLocksmithLibInterop</RootNamespace>
+    <ProjectName>PowerToys.FileLocksmithLib.Interop</ProjectName>
+    <RootNamespace>PowerToys.FileLocksmithLib.Interop</RootNamespace>
     <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
     <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
     <TargetName>PowerToys.FileLocksmithLib.Interop</TargetName>
@@ -91,12 +92,18 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="ProcessResult.cpp">
+      <DependentUpon>ProcessResult.idl</DependentUpon>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileLocksmith.h" />
     <ClInclude Include="NtdllBase.h" />
     <ClInclude Include="NtdllExtensions.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="ProcessResult.h">
+      <DependentUpon>ProcessResult.idl</DependentUpon>
+    </ClInclude>
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
@@ -109,6 +116,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="ProcessResult.idl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
