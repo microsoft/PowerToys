@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="$(SolutionDir)src\Common.Dotnet.props" />
+	<!-- This is used by the installer, $(SolutionDir) won't work here -->
+	<Import Project="..\..\..\Common.Dotnet.props" />
 	
   <PropertyGroup>
     <Description>PowerToys Telemetry</Description>

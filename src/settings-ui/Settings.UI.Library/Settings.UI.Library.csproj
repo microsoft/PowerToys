@@ -6,9 +6,10 @@
 		<!-- Without this first, the project will throw an error -->
 		<TargetFrameworks>net8.0-windows</TargetFrameworks>
 	</PropertyGroup>
-    
-    <Import Project="$(SolutionDir)src\Common.Dotnet.props" />
-	<Import Project="$(SolutionDir)src\Common.SelfContained.props" />
+	
+	<!-- This is used by the installer, $(SolutionDir) won't work here -->
+    <Import Project="..\..\Common.Dotnet.props" />
+	<Import Project="..\..\Common.SelfContained.props" />
     
 	<PropertyGroup>		
         <Description>PowerToys Settings UI Library</Description>
@@ -46,5 +47,4 @@
             <Generator>PublicResXFileCodeGenerator</Generator>
         </EmbeddedResource>
     </ItemGroup>
-
 </Project>
