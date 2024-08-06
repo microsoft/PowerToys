@@ -54,6 +54,9 @@
     <ClInclude Include="async_message_queue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HotkeyManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="keyboard_layout.cpp">
@@ -80,6 +83,12 @@
     <ClCompile Include="two_way_pipe_message_ipc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HotkeyManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="interop.rc">
@@ -94,7 +103,7 @@
     <None Include="PropertySheet.props" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="Hotkey.idl">
+    <Midl Include="HotkeyManager.idl">
       <Filter>Source Files</Filter>
     </Midl>
     <Midl Include="Constants.idl">
@@ -107,6 +116,9 @@
       <Filter>Source Files</Filter>
     </Midl>
     <Midl Include="KeyboardHook.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="TwoWayPipeMessageIPCManaged.idl">
       <Filter>Source Files</Filter>
     </Midl>
   </ItemGroup>
