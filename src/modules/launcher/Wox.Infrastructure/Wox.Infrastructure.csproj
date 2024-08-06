@@ -15,7 +15,7 @@
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WoxInfrastructure</OutputPath>
   </PropertyGroup>
 
-  <!-- FOLLOWUP: These should be done via a selfcontained, wondering if cut/copied? -->
+  <!-- FOLLOWUP: These should be done via a self-contained, wondering if cut/copied? -->
   <PropertyGroup Condition="'$(Platform)'=='x64'">
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>

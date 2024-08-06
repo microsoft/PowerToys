@@ -12,7 +12,7 @@
         <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     </PropertyGroup>
 
-	<!-- FOLLOWUP: This references projects but doens't seem to reference CsWinRT ... -->
+	<!-- FOLLOWUP: This references projects but doesn't seem to reference CsWinRT ... -->
     <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
     <PropertyGroup>
         <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
