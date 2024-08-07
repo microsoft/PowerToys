@@ -45,6 +45,8 @@ namespace CommonSharedConstants
 
     const wchar_t SHOW_HOSTS_ADMIN_EVENT[] = L"Local\\Hosts-ShowHostsAdminEvent-60ff44e2-efd3-43bf-928a-f4d269f98bec";
 
+    const wchar_t SHOW_FILE_ACTIONS_MENU_EVENT[] = L"Local\\FileActionsMenu-ShowFileActionsMenuEvent-5a0c0aae-5ff5-40f5-95c2-20e37ed671f1";
+
     // Path to the event used by Awake
     const wchar_t AWAKE_EXIT_EVENT[] = L"Local\\PowerToysAwakeExitEvent-c0d5e305-35fc-4fb5-83ec-f6070cfaf7fe";
     
@@ -83,6 +85,9 @@ namespace CommonSharedConstants
 
     // Path to the event used by MarkdownPreviewHandler
     const wchar_t SVG_PREVIEW_RESIZE_EVENT[] = L"Local\\PowerToysSvgPreviewResizeEvent-0701a4fc-d5a1-4ee7-b885-f83982c62a0d";
+
+    // Path to the event used by File Actions Menu
+    const wchar_t SHOW_FILE_ACTIONS_MENU_SHARED_EVENT[] = L"Local\\PowerToysFileActionsMenu-ef5601f4-04d1-432f-92e8-2262d37a013a";
 
     // Path to the event used to show Peek
     const wchar_t SHOW_PEEK_SHARED_EVENT[] = L"Local\\ShowPeekEvent";

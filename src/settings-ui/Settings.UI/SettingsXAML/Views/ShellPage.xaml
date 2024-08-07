@@ -1,4 +1,4 @@
-<UserControl
+﻿<UserControl
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -144,6 +144,12 @@
                     x:Uid="Shell_FancyZones"
                     helpers:NavHelper.NavigateTo="views:FancyZonesPage"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FancyZones.png}" />
+
+                <NavigationViewItem x:Uid="Shell_FileActionsMenu" helpers:NavHelper.NavigateTo="views:FileActionsMenuPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xe8b7;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
 
                 <NavigationViewItem
                     x:Uid="Shell_PowerPreview"

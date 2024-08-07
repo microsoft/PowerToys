@@ -15,6 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         CropAndLock,
         EnvironmentVariables,
         FancyZones,
+        FileActionsMenu,
         FileLocksmith,
         FileExplorer,
         ImageResizer,

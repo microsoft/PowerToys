@@ -25,6 +25,9 @@
     <ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="SettingsXAML\OOBE\Views\OobeFileActionsMenu.xaml" />
+  </ItemGroup>
+  <ItemGroup>
     <None Remove="Assets\Settings\Modules\APDialog.dark.png" />
     <None Remove="Assets\Settings\Modules\APDialog.light.png" />
   </ItemGroup>
@@ -137,6 +140,15 @@
     <None Update="Assets\Settings\Scripts\DisableModule.ps1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="SettingsXAML\OOBE\Views\OobeFileActionsMenu.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
+    <Page Update="SettingsXAML\Views\FileActionsMenuPage.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
   </ItemGroup>
 
 </Project>

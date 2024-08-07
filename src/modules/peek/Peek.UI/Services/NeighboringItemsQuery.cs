@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.ComponentModel;
-using Peek.UI.Helpers;
+using Peek.Helpers;
 using Peek.UI.Models;
 
 namespace Peek.UI
