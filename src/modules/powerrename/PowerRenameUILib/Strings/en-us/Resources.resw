@@ -346,7 +346,7 @@
     <value>Replace terms help</value>
   </data>
   <data name="FileCreationButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Replace syntax help</value>
+    <value>Replace terms help</value>
   </data>
   <data name="ErrorMessage_FileNameTooLong" xml:space="preserve">
     <value>File name is too long</value>
