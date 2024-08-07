@@ -68,7 +68,7 @@ namespace winrt::PowerToys::Interop::implementation
         {
             std::vector<KeyboardHook*> instances_copy;
             {
-                /* Use a copy of instances, to iterate throught the copy without needing to maintain the lock */
+                /* Use a copy of instances, to iterate through the copy without needing to maintain the lock */
                 std::unique_lock lock{ instancesMutex };
                 instances_copy.reserve(instances.size());
                 std::copy(instances.begin(), instances.end(), std::back_inserter(instances_copy));
