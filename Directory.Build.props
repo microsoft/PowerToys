@@ -1,5 +1,5 @@
 <Project>
-  <Import Condition="exists('src\Version.props')" Project="src\Version.props" />
+  <Import Project="src\Version.props" />
   <PropertyGroup>
     <Copyright>Copyright (C) Microsoft Corporation. All rights reserved.</Copyright>
     <AssemblyCopyright>Copyright (C) Microsoft Corporation. All rights reserved.</AssemblyCopyright>
