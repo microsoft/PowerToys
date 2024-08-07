@@ -32,6 +32,11 @@ namespace winrt::PowerToys::FileLocksmithLib::Interop::implementation
 
         std::vector<ProcessResult> result;
 
+        if (result_size == 0)
+        {
+            return com_array<ProcessResult>();
+        }
+
         for (int i = 0; i < result_size; i++)
         {
             result.push_back(ProcessResult

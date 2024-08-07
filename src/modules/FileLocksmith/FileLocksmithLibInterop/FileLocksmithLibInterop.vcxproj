@@ -72,6 +72,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>PowerToys.FileLocksmithLibInterop.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <PropertyGroup>
@@ -124,6 +125,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="PowerToys.Interop.def" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="NativeMethods.idl" />
