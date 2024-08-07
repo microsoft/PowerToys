@@ -3,7 +3,6 @@
     <Import Project="..\..\Version.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net8.0-windows10.0.20348.0</TargetFrameworks>
         <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
         <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
         <Version>$(Version).0</Version>
