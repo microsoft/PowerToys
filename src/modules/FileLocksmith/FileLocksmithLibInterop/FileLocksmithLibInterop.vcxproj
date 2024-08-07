@@ -118,6 +118,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Midl Include="NativeMethods.idl" />
     <Midl Include="ProcessResult.idl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

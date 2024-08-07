@@ -63,5 +63,8 @@
     <Midl Include="ProcessResult.idl">
       <Filter>Source Files</Filter>
     </Midl>
+    <Midl Include="NativeMethods.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
   </ItemGroup>
 </Project>

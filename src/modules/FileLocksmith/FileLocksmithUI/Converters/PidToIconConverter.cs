@@ -15,7 +15,7 @@ namespace PowerToys.FileLocksmithUI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            var y = FileLocksmith.Interop.NativeMethods.PidToFullPath((uint)value);
+            var y = PowerToys.FileLocksmithLib.Interop.NativeMethods.PidToFullPath((uint)value);
             Icon icon = null;
 
             if (!string.IsNullOrEmpty(y))
