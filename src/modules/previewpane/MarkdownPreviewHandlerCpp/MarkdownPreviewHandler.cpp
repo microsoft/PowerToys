@@ -160,9 +160,9 @@ IFACEMETHODIMP MarkdownPreviewHandler::DoPreview()
 {
     try
     {
-        if (m_rcParent.left == 0 && m_rcParent.top == 0 && m_rcParent.right == 0 && m_rcParent.bottom == 0)
+        if (m_hwndParent == NULL || (m_rcParent.left == 0 && m_rcParent.top == 0 && m_rcParent.right == 0 && m_rcParent.bottom == 0))
         {
-            // Postponing Start MarkdownPreviewHandler.exe, position not yet initialized. preview will be done after initialisation
+            // Postponing Start MarkdownPreviewHandler.exe, parent and position not yet initialized. Preview will be done after initialisation.
             return S_OK;
         }
         Logger::info(L"Starting MarkdownPreviewHandler.exe");
@@ -190,6 +190,13 @@ IFACEMETHODIMP MarkdownPreviewHandler::DoPreview()
         sei.lpParameters = cmdLine.c_str();
         sei.nShow = SW_SHOWDEFAULT;
         ShellExecuteEx(&sei);
+
+        // Prevent to leak processes: preview is called multiple times when minimizing and restoring Explorer window
+        if (m_process)
+        {
+            TerminateProcess(m_process, 0);
+        }
+
         m_process = sei.hProcess;
     }
     catch (std::exception& e)
