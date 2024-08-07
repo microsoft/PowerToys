@@ -4003,6 +4003,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="MouseUtils_MouseJump_PreviewType_Custom.Text" xml:space="preserve">
     <value>Custom</value>
   </data>
+  <data name="MouseUtils_MouseJump_CopyStyle.Content" xml:space="preserve">
+    <value>Copy to Custom preview style</value>
+  </data>
   <data name="MouseUtils_MouseJump_BackgroundColor1.Header" xml:space="preserve">
     <value>Background color 1</value>
   </data>

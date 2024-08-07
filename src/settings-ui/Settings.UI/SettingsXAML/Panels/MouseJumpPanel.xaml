@@ -161,10 +161,10 @@
                             </tkcontrols:SegmentedItem>
                         </tkcontrols:Segmented>
                         <Button
+                            x:Uid="MouseUtils_MouseJump_CopyStyle"
                             x:Name="CopyStyleToCustom"
                             Margin="20,0,0,0"
                             Click="CopyStyleToCustom_Click"
-                            Content="Copy to Custom preview style"
                             IsEnabled="{Binding SelectedIndex, ElementName=PreviewTypeSetting}" />
                     </StackPanel>
                 </tkcontrols:SettingsCard>
