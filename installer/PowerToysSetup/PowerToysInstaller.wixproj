@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureNuGetPackageBuildImports"
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\src\Version.props" Condition="Exists('..\..\src\Version.props')" />
   <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
-  <Import Project="..\..\src\Version.props" />
+
   <PropertyGroup Condition="'$(Platform)' == 'x64'">
     <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\Assets\Monaco\monacoSRC</DefineConstants>
     <!-- THIS IS AN INNER LOOP OPTIMIZATION

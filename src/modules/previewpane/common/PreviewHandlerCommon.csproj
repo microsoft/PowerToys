@@ -18,7 +18,7 @@
     <AssemblyName>PowerToys.PreviewHandlerCommon</AssemblyName>
   </PropertyGroup>
 
-  <Import Project="..\..\..\Version.props" />
+  
 
   <ItemGroup>
     <Compile Update="examplehandler\CustomControlTest.cs" />

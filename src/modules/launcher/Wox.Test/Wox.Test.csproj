@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\Version.props" />
+  
 
   <PropertyGroup>
     <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Wox.Test</RootNamespace>
     <AssemblyName>Wox.Test</AssemblyName>
-    <Version>$(Version).0</Version>
+    
     <ApplicationIcon />
     <StartupObject />
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\WoxTest</OutputPath>

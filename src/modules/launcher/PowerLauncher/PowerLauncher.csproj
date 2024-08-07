@@ -1,5 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\Version.props" />
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import 
+    Condition="exists('$(SolutionDir)src\Common.SelfContained.props')" 
+    Project="$(SolutionDir)src\Common.SelfContained.props" />
+
   <PropertyGroup>
     <AssemblyTitle>PowerToys.Run</AssemblyTitle>
     <OutputType>WinExe</OutputType>
@@ -15,21 +19,10 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <AssetTargetFallback>uap10.0.19041</AssetTargetFallback>
-    <Version>$(Version).0</Version>
-    <Authors>Microsoft Corporation</Authors>
     <Description>PowerToys PowerLauncher</Description>
     <AssemblyName>PowerToys.PowerLauncher</AssemblyName>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <SelfContained>true</SelfContained>
-  </PropertyGroup>
-
-  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
-  <PropertyGroup Condition="'$(Platform)'=='x64'">
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
-    <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">

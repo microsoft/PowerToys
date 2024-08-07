@@ -17,7 +17,7 @@
     <TestProjectType>UnitTest</TestProjectType>
   </PropertyGroup>
 
-  <Import Project="..\..\..\Version.props" />
+  
 
   <ItemGroup>
     <PackageReference Include="MSTest" />
