@@ -66,6 +66,7 @@
       <PreprocessorDefinitions>FILELOCKSMITHLIBINTEROP_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>%(AdditionalOptions) /bigobj /Zc:twoPhase-</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)src\modules\FileLocksmith\FileLocksmithLibInterop;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -87,6 +88,9 @@
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
     <ClCompile Include="FileLocksmith.cpp" />
+    <ClCompile Include="NativeMethods.cpp">
+      <DependentUpon>NativeMethods.idl</DependentUpon>
+    </ClCompile>
     <ClCompile Include="NtdllBase.cpp" />
     <ClCompile Include="NtdllExtensions.cpp" />
     <ClCompile Include="pch.cpp">
@@ -95,9 +99,13 @@
     <ClCompile Include="ProcessResult.cpp">
       <DependentUpon>ProcessResult.idl</DependentUpon>
     </ClCompile>
+    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileLocksmith.h" />
+    <ClInclude Include="NativeMethods.h">
+      <DependentUpon>NativeMethods.idl</DependentUpon>
+    </ClInclude>
     <ClInclude Include="NtdllBase.h" />
     <ClInclude Include="NtdllExtensions.h" />
     <ClInclude Include="pch.h" />

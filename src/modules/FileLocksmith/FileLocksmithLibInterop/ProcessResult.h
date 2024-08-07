@@ -5,6 +5,8 @@ namespace winrt::PowerToys::FileLocksmithLib::Interop::implementation
 {
     struct ProcessResult : ProcessResultT<ProcessResult>
     {
+        ProcessResult() = default;
+
         ProcessResult(hstring const& name, uint32_t pid, hstring const& user, array_view<hstring const> files);
         hstring name();
         uint32_t pid();
