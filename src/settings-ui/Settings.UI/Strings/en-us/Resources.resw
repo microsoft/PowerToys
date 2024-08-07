@@ -3989,7 +3989,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Appearance</value>
   </data>
   <data name="MouseUtils_MouseJump_PreviewType.Header" xml:space="preserve">
-    <value>Preview Style</value>
+    <value>Preview style</value>
   </data>
   <data name="MouseUtils_MouseJump_PreviewType.Description" xml:space="preserve">
     <value>Select a predefined style, or apply a custom one</value>

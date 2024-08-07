@@ -37,6 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.Panels
 
             /*
                 apply a variation of the "Left" VisualState for SettingsCards
+                to center the preview image in the true center of the card
                 see https://github.com/CommunityToolkit/Windows/blob/9c7642ff35eaaa51a404f9bcd04b10c7cf851921/components/SettingsControls/src/SettingsCard/SettingsCard.xaml#L334-L347
             */
 

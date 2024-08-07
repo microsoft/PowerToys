@@ -45,8 +45,8 @@
         </tkcontrols:SettingsCard>
 
         <tkcontrols:SettingsCard
-            x:Uid="MouseUtils_MouseJump_ThumbnailSize"
             x:Name="MouseUtils_MouseJump_ThumbnailSize"
+            x:Uid="MouseUtils_MouseJump_ThumbnailSize"
             HeaderIcon="{ui:FontIcon Glyph=&#xE740;}"
             IsEnabled="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=OneWay}">
             <tkcontrols:SettingsCard.Description>
@@ -133,17 +133,12 @@
                     MaxHeight="300"
                     Loaded="PreviewImage_Loaded">
                     <Grid
-                        HorizontalAlignment="Stretch"
                         MinHeight="283"
                         MaxHeight="283"
+                        HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
-                        <StackPanel
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center">
-                            <Image
-                                Source="{x:Bind Path=ViewModel.MouseJumpPreviewImage, Mode=OneWay}"
-                                Stretch="None"
-                            />
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Image Source="{x:Bind Path=ViewModel.MouseJumpPreviewImage, Mode=OneWay}" Stretch="None" />
                         </StackPanel>
                     </Grid>
                 </tkcontrols:SettingsCard>
@@ -156,13 +151,13 @@
                             SelectionMode="Single"
                             Style="{StaticResource ButtonSegmentedStyle}">
                             <tkcontrols:SegmentedItem>
-                                <TextBlock x:Uid="MouseUtils_MouseJump_PreviewType_Compact"></TextBlock>
+                                <TextBlock x:Uid="MouseUtils_MouseJump_PreviewType_Compact" />
                             </tkcontrols:SegmentedItem>
                             <tkcontrols:SegmentedItem>
-                                <TextBlock x:Uid="MouseUtils_MouseJump_PreviewType_Bezelled"></TextBlock>
+                                <TextBlock x:Uid="MouseUtils_MouseJump_PreviewType_Bezelled" />
                             </tkcontrols:SegmentedItem>
                             <tkcontrols:SegmentedItem>
-                                <TextBlock x:Uid="MouseUtils_MouseJump_PreviewType_Custom"></TextBlock>
+                                <TextBlock x:Uid="MouseUtils_MouseJump_PreviewType_Custom" />
                             </tkcontrols:SegmentedItem>
                         </tkcontrols:Segmented>
                         <Button
