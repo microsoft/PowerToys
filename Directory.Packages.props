@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
@@ -17,10 +17,8 @@
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
     <PackageVersion Include="ControlzEx" Version="6.0.0" />
-    <PackageVersion Include="DotNetSeleniumExtras.WaitHelpers" Version="3.11.0" />
     <PackageVersion Include="HelixToolkit" Version="2.24.0" />
     <PackageVersion Include="HelixToolkit.Core.Wpf" Version="2.24.0" />
-    <PackageVersion Include="HtmlAgilityPack" Version="1.11.57" />
     <PackageVersion Include="hyjiacan.pinyin4net" Version="4.1.1" />
     <PackageVersion Include="Interop.Microsoft.Office.Interop.OneNote" Version="1.1.0.2" />
     <PackageVersion Include="LazyCache" Version="2.4.0" />
@@ -28,7 +26,6 @@
     <PackageVersion Include="Markdig.Signed" Version="0.34.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.7" />
-    <PackageVersion Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.336902" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
@@ -43,7 +40,6 @@
     <!-- CsWinRT version needs to be set to have a WinRT.Runtime.dll at the same version contained inside the NET SDK we're currently building on CI. -->
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.0.4" />
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.2428" />
-    <PackageVersion Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.1" />
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.5.240428000" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
@@ -51,7 +47,6 @@
     <!-- Moq to stay below v4.20 due to behavior change. need to be sure fixed -->
     <PackageVersion Include="Moq" Version="4.18.4" />
     <PackageVersion Include="MSTest" Version="3.5.0" />
-    <PackageVersion Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageVersion Include="NLog" Version="5.0.4" />
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.3.8" />
     <PackageVersion Include="NLog.Schema" Version="5.2.8" />
@@ -86,8 +81,6 @@
     <PackageVersion Include="UnicodeInformation" Version="2.6.0" />
     <PackageVersion Include="UnitsNet" Version="5.50.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
-    <PackageVersion Include="Vanara.PInvoke.User32" Version="3.4.11" />
-    <PackageVersion Include="Vanara.PInvoke.Shell32" Version="3.4.11" />
     <PackageVersion Include="WinUIEx" Version="2.2.0" />
     <PackageVersion Include="WPF-UI" Version="3.0.0" />
   </ItemGroup>
