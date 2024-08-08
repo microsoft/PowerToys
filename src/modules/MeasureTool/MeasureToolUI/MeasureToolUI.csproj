@@ -12,6 +12,7 @@
     <AssemblyName>PowerToys.MeasureToolUI</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <UseWinUI>true</UseWinUI>
+    <Platforms>x64;ARM64</Platforms>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>    
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>

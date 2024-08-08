@@ -8,6 +8,7 @@
     <RootNamespace>EnvironmentVariables</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <UseWinUI>true</UseWinUI>
+    <Platforms>x64;ARM64</Platforms>
     <EnableMsixTooling>true</EnableMsixTooling>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <WindowsPackageType>None</WindowsPackageType>
