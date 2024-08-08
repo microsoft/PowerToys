@@ -5,6 +5,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
@@ -252,6 +253,12 @@ namespace AdvancedPaste.ViewModels
             {
                 Logger.LogTrace();
 
+                string tempText = Task.Run(async () =>
+                {
+                    string plainText = await ClipboardData.GetTextAsync() as string;
+                    return plainText;
+                }).Result;
+
                 string outputString = MarkdownHelper.PasteAsPlainTextFromClipboard(ClipboardData);
 
                 SetClipboardContentAndHideWindow(outputString);
@@ -260,6 +267,8 @@ namespace AdvancedPaste.ViewModels
                 {
                     ClipboardHelper.SendPasteKeyCombination();
                 }
+
+                SetClipboardContentAndHideWindow(tempText);
             }
             catch
             {
@@ -272,6 +281,12 @@ namespace AdvancedPaste.ViewModels
             {
                 Logger.LogTrace();
 
+                string tempText = Task.Run(async () =>
+                {
+                    string plainText = await ClipboardData.GetTextAsync() as string;
+                    return plainText;
+                }).Result;
+
                 string outputString = MarkdownHelper.ToMarkdown(ClipboardData);
 
                 SetClipboardContentAndHideWindow(outputString);
@@ -280,6 +295,8 @@ namespace AdvancedPaste.ViewModels
                 {
                     ClipboardHelper.SendPasteKeyCombination();
                 }
+
+                SetClipboardContentAndHideWindow(tempText);
             }
             catch
             {
@@ -292,6 +309,12 @@ namespace AdvancedPaste.ViewModels
             {
                 Logger.LogTrace();
 
+                string tempText = Task.Run(async () =>
+                {
+                    string plainText = await ClipboardData.GetTextAsync() as string;
+                    return plainText;
+                }).Result;
+
                 string jsonText = JsonHelper.ToJsonFromXmlOrCsv(ClipboardData);
 
                 SetClipboardContentAndHideWindow(jsonText);
@@ -300,6 +323,8 @@ namespace AdvancedPaste.ViewModels
                 {
                     ClipboardHelper.SendPasteKeyCombination();
                 }
+
+                SetClipboardContentAndHideWindow(tempText);
             }
             catch
             {
