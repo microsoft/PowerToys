@@ -1,9 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <!-- Look at Directory.Build.props in root for common stuff as well -->
-    <Import 
-        Condition="exists('$(SolutionDir)src\Common.SelfContained.props')" 
-        Project="$(SolutionDir)src\Common.SelfContained.props" />
-
+  <Import Project="..\..\Version.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
@@ -21,12 +17,14 @@
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <!-- OutputPath looks like this because it has to be called both by settings and publish.cmd -->
     <OutputPath>..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <SelfContained>true</SelfContained>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Assets\Settings\Modules\APDialog.dark.png" />
     <None Remove="Assets\Settings\Modules\APDialog.light.png" />
+    <None Remove="Images\MouseJump-Desktop.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,6 +33,14 @@
   <ItemGroup>
     <ApplicationDefinition Include="SettingsXAML\App.xaml" />
   </ItemGroup>
+
+  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
+    <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
+  </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <NoWarn></NoWarn>
@@ -71,6 +77,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Images\MouseJump-Desktop.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
     <PackageReference Include="CommunityToolkit.WinUI.Animations" />
@@ -78,6 +89,7 @@
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
+    <PackageReference Include="System.Drawing.Common" />
     <PackageReference Include="WinUIEx" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
@@ -105,6 +117,7 @@
     <ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+    <ProjectReference Include="..\..\modules\MouseUtils\MouseJump.Common\MouseJump.Common.csproj" />
     <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
 
@@ -137,6 +150,12 @@
     <None Update="Assets\Settings\Scripts\DisableModule.ps1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="SettingsXAML\Panels\MouseJumpPanel.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
   </ItemGroup>
 
 </Project>
