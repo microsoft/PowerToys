@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
   <Import Project="..\..\..\Common.SelfContained.props" />
+
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWindowsForms>true</UseWindowsForms>
@@ -9,9 +11,6 @@
     <AssemblyName>PowerToys.StlThumbnailProvider</AssemblyName>
     <AssemblyTitle>PowerToys.StlThumbnailProvider</AssemblyTitle>
     <AssemblyDescription>PowerToys StlPreviewHandler</AssemblyDescription>
-    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
-    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Description>PowerToys StlPreviewHandler</Description>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
@@ -27,6 +26,7 @@
     <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
+
   <PropertyGroup>
     <!-- Disable missing comment warning. WinRT/C++ libraries added won't have comments on their reflections. -->
     <NoWarn>$(NoWarn);1591</NoWarn>
@@ -35,7 +35,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" /> <!-- Referenced directly since it's a dependency of HelixToolkit and we want a version that doesn't conflict with the rest of the solution. -->
-    <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="HelixToolkit" />
     <PackageReference Include="HelixToolkit.Core.Wpf" />
   </ItemGroup>
