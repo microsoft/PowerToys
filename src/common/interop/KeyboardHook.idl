@@ -1,12 +1,10 @@
-typedef UInt64 WPARAM;
-
 namespace PowerToys
 {
     namespace Interop
     {
         struct KeyboardEvent
         {
-            WPARAM message;
+            UInt64 message;
             Int32 key;
             UInt64 dwExtraInfo;
         };
