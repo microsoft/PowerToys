@@ -169,7 +169,7 @@ namespace Awake.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Keep awake on interval.
+        ///   Looks up a localized string similar to Keep awake for duration.
         /// </summary>
         internal static string AWAKE_KEEP_ON_INTERVAL {
             get {
