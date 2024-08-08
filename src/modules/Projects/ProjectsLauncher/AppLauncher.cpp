@@ -458,6 +458,9 @@ ProjectsData::Project Launch(ProjectsData::Project project)
             continue;
         }
 
+        bool launchMinimized = app.isMinimized;
+        bool launchMaximized = app.isMaximized;
+
         HMONITOR currentMonitor{};
         UINT currentDpi = DPIAware::DEFAULT_DPI;
         auto currentMonitorIter = std::find_if(monitors.begin(), monitors.end(), [&](const ProjectsData::Project::Monitor& val) { return val.number == app.monitor; });
@@ -470,6 +473,9 @@ ProjectsData::Project Launch(ProjectsData::Project project)
         {
             currentMonitor = MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY);
             DPIAware::GetScreenDPIForMonitor(currentMonitor, currentDpi);
+            launchMinimized = true;
+            launchMaximized = false;
+
         }
 
         RECT rect = app.position.toRect();
@@ -479,7 +485,7 @@ ProjectsData::Project Launch(ProjectsData::Project project)
         rect.top = static_cast<long>(std::round(rect.top * mult));
         rect.bottom = static_cast<long>(std::round(rect.bottom * mult));
 
-        if (FancyZones::SizeWindowToRect(window, currentMonitor, app.isMinimized, app.isMaximized, rect))
+        if (FancyZones::SizeWindowToRect(window, currentMonitor, launchMinimized, launchMaximized, rect))
         {
             ProjectsWindowProperties::StampProjectsLaunchedProperty(window);
             Logger::trace(L"Placed {} to ({},{}) [{}x{}]", app.name, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);

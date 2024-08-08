@@ -42,7 +42,7 @@ namespace ProjectsEditor.Utils
         internal static double GetScreenDpiFromScreen(Screen screen)
         {
             var point = new System.Drawing.Point(screen.Bounds.Left + 1, screen.Bounds.Top + 1);
-            var monitor = NativeMethods.MonitorFromPoint(point, 2/*MONITOR_DEFAULTTONEAREST*/);
+            var monitor = NativeMethods.MonitorFromPoint(point, NativeMethods._MONITOR_DEFAULTTONEAREST);
             NativeMethods.GetDpiForMonitor(monitor, NativeMethods.DpiType.EFFECTIVE, out uint dpiX, out uint dpiY);
             return dpiX / 96.0;
         }
