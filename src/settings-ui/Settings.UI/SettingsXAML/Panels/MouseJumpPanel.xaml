@@ -161,8 +161,8 @@
                             </tkcontrols:SegmentedItem>
                         </tkcontrols:Segmented>
                         <Button
-                            x:Uid="MouseUtils_MouseJump_CopyStyle"
                             x:Name="CopyStyleToCustom"
+                            x:Uid="MouseUtils_MouseJump_CopyStyle"
                             Margin="20,0,0,0"
                             Click="CopyStyleToCustom_Click"
                             IsEnabled="{Binding SelectedIndex, ElementName=PreviewTypeSetting}" />
