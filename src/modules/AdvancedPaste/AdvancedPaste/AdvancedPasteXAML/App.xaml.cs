@@ -88,9 +88,9 @@ namespace AdvancedPaste
                 }
             }
 
-            NativeEventWaiter.WaitForEventLoop(interop.Constants.ShowAdvancedPasteSharedEvent(), OnAdvancedPasteHotkey);
-            NativeEventWaiter.WaitForEventLoop(interop.Constants.AdvancedPasteMarkdownEvent(), OnAdvancedPasteMarkdownHotkey);
-            NativeEventWaiter.WaitForEventLoop(interop.Constants.AdvancedPasteJsonEvent(), OnAdvancedPasteJsonHotkey);
+            NativeEventWaiter.WaitForEventLoop(PowerToys.Interop.Constants.ShowAdvancedPasteSharedEvent(), OnAdvancedPasteHotkey);
+            NativeEventWaiter.WaitForEventLoop(PowerToys.Interop.Constants.AdvancedPasteMarkdownEvent(), OnAdvancedPasteMarkdownHotkey);
+            NativeEventWaiter.WaitForEventLoop(PowerToys.Interop.Constants.AdvancedPasteJsonEvent(), OnAdvancedPasteJsonHotkey);
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)

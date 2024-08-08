@@ -181,7 +181,7 @@ namespace Awake
 
             TrayHelper.InitializeTray(Core.Constants.FullAppName, _defaultAwakeIcon);
 
-            var eventHandle = new EventWaitHandle(false, EventResetMode.ManualReset, interop.Constants.AwakeExitEvent());
+            var eventHandle = new EventWaitHandle(false, EventResetMode.ManualReset, PowerToys.Interop.Constants.AwakeExitEvent());
             new Thread(() =>
             {
                 WaitHandle.WaitAny([eventHandle]);

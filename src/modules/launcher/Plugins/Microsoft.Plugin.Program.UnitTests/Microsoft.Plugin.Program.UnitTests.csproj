@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <ProjectReference Include="..\Microsoft.Plugin.Program\Microsoft.Plugin.Program.csproj" />
   </ItemGroup>
 

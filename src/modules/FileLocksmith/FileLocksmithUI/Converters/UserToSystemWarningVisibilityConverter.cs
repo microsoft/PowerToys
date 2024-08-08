@@ -4,9 +4,9 @@
 
 using System;
 using System.Globalization;
-using FileLocksmith.Interop;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
+using PowerToys.FileLocksmithLib.Interop;
 
 namespace PowerToys.FileLocksmithUI.Converters
 {

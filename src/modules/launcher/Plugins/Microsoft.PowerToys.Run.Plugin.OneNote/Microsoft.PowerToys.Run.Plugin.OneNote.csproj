@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.OneNote</RootNamespace>
     <AssemblyName>Microsoft.PowerToys.Run.Plugin.OneNote</AssemblyName>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -46,6 +46,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="Interop.Microsoft.Office.Interop.OneNote" />
     <PackageReference Include="LazyCache" />
     <PackageReference Include="Microsoft.Windows.CsWin32">
