@@ -23,7 +23,7 @@ namespace winrt::PowerToys::Interop::implementation
         // The alternative when porting to C++/winrt is to keep track of every instance and use a single proc instead of one per object. This should also make it lighter.
         static std::mutex instancesMutex;
         static std::unordered_set<KeyboardHook*> instances;
-        HHOOK hookHandle = nullptr;
+        static inline HHOOK hookHandle = nullptr;
         static LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);
     };
 }
