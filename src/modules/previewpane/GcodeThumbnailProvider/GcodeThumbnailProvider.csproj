@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
   <Import Project="..\..\..\Common.SelfContained.props" />
 
   <PropertyGroup>
@@ -10,9 +11,6 @@
     <AssemblyName>PowerToys.GcodeThumbnailProvider</AssemblyName>
     <AssemblyTitle>PowerToys.GcodeThumbnailProvider</AssemblyTitle>
     <AssemblyDescription>PowerToys GcodePreviewHandler</AssemblyDescription>
-    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
-    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Description>PowerToys GcodePreviewHandler</Description>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
@@ -27,15 +25,12 @@
     <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
+
   <PropertyGroup>
     <!-- Disable missing comment warning. WinRT/C++ libraries added won't have comments on their reflections. -->
     <NoWarn>$(NoWarn);1591</NoWarn>
     <OutputType>WinExe</OutputType>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWinRT" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\FilePreviewCommon\FilePreviewCommon.csproj" />
