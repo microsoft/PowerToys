@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />	
 
   <PropertyGroup>
-    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <RootNamespace>Microsoft.Plugin.WindowWalker.UnitTests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="Moq" />
     <PackageReference Include="MSTest" />
   </ItemGroup>
@@ -15,5 +15,4 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Plugin.WindowWalker\Microsoft.Plugin.WindowWalker.csproj" />
   </ItemGroup>
-
 </Project>
