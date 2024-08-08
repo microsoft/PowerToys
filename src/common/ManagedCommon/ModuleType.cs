@@ -13,6 +13,7 @@ namespace ManagedCommon
         CropAndLock,
         EnvironmentVariables,
         FancyZones,
+        PowerPreview,
         FileLocksmith,
         FindMyMouse,
         Hosts,
