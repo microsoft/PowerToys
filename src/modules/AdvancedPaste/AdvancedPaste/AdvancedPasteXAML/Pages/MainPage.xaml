@@ -120,6 +120,7 @@
                 x:Name="PasteOptionsListView"
                 Grid.Row="0"
                 VerticalAlignment="Bottom"
+                IsEnabled="{x:Bind ViewModel.IsClipboardDataText, Mode=OneWay}"
                 IsItemClickEnabled="True"
                 ItemClick="PasteOptionsListView_ItemClick"
                 ItemContainerTransitions="{x:Null}"

@@ -142,13 +142,13 @@ namespace AdvancedPaste
 
         private void OnAdvancedPasteJsonHotkey()
         {
-            viewModel.GetClipboardData();
+            viewModel.ReadClipboard();
             viewModel.ToJsonFunction(true);
         }
 
         private void OnAdvancedPasteMarkdownHotkey()
         {
-            viewModel.GetClipboardData();
+            viewModel.ReadClipboard();
             viewModel.ToMarkdownFunction(true);
         }
 
@@ -184,7 +184,7 @@ namespace AdvancedPaste
             }
             else
             {
-                viewModel.GetClipboardData();
+                viewModel.ReadClipboard();
 
                 if (!int.TryParse(messageParts[1], CultureInfo.InvariantCulture, out int id))
                 {

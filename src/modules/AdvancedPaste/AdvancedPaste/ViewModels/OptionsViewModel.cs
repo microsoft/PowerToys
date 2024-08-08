@@ -17,20 +17,20 @@ using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using Microsoft.Win32;
 using Windows.ApplicationModel.DataTransfer;
 using WinUIEx;
 
 namespace AdvancedPaste.ViewModels
 {
-    public partial class OptionsViewModel : ObservableObject
+    public partial class OptionsViewModel : ObservableObject, IDisposable
     {
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        private readonly DispatcherTimer _clipboardTimer;
         private readonly IUserSettings _userSettings;
-
-        private App app = App.Current as App;
-
-        private AICompletionsHelper aiHelper;
+        private readonly AICompletionsHelper aiHelper;
+        private readonly App app = App.Current as App;
 
         public DataPackageView ClipboardData { get; set; }
 
@@ -40,18 +40,20 @@ namespace AdvancedPaste.ViewModels
         private bool _isClipboardDataText;
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(InputTxtBoxPlaceholderText))]
-        private bool _isCustomAIEnabled;
+        private bool _clipboardHistoryEnabled;
 
         [ObservableProperty]
-        private bool _clipboardHistoryEnabled;
+        [NotifyPropertyChangedFor(nameof(InputTxtBoxPlaceholderText))]
+        [NotifyPropertyChangedFor(nameof(IsCustomAIEnabled))]
+        private bool _isAllowedByGPO;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(InputTxtBoxErrorText))]
         private int _apiRequestStatus;
 
-        [ObservableProperty]
-        private ObservableCollection<AdvancedPasteCustomAction> _customActions;
+        public ObservableCollection<AdvancedPasteCustomAction> CustomActions => _userSettings.CustomActions;
+
+        public bool IsCustomAIEnabled => IsAllowedByGPO && IsClipboardDataText && aiHelper.IsAIEnabled;
 
         public event EventHandler<TextEventArgs> CustomActionActivated;
 
@@ -60,11 +62,7 @@ namespace AdvancedPaste.ViewModels
             aiHelper = new AICompletionsHelper();
             _userSettings = userSettings;
 
-            IsCustomAIEnabled = IsClipboardDataText && aiHelper.IsAIEnabled;
-
             ApiRequestStatus = (int)HttpStatusCode.OK;
-
-            CustomActions = _userSettings.CustomActions;
 
             GeneratedResponses = new ObservableCollection<string>();
             GeneratedResponses.CollectionChanged += (s, e) =>
@@ -74,10 +72,19 @@ namespace AdvancedPaste.ViewModels
             };
 
             ClipboardHistoryEnabled = IsClipboardHistoryEnabled();
-            GetClipboardData();
+            ReadClipboard();
+            _clipboardTimer = new() { Interval = TimeSpan.FromSeconds(1) };
+            _clipboardTimer.Tick += OnClipboardTimerTick;
+            _clipboardTimer.Start();
         }
 
-        public void GetClipboardData()
+        public void Dispose()
+        {
+            _clipboardTimer.Stop();
+            GC.SuppressFinalize(this);
+        }
+
+        public void ReadClipboard()
         {
             ClipboardData = Clipboard.GetContent();
             IsClipboardDataText = ClipboardData.Contains(StandardDataFormats.Text);
@@ -85,14 +92,10 @@ namespace AdvancedPaste.ViewModels
 
         public void OnShow()
         {
-            GetClipboardData();
+            ReadClipboard();
+            UpdateAllowedByGPO();
 
-            if (PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOnlineAIModelsValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
-            {
-                IsCustomAIEnabled = false;
-                OnPropertyChanged(nameof(InputTxtBoxPlaceholderText));
-            }
-            else
+            if (IsAllowedByGPO)
             {
                 var openAIKey = AICompletionsHelper.LoadOpenAIKey();
                 var currentKey = aiHelper.GetKey();
@@ -112,14 +115,10 @@ namespace AdvancedPaste.ViewModels
                             {
                                 app.GetMainWindow().FinishLoading(aiHelper.IsAIEnabled);
                                 OnPropertyChanged(nameof(InputTxtBoxPlaceholderText));
-                                IsCustomAIEnabled = IsClipboardDataText && aiHelper.IsAIEnabled;
+                                OnPropertyChanged(nameof(IsCustomAIEnabled));
                             });
                         },
                         TaskScheduler.Default);
-                }
-                else
-                {
-                    IsCustomAIEnabled = IsClipboardDataText && aiHelper.IsAIEnabled;
                 }
             }
 
@@ -160,7 +159,7 @@ namespace AdvancedPaste.ViewModels
             {
                 app.GetMainWindow().ClearInputText();
 
-                if (PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOnlineAIModelsValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+                if (!IsAllowedByGPO)
                 {
                     return ResourceLoaderInstance.ResourceLoader.GetString("OpenAIGpoDisabled");
                 }
@@ -464,6 +463,20 @@ namespace AdvancedPaste.ViewModels
             catch (Exception)
             {
                 return false;
+            }
+        }
+
+        private void UpdateAllowedByGPO()
+        {
+            IsAllowedByGPO = PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOnlineAIModelsValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled;
+        }
+
+        private void OnClipboardTimerTick(object sender, object e)
+        {
+            if (app.GetMainWindow()?.Visible is true)
+            {
+                ReadClipboard();
+                UpdateAllowedByGPO();
             }
         }
     }

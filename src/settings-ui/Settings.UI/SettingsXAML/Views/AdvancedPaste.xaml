@@ -145,16 +145,16 @@
                                             <x:Double x:Key="SettingsCardActionButtonWidth">0</x:Double>
                                         </tkcontrols:SettingsCard.Resources>
                                         <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <controls:ShortcutControl
+                                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                AllowDisable="True"
+                                                HotkeySettings="{x:Bind Path=Shortcut, Mode=TwoWay}" />
                                             <ToggleSwitch
                                                 x:Uid="Enable_CustomAction"
                                                 AutomationProperties.HelpText="{x:Bind Name}"
                                                 IsOn="{x:Bind IsShown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 OffContent=""
                                                 OnContent="" />
-                                            <controls:ShortcutControl
-                                                MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                                AllowDisable="True"
-                                                HotkeySettings="{x:Bind Path=Shortcut, Mode=TwoWay}" />
                                             <Button
                                                 x:Uid="More_Options_Button"
                                                 Grid.Column="1"
