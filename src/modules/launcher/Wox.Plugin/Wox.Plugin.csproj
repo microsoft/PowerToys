@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
 
-  
   <PropertyGroup>
-    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
     <ProjectGuid>{8451ECDD-2EA4-4966-BB0A-7BBC40138E80}</ProjectGuid>
     <UseWPF>true</UseWPF>
     <OutputType>Library</OutputType>
@@ -14,24 +14,6 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WoxPlugin</OutputPath>
-  </PropertyGroup>
-
-
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DebugSymbols>true</DebugSymbols>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Optimize>false</Optimize>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -48,7 +30,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="NLog.Extensions.Logging" />
     <!-- HACK: Microsoft.Extensions.Hosting is referenced, even if it is not used, to force dll versions to be the same as in other projects. Really only needed since OneNote uses the LazyCache and NLog dependencies, which references older assemblies. -->
     <PackageReference Include="Microsoft.Extensions.Hosting" />
