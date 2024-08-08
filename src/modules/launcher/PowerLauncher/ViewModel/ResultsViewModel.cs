@@ -43,6 +43,15 @@ namespace PowerLauncher.ViewModel
                         OnPropertyChanged(nameof(MaxHeight));
                     });
                 }
+
+                // TODO: check if necessary
+                if (e.PropertyName == nameof(_settings.ShowPreview))
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        OnPropertyChanged(nameof(ShowPreview));
+                    });
+                }
             };
         }
 
@@ -52,6 +61,11 @@ namespace PowerLauncher.ViewModel
             {
                 return (_settings.MaxResultsToShow * 56) + 16;
             }
+        }
+
+        public bool ShowPreview
+        {
+            get => _settings.ShowPreview;
         }
 
         private int _selectedIndex;
