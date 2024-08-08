@@ -268,6 +268,8 @@ namespace Wox.Infrastructure.UserSettings
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public LastQueryMode LastQueryMode { get; set; } = LastQueryMode.Selected;
+
+        public bool ShowPreview { get; set; }
     }
 
     public enum LastQueryMode
