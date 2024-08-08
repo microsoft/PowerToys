@@ -94,6 +94,8 @@ namespace PowerLauncher.ViewModel
                 {
                     _selectedItem = value;
                 }
+
+                OnPropertyChanged(nameof(SelectedItem));
             }
         }
 

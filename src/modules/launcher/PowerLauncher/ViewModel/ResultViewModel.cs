@@ -237,7 +237,9 @@ namespace PowerLauncher.ViewModel
         {
             var imagePath = Result.IcoPath;
             var iconDelegate = Result.Icon;
-            Image = await LoadImageInternalAsync(imagePath, iconDelegate, false).ConfigureAwait(false);
+
+            // TODO: only load full image if preview turned on
+            Image = await LoadImageInternalAsync(imagePath, iconDelegate, true).ConfigureAwait(false);
         }
 
         // Returns false if we've already reached the last item.
