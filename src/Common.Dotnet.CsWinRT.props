@@ -10,10 +10,10 @@
 
   <!-- Common from the debug / release items -->
   <PropertyGroup>
-	<WarningLevel>4</WarningLevel>
-	<NoWarn></NoWarn>
-	<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-	<WarningsNotAsErrors>CA1720</WarningsNotAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn></NoWarn>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <WarningsNotAsErrors>CA1720</WarningsNotAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -29,7 +29,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
   </ItemGroup>
