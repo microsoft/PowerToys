@@ -258,6 +258,11 @@ namespace Wox.Infrastructure.Image
 
         private const bool _enableImageHash = true;
 
+        public static void Unload(string path)
+        {
+            ImageCache.Remove(path);
+        }
+
         public static async ValueTask<ImageSource> LoadAsync(string path, bool generateThumbnailsFromFiles, bool loadFullImage = false)
         {
             var imageResult = await LoadInternalAsync(path, generateThumbnailsFromFiles, loadFullImage);

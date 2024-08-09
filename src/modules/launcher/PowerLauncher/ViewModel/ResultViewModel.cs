@@ -80,6 +80,17 @@ namespace PowerLauncher.ViewModel
             }
 
             _settings = settings;
+            _settings.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(_settings.ShowPreview))
+                {
+                    if (!string.IsNullOrEmpty(Result.IcoPath))
+                    {
+                        _imageLoaded = false;
+                        ImageLoader.Unload(Result.IcoPath);
+                    }
+                }
+            };
 
             ContextMenuSelectedIndex = NoSelectionIndex;
             LoadContextMenu();
