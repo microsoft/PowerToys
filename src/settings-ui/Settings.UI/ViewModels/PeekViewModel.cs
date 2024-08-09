@@ -201,6 +201,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool SourceCodeMinimap
+        {
+            get => _peekPreviewSettings.SourceCodeMinimap.Value;
+            set
+            {
+                if (_peekPreviewSettings.SourceCodeMinimap.Value != value)
+                {
+                    _peekPreviewSettings.SourceCodeMinimap.Value = value;
+                    OnPropertyChanged(nameof(SourceCodeMinimap));
+                    SavePreviewSettings();
+                }
+            }
+        }
+
         private void NotifySettingsChanged()
         {
             // Using InvariantCulture as this is an IPC message

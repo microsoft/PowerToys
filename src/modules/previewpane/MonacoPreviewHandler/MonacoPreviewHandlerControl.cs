@@ -402,6 +402,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             _html = _html.Replace("[[PT_FONT_SIZE]]", _settings.FontSize.ToString(CultureInfo.InvariantCulture), StringComparison.InvariantCulture);
             _html = _html.Replace("[[PT_CODE]]", _base64FileCode, StringComparison.InvariantCulture);
             _html = _html.Replace("[[PT_URL]]", FilePreviewCommon.MonacoHelper.VirtualHostName, StringComparison.InvariantCulture);
+            _html = _html.Replace("[[PT_MINIMAP]]", _settings.Minimap ? "true" : "false", StringComparison.InvariantCulture);
         }
 
         private async void DownloadLink_Click(object sender, EventArgs e)

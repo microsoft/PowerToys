@@ -20,12 +20,15 @@ namespace Settings.UI.Library
 
         public BoolProperty SourceCodeStickyScroll { get; set; }
 
+        public BoolProperty SourceCodeMinimap { get; set; }
+
         public PeekPreviewSettings()
         {
             SourceCodeWrapText = new BoolProperty(false);
             SourceCodeTryFormat = new BoolProperty(false);
             SourceCodeFontSize = new IntProperty(14);
             SourceCodeStickyScroll = new BoolProperty(true);
+            SourceCodeMinimap = new BoolProperty(false);
         }
 
         public string ToJsonString()
