@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />	
+
   <PropertyGroup>
-    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.OneNote</RootNamespace>
     <AssemblyName>Microsoft.PowerToys.Run.Plugin.OneNote</AssemblyName>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -13,21 +14,8 @@
     <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\RunPlugins\OneNote\</OutputPath>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DebugSymbols>true</DebugSymbols>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-  </PropertyGroup>
-
   <PropertyGroup>
-	<NoWarn>8981</NoWarn>
+    <NoWarn>8981</NoWarn>
   </PropertyGroup>
 	
   <ItemGroup>
@@ -46,7 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="Interop.Microsoft.Office.Interop.OneNote" />
     <PackageReference Include="LazyCache" />
     <PackageReference Include="Microsoft.Windows.CsWin32">

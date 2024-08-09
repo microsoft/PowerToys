@@ -1,9 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-  
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />  
 
   <PropertyGroup>
-    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.Service</RootNamespace>
     <AssemblyName>Microsoft.PowerToys.Run.Plugin.Service</AssemblyName>
     
@@ -13,19 +12,6 @@
     <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\RunPlugins\Service\</OutputPath>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DebugSymbols>true</DebugSymbols>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-  </PropertyGroup>
-
   <ItemGroup>
     <None Include="plugin.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -33,7 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="System.ServiceProcess.ServiceController" />
     <PackageReference Include="System.Diagnostics.EventLog">
       <!-- This package is a dependency of Microsoft.Extensions.Logging.EventLog, but we need to set it here so we can exclude the assets, so it doesn't conflict with the 8.0.1 dll coming from .NET SDK. -->

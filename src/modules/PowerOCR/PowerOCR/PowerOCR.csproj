@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
   <Import Project="..\..\..\Common.SelfContained.props" />
 
   <PropertyGroup>
@@ -11,28 +12,15 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <ProjectGuid>{25C91A4E-BA4E-467A-85CD-8B62545BF674}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <ApplicationIcon>PowerOCRLogo.ico</ApplicationIcon>
     <PackageIcon>PowerOCRLogo.png</PackageIcon>
     <RootNamespace>PowerOCR</RootNamespace>
     <AssemblyName>PowerToys.PowerOCR</AssemblyName>
-    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
-    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <ProjectTypeGuids>{2150E333-8FDC-42A3-9474-1A3956D46DE8}</ProjectTypeGuids>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <Optimize>true</Optimize>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <Optimize>false</Optimize>
   </PropertyGroup>
 
   <ItemGroup>
@@ -41,7 +29,6 @@
   </ItemGroup>
 	
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="System.ComponentModel.Composition" />
     <PackageReference Include="System.Drawing.Common" />
     <PackageReference Include="WPF-UI" />
