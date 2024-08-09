@@ -2,6 +2,7 @@
 
 #include <dcommon.h>
 #include <windef.h>
+#include <iosfwd>
 
 struct Measurement
 {
@@ -32,6 +33,12 @@ struct Measurement
 
     PrintResult Print(wchar_t* buf,
                       const size_t bufSize,
+                      const bool printWidth,
+                      const bool printHeight,
+                      const Unit units) const;
+
+    void PrintToStream(std::wostream& stream,
+                      const bool prependNewLine,
                       const bool printWidth,
                       const bool printHeight,
                       const Unit units) const;

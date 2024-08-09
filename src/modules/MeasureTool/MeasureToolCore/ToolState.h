@@ -31,7 +31,6 @@ struct CommonState
 
     Measurement::Unit units = Measurement::Unit::Pixel;
 
-    mutable Serialized<OverlayBoxText> overlayBoxText;
     POINT cursorPosSystemSpace = {}; // updated atomically
     std::atomic_bool closeOnOtherMonitors = false;
 };
@@ -77,9 +76,13 @@ struct MeasureToolState
 
     struct PerScreen
     {
+        using PrevMeasurement = std::pair<POINT, Measurement>;
+
         bool cursorInLeftScreenHalf = false;
         bool cursorInTopScreenHalf = false;
         std::optional<Measurement> measuredEdges;
+        std::vector<PrevMeasurement> prevMeasurements;
+
         // While not in a continuous capturing mode, we need to draw captured backgrounds. These are passed
         // directly from a capturing thread.
         const MappedTextureView* capturedScreenTexture = nullptr;
