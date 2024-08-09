@@ -9,6 +9,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class PowerAccentProperties
     {
+        // Default Hotkey: Win + Insert (code: 2D)
+        public static readonly HotkeySettings DefaultHotkeyValue = new HotkeySettings(true, false, false, false, 0x2D);
+
+        [JsonPropertyName("toggle_hotkey")]
+        public KeyboardKeysProperty Hotkey { get; set; }
+
+        [JsonPropertyName("hotkey_sound")]
+        public bool HotkeySound { get; set; }
+
         [JsonPropertyName("activation_key")]
         public PowerAccentActivationKey ActivationKey { get; set; }
 
@@ -38,6 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public PowerAccentProperties()
         {
+            Hotkey = new KeyboardKeysProperty(DefaultHotkeyValue);
             ActivationKey = PowerAccentActivationKey.Both;
             DoNotActivateOnGameMode = true;
             ToolbarPosition = "Top center";
