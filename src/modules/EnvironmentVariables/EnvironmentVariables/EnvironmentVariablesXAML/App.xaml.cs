@@ -66,9 +66,9 @@ namespace EnvironmentVariables
         }
 
         /// <summary>
-        /// Invoked when the application is launched.
+        /// Invoked when the application is opened.
         /// </summary>
-        /// <param name="args">Details about the launch request and process.</param>
+        /// <param name="args">Details about the open request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             var cmdArgs = Environment.GetCommandLineArgs();

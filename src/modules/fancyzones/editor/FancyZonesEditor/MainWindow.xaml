@@ -350,8 +350,8 @@
             </ScrollViewer>
             <!--
                 // Commented because of issue https://github.com/microsoft/PowerToys/issues/19828
-                // Settings would launch under the overlay for FZ Editor
-                //Lots of permutations to validate, Win10/11. Settings not launched, already launched, ...
+                // Settings would open under the overlay for FZ Editor
+                //Lots of permutations to validate, Win10/11. Settings not opened, already opened...
 
             <Button Click="SettingsBtn_Click"
                     x:Name="settingsBtn"

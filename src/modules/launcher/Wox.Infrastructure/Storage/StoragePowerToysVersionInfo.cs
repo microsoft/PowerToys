@@ -116,7 +116,7 @@ namespace Wox.Infrastructure.Storage
             currentPowerToysVersion = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper.GetProductVersion();
 
             // If the previous version is below a set threshold, then we want to delete the file
-            // However, we do not want to delete the cache if the same version of powerToys is being launched
+            // However, we do not want to delete the cache if the same version of powerToys is being opened
             if (LessThan(previousVersion, currentPowerToysVersion))
             {
                 ClearCache = true;

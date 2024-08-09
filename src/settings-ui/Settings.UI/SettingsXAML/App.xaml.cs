@@ -164,7 +164,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private void OnLaunchedFromRunner(string[] cmdArgs)
         {
-            // Skip the first argument which is prepended when launched by explorer
+            // Skip the first argument which is prepended when opened by explorer
             if (cmdArgs[0].EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase) && cmdArgs[1].EndsWith(".exe", StringComparison.InvariantCultureIgnoreCase) && (cmdArgs.Length >= RequiredArgumentsLaunchedFromRunnerQty + 1))
             {
                 cmdArgs = cmdArgs.Skip(1).ToArray();
@@ -263,10 +263,10 @@ namespace Microsoft.PowerToys.Settings.UI
         }
 
         /// <summary>
-        /// Invoked when the application is launched normally by the end user.  Other entry points
-        /// will be used such as when the application is launched to open a specific file.
+        /// Invoked when the application is opened normally by the end user.  Other entry points
+        /// will be used such as when the application is opened to open a specific file.
         /// </summary>
-        /// <param name="args">Details about the launch request and process.</param>
+        /// <param name="args">Details about the open request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             var cmdArgs = Environment.GetCommandLineArgs();

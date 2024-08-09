@@ -224,7 +224,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
     return result;
 }
 
-// If the PT runner is launched as part of some action and manually by a user, e.g. being activated as a COM server
+// If the PT runner is opened as part of some action and manually by a user, e.g. being activated as a COM server
 // for background toast notification handling, we should execute corresponding code flow instead of the main code flow.
 enum class SpecialMode
 {
