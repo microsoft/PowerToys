@@ -115,6 +115,24 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Ignore difference between decimal and group separators.
+        /// </summary>
+        public static string wox_plugin_calculator_ignore_regional_formatting {
+            get {
+                return ResourceManager.GetString("wox_plugin_calculator_ignore_regional_formatting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ignores difference between &apos;{0}&apos; and &apos;{1}&apos;, treating the last of them as the decimal separator.
+        /// </summary>
+        public static string wox_plugin_calculator_ignore_regional_formatting_description {
+            get {
+                return ResourceManager.GetString("wox_plugin_calculator_ignore_regional_formatting_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use English (United States) number format for input.
         /// </summary>
         public static string wox_plugin_calculator_in_en_format {
