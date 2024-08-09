@@ -76,7 +76,7 @@ namespace Peek.UI.Views
             InitializeComponent();
             TitleBarRootContainer.SizeChanged += TitleBarRootContainer_SizeChanged;
 
-            LaunchAppButton.RegisterPropertyChangedCallback(VisibilityProperty, LaunchAppButtonVisibilityChangedCallback);
+            OpenAppButton.RegisterPropertyChangedCallback(VisibilityProperty, OpenAppButtonVisibilityChangedCallback);
         }
 
         public IFileSystemItem Item
@@ -213,7 +213,7 @@ namespace Peek.UI.Views
                 dragRectangleLeft.Width = (int)(DraggableColumn.ActualWidth * scale);
                 dragRectangleLeft.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
 
-                dragRectangleRight.X = (int)((SystemLeftPaddingColumn.ActualWidth + DraggableColumn.ActualWidth + LaunchAppButtonColumn.ActualWidth) * scale);
+                dragRectangleRight.X = (int)((SystemLeftPaddingColumn.ActualWidth + DraggableColumn.ActualWidth + OpenAppButtonColumn.ActualWidth) * scale);
                 dragRectangleRight.Y = 0;
                 dragRectangleRight.Width = (int)(AppRightPaddingColumn.ActualWidth * scale);
                 dragRectangleRight.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
@@ -289,7 +289,7 @@ namespace Peek.UI.Views
         /// <summary>
         /// Ensure the drag region of the title bar is updated when the visibility of the launch app button changes.
         /// </summary>
-        private async void LaunchAppButtonVisibilityChangedCallback(DependencyObject sender, DependencyProperty dp)
+        private async void OpenAppButtonVisibilityChangedCallback(DependencyObject sender, DependencyProperty dp)
         {
             // Ensure the ActualWidth is updated
             await Task.Delay(100);

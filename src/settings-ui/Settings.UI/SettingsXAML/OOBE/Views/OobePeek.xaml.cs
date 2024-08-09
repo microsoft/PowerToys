@@ -25,7 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             DataContext = ViewModel;
         }
 
-        private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private void GoToSettingsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             if (OobeShellPage.OpenMainWindowCallback != null)
             {
