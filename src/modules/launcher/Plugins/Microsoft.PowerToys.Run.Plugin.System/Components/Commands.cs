@@ -61,7 +61,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                     IcoPath = $"Images\\restart.{iconTheme}.png",
                     Action = c =>
                     {
-                        return ResultHelper.ExecuteCommand(confirmCommands, Resources.Microsoft_plugin_sys_restart_computer_confirmation, () => Helper.OpenInShell("shutdown", "/r /t 0"));
+                        return ResultHelper.ExecuteCommand(confirmCommands, Resources.Microsoft_plugin_sys_restart_computer_confirmation, () => Helper.OpenInShell("shutdown", "/g /t 0"));
                     },
                 },
                 new Result

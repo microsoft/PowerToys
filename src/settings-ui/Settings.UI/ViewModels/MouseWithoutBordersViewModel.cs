@@ -66,17 +66,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ShowOriginalUI
         {
-            get => Settings.Properties.ShowOriginalUI;
+            get
+            {
+                if (_useOriginalUserInterfaceGpoConfiguration == GpoRuleConfigured.Disabled)
+                {
+                    return false;
+                }
+
+                return Settings.Properties.ShowOriginalUI;
+            }
 
             set
             {
-                if (Settings.Properties.ShowOriginalUI != value)
+                if (!_useOriginalUserInterfaceIsGPOConfigured && (Settings.Properties.ShowOriginalUI != value))
                 {
                     Settings.Properties.ShowOriginalUI = value;
                     NotifyPropertyChanged(nameof(ShowOriginalUI));
                 }
             }
         }
+
+        public bool CardForOriginalUiSettingIsEnabled => _useOriginalUserInterfaceIsGPOConfigured == false;
+
+        public bool ShowPolicyConfiguredInfoForOriginalUiSetting => IsEnabled && _useOriginalUserInterfaceIsGPOConfigured;
 
         public bool UseService
         {
@@ -162,6 +174,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
+
+        // Configuration policy variables
+        private GpoRuleConfigured _clipboardSharingEnabledGpoConfiguration;
+        private bool _clipboardSharingEnabledIsGPOConfigured;
+        private GpoRuleConfigured _fileTransferEnabledGpoConfiguration;
+        private bool _fileTransferEnabledIsGPOConfigured;
+        private GpoRuleConfigured _useOriginalUserInterfaceGpoConfiguration;
+        private bool _useOriginalUserInterfaceIsGPOConfigured;
+        private GpoRuleConfigured _disallowBlockingScreensaverGpoConfiguration;
+        private bool _disallowBlockingScreensaverIsGPOConfigured;
+        private GpoRuleConfigured _sameSubnetOnlyGpoConfiguration;
+        private bool _sameSubnetOnlyIsGPOConfigured;
+        private GpoRuleConfigured _validateRemoteIpGpoConfiguration;
+        private bool _validateRemoteIpIsGPOConfigured;
+        private GpoRuleConfigured _disableUserDefinedIpMappingRulesGpoConfiguration;
+        private bool _disableUserDefinedIpMappingRulesIsGPOConfigured;
+        private string _policyDefinedIpMappingRulesGPOData;
+        private bool _policyDefinedIpMappingRulesIsGPOConfigured;
 
         public string MachineHostName
         {
@@ -385,6 +415,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             InitializeEnabledValue();
+            InitializePolicyValues();
 
             // MouseWithoutBorders settings may be changed by the logic in the utility as machines connect. We need to get a fresh version everytime instead of using a repository.
             MouseWithoutBordersSettings moduleSettings;
@@ -464,6 +495,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.MouseWithoutBorders;
             }
+        }
+
+        private void InitializePolicyValues()
+        {
+            // Policies supporting only enabled state
+            _disallowBlockingScreensaverGpoConfiguration = GPOWrapper.GetConfiguredMwbDisallowBlockingScreensaverValue();
+            _disallowBlockingScreensaverIsGPOConfigured = _disallowBlockingScreensaverGpoConfiguration == GpoRuleConfigured.Enabled;
+            _disableUserDefinedIpMappingRulesGpoConfiguration = GPOWrapper.GetConfiguredMwbDisableUserDefinedIpMappingRulesValue();
+            _disableUserDefinedIpMappingRulesIsGPOConfigured = _disableUserDefinedIpMappingRulesGpoConfiguration == GpoRuleConfigured.Enabled;
+
+            // Policies supporting only disabled state
+            _clipboardSharingEnabledGpoConfiguration = GPOWrapper.GetConfiguredMwbClipboardSharingEnabledValue();
+            _clipboardSharingEnabledIsGPOConfigured = _clipboardSharingEnabledGpoConfiguration == GpoRuleConfigured.Disabled;
+            _fileTransferEnabledGpoConfiguration = GPOWrapper.GetConfiguredMwbFileTransferEnabledValue();
+            _fileTransferEnabledIsGPOConfigured = _fileTransferEnabledGpoConfiguration == GpoRuleConfigured.Disabled;
+            _useOriginalUserInterfaceGpoConfiguration = GPOWrapper.GetConfiguredMwbUseOriginalUserInterfaceValue();
+            _useOriginalUserInterfaceIsGPOConfigured = _useOriginalUserInterfaceGpoConfiguration == GpoRuleConfigured.Disabled;
+
+            // Policies supporting enabled and disabled state
+            _sameSubnetOnlyGpoConfiguration = GPOWrapper.GetConfiguredMwbSameSubnetOnlyValue();
+            _sameSubnetOnlyIsGPOConfigured = _sameSubnetOnlyGpoConfiguration == GpoRuleConfigured.Enabled || _sameSubnetOnlyGpoConfiguration == GpoRuleConfigured.Disabled;
+            _validateRemoteIpGpoConfiguration = GPOWrapper.GetConfiguredMwbValidateRemoteIpValue();
+            _validateRemoteIpIsGPOConfigured = _validateRemoteIpGpoConfiguration == GpoRuleConfigured.Enabled || _validateRemoteIpGpoConfiguration == GpoRuleConfigured.Disabled;
+
+            // Special policies
+            _policyDefinedIpMappingRulesGPOData = GPOWrapper.GetConfiguredMwbPolicyDefinedIpMappingRules();
+            _policyDefinedIpMappingRulesIsGPOConfigured = !string.IsNullOrWhiteSpace(_policyDefinedIpMappingRulesGPOData);
         }
 
         private void LoadViewModelFromSettings(MouseWithoutBordersSettings moduleSettings)
@@ -569,6 +627,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(IsEnabled));
                     OnPropertyChanged(nameof(ShowInfobarRunAsAdminText));
                     OnPropertyChanged(nameof(ShowInfobarCannotDragDropAsAdmin));
+                    OnPropertyChanged(nameof(ShowPolicyConfiguredInfoForBehaviorSettings));
+                    OnPropertyChanged(nameof(ShowPolicyConfiguredInfoForName2IPSetting));
+                    OnPropertyChanged(nameof(ShowPolicyConfiguredInfoForOriginalUiSetting));
+                    OnPropertyChanged(nameof(Name2IpListPolicyIsConfigured));
 
                     Task.Run(async () =>
                     {
@@ -654,34 +716,60 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
+                if (_clipboardSharingEnabledGpoConfiguration == GpoRuleConfigured.Disabled)
+                {
+                    return false;
+                }
+
                 return Settings.Properties.ShareClipboard;
             }
 
             set
             {
-                if (Settings.Properties.ShareClipboard != value)
+                if (!_clipboardSharingEnabledIsGPOConfigured && (Settings.Properties.ShareClipboard != value))
                 {
                     Settings.Properties.ShareClipboard = value;
                     NotifyPropertyChanged();
+                    OnPropertyChanged(nameof(TransferFile));
+                    OnPropertyChanged(nameof(CardForTransferFileSettingIsEnabled));
                 }
             }
         }
+
+        public bool CardForShareClipboardSettingIsEnabled => _clipboardSharingEnabledIsGPOConfigured == false;
 
         public bool TransferFile
         {
             get
             {
-                return Settings.Properties.TransferFile;
+                if (_fileTransferEnabledGpoConfiguration == GpoRuleConfigured.Disabled)
+                {
+                    return false;
+                }
+
+                return Settings.Properties.TransferFile && Settings.Properties.ShareClipboard;
             }
 
             set
             {
+                // If ShareClipboard is disabled the file transfer does not work and the setting is disabled. => Don't save toggle state.
+                // If FileTransferGpo is configured the file transfer does not work and the setting is disabled. => Don't save toggle state.
+                if (!ShareClipboard || _fileTransferEnabledIsGPOConfigured)
+                {
+                    return;
+                }
+
                 if (Settings.Properties.TransferFile != value)
                 {
                     Settings.Properties.TransferFile = value;
                     NotifyPropertyChanged();
                 }
             }
+        }
+
+        public bool CardForTransferFileSettingIsEnabled
+        {
+            get => ShareClipboard && !_fileTransferEnabledIsGPOConfigured;
         }
 
         public bool HideMouseAtScreenEdge
@@ -722,18 +810,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
+                if (_validateRemoteIpGpoConfiguration == GpoRuleConfigured.Enabled)
+                {
+                    return true;
+                }
+                else if (_validateRemoteIpGpoConfiguration == GpoRuleConfigured.Disabled)
+                {
+                    return false;
+                }
+
                 return Settings.Properties.ValidateRemoteMachineIP;
             }
 
             set
             {
-                if (Settings.Properties.ValidateRemoteMachineIP != value)
+                if (!_validateRemoteIpIsGPOConfigured && (Settings.Properties.ValidateRemoteMachineIP != value))
                 {
                     Settings.Properties.ValidateRemoteMachineIP = value;
                     NotifyPropertyChanged();
                 }
             }
         }
+
+        public bool CardForValidateRemoteIpSettingIsEnabled => _validateRemoteIpIsGPOConfigured == false;
 
         public string Name2IP
         {
@@ -742,11 +841,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // to make its behavior consistent with the old UI and MWB internal code.
             get
             {
+                if (_disableUserDefinedIpMappingRulesGpoConfiguration == GpoRuleConfigured.Enabled)
+                {
+                    return string.Empty;
+                }
+
                 return Settings.Properties.Name2IP.Value.Replace("\r\n", "\r");
             }
 
             set
             {
+                if (_disableUserDefinedIpMappingRulesIsGPOConfigured)
+                {
+                    return;
+                }
+
                 var newValue = value.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\r\n");
 
                 if (Settings.Properties.Name2IP.Value != newValue)
@@ -757,16 +866,40 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool CardForName2IpSettingIsEnabled => _disableUserDefinedIpMappingRulesIsGPOConfigured == false;
+
+        public bool ShowPolicyConfiguredInfoForName2IPSetting => _disableUserDefinedIpMappingRulesIsGPOConfigured && IsEnabled;
+
+        public string Name2IpListPolicyData
+        {
+            // Due to https://github.com/microsoft/microsoft-ui-xaml/issues/1826, we must
+            // add back \n chars on set and remove them on get for the widget
+            // to make its behavior consistent with the old UI and MWB internal code.
+            // get => GPOWrapper.GetConfiguredMwbPolicyDefinedIpMappingRules().Replace("\r\n", "\r");
+            get => _policyDefinedIpMappingRulesGPOData.Replace("\r\n", "\r");
+        }
+
+        public bool Name2IpListPolicyIsConfigured => _policyDefinedIpMappingRulesIsGPOConfigured && IsEnabled;
+
         public bool SameSubnetOnly
         {
             get
             {
+                if (_sameSubnetOnlyGpoConfiguration == GpoRuleConfigured.Enabled)
+                {
+                    return true;
+                }
+                else if (_sameSubnetOnlyGpoConfiguration == GpoRuleConfigured.Disabled)
+                {
+                    return false;
+                }
+
                 return Settings.Properties.SameSubnetOnly;
             }
 
             set
             {
-                if (Settings.Properties.SameSubnetOnly != value)
+                if (!_sameSubnetOnlyIsGPOConfigured && (Settings.Properties.SameSubnetOnly != value))
                 {
                     Settings.Properties.SameSubnetOnly = value;
                     NotifyPropertyChanged();
@@ -774,15 +907,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool CardForSameSubnetOnlySettingIsEnabled => _sameSubnetOnlyIsGPOConfigured == false;
+
         public bool BlockScreenSaverOnOtherMachines
         {
             get
             {
+                if (_disallowBlockingScreensaverGpoConfiguration == GpoRuleConfigured.Enabled)
+                {
+                    return false;
+                }
+
                 return Settings.Properties.BlockScreenSaverOnOtherMachines;
             }
 
             set
             {
+                if (_disallowBlockingScreensaverIsGPOConfigured)
+                {
+                    return;
+                }
+
                 if (Settings.Properties.BlockScreenSaverOnOtherMachines != value)
                 {
                     Settings.Properties.BlockScreenSaverOnOtherMachines = value;
@@ -790,6 +935,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
         }
+
+        public bool CardForBlockScreensaverSettingIsEnabled => _disallowBlockingScreensaverIsGPOConfigured == false;
 
         // Should match EasyMouseOption enum from MouseWithoutBorders and the ComboBox in the MouseWithoutBordersView.cs
         private enum EasyMouseOption
@@ -1081,6 +1228,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         internal void UninstallService()
         {
             SendCustomAction("uninstall_service");
+        }
+
+        public bool ShowPolicyConfiguredInfoForBehaviorSettings
+        {
+            get
+            {
+                return IsEnabled && (_disallowBlockingScreensaverIsGPOConfigured
+                    || _clipboardSharingEnabledIsGPOConfigured || _fileTransferEnabledIsGPOConfigured
+                    || _sameSubnetOnlyIsGPOConfigured || _validateRemoteIpIsGPOConfigured);
+            }
         }
 
         public bool ShowInfobarCannotDragDropAsAdmin

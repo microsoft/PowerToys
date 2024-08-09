@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Condition="exists('..\..\..\Version.props')" Project="..\..\..\Version.props" />
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -19,7 +18,6 @@
 
   <PropertyGroup>
     <!-- Properties for nuget package. -->
-    <Authors>Microsoft Corporation</Authors>
     <Description>Implements the UI control for the PowerToys Environment Variables Utility</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
