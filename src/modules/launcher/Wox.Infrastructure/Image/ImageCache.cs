@@ -69,6 +69,12 @@ namespace Wox.Infrastructure.Image
             }
         }
 
+        public void Remove(string path)
+        {
+            Usage.TryRemove(path, out _);
+            _data.TryRemove(path, out _);
+        }
+
         public void Cleanup()
         {
             var images = Usage
