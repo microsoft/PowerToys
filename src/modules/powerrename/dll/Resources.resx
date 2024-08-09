@@ -133,7 +133,7 @@
     <value>A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.</value>
   </data>
   <data name="Restore_Search" xml:space="preserve">
-    <value>Restore search, replace and flags values on launch from previous run.</value>
+    <value>Restore search, replace and flags values on opening from previous run.</value>
   </data>
   <data name="Enable_Auto" xml:space="preserve">
     <value>Enable autocomplete and autosuggest of recently used inputs for search and replace values.</value>
