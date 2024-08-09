@@ -139,13 +139,13 @@ public:
     DWORD GetWinKey(const ModifierKey& input) const;
 
     // Function to return the virtual key code of the ctrl key state expected in the shortcut. Return NULL if it is not a part of the shortcut
-    DWORD GetCtrlKey() const;
+    DWORD GetCtrlKey(const ModifierKey& input) const;
 
     // Function to return the virtual key code of the alt key state expected in the shortcut. Return NULL if it is not a part of the shortcut
-    DWORD GetAltKey() const;
+    DWORD GetAltKey(const ModifierKey& input) const;
 
     // Function to return the virtual key code of the shift key state expected in the shortcut. Return NULL if it is not a part of the shortcut
-    DWORD GetShiftKey() const;
+    DWORD GetShiftKey(const ModifierKey& input) const;
 
     // Function to check if the input key matches the win key expected in the shortcut
     bool CheckWinKey(const DWORD input) const;

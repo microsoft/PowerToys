@@ -185,7 +185,7 @@ DWORD Shortcut::GetWinKey(const ModifierKey& input) const
 }
 
 // Function to return the virtual key code of the ctrl key state expected in the shortcut. Return NULL if it is not a part of the shortcut
-DWORD Shortcut::GetCtrlKey() const
+DWORD Shortcut::GetCtrlKey(const ModifierKey& input) const
 {
     if (ctrlKey == ModifierKey::Disabled)
     {
@@ -201,12 +201,23 @@ DWORD Shortcut::GetCtrlKey() const
     }
     else
     {
-        return VK_CONTROL;
+        if (input == ModifierKey::Right)
+        {
+            return VK_RCONTROL;
+        }
+        else if (input == ModifierKey::Left || input == ModifierKey::Disabled)
+        {
+            return VK_LCONTROL;
+        }
+        else
+        {
+            return VK_CONTROL;
+        }  
     }
 }
 
 // Function to return the virtual key code of the alt key state expected in the shortcut. Return NULL if it is not a part of the shortcut
-DWORD Shortcut::GetAltKey() const
+DWORD Shortcut::GetAltKey(const ModifierKey& input) const
 {
     if (altKey == ModifierKey::Disabled)
     {
@@ -222,12 +233,23 @@ DWORD Shortcut::GetAltKey() const
     }
     else
     {
-        return VK_MENU;
+        if (input == ModifierKey::Right)
+        {
+            return VK_RMENU;
+        }
+        else if (input == ModifierKey::Left || input == ModifierKey::Disabled)
+        {
+            return VK_LMENU;
+        }
+        else
+        {
+            return VK_MENU;
+        } 
     }
 }
 
 // Function to return the virtual key code of the shift key state expected in the shortcut. Return NULL if it is not a part of the shortcut
-DWORD Shortcut::GetShiftKey() const
+DWORD Shortcut::GetShiftKey(const ModifierKey& input) const
 {
     if (shiftKey == ModifierKey::Disabled)
     {
@@ -243,7 +265,18 @@ DWORD Shortcut::GetShiftKey() const
     }
     else
     {
-        return VK_SHIFT;
+        if (input == ModifierKey::Right)
+        {
+            return VK_RSHIFT;
+        }
+        else if (input == ModifierKey::Left || input == ModifierKey::Disabled)
+        {
+            return VK_LSHIFT;
+        }
+        else
+        {
+            return VK_SHIFT;
+        }
     }
 }
 
@@ -493,15 +526,15 @@ winrt::hstring Shortcut::ToHstringVK() const
     }
     if (ctrlKey != ModifierKey::Disabled)
     {
-        output = output + winrt::to_hstring(static_cast<unsigned int>(GetCtrlKey())) + winrt::to_hstring(L";");
+        output = output + winrt::to_hstring(static_cast<unsigned int>(GetCtrlKey(ModifierKey::Both))) + winrt::to_hstring(L";");
     }
     if (altKey != ModifierKey::Disabled)
     {
-        output = output + winrt::to_hstring(static_cast<unsigned int>(GetAltKey())) + winrt::to_hstring(L";");
+        output = output + winrt::to_hstring(static_cast<unsigned int>(GetAltKey(ModifierKey::Both))) + winrt::to_hstring(L";");
     }
     if (shiftKey != ModifierKey::Disabled)
     {
-        output = output + winrt::to_hstring(static_cast<unsigned int>(GetShiftKey())) + winrt::to_hstring(L";");
+        output = output + winrt::to_hstring(static_cast<unsigned int>(GetShiftKey(ModifierKey::Both))) + winrt::to_hstring(L";");
     }
     if (actionKey != NULL)
     {
@@ -531,15 +564,15 @@ std::vector<DWORD> Shortcut::GetKeyCodes()
     }
     if (ctrlKey != ModifierKey::Disabled)
     {
-        keys.push_back(GetCtrlKey());
+        keys.push_back(GetCtrlKey(ModifierKey::Both));
     }
     if (altKey != ModifierKey::Disabled)
     {
-        keys.push_back(GetAltKey());
+        keys.push_back(GetAltKey(ModifierKey::Both));
     }
     if (shiftKey != ModifierKey::Disabled)
     {
-        keys.push_back(GetShiftKey());
+        keys.push_back(GetShiftKey(ModifierKey::Both));
     }
     if (actionKey != NULL)
     {
