@@ -225,18 +225,18 @@
                 Stretch="Uniform"
             >
                 <Image.MaxHeight>
-                        <MultiBinding Converter="{StaticResource sumConverter}">
-                            <Binding Path="ActualHeight" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=Grid}"/>
-                            <Binding>
-                                <Binding.Source>
-                                    <!--StackPanel and TextBlock margins-->
-                                    <sys:Double>-36</sys:Double>
-                                </Binding.Source>
-                            </Binding>
-                            <Binding Path="ActualHeight" ElementName="Title" Converter="{StaticResource negativeValueConverter}"/>
-                        </MultiBinding>
-                    </Image.MaxHeight>
-                </Image>
+                    <MultiBinding Converter="{StaticResource sumConverter}">
+                        <Binding Path="ActualHeight" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=Grid}"/>
+                        <Binding>
+                            <Binding.Source>
+                                <!--StackPanel and TextBlock margins-->
+                                <sys:Double>-36</sys:Double>
+                            </Binding.Source>
+                        </Binding>
+                        <Binding Path="ActualHeight" ElementName="Title" Converter="{StaticResource negativeValueConverter}"/>
+                    </MultiBinding>
+                </Image.MaxHeight>
+            </Image>
             <TextBlock
                 x:Name="Title"
                 HorizontalAlignment="Center"
