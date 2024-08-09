@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -11,7 +11,7 @@ using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorSession;
 namespace Microsoft.FancyZonesEditor.UITests
 {
     [TestClass]
-    public class RunFancyZonesEditorTest
+    public class CreateLayoutTests
     {
         private static FancyZonesEditorSession? _session;
         private static TestContext? _context;
@@ -20,7 +20,17 @@ namespace Microsoft.FancyZonesEditor.UITests
         public static void ClassInitialize(TestContext testContext)
         {
             _context = testContext;
+        }
 
+        [ClassCleanup]
+        public static void ClassCleanup()
+        {
+            _context = null;
+        }
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
             // prepare test editor parameters with 2 monitors before launching the editor
             EditorParameters editorParameters = new EditorParameters();
             EditorParameters.ParamsWrapper parameters = new EditorParameters.ParamsWrapper
@@ -44,22 +54,6 @@ namespace Microsoft.FancyZonesEditor.UITests
                         MonitorHeight = 1080,
                         MonitorWidth = 1920,
                         IsSelected = true,
-                    },
-                    new EditorParameters.NativeMonitorDataWrapper
-                    {
-                        Monitor = "monitor-2",
-                        MonitorInstanceId = "instance-id-2",
-                        MonitorSerialNumber = "serial-number-2",
-                        MonitorNumber = 2,
-                        VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
-                        Dpi = 96,
-                        LeftCoordinate = 1920,
-                        TopCoordinate = 0,
-                        WorkAreaHeight = 1040,
-                        WorkAreaWidth = 1920,
-                        MonitorHeight = 1080,
-                        MonitorWidth = 1920,
-                        IsSelected = false,
                     },
                 },
             };
@@ -118,22 +112,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             CustomLayouts customLayouts = new CustomLayouts();
             CustomLayouts.CustomLayoutListWrapper customLayoutListWrapper = new CustomLayouts.CustomLayoutListWrapper
             {
-                CustomLayouts = new List<CustomLayouts.CustomLayoutWrapper>
-                {
-                    new CustomLayouts.CustomLayoutWrapper
-                    {
-                        Uuid = "{E7807D0D-6223-4883-B15B-1F3883944C09}",
-                        Type = CustomLayout.Canvas.TypeToString(),
-                        Name = "Custom layout",
-                        Info = new CustomLayouts().ToJsonElement(new CustomLayouts.CanvasInfoWrapper
-                        {
-                            RefHeight = 952,
-                            RefWidth = 1500,
-                            SensitivityRadius = 10,
-                            Zones = new List<CustomLayouts.CanvasInfoWrapper.CanvasZoneWrapper> { },
-                        }),
-                    },
-                },
+                CustomLayouts = new List<CustomLayouts.CustomLayoutWrapper> { },
             };
             FancyZonesEditorSession.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
 
@@ -157,18 +136,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 AppliedLayouts = new List<AppliedLayouts.AppliedLayoutWrapper> { },
             };
             FancyZonesEditorSession.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
-        }
 
-        [ClassCleanup]
-        public static void ClassCleanup()
-        {
-            FancyZonesEditorSession.Files.Restore();
-            _context = null;
-        }
-
-        [TestInitialize]
-        public void TestInitialize()
-        {
             _session = new FancyZonesEditorSession(_context!);
         }
 
@@ -176,63 +144,109 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void TestCleanup()
         {
             _session?.Close();
+            FancyZonesEditorSession.Files.Restore();
         }
 
         [TestMethod]
-        public void OpenNewLayoutDialog() // verify the new layout dialog is opened
+        public void CreateWithDefaultName()
         {
+            string name = "Custom layout 1";
             _session?.Click(_session?.FindByAccessibilityId(AccessibilityId.NewLayoutButton));
-            Assert.IsNotNull(_session?.FindByName("Choose layout type")); // check the pane header
+            _session?.ClickConfirm();
+            _session?.Click(ElementName.Save);
+
+            // verify new layout presented
+            Assert.IsNotNull(_session?.GetLayout(name));
+
+            // check the file
+            var customLayouts = new CustomLayouts();
+            var data = customLayouts.Read(customLayouts.File);
+            Assert.AreEqual(1, data.CustomLayouts.Count);
+            Assert.IsTrue(data.CustomLayouts.Exists(x => x.Name == name));
         }
 
         [TestMethod]
-        public void OpenEditLayoutDialog() // verify the edit layout dialog is opened
+        public void CreateWithCustomName()
         {
-            _session?.ClickEditLayout(TestConstants.TemplateLayoutNames[LayoutType.Grid]);
-            Assert.IsNotNull(_session?.FindByAccessibilityId(FancyZonesEditorSession.AccessibilityId.DialogTitle)); // check the pane header
-            Assert.IsNotNull(_session?.FindByName($"Edit '{TestConstants.TemplateLayoutNames[LayoutType.Grid]}'")); // verify it's opened for the correct layout
+            string name = "Layout Name";
+            _session?.Click(_session?.FindByAccessibilityId(AccessibilityId.NewLayoutButton));
+            var input = _session?.FindByClassName(ClassName.TextBox);
+            Assert.IsNotNull(input);
+            input.Clear();
+            input.SendKeys(name);
+            _session?.ClickConfirm();
+            _session?.Click(ElementName.Save);
+
+            // verify new layout presented
+            Assert.IsNotNull(_session?.GetLayout(name));
+
+            // check the file
+            var customLayouts = new CustomLayouts();
+            var data = customLayouts.Read(customLayouts.File);
+            Assert.AreEqual(1, data.CustomLayouts.Count);
+            Assert.IsTrue(data.CustomLayouts.Exists(x => x.Name == name));
         }
 
         [TestMethod]
-        public void OpenEditLayoutDialog_ByContextMenu_TemplateLayout() // verify the edit layout dialog is opened
+        public void CreateGrid()
         {
-            _session?.ClickContextMenuItem(TestConstants.TemplateLayoutNames[LayoutType.Grid], FancyZonesEditorSession.ElementName.Edit);
-            _session?.WaitElementDisplayedById(FancyZonesEditorSession.AccessibilityId.DialogTitle);
-            Assert.IsNotNull(_session?.FindByAccessibilityId(FancyZonesEditorSession.AccessibilityId.DialogTitle)); // check the pane header
-            Assert.IsNotNull(_session?.FindByName($"Edit '{TestConstants.TemplateLayoutNames[LayoutType.Grid]}'")); // verify it's opened for the correct layout
+            CustomLayout type = CustomLayout.Grid;
+            _session?.Click(_session?.FindByAccessibilityId(AccessibilityId.NewLayoutButton));
+            _session?.SelectNewLayoutType(type);
+            _session?.ClickConfirm();
+            _session?.Click(ElementName.Save);
+
+            // check the file
+            var customLayouts = new CustomLayouts();
+            var data = customLayouts.Read(customLayouts.File);
+            Assert.AreEqual(1, data.CustomLayouts.Count);
+            Assert.IsTrue(data.CustomLayouts.Exists(x => x.Type == type.TypeToString()));
         }
 
         [TestMethod]
-        public void OpenEditLayoutDialog_ByContextMenu_CustomLayout() // verify the edit layout dialog is opened
+        public void CreateCanvas()
         {
-            string layoutName = "Custom layout";
-            _session?.ClickContextMenuItem(layoutName, FancyZonesEditorSession.ElementName.Edit);
-            _session?.WaitElementDisplayedById(FancyZonesEditorSession.AccessibilityId.DialogTitle);
-            Assert.IsNotNull(_session?.FindByAccessibilityId(FancyZonesEditorSession.AccessibilityId.DialogTitle)); // check the pane header
-            Assert.IsNotNull(_session?.FindByName($"Edit '{layoutName}'")); // verify it's opened for the correct layout
+            CustomLayout type = CustomLayout.Canvas;
+            _session?.Click(_session?.FindByAccessibilityId(AccessibilityId.NewLayoutButton));
+            _session?.SelectNewLayoutType(type);
+            _session?.ClickConfirm();
+            _session?.Click(ElementName.Save);
+
+            // check the file
+            var customLayouts = new CustomLayouts();
+            var data = customLayouts.Read(customLayouts.File);
+            Assert.AreEqual(1, data.CustomLayouts.Count);
+            Assert.IsTrue(data.CustomLayouts.Exists(x => x.Type == type.TypeToString()));
         }
 
         [TestMethod]
-        public void OpenContextMenu() // verify the context menu is opened
+        public void CancelGridCreation()
         {
-            Assert.IsNotNull(_session?.OpenContextMenu(TestConstants.TemplateLayoutNames[LayoutType.Columns]));
+            CustomLayout type = CustomLayout.Grid;
+            _session?.Click(_session?.FindByAccessibilityId(AccessibilityId.NewLayoutButton));
+            _session?.SelectNewLayoutType(type);
+            _session?.ClickConfirm();
+            _session?.Click(ElementName.Cancel);
+
+            // check the file
+            var customLayouts = new CustomLayouts();
+            var data = customLayouts.Read(customLayouts.File);
+            Assert.AreEqual(0, data.CustomLayouts.Count);
         }
 
         [TestMethod]
-        public void ClickMonitor()
+        public void CancelCanvasCreation()
         {
-            Assert.IsNotNull(_session?.GetMonitorItem(1));
-            Assert.IsNotNull(_session?.GetMonitorItem(2));
+            CustomLayout type = CustomLayout.Canvas;
+            _session?.Click(_session?.FindByAccessibilityId(AccessibilityId.NewLayoutButton));
+            _session?.SelectNewLayoutType(type);
+            _session?.ClickConfirm();
+            _session?.Click(ElementName.Cancel);
 
-            // verify that the monitor 1 is selected initially
-            Assert.IsTrue(_session?.GetMonitorItem(1).Selected);
-            Assert.IsFalse(_session?.GetMonitorItem(2).Selected);
-
-            _session?.ClickMonitor(2);
-
-            // verify that the monitor 2 is selected after click
-            Assert.IsFalse(_session?.GetMonitorItem(1).Selected);
-            Assert.IsTrue(_session?.GetMonitorItem(2).Selected);
+            // check the file
+            var customLayouts = new CustomLayouts();
+            var data = customLayouts.Read(customLayouts.File);
+            Assert.AreEqual(0, data.CustomLayouts.Count);
         }
     }
 }
