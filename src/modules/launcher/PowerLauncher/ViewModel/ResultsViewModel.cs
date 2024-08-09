@@ -44,7 +44,6 @@ namespace PowerLauncher.ViewModel
                     });
                 }
 
-                // TODO: check if necessary
                 if (e.PropertyName == nameof(_settings.ShowPreview))
                 {
                     Application.Current.Dispatcher.Invoke(() =>
