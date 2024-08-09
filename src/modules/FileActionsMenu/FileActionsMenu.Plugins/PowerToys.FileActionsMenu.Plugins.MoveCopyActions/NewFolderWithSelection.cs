@@ -31,7 +31,7 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
 
         public Task Execute(object sender, RoutedEventArgs e)
         {
-            string path = Path.Combine(Path.GetDirectoryName(SelectedItems[0]) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "New folder with selection");
+            string path = Path.Combine(Path.GetDirectoryName(SelectedItems[0]) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop), ResourceHelper.GetResource("Move_Copy_Actions.NewFolder.FolderName"));
 
             int i = 0;
             while (Directory.Exists(path))

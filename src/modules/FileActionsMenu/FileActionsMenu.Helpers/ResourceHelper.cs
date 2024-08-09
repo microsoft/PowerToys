@@ -7,7 +7,7 @@ using FileActionsMenu.Helpers.Properties;
 
 namespace FileActionsMenu.Helpers
 {
-    public class ResourceHelper
+    public static class ResourceHelper
     {
         /// <summary>
         /// Gets a resource string from the resource file.

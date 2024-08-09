@@ -288,6 +288,9 @@
   <data name="Move_Copy_Actions.MoveTo.Title" xml:space="preserve">
     <value>Move to</value>
   </data>
+  <data name="Move_Copy_Actions.NewFolder.FolderName" xml:space="preserve">
+    <value>New Folder</value>
+  </data>
   <data name="Move_Copy_Actions.NewFolder.Title" xml:space="preserve">
     <value>New folder with selection</value>
   </data>

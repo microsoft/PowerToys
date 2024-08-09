@@ -538,6 +538,15 @@ namespace FileActionsMenu.Helpers.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to New Folder.
+        /// </summary>
+        internal static string Move_Copy_Actions_NewFolder_FolderName {
+            get {
+                return ResourceManager.GetString("Move_Copy_Actions.NewFolder.FolderName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to New folder with selection.
         /// </summary>
         internal static string Move_Copy_Actions_NewFolder_Title {
