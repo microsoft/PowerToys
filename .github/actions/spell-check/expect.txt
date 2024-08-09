@@ -672,6 +672,7 @@ imageresizerinput
 imageresizersettings
 imagingdevices
 ime
+imperialounce
 inetcpl
 Infobar
 INFOEXAMPLE
@@ -1672,6 +1673,7 @@ USERDATA
 Userenv
 USESHOWWINDOW
 USESTDHANDLES
+usounce
 USRDLL
 UType
 uuidv
