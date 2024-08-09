@@ -72,7 +72,7 @@ SingleKeyRemapControl::SingleKeyRemapControl(StackPanel table, StackPanel row, c
                 return;
             }
 
-            singleKeyRemapBuffer[rowIndex].first[1] = text.c_str();
+            singleKeyRemapBuffer[rowIndex].mapping[1] = text.c_str();
         });
 
         auto typeCombo = ComboBox();
