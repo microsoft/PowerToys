@@ -597,6 +597,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool ShowPreview
+        {
+            get
+            {
+                return settings.Properties.ShowPreview;
+            }
+
+            set
+            {
+                if (settings.Properties.ShowPreview != value)
+                {
+                    settings.Properties.ShowPreview = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
         public int ShowPluginsOverviewIndex
         {
             get
