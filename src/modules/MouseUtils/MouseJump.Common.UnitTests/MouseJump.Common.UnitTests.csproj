@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <ProjectGuid>{D5E42C63-57C5-4EF6-AECE-1E2FCA725B77}</ProjectGuid>
+    <RootNamespace>Microsoft.MouseJump.Common.UnitTests</RootNamespace>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\MouseJump.Common.UnitTests\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Helpers\_test-4grid-desktop.png" />
+    <None Remove="Helpers\_test-4grid-expected.png" />
+    <None Remove="Helpers\_test-win11-desktop.png" />
+    <None Remove="Helpers\_test-win11-expected.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Helpers\_test-4grid-desktop.png" />
+    <EmbeddedResource Include="Helpers\_test-4grid-expected.png" />
+    <EmbeddedResource Include="Helpers\_test-win11-desktop.png" />
+    <EmbeddedResource Include="Helpers\_test-win11-expected.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MouseJump.Common\MouseJump.Common.csproj" />
+  </ItemGroup>
+
+</Project>

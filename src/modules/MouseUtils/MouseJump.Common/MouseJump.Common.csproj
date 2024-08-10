@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <AssemblyTitle>PowerToys.MouseJump.Common</AssemblyTitle>
+    <AssemblyDescription>PowerToys MouseJump.Common</AssemblyDescription>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <ProjectGuid>{923DF87C-CA99-4D1C-B1D2-959174E95BFA}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>MouseJump.Common</RootNamespace>
+    <AssemblyName>PowerToys.MouseJump.Common</AssemblyName>
+    <ProjectTypeGuids>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+
+  <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
+  <PropertyGroup>
+    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Drawing.Common" />
+    <PackageReference Include="Microsoft.Win32.SystemEvents">
+      <!-- This package is a dependency of System.Drawing.Common, but we need to set it here so we can exclude the assets, so it doesn't conflict with the 8.0.1 dll coming from .NET SDK. -->
+      <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
+    </PackageReference>
+  </ItemGroup>
+
+</Project>
