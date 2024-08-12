@@ -192,7 +192,7 @@ namespace AdvancedPaste
                 }
                 else
                 {
-                    viewModel.ExecuteCustomAction(id, true);
+                    viewModel.ExecuteCustomActionHeadless(id, true);
                 }
             }
         }

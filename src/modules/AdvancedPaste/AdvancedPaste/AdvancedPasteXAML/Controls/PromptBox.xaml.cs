@@ -21,19 +21,7 @@ namespace AdvancedPaste.Controls
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         private readonly IUserSettings _userSettings;
 
-        public static readonly DependencyProperty PromptProperty = DependencyProperty.Register(
-            nameof(Prompt),
-            typeof(string),
-            typeof(PromptBox),
-            new PropertyMetadata(defaultValue: string.Empty));
-
         public OptionsViewModel ViewModel { get; private set; }
-
-        public string Prompt
-        {
-            get => (string)GetValue(PromptProperty);
-            set => SetValue(PromptProperty, value);
-        }
 
         public static readonly DependencyProperty PlaceholderTextProperty = DependencyProperty.Register(
             nameof(PlaceholderText),
@@ -66,13 +54,7 @@ namespace AdvancedPaste.Controls
             _userSettings = App.GetService<IUserSettings>();
 
             ViewModel = App.GetService<OptionsViewModel>();
-            ViewModel.CustomActionActivated += ViewModel_CustomActionActivated;
-        }
-
-        private void ViewModel_CustomActionActivated(object sender, Models.TextEventArgs e)
-        {
-            InputTxtBox.Text = e.Text;
-            GenerateCustom();
+            ViewModel.CustomActionActivated += (_, _) => GenerateCustom();
         }
 
         private void Grid_Loaded(object sender, RoutedEventArgs e)

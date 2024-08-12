@@ -68,7 +68,6 @@ private:
     HANDLE m_hProcess;
 
     std::thread create_pipe_thread;
-    HANDLE m_hPipe = INVALID_HANDLE_VALUE;
     std::unique_ptr<CAtlFile> m_write_pipe;
 
     // Time to wait for process to close after sending WM_CLOSE signal
@@ -581,7 +580,7 @@ private:
 
         const auto full_pipe_name = std::format(L"\\\\.\\pipe\\{}", pipe_name);
 
-        m_hPipe = CreateNamedPipe(
+        const auto hPipe = CreateNamedPipe(
                 full_pipe_name.c_str(),     // pipe name
                 PIPE_ACCESS_OUTBOUND,       // write access
                 PIPE_TYPE_MESSAGE |         // message type pipe
@@ -593,13 +592,13 @@ private:
                 0,                          // client time-out
                 NULL);                      // default security attribute
 
-        if (m_hPipe == NULL || m_hPipe == INVALID_HANDLE_VALUE)
+        if (hPipe == NULL || hPipe == INVALID_HANDLE_VALUE)
         {
             return E_FAIL;
         }
 
         // This call blocks until a client process connects to the pipe
-        BOOL connected = ConnectNamedPipe(m_hPipe, NULL);
+        BOOL connected = ConnectNamedPipe(hPipe, NULL);
         if (!connected)
         {
             if (GetLastError() == ERROR_PIPE_CONNECTED)
@@ -608,13 +607,12 @@ private:
             }
             else
             {
-                CloseHandle(m_hPipe);
-                m_hPipe = INVALID_HANDLE_VALUE;
+                CloseHandle(hPipe);
             }
             return E_FAIL;
         }
 
-        m_write_pipe = std::make_unique<CAtlFile>(m_hPipe);
+        m_write_pipe = std::make_unique<CAtlFile>(hPipe);
         return S_OK;
     }
 
@@ -726,12 +724,7 @@ public:
         Logger::trace("AdvancedPaste::disable()");
         if (m_enabled)
         {
-            if (m_write_pipe)
-            {
-                m_write_pipe = nullptr;
-                CloseHandle(m_hPipe);
-                m_hPipe = INVALID_HANDLE_VALUE;
-            }
+            m_write_pipe = nullptr;
 
             TerminateProcess(m_hProcess, 1);
             Trace::AdvancedPaste_Enable(false);

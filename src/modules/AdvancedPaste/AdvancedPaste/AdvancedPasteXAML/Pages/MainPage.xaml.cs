@@ -11,7 +11,6 @@ using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.ViewModels;
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -25,7 +24,6 @@ namespace AdvancedPaste.Pages
     public sealed partial class MainPage : Page
     {
         private readonly ObservableCollection<ClipboardItem> clipboardHistory;
-        private readonly ObservableCollection<PasteFormat> pasteFormats;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
 
         public OptionsViewModel ViewModel { get; private set; }
@@ -33,13 +31,6 @@ namespace AdvancedPaste.Pages
         public MainPage()
         {
             this.InitializeComponent();
-
-            pasteFormats =
-            [
-                new PasteFormat { Icon = new FontIcon() { Glyph = "\uE8E9" }, Name = ResourceLoaderInstance.ResourceLoader.GetString("PasteAsPlainText"), Format = PasteFormats.PlainText },
-                new PasteFormat { Icon = new FontIcon() { Glyph = "\ue8a5" }, Name = ResourceLoaderInstance.ResourceLoader.GetString("PasteAsMarkdown"), Format = PasteFormats.Markdown },
-                new PasteFormat { Icon = new FontIcon() { Glyph = "\uE943" }, Name = ResourceLoaderInstance.ResourceLoader.GetString("PasteAsJson"), Format = PasteFormats.Json },
-            ];
 
             ViewModel = App.GetService<OptionsViewModel>();
 
@@ -135,56 +126,11 @@ namespace AdvancedPaste.Pages
             }
         }
 
-        private void PasteAsPlain()
-        {
-            ViewModel.ToPlainTextFunction();
-        }
-
-        private void PasteAsMarkdown()
-        {
-            ViewModel.ToMarkdownFunction();
-        }
-
-        private void PasteAsJson()
-        {
-            ViewModel.ToJsonFunction();
-        }
-
-        private void PasteOptionsListView_ItemClick(object sender, ItemClickEventArgs e)
+        private void ListView_Click(object sender, ItemClickEventArgs e)
         {
             if (e.ClickedItem is PasteFormat format)
             {
-                switch (format.Format)
-                {
-                    case PasteFormats.PlainText:
-                        {
-                            PasteAsPlain();
-                            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteFormatClickedEvent(PasteFormats.PlainText));
-                            break;
-                        }
-
-                    case PasteFormats.Markdown:
-                        {
-                            PasteAsMarkdown();
-                            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteFormatClickedEvent(PasteFormats.Markdown));
-                            break;
-                        }
-
-                    case PasteFormats.Json:
-                        {
-                            PasteAsJson();
-                            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteFormatClickedEvent(PasteFormats.Json));
-                            break;
-                        }
-                }
-            }
-        }
-
-        private void CustomActionsListView_ItemClick(object sender, ItemClickEventArgs e)
-        {
-            if (e.ClickedItem is AdvancedPasteCustomAction customAction)
-            {
-                ViewModel.ActivateCustomAction(customAction);
+                ViewModel.ExecutePasteFormat(format);
             }
         }
 
@@ -195,31 +141,19 @@ namespace AdvancedPaste.Pages
             switch (sender.Key)
             {
                 case VirtualKey.Escape:
-                    {
-                        (App.Current as App).GetMainWindow().Close();
-                        break;
-                    }
+                    break;
 
                 case VirtualKey.Number1:
-                    {
-                        PasteAsPlain();
-                        PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteInAppKeyboardShortcutEvent(PasteFormats.PlainText));
-                        break;
-                    }
-
                 case VirtualKey.Number2:
-                    {
-                        PasteAsMarkdown();
-                        PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteInAppKeyboardShortcutEvent(PasteFormats.Markdown));
-                        break;
-                    }
-
                 case VirtualKey.Number3:
-                    {
-                        PasteAsJson();
-                        PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteInAppKeyboardShortcutEvent(PasteFormats.Json));
-                        break;
-                    }
+                case VirtualKey.Number4:
+                case VirtualKey.Number5:
+                case VirtualKey.Number6:
+                case VirtualKey.Number7:
+                case VirtualKey.Number8:
+                case VirtualKey.Number9:
+                    ViewModel.ExecutePasteFormat(sender.Key);
+                    break;
 
                 default:
                     break;
