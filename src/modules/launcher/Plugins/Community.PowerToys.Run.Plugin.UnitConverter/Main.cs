@@ -29,7 +29,6 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         private bool _disposed;
 
         private static readonly CompositeFormat CopyToClipboard = System.Text.CompositeFormat.Parse(Properties.Resources.copy_to_clipboard);
-        private static readonly CompositeFormat ConvertFromOunce = System.Text.CompositeFormat.Parse(Properties.Resources.convert_from_ounce);
 
         public void Init(PluginInitContext context)
         {
@@ -57,32 +56,15 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 .ToList();
         }
 
-        private string GetUnitNameString(UnitConversionResult result)
-        {
-            return result.UnitNameFrom switch
-            {
-                "usounce" => "US ounce",
-                "imperialounce" => "Imperial ounce",
-                _ => string.Empty,
-            };
-        }
-
         private Result GetResult(UnitConversionResult result)
         {
-            string subTitleText = string.Format(CultureInfo.CurrentCulture, CopyToClipboard, result.QuantityInfo.Name);
-            if (result.UnitNameFrom == "usounce" || result.UnitNameFrom == "imperialounce")
-            {
-                string ounceName = GetUnitNameString(result);
-                subTitleText = subTitleText.Insert(0, string.Format(CultureInfo.CurrentCulture, ConvertFromOunce, ounceName) + " - ");
-            }
-
             return new Result
             {
                 ContextData = result,
                 Title = result.ToString(null),
                 IcoPath = _icon_path,
                 Score = 300,
-                SubTitle = subTitleText,
+                SubTitle = string.Format(CultureInfo.CurrentCulture, CopyToClipboard, result.QuantityInfo.Name),
                 Action = c =>
                 {
                     var ret = false;

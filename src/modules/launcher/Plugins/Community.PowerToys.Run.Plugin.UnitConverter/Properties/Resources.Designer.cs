@@ -70,15 +70,6 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to From {0}.
-        /// </summary>
-        public static string convert_from_ounce {
-            get {
-                return ResourceManager.GetString("convert_from_ounce", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Copy failed.
         /// </summary>
         public static string copy_failed {

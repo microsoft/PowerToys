@@ -79,54 +79,6 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
         }
 
         [TestMethod]
-        public void HandleFromOunce()
-        {
-            var convertModel = new ConvertModel(1, "ounce", "ml");
-            var results = UnitHandler.Convert(convertModel);
-            Assert.AreEqual(2, results.Count());
-
-            convertModel.FromUnit = "oz";
-            results = UnitHandler.Convert(convertModel);
-            Assert.AreEqual(2, results.Count());
-
-            convertModel.FromUnit = "o.z";
-            results = UnitHandler.Convert(convertModel);
-            Assert.AreEqual(2, results.Count());
-
-            convertModel.FromUnit = "o.z.";
-            results = UnitHandler.Convert(convertModel);
-            Assert.AreEqual(2, results.Count());
-
-            convertModel.ToUnit = "meter";
-            results = UnitHandler.Convert(convertModel);
-            Assert.AreEqual(0, results.Count());
-        }
-
-        [TestMethod]
-        public void HandleToOunce()
-        {
-            var convertModel = new ConvertModel(1, "ml", "ounce");
-            var results = UnitHandler.Convert(convertModel);
-            Assert.AreEqual(2, results.Count());
-
-            convertModel.ToUnit = "oz";
-            results = UnitHandler.Convert(convertModel);
-            Assert.AreEqual(2, results.Count());
-
-            convertModel.ToUnit = "o.z";
-            results = UnitHandler.Convert(convertModel);
-            Assert.AreEqual(2, results.Count());
-
-            convertModel.ToUnit = "o.z.";
-            results = UnitHandler.Convert(convertModel);
-            Assert.AreEqual(2, results.Count());
-
-            convertModel.FromUnit = "meter";
-            results = UnitHandler.Convert(convertModel);
-            Assert.AreEqual(0, results.Count());
-        }
-
-        [TestMethod]
         public void RoundZero()
         {
             double result = UnitHandler.Round(0.0);
