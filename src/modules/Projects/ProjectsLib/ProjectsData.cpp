@@ -13,7 +13,7 @@ namespace ProjectsData
     std::wstring ProjectsFile()
     {
         std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
-        return settingsFolderPath + L"\\applayouts.json";
+        return settingsFolderPath + L"\\app-layouts.json";
     }
 
     std::wstring TempProjectsFile()

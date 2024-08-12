@@ -69,7 +69,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
             else
             {
                 Logger::critical("Incorrect App Layouts file");
-                std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), L"applayouts.json");
+                std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), L"app-layouts.json");
                 MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_PROJECTS).c_str(), MB_ICONERROR | MB_OK);
                 return 1;
             }
@@ -77,7 +77,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         else
         {
             Logger::critical("Incorrect App Layouts file");
-            std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), L"applayouts.json");
+            std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), L"app-layouts.json");
             MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_PROJECTS).c_str(), MB_ICONERROR | MB_OK);
             return 1;
         }
@@ -85,7 +85,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     catch (std::exception ex)
     {
         Logger::critical("Exception on reading App Layout: {}", ex.what());
-        std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_FILE_READING_ERROR), L"applayouts.json");
+        std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_FILE_READING_ERROR), L"app-layouts.json");
         MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_PROJECTS).c_str(), MB_ICONERROR | MB_OK);
         return 1;
     }
@@ -93,7 +93,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     if (projects.empty())
     {
         Logger::warn("App Layouts file is empty");
-        std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_EMPTY_FILE), L"applayouts.json");
+        std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_EMPTY_FILE), L"app-layouts.json");
         MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_PROJECTS).c_str(), MB_ICONERROR | MB_OK);
         return 1;
     }
