@@ -78,8 +78,6 @@ namespace AdvancedPaste.Controls
         {
             Logger.LogTrace();
 
-            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteGenerateCustomFormatEvent());
-
             VisualStateManager.GoToState(this, "LoadingState", true);
             string inputInstructions = InputTxtBox.Text;
             ViewModel.SaveQuery(inputInstructions);

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "MicrophoneDevice.h"
 
 #include "Logging.h"

@@ -25,11 +25,9 @@
         <?if $(sys.BUILDARCH) = x64 ?>
           <File Source="$(var.BinDir)KeyboardManagerEditor\vcruntime140_1_app.dll" />
         <?endif ?>
-        <!-- Latest CppWinRT upgrade made Keyboard Manager Editor depend on additional VC Runtime libraries. -->
-        <!-- These are not in the Keyboard Manager Editor build output. So we copy them from the base build directory. -->
-        <File Source="$(var.BinDir)vcruntime140.dll" />
-        <File Source="$(var.BinDir)vcruntime140_1.dll" />
-        <File Source="$(var.BinDir)msvcp140.dll" />
+        <File Source="$(var.BinDir)KeyboardManagerEditor\vcruntime140.dll" />
+        <File Source="$(var.BinDir)KeyboardManagerEditor\vcruntime140_1.dll" />
+        <File Source="$(var.BinDir)KeyboardManagerEditor\msvcp140.dll" />
       </Component>
     </DirectoryRef>
 
