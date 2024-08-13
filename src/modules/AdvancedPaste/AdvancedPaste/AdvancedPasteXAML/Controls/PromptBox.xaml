@@ -8,7 +8,7 @@
     xmlns:local="using:AdvancedPaste.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    xmlns:winuiconverters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     mc:Ignorable="d">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -324,7 +324,7 @@
                     </Setter.Value>
                 </Setter>
             </Style>
-            <winuiconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter" />
         </ResourceDictionary>
     </UserControl.Resources>

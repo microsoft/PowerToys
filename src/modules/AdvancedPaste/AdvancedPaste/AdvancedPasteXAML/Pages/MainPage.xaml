@@ -9,12 +9,12 @@
     xmlns:local="using:AdvancedPaste.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    xmlns:winuiconverters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     KeyDown="Page_KeyDown"
     KeyboardAcceleratorPlacementMode="Hidden"
     mc:Ignorable="d">
     <Page.Resources>
-        <winuiconverters:BoolToVisibilityConverter x:Name="BoolToVisibilityConverter" />
+        <tkconverters:BoolToVisibilityConverter x:Name="BoolToVisibilityConverter" />
         <converters:CountToVisibilityConverter x:Name="countToVisibilityConverter" />
         <converters:CountToDoubleConverter
             x:Name="customActionsCountToMinHeightConverter"
