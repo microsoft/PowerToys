@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using interop;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -15,6 +14,7 @@ using Peek.FilePreviewer.Models;
 using Peek.UI.Native;
 using Peek.UI.Telemetry.Events;
 using Peek.UI.Views;
+using PowerToys.Interop;
 
 namespace Peek.UI
 {

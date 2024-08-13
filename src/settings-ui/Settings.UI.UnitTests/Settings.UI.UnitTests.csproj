@@ -1,34 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\Version.props" />
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\Common.Dotnet.CsWinRT.props" />
+
   <PropertyGroup>
-    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
-    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <IsPackable>false</IsPackable>
-    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
-    <Version>$(Version).0</Version>
-  </PropertyGroup>
+    <OutputPath>..\..\..\$(Configuration)\$(Platform)\tests\SettingsTests\</OutputPath>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutputPath>..\..\..\x64\Debug\tests\SettingsTests\</OutputPath>
-    <DebugType>full</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <!-- TODO: fix issues and reenable -->
     <!-- These are caused by streamjsonrpc dependency on Microsoft.VisualStudio.Threading.Analyzers -->
     <!-- We might want to add that to the project and fix the issues as well -->
     <NoWarn>VSTHRD002;VSTHRD110;VSTHRD100;VSTHRD200;VSTHRD101</NoWarn>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutputPath>..\..\..\x64\Release\tests\SettingsTest\</OutputPath>
-  </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="Moq" />
     <PackageReference Include="MSTest" />
     <PackageReference Include="System.IO.Abstractions.TestingHelpers" />
@@ -46,5 +30,4 @@
     <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\Settings.UI\PowerToys.Settings.csproj" />
   </ItemGroup>
-
 </Project>

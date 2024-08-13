@@ -73,9 +73,9 @@ namespace Common
         }
 
         /// <inheritdoc />
-        public void SetRect(Rectangle windowBounds)
+        public bool SetRect(Rectangle windowBounds)
         {
-            this.UpdateWindowBounds(parentHwnd, windowBounds);
+            return this.UpdateWindowBounds(parentHwnd, windowBounds);
         }
 
         /// <inheritdoc />
@@ -85,10 +85,10 @@ namespace Common
         }
 
         /// <inheritdoc />
-        public void SetWindow(IntPtr hwnd, Rectangle rect)
+        public bool SetWindow(IntPtr hwnd, Rectangle rect)
         {
             this.parentHwnd = hwnd;
-            this.UpdateWindowBounds(hwnd, rect);
+            return this.UpdateWindowBounds(hwnd, rect);
         }
 
         /// <inheritdoc />
@@ -118,12 +118,18 @@ namespace Common
         /// <summary>
         /// Update the Form Control window with the passed rectangle.
         /// </summary>
-        public void UpdateWindowBounds(IntPtr hwnd, Rectangle newBounds)
+        public bool UpdateWindowBounds(IntPtr hwnd, Rectangle newBounds)
         {
+            if (hwnd == IntPtr.Zero || !NativeMethods.IsWindow(hwnd))
+            {
+                // If the HWND is IntPtr.Zero the desktop window will be used as parent.
+                return false;
+            }
+
             if (this.Disposing || this.IsDisposed)
             {
                 // For unclear reasons, this can be called when handling an error and the form has already been disposed.
-                return;
+                return false;
             }
 
             // We must set the WS_CHILD style to change the form to a control within the Explorer preview pane
@@ -133,7 +139,10 @@ namespace Common
                 _ = NativeMethods.SetWindowLong(Handle, gwlStyle, windowStyle | wsChild);
             }
 
-            NativeMethods.SetParent(Handle, hwnd);
+            if (NativeMethods.SetParent(Handle, hwnd) == IntPtr.Zero)
+            {
+                return false;
+            }
 
             if (newBounds.IsEmpty)
             {
@@ -146,6 +155,8 @@ namespace Common
             {
                 Bounds = newBounds;
             }
+
+            return true;
         }
     }
 }

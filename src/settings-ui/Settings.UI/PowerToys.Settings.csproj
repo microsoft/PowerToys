@@ -1,13 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\Version.props" />
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\Common.SelfContained.props" />
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
-    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <RootNamespace>Microsoft.PowerToys.Settings.UI</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <WindowsPackageType>None</WindowsPackageType>
@@ -17,7 +16,6 @@
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <!-- OutputPath looks like this because it has to be called both by settings and publish.cmd -->
     <OutputPath>..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
-    <SelfContained>true</SelfContained>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
   </PropertyGroup>
@@ -32,31 +30,7 @@
   <ItemGroup>
     <ApplicationDefinition Include="SettingsXAML\App.xaml" />
   </ItemGroup>
-
-  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
-  <PropertyGroup Condition="'$(Platform)'=='x64'">
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
-    <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <NoWarn></NoWarn>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>CA1720</WarningsNotAsErrors>
-    <Optimize>False</Optimize>
-    <DebugType>full</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <NoWarn></NoWarn>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>CA1720</WarningsNotAsErrors>
-    <Optimize>true</Optimize>
-  </PropertyGroup>
+	
 
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
   <PropertyGroup>
@@ -82,7 +56,6 @@
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" />
-    <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="WinUIEx" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />

@@ -117,19 +117,19 @@ namespace AdvancedPaste
             var messageParts = message.Split();
             var messageType = messageParts.First();
 
-            if (messageType == interop.Constants.AdvancedPasteShowUIMessage())
+            if (messageType == PowerToys.Interop.Constants.AdvancedPasteShowUIMessage())
             {
                 OnAdvancedPasteHotkey();
             }
-            else if (messageType == interop.Constants.AdvancedPasteMarkdownMessage())
+            else if (messageType == PowerToys.Interop.Constants.AdvancedPasteMarkdownMessage())
             {
                 OnAdvancedPasteMarkdownHotkey();
             }
-            else if (messageType == interop.Constants.AdvancedPasteJsonMessage())
+            else if (messageType == PowerToys.Interop.Constants.AdvancedPasteJsonMessage())
             {
                 OnAdvancedPasteJsonHotkey();
             }
-            else if (messageType == interop.Constants.AdvancedPasteCustomActionMessage())
+            else if (messageType == PowerToys.Interop.Constants.AdvancedPasteCustomActionMessage())
             {
                 OnAdvancedPasteCustomActionHotkey(messageParts);
             }

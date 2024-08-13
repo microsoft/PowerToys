@@ -43,11 +43,11 @@ namespace FileLocksmithUI
                 return;
             }
 
-            bool isElevated = FileLocksmith.Interop.NativeMethods.IsProcessElevated();
+            bool isElevated = PowerToys.FileLocksmithLib.Interop.NativeMethods.IsProcessElevated();
 
             if (isElevated)
             {
-                if (!FileLocksmith.Interop.NativeMethods.SetDebugPrivilege())
+                if (!PowerToys.FileLocksmithLib.Interop.NativeMethods.SetDebugPrivilege())
                 {
                     Logger.LogWarning("Couldn't set debug privileges to see system processes.");
                 }

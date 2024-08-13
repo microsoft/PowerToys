@@ -1,11 +1,13 @@
 <Project>
-
+  <Import Project="src\Version.props" />
   <PropertyGroup>
     <Copyright>Copyright (C) Microsoft Corporation. All rights reserved.</Copyright>
-    <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
     <AssemblyCopyright>Copyright (C) Microsoft Corporation. All rights reserved.</AssemblyCopyright>
     <AssemblyProduct>PowerToys</AssemblyProduct>
+    <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
     <Company>Microsoft Corporation</Company>
+    <Authors>Microsoft Corporation</Authors>
+    <Product>PowerToys</Product>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Platforms>x64;ARM64</Platforms>
     <PackageTags>PowerToys</PackageTags>
@@ -17,11 +19,9 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
-    <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
+    <Version>$(Version).0</Version>
+	<RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
@@ -85,7 +85,7 @@
     <UsePrecompiledHeaders Condition="'$(TF_BUILD)' != ''">false</UsePrecompiledHeaders>
 
     <!-- Change this to bust the cache -->
-    <MSBuildCacheCacheUniverse Condition="'$(MSBuildCacheCacheUniverse)' == ''">202407200737</MSBuildCacheCacheUniverse>
+    <MSBuildCacheCacheUniverse Condition="'$(MSBuildCacheCacheUniverse)' == ''">202408050737</MSBuildCacheCacheUniverse>
 
     <!--
       Visual Studio telemetry reads various ApplicationInsights.config files and other files after the project is finished, likely in a detached process.

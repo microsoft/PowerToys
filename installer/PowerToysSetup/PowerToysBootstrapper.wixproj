@@ -3,9 +3,9 @@
   DefaultTargets="Build"
   InitialTargets="EnsureNuGetPackageBuildImports"
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\wix.props"
-    Condition="Exists('..\wix.props')" />
-  <Import Project="..\..\src\Version.props" />
+  <Import Project="..\..\src\Version.props" Condition="Exists('..\..\src\Version.props')" />
+  <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
+
   <PropertyGroup>
     <DefineConstants>Version=$(Version)</DefineConstants>
     <Name>PowerToysBootstrapper</Name>
