@@ -407,6 +407,7 @@ dxgi
 dxgidebug
 dxgiformat
 dxguid
+easeofaccess
 ecount
 EData
 Edid
@@ -1712,6 +1713,7 @@ vih
 VIRTUALDESK
 visiblecolorformats
 Visibletrue
+visualeffects
 VKey
 vmovl
 vorrq
