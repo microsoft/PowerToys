@@ -154,6 +154,32 @@ namespace AdvancedPaste
 
         private void OnAdvancedPasteHotkey()
         {
+            ShowWindow();
+        }
+
+        private void OnAdvancedPasteCustomActionHotkey(string[] messageParts)
+        {
+            if (messageParts.Length != 2)
+            {
+                Logger.LogWarning("Unexpected custom action message");
+            }
+            else
+            {
+                if (!int.TryParse(messageParts[1], CultureInfo.InvariantCulture, out int id))
+                {
+                    Logger.LogWarning($"Unexpected custom action message id {messageParts[1]}");
+                }
+                else
+                {
+                    ShowWindow();
+                    viewModel.ReadClipboard();
+                    viewModel.ExecuteCustomActionWithPaste(id);
+                }
+            }
+        }
+
+        private void ShowWindow()
+        {
             viewModel.OnShow();
 
             if (window is null)
@@ -174,27 +200,6 @@ namespace AdvancedPaste
             }
 
             window.SetFocus();
-        }
-
-        private void OnAdvancedPasteCustomActionHotkey(string[] messageParts)
-        {
-            if (messageParts.Length != 2)
-            {
-                Logger.LogWarning("Unexpected custom action message");
-            }
-            else
-            {
-                viewModel.ReadClipboard();
-
-                if (!int.TryParse(messageParts[1], CultureInfo.InvariantCulture, out int id))
-                {
-                    Logger.LogWarning($"Unexpected custom action message id {messageParts[1]}");
-                }
-                else
-                {
-                    viewModel.ExecuteCustomActionHeadless(id, true);
-                }
-            }
         }
 
         private void MoveWindowToActiveMonitor()

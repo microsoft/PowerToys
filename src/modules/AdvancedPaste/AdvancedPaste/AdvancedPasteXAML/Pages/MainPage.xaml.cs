@@ -136,6 +136,11 @@ namespace AdvancedPaste.Pages
 
         private void KeyboardAccelerator_Invoked(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender, Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
         {
+            if ((App.Current as App)?.GetMainWindow()?.Visible is false)
+            {
+                return;
+            }
+
             Logger.LogTrace();
 
             switch (sender.Key)

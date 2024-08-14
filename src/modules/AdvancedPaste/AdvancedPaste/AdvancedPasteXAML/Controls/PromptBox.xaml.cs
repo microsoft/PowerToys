@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Net;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
@@ -54,7 +55,7 @@ namespace AdvancedPaste.Controls
             _userSettings = App.GetService<IUserSettings>();
 
             ViewModel = App.GetService<OptionsViewModel>();
-            ViewModel.CustomActionActivated += (_, _) => GenerateCustom();
+            ViewModel.CustomActionActivated += (_, e) => GenerateCustom(e.ForcePasteCustom);
         }
 
         private void Grid_Loaded(object sender, RoutedEventArgs e)
@@ -63,27 +64,31 @@ namespace AdvancedPaste.Controls
         }
 
         [RelayCommand]
-        private void GenerateCustom()
+        private void GenerateCustom() => GenerateCustom(false);
+
+        private void GenerateCustom(bool forcePasteCustom)
         {
             Logger.LogTrace();
 
             VisualStateManager.GoToState(this, "LoadingState", true);
-            string inputInstructions = InputTxtBox.Text;
+            string inputInstructions = ViewModel.Query;
             ViewModel.SaveQuery(inputInstructions);
 
             var customFormatTask = ViewModel.GenerateCustomFunction(inputInstructions);
+            var delayTask = forcePasteCustom ? Task.Delay(TimeSpan.FromSeconds(2)) : Task.CompletedTask;
 
-            customFormatTask.ContinueWith(
-                t =>
+            var combinedTask = Task.WhenAll(customFormatTask, delayTask);
+            combinedTask.ContinueWith(
+                _ =>
                 {
                     _dispatcherQueue.TryEnqueue(() =>
                     {
-                        ViewModel.CustomFormatResult = t.Result;
+                        ViewModel.CustomFormatResult = customFormatTask.Result;
 
                         if (ViewModel.ApiRequestStatus == (int)HttpStatusCode.OK)
                         {
                             VisualStateManager.GoToState(this, "DefaultState", true);
-                            if (_userSettings.ShowCustomPreview)
+                            if (_userSettings.ShowCustomPreview && !forcePasteCustom)
                             {
                                 PreviewGrid.Width = InputTxtBox.ActualWidth;
                                 PreviewFlyout.ShowAt(InputTxtBox);

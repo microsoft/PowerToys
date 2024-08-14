@@ -73,7 +73,7 @@ namespace AdvancedPaste.ViewModels
 
         private bool IsCustomAIEnabledCore => IsAllowedByGPO && IsClipboardDataText && aiHelper.IsAIEnabled;
 
-        public event EventHandler<TextEventArgs> CustomActionActivated;
+        public event EventHandler<CustomActionActivatedEventArgs> CustomActionActivated;
 
         public OptionsViewModel(IUserSettings userSettings)
         {
@@ -457,14 +457,14 @@ namespace AdvancedPaste.ViewModels
 
                 case PasteFormats.Custom:
                     Query = pasteFormat.Prompt;
-                    CustomActionActivated?.Invoke(this, new TextEventArgs(pasteFormat.Prompt));
+                    CustomActionActivated?.Invoke(this, new CustomActionActivatedEventArgs(pasteFormat.Prompt, false));
                     break;
             }
 
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteInAppKeyboardShortcutEvent(pasteFormat.Format));
         }
 
-        internal void ExecuteCustomActionHeadless(int id, bool pasteAlways = false)
+        internal void ExecuteCustomActionWithPaste(int id)
         {
             Logger.LogTrace();
 
@@ -472,27 +472,8 @@ namespace AdvancedPaste.ViewModels
 
             if (customAction != null)
             {
-                GenerateCustomFunction(customAction.Prompt).ContinueWith(
-                t =>
-                {
-                    try
-                    {
-                        SetClipboardContentAndHideWindow(t.Result);
-
-                        if (pasteAlways || _userSettings.SendPasteKeyCombination)
-                        {
-                            ClipboardHelper.SendPasteKeyCombination();
-                        }
-                    }
-                    catch
-                    {
-                    }
-                },
-                TaskScheduler.FromCurrentSynchronizationContext());
-            }
-            else
-            {
-                Logger.LogWarning("Received request for unknown custom action");
+                Query = customAction.Prompt;
+                CustomActionActivated?.Invoke(this, new CustomActionActivatedEventArgs(customAction.Prompt, true));
             }
         }
 

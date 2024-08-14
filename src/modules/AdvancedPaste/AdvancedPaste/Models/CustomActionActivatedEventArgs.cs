@@ -6,7 +6,9 @@ using System;
 
 namespace AdvancedPaste.Models;
 
-public sealed class TextEventArgs(string text) : EventArgs
+public sealed class CustomActionActivatedEventArgs(string text, bool forcePasteCustom) : EventArgs
 {
     public string Text { get; private set; } = text;
+
+    public bool ForcePasteCustom { get; private set; } = forcePasteCustom;
 }
