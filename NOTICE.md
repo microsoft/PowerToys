@@ -1329,7 +1329,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Win32.SystemEvents 8.0.0
 - Microsoft.Windows.Compatibility 8.0.7
 - Microsoft.Windows.CsWin32 0.2.46-beta
-- Microsoft.Windows.CsWinRT 2.0.4
+- Microsoft.Windows.CsWinRT 2.0.8
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.2428
 - Microsoft.WindowsAppSDK 1.5.240428000
 - Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
