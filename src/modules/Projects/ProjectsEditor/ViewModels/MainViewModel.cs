@@ -348,6 +348,7 @@ namespace ProjectsEditor.ViewModels
             Projects.Remove(selectedProject);
             _projectsEditorIO.SerializeProjects(Projects.ToList());
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(ProjectsView)));
+            SendDeleteTelemetryEvent();
         }
 
         public void SetMainWindow(MainWindow mainWindow)
@@ -567,6 +568,13 @@ namespace ProjectsEditor.ViewModels
             telemetryEvent.AdminRemoved = adminRemoved;
             telemetryEvent.LaunchEditUsed = updatedProject.IsRevertEnabled; // enabled only when Launch and Edit triggered
             telemetryEvent.PixelAdjustmentsUsed = false; // TODO: update when the feature is added
+            PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
+        }
+
+        private void SendDeleteTelemetryEvent()
+        {
+            var telemetryEvent = new EditEvent();
+            telemetryEvent.Successful = true;
             PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
         }
     }
