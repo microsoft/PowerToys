@@ -128,9 +128,15 @@ namespace HostsUILib.Helpers
                 throw new NotRunningElevatedException();
             }
 
-            if (_fileSystem.FileInfo.FromFileName(HostsFilePath).IsReadOnly)
+            if (HasAttribute(FileAttributes.ReadOnly))
             {
                 throw new ReadOnlyHostsException();
+            }
+
+            var hidden = HasAttribute(FileAttributes.Hidden);
+            if (hidden)
+            {
+                RemoveAttribute(FileAttributes.Hidden);
             }
 
             var lines = new List<string>();
@@ -198,6 +204,11 @@ namespace HostsUILib.Helpers
                 }
 
                 await _fileSystem.File.WriteAllLinesAsync(HostsFilePath, lines, Encoding);
+
+                if (hidden)
+                {
+                    SetAttribute(FileAttributes.Hidden);
+                }
             }
             finally
             {
@@ -292,19 +303,33 @@ namespace HostsUILib.Helpers
             }
         }
 
-        public void RemoveReadOnly()
+        public void RemoveReadOnlyAttribute()
         {
-            var fileInfo = _fileSystem.FileInfo.FromFileName(HostsFilePath);
-            if (fileInfo.IsReadOnly)
-            {
-                fileInfo.IsReadOnly = false;
-            }
+            RemoveAttribute(FileAttributes.ReadOnly);
         }
 
         public void Dispose()
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        private bool HasAttribute(FileAttributes attribute)
+        {
+            var fileInfo = _fileSystem.FileInfo.FromFileName(HostsFilePath);
+            return fileInfo.Attributes.HasFlag(attribute);
+        }
+
+        private void SetAttribute(FileAttributes attribute)
+        {
+            var fileInfo = _fileSystem.FileInfo.FromFileName(HostsFilePath);
+            fileInfo.Attributes |= attribute;
+        }
+
+        private void RemoveAttribute(FileAttributes attribute)
+        {
+            var fileInfo = _fileSystem.FileInfo.FromFileName(HostsFilePath);
+            fileInfo.Attributes &= ~attribute;
         }
 
         private void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
