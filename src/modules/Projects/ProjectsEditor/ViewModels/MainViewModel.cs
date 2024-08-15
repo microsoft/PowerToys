@@ -168,6 +168,8 @@ namespace ProjectsEditor.ViewModels
 
         public void SaveProject(Project projectToSave)
         {
+            SendEditTelemetryEvent(projectToSave, editedProject);
+
             editedProject.Name = projectToSave.Name;
             editedProject.IsShortcutNeeded = projectToSave.IsShortcutNeeded;
             editedProject.MoveExistingWindows = projectToSave.MoveExistingWindows;
@@ -502,6 +504,69 @@ namespace ProjectsEditor.ViewModels
             telemetryEvent.CliCount = project.Applications.FindAll(app => app.CommandLineArguments.Length > 0).Count;
             telemetryEvent.ShortcutCreated = project.IsShortcutNeeded;
             telemetryEvent.AdminCount = project.Applications.FindAll(app => app.IsElevated).Count;
+            PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
+        }
+
+        private void SendEditTelemetryEvent(Project updatedProject, Project prevProject)
+        {
+            int appsRemovedCount = updatedProject.Applications.FindAll(val => !val.IsIncluded).Count;
+            foreach (var app in prevProject.Applications)
+            {
+                var updatedApp = updatedProject.Applications.Find(val => app.AppName == val.AppName && app.Position == val.Position);
+                if (updatedApp == null)
+                {
+                    appsRemovedCount++;
+                }
+            }
+
+            int appsAddedCount = 0;
+            int cliAdded = 0, cliRemoved = 0;
+            int adminAdded = 0, adminRemoved = 0;
+            foreach (var app in updatedProject.Applications)
+            {
+                var prevApp = prevProject.Applications.Find(val => app.AppName == val.AppName && app.Position == val.Position);
+                if (prevApp == null)
+                {
+                    if (app.IsIncluded)
+                    {
+                        appsAddedCount++;
+                    }
+
+                    continue;
+                }
+
+                if (app.CommandLineArguments.Length > 0 && prevApp.CommandLineArguments.Length == 0)
+                {
+                    cliAdded++;
+                }
+
+                if (prevApp.CommandLineArguments.Length > 0 && app.CommandLineArguments.Length == 0)
+                {
+                    cliRemoved++;
+                }
+
+                if (app.IsElevated && !prevApp.IsElevated)
+                {
+                    adminAdded++;
+                }
+
+                if (!app.IsElevated && prevApp.IsElevated)
+                {
+                    adminRemoved++;
+                }
+            }
+
+            var telemetryEvent = new EditEvent();
+            telemetryEvent.Successful = true;
+            telemetryEvent.ScreenCountDelta = updatedProject.Monitors.Count - prevProject.Monitors.Count;
+            telemetryEvent.AppsAdded = appsAddedCount;
+            telemetryEvent.AppsRemoved = appsRemovedCount;
+            telemetryEvent.CliAdded = cliAdded;
+            telemetryEvent.CliRemoved = cliRemoved;
+            telemetryEvent.AdminAdded = adminAdded;
+            telemetryEvent.AdminRemoved = adminRemoved;
+            telemetryEvent.LaunchEditUsed = updatedProject.IsRevertEnabled; // enabled only when Launch and Edit triggered
+            telemetryEvent.PixelAdjustmentsUsed = false; // TODO: update when the feature is added
             PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
         }
     }
