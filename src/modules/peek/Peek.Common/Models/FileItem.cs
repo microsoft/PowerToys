@@ -24,6 +24,8 @@ namespace Peek.Common.Models
 
         public string Name { get; init; }
 
+        public string ParsingName => string.Empty;
+
         public string Path { get; init; }
 
         public string Extension => System.IO.Path.GetExtension(Path).ToLower(CultureInfo.InvariantCulture);

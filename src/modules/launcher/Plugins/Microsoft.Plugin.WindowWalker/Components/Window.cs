@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Wox.Plugin.Common.VirtualDesktop.Helper;
 using Wox.Plugin.Common.Win32;
@@ -235,11 +236,20 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
+        /// Helper function to close the window
+        /// </summary>
+        internal void CloseThisWindowHelper()
+        {
+            _ = NativeMethods.SendMessageTimeout(Hwnd, Win32Constants.WM_SYSCOMMAND, Win32Constants.SC_CLOSE, 0, 0x0000, 5000, out _);
+        }
+
+        /// <summary>
         /// Closes the window
         /// </summary>
         internal void CloseThisWindow()
         {
-            _ = NativeMethods.SendMessage(Hwnd, Win32Constants.WM_SYSCOMMAND, Win32Constants.SC_CLOSE);
+            Thread thread = new(new ThreadStart(CloseThisWindowHelper));
+            thread.Start();
         }
 
         /// <summary>

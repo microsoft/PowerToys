@@ -3,9 +3,9 @@
   DefaultTargets="Build"
   InitialTargets="EnsureNuGetPackageBuildImports"
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\wix.props"
-    Condition="Exists('..\wix.props')" />
-  <Import Project="..\..\src\Version.props" />
+  <Import Project="..\..\src\Version.props" Condition="Exists('..\..\src\Version.props')" />
+  <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
+
   <PropertyGroup>
     <DefineConstants>Version=$(Version)</DefineConstants>
     <Name>PowerToysBootstrapper</Name>
@@ -76,4 +76,12 @@
     <Error Condition="!Exists('..\wix.props')"
       Text="$([System.String]::Format('$(ErrorText)', '..\wix.props'))" />
   </Target>
+
+  <!-- Prevents NU1503 -->
+  <Target Name="_IsProjectRestoreSupported" Returns="@(_ValidProjectsForRestore)">
+    <ItemGroup>
+      <_ValidProjectsForRestore Include="$(MSBuildProjectFullPath)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="Restore" />
 </Project>

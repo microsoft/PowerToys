@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -18,6 +17,7 @@ using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
+using PowerToys.Interop;
 using Windows.UI.Popups;
 using WinRT.Interop;
 using WinUIEx;
@@ -76,9 +76,16 @@ namespace Microsoft.PowerToys.Settings.UI
         /// </summary>
         public App()
         {
-            Logger.InitializeLogger("\\Settings\\Logs");
+            Logger.InitializeLogger(@"\Settings\Logs");
 
-            this.InitializeComponent();
+            InitializeComponent();
+
+            UnhandledException += App_UnhandledException;
+        }
+
+        private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            Logger.LogError("Unhandled exception", e.Exception);
         }
 
         public static void OpenSettingsWindow(Type type = null, bool ensurePageIsSelected = false)
@@ -393,6 +400,7 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 case "Dashboard": return typeof(DashboardPage);
                 case "Overview": return typeof(GeneralPage);
+                case "AdvancedPaste": return typeof(AdvancedPastePage);
                 case "AlwaysOnTop": return typeof(AlwaysOnTopPage);
                 case "Awake": return typeof(AwakePage);
                 case "CmdNotFound": return typeof(CmdNotFoundPage);
@@ -413,7 +421,6 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "MeasureTool": return typeof(MeasureToolPage);
                 case "Hosts": return typeof(HostsPage);
                 case "RegistryPreview": return typeof(RegistryPreviewPage);
-                case "PastePlain": return typeof(PastePlainPage);
                 case "Peek": return typeof(PeekPage);
                 case "CropAndLock": return typeof(CropAndLockPage);
                 case "EnvironmentVariables": return typeof(EnvironmentVariablesPage);

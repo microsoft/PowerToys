@@ -4,8 +4,11 @@
 
 using System;
 using System.IO.Abstractions;
-using EnvironmentVariables.Helpers;
-using EnvironmentVariables.ViewModels;
+using EnvironmentVariables.Telemetry;
+using EnvironmentVariablesUILib;
+using EnvironmentVariablesUILib.Helpers;
+using EnvironmentVariablesUILib.Telemetry;
+using EnvironmentVariablesUILib.ViewModels;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -47,8 +50,11 @@ namespace EnvironmentVariables
                 services.AddSingleton<IFileSystem, FileSystem>();
                 services.AddSingleton<IElevationHelper, ElevationHelper>();
                 services.AddSingleton<IEnvironmentVariablesService, EnvironmentVariablesService>();
+                services.AddSingleton<ILogger, LoggerWrapper>();
+                services.AddSingleton<ITelemetry, TelemetryWrapper>();
 
                 services.AddSingleton<MainViewModel>();
+                services.AddSingleton<EnvironmentVariablesMainPage>();
             }).Build();
 
             UnhandledException += App_UnhandledException;
@@ -85,8 +91,7 @@ namespace EnvironmentVariables
                 Logger.LogInfo($"EnvironmentVariables started detached from PowerToys Runner.");
             }
 
-            PowerToysTelemetry.Log.WriteEvent(new EnvironmentVariables.Telemetry.EnvironmentVariablesOpenedEvent());
-
+            PowerToysTelemetry.Log.WriteEvent(new Telemetry.EnvironmentVariablesOpenedEvent());
             window = new MainWindow();
             window.Activate();
         }
