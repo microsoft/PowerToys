@@ -16,7 +16,9 @@ using System.Timers;
 using System.Windows;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Telemetry;
 using ProjectsEditor.Models;
+using ProjectsEditor.Telemetry;
 using ProjectsEditor.Utils;
 using static ProjectsEditor.Data.ProjectsData;
 
@@ -336,6 +338,7 @@ namespace ProjectsEditor.ViewModels
             _projectsEditorIO.SerializeProjects(Projects.ToList());
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(ProjectsView)));
             ApplyShortcut(project);
+            SendCreateTelemetryEvent(project);
         }
 
         public void DeleteProject(Project selectedProject)
@@ -488,6 +491,18 @@ namespace ProjectsEditor.ViewModels
             await Task.Run(() => RunLauncher(project.Id));
             projectBeforeLaunch = new Project(project);
             EnterSnapshotMode(true);
+        }
+
+        private void SendCreateTelemetryEvent(Project project)
+        {
+            var telemetryEvent = new CreateEvent();
+            telemetryEvent.Successful = true;
+            telemetryEvent.NumScreens = project.Monitors.Count;
+            telemetryEvent.AppCount = project.Applications.Count;
+            telemetryEvent.CliCount = project.Applications.FindAll(app => app.CommandLineArguments.Length > 0).Count;
+            telemetryEvent.ShortcutCreated = project.IsShortcutNeeded;
+            telemetryEvent.AdminCount = project.Applications.FindAll(app => app.IsElevated).Count;
+            PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
         }
     }
 }
