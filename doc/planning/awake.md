@@ -20,6 +20,12 @@ The build ID moniker is made up of two components - a reference to a [Halo](http
 
 ### `VISEGRADRELAY_08152024` (August 15, 2024)
 
+>[!NOTE]
+>See pull request: [Awake - `VISEGRADRELAY_08152024`](https://github.com/microsoft/PowerToys/pull/34316)
+
+- [#34148](https://github.com/microsoft/PowerToys/issues/34148) Fixes the issue where the Awake icon is not displayed.
+- [#17969](https://github.com/microsoft/PowerToys/issues/17969) Add the ability to bind the process target to the parent of the Awake launcher.
+- PID binding now correctly ignores irrelevant parameters (e.g., expiration, interval) and only works for indefinite periods.
 - Amending the native API surface to make sure that the Win32 error is set correctly.
 
 ### `DAISY023_04102024` (April 10, 2024)
