@@ -566,8 +566,7 @@ namespace ProjectsEditor.ViewModels
             telemetryEvent.CliRemoved = cliRemoved;
             telemetryEvent.AdminAdded = adminAdded;
             telemetryEvent.AdminRemoved = adminRemoved;
-            telemetryEvent.LaunchEditUsed = updatedProject.IsRevertEnabled; // enabled only when Launch and Edit triggered
-            telemetryEvent.PixelAdjustmentsUsed = false; // TODO: update when the feature is added
+            telemetryEvent.PixelAdjustmentsUsed = updatedProject.IsPositionChangedManually;
             PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
         }
 

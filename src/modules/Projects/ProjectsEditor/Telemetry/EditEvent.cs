@@ -40,9 +40,6 @@ namespace ProjectsEditor.Telemetry
         // Number of apps with admin removed
         public int AdminRemoved { get; set; }
 
-        // True if user used Launch&Edit to recapture
-        public bool LaunchEditUsed { get; set; }
-
         // True if used window pixel sizing boxes to adjust size
         public bool PixelAdjustmentsUsed { get; set; }
 

@@ -122,6 +122,7 @@ namespace ProjectsEditor
 
             application.Position = new Models.Application.WindowPosition() { X = newPos, Y = application.Position.Y, Width = application.Position.Width, Height = application.Position.Height };
             Project project = application.Parent;
+            project.IsPositionChangedManually = true;
             project.Initialize(App.ThemeManager.GetCurrentTheme());
         }
 
@@ -137,6 +138,7 @@ namespace ProjectsEditor
 
             application.Position = new Models.Application.WindowPosition() { X = application.Position.X, Y = newPos, Width = application.Position.Width, Height = application.Position.Height };
             Project project = application.Parent;
+            project.IsPositionChangedManually = true;
             project.Initialize(App.ThemeManager.GetCurrentTheme());
         }
 
@@ -152,6 +154,7 @@ namespace ProjectsEditor
 
             application.Position = new Models.Application.WindowPosition() { X = application.Position.X, Y = application.Position.Y, Width = newPos, Height = application.Position.Height };
             Project project = application.Parent;
+            project.IsPositionChangedManually = true;
             project.Initialize(App.ThemeManager.GetCurrentTheme());
         }
 
@@ -167,6 +170,7 @@ namespace ProjectsEditor
 
             application.Position = new Models.Application.WindowPosition() { X = application.Position.X, Y = application.Position.Y, Width = application.Position.Width, Height = newPos };
             Project project = application.Parent;
+            project.IsPositionChangedManually = true;
             project.Initialize(App.ThemeManager.GetCurrentTheme());
         }
 

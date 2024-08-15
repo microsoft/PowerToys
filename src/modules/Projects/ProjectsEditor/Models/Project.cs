@@ -201,6 +201,8 @@ namespace ProjectsEditor.Models
 
         public List<MonitorSetup> Monitors { get; }
 
+        public bool IsPositionChangedManually { get; set; } // telemetry
+
         private BitmapImage _previewIcons;
         private BitmapImage _previewImage;
         private double _previewImageWidth;
