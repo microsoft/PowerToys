@@ -24,6 +24,36 @@ namespace ProjectsEditor.Models
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        public Application()
+        {
+        }
+
+        public Application(Application other)
+        {
+            AppName = other.AppName;
+            AppPath = other.AppPath;
+            AppTitle = other.AppTitle;
+            PackageFullName = other.PackageFullName;
+            CommandLineArguments = other.CommandLineArguments;
+            IsElevated = other.IsElevated;
+            CanLaunchElevated = other.CanLaunchElevated;
+            Minimized = other.Minimized;
+            Maximized = other.Maximized;
+            Position = other.Position;
+            MonitorNumber = other.MonitorNumber;
+
+            Parent = other.Parent;
+            IsNotFound = other.IsNotFound;
+            IsHighlighted = other.IsHighlighted;
+            RepeatIndex = other.RepeatIndex;
+            PackagedId = other.PackagedId;
+            PackagedName = other.PackagedName;
+            PackagedPublisherID = other.PackagedPublisherID;
+            Aumid = other.Aumid;
+            IsExpanded = other.IsExpanded;
+            IsIncluded = other.IsIncluded;
+        }
+
         public Project Parent { get; set; }
 
         public struct WindowPosition

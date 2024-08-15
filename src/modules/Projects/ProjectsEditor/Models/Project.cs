@@ -226,21 +226,8 @@ namespace ProjectsEditor.Models
             Applications = new List<Application>();
             foreach (var item in selectedProject.Applications)
             {
-                Application newApp = new Application()
-                {
-                    AppName = item.AppName,
-                    AppPath = item.AppPath,
-                    AppTitle = item.AppTitle,
-                    CommandLineArguments = item.CommandLineArguments,
-                    PackageFullName = item.PackageFullName,
-                    IsElevated = item.IsElevated,
-                    Minimized = item.Minimized,
-                    Maximized = item.Maximized,
-                    MonitorNumber = item.MonitorNumber,
-                    IsNotFound = item.IsNotFound,
-                    Position = new Application.WindowPosition() { X = item.Position.X, Y = item.Position.Y, Height = item.Position.Height, Width = item.Position.Width },
-                    Parent = this,
-                };
+                Application newApp = new Application(item);
+                newApp.Parent = this;
                 newApp.InitializationFinished();
                 Applications.Add(newApp);
             }
