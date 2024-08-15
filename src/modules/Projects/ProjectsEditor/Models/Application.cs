@@ -35,6 +35,32 @@ namespace ProjectsEditor.Models
             public int Width { get; set; }
 
             public int Height { get; set; }
+
+            public static bool operator ==(WindowPosition left, WindowPosition right)
+            {
+                return left.X == right.X && left.Y == right.Y && left.Width == right.Width && left.Height == right.Height;
+            }
+
+            public static bool operator !=(WindowPosition left, WindowPosition right)
+            {
+                return left.X != right.X || left.Y != right.Y || left.Width != right.Width || left.Height != right.Height;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (obj == null || GetType() != obj.GetType())
+                {
+                    return false;
+                }
+
+                WindowPosition pos = (WindowPosition)obj;
+                return X == pos.X && Y == pos.Y && Width == pos.Width && Height == pos.Height;
+            }
+
+            public override int GetHashCode()
+            {
+                return base.GetHashCode();
+            }
         }
 
         public string AppName { get; set; }
