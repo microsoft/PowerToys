@@ -10,12 +10,17 @@ The build ID can be found in `Core\Constants.cs` in the `BuildId` variable - it 
 
 The build ID moniker is made up of two components - a reference to a [Halo](https://en.wikipedia.org/wiki/Halo_(franchise)) character, and the date when the work on the specific build started in the format of `MMDDYYYY`.
 
-| Build ID                                                  | Build Date       |
-|:----------------------------------------------------------|:-----------------|
-| [`DAISY023_04102024`](#DAISY023_04102024-april-10-2024)   | April 10, 2024   |
-| [`ATRIOX_04132023`](#ATRIOX_04132023-april-13-2023)       | April 13, 2023   |
-| [`LIBRARIAN_03202022`](#librarian_03202022-march-20-2022) | March 20, 2022   |
-| `ARBITER_01312022`                                        | January 31, 2022 |
+| Build ID                                                           | Build Date      |
+|:-------------------------------------------------------------------|:----------------|
+| [`VISEGRADRELAY_08152024`](#VISEGRADRELAY_08152024-august-15-2024) | August 15, 2024 |
+| [`DAISY023_04102024`](#DAISY023_04102024-april-10-2024)            | April 10, 2024  |
+| [`ATRIOX_04132023`](#ATRIOX_04132023-april-13-2023)                | April 13, 2023  |
+| [`LIBRARIAN_03202022`](#librarian_03202022-march-20-2022)          | March 20, 2022  |
+| `ARBITER_01312022`                                                 | January 31, 2022 |
+
+### `VISEGRADRELAY_08152024` (August 15, 2024)
+
+- Amending the native API surface to make sure that the Win32 error is set correctly.
 
 ### `DAISY023_04102024` (April 10, 2024)
 
