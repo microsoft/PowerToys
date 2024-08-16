@@ -41,7 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="ProjectsSnapshotToolResources.base.rc">
+    <None Include="WorkspacesSnapshotToolResources.base.rc">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
@@ -51,7 +51,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Generated Files/ProjectsSnapshotToolResources.rc">
+    <ResourceCompile Include="Generated Files/WorkspacesSnapshotToolResources.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

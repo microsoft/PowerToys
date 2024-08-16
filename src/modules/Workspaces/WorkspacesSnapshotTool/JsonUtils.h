@@ -6,7 +6,7 @@
 
 #include <common/logger/logger.h>
 
-namespace ProjectsJsonUtils
+namespace WorkspacesJsonUtils
 {
     inline std::vector<WorkspacesData::WorkspacesProject> Read(const std::wstring& fileName)
     {

@@ -14,15 +14,15 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/UnhandledExceptionHandler.h>
 
-const std::wstring moduleName = L"App Layouts\\ProjectsSnapshotTool";
+const std::wstring moduleName = L"Workspaces\\ProjectsSnapshotTool";
 const std::wstring internalPath = L"";
 
 int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cmdShow)
 {
-    LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::projectsLauncherLoggerName);
+    LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::workspacesLauncherLoggerName);
     InitUnhandledExceptionHandler();
 
-    if (powertoys_gpo::getConfiguredProjectsEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
+    if (powertoys_gpo::getConfiguredWorkspacesEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
     {
         Logger::warn(L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
         return 0;
@@ -57,7 +57,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
     // create new project
     time_t creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     WorkspacesData::WorkspacesProject project{ .id = CreateGuidString(), .creationTime = creationTime };
-    Logger::trace(L"Creating project {}:{}", project.name, project.id);
+    Logger::trace(L"Creating workspace {}:{}", project.name, project.id);
 
     project.monitors = MonitorUtils::IdentifyMonitors();
     project.apps = SnapshotUtils::GetApps([&](HWND window) -> unsigned int {
@@ -75,7 +75,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
         return monitorNumber;
     });
 
-    ProjectsJsonUtils::Write(WorkspacesData::TempWorkspacesFile(), project);
+    WorkspacesJsonUtils::Write(WorkspacesData::TempWorkspacesFile(), project);
     Logger::trace(L"WorkspacesProject {}:{} created", project.name, project.id);
 
     CoUninitialize();

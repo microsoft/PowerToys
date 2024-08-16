@@ -118,10 +118,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DefaultProjectNamePrefix" xml:space="preserve">
-    <value>Project</value>
+    <value>Workspace</value>
   </data>
   <data name="Projects" xml:space="preserve">
-    <value>App Layouts</value>
+    <value>Workspaces</value>
   </data>
   <data name="System_Foreground_Elevated" xml:space="preserve">
     <value>We've detected an application running with administrator privileges. This will prevent certain interactions with these applications.</value>
