@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ProjectsLib/ProjectsData.h>
+#include <ProjectsLib/WorkspacesData.h>
 #include <common/Display/DisplayUtils.h>
 
 namespace MonitorUtils

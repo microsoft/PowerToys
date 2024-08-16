@@ -11,7 +11,7 @@
 #include <common/utils/winapi_error.h>
 
 #include <ProjectsLib/trace.h>
-#include <ProjectsLib/ProjectsData.h>
+#include <ProjectsLib/WorkspacesData.h>
 
 #include <shellapi.h>
 

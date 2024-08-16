@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 
-#include <ProjectsLib/ProjectsData.h>
+#include <ProjectsLib/WorkspacesData.h>
 #include <ProjectsLib/trace.h>
 
 #include <AppLauncher.h>

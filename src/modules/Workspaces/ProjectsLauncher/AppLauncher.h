@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ProjectsLib/ProjectsData.h>
+#include <ProjectsLib/WorkspacesData.h>
 
 using ErrorList = std::vector<std::pair<std::wstring, std::wstring>>;
 

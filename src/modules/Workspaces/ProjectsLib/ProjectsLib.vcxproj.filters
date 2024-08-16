@@ -17,7 +17,7 @@
     <ClInclude Include="trace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ProjectsData.h">
+    <ClInclude Include="WorkspacesData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -28,7 +28,7 @@
     <ClCompile Include="trace.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ProjectsData.cpp">
+    <ClCompile Include="WorkspacesData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
