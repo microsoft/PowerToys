@@ -356,7 +356,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityProjects" class="Both" displayName="$(string.ConfigureEnabledUtilityProjects)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityProjects">
+    <policy name="ConfigureEnabledUtilityWorkspaces" class="Both" displayName="$(string.ConfigureEnabledUtilityWorkspaces)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityWorkspaces">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_81_0" />
       <enabledValue>

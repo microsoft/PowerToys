@@ -54,7 +54,7 @@ namespace PowerToys
             static GpoRuleConfigured GetConfiguredQoiPreviewEnabledValue();
             static GpoRuleConfigured GetConfiguredQoiThumbnailsEnabledValue();
             static GpoRuleConfigured GetAllowedAdvancedPasteOnlineAIModelsValue();
-            static GpoRuleConfigured GetConfiguredProjectsEnabledValue();
+            static GpoRuleConfigured GetConfiguredWorkspacesEnabledValue();
         }
     }
 }
