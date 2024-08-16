@@ -57,7 +57,7 @@ properties:
           EnableQoiThumbnail: false
         PowerOcr:
           Enabled: false
-        Projects:
+        Workspaces:
           Enabled: false
         ShortcutGuide:
           Enabled: false

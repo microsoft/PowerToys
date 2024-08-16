@@ -69,10 +69,10 @@ struct LogSettings
     inline const static std::string environmentVariablesLoggerName = "environment-variables";
     inline const static std::wstring cmdNotFoundLogPath = L"Logs\\cmd-not-found-log.txt";
     inline const static std::string cmdNotFoundLoggerName = "cmd-not-found";
-    inline const static std::string projectsLauncherLoggerName = "projects-launcher";
-    inline const static std::wstring projectsLauncherLogPath = L"projects-launcher-log.txt";
-    inline const static std::string projectsSnapshotToolLoggerName = "projects-snapshot-tool";
-    inline const static std::wstring projectsSnapshotToolLogPath = L"projects-snapshot-tool-log.txt";
+    inline const static std::string workspacesLauncherLoggerName = "workspaces-launcher";
+    inline const static std::wstring workspacesLauncherLogPath = L"workspaces-launcher-log.txt";
+    inline const static std::string workspacesSnapshotToolLoggerName = "workspaces-snapshot-tool";
+    inline const static std::wstring workspacesSnapshotToolLogPath = L"workspaces-snapshot-tool-log.txt";
     inline const static int retention = 30;
     std::wstring logLevel;
     LogSettings();

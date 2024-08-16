@@ -18,7 +18,7 @@
   <?define AdvancedPasteProjectName="AdvancedPaste"?>
   <?define RegistryPreviewProjectName="RegistryPreview"?>
   <?define PeekProjectName="Peek"?>
-  <?define ProjectsProjectName="Projects"?>
+  <?define WorkspacesProjectName="Workspaces"?>
   
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?if $(var.Platform) = x64?>

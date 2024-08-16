@@ -8,7 +8,6 @@ namespace ManagedCommon
     {
         AdvancedPaste,
         AlwaysOnTop,
-        AppLayouts,
         Awake,
         ColorPicker,
         CropAndLock,
@@ -31,5 +30,6 @@ namespace ManagedCommon
         MeasureTool,
         ShortcutGuide,
         PowerOCR,
+        Workspaces,
     }
 }

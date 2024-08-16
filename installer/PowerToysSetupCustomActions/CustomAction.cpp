@@ -1255,9 +1255,10 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.MouseWithoutBordersService.exe",
         L"PowerToys.CropAndLock.exe",
         L"PowerToys.EnvironmentVariables.exe",
-        L"PowerToys.ProjectsSnapshotTool.exe",
-        L"PowerToys.ProjectsLauncher.exe",
-        L"PowerToys.ProjectsEditor.exe",
+        L"PowerToys.WorkspacesSnapshotTool.exe",
+        L"PowerToys.WorkspacesLauncher.exe",
+        L"PowerToys.WorkspacesLauncherUI.exe",
+        L"PowerToys.WorkspacesEditor.exe",
         L"PowerToys.exe",
     };
 

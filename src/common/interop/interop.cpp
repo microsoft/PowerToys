@@ -196,8 +196,8 @@ public
             return gcnew String(CommonSharedConstants::FANCY_ZONES_EDITOR_TOGGLE_EVENT);
         }
 
-        static String ^ ProjectsLaunchEditorEvent() {
-            return gcnew String(CommonSharedConstants::PROJECTS_LAUNCH_EDITOR_EVENT);
+        static String ^ WorkspacesLaunchEditorEvent() {
+            return gcnew String(CommonSharedConstants::WORKSPACES_LAUNCH_EDITOR_EVENT);
         }
 
         static String ^ ColorPickerSendSettingsTelemetryEvent() {
