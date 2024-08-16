@@ -65,10 +65,10 @@ FancyZonesWindowProcessing::ProcessabilityType FancyZonesWindowProcessing::Defin
         return ProcessabilityType::NotCurrentVirtualDesktop;
     }
 
-    // Ignore windows launched by Projects
+    // Ignore windows launched by Workspaces
     if (FancyZonesWindowProperties::RetrieveFilteringProperties(window))
     {
-		return ProcessabilityType::LaunchedByProjects;
+		return ProcessabilityType::LaunchedByWorkspaces;
 	}
 
     return ProcessabilityType::Processable;
