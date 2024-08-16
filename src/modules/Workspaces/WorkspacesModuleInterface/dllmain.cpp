@@ -19,9 +19,9 @@
 #include <common/utils/EventWaiter.h>
 
 // Non-localizable
-const std::wstring projectsLauncherPath = L"PowerToys.ProjectsLauncher.exe";
-const std::wstring projectsSnapshotToolPath = L"PowerToys.ProjectsSnapshotTool.exe";
-const std::wstring projectsEditorPath = L"PowerToys.ProjectsEditor.exe";
+const std::wstring workspacesLauncherPath = L"PowerToys.WorkspacesLauncher.exe";
+const std::wstring workspacesSnapshotToolPath = L"PowerToys.WorkspacesSnapshotTool.exe";
+const std::wstring workspacesEditorPath = L"PowerToys.WorkspacesEditor.exe";
 
 namespace
 {
@@ -51,7 +51,7 @@ BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lp
     return TRUE;
 }
 
-class ProjectsModuleInterface : public PowertoyModuleIface
+class WorkspacesModuleInterface : public PowertoyModuleIface
 {
 public:
     EventWaiter m_toggleEditorEventWaiter;
@@ -92,7 +92,7 @@ public:
 
         // Create a Settings object.
         PowerToysSettings::Settings settings(hinstance, get_name());
-        settings.set_description(GET_RESOURCE_STRING(IDS_PROJECTS_SETTINGS_DESC));
+        settings.set_description(GET_RESOURCE_STRING(IDS_WORKSPACES_SETTINGS_DESC));
         settings.set_overview_link(L"https://aka.ms/PowerToysOverview_Workspaces");
 
         return settings.serialize_to_buffer(buffer, buffer_size);
@@ -164,9 +164,9 @@ public:
     {
     }
 
-    ProjectsModuleInterface()
+    WorkspacesModuleInterface()
     {
-        app_name = GET_RESOURCE_STRING(IDS_PROJECTS_NAME);
+        app_name = GET_RESOURCE_STRING(IDS_WORKSPACES_NAME);
         app_key = L"Workspaces";
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", "Workspaces");
         init_settings();
@@ -308,7 +308,7 @@ private:
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = SEE_MASK_NOCLOSEPROCESS;
-        sei.lpFile = L"PowerToys.ProjectsEditor.exe";
+        sei.lpFile = L"PowerToys.WorkspacesEditor.exe";
         sei.nShow = SW_SHOWNORMAL;
         //sei.lpParameters = executable_args.data();
         if (ShellExecuteExW(&sei))
@@ -330,7 +330,7 @@ private:
     bool m_enabled = false;
     HANDLE m_hProcess = nullptr;
 
-    // Handle to event used to invoke Projects Editor
+    // Handle to event used to invoke Workspaces Editor
     HANDLE m_toggleEditorEvent;
 
     // Hotkey to invoke the module
@@ -342,5 +342,5 @@ private:
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
-    return new ProjectsModuleInterface();
+    return new WorkspacesModuleInterface();
 }

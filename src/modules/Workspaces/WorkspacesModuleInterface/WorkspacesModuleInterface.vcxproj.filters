@@ -37,7 +37,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="ProjectsModuleInterface.rc">
+    <ResourceCompile Include="WorkspacesModuleInterface.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

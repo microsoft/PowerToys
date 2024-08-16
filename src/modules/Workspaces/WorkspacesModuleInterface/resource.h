@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by ProjectsModuleInterface.rc
+// Used by WorkspacesModuleInterface.rc
 
 //////////////////////////////
 // Non-localizable
@@ -12,5 +12,5 @@
 // Non-localizable
 //////////////////////////////
 
-#define IDS_PROJECTS_NAME 101
-#define IDS_PROJECTS_SETTINGS_DESC 102
+#define IDS_WORKSPACES_NAME 101
+#define IDS_WORKSPACES_SETTINGS_DESC 102

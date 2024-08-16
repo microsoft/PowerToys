@@ -47,8 +47,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 STRINGTABLE
 BEGIN
-    IDS_PROJECTS_NAME L"Workspaces"
-    IDS_PROJECTS_SETTINGS_DESC "Workspaces description"
+    IDS_WORKSPACES_NAME L"Workspaces"
+    IDS_WORKSPACES_SETTINGS_DESC "Workspaces description"
 END
 
 #endif    // English (United States) resources
