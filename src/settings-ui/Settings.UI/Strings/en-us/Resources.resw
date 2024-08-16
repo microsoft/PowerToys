@@ -2721,8 +2721,8 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Time before the spotlight appears (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
-  <data name="MouseUtils_FindMyMouse_AnimationDurationMs_Disabled.Message" xml:space="preserve">
-    <value>Animations are disabled by OS. See Settings &gt; Accessibility &gt; Visual effects</value>
+  <data name="MouseUtils_FindMyMouse_AnimationDurationMs_Disabled.Title" xml:space="preserve">
+    <value>Animations are disabled in your system settings.</value>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingMinimumDistance.Header" xml:space="preserve">
     <value>Shake minimum distance</value>
@@ -3482,6 +3482,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_SelectedLanguage_All.Content" xml:space="preserve">
     <value>All available</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Bulgarian.Content" xml:space="preserve">
+    <value>Bulgarian</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Catalan.Content" xml:space="preserve">
     <value>Catalan</value>
@@ -4244,5 +4247,14 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Workspaces_ShortDescription" xml:space="preserve">
     <value>Create and launch Workspaces</value>
+  </data>
+  <data name="MouseWithoutBorders_PolicyIPAddressMappingInfo.Title" xml:space="preserve">
+    <value>Rules defined by your organization</value>
+  </data>
+  <data name="MouseWithoutBorders_PolicyIPAddressMappingInfo_TextBoxControl.Description" xml:space="preserve">
+    <value>You can not change, remove or disable these enforced rules.</value>
+  </data>
+  <data name="OpenSettings.Content" xml:space="preserve">
+    <value>Open settings</value>
   </data>
 </root>

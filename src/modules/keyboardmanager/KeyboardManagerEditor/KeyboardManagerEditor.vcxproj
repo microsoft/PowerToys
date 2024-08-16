@@ -150,6 +150,9 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
+  <PropertyGroup>
+    <CopyCppRuntimeToOutputDir>true</CopyCppRuntimeToOutputDir>
+  </PropertyGroup>
   <ItemGroup>
     <Image Include="Keyboard.ico" />
   </ItemGroup>

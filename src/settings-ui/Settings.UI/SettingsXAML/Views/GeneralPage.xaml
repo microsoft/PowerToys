@@ -110,6 +110,7 @@
                                 <StackPanel Spacing="16">
                                     <Button
                                         x:Uid="General_DownloadAndInstall"
+                                        Margin="0,0,0,16"
                                         Command="{Binding UpdateNowButtonEventHandler}"
                                         IsEnabled="{Binding IsDownloadAllowed}"
                                         Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}}" />

@@ -203,6 +203,7 @@ CMINVOKECOMMANDINFO
 CMINVOKECOMMANDINFOEX
 CMock
 CMONITORS
+cmph
 cmpgt
 cne
 CNF
@@ -223,7 +224,6 @@ comdlg
 comexp
 cominterop
 commandline
-COMMANDTITLE
 commctrl
 commdlg
 compmgmt
@@ -248,6 +248,7 @@ COREWINDOW
 cotaskmem
 COULDNOT
 countof
+cph
 CPower
 cppblog
 cppruntime
@@ -410,6 +411,7 @@ dxgi
 dxgidebug
 dxgiformat
 dxguid
+easeofaccess
 ecount
 EData
 Edid
@@ -432,8 +434,8 @@ ENDSESSION
 ENTERSIZEMOVE
 ENU
 EOAC
-epu
 EPO
+epu
 ERASEBKGND
 EREOF
 EResize
@@ -488,7 +490,6 @@ FILEFLAGSMASK
 FILELOCKSMITH
 FILELOCKSMITHCONTEXTMENU
 FILELOCKSMITHEXT
-FILELOCKSMITHLIB
 FILELOCKSMITHLIBINTEROP
 FILEMUSTEXIST
 FILEOP
@@ -504,6 +505,7 @@ findfast
 FIXEDFILEINFO
 flac
 flyouts
+FMask
 FOF
 FOFX
 FOLDERID
@@ -525,7 +527,6 @@ GCLP
 gdi
 gdiplus
 GDISCALED
-gdnbaselines
 GEmoji
 GETCLIENTAREAANIMATION
 GETDESKWALLPAPER
@@ -545,7 +546,6 @@ gpedit
 gpo
 GPOCA
 gpp
-GPT
 gpu
 GSM
 gtm
@@ -677,6 +677,7 @@ imageresizerinput
 imageresizersettings
 imagingdevices
 ime
+imperialounce
 inetcpl
 Infobar
 INFOEXAMPLE
@@ -705,7 +706,6 @@ INSTALLSTARTMENUSHORTCUT
 INSTALLSTATE
 Inste
 Intelli
-interactable
 Interlop
 INTRESOURCE
 INVALIDARG
@@ -734,7 +734,6 @@ IWeb
 IWIC
 iwr
 IYUV
-JArray
 jfi
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
@@ -764,8 +763,8 @@ keyremaps
 keyvault
 KILLFOCUS
 killrunner
+kmph
 Knownfolders
-ksh
 KSPROPERTY
 Kybd
 languagesjson
@@ -801,7 +800,6 @@ LOADFROMFILE
 LOBYTE
 LOCALDISPLAY
 LOCALPACKAGE
-localport
 LOCALSYSTEM
 LOCATIONCHANGE
 LOGFONT
@@ -815,6 +813,7 @@ LOWORD
 lparam
 LPBITMAPINFOHEADER
 LPCITEMIDLIST
+lpcmi
 LPCMINVOKECOMMANDINFO
 LPCREATESTRUCT
 LPCRECT
@@ -839,6 +838,7 @@ lptpm
 LPTR
 LPTSTR
 LPW
+lpwcx
 lpwndpl
 LReader
 LRESULT
@@ -857,10 +857,10 @@ lwin
 LZero
 majortype
 makecab
-MAKELANGID
 MAKEINTRESOURCE
 MAKEINTRESOURCEA
 MAKEINTRESOURCEW
+MAKELANGID
 makepri
 manifestdependency
 MAPPEDTOSAMEKEY
@@ -880,7 +880,6 @@ mdwn
 MEDIASUBTYPE
 mediatype
 mef
-MENUBREAK
 MENUITEMINFO
 MENUITEMINFOW
 MERGECOPY
@@ -1043,6 +1042,7 @@ NOSEARCH
 NOSENDCHANGING
 NOSIZE
 NOTIFICATIONSDLL
+NOTIFYICONDATA
 NOTIFYICONDATAW
 NOTIMPL
 notlike
@@ -1079,7 +1079,6 @@ oldtheme
 oleaut
 OLECHAR
 onebranch
-OOBEPT
 opencode
 OPENFILENAME
 opensource
@@ -1103,7 +1102,6 @@ OVERLAPPEDWINDOW
 overlaywindow
 Oversampling
 OWNDC
-OWNERDRAW
 Packagemanager
 PACL
 PAINTSTRUCT
@@ -1117,7 +1115,6 @@ PARTIALCONFIRMATIONDIALOGTITLE
 PATCOPY
 pathcch
 PATHMUSTEXIST
-Pathto
 PATINVERT
 PATPAINT
 PAUDIO
@@ -1166,6 +1163,7 @@ ploca
 plocm
 pluginsmodel
 PMSIHANDLE
+pnid
 Pnp
 Popups
 POPUPWINDOW
@@ -1260,8 +1258,6 @@ QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
 QUNS
-qwertyuiopasdfghjklzxcvbnm
-qwrtyuiopsghjklzxvnm
 raf
 RAII
 RAlt
@@ -1278,7 +1274,6 @@ RECTDESTINATION
 rectp
 RECTSOURCE
 recyclebin
-redirectedfrom
 Redist
 redistributable
 reencode
@@ -1360,8 +1355,6 @@ runas
 rundll
 rungameid
 RUNLEVEL
-runsettings
-runspace
 runtimeclass
 runtimeobject
 runtimepack
@@ -1382,6 +1375,7 @@ SCID
 Scip
 scipbe
 Scode
+screensaver
 screenshots
 scrollviewer
 sddl
@@ -1597,7 +1591,6 @@ TDevice
 telem
 telephon
 templatenamespace
-testhost
 testprocess
 TEXCOORD
 TEXTEXTRACTOR
@@ -1622,7 +1615,6 @@ tlb
 tlbimp
 TMPVAR
 TNP
-toggleswitch
 Toolhelp
 toolkitconverters
 Toolset
@@ -1652,9 +1644,11 @@ TYPESHORTCUT
 UAC
 UAL
 uap
+UCallback
 udit
 uefi
 uesc
+UFlags
 UHash
 UIA
 UIEx
@@ -1692,8 +1686,10 @@ Userenv
 USESHOWWINDOW
 USESIZE
 USESTDHANDLES
+usounce
 USRDLL
 UType
+uuidv
 uwp
 uxtheme
 vabdq
@@ -1729,6 +1725,7 @@ vih
 VIRTUALDESK
 visiblecolorformats
 Visibletrue
+visualeffects
 VKey
 vmovl
 vorrq

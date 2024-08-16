@@ -7,11 +7,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using interop;
 using Microsoft.PowerToys.Run.Plugin.PowerToys.Components;
 using Microsoft.PowerToys.Run.Plugin.PowerToys.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.GPOWrapper;
+using PowerToys.Interop;
 using Wox.Plugin.Logger;
 
 namespace Microsoft.PowerToys.Run.Plugin.PowerToys

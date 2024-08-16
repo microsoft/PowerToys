@@ -96,7 +96,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
             return Directory.GetParent(settingsPath).FullName;
         }
 
-        private static readonly interop.LayoutMapManaged LayoutMap = new interop.LayoutMapManaged();
+        private static readonly global::PowerToys.Interop.LayoutMapManaged LayoutMap = new global::PowerToys.Interop.LayoutMapManaged();
 
         public static string GetKeyName(uint key)
         {
@@ -110,7 +110,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
 
         public static string GetProductVersion()
         {
-            return interop.CommonManaged.GetProductVersion();
+            return global::PowerToys.Interop.CommonManaged.GetProductVersion();
         }
 
         public static int CompareVersions(string version1, string version2)
@@ -148,6 +148,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
             }
         }
 
-        public const uint VirtualKeyWindows = interop.Constants.VK_WIN_BOTH;
+        public static readonly uint VirtualKeyWindows = global::PowerToys.Interop.Constants.VK_WIN_BOTH;
     }
 }
