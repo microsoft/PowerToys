@@ -138,6 +138,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="RegistryUtils.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
