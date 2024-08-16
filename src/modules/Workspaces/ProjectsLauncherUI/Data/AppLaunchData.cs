@@ -22,7 +22,7 @@ namespace ProjectsLauncherUI.Data
         {
             get
             {
-                return FolderUtils.DataFolder() + "\\launch-applayout.json";
+                return FolderUtils.DataFolder() + "\\launch-workspaces.json";
             }
         }
 

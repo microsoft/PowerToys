@@ -22,7 +22,7 @@ namespace ProjectsEditor.Utils
         // Note: the same path should be used in SnapshotTool and Launcher
         public static string DataFolder()
         {
-            return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\Microsoft\\PowerToys\\App Layouts";
+            return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\Microsoft\\PowerToys\\Workspaces";
         }
     }
 }

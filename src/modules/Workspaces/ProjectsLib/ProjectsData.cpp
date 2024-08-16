@@ -5,27 +5,27 @@
 
 namespace NonLocalizable
 {
-    const inline wchar_t ModuleKey[] = L"App Layouts";
+    const inline wchar_t ModuleKey[] = L"Workspaces";
 }
 
 namespace ProjectsData
 {
-    std::wstring ProjectsFile()
+    std::wstring WorkspacesFile()
     {
         std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
-        return settingsFolderPath + L"\\app-layouts.json";
+        return settingsFolderPath + L"\\workspaces.json";
     }
 
-    std::wstring TempProjectsFile()
+    std::wstring TempWorkspacesFile()
     {
         std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
-        return settingsFolderPath + L"\\temp-applayout.json";
+        return settingsFolderPath + L"\\temp-workspaces.json";
     }
 
-    std::wstring LaunchProjectsFile()
+    std::wstring LaunchWorkspacesFile()
     {
         std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
-        return settingsFolderPath + L"\\launch-applayout.json";
+        return settingsFolderPath + L"\\launch-workspaces.json";
     }
     
     RECT Project::Application::Position::toRect() const noexcept

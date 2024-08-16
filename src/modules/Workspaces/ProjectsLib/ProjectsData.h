@@ -4,9 +4,9 @@
 
 namespace ProjectsData
 {
-    std::wstring ProjectsFile();
-    std::wstring TempProjectsFile();
-    std::wstring LaunchProjectsFile();
+    std::wstring WorkspacesFile();
+    std::wstring TempWorkspacesFile();
+    std::wstring LaunchWorkspacesFile();
 
     struct Project
     {

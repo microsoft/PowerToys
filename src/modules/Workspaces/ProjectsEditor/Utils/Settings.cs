@@ -8,14 +8,13 @@ namespace ProjectsEditor.Utils
 {
     public class Settings
     {
-        private const string ProjectsModuleName = "App Layouts";
+        private const string ProjectsModuleName = "Workspaces";
         private static SettingsUtils _settingsUtils = new SettingsUtils();
 
         public static ProjectsSettings ReadSettings()
         {
             if (!_settingsUtils.SettingsExists(ProjectsModuleName))
             {
-                ////Logger.LogInfo("App Layouts settings.json was missing, creating a new one");
                 var defaultProjectsSettings = new ProjectsSettings();
                 defaultProjectsSettings.Save(_settingsUtils);
                 return defaultProjectsSettings;

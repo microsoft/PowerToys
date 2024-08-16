@@ -46,7 +46,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
         return -1;
     }
 
-    std::wstring fileName = ProjectsData::ProjectsFile();
+    std::wstring fileName = WorkspacesData::WorkspacesFile();
     std::string cmdLineStr(cmdLine);
     if (!cmdLineStr.empty())
     {
@@ -75,8 +75,8 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
         return monitorNumber;
     });
 
-    ProjectsJsonUtils::Write(ProjectsData::TempProjectsFile(), project);
-    Logger::trace(L"Project {}:{} created", project.name, project.id);
+    ProjectsJsonUtils::Write(WorkspacesData::TempWorkspacesFile(), project);
+    Logger::trace(L"WorkspacesProject {}:{} created", project.name, project.id);
 
     CoUninitialize();
     return 0;
