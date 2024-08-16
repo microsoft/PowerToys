@@ -62,20 +62,20 @@
             Margin="0,20,40,20"
             HorizontalAlignment="Right"
             VerticalAlignment="Bottom"
-            AutomationProperties.Name="{x:Static props:Resources.CreateProject}"
+            AutomationProperties.Name="{x:Static props:Resources.CreateWorkspace}"
             Click="NewProjectButton_Click"
             Style="{StaticResource AccentButtonStyle}"
             TabIndex="3">
             <StackPanel Margin="12, 8, 12, 8" Orientation="Horizontal">
                 <TextBlock
-                    AutomationProperties.Name="{x:Static props:Resources.CreateProject}"
+                    AutomationProperties.Name="{x:Static props:Resources.CreateWorkspace}"
                     FontFamily="{DynamicResource SymbolThemeFontFamily}"
                     Foreground="{DynamicResource AccentButtonForeground}"
                     Text="&#xE710;" />
                 <TextBlock
                     Margin="12,-3,0,0"
                     Foreground="{DynamicResource AccentButtonForeground}"
-                    Text="{x:Static props:Resources.CreateProject}" />
+                    Text="{x:Static props:Resources.CreateWorkspace}" />
             </StackPanel>
             <Button.Effect>
                 <DropShadowEffect

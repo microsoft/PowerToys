@@ -32,7 +32,7 @@ namespace WorkspacesEditor
             _mainViewModel.SwitchToMainView();
             Project projectToSave = this.DataContext as Project;
             projectToSave.CloseExpanders();
-            if (projectToSave.EditorWindowTitle == Properties.Resources.CreateProject)
+            if (projectToSave.EditorWindowTitle == Properties.Resources.CreateWorkspace)
             {
                 _mainViewModel.AddNewProject(projectToSave);
             }

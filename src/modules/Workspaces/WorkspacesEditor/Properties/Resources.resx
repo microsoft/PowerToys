@@ -139,7 +139,7 @@
     <value>Are you sure?</value>
   </data>
   <data name="Are_You_Sure_Description" xml:space="preserve">
-    <value>Are you sure you want to delete this App Layout?</value>
+    <value>Are you sure you want to delete this Workspace?</value>
   </data>
   <data name="Args" xml:space="preserve">
     <value>Args</value>
@@ -154,8 +154,8 @@
   <data name="Created" xml:space="preserve">
     <value>Created</value>
   </data>
-  <data name="CreateProject" xml:space="preserve">
-    <value>Create layout</value>
+  <data name="CreateWorkspace" xml:space="preserve">
+    <value>Create Workspace</value>
   </data>
   <data name="CreateShortcut" xml:space="preserve">
     <value>Create Desktop Shortcut</value>
@@ -163,8 +163,8 @@
   <data name="DaysAgo" xml:space="preserve">
     <value>days ago</value>
   </data>
-  <data name="DefaultProjectNamePrefix" xml:space="preserve">
-    <value>App Layout</value>
+  <data name="DefaultWorkspaceNamePrefix" xml:space="preserve">
+    <value>Workspace</value>
   </data>
   <data name="Delete" xml:space="preserve">
     <value>Remove</value>
@@ -172,20 +172,20 @@
   <data name="DeleteSelected" xml:space="preserve">
     <value>Remove Selected Apps</value>
   </data>
-  <data name="Delete_Project_Dialog_Announce" xml:space="preserve">
-    <value>Delete App Layout dialog.</value>
+  <data name="Delete_Workspace_Dialog_Announce" xml:space="preserve">
+    <value>Delete Workspace dialog.</value>
   </data>
   <data name="Edit" xml:space="preserve">
     <value>Edit</value>
   </data>
-  <data name="EditProject" xml:space="preserve">
-    <value>Edit App Layout</value>
+  <data name="EditWorkspace" xml:space="preserve">
+    <value>Edit Workspace</value>
   </data>
   <data name="Edit_Project_Open_Announce" xml:space="preserve">
     <value>opened</value>
   </data>
   <data name="Error_Parsing_Message" xml:space="preserve">
-    <value>Error parsing App Layout data.</value>
+    <value>Error parsing Workspaces data.</value>
   </data>
   <data name="Height" xml:space="preserve">
     <value>Height</value>
@@ -239,8 +239,8 @@
   <data name="Never" xml:space="preserve">
     <value>never</value>
   </data>
-  <data name="New_project" xml:space="preserve">
-    <value>New App Layout</value>
+  <data name="New_Workspace" xml:space="preserve">
+    <value>New Workspace</value>
   </data>
   <data name="NoWorkspacesMatch" xml:space="preserve">
     <value>No Workspaces match the current search.</value>
@@ -267,10 +267,10 @@
     <value>one year ago</value>
   </data>
   <data name="PinToTaskbar" xml:space="preserve">
-    <value>Pin App Layout to Taskbar</value>
+    <value>Pin Workspaces to Taskbar</value>
   </data>
-  <data name="ProjectName" xml:space="preserve">
-    <value>App Layout name</value>
+  <data name="WorkspaceName" xml:space="preserve">
+    <value>Workspace name</value>
   </data>
   <data name="Workspaces" xml:space="preserve">
     <value>Workspaces</value>
@@ -281,8 +281,8 @@
   <data name="Revert" xml:space="preserve">
     <value>Revert</value>
   </data>
-  <data name="Save_project" xml:space="preserve">
-    <value>Save App Layout</value>
+  <data name="Save_Workspace" xml:space="preserve">
+    <value>Save Workspace</value>
   </data>
   <data name="Search" xml:space="preserve">
     <value>Search</value>
@@ -299,8 +299,8 @@
   <data name="SelectAllMinimizedApps" xml:space="preserve">
     <value>Select All Minimized Apps</value>
   </data>
-  <data name="SelectedAllInProject" xml:space="preserve">
-    <value>Select All Apps in App Layout</value>
+  <data name="SelectedAllInWorkspace" xml:space="preserve">
+    <value>Select All Apps in Workspace</value>
   </data>
   <data name="SnapshotDescription" xml:space="preserve">
     <value>Edit your layout and click "Capture" when finished.</value>

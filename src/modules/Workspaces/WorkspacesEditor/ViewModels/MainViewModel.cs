@@ -293,7 +293,7 @@ namespace WorkspacesEditor.ViewModels
             if (isNewlyCreated)
             {
                 // generate a default name for the new project
-                string defaultNamePrefix = Properties.Resources.DefaultProjectNamePrefix;
+                string defaultNamePrefix = Properties.Resources.DefaultWorkspaceNamePrefix;
                 int nextProjectIndex = 0;
                 foreach (var proj in Workspaces)
                 {
@@ -316,7 +316,7 @@ namespace WorkspacesEditor.ViewModels
                 selectedProject.Name = defaultNamePrefix + " " + (nextProjectIndex + 1).ToString(CultureInfo.CurrentCulture);
             }
 
-            selectedProject.EditorWindowTitle = isNewlyCreated ? Properties.Resources.CreateProject : Properties.Resources.EditProject;
+            selectedProject.EditorWindowTitle = isNewlyCreated ? Properties.Resources.CreateWorkspace : Properties.Resources.EditWorkspace;
             selectedProject.Initialize(App.ThemeManager.GetCurrentTheme());
 
             CheckShortcutPresence(selectedProject);
@@ -369,7 +369,7 @@ namespace WorkspacesEditor.ViewModels
         {
             if (!Workspaces.Where(x => x.Id == projectId).Any())
             {
-                Logger.LogWarning($"App Layout to launch not found. Id: {projectId}");
+                Logger.LogWarning($"Workspace to launch not found. Id: {projectId}");
                 return;
             }
 
@@ -386,7 +386,7 @@ namespace WorkspacesEditor.ViewModels
 
             if (exitAfterLaunch)
             {
-                Logger.LogInfo($"Launched the App Layout {project.Name}. Exiting.");
+                Logger.LogInfo($"Launched the Workspace {project.Name}. Exiting.");
                 Environment.Exit(0);
             }
         }

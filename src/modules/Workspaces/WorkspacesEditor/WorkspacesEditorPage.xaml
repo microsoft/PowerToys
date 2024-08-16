@@ -8,7 +8,7 @@
         xmlns:models="clr-namespace:WorkspacesEditor.Models"
         xmlns:controls="clr-namespace:WorkspacesEditor.Controls"
         mc:Ignorable="d"
-        Title="App Layout Editor"
+        Title="Workspaces Editor"
         Background="{DynamicResource PrimaryBackgroundBrush}">
     <Page.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
@@ -308,7 +308,7 @@
                 VerticalAlignment="Center"/>
         </StackPanel>
         <StackPanel Grid.Row="1" Orientation="Vertical">
-            <TextBlock Text="{x:Static props:Resources.ProjectName}" FontSize="14" FontWeight="Normal" Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+            <TextBlock Text="{x:Static props:Resources.WorkspaceName}" FontSize="14" FontWeight="Normal" Foreground="{DynamicResource PrimaryForegroundBrush}"/>
             <TextBox
                 x:Name="EditNameTextBox"
                 Width="320"
@@ -419,8 +419,8 @@
                     Padding="24,0,24,0"
                     Height="36"
                     IsEnabled="{Binding CanBeSaved, UpdateSourceTrigger=PropertyChanged}"
-                    Content="{x:Static props:Resources.Save_project}"
-                    AutomationProperties.Name="{x:Static props:Resources.Save_project}"
+                    Content="{x:Static props:Resources.Save_Workspace}"
+                    AutomationProperties.Name="{x:Static props:Resources.Save_Workspace}"
                     Click="SaveButtonClicked"
                     Style="{StaticResource AccentButtonStyle}">
                 </Button>

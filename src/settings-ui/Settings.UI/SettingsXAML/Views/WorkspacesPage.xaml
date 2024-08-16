@@ -46,7 +46,7 @@
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_Workspaces" Link="https://aka.ms/PowerToysOverview_AppLayouts" />
+            <controls:PageLink x:Uid="LearnMore_Workspaces" Link="https://aka.ms/PowerToysOverview_Workspaces" />
         </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
 </Page>

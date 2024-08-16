@@ -124,7 +124,7 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Are you sure you want to delete this App Layout?.
+        ///   Looks up a localized string similar to Are you sure you want to delete this Workspace?.
         /// </summary>
         public static string Are_You_Sure_Description {
             get {
@@ -169,20 +169,20 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Create layout.
-        /// </summary>
-        public static string CreateProject {
-            get {
-                return ResourceManager.GetString("CreateProject", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Create Desktop Shortcut.
         /// </summary>
         public static string CreateShortcut {
             get {
                 return ResourceManager.GetString("CreateShortcut", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create Workspace.
+        /// </summary>
+        public static string CreateWorkspace {
+            get {
+                return ResourceManager.GetString("CreateWorkspace", resourceCulture);
             }
         }
         
@@ -196,11 +196,11 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to App Layout.
+        ///   Looks up a localized string similar to Workspace.
         /// </summary>
-        public static string DefaultProjectNamePrefix {
+        public static string DefaultWorkspaceNamePrefix {
             get {
-                return ResourceManager.GetString("DefaultProjectNamePrefix", resourceCulture);
+                return ResourceManager.GetString("DefaultWorkspaceNamePrefix", resourceCulture);
             }
         }
         
@@ -214,11 +214,11 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Delete App Layout dialog..
+        ///   Looks up a localized string similar to Delete Workspace dialog..
         /// </summary>
-        public static string Delete_Project_Dialog_Announce {
+        public static string Delete_Workspace_Dialog_Announce {
             get {
-                return ResourceManager.GetString("Delete_Project_Dialog_Announce", resourceCulture);
+                return ResourceManager.GetString("Delete_Workspace_Dialog_Announce", resourceCulture);
             }
         }
         
@@ -250,16 +250,16 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Edit App Layout.
+        ///   Looks up a localized string similar to Edit Workspace.
         /// </summary>
-        public static string EditProject {
+        public static string EditWorkspace {
             get {
-                return ResourceManager.GetString("EditProject", resourceCulture);
+                return ResourceManager.GetString("EditWorkspace", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error parsing App Layout data..
+        ///   Looks up a localized string similar to Error parsing Workspaces data..
         /// </summary>
         public static string Error_Parsing_Message {
             get {
@@ -421,11 +421,11 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to New App Layout.
+        ///   Looks up a localized string similar to New Workspace.
         /// </summary>
-        public static string New_project {
+        public static string New_Workspace {
             get {
-                return ResourceManager.GetString("New_project", resourceCulture);
+                return ResourceManager.GetString("New_Workspace", resourceCulture);
             }
         }
         
@@ -439,20 +439,20 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No Workspaces match the current search..
-        /// </summary>
-        public static string NoWorkspacesMatch {
-            get {
-                return ResourceManager.GetString("NoWorkspacesMatch", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The application cannot be found.
         /// </summary>
         public static string NotFoundTooltip {
             get {
                 return ResourceManager.GetString("NotFoundTooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No Workspaces match the current search..
+        /// </summary>
+        public static string NoWorkspacesMatch {
+            get {
+                return ResourceManager.GetString("NoWorkspacesMatch", resourceCulture);
             }
         }
         
@@ -502,29 +502,11 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Pin App Layout to Taskbar.
+        ///   Looks up a localized string similar to Pin Workspaces to Taskbar.
         /// </summary>
         public static string PinToTaskbar {
             get {
                 return ResourceManager.GetString("PinToTaskbar", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to App Layout name.
-        /// </summary>
-        public static string ProjectName {
-            get {
-                return ResourceManager.GetString("ProjectName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Workspaces.
-        /// </summary>
-        public static string Workspaces {
-            get {
-                return ResourceManager.GetString("Workspaces", resourceCulture);
             }
         }
         
@@ -547,11 +529,11 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Save App Layout.
+        ///   Looks up a localized string similar to Save Workspace.
         /// </summary>
-        public static string Save_project {
+        public static string Save_Workspace {
             get {
-                return ResourceManager.GetString("Save_project", resourceCulture);
+                return ResourceManager.GetString("Save_Workspace", resourceCulture);
             }
         }
         
@@ -601,11 +583,11 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Select All Apps in App Layout.
+        ///   Looks up a localized string similar to Select All Apps in Workspace.
         /// </summary>
-        public static string SelectedAllInProject {
+        public static string SelectedAllInWorkspace {
             get {
-                return ResourceManager.GetString("SelectedAllInProject", resourceCulture);
+                return ResourceManager.GetString("SelectedAllInWorkspace", resourceCulture);
             }
         }
         
@@ -660,6 +642,24 @@ namespace WorkspacesEditor.Properties {
         public static string Width {
             get {
                 return ResourceManager.GetString("Width", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Workspace name.
+        /// </summary>
+        public static string WorkspaceName {
+            get {
+                return ResourceManager.GetString("WorkspaceName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Workspaces.
+        /// </summary>
+        public static string Workspaces {
+            get {
+                return ResourceManager.GetString("Workspaces", resourceCulture);
             }
         }
         
