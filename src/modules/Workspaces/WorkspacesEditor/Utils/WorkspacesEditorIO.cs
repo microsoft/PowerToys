@@ -31,6 +31,11 @@ namespace WorkspacesEditor.Utils
                 }
 
                 WorkspacesData.WorkspacesListWrapper workspaces = parser.Read(parser.File);
+                if (workspaces.Workspaces == null)
+                {
+                    return new ParsingResult(true);
+                }
+
                 if (!SetWorkspaces(mainViewModel, workspaces))
                 {
                     Logger.LogWarning($"Workspaces storage file content could not be set. Reason: {Properties.Resources.Error_Parsing_Message}");
