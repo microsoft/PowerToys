@@ -48,6 +48,11 @@ namespace ProjectsData
                 int left;
                 int width;
                 int height;
+
+                inline bool operator==(const MonitorRect& other) const noexcept
+                {
+                    return top == other.top && left == other.left && width == other.width && height == other.height;
+                }
             };
 
             HMONITOR monitor{};
