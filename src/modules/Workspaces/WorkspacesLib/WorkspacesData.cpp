@@ -363,7 +363,7 @@ namespace WorkspacesData
     {
         namespace NonLocalizable
         {
-            const static wchar_t* ProjectsID = L"projects";
+            const static wchar_t* WorkspacesID = L"workspaces";
         }
 
         json::JsonObject ToJson(const std::vector<WorkspacesProject>& data)
@@ -376,7 +376,7 @@ namespace WorkspacesData
                 projectsArray.Append(WorkspacesProjectJSON::ToJson(project));
             }
 
-            json.SetNamedValue(NonLocalizable::ProjectsID, projectsArray);
+            json.SetNamedValue(NonLocalizable::WorkspacesID, projectsArray);
             return json;
         }
 
@@ -386,7 +386,7 @@ namespace WorkspacesData
 
             try
             {
-                auto array = json.GetNamedArray(NonLocalizable::ProjectsID);
+                auto array = json.GetNamedArray(NonLocalizable::WorkspacesID);
                 for (uint32_t i = 0; i < array.Size(); ++i)
                 {
                     auto obj = WorkspacesProjectJSON::FromJson(array.GetObjectAt(i));
