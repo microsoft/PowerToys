@@ -5,9 +5,9 @@
 //////////////////////////////
 // Non-localizable
 
-#define FILE_DESCRIPTION "PowerToys Projects Module"
-#define INTERNAL_NAME "PowerToys.ProjectsModuleInterface"
-#define ORIGINAL_FILENAME "PowerToys.ProjectsModuleInterface.dll"
+#define FILE_DESCRIPTION "PowerToys Workspaces Module"
+#define INTERNAL_NAME "PowerToys.WorkspacesModuleInterface"
+#define ORIGINAL_FILENAME "PowerToys.WorkspacesModuleInterface.dll"
 
 // Non-localizable
 //////////////////////////////

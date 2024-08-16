@@ -5,8 +5,8 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{45285DF2-9742-4ECA-9AC9-58951FC26489}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>projects</RootNamespace>
-    <ProjectName>ProjectsModuleInterface</ProjectName>
+    <RootNamespace>workspaces</RootNamespace>
+    <ProjectName>WorkspacesModuleInterface</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -24,7 +24,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
-    <TargetName>PowerToys.ProjectsModuleInterface</TargetName>
+    <TargetName>PowerToys.WorkspacesModuleInterface</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
