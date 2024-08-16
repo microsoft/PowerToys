@@ -9,7 +9,6 @@
 
 #include <projects-common/AppUtils.h>
 #include <projects-common/MonitorEnumerator.h>
-#include <projects-common/MonitorUtils.h>
 #include <projects-common/WindowEnumerator.h>
 #include <projects-common/WindowFilter.h>
 
@@ -263,7 +262,7 @@ namespace
     }
 }
 
-bool LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated)
+bool LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated, ErrorList& launchErrors)
 {
     SHELLEXECUTEINFO sei = { 0 };
     sei.cbSize = sizeof(SHELLEXECUTEINFO);
@@ -277,14 +276,16 @@ bool LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs,
 
     if (!ShellExecuteEx(&sei))
     {
-        Logger::error(L"Failed to launch process. {}", get_last_error_or_default(GetLastError()));
+        auto error = GetLastError();
+        Logger::error(L"Failed to launch process. {}", get_last_error_or_default(error));
+        launchErrors.push_back({ std::filesystem::path(appPath).filename(), get_last_error_or_default(error) });
         return false;
     }
 
     return true;
 }
 
-bool LaunchPackagedApp(const std::wstring& packageFullName)
+bool LaunchPackagedApp(const std::wstring& packageFullName, ErrorList& launchErrors)
 {
     try
     {
@@ -305,6 +306,7 @@ bool LaunchPackagedApp(const std::wstring& packageFullName)
                 else
                 {
                     Logger::error(L"No app entries found for the package.");
+                    launchErrors.push_back({ packageFullName, L"No app entries found for the package." });
                 }
             }
         }
@@ -312,18 +314,19 @@ bool LaunchPackagedApp(const std::wstring& packageFullName)
     catch (const hresult_error& ex)
     {
         Logger::error(L"Packaged app launching error: {}", ex.message());
+        launchErrors.push_back({ packageFullName, ex.message().c_str() });
     }
 
     return false;
 }
 
-bool Launch(const ProjectsData::Project::Application& app)
+bool Launch(const ProjectsData::Project::Application& app, ErrorList& launchErrors)
 {
     bool launched{ false };
     if (!app.packageFullName.empty() && app.commandLineArgs.empty() && !app.isElevated)
     {
         Logger::trace(L"Launching packaged app {}", app.name);
-        launched = LaunchPackagedApp(app.packageFullName);
+        launched = LaunchPackagedApp(app.packageFullName, launchErrors);
     }
 
     if (!launched && !app.packageFullName.empty())
@@ -336,7 +339,7 @@ bool Launch(const ProjectsData::Project::Application& app)
             std::wstring uriProtocolName = names[0];
             std::wstring command = std::wstring(uriProtocolName + (app.commandLineArgs.starts_with(L":") ? L"" : L":") + app.commandLineArgs);
 
-            launched = LaunchApp(command, L"", app.isElevated);
+            launched = LaunchApp(command, L"", app.isElevated, launchErrors);
         }
         else
         {
@@ -352,10 +355,11 @@ bool Launch(const ProjectsData::Project::Application& app)
         if (dwAttrib == INVALID_FILE_ATTRIBUTES)
         {
             Logger::error(L"File not found at {}", app.path);
+            launchErrors.push_back({ std::filesystem::path(app.path).filename(), L"File not found" });
             return false;
         }
 
-        launched = LaunchApp(app.path, app.commandLineArgs, app.isElevated);
+        launched = LaunchApp(app.path, app.commandLineArgs, app.isElevated, launchErrors);
     }
 
     Logger::trace(L"{} {} at {}", app.name, (launched ? L"launched" : L"not launched"), app.path);
@@ -380,38 +384,31 @@ void Launch_UI()
     }
 }
 
-ProjectsData::Project Launch(ProjectsData::Project project)
+bool Launch(ProjectsData::Project& project, const std::vector<ProjectsData::Project::Monitor>& monitors, ErrorList& launchErrors)
 {
+    bool launchedSuccessfully{ true };
+
     std::filesystem::remove(launchFileName);
     Launch_UI();
 
     // Get the set of windows before launching the app
     std::vector<HWND> windowsBefore = WindowEnumerator::Enumerate(WindowFilter::Filter);
     auto installedApps = Utils::Apps::GetAppsList();
-    auto monitors = MonitorUtils::IdentifyMonitors();
     auto launchedApps = Prepare(project.apps, installedApps);
 
     UpdateLaunchStatus(launchedApps);
-
-    // If the moveExistingWindows setting is applied
-    // move existing windows if any to the correct position
-    // feature is canceled
-    // if (project.moveExistingWindows)
-    // {
-    //    AddOpenedWindows(launchedApps, windowsBefore, installedApps);
-    //    UpdateLaunchStatus(launchedApps);
-    // }
 
     // Launch apps
     for (auto& app : launchedApps)
     {
         if (!app.window)
         {
-            if (!Launch(app.application))
+            if (!Launch(app.application, launchErrors))
             {
                 Logger::error(L"Failed to launch {}", app.application.name);
                 app.state = L"failed";
                 UpdateLaunchStatus(launchedApps);
+                launchedSuccessfully = false;
             }
         }
     }
@@ -455,6 +452,7 @@ ProjectsData::Project Launch(ProjectsData::Project project)
         if (window == nullptr)
         {
             Logger::warn(L"{} window not found.", app.name);
+            launchedSuccessfully = false;
             continue;
         }
 
@@ -500,8 +498,9 @@ ProjectsData::Project Launch(ProjectsData::Project project)
         else
         {
             Logger::error(L"Failed placing {}", app.name);
+            launchedSuccessfully = false;
         }
     }
 
-    return project;
+    return launchedSuccessfully;
 }

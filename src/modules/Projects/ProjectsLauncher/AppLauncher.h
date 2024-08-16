@@ -2,5 +2,6 @@
 
 #include <ProjectsLib/ProjectsData.h>
 
-bool Launch(const ProjectsData::Project::Application& app);
-ProjectsData::Project Launch(ProjectsData::Project project);
+using ErrorList = std::vector<std::pair<std::wstring, std::wstring>>;
+
+bool Launch(ProjectsData::Project& project, const std::vector<ProjectsData::Project::Monitor>& monitors, ErrorList& launchErrors);

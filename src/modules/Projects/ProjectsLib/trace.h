@@ -2,6 +2,9 @@
 
 #include <modules/interface/powertoy_module_interface.h>
 
+#include <ProjectsLib/ProjectsData.h>
+#include <projects-common/InvokePoint.h>
+
 class Trace
 {
 public:
@@ -12,9 +15,11 @@ public:
     {
     public:
         static void Enable(bool enabled) noexcept;
-        static void SettingsTelemetry(const PowertoyModuleIface::HotkeyEx& hotkey) noexcept;
-        static void NumberOfProjects(size_t numberOfProjects) noexcept;
-        static void MonitorConfiguration(size_t numberOfMonitors) noexcept;
-        static void CLIUsage(bool usingCLI) noexcept;
+        static void Launch(bool success,
+                           const ProjectsData::Project& project,
+                           InvokePoint invokePoint,
+                           double launchTimeSeconds,
+                           bool setupIsDifferent,
+                           const std::vector<std::pair<std::wstring, std::wstring>> errors) noexcept;
     };
 };

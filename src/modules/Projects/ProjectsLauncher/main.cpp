@@ -1,12 +1,15 @@
-#include "pch.h"
+﻿#include "pch.h"
 
 #include <ProjectsLib/ProjectsData.h>
+#include <ProjectsLib/trace.h>
 
 #include <AppLauncher.h>
 #include <utils.h>
 
 #include <Generated Files/resource.h>
+
 #include <projects-common/InvokePoint.h>
+#include <projects-common/MonitorUtils.h>
 
 #include <common/utils/elevation.h>
 #include <common/utils/gpo.h>
@@ -145,10 +148,12 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 
     Logger::trace(L"Invoke point: {}", invokePoint);
 
-    Logger::info(L"Launch App Layout {} : {}", projectToLaunch.name, projectToLaunch.id);
-
     // launch apps
-    projectToLaunch = Launch(projectToLaunch);
+    Logger::info(L"Launch App Layout {} : {}", projectToLaunch.name, projectToLaunch.id);
+    auto monitors = MonitorUtils::IdentifyMonitors();
+    std::vector<std::pair<std::wstring, std::wstring>> launchErrors{};
+    auto start = std::chrono::high_resolution_clock::now();
+    bool launchedSuccessfully = Launch(projectToLaunch, monitors, launchErrors);
     
     // update last-launched time
     time_t launchedTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
@@ -162,6 +167,27 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         }
     }
     json::to_file(projectsFileName, ProjectsData::ProjectsListJSON::ToJson(projects));
+
+    // telemetry
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duration = end - start;
+    Logger::trace(L"Launching time: {} s", duration.count());
+
+    bool differentSetup = monitors.size() != projectToLaunch.monitors.size();
+    if (!differentSetup)
+    {
+        for (const auto& monitor : projectToLaunch.monitors)
+        {
+            auto setup = std::find_if(monitors.begin(), monitors.end(), [&](const ProjectsData::Project::Monitor& val) { return val.dpi == monitor.dpi && val.monitorRectDpiAware == monitor.monitorRectDpiAware; });
+            if (setup == monitors.end())
+            {
+                differentSetup = true;
+                break;
+            }
+        }
+    }
+
+    Trace::Projects::Launch(launchedSuccessfully, projectToLaunch, invokePoint, duration.count(), differentSetup, launchErrors);
 
     CoUninitialize();
     return 0;

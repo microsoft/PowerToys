@@ -27,55 +27,69 @@ void Trace::Projects::Enable(bool enabled) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "Projects_EnableProjects",
+        "Workspaces_Enable",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingBoolean(enabled, "Enabled"));
 }
 
-void Trace::Projects::SettingsTelemetry(const PowertoyModuleIface::HotkeyEx& hotkey) noexcept
+void Trace::Projects::Launch(bool success, 
+    const ProjectsData::Project& project, 
+    InvokePoint invokePoint, 
+    double launchTimeSeconds, 
+    bool setupIsDifferent, 
+    const std::vector<std::pair<std::wstring, std::wstring>> errors) noexcept
 {
-    std::wstring hotKeyStr =
-        std::wstring((hotkey.modifiersMask & MOD_WIN) == MOD_WIN ? L"Win + " : L"") +
-        std::wstring((hotkey.modifiersMask & MOD_CONTROL) == MOD_CONTROL ? L"Ctrl + " : L"") +
-        std::wstring((hotkey.modifiersMask & MOD_SHIFT) == MOD_SHIFT ? L"Shift + " : L"") +
-        std::wstring((hotkey.modifiersMask & MOD_ALT) == MOD_ALT ? L"Alt + " : L"") +
-        std::wstring(L"VK ") + std::to_wstring(hotkey.vkCode);
+    int cliCount = 0;
+    int adminCount = 0;
+    for (const auto& app : project.apps)
+    {
+        if (!app.commandLineArgs.empty())
+        {
+            cliCount++;
+        }
 
+        if (app.isElevated)
+        {
+            adminCount++;
+        }
+    }
+
+    std::string invokePointStr;
+    switch (invokePoint)
+    {
+    case EditorButton:
+        invokePointStr = "launchButton";
+        break;
+    case Shortcut:
+        invokePointStr = "shortcut";
+        break;
+    case LaunchAndEdit:
+        invokePointStr = "launchAndEdit";
+        break;
+    default:
+        break;
+    }
+
+    std::wstring errorStr{};
+    for (const auto& [exeName, errorMessage] : errors)
+    {
+        errorStr += exeName + L":" + errorMessage + L"; ";
+    }
+    
     TraceLoggingWrite(
         g_hProvider,
-        "Projects_Settings",
+        "Workspaces_LaunchEvent",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingWideString(hotKeyStr.c_str(), "HotKey"));
-}
-
-void Trace::Projects::NumberOfProjects(size_t number) noexcept
-{
-    TraceLoggingWrite(
-        g_hProvider,
-        "Projects_NumberOfProjects",
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingUInt64(number, "NumberOfProjects"));
-}
-
-void Trace::Projects::MonitorConfiguration(size_t numberOfMonitors) noexcept
-{
-    TraceLoggingWrite(
-        g_hProvider,
-        "Projects_MonitorConfiguration",
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingUInt64(numberOfMonitors, "NumberOfMonitors"));
-}
-
-void Trace::Projects::CLIUsage(bool usingCLI) noexcept
-{
-    TraceLoggingWrite(
-        g_hProvider,
-        "Projects_CLIUsage",
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingBoolean(usingCLI, "UsingCLI"));
+        TraceLoggingBoolean(success, "successful"), // True if launch successfully completely. False if ANY app failed.
+        TraceLoggingInt64(project.monitors.size(), "numScreens"), // Number of screens present in the project
+        TraceLoggingInt64(project.apps.size(), "appCount"), // Total number of apps in the project
+        TraceLoggingInt32(cliCount, "cliCount"), // Number of apps with CLI args
+        TraceLoggingInt32(adminCount, "adminCount"), // Number of apps with "Launch as admin" set
+        TraceLoggingString(invokePointStr.c_str(), "invokePoint"), // The method by which the user launched the project.
+        TraceLoggingFloat64(launchTimeSeconds, "launchTime"), // The time, in seconds, it took for the project to completely launch (from when user invoked launch to when last window successfully moved)
+        TraceLoggingBool(setupIsDifferent, "setupDiff"), // True if users monitor setup (in terms of # monitors and monitor resolution & aspect ratio) is different from the setup defined at project creation. False if setup is the same.
+        TraceLoggingWideString(errorStr.c_str(), "failures") // List of errors encountered when applicable. Collects .exe name and error message in String fields
+        );
 }
