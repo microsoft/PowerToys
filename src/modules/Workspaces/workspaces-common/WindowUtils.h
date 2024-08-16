@@ -18,9 +18,9 @@ namespace WindowUtils
         const wchar_t HelpWindow[] = L"WINDOWS\\HH.EXE";
         const wchar_t ApplicationFrameHost[] = L"WINDOWS\\SYSTEM32\\APPLICATIONFRAMEHOST.EXE";
         
-        const wchar_t ProjectsSnapshotTool[] = L"POWERTOYS.PROJECTSSNAPSHOTTOOL";
-        const wchar_t ProjectsEditor[] = L"POWERTOYS.PROJECTSEDITOR";
-        const wchar_t ProjectsLauncher[] = L"POWERTOYS.PROJECTSLAUNCHER";
+        const wchar_t WorkspacesSnapshotTool[] = L"POWERTOYS.WORKSPACESSNAPSHOTTOOL";
+        const wchar_t WorkspacesEditor[] = L"POWERTOYS.WORKSPACESEDITOR";
+        const wchar_t WorkspacesLauncher[] = L"POWERTOYS.WORKSPACESLAUNCHER";
     }
 
     inline bool IsRoot(HWND window) noexcept
@@ -78,9 +78,9 @@ namespace WindowUtils
             NonLocalizable::CoreWindow, 
             NonLocalizable::SearchUI, 
             NonLocalizable::HelpWindow,
-            NonLocalizable::ProjectsEditor, 
-            NonLocalizable::ProjectsLauncher, 
-            NonLocalizable::ProjectsSnapshotTool, 
+            NonLocalizable::WorkspacesEditor, 
+            NonLocalizable::WorkspacesLauncher, 
+            NonLocalizable::WorkspacesSnapshotTool, 
         };
         return (check_excluded_app(window, processPathUpper, defaultExcludedApps));
     }
@@ -119,9 +119,4 @@ namespace WindowUtils
 
         return std::wstring(title);
     }
-
-    /*bool IsFullscreen(HWND window)
-    {
-        TODO
-    }*/
 }

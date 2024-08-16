@@ -1,6 +1,6 @@
 #pragma once
 
-/* sync with ProjectsEditor */
+/* sync with WorkspacesEditor */
 enum InvokePoint
 {
 	EditorButton = 0,
