@@ -123,6 +123,9 @@
   <data name="File_reading_error" xml:space="preserve">
     <value>Error reading file {0}.</value>
   </data>
+  <data name="Incorrect_args" xml:space="preserve">
+    <value>Incorrect command line arguments</value>
+  </data>
   <data name="Incorrect_file_error" xml:space="preserve">
     <value>Incorrect {0} file.</value>
   </data>
