@@ -1,10 +1,11 @@
-﻿#include "pch.h"
+#include "pch.h"
 
 #include <ProjectsLib/ProjectsData.h>
 
 #include <AppLauncher.h>
 
 #include <Generated Files/resource.h>
+#include <projects-common/InvokePoint.h>
 
 #include <common/utils/elevation.h>
 #include <common/utils/gpo.h>
@@ -99,8 +100,16 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     }
 
     ProjectsData::Project projectToLaunch{};
-    std::string idStr(cmdline);
-    std::wstring id(idStr.begin(), idStr.end());
+    std::string cmdLineStr(cmdline);
+    auto cmdArgs = split(cmdLineStr, " ");
+    if (cmdArgs.size() < 2)
+    {
+        Logger::warn("Incorrect command line arguments");
+        MessageBox(NULL, GET_RESOURCE_STRING(IDS_INCORRECT_ARGS).c_str(), GET_RESOURCE_STRING(IDS_PROJECTS).c_str(), MB_ICONERROR | MB_OK);
+        return 1;
+    }
+
+    std::wstring id(cmdArgs[0].begin(), cmdArgs[0].end());
     if (!id.empty())
     {
         for (const auto& proj : projects)

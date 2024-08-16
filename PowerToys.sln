@@ -595,6 +595,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "projects-common", "projects
 	ProjectSection(SolutionItems) = preProject
 		src\modules\Projects\projects-common\AppUtils.h = src\modules\Projects\projects-common\AppUtils.h
 		src\modules\Projects\projects-common\GuidUtils.h = src\modules\Projects\projects-common\GuidUtils.h
+		src\modules\Projects\projects-common\InvokePoint.h = src\modules\Projects\projects-common\InvokePoint.h
 		src\modules\Projects\projects-common\MonitorUtils.h = src\modules\Projects\projects-common\MonitorUtils.h
 		src\modules\Projects\projects-common\VirtualDesktop.h = src\modules\Projects\projects-common\VirtualDesktop.h
 		src\modules\Projects\projects-common\WindowEnumerator.h = src\modules\Projects\projects-common\WindowEnumerator.h

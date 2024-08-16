@@ -17,6 +17,7 @@ using System.Windows;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
+using ProjectsEditor.Data;
 using ProjectsEditor.Models;
 using ProjectsEditor.Telemetry;
 using ProjectsEditor.Utils;
@@ -221,7 +222,7 @@ namespace ProjectsEditor.ViewModels
                 // Set the .lnk file properties
                 link.Description = $"Project Launcher {project.Id}";
                 link.Path = Path.Combine(basePath, "PowerToys.ProjectsLauncher.exe");
-                link.Arguments = project.Id.ToString();
+                link.Arguments = $"{project.Id.ToString()} {(int)InvokePoint.Shortcut}";
                 link.WorkingDirectory = basePath;
                 link.SetIconLocation(shortcutIconFilename, 0);
 
@@ -377,7 +378,7 @@ namespace ProjectsEditor.ViewModels
 
         public async void LaunchProject(Project project, bool exitAfterLaunch = false)
         {
-            await Task.Run(() => RunLauncher(project.Id));
+            await Task.Run(() => RunLauncher(project.Id, InvokePoint.EditorButton));
             if (_projectsEditorIO.ParseProjects(this).Result == true)
             {
                 OnPropertyChanged(new PropertyChangedEventArgs(nameof(ProjectsView)));
@@ -424,10 +425,10 @@ namespace ProjectsEditor.ViewModels
             }
         }
 
-        private void RunLauncher(string projectIdOrFilename)
+        private void RunLauncher(string projectId, InvokePoint invokePoint)
         {
             Process process = new Process();
-            process.StartInfo = new ProcessStartInfo(@".\PowerToys.ProjectsLauncher.exe", projectIdOrFilename);
+            process.StartInfo = new ProcessStartInfo(@".\PowerToys.ProjectsLauncher.exe", $"{projectId} {(int)invokePoint}");
             process.StartInfo.CreateNoWindow = true;
 
             try
@@ -491,7 +492,7 @@ namespace ProjectsEditor.ViewModels
 
         internal async void LaunchAndEdit(Project project)
         {
-            await Task.Run(() => RunLauncher(project.Id));
+            await Task.Run(() => RunLauncher(project.Id, InvokePoint.LaunchAndEdit));
             projectBeforeLaunch = new Project(project);
             EnterSnapshotMode(true);
         }
