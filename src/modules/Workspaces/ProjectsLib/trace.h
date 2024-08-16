@@ -3,7 +3,7 @@
 #include <modules/interface/powertoy_module_interface.h>
 
 #include <ProjectsLib/ProjectsData.h>
-#include <projects-common/InvokePoint.h>
+#include <workspaces-common/InvokePoint.h>
 
 class Trace
 {

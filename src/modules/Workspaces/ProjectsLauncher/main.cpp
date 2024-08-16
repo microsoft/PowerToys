@@ -8,8 +8,8 @@
 
 #include <Generated Files/resource.h>
 
-#include <projects-common/InvokePoint.h>
-#include <projects-common/MonitorUtils.h>
+#include <workspaces-common/InvokePoint.h>
+#include <workspaces-common/MonitorUtils.h>
 
 #include <common/utils/elevation.h>
 #include <common/utils/gpo.h>

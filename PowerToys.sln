@@ -583,36 +583,37 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerToys.Settings.DSC.Sche
 		{020A7474-3601-4160-A159-D7B70B77B15F} = {020A7474-3601-4160-A159-D7B70B77B15F}
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Projects", "Projects", "{A2221D7E-55E7-4BEA-90D1-4F162D670BBF}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workspaces", "Workspaces", "{A2221D7E-55E7-4BEA-90D1-4F162D670BBF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectsEditor", "src\modules\Projects\ProjectsEditor\ProjectsEditor.csproj", "{367D7543-7DBA-4381-99F1-BF6142A996C4}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProjectsLauncher", "src\modules\Projects\ProjectsLauncher\ProjectsLauncher.vcxproj", "{2CAC093E-5FCF-4102-9C2C-AC7DD5D9EB96}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProjectsSnapshotTool", "src\modules\Projects\ProjectsSnapshotTool\ProjectsSnapshotTool.vcxproj", "{3D63307B-9D27-44FD-B033-B26F39245B85}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "projects-common", "projects-common", "{BE126CBB-AE12-406A-9837-A05ACFCA57A7}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workspaces-common", "workspaces-common", "{BE126CBB-AE12-406A-9837-A05ACFCA57A7}"
 	ProjectSection(SolutionItems) = preProject
-		src\modules\Projects\projects-common\AppUtils.h = src\modules\Projects\projects-common\AppUtils.h
-		src\modules\Projects\projects-common\GuidUtils.h = src\modules\Projects\projects-common\GuidUtils.h
-		src\modules\Projects\projects-common\InvokePoint.h = src\modules\Projects\projects-common\InvokePoint.h
-		src\modules\Projects\projects-common\MonitorUtils.h = src\modules\Projects\projects-common\MonitorUtils.h
-		src\modules\Projects\projects-common\VirtualDesktop.h = src\modules\Projects\projects-common\VirtualDesktop.h
-		src\modules\Projects\projects-common\WindowEnumerator.h = src\modules\Projects\projects-common\WindowEnumerator.h
-		src\modules\Projects\projects-common\WindowFilter.h = src\modules\Projects\projects-common\WindowFilter.h
-		src\modules\Projects\projects-common\WindowUtils.h = src\modules\Projects\projects-common\WindowUtils.h
+		src\modules\Workspaces\workspaces-common\AppUtils.h = src\modules\Workspaces\workspaces-common\AppUtils.h
+		src\modules\Workspaces\workspaces-common\GuidUtils.h = src\modules\Workspaces\workspaces-common\GuidUtils.h
+		src\modules\Workspaces\workspaces-common\InvokePoint.h = src\modules\Workspaces\workspaces-common\InvokePoint.h
+		src\modules\Workspaces\workspaces-common\MonitorEnumerator.h = src\modules\Workspaces\workspaces-common\MonitorEnumerator.h
+		src\modules\Workspaces\workspaces-common\MonitorUtils.h = src\modules\Workspaces\workspaces-common\MonitorUtils.h
+		src\modules\Workspaces\workspaces-common\VirtualDesktop.h = src\modules\Workspaces\workspaces-common\VirtualDesktop.h
+		src\modules\Workspaces\workspaces-common\WindowEnumerator.h = src\modules\Workspaces\workspaces-common\WindowEnumerator.h
+		src\modules\Workspaces\workspaces-common\WindowFilter.h = src\modules\Workspaces\workspaces-common\WindowFilter.h
+		src\modules\Workspaces\workspaces-common\WindowUtils.h = src\modules\Workspaces\workspaces-common\WindowUtils.h
 	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProjectsModuleInterface", "src\modules\Projects\ProjectsModuleInterface\ProjectsModuleInterface.vcxproj", "{45285DF2-9742-4ECA-9AC9-58951FC26489}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProjectsLib", "src\modules\Projects\ProjectsLib\ProjectsLib.vcxproj", "{B31FCC55-B5A4-4EA7-B414-2DCEAE6AF332}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WindowProperties", "WindowProperties", "{14CB58B7-D280-4A7A-95DE-4B2DF14EA000}"
 	ProjectSection(SolutionItems) = preProject
-		src\modules\Projects\WindowProperties\ProjectsWindowPropertyUtils.h = src\modules\Projects\WindowProperties\ProjectsWindowPropertyUtils.h
+		src\modules\Workspaces\WindowProperties\ProjectsWindowPropertyUtils.h = src\modules\Workspaces\WindowProperties\ProjectsWindowPropertyUtils.h
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectsLauncherUI", "src\modules\Projects\ProjectsLauncherUI\ProjectsLauncherUI.csproj", "{9C53CC25-0623-4569-95BC-B05410675EE3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectsEditor", "src\modules\Workspaces\ProjectsEditor\ProjectsEditor.csproj", "{367D7543-7DBA-4381-99F1-BF6142A996C4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProjectsLauncher", "src\modules\Workspaces\ProjectsLauncher\ProjectsLauncher.vcxproj", "{2CAC093E-5FCF-4102-9C2C-AC7DD5D9EB96}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProjectsLib", "src\modules\Workspaces\ProjectsLib\ProjectsLib.vcxproj", "{B31FCC55-B5A4-4EA7-B414-2DCEAE6AF332}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectsLauncherUI", "src\modules\Workspaces\ProjectsLauncherUI\ProjectsLauncherUI.csproj", "{9C53CC25-0623-4569-95BC-B05410675EE3}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProjectsModuleInterface", "src\modules\Workspaces\ProjectsModuleInterface\ProjectsModuleInterface.vcxproj", "{45285DF2-9742-4ECA-9AC9-58951FC26489}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProjectsSnapshotTool", "src\modules\Workspaces\ProjectsSnapshotTool\ProjectsSnapshotTool.vcxproj", "{3D63307B-9D27-44FD-B033-B26F39245B85}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

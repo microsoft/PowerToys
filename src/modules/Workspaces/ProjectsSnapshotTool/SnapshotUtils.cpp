@@ -8,9 +8,9 @@
 #include <common/utils/process_path.h>
 #include <common/notifications/NotificationUtil.h>
 
-#include <projects-common/AppUtils.h>
-#include <projects-common/WindowEnumerator.h>
-#include <projects-common/WindowFilter.h>
+#include <workspaces-common/AppUtils.h>
+#include <workspaces-common/WindowEnumerator.h>
+#include <workspaces-common/WindowFilter.h>
 
 namespace SnapshotUtils
 {

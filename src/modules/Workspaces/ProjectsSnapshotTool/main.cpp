@@ -2,8 +2,8 @@
 
 #include <chrono>
 
-#include <projects-common/GuidUtils.h>
-#include <projects-common/MonitorUtils.h>
+#include <workspaces-common/GuidUtils.h>
+#include <workspaces-common/MonitorUtils.h>
 
 #include <ProjectsLib/ProjectsData.h>
 

@@ -150,9 +150,6 @@
     <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\ProjectsLib\ProjectsLib.vcxproj">
-      <Project>{b31fcc55-b5a4-4ea7-b414-2dceae6af332}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Generated Files/ProjectLauncherResource.rc" />
