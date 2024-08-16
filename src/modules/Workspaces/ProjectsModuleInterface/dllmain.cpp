@@ -10,8 +10,8 @@
 #include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
 
-#include <ProjectsLib/trace.h>
-#include <ProjectsLib/WorkspacesData.h>
+#include <WorkspacesLib/trace.h>
+#include <WorkspacesLib/WorkspacesData.h>
 
 #include <shellapi.h>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ProjectsLib/WorkspacesData.h>
+#include <WorkspacesLib/WorkspacesData.h>
 #include <common/Display/DisplayUtils.h>
 
 namespace MonitorUtils
@@ -16,7 +16,7 @@ namespace MonitorUtils
             displaysResult = DisplayUtils::GetDisplays();
             retryCounter++;
         }
-
+        
         std::vector<WorkspacesData::WorkspacesProject::Monitor> result{};
         for (const auto& data : displaysResult.second)
         {

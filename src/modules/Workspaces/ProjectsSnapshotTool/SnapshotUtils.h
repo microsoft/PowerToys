@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ProjectsLib/WorkspacesData.h>
+#include <WorkspacesLib/WorkspacesData.h>
 
 namespace SnapshotUtils
 {

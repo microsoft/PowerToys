@@ -4,8 +4,8 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{b31fcc55-b5a4-4ea7-b414-2dceae6af332}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>ProjectsLib</RootNamespace>
-    <ProjectName>ProjectsLib</ProjectName>
+    <RootNamespace>WorkspacesLib</RootNamespace>
+    <ProjectName>WorkspacesLib</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">

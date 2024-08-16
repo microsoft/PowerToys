@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 
-#include <ProjectsLib/WorkspacesData.h>
-#include <ProjectsLib/trace.h>
+#include <WorkspacesLib/WorkspacesData.h>
+#include <WorkspacesLib/trace.h>
 
 #include <AppLauncher.h>
 #include <utils.h>

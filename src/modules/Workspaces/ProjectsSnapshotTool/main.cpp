@@ -5,7 +5,7 @@
 #include <workspaces-common/GuidUtils.h>
 #include <workspaces-common/MonitorUtils.h>
 
-#include <ProjectsLib/WorkspacesData.h>
+#include <WorkspacesLib/WorkspacesData.h>
 
 #include <JsonUtils.h>
 #include <SnapshotUtils.h>

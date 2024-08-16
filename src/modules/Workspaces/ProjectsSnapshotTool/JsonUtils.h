@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include <ProjectsLib/WorkspacesData.h>
+#include <WorkspacesLib/WorkspacesData.h>
 
 #include <common/logger/logger.h>
 
