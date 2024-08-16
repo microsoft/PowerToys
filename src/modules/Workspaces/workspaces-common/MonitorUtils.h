@@ -5,7 +5,7 @@
 
 namespace MonitorUtils
 {
-    inline std::vector<ProjectsData::Project::Monitor> IdentifyMonitors() noexcept
+    inline std::vector<WorkspacesData::WorkspacesProject::Monitor> IdentifyMonitors() noexcept
     {
         auto displaysResult = DisplayUtils::GetDisplays();
 
@@ -17,22 +17,22 @@ namespace MonitorUtils
             retryCounter++;
         }
 
-        std::vector<ProjectsData::Project::Monitor> result{};
+        std::vector<WorkspacesData::WorkspacesProject::Monitor> result{};
         for (const auto& data : displaysResult.second)
         {
-            result.emplace_back(ProjectsData::Project::Monitor{
+            result.emplace_back(WorkspacesData::WorkspacesProject::Monitor{
                 .monitor = data.monitor,
                 .id = data.id,
                 .instanceId = data.instanceId,
                 .number = data.number,
                 .dpi = data.dpi,
-                .monitorRectDpiAware = ProjectsData::Project::Monitor::MonitorRect{
+                .monitorRectDpiAware = WorkspacesData::WorkspacesProject::Monitor::MonitorRect{
                     .top = data.monitorRectDpiAware.top,
                     .left = data.monitorRectDpiAware.left,
                     .width = data.monitorRectDpiAware.right - data.monitorRectDpiAware.left,
                     .height = data.monitorRectDpiAware.bottom - data.monitorRectDpiAware.top,
                 },
-                .monitorRectDpiUnaware = ProjectsData::Project::Monitor::MonitorRect{
+                .monitorRectDpiUnaware = WorkspacesData::WorkspacesProject::Monitor::MonitorRect{
                     .top = data.monitorRectDpiUnaware.top,
                     .left = data.monitorRectDpiUnaware.left,
                     .width = data.monitorRectDpiUnaware.right - data.monitorRectDpiUnaware.left,

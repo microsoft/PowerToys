@@ -2,13 +2,13 @@
 
 #include <common/utils/json.h>
 
-namespace ProjectsData
+namespace WorkspacesData
 {
     std::wstring WorkspacesFile();
     std::wstring TempWorkspacesFile();
     std::wstring LaunchWorkspacesFile();
 
-    struct Project
+    struct WorkspacesProject
     {
         struct Application
         {
@@ -74,9 +74,9 @@ namespace ProjectsData
         std::vector<Application> apps;
     };
 
-    struct ProjectsList
+    struct WorkspacesList
     {
-        std::vector<Project> projects;
+        std::vector<WorkspacesProject> projects;
     };
 
     struct AppLaunchInfo
@@ -107,39 +107,39 @@ namespace ProjectsData
         json::JsonObject ToJson(const AppLaunchData& data);
     }
 
-    namespace ProjectJSON
+    namespace WorkspacesProjectJSON
     {
         namespace ApplicationJSON
         {
             namespace PositionJSON
             {
-                json::JsonObject ToJson(const Project::Application::Position& position);
-                std::optional<Project::Application::Position> FromJson(const json::JsonObject& json);
+                json::JsonObject ToJson(const WorkspacesProject::Application::Position& position);
+                std::optional<WorkspacesProject::Application::Position> FromJson(const json::JsonObject& json);
             }
 
-            json::JsonObject ToJson(const Project::Application& data);
-            std::optional<Project::Application> FromJson(const json::JsonObject& json);
+            json::JsonObject ToJson(const WorkspacesProject::Application& data);
+            std::optional<WorkspacesProject::Application> FromJson(const json::JsonObject& json);
         }
 
         namespace MonitorJSON
         {
             namespace MonitorRectJSON
             {
-                json::JsonObject ToJson(const Project::Monitor::MonitorRect& data);
-                std::optional<Project::Monitor::MonitorRect> FromJson(const json::JsonObject& json);
+                json::JsonObject ToJson(const WorkspacesProject::Monitor::MonitorRect& data);
+                std::optional<WorkspacesProject::Monitor::MonitorRect> FromJson(const json::JsonObject& json);
             }
 
-            json::JsonObject ToJson(const Project::Monitor& data);
-            std::optional<Project::Monitor> FromJson(const json::JsonObject& json);
+            json::JsonObject ToJson(const WorkspacesProject::Monitor& data);
+            std::optional<WorkspacesProject::Monitor> FromJson(const json::JsonObject& json);
         }
 
-        json::JsonObject ToJson(const Project& data);
-        std::optional<Project> FromJson(const json::JsonObject& json);
+        json::JsonObject ToJson(const WorkspacesProject& data);
+        std::optional<WorkspacesProject> FromJson(const json::JsonObject& json);
     }
 
-    namespace ProjectsListJSON
+    namespace WorkspacesListJSON
     {
-        json::JsonObject ToJson(const std::vector<Project>& data);
-        std::optional<std::vector<Project>> FromJson(const json::JsonObject& json);
+        json::JsonObject ToJson(const std::vector<WorkspacesProject>& data);
+        std::optional<std::vector<WorkspacesProject>> FromJson(const json::JsonObject& json);
     }
 };

@@ -16,7 +16,7 @@ public:
     public:
         static void Enable(bool enabled) noexcept;
         static void Launch(bool success,
-                           const ProjectsData::Project& project,
+                           const WorkspacesData::WorkspacesProject& project,
                            InvokePoint invokePoint,
                            double launchTimeSeconds,
                            bool setupIsDifferent,

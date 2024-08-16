@@ -8,15 +8,15 @@
 
 namespace ProjectsJsonUtils
 {
-    inline std::vector<ProjectsData::Project> Read(const std::wstring& fileName)
+    inline std::vector<WorkspacesData::WorkspacesProject> Read(const std::wstring& fileName)
     {
-        std::vector<ProjectsData::Project> projects{};
+        std::vector<WorkspacesData::WorkspacesProject> projects{};
         try
         {
             auto savedProjectsJson = json::from_file(fileName);
             if (savedProjectsJson.has_value())
             {
-                auto savedProjects = ProjectsData::ProjectsListJSON::FromJson(savedProjectsJson.value());
+                auto savedProjects = WorkspacesData::WorkspacesListJSON::FromJson(savedProjectsJson.value());
                 if (savedProjects.has_value())
                 {
                     projects = savedProjects.value();
@@ -25,33 +25,33 @@ namespace ProjectsJsonUtils
         }
         catch (std::exception ex)
         {
-            Logger::error("Error reading projects file. {}", ex.what());
+            Logger::error("Error reading workspaces file. {}", ex.what());
         }
 
         return projects;
     }
 
-    inline void Write(const std::wstring& fileName, const std::vector<ProjectsData::Project>& projects)
+    inline void Write(const std::wstring& fileName, const std::vector<WorkspacesData::WorkspacesProject>& projects)
     {
         try
         {
-            json::to_file(fileName, ProjectsData::ProjectsListJSON::ToJson(projects));
+            json::to_file(fileName, WorkspacesData::WorkspacesListJSON::ToJson(projects));
         }
         catch (std::exception ex)
         {
-            Logger::error("Error writing projects file. {}", ex.what());
+            Logger::error("Error writing workspaces file. {}", ex.what());
         }
     }
 
-    inline void Write(const std::wstring& fileName, const ProjectsData::Project& project)
+    inline void Write(const std::wstring& fileName, const WorkspacesData::WorkspacesProject& project)
     {
         try
         {
-            json::to_file(fileName, ProjectsData::ProjectJSON::ToJson(project));
+            json::to_file(fileName, WorkspacesData::WorkspacesProjectJSON::ToJson(project));
         }
         catch (std::exception ex)
         {
-            Logger::error("Error writing projects file. {}", ex.what());
+            Logger::error("Error writing workspaces file. {}", ex.what());
         }
     }
 }

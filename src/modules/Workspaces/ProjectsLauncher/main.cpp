@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 
 #include <ProjectsLib/ProjectsData.h>
 #include <ProjectsLib/trace.h>
@@ -59,14 +59,14 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     
     // read projects
-    auto projectsFileName = ProjectsData::ProjectsFile();
-    std::vector<ProjectsData::Project> projects;
+    auto projectsFileName = WorkspacesData::WorkspacesFile();
+    std::vector<WorkspacesData::WorkspacesProject> projects;
     try
     {
         auto savedProjectsJson = json::from_file(projectsFileName);
         if (savedProjectsJson.has_value())
         {
-            auto savedProjects = ProjectsData::ProjectsListJSON::FromJson(savedProjectsJson.value());
+            auto savedProjects = WorkspacesData::WorkspacesListJSON::FromJson(savedProjectsJson.value());
             if (savedProjects.has_value())
             {
                 projects = savedProjects.value();
@@ -103,7 +103,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         return 1;
     }
 
-    ProjectsData::Project projectToLaunch{};
+    WorkspacesData::WorkspacesProject projectToLaunch{};
     std::string cmdLineStr(cmdline);
     auto cmdArgs = split(cmdLineStr, " ");
     if (cmdArgs.size() < 1)
@@ -166,7 +166,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
             break;
         }
     }
-    json::to_file(projectsFileName, ProjectsData::ProjectsListJSON::ToJson(projects));
+    json::to_file(projectsFileName, WorkspacesData::WorkspacesListJSON::ToJson(projects));
 
     // telemetry
     auto end = std::chrono::high_resolution_clock::now();
@@ -178,7 +178,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     {
         for (const auto& monitor : projectToLaunch.monitors)
         {
-            auto setup = std::find_if(monitors.begin(), monitors.end(), [&](const ProjectsData::Project::Monitor& val) { return val.dpi == monitor.dpi && val.monitorRectDpiAware == monitor.monitorRectDpiAware; });
+            auto setup = std::find_if(monitors.begin(), monitors.end(), [&](const WorkspacesData::WorkspacesProject::Monitor& val) { return val.dpi == monitor.dpi && val.monitorRectDpiAware == monitor.monitorRectDpiAware; });
             if (setup == monitors.end())
             {
                 differentSetup = true;

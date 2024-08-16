@@ -56,7 +56,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
 
     // create new project
     time_t creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    ProjectsData::Project project { .id = CreateGuidString(), .creationTime = creationTime };
+    WorkspacesData::WorkspacesProject project{ .id = CreateGuidString(), .creationTime = creationTime };
     Logger::trace(L"Creating project {}:{}", project.name, project.id);
 
     project.monitors = MonitorUtils::IdentifyMonitors();

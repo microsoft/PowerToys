@@ -137,14 +137,14 @@ namespace
 {
     struct LaunchingApp
     {
-        ProjectsData::Project::Application application;
+        WorkspacesData::WorkspacesProject::Application application;
         HWND window;
         std::wstring state;
     };
 
     using LaunchingApps = std::vector<LaunchingApp>;
 
-    LaunchingApps Prepare(std::vector<ProjectsData::Project::Application>& apps, const Utils::Apps::AppList& installedApps)
+    LaunchingApps Prepare(std::vector<WorkspacesData::WorkspacesProject::Application>& apps, const Utils::Apps::AppList& installedApps)
     {
         LaunchingApps launchedApps{};
         launchedApps.reserve(apps.size());
@@ -171,16 +171,16 @@ namespace
         return launchedApps;
     }
 
-    auto launchFileName = ProjectsData::LaunchProjectsFile();
+    auto launchFileName = WorkspacesData::LaunchWorkspacesFile();
 
     void UpdateLaunchStatus(LaunchingApps launchedApps)
     {
-        ProjectsData::AppLaunchData appData = ProjectsData::AppLaunchData();
+        WorkspacesData::AppLaunchData appData = WorkspacesData::AppLaunchData();
         appData.appLaunchInfoList.reserve(launchedApps.size());
         appData.launcherProcessID = GetCurrentProcessId();
         for (auto& app : launchedApps)
         {
-            ProjectsData::AppLaunchInfo appLaunchInfo = ProjectsData::AppLaunchInfo();
+            WorkspacesData::AppLaunchInfo appLaunchInfo = WorkspacesData::AppLaunchInfo();
             appLaunchInfo.name = app.application.name;
             appLaunchInfo.path = app.application.path;
             appLaunchInfo.state = app.state;
@@ -188,7 +188,7 @@ namespace
             appData.appLaunchInfoList.push_back(appLaunchInfo);
         }
 
-        json::to_file(launchFileName, ProjectsData::AppLaunchDataJSON::ToJson(appData));
+        json::to_file(launchFileName, WorkspacesData::AppLaunchDataJSON::ToJson(appData));
     }
 
     bool AllWindowsFound(const LaunchingApps& launchedApps)
@@ -232,7 +232,7 @@ namespace
                 DPIAware::InverseConvert(monitor, x, y);
                 DPIAware::InverseConvert(monitor, width, height);
 
-                ProjectsData::Project::Application::Position windowPosition{
+                WorkspacesData::WorkspacesProject::Application::Position windowPosition{
                     .x = static_cast<int>(std::round(x)),
                     .y = static_cast<int>(std::round(y)),
                     .width = static_cast<int>(std::round(width)),
@@ -320,7 +320,7 @@ bool LaunchPackagedApp(const std::wstring& packageFullName, ErrorList& launchErr
     return false;
 }
 
-bool Launch(const ProjectsData::Project::Application& app, ErrorList& launchErrors)
+bool Launch(const WorkspacesData::WorkspacesProject::Application& app, ErrorList& launchErrors)
 {
     bool launched{ false };
     if (!app.packageFullName.empty() && app.commandLineArgs.empty() && !app.isElevated)
@@ -384,7 +384,7 @@ void Launch_UI()
     }
 }
 
-bool Launch(ProjectsData::Project& project, const std::vector<ProjectsData::Project::Monitor>& monitors, ErrorList& launchErrors)
+bool Launch(WorkspacesData::WorkspacesProject& project, const std::vector<WorkspacesData::WorkspacesProject::Monitor>& monitors, ErrorList& launchErrors)
 {
     bool launchedSuccessfully{ true };
 
@@ -456,7 +456,7 @@ bool Launch(ProjectsData::Project& project, const std::vector<ProjectsData::Proj
             continue;
         }
 
-        auto snapMonitorIter = std::find_if(project.monitors.begin(), project.monitors.end(), [&](const ProjectsData::Project::Monitor& val) { return val.number == app.monitor; });
+        auto snapMonitorIter = std::find_if(project.monitors.begin(), project.monitors.end(), [&](const WorkspacesData::WorkspacesProject::Monitor& val) { return val.number == app.monitor; });
         if (snapMonitorIter == project.monitors.end())
         {
             Logger::error(L"No monitor saved for launching the app");
@@ -468,7 +468,7 @@ bool Launch(ProjectsData::Project& project, const std::vector<ProjectsData::Proj
 
         HMONITOR currentMonitor{};
         UINT currentDpi = DPIAware::DEFAULT_DPI;
-        auto currentMonitorIter = std::find_if(monitors.begin(), monitors.end(), [&](const ProjectsData::Project::Monitor& val) { return val.number == app.monitor; });
+        auto currentMonitorIter = std::find_if(monitors.begin(), monitors.end(), [&](const WorkspacesData::WorkspacesProject::Monitor& val) { return val.number == app.monitor; });
         if (currentMonitorIter != monitors.end())
         {
             currentMonitor = currentMonitorIter->monitor;

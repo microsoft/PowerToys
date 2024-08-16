@@ -167,9 +167,9 @@ namespace SnapshotUtils
         return false;
     }
 
-    std::vector<ProjectsData::Project::Application> GetApps(const std::function<unsigned int(HWND)> getMonitorNumberFromWindowHandle)
+    std::vector<WorkspacesData::WorkspacesProject::Application> GetApps(const std::function<unsigned int(HWND)> getMonitorNumberFromWindowHandle)
     {
-        std::vector<ProjectsData::Project::Application> apps{};
+        std::vector<WorkspacesData::WorkspacesProject::Application> apps{};
 
         auto installedApps = Utils::Apps::GetAppsList();
         auto windows = WindowEnumerator::Enumerate(WindowFilter::Filter);
@@ -247,7 +247,7 @@ namespace SnapshotUtils
                 continue;
             }
 
-            ProjectsData::Project::Application app{
+            WorkspacesData::WorkspacesProject::Application app{
                 .name = data.value().name,
                 .title = title,
                 .path = processPath,
@@ -257,7 +257,7 @@ namespace SnapshotUtils
                 .canLaunchElevated = data.value().canLaunchElevated,
                 .isMinimized = WindowUtils::IsMinimized(window),
                 .isMaximized = WindowUtils::IsMaximized(window),
-                .position = ProjectsData::Project::Application::Position{
+                .position = WorkspacesData::WorkspacesProject::Application::Position{
                     .x = rect.left,
                     .y = rect.top,
                     .width = rect.right - rect.left,

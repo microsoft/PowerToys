@@ -34,7 +34,7 @@ void Trace::Projects::Enable(bool enabled) noexcept
 }
 
 void Trace::Projects::Launch(bool success, 
-    const ProjectsData::Project& project, 
+    const WorkspacesData::WorkspacesProject& project, 
     InvokePoint invokePoint, 
     double launchTimeSeconds, 
     bool setupIsDifferent, 

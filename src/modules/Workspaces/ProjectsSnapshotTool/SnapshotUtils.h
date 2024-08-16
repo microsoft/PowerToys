@@ -4,5 +4,5 @@
 
 namespace SnapshotUtils
 {
-    std::vector<ProjectsData::Project::Application> GetApps(const std::function<unsigned int(HWND)> getMonitorNumberFromWindowHandle);
+    std::vector<WorkspacesData::WorkspacesProject::Application> GetApps(const std::function<unsigned int(HWND)> getMonitorNumberFromWindowHandle);
 };
