@@ -5,13 +5,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Projects.Data;
-using static ProjectsLauncherUI.Data.AppLaunchInfoData;
-using static ProjectsLauncherUI.Data.AppLaunchInfosData;
+using Workspaces.Data;
+using static WorkspacesLauncherUI.Data.AppLaunchInfoData;
+using static WorkspacesLauncherUI.Data.AppLaunchInfosData;
 
-namespace ProjectsLauncherUI.Data
+namespace WorkspacesLauncherUI.Data
 {
-    public class AppLaunchInfosData : ProjectsEditorData<AppLaunchInfoListWrapper>
+    public class AppLaunchInfosData : WorkspacesEditorData<AppLaunchInfoListWrapper>
     {
         public struct AppLaunchInfoListWrapper
         {

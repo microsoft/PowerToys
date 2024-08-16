@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProjectsLauncherUI.Utils
+namespace WorkspacesLauncherUI.Utils
 {
     internal sealed class NativeMethods
     {

@@ -7,7 +7,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
-namespace ProjectsLauncherUI.Converters
+namespace WorkspacesLauncherUI.Converters
 {
     public class BooleanToInvertedVisibilityConverter : IValueConverter
     {

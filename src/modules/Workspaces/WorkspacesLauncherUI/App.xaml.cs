@@ -8,10 +8,10 @@ using System.Windows;
 using System.Windows.Forms.Design.Behavior;
 using Common.UI;
 using ManagedCommon;
-using ProjectsLauncherUI.Utils;
-using ProjectsLauncherUI.ViewModels;
+using WorkspacesLauncherUI.Utils;
+using WorkspacesLauncherUI.ViewModels;
 
-namespace ProjectsLauncherUI
+namespace WorkspacesLauncherUI
 {
     /// <summary>
     /// Interaction logic for App.xaml
@@ -34,21 +34,21 @@ namespace ProjectsLauncherUI
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            Logger.InitializeLogger("\\App Layouts\\Logs");
+            Logger.InitializeLogger("\\Workspaces\\Logs");
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
-            const string appName = "Local\\PowerToys_Projects_Launcher_InstanceMutex";
+            const string appName = "Local\\PowerToys_Workspaces_Launcher_InstanceMutex";
             bool createdNew;
             _instanceMutex = new Mutex(true, appName, out createdNew);
             if (!createdNew)
             {
-                Logger.LogWarning("Another instance of Projects Launcher is already running. Exiting this instance.");
+                Logger.LogWarning("Another instance of Workspaces Launcher is already running. Exiting this instance.");
                 _instanceMutex = null;
                 Shutdown(0);
                 return;
             }
 
-            if (PowerToys.GPOWrapperProjection.GPOWrapper.GetConfiguredProjectsEnabledValue() == PowerToys.GPOWrapperProjection.GpoRuleConfigured.Disabled)
+            if (PowerToys.GPOWrapperProjection.GPOWrapper.GetConfiguredWorkspacesEnabledValue() == PowerToys.GPOWrapperProjection.GpoRuleConfigured.Disabled)
             {
                 Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
                 Shutdown(0);

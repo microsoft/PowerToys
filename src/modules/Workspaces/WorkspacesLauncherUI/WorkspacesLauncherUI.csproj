@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Version.props" />
   <PropertyGroup>
-    <AssemblyTitle>PowerToys.ProjectsLauncherUI</AssemblyTitle>
-    <AssemblyDescription>PowerToys Projects Editor</AssemblyDescription>
-    <Description>PowerToys Projects Editor</Description>
+    <AssemblyTitle>PowerToys.WorkspacesLauncherUI</AssemblyTitle>
+    <AssemblyDescription>PowerToys Workspaces Editor</AssemblyDescription>
+    <Description>PowerToys Workspaces Editor</Description>
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
@@ -41,17 +41,17 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ApplicationIcon>images\Projects.ico</ApplicationIcon>
+    <ApplicationIcon>images\Workspaces.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <AssemblyName>PowerToys.ProjectsLauncherUI</AssemblyName>
+    <AssemblyName>PowerToys.WorkspacesLauncherUI</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="images\checkmark.png" />
     <None Remove="images\DefaultIcon.ico" />
     <None Remove="images\failed.png" />
-    <None Remove="images\Projects.ico" />
+    <None Remove="images\Workspaces.ico" />
     <None Remove="images\spinner.png" />
   </ItemGroup>
   <ItemGroup>
@@ -78,7 +78,7 @@
     <Content Include="images\DefaultIcon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="images\Projects.ico">
+    <Content Include="images\Workspaces.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

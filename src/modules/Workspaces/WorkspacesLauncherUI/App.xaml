@@ -1,8 +1,8 @@
 ﻿<Application
-    x:Class="ProjectsLauncherUI.App"
+    x:Class="WorkspacesLauncherUI.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="clr-namespace:ProjectsLauncherUI"
+    xmlns:local="clr-namespace:WorkspacesLauncherUI"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Exit="OnExit"
     Startup="OnStartup">

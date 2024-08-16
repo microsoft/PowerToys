@@ -4,7 +4,7 @@
 
 using System.Text.Json;
 
-namespace ProjectsLauncherUI.Utils
+namespace WorkspacesLauncherUI.Utils
 {
     public class DashCaseNamingPolicy : JsonNamingPolicy
     {

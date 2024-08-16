@@ -3,11 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
-using ProjectsLauncherUI.Utils;
+using WorkspacesLauncherUI.Utils;
 
-namespace Projects.Data
+namespace Workspaces.Data
 {
-    public class ProjectsEditorData<T>
+    public class WorkspacesEditorData<T>
     {
         protected JsonSerializerOptions JsonOptions
         {

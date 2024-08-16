@@ -4,7 +4,7 @@
 
 using System.Linq;
 
-namespace ProjectsLauncherUI.Utils
+namespace WorkspacesLauncherUI.Utils
 {
     public static class StringUtils
     {

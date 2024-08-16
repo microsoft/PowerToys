@@ -6,7 +6,7 @@ using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 
-namespace ProjectsLauncherUI
+namespace WorkspacesLauncherUI
 {
     public class HeadingTextBlock : TextBlock
     {

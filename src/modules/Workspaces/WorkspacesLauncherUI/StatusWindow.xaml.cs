@@ -5,10 +5,10 @@
 using System;
 using System.Windows;
 using System.Windows.Interop;
-using ProjectsLauncherUI.Utils;
-using ProjectsLauncherUI.ViewModels;
+using WorkspacesLauncherUI.Utils;
+using WorkspacesLauncherUI.ViewModels;
 
-namespace ProjectsLauncherUI
+namespace WorkspacesLauncherUI
 {
     /// <summary>
     /// Interaction logic for SnapshotWindow.xaml

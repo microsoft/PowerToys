@@ -21,7 +21,7 @@ using Microsoft.VisualBasic.Devices;
 using Windows.ApplicationModel;
 using Windows.Management.Deployment;
 
-namespace ProjectsLauncherUI.Models
+namespace WorkspacesLauncherUI.Models
 {
     public class AppLaunching : INotifyPropertyChanged, IDisposable
     {

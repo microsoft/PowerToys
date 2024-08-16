@@ -10,10 +10,10 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
 using ManagedCommon;
-using ProjectsLauncherUI.Data;
-using ProjectsLauncherUI.Models;
+using WorkspacesLauncherUI.Data;
+using WorkspacesLauncherUI.Models;
 
-namespace ProjectsLauncherUI.ViewModels
+namespace WorkspacesLauncherUI.ViewModels
 {
     public class MainViewModel : INotifyPropertyChanged, IDisposable
     {
@@ -35,7 +35,7 @@ namespace ProjectsLauncherUI.ViewModels
         {
             LoadAppLaunchInfos();
             string fileName = Path.GetFileName(AppLaunchData.File);
-            _watcher = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper.GetFileWatcher("App Layouts", fileName, () => AppLaunchInfoStateChanged());
+            _watcher = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper.GetFileWatcher("Workspaces", fileName, () => AppLaunchInfoStateChanged());
         }
 
         private void AppLaunchInfoStateChanged()

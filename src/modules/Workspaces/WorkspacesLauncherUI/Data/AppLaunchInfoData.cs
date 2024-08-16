@@ -8,12 +8,12 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Projects.Data;
-using static ProjectsLauncherUI.Data.AppLaunchInfoData;
+using Workspaces.Data;
+using static WorkspacesLauncherUI.Data.AppLaunchInfoData;
 
-namespace ProjectsLauncherUI.Data
+namespace WorkspacesLauncherUI.Data
 {
-    public class AppLaunchInfoData : ProjectsEditorData<AppLaunchInfoWrapper>
+    public class AppLaunchInfoData : WorkspacesEditorData<AppLaunchInfoWrapper>
     {
         public struct AppLaunchInfoWrapper
         {

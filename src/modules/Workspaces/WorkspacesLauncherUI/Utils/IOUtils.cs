@@ -7,7 +7,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Threading.Tasks;
 
-namespace ProjectsLauncherUI.Utils
+namespace WorkspacesLauncherUI.Utils
 {
     public class IOUtils
     {

@@ -5,7 +5,7 @@
 using System;
 using System.IO;
 
-namespace ProjectsLauncherUI.Utils
+namespace WorkspacesLauncherUI.Utils
 {
     public class FolderUtils
     {
