@@ -253,6 +253,14 @@ namespace KeyboardEventHandlers
             if (data->lParam->vkCode == VK_RMENU)
             {
                 isAltRightKeyInvoked = true;
+
+                // Check if the left control is pressed when right Alt key (AltGr) is pressed. If it is release it.
+                if ((data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP) && ii.GetVirtualKeyState(VK_LCONTROL))
+                {
+                    std::vector<INPUT> keyEventList;
+                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(it->first.GetCtrlKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                    ii.SendVirtualInput(keyEventList);
+                }
             }
 
             // If the shortcut has been pressed down
@@ -532,7 +540,7 @@ namespace KeyboardEventHandlers
 
                 // Prevents the unintended release of the Ctrl part when AltGr is pressed. AltGr acts as both Ctrl and Alt being pressed.
                 // After triggering a shortcut involving AltGr, the system might attempt to release the Ctrl part. This code ensures Ctrl remains pressed, maintaining the AltGr state correctly.
-                if (isAltRightKeyInvoked && data->lParam->vkCode == VK_LCONTROL && it->first.GetActionKey() != VK_LCONTROL)
+                if (isAltRightKeyInvoked && data->lParam->vkCode == VK_LCONTROL && it->first.GetActionKey() != VK_LCONTROL && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
                 {
                     break;
                 }
