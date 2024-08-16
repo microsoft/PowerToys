@@ -151,11 +151,11 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to App Layouts.
+        ///   Looks up a localized string similar to Workspaces.
         /// </summary>
-        internal static string Projects {
+        internal static string Workspaces {
             get {
-                return ResourceManager.GetString("Projects", resourceCulture);
+                return ResourceManager.GetString("Workspaces", resourceCulture);
             }
         }
         

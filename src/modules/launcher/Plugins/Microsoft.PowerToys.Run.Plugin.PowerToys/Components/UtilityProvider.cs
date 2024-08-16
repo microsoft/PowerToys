@@ -185,12 +185,12 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
             }
 
             _utilities.Add(new Utility(
-                UtilityKey.Projects,
-                Resources.Projects,
-                generalSettings.Enabled.Projects,
+                UtilityKey.Workspaces,
+                Resources.Workspaces,
+                generalSettings.Enabled.Workspaces,
                 (_) =>
                 {
-                    using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ProjectsLaunchEditorEvent());
+                    using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.WorkspacesLaunchEditorEvent());
                     eventHandle.Set();
                     return true;
                 }));
@@ -240,7 +240,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
                                 case UtilityKey.RegistryPreview: u.Enable(generalSettings.Enabled.RegistryPreview); break;
                                 case UtilityKey.CropAndLock: u.Enable(generalSettings.Enabled.CropAndLock); break;
                                 case UtilityKey.EnvironmentVariables: u.Enable(generalSettings.Enabled.EnvironmentVariables); break;
-                                case UtilityKey.Projects: u.Enable(generalSettings.Enabled.Projects); break;
+                                case UtilityKey.Workspaces: u.Enable(generalSettings.Enabled.Workspaces); break;
                             }
                         }
 
