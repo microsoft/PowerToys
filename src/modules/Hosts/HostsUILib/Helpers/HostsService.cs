@@ -23,6 +23,7 @@ namespace HostsUILib.Helpers
     public class HostsService : IHostsService, IDisposable
     {
         private const string _backupSuffix = $"_PowerToysBackup_";
+        private const int _defaultBufferSize = 4096; // From System.IO.File source code
 
         private readonly SemaphoreSlim _asyncLock = new SemaphoreSlim(1, 1);
         private readonly IFileSystem _fileSystem;
@@ -128,15 +129,9 @@ namespace HostsUILib.Helpers
                 throw new NotRunningElevatedException();
             }
 
-            if (HasAttribute(FileAttributes.ReadOnly))
+            if (_fileSystem.FileInfo.FromFileName(HostsFilePath).IsReadOnly)
             {
                 throw new ReadOnlyHostsException();
-            }
-
-            var hidden = HasAttribute(FileAttributes.Hidden);
-            if (hidden)
-            {
-                RemoveAttribute(FileAttributes.Hidden);
             }
 
             var lines = new List<string>();
@@ -203,12 +198,16 @@ namespace HostsUILib.Helpers
                     _backupDone = true;
                 }
 
-                await _fileSystem.File.WriteAllLinesAsync(HostsFilePath, lines, Encoding);
-
-                if (hidden)
+                // FileMode.OpenOrCreate is necessary to prevent UnauthorizedAccessException when the hosts file is hidden
+                using var stream = _fileSystem.FileStream.Create(HostsFilePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read, _defaultBufferSize, FileOptions.Asynchronous);
+                using var writer = new StreamWriter(stream, Encoding);
+                foreach (var line in lines)
                 {
-                    SetAttribute(FileAttributes.Hidden);
+                    await writer.WriteLineAsync(line.AsMemory());
                 }
+
+                stream.SetLength(stream.Position);
+                await writer.FlushAsync();
             }
             finally
             {
@@ -305,31 +304,17 @@ namespace HostsUILib.Helpers
 
         public void RemoveReadOnlyAttribute()
         {
-            RemoveAttribute(FileAttributes.ReadOnly);
+            var fileInfo = _fileSystem.FileInfo.FromFileName(HostsFilePath);
+            if (fileInfo.IsReadOnly)
+            {
+                fileInfo.IsReadOnly = false;
+            }
         }
 
         public void Dispose()
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
-        }
-
-        private bool HasAttribute(FileAttributes attribute)
-        {
-            var fileInfo = _fileSystem.FileInfo.FromFileName(HostsFilePath);
-            return fileInfo.Attributes.HasFlag(attribute);
-        }
-
-        private void SetAttribute(FileAttributes attribute)
-        {
-            var fileInfo = _fileSystem.FileInfo.FromFileName(HostsFilePath);
-            fileInfo.Attributes |= attribute;
-        }
-
-        private void RemoveAttribute(FileAttributes attribute)
-        {
-            var fileInfo = _fileSystem.FileInfo.FromFileName(HostsFilePath);
-            fileInfo.Attributes &= ~attribute;
         }
 
         private void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
