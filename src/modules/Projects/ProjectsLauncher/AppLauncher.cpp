@@ -136,11 +136,18 @@ namespace FancyZones
 
 namespace
 {
-    using LaunchedApps = std::vector<std::tuple<ProjectsData::Project::Application, HWND, std::wstring>>;
-
-    LaunchedApps Prepare(std::vector<ProjectsData::Project::Application>& apps, const Utils::Apps::AppList& installedApps)
+    struct LaunchingApp
     {
-        LaunchedApps launchedApps{};
+        ProjectsData::Project::Application application;
+        HWND window;
+        std::wstring state;
+    };
+
+    using LaunchingApps = std::vector<LaunchingApp>;
+
+    LaunchingApps Prepare(std::vector<ProjectsData::Project::Application>& apps, const Utils::Apps::AppList& installedApps)
+    {
+        LaunchingApps launchedApps{};
         launchedApps.reserve(apps.size());
 
         for (auto& app : apps)
@@ -167,7 +174,7 @@ namespace
 
     auto launchFileName = ProjectsData::LaunchProjectsFile();
 
-    void UpdateLaunchStatus(LaunchedApps launchedApps)
+    void UpdateLaunchStatus(LaunchingApps launchedApps)
     {
         ProjectsData::AppLaunchData appData = ProjectsData::AppLaunchData();
         appData.appLaunchInfoList.reserve(launchedApps.size());
@@ -175,9 +182,9 @@ namespace
         for (auto& app : launchedApps)
         {
             ProjectsData::AppLaunchInfo appLaunchInfo = ProjectsData::AppLaunchInfo();
-            appLaunchInfo.name = get<0>(app).name;
-            appLaunchInfo.path = get<0>(app).path;
-            appLaunchInfo.state = get<2>(app);
+            appLaunchInfo.name = app.application.name;
+            appLaunchInfo.path = app.application.path;
+            appLaunchInfo.state = app.state;
 
             appData.appLaunchInfoList.push_back(appLaunchInfo);
         }
@@ -185,14 +192,14 @@ namespace
         json::to_file(launchFileName, ProjectsData::AppLaunchDataJSON::ToJson(appData));
     }
 
-    bool AllWindowsFound(const LaunchedApps& launchedApps)
+    bool AllWindowsFound(const LaunchingApps& launchedApps)
     {
-        return std::find_if(launchedApps.begin(), launchedApps.end(), [&](const std::tuple<ProjectsData::Project::Application, HWND, std::wstring>& val) {
-                   return std::get<1>(val) == nullptr;
+        return std::find_if(launchedApps.begin(), launchedApps.end(), [&](const LaunchingApp& val) {
+                   return val.window == nullptr;
                }) == launchedApps.end();
     };
 
-    bool AddOpenedWindows(LaunchedApps& launchedApps, const std::vector<HWND>& windows, const Utils::Apps::AppList& installedApps)
+    bool AddOpenedWindows(LaunchingApps& launchedApps, const std::vector<HWND>& windows, const Utils::Apps::AppList& installedApps)
     {
         bool statusChanged = false;
         for (HWND window : windows)
@@ -206,7 +213,7 @@ namespace
             auto insertionIter = launchedApps.end();
             for (auto iter = launchedApps.begin(); iter != launchedApps.end(); ++iter)
             {
-                if (std::get<1>(*iter) == nullptr && installedAppData.value().name == std::get<0>(*iter).name)
+                if (iter->window == nullptr && installedAppData.value().name == iter->application.name)
                 {
                     insertionIter = iter;
                 }
@@ -232,9 +239,9 @@ namespace
                     .width = static_cast<int>(std::round(width)),
                     .height = static_cast<int>(std::round(height)),
                 };
-                if (std::get<0>(*iter).position == windowPosition)
+                if (iter->application.position == windowPosition)
                 {
-                    Logger::debug(L"{} window already found at {} {}.", std::get<0>(*iter).name, std::get<0>(*iter).position.x, std::get<0>(*iter).position.y);
+                    Logger::debug(L"{} window already found at {} {}.", iter->application.name, iter->application.position.x, iter->application.position.y);
                     insertionIter = iter;
                     break;
                 }
@@ -242,8 +249,8 @@ namespace
 
             if (insertionIter != launchedApps.end())
             {
-                std::get<1>(*insertionIter) = window;
-                std::get<2>(*insertionIter) = L"launched";
+                insertionIter->window = window;
+                insertionIter->state = L"launched";
                 statusChanged = true;
             }
 
@@ -398,12 +405,12 @@ ProjectsData::Project Launch(ProjectsData::Project project)
     // Launch apps
     for (auto& app : launchedApps)
     {
-        if (!std::get<1>(app))
+        if (!app.window)
         {
-            if (!Launch(std::get<0>(app)))
+            if (!Launch(app.application))
             {
-                Logger::error(L"Failed to launch {}", std::get<0>(app).name);
-                std::get<2>(app) = L"failed";
+                Logger::error(L"Failed to launch {}", app.application.name);
+                app.state = L"failed";
                 UpdateLaunchStatus(launchedApps);
             }
         }
