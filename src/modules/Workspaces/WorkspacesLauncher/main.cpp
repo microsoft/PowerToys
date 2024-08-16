@@ -18,15 +18,15 @@
 #include <common/utils/UnhandledExceptionHandler.h>
 #include <common/utils/resources.h>
 
-const std::wstring moduleName = L"App Layouts\\ProjectsLauncher";
+const std::wstring moduleName = L"Workspaces\\WorkspacesLauncher";
 const std::wstring internalPath = L"";
 
 int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cmdShow)
 {
-    LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::projectsLauncherLoggerName);
+    LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::workspacesLauncherLoggerName);
     InitUnhandledExceptionHandler();  
 
-    if (powertoys_gpo::getConfiguredProjectsEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
+    if (powertoys_gpo::getConfiguredWorkspacesEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
     {
         Logger::warn(L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
         return 0;
@@ -34,7 +34,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 
     if (is_process_elevated())
     {
-        Logger::warn("App Layouts Launcher is elevated, restart");
+        Logger::warn("Workspaces Launcher is elevated, restart");
 
         constexpr DWORD exe_path_size = 0xFFFF;
         auto exe_path = std::make_unique<wchar_t[]>(exe_path_size);
@@ -58,24 +58,24 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     
-    // read projects
-    auto projectsFileName = WorkspacesData::WorkspacesFile();
-    std::vector<WorkspacesData::WorkspacesProject> projects;
+    // read workspaces
+    auto workspacesFileName = WorkspacesData::WorkspacesFile();
+    std::vector<WorkspacesData::WorkspacesProject> workspaces;
     try
     {
-        auto savedProjectsJson = json::from_file(projectsFileName);
-        if (savedProjectsJson.has_value())
+        auto savedWorkspacesJson = json::from_file(workspacesFileName);
+        if (savedWorkspacesJson.has_value())
         {
-            auto savedProjects = WorkspacesData::WorkspacesListJSON::FromJson(savedProjectsJson.value());
-            if (savedProjects.has_value())
+            auto savedWorkspaces = WorkspacesData::WorkspacesListJSON::FromJson(savedWorkspacesJson.value());
+            if (savedWorkspaces.has_value())
             {
-                projects = savedProjects.value();
+                workspaces = savedWorkspaces.value();
             }
             else
             {
                 Logger::critical("Incorrect Workspaces file");
                 std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), L"workspaces.json");
-                MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_PROJECTS).c_str(), MB_ICONERROR | MB_OK);
+                MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
                 return 1;
             }
         }
@@ -83,7 +83,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         {
             Logger::critical("Incorrect Workspaces file");
             std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), L"workspaces.json");
-            MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_PROJECTS).c_str(), MB_ICONERROR | MB_OK);
+            MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
             return 1;
         }
     }
@@ -91,15 +91,15 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     {
         Logger::critical("Exception on reading Workspaces file: {}", ex.what());
         std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_FILE_READING_ERROR), L"workspaces.json");
-        MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_PROJECTS).c_str(), MB_ICONERROR | MB_OK);
+        MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
         return 1;
     }
 
-    if (projects.empty())
+    if (workspaces.empty())
     {
         Logger::warn("Workspaces file is empty");
         std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_EMPTY_FILE), L"workspaces.json");
-        MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_PROJECTS).c_str(), MB_ICONERROR | MB_OK);
+        MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
         return 1;
     }
 
@@ -109,14 +109,14 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     if (cmdArgs.size() < 1)
     {
         Logger::warn("Incorrect command line arguments");
-        MessageBox(NULL, GET_RESOURCE_STRING(IDS_INCORRECT_ARGS).c_str(), GET_RESOURCE_STRING(IDS_PROJECTS).c_str(), MB_ICONERROR | MB_OK);
+        MessageBox(NULL, GET_RESOURCE_STRING(IDS_INCORRECT_ARGS).c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
         return 1;
     }
     
     std::wstring id(cmdArgs[0].begin(), cmdArgs[0].end());
     if (!id.empty())
     {
-        for (const auto& proj : projects)
+        for (const auto& proj : workspaces)
         {
             if (proj.id == id)
             {
@@ -128,9 +128,9 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 
     if (projectToLaunch.id.empty())
     {
-        Logger::critical(L"App Layout {} not found", id);
+        Logger::critical(L"Workspace {} not found", id);
         std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_PROJECT_NOT_FOUND), id);
-        MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_PROJECTS).c_str(), MB_ICONERROR | MB_OK);
+        MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
         return 1;
     }
 
@@ -149,7 +149,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     Logger::trace(L"Invoke point: {}", invokePoint);
 
     // launch apps
-    Logger::info(L"Launch App Layout {} : {}", projectToLaunch.name, projectToLaunch.id);
+    Logger::info(L"Launch Workspace {} : {}", projectToLaunch.name, projectToLaunch.id);
     auto monitors = MonitorUtils::IdentifyMonitors();
     std::vector<std::pair<std::wstring, std::wstring>> launchErrors{};
     auto start = std::chrono::high_resolution_clock::now();
@@ -158,15 +158,15 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     // update last-launched time
     time_t launchedTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     projectToLaunch.lastLaunchedTime = launchedTime;
-    for (int i = 0; i < projects.size(); i++)
+    for (int i = 0; i < workspaces.size(); i++)
     {
-        if (projects[i].id == projectToLaunch.id)
+        if (workspaces[i].id == projectToLaunch.id)
         {
-            projects[i] = projectToLaunch;
+            workspaces[i] = projectToLaunch;
             break;
         }
     }
-    json::to_file(projectsFileName, WorkspacesData::WorkspacesListJSON::ToJson(projects));
+    json::to_file(workspacesFileName, WorkspacesData::WorkspacesListJSON::ToJson(workspaces));
 
     // telemetry
     auto end = std::chrono::high_resolution_clock::now();

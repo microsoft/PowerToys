@@ -368,19 +368,19 @@ bool Launch(const WorkspacesData::WorkspacesProject::Application& app, ErrorList
 
 void Launch_UI()
 {
-    Logger::trace(L"Starting ProjectsLauncherUI");
+    Logger::trace(L"Starting WorkspacesLauncherUI");
 
     SHELLEXECUTEINFOW sei{ sizeof(sei) };
     sei.fMask = SEE_MASK_NOCLOSEPROCESS;
-    sei.lpFile = L"PowerToys.ProjectsLauncherUI.exe";
+    sei.lpFile = L"PowerToys.WorkspacesLauncherUI.exe";
     sei.nShow = SW_SHOWNORMAL;
     if (ShellExecuteExW(&sei))
     {
-        Logger::trace("Successfully started the ProjectsLauncherUI");
+        Logger::trace("Successfully started the WorkspacesLauncherUI");
     }
     else
     {
-        Logger::error(L"ProjectsLauncherUI failed to start. {}", get_last_error_or_default(GetLastError()));
+        Logger::error(L"WorkspacesLauncherUI failed to start. {}", get_last_error_or_default(GetLastError()));
     }
 }
 

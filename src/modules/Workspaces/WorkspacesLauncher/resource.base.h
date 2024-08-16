@@ -5,9 +5,9 @@
 //////////////////////////////
 // Non-localizable
 
-#define FILE_DESCRIPTION "PowerToys Projects Launcher"
-#define INTERNAL_NAME "PowerToys.ProjectsLauncher"
-#define ORIGINAL_FILENAME "PowerToys.ProjectsLauncher.exe"
+#define FILE_DESCRIPTION "PowerToys Workspaces Launcher"
+#define INTERNAL_NAME "PowerToys.WorkspacesLauncher"
+#define ORIGINAL_FILENAME "PowerToys.WorkspacesLauncher.exe"
 
 // Non-localizable
 //////////////////////////////

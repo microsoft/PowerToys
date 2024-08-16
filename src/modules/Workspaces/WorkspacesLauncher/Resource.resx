@@ -129,11 +129,11 @@
   <data name="Incorrect_file_error" xml:space="preserve">
     <value>Incorrect {0} file.</value>
   </data>
-  <data name="Projects" xml:space="preserve">
-    <value>App Layouts</value>
+  <data name="Workspaces" xml:space="preserve">
+    <value>Workspaces</value>
     <comment>Name of the module</comment>
   </data>
   <data name="Project_not_found" xml:space="preserve">
-    <value>App Layout {0} not found.</value>
+    <value>Workspace {0} not found.</value>
   </data>
 </root>

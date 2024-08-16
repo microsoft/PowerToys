@@ -47,12 +47,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="ProjectLauncherResource.base.rc">
+    <None Include="WorkspacesLauncherResource.base.rc">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Generated Files/ProjectLauncherResource.rc">
+    <ResourceCompile Include="Generated Files/WorkspacesLauncherResource.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
