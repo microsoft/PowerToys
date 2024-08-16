@@ -9,24 +9,24 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class ProjectsSettings : BasePTModuleSettings, ISettingsConfig
+    public class WorkspacesSettings : BasePTModuleSettings, ISettingsConfig
     {
-        public const string ModuleName = "App Layouts";
+        public const string ModuleName = "Workspaces";
         public const string ModuleVersion = "0.0.1";
         private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
         {
             WriteIndented = true,
         };
 
-        public ProjectsSettings()
+        public WorkspacesSettings()
         {
             Name = ModuleName;
             Version = ModuleVersion;
-            Properties = new ProjectsProperties();
+            Properties = new WorkspacesProperties();
         }
 
         [JsonPropertyName("properties")]
-        public ProjectsProperties Properties { get; set; }
+        public WorkspacesProperties Properties { get; set; }
 
         public string GetModuleName()
         {

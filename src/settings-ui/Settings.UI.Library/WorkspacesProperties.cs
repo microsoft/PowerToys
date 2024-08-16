@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class ProjectsProperties
+    public class WorkspacesProperties
     {
         public enum SortByProperty
         {
@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public static readonly HotkeySettings DefaultHotkeyValue = new HotkeySettings(true, false, false, true, 0x4F);
 
-        public ProjectsProperties()
+        public WorkspacesProperties()
         {
             Hotkey = new KeyboardKeysProperty(DefaultHotkeyValue);
         }

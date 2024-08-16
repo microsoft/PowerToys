@@ -25,12 +25,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         PowerRename,
         Run,
         QuickAccent,
-        Projects,
         ShortcutGuide,
         TextExtractor,
         VideoConference,
         MeasureTool,
         Hosts,
+        Workspaces,
         WhatsNew,
         RegistryPreview,
     }

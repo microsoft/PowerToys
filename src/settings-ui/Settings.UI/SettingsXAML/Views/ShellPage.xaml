@@ -116,11 +116,6 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AlwaysOnTop.png}" />
 
                 <NavigationViewItem
-                    x:Uid="Shell_Projects"
-                    helpers:NavHelper.NavigateTo="views:ProjectsPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Projects.png}" />
-
-                <NavigationViewItem
                     x:Uid="Shell_Awake"
                     helpers:NavHelper.NavigateTo="views:AwakePage"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Awake.png}" />
@@ -223,6 +218,11 @@
                     x:Uid="Shell_TextExtractor"
                     helpers:NavHelper.NavigateTo="views:PowerOcrPage"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExtractor.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_Workspaces"
+                    helpers:NavHelper.NavigateTo="views:WorkspacesPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}" />
 
                 <NavigationViewItem
                     x:Uid="Shell_VideoConference"

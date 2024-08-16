@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         {
             switch (moduleType)
             {
-                case ModuleType.AppLayouts: return "Projects/ModuleTitle";
+                case ModuleType.Workspaces: return "Workspaces/ModuleTitle";
                 case ModuleType.PowerAccent: return "QuickAccent/ModuleTitle";
                 case ModuleType.PowerOCR: return "TextExtractor/ModuleTitle";
                 case ModuleType.FindMyMouse:
@@ -32,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
             switch (moduleType)
             {
                 case ModuleType.AdvancedPaste: return "ms-appx:///Assets/Settings/Icons/AdvancedPaste.png";
-                case ModuleType.AppLayouts: return "ms-appx:///Assets/Settings/Icons/Projects.png";
+                case ModuleType.Workspaces: return "ms-appx:///Assets/Settings/Icons/Workspaces.png";
                 case ModuleType.PowerOCR: return "ms-appx:///Assets/Settings/Icons/TextExtractor.png";
                 case ModuleType.PowerAccent: return "ms-appx:///Assets/Settings/Icons/QuickAccent.png";
                 case ModuleType.MousePointerCrosshairs: return "ms-appx:///Assets/Settings/Icons/MouseCrosshairs.png";
@@ -66,7 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.PowerRename: return generalSettingsConfig.Enabled.PowerRename;
                 case ModuleType.PowerLauncher: return generalSettingsConfig.Enabled.PowerLauncher;
                 case ModuleType.PowerAccent: return generalSettingsConfig.Enabled.PowerAccent;
-                case ModuleType.AppLayouts: return generalSettingsConfig.Enabled.Projects;
+                case ModuleType.Workspaces: return generalSettingsConfig.Enabled.Workspaces;
                 case ModuleType.RegistryPreview: return generalSettingsConfig.Enabled.RegistryPreview;
                 case ModuleType.MeasureTool: return generalSettingsConfig.Enabled.MeasureTool;
                 case ModuleType.ShortcutGuide: return generalSettingsConfig.Enabled.ShortcutGuide;
@@ -99,7 +99,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.PowerRename: generalSettingsConfig.Enabled.PowerRename = isEnabled; break;
                 case ModuleType.PowerLauncher: generalSettingsConfig.Enabled.PowerLauncher = isEnabled; break;
                 case ModuleType.PowerAccent: generalSettingsConfig.Enabled.PowerAccent = isEnabled; break;
-                case ModuleType.AppLayouts: generalSettingsConfig.Enabled.Projects = isEnabled; break;
+                case ModuleType.Workspaces: generalSettingsConfig.Enabled.Workspaces = isEnabled; break;
                 case ModuleType.RegistryPreview: generalSettingsConfig.Enabled.RegistryPreview = isEnabled; break;
                 case ModuleType.MeasureTool: generalSettingsConfig.Enabled.MeasureTool = isEnabled; break;
                 case ModuleType.ShortcutGuide: generalSettingsConfig.Enabled.ShortcutGuide = isEnabled; break;
@@ -131,7 +131,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.PowerRename: return GPOWrapper.GetConfiguredPowerRenameEnabledValue();
                 case ModuleType.PowerLauncher: return GPOWrapper.GetConfiguredPowerLauncherEnabledValue();
                 case ModuleType.PowerAccent: return GPOWrapper.GetConfiguredQuickAccentEnabledValue();
-                case ModuleType.AppLayouts: return GPOWrapper.GetConfiguredProjectsEnabledValue();
+                case ModuleType.Workspaces: return GPOWrapper.GetConfiguredWorkspacesEnabledValue();
                 case ModuleType.RegistryPreview: return GPOWrapper.GetConfiguredRegistryPreviewEnabledValue();
                 case ModuleType.MeasureTool: return GPOWrapper.GetConfiguredScreenRulerEnabledValue();
                 case ModuleType.ShortcutGuide: return GPOWrapper.GetConfiguredShortcutGuideEnabledValue();
@@ -164,7 +164,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.PowerRename => typeof(PowerRenamePage),
                 ModuleType.PowerLauncher => typeof(PowerLauncherPage),
                 ModuleType.PowerAccent => typeof(PowerAccentPage),
-                ModuleType.AppLayouts => typeof(ProjectsPage),
+                ModuleType.Workspaces => typeof(WorkspacesPage),
                 ModuleType.RegistryPreview => typeof(RegistryPreviewPage),
                 ModuleType.MeasureTool => typeof(MeasureToolPage),
                 ModuleType.ShortcutGuide => typeof(ShortcutGuidePage),

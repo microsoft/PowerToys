@@ -70,10 +70,6 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AlwaysOnTop.png}"
                     Tag="AlwaysOnTop" />
                 <NavigationViewItem
-                    x:Uid="Shell_Projects"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Projects.png}"
-                    Tag="App Layouts" />
-                <NavigationViewItem
                     x:Uid="Shell_Awake"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Awake.png}"
                     Tag="Awake" />
@@ -157,6 +153,10 @@
                     x:Uid="Shell_TextExtractor"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExtractor.png}"
                     Tag="TextExtractor" />
+                <NavigationViewItem
+                    x:Uid="Shell_Workspaces"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}"
+                    Tag="Workspaces" />
                 <NavigationViewItem
                     x:Uid="Shell_VideoConference"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/VideoConferenceMute.png}"

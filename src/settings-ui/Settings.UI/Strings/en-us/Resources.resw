@@ -2060,8 +2060,8 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Oobe_PowerRename.Description" xml:space="preserve">
     <value>PowerRename enables you to perform simple bulk renaming, searching and replacing file names.</value>
   </data>
-  <data name="Oobe_Projects.Description" xml:space="preserve">
-    <value>The App Layouts utility enables you to launch a set of applications at once.</value>
+  <data name="Oobe_Workspaces.Description" xml:space="preserve">
+    <value>The Workspaces utility enables you to launch a set of applications at once.</value>
   </data>
   <data name="Oobe_Run.Description" xml:space="preserve">
     <value>PowerToys Run is a quick launcher for power users that contains some additional features without sacrificing performance.</value>
@@ -2149,11 +2149,11 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_PowerRename_HowToUse.Text" xml:space="preserve">
     <value>In File Explorer, right-click one or more selected files and select **Rename with PowerRename** from the context menu.</value>
   </data>
-  <data name="Oobe_Projects_HowToUse.Text" xml:space="preserve">
-    <value>In the App Layouts Editor window create App Layouts - a set of applications. You can launch App Layouts from the App Layouts Editor or by Shortcuts created in the App Layouts Editor.</value>
+  <data name="Oobe_Workspaces_HowToUse.Text" xml:space="preserve">
+    <value>In the Workspaces Editor window create Workspaces - a set of applications. You can launch Workspaces from the Workspaces Editor or by Shortcuts created in the Workspaces Editor.</value>
   </data>
-  <data name="Oobe_Projects_TipsAndTricks.Text" xml:space="preserve">
-    <value>The App Layouts utility helps you to have a predefined set of applications on your desktop, each application in a desired position.</value>
+  <data name="Oobe_Workspaces_TipsAndTricks.Text" xml:space="preserve">
+    <value>The Workspaces utility helps you to have a predefined set of applications on your desktop, each application in a desired position.</value>
   </data>
   <data name="Oobe_PowerRename_TipsAndTricks.Text" xml:space="preserve">
     <value>PowerRename supports searching for files using regular expressions to enable more advanced renaming functionalities.</value>
@@ -2219,8 +2219,8 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>PowerRename</value>
     <comment>Do not localize this string</comment>
   </data>
-  <data name="Oobe_Projects.Title" xml:space="preserve">
-    <value>App Layouts</value>
+  <data name="Oobe_Workspaces.Title" xml:space="preserve">
+    <value>Workspaces</value>
     <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_Run.Title" xml:space="preserve">
@@ -3127,31 +3127,31 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Shell_QuickAccent.Content" xml:space="preserve">
     <value>Quick Accent</value>
   </data>
-  <data name="Shell_Projects.Content" xml:space="preserve">
-    <value>App Layouts</value>
+  <data name="Shell_Workspaces.Content" xml:space="preserve">
+    <value>Workspaces</value>
   </data>
-  <data name="Projects_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable App Layouts</value>
-    <comment>"App Layouts" is the name of the utility</comment>
+  <data name="Workspaces_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Workspaces</value>
+    <comment>"Workspaces" is the name of the utility</comment>
   </data>
-  <data name="Projects_Activation_GroupSettings.Header" xml:space="preserve">
+  <data name="Workspaces_Activation_GroupSettings.Header" xml:space="preserve">
     <value>Activation</value>
   </data>
-  <data name="Projects_ActivationShortcut.Description" xml:space="preserve">
-    <value>Customize the shortcut to launch the App Layouts Editor</value>
+  <data name="Workspaces_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to launch the Workspaces Editor</value>
   </data>
-  <data name="Projects_ActivationShortcut.Header" xml:space="preserve">
+  <data name="Workspaces_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
-  <data name="Projects_LaunchEditorButtonControl.Description" xml:space="preserve">
-    <value>Create and manage App Layouts</value>
+  <data name="Workspaces_LaunchEditorButtonControl.Description" xml:space="preserve">
+    <value>Create and manage Workspaces</value>
   </data>
-  <data name="Projects_LaunchEditorButtonControl.Header" xml:space="preserve">
+  <data name="Workspaces_LaunchEditorButtonControl.Header" xml:space="preserve">
     <value>Launch editor</value>
   </data>
-  <data name="LearnMore_Projects.Text" xml:space="preserve">
-    <value>Learn more about the App Layouts utility</value>
-    <comment> App Layouts is the name of the module. </comment>
+  <data name="LearnMore_Workspaces.Text" xml:space="preserve">
+    <value>Learn more about the Workspaces utility</value>
+    <comment> Workspaces is the name of the module. </comment>
   </data>
   <data name="QuickAccent.ModuleDescription" xml:space="preserve">
     <value>Quick Accent is an alternative way to type accented characters, useful for when a keyboard doesn't support that specific accent.
@@ -4235,14 +4235,14 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Automatically close the AdvancedPaste window after it loses focus</value>
     <comment>AdvancedPaste is a product name, do not loc</comment>
   </data>
-  <data name="Projects.ModuleDescription" xml:space="preserve">
-    <value>App Layouts is a quick and easy way to launch multiple applications.</value>
+  <data name="Workspaces.ModuleDescription" xml:space="preserve">
+    <value>Workspaces is a quick and easy way to launch multiple applications.</value>
     <comment>{Locked="Always On Top"}</comment>
   </data>
-  <data name="Projects.ModuleTitle" xml:space="preserve">
-    <value>App Layouts</value>
+  <data name="Workspaces.ModuleTitle" xml:space="preserve">
+    <value>Workspaces</value>
   </data>
-  <data name="Projects_ShortDescription" xml:space="preserve">
-    <value>Create and launch App Layouts</value>
+  <data name="Workspaces_ShortDescription" xml:space="preserve">
+    <value>Create and launch Workspaces</value>
   </data>
 </root>

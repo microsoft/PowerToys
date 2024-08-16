@@ -14,19 +14,19 @@ using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class ProjectsViewModel : Observable
+    public class WorkspacesViewModel : Observable
     {
         private ISettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
-        private ProjectsSettings Settings { get; set; }
+        private WorkspacesSettings Settings { get; set; }
 
         private Func<string, int> SendConfigMSG { get; }
 
         public ButtonClickCommand LaunchEditorEventHandler { get; set; }
 
-        public ProjectsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<ProjectsSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public WorkspacesViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<WorkspacesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             ArgumentNullException.ThrowIfNull(settingsUtils);
 
@@ -39,7 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             InitializeEnabledValue();
 
-            // To obtain the settings configurations of Projects.
+            // To obtain the settings configurations of Workspaces.
             ArgumentNullException.ThrowIfNull(moduleSettingsRepository);
 
             Settings = moduleSettingsRepository.SettingsConfig;
@@ -54,13 +54,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void LaunchEditor()
         {
-            // send message to launch the zones editor;
-            SendConfigMSG("{\"action\":{\"App Layouts\":{\"action_name\":\"LaunchEditor\", \"value\":\"\"}}}");
+            // send message to launch the editor;
+            SendConfigMSG("{\"action\":{\"Workspaces\":{\"action_name\":\"LaunchEditor\", \"value\":\"\"}}}");
         }
 
         private void InitializeEnabledValue()
         {
-            ////_enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredProjectsEnabledValue();
+            ////_enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredWorkspacesEnabledValue();
             _enabledGpoRuleConfiguration = GpoRuleConfigured.NotConfigured;
             if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
@@ -70,7 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             else
             {
-                _isEnabled = GeneralSettingsConfig.Enabled.Projects;
+                _isEnabled = GeneralSettingsConfig.Enabled.Workspaces;
             }
         }
 
@@ -91,7 +91,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _isEnabled = value;
 
                     // Set the status in the general settings configuration
-                    GeneralSettingsConfig.Enabled.Projects = value;
+                    GeneralSettingsConfig.Enabled.Workspaces = value;
                     OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
                     SendConfigMSG(snd.ToString());
@@ -115,7 +115,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     if (value == null || value.IsEmpty())
                     {
-                        _hotkey = ProjectsProperties.DefaultHotkeyValue;
+                        _hotkey = WorkspacesProperties.DefaultHotkeyValue;
                     }
                     else
                     {
@@ -130,7 +130,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
-                            ProjectsSettings.ModuleName,
+                            WorkspacesSettings.ModuleName,
                             JsonSerializer.Serialize(Settings)));
                 }
             }
@@ -139,7 +139,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
-            SettingsUtils.SaveSettings(Settings.ToJsonString(), ProjectsSettings.ModuleName);
+            SettingsUtils.SaveSettings(Settings.ToJsonString(), WorkspacesSettings.ModuleName);
         }
 
         public void RefreshEnabledState()

@@ -462,18 +462,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool projects = true;
+        private bool workspaces = true;
 
-        [JsonPropertyName("Projects")]
-        public bool Projects
+        [JsonPropertyName("Workspaces")]
+        public bool Workspaces
         {
-            get => projects;
+            get => workspaces;
             set
             {
-                if (projects != value)
+                if (workspaces != value)
                 {
                     LogTelemetryEvent(value);
-                    projects = value;
+                    workspaces = value;
                     NotifyChange();
                 }
             }

@@ -24,8 +24,7 @@
   <ItemGroup>
     <None Remove="Assets\Settings\Modules\APDialog.dark.png" />
     <None Remove="Assets\Settings\Modules\APDialog.light.png" />
-    <None Remove="SettingsXAML\OOBE\Views\OobeProjects.xaml" />
-    <None Remove="SettingsXAML\Views\ProjectsPage.xaml" />
+    <None Remove="SettingsXAML\OOBE\Views\OobeWorkspaces.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -145,10 +144,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="SettingsXAML\OOBE\Views\OobeProjects.xaml">
+    <Page Update="SettingsXAML\OOBE\Views\OobeWorkspaces.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
-    <Page Update="SettingsXAML\Views\ProjectsPage.xaml">
+    <Page Update="SettingsXAML\Views\WorkspacesPage.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
   </ItemGroup>

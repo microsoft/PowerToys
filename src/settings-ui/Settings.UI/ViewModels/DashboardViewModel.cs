@@ -166,7 +166,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.PowerRename => GetModuleItemsPowerRename(),
                 ModuleType.PowerLauncher => GetModuleItemsPowerLauncher(),
                 ModuleType.PowerAccent => GetModuleItemsPowerAccent(),
-                ModuleType.AppLayouts => GetModuleItemsProjects(),
+                ModuleType.Workspaces => GetModuleItemsWorkspaces(),
                 ModuleType.RegistryPreview => GetModuleItemsRegistryPreview(),
                 ModuleType.MeasureTool => GetModuleItemsMeasureTool(),
                 ModuleType.ShortcutGuide => GetModuleItemsShortcutGuide(),
@@ -431,15 +431,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
-        private ObservableCollection<DashboardModuleItem> GetModuleItemsProjects()
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsWorkspaces()
         {
-            ISettingsRepository<ProjectsSettings> moduleSettingsRepository = SettingsRepository<ProjectsSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<WorkspacesSettings> moduleSettingsRepository = SettingsRepository<WorkspacesSettings>.GetInstance(new SettingsUtils());
             var settings = moduleSettingsRepository.SettingsConfig;
 
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("Projects_ShortDescription"), Shortcut = settings.Properties.Hotkey.Value.GetKeysList() },
-                new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("Projects_LaunchEditorButtonControl/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("FancyZones_LaunchEditorButtonControl/Description"), ButtonGlyph = "\uEB3C", ButtonClickHandler = ProjectsLaunchClicked },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("Workspaces_ShortDescription"), Shortcut = settings.Properties.Hotkey.Value.GetKeysList() },
+                new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("Workspaces_LaunchEditorButtonControl/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("FancyZones_LaunchEditorButtonControl/Description"), ButtonGlyph = "\uEB3C", ButtonClickHandler = WorkspacesLaunchClicked },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -513,10 +513,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SendConfigMSG("{\"action\":{\"FancyZones\":{\"action_name\":\"ToggledFZEditor\", \"value\":\"\"}}}");
         }
 
-        private void ProjectsLaunchClicked(object sender, RoutedEventArgs e)
+        private void WorkspacesLaunchClicked(object sender, RoutedEventArgs e)
         {
-            // send message to launch the projects editor;
-            SendConfigMSG("{\"action\":{\"App Layouts\":{\"action_name\":\"LaunchEditor\", \"value\":\"\"}}}");
+            // send message to launch the Workspaces editor;
+            SendConfigMSG("{\"action\":{\"Workspaces\":{\"action_name\":\"LaunchEditor\", \"value\":\"\"}}}");
         }
 
         private void KbmKeyLaunchClicked(object sender, RoutedEventArgs e)
