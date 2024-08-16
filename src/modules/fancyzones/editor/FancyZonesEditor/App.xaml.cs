@@ -145,7 +145,7 @@ namespace FancyZonesEditor
         private void App_WaitExit()
         {
             NativeEventWaiter.WaitForEventLoop(
-            interop.Constants.FZEExitEvent(),
+            PowerToys.Interop.Constants.FZEExitEvent(),
             () =>
             {
                 Logger.LogInfo("Exit event triggered");

@@ -96,7 +96,7 @@
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>$(SolutionDir)\src\;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
@@ -123,6 +123,7 @@
     <ClInclude Include="DLLProviderHelpers.h" />
     <ClInclude Include="Logging.h" />
     <ClInclude Include="MediaFoundationAPIProvider.h" />
+    <ClInclude Include="pch.h" />
     <ClInclude Include="SerializedSharedMemory.h" />
     <ClInclude Include="naming.h" />
     <ClInclude Include="MicrophoneDevice.h" />
