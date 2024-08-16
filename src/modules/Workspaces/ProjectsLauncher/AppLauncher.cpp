@@ -16,7 +16,7 @@
 #include <common/utils/winapi_error.h>
 
 #include <RegistryUtils.h>
-#include <WindowProperties/ProjectsWindowPropertyUtils.h>
+#include <WindowProperties/WorkspacesWindowPropertyUtils.h>
 
 using namespace winrt;
 using namespace Windows::Foundation;
@@ -492,7 +492,7 @@ bool Launch(ProjectsData::Project& project, const std::vector<ProjectsData::Proj
 
         if (FancyZones::SizeWindowToRect(window, currentMonitor, launchMinimized, launchMaximized, rect))
         {
-            ProjectsWindowProperties::StampProjectsLaunchedProperty(window);
+            WorkspacesWindowProperties::StampWorkspacesLaunchedProperty(window);
             Logger::trace(L"Placed {} to ({},{}) [{}x{}]", app.name, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
         }
         else
