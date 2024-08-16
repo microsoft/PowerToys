@@ -187,7 +187,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         }
     }
 
-    Trace::Projects::Launch(launchedSuccessfully, projectToLaunch, invokePoint, duration.count(), differentSetup, launchErrors);
+    Trace::Workspaces::Launch(launchedSuccessfully, projectToLaunch, invokePoint, duration.count(), differentSetup, launchErrors);
 
     CoUninitialize();
     return 0;

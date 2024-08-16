@@ -11,7 +11,7 @@ public:
     static void RegisterProvider() noexcept;
     static void UnregisterProvider() noexcept;
 
-    class Projects
+    class Workspaces
     {
     public:
         static void Enable(bool enabled) noexcept;

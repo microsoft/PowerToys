@@ -196,7 +196,7 @@ private:
         Logger::info("Enable");
         m_enabled = true;
 
-        Trace::Projects::Enable(true);
+        Trace::Workspaces::Enable(true);
 
         unsigned long powertoys_pid = GetCurrentProcessId();
         std::wstring executable_args = L"";
@@ -229,7 +229,7 @@ private:
         m_enabled = false;
         if (traceEvent)
         {
-            Trace::Projects::Enable(false);
+            Trace::Workspaces::Enable(false);
         }
 
         if (m_toggleEditorEvent)

@@ -23,7 +23,7 @@ void Trace::UnregisterProvider() noexcept
     TraceLoggingUnregister(g_hProvider);
 }
 
-void Trace::Projects::Enable(bool enabled) noexcept
+void Trace::Workspaces::Enable(bool enabled) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
@@ -33,7 +33,7 @@ void Trace::Projects::Enable(bool enabled) noexcept
         TraceLoggingBoolean(enabled, "Enabled"));
 }
 
-void Trace::Projects::Launch(bool success, 
+void Trace::Workspaces::Launch(bool success, 
     const WorkspacesData::WorkspacesProject& project, 
     InvokePoint invokePoint, 
     double launchTimeSeconds, 
