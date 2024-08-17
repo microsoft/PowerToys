@@ -12,7 +12,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace MouseJumpUI.Helpers;
 
-internal class SettingsHelper
+internal sealed class SettingsHelper
 {
     public SettingsHelper()
     {
