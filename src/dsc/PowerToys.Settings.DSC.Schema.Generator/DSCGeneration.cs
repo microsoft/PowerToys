@@ -21,7 +21,7 @@ internal sealed class DSCGeneration
         public string Type;
     }
 
-    private static readonly Dictionary<string, AdditionalPropertiesInfo> AdditionalPropertiesInfoPerModule = new Dictionary<string, AdditionalPropertiesInfo> { { "PowerLauncher", new AdditionalPropertiesInfo { Name = "Plugins", Type = "Hashtable[]" } } };
+    private static readonly Dictionary<string, AdditionalPropertiesInfo> AdditionalPropertiesInfoPerModule = new Dictionary<string, AdditionalPropertiesInfo> { { "PowerLauncher", new AdditionalPropertiesInfo { Name = "Plugins", Type = "Hashtable[]" } }, { "ImageResizer", new AdditionalPropertiesInfo { Name = "ImageresizerSizes", Type = "Hashtable[]" } } };
 
     private static string EmitEnumDefinition(Type type)
     {
