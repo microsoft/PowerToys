@@ -1,71 +1,68 @@
-﻿<Window x:Class="WorkspacesLauncherUI.StatusWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:ui="http://schemas.modernwpf.com/2019"
-        xmlns:local="clr-namespace:WorkspacesLauncherUI"
-        xmlns:props="clr-namespace:WorkspacesLauncherUI.Properties"
-        mc:Ignorable="d"
-        Background="{DynamicResource PrimaryBackgroundBrush}"
-        Title="{x:Static props:Resources.LauncherWindowTitle}"
-        Width="350"
-        Height="340"
-        ResizeMode="NoResize"
-        ui:TitleBar.Background="{DynamicResource PrimaryBackgroundBrush}"
-        ui:TitleBar.InactiveBackground="{DynamicResource TertiaryBackgroundBrush}"
-        ui:WindowHelper.UseModernWindowStyle="True"
-        WindowStartupLocation="CenterScreen"
-        Closing="Window_Closing"
-        Topmost="True"
-        BorderThickness="5"
-        BorderBrush="Red">
-    <Grid
-        Margin="5"
-        Background="Transparent">
+﻿<Window
+    x:Class="WorkspacesLauncherUI.StatusWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:WorkspacesLauncherUI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:props="clr-namespace:WorkspacesLauncherUI.Properties"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    Title="{x:Static props:Resources.LauncherWindowTitle}"
+    Width="350"
+    Height="340"
+    ui:TitleBar.Background="{DynamicResource PrimaryBackgroundBrush}"
+    ui:TitleBar.InactiveBackground="{DynamicResource TertiaryBackgroundBrush}"
+    ui:WindowHelper.UseModernWindowStyle="True"
+    Background="{DynamicResource PrimaryBackgroundBrush}"
+    BorderBrush="Red"
+    BorderThickness="5"
+    Closing="Window_Closing"
+    ResizeMode="NoResize"
+    Topmost="True"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+    <Grid Margin="5" Background="Transparent">
         <Grid.RowDefinitions>
-            <RowDefinition Height="1*"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
-        <ScrollViewer
-            Grid.ColumnSpan="2">
+        <ScrollViewer Grid.ColumnSpan="2">
             <StackPanel>
-                <ItemsControl
-                    ItemsSource="{Binding AppsListed, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
+                <ItemsControl ItemsSource="{Binding AppsListed, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="auto"/>
-                                    <ColumnDefinition Width="1*"/>
-                                    <ColumnDefinition Width="auto"/>
+                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition Width="1*" />
+                                    <ColumnDefinition Width="auto" />
                                 </Grid.ColumnDefinitions>
                                 <Image
                                     Width="20"
                                     Height="20"
+                                    Margin="10"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    Margin="10"
-                                    Source="{Binding IconBitmapImage}"/>
+                                    Source="{Binding IconBitmapImage}" />
                                 <TextBlock
                                     Grid.Column="1"
-                                    Text="{Binding Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                    VerticalAlignment="Center"
                                     FontSize="14"
                                     FontWeight="Normal"
-                                    VerticalAlignment="Center"/>
+                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                    Text="{Binding Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                                 <Image
                                     Grid.Column="2"
                                     Width="20"
                                     Height="20"
+                                    Margin="10"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    Margin="10"
-                                    Source="{Binding StateImageSource}"/>
+                                    Source="{Binding StateImageSource}" />
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -73,27 +70,25 @@
             </StackPanel>
         </ScrollViewer>
         <Button
-            Grid.Row="1"
             x:Name="CancelButton"
+            Grid.Row="1"
+            Height="36"
             Margin="5,5,5,5"
             HorizontalAlignment="Stretch"
-            Height="36"
-            Content="{x:Static props:Resources.CancelLaunch}"
-            Background="{DynamicResource SecondaryBackgroundBrush}"
             AutomationProperties.Name="{x:Static props:Resources.CancelLaunch}"
-            Click="CancelButtonClicked">
-        </Button>
+            Background="{DynamicResource SecondaryBackgroundBrush}"
+            Click="CancelButtonClicked"
+            Content="{x:Static props:Resources.CancelLaunch}" />
         <Button
+            x:Name="DismissButton"
             Grid.Row="1"
             Grid.Column="1"
-            x:Name="DismissButton"
-            HorizontalAlignment="Stretch"
-            Margin="5,5,5,5"
             Height="36"
-            Content="{x:Static props:Resources.Dismiss}"
+            Margin="5,5,5,5"
+            HorizontalAlignment="Stretch"
             AutomationProperties.Name="{x:Static props:Resources.Dismiss}"
             Click="DismissButtonClicked"
-            Style="{StaticResource AccentButtonStyle}">
-        </Button>
+            Content="{x:Static props:Resources.Dismiss}"
+            Style="{StaticResource AccentButtonStyle}" />
     </Grid>
 </Window>

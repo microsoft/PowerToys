@@ -29,9 +29,7 @@
                     Severity="Informational" />
                 <controls:SettingsGroup x:Uid="Workspaces_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
 
-                    <tkcontrols:SettingsCard
-                        x:Uid="Workspaces_ActivationShortcut"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <tkcontrols:SettingsCard x:Uid="Workspaces_ActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 

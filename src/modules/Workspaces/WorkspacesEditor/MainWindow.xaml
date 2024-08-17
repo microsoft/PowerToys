@@ -1,4 +1,4 @@
-<Window
+﻿<Window
     x:Class="WorkspacesEditor.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -8,26 +8,22 @@
     xmlns:ui="http://schemas.modernwpf.com/2019"
     x:Name="WorkspacesMainWindow"
     Title="{x:Static props:Resources.MainTitle}"
+    MinWidth="700"
+    MinHeight="680"
     ui:TitleBar.Background="{DynamicResource PrimaryBackgroundBrush}"
     ui:TitleBar.InactiveBackground="{DynamicResource TertiaryBackgroundBrush}"
     ui:TitleBar.IsIconVisible="True"
     ui:WindowHelper.UseModernWindowStyle="True"
-    MinWidth="700"
-    MinHeight="680"
     AutomationProperties.Name="Workspaces Editor"
+    Background="{DynamicResource PrimaryBackgroundBrush}"
     Closing="OnClosing"
     ContentRendered="OnContentRendered"
     ResizeMode="CanResize"
     WindowStartupLocation="CenterOwner"
-    mc:Ignorable="d"
-    Background="{DynamicResource PrimaryBackgroundBrush}">
-    <Border
-        CornerRadius="20"
-        BorderThickness="1">
+    mc:Ignorable="d">
+    <Border BorderThickness="1" CornerRadius="20">
         <Grid Margin="0,10,0,0">
-            <Frame
-                x:Name="ContentFrame"
-                NavigationUIVisibility="Hidden"/>
+            <Frame x:Name="ContentFrame" NavigationUIVisibility="Hidden" />
         </Grid>
     </Border>
 </Window>
