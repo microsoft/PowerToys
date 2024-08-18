@@ -151,15 +151,6 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Workspaces.
-        /// </summary>
-        internal static string Workspaces {
-            get {
-                return ResourceManager.GetString("Workspaces", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Registry Preview.
         /// </summary>
         internal static string Registry_Preview {
@@ -201,6 +192,15 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Properties {
         internal static string Text_Extractor {
             get {
                 return ResourceManager.GetString("Text_Extractor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Workspaces Editor.
+        /// </summary>
+        internal static string Workspaces_Editor {
+            get {
+                return ResourceManager.GetString("Workspaces_Editor", resourceCulture);
             }
         }
     }

@@ -184,9 +184,11 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
                     }));
             }
 
-            _utilities.Add(new Utility(
+            if (GPOWrapper.GetConfiguredWorkspacesEnabledValue() != GpoRuleConfigured.Disabled)
+            {
+                _utilities.Add(new Utility(
                 UtilityKey.Workspaces,
-                Resources.Workspaces,
+                Resources.Workspaces_Editor,
                 generalSettings.Enabled.Workspaces,
                 (_) =>
                 {
@@ -194,6 +196,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
                     eventHandle.Set();
                     return true;
                 }));
+            }
 
             _watcher = new FileSystemWatcher
             {
