@@ -231,11 +231,11 @@ namespace KeyboardEventHandlers
             static bool isAltRightKeyInvoked = false;
 
             // Remember which modifier key was pressed initially
-            if (data->lParam->vkCode == VK_RWIN || data->lParam->vkCode == VK_RCONTROL || data->lParam->vkCode == VK_RMENU || data->lParam->vkCode == VK_RSHIFT)
+            if(ii.GetVirtualKeyState(VK_RWIN) || ii.GetVirtualKeyState(VK_RCONTROL) || ii.GetVirtualKeyState(VK_RMENU) || ii.GetVirtualKeyState(VK_RSHIFT))
             {
                 it->second.modifierKeyInvoked = ModifierKey::Right;
             }
-            else if (data->lParam->vkCode == VK_LWIN || data->lParam->vkCode == VK_LCONTROL || data->lParam->vkCode == VK_LMENU || data->lParam->vkCode == VK_LSHIFT)
+            else if (ii.GetVirtualKeyState(VK_LWIN) || ii.GetVirtualKeyState(VK_LCONTROL) || ii.GetVirtualKeyState(VK_LMENU) || ii.GetVirtualKeyState(VK_LSHIFT))
             {
                 it->second.modifierKeyInvoked = ModifierKey::Left;
             }
@@ -258,6 +258,31 @@ namespace KeyboardEventHandlers
                     isAltRightKeyInvoked = true;
                 }
             }
+
+            // Check if Alt Right key is Ctrl Left + Alt Right (Altgr) for US-EN keyboard layout
+             if ((!Helpers::IsModifierKey(data->lParam->vkCode)))
+             {
+                auto previousModifierKeys = state.GetPreviousModifierKey();
+                if (isAltRightKeyInvoked == true)
+                {
+                    for (auto key : previousModifierKeys)
+                    {
+                        if (key != NULL)
+                        {
+                            if (it->first.GetCtrlKey(it->second.modifierKeyInvoked) == key)
+                            {
+                                isAltRightKeyInvoked = true;
+                                break;
+                            }
+                            else
+                            {
+                                isAltRightKeyInvoked = false;
+                            }
+                        }
+                    }
+                }
+             }
+
             // If a shortcut is currently in the invoked state then skip till the shortcut that is currently invoked and pressed key is not action key
             if (data->lParam->vkCode != it->first.GetActionKey() && isShortcutInvoked && !it->second.isShortcutInvoked)
             {
@@ -560,7 +585,7 @@ namespace KeyboardEventHandlers
                 // Prevents the unintended release of the Ctrl part when AltGr is pressed. AltGr acts as both Ctrl and Alt being pressed.
                 // After triggering a shortcut involving AltGr, the system might attempt to release the Ctrl part. This code ensures Ctrl remains pressed, maintaining the AltGr state correctly.
                 
-                if (isAltRightKeyInvoked && data->lParam->vkCode == VK_LCONTROL && it->first.GetActionKey() != VK_LCONTROL && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+                if (isAltRightKeyInvoked && data->lParam->vkCode == VK_LCONTROL && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
                 {
                     return 0;
                 }
@@ -615,7 +640,7 @@ namespace KeyboardEventHandlers
                             // Set original shortcut key down state except the action key and the released modifier since the original action key may or may not be held down. If it is held down it will generate it's own key message
                             Helpers::SetModifierKeyEvents(it->first, it->second.modifierKeyInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, Shortcut(), data->lParam->vkCode);
                         }
-                        else if (isAltRightKeyInvoked && data->lParam->vkCode == VK_RMENU && state.GetPreviousModifierKey().size() == 0)
+                        else if (isAltRightKeyInvoked && data->lParam->vkCode == VK_RMENU)
                         {
                             isAltRightKeyInvoked = false;
                         }
@@ -624,7 +649,7 @@ namespace KeyboardEventHandlers
                         Helpers::SetDummyKeyEvent(keyEventList, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                     }
 
-                    if (!isAltRightKeyInvoked || (isAltRightKeyInvoked && data->lParam->vkCode == VK_RMENU && state.GetPreviousModifierKey().size() == 0))
+                    if (!isAltRightKeyInvoked || (isAltRightKeyInvoked && data->lParam->vkCode == VK_RMENU))
                     {
                         // Reset the remap state
                         it->second.isShortcutInvoked = false;

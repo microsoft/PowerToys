@@ -775,8 +775,8 @@ namespace RemappingLogicTests
             mockedInputHandler.SendVirtualInput(inputs5);
 
             // Alt, D, LWin key states should be unchanged, RWin, B should be true
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_LWIN), false);
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_RWIN), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_LWIN), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_RWIN), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x42), true);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x44), false);
@@ -794,6 +794,75 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_RWIN), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x42), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x44), false);
+        }
+
+        TEST_METHOD (RemappedShortcutWithCtrlBothModifier_ShouldSetRemappedShortcut_OnKeyEvent)
+        {
+            // Remap Ctrl+A to B
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey(0x41);
+            Shortcut dest;
+            dest.SetKey(0x44);
+            testState.AddOSLevelShortcut(src, dest);
+
+            // Test 2 cases for first remap - LCtrl, A, A(Up), LCtrl(Up). RCtrl, A, A(Up), RCtrl(Up)
+            std::vector<INPUT> inputs1{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LCONTROL } },
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+            };
+
+            // Send LCtrl+A keydown
+            mockedInputHandler.SendVirtualInput(inputs1);
+
+            // LCtrl, RCtrl, A key states should be unchanged, B should be true
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_LCONTROL), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_RCONTROL), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x44), true);
+
+            std::vector<INPUT> inputs2{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A', .dwFlags = KEYEVENTF_KEYUP } },
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LCONTROL, .dwFlags = KEYEVENTF_KEYUP } },
+            };
+
+            // Release LCtrl+A
+            mockedInputHandler.SendVirtualInput(inputs2);
+
+            // LCtrl, RCtrl, A, B key states should be unchanged
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_LCONTROL), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_RCONTROL), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x44), false);
+
+            // Case 1.2
+            std::vector<INPUT> inputs3{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RCONTROL } },
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+            };
+
+            // Send RCtrl+A keydown
+            mockedInputHandler.SendVirtualInput(inputs3);
+
+            // LCtrl, RCtrl, A key states should be unchanged, B should be true
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_RCONTROL), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_LCONTROL), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x44), true);
+
+            std::vector<INPUT> inputs4{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A', .dwFlags = KEYEVENTF_KEYUP } },
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RCONTROL, .dwFlags = KEYEVENTF_KEYUP } },
+            };
+
+            // Release RCtrl+A
+            mockedInputHandler.SendVirtualInput(inputs4);
+
+            // LCtrl, RCtrl, A, V key states should be unchanged
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_LCONTROL), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_RCONTROL), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x44), false);
         }
 
