@@ -20,6 +20,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_81_0" displayName="$(string.SUPPORTED_POWERTOYS_0_81_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_81_1" displayName="$(string.SUPPORTED_POWERTOYS_0_81_1)"/>
       <definition name="SUPPORTED_POWERTOYS_0_83_0" displayName="$(string.SUPPORTED_POWERTOYS_0_83_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_84_0" displayName="$(string.SUPPORTED_POWERTOYS_0_84_0)"/>
     </definitions>
   </supportedOn>
   <categories>
