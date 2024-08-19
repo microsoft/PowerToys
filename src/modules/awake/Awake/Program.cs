@@ -218,6 +218,17 @@ namespace Awake
                     }
 
                     ScaffoldConfiguration(settingsPath);
+
+                    if (pid != 0)
+                    {
+                        Logger.LogInfo($"Bound to target process while also using PowerToys settings: {pid}");
+
+                        RunnerHelper.WaitForPowerToysRunner(pid, () =>
+                        {
+                            Logger.LogInfo($"Triggered PID-based exit handler for PID {pid}.");
+                            Exit(Resources.AWAKE_EXIT_BINDING_HOOK_MESSAGE, 0);
+                        });
+                    }
                 }
                 catch (Exception ex)
                 {
