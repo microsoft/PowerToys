@@ -60,8 +60,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void InitializeEnabledValue()
         {
-            ////_enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredWorkspacesEnabledValue();
-            _enabledGpoRuleConfiguration = GpoRuleConfigured.NotConfigured;
+            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredWorkspacesEnabledValue();
             if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
                 // Get the enabled state from GPO.
