@@ -18,8 +18,6 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 {
     public class Main : IPlugin, IPluginI18n, IContextMenu, IDisposable
     {
-        private static readonly object _convertLock = new object();
-
         public string Name => Properties.Resources.plugin_name;
 
         public string Description => Properties.Resources.plugin_description;
@@ -52,16 +50,9 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 return new List<Result>();
             }
 
-            List<Result> result = null;
-            lock (_convertLock)
-            {
-                // Convert
-                result = UnitHandler.Convert(convertModel)
+            return UnitHandler.Convert(convertModel)
                 .Select(x => GetResult(x))
                 .ToList();
-            }
-
-            return result;
         }
 
         private Result GetResult(UnitConversionResult result)
