@@ -125,7 +125,7 @@ void FancyZonesWindowProperties::SetTabSortKeyWithinZone(HWND window, std::optio
     }
 }
 
-bool FancyZonesWindowProperties::RetrieveFilteringProperties(HWND window)
+bool FancyZonesWindowProperties::IsLaunchedByWorkspaces(HWND window)
 {
     HANDLE handle = ::GetProp(window, WorkspacesWindowProperties::Properties::LaunchedByWorkspacesID);
     return handle != nullptr;

@@ -66,7 +66,7 @@ FancyZonesWindowProcessing::ProcessabilityType FancyZonesWindowProcessing::Defin
     }
 
     // Ignore windows launched by Workspaces
-    if (FancyZonesWindowProperties::RetrieveFilteringProperties(window))
+    if (FancyZonesWindowProperties::IsLaunchedByWorkspaces(window))
     {
         return ProcessabilityType::LaunchedByWorkspaces;
 	}

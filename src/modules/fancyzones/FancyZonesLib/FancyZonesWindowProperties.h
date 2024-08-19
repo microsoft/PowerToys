@@ -28,6 +28,6 @@ namespace FancyZonesWindowProperties
     std::optional<size_t> GetTabSortKeyWithinZone(HWND window);
     void SetTabSortKeyWithinZone(HWND window, std::optional<size_t> tabSortKeyWithinZone);
 
-    bool RetrieveFilteringProperties(HWND window);
+    bool IsLaunchedByWorkspaces(HWND window);
 }
 
