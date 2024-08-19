@@ -1,6 +1,7 @@
 #include "DisplayUtils.h"
 
 #include <algorithm>
+#include <cwctype>
 #include <iterator>
 
 #include <dpi_aware.h>
@@ -10,15 +11,10 @@
 
 namespace DisplayUtils
 {
-    constexpr bool not_digit(wchar_t ch)
-    {
-        return '0' <= ch && ch <= '9';
-    }
-
     std::wstring remove_non_digits(const std::wstring& input)
     {
         std::wstring result;
-        std::copy_if(input.begin(), input.end(), std::back_inserter(result), not_digit);
+        std::copy_if(input.begin(), input.end(), std::back_inserter(result), [](wchar_t ch) { return std::iswdigit(ch); });
         return result;
     }
 
