@@ -5,6 +5,7 @@
 using System;
 using System.Windows;
 using System.Windows.Interop;
+using ManagedCommon;
 using WorkspacesEditor.Utils;
 using WorkspacesEditor.ViewModels;
 
@@ -15,8 +16,6 @@ namespace WorkspacesEditor
     /// </summary>
     public partial class MainWindow : Window
     {
-        private bool haveTriedToGetFocusAlready;
-
         public MainViewModel MainViewModel { get; set; }
 
         private static MainPage _mainPage;
@@ -44,42 +43,6 @@ namespace WorkspacesEditor
             MaxHeight = SystemParameters.PrimaryScreenHeight;
         }
 
-        private void BringToFront()
-        {
-            // Get the window handle of the Workspaces Editor window
-            IntPtr handle = new WindowInteropHelper(this).Handle;
-
-            // Get the handle of the window currently in the foreground
-            IntPtr foregroundWindowHandle = NativeMethods.GetForegroundWindow();
-
-            // Get the thread IDs of the current thread and the thread of the foreground window
-            uint currentThreadId = NativeMethods.GetCurrentThreadId();
-            uint activeThreadId = NativeMethods.GetWindowThreadProcessId(foregroundWindowHandle, IntPtr.Zero);
-
-            // Check if the active thread is different from the current thread
-            if (activeThreadId != currentThreadId)
-            {
-                // Attach the input processing mechanism of the current thread to the active thread
-                NativeMethods.AttachThreadInput(activeThreadId, currentThreadId, true);
-
-                // Set the Workspaces Editor window as the foreground window
-                NativeMethods.SetForegroundWindow(handle);
-
-                // Detach the input processing mechanism of the current thread from the active thread
-                NativeMethods.AttachThreadInput(activeThreadId, currentThreadId, false);
-            }
-            else
-            {
-                // Set the Workspaces Editor window as the foreground window
-                NativeMethods.SetForegroundWindow(handle);
-            }
-
-            // Bring the Workspaces Editor window to the foreground and activate it
-            NativeMethods.SwitchToThisWindow(handle, true);
-
-            haveTriedToGetFocusAlready = true;
-        }
-
         private void OnClosing(object sender, EventArgs e)
         {
             App.Current.Shutdown();
@@ -88,10 +51,9 @@ namespace WorkspacesEditor
         // This is required to fix a WPF rendering bug when using custom chrome
         private void OnContentRendered(object sender, EventArgs e)
         {
-            if (!haveTriedToGetFocusAlready)
-            {
-                BringToFront();
-            }
+            // Get the window handle of the Workspaces Editor window
+            IntPtr handle = new WindowInteropHelper(this).Handle;
+            WindowHelpers.BringToForeground(handle);
 
             InvalidateVisual();
         }
