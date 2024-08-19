@@ -407,6 +407,7 @@ dxgi
 dxgidebug
 dxgiformat
 dxguid
+easeofaccess
 ecount
 EData
 Edid
@@ -672,6 +673,7 @@ imageresizerinput
 imageresizersettings
 imagingdevices
 ime
+imperialounce
 inetcpl
 Infobar
 INFOEXAMPLE
@@ -1672,6 +1674,7 @@ USERDATA
 Userenv
 USESHOWWINDOW
 USESTDHANDLES
+usounce
 USRDLL
 UType
 uuidv
@@ -1710,6 +1713,7 @@ vih
 VIRTUALDESK
 visiblecolorformats
 Visibletrue
+visualeffects
 VKey
 vmovl
 vorrq

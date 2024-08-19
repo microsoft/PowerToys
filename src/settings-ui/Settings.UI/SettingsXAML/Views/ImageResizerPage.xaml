@@ -15,7 +15,9 @@
     mc:Ignorable="d">
     <Page.Resources>
         <converters:ImageResizerFitToStringConverter x:Key="ImageResizerFitToStringConverter" />
+        <converters:ImageResizerFitToIntConverter x:Key="ImageResizerFitToIntConverter" />
         <converters:ImageResizerUnitToStringConverter x:Key="ImageResizerUnitToStringConverter" />
+        <converters:ImageResizerUnitToIntConverter x:Key="ImageResizerUnitToIntConverter" />
         <toolkitconverters:BoolToObjectConverter
             x:Key="BoolToComboBoxIndexConverter"
             FalseValue="1"
@@ -120,7 +122,7 @@
                                                             x:Uid="ImageResizer_Fit"
                                                             Width="240"
                                                             HorizontalAlignment="Left"
-                                                            SelectedIndex="{x:Bind Fit, Mode=TwoWay}">
+                                                            SelectedIndex="{x:Bind Fit, Mode=TwoWay, Converter={StaticResource ImageResizerFitToIntConverter}}">
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fill" />
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fit" />
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Stretch" />
@@ -146,7 +148,7 @@
                                                         <ComboBox
                                                             x:Uid="ImageResizer_Size"
                                                             Width="240"
-                                                            SelectedIndex="{Binding Unit, Mode=TwoWay}">
+                                                            SelectedIndex="{Binding Unit, Mode=TwoWay, Converter={StaticResource ImageResizerUnitToIntConverter}}">
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_CM" />
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Inches" />
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Percent" />
