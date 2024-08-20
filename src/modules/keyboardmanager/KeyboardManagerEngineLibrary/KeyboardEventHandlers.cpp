@@ -250,17 +250,9 @@ namespace KeyboardEventHandlers
             static bool isAltRightKeyInvoked = false;
 
             // Check if the right Alt key (AltGr) is pressed.
-            if (data->lParam->vkCode == VK_RMENU)
+            if (data->lParam->vkCode == VK_RMENU && ii.GetVirtualKeyState(VK_LCONTROL))
             {
                 isAltRightKeyInvoked = true;
-
-                // Check if the left control is pressed when right Alt key (AltGr) is pressed. If it is release it.
-                if ((data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP) && ii.GetVirtualKeyState(VK_LCONTROL))
-                {
-                    std::vector<INPUT> keyEventList;
-                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(it->first.GetCtrlKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                    ii.SendVirtualInput(keyEventList);
-                }
             }
 
             // If the shortcut has been pressed down
