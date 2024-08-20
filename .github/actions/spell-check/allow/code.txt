@@ -80,6 +80,7 @@ yinwang
 # KEYS
 
 altdown
+Altgr
 BUTTONUP
 CTRLALTDEL
 Ctrls
