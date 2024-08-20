@@ -220,7 +220,7 @@ class {{module.Name}} {
         }
 
         var enumsBlock = string.Join(DoubleNewLine, enumsToEmit.Select(EmitEnumDefinition));
-        var version = interop.CommonManaged.GetProductVersion().Replace("v", string.Empty);
+        var version = PowerToys.Interop.CommonManaged.GetProductVersion().Replace("v", string.Empty);
         var outputResult = string.Empty;
 
         outputResult += $$"""
@@ -393,7 +393,7 @@ class {{module.Name}} {
 
     public static string EmitManifestFileContents()
     {
-        var version = interop.CommonManaged.GetProductVersion().Replace("v", string.Empty);
+        var version = PowerToys.Interop.CommonManaged.GetProductVersion().Replace("v", string.Empty) + ".0";
         var generatedDate = DateTime.Now.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture);
 
         return $$"""
