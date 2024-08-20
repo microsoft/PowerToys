@@ -221,3 +221,8 @@ artanh
 arsinh
 arcosh
 
+# Linux
+
+dbus
+anypass
+gpg

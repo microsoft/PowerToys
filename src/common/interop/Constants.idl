@@ -1,0 +1,41 @@
+namespace PowerToys
+{
+    namespace Interop
+    {
+        [default_interface] static runtimeclass Constants {
+            static UInt32 VK_WIN_BOTH {get; };
+            static String AppDataPath();
+            static String PowerLauncherSharedEvent();
+            static String PowerLauncherCentralizedHookSharedEvent();
+            static String RunSendSettingsTelemetryEvent();
+            static String RunExitEvent();
+            static String FZEExitEvent();
+            static String FZEToggleEvent();
+            static String ColorPickerSendSettingsTelemetryEvent();
+            static String ShowColorPickerSharedEvent();
+            static String ShowAdvancedPasteSharedEvent();
+            static String AdvancedPasteMarkdownEvent();
+            static String AdvancedPasteJsonEvent();
+            static String ShowPowerOCRSharedEvent();
+            static String MouseJumpShowPreviewEvent();
+            static String AwakeExitEvent();
+            static String ShowPeekEvent();
+            static String PowerAccentExitEvent();
+            static String ShortcutGuideTriggerEvent();
+            static String RegistryPreviewTriggerEvent();
+            static String MeasureToolTriggerEvent();
+            static String GcodePreviewResizeEvent();
+            static String QoiPreviewResizeEvent();
+            static String DevFilesPreviewResizeEvent();
+            static String MarkdownPreviewResizeEvent();
+            static String PdfPreviewResizeEvent();
+            static String SvgPreviewResizeEvent();
+            static String ShowHostsSharedEvent();
+            static String ShowHostsAdminSharedEvent();
+            static String CropAndLockThumbnailEvent();
+            static String CropAndLockReparentEvent();
+            static String ShowEnvironmentVariablesSharedEvent();
+            static String ShowEnvironmentVariablesAdminSharedEvent();
+        }
+    }
+}

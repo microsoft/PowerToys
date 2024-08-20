@@ -1,0 +1,21 @@
+namespace PowerToys
+{
+    namespace Interop
+    {
+        struct KeyboardEvent
+        {
+            UInt64 message;
+            Int32 key;
+            UInt64 dwExtraInfo;
+        };
+
+        [version(1.0), uuid(7b820173-a54a-4a38-b810-810e05c14344)] delegate void KeyboardEventCallback(KeyboardEvent ev);
+        [version(1.0), uuid(e3a8bb91-0dfd-4d77-8472-75a47b7af8f8)] delegate Boolean IsActiveCallback();
+        [version(1.0), uuid(94b900ee-d9e8-4630-9064-737eeb9c18ad)] delegate Boolean FilterKeyboardEvent(KeyboardEvent ev);
+
+        [default_interface] runtimeclass KeyboardHook: Windows.Foundation.IClosable {
+            KeyboardHook(KeyboardEventCallback keyboardEventCallback, IsActiveCallback isActiveCallback, FilterKeyboardEvent filterKeyboardEvent);
+            void Start();
+        }
+    }
+}
