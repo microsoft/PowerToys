@@ -81,6 +81,7 @@ namespace WorkspacesData
                 const static wchar_t* AppNameID = L"application";
                 const static wchar_t* AppPathID = L"application-path";
                 const static wchar_t* AppPackageFullNameID = L"package-full-name";
+                const static wchar_t* AppUserModelId = L"app-user-model-id";
                 const static wchar_t* AppTitleID = L"title";
                 const static wchar_t* CommandLineArgsID = L"command-line-arguments";
                 const static wchar_t* ElevatedID = L"is-elevated";
@@ -98,6 +99,7 @@ namespace WorkspacesData
                 json.SetNamedValue(NonLocalizable::AppPathID, json::value(data.path));
                 json.SetNamedValue(NonLocalizable::AppTitleID, json::value(data.title));
                 json.SetNamedValue(NonLocalizable::AppPackageFullNameID, json::value(data.packageFullName));
+                json.SetNamedValue(NonLocalizable::AppUserModelId, json::value(data.appUserModelId));
                 json.SetNamedValue(NonLocalizable::CommandLineArgsID, json::value(data.commandLineArgs));
                 json.SetNamedValue(NonLocalizable::ElevatedID, json::value(data.isElevated));
                 json.SetNamedValue(NonLocalizable::CanLaunchElevatedID, json::value(data.canLaunchElevated));
@@ -124,6 +126,11 @@ namespace WorkspacesData
                     if (json.HasKey(NonLocalizable::AppPackageFullNameID))
                     {
                         result.packageFullName = json.GetNamedString(NonLocalizable::AppPackageFullNameID);
+                    }
+
+                    if (json.HasKey(NonLocalizable::AppUserModelId))
+                    {
+                        result.appUserModelId = json.GetNamedString(NonLocalizable::AppUserModelId);
                     }
 
                     result.commandLineArgs = json.GetNamedString(NonLocalizable::CommandLineArgsID);

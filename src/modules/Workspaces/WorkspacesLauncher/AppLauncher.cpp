@@ -326,7 +326,13 @@ bool LaunchPackagedApp(const std::wstring& packageFullName, ErrorList& launchErr
 bool Launch(const WorkspacesData::WorkspacesProject::Application& app, ErrorList& launchErrors)
 {
     bool launched{ false };
-    if (!app.packageFullName.empty() && app.commandLineArgs.empty() && !app.isElevated)
+    if (!app.appUserModelId.empty())
+    {
+        Logger::trace(L"Launching {} as {}", app.name, app.appUserModelId);
+        launched = LaunchApp(L"shell:AppsFolder\\" + app.appUserModelId, app.commandLineArgs, app.isElevated, launchErrors);
+    }
+
+    if (!launched && !app.packageFullName.empty() && app.commandLineArgs.empty() && !app.isElevated)
     {
         Logger::trace(L"Launching packaged app {}", app.name);
         launched = LaunchPackagedApp(app.packageFullName, launchErrors);

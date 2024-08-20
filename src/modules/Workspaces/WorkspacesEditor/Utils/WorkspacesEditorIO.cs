@@ -102,6 +102,7 @@ namespace WorkspacesEditor.Utils
                         ApplicationPath = app.AppPath,
                         Title = app.AppTitle,
                         PackageFullName = app.PackageFullName,
+                        AppUserModelId = app.AppUserModelId,
                         CommandLineArguments = app.CommandLineArguments,
                         IsElevated = app.IsElevated,
                         CanLaunchElevated = app.CanLaunchElevated,

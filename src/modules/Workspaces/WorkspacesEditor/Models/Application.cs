@@ -34,6 +34,7 @@ namespace WorkspacesEditor.Models
             AppPath = other.AppPath;
             AppTitle = other.AppTitle;
             PackageFullName = other.PackageFullName;
+            AppUserModelId = other.AppUserModelId;
             CommandLineArguments = other.CommandLineArguments;
             IsElevated = other.IsElevated;
             CanLaunchElevated = other.CanLaunchElevated;
@@ -100,6 +101,8 @@ namespace WorkspacesEditor.Models
         public string AppTitle { get; set; }
 
         public string PackageFullName { get; set; }
+
+        public string AppUserModelId { get; set; }
 
         public string CommandLineArguments { get; set; }
 

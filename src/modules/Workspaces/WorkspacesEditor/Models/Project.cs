@@ -254,6 +254,7 @@ namespace WorkspacesEditor.Models
                     AppPath = app.ApplicationPath,
                     AppTitle = app.Title,
                     PackageFullName = app.PackageFullName,
+                    AppUserModelId = app.AppUserModelId,
                     Parent = this,
                     CommandLineArguments = app.CommandLineArguments,
                     IsElevated = app.IsElevated,

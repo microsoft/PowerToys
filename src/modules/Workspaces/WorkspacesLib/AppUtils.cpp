@@ -21,6 +21,7 @@ namespace Utils
             constexpr const wchar_t* PackageInstallPathProp = L"System.AppUserModel.PackageInstallPath";
             constexpr const wchar_t* InstallPathProp = L"System.Link.TargetParsingPath";
             constexpr const wchar_t* HostEnvironmentProp = L"System.AppUserModel.HostEnvironment";
+            constexpr const wchar_t* AppUserModelIdProp = L"System.AppUserModel.ID";
 
             constexpr const wchar_t* FileExplorerName = L"File Explorer";
             constexpr const wchar_t* FileExplorerPath = L"C:\\WINDOWS\\EXPLORER.EXE";
@@ -95,7 +96,8 @@ namespace Utils
                     if (prop == NonLocalizable::PackageFullNameProp ||
                         prop == NonLocalizable::PackageInstallPathProp ||
                         prop == NonLocalizable::InstallPathProp ||
-                        prop == NonLocalizable::HostEnvironmentProp)
+                        prop == NonLocalizable::HostEnvironmentProp ||
+                        prop == NonLocalizable::AppUserModelIdProp)
                     {
                         PROPVARIANT pv;
                         PropVariantInit(&pv);
@@ -122,6 +124,10 @@ namespace Utils
                                 if (prop == NonLocalizable::PackageFullNameProp)
                                 {
                                     data.packageFullName = propVariantString.m_pData;
+                                }
+                                else if (prop == NonLocalizable::AppUserModelIdProp)
+                                {
+                                    data.appUserModelId = propVariantString.m_pData;
                                 }
                                 else if (prop == NonLocalizable::PackageInstallPathProp || prop == NonLocalizable::InstallPathProp)
                                 {

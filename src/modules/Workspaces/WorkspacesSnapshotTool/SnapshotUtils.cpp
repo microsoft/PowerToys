@@ -253,6 +253,7 @@ namespace SnapshotUtils
                 .title = title,
                 .path = processPath,
                 .packageFullName = data.value().packageFullName,
+                .appUserModelId = data.value().appUserModelId,
                 .commandLineArgs = L"", // GetCommandLineArgs(pid, wbemHelper),
                 .isElevated = IsProcessElevated(pid),
                 .canLaunchElevated = data.value().canLaunchElevated,

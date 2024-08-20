@@ -9,6 +9,7 @@ namespace Utils
             std::wstring name;
             std::wstring installPath;
             std::wstring packageFullName;
+            std::wstring appUserModelId;
             bool canLaunchElevated = false;
         };
 

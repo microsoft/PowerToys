@@ -31,6 +31,8 @@ namespace WorkspacesEditor.Data
 
             public string PackageFullName { get; set; }
 
+            public string AppUserModelId { get; set; }
+
             public string CommandLineArguments { get; set; }
 
             public bool IsElevated { get; set; }
