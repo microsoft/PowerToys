@@ -117,6 +117,7 @@
 ^\Qsrc/modules/previewpane/UnitTests-StlThumbnailProvider/HelperFiles/sample.stl\E$
 ^\Qtools/project_template/ModuleTemplate/resource.h\E$
 ^doc/devdocs/akaLinks\.md$
+^src/modules/launcher/Plugins/Microsoft\.PowerToys\.Run\.Plugin\.TimeDate/Properties/
 ^src/modules/MouseWithoutBorders/App/.*/NativeMethods\.cs$
 ^src/modules/MouseWithoutBorders/App/Form/.*\.Designer\.cs$
 ^src/modules/MouseWithoutBorders/App/Form/.*\.resx$

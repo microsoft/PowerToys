@@ -56,13 +56,13 @@ namespace Awake.Core.Native
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DestroyMenu(IntPtr hMenu);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool DestroyWindow(IntPtr hWnd);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", SetLastError = true)]
         internal static extern void PostQuitMessage(int nExitCode);
 
-        [DllImport("shell32.dll")]
+        [DllImport("shell32.dll", SetLastError = true)]
         internal static extern bool Shell_NotifyIcon(int dwMessage, ref NotifyIconData pnid);
 
         [DllImport("user32.dll", SetLastError = true)]
@@ -83,14 +83,14 @@ namespace Awake.Core.Native
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool GetCursorPos(out Point lpPoint);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool ScreenToClient(IntPtr hWnd, ref Point lpPoint);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool GetMessage(out Msg lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax);
 
         [DllImport("user32.dll", SetLastError = true)]
@@ -100,7 +100,10 @@ namespace Awake.Core.Native
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool SetMenuInfo(IntPtr hMenu, ref MenuInfo lpcmi);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("ntdll.dll")]
+        internal static extern int NtQueryInformationProcess(IntPtr processHandle, int processInformationClass, ref ProcessBasicInformation processInformation, int processInformationLength, out int returnLength);
     }
 }
