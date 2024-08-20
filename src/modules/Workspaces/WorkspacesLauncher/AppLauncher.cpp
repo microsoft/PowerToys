@@ -7,10 +7,13 @@
 #include <shellapi.h>
 #include <ShellScalingApi.h>
 
-#include <workspaces-common/AppUtils.h>
+#include <filesystem>
+
 #include <workspaces-common/MonitorEnumerator.h>
 #include <workspaces-common/WindowEnumerator.h>
 #include <workspaces-common/WindowFilter.h>
+
+#include <WorkspacesLib/AppUtils.h>
 
 #include <common/Display/dpi_aware.h>
 #include <common/utils/winapi_error.h>

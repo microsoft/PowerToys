@@ -1,4 +1,5 @@
-#pragma once
+#include "pch.h"
+#include "AppUtils.h"
 
 #include <atlbase.h>
 #include <ShlObj.h>
@@ -12,8 +13,8 @@
 
 namespace Utils
 {
-	namespace Apps
-	{
+    namespace Apps
+    {
         namespace NonLocalizable
         {
             constexpr const wchar_t* PackageFullNameProp = L"System.AppUserModel.PackageFullName";
@@ -28,17 +29,7 @@ namespace Utils
             constexpr const wchar_t* PowerToysSettings = L"PowerToys.Settings.exe";
         }
 
-		struct AppData
-		{
-            std::wstring name;
-            std::wstring installPath;
-            std::wstring packageFullName;
-            bool canLaunchElevated = false;
-		};
-
-		using AppList = std::vector<AppData>;
-
-        inline AppList IterateAppsFolder()
+        AppList IterateAppsFolder()
         {
             AppList result{};
 
@@ -103,7 +94,7 @@ namespace Utils
                     std::wstring prop(pkName.m_pData);
                     if (prop == NonLocalizable::PackageFullNameProp ||
                         prop == NonLocalizable::PackageInstallPathProp ||
-                        prop == NonLocalizable::InstallPathProp || 
+                        prop == NonLocalizable::InstallPathProp ||
                         prop == NonLocalizable::HostEnvironmentProp)
                     {
                         PROPVARIANT pv;
@@ -156,12 +147,7 @@ namespace Utils
             return result;
         }
 
-        inline AppList GetAppsList()
-        {
-            return IterateAppsFolder();
-        }
-
-        inline const std::wstring& GetCurrentFolder()
+        const std::wstring& GetCurrentFolder()
         {
             static std::wstring currentFolder;
             if (currentFolder.empty())
@@ -171,11 +157,11 @@ namespace Utils
                 std::wstring::size_type pos = std::wstring(buffer).find_last_of(L"\\/");
                 currentFolder = std::wstring(buffer).substr(0, pos);
             }
-            
+
             return currentFolder;
         }
 
-        inline const std::wstring& GetCurrentFolderUpper()
+        const std::wstring& GetCurrentFolderUpper()
         {
             static std::wstring currentFolderUpper;
             if (currentFolderUpper.empty())
@@ -187,7 +173,12 @@ namespace Utils
             return currentFolderUpper;
         }
 
-        inline std::optional<AppData> GetApp(const std::wstring& appPath, const AppList& apps)
+        AppList GetAppsList()
+        {
+            return IterateAppsFolder();
+        }
+
+        std::optional<AppData> GetApp(const std::wstring& appPath, const AppList& apps)
         {
             std::wstring appPathUpper(appPath);
             std::transform(appPathUpper.begin(), appPathUpper.end(), appPathUpper.begin(), towupper);
@@ -206,20 +197,20 @@ namespace Utils
             {
                 if (appPathUpper.contains(NonLocalizable::PowerToysSettingsUpper))
                 {
-                    return AppData {
+                    return AppData{
                         .name = NonLocalizable::PowerToysSettings,
                         .installPath = GetCurrentFolder() + L"\\" + NonLocalizable::PowerToys
                     };
                 }
                 else
-                {   
-                    return AppData {
+                {
+                    return AppData{
                         .name = std::filesystem::path(appPath).stem(),
                         .installPath = appPath,
                     };
                 }
             }
-            
+
             for (const auto& appData : apps)
             {
                 if (!appData.installPath.empty())
@@ -246,10 +237,10 @@ namespace Utils
             };
         }
 
-        inline std::optional<AppData> GetApp(HWND window, const AppList& apps)
+        std::optional<AppData> GetApp(HWND window, const AppList& apps)
         {
             std::wstring processPath = get_process_path_waiting_uwp(window);
             return Utils::Apps::GetApp(processPath, apps);
         }
-	}
+    }
 }

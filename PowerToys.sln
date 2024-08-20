@@ -588,7 +588,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workspaces", "Workspaces", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workspaces-common", "workspaces-common", "{BE126CBB-AE12-406A-9837-A05ACFCA57A7}"
 	ProjectSection(SolutionItems) = preProject
-		src\modules\Workspaces\workspaces-common\AppUtils.h = src\modules\Workspaces\workspaces-common\AppUtils.h
 		src\modules\Workspaces\workspaces-common\GuidUtils.h = src\modules\Workspaces\workspaces-common\GuidUtils.h
 		src\modules\Workspaces\workspaces-common\InvokePoint.h = src\modules\Workspaces\workspaces-common\InvokePoint.h
 		src\modules\Workspaces\workspaces-common\MonitorEnumerator.h = src\modules\Workspaces\workspaces-common\MonitorEnumerator.h
