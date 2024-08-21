@@ -1,6 +1,9 @@
 # FALSE POSITIVES
 ## "PackagemanagerWrapper.cs" should be "PackageManagerWrapper.cs"
 ## NOTICE.MD > MOZILLA PUBLIC LICENSE v1.1
+# moving 8LWXpg to this file from users as it was throwing errors
+
+8LWXpg
 aaaa
 abcdefghjkmnpqrstuvxyz
 abgr
