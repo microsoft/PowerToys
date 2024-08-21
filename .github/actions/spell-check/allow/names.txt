@@ -28,7 +28,6 @@ videoconference
 
 # USERS
 
-8LWXpg
 Adoumie
 Advaith
 alekhyareddy
