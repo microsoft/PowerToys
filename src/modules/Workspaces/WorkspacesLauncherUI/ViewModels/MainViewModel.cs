@@ -66,7 +66,7 @@ namespace WorkspacesLauncherUI.ViewModels
                     AppPath = app.Path,
                     LaunchState = app.State,
                 });
-                if (app.State != "launched")
+                if (app.State != "launched" && app.State != "failed")
                 {
                     allLaunched = false;
                 }
