@@ -72,9 +72,6 @@ namespace WorkspacesLauncherUI
             _mainWindow.ShowActivated = true;
             _mainWindow.Topmost = true;
             _mainWindow.Show();
-
-            // we can reset topmost flag after it's opened
-            _mainWindow.Topmost = false;
         }
 
         private void OnExit(object sender, ExitEventArgs e)
