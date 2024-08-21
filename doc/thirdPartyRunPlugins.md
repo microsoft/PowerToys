@@ -38,6 +38,7 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [PowerHexInspector](https://github.com/NaroZeol/PowerHexInspector) | [NaroZeol](https://github.com/NaroZeol) | Peek other forms of an input number |
 | [GitHubRepo](https://github.com/8LWXpg/PowerToysRun-GitHubRepo) | [8LWXpg](https://github.com/8LWXpg) | Search and open GitHub repositories |
 | [ProcessKiller](https://github.com/8LWXpg/PowerToysRun-ProcessKiller) | [8LWXpg](https://github.com/8LWXpg) | Search and kill processes |
+| [ChatGPT](https://github.com/ferraridavide/ChatGPTPowerToys) | [ferraridavide](https://github.com/ferraridavide) | Ask a question to ChatGPT |
 
 ## Extending software plugins
 

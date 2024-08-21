@@ -189,7 +189,6 @@ CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
 closesocket
-clrcall
 CLSCTX
 Clusion
 cmder
@@ -200,8 +199,8 @@ CMINVOKECOMMANDINFO
 CMINVOKECOMMANDINFOEX
 CMock
 CMONITORS
-cmph
 cmpgt
+cmph
 cne
 CNF
 coclass
@@ -247,10 +246,7 @@ countof
 cph
 CPower
 cppblog
-cppruntime
-cppstd
 cppwinrt
-CProj
 createdump
 CREATESCHEDULEDTASK
 CREATESTRUCT
@@ -407,6 +403,7 @@ dxgi
 dxgidebug
 dxgiformat
 dxguid
+easeofaccess
 ecount
 EData
 Edid
@@ -604,7 +601,6 @@ hmenu
 hmodule
 hmonitor
 homljgmgpmcbpjbnjpfijnhipfkiclkd
-HOOKPROC
 Hostbackdropbrush
 hotkeycontrol
 hotkeys
@@ -672,7 +668,6 @@ imageresizerinput
 imageresizersettings
 imagingdevices
 ime
-imperialounce
 inetcpl
 Infobar
 INFOEXAMPLE
@@ -933,7 +928,6 @@ MRT
 mru
 mrw
 msc
-msclr
 mscorlib
 msdata
 msedge
@@ -1113,6 +1107,7 @@ PATINVERT
 PATPAINT
 PAUDIO
 pbc
+pbi
 PBlob
 pcb
 pcch
@@ -1126,6 +1121,7 @@ pdo
 pdto
 pdtobj
 pdw
+Peb
 pef
 PElems
 Pels
@@ -1505,7 +1501,6 @@ STATICEDGE
 STATSTG
 stdafx
 STDAPI
-stdcpp
 stdcpplatest
 STDMETHODCALLTYPE
 STDMETHODIMP
@@ -1673,7 +1668,6 @@ USERDATA
 Userenv
 USESHOWWINDOW
 USESTDHANDLES
-usounce
 USRDLL
 UType
 uuidv
@@ -1710,8 +1704,10 @@ VIDEOINFOHEADER
 viewmodel
 vih
 VIRTUALDESK
+VISEGRADRELAY
 visiblecolorformats
 Visibletrue
+visualeffects
 VKey
 vmovl
 vorrq

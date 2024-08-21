@@ -205,4 +205,7 @@
     <value>s</value>
     <comment>Used to display number of seconds in the system tray tooltip.</comment>
   </data>
+  <data name="AWAKE_CMD_PARENT_PID_OPTION" xml:space="preserve">
+    <value>Uses the parent process as the bound target - once the process terminates, Awake stops.</value>
+  </data>
 </root>
