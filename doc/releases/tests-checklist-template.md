@@ -883,7 +883,8 @@ Mouse Jump:
    - [ ] Manually change the position for the app, check the preview.
    - [ ] Change the Workspace name.
    - [ ] Verify `Save` and `Cancel` work as expected. 
-   - [ ] Change anything in the project, click at the `Workspaces` on the top of the page, and verify you returned to the main page without saving any changes.    - [ ] Check `Create desktop shortcut`, save the project, verify the shortcut appears on the desktop. 
+   - [ ] Change anything in the project, click at the `Workspaces` on the top of the page, and verify you returned to the main page without saving any changes.
+   - [ ] Check `Create desktop shortcut`, save the project, verify the shortcut appears on the desktop. 
    - [ ] Verify that `Create desktop shortcut` is checked when the shortcut is on the desktop and unchecked when there is no shortcut on the desktop. 
    - [ ] Click `Launch and Edit`, wait for the apps to launch, click `Capture`, verify opened apps are added to the project.
 
