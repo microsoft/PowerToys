@@ -18,6 +18,8 @@
 #include <common/Display/dpi_aware.h>
 #include <common/utils/winapi_error.h>
 
+#include <LaunchingApp.h>
+#include <LauncherUIHelper.h>
 #include <RegistryUtils.h>
 #include <WindowProperties/WorkspacesWindowPropertyUtils.h>
 
@@ -138,15 +140,6 @@ namespace FancyZones
 
 namespace
 {
-    struct LaunchingApp
-    {
-        WorkspacesData::WorkspacesProject::Application application;
-        HWND window;
-        std::wstring state;
-    };
-
-    using LaunchingApps = std::vector<LaunchingApp>;
-
     LaunchingApps Prepare(std::vector<WorkspacesData::WorkspacesProject::Application>& apps, const Utils::Apps::AppList& installedApps)
     {
         LaunchingApps launchedApps{};
@@ -172,26 +165,6 @@ namespace
         }
 
         return launchedApps;
-    }
-
-    auto launchFileName = WorkspacesData::LaunchWorkspacesFile();
-
-    void UpdateLaunchStatus(LaunchingApps launchedApps)
-    {
-        WorkspacesData::AppLaunchData appData = WorkspacesData::AppLaunchData();
-        appData.appLaunchInfoList.reserve(launchedApps.size());
-        appData.launcherProcessID = GetCurrentProcessId();
-        for (auto& app : launchedApps)
-        {
-            WorkspacesData::AppLaunchInfo appLaunchInfo = WorkspacesData::AppLaunchInfo();
-            appLaunchInfo.name = app.application.name;
-            appLaunchInfo.path = app.application.path;
-            appLaunchInfo.state = app.state;
-
-            appData.appLaunchInfoList.push_back(appLaunchInfo);
-        }
-
-        json::to_file(launchFileName, WorkspacesData::AppLaunchDataJSON::ToJson(appData));
     }
 
     bool AllWindowsFound(const LaunchingApps& launchedApps)
@@ -375,37 +348,19 @@ bool Launch(const WorkspacesData::WorkspacesProject::Application& app, ErrorList
     return launched;
 }
 
-void Launch_UI()
-{
-    Logger::trace(L"Starting WorkspacesLauncherUI");
-
-    SHELLEXECUTEINFOW sei{ sizeof(sei) };
-    sei.fMask = SEE_MASK_NOCLOSEPROCESS;
-    sei.lpFile = L"PowerToys.WorkspacesLauncherUI.exe";
-    sei.nShow = SW_SHOWNORMAL;
-    if (ShellExecuteExW(&sei))
-    {
-        Logger::trace("Successfully started the WorkspacesLauncherUI");
-    }
-    else
-    {
-        Logger::error(L"WorkspacesLauncherUI failed to start. {}", get_last_error_or_default(GetLastError()));
-    }
-}
-
 bool Launch(WorkspacesData::WorkspacesProject& project, const std::vector<WorkspacesData::WorkspacesProject::Monitor>& monitors, ErrorList& launchErrors)
 {
     bool launchedSuccessfully{ true };
 
-    std::filesystem::remove(launchFileName);
-    Launch_UI();
+    LauncherUIHelper uiHelper;
+    uiHelper.LaunchUI();
 
     // Get the set of windows before launching the app
     std::vector<HWND> windowsBefore = WindowEnumerator::Enumerate(WindowFilter::Filter);
     auto installedApps = Utils::Apps::GetAppsList();
     auto launchedApps = Prepare(project.apps, installedApps);
 
-    UpdateLaunchStatus(launchedApps);
+    uiHelper.UpdateLaunchStatus(launchedApps);
 
     // Launch apps
     for (auto& app : launchedApps)
@@ -416,7 +371,7 @@ bool Launch(WorkspacesData::WorkspacesProject& project, const std::vector<Worksp
             {
                 Logger::error(L"Failed to launch {}", app.application.name);
                 app.state = L"failed";
-                UpdateLaunchStatus(launchedApps);
+                uiHelper.UpdateLaunchStatus(launchedApps);
                 launchedSuccessfully = false;
             }
         }
@@ -430,7 +385,7 @@ bool Launch(WorkspacesData::WorkspacesProject& project, const std::vector<Worksp
         std::copy_if(windowsAfter.begin(), windowsAfter.end(), std::back_inserter(windowsDiff), [&](HWND window) { return std::find(windowsBefore.begin(), windowsBefore.end(), window) == windowsBefore.end(); });
         if (AddOpenedWindows(launchedApps, windowsDiff, installedApps))
         {
-            UpdateLaunchStatus(launchedApps);
+            uiHelper.UpdateLaunchStatus(launchedApps);
         }
 
         // check if all windows were found
@@ -451,7 +406,7 @@ bool Launch(WorkspacesData::WorkspacesProject& project, const std::vector<Worksp
     {
         if (AddOpenedWindows(launchedApps, WindowEnumerator::Enumerate(WindowFilter::Filter), installedApps))
         {
-            UpdateLaunchStatus(launchedApps);
+            uiHelper.UpdateLaunchStatus(launchedApps);
         }
     }
 
