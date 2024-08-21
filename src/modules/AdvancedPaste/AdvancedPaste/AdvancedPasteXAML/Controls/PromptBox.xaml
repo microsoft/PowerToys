@@ -325,6 +325,10 @@
                 </Setter>
             </Style>
             <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <tkconverters:BoolToVisibilityConverter
+                x:Key="BoolToInvertedVisibilityConverter"
+                FalseValue="Visible"
+                TrueValue="Collapsed" />
             <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter" />
         </ResourceDictionary>
     </UserControl.Resources>
@@ -332,7 +336,6 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="40" />
-            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <local:AnimatedContentControl
             x:Name="Loader"
@@ -533,48 +536,65 @@
                             <animations:OffsetAnimation Duration="0:0:1" />
                         </animations:Implicit.Animations>
                     </Button>-->
-                <Button
-                    x:Name="SendBtn"
-                    x:Uid="SendButtonAutomation"
+                <Grid
                     Width="32"
                     Height="32"
                     Margin="0,0,4,0"
-                    Padding="0"
                     HorizontalAlignment="Right"
-                    VerticalAlignment="Stretch"
-                    ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
-                    Command="{x:Bind GenerateCustomCommand}"
-                    Content="{ui:FontIcon Glyph=&#xE724;,
-                                          FontSize=16}"
-                    Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                    Style="{StaticResource SubtleButtonStyle}"
-                    TabIndex="1"
-                    Visibility="{x:Bind ViewModel.Query.Length, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
-                    <ToolTipService.ToolTip>
-                        <TextBlock x:Uid="SendBtnToolTip" TextWrapping="WrapWholeWords" />
-                    </ToolTipService.ToolTip>
-                    <animations:Implicit.ShowAnimations>
-                        <animations:ScaleAnimation
-                            From="0.4"
-                            To="1"
-                            Duration="0:0:0.167" />
-                        <animations:OpacityAnimation
-                            From="0.0"
-                            To="1.0"
-                            Duration="0:0:0.167" />
-                    </animations:Implicit.ShowAnimations>
-                    <animations:Implicit.HideAnimations>
-                        <animations:ScaleAnimation
-                            From="1"
-                            To="0.4"
-                            Duration="0:0:0.167" />
-                        <animations:OpacityAnimation
-                            From="1.0"
-                            To="0.0"
-                            Duration="0:0:0.167" />
-                    </animations:Implicit.HideAnimations>
-                </Button>
-                <!--</StackPanel>-->
+                    VerticalAlignment="Stretch">
+                    <Button
+                        x:Name="SendBtn"
+                        x:Uid="SendButtonAutomation"
+                        Width="32"
+                        Height="32"
+                        Padding="0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
+                        Command="{x:Bind GenerateCustomCommand}"
+                        Content="{ui:FontIcon Glyph=&#xE724;,
+                                              FontSize=16}"
+                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                        IsEnabled="{x:Bind ViewModel.IsCustomAIEnabled, Mode=OneWay}"
+                        Style="{StaticResource SubtleButtonStyle}"
+                        TabIndex="1"
+                        Visibility="{x:Bind ViewModel.Query.Length, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
+                        <ToolTipService.ToolTip>
+                            <TextBlock x:Uid="SendBtnToolTip" TextWrapping="WrapWholeWords" />
+                        </ToolTipService.ToolTip>
+                        <animations:Implicit.ShowAnimations>
+                            <animations:ScaleAnimation
+                                From="0.4"
+                                To="1"
+                                Duration="0:0:0.167" />
+                            <animations:OpacityAnimation
+                                From="0.0"
+                                To="1.0"
+                                Duration="0:0:0.167" />
+                        </animations:Implicit.ShowAnimations>
+                        <animations:Implicit.HideAnimations>
+                            <animations:ScaleAnimation
+                                From="1"
+                                To="0.4"
+                                Duration="0:0:0.167" />
+                            <animations:OpacityAnimation
+                                From="1.0"
+                                To="0.0"
+                                Duration="0:0:0.167" />
+                        </animations:Implicit.HideAnimations>
+                    </Button>
+                    <!--  Transparent overlay to show tooltip  -->
+                    <Grid
+                        x:Name="SendBtnOverlay"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Background="Transparent"
+                        Visibility="{x:Bind ViewModel.IsCustomAIEnabled, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="{x:Bind ViewModel.GeneralErrorText}" />
+                        </ToolTipService.ToolTip>
+                    </Grid>
+                </Grid>
             </Grid>
         </local:AnimatedContentControl>
         <ContentPresenter
@@ -637,16 +657,6 @@
                 <animations:OpacityAnimation To="0.0" Duration="0:0:0.167" />
             </animations:Implicit.HideAnimations>
         </Grid>
-        <TextBlock
-            Grid.Row="2"
-            MaxHeight="40"
-            Margin="8,-1,0,10"
-            HorizontalAlignment="Stretch"
-            FontWeight="SemiBold"
-            Foreground="{ThemeResource SystemFillColorCaution}"
-            Style="{StaticResource CaptionTextBlockStyle}"
-            Text="{x:Bind ViewModel.GeneralErrorText, Mode=OneWay}"
-            Visibility="{x:Bind ViewModel.GeneralErrorText.Length, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}" />
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="CommonStates">
                 <VisualState x:Name="DefaultState" />

@@ -124,14 +124,9 @@ namespace AdvancedPaste.Controls
             ClipboardHelper.SetClipboardTextContent(lastQuery.ClipboardData);
         }
 
-        private void InputTxtBox_TextChanging(Microsoft.UI.Xaml.Controls.TextBox sender, TextBoxTextChangingEventArgs args)
-        {
-            SendBtn.Visibility = InputTxtBox.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
-        }
-
         private void InputTxtBox_KeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
         {
-            if (e.Key == Windows.System.VirtualKey.Enter && InputTxtBox.Text.Length > 0)
+            if (e.Key == Windows.System.VirtualKey.Enter && InputTxtBox.Text.Length > 0 && ViewModel.IsCustomAIEnabled)
             {
                 GenerateCustom();
             }
