@@ -448,10 +448,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _customActions.Add(customAction);
         }
 
-        internal void DeleteCustomAction(AdvancedPasteCustomAction customAction)
-        {
-            _customActions.Remove(customAction);
-        }
+        internal void DeleteCustomAction(AdvancedPasteCustomAction customAction) => _customActions.Remove(customAction);
 
         private void SaveCustomActions() => SaveAndNotifySettings();
 

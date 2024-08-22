@@ -31,11 +31,12 @@ namespace AdvancedPaste
     {
         public IHost Host { get; private set; }
 
+        private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        private readonly OptionsViewModel viewModel;
+
         private MainWindow window;
 
         private nint windowHwnd;
-
-        private OptionsViewModel viewModel;
 
         private bool disposedValue;
 
@@ -101,14 +102,12 @@ namespace AdvancedPaste
 
         private void ProcessNamedPipe(string pipeName)
         {
-            var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-
-            var connectTimeout = TimeSpan.FromSeconds(10);
-            Action<string> messageHandler = message => dispatcherQueue.TryEnqueue(() => OnNamedPipeMessage(message));
+            void OnMessage(string message) => _dispatcherQueue.TryEnqueue(() => OnNamedPipeMessage(message));
 
             Task.Run(async () =>
             {
-                await NamedPipeProcessor.ProcessNamedPipeAsync(pipeName, connectTimeout, messageHandler, CancellationToken.None);
+                var connectTimeout = TimeSpan.FromSeconds(10);
+                await NamedPipeProcessor.ProcessNamedPipeAsync(pipeName, connectTimeout, OnMessage, CancellationToken.None);
             });
         }
 
@@ -165,7 +164,7 @@ namespace AdvancedPaste
             }
             else
             {
-                if (!int.TryParse(messageParts[1], CultureInfo.InvariantCulture, out int id))
+                if (!int.TryParse(messageParts[1], CultureInfo.InvariantCulture, out int customActionId))
                 {
                     Logger.LogWarning($"Unexpected custom action message id {messageParts[1]}");
                 }
@@ -173,7 +172,7 @@ namespace AdvancedPaste
                 {
                     ShowWindow();
                     viewModel.ReadClipboard();
-                    viewModel.ExecuteCustomActionWithPaste(id);
+                    viewModel.ExecuteCustomActionWithPaste(customActionId);
                 }
             }
         }

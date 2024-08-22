@@ -30,7 +30,8 @@ public static class NamedPipeProcessor
                 messageHandler(message);
             }
 
-            await Task.Delay(TimeSpan.FromMilliseconds(10), cancellationToken);
+            var intraMessageDelay = TimeSpan.FromMilliseconds(10);
+            await Task.Delay(intraMessageDelay, cancellationToken);
         }
     }
 }

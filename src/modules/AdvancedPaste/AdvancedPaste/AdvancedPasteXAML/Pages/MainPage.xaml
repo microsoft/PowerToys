@@ -8,8 +8,8 @@
     xmlns:library="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:local="using:AdvancedPaste.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     KeyDown="Page_KeyDown"
     KeyboardAcceleratorPlacementMode="Hidden"
     mc:Ignorable="d">

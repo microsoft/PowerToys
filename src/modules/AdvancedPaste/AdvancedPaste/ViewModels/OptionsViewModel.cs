@@ -317,7 +317,7 @@ namespace AdvancedPaste.ViewModels
 
             if (text != null)
             {
-                PasteCustomFunction(GeneratedResponses[CurrentResponseIndex]);
+                PasteCustomFunction(text);
             }
         }
 
@@ -431,6 +431,7 @@ namespace AdvancedPaste.ViewModels
             if (pasteFormat != null)
             {
                 ExecutePasteFormat(pasteFormat);
+                PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteInAppKeyboardShortcutEvent(pasteFormat.Format));
             }
         }
 
@@ -460,15 +461,13 @@ namespace AdvancedPaste.ViewModels
                     CustomActionActivated?.Invoke(this, new CustomActionActivatedEventArgs(pasteFormat.Prompt, false));
                     break;
             }
-
-            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteInAppKeyboardShortcutEvent(pasteFormat.Format));
         }
 
-        internal void ExecuteCustomActionWithPaste(int id)
+        internal void ExecuteCustomActionWithPaste(int customActionId)
         {
             Logger.LogTrace();
 
-            var customAction = _userSettings.CustomActions.FirstOrDefault(customAction => customAction.Id == id);
+            var customAction = _userSettings.CustomActions.FirstOrDefault(customAction => customAction.Id == customActionId);
 
             if (customAction != null)
             {

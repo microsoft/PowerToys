@@ -19,6 +19,9 @@ namespace AdvancedPaste.Controls
 {
     public sealed partial class PromptBox : Microsoft.UI.Xaml.Controls.UserControl
     {
+        // Minimum time to show spinner when generating custom format using forcePasteCustom
+        private static readonly TimeSpan MinTaskTime = TimeSpan.FromSeconds(2);
+
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         private readonly IUserSettings _userSettings;
 
@@ -75,10 +78,9 @@ namespace AdvancedPaste.Controls
             ViewModel.SaveQuery(inputInstructions);
 
             var customFormatTask = ViewModel.GenerateCustomFunction(inputInstructions);
-            var delayTask = forcePasteCustom ? Task.Delay(TimeSpan.FromSeconds(2)) : Task.CompletedTask;
-
-            var combinedTask = Task.WhenAll(customFormatTask, delayTask);
-            combinedTask.ContinueWith(
+            var delayTask = forcePasteCustom ? Task.Delay(MinTaskTime) : Task.CompletedTask;
+            Task.WhenAll(customFormatTask, delayTask)
+                .ContinueWith(
                 _ =>
                 {
                     _dispatcherQueue.TryEnqueue(() =>

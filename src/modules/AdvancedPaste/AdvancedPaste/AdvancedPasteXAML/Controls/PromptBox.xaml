@@ -545,8 +545,6 @@
                     <Button
                         x:Name="SendBtn"
                         x:Uid="SendButtonAutomation"
-                        Width="32"
-                        Height="32"
                         Padding="0"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"

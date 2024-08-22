@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections;
 using Microsoft.UI.Xaml.Data;
 
 namespace AdvancedPaste.Converters;
@@ -15,13 +16,10 @@ public sealed class CountToDoubleConverter : IValueConverter
 
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        var count = (value is int intValue) ? intValue : 0;
+        bool hasCount = ((value is int intValue) && intValue > 0) || (value is IEnumerable collection && collection.GetEnumerator().MoveNext());
 
-        return count == 0 ? ValueIfZero : ValueIfNonZero;
+        return hasCount ? ValueIfNonZero : ValueIfZero;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, string language)
-    {
-        throw new NotImplementedException();
-    }
+    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotImplementedException();
 }
