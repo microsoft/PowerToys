@@ -175,8 +175,9 @@ namespace SnapshotUtils
         auto installedApps = Utils::Apps::GetAppsList();
         auto windows = WindowEnumerator::Enumerate(WindowFilter::Filter);
         
-        WbemHelper wbemHelper;
-        wbemHelper.Initialize();
+        // for command line args detection
+        // WbemHelper wbemHelper;
+        // wbemHelper.Initialize();
 
         for (const auto window : windows)
         {
