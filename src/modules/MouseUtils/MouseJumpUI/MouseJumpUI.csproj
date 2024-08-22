@@ -4,22 +4,19 @@
   <Import Project="..\..\..\Common.SelfContained.props" />
 
   <PropertyGroup>
+
+    <AssemblyName>PowerToys.MouseJumpUI</AssemblyName>
     <AssemblyTitle>PowerToys.MouseJumpUI</AssemblyTitle>
     <AssemblyDescription>PowerToys MouseJumpUI</AssemblyDescription>
+    <OutputType>WinExe</OutputType>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <UseWindowsForms>true</UseWindowsForms>
-    <StartupObject>MouseJumpUI.Program</StartupObject>
+
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
-    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
-    <ProjectGuid>{D962A009-834F-4EEC-AABB-430DF8F98E39}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
-    <RootNamespace>MouseJumpUI</RootNamespace>
-    <AssemblyName>PowerToys.MouseJumpUI</AssemblyName>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>disable</ImplicitUsings>
+
   </PropertyGroup>
 
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
@@ -37,4 +34,5 @@
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\MouseJump.Common\MouseJump.Common.csproj" />
   </ItemGroup>
+
 </Project>
