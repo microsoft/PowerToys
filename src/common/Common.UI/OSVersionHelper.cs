@@ -12,5 +12,10 @@ namespace Common.UI
         {
             return Environment.OSVersion.Version.Major >= 10 && Environment.OSVersion.Version.Build >= 22000;
         }
+
+        public static bool IsGreaterThanWindows11_21H2()
+        {
+            return Environment.OSVersion.Version.Major >= 10 && Environment.OSVersion.Version.Build > 22000;
+        }
     }
 }

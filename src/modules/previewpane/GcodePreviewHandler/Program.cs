@@ -5,7 +5,7 @@
 using System.Globalization;
 using System.Windows.Threading;
 using Common.UI;
-using interop;
+using PowerToys.Interop;
 
 namespace Microsoft.PowerToys.PreviewHandler.Gcode
 {
@@ -36,15 +36,24 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
                     Rectangle s = new Rectangle(left, top, right - left, bottom - top);
 
                     _previewHandlerControl = new GcodePreviewHandlerControl();
-                    _previewHandlerControl.SetWindow(hwnd, s);
+
+                    if (!_previewHandlerControl.SetWindow(hwnd, s))
+                    {
+                        return;
+                    }
+
                     _previewHandlerControl.DoPreview(filePath);
 
                     NativeEventWaiter.WaitForEventLoop(
                         Constants.GcodePreviewResizeEvent(),
                         () =>
                         {
-                            Rectangle s = default(Rectangle);
-                            _previewHandlerControl.SetRect(s);
+                            Rectangle s = default;
+                            if (!_previewHandlerControl.SetRect(s))
+                            {
+                                // When the parent HWND became invalid, the application won't respond to Application.Exit().
+                                Environment.Exit(0);
+                            }
                         },
                         Dispatcher.CurrentDispatcher,
                         _tokenSource.Token);

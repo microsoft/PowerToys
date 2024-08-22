@@ -28,6 +28,7 @@ videoconference
 
 # USERS
 
+8LWXpg
 Adoumie
 Advaith
 alekhyareddy
@@ -61,6 +62,7 @@ DHowett
 ductdo
 Essey
 ethanfangg
+ferraridavide
 frankychen
 gabime
 Galaxi
@@ -143,6 +145,7 @@ TBM
 tilovell
 Triet
 waaverecords
+Xpg
 ycv
 Yuniardi
 yuyoyuppe

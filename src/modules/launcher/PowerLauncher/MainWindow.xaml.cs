@@ -14,13 +14,13 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using Common.UI;
-using interop;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using PowerLauncher.Telemetry.Events;
 using PowerLauncher.ViewModel;
+using PowerToys.Interop;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Interfaces;
@@ -411,8 +411,8 @@ namespace PowerLauncher
 
         private void InitializePosition()
         {
-            Top = WindowTop();
-            Left = WindowLeft();
+            MoveToDesiredPosition();
+
             _settings.WindowTop = Top;
             _settings.WindowLeft = Left;
         }
@@ -434,9 +434,37 @@ namespace PowerLauncher
             }
             else
             {
-                Top = WindowTop();
-                Left = WindowLeft();
+                MoveToDesiredPosition();
             }
+        }
+
+        private void MoveToDesiredPosition()
+        {
+            // Hack: After switching to PerMonitorV2, this operation seems to require a three-step operation
+            // to ensure a stable position: First move to top-left of desired screen, then centralize twice.
+            // More straightforward ways of doing this don't seem to work well for unclear reasons, but possibly related to
+            // https://github.com/dotnet/wpf/issues/4127
+            // In any case, there does not seem to be any big practical downside to doing it this way. As a bonus, it can be
+            // done in pure WPF without any native calls and without too much DPI-based fiddling.
+            // In terms of the hack itself, removing any of these three steps seems to fail in certain scenarios only,
+            // so be careful with testing!
+            var desiredScreen = GetScreen();
+            var workingArea = desiredScreen.WorkingArea;
+            Point ToDIP(double unitX, double unitY) => WindowsInteropHelper.TransformPixelsToDIP(this, unitX, unitY);
+
+            // Move to top-left of desired screen.
+            Top = workingArea.Top;
+            Left = workingArea.Left;
+
+            // Centralize twice.
+            void MoveToScreenTopCenter()
+            {
+                Left = ((ToDIP(workingArea.Width, 0).X - ActualWidth) / 2) + ToDIP(workingArea.X, 0).X;
+                Top = ((ToDIP(0, workingArea.Height).Y - SearchBox.ActualHeight) / 4) + ToDIP(0, workingArea.Y).Y;
+            }
+
+            MoveToScreenTopCenter();
+            MoveToScreenTopCenter();
         }
 
         private void OnLocationChanged(object sender, EventArgs e)
@@ -446,28 +474,6 @@ namespace PowerLauncher
                 _settings.WindowLeft = Left;
                 _settings.WindowTop = Top;
             }
-        }
-
-        /// <summary>
-        /// Calculates X co-ordinate of main window top left corner.
-        /// </summary>
-        /// <returns>X co-ordinate of main window top left corner</returns>
-        private double WindowLeft()
-        {
-            var screen = GetScreen();
-            var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.X, 0);
-            var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
-            var left = ((dip2.X - ActualWidth) / 2) + dip1.X;
-            return left;
-        }
-
-        private double WindowTop()
-        {
-            var screen = GetScreen();
-            var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Y);
-            var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
-            var top = ((dip2.Y - SearchBox.ActualHeight) / 4) + dip1.Y;
-            return top;
         }
 
         private Screen GetScreen()
