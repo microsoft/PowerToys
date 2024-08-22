@@ -157,14 +157,16 @@ namespace PowerAccent.Core
         {
             return letter switch
             {
-                LetterKey.VK_0 => new[] { "↉" },
-                LetterKey.VK_1 => new[] { "½", "⅓", "¼", "⅕", "⅙", "⅐", "⅛", "⅑", "⅒" },
-                LetterKey.VK_2 => new[] { "⅔", "⅖" },
-                LetterKey.VK_3 => new[] { "¾", "⅗", "⅜" },
-                LetterKey.VK_4 => new[] { "⅘" },
-                LetterKey.VK_5 => new[] { "⅚", "⅝" },
-                LetterKey.VK_7 => new[] { "⅞" },
-                LetterKey.VK_8 => new[] { "∞" },
+                LetterKey.VK_0 => new[] { "₀", "⁰", "↉" },
+                LetterKey.VK_1 => new[] { "₁", "¹", "½", "⅓", "¼", "⅕", "⅙", "⅐", "⅛", "⅑", "⅒" },
+                LetterKey.VK_2 => new[] { "₂", "²", "⅔", "⅖" },
+                LetterKey.VK_3 => new[] { "₃", "³", "¾", "⅗", "⅜" },
+                LetterKey.VK_4 => new[] { "₄", "⁴", "⅘" },
+                LetterKey.VK_5 => new[] { "₅", "⁵", "⅚", "⅝" },
+                LetterKey.VK_6 => new[] { "₆", "⁶" },
+                LetterKey.VK_7 => new[] { "₇", "⁷", "⅞" },
+                LetterKey.VK_8 => new[] { "₈", "⁸", "∞" },
+                LetterKey.VK_9 => new[] { "₉", "⁹" },
                 LetterKey.VK_A => new[] { "ȧ", "ǽ", "∀" },
                 LetterKey.VK_B => new[] { "ḃ" },
                 LetterKey.VK_C => new[] { "ċ", "°C", "©", "ℂ", "∁" },
@@ -478,16 +480,6 @@ namespace PowerAccent.Core
         {
             return letter switch
             {
-                LetterKey.VK_0 => new[] { "₀", "⁰" },
-                LetterKey.VK_1 => new[] { "₁", "¹" },
-                LetterKey.VK_2 => new[] { "₂", "²" },
-                LetterKey.VK_3 => new[] { "₃", "³" },
-                LetterKey.VK_4 => new[] { "₄", "⁴" },
-                LetterKey.VK_5 => new[] { "₅", "⁵" },
-                LetterKey.VK_6 => new[] { "₆", "⁶" },
-                LetterKey.VK_7 => new[] { "₇", "⁷" },
-                LetterKey.VK_8 => new[] { "₈", "⁸" },
-                LetterKey.VK_9 => new[] { "₉", "⁹" },
                 LetterKey.VK_A => new[] { "á", "à", "â", "ã", "ª" },
                 LetterKey.VK_C => new[] { "ç" },
                 LetterKey.VK_E => new[] { "é", "ê", "€" },
