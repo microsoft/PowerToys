@@ -23,6 +23,7 @@ namespace WorkspacesLauncherUI.ViewModels
         private System.Timers.Timer selfDestroyTimer;
         private StatusWindow _snapshotWindow;
         private int launcherProcessID;
+        private bool _exiting;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -33,6 +34,7 @@ namespace WorkspacesLauncherUI.ViewModels
 
         public MainViewModel()
         {
+            _exiting = false;
             LoadAppLaunchInfos();
             string fileName = Path.GetFileName(AppLaunchData.File);
             _watcher = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper.GetFileWatcher("Workspaces", fileName, () => AppLaunchInfoStateChanged());
@@ -45,6 +47,11 @@ namespace WorkspacesLauncherUI.ViewModels
 
         private void LoadAppLaunchInfos()
         {
+            if (_exiting)
+            {
+                return;
+            }
+
             AppLaunchData parser = new AppLaunchData();
             if (!File.Exists(AppLaunchData.File))
             {
@@ -104,6 +111,8 @@ namespace WorkspacesLauncherUI.ViewModels
 
         internal void CancelLaunch()
         {
+            _exiting = true;
+            _watcher.Dispose();
             Process proc = Process.GetProcessById(launcherProcessID);
             proc.Kill();
         }
