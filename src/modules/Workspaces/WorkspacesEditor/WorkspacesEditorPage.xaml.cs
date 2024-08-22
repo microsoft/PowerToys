@@ -4,6 +4,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -29,17 +30,19 @@ namespace WorkspacesEditor
 
         private void SaveButtonClicked(object sender, RoutedEventArgs e)
         {
-            _mainViewModel.SwitchToMainView();
             Project projectToSave = this.DataContext as Project;
             projectToSave.CloseExpanders();
-            if (projectToSave.EditorWindowTitle == Properties.Resources.CreateWorkspace)
-            {
-                _mainViewModel.AddNewProject(projectToSave);
-            }
-            else
+
+            if (_mainViewModel.Workspaces.Any(x => x.Id == projectToSave.Id))
             {
                 _mainViewModel.SaveProject(projectToSave);
             }
+            else
+            {
+                _mainViewModel.AddNewProject(projectToSave);
+            }
+
+            _mainViewModel.SwitchToMainView();
         }
 
         private void CancelButtonClicked(object sender, RoutedEventArgs e)

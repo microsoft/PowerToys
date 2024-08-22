@@ -31,7 +31,6 @@ namespace WorkspacesEditor.ViewModels
         private ProjectEditor editPage;
         private SnapshotWindow _snapshotWindow;
         private List<OverlayWindow> _overlayWindows = new List<OverlayWindow>();
-        private bool _isExistingProjectLaunched;
         private Project editedProject;
         private Project projectBeforeLaunch;
         private string projectNameBeingEdited;
@@ -249,7 +248,7 @@ namespace WorkspacesEditor.ViewModels
             project.Name = projectNameBeingEdited;
         }
 
-        public async void SnapNewProject()
+        public async void SnapWorkspace()
         {
             CancelSnapshot();
 
@@ -258,24 +257,19 @@ namespace WorkspacesEditor.ViewModels
             Project project = _workspacesEditorIO.ParseTempProject();
             if (project != null)
             {
-                if (_isExistingProjectLaunched)
+                if (editedProject != null)
                 {
-                    UpdateProject(project);
+                    project.UpdateAfterLaunchAndEdit(projectBeforeLaunch);
+                    project.EditorWindowTitle = Properties.Resources.EditWorkspace;
+                    editPage.DataContext = project;
+                    CheckShortcutPresence(project);
+                    project.Initialize(App.ThemeManager.GetCurrentTheme());
                 }
                 else
                 {
                     EditProject(project, true);
                 }
             }
-        }
-
-        private void UpdateProject(Project project)
-        {
-            project.Name = projectBeforeLaunch.Name;
-            project.IsRevertEnabled = true;
-            CheckShortcutPresence(project);
-            editPage.DataContext = project;
-            project.Initialize(App.ThemeManager.GetCurrentTheme());
         }
 
         internal void RevertLaunch()
@@ -386,6 +380,7 @@ namespace WorkspacesEditor.ViewModels
             SearchTerm = string.Empty;
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(SearchTerm)));
             lastUpdatedTimer.Start();
+            editedProject = null;
         }
 
         public void LaunchProject(string projectId)
@@ -480,7 +475,6 @@ namespace WorkspacesEditor.ViewModels
 
         internal void EnterSnapshotMode(bool isExistingProjectLaunched)
         {
-            _isExistingProjectLaunched = isExistingProjectLaunched;
             _mainWindow.WindowState = System.Windows.WindowState.Minimized;
             _overlayWindows.Clear();
             foreach (var screen in MonitorHelper.GetDpiUnawareScreens())

@@ -29,7 +29,7 @@ namespace WorkspacesEditor
         private void SnapshotButtonClicked(object sender, RoutedEventArgs e)
         {
             Close();
-            _mainViewModel.SnapNewProject();
+            _mainViewModel.SnapWorkspace();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)

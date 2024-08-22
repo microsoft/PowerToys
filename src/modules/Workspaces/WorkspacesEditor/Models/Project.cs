@@ -22,7 +22,7 @@ namespace WorkspacesEditor.Models
         [JsonIgnore]
         public string EditorWindowTitle { get; set; }
 
-        public string Id { get; }
+        public string Id { get; private set; }
 
         private string _name;
 
@@ -356,6 +356,13 @@ namespace WorkspacesEditor.Models
             }
 
             return new Rectangle((int)minX, (int)minY, (int)(maxX - minX), (int)(maxY - minY));
+        }
+
+        public void UpdateAfterLaunchAndEdit(Project other)
+        {
+            Id = other.Id;
+            Name = other.Name;
+            IsRevertEnabled = true;
         }
 
         internal void CloseExpanders()
