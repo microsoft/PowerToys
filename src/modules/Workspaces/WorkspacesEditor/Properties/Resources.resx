@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AddBack" xml:space="preserve">
-    <value>Add Back</value>
+    <value>Add back</value>
   </data>
   <data name="Admin" xml:space="preserve">
     <value>Admin</value>
@@ -158,7 +158,7 @@
     <value>Create Workspace</value>
   </data>
   <data name="CreateShortcut" xml:space="preserve">
-    <value>Create Desktop Shortcut</value>
+    <value>Create desktop shortcut</value>
   </data>
   <data name="DaysAgo" xml:space="preserve">
     <value>days ago</value>
@@ -170,7 +170,7 @@
     <value>Remove</value>
   </data>
   <data name="DeleteSelected" xml:space="preserve">
-    <value>Remove Selected Apps</value>
+    <value>Remove selected apps</value>
   </data>
   <data name="Delete_Workspace_Dialog_Announce" xml:space="preserve">
     <value>Delete Workspace dialog.</value>
@@ -203,7 +203,7 @@
     <value>Launch as Admin</value>
   </data>
   <data name="LaunchEdit" xml:space="preserve">
-    <value>Launch &amp; Edit</value>
+    <value>Launch &amp; edit</value>
   </data>
   <data name="Launch_args" xml:space="preserve">
     <value>Launch args</value>
@@ -222,7 +222,7 @@
     <value>Minimized</value>
   </data>
   <data name="Minimized_Apps" xml:space="preserve">
-    <value>Minimized Apps</value>
+    <value>Minimized apps</value>
   </data>
   <data name="MinutesAgo" xml:space="preserve">
     <value>minutes ago</value>
@@ -267,7 +267,7 @@
     <value>one year ago</value>
   </data>
   <data name="PinToTaskbar" xml:space="preserve">
-    <value>Pin Workspaces to Taskbar</value>
+    <value>Pin Workspaces to taskbar</value>
   </data>
   <data name="WorkspaceName" xml:space="preserve">
     <value>Workspace name</value>
@@ -294,13 +294,13 @@
     <value>seconds ago</value>
   </data>
   <data name="SelectAllAppsOnMonitor" xml:space="preserve">
-    <value>Select All Apps on</value>
+    <value>Select all apps on</value>
   </data>
   <data name="SelectAllMinimizedApps" xml:space="preserve">
-    <value>Select All Minimized Apps</value>
+    <value>Select all minimized apps</value>
   </data>
   <data name="SelectedAllInWorkspace" xml:space="preserve">
-    <value>Select All Apps in Workspace</value>
+    <value>Select all apps in Workspace</value>
   </data>
   <data name="SnapshotDescription" xml:space="preserve">
     <value>Edit your layout and click "Capture" when finished.</value>
