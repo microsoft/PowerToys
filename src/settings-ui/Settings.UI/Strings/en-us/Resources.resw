@@ -2003,7 +2003,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Create and manage advanced paste custom actions</value>
   </data>
   <data name="AdvancedPasteUI_AddCustomActionButton.Content" xml:space="preserve">
-    <value>Add Custom Action</value>
+    <value>Add custom action</value>
   </data>
   <data name="AdvancedPasteUI_Shortcut.Header" xml:space="preserve">
     <value>Open Advanced Paste window</value>
