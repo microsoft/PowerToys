@@ -44,6 +44,7 @@ namespace Awake
         internal static readonly string[] AliasesTimeOption = ["--time-limit", "-t"];
         internal static readonly string[] AliasesPidOption = ["--pid", "-p"];
         internal static readonly string[] AliasesExpireAtOption = ["--expire-at", "-e"];
+        internal static readonly string[] AliasesParentPidOption = ["--use-parent-pid", "-u"];
 
         private static readonly Icon _defaultAwakeIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/awake.ico"));
 
@@ -116,6 +117,12 @@ namespace Awake
                 IsRequired = false,
             };
 
+            var parentPidOption = new Option<bool>(AliasesParentPidOption, () => true, Resources.AWAKE_CMD_PARENT_PID_OPTION)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+                IsRequired = false,
+            };
+
             RootCommand? rootCommand =
             [
                 configOption,
@@ -123,10 +130,11 @@ namespace Awake
                 timeOption,
                 pidOption,
                 expireAtOption,
+                parentPidOption,
             ];
 
             rootCommand.Description = Core.Constants.AppName;
-            rootCommand.SetHandler(HandleCommandLineArguments, configOption, displayOption, timeOption, pidOption, expireAtOption);
+            rootCommand.SetHandler(HandleCommandLineArguments, configOption, displayOption, timeOption, pidOption, expireAtOption, parentPidOption);
 
             return rootCommand.InvokeAsync(args).Result;
         }
@@ -153,9 +161,9 @@ namespace Awake
             Manager.CompleteExit(exitCode);
         }
 
-        private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid, string expireAt)
+        private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid, string expireAt, bool useParentPid)
         {
-            if (pid == 0)
+            if (pid == 0 && !useParentPid)
             {
                 Logger.LogInfo("No PID specified. Allocating console...");
                 Manager.AllocateConsole();
@@ -175,11 +183,12 @@ namespace Awake
             Logger.LogInfo($"The value for --time-limit is: {timeLimit}");
             Logger.LogInfo($"The value for --pid is: {pid}");
             Logger.LogInfo($"The value for --expire-at is: {expireAt}");
+            Logger.LogInfo($"The value for --use-parent-pid is: {useParentPid}");
 
             // Start the monitor thread that will be used to track the current state.
             Manager.StartMonitor();
 
-            TrayHelper.InitializeTray(Core.Constants.FullAppName, _defaultAwakeIcon);
+            TrayHelper.InitializeTray(_defaultAwakeIcon, Core.Constants.FullAppName);
 
             var eventHandle = new EventWaitHandle(false, EventResetMode.ManualReset, PowerToys.Interop.Constants.AwakeExitEvent());
             new Thread(() =>
@@ -209,10 +218,45 @@ namespace Awake
                     }
 
                     ScaffoldConfiguration(settingsPath);
+
+                    if (pid != 0)
+                    {
+                        Logger.LogInfo($"Bound to target process while also using PowerToys settings: {pid}");
+
+                        RunnerHelper.WaitForPowerToysRunner(pid, () =>
+                        {
+                            Logger.LogInfo($"Triggered PID-based exit handler for PID {pid}.");
+                            Exit(Resources.AWAKE_EXIT_BINDING_HOOK_MESSAGE, 0);
+                        });
+                    }
                 }
                 catch (Exception ex)
                 {
                     Logger.LogError($"There was a problem with the configuration file. Make sure it exists.\n{ex.Message}");
+                }
+            }
+            else if (pid != 0 || useParentPid)
+            {
+                // Second, we snap to process-based execution. Because this is something that
+                // is snapped to a running entity, we only want to enable the ability to set
+                // indefinite keep-awake with the display settings that the user wants to set.
+                int targetPid = pid != 0 ? pid : useParentPid ? Manager.GetParentProcess()?.Id ?? 0 : 0;
+
+                if (targetPid != 0)
+                {
+                    Logger.LogInfo($"Bound to target process: {targetPid}");
+
+                    Manager.SetIndefiniteKeepAwake(displayOn);
+
+                    RunnerHelper.WaitForPowerToysRunner(targetPid, () =>
+                    {
+                        Logger.LogInfo($"Triggered PID-based exit handler for PID {targetPid}.");
+                        Exit(Resources.AWAKE_EXIT_BINDING_HOOK_MESSAGE, 0);
+                    });
+                }
+                else
+                {
+                    Logger.LogError("Not binding to any process.");
                 }
             }
             else
@@ -246,15 +290,6 @@ namespace Awake
                         Manager.SetTimedKeepAwake(timeLimit, displayOn);
                     }
                 }
-            }
-
-            if (pid != 0)
-            {
-                RunnerHelper.WaitForPowerToysRunner(pid, () =>
-                {
-                    Logger.LogInfo($"Triggered PID-based exit handler for PID {pid}.");
-                    Exit(Resources.AWAKE_EXIT_BINDING_HOOK_MESSAGE, 0);
-                });
             }
         }
 

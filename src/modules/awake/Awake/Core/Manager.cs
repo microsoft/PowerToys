@@ -5,10 +5,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -62,7 +64,7 @@ namespace Awake.Core
         {
             Thread monitorThread = new(() =>
             {
-                Thread.CurrentThread.IsBackground = true;
+                Thread.CurrentThread.IsBackground = false;
                 while (true)
                 {
                     ExecutionState state = _stateQueue.Take();
@@ -126,10 +128,18 @@ namespace Awake.Core
             _stateQueue.Add(ExecutionState.ES_CONTINUOUS);
 
             // Next, make sure that any existing background threads are terminated.
-            _tokenSource.Cancel();
-            _tokenSource.Dispose();
+            if (_tokenSource != null)
+            {
+                _tokenSource.Cancel();
+                _tokenSource.Dispose();
 
-            _tokenSource = new CancellationTokenSource();
+                _tokenSource = new CancellationTokenSource();
+            }
+            else
+            {
+                Logger.LogWarning("The token source was null.");
+            }
+
             Logger.LogInfo("Instantiating of new token source and thread token completed.");
         }
 
@@ -137,11 +147,10 @@ namespace Awake.Core
         {
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeIndefinitelyKeepAwakeEvent());
 
-            CancelExistingThread();
-
-            _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
-
             TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_INDEFINITE}]", _indefiniteIcon, TrayIconAction.Update);
+
+            CancelExistingThread();
+            _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
             if (IsUsingPowerToysConfig)
             {
@@ -416,6 +425,19 @@ namespace Awake.Core
                     Logger.LogError($"Failed to handle display setting command: {ex.Message}");
                 }
             }
+        }
+
+        public static Process? GetParentProcess()
+        {
+            return GetParentProcess(Process.GetCurrentProcess().Handle);
+        }
+
+        private static Process? GetParentProcess(IntPtr handle)
+        {
+            ProcessBasicInformation pbi = default;
+            int status = Bridge.NtQueryInformationProcess(handle, 0, ref pbi, Marshal.SizeOf<ProcessBasicInformation>(), out _);
+
+            return status != 0 ? null : Process.GetProcessById(pbi.InheritedFromUniqueProcessId.ToInt32());
         }
     }
 }

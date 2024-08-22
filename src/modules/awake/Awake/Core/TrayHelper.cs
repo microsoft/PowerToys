@@ -43,11 +43,6 @@ namespace Awake.Core
             HiddenWindowHandle = IntPtr.Zero;
         }
 
-        public static void InitializeTray(string text, Icon icon)
-        {
-            CreateHiddenWindow(icon, text);
-        }
-
         private static void ShowContextMenu(IntPtr hWnd)
         {
             if (TrayMenu != IntPtr.Zero)
@@ -88,7 +83,7 @@ namespace Awake.Core
             }
         }
 
-        private static void CreateHiddenWindow(Icon icon, string text)
+        public static void InitializeTray(Icon icon, string text)
         {
             IntPtr hWnd = IntPtr.Zero;
 
@@ -143,7 +138,13 @@ namespace Awake.Core
                     Bridge.UpdateWindow(hWnd);
 
                     SetShellIcon(hWnd, text, icon);
+                });
+            }).Wait();
 
+            Task.Run(() =>
+            {
+                RunOnMainThread(() =>
+                {
                     RunMessageLoop();
                 });
             });
@@ -151,6 +152,8 @@ namespace Awake.Core
 
         internal static void SetShellIcon(IntPtr hWnd, string text, Icon? icon, TrayIconAction action = TrayIconAction.Add)
         {
+            Logger.LogInfo($"Setting the shell icon.\nText: {text}\nAction: {action}");
+
             int message = Native.Constants.NIM_ADD;
 
             switch (action)
@@ -168,6 +171,8 @@ namespace Awake.Core
 
             if (action == TrayIconAction.Add || action == TrayIconAction.Update)
             {
+                Logger.LogInfo($"Adding or updating tray icon. HIcon handle is {icon?.Handle}\nHWnd: {hWnd}");
+
                 _notifyIconData = new NotifyIconData
                 {
                     CbSize = Marshal.SizeOf(typeof(NotifyIconData)),

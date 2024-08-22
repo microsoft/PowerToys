@@ -79,7 +79,7 @@
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="8.0.0" />
     <PackageVersion Include="System.Text.Json" Version="8.0.4" />
     <PackageVersion Include="UnicodeInformation" Version="2.6.0" />
-    <PackageVersion Include="UnitsNet" Version="5.50.0" />
+    <PackageVersion Include="UnitsNet" Version="5.56.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
     <PackageVersion Include="WinUIEx" Version="2.2.0" />
     <PackageVersion Include="WPF-UI" Version="3.0.0" />

@@ -720,7 +720,7 @@
     <value>Save multiple items to your clipboard. This is an OS feature.</value>
   </data>
   <data name="AdvancedPaste_Direct_Access_Hotkeys_GroupSettings.Header" xml:space="preserve">
-    <value>Shortcuts</value>
+    <value>Actions</value>
   </data>
   <data name="RemapKeysList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Current Key Remappings</value>
@@ -1996,8 +1996,42 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="PasteAsPlainText_Shortcut.Header" xml:space="preserve">
     <value>Paste as plain text directly</value>
   </data>
+  <data name="AdvancedPasteUI_Actions.Header" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="AdvancedPasteUI_Actions.Description" xml:space="preserve">
+    <value>Create and manage advanced paste custom actions</value>
+  </data>
+  <data name="AdvancedPasteUI_AddCustomActionButton.Content" xml:space="preserve">
+    <value>Add custom action</value>
+  </data>
   <data name="AdvancedPasteUI_Shortcut.Header" xml:space="preserve">
     <value>Open Advanced Paste window</value>
+  </data>
+  <data name="AdvancedPasteUI_NewCustomActionPrefix" xml:space="preserve">
+    <value>New custom action</value>
+    <comment>First part of the default name of new custom action that can be added in PT's settings ui.</comment>
+  </data>
+  <data name="AdvancedPasteUI_CustomAction_Name.Header" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="AdvancedPasteUI_CustomAction_Prompt.Header" xml:space="preserve">
+    <value>Prompt</value>
+  </data>
+  <data name="CustomActionDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="AddCustomAction" xml:space="preserve">
+    <value>Add custom action</value>
+  </data>
+  <data name="CustomActionSave" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="EditCustomAction" xml:space="preserve">
+    <value>Edit custom action</value>
+  </data>
+  <data name="CustomActionUpdate" xml:space="preserve">
+    <value>Update</value>
   </data>
   <data name="PasteAsMarkdown_Shortcut.Header" xml:space="preserve">
     <value>Paste as Markdown directly</value>

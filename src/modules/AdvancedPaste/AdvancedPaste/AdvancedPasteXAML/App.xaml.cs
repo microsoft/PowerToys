@@ -3,6 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Settings;
 using AdvancedPaste.ViewModels;
@@ -14,6 +18,7 @@ using Microsoft.UI.Xaml;
 using Windows.Graphics;
 using WinUIEx;
 using static AdvancedPaste.Helpers.NativeMethods;
+using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -26,11 +31,12 @@ namespace AdvancedPaste
     {
         public IHost Host { get; private set; }
 
+        private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        private readonly OptionsViewModel viewModel;
+
         private MainWindow window;
 
         private nint windowHwnd;
-
-        private OptionsViewModel viewModel;
 
         private bool disposedValue;
 
@@ -74,7 +80,7 @@ namespace AdvancedPaste
         /// Invoked when the application is launched.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
-        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             var cmdArgs = Environment.GetCommandLineArgs();
             if (cmdArgs?.Length > 1)
@@ -88,9 +94,44 @@ namespace AdvancedPaste
                 }
             }
 
-            NativeEventWaiter.WaitForEventLoop(PowerToys.Interop.Constants.ShowAdvancedPasteSharedEvent(), OnAdvancedPasteHotkey);
-            NativeEventWaiter.WaitForEventLoop(PowerToys.Interop.Constants.AdvancedPasteMarkdownEvent(), OnAdvancedPasteMarkdownHotkey);
-            NativeEventWaiter.WaitForEventLoop(PowerToys.Interop.Constants.AdvancedPasteJsonEvent(), OnAdvancedPasteJsonHotkey);
+            if (cmdArgs?.Length > 2)
+            {
+                ProcessNamedPipe(cmdArgs[2]);
+            }
+        }
+
+        private void ProcessNamedPipe(string pipeName)
+        {
+            void OnMessage(string message) => _dispatcherQueue.TryEnqueue(() => OnNamedPipeMessage(message));
+
+            Task.Run(async () =>
+            {
+                var connectTimeout = TimeSpan.FromSeconds(10);
+                await NamedPipeProcessor.ProcessNamedPipeAsync(pipeName, connectTimeout, OnMessage, CancellationToken.None);
+            });
+        }
+
+        private void OnNamedPipeMessage(string message)
+        {
+            var messageParts = message.Split();
+            var messageType = messageParts.First();
+
+            if (messageType == PowerToys.Interop.Constants.AdvancedPasteShowUIMessage())
+            {
+                OnAdvancedPasteHotkey();
+            }
+            else if (messageType == PowerToys.Interop.Constants.AdvancedPasteMarkdownMessage())
+            {
+                OnAdvancedPasteMarkdownHotkey();
+            }
+            else if (messageType == PowerToys.Interop.Constants.AdvancedPasteJsonMessage())
+            {
+                OnAdvancedPasteJsonHotkey();
+            }
+            else if (messageType == PowerToys.Interop.Constants.AdvancedPasteCustomActionMessage())
+            {
+                OnAdvancedPasteCustomActionHotkey(messageParts);
+            }
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -100,17 +141,43 @@ namespace AdvancedPaste
 
         private void OnAdvancedPasteJsonHotkey()
         {
-            viewModel.GetClipboardData();
+            viewModel.ReadClipboard();
             viewModel.ToJsonFunction(true);
         }
 
         private void OnAdvancedPasteMarkdownHotkey()
         {
-            viewModel.GetClipboardData();
+            viewModel.ReadClipboard();
             viewModel.ToMarkdownFunction(true);
         }
 
         private void OnAdvancedPasteHotkey()
+        {
+            ShowWindow();
+        }
+
+        private void OnAdvancedPasteCustomActionHotkey(string[] messageParts)
+        {
+            if (messageParts.Length != 2)
+            {
+                Logger.LogWarning("Unexpected custom action message");
+            }
+            else
+            {
+                if (!int.TryParse(messageParts[1], CultureInfo.InvariantCulture, out int customActionId))
+                {
+                    Logger.LogWarning($"Unexpected custom action message id {messageParts[1]}");
+                }
+                else
+                {
+                    ShowWindow();
+                    viewModel.ReadClipboard();
+                    viewModel.ExecuteCustomActionWithPaste(customActionId);
+                }
+            }
+        }
+
+        private void ShowWindow()
         {
             viewModel.OnShow();
 

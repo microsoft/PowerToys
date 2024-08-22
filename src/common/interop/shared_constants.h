@@ -25,12 +25,14 @@ namespace CommonSharedConstants
 
     const wchar_t COLOR_PICKER_SEND_SETTINGS_TELEMETRY_EVENT[] = L"Local\\ColorPickerSettingsTelemetryEvent-6c7071d8-4014-46ec-b687-913bd8a422f1";
 
-    // Path to the event used to show Advanced Paste UI
-    const wchar_t SHOW_ADVANCED_PASTE_SHARED_EVENT[] = L"Local\\ShowAdvancedPasteEvent-9a46be2a-3e05-4186-b56b-4ae986ef2526";
+    // IPC Messages used in Advanced Paste
+    const wchar_t ADVANCED_PASTE_SHOW_UI_MESSAGE[] = L"ShowUI";
 
-    const wchar_t ADVANCED_PASTE_MARKDOWN_EVENT[] = L"Local\\AdvancedPasteJsonEvent-a18c0798-3ee6-4fc5-bb9f-114c57ac0d47";
+    const wchar_t ADVANCED_PASTE_MARKDOWN_MESSAGE[] = L"PasteMarkdown";
 
-    const wchar_t ADVANCED_PASTE_JSON_EVENT[] = L"Local\\AdvancedPasteJsonEvent-9ed021ab-b711-4cf3-9f33-135a698a9d21";
+    const wchar_t ADVANCED_PASTE_JSON_MESSAGE[] = L"PasteJson";
+
+    const wchar_t ADVANCED_PASTE_CUSTOM_ACTION_MESSAGE[] = L"CustomAction";
 
     // Path to the event used to show Color Picker
     const wchar_t SHOW_COLOR_PICKER_SHARED_EVENT[] = L"Local\\ShowColorPickerEvent-8c46be2a-3e05-4186-b56b-4ae986ef2525";
