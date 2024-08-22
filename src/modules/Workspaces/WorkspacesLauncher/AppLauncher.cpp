@@ -299,19 +299,10 @@ bool LaunchPackagedApp(const std::wstring& packageFullName, ErrorList& launchErr
 bool Launch(const WorkspacesData::WorkspacesProject::Application& app, ErrorList& launchErrors)
 {
     bool launched{ false };
-    if (!app.appUserModelId.empty())
-    {
-        Logger::trace(L"Launching {} as {}", app.name, app.appUserModelId);
-        launched = LaunchApp(L"shell:AppsFolder\\" + app.appUserModelId, app.commandLineArgs, app.isElevated, launchErrors);
-    }
 
-    if (!launched && !app.packageFullName.empty() && app.commandLineArgs.empty() && !app.isElevated)
-    {
-        Logger::trace(L"Launching packaged app {}", app.name);
-        launched = LaunchPackagedApp(app.packageFullName, launchErrors);
-    }
-
-    if (!launched && !app.packageFullName.empty())
+    // packaged apps: check protocol in registry
+    // usage example: Settings with cmd args
+    if (!app.packageFullName.empty())
     {
         auto names = RegistryUtils::GetUriProtocolNames(app.packageFullName);
         if (!names.empty())
@@ -327,6 +318,22 @@ bool Launch(const WorkspacesData::WorkspacesProject::Application& app, ErrorList
         {
             Logger::info(L"Uri protocol names not found for {}", app.packageFullName);
         }
+    }
+
+    // packaged apps: try launching first by AppUserModel.ID
+    // usage example: elevated Terminal 
+    if (!launched && !app.appUserModelId.empty() && !app.packageFullName.empty())
+    {
+        Logger::trace(L"Launching {} as {}", app.name, app.appUserModelId);
+        launched = LaunchApp(L"shell:AppsFolder\\" + app.appUserModelId, app.commandLineArgs, app.isElevated, launchErrors);
+    }
+
+    // packaged apps: try launching by package full name
+    // doesn't work for elevated apps or apps with command line args
+    if (!launched && !app.packageFullName.empty() && app.commandLineArgs.empty() && !app.isElevated)
+    {
+        Logger::trace(L"Launching packaged app {}", app.name);
+        launched = LaunchPackagedApp(app.packageFullName, launchErrors);
     }
 
     if (!launched)
