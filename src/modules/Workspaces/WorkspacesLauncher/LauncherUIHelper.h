@@ -12,5 +12,5 @@ public:
     void UpdateLaunchStatus(LaunchingApps launchedApps);
 
 private:
-    HANDLE uiProcess;
+    DWORD uiProcessId;
 };

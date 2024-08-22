@@ -11,7 +11,21 @@ LauncherUIHelper::~LauncherUIHelper()
 {
     OnThreadExecutor().submit(OnThreadExecutor::task_t{ [&] {
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        TerminateProcess(uiProcess, 0);
+
+        HANDLE uiProcess = OpenProcess(PROCESS_ALL_ACCESS, false, uiProcessId);
+        if (uiProcess)
+        {
+            bool res = TerminateProcess(uiProcess, 0);
+            if (!res)
+            {
+                Logger::error(L"Unable to terminate UI process: {}", get_last_error_or_default(GetLastError()));
+            }
+        }
+        else
+        {
+            Logger::error(L"Unable to find UI process: {}", get_last_error_or_default(GetLastError()));
+        }
+        
         std::filesystem::remove(WorkspacesData::LaunchWorkspacesFile());
     } }).wait();
 }
@@ -31,7 +45,7 @@ void LauncherUIHelper::LaunchUI()
     {
         if (pi.hProcess)
         {
-            uiProcess = pi.hProcess;
+            uiProcessId = pi.dwProcessId;
             CloseHandle(pi.hProcess);
         }
         if (pi.hThread)
