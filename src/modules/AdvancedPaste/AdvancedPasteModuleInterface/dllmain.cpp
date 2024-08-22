@@ -41,6 +41,7 @@ namespace
     const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
     const wchar_t JSON_KEY_CUSTOM_ACTIONS[] = L"custom-actions";
     const wchar_t JSON_KEY_SHORTCUT[] = L"shortcut";
+    const wchar_t JSON_KEY_IS_SHOWN[] = L"isShown";
     const wchar_t JSON_KEY_ID[] = L"id";
     const wchar_t JSON_KEY_WIN[] = L"win";
     const wchar_t JSON_KEY_ALT[] = L"alt";
@@ -220,8 +221,11 @@ private:
                         {
                             const auto object = customAction.GetObjectW();
 
-                            m_custom_action_hotkeys.push_back(parse_single_hotkey(object.GetNamedObject(JSON_KEY_SHORTCUT)));
-                            m_custom_action_ids.push_back(static_cast<int>(object.GetNamedNumber(JSON_KEY_ID)));
+                            if (object.GetNamedBoolean(JSON_KEY_IS_SHOWN, false))
+                            {
+                                m_custom_action_hotkeys.push_back(parse_single_hotkey(object.GetNamedObject(JSON_KEY_SHORTCUT)));
+                                m_custom_action_ids.push_back(static_cast<int>(object.GetNamedNumber(JSON_KEY_ID)));
+                            }
                         }
                     }
                 }
