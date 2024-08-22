@@ -16,7 +16,6 @@
     <OutputType>Library</OutputType>
     <RootNamespace>MouseJump.Common</RootNamespace>
     <AssemblyName>PowerToys.MouseJump.Common</AssemblyName>
-    <ProjectTypeGuids>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
