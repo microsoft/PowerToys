@@ -58,8 +58,8 @@ public static class DrawingHelperTests
                         new(0, 500, 500, 500),
                     },
                     activatedLocation: new(x: 50, y: 50),
-                    desktopImageFilename: "Helpers/_test-4grid-desktop.png",
-                    expectedImageFilename: "Helpers/_test-4grid-expected.png"),
+                    desktopImageFilename: "_test-4grid-desktop.png",
+                    expectedImageFilename: "_test-4grid-expected.png"),
             };
             /* win 11 */
             yield return new object[]
@@ -72,8 +72,8 @@ public static class DrawingHelperTests
                         new(0, 0, 5120, 1440),
                     },
                     activatedLocation: new(x: 50, y: 50),
-                    desktopImageFilename: "Helpers/_test-win11-desktop.png",
-                    expectedImageFilename: "Helpers/_test-win11-expected.png"),
+                    desktopImageFilename: "_test-win11-desktop.png",
+                    expectedImageFilename: "_test-win11-expected.png"),
             };
         }
 
@@ -102,13 +102,19 @@ public static class DrawingHelperTests
 
         private static Bitmap LoadImageResource(string filename)
         {
+            // assume embedded resources are in the same source folder as this
+            // class, and the namespace hierarchy matches the folder sructure.
+            // that way we can build resource names from the current namespace
+            var resourcePrefix = typeof(DrawingHelperTests).Namespace;
+            var resourceName = $"{resourcePrefix}.{filename}";
+
             var assembly = Assembly.GetExecutingAssembly();
-            var assemblyName = new AssemblyName(assembly.FullName ?? throw new InvalidOperationException());
-            var resourceName = $"Microsoft.{assemblyName.Name}.{filename.Replace("/", ".")}";
             var resourceNames = assembly.GetManifestResourceNames();
             if (!resourceNames.Contains(resourceName))
             {
-                throw new InvalidOperationException($"Embedded resource '{resourceName}' does not exist.");
+                var message = $"Embedded resource '{resourceName}' does not exist. " +
+                    "Valid resource names are: \r\n" + string.Join("\r\n", resourceNames);
+                throw new InvalidOperationException(message);
             }
 
             var stream = assembly.GetManifestResourceStream(resourceName)
