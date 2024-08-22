@@ -344,6 +344,7 @@ namespace WorkspacesEditor.ViewModels
             project.Initialize(App.ThemeManager.GetCurrentTheme());
             Workspaces.Add(project);
             _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
+            TempProjectData.DeleteTempFile();
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(WorkspacesView)));
             ApplyShortcut(project);
             SendCreateTelemetryEvent(project);

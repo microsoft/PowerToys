@@ -63,8 +63,6 @@ namespace WorkspacesEditor.Utils
                 }
 
                 Project project = new Project(parser.Read(TempProjectData.File));
-                TempProjectData.DeleteTempFile();
-
                 return project;
             }
             catch (Exception e)
