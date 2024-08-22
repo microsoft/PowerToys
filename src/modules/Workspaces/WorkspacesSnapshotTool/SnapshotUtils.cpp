@@ -215,7 +215,7 @@ namespace SnapshotUtils
                 continue;
             }
 
-            if (WindowUtils::IsExcludedByDefault(window, processPath, title))
+            if (WindowUtils::IsExcludedByDefault(window, processPath))
             {
                 continue;
             }

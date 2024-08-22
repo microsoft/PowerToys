@@ -49,7 +49,7 @@ namespace WindowUtils
         return ((style & styleToCheck) == styleToCheck);
     }
 
-    inline bool IsExcludedByDefault(HWND window, const std::wstring& processPath, const std::wstring& title)
+    inline bool IsExcludedByDefault(HWND window, const std::wstring& processPath)
     {
         std::wstring processPathUpper = processPath;
         CharUpperBuffW(processPathUpper.data(), static_cast<DWORD>(processPathUpper.length()));
