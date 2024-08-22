@@ -14,6 +14,10 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/winapi_error.h>
 
+#include <atlfile.h>
+#include <atlstr.h>
+#include <vector>
+
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
 {
     switch (ul_reason_for_call)
@@ -35,6 +39,9 @@ BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lp
 namespace
 {
     const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
+    const wchar_t JSON_KEY_CUSTOM_ACTIONS[] = L"custom-actions";
+    const wchar_t JSON_KEY_SHORTCUT[] = L"shortcut";
+    const wchar_t JSON_KEY_ID[] = L"id";
     const wchar_t JSON_KEY_WIN[] = L"win";
     const wchar_t JSON_KEY_ALT[] = L"alt";
     const wchar_t JSON_KEY_CTRL[] = L"ctrl";
@@ -60,33 +67,30 @@ private:
 
     HANDLE m_hProcess;
 
+    std::thread create_pipe_thread;
+    std::unique_ptr<CAtlFile> m_write_pipe;
+
     // Time to wait for process to close after sending WM_CLOSE signal
-    static const int MAX_WAIT_MILLISEC = 10000;
+    static const constexpr int MAX_WAIT_MILLISEC = 10000;
+
+    static const constexpr int NUM_DEFAULT_HOTKEYS = 4;
 
     Hotkey m_paste_as_plain_hotkey = { .win = true, .ctrl = true, .shift = false, .alt = true, .key = 'V' };
     Hotkey m_advanced_paste_ui_hotkey = { .win = true, .ctrl = false, .shift = true, .alt = false, .key = 'V' };
     Hotkey m_paste_as_markdown_hotkey{};
     Hotkey m_paste_as_json_hotkey{};
 
+    std::vector<Hotkey> m_custom_action_hotkeys;
+    std::vector<int> m_custom_action_ids;
+
     bool m_preview_custom_format_output = true;
 
-    // Handle to event used to invoke AdvancedPaste
-    HANDLE m_hShowUIEvent;
-    HANDLE m_hPasteMarkdownEvent;
-    HANDLE m_hPasteJsonEvent;
-
-    Hotkey parse_single_hotkey(const wchar_t* hotkey, const winrt::Windows::Data::Json::JsonObject& settingsObject)
+    Hotkey parse_single_hotkey(const wchar_t* keyName, const winrt::Windows::Data::Json::JsonObject& settingsObject)
     {
         try
         {
-            Hotkey _temp_paste_as_plain;
-            auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(hotkey);
-            _temp_paste_as_plain.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
-            _temp_paste_as_plain.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
-            _temp_paste_as_plain.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
-            _temp_paste_as_plain.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
-            _temp_paste_as_plain.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
-            return _temp_paste_as_plain;
+            const auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(keyName);
+            return parse_single_hotkey(jsonHotkeyObject);
         }
         catch (...)
         {
@@ -94,6 +98,38 @@ private:
         }
 
         return {};
+    }
+
+    static Hotkey parse_single_hotkey(const winrt::Windows::Data::Json::JsonObject& jsonHotkeyObject)
+    {
+        try
+        {
+            Hotkey hotkey;
+            hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
+            hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
+            hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
+            hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
+            hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+            return hotkey;
+        }
+        catch (...)
+        {
+            Logger::error("Failed to initialize AdvancedPaste shortcut from settings. Value will keep unchanged.");
+        }
+
+        return {};
+    }
+
+    static json::JsonObject to_json_object(const Hotkey& hotkey)
+    {
+        json::JsonObject jsonObject;
+        jsonObject.SetNamedValue(JSON_KEY_WIN, json::value(hotkey.win));
+        jsonObject.SetNamedValue(JSON_KEY_ALT, json::value(hotkey.alt));
+        jsonObject.SetNamedValue(JSON_KEY_SHIFT, json::value(hotkey.shift));
+        jsonObject.SetNamedValue(JSON_KEY_CTRL, json::value(hotkey.ctrl));
+        jsonObject.SetNamedValue(JSON_KEY_CODE, json::value(hotkey.key));
+
+        return jsonObject;
     }
 
     bool migrate_data_and_remove_data_file(Hotkey& old_paste_as_plain_hotkey)
@@ -131,7 +167,7 @@ private:
     {
         auto settingsObject = settings.get_raw_json();
 
-        // Migrate Paste As PLain text shortcut
+        // Migrate Paste As Plain text shortcut
         Hotkey old_paste_as_plain_hotkey;
         bool old_data_migrated = migrate_data_and_remove_data_file(old_paste_as_plain_hotkey);
         if (old_data_migrated)
@@ -139,12 +175,7 @@ private:
             m_paste_as_plain_hotkey = old_paste_as_plain_hotkey;
 
             // override settings file
-            json::JsonObject new_hotkey_value;
-            new_hotkey_value.SetNamedValue(JSON_KEY_WIN, json::value(old_paste_as_plain_hotkey.win));
-            new_hotkey_value.SetNamedValue(JSON_KEY_ALT, json::value(old_paste_as_plain_hotkey.alt));
-            new_hotkey_value.SetNamedValue(JSON_KEY_SHIFT, json::value(old_paste_as_plain_hotkey.shift));
-            new_hotkey_value.SetNamedValue(JSON_KEY_CTRL, json::value(old_paste_as_plain_hotkey.ctrl));
-            new_hotkey_value.SetNamedValue(JSON_KEY_CODE, json::value(old_paste_as_plain_hotkey.key));
+            const auto new_hotkey_value = to_json_object(old_paste_as_plain_hotkey);
 
             if (!settingsObject.HasKey(JSON_KEY_PROPERTIES))
             {
@@ -153,13 +184,7 @@ private:
 
             settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).SetNamedValue(JSON_KEY_PASTE_AS_PLAIN_HOTKEY, new_hotkey_value);
 
-
-            json::JsonObject ui_hotkey;
-            ui_hotkey.SetNamedValue(JSON_KEY_WIN, json::value(m_advanced_paste_ui_hotkey.win));
-            ui_hotkey.SetNamedValue(JSON_KEY_ALT, json::value(m_advanced_paste_ui_hotkey.alt));
-            ui_hotkey.SetNamedValue(JSON_KEY_SHIFT, json::value(m_advanced_paste_ui_hotkey.shift));
-            ui_hotkey.SetNamedValue(JSON_KEY_CTRL, json::value(m_advanced_paste_ui_hotkey.ctrl));
-            ui_hotkey.SetNamedValue(JSON_KEY_CODE, json::value(m_advanced_paste_ui_hotkey.key));
+            const auto ui_hotkey = to_json_object(m_advanced_paste_ui_hotkey);
             settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).SetNamedValue(JSON_KEY_ADVANCED_PASTE_UI_HOTKEY, ui_hotkey);
 
             settings.save_to_settings_file();
@@ -168,40 +193,53 @@ private:
         {
             if (settingsObject.GetView().Size())
             {
-                if (settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).HasKey(JSON_KEY_PASTE_AS_PLAIN_HOTKEY))
+                const std::array<std::pair<Hotkey*, LPCWSTR>, NUM_DEFAULT_HOTKEYS> defaultHotkeys{
+                    { { &m_paste_as_plain_hotkey, JSON_KEY_PASTE_AS_PLAIN_HOTKEY },
+                      { &m_advanced_paste_ui_hotkey, JSON_KEY_ADVANCED_PASTE_UI_HOTKEY },
+                      { &m_paste_as_markdown_hotkey, JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY },
+                      { &m_paste_as_json_hotkey, JSON_KEY_PASTE_AS_JSON_HOTKEY } }
+                };
+
+                for (auto& [hotkey, keyName] : defaultHotkeys)
                 {
-                    m_paste_as_plain_hotkey = parse_single_hotkey(JSON_KEY_PASTE_AS_PLAIN_HOTKEY, settingsObject);
+                    *hotkey = parse_single_hotkey(keyName, settingsObject);
                 }
-                if (settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).HasKey(JSON_KEY_ADVANCED_PASTE_UI_HOTKEY))
+
+                m_custom_action_hotkeys.clear();
+                m_custom_action_ids.clear();
+
+                if (settingsObject.HasKey(JSON_KEY_PROPERTIES))
                 {
-                    m_advanced_paste_ui_hotkey = parse_single_hotkey(JSON_KEY_ADVANCED_PASTE_UI_HOTKEY, settingsObject);
-                }
-                if (settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).HasKey(JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY))
-                {
-                    m_paste_as_markdown_hotkey = parse_single_hotkey(JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY, settingsObject);
-                }
-                if (settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).HasKey(JSON_KEY_PASTE_AS_JSON_HOTKEY))
-                {
-                    m_paste_as_json_hotkey = parse_single_hotkey(JSON_KEY_PASTE_AS_JSON_HOTKEY, settingsObject);
+                    const auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+
+                    if (propertiesObject.HasKey(JSON_KEY_CUSTOM_ACTIONS))
+                    {
+                        const auto customActions = propertiesObject.GetNamedObject(JSON_KEY_CUSTOM_ACTIONS).GetNamedArray(JSON_KEY_VALUE);
+
+                        for (const auto& customAction : customActions)
+                        {
+                            const auto object = customAction.GetObjectW();
+
+                            m_custom_action_hotkeys.push_back(parse_single_hotkey(object.GetNamedObject(JSON_KEY_SHORTCUT)));
+                            m_custom_action_ids.push_back(static_cast<int>(object.GetNamedNumber(JSON_KEY_ID)));
+                        }
+                    }
                 }
             }
         }
     }
 
-    bool is_process_running()
+    bool is_process_running() const
     {
         return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
     }
 
-    void launch_process(const std::wstring& arg = L"")
+    void launch_process(const std::wstring& pipe_name)
     {
         Logger::trace(L"Starting AdvancedPaste process");
-        unsigned long powertoys_pid = GetCurrentProcessId();
+        const unsigned long powertoys_pid = GetCurrentProcessId();
 
-        std::wstring executable_args = L"";
-        executable_args.append(std::to_wstring(powertoys_pid));
-
-        executable_args += L" " + arg;
+        const auto executable_args = std::format(L"{} {}", std::to_wstring(powertoys_pid), pipe_name);
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
@@ -219,6 +257,55 @@ private:
 
         TerminateProcess(m_hProcess, 1);
         m_hProcess = sei.hProcess;
+    }
+
+
+    std::optional<std::wstring> get_pipe_name(const std::wstring& prefix) const
+    {
+        UUID temp_uuid;
+        wchar_t* uuid_chars = nullptr;
+        if (UuidCreate(&temp_uuid) == RPC_S_UUID_NO_ADDRESS)
+        {
+            const auto val = get_last_error_message(GetLastError());
+            Logger::error(L"UuidCreate cannot create guid. {}", val.has_value() ? val.value() : L"");
+            return std::nullopt;
+        }
+        else if (UuidToString(&temp_uuid, reinterpret_cast<RPC_WSTR*>(&uuid_chars)) != RPC_S_OK)
+        {
+            const auto val = get_last_error_message(GetLastError());
+            Logger::error(L"UuidToString cannot convert to string. {}", val.has_value() ? val.value() : L"");
+            return std::nullopt;
+        }
+
+        const auto pipe_name = std::format(L"{}{}", prefix, std::wstring(uuid_chars));
+        RpcStringFree(reinterpret_cast<RPC_WSTR*>(&uuid_chars));
+
+        return pipe_name;
+    }
+
+    void launch_process_and_named_pipe()
+    {
+        const auto pipe_name = get_pipe_name(L"powertoys_advanced_paste_");
+
+        if (!pipe_name)
+        {
+            return;
+        }
+
+        create_pipe_thread = std::thread([&] { start_named_pipe_server(pipe_name.value()); });
+        launch_process(pipe_name.value());
+        create_pipe_thread.join();
+    }
+
+    void send_named_pipe_message(const std::wstring& message_type, const std::wstring& message_arg = L"")
+    {
+        if (m_write_pipe)
+        {
+            const auto message = message_arg.empty() ? std::format(L"{}\r\n", message_type) : std::format(L"{} {}\r\n", message_type, message_arg);
+
+            const CString file_name(message.c_str());
+            m_write_pipe->Write(file_name, file_name.GetLength() * sizeof(TCHAR));
+        }
     }
 
     // Load the settings file.
@@ -258,7 +345,7 @@ private:
         }
     }
 
-    void try_inject_modifier_key_restore(std::vector<INPUT> &inputs, short modifier)
+    void try_inject_modifier_key_restore(std::vector<INPUT>& inputs, short modifier)
     {
         // Most significant bit is set if key is down
         if ((GetAsyncKeyState(static_cast<int>(modifier)) & 0x8000) != 0)
@@ -487,15 +574,54 @@ private:
         EnumWindows(enum_windows, (LPARAM)m_hProcess);
     }
 
+    HRESULT start_named_pipe_server(const std::wstring& pipe_name)
+    {
+        const constexpr DWORD BUFSIZE = 4096 * 4;
+
+        const auto full_pipe_name = std::format(L"\\\\.\\pipe\\{}", pipe_name);
+
+        const auto hPipe = CreateNamedPipe(
+                full_pipe_name.c_str(),     // pipe name
+                PIPE_ACCESS_OUTBOUND,       // write access
+                PIPE_TYPE_MESSAGE |         // message type pipe
+                    PIPE_READMODE_MESSAGE | // message-read mode
+                    PIPE_WAIT,              // blocking mode
+                1,                          // max. instances
+                BUFSIZE,                    // output buffer size
+                0,                          // input buffer size
+                0,                          // client time-out
+                NULL);                      // default security attribute
+
+        if (hPipe == NULL || hPipe == INVALID_HANDLE_VALUE)
+        {
+            return E_FAIL;
+        }
+
+        // This call blocks until a client process connects to the pipe
+        BOOL connected = ConnectNamedPipe(hPipe, NULL);
+        if (!connected)
+        {
+            if (GetLastError() == ERROR_PIPE_CONNECTED)
+            {
+                return S_OK;
+            }
+            else
+            {
+                CloseHandle(hPipe);
+            }
+            return E_FAIL;
+        }
+
+        m_write_pipe = std::make_unique<CAtlFile>(hPipe);
+        return S_OK;
+    }
+
 public:
     AdvancedPaste()
     {
         app_name = GET_RESOURCE_STRING(IDS_ADVANCED_PASTE_NAME);
         app_key = AdvancedPasteConstants::ModuleKey;
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", "AdvancedPaste");
-        m_hShowUIEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_ADVANCED_PASTE_SHARED_EVENT);
-        m_hPasteMarkdownEvent = CreateDefaultEvent(CommonSharedConstants::ADVANCED_PASTE_MARKDOWN_EVENT);
-        m_hPasteJsonEvent = CreateDefaultEvent(CommonSharedConstants::ADVANCED_PASTE_JSON_EVENT);
         init_settings();
     }
 
@@ -559,7 +685,7 @@ public:
 
             parse_hotkeys(values);
 
-            auto settingsObject = values.get_raw_json();
+            const auto settingsObject = values.get_raw_json();
             if (settingsObject.GetView().Size() && settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).HasKey(JSON_KEY_SHOW_CUSTOM_PREVIEW))
             {
                 m_preview_custom_format_output = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SHOW_CUSTOM_PREVIEW).GetNamedBoolean(JSON_KEY_VALUE);
@@ -567,10 +693,10 @@ public:
 
             // order of args matter
             Trace::AdvancedPaste_SettingsTelemetry(m_paste_as_plain_hotkey,
-                                     m_advanced_paste_ui_hotkey,
-                                     m_paste_as_markdown_hotkey,
-                                     m_paste_as_json_hotkey,
-                                     m_preview_custom_format_output);
+                                                   m_advanced_paste_ui_hotkey,
+                                                   m_paste_as_markdown_hotkey,
+                                                   m_paste_as_json_hotkey,
+                                                   m_preview_custom_format_output);
 
             // If you don't need to do any custom processing of the settings, proceed
             // to persists the values calling:
@@ -588,12 +714,9 @@ public:
     {
         Logger::trace("AdvancedPaste::enable()");
         Trace::AdvancedPaste_Enable(true);
-        ResetEvent(m_hShowUIEvent);
-        ResetEvent(m_hPasteMarkdownEvent);
-        ResetEvent(m_hPasteJsonEvent);
         m_enabled = true;
 
-        launch_process();
+        launch_process_and_named_pipe();
     };
 
     virtual void disable()
@@ -601,9 +724,8 @@ public:
         Logger::trace("AdvancedPaste::disable()");
         if (m_enabled)
         {
-            ResetEvent(m_hShowUIEvent);
-            ResetEvent(m_hPasteMarkdownEvent);
-            ResetEvent(m_hPasteJsonEvent);
+            m_write_pipe = nullptr;
+
             TerminateProcess(m_hProcess, 1);
             Trace::AdvancedPaste_Enable(false);
 
@@ -622,13 +744,14 @@ public:
             if (!is_process_running())
             {
                 Logger::trace(L"Launching new process");
-                launch_process();
+                launch_process_and_named_pipe();
 
                 Trace::AdvancedPaste_Invoked(L"AdvancedPasteUI");
             }
 
             // hotkeyId in same order as set by get_hotkeys
-            if (hotkeyId == 0) { // m_paste_as_plain_hotkey
+            if (hotkeyId == 0)
+            { // m_paste_as_plain_hotkey
                 Logger::trace(L"Paste as plain text hotkey pressed");
 
                 std::thread([=]() {
@@ -641,21 +764,36 @@ public:
                 return true;
             }
 
-            if (hotkeyId == 1) { // m_advanced_paste_ui_hotkey
+            if (hotkeyId == 1)
+            { // m_advanced_paste_ui_hotkey
                 Logger::trace(L"Setting start up event");
 
                 bring_process_to_front();
-                SetEvent(m_hShowUIEvent);
+                send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_MESSAGE);
                 return true;
             }
-            if (hotkeyId == 2) { // m_paste_as_markdown_hotkey
+            if (hotkeyId == 2)
+            { // m_paste_as_markdown_hotkey
                 Logger::trace(L"Starting paste as markdown directly");
-                SetEvent(m_hPasteMarkdownEvent);
+                send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_MARKDOWN_MESSAGE);
                 return true;
             }
-            if (hotkeyId == 3) { // m_paste_as_json_hotkey
+            if (hotkeyId == 3)
+            { // m_paste_as_json_hotkey
                 Logger::trace(L"Starting paste as json directly");
-                SetEvent(m_hPasteJsonEvent);
+                send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_JSON_MESSAGE);
+                return true;
+            }
+
+            const auto custom_action_index = hotkeyId - NUM_DEFAULT_HOTKEYS;
+
+            if (custom_action_index < m_custom_action_ids.size())
+            {
+                const auto id = m_custom_action_ids.at(custom_action_index);
+
+                Logger::trace(L"Starting custom action id={}", id);
+
+                send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_CUSTOM_ACTION_MESSAGE, std::to_wstring(id));
                 return true;
             }
         }
@@ -665,14 +803,20 @@ public:
 
     virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
     {
-        if (hotkeys && buffer_size >= 4)
+        const size_t num_hotkeys = NUM_DEFAULT_HOTKEYS + m_custom_action_hotkeys.size();
+
+        if (hotkeys && buffer_size >= num_hotkeys)
         {
-            hotkeys[0] = m_paste_as_plain_hotkey;
-            hotkeys[1] = m_advanced_paste_ui_hotkey;
-            hotkeys[2] = m_paste_as_markdown_hotkey;
-            hotkeys[3] = m_paste_as_json_hotkey;
+            const std::array default_hotkeys = { m_paste_as_plain_hotkey,
+                                                 m_advanced_paste_ui_hotkey,
+                                                 m_paste_as_markdown_hotkey,
+                                                 m_paste_as_json_hotkey };
+
+            std::copy(default_hotkeys.begin(), default_hotkeys.end(), hotkeys);
+            std::copy(m_custom_action_hotkeys.begin(), m_custom_action_hotkeys.end(), hotkeys + NUM_DEFAULT_HOTKEYS);
         }
-        return 4;
+
+        return num_hotkeys;
     }
 
     virtual bool is_enabled() override

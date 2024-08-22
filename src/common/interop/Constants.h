@@ -16,9 +16,10 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring FZEToggleEvent();
         static hstring ColorPickerSendSettingsTelemetryEvent();
         static hstring ShowColorPickerSharedEvent();
-        static hstring ShowAdvancedPasteSharedEvent();
-        static hstring AdvancedPasteMarkdownEvent();
-        static hstring AdvancedPasteJsonEvent();
+        static hstring AdvancedPasteShowUIMessage();
+        static hstring AdvancedPasteMarkdownMessage();
+        static hstring AdvancedPasteJsonMessage();
+        static hstring AdvancedPasteCustomActionMessage();
         static hstring ShowPowerOCRSharedEvent();
         static hstring MouseJumpShowPreviewEvent();
         static hstring AwakeExitEvent();
