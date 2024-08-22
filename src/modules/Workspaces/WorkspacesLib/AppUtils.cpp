@@ -245,7 +245,7 @@ namespace Utils
 
         std::optional<AppData> GetApp(HWND window, const AppList& apps)
         {
-            std::wstring processPath = get_process_path_waiting_uwp(window);
+            std::wstring processPath = get_process_path(window);
             return Utils::Apps::GetApp(processPath, apps);
         }
     }
