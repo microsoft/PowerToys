@@ -4,6 +4,7 @@
 
   <PropertyGroup>
 
+    <ProjectGuid>{923DF87C-CA99-4D1C-B1D2-959174E95BFA}</ProjectGuid>
     <AssemblyName>PowerToys.MouseJump.Common</AssemblyName>
     <AssemblyTitle>PowerToys.MouseJump.Common</AssemblyTitle>
     <AssemblyDescription>PowerToys MouseJump.Common</AssemblyDescription>
@@ -13,24 +14,9 @@
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
-    <UseWindowsForms>false</UseWindowsForms>
+    <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>disable</ImplicitUsings>
 
   </PropertyGroup>
-
-  <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
-  <PropertyGroup>
-    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
-    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
-    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="System.Drawing.Common" />
-    <PackageReference Include="Microsoft.Win32.SystemEvents">
-      <!-- This package is a dependency of System.Drawing.Common, but we need to set it here so we can exclude the assets, so it doesn't conflict with the 8.0.1 dll coming from .NET SDK. -->
-      <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
-    </PackageReference>
-  </ItemGroup>
 
 </Project>
