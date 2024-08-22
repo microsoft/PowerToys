@@ -112,6 +112,8 @@ namespace AdvancedPaste.Pages
             }
         }
 
+        private static MainWindow GetMainWindow() => (App.Current as App)?.GetMainWindow();
+
         private void ClipboardHistoryItemDeleteButton_Click(object sender, RoutedEventArgs e)
         {
             Logger.LogTrace();
@@ -136,7 +138,7 @@ namespace AdvancedPaste.Pages
 
         private void KeyboardAccelerator_Invoked(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender, Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
         {
-            if ((App.Current as App)?.GetMainWindow()?.Visible is false)
+            if (GetMainWindow()?.Visible is false)
             {
                 return;
             }
@@ -146,6 +148,7 @@ namespace AdvancedPaste.Pages
             switch (sender.Key)
             {
                 case VirtualKey.Escape:
+                    GetMainWindow()?.Close();
                     break;
 
                 case VirtualKey.Number1:
@@ -169,7 +172,7 @@ namespace AdvancedPaste.Pages
         {
             if (e.Key == VirtualKey.Escape)
             {
-                (App.Current as App).GetMainWindow().Close();
+                GetMainWindow()?.Close();
             }
         }
 
