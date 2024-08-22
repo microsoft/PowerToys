@@ -103,7 +103,7 @@ public static class DrawingHelperTests
         private static Bitmap LoadImageResource(string filename)
         {
             // assume embedded resources are in the same source folder as this
-            // class, and the namespace hierarchy matches the folder sructure.
+            // class, and the namespace hierarchy matches the folder structure.
             // that way we can build resource names from the current namespace
             var resourcePrefix = typeof(DrawingHelperTests).Namespace;
             var resourceName = $"{resourcePrefix}.{filename}";
