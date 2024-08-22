@@ -385,6 +385,7 @@ bool Launch(WorkspacesData::WorkspacesProject& project, const std::vector<Worksp
     }
 
     // Get newly opened windows after launching apps, keep retrying for 5 seconds
+    Logger::trace(L"Find new windows");
     for (int attempt = 0; attempt < 50 && !AllWindowsFound(launchedApps); attempt++)
     {
         std::vector<HWND> windowsAfter = WindowEnumerator::Enumerate(WindowFilter::Filter);
@@ -409,6 +410,7 @@ bool Launch(WorkspacesData::WorkspacesProject& project, const std::vector<Worksp
     }
 
     // Check single-instance app windows
+    Logger::trace(L"Find single-instance app windows");
     if (!AllWindowsFound(launchedApps))
     {
         if (AddOpenedWindows(launchedApps, WindowEnumerator::Enumerate(WindowFilter::Filter), installedApps))
