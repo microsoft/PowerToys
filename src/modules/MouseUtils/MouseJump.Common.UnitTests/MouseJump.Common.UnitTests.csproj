@@ -3,11 +3,18 @@
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
+
     <ProjectGuid>{D5E42C63-57C5-4EF6-AECE-1E2FCA725B77}</ProjectGuid>
+    <AssemblyName>PowerToys.MouseJump.Common.UnitTests</AssemblyName>
+    <AssemblyTitle>PowerToys.MouseJump.Common.UnitTests</AssemblyTitle>
+    <AssemblyDescription>PowerToys MouseJump.Common.UnitTests</AssemblyDescription>
     <OutputType>Library</OutputType>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\MouseJump.Common.UnitTests\</OutputPath>
+
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>disable</ImplicitUsings>
+
   </PropertyGroup>
 
   <ItemGroup>
