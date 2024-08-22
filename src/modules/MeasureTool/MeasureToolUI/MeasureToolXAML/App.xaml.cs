@@ -27,10 +27,10 @@ namespace MeasureToolUI
         }
 
         /// <summary>
-        /// Invoked when the application is launched normally by the end user.  Other entry points
-        /// will be used such as when the application is launched to open a specific file.
+        /// Invoked when the application is opened normally by the end user.  Other entry points
+        /// will be used such as when the application is opened to open a specific file.
         /// </summary>
-        /// <param name="args">Details about the launch request and process.</param>
+        /// <param name="args">Details about the open request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredScreenRulerEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)

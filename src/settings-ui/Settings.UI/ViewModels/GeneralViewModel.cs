@@ -850,7 +850,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             NotifyPropertyChanged(nameof(SettingsBackupRestoreMessageVisible), false);
         }
 
-        // callback function to launch the URL to check for updates.
+        // callback function to open the URL to check for updates.
         private void CheckForUpdatesClick()
         {
             GeneralSettingsConfig.CustomActionName = "check_for_updates";

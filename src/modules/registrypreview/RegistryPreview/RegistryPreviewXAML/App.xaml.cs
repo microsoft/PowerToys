@@ -28,9 +28,10 @@ namespace RegistryPreview
         }
 
         /// <summary>
-        /// Invoked when the application is launched.
+        /// Invoked when the application is opened normally by the end user.  Other entry points
+        /// will be used such as when the application is opened to open a specific file.
         /// </summary>
-        /// <param name="args">Details about the launch request and process.</param>
+        /// <param name="args">Details about the open request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             // Keeping commented out but this is invaluable for protocol activation testing.
