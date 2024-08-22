@@ -171,6 +171,11 @@ namespace WorkspacesEditor.ViewModels
         {
             SendEditTelemetryEvent(projectToSave, editedProject);
 
+            if (editedProject.Name != projectToSave.Name)
+            {
+                RemoveShortcut(editedProject);
+            }
+
             editedProject.Name = projectToSave.Name;
             editedProject.IsShortcutNeeded = projectToSave.IsShortcutNeeded;
             editedProject.MoveExistingWindows = projectToSave.MoveExistingWindows;
