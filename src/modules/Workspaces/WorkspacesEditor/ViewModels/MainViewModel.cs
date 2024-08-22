@@ -348,8 +348,25 @@ namespace WorkspacesEditor.ViewModels
         {
             Workspaces.Remove(selectedProject);
             _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
+            RemoveShortcut(selectedProject);
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(WorkspacesView)));
             SendDeleteTelemetryEvent();
+        }
+
+        private void RemoveShortcut(Project selectedProject)
+        {
+            string shortcutAddress = Path.Combine(FolderUtils.Desktop(), selectedProject.Name + ".lnk");
+            string shortcutIconFilename = Path.Combine(FolderUtils.Temp(), selectedProject.Id + ".ico");
+
+            if (File.Exists(shortcutIconFilename))
+            {
+                File.Delete(shortcutIconFilename);
+            }
+
+            if (File.Exists(shortcutAddress))
+            {
+                File.Delete(shortcutAddress);
+            }
         }
 
         public void SetMainWindow(MainWindow mainWindow)
