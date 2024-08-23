@@ -121,7 +121,7 @@ In this release, we focused on stability and improvements.
 
 ### Awake
 
- - Added --use-parent-pid CLI argument to attach to parent process and fixed issue causing tray icon to dissapear. Thanks [@dend](https://github.com/dend)!
+ - Added --use-parent-pid CLI argument to attach to parent process and fixed issue causing tray icon to disappear. Thanks [@dend](https://github.com/dend)!
 
 ### Hosts File Editor
 
