@@ -1363,7 +1363,7 @@ EXHIBIT A -Mozilla Public License.
 - System.Text.Encoding.CodePages 8.0.0
 - System.Text.Json 8.0.4
 - UnicodeInformation 2.6.0
-- UnitsNet 5.50.0
+- UnitsNet 5.56.0
 - UTF.Unknown 2.5.1
 - WinUIEx 2.2.0
 - WPF-UI 3.0.0

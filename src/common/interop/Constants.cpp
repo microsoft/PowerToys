@@ -51,17 +51,21 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::SHOW_COLOR_PICKER_SHARED_EVENT;
     }
-    hstring Constants::ShowAdvancedPasteSharedEvent()
+    hstring Constants::AdvancedPasteShowUIMessage()
     {
-        return CommonSharedConstants::SHOW_ADVANCED_PASTE_SHARED_EVENT;
+        return CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_MESSAGE;
     }
-    hstring Constants::AdvancedPasteMarkdownEvent()
+    hstring Constants::AdvancedPasteMarkdownMessage()
     {
-        return CommonSharedConstants::ADVANCED_PASTE_MARKDOWN_EVENT;
+        return CommonSharedConstants::ADVANCED_PASTE_MARKDOWN_MESSAGE;
     }
-    hstring Constants::AdvancedPasteJsonEvent()
+    hstring Constants::AdvancedPasteJsonMessage()
     {
-        return CommonSharedConstants::ADVANCED_PASTE_JSON_EVENT;
+        return CommonSharedConstants::ADVANCED_PASTE_JSON_MESSAGE;
+    }
+    hstring Constants::AdvancedPasteCustomActionMessage()
+    {
+        return CommonSharedConstants::ADVANCED_PASTE_CUSTOM_ACTION_MESSAGE;
     }
     hstring Constants::ShowPowerOCRSharedEvent()
     {
@@ -142,5 +146,9 @@ namespace winrt::PowerToys::Interop::implementation
     hstring Constants::ShowEnvironmentVariablesAdminSharedEvent()
     {
         return CommonSharedConstants::SHOW_ENVIRONMENT_VARIABLES_ADMIN_EVENT;
+    }
+    hstring Constants::WorkspacesLaunchEditorEvent()
+    {
+        return CommonSharedConstants::WORKSPACES_LAUNCH_EDITOR_EVENT;
     }
 }
