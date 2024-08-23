@@ -424,6 +424,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "Peek": return typeof(PeekPage);
                 case "CropAndLock": return typeof(CropAndLockPage);
                 case "EnvironmentVariables": return typeof(EnvironmentVariablesPage);
+                case "Workspaces": return typeof(WorkspacesPage);
                 default:
                     // Fallback to Dashboard
                     Debug.Assert(false, "Unexpected SettingsWindow argument value");

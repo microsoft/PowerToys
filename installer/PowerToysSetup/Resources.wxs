@@ -449,6 +449,15 @@
         </RegistryKey>
         <File Id="PowerOCR_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.PowerOCR.resources.dll" />
       </Component>
+      <Component
+          Id="WorkspacesEditor_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER"
+          Guid="$(var.CompGUIDPrefix)21">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="WorkspacesEditor_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="WorkspacesEditor_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.WorkspacesEditor.resources.dll" />
+      </Component>
       <?undef IdSafeLanguage?>
       <?undef CompGUIDPrefix?>
       <?endforeach?>

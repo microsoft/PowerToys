@@ -147,4 +147,8 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::SHOW_ENVIRONMENT_VARIABLES_ADMIN_EVENT;
     }
+    hstring Constants::WorkspacesLaunchEditorEvent()
+    {
+        return CommonSharedConstants::WORKSPACES_LAUNCH_EDITOR_EVENT;
+    }
 }

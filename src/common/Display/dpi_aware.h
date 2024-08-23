@@ -12,6 +12,7 @@ namespace DPIAware
     HRESULT GetScreenDPIForPoint(POINT p, UINT& dpi);
     HRESULT GetScreenDPIForCursor(UINT& dpi);
     void Convert(HMONITOR monitor_handle, float& width, float& height);
+    void Convert(HMONITOR monitor_handle, RECT& rect);
     void ConvertByCursorPosition(float& width, float& height);
     void InverseConvert(HMONITOR monitor_handle, float& width, float& height);
     void EnableDPIAwarenessForThisProcess();

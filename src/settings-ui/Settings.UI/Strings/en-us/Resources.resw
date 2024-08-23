@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -2094,6 +2094,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Oobe_PowerRename.Description" xml:space="preserve">
     <value>PowerRename enables you to perform simple bulk renaming, searching and replacing file names.</value>
   </data>
+  <data name="Oobe_Workspaces.Description" xml:space="preserve">
+    <value>The Workspaces utility enables you to launch a set of applications at once.</value>
+  </data>
   <data name="Oobe_Run.Description" xml:space="preserve">
     <value>PowerToys Run is a quick launcher for power users that contains some additional features without sacrificing performance.</value>
   </data>
@@ -2180,6 +2183,12 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_PowerRename_HowToUse.Text" xml:space="preserve">
     <value>In File Explorer, right-click one or more selected files and select **Rename with PowerRename** from the context menu.</value>
   </data>
+  <data name="Oobe_Workspaces_HowToUse.Text" xml:space="preserve">
+    <value>In the Workspaces Editor window create Workspaces - a set of applications. You can launch Workspaces from the Workspaces Editor or by Shortcuts created in the Workspaces Editor.</value>
+  </data>
+  <data name="Oobe_Workspaces_TipsAndTricks.Text" xml:space="preserve">
+    <value>The Workspaces utility helps you to have a predefined set of applications on your desktop, each application in a desired position.</value>
+  </data>
   <data name="Oobe_PowerRename_TipsAndTricks.Text" xml:space="preserve">
     <value>PowerRename supports searching for files using regular expressions to enable more advanced renaming functionalities.</value>
   </data>
@@ -2242,6 +2251,10 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_PowerRename.Title" xml:space="preserve">
     <value>PowerRename</value>
+    <comment>Do not localize this string</comment>
+  </data>
+  <data name="Oobe_Workspaces.Title" xml:space="preserve">
+    <value>Workspaces</value>
     <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_Run.Title" xml:space="preserve">
@@ -3147,6 +3160,32 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Shell_QuickAccent.Content" xml:space="preserve">
     <value>Quick Accent</value>
+  </data>
+  <data name="Shell_Workspaces.Content" xml:space="preserve">
+    <value>Workspaces</value>
+  </data>
+  <data name="Workspaces_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Workspaces</value>
+    <comment>"Workspaces" is the name of the utility</comment>
+  </data>
+  <data name="Workspaces_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="Workspaces_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to launch the Workspaces Editor</value>
+  </data>
+  <data name="Workspaces_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="Workspaces_LaunchEditorButtonControl.Description" xml:space="preserve">
+    <value>Create and manage Workspaces</value>
+  </data>
+  <data name="Workspaces_LaunchEditorButtonControl.Header" xml:space="preserve">
+    <value>Launch editor</value>
+  </data>
+  <data name="LearnMore_Workspaces.Text" xml:space="preserve">
+    <value>Learn more about the Workspaces utility</value>
+    <comment> Workspaces is the name of the module. </comment>
   </data>
   <data name="QuickAccent.ModuleDescription" xml:space="preserve">
     <value>Quick Accent is an alternative way to type accented characters, useful for when a keyboard doesn't support that specific accent.
@@ -4232,6 +4271,16 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AdvancedPaste_CloseAfterLosingFocus.Header" xml:space="preserve">
     <value>Automatically close the AdvancedPaste window after it loses focus</value>
     <comment>AdvancedPaste is a product name, do not loc</comment>
+  </data>
+  <data name="Workspaces.ModuleDescription" xml:space="preserve">
+    <value>Workspaces is a quick and easy way to launch multiple applications.</value>
+    <comment>{Locked="Always On Top"}</comment>
+  </data>
+  <data name="Workspaces.ModuleTitle" xml:space="preserve">
+    <value>Workspaces</value>
+  </data>
+  <data name="Workspaces_ShortDescription" xml:space="preserve">
+    <value>Create and launch Workspaces</value>
   </data>
   <data name="MouseWithoutBorders_PolicyIPAddressMappingInfo.Title" xml:space="preserve">
     <value>Rules defined by your organization</value>

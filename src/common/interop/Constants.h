@@ -40,6 +40,7 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring CropAndLockReparentEvent();
         static hstring ShowEnvironmentVariablesSharedEvent();
         static hstring ShowEnvironmentVariablesAdminSharedEvent();
+        static hstring WorkspacesLaunchEditorEvent();
     };
 }
 
