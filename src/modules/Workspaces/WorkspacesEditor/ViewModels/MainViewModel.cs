@@ -509,13 +509,13 @@ namespace WorkspacesEditor.ViewModels
 
         internal async void LaunchAndEdit(Project project)
         {
-            // the project might contain removed apps, creating a temporaly copy of it (without removed apps) and launching the copy.
+            // the project might contain removed apps, creating a temporal copy of it (without removed apps) and launching the copy.
             Project launchProject = new Project(project, Guid.NewGuid().ToString());
-            _workspacesEditorIO.SerializeWorkspaces(new List<Project>() { launchProject }, WorkspacesEditorIO.StorageFile.TemporallyLaunch);
+            _workspacesEditorIO.SerializeWorkspaces(new List<Project>() { launchProject }, WorkspacesEditorIO.StorageFile.TemporalLaunch);
 
             await Task.Run(() => RunLauncher(launchProject.Id, InvokePoint.LaunchAndEdit));
 
-            _workspacesEditorIO.RemoveFile(WorkspacesEditorIO.StorageFile.TemporallyLaunch);
+            _workspacesEditorIO.RemoveFile(WorkspacesEditorIO.StorageFile.TemporalLaunch);
             projectBeforeLaunch = new Project(project);
             EnterSnapshotMode(true);
         }

@@ -18,8 +18,8 @@ namespace WorkspacesEditor.Utils
         public enum StorageFile
         {
             Common,
-            Temporaly,
-            TemporallyLaunch,
+            Temporal,
+            TemporalLaunch,
         }
 
         public WorkspacesEditorIO()
@@ -157,8 +157,8 @@ namespace WorkspacesEditor.Utils
                 IOUtils ioUtils = new IOUtils();
                 string fileName = storageFile switch
                 {
-                    StorageFile.Temporaly => TempProjectData.File,
-                    StorageFile.TemporallyLaunch => TempProjectData.LaunchFile,
+                    StorageFile.Temporal => TempProjectData.File,
+                    StorageFile.TemporalLaunch => TempProjectData.LaunchFile,
                     _ => serializer.File,
                 };
 
@@ -190,15 +190,15 @@ namespace WorkspacesEditor.Utils
 
         internal void SerializeTempProject(Project project)
         {
-            SerializeWorkspaces(new List<Project>() { project }, StorageFile.Temporaly);
+            SerializeWorkspaces(new List<Project>() { project }, StorageFile.Temporal);
         }
 
         internal void RemoveFile(StorageFile storageFile)
         {
             string fileName = storageFile switch
             {
-                StorageFile.Temporaly => TempProjectData.File,
-                StorageFile.TemporallyLaunch => TempProjectData.LaunchFile,
+                StorageFile.Temporal => TempProjectData.File,
+                StorageFile.TemporalLaunch => TempProjectData.LaunchFile,
                 _ => string.Empty,
             };
 

@@ -109,7 +109,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
                     }
                     else
                     {
-                        Logger::critical("Incorrect temporaly launch Workspaces file");
+                        Logger::critical("Incorrect temporal launch Workspaces file");
                         std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), WorkspacesData::TempLaunchWorkspacesFile());
                         MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
                         return 1;
@@ -117,7 +117,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
                 }
                 else
                 {
-                    Logger::critical("Incorrect temporaly launch  Workspaces file");
+                    Logger::critical("Incorrect temporal launch Workspaces file");
                     std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), WorkspacesData::TempLaunchWorkspacesFile());
                     MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
                     return 1;
@@ -125,7 +125,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
             }
             catch (std::exception ex)
             {
-                Logger::critical("Exception on reading temporaly launch  Workspaces file: {}", ex.what());
+                Logger::critical("Exception on reading temporal launch Workspaces file: {}", ex.what());
                 std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_FILE_READING_ERROR), WorkspacesData::TempLaunchWorkspacesFile());
                 MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
                 return 1;
@@ -166,7 +166,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
                         }
                         else
                         {
-                            Logger::critical("Incorrect temporaly Workspaces file");
+                            Logger::critical("Incorrect temporal Workspaces file");
                             std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), WorkspacesData::TempWorkspacesFile());
                             MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
                             return 1;
@@ -174,7 +174,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
                     }
                     else
                     {
-                        Logger::critical("Incorrect temporaly Workspaces file");
+                        Logger::critical("Incorrect temporal Workspaces file");
                         std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), WorkspacesData::TempWorkspacesFile());
                         MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
                         return 1;
@@ -182,7 +182,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
                 }
                 catch (std::exception ex)
                 {
-                    Logger::critical("Exception on reading temporaly Workspaces file: {}", ex.what());
+                    Logger::critical("Exception on reading temporal Workspaces file: {}", ex.what());
                     std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_FILE_READING_ERROR), WorkspacesData::TempWorkspacesFile());
                     MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
                     return 1;
