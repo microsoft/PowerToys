@@ -207,9 +207,9 @@ namespace WorkspacesEditor.Models
         private BitmapImage _previewImage;
         private double _previewImageWidth;
 
-        public Project(Project selectedProject)
+        public Project(Project selectedProject, string newId = "")
         {
-            Id = selectedProject.Id;
+            Id = newId == string.Empty ? selectedProject.Id : newId;
             Name = selectedProject.Name;
             PreviewIcons = selectedProject.PreviewIcons;
             PreviewImage = selectedProject.PreviewImage;

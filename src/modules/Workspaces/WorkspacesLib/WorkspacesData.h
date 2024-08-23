@@ -6,6 +6,7 @@ namespace WorkspacesData
 {
     std::wstring WorkspacesFile();
     std::wstring TempWorkspacesFile();
+    std::wstring TempLaunchWorkspacesFile();
     std::wstring LaunchWorkspacesFile();
 
     struct WorkspacesProject

@@ -15,6 +15,13 @@ namespace WorkspacesEditor.Utils
 {
     public class WorkspacesEditorIO
     {
+        public enum StorageFile
+        {
+            Common,
+            Temporaly,
+            TemporallyLaunch,
+        }
+
         public WorkspacesEditorIO()
         {
         }
@@ -72,7 +79,7 @@ namespace WorkspacesEditor.Utils
             }
         }
 
-        public void SerializeWorkspaces(List<Project> workspaces, bool useTempFile = false)
+        public void SerializeWorkspaces(List<Project> workspaces, StorageFile storageFile = StorageFile.Common)
         {
             WorkspacesData serializer = new WorkspacesData();
             WorkspacesData.WorkspacesListWrapper workspacesWrapper = new WorkspacesData.WorkspacesListWrapper { };
@@ -148,7 +155,14 @@ namespace WorkspacesEditor.Utils
             try
             {
                 IOUtils ioUtils = new IOUtils();
-                ioUtils.WriteFile(useTempFile ? TempProjectData.File : serializer.File, serializer.Serialize(workspacesWrapper));
+                string fileName = storageFile switch
+                {
+                    StorageFile.Temporaly => TempProjectData.File,
+                    StorageFile.TemporallyLaunch => TempProjectData.LaunchFile,
+                    _ => serializer.File,
+                };
+
+                ioUtils.WriteFile(fileName, serializer.Serialize(workspacesWrapper));
             }
             catch (Exception e)
             {
@@ -176,7 +190,22 @@ namespace WorkspacesEditor.Utils
 
         internal void SerializeTempProject(Project project)
         {
-            SerializeWorkspaces(new List<Project>() { project }, true);
+            SerializeWorkspaces(new List<Project>() { project }, StorageFile.Temporaly);
+        }
+
+        internal void RemoveFile(StorageFile storageFile)
+        {
+            string fileName = storageFile switch
+            {
+                StorageFile.Temporaly => TempProjectData.File,
+                StorageFile.TemporallyLaunch => TempProjectData.LaunchFile,
+                _ => string.Empty,
+            };
+
+            if (File.Exists(fileName))
+            {
+                File.Delete(fileName);
+            }
         }
     }
 }

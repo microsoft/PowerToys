@@ -24,7 +24,7 @@ const std::wstring internalPath = L"";
 int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cmdShow)
 {
     LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::workspacesLauncherLoggerName);
-    InitUnhandledExceptionHandler();  
+    InitUnhandledExceptionHandler();
 
     if (powertoys_gpo::getConfiguredWorkspacesEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
     {
@@ -41,7 +41,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         GetModuleFileNameW(nullptr, exe_path.get(), exe_path_size);
 
         const auto modulePath = get_module_folderpath();
-        
+
         std::string cmdLineStr(cmdline);
         std::wstring cmdLineWStr(cmdLineStr.begin(), cmdLineStr.end());
 
@@ -57,7 +57,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     }
 
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-    
+
     std::string cmdLineStr(cmdline);
     auto cmdArgs = split(cmdLineStr, " ");
     if (cmdArgs.size() < 1)
@@ -66,7 +66,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         MessageBox(NULL, GET_RESOURCE_STRING(IDS_INCORRECT_ARGS).c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
         return 1;
     }
-    
+
     std::wstring id(cmdArgs[0].begin(), cmdArgs[0].end());
     if (id.empty())
     {
@@ -94,45 +94,103 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     WorkspacesData::WorkspacesProject projectToLaunch{};
     if (invokePoint == InvokePoint::LaunchAndEdit)
     {
-        // check the temp file in case the project is just created and not saved to the workspaces.json yet
-        if (std::filesystem::exists(WorkspacesData::TempWorkspacesFile()))
+        // check the temp launch file in case the project is launched from the editor
+        if (std::filesystem::exists(WorkspacesData::TempLaunchWorkspacesFile()))
         {
             try
             {
-                auto savedWorkspacesJson = json::from_file(WorkspacesData::TempWorkspacesFile());
+                auto savedWorkspacesJson = json::from_file(WorkspacesData::TempLaunchWorkspacesFile());
                 if (savedWorkspacesJson.has_value())
                 {
-                    auto savedWorkspaces = WorkspacesData::WorkspacesProjectJSON::FromJson(savedWorkspacesJson.value());
+                    auto savedWorkspaces = WorkspacesData::WorkspacesListJSON::FromJson(savedWorkspacesJson.value());
                     if (savedWorkspaces.has_value())
                     {
-                        projectToLaunch = savedWorkspaces.value();
+                        workspaces = savedWorkspaces.value();
                     }
                     else
                     {
-                        Logger::critical("Incorrect Workspaces file");
-                        std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), WorkspacesData::TempWorkspacesFile());
+                        Logger::critical("Incorrect temporaly launch Workspaces file");
+                        std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), WorkspacesData::TempLaunchWorkspacesFile());
                         MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
                         return 1;
                     }
                 }
                 else
                 {
-                    Logger::critical("Incorrect Workspaces file");
-                    std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), WorkspacesData::TempWorkspacesFile());
+                    Logger::critical("Incorrect temporaly launch  Workspaces file");
+                    std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), WorkspacesData::TempLaunchWorkspacesFile());
                     MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
                     return 1;
                 }
             }
             catch (std::exception ex)
             {
-                Logger::critical("Exception on reading Workspaces file: {}", ex.what());
-                std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_FILE_READING_ERROR), WorkspacesData::TempWorkspacesFile());
+                Logger::critical("Exception on reading temporaly launch  Workspaces file: {}", ex.what());
+                std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_FILE_READING_ERROR), WorkspacesData::TempLaunchWorkspacesFile());
                 MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
                 return 1;
             }
+
+            if (workspaces.empty())
+            {
+                Logger::warn("Temp Launch Workspaces file is empty");
+                std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_EMPTY_FILE), WorkspacesData::TempLaunchWorkspacesFile());
+                MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
+                return 1;
+            }
+
+            for (const auto& proj : workspaces)
+            {
+                if (proj.id == id)
+                {
+                    projectToLaunch = proj;
+                    break;
+                }
+            }
+        }
+
+        if (projectToLaunch.id.empty())
+        {
+            // check the temp file in case the project is just created and not saved to the workspaces.json yet
+            if (std::filesystem::exists(WorkspacesData::TempWorkspacesFile()))
+            {
+                try
+                {
+                    auto savedWorkspacesJson = json::from_file(WorkspacesData::TempWorkspacesFile());
+                    if (savedWorkspacesJson.has_value())
+                    {
+                        auto savedWorkspaces = WorkspacesData::WorkspacesProjectJSON::FromJson(savedWorkspacesJson.value());
+                        if (savedWorkspaces.has_value())
+                        {
+                            projectToLaunch = savedWorkspaces.value();
+                        }
+                        else
+                        {
+                            Logger::critical("Incorrect temporaly Workspaces file");
+                            std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), WorkspacesData::TempWorkspacesFile());
+                            MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
+                            return 1;
+                        }
+                    }
+                    else
+                    {
+                        Logger::critical("Incorrect temporaly Workspaces file");
+                        std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), WorkspacesData::TempWorkspacesFile());
+                        MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
+                        return 1;
+                    }
+                }
+                catch (std::exception ex)
+                {
+                    Logger::critical("Exception on reading temporaly Workspaces file: {}", ex.what());
+                    std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_FILE_READING_ERROR), WorkspacesData::TempWorkspacesFile());
+                    MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
+                    return 1;
+                }
+            }
         }
     }
-    
+
     if (projectToLaunch.id.empty())
     {
         try
@@ -201,7 +259,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     std::vector<std::pair<std::wstring, std::wstring>> launchErrors{};
     auto start = std::chrono::high_resolution_clock::now();
     bool launchedSuccessfully = Launch(projectToLaunch, monitors, launchErrors);
-    
+
     // update last-launched time
     if (invokePoint != InvokePoint::LaunchAndEdit)
     {

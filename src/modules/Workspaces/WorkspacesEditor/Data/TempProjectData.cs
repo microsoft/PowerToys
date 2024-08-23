@@ -16,6 +16,14 @@ namespace WorkspacesEditor.Data
             }
         }
 
+        public static string LaunchFile
+        {
+            get
+            {
+                return FolderUtils.DataFolder() + "\\tempLaunch-workspaces.json";
+            }
+        }
+
         public static void DeleteTempFile()
         {
             if (System.IO.File.Exists(File))
