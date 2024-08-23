@@ -108,7 +108,7 @@ In this release, we focused on stability and improvements.
  - Ported all C++/CX code to C++/WinRT.
  - Added Awake --use-parent-pid CLI argument to attach to parent process. Thanks [@dend](https://github.com/dend)!
  - Added custom actions - user-specified pre-defined prompts for the AI model. Additionally, actions (both standard and custom) are now searchable from prompt box and Ctrl + number in-app shortcuts are now applicable for first 9 search results.
- - New utility: PowerToys Workspaces - this utility can launch a set of applications to a custom layout and configuration on the desktop. App arrangements can be saved as a workspace and then relaunched with one click from the Workspaces Editor or from a desktop shortcut. In the editor, app configuration can be customized using CLI arguments and "launch as admin" modifiers, and app window sizes and positions can be updated as desired. This is our first public version of Workspaces and we are excited for you to try it out for yourself! Make sure to file issues you encounter on our GItHub so the team can continue to improve the utility.
+ - New utility: PowerToys Workspaces - this utility can launch a set of applications to a custom layout and configuration on the desktop. App arrangements can be saved as a workspace and then relaunched with one click from the Workspaces Editor or from a desktop shortcut. In the editor, app configuration can be customized using CLI arguments and "launch as admin" modifiers, and app window sizes and positions can be updated as desired. This is our first public version of Workspaces and we are excited for you to try it out for yourself! Make sure to file issues you encounter on our GitHub so the team can continue to improve the utility.
 
 ### General
 
