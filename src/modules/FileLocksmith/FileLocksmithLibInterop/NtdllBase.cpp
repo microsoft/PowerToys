@@ -10,19 +10,19 @@ Ntdll::Ntdll()
         throw std::runtime_error{ "GetModuleHandleW returned null" };
     }
 
-    m_NtQuerySystemInformation = (NtQuerySystemInformation_t)GetProcAddress(m_module, "NtQuerySystemInformation");
+    m_NtQuerySystemInformation = reinterpret_cast<NtQuerySystemInformation_t>(GetProcAddress(m_module, "NtQuerySystemInformation"));
     if (m_NtQuerySystemInformation == 0)
     {
         throw std::runtime_error{ "GetProcAddress returned null for NtQuerySystemInformation" };
     }
 
-    m_NtDuplicateObject = (NtDuplicateObject_t)GetProcAddress(m_module, "NtDuplicateObject");
+    m_NtDuplicateObject = reinterpret_cast<NtDuplicateObject_t>(GetProcAddress(m_module, "NtDuplicateObject"));
     if (m_NtDuplicateObject == 0)
     {
         throw std::runtime_error{ "GetProcAddress returned null for NtDuplicateObject" };
     }
 
-    m_NtQueryObject = (NtQueryObject_t)GetProcAddress(m_module, "NtQueryObject");
+    m_NtQueryObject = reinterpret_cast<NtQueryObject_t>(GetProcAddress(m_module, "NtQueryObject"));
     if (m_NtQueryObject == 0)
     {
         throw std::runtime_error{ "GetProcAddress returned null for NtQueryObject" };

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "VideoCaptureDeviceList.h"
 #include "Logging.h"
 #include "MediaFoundationAPIProvider.h"

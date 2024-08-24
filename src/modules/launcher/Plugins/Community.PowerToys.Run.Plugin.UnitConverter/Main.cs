@@ -50,7 +50,6 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 return new List<Result>();
             }
 
-            // Convert
             return UnitHandler.Convert(convertModel)
                 .Select(x => GetResult(x))
                 .ToList();

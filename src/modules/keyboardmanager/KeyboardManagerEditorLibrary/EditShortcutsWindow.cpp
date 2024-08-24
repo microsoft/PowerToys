@@ -348,7 +348,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         auto indexToDelete = -1;
         for (int i = 0; i < ShortcutControl::shortcutRemapBuffer.size(); i++)
         {
-            auto tempShortcut = std::get<Shortcut>(ShortcutControl::shortcutRemapBuffer[i].first[0]);
+            auto tempShortcut = std::get<Shortcut>(ShortcutControl::shortcutRemapBuffer[i].mapping[0]);
             if (tempShortcut.ToHstringVK() == keysForShortcutToEdit)
             {
                 indexToDelete = i;

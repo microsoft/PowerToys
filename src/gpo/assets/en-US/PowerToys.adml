@@ -10,6 +10,7 @@
       <string id="InstallerUpdates">Installer and Updates</string>
       <string id="PowerToysRun">PowerToys Run</string>
       <string id="AdvancedPaste">Advanced Paste</string>
+      <string id="Workspaces">Workspaces</string>
       <string id="MouseWithoutBorders">Mouse Without Borders</string>
       <string id="GeneralSettings">General settings</string>
 
@@ -25,6 +26,7 @@
       <string id="SUPPORTED_POWERTOYS_0_81_0">PowerToys version 0.81.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_81_1">PowerToys version 0.81.1 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_83_0">PowerToys version 0.83.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_84_0">PowerToys version 0.84.0 or later</string>
 
       <string id="ConfigureAllUtilityGlobalEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
 
@@ -110,6 +112,12 @@ If you don't configure this setting, users are able to enable or disable the plu
 You can override this policy for individual plugins using the policy "Configure enabled state for individual plugins".
 
 Note: Changes require a restart of PowerToys Run.
+</string>
+      <string id="ConfigureEnabledUtilityWorkspaces">This policy configures the enabled disable state for the Workspaces utility.
+
+If you enable or don't configure this policy, the user takes control over the enabled state of the Workspaces utility.
+
+If you disable this policy, the user won't be able to enable Enable and use the Workspaces utility.
 </string>
       <string id="PowerToysRunIndividualPluginEnabledStateDescription">With this policy you can configure an individual enabled state for each PowerToys Run plugin that you add to the list.
 
@@ -219,6 +227,7 @@ If you disable or don't configure this policy, no predefined rules are applied.
       <string id="ConfigureEnabledUtilityPeek">Peek: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPowerRename">Power Rename: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPowerLauncher">PowerToys Run: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityWorkspaces">PowerToys Workspaces: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityQuickAccent">Quick Accent: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityRegistryPreview">Registry Preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityScreenRuler">Screen Ruler: Configure enabled state</string>

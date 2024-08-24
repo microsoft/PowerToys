@@ -56,11 +56,14 @@ APPBARDATA
 appdata
 APPEXECLINK
 Appium
+applayout
 Applicationcan
+APPLICATIONFRAMEHOST
 appmanifest
 APPNAME
 appref
 appsettings
+appsfolder
 appwindow
 appwiz
 APSTUDIO
@@ -189,7 +192,6 @@ CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
 closesocket
-clrcall
 CLSCTX
 Clusion
 cmder
@@ -200,8 +202,8 @@ CMINVOKECOMMANDINFO
 CMINVOKECOMMANDINFOEX
 CMock
 CMONITORS
-cmph
 cmpgt
+cmph
 cne
 CNF
 coclass
@@ -221,7 +223,6 @@ comdlg
 comexp
 cominterop
 commandline
-COMMANDTITLE
 commctrl
 commdlg
 compmgmt
@@ -242,16 +243,14 @@ CONTEXTMENUHANDLER
 CONTROLL
 CONTROLPARENT
 copiedcolorrepresentation
+COREWINDOW
 cotaskmem
 COULDNOT
 countof
 cph
 CPower
 cppblog
-cppruntime
-cppstd
 cppwinrt
-CProj
 createdump
 CREATESCHEDULEDTASK
 CREATESTRUCT
@@ -408,6 +407,7 @@ dxgi
 dxgidebug
 dxgiformat
 dxguid
+easeofaccess
 ecount
 EData
 Edid
@@ -430,8 +430,8 @@ ENDSESSION
 ENTERSIZEMOVE
 ENU
 EOAC
-epu
 EPO
+epu
 ERASEBKGND
 EREOF
 EResize
@@ -486,7 +486,6 @@ FILEFLAGSMASK
 FILELOCKSMITH
 FILELOCKSMITHCONTEXTMENU
 FILELOCKSMITHEXT
-FILELOCKSMITHLIB
 FILELOCKSMITHLIBINTEROP
 FILEMUSTEXIST
 FILEOP
@@ -502,6 +501,7 @@ findfast
 FIXEDFILEINFO
 flac
 flyouts
+FMask
 FOF
 FOFX
 FOLDERID
@@ -523,7 +523,6 @@ GCLP
 gdi
 gdiplus
 GDISCALED
-gdnbaselines
 GEmoji
 GETCLIENTAREAANIMATION
 GETDESKWALLPAPER
@@ -543,7 +542,6 @@ gpedit
 gpo
 GPOCA
 gpp
-GPT
 gpu
 GSM
 gtm
@@ -607,7 +605,6 @@ hmenu
 hmodule
 hmonitor
 homljgmgpmcbpjbnjpfijnhipfkiclkd
-HOOKPROC
 Hostbackdropbrush
 hotkeycontrol
 hotkeys
@@ -703,7 +700,6 @@ INSTALLSTARTMENUSHORTCUT
 INSTALLSTATE
 Inste
 Intelli
-interactable
 Interlop
 INTRESOURCE
 INVALIDARG
@@ -732,7 +728,6 @@ IWeb
 IWIC
 iwr
 IYUV
-JArray
 jfi
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
@@ -764,7 +759,6 @@ KILLFOCUS
 killrunner
 kmph
 Knownfolders
-ksh
 KSPROPERTY
 Kybd
 languagesjson
@@ -800,7 +794,6 @@ LOADFROMFILE
 LOBYTE
 LOCALDISPLAY
 LOCALPACKAGE
-localport
 LOCALSYSTEM
 LOCATIONCHANGE
 LOGFONT
@@ -814,6 +807,7 @@ LOWORD
 lparam
 LPBITMAPINFOHEADER
 LPCITEMIDLIST
+lpcmi
 LPCMINVOKECOMMANDINFO
 LPCREATESTRUCT
 LPCRECT
@@ -838,9 +832,11 @@ lptpm
 LPTR
 LPTSTR
 LPW
+lpwcx
 lpwndpl
 LReader
 LRESULT
+LSTATUS
 lstrcmp
 lstrcmpi
 lstrlen
@@ -855,10 +851,10 @@ lwin
 LZero
 majortype
 makecab
-MAKELANGID
 MAKEINTRESOURCE
 MAKEINTRESOURCEA
 MAKEINTRESOURCEW
+MAKELANGID
 makepri
 manifestdependency
 MAPPEDTOSAMEKEY
@@ -878,7 +874,6 @@ mdwn
 MEDIASUBTYPE
 mediatype
 mef
-MENUBREAK
 MENUITEMINFO
 MENUITEMINFOW
 MERGECOPY
@@ -938,7 +933,6 @@ MRT
 mru
 mrw
 msc
-msclr
 mscorlib
 msdata
 msedge
@@ -1041,6 +1035,7 @@ NOSEARCH
 NOSENDCHANGING
 NOSIZE
 NOTIFICATIONSDLL
+NOTIFYICONDATA
 NOTIFYICONDATAW
 NOTIMPL
 notlike
@@ -1077,7 +1072,6 @@ oldtheme
 oleaut
 OLECHAR
 onebranch
-OOBEPT
 opencode
 OPENFILENAME
 opensource
@@ -1101,7 +1095,6 @@ OVERLAPPEDWINDOW
 overlaywindow
 Oversampling
 OWNDC
-OWNERDRAW
 Packagemanager
 PACL
 PAINTSTRUCT
@@ -1115,11 +1108,11 @@ PARTIALCONFIRMATIONDIALOGTITLE
 PATCOPY
 pathcch
 PATHMUSTEXIST
-Pathto
 PATINVERT
 PATPAINT
 PAUDIO
 pbc
+pbi
 PBlob
 pcb
 pcch
@@ -1133,6 +1126,7 @@ pdo
 pdto
 pdtobj
 pdw
+Peb
 pef
 PElems
 Pels
@@ -1164,6 +1158,7 @@ ploca
 plocm
 pluginsmodel
 PMSIHANDLE
+pnid
 Pnp
 Popups
 POPUPWINDOW
@@ -1215,6 +1210,8 @@ projectname
 PROPBAG
 PROPERTYKEY
 propkey
+propsys
+PROPVARIANT
 propvarutil
 prvpane
 psapi
@@ -1256,8 +1253,6 @@ QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
 QUNS
-qwertyuiopasdfghjklzxcvbnm
-qwrtyuiopsghjklzxvnm
 raf
 RAII
 RAlt
@@ -1274,7 +1269,6 @@ RECTDESTINATION
 rectp
 RECTSOURCE
 recyclebin
-redirectedfrom
 Redist
 redistributable
 reencode
@@ -1356,8 +1350,6 @@ runas
 rundll
 rungameid
 RUNLEVEL
-runsettings
-runspace
 runtimeclass
 runtimeobject
 runtimepack
@@ -1385,6 +1377,7 @@ sddl
 SDKDDK
 sdns
 searchterm
+SEARCHUI
 secpol
 SENDCHANGE
 sendinput
@@ -1516,7 +1509,6 @@ STATICEDGE
 STATSTG
 stdafx
 STDAPI
-stdcpp
 stdcpplatest
 STDMETHODCALLTYPE
 STDMETHODIMP
@@ -1568,7 +1560,9 @@ SYSKEYUP
 SYSLIB
 SYSMENU
 SYSTEMAPPS
+systemsettings
 SYSTEMTIME
+SYSTEMWOW
 tapp
 TApplication
 TApplied
@@ -1591,7 +1585,6 @@ TDevice
 telem
 telephon
 templatenamespace
-testhost
 testprocess
 TEXCOORD
 TEXTEXTRACTOR
@@ -1616,7 +1609,6 @@ tlb
 tlbimp
 TMPVAR
 TNP
-toggleswitch
 Toolhelp
 toolkitconverters
 Toolset
@@ -1646,9 +1638,11 @@ TYPESHORTCUT
 UAC
 UAL
 uap
+UCallback
 udit
 uefi
 uesc
+UFlags
 UHash
 UIA
 UIEx
@@ -1680,9 +1674,11 @@ urlmon
 Usb
 USEDEFAULT
 USEFILEATTRIBUTES
+USEPOSITION
 USERDATA
 Userenv
 USESHOWWINDOW
+USESIZE
 USESTDHANDLES
 USRDLL
 UType
@@ -1720,8 +1716,10 @@ VIDEOINFOHEADER
 viewmodel
 vih
 VIRTUALDESK
+VISEGRADRELAY
 visiblecolorformats
 Visibletrue
+visualeffects
 VKey
 vmovl
 vorrq
@@ -1748,6 +1746,7 @@ vswhere
 Vtbl
 WANTPALM
 wbem
+Wbemidl
 wbemuuid
 WBounds
 Wca
@@ -1835,6 +1834,9 @@ WNDCLASSEXW
 WNDCLASSW
 WNDPROC
 workarounds
+WORKSPACESEDITOR
+WORKSPACESLAUNCHER
+WORKSPACESSNAPSHOTTOOL
 wox
 wparam
 wpf

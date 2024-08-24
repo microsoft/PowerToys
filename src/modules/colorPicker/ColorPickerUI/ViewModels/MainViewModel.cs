@@ -14,8 +14,8 @@ using ColorPicker.Mouse;
 using ColorPicker.Settings;
 using ColorPicker.ViewModelContracts;
 using Common.UI;
-using interop;
 using ManagedCommon;
+using PowerToys.Interop;
 
 namespace ColorPicker.ViewModels
 {

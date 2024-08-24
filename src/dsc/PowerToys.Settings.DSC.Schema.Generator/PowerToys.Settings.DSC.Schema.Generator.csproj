@@ -1,40 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="..\..\Version.props" />
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\Common.SelfContained.props" />
+
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net8.0-windows</TargetFramework>
         <RootNamespace>PowerToys.Settings.DSC.Schema</RootNamespace>
         <ApplicationManifest>app.manifest</ApplicationManifest>
-        <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
         <WindowsPackageType>None</WindowsPackageType>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-        <SelfContained>true</SelfContained>
-    </PropertyGroup>
-
-    <!-- SelfContained=true requires RuntimeIdentifier to be set -->
-    <PropertyGroup Condition="'$(Platform)'=='x64'">
-        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Platform)'=='ARM64'">
-        <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-        <NoWarn></NoWarn>
-        <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-        <WarningsNotAsErrors>CA1720</WarningsNotAsErrors>
-        <Optimize>False</Optimize>
-        <DebugType>full</DebugType>
-        <DebugSymbols>true</DebugSymbols>
-        <DefineConstants>DEBUG;TRACE</DefineConstants>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(Configuration)'=='Release'">
-        <NoWarn></NoWarn>
-        <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-        <WarningsNotAsErrors>CA1720</WarningsNotAsErrors>
-        <Optimize>true</Optimize>
     </PropertyGroup>
 
     <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->

@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using FileLocksmith.Interop;
 using Microsoft.UI.Xaml.Data;
+using PowerToys.FileLocksmithLib.Interop;
 
 namespace PowerToys.FileLocksmithUI.Converters
 {

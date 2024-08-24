@@ -6,6 +6,8 @@
 #include <common/logger/logger.h>
 #include <common/utils/winapi_error.h>
 
+#include <modules/Workspaces/WindowProperties/WorkspacesWindowPropertyUtils.h>
+
 // Zoned window properties are not localized.
 namespace ZonedWindowProperties
 {
@@ -121,4 +123,10 @@ void FancyZonesWindowProperties::SetTabSortKeyWithinZone(HWND window, std::optio
         auto rawTabSortKeyWithinZone = reinterpret_cast<HANDLE>(tabSortKeyWithinZone.value() + 1);
         ::SetPropW(window, ZonedWindowProperties::PropertySortKeyWithinZone, rawTabSortKeyWithinZone);
     }
+}
+
+bool FancyZonesWindowProperties::IsLaunchedByWorkspaces(HWND window)
+{
+    HANDLE handle = ::GetProp(window, WorkspacesWindowProperties::Properties::LaunchedByWorkspacesID);
+    return handle != nullptr;
 }

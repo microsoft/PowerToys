@@ -11,5 +11,7 @@ namespace Peek.FilePreviewer.Previewers.Interfaces
         public Uri? Preview { get; }
 
         public bool IsDevFilePreview { get; }
+
+        public bool CustomContextMenu { get; }
     }
 }

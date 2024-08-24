@@ -25,12 +25,14 @@ namespace CommonSharedConstants
 
     const wchar_t COLOR_PICKER_SEND_SETTINGS_TELEMETRY_EVENT[] = L"Local\\ColorPickerSettingsTelemetryEvent-6c7071d8-4014-46ec-b687-913bd8a422f1";
 
-    // Path to the event used to show Advanced Paste UI
-    const wchar_t SHOW_ADVANCED_PASTE_SHARED_EVENT[] = L"Local\\ShowAdvancedPasteEvent-9a46be2a-3e05-4186-b56b-4ae986ef2526";
+    // IPC Messages used in Advanced Paste
+    const wchar_t ADVANCED_PASTE_SHOW_UI_MESSAGE[] = L"ShowUI";
 
-    const wchar_t ADVANCED_PASTE_MARKDOWN_EVENT[] = L"Local\\AdvancedPasteJsonEvent-a18c0798-3ee6-4fc5-bb9f-114c57ac0d47";
+    const wchar_t ADVANCED_PASTE_MARKDOWN_MESSAGE[] = L"PasteMarkdown";
 
-    const wchar_t ADVANCED_PASTE_JSON_EVENT[] = L"Local\\AdvancedPasteJsonEvent-9ed021ab-b711-4cf3-9f33-135a698a9d21";
+    const wchar_t ADVANCED_PASTE_JSON_MESSAGE[] = L"PasteJson";
+
+    const wchar_t ADVANCED_PASTE_CUSTOM_ACTION_MESSAGE[] = L"CustomAction";
 
     // Path to the event used to show Color Picker
     const wchar_t SHOW_COLOR_PICKER_SHARED_EVENT[] = L"Local\\ShowColorPickerEvent-8c46be2a-3e05-4186-b56b-4ae986ef2525";
@@ -40,6 +42,8 @@ namespace CommonSharedConstants
     const wchar_t SHORTCUT_GUIDE_EXIT_EVENT[] = L"Local\\ShortcutGuide-ExitEvent-35697cdd-a3d2-47d6-a246-34efcc73eac0";
 
     const wchar_t FANCY_ZONES_EDITOR_TOGGLE_EVENT[] = L"Local\\FancyZones-ToggleEditorEvent-1e174338-06a3-472b-874d-073b21c62f14";
+
+    const wchar_t WORKSPACES_LAUNCH_EDITOR_EVENT[] = L"Local\\Workspaces-LaunchEditorEvent-a55ff427-cf62-4994-a2cd-9f72139296bf";
 
     const wchar_t SHOW_HOSTS_EVENT[] = L"Local\\Hosts-ShowHostsEvent-5a0c0aae-5ff5-40f5-95c2-20e37ed671f0";
 
@@ -95,6 +99,8 @@ namespace CommonSharedConstants
     // Path to the events used by EnvironmentVariables
     const wchar_t SHOW_ENVIRONMENT_VARIABLES_EVENT[] = L"Local\\PowerToysEnvironmentVariables-ShowEnvironmentVariablesEvent-1021f616-e951-4d64-b231-a8f972159978";
     const wchar_t SHOW_ENVIRONMENT_VARIABLES_ADMIN_EVENT[] = L"Local\\PowerToysEnvironmentVariables-EnvironmentVariablesAdminEvent-8c95d2ad-047c-49a2-9e8b-b4656326cfb2";
+
+    const wchar_t WORKSPACES_EXIT_EVENT[] = L"Local\\PowerToys-Workspaces-ExitEvent-29a1566f-f4f8-4d56-9435-d2a437f727c6";
 
     // Max DWORD for key code to disable keys.
     const DWORD VK_DISABLED = 0x100;
