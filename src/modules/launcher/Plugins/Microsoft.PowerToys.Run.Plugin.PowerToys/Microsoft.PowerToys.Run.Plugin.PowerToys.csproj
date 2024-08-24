@@ -100,6 +100,10 @@
       <Link>Images\EnvironmentVariables.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\Workspaces.png">
+      <Link>Images\Workspaces.png</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

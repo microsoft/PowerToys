@@ -37,6 +37,7 @@ namespace PowerToys
             static String CropAndLockReparentEvent();
             static String ShowEnvironmentVariablesSharedEvent();
             static String ShowEnvironmentVariablesAdminSharedEvent();
+            static String WorkspacesLaunchEditorEvent();
         }
     }
 }
