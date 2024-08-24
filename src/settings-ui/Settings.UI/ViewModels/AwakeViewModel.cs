@@ -32,7 +32,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsEnabled
         {
-            get => _isEnabled;
+            get
+            {
+                if (_enabledStateIsGPOConfigured)
+                {
+                    return _enabledGPOConfiguration;
+                }
+                else
+                {
+                    return _isEnabled;
+                }
+            }
+
             set
             {
                 if (_isEnabled != value)
@@ -60,6 +71,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_enabledStateIsGPOConfigured != value)
                 {
                     _enabledStateIsGPOConfigured = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool EnabledGPOConfiguration
+        {
+            get => _enabledGPOConfiguration;
+            set
+            {
+                if (_enabledGPOConfiguration != value)
+                {
+                    _enabledGPOConfiguration = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -197,6 +221,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         private bool _enabledStateIsGPOConfigured;
+        private bool _enabledGPOConfiguration;
         private AwakeSettings _moduleSettings;
         private bool _isEnabled;
     }
