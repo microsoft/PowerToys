@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Threading.Tasks;
@@ -248,25 +249,53 @@ namespace Hosts.Tests
         {
             var fileSystem = new CustomMockFileSystem();
             var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object);
-            var hostsFile = new MockFileData(string.Empty);
-            hostsFile.Attributes = System.IO.FileAttributes.ReadOnly;
+
+            var hostsFile = new MockFileData(string.Empty)
+            {
+                Attributes = FileAttributes.ReadOnly,
+            };
+
             fileSystem.AddFile(service.HostsFilePath, hostsFile);
 
             await Assert.ThrowsExceptionAsync<ReadOnlyHostsException>(async () => await service.WriteAsync("# Empty hosts file", Enumerable.Empty<Entry>()));
         }
 
         [TestMethod]
-        public void Remove_ReadOnly()
+        public void Remove_ReadOnly_Attribute()
         {
             var fileSystem = new CustomMockFileSystem();
             var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object);
-            var hostsFile = new MockFileData(string.Empty);
-            hostsFile.Attributes = System.IO.FileAttributes.ReadOnly;
+
+            var hostsFile = new MockFileData(string.Empty)
+            {
+                Attributes = FileAttributes.ReadOnly,
+            };
+
             fileSystem.AddFile(service.HostsFilePath, hostsFile);
 
-            service.RemoveReadOnly();
-            var readOnly = fileSystem.FileInfo.FromFileName(service.HostsFilePath).Attributes.HasFlag(System.IO.FileAttributes.ReadOnly);
+            service.RemoveReadOnlyAttribute();
+
+            var readOnly = fileSystem.FileInfo.FromFileName(service.HostsFilePath).Attributes.HasFlag(FileAttributes.ReadOnly);
             Assert.IsFalse(readOnly);
+        }
+
+        [TestMethod]
+        public async Task Save_Hidden_Hosts()
+        {
+            var fileSystem = new CustomMockFileSystem();
+            var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object);
+
+            var hostsFile = new MockFileData(string.Empty)
+            {
+                Attributes = FileAttributes.Hidden,
+            };
+
+            fileSystem.AddFile(service.HostsFilePath, hostsFile);
+
+            await service.WriteAsync("# Empty hosts file", Enumerable.Empty<Entry>());
+
+            var hidden = fileSystem.FileInfo.FromFileName(service.HostsFilePath).Attributes.HasFlag(FileAttributes.Hidden);
+            Assert.IsTrue(hidden);
         }
     }
 }

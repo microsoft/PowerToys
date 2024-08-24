@@ -192,7 +192,6 @@ CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
 closesocket
-clrcall
 CLSCTX
 Clusion
 cmder
@@ -203,8 +202,8 @@ CMINVOKECOMMANDINFO
 CMINVOKECOMMANDINFOEX
 CMock
 CMONITORS
-cmph
 cmpgt
+cmph
 cne
 CNF
 coclass
@@ -251,10 +250,7 @@ countof
 cph
 CPower
 cppblog
-cppruntime
-cppstd
 cppwinrt
-CProj
 createdump
 CREATESCHEDULEDTASK
 CREATESTRUCT
@@ -413,6 +409,7 @@ dxgi
 dxgidebug
 dxgiformat
 dxguid
+easeofaccess
 ecount
 EData
 Edid
@@ -508,6 +505,7 @@ findfast
 FIXEDFILEINFO
 flac
 flyouts
+FMask
 FOF
 FOFX
 FOLDERID
@@ -614,7 +612,6 @@ hmenu
 hmodule
 hmonitor
 homljgmgpmcbpjbnjpfijnhipfkiclkd
-HOOKPROC
 Hostbackdropbrush
 hotkeycontrol
 hotkeys
@@ -820,6 +817,7 @@ LOWORD
 lparam
 LPBITMAPINFOHEADER
 LPCITEMIDLIST
+lpcmi
 LPCMINVOKECOMMANDINFO
 LPCREATESTRUCT
 LPCRECT
@@ -844,6 +842,7 @@ lptpm
 LPTR
 LPTSTR
 LPW
+lpwcx
 lpwndpl
 LReader
 LRESULT
@@ -884,7 +883,6 @@ mdwn
 MEDIASUBTYPE
 mediatype
 mef
-MENUBREAK
 MENUITEMINFO
 MENUITEMINFOW
 MERGECOPY
@@ -944,7 +942,6 @@ MRT
 mru
 mrw
 msc
-msclr
 mscorlib
 msdata
 msedge
@@ -1053,6 +1050,7 @@ NOSEARCH
 NOSENDCHANGING
 NOSIZE
 NOTIFICATIONSDLL
+NOTIFYICONDATA
 NOTIFYICONDATAW
 NOTIMPL
 notlike
@@ -1076,7 +1074,6 @@ numberbox
 nwc
 Objbase
 objidl
-occurrence
 ocr
 Ocrsettings
 odbccp
@@ -1113,7 +1110,6 @@ OVERLAPPEDWINDOW
 overlaywindow
 Oversampling
 OWNDC
-OWNERDRAW
 Packagemanager
 PACL
 PAINTSTRUCT
@@ -1131,6 +1127,7 @@ PATINVERT
 PATPAINT
 PAUDIO
 pbc
+pbi
 PBlob
 pcb
 pcch
@@ -1144,6 +1141,7 @@ pdo
 pdto
 pdtobj
 pdw
+Peb
 pef
 PElems
 Pels
@@ -1175,6 +1173,7 @@ ploca
 plocm
 pluginsmodel
 PMSIHANDLE
+pnid
 Pnp
 Popups
 POPUPWINDOW
@@ -1525,7 +1524,6 @@ STATICEDGE
 STATSTG
 stdafx
 STDAPI
-stdcpp
 stdcpplatest
 STDMETHODCALLTYPE
 STDMETHODIMP
@@ -1654,9 +1652,11 @@ TYPESHORTCUT
 UAC
 UAL
 uap
+UCallback
 udit
 uefi
 uesc
+UFlags
 UHash
 UIA
 UIEx
@@ -1728,8 +1728,10 @@ VIDEOINFOHEADER
 viewmodel
 vih
 VIRTUALDESK
+VISEGRADRELAY
 visiblecolorformats
 Visibletrue
+visualeffects
 VKey
 vmovl
 vorrq

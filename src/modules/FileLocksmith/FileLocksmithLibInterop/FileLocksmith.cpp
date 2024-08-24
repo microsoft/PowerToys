@@ -10,7 +10,7 @@ static bool is_directory(const std::wstring path)
 }
 
 // C++20 method
-static bool starts_with(std::wstring_view whole, std::wstring_view part)
+static constexpr bool starts_with(std::wstring_view whole, std::wstring_view part)
 {
     return whole.size() >= part.size() && whole.substr(0, part.size()) == part;
 }
@@ -121,7 +121,7 @@ std::wstring pid_to_full_path(DWORD pid)
     std::wstring result(LongMaxPathSize, L'\0');
 
     // Returns zero on failure, so it's okay to resize to zero.
-    auto length = GetModuleFileNameExW(process, NULL, result.data(), (DWORD)result.size());
+    auto length = GetModuleFileNameExW(process, NULL, result.data(), static_cast<DWORD>(result.size()));
     result.resize(length);
 
     CloseHandle(process);

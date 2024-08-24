@@ -51,8 +51,8 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="DSCModulesReference" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version)\Microsoft.PowerToys.Configure.psd1" Id="PTConfReference.psd1" />
-        <File Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version)\Microsoft.PowerToys.Configure.psm1" Id="PTConfReference.psm1" />
+        <File Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version).0\Microsoft.PowerToys.Configure.psd1" Id="PTConfReference.psd1" />
+        <File Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version).0\Microsoft.PowerToys.Configure.psm1" Id="PTConfReference.psm1" />
       </Component>
     </DirectoryRef>
 
@@ -63,11 +63,11 @@
       <Directory Id="WindowsPowerShellFolder" Name="WindowsPowerShell">
         <Directory Id="PowerShellModulesFolder" Name="Modules">
           <Directory Id="PowerToysDscFolder" Name="Microsoft.PowerToys.Configure">
-            <Directory Id="PowerToysDscVerFolder" Name="$(var.Version)">
+            <Directory Id="PowerToysDscVerFolder" Name="$(var.Version).0">
               <Component Id="PowerToysDSC" Win64="yes" Guid="C52AECA0-DA73-49B8-BB49-31EF6640FF1F">
                 <!-- Don't fail installation because of DSC. Files are marked as not vital. -->
-                <File Vital="no" Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version)\Microsoft.PowerToys.Configure.psd1" Id="PTConf.psd1" />
-                <File Vital="no" Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version)\Microsoft.PowerToys.Configure.psm1" Id="PTConf.psm1" />
+                <File Vital="no" Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version).0\Microsoft.PowerToys.Configure.psd1" Id="PTConf.psd1" />
+                <File Vital="no" Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version).0\Microsoft.PowerToys.Configure.psm1" Id="PTConf.psm1" />
               </Component>
             </Directory>
           </Directory>
