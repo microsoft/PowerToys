@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.11" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.12" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <displayName>PowerToys</displayName>
   <description>PowerToys</description>
   <resources>
@@ -10,7 +10,6 @@
       <string id="InstallerUpdates">Installer and Updates</string>
       <string id="PowerToysRun">PowerToys Run</string>
       <string id="AdvancedPaste">Advanced Paste</string>
-      <string id="Workspaces">Workspaces</string>
       <string id="MouseWithoutBorders">Mouse Without Borders</string>
       <string id="GeneralSettings">General settings</string>
 
@@ -112,12 +111,6 @@ If you don't configure this setting, users are able to enable or disable the plu
 You can override this policy for individual plugins using the policy "Configure enabled state for individual plugins".
 
 Note: Changes require a restart of PowerToys Run.
-</string>
-      <string id="ConfigureEnabledUtilityWorkspaces">This policy configures the enabled disable state for the Workspaces utility.
-
-If you enable or don't configure this policy, the user takes control over the enabled state of the Workspaces utility.
-
-If you disable this policy, the user won't be able to enable Enable and use the Workspaces utility.
 </string>
       <string id="PowerToysRunIndividualPluginEnabledStateDescription">With this policy you can configure an individual enabled state for each PowerToys Run plugin that you add to the list.
 
