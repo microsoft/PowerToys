@@ -474,6 +474,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     newPlus = value;
+                }
+            }
+        }
+
         private bool workspaces = true;
 
         [JsonPropertyName("Workspaces")]

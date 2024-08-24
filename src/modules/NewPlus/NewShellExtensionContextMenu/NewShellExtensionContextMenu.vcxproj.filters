@@ -75,12 +75,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="Assets\NewPlus\new.ico">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\new_folder.ico">
-      <Filter>Asset Files</Filter>
-    </None>
     <None Include="Assets\NewPlus\SmallTile.png">
       <Filter>Asset Files</Filter>
     </None>
@@ -121,24 +115,6 @@
       <Filter>Asset Files</Filter>
     </None>
     <None Include="Assets\NewPlus\Wide310x150Logo.png">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
       <Filter>Asset Files</Filter>
     </None>
     <None Include="resources.resx">
@@ -153,7 +129,6 @@
     <None Include="AppxManifest.xml">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="Assets\NewPlus\**" />
     <None Include="Assets\NewPlus\New.ico">
       <Filter>Asset Files</Filter>
     </None>
@@ -175,175 +150,19 @@
     <None Include="Assets\NewPlus\Wide310x150Logo.png">
       <Filter>Asset Files</Filter>
     </None>
-    <None Include="Assets\NewPlus\**">
+    <None Include="Assets\NewPlus\LargeTile.png">
       <Filter>Asset Files</Filter>
     </None>
-    <None Include="Assets\NewPlus\**">
+    <None Include="Assets\NewPlus\New_dark.ico">
       <Filter>Asset Files</Filter>
     </None>
-    <None Include="Assets\NewPlus\**">
+    <None Include="Assets\NewPlus\New_light.ico">
       <Filter>Asset Files</Filter>
     </None>
-    <None Include="Assets\NewPlus\**">
+    <None Include="Assets\NewPlus\Open_templates_dark.ico">
       <Filter>Asset Files</Filter>
     </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\**">
+    <None Include="Assets\NewPlus\Open_templates_light.ico">
       <Filter>Asset Files</Filter>
     </None>
   </ItemGroup>
