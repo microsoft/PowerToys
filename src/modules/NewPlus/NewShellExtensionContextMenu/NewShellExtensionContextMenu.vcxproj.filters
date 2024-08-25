@@ -93,12 +93,6 @@
     <None Include="Assets\NewPlus\Wide310x150Logo.png">
       <Filter>Asset Files</Filter>
     </None>
-    <None Include="Assets\NewPlus\New.ico">
-      <Filter>Asset Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\new_folder.ico">
-      <Filter>Asset Files</Filter>
-    </None>
     <None Include="Assets\NewPlus\SmallTile.png">
       <Filter>Asset Files</Filter>
     </None>
@@ -186,7 +180,7 @@
     <Filter Include="Template Examples">
       <UniqueIdentifier>{b442cb0f-9f62-46e8-b269-fefa8ceacb21}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Template Examples\Project folder">
+    <Filter Include="Template Examples\Example folder">
       <UniqueIdentifier>{e7904759-7b6c-4609-9c6d-e3eae3cb866c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -196,14 +190,14 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="TemplateExamples\Project folder\Readme.md">
-      <Filter>Template Examples\Project folder</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="TemplateExamples\Markdown file.md">
+    <Text Include="TemplateExamples\Example folder\Another example txt file.txt">
+      <Filter>Template Examples\Example folder</Filter>
+    </Text>
+    <Text Include="TemplateExamples\Example folder\Example txt file.txt">
+      <Filter>Template Examples\Example folder</Filter>
+    </Text>
+    <Text Include="TemplateExamples\Any files or folders placed in the template folder are available via New+.txt">
       <Filter>Template Examples</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="TemplateExamples\PowerShell script.ps1">
-      <Filter>Template Examples</Filter>
-    </CopyFileToFolders>
+    </Text>
   </ItemGroup>
 </Project>

@@ -16,6 +16,7 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Windows.ApplicationModel.VoiceCommands;
 using Windows.System;
@@ -97,6 +98,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     SendConfigMSG(outgoingMessage.ToString());
 
                     NotifySettingsChanged();
+
+                    if (_isNewPlusEnabled == true)
+                    {
+                        CopyTemplateExamples();
+                    }
                 }
             }
         }
@@ -176,6 +182,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         private Func<string, int> SendConfigMSG { get; }
+
+        private void CopyTemplateExamples()
+        {
+            if (!Directory.Exists(_templateLocation))
+            {
+                Directory.CreateDirectory(_templateLocation);
+            }
+
+            if (Directory.GetFiles(_templateLocation).Length == 0)
+            {
+                // No files in _templateLocation directory
+                // Copy over examples files from <Program Files>\PowerToys\WinUI3Apps\Assets\NewPlus\Templates
+                var example_templates = Path.Combine(Helper.GetPowerToysInstallationWinUI3AppsAssetsFolder(), "NewPlus", "Templates");
+                Helper.CopyDirectory(example_templates, _templateLocation, true);
+            }
+        }
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;

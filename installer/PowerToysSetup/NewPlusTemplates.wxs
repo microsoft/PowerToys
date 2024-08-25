@@ -4,16 +4,15 @@
 
 	<?include $(sys.CURRENTDIR)\Common.wxi?>
 
-	<?define NewPlusTemplateFilesPath=$(var.BinDir)WinUI3Apps\NewPlusTemplates\?>
-	<?define NewPlusTemplateSubFilesPath=$(var.BinDir)WinUI3Apps\NewPlusTemplates\Project folder\?>
+	<?define NewPlusTemplateFilesPath=$(var.BinDir)WinUI3Apps\Assets\NewPlus\Templates\?>
+	<?define NewPlusTemplateSubFilesPath=$(var.BinDir)WinUI3Apps\Assets\NewPlus\Templates\Example folder\?>
 
 	<Fragment>
-
 		<!-- Example templates -->
-		<DirectoryRef Id="LocalAppDataProductFolder">
+		<DirectoryRef Id="WinUI3AppsAssetsFolder">
 			<Directory Id="NewPlusInstallFolder" Name="NewPlus">
 				<Directory Id="NewPlusTemplatesInstallFolder" Name="Templates">
-					<Directory Id="NewPlusTemplatesSubInstallFolder" Name="Project folder"/>
+					<Directory Id="NewPlusTemplatesSubInstallFolder" Name="Example folder"/>
 				</Directory>
 			</Directory>
 		</DirectoryRef>
@@ -22,8 +21,7 @@
 				<RegistryKey Root="HKCU" Key="Software\Classes\powertoys\components">
 					<RegistryValue Type="string" Name="NewPlusTemplateFiles_Component" Value="" KeyPath="yes"/>
 				</RegistryKey>
-				<File Id="NewPlusTemplateFiles_File_Markdown_file.md" Source="$(var.NewPlusTemplateFilesPath)\Markdown file.md" />
-				<File Id="NewPlusTemplateFiles_File_PowerShell_script.ps1" Source="$(var.NewPlusTemplateFilesPath)\PowerShell script.ps1" />
+				<File Id="NewPlusTemplateFiles_File_1.md" Source="$(var.NewPlusTemplateFilesPath)Any files or folders placed in the template folder are available via New+.txt" />
 			</Component>
 		</DirectoryRef>
 		<DirectoryRef Id="NewPlusTemplatesSubInstallFolder" FileSource="$(var.NewPlusTemplateSubFilesPath)">
@@ -31,7 +29,8 @@
 				<RegistryKey Root="HKCU" Key="Software\Classes\powertoys\components">
 					<RegistryValue Type="string" Name="NewPlusTemplateSubFiles_Component" Value="" KeyPath="yes"/>
 				</RegistryKey>
-				<File Id="NewPlusTemplateSubFiles_File_Readme.md" Source="$(var.NewPlusTemplateSubFilesPath)\Readme.md" />
+				<File Id="NewPlusTemplateSubFiles_File_1.md" Source="$(var.NewPlusTemplateSubFilesPath)Example txt file.txt" />
+				<File Id="NewPlusTemplateSubFiles_File_2.md" Source="$(var.NewPlusTemplateSubFilesPath)Another example txt file.txt" />
 			</Component>
 		</DirectoryRef>
 
