@@ -363,8 +363,8 @@
                                                         VerticalAlignment="Center"
                                                         FontSize="12"
                                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                        Text="{x:Bind Description}" 
-                                                        TextWrapping="Wrap"/>
+                                                        Text="{x:Bind Description}"
+                                                        TextWrapping="Wrap" />
                                                 </Grid>
                                             </DataTemplate>
                                         </ListView.ItemTemplate>
