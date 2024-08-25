@@ -78,6 +78,7 @@
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Lithuanian" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Macedonian" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Maori" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Mathematics" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Norwegian" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Pinyin" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Polish" />
