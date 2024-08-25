@@ -1780,6 +1780,7 @@ WCE
 wcex
 WClass
 wcsicmp
+wcsncpy
 wcsnicmp
 WDA
 wdp
