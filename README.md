@@ -108,14 +108,13 @@ In this release, we focused on stability and improvements.
  - New utility: PowerToys Workspaces - this utility can launch a set of applications to a custom layout and configuration on the desktop. App arrangements can be saved as a workspace and then relaunched with one click from the Workspaces Editor or from a desktop shortcut. In the editor, app configuration can be customized using CLI arguments and "launch as admin" modifiers, and app window sizes and positions can be updated as desired. This is our first public version of Workspaces and we are excited for you to try it out for yourself! Make sure to file issues you encounter on our GitHub so the team can continue to improve the utility.
     - Known issues - the team is actively working on fixing these:
        - Apps that launch as admin are unable to be repositioned to the desired layout.
-       - Border of "Remove" / "Add Back" app button in editor is not clearly visibile on light themes.  
- - Ported all C++/CX code to C++/WinRT.
+       - Border of "Remove" / "Add Back" app button in editor is not clearly visible on light themes.  
  - Added Awake --use-parent-pid CLI argument to attach to parent process. Thanks [@dend](https://github.com/dend)!
  - Added custom actions - user-specified pre-defined prompts for the AI model. Additionally, actions (both standard and custom) are now searchable from prompt box and Ctrl + number in-app shortcuts are now applicable for first 9 search results.
+ - Ported all C++/CX code to C++/WinRT as part of a refactor and upgrade series aimed at enabling AOT (Ahead of Time) compilation for enhanced performance and reduced disk footprint.
 
 ### General
 
- - Ported all C++/CX code to C++/WinRT.
  - Added DSC support for ImageResizer resize sizes property.
  
 ### Advanced Paste
@@ -176,6 +175,7 @@ In this release, we focused on stability and improvements.
 
 ### Development
 
+ - Ported all C++/CX code to C++/WinRT.
  - Moved Version.props import to Directory.Build.props.
  - Extracted self-containment related .csproj properties to src/Common.SelfContained.props.
  - Unused and obsolete dependencies cleanup. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
