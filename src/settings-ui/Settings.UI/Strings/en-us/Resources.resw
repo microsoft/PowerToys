@@ -4273,8 +4273,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>AdvancedPaste is a product name, do not loc</comment>
   </data>
   <data name="Workspaces.ModuleDescription" xml:space="preserve">
-    <value>Workspaces is a quick and easy way to launch multiple applications.</value>
-    <comment>{Locked="Always On Top"}</comment>
+    <value>Workspaces is a quick and easy way to launch a set of applications to custom positions and configurations with one-click.</value>
   </data>
   <data name="Workspaces.ModuleTitle" xml:space="preserve">
     <value>Workspaces</value>
