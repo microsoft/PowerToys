@@ -144,9 +144,9 @@ Enable `Move newly created windows to the current active monitor`.
 
 ### Switch between windows in the current zone
 Enable `Switch between windows in the current zone` (default shortcut is `Win + PgUp/PgDown`)
-- [ ] Snap several windows to one zone, verify switching works.
-- [ ] Snap several windows to one zone, switch virtual desktop, return back, verify window switching works.
-- [ ] Disable `Switch between windows in the current zone`, verify switching doesn't work.
+- [x] Snap several windows to one zone, verify switching works.
+- [x] Snap several windows to one zone, switch virtual desktop, return back, verify window switching works.
+- [x] Disable `Switch between windows in the current zone`, verify switching doesn't work.
   
 ### Override Windows Snap
 - [ ] Disable `Override Windows Snap`, verify it's disabled.
