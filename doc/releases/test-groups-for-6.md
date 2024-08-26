@@ -32,6 +32,7 @@ All:
 - Command Not Found
 - DSC
 - Advanced Paste
+- Workspaces
 ```
 
 ```
@@ -48,6 +49,7 @@ Group 1:
 - Peek
 - MWB
 - Command Not Found
+- Workspaces
 ```
 
 ```
@@ -96,6 +98,7 @@ Group 4:
 - Hosts File Editor
 - MWB
 - Command Not Found
+- Workspaces
 ```
 
 ```
