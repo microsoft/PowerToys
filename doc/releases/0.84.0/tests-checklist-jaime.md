@@ -203,23 +203,23 @@ Before testing
    * Remove `CurrentVirtualDesktop` from `\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\SessionInfo\1\VirtualDesktops` 
    * Remove `VirtualDesktopIDs` from `\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\VirtualDesktops`
 
-- [ ] Test screen locking
+- [x] Test screen locking
    * Set custom layouts on each monitor
    * Lock screen / unplug monitor / plug monitor
    * Verify that layouts weren't reset to defaults
    
-- [ ] Test restart
+- [x] Test restart
    * Set custom layouts on each monitor
    * Restart the computer
    * Verify that layouts weren't reset to defaults
 
-- [ ] Test applying default layouts on reset
+- [x] Test applying default layouts on reset
    * Set default horizontal and vertical layouts
    * Delete `applied-layouts.json`
    * Verify that selected default layout is applied according to configuration
 
 ### Span zones across monitors
-- [ ] Switch between `Allow zones to span across monitors` on and off. Verify that layouts are applied correctly in both cases.
+- [x] Switch between `Allow zones to span across monitors` on and off. Verify that layouts are applied correctly in both cases.
 
 Repeat the previous subsections steps after enabling `Allow zones to span across monitors`
 - [ ] Dragging
