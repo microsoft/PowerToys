@@ -34,6 +34,8 @@ namespace WorkspacesLauncherUI.Models
 
         public string AppPath { get; set; }
 
+        public bool Loading { get; set; } = true;
+
         private Icon _icon;
 
         public Icon Icon
