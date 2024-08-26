@@ -4349,8 +4349,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>You can have multiple templates of the same file type, and you can even template folders!</value>
   </data>  
   <data name="Workspaces.ModuleDescription" xml:space="preserve">
-    <value>Workspaces is a quick and easy way to launch multiple applications.</value>
-    <comment>{Locked="Always On Top"}</comment>
+    <value>Workspaces is a quick and easy way to launch a set of applications to custom positions and configurations with one-click.</value>
   </data>
   <data name="Workspaces.ModuleTitle" xml:space="preserve">
     <value>Workspaces</value>
