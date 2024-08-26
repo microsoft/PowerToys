@@ -25,7 +25,7 @@ IFACEMETHODIMP shell_context_menu::GetIcon(_In_opt_ IShellItemArray*, _Outptr_re
 {
     *returned_icon = nullptr;
 
-    static const auto icon_resource_filepath = utilities::get_new_icon_resource_filepath(module_instance_handle, ThemeHelpers::GetSystemTheme());
+    static const auto icon_resource_filepath = utilities::get_new_icon_resource_filepath(module_instance_handle, ThemeHelpers::GetAppTheme());
 
     return SHStrDup(icon_resource_filepath.c_str(), returned_icon);
 }
