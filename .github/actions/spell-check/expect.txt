@@ -262,6 +262,7 @@ CSettings
 cso
 CSRW
 CStyle
+cswinrt
 CSY
 CTest
 currentculture
