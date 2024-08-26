@@ -97,13 +97,13 @@ Disable FZ and clear `app-zone-history.json` before starting. FancyZones should 
 
 - [x] Snap a window to a zone by dragging, verify `app-zone-history.json` contains info about the window position on the corresponding work area.
 - [x] Snap a window to a zone by a keyboard shortcut, verify `app-zone-history.json` contains info about the window position on the corresponding work area.
-- [x] Snap a window to another monitor, verify `app-zone-history.json` contains positions about zones on both monitors.
+- [ ] Snap a window to another monitor, verify `app-zone-history.json` contains positions about zones on both monitors.
 - [x] Snap a window to several zones, verify zone numbers in the json file are correct.
 - [x] Snap a window to a zone, unsnap it, verify this app was removed from the json file.
-- [x] Snap the same window to a zone on two different monitors or virtual desktops. Then unsnap from one of them, verify that info about unsnapped zone was removed from `app-zone-history.json`. Verify info about the second monitor/virtual desktop is kept.  
+- [ ] Snap the same window to a zone on two different monitors or virtual desktops. Then unsnap from one of them, verify that info about unsnapped zone was removed from `app-zone-history.json`. Verify info about the second monitor/virtual desktop is kept.  
 - [x] Enable `Restore the original size of windows when unsnapping`, snap window, unsnap window, verify the window changed its size to original.
 - [x] Disable `Restore the original size of windows when unsnapping`, snap window, unsnap window, verify window size wasn't changed.
-- [x] Disable `Restore the original size of windows when unsnapping`, snap window, enable `Restore the original size of windows when unsnapping`, unsnap window, verify window size wasn't changed. 
+- [ ] Disable `Restore the original size of windows when unsnapping`, snap window, enable `Restore the original size of windows when unsnapping`, unsnap window, verify window size wasn't changed. 
 - [x] Launch PT in user mode, try to assign a window with administrator privileges to a zone. Verify the notification is shown.
 - [x] Launch PT in administrator mode, assign a window with administrator privileges.
 * Open `Task view` , right-click on the window, check the `Show this window on all desktops` or the `Show windows from this app on all desktops` option to turn it on.
@@ -116,11 +116,11 @@ Disable FZ and clear `app-zone-history.json` before starting. FancyZones should 
 - [x] `Keep windows in their zones when the screen resolution changes` off, snap a window to a zone, change the screen resolution or scaling, verify window didn't change its size and position.
 
 Enable `During zone layout changes, windows assigned to a zone will match new size/positions` and prepare layouts with 1 and 3 zones where zone size/positions are different.
-- [ ] Snap a window to zone 1, change the layout, verify window changed its size/position.
-- [ ] Snap a window to zone 3, change the layout, verify window didn't change its size/position because another layout doesn't have a zone with this zone number.
+- [x] Snap a window to zone 1, change the layout, verify window changed its size/position.
+- [x] Snap a window to zone 3, change the layout, verify window didn't change its size/position because another layout doesn't have a zone with this zone number.
 - [ ] Snap a window to zones 1-2, change the layout, verify window changed its size/position to fit zone 1.
-- [ ] Snap a window to zones 1-2, change the layout (the window will be snapped to zone 1), then return back to the previous layout, verify the window snapped to 1-2 zones.
-- [ ] Disable `During zone layout changes, windows assigned to a zone will match new size/positions`, snap window to zone 1, change layout, verify window didn't change its size/position
+- [x] Snap a window to zones 1-2, change the layout (the window will be snapped to zone 1), then return back to the previous layout, verify the window snapped to 1-2 zones.
+- [x] Disable `During zone layout changes, windows assigned to a zone will match new size/positions`, snap window to zone 1, change layout, verify window didn't change its size/position
 
 Enable `Move newly created windows to their last known zone`.
 - [ ] Snap a window to the primary monitor, close and reopen the window. Verify it's snapped to its zone.
