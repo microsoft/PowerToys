@@ -67,11 +67,11 @@
             <Grid Grid.Row="1">
                 <ScrollViewer>
                     <ItemsControl
-                    Margin="12,26,12,24"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Top"
-                    ItemsSource="{x:Bind ViewModel.FlyoutMenuItems}"
-                    TabNavigation="Local">
+                        Margin="12,26,12,24"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Top"
+                        ItemsSource="{x:Bind ViewModel.FlyoutMenuItems}"
+                        TabNavigation="Local">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <tkcontrols:WrapPanel HorizontalAlignment="Stretch" VerticalSpacing="12" />
@@ -80,16 +80,16 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="viewModels:FlyoutMenuItem">
                                 <controls:FlyoutMenuButton
-                                AutomationProperties.Name="{x:Bind Label}"
-                                Click="ModuleButton_Click"
-                                Tag="{x:Bind Tag}"
-                                Visibility="{x:Bind Visible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    AutomationProperties.Name="{x:Bind Label}"
+                                    Click="ModuleButton_Click"
+                                    Tag="{x:Bind Tag}"
+                                    Visibility="{x:Bind Visible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolToVisibilityConverter}}">
                                     <controls:FlyoutMenuButton.Content>
                                         <TextBlock
-                                        Style="{StaticResource CaptionTextBlockStyle}"
-                                        Text="{x:Bind Label}"
-                                        TextAlignment="Center"
-                                        TextWrapping="Wrap" />
+                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                            Text="{x:Bind Label}"
+                                            TextAlignment="Center"
+                                            TextWrapping="Wrap" />
                                     </controls:FlyoutMenuButton.Content>
                                     <controls:FlyoutMenuButton.Icon>
                                         <Image>
