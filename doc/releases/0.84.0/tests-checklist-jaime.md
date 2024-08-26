@@ -123,12 +123,12 @@ Enable `During zone layout changes, windows assigned to a zone will match new si
 - [x] Disable `During zone layout changes, windows assigned to a zone will match new size/positions`, snap window to zone 1, change layout, verify window didn't change its size/position
 
 Enable `Move newly created windows to their last known zone`.
-- [ ] Snap a window to the primary monitor, close and reopen the window. Verify it's snapped to its zone.
+- [x] Snap a window to the primary monitor, close and reopen the window. Verify it's snapped to its zone.
 - [ ] Snap a window to zones on the primary and secondary monitors. Close and reopen the app. Verify it's snapped to the zone on the active monitor.
-- [ ] Snap a window to the secondary monitor (use a different app or unsnap the window from the zone on the primary monitor), close and reopen the window. Verify it's snapped to its zone. 
+- [x] Snap a window to the secondary monitor (use a different app or unsnap the window from the zone on the primary monitor), close and reopen the window. Verify it's snapped to its zone. 
 - [ ] Snap a window, turn off FancyZones, move that window, turn FZ on. Verify window returned to its zone.
-- [ ] Move unsnapped window to a secondary monitor, switch virtual desktop and return back. Verify window didn't change its position and size.
-- [ ] Snap a window, then resize it (it's still snapped, but doesn't fit the zone). Switch the virtual desktop and return back, verify window didn't change its size.
+- [x] Move unsnapped window to a secondary monitor, switch virtual desktop and return back. Verify window didn't change its position and size.
+- [x] Snap a window, then resize it (it's still snapped, but doesn't fit the zone). Switch the virtual desktop and return back, verify window didn't change its size.
 
 Enable `Move newly created windows to the current active monitor`.
 - [ ] Open a window that wasn't snapped anywhere, verify it's opened on the active monitor.
