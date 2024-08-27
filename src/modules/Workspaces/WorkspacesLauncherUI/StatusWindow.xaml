@@ -76,10 +76,10 @@
                                     Width="20"
                                     Height="20"
                                     Margin="10"
-                                    FontSize="20"
-                                    FontFamily="{DynamicResource SymbolThemeFontFamily}"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
+                                    FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                    FontSize="20"
                                     Foreground="{Binding StateColor}"
                                     Text="{Binding StateGlyph}"
                                     Visibility="{Binding Loading, Mode=OneWay, Converter={StaticResource BooleanToInvertedVisibilityConverter}, UpdateSourceTrigger=PropertyChanged}" />
