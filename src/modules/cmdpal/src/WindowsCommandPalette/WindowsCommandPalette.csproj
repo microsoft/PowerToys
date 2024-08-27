@@ -78,7 +78,7 @@
     <ProjectReference Include="..\BuiltinCommands\AllApps\AllApps.csproj" />
     <ProjectReference Include="..\BuiltinCommands\Calculator\Calculator.csproj" />
     <ProjectReference Include="..\common\CmdPal.Common.csproj" />
-    <ProjectReference Include="Microsoft.Terminal.UI\Microsoft.Terminal.UI.vcxproj">
+    <ProjectReference Include="..\Microsoft.Terminal.UI\Microsoft.Terminal.UI.vcxproj">
       <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
       <Private>True</Private>
       <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
