@@ -34,6 +34,8 @@ namespace WorkspacesLauncherUI.Models
 
         public string AppPath { get; set; }
 
+        public bool Loading => LaunchState == "waiting";
+
         private Icon _icon;
 
         public Icon Icon
@@ -76,10 +78,9 @@ namespace WorkspacesLauncherUI.Models
         {
             get => LaunchState switch
             {
-                "waiting" => "../images/spinner.gif",
                 "launched" => "../images/checkmark.png",
                 "failed" => "../images/failed.png",
-                _ => "../images/spinner.gif",
+                _ => "../images/failed.png",
             };
         }
 
