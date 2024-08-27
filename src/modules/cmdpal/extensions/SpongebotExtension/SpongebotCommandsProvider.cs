@@ -12,13 +12,13 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using ABI.System;
 using Microsoft.UI;
 using Microsoft.Windows.CommandPalette.Extensions;
 using Microsoft.Windows.CommandPalette.Extensions.Helpers;
-using Newtonsoft.Json.Linq;
 using Windows.Foundation;
 using Windows.Storage.Streams;
 
@@ -82,7 +82,7 @@ public class SpongebotPage : Microsoft.Windows.CommandPalette.Extensions.Helpers
         var client = new System.Net.Http.HttpClient();
 
         var state = File.ReadAllText(StateJsonPath());
-        var jsonState = JObject.Parse(state);
+        var jsonState = JsonNode.Parse(state);
 
         var bodyObj = new Dictionary<string, string>
         {
@@ -99,7 +99,7 @@ public class SpongebotPage : Microsoft.Windows.CommandPalette.Extensions.Helpers
         var resp = await client.PostAsync("https://api.imgflip.com/caption_image", content);
         var respBody = await resp.Content.ReadAsStringAsync();
         // dynamic r = JsonSerializer.Deserialize(respBody);
-        JObject response = JObject.Parse(respBody);
+        var response = JsonNode.Parse(respBody);
 
         // var url = r?.data?.url;
         var url = response["data"]?["url"]?.ToString() ?? "";
