@@ -83,9 +83,9 @@ namespace WorkspacesLauncherUI.Models
         {
             get => LaunchState switch
             {
-                "launched" => new SolidColorBrush(Colors.Green),
-                "failed" => new SolidColorBrush(Colors.Red),
-                _ => new SolidColorBrush(Colors.Red),
+                "launched" => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 0, 128, 0)),
+                "failed" => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 254, 0, 0)),
+                _ => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 254, 0, 0)),
             };
         }
 
