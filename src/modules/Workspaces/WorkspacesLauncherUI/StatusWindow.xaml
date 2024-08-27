@@ -71,14 +71,17 @@
                                     VerticalAlignment="Center"
                                     IsActive="True"
                                     Visibility="{Binding Loading, Mode=OneWay, Converter={StaticResource BoolToVis}, UpdateSourceTrigger=PropertyChanged}" />
-                                <Image
+                                <TextBlock
                                     Grid.Column="2"
                                     Width="20"
                                     Height="20"
                                     Margin="10"
+                                    FontSize="20"
+                                    FontFamily="{DynamicResource SymbolThemeFontFamily}"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    Source="{Binding StateImageSource}"
+                                    Foreground="{Binding StateColor}"
+                                    Text="{Binding StateGlyph}"
                                     Visibility="{Binding Loading, Mode=OneWay, Converter={StaticResource BooleanToInvertedVisibilityConverter}, UpdateSourceTrigger=PropertyChanged}" />
                             </Grid>
                         </DataTemplate>
