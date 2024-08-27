@@ -72,7 +72,6 @@ namespace WorkspacesLauncherUI.ViewModels
                     Name = app.Name,
                     AppPath = app.Path,
                     LaunchState = app.State,
-                    Loading = (app.State != "launched" && app.State != "failed") ? true : false,
                 });
                 if (app.State != "launched" && app.State != "failed")
                 {

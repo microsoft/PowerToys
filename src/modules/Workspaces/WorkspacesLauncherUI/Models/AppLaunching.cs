@@ -34,7 +34,7 @@ namespace WorkspacesLauncherUI.Models
 
         public string AppPath { get; set; }
 
-        public bool Loading { get; set; } = true;
+        public bool Loading => LaunchState == "waiting";
 
         private Icon _icon;
 
