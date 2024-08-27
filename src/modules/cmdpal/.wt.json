@@ -1,0 +1,11 @@
+{
+    "$version": "1.0.0",
+    "snippets":
+    [
+        {
+            "input": "pwsh -c .\\doc\\initial-sdk-spec\\generate-interface.ps1 > .\\extensionsdk\\Microsoft.Windows.CommandPalette.Extensions\\Microsoft.Windows.CommandPalette.Extensions.idl",
+            "name": "Generate interface",
+            "description": "Generate the interface from the SDK spec\nThis drops it into Microsoft.Windows.CommandPalette.Extensions"
+        }
+    ]
+}

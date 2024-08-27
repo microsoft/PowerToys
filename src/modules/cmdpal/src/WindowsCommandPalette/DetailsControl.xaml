@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="DeveloperCommandPalette.DetailsControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:DeveloperCommandPalette"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <local:StringNotEmptyToVisibilityConverter x:Key="StringNotEmptyToVisibilityConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    
+    <Grid HorizontalAlignment="Center">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <TextBlock 
+            Grid.Row="0"
+            FontSize="20"
+            Visibility="{x:Bind ViewModel.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}"
+            TextWrapping="WrapWholeWords"
+            Text="{x:Bind ViewModel.Title, Mode=OneWay}" />
+
+        <ContentControl Margin="4, 0, 8, 0" 
+                        Grid.Row="1"
+                        Visibility="{x:Bind ViewModel.HeroImage.Icon, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}"
+                        Width="64"
+                        Height="64" Content="{x:Bind ViewModel.IcoElement}" />
+        <ScrollViewer 
+            Grid.Row="2">
+            <toolkit:MarkdownTextBlock x:Name="mdTextBox"
+                                       Background="Transparent"
+                                       IsTextSelectionEnabled="True"
+                                       Text="{x:Bind ViewModel.Body, Mode=OneWay}" />
+
+        </ScrollViewer>
+
+
+    </Grid>
+</UserControl>

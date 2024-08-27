@@ -1,0 +1,17 @@
+GetPhysicallyInstalledSystemMemory
+GlobalMemoryStatusEx
+GetSystemInfo
+CoCreateInstance
+SetForegroundWindow
+IsIconic
+RegisterHotKey
+SetWindowLongPtr
+CallWindowProc
+ShowWindow
+SetForegroundWindow
+SetFocus
+SetActiveWindow
+MonitorFromWindow
+GetMonitorInfo
+SHCreateStreamOnFileEx
+CoAllowSetForegroundWindow
