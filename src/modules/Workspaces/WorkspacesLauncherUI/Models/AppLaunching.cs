@@ -78,10 +78,9 @@ namespace WorkspacesLauncherUI.Models
         {
             get => LaunchState switch
             {
-                "waiting" => "../images/spinner.gif",
                 "launched" => "../images/checkmark.png",
                 "failed" => "../images/failed.png",
-                _ => "../images/spinner.gif",
+                _ => "../images/failed.gif",
             };
         }
 

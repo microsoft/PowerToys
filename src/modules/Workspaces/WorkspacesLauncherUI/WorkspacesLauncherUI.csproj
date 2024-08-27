@@ -33,7 +33,6 @@
     <None Remove="images\checkmark.png" />
     <None Remove="images\DefaultIcon.ico" />
     <None Remove="images\failed.png" />
-    <None Remove="images\spinner.gif" />
     <None Remove="images\Workspaces.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -93,9 +92,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="images\failed.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="images\spinner.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
