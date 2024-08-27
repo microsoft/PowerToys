@@ -80,7 +80,7 @@ namespace WorkspacesLauncherUI.Models
             {
                 "launched" => "../images/checkmark.png",
                 "failed" => "../images/failed.png",
-                _ => "../images/failed.gif",
+                _ => "../images/failed.png",
             };
         }
 
