@@ -240,6 +240,8 @@ namespace
 
 bool LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated, ErrorList& launchErrors)
 {
+    std::wstring dir = std::filesystem::path(appPath).parent_path();
+
     SHELLEXECUTEINFO sei = { 0 };
     sei.cbSize = sizeof(SHELLEXECUTEINFO);
     sei.hwnd = nullptr;
@@ -247,7 +249,7 @@ bool LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs,
     sei.lpVerb = elevated ? L"runas" : L"open";
     sei.lpFile = appPath.c_str();
     sei.lpParameters = commandLineArgs.c_str();
-    sei.lpDirectory = nullptr;
+    sei.lpDirectory = dir.c_str();
     sei.nShow = SW_SHOWNORMAL;
 
     if (!ShellExecuteEx(&sei))
