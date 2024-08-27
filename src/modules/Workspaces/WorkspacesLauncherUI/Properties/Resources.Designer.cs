@@ -79,7 +79,7 @@ namespace WorkspacesLauncherUI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Your project is launching. Waiting on ....
+        ///   Looks up a localized string similar to Your workspace is launching. Waiting on ....
         /// </summary>
         public static string LauncherWindowTitle {
             get {
