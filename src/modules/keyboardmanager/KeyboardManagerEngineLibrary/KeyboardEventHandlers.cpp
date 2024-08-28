@@ -600,7 +600,7 @@ namespace KeyboardEventHandlers
                         // Set original shortcut key down state except the action key and the released modifier since the original action key may or may not be held down. If it is held down it will generate it's own key message
                         Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut), data->lParam->vkCode);
 
-                        // If the released key is altgr, release the left control key as well. 
+                        // If the released key is AltGr, release the left control key as well. 
                         if (isAltRightKeyInvoked && data->lParam->vkCode == VK_RMENU)
                         {
                             isAltRightKeyInvoked = false;
@@ -624,7 +624,7 @@ namespace KeyboardEventHandlers
                         // Set original shortcut key down state except the action key and the released modifier since the original action key may or may not be held down. If it is held down it will generate it's own key message
                         Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, Shortcut(), data->lParam->vkCode);
 
-                        // If the released key is altgr, release the left control key as well. 
+                        // If the released key is AltGr, release the left control key as well. 
                         if (isAltRightKeyInvoked && data->lParam->vkCode == VK_RMENU)
                         {
                             isAltRightKeyInvoked = false;
