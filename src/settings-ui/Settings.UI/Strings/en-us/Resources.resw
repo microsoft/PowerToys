@@ -2095,7 +2095,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>PowerRename enables you to perform simple bulk renaming, searching and replacing file names.</value>
   </data>
   <data name="Oobe_Workspaces.Description" xml:space="preserve">
-    <value>The Workspaces utility enables you to launch a set of applications at once.</value>
+    <value>The Workspaces utility enables you to launch a set of applications to a custom layout and configuration all at once.</value>
   </data>
   <data name="Oobe_Run.Description" xml:space="preserve">
     <value>PowerToys Run is a quick launcher for power users that contains some additional features without sacrificing performance.</value>
@@ -2183,11 +2183,15 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_PowerRename_HowToUse.Text" xml:space="preserve">
     <value>In File Explorer, right-click one or more selected files and select **Rename with PowerRename** from the context menu.</value>
   </data>
+  <data name="Oobe_Workspaces_HowToUse_Shortcut.Text" xml:space="preserve">
+    <value>to open the Workspaces Editor.</value>
+    <comment>{Locked="Workspaces"}</comment>
+  </data>
   <data name="Oobe_Workspaces_HowToUse.Text" xml:space="preserve">
-    <value>In the Workspaces Editor window create Workspaces - a set of applications. You can launch Workspaces from the Workspaces Editor or by Shortcuts created in the Workspaces Editor.</value>
+    <value>In the Workspaces Editor window create Workspaces - a set of applications arranged in a custom layout. You can launch Workspaces from the Workspaces Editor or by shortcuts created in the Workspaces Editor.</value>
   </data>
   <data name="Oobe_Workspaces_TipsAndTricks.Text" xml:space="preserve">
-    <value>The Workspaces utility helps you to have a predefined set of applications on your desktop, each application in a desired position.</value>
+    <value>Customize the configuration of your apps on launch by adding CLI arguments to each app in the Workspaces Editor.</value>
   </data>
   <data name="Oobe_PowerRename_TipsAndTricks.Text" xml:space="preserve">
     <value>PowerRename supports searching for files using regular expressions to enable more advanced renaming functionalities.</value>
