@@ -2184,7 +2184,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>In File Explorer, right-click one or more selected files and select **Rename with PowerRename** from the context menu.</value>
   </data>
   <data name="Oobe_Workspaces_HowToUse_Shortcut.Text" xml:space="preserve">
-    <value>to open the Workspaces editor.</value>
+    <value>to open the Workspaces Editor.</value>
     <comment>{Locked="Workspaces"}</comment>
   </data>
   <data name="Oobe_Workspaces_HowToUse.Text" xml:space="preserve">
