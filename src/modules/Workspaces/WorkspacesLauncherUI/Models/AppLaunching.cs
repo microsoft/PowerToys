@@ -3,22 +3,17 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using ManagedCommon;
-using Microsoft.VisualBasic.Devices;
-using Windows.ApplicationModel;
 using Windows.Management.Deployment;
 
 namespace WorkspacesLauncherUI.Models
@@ -74,13 +69,23 @@ namespace WorkspacesLauncherUI.Models
 
         public string LaunchState { get; set; }
 
-        public string StateImageSource
+        public string StateGlyph
         {
             get => LaunchState switch
             {
-                "launched" => "../images/checkmark.png",
-                "failed" => "../images/failed.png",
-                _ => "../images/failed.png",
+                "launched" => "\U0000E73E",
+                "failed" => "\U0000E711",
+                _ => "\U0000E711",
+            };
+        }
+
+        public System.Windows.Media.Brush StateColor
+        {
+            get => LaunchState switch
+            {
+                "launched" => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 0, 128, 0)),
+                "failed" => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 254, 0, 0)),
+                _ => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 254, 0, 0)),
             };
         }
 
