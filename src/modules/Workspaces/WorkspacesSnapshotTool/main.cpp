@@ -14,12 +14,12 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/UnhandledExceptionHandler.h>
 
-const std::wstring moduleName = L"Workspaces\\ProjectsSnapshotTool";
+const std::wstring moduleName = L"Workspaces\\WorkspacesSnapshotTool";
 const std::wstring internalPath = L"";
 
 int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cmdShow)
 {
-    LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::workspacesLauncherLoggerName);
+    LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::workspacesSnapshotToolLoggerName);
     InitUnhandledExceptionHandler();
 
     if (powertoys_gpo::getConfiguredWorkspacesEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
