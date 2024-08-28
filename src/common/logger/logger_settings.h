@@ -71,6 +71,8 @@ struct LogSettings
     inline const static std::string cmdNotFoundLoggerName = "cmd-not-found";
     inline const static std::string workspacesLauncherLoggerName = "workspaces-launcher";
     inline const static std::wstring workspacesLauncherLogPath = L"workspaces-launcher-log.txt";
+    inline const static std::string workspacesWindowArrangerLoggerName = "workspaces-window-arranger";
+    inline const static std::wstring workspacesWindowArrangerLogPath = L"workspaces-window-arranger-log.txt";
     inline const static std::string workspacesSnapshotToolLoggerName = "workspaces-snapshot-tool";
     inline const static std::wstring workspacesSnapshotToolLogPath = L"workspaces-snapshot-tool-log.txt";
     inline const static int retention = 30;
