@@ -481,13 +481,19 @@ namespace WorkspacesEditor.ViewModels
             {
                 var bounds = screen.Bounds;
                 OverlayWindow overlayWindow = new OverlayWindow();
+                overlayWindow.Topmost = true;
+                overlayWindow.ShowActivated = true;
+
+                // Place window to correct monitor
+                overlayWindow.Top = bounds.Top + (bounds.Height / 2);
+                overlayWindow.Left = bounds.Left + (bounds.Width / 2);
+                overlayWindow.Show();
+
+                // Size it correctly as Show() can affect window placement if window is not opened where needed
                 overlayWindow.Top = bounds.Top;
                 overlayWindow.Left = bounds.Left;
                 overlayWindow.Width = bounds.Width;
                 overlayWindow.Height = bounds.Height;
-                overlayWindow.ShowActivated = true;
-                overlayWindow.Topmost = true;
-                overlayWindow.Show();
                 _overlayWindows.Add(overlayWindow);
             }
 

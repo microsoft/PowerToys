@@ -7,6 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     AllowsTransparency="True"
     Background="Transparent"
+    Width="0"
+    Height="0"
     WindowStyle="None"
     mc:Ignorable="d">
     <Border
