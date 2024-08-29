@@ -365,8 +365,8 @@ private:
 
     // Hotkey to invoke the module
     HotkeyEx m_hotkey{
-        .modifiersMask = MOD_SHIFT | MOD_WIN,
-        .vkCode = 0x4F, // O key;
+        .modifiersMask = MOD_CONTROL | MOD_WIN,
+        .vkCode = 0xC0, // VK_OEM_3 key; usually `~
     };
 };
 
