@@ -340,7 +340,6 @@ private:
             if (GetProcessId(process_handle) == window_process_id)
             {
                 SetForegroundWindow(hwnd);
-                return FALSE;
             }
             return TRUE;
         };
