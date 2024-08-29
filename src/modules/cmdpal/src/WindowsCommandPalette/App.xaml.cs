@@ -25,6 +25,7 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Microsoft.Windows.CommandPalette.Services;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -38,7 +39,7 @@ public partial class App : Application, IApp
     private Window? window;
     public Window? AppWindow
     {
-        get { return window; }
+        get => window;
         private set { }
     }
 
@@ -79,6 +80,7 @@ public partial class App : Application, IApp
 
                 // Core Services
                 services.AddSingleton<IFileService, FileService>();
+                services.AddSingleton<IExtensionService, ExtensionService>();
 
                 //// Main window: Allow access to the main window
                 //// from anywhere in the application.

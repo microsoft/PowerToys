@@ -3,24 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using System.Xml.Linq;
-using ABI.System;
-using Microsoft.UI;
 using Microsoft.Windows.CommandPalette.Extensions;
 using Microsoft.Windows.CommandPalette.Extensions.Helpers;
-using Windows.Foundation;
-using Windows.Storage.Streams;
 
 namespace SpongebotExtension;
 
@@ -98,15 +86,10 @@ public class SpongebotPage : Microsoft.Windows.CommandPalette.Extensions.Helpers
         var content = new System.Net.Http.FormUrlEncodedContent(bodyObj);
         var resp = await client.PostAsync("https://api.imgflip.com/caption_image", content);
         var respBody = await resp.Content.ReadAsStringAsync();
-        // dynamic r = JsonSerializer.Deserialize(respBody);
         var response = JsonNode.Parse(respBody);
 
-        // var url = r?.data?.url;
         var url = response["data"]?["url"]?.ToString() ?? "";
 
-        // var encodedMessage = JsonEncodedText.Encode(Message).ToString();
-        // var encodedUrl = JsonEncodedText.Encode(url).ToString();
-        //
         var body = $$"""
  SpongeBot says:
 ![{{text}}]({{url}})
@@ -144,19 +127,6 @@ internal sealed class SpongebotCommandsProvider : ICommandProvider
         };
         return [ listItem ];
     }
-
-    // public IAsyncOperation<IReadOnlyList<ICommand>> GetCommands()
-    // {
-    //     var spongeCommand = new SpongeDynamicCommandHost() ;
-    //     var settingsCommand = new SettingsCommand() ;
-    //     ICommand command = (File.Exists(SettingsCommand.StateJsonPath())?
-    //             spongeCommand : settingsCommand);
-    //     var list = new List<ICommand>()
-    //     {
-    //         command
-    //     };
-    //     return Task.FromResult(list as IReadOnlyList<ICommand>).AsAsyncOperation();
-    // }
 }
 
 

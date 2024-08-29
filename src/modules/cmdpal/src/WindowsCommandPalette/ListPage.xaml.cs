@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 using Microsoft.Windows.CommandPalette.Extensions;
+using System.Runtime.InteropServices;
 
 namespace DeveloperCommandPalette;
 
@@ -90,7 +91,7 @@ public sealed class NoOpAction : InvokableCommand
 {
     public override ICommandResult Invoke() { return ActionResult.KeepOpen(); }
 }
-public sealed class ErrorListItem : ListItem
+public sealed class ErrorListItem : Microsoft.Windows.CommandPalette.Extensions.Helpers.ListItem
 {
     public ErrorListItem(Exception ex) : base(new NoOpAction()) {
         this.Title = "Error in extension:";
@@ -198,9 +199,20 @@ public sealed class ListPageViewModel : PageViewModel
 
             //// TODO! Probably bad that this turns list view models into listitems back to NEW view models
             //return ListHelpers.FilterList(Items.Select(vm => vm.ListItem), Query).Select(li => new ListItemViewModel(li)).ToList();
-            var allFilteredItems = ListHelpers.FilterList(Items.SelectMany(section => section).Select(vm => vm.ListItem), Query).Select(li => new ListItemViewModel(li));
-            var newSection = new SectionInfoList(null, allFilteredItems);
-            return [newSection];
+            try{
+                var allFilteredItems = ListHelpers.FilterList(
+                    Items
+                        .SelectMany(section => section)
+                        .Select(vm => vm.ListItem.Unsafe),
+                    Query).Select(li => new ListItemViewModel(li)
+                );
+                var newSection = new SectionInfoList(null, allFilteredItems);
+                return [newSection];
+            }
+            catch (COMException ex)
+            {
+                return [new SectionInfoList(null, [new ListItemViewModel(new ErrorListItem(ex))])];
+            }
         }
     }
 }

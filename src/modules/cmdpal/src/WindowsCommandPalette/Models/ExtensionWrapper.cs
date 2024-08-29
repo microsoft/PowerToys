@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Runtime.InteropServices;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.Windows.CommandPalette.Extensions;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.AppExtensions;
@@ -9,9 +10,9 @@ using Windows.Win32;
 using Windows.Win32.System.Com;
 using WinRT;
 
-namespace DeveloperCommandPalette;
+namespace CmdPal.Models;
 
-public class ExtensionWrapper
+public class ExtensionWrapper : IExtensionWrapper
 {
     private const int HResultRpcServerNotRunning = -2147023174;
 

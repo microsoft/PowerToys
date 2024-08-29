@@ -18,4 +18,8 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\extensionsdk\Microsoft.Windows.CommandPalette.Extensions.Helpers\Microsoft.CmdPal.Extensions.Helpers.csproj" />
+  </ItemGroup>
+
 </Project>
