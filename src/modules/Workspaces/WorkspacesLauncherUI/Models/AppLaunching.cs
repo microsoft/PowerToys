@@ -73,9 +73,9 @@ namespace WorkspacesLauncherUI.Models
         {
             get => LaunchState switch
             {
-                "launched" => "\U0000E73E",
-                "failed" => "\U0000E711",
-                _ => "\U0000E711",
+                "launched" => "\U0000F78C",
+                "failed" => "\U0000EF2C",
+                _ => "\U0000EF2C",
             };
         }
 
