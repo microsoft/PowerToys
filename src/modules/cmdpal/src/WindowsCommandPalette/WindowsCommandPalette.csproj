@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\ToolingVersions.props" />
+  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <RootNamespace>WindowsCommandPalette</RootNamespace>
@@ -40,12 +41,9 @@
 
     <!-- <PackageReference Include="CommunityToolkit.WinUI" /> -->
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" />
-    <PackageReference Include="Microsoft.Windows.CsWinRT" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
     <Manifest Include="RunPackage.appxmanifest" />
 
-    <PackageReference Include="Microsoft.Windows.CsWin32">
+	<PackageReference Include="Microsoft.Windows.CsWin32">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
