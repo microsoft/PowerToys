@@ -57,6 +57,20 @@ namespace WorkspacesEditor
                 return;
             }
 
+            var args = e?.Args;
+            int powerToysRunnerPid;
+            if (args?.Length > 0)
+            {
+                _ = int.TryParse(args[0], out powerToysRunnerPid);
+
+                Logger.LogInfo($"WorkspacesEditor started from the PowerToys Runner. Runner pid={powerToysRunnerPid}");
+                RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
+                {
+                    Logger.LogInfo("PowerToys Runner exited. Exiting WorkspacesEditor");
+                    Dispatcher.Invoke(Shutdown);
+                });
+            }
+
             ThemeManager = new ThemeManager(this);
 
             if (_mainViewModel == null)
