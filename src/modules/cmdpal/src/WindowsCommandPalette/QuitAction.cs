@@ -10,17 +10,19 @@ namespace DeveloperCommandPalette;
 
 public class QuitAction : InvokableCommand, IFallbackHandler
 {
+    public event TypedEventHandler<object?, object?>? QuitRequested;
+
     public QuitAction()
     {
         Icon = new("\uE711");
     }
-    public override ICommandResult Invoke() {
 
-        // Exit the application
-        Environment.Exit(0);
-        // unreachable
-        return ActionResult.Dismiss();
+    public override ICommandResult Invoke()
+    {
+        QuitRequested?.Invoke(this, new());
+        return ActionResult.KeepOpen();
     }
+
     public void UpdateQuery(string query) {
         if (query.StartsWith('q'))
         {
@@ -37,11 +39,12 @@ public class QuitActionProvider : ICommandProvider
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
     public void Dispose() => throw new NotImplementedException();
 #pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
+    private readonly QuitAction quitAction = new();
 
-    private readonly ListItem quitAction = new(new QuitAction()) { Subtitle = "Exit Run" };
+    public event TypedEventHandler<object?, object?>? QuitRequested { add => quitAction.QuitRequested += value; remove => quitAction.QuitRequested -= value; }
 
     public IListItem[] TopLevelCommands()
     {
-        return [quitAction];
+        return [new ListItem(quitAction) { Subtitle = "Exit Command Palette" }];
     }
 }

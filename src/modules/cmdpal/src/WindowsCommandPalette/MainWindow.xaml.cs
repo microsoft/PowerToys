@@ -17,6 +17,7 @@ using Microsoft.CmdPal.Common.Extensions;
 using System.Text.RegularExpressions;
 using Windows.System;
 using Windows.Win32.UI.WindowsAndMessaging;
+using Microsoft.CmdPal.Common.Services;
 
 namespace DeveloperCommandPalette;
 
@@ -91,6 +92,12 @@ public sealed partial class MainWindow : Window
         //PositionForStartMenu();
         PositionCentered();
         _mainViewModel.HideRequested += _mainViewModel_HideRequested;
+
+        _mainViewModel.QuitRequested += (s, e) =>
+        {
+            this.Close();
+            // Application.Current.Exit();
+        };
     }
     private async Task SetupHotkey()
     {
@@ -347,6 +354,16 @@ public sealed partial class MainWindow : Window
         }
 
         return ((uint)key, mod);
+    }
+
+    private void MainWindow_Closed(object sender, WindowEventArgs args)
+    {
+        Application.Current.GetService<IExtensionService>().SignalStopExtensionsAsync();
+        // Log.Information("Terminating via MainWindow_Closed.");
+
+        // WinUI bug is causing a crash on shutdown when FailFastOnErrors is set to true (#51773592).
+        // Workaround by turning it off before shutdown.
+        App.Current.DebugSettings.FailFastOnErrors = false;
     }
 
 }

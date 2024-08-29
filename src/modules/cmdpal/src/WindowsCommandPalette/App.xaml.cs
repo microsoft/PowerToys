@@ -79,6 +79,8 @@ public partial class App : Application, IApp
                 services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
             })
             .Build();
+
+        UnhandledException += App_UnhandledException;
     }
 
     /// <summary>
@@ -89,6 +91,19 @@ public partial class App : Application, IApp
     {
         window = new MainWindow();
         window.Activate();
+    }
+
+    private async void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+    {
+        // https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.unhandledexception.
+        // Log.Fatal(e.Exception, $"Unhandled exception: {e.Message}");
+
+        // We are about to crash, so signal the extensions to stop.
+        await GetService<IExtensionService>().SignalStopExtensionsAsync();
+        // Log.CloseAndFlush();
+
+        // We are very likely in a bad and unrecoverable state, so ensure Dev Home crashes w/ the exception info.
+        Environment.FailFast(e.Message, e.Exception);
     }
 
 }

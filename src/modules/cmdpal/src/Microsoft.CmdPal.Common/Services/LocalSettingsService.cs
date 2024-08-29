@@ -17,8 +17,8 @@ namespace Microsoft.CmdPal.Common.Services;
 public class LocalSettingsService : ILocalSettingsService
 {
     // TODO! for now, we're hardcoding the path as effectively:
-    // %localappdata%\Runv2\LocalSettings.json
-    private const string DefaultApplicationDataFolder = "Runv2";
+    // %localappdata%\CmdPal\LocalSettings.json
+    private const string DefaultApplicationDataFolder = "CmdPal";
     private const string DefaultLocalSettingsFile = "LocalSettings.json";
 
     private readonly IFileService _fileService;

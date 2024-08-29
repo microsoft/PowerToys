@@ -54,7 +54,7 @@
             Id="PG-SP-ID"
             PublicFolder="Public"
             DisplayName="Process Monitor Extension Sample"
-            Description="Process Monitor Extension for Runv2">
+            Description="Process Monitor Extension for CmdPal">
             <uap3:Properties>
               <CmdPalProvider>
                 <Activation>

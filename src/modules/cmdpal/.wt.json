@@ -6,6 +6,11 @@
             "input": "pwsh -c .\\doc\\initial-sdk-spec\\generate-interface.ps1 > .\\extensionsdk\\Microsoft.Windows.CommandPalette.Extensions\\Microsoft.Windows.CommandPalette.Extensions.idl",
             "name": "Generate interface",
             "description": "Generate the interface from the SDK spec\nThis drops it into Microsoft.Windows.CommandPalette.Extensions"
+        },
+        {
+            "input": "tasklist | findstr Extension",
+            "name": "List running extensions",
+            "description": "This will list all running extensions, as long as they have 'Extension' in the name (they should)"
         }
     ]
 }
