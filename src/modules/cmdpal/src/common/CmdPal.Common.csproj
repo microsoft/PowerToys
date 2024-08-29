@@ -1,11 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="$(SolutionDir)ToolingVersions.props" />
+  <Import Project="..\..\ToolingVersions.props" />
   <PropertyGroup>
-
     <RootNamespace>CmdPal.Common</RootNamespace>
-
-    <Platforms>x86;x64;arm64</Platforms>
-    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
     <Nullable>enable</Nullable>
     <UseWinUI>true</UseWinUI>
   </PropertyGroup>

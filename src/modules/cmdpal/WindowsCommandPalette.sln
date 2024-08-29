@@ -4,11 +4,11 @@ VisualStudioVersion = 17.11.34929.205
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WindowsCommandPalette", "src\WindowsCommandPalette\WindowsCommandPalette.csproj", "{F71CF22B-A5C7-4328-A5B3-F4191AE57314}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Calculator", "src\BuiltinCommands\Calculator\Calculator.csproj", "{C668A4BF-8BC1-48D1-B00D-FF99D05E6739}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Calculator", "src\Plugins\Calculator\Calculator.csproj", "{C668A4BF-8BC1-48D1-B00D-FF99D05E6739}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AllApps", "src\BuiltinCommands\AllApps\AllApps.csproj", "{F5E5B8B9-7F51-43B8-ACED-1BD380BED98D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AllApps", "src\Plugins\AllApps\AllApps.csproj", "{F5E5B8B9-7F51-43B8-ACED-1BD380BED98D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Builtins", "Builtins", "{B7FF739F-7716-4FC3-B622-705486187B87}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{B7FF739F-7716-4FC3-B622-705486187B87}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.Terminal.UI", "src\Microsoft.Terminal.UI\Microsoft.Terminal.UI.vcxproj", "{6515F03F-E56D-4DB4-B23D-AC4FB80DB36F}"
 EndProject

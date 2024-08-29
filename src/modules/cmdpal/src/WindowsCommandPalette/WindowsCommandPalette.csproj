@@ -1,13 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\ToolingVersions.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <RootNamespace>WindowsCommandPalette</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Platforms>x86;x64;ARM64</Platforms>
-    <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)')) &gt;= 8">win-x86;win-x64;win-arm64</RuntimeIdentifiers>
-    <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)')) &lt; 8">win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <PublishProfile>win-$(Platform).pubxml</PublishProfile>
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
@@ -23,7 +19,6 @@
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
-
 
   <PropertyGroup>
       <!-- This lets us actually reference types from Microsoft.Terminal.UI -->
@@ -75,8 +70,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\extensionsdk\Microsoft.Windows.CommandPalette.Extensions.Helpers\Microsoft.Windows.CommandPalette.Extensions.Helpers.csproj" />
-    <ProjectReference Include="..\BuiltinCommands\AllApps\AllApps.csproj" />
-    <ProjectReference Include="..\BuiltinCommands\Calculator\Calculator.csproj" />
+    <ProjectReference Include="..\Plugins\AllApps\AllApps.csproj" />
+    <ProjectReference Include="..\Plugins\Calculator\Calculator.csproj" />
     <ProjectReference Include="..\common\CmdPal.Common.csproj" />
     <ProjectReference Include="..\Microsoft.Terminal.UI\Microsoft.Terminal.UI.vcxproj">
       <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
