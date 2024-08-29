@@ -2,13 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using static Wox.Infrastructure.StringMatcher;
 
 [assembly: InternalsVisibleTo("Microsoft.Plugin.Program.UnitTests")]
 
-namespace Wox.Infrastructure;
+namespace Microsoft.Windows.CommandPalette.Extensions.Helpers;
 
 public class MatchResult
 {

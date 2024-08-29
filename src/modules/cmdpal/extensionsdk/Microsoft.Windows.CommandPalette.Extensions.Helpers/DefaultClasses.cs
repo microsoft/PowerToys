@@ -1,9 +1,6 @@
-
-using System;
-using System.Collections.Generic;
 using Windows.Foundation;
-using Microsoft.Windows.CommandPalette.Extensions;
 using Windows.UI;
+
 namespace Microsoft.Windows.CommandPalette.Extensions.Helpers;
 
 // TODO! We probably want to have OnPropertyChanged raise the event

@@ -5,7 +5,7 @@
 using System.Diagnostics;
 using System.IO.Abstractions;
 
-namespace Wox.Infrastructure.FileSystemHelper;
+namespace AllApps;
 
 public class FileVersionInfoWrapper : IFileVersionInfoWrapper
 {

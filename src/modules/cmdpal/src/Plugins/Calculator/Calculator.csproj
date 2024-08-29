@@ -1,16 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\ToolingVersions.props" />
+  <Import Project="..\..\..\..\..\Common.Dotnet.CsWinRT.props" />
   <PropertyGroup>
     <RootNamespace>Calculator</RootNamespace>
     <UseWinUI>true</UseWinUI>
   </PropertyGroup>
 
   <ItemGroup>
-      <PackageReference Include="Microsoft.WindowsAppSDK" />
-    <PackageReference Include="Microsoft.Windows.CsWinRT" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\extensionsdk\Microsoft.Windows.CommandPalette.Extensions.Helpers\Microsoft.Windows.CommandPalette.Extensions.Helpers.csproj" />
+    <ProjectReference Include="..\..\..\extensionsdk\Microsoft.Windows.CommandPalette.Extensions.Helpers\Microsoft.CmdPal.Extensions.Helpers.csproj" />
   </ItemGroup>
 </Project>

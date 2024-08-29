@@ -2,17 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Runtime.CompilerServices;
 
 //[assembly: InternalsVisibleTo("Microsoft.Plugin.Program.UnitTests")]
 //[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.System.UnitTests")]
 //[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests")]
 
-namespace Wox.Infrastructure;
+namespace Microsoft.Windows.CommandPalette.Extensions.Helpers;
 
 public class StringMatcher
 {
@@ -310,12 +306,5 @@ public class StringMatcher
 #pragma warning restore CA1309 // Use ordinal string comparison
 
         return score;
-    }
-
-    public enum SearchPrecisionScore
-    {
-        Regular = 50,
-        Low = 20,
-        None = 0,
     }
 }

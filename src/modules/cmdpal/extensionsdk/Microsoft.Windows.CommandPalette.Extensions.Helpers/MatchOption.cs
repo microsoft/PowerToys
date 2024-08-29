@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Microsoft.Plugin.Program.UnitTests")]
 
-namespace Wox.Infrastructure;
+namespace Microsoft.Windows.CommandPalette.Extensions.Helpers;
 
 public class MatchOption
 {
