@@ -309,15 +309,15 @@ private:
     {
         Logger::trace(L"Starting Workspaces Editor");
 
-        /*unsigned long powertoys_pid = GetCurrentProcessId();
+        unsigned long powertoys_pid = GetCurrentProcessId();
         std::wstring executable_args = L"";
-        executable_args.append(std::to_wstring(powertoys_pid));*/
+        executable_args.append(std::to_wstring(powertoys_pid));
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = SEE_MASK_NOCLOSEPROCESS;
         sei.lpFile = L"PowerToys.WorkspacesEditor.exe";
         sei.nShow = SW_SHOWNORMAL;
-        //sei.lpParameters = executable_args.data();
+        sei.lpParameters = executable_args.data();
         if (ShellExecuteExW(&sei))
         {
             Logger::trace("Successfully started the Workspaces Editor");
