@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "HackerNewsExtension (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "HackerNewsExtension (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

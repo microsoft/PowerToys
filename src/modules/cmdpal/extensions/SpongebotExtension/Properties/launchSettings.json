@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SpongebotExtension (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "SpongebotExtension (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
