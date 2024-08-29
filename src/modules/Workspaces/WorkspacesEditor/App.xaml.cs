@@ -66,7 +66,7 @@ namespace WorkspacesEditor
                 Logger.LogInfo($"WorkspacesEditor started from the PowerToys Runner. Runner pid={powerToysRunnerPid}");
                 RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
                 {
-                    Logger.LogInfo("PowerToys Runner exited. Exiting WorkspacesEditor"); 
+                    Logger.LogInfo("PowerToys Runner exited. Exiting WorkspacesEditor");
                     Dispatcher.Invoke(Shutdown);
                 });
             }
