@@ -5,13 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using CmdPal.Common.Contracts;
-using CmdPal.Common.Helpers;
-using CmdPal.Common.Models;
+using Microsoft.CmdPal.Common.Contracts;
+using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Models;
 using Microsoft.Extensions.Options;
 using Windows.Storage;
 
-namespace CmdPal.Common.Services;
+namespace Microsoft.CmdPal.Common.Services;
 
 public class LocalSettingsService : ILocalSettingsService
 {

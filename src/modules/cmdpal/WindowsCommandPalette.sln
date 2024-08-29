@@ -18,7 +18,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.Windows.CommandPa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.Extensions.Helpers", "extensionsdk\Microsoft.Windows.CommandPalette.Extensions.Helpers\Microsoft.CmdPal.Extensions.Helpers.csproj", "{79060D06-7174-4D66-8D0B-4FF021154049}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.Common", "src\common\Microsoft.CmdPal.Common.csproj", "{05CDE6EE-23AE-42AF-A9F5-E398C382675F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.Common", "src\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj", "{05CDE6EE-23AE-42AF-A9F5-E398C382675F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

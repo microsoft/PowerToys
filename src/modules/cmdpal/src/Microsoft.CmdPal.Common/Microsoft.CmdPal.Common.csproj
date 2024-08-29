@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
   <PropertyGroup>
-    <RootNamespace>CmdPal.Common</RootNamespace>
+    <RootNamespace>Microsoft.CmdPal.Common</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWinUI>true</UseWinUI>
   </PropertyGroup>

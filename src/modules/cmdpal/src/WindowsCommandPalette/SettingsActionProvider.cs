@@ -5,8 +5,8 @@ using Microsoft.Windows.CommandPalette.Extensions;
 using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 using System.Text.Json.Nodes;
 using Microsoft.UI.Xaml;
-using CmdPal.Common.Contracts;
-using CmdPal.Common.Extensions;
+using Microsoft.CmdPal.Common.Contracts;
+using Microsoft.CmdPal.Common.Extensions;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.

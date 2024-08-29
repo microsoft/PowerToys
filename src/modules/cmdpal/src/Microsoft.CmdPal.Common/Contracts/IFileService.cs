@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-namespace CmdPal.Common.Contracts;
+namespace Microsoft.CmdPal.Common.Contracts;
 
 public interface IFileService
 {

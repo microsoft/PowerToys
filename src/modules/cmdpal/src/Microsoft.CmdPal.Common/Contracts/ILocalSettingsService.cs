@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 
-namespace CmdPal.Common.Contracts;
+namespace Microsoft.CmdPal.Common.Contracts;
 
 public interface ILocalSettingsService
 {

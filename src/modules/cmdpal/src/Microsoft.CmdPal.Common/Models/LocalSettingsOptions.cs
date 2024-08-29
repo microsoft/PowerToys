@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-namespace CmdPal.Common.Models;
+namespace Microsoft.CmdPal.Common.Models;
 
 public class LocalSettingsOptions
 {

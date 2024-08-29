@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-namespace CmdPal.Common.Services;
+namespace Microsoft.CmdPal.Common.Services;
 
 /// <summary>
 /// Interface for the current application singleton object exposing the API
