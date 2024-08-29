@@ -1,15 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Wox.Infrastructure;
 
 namespace Microsoft.Windows.CommandPalette.Extensions.Helpers;
+
 public class ListHelpers
 {
     // Generate a score for a list item.
