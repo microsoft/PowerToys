@@ -1,17 +1,21 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Navigation;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
-using Microsoft.Windows.CommandPalette.Extensions;
-using Windows.System;
-using Microsoft.UI.Xaml.Input;
-using AdaptiveCards.Rendering.WinUI3;
-using AdaptiveCards.ObjectModel.WinUI3;
-using Windows.UI.ViewManagement;
-using AdaptiveCards.Templating;
 using System.Collections.ObjectModel;
-using Windows.Foundation;
 using System.ComponentModel;
+using AdaptiveCards.ObjectModel.WinUI3;
+using AdaptiveCards.Rendering.WinUI3;
+using AdaptiveCards.Templating;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Navigation;
+using Microsoft.Windows.CommandPalette.Extensions;
+using Windows.Foundation;
+using Windows.System;
+using Windows.UI.ViewManagement;
 
 namespace DeveloperCommandPalette;
 
