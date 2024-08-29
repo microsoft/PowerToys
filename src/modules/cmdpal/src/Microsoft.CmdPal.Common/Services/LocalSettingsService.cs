@@ -35,7 +35,7 @@ public class LocalSettingsService : ILocalSettingsService
 
     public LocalSettingsService(IFileService fileService, IOptions<LocalSettingsOptions> options)
     {
-        _isMsix = false;//  RuntimeHelper.IsMSIX;
+        _isMsix = false; //  RuntimeHelper.IsMSIX;
 
         _fileService = fileService;
         _options = options.Value;
@@ -91,8 +91,11 @@ public class LocalSettingsService : ILocalSettingsService
             if (_settings != null && _settings.TryGetValue(key, out var obj))
             {
                 var s = obj.ToString();
-                if (s !=null)
+
+                if (s != null)
+                {
                     return await Json.ToObjectAsync<T>(s);
+                }
             }
         }
 

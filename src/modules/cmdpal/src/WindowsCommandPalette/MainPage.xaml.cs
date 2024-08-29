@@ -31,7 +31,7 @@ public sealed class MainViewModel
     internal bool LoadedApps;
 
     public event TypedEventHandler<object, object?>? HideRequested;
-    
+
     public event TypedEventHandler<object, object?>? SummonRequested;
 
     public event TypedEventHandler<object, object?>? AppsReady;
@@ -65,7 +65,8 @@ public sealed class MainViewModel
         handlers?.Invoke(this, null);
     }
 
-    public void Summon(){
+    public void Summon()
+    {
         var handlers = SummonRequested;
         handlers?.Invoke(this, null);
     }
@@ -75,20 +76,26 @@ public sealed class MainViewModel
         return title + subtitle;
     }
 
-    private string[] _recentCommandHashes = [];// ["SpotifySpotify", "All Apps", "GitHub Issues", "Microsoft/GithubBookmark"];
+    private string[] _recentCommandHashes = [];
 
     public IEnumerable<IListItem> RecentActions => TopLevelCommands
-        .Select(i=>i.Unsafe)
-        .Where((i) => {
+        .Select(i => i.Unsafe)
+        .Where((i) =>
+        {
             if (i != null)
             {
-                try{
+                try
+                {
                     return _recentCommandHashes.Contains(CreateHash(i.Title, i.Subtitle));
-                } catch(COMException){ return false; }
+                }
+                catch (COMException)
+                {
+                    return false;
+                }
             }
+
             return false;
-        })
-        .Select(i=>i!);
+        }).Select(i => i!);
 
     public IEnumerable<IListItem> AppItems => LoadedApps? apps.GetItems().First().Items : [];
 
@@ -139,7 +146,7 @@ public sealed class MainViewModel
                     return;
                 }
             }
-            catch(COMException){ /* log something */ }
+            catch (COMException) { /* log something */ }
         }
     }
 }

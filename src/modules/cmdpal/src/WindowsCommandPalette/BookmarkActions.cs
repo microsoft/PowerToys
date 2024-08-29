@@ -155,15 +155,22 @@ internal sealed class AddBookmarkForm : Form
             var state = File.ReadAllText(BookmarksActionProvider.StateJsonPath());
             var jsonState = JsonNode.Parse(state);
             var items = jsonState?["items"]?.AsArray();
+
             if (items != null)
             {
                 // var items = jsonState["items"];
                 var newItem = new JsonObject();
                 newItem["name"] = formName;
                 newItem["bookmark"] = formBookmark;
-                var formData = new BookmarkData() { name = formName.ToString(), bookmark=formBookmark.ToString(), type = bookmarkType };
+                var formData = new BookmarkData()
+                {
+                    name = formName.ToString(),
+                    bookmark = formBookmark.ToString(),
+                    type = bookmarkType,
+                };
+
                 items.Add(JsonSerializer.SerializeToNode(formData, typeof(BookmarkData), SourceGenerationContext.Default));
-                //items.Add(newItem);
+
                 json = jsonState?.ToString();
             }
         }
