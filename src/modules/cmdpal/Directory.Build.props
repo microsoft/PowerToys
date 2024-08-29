@@ -7,7 +7,7 @@
     <AssemblyProduct>CmdPal</AssemblyProduct>
     <Company>Microsoft Corporation</Company>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <Platforms>x64;x86;ARM64</Platforms>
+    <Platforms>x64;ARM64</Platforms>
     <PackageTags>CmdPal</PackageTags>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisMode>Recommended</AnalysisMode>
@@ -31,13 +31,17 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
-    <!-- <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
+    <PackageReference Include="StyleCop.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference> -->
-    <!-- <Compile Condition="$(MSBuildProjectName) != 'DevPalStub'" Include="$(MSBuildThisFileDirectory)\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" /> -->
-    <!-- <Compile Condition="$(MSBuildProjectName) == 'DevPalStub'" Include="$(MSBuildThisFileDirectory)\codeAnalysis\StubSuppressions.cs" Link="GlobalSuppressions.cs" /> -->
-    <!-- <AdditionalFiles Include="$(MSBuildThisFileDirectory)\codeAnalysis\StyleCop.json" Link="StyleCop.json" /> -->
+    </PackageReference>
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\..\src\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)\..\..\..\src\codeAnalysis\StyleCop.json" Link="StyleCop.json" />
+
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
 </Project>

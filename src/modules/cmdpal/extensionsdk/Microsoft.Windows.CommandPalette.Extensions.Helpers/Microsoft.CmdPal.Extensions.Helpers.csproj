@@ -7,7 +7,7 @@
     <DebugType>pdbonly</DebugType>
     <!-- Remove once new CsWinRT version is available and Uri.cs is removed -->
     <NoWarn>0436</NoWarn>
-	  <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+	<TreatWarningsAsErrors>False</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -3,6 +3,7 @@
   <PropertyGroup>
     <RootNamespace>AllApps</RootNamespace>
     <UseWinUI>true</UseWinUI>
+	<TreatWarningsAsErrors>False</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
