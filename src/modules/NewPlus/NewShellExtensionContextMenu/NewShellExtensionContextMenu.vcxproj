@@ -23,13 +23,26 @@
     <ProjectName>NewPlus.ShellExtension</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
@@ -41,11 +54,20 @@
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" >
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup >
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <TargetExt>.dll</TargetExt>
     <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\TemporaryBuild\obj\$(ProjectName)\</IntDir>
@@ -53,7 +75,29 @@
     <LinkIncremental />
     <IgnoreImportLibrary />
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetExt>.dll</TargetExt>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
+    <TargetName>PowerToys.NewPlus.ShellExtension</TargetName>
+    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\TemporaryBuild\obj\$(ProjectName)\</IntDir>
+    <LinkIncremental />
+    <IgnoreImportLibrary />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\TemporaryBuild\obj\$(ProjectName)\</IntDir>
+    <TargetName>PowerToys.NewShellExtensionContextMenu</TargetName>
+    <LinkIncremental />
+    <IgnoreImportLibrary />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
+    <TargetName>PowerToys.NewPlus.ShellExtension</TargetName>
+    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\TemporaryBuild\obj\$(ProjectName)\</IntDir>
+    <LinkIncremental />
+    <IgnoreImportLibrary />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
@@ -78,7 +122,7 @@ MakeAppx.exe pack /d . /p $(OutDir)NewShellExtensionContextMenuPackage.msix /nv<
       <Command>cmd.exe /k CustomBuild\PostBuild.cmd</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -107,6 +151,68 @@ MakeAppx.exe pack /d . /p $(OutDir)NewShellExtensionContextMenuPackage.msix /nv<
       <Command>cmd.exe /k CustomBuild\PostBuild.cmd</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;NEWPLUSCONTEXTMENU_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>..\..\..\common\Telemetry;..\..\;..\..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>dll.def</ModuleDefinitionFile>
+      <AdditionalDependencies>runtimeobject.lib;$(CoreLibraryDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
+    </Link>
+    <PreBuildEvent>
+      <Command>del $(OutDir)\NewPlusPackage.msix /q
+MakeAppx.exe pack /d . /p $(OutDir)NewPlusPackage.msix /nv</Command>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;NEWPLUSCONTEXTMENU_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>..\..\..\common\Telemetry;..\..\;..\..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>dll.def</ModuleDefinitionFile>
+      <AdditionalDependencies>runtimeobject.lib;$(CoreLibraryDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
+    </Link>
+    <PreBuildEvent>
+      <Command>del $(OutDir)\NewPlusPackage.msix /q
+MakeAppx.exe pack /d . /p $(OutDir)NewPlusPackage.msix /nv</Command>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="dll_main.h" />
     <ClInclude Include="shell_context_menu.h" />
@@ -132,7 +238,10 @@ MakeAppx.exe pack /d . /p $(OutDir)NewShellExtensionContextMenuPackage.msix /nv<
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="template_folder.cpp" />
     <ClCompile Include="pch.cpp">
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="template_item.cpp" />
   </ItemGroup>
@@ -142,17 +251,20 @@ MakeAppx.exe pack /d . /p $(OutDir)NewShellExtensionContextMenuPackage.msix /nv<
     <CopyFileToFolders Include="TemplateExamples\Any files or folders placed in the template folder are available via New+.txt">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\Assets\NewPlus\Templates</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\Assets\NewPlus\Templates</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\Assets\NewPlus\Templates</DestinationFolders>
     </CopyFileToFolders>
     <CopyFileToFolders Include="TemplateExamples\Example folder\Example txt file.txt">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\Assets\NewPlus\Templates\Example folder</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\Assets\NewPlus\Templates\Example folder</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\Assets\NewPlus\Templates\Example folder</DestinationFolders>
     </CopyFileToFolders>
     <CopyFileToFolders Include="TemplateExamples\Example folder\Another example txt file.txt">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\Assets\NewPlus\Templates\Example folder</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\Assets\NewPlus\Templates\Example folder</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\Assets\NewPlus\Templates\Example folder</DestinationFolders>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
