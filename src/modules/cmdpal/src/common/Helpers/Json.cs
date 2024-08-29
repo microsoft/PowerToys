@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace CmdPal.Common.Helpers;
+namespace Microsoft.CmdPal.Common.Helpers;
 
 public static class Json
 {

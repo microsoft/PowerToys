@@ -5,7 +5,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace CmdPal.Common.Extensions;
+namespace Microsoft.CmdPal.Common.Extensions;
 
 public static class IHostExtensions
 {

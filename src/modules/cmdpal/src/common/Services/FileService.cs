@@ -4,9 +4,9 @@
 using System.IO;
 using System.Text;
 using System.Text.Json;
-using CmdPal.Common.Contracts;
+using Microsoft.CmdPal.Common.Contracts;
 
-namespace CmdPal.Common.Services;
+namespace Microsoft.CmdPal.Common.Services;
 
 public class FileService : IFileService
 {

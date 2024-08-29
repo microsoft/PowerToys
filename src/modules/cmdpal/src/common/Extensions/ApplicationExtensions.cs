@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using CmdPal.Common.Services;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.UI.Xaml;
 
-namespace CmdPal.Common.Extensions;
+namespace Microsoft.CmdPal.Common.Extensions;
 
 /// <summary>
 /// Extension class implementing extension methods for <see cref="Application"/>.

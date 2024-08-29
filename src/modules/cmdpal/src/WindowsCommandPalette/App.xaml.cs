@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using CmdPal.Common.Contracts;
-using CmdPal.Common.Models;
-using CmdPal.Common.Services;
+using Microsoft.CmdPal.Common.Contracts;
+using Microsoft.CmdPal.Common.Models;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using CmdPal.Common.Extensions;
+using Microsoft.CmdPal.Common.Extensions;
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
