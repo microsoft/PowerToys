@@ -82,7 +82,7 @@ internal sealed class SettingsForm: Form
         var hotkey = "win+ctrl+.";
         try
         {
-            hotkey = await Application.Current.GetService<ILocalSettingsService>().ReadSettingAsync<string>("GlobalHotkey") ;
+            hotkey = await Application.Current.GetService<ILocalSettingsService>().ReadSettingAsync<string>("GlobalHotkey");
         }
         catch (Exception ex)
         {
@@ -94,7 +94,9 @@ internal sealed class SettingsForm: Form
 }
 """;
     }
+
     public override string StateJson() => throw new NotImplementedException();
+
     public override ActionResult SubmitForm(string payload)
     {
         var formInput = JsonNode.Parse(payload)?.AsObject();
