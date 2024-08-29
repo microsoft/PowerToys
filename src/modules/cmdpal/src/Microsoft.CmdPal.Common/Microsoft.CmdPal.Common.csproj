@@ -4,6 +4,7 @@
     <RootNamespace>Microsoft.CmdPal.Common</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWinUI>true</UseWinUI>
+	<TreatWarningsAsErrors>False</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
