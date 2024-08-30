@@ -38,6 +38,7 @@ namespace PowerToys
             static String ShowEnvironmentVariablesSharedEvent();
             static String ShowEnvironmentVariablesAdminSharedEvent();
             static String WorkspacesLaunchEditorEvent();
+            static String WorkspacesHotkeyEvent();
         }
     }
 }
