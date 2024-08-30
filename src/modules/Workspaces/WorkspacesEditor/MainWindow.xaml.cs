@@ -80,7 +80,7 @@ namespace WorkspacesEditor
             IntPtr result = IntPtr.Zero;
 
             uint hotkeyMessageId = 0;
-            hotkeyMessageId = NativeMethods.RegisterWindowMessage("Local\\PowerToys-Workspaces-HotkeyEvent-2625C3C8-BAC9-4DB3-BCD6-3B4391A26FD0");
+            hotkeyMessageId = NativeMethods.RegisterWindowMessage(PowerToys.Interop.Constants.WorkspacesHotkeyEvent());
 
             if (msgId == hotkeyMessageId)
             {
