@@ -13,7 +13,6 @@ public interface IExtensionService
     Task<IEnumerable<IExtensionWrapper>> GetInstalledExtensionsAsync(bool includeDisabledExtensions = false);
 
     // Task<IEnumerable<string>> GetInstalledHomeWidgetPackageFamilyNamesAsync(bool includeDisabledExtensions = false);
-
     Task<IEnumerable<IExtensionWrapper>> GetInstalledExtensionsAsync(Microsoft.Windows.CommandPalette.Extensions.ProviderType providerType, bool includeDisabledExtensions = false);
 
     IExtensionWrapper? GetInstalledExtension(string extensionUniqueId);
@@ -32,5 +31,5 @@ public interface IExtensionService
     ///// </summary>
     ///// <param name="extension">The out of proc extension object</param>
     ///// <returns>True only if the extension was disabled. False otherwise.</returns>
-    //public Task<bool> DisableExtensionIfWindowsFeatureNotAvailable(IExtensionWrapper extension);
+    // public Task<bool> DisableExtensionIfWindowsFeatureNotAvailable(IExtensionWrapper extension);
 }

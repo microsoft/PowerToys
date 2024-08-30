@@ -11,8 +11,7 @@ namespace Microsoft.CmdPal.Common.Services;
 
 public class FileService : IFileService
 {
-    static readonly Encoding encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
-
+    private static readonly Encoding _encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
 #pragma warning disable CS8603 // Possible null reference return.
     public T Read<T>(string folderPath, string fileName)
@@ -36,7 +35,7 @@ public class FileService : IFileService
         }
 
         var fileContent = JsonSerializer.Serialize(content);
-        File.WriteAllText(Path.Combine(folderPath, fileName), fileContent, encoding);
+        File.WriteAllText(Path.Combine(folderPath, fileName), fileContent, _encoding);
     }
 
     public void Delete(string folderPath, string fileName)
