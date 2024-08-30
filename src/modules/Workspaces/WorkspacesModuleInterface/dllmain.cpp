@@ -210,45 +210,24 @@ private:
         executable_args.append(std::to_wstring(powertoys_pid));
     }
 
-    void SendCloseEvent()
+    void sendHotkeyEvent()
     {
-        auto exitEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::WORKSPACES_EXIT_EVENT);
-        if (!exitEvent)
+        auto hotkeyEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::WORKSPACES_HOTKEY_EVENT);
+        if (!hotkeyEvent)
         {
-            Logger::warn(L"Failed to create exitEvent. {}", get_last_error_or_default(GetLastError()));
+            Logger::warn(L"Failed to create hotkey event. {}", get_last_error_or_default(GetLastError()));
         }
         else
         {
-            Logger::trace(L"Signaled exitEvent");
-            if (!SetEvent(exitEvent))
+            Logger::trace(L"Signaled hotkey event");
+            if (!SetEvent(hotkeyEvent))
             {
-                Logger::warn(L"Failed to signal exitEvent. {}", get_last_error_or_default(GetLastError()));
+                Logger::warn(L"Failed to signal hotkey event. {}", get_last_error_or_default(GetLastError()));
             }
 
-            ResetEvent(exitEvent);
-            CloseHandle(exitEvent);
+            ResetEvent(hotkeyEvent);
+            CloseHandle(hotkeyEvent);
         }
-    }
-
-    void sendHotkeyEvent()
-    {
-        auto enum_windows = [](HWND hwnd, LPARAM param) -> BOOL {
-            HANDLE process_handle = reinterpret_cast<HANDLE>(param);
-            DWORD window_process_id = 0;
-
-            GetWindowThreadProcessId(hwnd, &window_process_id);
-            if (GetProcessId(process_handle) == window_process_id)
-            {
-                UINT deviceConnected = 0;
-                deviceConnected = RegisterWindowMessage(CommonSharedConstants::WORKSPACES_HOTKEY_EVENT);
-
-                LPCTSTR message = L"Failed to create exitEvent.";
-                ::SendMessage(hwnd, deviceConnected, 0, reinterpret_cast<LPARAM> (message));
-            }
-            return TRUE;
-        };
-
-        EnumWindows(enum_windows, (LPARAM)m_hProcess);
     }
 
     void Disable(bool const traceEvent)
@@ -268,7 +247,6 @@ private:
         if (m_hProcess)
         {
             TerminateProcess(m_hProcess, 0);
-            SendCloseEvent();
             m_hProcess = nullptr;
         }
     }

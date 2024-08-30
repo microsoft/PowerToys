@@ -54,8 +54,5 @@ namespace WorkspacesEditor.Utils
         public const int _S_OK = 0;
         public const int _MONITOR_DEFAULTTONEAREST = 2;
         public const int _E_INVALIDARG = -2147024809;
-
-        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        public static extern uint RegisterWindowMessage(string lpString);
     }
 }

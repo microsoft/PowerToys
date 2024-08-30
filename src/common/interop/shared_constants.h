@@ -45,7 +45,6 @@ namespace CommonSharedConstants
 
     // Path to the event used by Workspaces
     const wchar_t WORKSPACES_LAUNCH_EDITOR_EVENT[] = L"Local\\Workspaces-LaunchEditorEvent-a55ff427-cf62-4994-a2cd-9f72139296bf";
-    const wchar_t WORKSPACES_EXIT_EVENT[] = L"Local\\PowerToys-Workspaces-ExitEvent-29a1566f-f4f8-4d56-9435-d2a437f727c6";
     const wchar_t WORKSPACES_HOTKEY_EVENT[] = L"Local\\PowerToys-Workspaces-HotkeyEvent-2625C3C8-BAC9-4DB3-BCD6-3B4391A26FD0";
 
     const wchar_t SHOW_HOSTS_EVENT[] = L"Local\\Hosts-ShowHostsEvent-5a0c0aae-5ff5-40f5-95c2-20e37ed671f0";
