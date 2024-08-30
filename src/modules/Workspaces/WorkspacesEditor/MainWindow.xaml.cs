@@ -55,6 +55,11 @@ namespace WorkspacesEditor
                     }
                     else
                     {
+                        if (WindowState == WindowState.Minimized)
+                        {
+                            WindowState = WindowState.Normal;
+                        }
+
                         // Get the window handle of the Workspaces Editor window
                         IntPtr handle = new WindowInteropHelper(this).Handle;
                         WindowHelpers.BringToForeground(handle);
