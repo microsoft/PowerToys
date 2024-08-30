@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO.Compression;
 using System.Threading;
 using System.Windows;
 using System.Windows.Interop;

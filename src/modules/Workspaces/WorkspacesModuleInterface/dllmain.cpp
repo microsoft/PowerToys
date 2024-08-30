@@ -329,23 +329,6 @@ private:
         m_hProcess = sei.hProcess;
     }
 
-    void bring_process_to_front()
-    {
-        auto enum_windows = [](HWND hwnd, LPARAM param) -> BOOL {
-            HANDLE process_handle = reinterpret_cast<HANDLE>(param);
-            DWORD window_process_id = 0;
-
-            GetWindowThreadProcessId(hwnd, &window_process_id);
-            if (GetProcessId(process_handle) == window_process_id)
-            {
-                SetForegroundWindow(hwnd);
-            }
-            return TRUE;
-        };
-
-        EnumWindows(enum_windows, (LPARAM)m_hProcess);
-    }
-
     bool is_process_running() const
     {
         return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
