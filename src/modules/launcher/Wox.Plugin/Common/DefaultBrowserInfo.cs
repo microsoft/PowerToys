@@ -127,6 +127,14 @@ namespace Wox.Plugin.Common
                         commandPattern = commandPattern.Insert(0, "\"");
                     }
 
+                    // Arc.exe takes no parameters.
+                    // Give up and use $"rundll32 url.dll,FileProtocolHandler {URL}" instead.
+                    const string ArcExecutableName = "Arc.exe";
+                    if (commandPattern.Contains(ArcExecutableName))
+                    {
+                        commandPattern = "rundll32 url.dll,FileProtocolHandler"
+                    }
+
                     if (commandPattern.StartsWith('\"'))
                     {
                         var endQuoteIndex = commandPattern.IndexOf('\"', 1);
