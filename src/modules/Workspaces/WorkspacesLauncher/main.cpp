@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 
+#include <WorkspacesLib/JsonUtils.h>
 #include <WorkspacesLib/WorkspacesData.h>
 #include <WorkspacesLib/trace.h>
 
@@ -95,76 +96,51 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     if (invokePoint == InvokePoint::LaunchAndEdit)
     {
         // check the temp file in case the project is just created and not saved to the workspaces.json yet
-        if (std::filesystem::exists(WorkspacesData::TempWorkspacesFile()))
+        auto file = WorkspacesData::TempWorkspacesFile();
+        auto res = JsonUtils::ReadSingleWorkspace(file);
+        if (res.isOk())
         {
-            try
+            projectToLaunch = res.getValue();
+        }
+        else
+        {
+            std::wstring formattedMessage{};
+            switch (res.error())
             {
-                auto savedWorkspacesJson = json::from_file(WorkspacesData::TempWorkspacesFile());
-                if (savedWorkspacesJson.has_value())
-                {
-                    auto savedWorkspaces = WorkspacesData::WorkspacesProjectJSON::FromJson(savedWorkspacesJson.value());
-                    if (savedWorkspaces.has_value())
-                    {
-                        projectToLaunch = savedWorkspaces.value();
-                    }
-                    else
-                    {
-                        Logger::critical("Incorrect Workspaces file");
-                        std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), WorkspacesData::TempWorkspacesFile());
-                        MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
-                        return 1;
-                    }
-                }
-                else
-                {
-                    Logger::critical("Incorrect Workspaces file");
-                    std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), WorkspacesData::TempWorkspacesFile());
-                    MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
-                    return 1;
-                }
+            case JsonUtils::WorkspacesFileError::FileReadingError:
+                formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_FILE_READING_ERROR), file);
+                break;
+            case JsonUtils::WorkspacesFileError::IncorrectFileError:
+                formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), file);
+                break;
             }
-            catch (std::exception ex)
-            {
-                Logger::critical("Exception on reading Workspaces file: {}", ex.what());
-                std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_FILE_READING_ERROR), WorkspacesData::TempWorkspacesFile());
-                MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
-                return 1;
-            }
+             
+            MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
+            return 1;
         }
     }
     
     if (projectToLaunch.id.empty())
     {
-        try
+        auto file = WorkspacesData::WorkspacesFile();
+        auto res = JsonUtils::ReadWorkspaces(file);
+        if (res.isOk())
         {
-            auto savedWorkspacesJson = json::from_file(WorkspacesData::WorkspacesFile());
-            if (savedWorkspacesJson.has_value())
-            {
-                auto savedWorkspaces = WorkspacesData::WorkspacesListJSON::FromJson(savedWorkspacesJson.value());
-                if (savedWorkspaces.has_value())
-                {
-                    workspaces = savedWorkspaces.value();
-                }
-                else
-                {
-                    Logger::critical("Incorrect Workspaces file");
-                    std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), WorkspacesData::WorkspacesFile());
-                    MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
-                    return 1;
-                }
-            }
-            else
-            {
-                Logger::critical("Incorrect Workspaces file");
-                std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), WorkspacesData::WorkspacesFile());
-                MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
-                return 1;
-            }
+            workspaces = res.getValue();
         }
-        catch (std::exception ex)
+        else
         {
-            Logger::critical("Exception on reading Workspaces file: {}", ex.what());
-            std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_FILE_READING_ERROR), WorkspacesData::WorkspacesFile());
+            std::wstring formattedMessage{};
+            switch (res.error())
+            {
+            case JsonUtils::WorkspacesFileError::FileReadingError:
+                formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_FILE_READING_ERROR), file);
+                break;
+            case JsonUtils::WorkspacesFileError::IncorrectFileError:
+                formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), file);
+                break;
+            }
+
             MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
             return 1;
         }
@@ -172,7 +148,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         if (workspaces.empty())
         {
             Logger::warn("Workspaces file is empty");
-            std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_EMPTY_FILE), WorkspacesData::WorkspacesFile());
+            std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_EMPTY_FILE), file);
             MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
             return 1;
         }
