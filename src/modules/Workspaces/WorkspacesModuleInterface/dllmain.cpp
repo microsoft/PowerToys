@@ -164,6 +164,12 @@ public:
             m_toggleEditorEvent = nullptr;
         }
 
+        if (m_hotkeyEvent)
+        {
+            CloseHandle(m_hotkeyEvent);
+            m_hotkeyEvent = nullptr;
+        }
+
         delete this;
     }
 
@@ -177,6 +183,12 @@ public:
         app_key = L"Workspaces";
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", "Workspaces");
         init_settings();
+
+        m_hotkeyEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::WORKSPACES_HOTKEY_EVENT);
+        if (!m_hotkeyEvent)
+        {
+            Logger::warn(L"Failed to create hotkey event. {}", get_last_error_or_default(GetLastError()));
+        }
 
         m_toggleEditorEvent = CreateDefaultEvent(CommonSharedConstants::WORKSPACES_LAUNCH_EDITOR_EVENT);
         if (!m_toggleEditorEvent)
@@ -212,21 +224,10 @@ private:
 
     void sendHotkeyEvent()
     {
-        auto hotkeyEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::WORKSPACES_HOTKEY_EVENT);
-        if (!hotkeyEvent)
+        Logger::trace(L"Signaled hotkey event");
+        if (!SetEvent(m_hotkeyEvent))
         {
-            Logger::warn(L"Failed to create hotkey event. {}", get_last_error_or_default(GetLastError()));
-        }
-        else
-        {
-            Logger::trace(L"Signaled hotkey event");
-            if (!SetEvent(hotkeyEvent))
-            {
-                Logger::warn(L"Failed to signal hotkey event. {}", get_last_error_or_default(GetLastError()));
-            }
-
-            ResetEvent(hotkeyEvent);
-            CloseHandle(hotkeyEvent);
+            Logger::warn(L"Failed to signal hotkey event. {}", get_last_error_or_default(GetLastError()));
         }
     }
 
@@ -242,6 +243,11 @@ private:
         if (m_toggleEditorEvent)
         {
             ResetEvent(m_toggleEditorEvent);
+        }
+
+        if (m_hotkeyEvent)
+        {
+            ResetEvent(m_hotkeyEvent);
         }
 
         if (m_hProcess)
@@ -360,6 +366,9 @@ private:
 
     // Handle to event used to invoke Workspaces Editor
     HANDLE m_toggleEditorEvent;
+
+    // Handle to event used when hotkey is invoked
+    HANDLE m_hotkeyEvent;
 
     // Hotkey to invoke the module
     HotkeyEx m_hotkey{
