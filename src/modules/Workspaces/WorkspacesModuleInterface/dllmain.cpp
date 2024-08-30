@@ -77,7 +77,7 @@ public:
     {
         if (is_process_running())
         {
-            bring_process_to_front();
+            sendHotkeyEvent();
         }
         else
         {
@@ -228,6 +228,27 @@ private:
             ResetEvent(exitEvent);
             CloseHandle(exitEvent);
         }
+    }
+
+    void sendHotkeyEvent()
+    {
+        auto enum_windows = [](HWND hwnd, LPARAM param) -> BOOL {
+            HANDLE process_handle = reinterpret_cast<HANDLE>(param);
+            DWORD window_process_id = 0;
+
+            GetWindowThreadProcessId(hwnd, &window_process_id);
+            if (GetProcessId(process_handle) == window_process_id)
+            {
+                UINT deviceConnected = 0;
+                deviceConnected = RegisterWindowMessage(CommonSharedConstants::WORKSPACES_HOTKEY_EVENT);
+
+                LPCTSTR message = L"Failed to create exitEvent.";
+                ::SendMessage(hwnd, deviceConnected, 0, reinterpret_cast<LPARAM> (message));
+            }
+            return TRUE;
+        };
+
+        EnumWindows(enum_windows, (LPARAM)m_hProcess);
     }
 
     void Disable(bool const traceEvent)

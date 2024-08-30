@@ -30,7 +30,7 @@ namespace WorkspacesEditor.Utils
         public static extern IntPtr GetForegroundWindow();
 
         [DllImport("user32.dll")]
-        public static extern uint GetWindowThreadProcessId(IntPtr hWnd, IntPtr processId);
+        public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out int processId);
 
         [DllImport("kernel32.dll")]
         public static extern uint GetCurrentThreadId();
@@ -54,5 +54,8 @@ namespace WorkspacesEditor.Utils
         public const int _S_OK = 0;
         public const int _MONITOR_DEFAULTTONEAREST = 2;
         public const int _E_INVALIDARG = -2147024809;
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern uint RegisterWindowMessage(string lpString);
     }
 }

@@ -67,5 +67,64 @@ namespace WorkspacesEditor
         {
             ContentFrame.GoBack();
         }
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            HwndSource source = PresentationSource.FromVisual(this) as HwndSource;
+            source.AddHook(WndProc);
+        }
+
+        private IntPtr WndProc(IntPtr hwnd, int msgId, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            IntPtr result = IntPtr.Zero;
+
+            uint hotkeyMessageId = 0;
+            hotkeyMessageId = NativeMethods.RegisterWindowMessage("Local\\PowerToys-Workspaces-HotkeyEvent-2625C3C8-BAC9-4DB3-BCD6-3B4391A26FD0");
+
+            if (msgId == hotkeyMessageId)
+            {
+                if (ApplicationIsInFocus())
+                {
+                    Environment.Exit(0);
+                }
+                else
+                {
+                    if (WindowState == WindowState.Minimized)
+                    {
+                        WindowState = WindowState.Normal;
+                    }
+
+                    // Get the window handle of the Workspaces Editor window
+                    IntPtr handle = new WindowInteropHelper(this).Handle;
+                    WindowHelpers.BringToForeground(handle);
+
+                    InvalidateVisual();
+                }
+
+                handled = true;
+            }
+            else
+            {
+                handled = false;
+            }
+
+            return result;
+        }
+
+        public static bool ApplicationIsInFocus()
+        {
+            var activatedHandle = NativeMethods.GetForegroundWindow();
+            if (activatedHandle == IntPtr.Zero)
+            {
+                return false;       // No window is currently activated
+            }
+
+            var procId = Environment.ProcessId;
+            int activeProcId;
+            _ = NativeMethods.GetWindowThreadProcessId(activatedHandle, out activeProcId);
+
+            return activeProcId == procId;
+        }
     }
 }
