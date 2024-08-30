@@ -28,15 +28,14 @@ public class LocalSettingsService : ILocalSettingsService
     private readonly string _applicationDataFolder;
     private readonly string _localSettingsFile;
 
-    private Dictionary<string, object> _settings;
-
-    private bool _isInitialized;
-
     private readonly bool _isMsix;
+
+    private Dictionary<string, object> _settings;
+    private bool _isInitialized;
 
     public LocalSettingsService(IFileService fileService, IOptions<LocalSettingsOptions> options)
     {
-        _isMsix = false; //  RuntimeHelper.IsMSIX;
+        _isMsix = false; // RuntimeHelper.IsMSIX;
 
         _fileService = fileService;
         _options = options.Value;

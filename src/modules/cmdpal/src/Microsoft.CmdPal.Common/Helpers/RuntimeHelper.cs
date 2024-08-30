@@ -15,16 +15,16 @@ public static class RuntimeHelper
     {
         get
         {
-            // TODO! for whatever reason, when I ported this into the PT
+            // TODO: for whatever reason, when I ported this into the PT
             // codebase, this no longer compiled. We're only ever using it for
             // the hacked up settings and ignoring it anyways, so I'm leaving
-            // it commented out for now. 
-            // 
+            // it commented out for now.
+            //
             // See also:
             // * https://github.com/microsoft/win32metadata/commit/6fee67ba73bfe1b126ce524f7de8d367f0317715
             // * https://github.com/microsoft/win32metadata/issues/1311
-            //uint length = 0;
-            //return PInvoke.GetCurrentPackageFullName(ref length, null) != WIN32_ERROR.APPMODEL_ERROR_NO_PACKAGE;
+            // uint length = 0;
+            // return PInvoke.GetCurrentPackageFullName(ref length, null) != WIN32_ERROR.APPMODEL_ERROR_NO_PACKAGE;
 #pragma warning disable IDE0025 // Use expression body for property
             return true;
 #pragma warning restore IDE0025 // Use expression body for property
