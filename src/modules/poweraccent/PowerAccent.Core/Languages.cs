@@ -117,7 +117,6 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeyGA(letter))
                 .Union(GetDefaultLetterKeyGD(letter))
                 .Union(GetDefaultLetterKeyDE(letter))
-                .Union(GetDefaultLetterKeyEL(letter))
                 .Union(GetDefaultLetterKeyEST(letter))
                 .Union(GetDefaultLetterKeyEPO(letter))
                 .Union(GetDefaultLetterKeyFI(letter))
@@ -194,7 +193,7 @@ namespace PowerAccent.Core
         // Mathematics
         private static string[] GetDefaultLetterKeyMATH(LetterKey letter)
         {
-            return letter switch
+            string[] characters = letter switch
             {
                 LetterKey.VK_0 => new[] { "₀", "⁰", "°", "∅", "↉" },
                 LetterKey.VK_1 => new[] { "₁", "¹", "½", "⅓", "¼", "⅕", "⅙", "⅐", "⅛", "⅑", "⅒" },
@@ -206,28 +205,19 @@ namespace PowerAccent.Core
                 LetterKey.VK_7 => new[] { "₇", "⁷", "⅞" },
                 LetterKey.VK_8 => new[] { "₈", "⁸", "∞", "∝" },
                 LetterKey.VK_9 => new[] { "₉", "⁹" },
-                LetterKey.VK_A => new[] { "α", "∀" },
-                LetterKey.VK_B => new[] { "β" },
-                LetterKey.VK_C => new[] { "χ", "ℂ", "∁" },
-                LetterKey.VK_D => new[] { "δ", "∂", "◇" },
-                LetterKey.VK_E => new[] { "ε", "η", "∃", "∄", "∈", "∉" },
-                LetterKey.VK_F => new[] { "φ", "ƒ" },
-                LetterKey.VK_G => new[] { "γ" },
-                LetterKey.VK_I => new[] { "ι" },
-                LetterKey.VK_K => new[] { "κ" },
-                LetterKey.VK_L => new[] { "λ" },
-                LetterKey.VK_M => new[] { "μ" },
-                LetterKey.VK_N => new[] { "ν", "ⁿ", "ℕ" },
-                LetterKey.VK_O => new[] { "ο", "ω" },
-                LetterKey.VK_P => new[] { "π", "ψ", "φ", "∏", "⊥", "⊢", "⊬" },
+                LetterKey.VK_A => new[] { "∀" },
+                LetterKey.VK_C => new[] { "ℂ", "∁" },
+                LetterKey.VK_D => new[] { "∂", "◇" },
+                LetterKey.VK_E => new[] { "∃", "∄", "∈", "∉" },
+                LetterKey.VK_F => new[] { "ƒ" },
+                LetterKey.VK_N => new[] { "ⁿ", "ℕ" },
+                LetterKey.VK_P => new[] { "∏", "⊥", "⊢", "⊬" },
                 LetterKey.VK_Q => new[] { "ℚ" },
-                LetterKey.VK_R => new[] { "ρ", "ℝ" },
-                LetterKey.VK_S => new[] { "σ", "∑", "∫", "∮" },
-                LetterKey.VK_T => new[] { "θ", "τ", "⊨", "⊭" },
-                LetterKey.VK_U => new[] { "υ" },
-                LetterKey.VK_X => new[] { "ξ", "×", "⋅" },
-                LetterKey.VK_Y => new[] { "υ" },
-                LetterKey.VK_Z => new[] { "ζ", "ℤ" },
+                LetterKey.VK_R => new[] { "ℝ" },
+                LetterKey.VK_S => new[] { "∑", "∫", "∮" },
+                LetterKey.VK_T => new[] { "⊨", "⊭" },
+                LetterKey.VK_X => new[] { "×", "⋅" },
+                LetterKey.VK_Z => new[] { "ℤ" },
                 LetterKey.VK_PLUS => new[] { "≤", "≥", "±", "⇔", "₊", "⁺", "≠", "≅", "≈", "≙", "≜", "≔", "≝", "≡", "⊕", "⊗", "⊙" },
                 LetterKey.VK_COMMA => new[] { "≤", "⇐", "⋃", "⋁", "⊆", "⊂", "⊄", "∌", "∋", "≪" },
                 LetterKey.VK_PERIOD => new[] { "≥", "⇒", "⋂", "⋀", "⊇", "⊃", "⊅", "∉", "∈", "≫" },
@@ -237,6 +227,8 @@ namespace PowerAccent.Core
                 LetterKey.VK_DIVIDE_ => new[] { "÷", "√", "∠", "∡", "∢", "⦝", "⦜" },
                 _ => Array.Empty<string>(),
             };
+
+            return characters.Union(GetDefaultLetterKeyEL(letter)).ToArray();
         }
 
         // Bulgarian
@@ -639,7 +631,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_T => new string[] { "τ", "θ", "ϑ" },
                 LetterKey.VK_U => new string[] { "υ", "ύ" },
                 LetterKey.VK_X => new string[] { "ξ" },
-                LetterKey.VK_Y => new string[] { "υ" },
+                LetterKey.VK_Y => new string[] { "υ", "ύ" },
                 LetterKey.VK_Z => new string[] { "ζ" },
                 _ => Array.Empty<string>(),
             };
