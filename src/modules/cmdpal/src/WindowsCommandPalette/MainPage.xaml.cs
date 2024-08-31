@@ -23,6 +23,7 @@ public sealed class MainViewModel
 {
     internal readonly AllApps.AllAppsPage apps = new();
     internal readonly QuitActionProvider quitActionProvider = new();
+
     public event TypedEventHandler<object, object?>? QuitRequested { add => quitActionProvider.QuitRequested += value; remove => quitActionProvider.QuitRequested -= value; }
 
     internal readonly ObservableCollection<ActionsProviderWrapper> CommandsProviders = new();
@@ -50,7 +51,8 @@ public sealed class MainViewModel
         ResetTopLevel();
 
         // On a background thread, warm up the app cache since we want it more often than not
-        new Task(() => {
+        new Task(() =>
+        {
             var _ = AllApps.AppCache.Instance.Value;
             LoadedApps = true;
             AppsReady?.Invoke(this, null);
@@ -101,25 +103,34 @@ public sealed class MainViewModel
             return false;
         }).Select(i => i!);
 
-    public IEnumerable<IListItem> AppItems => LoadedApps? apps.GetItems().First().Items : [];
+    public IEnumerable<IListItem> AppItems => LoadedApps ? apps.GetItems().First().Items : [];
 
     public IEnumerable<ExtensionObject<IListItem>> Everything => TopLevelCommands
         .Concat(AppItems.Select(i => new ExtensionObject<IListItem>(i)))
-        .Where(i => i!= null);
+        .Where(i =>
+        {
+            var v = i != null;
+            return v;
+        });
 
     public IEnumerable<ExtensionObject<IListItem>> Recent => _recentCommandHashes
         .Select(hash =>
             Everything
-                .Where(i => {
-                    try {
+                .Where(i =>
+                {
+                    try
+                    {
                         var o = i.Unsafe;
                         return CreateHash(o.Title, o.Subtitle) == hash;
-                    } catch (COMException) { return false; }
+                    }
+                    catch (COMException)
+                    {
+                        return false;
+                    }
                 })
-                .FirstOrDefault()
-        )
+                .FirstOrDefault())
         .Where(i => i != null)
-        .Select(i=>i!);
+        .Select(i => i!);
 
     public bool IsRecentCommand(MainListItem item)
     {
@@ -127,10 +138,17 @@ public sealed class MainViewModel
         {
             foreach (var wraprer in Recent)
             {
-                if (wraprer.Unsafe == item) return true;
+                if (wraprer.Unsafe == item)
+                {
+                    return true;
+                }
             }
         }
-        catch (COMException) { return false; }
+        catch (COMException)
+        {
+            return false;
+        }
+
         return false;
     }
 
@@ -138,19 +156,23 @@ public sealed class MainViewModel
     {
         foreach (var wrapped in Everything)
         {
-            try{
+            try
+            {
                 var listItem = wrapped?.Unsafe;
                 if (listItem != null && listItem.Command == action)
                 {
                     // Found it, awesome.
                     var hash = CreateHash(listItem.Title, listItem.Subtitle);
+
                     // Remove the old one and push the new one to the front
                     var recent = new List<string>([hash]).Concat(_recentCommandHashes.Where(h => h != hash)).Take(5).ToArray();
                     _recentCommandHashes = recent.ToArray();
                     return;
                 }
             }
-            catch (COMException) { /* log something */ }
+            catch (COMException)
+            { /* log something */
+            }
         }
     }
 }
@@ -160,7 +182,7 @@ public sealed class MainViewModel
 /// </summary>
 public sealed partial class MainPage : Page
 {
-    private string _log = "";
+    private string _log = string.Empty;
 
     public MainViewModel ViewModel { get; } = new MainViewModel();
 
@@ -194,13 +216,15 @@ public sealed partial class MainPage : Page
     private void _HackyBadClearFilter()
     {
         // BODGY but I don't care, cause i'm throwing this all out
-        if ((this.RootFrame.Content as Page)?.FindName("FilterBox") is TextBox tb) {
-            tb.Text = "";
+        if ((this.RootFrame.Content as Page)?.FindName("FilterBox") is TextBox tb)
+        {
+            tb.Text = string.Empty;
             tb.Focus(FocusState.Programmatic);
         }
 
         _ = LoadAllCommands();
     }
+
     private void ViewModel_SummonRequested(object sender, object? args)
     {
         if (!RootFrame.CanGoBack)
@@ -216,11 +240,12 @@ public sealed partial class MainPage : Page
     private async Task LoadAllCommands()
     {
         ViewModel.ResetTopLevel();
+
         // Load builtins syncronously...
         await LoadBuiltinCommandsAsync();
+
         // ...and extensions on a fire_and_forget
         _ = LoadExtensions();
-
     }
 
     public async Task LoadBuiltinCommandsAsync()
@@ -233,7 +258,6 @@ public sealed partial class MainPage : Page
             ViewModel.CommandsProviders.Add(wrapper);
             await LoadTopLevelCommandsFromProvider(wrapper).ConfigureAwait(false);
         }
-
     }
 
     private void InitializePage(PageViewModel vm)
@@ -254,7 +278,8 @@ public sealed partial class MainPage : Page
             HandleResult(invokable.Invoke());
             return;
         }
-        else if (action is IListPage listPage) {
+        else if (action is IListPage listPage)
+        {
             GoToList(listPage);
             return;
         }
@@ -268,6 +293,7 @@ public sealed partial class MainPage : Page
             GoToForm(formPage);
             return;
         }
+
         // This is bad
         // TODO! handle this with some sort of badly authored extension error
         throw new NotImplementedException();
@@ -277,7 +303,11 @@ public sealed partial class MainPage : Page
     {
         foreach (var provider in ViewModel.CommandsProviders)
         {
-            if (!provider.IsExtension) continue;
+            if (!provider.IsExtension)
+            {
+                continue;
+            }
+
             foreach (var item in provider.TopLevelItems)
             {
                 // TODO! We really need a better "SafeWrapper<T>" object that can make sure
@@ -292,7 +322,10 @@ public sealed partial class MainPage : Page
                         return;
                     }
                 }
-                catch (COMException e){ AppendLog(e.Message); }
+                catch (COMException e)
+                {
+                    AppendLog(e.Message);
+                }
             }
         }
     }
@@ -307,7 +340,10 @@ public sealed partial class MainPage : Page
 
     private void HandleResult(ICommandResult? res)
     {
-        if (res == null) return;
+        if (res == null)
+        {
+            return;
+        }
 
         DispatcherQueue.TryEnqueue(() =>
         {
@@ -325,12 +361,15 @@ public sealed partial class MainPage : Page
 
     private void RequestGoBackHandler(object sender, object args)
     {
-        if (!RootFrame.CanGoBack) {
+        if (!RootFrame.CanGoBack)
+        {
             ViewModel.RequestHide();
             return;
         }
+
         RootFrame.GoBack();
-        if (!RootFrame.CanGoBack){
+        if (!RootFrame.CanGoBack)
+        {
             _HackyBadClearFilter();
         }
     }
@@ -346,6 +385,7 @@ public sealed partial class MainPage : Page
         {
             RootFrame.GoBack();
         }
+
         if (!RootFrame.CanGoBack)
         {
             _HackyBadClearFilter();
@@ -359,18 +399,24 @@ public sealed partial class MainPage : Page
 
     private async Task LoadExtensions()
     {
-        if (ViewModel == null) return;
+        if (ViewModel == null)
+        {
+            return;
+        }
 
         ViewModel.LoadingExtensions = true;
 
         var extnService = Application.Current.GetService<IExtensionService>();
         if (extnService != null)
         {
-
             var extensions = await extnService.GetInstalledExtensionsAsync(ProviderType.Commands, includeDisabledExtensions: false);
             foreach (var extension in extensions)
             {
-                if (extension == null) continue;
+                if (extension == null)
+                {
+                    continue;
+                }
+
                 await LoadActionExtensionObject(extension);
             }
         }
@@ -411,18 +457,22 @@ public sealed partial class MainPage : Page
     {
         var listVm = new ListPageViewModel(page) { Nested = true };
         InitializePage(listVm);
-        DispatcherQueue.TryEnqueue(() => {
+        DispatcherQueue.TryEnqueue(() =>
+        {
             RootFrame.Navigate(typeof(ListPage), listVm, new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromRight });
         });
     }
+
     private void GoToMarkdown(IMarkdownPage page)
     {
         var mdVm = new MarkdownPageViewModel(page) { Nested = true };
         InitializePage(mdVm);
-        DispatcherQueue.TryEnqueue(() => {
+        DispatcherQueue.TryEnqueue(() =>
+        {
             RootFrame.Navigate(typeof(MarkdownPage), mdVm, new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromRight });
         });
     }
+
     private void GoToForm(IFormPage page)
     {
         var formVm = new FormPageViewModel(page) { Nested = true };
@@ -452,48 +502,52 @@ public sealed partial class MainPage : Page
 sealed class ActionsProviderWrapper
 {
     public bool IsExtension => extensionWrapper != null;
+
     private readonly bool isValid;
+
     private ICommandProvider ActionProvider { get; }
+
     private readonly IExtensionWrapper? extensionWrapper;
     private IListItem[] _topLevelItems = [];
+
     public IListItem[] TopLevelItems => _topLevelItems;
 
-    public ActionsProviderWrapper(ICommandProvider provider) {
+    public ActionsProviderWrapper(ICommandProvider provider)
+    {
         ActionProvider = provider;
         isValid = true;
     }
+
     public ActionsProviderWrapper(IExtensionWrapper extension)
     {
         extensionWrapper = extension;
         var extensionImpl = extension.GetExtensionObject();
-        if (extensionImpl?.GetProvider(ProviderType.Commands) is not ICommandProvider provider) throw new ArgumentException("extension didn't actually implement ICommandProvider");
+        if (extensionImpl?.GetProvider(ProviderType.Commands) is not ICommandProvider provider)
+        {
+            throw new ArgumentException("extension didn't actually implement ICommandProvider");
+        }
+
         ActionProvider = provider;
         isValid = true;
     }
+
     public async Task LoadTopLevelCommands()
     {
-        if (!isValid) return;
+        if (!isValid)
+        {
+            return;
+        }
 
         var t = new Task<IListItem[]>(() => ActionProvider.TopLevelCommands());
         t.Start();
         var commands = await t.ConfigureAwait(false);
 
         // On a BG thread here
-
         if (commands != null)
         {
             _topLevelItems = commands;
         }
     }
-    // public async Task<bool> Ping()
-    // {
-    //     if (!isValid) return false;
-    //     if (extensionWrapper != null)
-    //     {
-    //         return extensionWrapper.IsRunning();
-    //     }
-    //     return false;
-    // }
 
     public void AllowSetForeground(bool allow)
     {
@@ -501,10 +555,13 @@ sealed class ActionsProviderWrapper
         {
             return;
         }
+
         var iextn = extensionWrapper?.GetExtensionObject();
         unsafe
         {
             PInvoke.CoAllowSetForegroundWindow(iextn);
         }
     }
+
+    public override bool Equals(object? obj) => obj is ActionsProviderWrapper wrapper && isValid == wrapper.isValid;
 }
