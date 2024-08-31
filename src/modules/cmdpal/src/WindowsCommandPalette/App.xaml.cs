@@ -3,12 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Common.Contracts;
+using Microsoft.CmdPal.Common.Extensions;
 using Microsoft.CmdPal.Common.Models;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.CmdPal.Common.Extensions;
-
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.CommandPalette.Services;
 
@@ -21,13 +20,13 @@ namespace DeveloperCommandPalette;
 /// </summary>
 public partial class App : Application, IApp
 {
-    private Window? window;
+    private Window? _window;
+
     public Window? AppWindow
     {
-        get => window;
+        get => _window;
         private set { }
     }
-
 
     // The .NET Generic Host provides dependency injection, configuration, logging, and other services.
     // https://docs.microsoft.com/dotnet/core/extensions/generic-host
@@ -39,7 +38,9 @@ public partial class App : Application, IApp
         get; private set;
     }
 
-    public T GetService<T>() where T : class => Host.GetService<T>();
+    public T GetService<T>()
+        where T : class
+        => Host.GetService<T>();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="App"/> class.
@@ -49,7 +50,6 @@ public partial class App : Application, IApp
     public App()
     {
         this.InitializeComponent();
-
 
         Host = Microsoft.Extensions.Hosting.Host.
             CreateDefaultBuilder()
@@ -69,11 +69,11 @@ public partial class App : Application, IApp
 
                 //// Main window: Allow access to the main window
                 //// from anywhere in the application.
-                //services.AddSingleton(_ => MainWindow);
+                // services.AddSingleton(_ => MainWindow);
 
                 //// DispatcherQueue: Allow access to the DispatcherQueue for
                 //// the main window for general purpose UI thread access.
-                //services.AddSingleton(_ => MainWindow.DispatcherQueue);
+                // services.AddSingleton(_ => MainWindow.DispatcherQueue);
 
                 // Configuration
                 services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
@@ -89,8 +89,8 @@ public partial class App : Application, IApp
     /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
-        window = new MainWindow();
-        window.Activate();
+        _window = new MainWindow();
+        _window.Activate();
     }
 
     private async void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -100,10 +100,10 @@ public partial class App : Application, IApp
 
         // We are about to crash, so signal the extensions to stop.
         await GetService<IExtensionService>().SignalStopExtensionsAsync();
+
         // Log.CloseAndFlush();
 
         // We are very likely in a bad and unrecoverable state, so ensure Dev Home crashes w/ the exception info.
         Environment.FailFast(e.Message, e.Exception);
     }
-
 }
