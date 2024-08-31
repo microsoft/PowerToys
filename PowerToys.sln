@@ -585,6 +585,7 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NewPlus.ShellExtension", "src\modules\NewPlus\NewShellExtensionContextMenu\NewShellExtensionContextMenu.vcxproj", "{8ACB33D9-C95B-47D4-8363-9731EE0930A0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "New+", "New+", "{CA716AE6-FE5C-40AC-BB8F-2C87912687AC}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToys.Interop", "src\common\interop\PowerToys.Interop.vcxproj", "{F055103B-F80B-4D0C-BF48-057C55620033}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workspaces", "Workspaces", "{A2221D7E-55E7-4BEA-90D1-4F162D670BBF}"
