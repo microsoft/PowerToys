@@ -43,19 +43,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
-            try
-            {
-                Settings = _settingsUtils.GetSettings<NewPlusSettings>(ModuleName);
-            }
-            catch (Exception e)
-            {
-                Logger.LogError($"Exception encountered while reading {ModuleName} settings.", e);
-
-                // This code path should never happen
-                Settings = new NewPlusSettings();
-                Settings.InitializeWithDefaultSettings();
-                SaveSettingsToJson();
-            }
+            Settings = LoadSettings(settingsUtils);
 
             // Initialize properties
             _hideFileExtension = Settings.HideFileExtension;
@@ -101,7 +89,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     if (_isNewPlusEnabled == true)
                     {
-                        CopyTemplateExamples();
+                        CopyTemplateExamples(_templateLocation);
                     }
                 }
             }
@@ -183,19 +171,35 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        private void CopyTemplateExamples()
+        public static NewPlusSettings LoadSettings(ISettingsUtils settingsUtils)
         {
-            if (!Directory.Exists(_templateLocation))
+            NewPlusSettings settings = null;
+
+            try
             {
-                Directory.CreateDirectory(_templateLocation);
+                settings = settingsUtils.GetSettings<NewPlusSettings>(NewPlusSettings.ModuleName);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"Exception encountered while reading {NewPlusSettings.ModuleName} settings.", e);
             }
 
-            if (Directory.GetFiles(_templateLocation).Length == 0)
+            return settings;
+        }
+
+        public static void CopyTemplateExamples(string templateLocation)
+        {
+            if (!Directory.Exists(templateLocation))
             {
-                // No files in _templateLocation directory
+                Directory.CreateDirectory(templateLocation);
+            }
+
+            if (Directory.GetFiles(templateLocation).Length == 0)
+            {
+                // No files in templateLocation directory
                 // Copy over examples files from <Program Files>\PowerToys\WinUI3Apps\Assets\NewPlus\Templates
                 var example_templates = Path.Combine(Helper.GetPowerToysInstallationWinUI3AppsAssetsFolder(), "NewPlus", "Templates");
-                Helper.CopyDirectory(example_templates, _templateLocation, true);
+                Helper.CopyDirectory(example_templates, templateLocation, true);
             }
         }
 

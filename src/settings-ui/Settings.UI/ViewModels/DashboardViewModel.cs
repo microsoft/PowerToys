@@ -125,6 +125,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private void EnabledChangedOnUI(DashboardListItem dashboardListItem)
         {
             Views.ShellPage.UpdateGeneralSettingsCallback(dashboardListItem.Tag, dashboardListItem.IsEnabled);
+
+            if (dashboardListItem.Tag == ModuleType.NewPlus && dashboardListItem.IsEnabled == true)
+            {
+                var settingsUtils = new SettingsUtils();
+                var settings = NewPlusViewModel.LoadSettings(settingsUtils);
+                NewPlusViewModel.CopyTemplateExamples(settings.TemplateLocation);
+            }
         }
 
         public void ModuleEnabledChangedOnSettingsPage()
