@@ -77,7 +77,7 @@ public:
     {
         if (is_process_running())
         {
-            bring_process_to_front();
+            sendHotkeyEvent();
         }
         else
         {
@@ -164,6 +164,12 @@ public:
             m_toggleEditorEvent = nullptr;
         }
 
+        if (m_hotkeyEvent)
+        {
+            CloseHandle(m_hotkeyEvent);
+            m_hotkeyEvent = nullptr;
+        }
+
         delete this;
     }
 
@@ -177,6 +183,12 @@ public:
         app_key = L"Workspaces";
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", "Workspaces");
         init_settings();
+
+        m_hotkeyEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::WORKSPACES_HOTKEY_EVENT);
+        if (!m_hotkeyEvent)
+        {
+            Logger::warn(L"Failed to create hotkey event. {}", get_last_error_or_default(GetLastError()));
+        }
 
         m_toggleEditorEvent = CreateDefaultEvent(CommonSharedConstants::WORKSPACES_LAUNCH_EDITOR_EVENT);
         if (!m_toggleEditorEvent)
@@ -210,23 +222,12 @@ private:
         executable_args.append(std::to_wstring(powertoys_pid));
     }
 
-    void SendCloseEvent()
+    void sendHotkeyEvent()
     {
-        auto exitEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::WORKSPACES_EXIT_EVENT);
-        if (!exitEvent)
+        Logger::trace(L"Signaled hotkey event");
+        if (!SetEvent(m_hotkeyEvent))
         {
-            Logger::warn(L"Failed to create exitEvent. {}", get_last_error_or_default(GetLastError()));
-        }
-        else
-        {
-            Logger::trace(L"Signaled exitEvent");
-            if (!SetEvent(exitEvent))
-            {
-                Logger::warn(L"Failed to signal exitEvent. {}", get_last_error_or_default(GetLastError()));
-            }
-
-            ResetEvent(exitEvent);
-            CloseHandle(exitEvent);
+            Logger::warn(L"Failed to signal hotkey event. {}", get_last_error_or_default(GetLastError()));
         }
     }
 
@@ -244,10 +245,14 @@ private:
             ResetEvent(m_toggleEditorEvent);
         }
 
+        if (m_hotkeyEvent)
+        {
+            ResetEvent(m_hotkeyEvent);
+        }
+
         if (m_hProcess)
         {
             TerminateProcess(m_hProcess, 0);
-            SendCloseEvent();
             m_hProcess = nullptr;
         }
     }
@@ -309,15 +314,15 @@ private:
     {
         Logger::trace(L"Starting Workspaces Editor");
 
-        /*unsigned long powertoys_pid = GetCurrentProcessId();
+        unsigned long powertoys_pid = GetCurrentProcessId();
         std::wstring executable_args = L"";
-        executable_args.append(std::to_wstring(powertoys_pid));*/
+        executable_args.append(std::to_wstring(powertoys_pid));
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = SEE_MASK_NOCLOSEPROCESS;
         sei.lpFile = L"PowerToys.WorkspacesEditor.exe";
         sei.nShow = SW_SHOWNORMAL;
-        //sei.lpParameters = executable_args.data();
+        sei.lpParameters = executable_args.data();
         if (ShellExecuteExW(&sei))
         {
             Logger::trace("Successfully started the Workspaces Editor");
@@ -328,24 +333,6 @@ private:
         }
 
         m_hProcess = sei.hProcess;
-    }
-
-    void bring_process_to_front()
-    {
-        auto enum_windows = [](HWND hwnd, LPARAM param) -> BOOL {
-            HANDLE process_handle = reinterpret_cast<HANDLE>(param);
-            DWORD window_process_id = 0;
-
-            GetWindowThreadProcessId(hwnd, &window_process_id);
-            if (GetProcessId(process_handle) == window_process_id)
-            {
-                SetForegroundWindow(hwnd);
-                return FALSE;
-            }
-            return TRUE;
-        };
-
-        EnumWindows(enum_windows, (LPARAM)m_hProcess);
     }
 
     bool is_process_running() const
@@ -363,10 +350,13 @@ private:
     // Handle to event used to invoke Workspaces Editor
     HANDLE m_toggleEditorEvent;
 
+    // Handle to event used when hotkey is invoked
+    HANDLE m_hotkeyEvent;
+
     // Hotkey to invoke the module
     HotkeyEx m_hotkey{
-        .modifiersMask = MOD_SHIFT | MOD_WIN,
-        .vkCode = 0x4F, // O key;
+        .modifiersMask = MOD_CONTROL | MOD_WIN,
+        .vkCode = 0xC0, // VK_OEM_3 key; usually `~
     };
 };
 

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading;
 using System.Windows;
 using System.Windows.Interop;
 using ManagedCommon;
@@ -14,9 +15,11 @@ namespace WorkspacesEditor
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, IDisposable
     {
         public MainViewModel MainViewModel { get; set; }
+
+        private CancellationTokenSource cancellationToken = new CancellationTokenSource();
 
         private static MainPage _mainPage;
 
@@ -41,10 +44,36 @@ namespace WorkspacesEditor
 
             MaxWidth = SystemParameters.PrimaryScreenWidth;
             MaxHeight = SystemParameters.PrimaryScreenHeight;
+
+            Common.UI.NativeEventWaiter.WaitForEventLoop(
+                PowerToys.Interop.Constants.WorkspacesHotkeyEvent(),
+                () =>
+                {
+                    if (ApplicationIsInFocus())
+                    {
+                        Environment.Exit(0);
+                    }
+                    else
+                    {
+                        if (WindowState == WindowState.Minimized)
+                        {
+                            WindowState = WindowState.Normal;
+                        }
+
+                        // Get the window handle of the Workspaces Editor window
+                        IntPtr handle = new WindowInteropHelper(this).Handle;
+                        WindowHelpers.BringToForeground(handle);
+
+                        InvalidateVisual();
+                    }
+                },
+                Application.Current.Dispatcher,
+                cancellationToken.Token);
         }
 
         private void OnClosing(object sender, EventArgs e)
         {
+            cancellationToken.Dispose();
             App.Current.Shutdown();
         }
 
@@ -66,6 +95,26 @@ namespace WorkspacesEditor
         public void SwitchToMainView()
         {
             ContentFrame.GoBack();
+        }
+
+        public static bool ApplicationIsInFocus()
+        {
+            var activatedHandle = NativeMethods.GetForegroundWindow();
+            if (activatedHandle == IntPtr.Zero)
+            {
+                return false;       // No window is currently activated
+            }
+
+            var procId = Environment.ProcessId;
+            int activeProcId;
+            _ = NativeMethods.GetWindowThreadProcessId(activatedHandle, out activeProcId);
+
+            return activeProcId == procId;
+        }
+
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
         }
     }
 }
