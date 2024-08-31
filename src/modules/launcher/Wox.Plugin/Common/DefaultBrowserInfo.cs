@@ -132,7 +132,7 @@ namespace Wox.Plugin.Common
                     const string ArcExecutableName = "Arc.exe";
                     if (commandPattern.Contains(ArcExecutableName))
                     {
-                        commandPattern = "rundll32 url.dll,FileProtocolHandler"
+                        commandPattern = "rundll32 url.dll,FileProtocolHandler";
                     }
 
                     if (commandPattern.StartsWith('\"'))
