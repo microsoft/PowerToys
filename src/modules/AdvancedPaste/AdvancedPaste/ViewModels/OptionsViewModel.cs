@@ -266,7 +266,7 @@ namespace AdvancedPaste.ViewModels
                 }
 
                 // Sleeping 250 ms that paste command can be completely executed before resetting the clipboard.
-                // Otherwise we reset the clipboard to early and past the original content. Or the clipboard is still used while resetting and restting fails.
+                // Otherwise we reset the clipboard to early and past the original content. Or the clipboard is still used while resetting and resetting fails.
                 Thread.Sleep(250);
 
                 // Resetting clipboard content
@@ -295,7 +295,7 @@ namespace AdvancedPaste.ViewModels
                 }
 
                 // Sleeping 250 ms that paste command can be completely executed before resetting the clipboard.
-                // Otherwise we reset the clipboard to early and past the original content. Or the clipboard is still used while resetting and restting fails.
+                // Otherwise we reset the clipboard to early and past the original content. Or the clipboard is still used while resetting and resetting fails.
                 Thread.Sleep(250);
 
                 // Resetting clipboard content

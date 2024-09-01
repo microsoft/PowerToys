@@ -40,7 +40,7 @@ namespace AdvancedPaste.Helpers
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError("Falied to get clipboard content: ", ex.GetBaseException());
+                    Logger.LogError("Failed to get clipboard content: ", ex.GetBaseException());
                 }
 
                 // TODO(stefan): For some reason Flush() fails from time to time when directly activated via hotkey.
