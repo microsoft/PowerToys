@@ -25,7 +25,7 @@ namespace AdvancedPaste.Helpers
                 DataPackage output = new();
                 output.SetText(text);
                 bool success = Clipboard.SetContentWithOptions(output, null);
-                Logger.LogInfo("Setting Clipboard data was success? : " + success);
+                Logger.LogDebug("Setting Clipboard data was success?: " + success);
 
                 // Wait 50 ms in a loop until setting the clipboard content has really finished.
                 while (!Clipboard.GetContent().GetTextAsync().GetAwaiter().GetResult().Contains(text))
@@ -36,7 +36,7 @@ namespace AdvancedPaste.Helpers
                 try
                 {
                     string clipContent = Clipboard.GetContent().GetTextAsync().GetAwaiter().GetResult();
-                    Logger.LogInfo("Clipboard content for current process:" + clipContent);
+                    Logger.LogDebug("Clipboard content for current process: " + clipContent);
                 }
                 catch (Exception ex)
                 {
