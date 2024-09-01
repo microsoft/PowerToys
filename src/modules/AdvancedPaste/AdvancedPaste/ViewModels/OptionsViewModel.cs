@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
@@ -253,11 +254,7 @@ namespace AdvancedPaste.ViewModels
             {
                 Logger.LogTrace();
 
-                string tempText = Task.Run(async () =>
-                {
-                    string plainText = await ClipboardData.GetTextAsync() as string;
-                    return plainText;
-                }).Result;
+                string tempText = ClipboardData.GetTextAsync().GetAwaiter().GetResult();
 
                 string outputString = MarkdownHelper.PasteAsPlainTextFromClipboard(ClipboardData);
 
@@ -268,6 +265,11 @@ namespace AdvancedPaste.ViewModels
                     ClipboardHelper.SendPasteKeyCombination();
                 }
 
+                // Sleeping 250 ms that paste command can be completely executed before resetting the clipboard.
+                // Otherwise we reset the clipboard to early and past the original content. Or the clipboard is still used while resetting and restting fails.
+                Thread.Sleep(250);
+
+                // Resetting clipboard content
                 SetClipboardContentAndHideWindow(tempText);
             }
             catch
@@ -281,11 +283,7 @@ namespace AdvancedPaste.ViewModels
             {
                 Logger.LogTrace();
 
-                string tempText = Task.Run(async () =>
-                {
-                    string plainText = await ClipboardData.GetTextAsync() as string;
-                    return plainText;
-                }).Result;
+                string tempText = ClipboardData.GetTextAsync().GetAwaiter().GetResult();
 
                 string outputString = MarkdownHelper.ToMarkdown(ClipboardData);
 
@@ -296,6 +294,11 @@ namespace AdvancedPaste.ViewModels
                     ClipboardHelper.SendPasteKeyCombination();
                 }
 
+                // Sleeping 250 ms that paste command can be completely executed before resetting the clipboard.
+                // Otherwise we reset the clipboard to early and past the original content. Or the clipboard is still used while resetting and restting fails.
+                Thread.Sleep(250);
+
+                // Resetting clipboard content
                 SetClipboardContentAndHideWindow(tempText);
             }
             catch
@@ -308,23 +311,28 @@ namespace AdvancedPaste.ViewModels
             try
             {
                 Logger.LogTrace();
-
-                string tempText = Task.Run(async () =>
-                {
-                    string plainText = await ClipboardData.GetTextAsync() as string;
-                    return plainText;
-                }).Result;
+                string tempText = ClipboardData.GetTextAsync().GetAwaiter().GetResult();
+                Logger.LogInfo("Temp text: " + tempText);
 
                 string jsonText = JsonHelper.ToJsonFromXmlOrCsv(ClipboardData);
+                Logger.LogInfo("JSON text: " + jsonText);
 
                 SetClipboardContentAndHideWindow(jsonText);
+                Logger.LogInfo("Copied JSON text to the clipboard");
 
                 if (pasteAlways || _userSettings.SendPasteKeyCombination)
                 {
+                    Logger.LogInfo("Clipboard data: " + ClipboardData.GetTextAsync().GetAwaiter().GetResult());
+
+                    Logger.LogInfo("Inside paste if");
                     ClipboardHelper.SendPasteKeyCombination();
+                    Logger.LogInfo("End paste if");
                 }
 
+                Thread.Sleep(250);
                 SetClipboardContentAndHideWindow(tempText);
+                string temp = ClipboardData.GetTextAsync().GetAwaiter().GetResult();
+                Logger.LogInfo("Text in clipboard: " + temp);
             }
             catch
             {

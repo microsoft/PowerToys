@@ -6,7 +6,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
-using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage.Streams;
 using Windows.System;
@@ -21,9 +20,28 @@ namespace AdvancedPaste.Helpers
 
             if (!string.IsNullOrEmpty(text))
             {
+                Logger.LogDebug("Text to set to clipboard: " + text);
+
                 DataPackage output = new();
                 output.SetText(text);
-                Clipboard.SetContentWithOptions(output, null);
+                bool success = Clipboard.SetContentWithOptions(output, null);
+                Logger.LogInfo("Setting Clipboard data was success? : " + success);
+
+                // Wait 50 ms in a loop until setting the clipboard content has really finished.
+                while (!Clipboard.GetContent().GetTextAsync().GetAwaiter().GetResult().Contains(text))
+                {
+                    Thread.Sleep(50);
+                }
+
+                try
+                {
+                    string clipContent = Clipboard.GetContent().GetTextAsync().GetAwaiter().GetResult();
+                    Logger.LogInfo("Clipboard content for current process:" + clipContent);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Falied to get clipboard content: ", ex.GetBaseException());
+                }
 
                 // TODO(stefan): For some reason Flush() fails from time to time when directly activated via hotkey.
                 // Calling inside a loop makes it work.
@@ -39,14 +57,24 @@ namespace AdvancedPaste.Helpers
                     {
                         Task.Run(() =>
                         {
-                            Clipboard.Flush();
+                            try
+                            {
+                                Clipboard.Flush();
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.LogError("Clipboard.Flush() failed. Real reason:", ex.GetBaseException());
+                                throw;
+                            }
                         }).Wait();
 
                         flushed = true;
+                        Logger.LogDebug("Clipboard flushed.");
                     }
                     catch (Exception ex)
                     {
                         Logger.LogError("Clipboard.Flush() failed", ex);
+                        Thread.Sleep(50);
                     }
                 }
             }
