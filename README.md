@@ -190,34 +190,34 @@ In this release, we focused on stability and improvements.
 
 ### Development
 
-- Disabled FancyZone UI tests, to unblock PRs. We plan to bring them back in the future. (This was a hotfix for 0.82)
-- Fixed an issue where flakiness in CI was causing the installer custom actions DLL from being signed. (This was a hotfix for 0.82)
-- Upgraded the Microsoft.Windows.Compatibility dependency to 8.0.7.
-- Upgraded the System.Text.Json dependency to 8.0.4.
-- Upgraded the Microsoft.Data.Sqlite dependency to 8.0.7.
-- Upgraded the MSBuildCache dependency to 0.1.283-preview. Thanks [@dfederm](https://github.com/dfederm)!
-- Removed an unneeded /Zm compiler flag from Keyboard Manager Editor common build flags.
-- Fixed the winget publish action to handle upper case V in the tag name. Thanks [@mdanish-kh](https://github.com/mdanish-kh)!
-- Removed wildcard items from vcxproj files. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Removed similar issues bot GitHub actions. Thanks [@craigloewen-msft](https://github.com/craigloewen-msft)!
-- Fixed CODEOWNERS to better protect changes in some files.
-- Switched machines being used in CI and pointed status badges in README to the new machines.
-- Fixed NU1503 build warnings when building PowerToys. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Use the MSTest meta dependency for running the tests instead of the individual testing packages. Thanks [@stan-sz](https://github.com/stan-sz)!
-- Added missing CppWinRT references.
+ - Disabled FancyZone UI tests, to unblock PRs. We plan to bring them back in the future. (This was a hotfix for 0.82)
+ - Fixed an issue where flakiness in CI was causing the installer custom actions DLL from being signed. (This was a hotfix for 0.82)
+ - Upgraded the Microsoft.Windows.Compatibility dependency to 8.0.7.
+ - Upgraded the System.Text.Json dependency to 8.0.4.
+ - Upgraded the Microsoft.Data.Sqlite dependency to 8.0.7.
+ - Upgraded the MSBuildCache dependency to 0.1.283-preview. Thanks [@dfederm](https://github.com/dfederm)!
+ - Removed an unneeded /Zm compiler flag from Keyboard Manager Editor common build flags.
+ - Fixed the winget publish action to handle upper case V in the tag name. Thanks [@mdanish-kh](https://github.com/mdanish-kh)!
+ - Removed wildcard items from vcxproj files. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Removed similar issues bot GitHub actions. Thanks [@craigloewen-msft](https://github.com/craigloewen-msft)!
+ - Fixed CODEOWNERS to better protect changes in some files.
+ - Switched machines being used in CI and pointed status badges in README to the new machines.
+ - Fixed NU1503 build warnings when building PowerToys. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Use the MSTest meta dependency for running the tests instead of the individual testing packages. Thanks [@stan-sz](https://github.com/stan-sz)!
+ - Added missing CppWinRT references.
 
 #### What is being planned for version 0.84
 
 For [v0.84][github-next-release-work], we'll work on the items below:
 
-- Stability/bug fixes
-- New utility: Dev Projects
-- Language selection
-- New module: File Actions Menu
+ - Stability/bug fixes
+ - New utility: Dev Projects
+ - Language selection
+ - New module: File Actions Menu
 
 ## PowerToys Community
 
-The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is vital. PowerToys wouldn’t be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take the time to recognize your work. Month by month, you help make PowerToys a better piece of software.
+The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is vital. PowerToys wouldn’t be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take the time to recognize your work.  Month by month, you help make PowerToys a better piece of software.
 
 ## Code of Conduct
 
