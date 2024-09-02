@@ -73,4 +73,34 @@ namespace JsonUtils
             return Error(WorkspacesFileError::FileReadingError);
         }
     }
+
+    bool Write(const std::wstring& fileName, const std::vector<WorkspacesData::WorkspacesProject>& projects)
+    {
+        try
+        {
+            json::to_file(fileName, WorkspacesData::WorkspacesListJSON::ToJson(projects));
+        }
+        catch (std::exception ex)
+        {
+            Logger::error("Error writing workspaces file. {}", ex.what());
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Write(const std::wstring& fileName, const WorkspacesData::WorkspacesProject& project)
+    {
+        try
+        {
+            json::to_file(fileName, WorkspacesData::WorkspacesProjectJSON::ToJson(project));
+        }
+        catch (std::exception ex)
+        {
+            Logger::error("Error writing workspaces file. {}", ex.what());
+            return false;
+        }
+
+        return true;
+    }
 }
