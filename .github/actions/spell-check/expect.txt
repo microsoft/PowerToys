@@ -56,14 +56,12 @@ APPBARDATA
 appdata
 APPEXECLINK
 Appium
-applayout
 Applicationcan
 APPLICATIONFRAMEHOST
 appmanifest
 APPNAME
 appref
 appsettings
-appsfolder
 appwindow
 appwiz
 APSTUDIO
@@ -1560,9 +1558,7 @@ SYSKEYUP
 SYSLIB
 SYSMENU
 SYSTEMAPPS
-systemsettings
 SYSTEMTIME
-SYSTEMWOW
 tapp
 TApplication
 TApplied
@@ -1674,11 +1670,9 @@ urlmon
 Usb
 USEDEFAULT
 USEFILEATTRIBUTES
-USEPOSITION
 USERDATA
 Userenv
 USESHOWWINDOW
-USESIZE
 USESTDHANDLES
 USRDLL
 UType
@@ -1766,6 +1760,7 @@ websites
 wekyb
 Wevtapi
 wgpocpl
+whitesource
 WIC
 wil
 winapi
