@@ -1,4 +1,3 @@
-
 # Microsoft PowerToys
 
 ![Hero image for Microsoft PowerToys](doc/images/overview/PT_hero_image.png)
@@ -214,7 +213,7 @@ For [v0.84][github-next-release-work], we'll work on the items below:
 
 ## PowerToys Community
 
-The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is vitalincredibly important. PowerToys wouldn’t be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take the time to recognize your work. Month by month, you directly help make PowerToys a better piece of software.
+The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is incredibly important. PowerToys wouldn’t be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take the time to recognize your work. Month by month, you directly help make PowerToys a better piece of software.
 
 ## Code of Conduct
 
