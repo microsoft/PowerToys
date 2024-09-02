@@ -1,4 +1,4 @@
-<Window
+﻿<Window
     x:Class="WorkspacesEditor.SnapshotWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -9,7 +9,6 @@
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="{x:Static props:Resources.SnapshotWindowTitle}"
     Width="350"
-    SizeToContent="Height"
     ui:TitleBar.Background="{DynamicResource PrimaryBackgroundBrush}"
     ui:TitleBar.InactiveBackground="{DynamicResource TertiaryBackgroundBrush}"
     ui:WindowHelper.UseModernWindowStyle="True"
@@ -18,6 +17,7 @@
     BorderThickness="5"
     Closing="Window_Closing"
     ResizeMode="NoResize"
+    SizeToContent="Height"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
     <Grid Margin="5" Background="Transparent">
@@ -34,7 +34,7 @@
             Margin="5,5,5,15"
             Foreground="{DynamicResource PrimaryForegroundBrush}"
             Text="{x:Static props:Resources.SnapshotDescription}"
-            TextWrapping="Wrap"/>
+            TextWrapping="Wrap" />
         <Button
             x:Name="CancelButton"
             Grid.Row="1"
