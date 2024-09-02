@@ -103,6 +103,7 @@ namespace WorkspacesEditor
             }
 
             Dispose();
+            Environment.Exit(0);
         }
 
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs args)
