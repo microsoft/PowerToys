@@ -104,7 +104,7 @@
                             </StackPanel>
                             <controls:ResetIsEnabled Grid.Column="4">
                                 <Button
-                                    Width="120"
+                                    Width="Auto"
                                     Margin="10,5"
                                     Padding="24,6"
                                     AutomationProperties.Name="{x:Static props:Resources.Delete}"
