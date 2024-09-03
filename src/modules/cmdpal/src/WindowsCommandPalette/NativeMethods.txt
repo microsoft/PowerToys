@@ -15,3 +15,5 @@ MonitorFromWindow
 GetMonitorInfo
 SHCreateStreamOnFileEx
 CoAllowSetForegroundWindow
+SHCreateStreamOnFileEx
+SHLoadIndirectString

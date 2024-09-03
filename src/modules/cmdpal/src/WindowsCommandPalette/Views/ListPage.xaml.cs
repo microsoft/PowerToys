@@ -5,6 +5,8 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Runtime.InteropServices;
+using DeveloperCommandPalette;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
@@ -13,11 +15,10 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
-using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 using Microsoft.Windows.CommandPalette.Extensions;
-using System.Runtime.InteropServices;
+using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 
-namespace DeveloperCommandPalette;
+namespace WindowsCommandPalette.Views;
 
 public sealed class StringNotEmptyToVisibilityConverter : IValueConverter
 {

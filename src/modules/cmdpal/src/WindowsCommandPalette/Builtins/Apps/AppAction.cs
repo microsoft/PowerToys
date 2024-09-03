@@ -2,12 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using System.Threading.Tasks;
 using AllApps.Programs;
-using System.Diagnostics;
 using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 
-namespace AllApps;
+namespace WindowsCommandPalette.BuiltinCommands.AllApps;
 
 internal sealed class AppAction : InvokableCommand
 {

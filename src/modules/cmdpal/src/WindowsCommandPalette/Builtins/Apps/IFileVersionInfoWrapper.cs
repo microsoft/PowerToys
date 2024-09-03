@@ -4,7 +4,7 @@
 
 using System.Diagnostics;
 
-namespace AllApps;
+namespace WindowsCommandPalette.BuiltinCommands.AllApps;
 
 public interface IFileVersionInfoWrapper
 {

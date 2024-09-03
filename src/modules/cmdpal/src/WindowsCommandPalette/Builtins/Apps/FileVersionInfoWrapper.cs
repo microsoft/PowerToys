@@ -5,7 +5,7 @@
 using System.Diagnostics;
 using System.IO.Abstractions;
 
-namespace AllApps;
+namespace WindowsCommandPalette.BuiltinCommands.AllApps;
 
 public class FileVersionInfoWrapper : IFileVersionInfoWrapper
 {

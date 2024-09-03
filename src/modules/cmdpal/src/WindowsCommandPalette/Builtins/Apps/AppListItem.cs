@@ -4,7 +4,7 @@
 
 using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 
-namespace AllApps;
+namespace WindowsCommandPalette.BuiltinCommands.AllApps;
 
 internal sealed class AppListItem : ListItem
 {

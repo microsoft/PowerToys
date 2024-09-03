@@ -8,6 +8,7 @@ using System.ComponentModel;
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
 using AdaptiveCards.Templating;
+using DeveloperCommandPalette;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -17,7 +18,7 @@ using Windows.Foundation;
 using Windows.System;
 using Windows.UI.ViewManagement;
 
-namespace DeveloperCommandPalette;
+namespace WindowsCommandPalette.Views;
 
 public sealed class FormViewModel : System.ComponentModel.INotifyPropertyChanged
 {

@@ -2,15 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Security;
 // using Microsoft.Plugin.Program.Logger;
 // using Microsoft.Plugin.Program.Utils;
 using Microsoft.Win32;
+using WindowsCommandPalette.BuiltinCommands.AllApps;
 // using Wox.Plugin;
 // using Wox.Plugin.Logger;
 // using DirectoryWrapper = Wox.Infrastructure.FileSystemHelper.DirectoryWrapper;

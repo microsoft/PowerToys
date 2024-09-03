@@ -2,11 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 
-namespace AllApps;
+namespace WindowsCommandPalette.BuiltinCommands.AllApps;
 
 // NOTE this is pretty close to what we'd put in the SDK
 internal sealed class OpenPathAction(string target) : InvokableCommand

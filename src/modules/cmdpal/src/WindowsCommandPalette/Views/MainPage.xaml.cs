@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using CmdPal.Models;
+using DeveloperCommandPalette;
 using Microsoft.CmdPal.Common.Extensions;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.UI.Xaml;
@@ -17,12 +18,14 @@ using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 using Windows.Foundation;
 using Windows.Win32;
 using WindowsCommandPalette.BuiltinCommands;
+using WindowsCommandPalette.BuiltinCommands.AllApps;
+using WindowsCommandPalette.Builtins;
 
-namespace DeveloperCommandPalette;
+namespace WindowsCommandPalette.Views;
 
 public sealed class MainViewModel
 {
-    internal readonly AllApps.AllAppsPage apps = new();
+    internal readonly AllAppsPage apps = new();
     internal readonly QuitActionProvider quitActionProvider = new();
     internal readonly ReloadExtensionsActionProvider reloadActionProvider = new();
 
@@ -47,7 +50,7 @@ public sealed class MainViewModel
     {
         _builtInCommands.Add(new Run.Bookmarks.BookmarksActionProvider());
         _builtInCommands.Add(new Calculator.CalculatorActionProvider());
-        _builtInCommands.Add(new Run.Settings.SettingsActionProvider());
+        _builtInCommands.Add(new SettingsActionProvider());
         _builtInCommands.Add(quitActionProvider);
         _builtInCommands.Add(reloadActionProvider);
 
@@ -56,7 +59,7 @@ public sealed class MainViewModel
         // On a background thread, warm up the app cache since we want it more often than not
         new Task(() =>
         {
-            var _ = AllApps.AppCache.Instance.Value;
+            var _ = AppCache.Instance.Value;
             LoadedApps = true;
             AppsReady?.Invoke(this, null);
         }).Start();

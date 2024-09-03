@@ -4,9 +4,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Microsoft.Terminal.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -18,9 +21,6 @@ using Microsoft.Windows.CommandPalette.Extensions;
 using Windows.ApplicationModel.AppExtensions;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using System.Collections.ObjectModel;
-using Microsoft.Terminal.UI;
-using System.ComponentModel;
 using Windows.UI;
 
 namespace DeveloperCommandPalette;

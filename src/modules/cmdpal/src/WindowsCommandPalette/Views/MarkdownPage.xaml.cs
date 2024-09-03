@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
+using DeveloperCommandPalette;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -11,7 +12,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.CommandPalette.Extensions;
 
-namespace DeveloperCommandPalette;
+namespace WindowsCommandPalette.Views;
 
 public sealed class MarkdownPageViewModel : PageViewModel
 {

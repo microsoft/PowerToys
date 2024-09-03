@@ -2,17 +2,16 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Windows.Foundation;
-using Microsoft.Windows.CommandPalette.Extensions;
-using Windows.System;
-using System.Text.RegularExpressions;
-using Microsoft.Windows.CommandPalette.Extensions.Helpers;
-
-using System.Text.Json.Nodes;
-using System.Text.Json;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using Microsoft.Bot.AdaptiveExpressions.Core;
+using Microsoft.Windows.CommandPalette.Extensions;
+using Microsoft.Windows.CommandPalette.Extensions.Helpers;
+using Windows.Foundation;
+using Windows.System;
 
 namespace Run.Bookmarks;
 

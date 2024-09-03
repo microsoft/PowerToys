@@ -10,6 +10,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.CommandPalette.Extensions;
 using Microsoft.Windows.CommandPalette.Extensions.Helpers;
+using WindowsCommandPalette.Views;
 
 namespace DeveloperCommandPalette;
 

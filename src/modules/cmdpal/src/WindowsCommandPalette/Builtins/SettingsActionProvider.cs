@@ -2,17 +2,17 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.Windows.CommandPalette.Extensions;
-using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 using System.Text.Json.Nodes;
-using Microsoft.UI.Xaml;
 using Microsoft.CmdPal.Common.Contracts;
 using Microsoft.CmdPal.Common.Extensions;
+using Microsoft.UI.Xaml;
+using Microsoft.Windows.CommandPalette.Extensions;
+using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace Run.Settings;
+namespace WindowsCommandPalette.Builtins;
 
 internal sealed class SettingsPage : FormPage
 {
@@ -22,18 +22,18 @@ internal sealed class SettingsPage : FormPage
 
     public SettingsPage()
     {
-        this.Icon = new("\uE713");
-        this.Name = "Settings";
+        Icon = new("\uE713");
+        Name = "Settings";
     }
 }
 
-internal sealed class SettingsForm: Form
+internal sealed class SettingsForm : Form
 {
     public SettingsForm()
     {
     }
 
-        public override string TemplateJson()
+    public override string TemplateJson()
     {
         var json = $$"""
 {
@@ -105,7 +105,8 @@ internal sealed class SettingsForm: Form
     public override ActionResult SubmitForm(string payload)
     {
         var formInput = JsonNode.Parse(payload)?.AsObject();
-        if (formInput == null) {
+        if (formInput == null)
+        {
             return ActionResult.GoHome();
         }
         Application.Current.GetService<ILocalSettingsService>().SaveSettingAsync("GlobalHotkey", formInput["hotkey"]?.ToString() ?? string.Empty);
@@ -133,7 +134,7 @@ public class SettingsActionProvider : ICommandProvider
 
     public IListItem[] TopLevelCommands()
     {
-        return [ new ListItem(settingsPage) { Subtitle = "CmdPal settings"} ];
+        return [new ListItem(settingsPage) { Subtitle = "CmdPal settings" }];
     }
 }
 

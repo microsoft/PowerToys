@@ -52,6 +52,7 @@
     <PackageReference Include="System.Net.Http" />
     <PackageReference Include="System.Private.Uri" />
     <PackageReference Include="System.Text.RegularExpressions" />
+    <PackageReference Include="System.IO.Abstractions" />
 
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="System.Text.Json" />
@@ -68,8 +69,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\extensionsdk\Microsoft.Windows.CommandPalette.Extensions.Helpers\Microsoft.CmdPal.Extensions.Helpers.csproj" />
-    <ProjectReference Include="..\Plugins\AllApps\AllApps.csproj" />
-    <ProjectReference Include="..\Plugins\Calculator\Calculator.csproj" />
     <ProjectReference Include="..\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj" />
     <ProjectReference Include="..\Microsoft.Terminal.UI\Microsoft.Terminal.UI.vcxproj">
       <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
@@ -98,6 +97,9 @@
      <Page Update="DetailsControl.xaml">
        <Generator>MSBuild:Compile</Generator>
      </Page>
+   </ItemGroup>
+   <ItemGroup>
+     <Folder Include="Views\" />
    </ItemGroup>
    <Target Name="CopyAdaptiveCardsToTargetDir" BeforeTargets="BeforeBuild">
      <Message text="PkgAdaptiveCards_ObjectModel_WinUI3 = '$(PkgAdaptiveCards_ObjectModel_WinUI3)'" Importance="high" />

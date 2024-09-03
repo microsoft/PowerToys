@@ -9,7 +9,7 @@ using System.Text;
 //using Accessibility;
 //using Wox.Plugin.Logger;
 
-namespace AllApps;
+namespace WindowsCommandPalette.BuiltinCommands.AllApps;
 
 public class ShellLinkHelper : IShellLinkHelper
 {

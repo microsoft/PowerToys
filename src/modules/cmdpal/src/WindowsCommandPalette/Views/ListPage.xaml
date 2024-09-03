@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Page
-    x:Class="DeveloperCommandPalette.ListPage"
+    x:Class="WindowsCommandPalette.Views.ListPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:DeveloperCommandPalette"
+    xmlns:devpal="using:DeveloperCommandPalette"
+    xmlns:local="using:WindowsCommandPalette.Views"
     xmlns:rsdk="using:Microsoft.Windows.CommandPalette.Extensions"
     xmlns:mtu="using:Microsoft.Terminal.UI"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -20,7 +21,7 @@
             <StackLayout x:Name="HorizontalStackLayout" Orientation="Horizontal" Spacing="8"/>
 
 
-            <DataTemplate x:Key="TagTemplate" x:DataType="local:TagViewModel">
+            <DataTemplate x:Key="TagTemplate" x:DataType="devpal:TagViewModel">
                 <Border BorderBrush="{x:Bind BorderBrush, Mode=OneWay}"
                         BorderThickness="1"
                         CornerRadius="4"
@@ -39,7 +40,7 @@
             </DataTemplate>
 
             <!--Template for items in the main list view -->
-            <DataTemplate x:Key="ListItemTemplate" x:DataType="local:ListItemViewModel">
+            <DataTemplate x:Key="ListItemTemplate" x:DataType="devpal:ListItemViewModel">
                 <ListViewItem KeyDown="ListItem_KeyDown"
                               Tapped="ListItem_Tapped"
                               MinHeight="32"
@@ -79,7 +80,7 @@
             </DataTemplate>
 
             <!--Template for actions in the mode actions dropdown button -->
-            <DataTemplate x:Key="ContextMenuViewModelTemplate" x:DataType="local:ContextItemViewModel">
+            <DataTemplate x:Key="ContextMenuViewModelTemplate" x:DataType="devpal:ContextItemViewModel">
                 <ListViewItem KeyDown="ActionListViewItem_KeyDown" Tapped="ActionListViewItem_Tapped">
                     <Grid>
                         <Grid.ColumnDefinitions>
