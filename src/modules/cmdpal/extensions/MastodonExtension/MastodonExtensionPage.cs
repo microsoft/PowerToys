@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -6,15 +6,15 @@ using System;
 using Microsoft.Windows.CommandPalette.Extensions;
 using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 
-namespace TemplateExtension;
+namespace MastodonExtension;
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]
-internal sealed class TemplateExtensionPage : ListPage
+internal sealed class MastodonExtensionPage : ListPage
 {
-    public TemplateExtensionPage()
+    public MastodonExtensionPage()
     {
-        Icon = new(string.Empty);
-        Name = "TemplateDisplayName";
+        Icon = new("https://mastodon.social/packs/media/icons/android-chrome-36x36-4c61fdb42936428af85afdbf8c6a45a8.png");
+        Name = "Mastodon extension for cmdpal";
     }
 
     public override ISection[] GetItems()
@@ -31,14 +31,14 @@ internal sealed class TemplateExtensionPage : ListPage
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]
-public class TemplateExtensionActionsProvider : ICommandProvider
+public class MastodonExtensionActionsProvider : ICommandProvider
 {
-    public string DisplayName => $"TemplateDisplayName Commands";
+    public string DisplayName => $"Mastodon extension for cmdpal Commands";
 
     public IconDataType Icon => new(string.Empty);
 
     private readonly IListItem[] _actions = [
-        new ListItem(new TemplateExtensionPage()),
+        new ListItem(new MastodonExtensionPage()),
     ];
 
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize

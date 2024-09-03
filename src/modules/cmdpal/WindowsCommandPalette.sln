@@ -28,6 +28,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Prototype", "Prototype", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TemplateExtension", "extensions\TemplateExtension\TemplateExtension.csproj", "{EB13FDBD-7DD5-4E7E-8BEB-727B3C9331CB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MastodonExtension", "extensions\MastodonExtension\MastodonExtension.csproj", "{65E22130-6A8F-4AB7-80EC-FF75475DE821}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -128,6 +130,14 @@ Global
 		{EB13FDBD-7DD5-4E7E-8BEB-727B3C9331CB}.Release|x64.ActiveCfg = Release|x64
 		{EB13FDBD-7DD5-4E7E-8BEB-727B3C9331CB}.Release|x64.Build.0 = Release|x64
 		{EB13FDBD-7DD5-4E7E-8BEB-727B3C9331CB}.Release|x64.Deploy.0 = Release|x64
+		{65E22130-6A8F-4AB7-80EC-FF75475DE821}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{65E22130-6A8F-4AB7-80EC-FF75475DE821}.Debug|ARM64.Build.0 = Debug|ARM64
+		{65E22130-6A8F-4AB7-80EC-FF75475DE821}.Debug|x64.ActiveCfg = Debug|x64
+		{65E22130-6A8F-4AB7-80EC-FF75475DE821}.Debug|x64.Build.0 = Debug|x64
+		{65E22130-6A8F-4AB7-80EC-FF75475DE821}.Release|ARM64.ActiveCfg = Release|ARM64
+		{65E22130-6A8F-4AB7-80EC-FF75475DE821}.Release|ARM64.Build.0 = Release|ARM64
+		{65E22130-6A8F-4AB7-80EC-FF75475DE821}.Release|x64.ActiveCfg = Release|x64
+		{65E22130-6A8F-4AB7-80EC-FF75475DE821}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -143,6 +153,7 @@ Global
 		{D08AE85F-B6FE-4E1C-8402-DB396B70D6DA} = {B7FF739F-7716-4FC3-B622-705486187B87}
 		{9456257A-3292-4A8D-AF63-9830EABE7ED2} = {B7FF739F-7716-4FC3-B622-705486187B87}
 		{EB13FDBD-7DD5-4E7E-8BEB-727B3C9331CB} = {B7FF739F-7716-4FC3-B622-705486187B87}
+		{65E22130-6A8F-4AB7-80EC-FF75475DE821} = {B7FF739F-7716-4FC3-B622-705486187B87}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BC94BFC2-A741-4978-B6A4-9E01B7660E6B}
