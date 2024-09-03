@@ -55,6 +55,7 @@ sealed class  Program
         }
         return isRedirect;
     }
+
     private static void OnActivated(object? sender, AppActivationArguments args)
     {
         ExtendedActivationKind kind = args.Kind;

@@ -6,7 +6,7 @@ using Microsoft.Windows.CommandPalette.Extensions;
 using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 using Windows.Foundation;
 
-namespace DeveloperCommandPalette;
+namespace WindowsCommandPalette.BuiltinCommands;
 
 public class QuitAction : InvokableCommand, IFallbackHandler
 {
@@ -23,21 +23,28 @@ public class QuitAction : InvokableCommand, IFallbackHandler
         return ActionResult.KeepOpen();
     }
 
-    public void UpdateQuery(string query) {
+    public void UpdateQuery(string query)
+    {
         if (query.StartsWith('q'))
         {
-            this.Name = "Quit";
+            Name = "Quit";
         }
-        else this.Name = "";
-
+        else
+        {
+            Name = string.Empty;
+        }
     }
 }
+
 public class QuitActionProvider : ICommandProvider
 {
-    public string DisplayName => "";
-    public IconDataType Icon => new("");
+    public string DisplayName => string.Empty;
+
+    public IconDataType Icon => new(string.Empty);
+
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
     public void Dispose() => throw new NotImplementedException();
+
 #pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
     private readonly QuitAction quitAction = new();
 

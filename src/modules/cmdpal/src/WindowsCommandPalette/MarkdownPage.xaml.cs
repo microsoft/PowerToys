@@ -16,11 +16,15 @@ namespace DeveloperCommandPalette;
 public sealed class MarkdownPageViewModel : PageViewModel
 {
     internal IMarkdownPage Page => (IMarkdownPage)this.pageAction;
-    internal string[] MarkdownContent = [""];
+
+    internal string[] MarkdownContent = [string.Empty];
+
     internal string Title => Page.Title;
 
     private IEnumerable<ICommandContextItem> contextActions => Page.Commands.Where(i => i is ICommandContextItem).Select(i => (ICommandContextItem)i);
+
     internal bool HasMoreCommands => contextActions.Any();
+
     internal IList<ContextItemViewModel> ContextActions => contextActions.Select(a => new ContextItemViewModel(a)).ToList();
 
     public MarkdownPageViewModel(IMarkdownPage page) : base(page)
@@ -80,6 +84,7 @@ public sealed partial class MarkdownPage : Page, System.ComponentModel.INotifyPr
             });
         });
     }
+
     private void DoAction(ActionViewModel actionViewModel)
     {
         ViewModel?.DoAction(actionViewModel);
@@ -118,6 +123,7 @@ public sealed partial class MarkdownPage : Page, System.ComponentModel.INotifyPr
         //ActionsDropdown.SelectedIndex = 0;
         //ActionsDropdown.Focus(FocusState.Programmatic);
     }
+
 #pragma warning disable CA1822 // Mark members as static
     private bool MoreCommandsAvailable => (ViewModel?.Page.Commands != null) && (ViewModel.Page.Commands.Length > 0);
 
@@ -139,6 +145,7 @@ public sealed partial class MarkdownPage : Page, System.ComponentModel.INotifyPr
         DoAction(new(vm.Command));
         e.Handled = true;
     }
+
     private void RootGrid_KeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (e.Handled) return;

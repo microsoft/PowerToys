@@ -31,14 +31,16 @@ public sealed class StringNotEmptyToVisibilityConverter : IValueConverter
         throw new NotImplementedException();
     }
 }
+
 public class SectionInfoList : ObservableCollection<ListItemViewModel>
 {
     public string Title { get; }
+
     private readonly DispatcherQueue DispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
     public SectionInfoList(ISection? section, IEnumerable<ListItemViewModel> items) : base(items)
     {
-        Title = section?.Title ?? "";
+        Title = section?.Title ?? string.Empty;
         if (section != null && section is INotifyCollectionChanged observable)
         {
             observable.CollectionChanged -= Items_CollectionChanged;
@@ -92,6 +94,7 @@ public sealed class NoOpAction : InvokableCommand
 {
     public override ICommandResult Invoke() { return ActionResult.KeepOpen(); }
 }
+
 public sealed class ErrorListItem : Microsoft.Windows.CommandPalette.Extensions.Helpers.ListItem
 {
     public ErrorListItem(Exception ex) : base(new NoOpAction()) {
@@ -106,10 +109,13 @@ public sealed class ListPageViewModel : PageViewModel
     internal readonly ObservableCollection<SectionInfoList> FilteredItems = [];
 
     internal IListPage Page => (IListPage)this.pageAction;
+
     private bool isDynamic => Page is IDynamicListPage;
+
     private IDynamicListPage? dynamicPage => Page as IDynamicListPage;
+
     private readonly DispatcherQueue DispatcherQueue = DispatcherQueue.GetForCurrentThread();
-    internal string Query = "";
+    internal string Query = string.Empty;
 
     public ListPageViewModel(IListPage page) : base(page)
     {
@@ -225,8 +231,11 @@ public sealed class ListPageViewModel : PageViewModel
 public sealed partial class ListPage : Page, System.ComponentModel.INotifyPropertyChanged
 {
     private ListPageViewModel? ViewModel;
+
     public event PropertyChangedEventHandler? PropertyChanged;
+
     private ListItemViewModel? _SelectedItem;
+
     public ListItemViewModel? SelectedItem
     {
         get => _SelectedItem;
@@ -404,7 +413,7 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
         {
             if (FilterBox.Text.Length > 0)
             {
-                FilterBox.Text = "";
+                FilterBox.Text = string.Empty;
             }
             else
             {
@@ -435,6 +444,7 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
         // on the UI thread
         _ = UpdateFilter(FilterBox.Text);
     }
+
     private async Task UpdateFilter(string text)
     {
         if (ViewModel == null) return;

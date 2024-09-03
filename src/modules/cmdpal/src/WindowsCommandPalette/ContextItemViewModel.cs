@@ -27,12 +27,15 @@ namespace DeveloperCommandPalette;
 public sealed class ContextItemViewModel : INotifyPropertyChanged
 {
     internal ICommand Command;
+
     internal string Name => Command.Name;
+
     internal IconDataType Icon => Command.Icon;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     internal bool CanInvoke => Command != null && Command is IInvokableCommand or IPage;
+
     internal IconElement IcoElement => Microsoft.Terminal.UI.IconPathConverter.IconMUX(Icon.Icon);
 
     public ContextItemViewModel(ICommand action)
@@ -40,6 +43,7 @@ public sealed class ContextItemViewModel : INotifyPropertyChanged
         this.Command = action;
         this.Command.PropChanged += Action_PropertyChanged;
     }
+
     public ContextItemViewModel(ICommandContextItem model)
     {
         this.Command = model.Command;

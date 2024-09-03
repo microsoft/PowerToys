@@ -16,6 +16,7 @@ using Microsoft.Windows.CommandPalette.Extensions;
 using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 using Windows.Foundation;
 using Windows.Win32;
+using WindowsCommandPalette.BuiltinCommands;
 
 namespace DeveloperCommandPalette;
 
@@ -23,6 +24,7 @@ public sealed class MainViewModel
 {
     internal readonly AllApps.AllAppsPage apps = new();
     internal readonly QuitActionProvider quitActionProvider = new();
+    internal readonly ReloadExtensionsActionProvider reloadActionProvider = new();
 
     public event TypedEventHandler<object, object?>? QuitRequested { add => quitActionProvider.QuitRequested += value; remove => quitActionProvider.QuitRequested -= value; }
 
@@ -47,6 +49,7 @@ public sealed class MainViewModel
         _builtInCommands.Add(new Calculator.CalculatorActionProvider());
         _builtInCommands.Add(new Run.Settings.SettingsActionProvider());
         _builtInCommands.Add(quitActionProvider);
+        _builtInCommands.Add(reloadActionProvider);
 
         ResetTopLevel();
 

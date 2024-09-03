@@ -11,7 +11,9 @@ namespace DeveloperCommandPalette;
 public sealed class MainListItem : ListItem
 {
     private readonly IListItem _listItem;
+
     public IListItem Item => _listItem;
+
     internal MainListItem(IListItem listItem) : base(listItem.Command)
     {
         _listItem = listItem;

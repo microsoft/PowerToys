@@ -27,7 +27,9 @@ namespace DeveloperCommandPalette;
 public sealed partial class MainWindow : Window
 {
     private readonly AppWindow m_AppWindow;
+
     private MainViewModel _mainViewModel { get; init; }
+
     private readonly HWND hwnd;
     private const uint DOT_KEY = 0xBE;
     private const uint WM_HOTKEY = 0x0312;
@@ -55,6 +57,7 @@ public sealed partial class MainWindow : Window
 
         return Windows.Win32.PInvoke.CallWindowProc(origPrc, hwnd, uMsg, wParam, lParam);
     }
+
     public void Summon()
     {
         Windows.Win32.PInvoke.ShowWindow(hwnd, Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_SHOW);
@@ -63,6 +66,7 @@ public sealed partial class MainWindow : Window
         Windows.Win32.PInvoke.SetActiveWindow(hwnd);
         MainPage.ViewModel.Summon();
     }
+
     public MainWindow()
     {
         this.InitializeComponent();
@@ -99,6 +103,7 @@ public sealed partial class MainWindow : Window
             // Application.Current.Exit();
         };
     }
+
     private async Task SetupHotkey()
     {
         var hotkeySettingString = await Application.Current.GetService<ILocalSettingsService>().ReadSettingAsync<string>("GlobalHotkey") ?? "win+ctrl+.";
@@ -110,6 +115,7 @@ public sealed partial class MainWindow : Window
         origPrc = Marshal.GetDelegateForFunctionPointer<WNDPROC>((IntPtr)Windows.Win32.PInvoke.SetWindowLongPtr(hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, hotKeyPrcPointer));
 
     }
+
     private void PositionCentered()
     {
         m_AppWindow.Resize(new SizeInt32 { Width = 860, Height = 512 });
@@ -122,6 +128,7 @@ public sealed partial class MainWindow : Window
             AppWindow.Move(CenteredPosition);
         }
     }
+
     private void PositionForStartMenu()
     {
         m_AppWindow.Resize(new Windows.Graphics.SizeInt32(768, 768));
@@ -280,7 +287,7 @@ public sealed partial class MainWindow : Window
             keyString = Regex.Replace(keyString, "([a-z])([A-Z])", "$1+$2");
         }
 
-        var modifierString = "";
+        var modifierString = string.Empty;
         if (modifiers.HasFlag(VirtualKeyModifiers.Control))
         {
             modifierString += "ctrl+";
@@ -300,6 +307,7 @@ public sealed partial class MainWindow : Window
 
         return modifierString + keyString;
     }
+
     private static (VirtualKey key, VirtualKeyModifiers modifiers) StringToKeybinding(string keybinding)
     {
         var parts = keybinding.Split('+');
@@ -333,6 +341,7 @@ public sealed partial class MainWindow : Window
 
         return (key, modifiers);
     }
+
     private static (uint vk, Windows.Win32.UI.Input.KeyboardAndMouse.HOT_KEY_MODIFIERS mod) UwpToWin32(VirtualKey key, VirtualKeyModifiers modifiers)
     {
         Windows.Win32.UI.Input.KeyboardAndMouse.HOT_KEY_MODIFIERS mod = new();

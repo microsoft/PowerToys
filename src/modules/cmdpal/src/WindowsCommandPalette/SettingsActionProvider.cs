@@ -17,7 +17,9 @@ namespace Run.Settings;
 internal sealed class SettingsPage : FormPage
 {
     private readonly SettingsForm _settings = new();
+
     public override IForm[] Forms() => [_settings];
+
     public SettingsPage()
     {
         this.Icon = new("\uE713");
@@ -30,6 +32,7 @@ internal sealed class SettingsForm: Form
     public SettingsForm()
     {
     }
+
         public override string TemplateJson()
     {
         var json = $$"""
@@ -77,6 +80,7 @@ internal sealed class SettingsForm: Form
         t.ConfigureAwait(false);
         return t.Result;
     }
+
     private static async Task<string> GetSettingsDataJson()
     {
 
@@ -104,7 +108,7 @@ internal sealed class SettingsForm: Form
         if (formInput == null) {
             return ActionResult.GoHome();
         }
-        Application.Current.GetService<ILocalSettingsService>().SaveSettingAsync("GlobalHotkey", formInput["hotkey"]?.ToString() ?? "");
+        Application.Current.GetService<ILocalSettingsService>().SaveSettingAsync("GlobalHotkey", formInput["hotkey"]?.ToString() ?? string.Empty);
 
         return ActionResult.GoHome();
     }
@@ -120,7 +124,7 @@ public class SettingsActionProvider : ICommandProvider
     {
     }
 
-    public IconDataType Icon => new("");
+    public IconDataType Icon => new(string.Empty);
 
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
     public void Dispose() => throw new NotImplementedException();

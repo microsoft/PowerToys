@@ -26,10 +26,13 @@ public sealed class FormViewModel : System.ComponentModel.INotifyPropertyChanged
     internal RenderedAdaptiveCard? RenderedAdaptiveCard;
     internal string TemplateJson = "{}";
     internal string DataJson = "{}";
+
     public event TypedEventHandler<object, SubmitFormArgs>? RequestSubmitForm;
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public bool ShouldDisplay => RenderedAdaptiveCard?.FrameworkElement != null;
+
     public FrameworkElement? RenderedChildElement => RenderedAdaptiveCard?.FrameworkElement;
 
     public FormViewModel(IForm form)
@@ -95,6 +98,7 @@ public sealed class FormViewModel : System.ComponentModel.INotifyPropertyChanged
 public sealed class FormPageViewModel : PageViewModel
 {
     internal IFormPage Page => (IFormPage)this.pageAction;
+
     internal ObservableCollection<FormViewModel> Forms = new();
 
     public FormPageViewModel(IFormPage page) : base(page)
@@ -134,6 +138,7 @@ public sealed partial class FormPage : Page
 {
     private FormPageViewModel? ViewModel;
     private readonly AdaptiveCardRenderer Renderer = new();
+
     public FormPage()
     {
         this.InitializeComponent();
@@ -340,6 +345,7 @@ public sealed partial class FormPage : Page
   }
 }
 """;
+
     private static readonly string LightHostConfig = """
 {
   "spacing": {

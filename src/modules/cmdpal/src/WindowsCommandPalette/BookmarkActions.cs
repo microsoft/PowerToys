@@ -19,6 +19,7 @@ namespace Run.Bookmarks;
 internal sealed class OpenInTerminalAction : InvokableCommand
 {
     private readonly string _folder;
+
     public OpenInTerminalAction(string folder)
     {
         this.Name = "Open in Terminal";
@@ -50,21 +51,24 @@ internal sealed class OpenInTerminalAction : InvokableCommand
 
 internal sealed class BookmarkData
 {
-    internal string name = "";
-    internal string bookmark = "";
-    internal string type = "";
+    internal string name = string.Empty;
+    internal string bookmark = string.Empty;
+    internal string type = string.Empty;
 }
+
 [JsonSourceGenerationOptions(WriteIndented = true)]
 [JsonSerializable(typeof(BookmarkData))]
 internal sealed partial class SourceGenerationContext : JsonSerializerContext
 {
 }
+
 [JsonSerializable(typeof(BookmarkData))]
 [JsonSerializable(typeof(string))]
 [JsonSerializable(typeof(string))]
 internal sealed partial class BookmarkDataContext : JsonSerializerContext
 {
 }
+
 internal sealed class AddBookmarkForm : Form
 {
     internal event TypedEventHandler<object, object?>? AddedAction;
@@ -110,7 +114,9 @@ internal sealed class AddBookmarkForm : Form
     }
 
     public override string DataJson() => throw new NotImplementedException();
+
     public override string StateJson() => throw new NotImplementedException();
+
     public override ActionResult SubmitForm(string payload)
     {
         var formInput = JsonNode.Parse(payload);
@@ -120,8 +126,8 @@ internal sealed class AddBookmarkForm : Form
         }
 
         // get the name and url out of the values
-        var formName = formInput["name"] ?? "";
-        var formBookmark = formInput["bookmark"] ?? "";
+        var formName = formInput["name"] ?? string.Empty;
+        var formBookmark = formInput["bookmark"] ?? string.Empty;
         var hasPlaceholder = formBookmark.ToString().Contains('{') && formBookmark.ToString().Contains('}');
 
         // Determine the type of the bookmark
@@ -148,7 +154,7 @@ internal sealed class AddBookmarkForm : Form
 
 
         // Construct a new json blob with the name and url
-        var json = "";
+        var json = string.Empty;
 
         // if the file exists, load it and append the new item
         if (File.Exists(BookmarksActionProvider.StateJsonPath()))
@@ -196,13 +202,16 @@ internal sealed class AddBookmarkForm : Form
     }
 
 }
+
 internal sealed class AddBookmarkPage : Microsoft.Windows.CommandPalette.Extensions.Helpers.FormPage
 {
     private readonly AddBookmarkForm _addBookmark = new();
+
     internal event TypedEventHandler<object, object?>? AddedAction {
         add => _addBookmark.AddedAction += value;
         remove => _addBookmark.AddedAction -= value;
     }
+
     public override IForm[] Forms() => [_addBookmark];
 
     public AddBookmarkPage()
@@ -215,7 +224,8 @@ internal sealed class AddBookmarkPage : Microsoft.Windows.CommandPalette.Extensi
 internal sealed class BookmarkPlaceholderForm: Microsoft.Windows.CommandPalette.Extensions.Helpers.Form
 {
     private List<string> placeholderNames { get; init; }
-    private readonly string _Bookmark = "";
+
+    private readonly string _Bookmark = string.Empty;
 
     // TODO pass in an array of placeholders
     public BookmarkPlaceholderForm(string name, string url, string type) {
@@ -265,7 +275,9 @@ internal sealed class BookmarkPlaceholderForm: Microsoft.Windows.CommandPalette.
     }
 
     public override string DataJson() => throw new NotImplementedException();
+
     public override string StateJson() => throw new NotImplementedException();
+
     public override ActionResult SubmitForm(string payload)
     {
         var target = _Bookmark;
@@ -306,9 +318,11 @@ internal sealed class BookmarkPlaceholderForm: Microsoft.Windows.CommandPalette.
     }
 
 }
+
 internal sealed class BookmarkPlaceholderPage : Microsoft.Windows.CommandPalette.Extensions.Helpers.FormPage
 {
     private readonly IForm _bookmarkPlaceholder;
+
     public override IForm[] Forms() => [_bookmarkPlaceholder];
 
     public BookmarkPlaceholderPage(string name, string url, string type)
@@ -322,7 +336,9 @@ internal sealed class BookmarkPlaceholderPage : Microsoft.Windows.CommandPalette
 public class UrlAction : InvokableCommand
 {
     private bool _containsPlaceholder => _url.Contains('{') && _url.Contains('}');
+
     public string Type { get; }
+
     public string Url {  get; }
 
     private readonly string _url;
@@ -371,6 +387,7 @@ public class UrlAction : InvokableCommand
         }
         return uri;
     }
+
     internal static string IconFromUrl(string url, string type)
     {
         switch (type)
@@ -407,7 +424,8 @@ public class UrlAction : InvokableCommand
 public class BookmarksActionProvider : ICommandProvider
 {
     public string DisplayName => $"Bookmarks";
-    public IconDataType Icon => new("");
+
+    public IconDataType Icon => new(string.Empty);
 
     private readonly List<ICommand> _commands = [];
     private readonly AddBookmarkPage _addNewCommand = new();
@@ -519,12 +537,13 @@ public class BookmarksActionProvider : ICommandProvider
             return listItem;
         }).ToArray();
     }
+
     internal static string StateJsonPath()
     {
         // Get the path to our exe
         var path = System.Reflection.Assembly.GetExecutingAssembly().Location;
         // Get the directory of the exe
-        var directory = System.IO.Path.GetDirectoryName(path) ?? "";
+        var directory = System.IO.Path.GetDirectoryName(path) ?? string.Empty;
         // now, the state is just next to the exe
         return System.IO.Path.Combine(directory, "state.json");
     }
