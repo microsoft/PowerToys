@@ -168,13 +168,13 @@ public class UWPApplication : IProgram
             var outBuffer = new StringBuilder(128);
 
             var source = $"@{{{packageFullName}? {parsed}}}";
-            var hResult = Native.SHLoadIndirectString(source, outBuffer, outBuffer.Capacity, null);
+            var hResult = Native.SHLoadIndirectString(source, outBuffer, outBuffer.Capacity, IntPtr.Zero);
             if (hResult != 0)
             {
                 if (!string.IsNullOrEmpty(parsedFallback))
                 {
                     var sourceFallback = $"@{{{packageFullName}? {parsedFallback}}}";
-                    hResult = Native.SHLoadIndirectString(sourceFallback, outBuffer, outBuffer.Capacity, null);
+                    hResult = Native.SHLoadIndirectString(sourceFallback, outBuffer, outBuffer.Capacity, IntPtr.Zero);
                     if (hResult == 0) // HRESULT.S_OK
                     {
                         var loaded = outBuffer.ToString();
