@@ -1,0 +1,29 @@
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using Microsoft.Windows.CommandPalette.Extensions.Helpers;
+using Windows.Media.Control;
+
+namespace MediaControlsExtension;
+
+public sealed class TogglePlayMediaAction : InvokableCommand
+{
+    public GlobalSystemMediaTransportControlsSession MediaSession { get; set; }
+
+    public TogglePlayMediaAction()
+    {
+        Name = "No media playing";
+        Icon = new(string.Empty);
+    }
+
+    public override ActionResult Invoke()
+    {
+        if (MediaSession != null)
+        {
+            _ = MediaSession.TryTogglePlayPauseAsync();
+        }
+
+        return ActionResult.KeepOpen();
+    }
+}
