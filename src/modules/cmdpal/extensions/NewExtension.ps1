@@ -1,7 +1,8 @@
 Param(
     [string]$Name = "MyNewExtension",
     [string]$DisplayName = "My new command palette extension",
-    [switch]$Help = $false
+    [switch]$Help = $false,
+    [switch]$Verbose = $false
 ),
 
 $StartTime = Get-Date
@@ -30,6 +31,10 @@ Options:
 
   -Help
       Display this usage message.
+
+Examples:
+
+  .\extensions\NewExtension.ps1 -name MastodonExtension -DisplayName "Mastodon extension for cmdpal"
 "@
   Exit
 }
@@ -54,20 +59,29 @@ if(Test-Path $ExtensionRoot) {
 Write-Host "Creating new extension $Name"
 
 # Get all the folders and files tracked in git in the template
-$TemplateFiles = git ls-files $TemplateRoot
+$TemplateFiles = git ls-files --full-name $TemplateRoot
 
 # Create the new extension folder
 New-Item -ItemType Directory -Path $ExtensionRoot -Force | Out-Null
 
+# $TemplateFiles will be relative to the git root. That's something like
+# src/modules/cmdpal/extensions/TemplateExtension/
+
+$gitRoot = git rev-parse --show-toplevel
+
 # Copy all the files from the template to the new extension
 foreach($file in $TemplateFiles) {
-  $RelativePath = $file -replace "$TemplateRoot\\", ""
+  $RelativePath = (Join-Path $gitRoot $file) -replace [regex]::Escape($TemplateRoot), ""
+  $SourcePath = Join-Path $TemplateRoot $RelativePath
   $DestinationPath = Join-Path $ExtensionRoot $RelativePath
+  if ($Verbose) {
+    Write-Host "Copying $SourcePath -> $DestinationPath" -ForegroundColor DarkGray
+  }
   $DestinationFolder = Split-Path $DestinationPath -Parent
   if(-not (Test-Path $DestinationFolder)) {
     New-Item -ItemType Directory -Path $DestinationFolder -Force | Out-Null
   }
-  Copy-Item -Path $file -Destination $DestinationPath -Force
+  Copy-Item -Path $SourcePath -Destination $DestinationPath -Force
 }
 
 # Replace all the placeholders in the files
@@ -80,12 +94,31 @@ foreach($file in $Files) {
   Set-Content -Path $file.FullName -Value $Content
 }
 
-Write-Host "Extension created in $ExtensionRoot" -ForegroundColor GREEN
+# also renamve files with TemplateExtension in the name
+$Files = Get-ChildItem -Path $ExtensionRoot -Recurse -File -Filter "*TemplateExtension*"
+foreach($file in $Files) {
+  $NewName = $file.Name -replace "TemplateExtension", $Name
+  $NewPath = Join-Path $file.DirectoryName $NewName
+  Move-Item -Path $file.FullName -Destination $NewPath
+}
 
-$TotalTime = (Get-Date)-$StartTime
-$TotalMinutes = [math]::Floor($TotalTime.TotalMinutes)
-$TotalSeconds = [math]::Ceiling($TotalTime.TotalSeconds)
+Write-Host "Extension created in $ExtensionRoot" -ForegroundColor GREEN
+Write-Host "Don't forget to add your new extension to the 'Sample plugins' in the WindowsCommandPalette solution."
+
+$pathToSolution = Join-Path $gitRoot "src\modules\cmdpal\WindowsCommandPalette.sln"
 Write-Host @"
+You can open the solution with
+    start $pathToSolution
+and get started by editing the file
+     $ExtensionRoot\src\${Name}Page.cs
+"@
+
+if ($Verbose) {
+    $TotalTime = (Get-Date)-$StartTime
+    $TotalMinutes = [math]::Floor($TotalTime.TotalMinutes)
+    $TotalSeconds = [math]::Ceiling($TotalTime.TotalSeconds)
+    Write-Host @"
 Total Running Time:
 $TotalMinutes minutes and $TotalSeconds seconds
 "@ -ForegroundColor CYAN
+}
