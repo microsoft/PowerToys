@@ -104,6 +104,8 @@
                             </StackPanel>
                             <controls:ResetIsEnabled Grid.Column="4">
                                 <Button
+                                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                                    BorderThickness="2"
                                     Width="Auto"
                                     Margin="10,5"
                                     Padding="24,6"
@@ -331,6 +333,8 @@
                     Source="{Binding PreviewImage, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                     Stretch="Fill" />
                 <Button
+                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                    BorderThickness="2"
                     x:Name="RevertButton"
                     Height="36"
                     Margin="0,0,20,10"
@@ -343,6 +347,8 @@
                     DockPanel.Dock="Right"
                     IsEnabled="{Binding IsRevertEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                 <Button
+                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                    BorderThickness="2"
                     x:Name="LaunchEditButton"
                     Height="36"
                     Margin="0,0,10,10"
@@ -396,6 +402,8 @@
                 DockPanel.Dock="Right"
                 Orientation="Horizontal">
                 <Button
+                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                    BorderThickness="2"
                     x:Name="CancelButton"
                     Height="36"
                     Margin="20,0,0,0"
