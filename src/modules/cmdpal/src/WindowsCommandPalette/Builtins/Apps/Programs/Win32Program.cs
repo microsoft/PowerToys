@@ -4,25 +4,19 @@
 
 using System.Diagnostics;
 using System.Security;
-// using Microsoft.Plugin.Program.Logger;
-// using Microsoft.Plugin.Program.Utils;
 using Microsoft.Win32;
 using WindowsCommandPalette.BuiltinCommands.AllApps;
-// using Wox.Plugin;
-// using Wox.Plugin.Logger;
-// using DirectoryWrapper = Wox.Infrastructure.FileSystemHelper.DirectoryWrapper;
 
 namespace AllApps.Programs;
 
 [Serializable]
 public class Win32Program // : IProgram
 {
-    public static readonly Win32Program InvalidProgram = new(){ Valid = false, Enabled = false };
-
-    // private static readonly IFileSystem FileSystem = new FileSystem();
-    //private static readonly IPath Path = FileSystem.Path;
-    //private static readonly IFile File = FileSystem.File;
-    //private static readonly IDirectory Directory = FileSystem.Directory;
+    public static readonly Win32Program InvalidProgram = new()
+    {
+        Valid = false,
+        Enabled = false,
+    };
 
     public string Name { get; set; }
 
@@ -71,11 +65,7 @@ public class Win32Program // : IProgram
     // Wrappers for File Operations
     public static IFileVersionInfoWrapper FileVersionInfoWrapper { get; set; } = new FileVersionInfoWrapper();
 
-    //public static IFile FileWrapper { get; set; } = new FileSystem().File;
-
     public static IShellLinkHelper ShellLinkHelper { get; set; } = new ShellLinkHelper();
-
-    //public static IDirectoryWrapper DirectoryWrapper { get; set; } = new DirectoryWrapper();
 
     private const string ShortcutExtension = "lnk";
     private const string ApplicationReferenceExtension = "appref-ms";
@@ -100,16 +90,6 @@ public class Win32Program // : IProgram
     // Function to calculate the score of a result
     private int Score(string query)
     {
-        //var nameMatch = StringMatcher.FuzzySearch(query, Name);
-        //var locNameMatch = StringMatcher.FuzzySearch(query, NameLocalized);
-        //var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
-        //var executableNameMatch = StringMatcher.FuzzySearch(query, ExecutableName);
-        //var locExecutableNameMatch = StringMatcher.FuzzySearch(query, ExecutableNameLocalized);
-        //var lnkResolvedExecutableNameMatch = StringMatcher.FuzzySearch(query, LnkResolvedExecutableName);
-        //var locLnkResolvedExecutableNameMatch = StringMatcher.FuzzySearch(query, LnkResolvedExecutableNameLocalized);
-        //var score = new[] { nameMatch.Score, locNameMatch.Score, descriptionMatch.Score / 2, executableNameMatch.Score, locExecutableNameMatch.Score, lnkResolvedExecutableNameMatch.Score, locLnkResolvedExecutableNameMatch.Score }.Max();
-        //return score;
-
         return query.Length + Name.Length;
     }
 
@@ -161,20 +141,6 @@ public class Win32Program // : IProgram
     {
         switch (AppType)
         {
-            //case ApplicationType.Win32Application:
-            //case ApplicationType.ShortcutApplication:
-            //case ApplicationType.ApprefApplication:
-            //    return Properties.Resources.powertoys_run_plugin_program_win32_application;
-            //case ApplicationType.InternetShortcutApplication:
-            //    return Properties.Resources.powertoys_run_plugin_program_internet_shortcut_application;
-            //case ApplicationType.WebApplication:
-            //    return Properties.Resources.powertoys_run_plugin_program_web_application;
-            //case ApplicationType.RunCommand:
-            //    return Properties.Resources.powertoys_run_plugin_program_run_command;
-            //case ApplicationType.Folder:
-            //    return Properties.Resources.powertoys_run_plugin_program_folder_type;
-            //case ApplicationType.GenericFile:
-            //    return Properties.Resources.powertoys_run_plugin_program_generic_file_type;
             default:
                 return string.Empty;
         }
@@ -193,158 +159,6 @@ public class Win32Program // : IProgram
 
         return true;
     }
-
-    //public Result Result(string query, string queryArguments, IPublicAPI api)
-    //{
-    //    ArgumentNullException.ThrowIfNull(api);
-
-    //    var score = Score(query);
-    //    if (score <= 0)
-    //    { // no need to create result if this is zero
-    //        return null;
-    //    }
-
-    //    if (!HasArguments)
-    //    {
-    //        var noArgumentScoreModifier = 5;
-    //        score += noArgumentScoreModifier;
-    //    }
-    //    else
-    //    {
-    //        // Filter Web Applications when searching for the main application
-    //        if (FilterWebApplication(query))
-    //        {
-    //            return null;
-    //        }
-    //    }
-
-    //    // NOTE: This is to display run commands only when there is an exact match, like in start menu
-    //    if (!QueryEqualsNameForRunCommands(query))
-    //    {
-    //        return null;
-    //    }
-
-    //    var result = new Result
-    //    {
-    //        // To set the title for the result to always be the name of the application
-    //        Title = !string.IsNullOrEmpty(NameLocalized) ? NameLocalized : Name,
-    //        SubTitle = GetSubtitle(),
-    //        IcoPath = IcoPath,
-    //        Score = score,
-    //        ContextData = this,
-    //        ProgramArguments = queryArguments,
-    //        Action = e =>
-    //        {
-    //            var info = GetProcessStartInfo(queryArguments);
-
-    //            Main.StartProcess(Process.Start, info);
-
-    //            return true;
-    //        },
-    //    };
-
-    //    // Adjust title of RunCommand result
-    //    if (AppType == ApplicationType.RunCommand)
-    //    {
-    //        result.Title = ExecutableName;
-    //    }
-
-    //    result.TitleHighlightData = StringMatcher.FuzzySearch(query, result.Title).MatchData;
-
-    //    // Using CurrentCulture since this is user facing
-    //    var toolTipTitle = result.Title;
-    //    string filePath = !string.IsNullOrEmpty(FullPathLocalized) ? FullPathLocalized : FullPath;
-    //    var toolTipText = filePath;
-    //    result.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
-
-    //    return result;
-    //}
-
-    //public List<ContextMenuResult> ContextMenus(string queryArguments, IPublicAPI api)
-    //{
-    //    ArgumentNullException.ThrowIfNull(api);
-
-    //    var contextMenus = new List<ContextMenuResult>();
-
-    //    if (AppType != ApplicationType.InternetShortcutApplication && AppType != ApplicationType.Folder && AppType != ApplicationType.GenericFile)
-    //    {
-    //        contextMenus.Add(new ContextMenuResult
-    //        {
-    //            PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-    //            Title = Properties.Resources.wox_plugin_program_run_as_administrator,
-    //            Glyph = "\xE7EF",
-    //            FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
-    //            AcceleratorKey = Key.Enter,
-    //            AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-    //            Action = _ =>
-    //            {
-    //                var info = GetProcessStartInfo(queryArguments, RunAsType.Administrator);
-    //                Task.Run(() => Main.StartProcess(Process.Start, info));
-
-    //                return true;
-    //            },
-    //        });
-
-    //        contextMenus.Add(new ContextMenuResult
-    //        {
-    //            PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-    //            Title = Properties.Resources.wox_plugin_program_run_as_user,
-    //            Glyph = "\xE7EE",
-    //            FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
-    //            AcceleratorKey = Key.U,
-    //            AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-    //            Action = _ =>
-    //            {
-    //                var info = GetProcessStartInfo(queryArguments, RunAsType.OtherUser);
-    //                Task.Run(() => Main.StartProcess(Process.Start, info));
-
-    //                return true;
-    //            },
-    //        });
-    //    }
-
-    //    contextMenus.Add(
-    //        new ContextMenuResult
-    //        {
-    //            PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-    //            Title = Properties.Resources.wox_plugin_program_open_containing_folder,
-    //            Glyph = "\xE838",
-    //            FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
-    //            AcceleratorKey = Key.E,
-    //            AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-    //            Action = _ =>
-    //            {
-    //                Helper.OpenInShell(ParentDirectory);
-    //                return true;
-    //            },
-    //        });
-
-    //    contextMenus.Add(
-    //        new ContextMenuResult
-    //        {
-    //            PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-    //            Title = Properties.Resources.wox_plugin_program_open_in_console,
-    //            Glyph = "\xE756",
-    //            FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
-    //            AcceleratorKey = Key.C,
-    //            AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-    //            Action = (context) =>
-    //            {
-    //                try
-    //                {
-    //                    Helper.OpenInConsole(ParentDirectory);
-    //                    return true;
-    //                }
-    //                catch (Exception e)
-    //                {
-    //                    Log.Exception($"|Failed to open {Name} in console, {e.Message}", e, GetType());
-    //                    return false;
-    //                }
-    //            },
-    //        });
-
-    //    return contextMenus;
-    //}
 
     private ProcessStartInfo GetProcessStartInfo(string programArguments, RunAsType runAs = RunAsType.None)
     {
@@ -392,109 +206,29 @@ public class Win32Program // : IProgram
                 // Localized name, path and executable based on windows display language
                 NameLocalized = Path.GetFileNameWithoutExtension(path), //  Main.ShellLocalizationHelper.GetLocalizedName(path),
                 FullPathLocalized = path, // Main.ShellLocalizationHelper.GetLocalizedPath(path),
-                ExecutableNameLocalized = Path.GetFileName(path),// Path.GetFileName(Main.ShellLocalizationHelper.GetLocalizedPath(path)),
+                ExecutableNameLocalized = Path.GetFileName(path), // Path.GetFileName(Main.ShellLocalizationHelper.GetLocalizedPath(path)),
             };
         }
         catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
         {
-            //ProgramLogger.Warn($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
-
+            // ProgramLogger.Warn($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
             return InvalidProgram;
         }
         catch (Exception)
         {
-            //ProgramLogger.Exception($"|An unexpected error occurred in the calling method CreateWin32Program at {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
-
+            // ProgramLogger.Exception($"|An unexpected error occurred in the calling method CreateWin32Program at {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
             return InvalidProgram;
         }
     }
-
-    //private static readonly Regex InternetShortcutURLPrefixes = new Regex(@"^steam:\/\/(rungameid|run|open)\/|^com\.epicgames\.launcher:\/\/apps\/", RegexOptions.Compiled);
 
     // This function filters Internet Shortcut programs
     private static Win32Program InternetShortcutProgram(string path)
     {
         return InvalidProgram;
-    //    try
-    //    {
-    //        // We don't want to read the whole file if we don't need to
-    //        var lines = FileWrapper.ReadLines(path);
-    //        string iconPath = string.Empty;
-    //        string urlPath = string.Empty;
-    //        bool validApp = false;
-
-    //        const string urlPrefix = "URL=";
-    //        const string iconFilePrefix = "IconFile=";
-
-    //        foreach (string line in lines)
-    //        {
-    //            // Using OrdinalIgnoreCase since this is used internally
-    //            if (line.StartsWith(urlPrefix, StringComparison.OrdinalIgnoreCase))
-    //            {
-    //                urlPath = line.Substring(urlPrefix.Length);
-
-    //                if (!Uri.TryCreate(urlPath, UriKind.RelativeOrAbsolute, out Uri _))
-    //                {
-    //                    ProgramLogger.Warn("url could not be parsed", null, MethodBase.GetCurrentMethod().DeclaringType, urlPath);
-    //                    return InvalidProgram;
-    //                }
-
-    //                // To filter out only those steam shortcuts which have 'run' or 'rungameid' as the hostname
-    //                if (InternetShortcutURLPrefixes.Match(urlPath).Success)
-    //                {
-    //                    validApp = true;
-    //                }
-    //            }
-    //            else if (line.StartsWith(iconFilePrefix, StringComparison.OrdinalIgnoreCase))
-    //            {
-    //                iconPath = line.Substring(iconFilePrefix.Length);
-    //            }
-
-    //            // If we resolved an urlPath & and an iconPath quit reading the file
-    //            if (!string.IsNullOrEmpty(urlPath) && !string.IsNullOrEmpty(iconPath))
-    //            {
-    //                break;
-    //            }
-    //        }
-
-    //        if (!validApp)
-    //        {
-    //            return InvalidProgram;
-    //        }
-
-    //        try
-    //        {
-    //            return new Win32Program
-    //            {
-    //                Name = Path.GetFileNameWithoutExtension(path),
-    //                ExecutableName = Path.GetFileName(path),
-    //                IcoPath = iconPath,
-    //                FullPath = urlPath,
-    //                UniqueIdentifier = path,
-    //                ParentDirectory = Directory.GetParent(path).FullName,
-    //                Valid = true,
-    //                Enabled = true,
-    //                AppType = ApplicationType.InternetShortcutApplication,
-    //            };
-    //        }
-    //        catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
-    //        {
-    //            ProgramLogger.Warn($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
-
-    //            return InvalidProgram;
-    //        }
-    //    }
-    //    catch (Exception e)
-    //    {
-    //        ProgramLogger.Exception($"|An unexpected error occurred in the calling method InternetShortcutProgram at {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
-
-    //        return InvalidProgram;
-    //    }
     }
 
     private static Win32Program LnkProgram(string path)
     {
-        //return InvalidProgram;
         try
         {
             var program = CreateWin32Program(path);
@@ -510,11 +244,11 @@ public class Win32Program // : IProgram
 
                 program.LnkFilePath = program.FullPath;
                 program.LnkResolvedExecutableName = Path.GetFileName(target);
-                program.LnkResolvedExecutableNameLocalized = Path.GetFileName(target);// Path.GetFileName(Main.ShellLocalizationHelper.GetLocalizedPath(target));
+                program.LnkResolvedExecutableNameLocalized = Path.GetFileName(target); // Path.GetFileName(Main.ShellLocalizationHelper.GetLocalizedPath(target));
 
                 // Using CurrentCulture since this is user facing
                 program.FullPath = Path.GetFullPath(target);
-                program.FullPathLocalized = Path.GetFullPath(target);// Main.ShellLocalizationHelper.GetLocalizedPath(target);
+                program.FullPathLocalized = Path.GetFullPath(target); // Main.ShellLocalizationHelper.GetLocalizedPath(target);
 
                 program.Arguments = ShellLinkHelper.Arguments;
 
@@ -542,7 +276,7 @@ public class Win32Program // : IProgram
         }
         catch (System.IO.FileLoadException)
         {
-            //ProgramLogger.Warn($"Couldn't load the link file at {path}. This might be caused by a new link being created and locked by the OS.", e, MethodBase.GetCurrentMethod().DeclaringType, path);
+            // ProgramLogger.Warn($"Couldn't load the link file at {path}. This might be caused by a new link being created and locked by the OS.", e, MethodBase.GetCurrentMethod().DeclaringType, path);
             return InvalidProgram;
         }
 
@@ -550,8 +284,7 @@ public class Win32Program // : IProgram
         // Error caused likely due to trying to get the description of the program
         catch (Exception)
         {
-            //ProgramLogger.Exception($"|An unexpected error occurred in the calling method LnkProgram at {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
-
+            // ProgramLogger.Exception($"|An unexpected error occurred in the calling method LnkProgram at {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
             return InvalidProgram;
         }
     }
@@ -571,20 +304,17 @@ public class Win32Program // : IProgram
         }
         catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
         {
-            //ProgramLogger.Warn($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
-
+            // ProgramLogger.Warn($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
             return InvalidProgram;
         }
         catch (FileNotFoundException)
         {
-            //ProgramLogger.Warn($"|Unable to locate exe file at {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
-
+            // ProgramLogger.Warn($"|Unable to locate exe file at {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
             return InvalidProgram;
         }
         catch (Exception)
         {
-            //ProgramLogger.Exception($"|An unexpected error occurred in the calling method ExeProgram at {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
-
+            // ProgramLogger.Exception($"|An unexpected error occurred in the calling method ExeProgram at {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
             return InvalidProgram;
         }
     }
@@ -613,7 +343,7 @@ public class Win32Program // : IProgram
         {
             return ApplicationType.InternetShortcutApplication;
         }
-        else if (string.IsNullOrEmpty(extension))//  && DirectoryWrapper.Exists(path))
+        else if (string.IsNullOrEmpty(extension))
         {
             return ApplicationType.Folder;
         }
@@ -622,11 +352,11 @@ public class Win32Program // : IProgram
     }
 
     // Function to get the Win32 application, given the path to the application
-    public static Win32Program GetAppFromPath(string path)
+    public static Win32Program? GetAppFromPath(string path)
     {
         ArgumentNullException.ThrowIfNull(path);
 
-        Win32Program app;
+        Win32Program? app;
         switch (GetAppTypeFromPath(path))
         {
             case ApplicationType.Win32Application:
@@ -692,17 +422,17 @@ public class Win32Program // : IProgram
                     }
                     catch (DirectoryNotFoundException )
                     {
-                        //ProgramLogger.Warn("|The directory trying to load the program from does not exist", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
+                        // ProgramLogger.Warn("|The directory trying to load the program from does not exist", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
                     }
                 }
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
             {
-                //ProgramLogger.Warn($"|Permission denied when trying to load programs from {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
+                // ProgramLogger.Warn($"|Permission denied when trying to load programs from {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
             }
             catch (Exception )
             {
-                //ProgramLogger.Exception($"|An unexpected error occurred in the calling method ProgramPaths at {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
+                // ProgramLogger.Exception($"|An unexpected error occurred in the calling method ProgramPaths at {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
             }
 
             try
@@ -726,11 +456,11 @@ public class Win32Program // : IProgram
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
             {
-                //ProgramLogger.Warn($"|Permission denied when trying to load programs from {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
+                // ProgramLogger.Warn($"|Permission denied when trying to load programs from {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
             }
             catch (Exception )
             {
-                //ProgramLogger.Exception($"|An unexpected error occurred in the calling method ProgramPaths at {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
+                // ProgramLogger.Exception($"|An unexpected error occurred in the calling method ProgramPaths at {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
             }
         }
         while (folderQueue.Count > 0);
@@ -858,23 +588,26 @@ public class Win32Program // : IProgram
         }
         catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
         {
-            //ProgramLogger.Warn($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
-
+            // ProgramLogger.Warn($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
             return string.Empty;
         }
     }
 
-    private static string ExpandEnvironmentVariables(string path) =>
-        path != null
+    private static string? ExpandEnvironmentVariables(string path)
+    {
+        return path != null
             ? Environment.ExpandEnvironmentVariables(path)
             : null;
+    }
 
     // Overriding the object.GetHashCode() function to aid in removing duplicates while adding and removing apps from the concurrent dictionary storage
     public override int GetHashCode()
         => Win32ProgramEqualityComparer.Default.GetHashCode(this);
 
     public override bool Equals(object obj)
-        => obj is Win32Program win32Program && Win32ProgramEqualityComparer.Default.Equals(this, win32Program);
+    {
+        return obj is Win32Program win32Program && Win32ProgramEqualityComparer.Default.Equals(this, win32Program);
+    }
 
     private sealed class Win32ProgramEqualityComparer : IEqualityComparer<Win32Program>
     {
@@ -900,7 +633,7 @@ public class Win32Program // : IProgram
     public static List<Win32Program> DeduplicatePrograms(IEnumerable<Win32Program> programs)
         => new HashSet<Win32Program>(programs, Win32ProgramEqualityComparer.Default).ToList();
 
-    private static Win32Program GetProgramFromPath(string path)
+    private static Win32Program? GetProgramFromPath(string path)
     {
         var extension = Extension(path);
         if (ExecutableApplicationExtensions.Contains(extension))
@@ -938,7 +671,7 @@ public class Win32Program // : IProgram
         // https://msdn.microsoft.com/library/windows/desktop/ee872121
         try
         {
-            var redirectionPath = ""; // ReparsePoint.GetTarget(program.FullPath);
+            var redirectionPath = string.Empty; // ReparsePoint.GetTarget(program.FullPath);
             if (string.IsNullOrEmpty(redirectionPath))
             {
                 return false;
@@ -949,7 +682,7 @@ public class Win32Program // : IProgram
         }
         catch (IOException )
         {
-            //ProgramLogger.Warn($"|Error whilst retrieving the redirection path from app execution alias {program.FullPath}", e, MethodBase.GetCurrentMethod().DeclaringType, program.FullPath);
+            // ProgramLogger.Warn($"|Error whilst retrieving the redirection path from app execution alias {program.FullPath}", e, MethodBase.GetCurrentMethod().DeclaringType, program.FullPath);
         }
 
         icoPath = null;
@@ -998,19 +731,14 @@ public class Win32Program // : IProgram
                 (/*settings.EnablePathEnvironmentVariableSource*/ false, () => PathEnvironmentProgramPaths(settings_RunCommandSuffixes)),
             };
 
-            //var disabledProgramsList = settings.DisabledProgramSources;
-
             // Get all paths but exclude all normal .Executables
             paths.UnionWith(sources
                 .AsParallel()
                 .SelectMany(source => source.IsEnabled ? source.GetPaths() : Enumerable.Empty<string>())
-                //.Where(programPath => disabledProgramsList.All(x => x.UniqueIdentifier != programPath))
                 .Where(path => !ExecutableApplicationExtensions.Contains(Extension(path))));
             runCommandPaths.UnionWith(runCommandSources
                 .AsParallel()
-                .SelectMany(source => source.IsEnabled ? source.GetPaths() : Enumerable.Empty<string>())
-                //.Where(programPath => disabledProgramsList.All(x => x.UniqueIdentifier != programPath))
-                );
+                .SelectMany(source => source.IsEnabled ? source.GetPaths() : Enumerable.Empty<string>()));
 
             var programs = paths.AsParallel().Select(source => GetProgramFromPath(source));
             var runCommandPrograms = runCommandPaths.AsParallel().Select(source => GetRunCommandProgramFromPath(source));
@@ -1020,7 +748,6 @@ public class Win32Program // : IProgram
         catch (Exception )
         {
             // ProgramLogger.Exception("An unexpected error occurred", e, MethodBase.GetCurrentMethod().DeclaringType, "Not available");
-
             return Array.Empty<Win32Program>();
         }
     }

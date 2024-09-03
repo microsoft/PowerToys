@@ -98,9 +98,6 @@
        <Generator>MSBuild:Compile</Generator>
      </Page>
    </ItemGroup>
-   <ItemGroup>
-     <Folder Include="Views\" />
-   </ItemGroup>
    <Target Name="CopyAdaptiveCardsToTargetDir" BeforeTargets="BeforeBuild">
      <Message text="PkgAdaptiveCards_ObjectModel_WinUI3 = '$(PkgAdaptiveCards_ObjectModel_WinUI3)'" Importance="high" />
      <Message text="PkgAdaptiveCards_Rendering_WinUI3 = '$(PkgAdaptiveCards_Rendering_WinUI3)'" Importance="high" />
