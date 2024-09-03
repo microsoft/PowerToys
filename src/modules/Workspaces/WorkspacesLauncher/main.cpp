@@ -7,6 +7,7 @@
 #include <AppLauncher.h>
 #include <LauncherUIHelper.h>
 #include <utils.h>
+#include <WindowArrangerHelper.h>
 
 #include <Generated Files/resource.h>
 
@@ -176,6 +177,10 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     LauncherUIHelper uiHelper;
     uiHelper.LaunchUI();
 
+    // start WorkspacesWindowArranger
+    WindowArrangerHelper windowArrangerHelper;
+    windowArrangerHelper.Launch(projectToLaunch.id);
+    
     // launch apps
     Logger::info(L"Launch Workspace {} : {}", projectToLaunch.name, projectToLaunch.id);
     std::vector<std::pair<std::wstring, std::wstring>> launchErrors{};

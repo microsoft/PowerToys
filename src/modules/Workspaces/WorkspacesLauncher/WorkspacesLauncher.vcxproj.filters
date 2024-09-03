@@ -36,6 +36,9 @@
     <ClInclude Include="LaunchingApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="WindowArrangerHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -51,6 +54,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LauncherUIHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowArrangerHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

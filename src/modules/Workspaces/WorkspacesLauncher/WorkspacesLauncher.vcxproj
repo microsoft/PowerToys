@@ -133,6 +133,7 @@
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="RegistryUtils.cpp" />
+    <ClCompile Include="WindowArrangerHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AppLauncher.h" />
@@ -142,6 +143,7 @@
     <ClInclude Include="RegistryUtils.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="utils.h" />
+    <ClInclude Include="WindowArrangerHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
