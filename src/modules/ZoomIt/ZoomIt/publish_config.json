@@ -1,0 +1,21 @@
+{
+    "packageName": "ZoomIt.zip",
+    "files": [
+      {
+        "name": "ZoomIt.exe",
+        "platform": "Win32",
+        "configuration": "Release"
+      },
+	  {
+        "name": "ZoomIt64.exe",
+        "platform": "x64",
+        "configuration": "Release"
+      },
+      {
+        "name": "ZoomIt64a.exe",
+        "platform": "ARM64",
+        "configuration": "Release",
+        "skus": ["ARM64"]
+      }
+    ]
+}

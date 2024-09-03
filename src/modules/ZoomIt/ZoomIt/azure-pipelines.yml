@@ -1,0 +1,38 @@
+resources:
+  repositories:
+  - repository: templates
+    type: git
+    name: Pipelines
+    ref: refs/heads/amihaiuc/1b
+  - repository: oneBranchPipelines
+    type: git
+    name: OneBranch.Pipelines/GovernedTemplates
+    ref: refs/heads/main
+
+variables:
+- template: templates/variables.yml@templates
+- name: ToolName
+  value: 'ZoomIt'
+- name: ToolBasePath
+  value: '' # Generally leave empty for non-PSTools
+
+trigger:
+- main
+
+extends:
+  template: ${{ variables.originalTemplate }}
+  parameters:
+    globalSdl:
+      tsa:
+        enabled: false
+    stages:
+    - stage: build
+      displayName: 'Build and Sign'
+      jobs:
+      - template: jobs/build-and-sign-cpp.yml@templates
+    - stage: deploy_internal
+      displayName: 'Deploy Internal'
+      dependsOn: build
+      condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+      jobs:
+      - template: templates/deploy-tool.yml@templates

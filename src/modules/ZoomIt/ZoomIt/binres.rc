@@ -1,0 +1,18 @@
+//
+// This file allows for CPU architecture dependencies
+
+#ifdef _M_IX86
+
+//
+// x86
+//
+
+// To prevent Visual Studio dependency tracking logic from assuming that the x64 .res depend on the .exe that contain them, trick it with the macros
+// The .rc's included below will be touched every time any of the .exe's mentioned in them is rebuilt thus guaranteeing the Win32 .rc will be recompiled too
+#include "Dependency-x64.rc"
+
+RCZOOMIT64             BINRES  MOVEABLE PURE   RCZOOMIT_x64_path
+
+#endif
+
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "ZoomIt.exe.manifest"
