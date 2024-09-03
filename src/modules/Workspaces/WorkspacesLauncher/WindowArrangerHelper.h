@@ -9,5 +9,5 @@ public:
     void Launch(const std::wstring& projectId, bool elevated);
 
 private:
-    DWORD uiProcessId;
+    DWORD processId;
 };

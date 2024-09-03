@@ -49,7 +49,7 @@ namespace
     }
 }
 
-bool LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated, ErrorList& launchErrors)
+Result<SHELLEXECUTEINFO, std::wstring> LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated)
 {
     std::wstring dir = std::filesystem::path(appPath).parent_path();
 
@@ -65,13 +65,12 @@ bool LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs,
 
     if (!ShellExecuteEx(&sei))
     {
-        auto error = GetLastError();
-        Logger::error(L"Failed to launch process. {}", get_last_error_or_default(error));
-        launchErrors.push_back({ std::filesystem::path(appPath).filename(), get_last_error_or_default(error) });
-        return false;
+        std::wstring error = get_last_error_or_default(GetLastError());
+        Logger::error(L"Failed to launch process. {}", error);
+        return Error(error);
     }
 
-    return true;
+    return Ok(sei);
 }
 
 bool LaunchPackagedApp(const std::wstring& packageFullName, ErrorList& launchErrors)
@@ -125,7 +124,15 @@ bool Launch(const WorkspacesData::WorkspacesProject::Application& app, ErrorList
             std::wstring uriProtocolName = names[0];
             std::wstring command = std::wstring(uriProtocolName + (app.commandLineArgs.starts_with(L":") ? L"" : L":") + app.commandLineArgs);
 
-            launched = LaunchApp(command, L"", app.isElevated, launchErrors);
+            auto res = LaunchApp(command, L"", app.isElevated);
+            if (res.isOk())
+            {
+                launched = true;
+            }
+            else
+            {
+                launchErrors.push_back({ std::filesystem::path(app.path).filename(), res.error() });
+            }
         }
         else
         {
@@ -138,7 +145,15 @@ bool Launch(const WorkspacesData::WorkspacesProject::Application& app, ErrorList
     if (!launched && !app.appUserModelId.empty() && !app.packageFullName.empty())
     {
         Logger::trace(L"Launching {} as {}", app.name, app.appUserModelId);
-        launched = LaunchApp(L"shell:AppsFolder\\" + app.appUserModelId, app.commandLineArgs, app.isElevated, launchErrors);
+        auto res = LaunchApp(L"shell:AppsFolder\\" + app.appUserModelId, app.commandLineArgs, app.isElevated);
+        if (res.isOk())
+        {
+            launched = true;
+        }
+        else
+        {
+            launchErrors.push_back({ std::filesystem::path(app.path).filename(), res.error() });
+        }
     }
 
     // packaged apps: try launching by package full name
@@ -161,7 +176,15 @@ bool Launch(const WorkspacesData::WorkspacesProject::Application& app, ErrorList
             return false;
         }
 
-        launched = LaunchApp(app.path, app.commandLineArgs, app.isElevated, launchErrors);
+        auto res = LaunchApp(app.path, app.commandLineArgs, app.isElevated);
+        if (res.isOk())
+        {
+            launched = true;
+        }
+        else
+        {
+            launchErrors.push_back({ std::filesystem::path(app.path).filename(), res.error() });
+        }
     }
 
     Logger::trace(L"{} {} at {}", app.name, (launched ? L"launched" : L"not launched"), app.path);

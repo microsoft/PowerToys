@@ -7,6 +7,8 @@
 #include <common/utils/OnThreadExecutor.h>
 #include <common/utils/winapi_error.h>
 
+#include <AppLauncher.h>
+
 LauncherUIHelper::~LauncherUIHelper()
 {
     OnThreadExecutor().submit(OnThreadExecutor::task_t{ [&] {
@@ -33,29 +35,21 @@ LauncherUIHelper::~LauncherUIHelper()
 void LauncherUIHelper::LaunchUI()
 {
     Logger::trace(L"Starting WorkspacesLauncherUI");
-
-    STARTUPINFO info = { sizeof(info) };
-    PROCESS_INFORMATION pi = { 0 };
+    
     TCHAR buffer[MAX_PATH] = { 0 };
     GetModuleFileName(NULL, buffer, MAX_PATH);
     std::wstring path = std::filesystem::path(buffer).parent_path();
-    path.append(L"\\PowerToys.WorkspacesLauncherUI.exe");
-    auto succeeded = CreateProcessW(path.c_str(), nullptr, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &info, &pi);
-    if (succeeded)
+
+    auto res = LaunchApp(path + L"\\PowerToys.WorkspacesLauncherUI.exe", L"", false);
+    if (res.isOk())
     {
-        if (pi.hProcess)
-        {
-            uiProcessId = pi.dwProcessId;
-            CloseHandle(pi.hProcess);
-        }
-        if (pi.hThread)
-        {
-            CloseHandle(pi.hThread);
-        }
+        auto value = res.value();
+        uiProcessId = GetProcessId(value.hProcess);
+        CloseHandle(value.hProcess);
     }
     else
     {
-        Logger::error(L"CreateProcessW() failed. {}", get_last_error_or_default(GetLastError()));
+        Logger::error(L"Failed to launch PowerToys.WorkspacesLauncherUI: {}", res.error());
     }
 }
 

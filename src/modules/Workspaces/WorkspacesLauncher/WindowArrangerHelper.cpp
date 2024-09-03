@@ -8,16 +8,18 @@
 
 #include <WorkspacesLib/WorkspacesData.h>
 
+#include <AppLauncher.h>
+
 WindowArrangerHelper::~WindowArrangerHelper()
 {
     OnThreadExecutor().submit(OnThreadExecutor::task_t{
         [&] {
             std::this_thread::sleep_for(std::chrono::milliseconds(6000));
 
-            HANDLE uiProcess = OpenProcess(PROCESS_ALL_ACCESS, false, uiProcessId);
-            if (uiProcess)
+            HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, false, processId);
+            if (process)
             {
-                bool res = TerminateProcess(uiProcess, 0);
+                bool res = TerminateProcess(process, 0);
                 if (!res)
                 {
                     Logger::error(L"Unable to terminate PowerToys.WorkspacesWindowArranger process: {}", get_last_error_or_default(GetLastError()));
@@ -30,32 +32,23 @@ WindowArrangerHelper::~WindowArrangerHelper()
         } }).wait();
 }
 
-void WindowArrangerHelper::Launch(const std::wstring& projectId)
+void WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated)
 {
     Logger::trace(L"Starting WorkspacesWindowArranger");
 
-    STARTUPINFO info = { sizeof(info) };
-    PROCESS_INFORMATION pi = { 0 };
     TCHAR buffer[MAX_PATH] = { 0 };
     GetModuleFileName(NULL, buffer, MAX_PATH);
     std::wstring path = std::filesystem::path(buffer).parent_path();
-    path.append(L"\\PowerToys.WorkspacesWindowArranger.exe");
-    std::wstring commandLine = projectId;
-    auto succeeded = CreateProcessW(path.c_str(), commandLine.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &info, &pi);
-    if (succeeded)
+
+    auto res = LaunchApp(path + L"\\PowerToys.WorkspacesWindowArranger.exe", projectId, elevated);
+    if (res.isOk())
     {
-        if (pi.hProcess)
-        {
-            uiProcessId = pi.dwProcessId;
-            CloseHandle(pi.hProcess);
-        }
-        if (pi.hThread)
-        {
-            CloseHandle(pi.hThread);
-        }
+        auto value = res.value();
+        processId = GetProcessId(value.hProcess);
+        CloseHandle(value.hProcess);
     }
     else
     {
-        Logger::error(L"CreateProcessW() failed. {}", get_last_error_or_default(GetLastError()));
+        Logger::error(L"Failed to launch PowerToys.WorkspacesWindowArranger: {}", res.error());
     }
 }
