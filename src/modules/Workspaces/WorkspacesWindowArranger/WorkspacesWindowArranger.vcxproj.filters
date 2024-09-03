@@ -21,13 +21,7 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RegistryUtils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="UIHelper.h">
+    <ClInclude Include="ArrangeWindows.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LaunchingApp.h">
@@ -41,10 +35,7 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RegistryUtils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="UIHelper.cpp">
+    <ClCompile Include="ArrangeWindows.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
