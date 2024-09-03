@@ -30,8 +30,10 @@ public sealed class AllAppsPage : ListPage
         {
             PopulateApps();
         }
-        return [this.allAppsSection];
+
+        return [allAppsSection];
     }
+
     private void PopulateApps()
     {
         var apps = GetPrograms();
@@ -41,13 +43,12 @@ public sealed class AllAppsPage : ListPage
             Title = "Apps",
             Items = apps
                         .Select((app) => new AppListItem(app))
-                        .ToArray()
+                        .ToArray(),
         };
     }
 
     internal static List<AppItem> GetPrograms()
     {
-
         // NOTE TO SELF:
         //
         // There's logic in Win32Program.All() here to pick the "sources" for programs.
@@ -58,7 +59,6 @@ public sealed class AllAppsPage : ListPage
         // for now. I've disabled the "PATH" source too, because it's n o i s y
         //
         // This also doesn't include Packaged apps, cause they're enumerated entirely seperately.
-
         var cache = AppCache.Instance.Value;
         var uwps = cache.UWPs;
         var win32s = cache.Win32s;
@@ -69,10 +69,11 @@ public sealed class AllAppsPage : ListPage
                 {
                     Name = app.Name,
                     Subtitle = app.Description,
-                    IcoPath = app.LogoType != LogoType.Error ? app.LogoPath : "",
-                    //ExePath = app.FullPath,
+                    IcoPath = app.LogoType != LogoType.Error ? app.LogoPath : string.Empty,
                     DirPath = app.Location,
                     UserModelId = app.UserModelId,
+
+                    // ExePath = app.FullPath,
                 });
         var win32Results = win32s
             .Where((application) => application.Enabled /*&& application.Valid*/)
@@ -89,15 +90,3 @@ public sealed class AllAppsPage : ListPage
         return uwpResults.Concat(win32Results).OrderBy(app => app.Name).ToList();
     }
 }
-
-//internal sealed class AppAndScore
-//{
-//    public AppItem app;
-//    public int score;
-//}
-
-//internal sealed class AppSearchState
-//{
-//    public string Query { get; set; } = "";
-//    public List<AppAndScore> Results { get; set; } = new();
-//}

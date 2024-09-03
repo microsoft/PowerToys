@@ -219,7 +219,7 @@ public sealed partial class MainPage : Page
         _ = LoadAllCommands();
     }
 
-    private void _HackyBadClearFilter()
+    private void HackyBadClearFilter()
     {
         // BODGY but I don't care, cause i'm throwing this all out
         if ((this.RootFrame.Content as Page)?.FindName("FilterBox") is TextBox tb)
@@ -235,7 +235,7 @@ public sealed partial class MainPage : Page
     {
         if (!RootFrame.CanGoBack)
         {
-            _HackyBadClearFilter();
+            HackyBadClearFilter();
         }
     }
 
@@ -376,7 +376,7 @@ public sealed partial class MainPage : Page
         RootFrame.GoBack();
         if (!RootFrame.CanGoBack)
         {
-            _HackyBadClearFilter();
+            HackyBadClearFilter();
         }
     }
 
@@ -394,7 +394,7 @@ public sealed partial class MainPage : Page
 
         if (!RootFrame.CanGoBack)
         {
-            _HackyBadClearFilter();
+            HackyBadClearFilter();
         }
     }
 
@@ -503,71 +503,4 @@ public sealed partial class MainPage : Page
             }
         }
     }
-}
-
-sealed class ActionsProviderWrapper
-{
-    public bool IsExtension => extensionWrapper != null;
-
-    private readonly bool isValid;
-
-    private ICommandProvider ActionProvider { get; }
-
-    private readonly IExtensionWrapper? extensionWrapper;
-    private IListItem[] _topLevelItems = [];
-
-    public IListItem[] TopLevelItems => _topLevelItems;
-
-    public ActionsProviderWrapper(ICommandProvider provider)
-    {
-        ActionProvider = provider;
-        isValid = true;
-    }
-
-    public ActionsProviderWrapper(IExtensionWrapper extension)
-    {
-        extensionWrapper = extension;
-        var extensionImpl = extension.GetExtensionObject();
-        if (extensionImpl?.GetProvider(ProviderType.Commands) is not ICommandProvider provider)
-        {
-            throw new ArgumentException("extension didn't actually implement ICommandProvider");
-        }
-
-        ActionProvider = provider;
-        isValid = true;
-    }
-
-    public async Task LoadTopLevelCommands()
-    {
-        if (!isValid)
-        {
-            return;
-        }
-
-        var t = new Task<IListItem[]>(() => ActionProvider.TopLevelCommands());
-        t.Start();
-        var commands = await t.ConfigureAwait(false);
-
-        // On a BG thread here
-        if (commands != null)
-        {
-            _topLevelItems = commands;
-        }
-    }
-
-    public void AllowSetForeground(bool allow)
-    {
-        if (!IsExtension)
-        {
-            return;
-        }
-
-        var iextn = extensionWrapper?.GetExtensionObject();
-        unsafe
-        {
-            PInvoke.CoAllowSetForegroundWindow(iextn);
-        }
-    }
-
-    public override bool Equals(object? obj) => obj is ActionsProviderWrapper wrapper && isValid == wrapper.isValid;
 }

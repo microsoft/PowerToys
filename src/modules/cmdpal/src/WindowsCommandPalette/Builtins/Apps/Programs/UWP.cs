@@ -2,19 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
 using System.IO.Abstractions;
-using System.Linq;
-using System.Reflection;
-//using System.Runtime.InteropServices;
-//using System.Runtime.InteropServices.ComTypes;
 using System.Xml.Linq;
 using Windows.Win32;
 using Windows.Win32.System.Com;
-//using Microsoft.Plugin.Program.Logger;
-//using Wox.Plugin.Common.Win32;
-//using Wox.Plugin.Logger;
 
 namespace AllApps.Programs;
 
@@ -59,18 +50,19 @@ public partial class UWP
     public void InitializeAppInfo(string installedLocation)
     {
         Location = installedLocation;
-        LocationLocalized = installedLocation;//  Main.ShellLocalizationHelper.GetLocalizedPath(installedLocation);
+        LocationLocalized = installedLocation; // Main.ShellLocalizationHelper.GetLocalizedPath(installedLocation);
         var path = Path.Combine(installedLocation, "AppxManifest.xml");
 
         var namespaces = XmlNamespaces(path);
         InitPackageVersion(namespaces);
 
         const uint noAttribute = 0x80;
-        //const STGM exclusiveRead = STGM.READ;
+
+        // const STGM exclusiveRead = STGM.READ;
         uint access = 0; // STGM.READ
         var hResult = PInvoke.SHCreateStreamOnFileEx(path, access, noAttribute, false, null, out IStream stream);
 
-        if (hResult == 0) //S_OK
+        if (hResult == 0) // S_OK
         {
             Apps = AppxPackageHelper.GetAppsFromManifest(stream).Select(appInManifest => new UWPApplication(appInManifest, this)).Where(a =>
             {
@@ -81,17 +73,11 @@ public partial class UWP
 
                 return valid;
             }).ToList();
-
-            //if (Marshal.ReleaseComObject(stream) > 0)
-            //{
-            //    //Log.Error("AppxManifest.xml was leaked", MethodBase.GetCurrentMethod().DeclaringType);
-            //}
         }
         else
         {
-            //var e = Marshal.GetExceptionForHR((int)hResult);
-            //ProgramLogger.Exception("Error caused while trying to get the details of the UWP program", e, GetType(), path);
-
+            // var e = Marshal.GetExceptionForHR((int)hResult);
+            // ProgramLogger.Exception("Error caused while trying to get the details of the UWP program", e, GetType(), path);
             Apps = Array.Empty<UWPApplication>();
         }
     }
@@ -112,8 +98,7 @@ public partial class UWP
         }
         else
         {
-            //Log.Error($"Error occurred while trying to get the XML from {path}", MethodBase.GetCurrentMethod().DeclaringType);
-
+            // Log.Error($"Error occurred while trying to get the XML from {path}", MethodBase.GetCurrentMethod().DeclaringType);
             return Array.Empty<string>();
         }
     }
@@ -126,8 +111,7 @@ public partial class UWP
             return;
         }
 
-        //ProgramLogger.Exception($"|Trying to get the package version of the UWP program, but a unknown UWP appmanifest version {FullName} from location {Location} is returned.", new FormatException(), GetType(), Location);
-
+        // ProgramLogger.Exception($"|Trying to get the package version of the UWP program, but a unknown UWP appmanifest version {FullName} from location {Location} is returned.", new FormatException(), GetType(), Location);
         Version = PackageVersion.Unknown;
     }
 
@@ -147,17 +131,14 @@ public partial class UWP
                 }
                 catch (Exception )
                 {
-                    //ProgramLogger.Exception($"Unable to convert Package to UWP for {p.FullName}", e, MethodBase.GetCurrentMethod().DeclaringType, p.InstalledLocation);
-
+                    // ProgramLogger.Exception($"Unable to convert Package to UWP for {p.FullName}", e, MethodBase.GetCurrentMethod().DeclaringType, p.InstalledLocation);
                     return Array.Empty<UWPApplication>();
                 }
 
                 return u.Apps;
             });
 
-            var updatedListWithoutDisabledApps = applications
-                                                    //.Where(t1 => Main.Settings.DisabledProgramSources.All(x => x.UniqueIdentifier != t1.UniqueIdentifier))
-                                                    .Select(x => x);
+            var updatedListWithoutDisabledApps = applications.Select(x => x);
 
             return updatedListWithoutDisabledApps.ToArray();
         }
@@ -179,7 +160,7 @@ public partial class UWP
             }
             catch (Exception )
             {
-                //ProgramLogger.Exception("An unexpected error occurred and unable to verify if package is valid", e, MethodBase.GetCurrentMethod().DeclaringType, "id");
+                // ProgramLogger.Exception("An unexpected error occurred and unable to verify if package is valid", e, MethodBase.GetCurrentMethod().DeclaringType, "id");
                 return false;
             }
         });
