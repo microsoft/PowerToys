@@ -275,7 +275,6 @@ bool SaveToClipboard( WCHAR* filePath, HWND hwnd )
 	dFiles->pFiles = sizeof(DROPFILES);
     dFiles->fWide = TRUE; 
 
-	WCHAR* pStart = (WCHAR*) &dFiles[1];
 	wcscpy( (WCHAR*) & dFiles[1], filePath);
 	GlobalUnlock( hDrop );
 
@@ -385,13 +384,13 @@ void RestoreForeground()
 // ErrorDialog
 //
 //----------------------------------------------------------------------------
-VOID ErrorDialog( HWND hParent, PCTSTR message, DWORD Error )
+VOID ErrorDialog( HWND hParent, PCTSTR message, DWORD _Error )
 {
 	LPTSTR	lpMsgBuf;
 	TCHAR	errmsg[1024];
 
 	FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-					NULL, Error, 
+					NULL, _Error, 
 					MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 					(LPTSTR) &lpMsgBuf, 0, NULL );
 	_stprintf( errmsg, L"%s: %s", message, lpMsgBuf );
@@ -403,11 +402,11 @@ VOID ErrorDialog( HWND hParent, PCTSTR message, DWORD Error )
 // ErrorDialogString
 //
 //----------------------------------------------------------------------------
-VOID ErrorDialogString( HWND hParent, PCTSTR Message, const wchar_t *Error )
+VOID ErrorDialogString( HWND hParent, PCTSTR Message, const wchar_t *_Error )
 {
 	TCHAR	errmsg[1024];
 
-	_stprintf( errmsg, L"%s: %s", Message, Error );
+	_stprintf( errmsg, L"%s: %s", Message, _Error );
 	if( hParent == g_hWndMain )
 		EnsureForeground();
 	MessageBox( hParent, errmsg, APPNAME, MB_OK | MB_ICONERROR );
@@ -675,7 +674,7 @@ LONG EnableDisableSecondaryDisplay( HWND hWnd, BOOLEAN Enable,
 									PDEVMODE OriginalDevMode ) 
 {
     LONG		result;
-	DEVMODE		devMode;
+	DEVMODE		devMode{};
 
 	if( Enable ) {
 
@@ -855,9 +854,9 @@ BYTE* CreateBitmapMemoryDIB(HDC hdcScreenCompat, HDC hBitmapDc, Gdiplus::Rect* l
 Gdiplus::BitmapData *LockGdiPlusBitmap( Gdiplus::Bitmap *Bitmap)
 {
 	Gdiplus::BitmapData *lineData = new Gdiplus::BitmapData();
-	Gdiplus::PixelFormat linePixelFormat = Bitmap->GetPixelFormat();
+	Bitmap->GetPixelFormat();
 	Gdiplus::Rect lineBitmapBounds(0, 0, Bitmap->GetWidth(), Bitmap->GetHeight());
-	Gdiplus::Status status = Bitmap->LockBits(&lineBitmapBounds, Gdiplus::ImageLockModeRead,
+	Bitmap->LockBits(&lineBitmapBounds, Gdiplus::ImageLockModeRead,
 		Bitmap->GetPixelFormat(), lineData);
 	return lineData; 
 }
@@ -883,9 +882,9 @@ void BlurScreen(HDC hdcScreenCompat, Gdiplus::Rect* lineBounds,
 	for (int y = 0; y < lineBounds->Height; ++y) {
 		for (int x = 0; x < lineBounds->Width; ++x) {
 			int index = (y * lineBounds->Width * 4) + (x * 4);  // Assuming 4 bytes per pixel
-			BYTE b = pPixels[index + 0];  // Blue channel
-			BYTE g = pPixels[index + 1];  // Green channel
-			BYTE r = pPixels[index + 2];  // Red channel
+			// BYTE b = pPixels[index + 0];  // Blue channel
+			// BYTE g = pPixels[index + 1];  // Green channel
+			// BYTE r = pPixels[index + 2];  // Red channel
 			BYTE a = pPixels[index + 3];  // Alpha channel
 
 			// Check if this is a drawn pixel
@@ -963,12 +962,13 @@ void DrawBlurredShape( DWORD Shape, Gdiplus::Pen *pen, HDC hdcScreenCompat, Gdip
 
 	Gdiplus::Bitmap* lineBitmap = new Gdiplus::Bitmap(lineBounds.Width, lineBounds.Height, PixelFormat32bppARGB);
 	Gdiplus::Graphics lineGraphics(lineBitmap);
+    static const auto blackBrush = Gdiplus::SolidBrush(Gdiplus::Color::Black);
 	switch (Shape) {
 	case DRAW_RECTANGLE:
-		lineGraphics.FillRectangle(&Gdiplus::SolidBrush(Gdiplus::Color::Black), 0, 0, lineBounds.Width, lineBounds.Height);
+        lineGraphics.FillRectangle(&blackBrush, 0, 0, lineBounds.Width, lineBounds.Height);
 		break;
 	case DRAW_ELLIPSE:
-		lineGraphics.FillEllipse(&Gdiplus::SolidBrush(Gdiplus::Color::Black), 0, 0, lineBounds.Width, lineBounds.Height);
+        lineGraphics.FillEllipse(&blackBrush, 0, 0, lineBounds.Width, lineBounds.Height);
 		break;
 	case DRAW_LINE:
 		OutputDebug(L"BLUR_LINE: %d %d\n", lineBounds.Width, lineBounds.Height);
@@ -1084,8 +1084,8 @@ COLORREF BlendColors(COLORREF color1, const Gdiplus::Color& color2) {
 	//alpha2 /= 2; // Use half the alpha for higher contrast
 
 	// Don't blend grey's as much
-	int minValue = min(red1, min(green1, blue1));
-	int maxValue = max(red1, max(green1, blue1));
+	// int minValue = min(red1, min(green1, blue1));
+	// int maxValue = max(red1, max(green1, blue1));
 	if(TRUE) { // red1 > 0x10 && red1 < 0xC0 && (maxValue - minValue < 0x40)) {
 
 		// This does a standard bright highlight	
@@ -1172,9 +1172,9 @@ void DrawHighlightedShape( DWORD Shape, HDC hdcScreenCompat, Gdiplus::Brush *pBr
 	for (int y = 0; y < lineBounds.Height; ++y) {
 		for (int x = 0; x < lineBounds.Width; ++x) {
 			int index = (y * lineBounds.Width * 4) + (x * 4);  // Assuming 4 bytes per pixel
-			BYTE b = pPixels[index + 0];  // Blue channel
-			BYTE g = pPixels[index + 1];  // Green channel
-			BYTE r = pPixels[index + 2];  // Red channel
+			// BYTE b = pPixels[index + 0];  // Blue channel
+			// BYTE g = pPixels[index + 1];  // Green channel
+			// BYTE r = pPixels[index + 2];  // Red channel
 			BYTE a = pPixels[index + 3];  // Alpha channel
 
 			// Check if this is a drawn pixel
@@ -1504,7 +1504,7 @@ void EnableDisableStickyKeys( BOOLEAN Enable )
 			if( !SystemParametersInfo(SPI_SETSTICKYKEYS, 
 				sizeof(STICKYKEYS), &newStickyKeyValue, SPIF_SENDCHANGE)) {
 
-				DWORD error = GetLastError();
+				// DWORD error = GetLastError();
 
 			}
 		}
@@ -1846,9 +1846,9 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
 		if( (hTextPreview = GetDlgItem( hDlg, IDC_TEXTFONT ))) {
 
 			// 16-pt preview
-			LOGFONT lf = g_LogFont;
-			lf.lfHeight = -21;
-			hFont = CreateFontIndirect( &lf);
+			LOGFONT _lf = g_LogFont;
+			_lf.lfHeight = -21;
+			hFont = CreateFontIndirect( &_lf);
 			hDc = BeginPaint(hDlg, &ps); 
 			SelectObject( hDc, hFont );
 
@@ -2016,7 +2016,6 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 	static HWND		hOpacity;
 	static HWND		hToggleKey;
 	TCHAR			text[32];
-	int				i;
 	DWORD			newToggleKey, newTimeout, newToggleMod, newBreakToggleKey, newDemoTypeToggleKey, newRecordToggleKey, newSnipToggleKey;
 	DWORD			newDrawToggleKey, newDrawToggleMod, newBreakToggleMod, newDemoTypeToggleMod, newRecordToggleMod, newSnipToggleMod;
 	DWORD			newLiveZoomToggleKey, newLiveZoomToggleMod;
@@ -2094,7 +2093,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 		CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTUREAUDIO, 
 			g_CaptureAudio ? BST_CHECKED: BST_UNCHECKED );
 
-		for (i = 0; i < _countof(g_FramerateOptions); i++) {
+		for (int i = 0; i < _countof(g_FramerateOptions); i++) {
 
 			_stprintf(text, L"%d", g_FramerateOptions[i]);
 			SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORDFRAMERATE), (UINT)CB_ADDSTRING,
@@ -2104,7 +2103,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 				SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORDFRAMERATE), CB_SETCURSEL, (WPARAM)i, (LPARAM)0);
 			}
 		}
-		for(int i = 1; i < 11; i++) {
+		for(unsigned int i = 1; i < 11; i++) {
 
 			_stprintf(text, L"%2.1f", ((double) i) / 10 );
 			SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORDSCALING), (UINT)CB_ADDSTRING,
@@ -2711,8 +2710,8 @@ VOID DrawShape( DWORD Shape, HDC hDc, RECT *Rect, bool UseGdiPlus = false )
 	Gdiplus::Brush *pBrush = NULL;
 	if (PEN_COLOR_HIGHLIGHT(g_PenColor)) {
 		// Use half the alpha for higher contrast
-		DWORD color = g_PenColor & 0xFFFFFF | ((g_AlphaBlend / 2) << 24);
-		pBrush = new Gdiplus::SolidBrush( ColorFromCOLORREF( color ) );
+		DWORD newColor = g_PenColor & 0xFFFFFF | ((g_AlphaBlend / 2) << 24);
+        pBrush = new Gdiplus::SolidBrush(ColorFromCOLORREF(newColor));
 		if(UseGdiPlus && Shape != DRAW_LINE && Shape != DRAW_ARROW)
 			InflateRect(Rect, g_PenWidth/2, g_PenWidth/2);
 	}
@@ -3040,7 +3039,7 @@ void ResizePen( HWND hWnd, HDC hdcScreenCompat, HDC hdcScreenCursorCompat, POINT
 		g_RootPenWidth = g_PenWidth;
 	}
 
-	if(prevWidth == g_PenWidth ) {
+	if(prevWidth == static_cast<int>(g_PenWidth) ) {
 		// No change
 		return;
 	}
@@ -3125,7 +3124,7 @@ std::future<winrt::com_ptr<ID3D11Texture2D>> CaptureScreenshotAsync(winrt::IDire
 //----------------------------------------------------------------------------
 winrt::com_ptr<ID3D11Texture2D>CaptureScreenshot(winrt::DirectXPixelFormat const& pixelFormat)
 {
-	auto d3dDevice = util::CreateD3DDevice();
+	auto d3dDevice = util::CreateD3D11Device();
 	auto dxgiDevice = d3dDevice.as<IDXGIDevice>();
 	auto device = CreateDirect3DDevice(dxgiDevice.get());
 
@@ -3408,7 +3407,7 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
 	auto file = co_await appFolder.CreateFileAsync( L"zoomit.mp4", winrt::CreationCollisionOption::ReplaceExisting );
 
 	// Get the device
-	auto d3dDevice = util::CreateD3DDevice();
+	auto d3dDevice = util::CreateD3D11Device();
 	auto dxgiDevice = d3dDevice.as<IDXGIDevice>();
 	g_RecordDevice = CreateDirect3DDevice( dxgiDevice.get() );
 
@@ -3466,9 +3465,9 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
 
 			if( g_RecordingSaveLocation.size() == 0) {
 
-				wil::com_ptr<IShellItem> item;
+				wil::com_ptr<IShellItem> shellItem;
 				wil::unique_cotaskmem_string folderPath;
-				if( SUCCEEDED( saveDialog->GetFolder( item.put() ) ) && SUCCEEDED( item->GetDisplayName( SIGDN_FILESYSPATH, folderPath.put() ) ) )
+                if (SUCCEEDED(saveDialog->GetFolder(shellItem.put())) && SUCCEEDED(shellItem->GetDisplayName(SIGDN_FILESYSPATH, folderPath.put())))
 					g_RecordingSaveLocation = folderPath.get();
 				g_RecordingSaveLocation = std::filesystem::path{ g_RecordingSaveLocation } /= DEFAULT_RECORDING_FILE;
 			}
@@ -3476,10 +3475,10 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
 			saveDialog->SetFileName( suggestedName.c_str() );
 
 			THROW_IF_FAILED( saveDialog->Show( hWnd ) );
-			wil::com_ptr<IShellItem> item;
-			THROW_IF_FAILED( saveDialog->GetResult( item.put() ) );
+            wil::com_ptr<IShellItem> shellItem;
+            THROW_IF_FAILED(saveDialog->GetResult(shellItem.put()));
 			wil::unique_cotaskmem_string filePath;
-			THROW_IF_FAILED( item->GetDisplayName( SIGDN_FILESYSPATH, filePath.put() ) );
+            THROW_IF_FAILED(shellItem->GetDisplayName(SIGDN_FILESYSPATH, filePath.put()));
 			auto path = std::filesystem::path( filePath.get() );
 
 			winrt::StorageFolder folder{ co_await winrt::StorageFolder::GetFolderFromPathAsync( path.parent_path().c_str() ) };
@@ -4028,7 +4027,7 @@ LRESULT APIENTRY MainWndProc(
 
 				g_RecordCropping = TRUE;
 
-				POINT savedPoint;
+				POINT savedPoint{};
 				RECT savedClip = {};
 
 				// Handle the cursor for live zoom and static zoom modes.
@@ -4790,21 +4789,21 @@ LRESULT APIENTRY MainWndProc(
 						}
 					}
 					else {
-						RECT	rc = deletedKey->rc;
+						RECT rect = deletedKey->rc;
 						if (g_BlankedScreen) {
 
-							BlankScreenArea( hdcScreenCompat, &rc, g_BlankedScreen );
+							BlankScreenArea(hdcScreenCompat, &rect, g_BlankedScreen);
 
 						}
 						else {
 
-							BitBlt( hdcScreenCompat, rc.left, rc.top, rc.right - rc.left,
-								rc.bottom - rc.top, hdcScreenSaveCompat, rc.left, rc.top, SRCCOPY | CAPTUREBLT );
+							BitBlt(hdcScreenCompat, rect.left, rect.top, rect.right - rect.left,
+								rect.bottom - rect.top, hdcScreenSaveCompat, rect.left, rect.top, SRCCOPY | CAPTUREBLT );
 						}
 						InvalidateRect( hWnd, NULL, FALSE );
 
-						textPt.x = rc.left;
-						textPt.y = rc.top;
+						textPt.x = rect.left;
+                        textPt.y = rect.top;
 
 						typedKeyList = deletedKey->Next;
 						free(deletedKey);
@@ -5128,7 +5127,7 @@ LRESULT APIENTRY MainWndProc(
 						BYTE* pPixels = static_cast<BYTE*>(lineData->Scan0);
 
 						// Copy the contents of the screen bitmap to the temporary bitmap
-						PDRAW_UNDO oldestUndo = GetOldestUndo(drawUndoList);
+						GetOldestUndo(drawUndoList);
 
 						// Create a GDI bitmap that's the size of the lineBounds rectangle
 						Gdiplus::Bitmap *blurBitmap = CreateGdiplusBitmap( hdcScreenCompat, // oldestUndo->hDc, 
@@ -5188,12 +5187,12 @@ LRESULT APIENTRY MainWndProc(
 						BYTE* pDestPixels2 = CreateBitmapMemoryDIB(hdcScreenCompat, oldestUndo->hDc, &lineBounds, 
 												&hdcDIBOrig, &hDibBitmap, &hDibOrigBitmap);
 
-						for (int y = 0; y < lineBounds.Height; ++y) {
-							for (int x = 0; x < lineBounds.Width; ++x) {
-								int index = (y * lineBounds.Width * 4) + (x * 4);  // Assuming 4 bytes per pixel
-								BYTE b = pPixels[index + 0];  // Blue channel
-								BYTE g = pPixels[index + 1];  // Green channel
-								BYTE r = pPixels[index + 2];  // Red channel
+						for (int local_y = 0; local_y < lineBounds.Height; ++local_y) {
+							for (int local_x = 0; local_x < lineBounds.Width; ++local_x) {
+                                int index = (local_y * lineBounds.Width * 4) + (local_x * 4); // Assuming 4 bytes per pixel
+								// BYTE b = pPixels[index + 0];  // Blue channel
+								// BYTE g = pPixels[index + 1];  // Green channel
+								// BYTE r = pPixels[index + 2];  // Red channel
 								BYTE a = pPixels[index + 3];  // Alpha channel
 
 								// Check if this is a drawn pixel
@@ -5697,10 +5696,10 @@ LRESULT APIENTRY MainWndProc(
 		case IDC_SAVECROP:
 		case IDC_SAVE:
 		{
-			POINT savedCursorPos;
+            POINT local_savedCursorPos{};
 			if( lParam != SHALLOW_ZOOM )
 			{
-				GetCursorPos( &savedCursorPos );
+                GetCursorPos(&local_savedCursorPos);
 			}
 
 			int			saveWidth, saveHeight;
@@ -5717,7 +5716,7 @@ LRESULT APIENTRY MainWndProc(
 					g_RecordCropping = FALSE;
 					if( lParam != SHALLOW_ZOOM )
 					{
-						SetCursorPos( savedCursorPos.x, savedCursorPos.y );
+                        SetCursorPos(local_savedCursorPos.x, local_savedCursorPos.y);
 					}
 					break;
 				}
@@ -5795,7 +5794,7 @@ LRESULT APIENTRY MainWndProc(
 			g_bSaveInProgress = false;
 			if( lParam != SHALLOW_ZOOM )
 			{
-				SetCursorPos( savedCursorPos.x, savedCursorPos.y );
+                SetCursorPos(local_savedCursorPos.x, local_savedCursorPos.y);
 			}
 			ClipCursor( &oldClipRect );
 			break;
@@ -5811,10 +5810,10 @@ LRESULT APIENTRY MainWndProc(
 			if( LOWORD( wParam ) == IDC_COPYCROP )
 			{
 				g_RecordCropping = TRUE;
-				POINT savedCursorPos;
+                POINT local_savedCursorPos{};
 				if( lParam != SHALLOW_ZOOM )
 				{
-					GetCursorPos( &savedCursorPos );
+                    GetCursorPos(&local_savedCursorPos);
 				}
 				SelectRectangle selectRectangle;
 				if( !selectRectangle.Start( hWnd ) )
@@ -5826,7 +5825,7 @@ LRESULT APIENTRY MainWndProc(
 				selectRectangle.Stop();
 				if( lParam != SHALLOW_ZOOM )
 				{
-					SetCursorPos( savedCursorPos.x, savedCursorPos.y );
+                    SetCursorPos(local_savedCursorPos.x, local_savedCursorPos.y);
 				}
 				g_RecordCropping = FALSE;
 
@@ -6184,15 +6183,15 @@ LRESULT APIENTRY MainWndProc(
 			// If there's a background bitmap, draw it in the center
 			if( g_hBackgroundBmp ) {
 
-				BITMAP bmp;
-				GetObject( g_hBackgroundBmp, sizeof(bmp), &bmp );
+				BITMAP local_bmp;
+                GetObject(g_hBackgroundBmp, sizeof(local_bmp), &local_bmp);
 				SetStretchBltMode( hdcScreenCompat, HALFTONE );
 				if( g_BreakBackgroundStretch ) {
 					StretchBlt( hdcScreenCompat, 0, 0, width, height,
-						g_hDcBackgroundFile, 0, 0, bmp.bmWidth, bmp.bmHeight, SRCCOPY|CAPTUREBLT  );
+						g_hDcBackgroundFile, 0, 0, local_bmp.bmWidth, local_bmp.bmHeight, SRCCOPY|CAPTUREBLT  );
 				} else {
-					BitBlt( hdcScreenCompat, width/2 - bmp.bmWidth/2, height/2 - bmp.bmHeight/2, 
-						bmp.bmWidth, bmp.bmHeight, g_hDcBackgroundFile, 0, 0, SRCCOPY|CAPTUREBLT  );
+					BitBlt( hdcScreenCompat, width/2 - local_bmp.bmWidth/2, height/2 - local_bmp.bmHeight/2, 
+						local_bmp.bmWidth, local_bmp.bmHeight, g_hDcBackgroundFile, 0, 0, SRCCOPY|CAPTUREBLT  );
 				}
 			}
 
@@ -6319,7 +6318,7 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	int				moveWidth, moveHeight;
 	int				sourceRectHeight, sourceRectWidth;
 	DWORD			curTickCount;
-	RECT			sourceRect;
+	RECT			sourceRect{};
 	static RECT		lastSourceRect;
 	static float	zoomLevel;
 	static float	zoomTelescopeStep;
@@ -6961,11 +6960,11 @@ int APIENTRY WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 			int count = 0;
 			while( count++ < 5 ) {
 
-				HWND hWndOptions = FindWindow( NULL, L"ZoomIt - Sysinternals: www.sysinternals.com" );
-				if( hWndOptions ) {
+				HWND local_hWndOptions = FindWindow( NULL, L"ZoomIt - Sysinternals: www.sysinternals.com" );
+				if( local_hWndOptions ) {
 
-					SetForegroundWindow( hWndOptions );
-					SetWindowPos( hWndOptions, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE|SWP_NOMOVE|SWP_SHOWWINDOW ); 
+					SetForegroundWindow( local_hWndOptions );
+					SetWindowPos( local_hWndOptions, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE|SWP_NOMOVE|SWP_SHOWWINDOW ); 
 					break;
 				}
 				Sleep( 100 );

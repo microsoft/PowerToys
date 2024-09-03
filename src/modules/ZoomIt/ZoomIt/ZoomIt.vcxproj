@@ -67,7 +67,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <DisableSpecificWarnings>4100;4091</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4100;4091;4245</DisableSpecificWarnings>
       <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\..\common\sysinternals</AdditionalIncludeDirectories>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>

@@ -1150,7 +1150,6 @@ bool CleanDemoTypeText()
     size_t lastEnd = g_Text.rfind( L"[end]" );
     if( lastEnd != std::wstring::npos )
     {
-        size_t i = lastEnd + END_CONTROL_LEN;
         for( size_t i = lastEnd + END_CONTROL_LEN; i < g_Text.length(); i++ )
         {
             if( iswprint( g_Text[i] ) && g_Text[i] != L' ' )
