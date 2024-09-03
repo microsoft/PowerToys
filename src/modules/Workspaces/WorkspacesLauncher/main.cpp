@@ -1,10 +1,11 @@
-﻿#include "pch.h"
+#include "pch.h"
 
 #include <WorkspacesLib/JsonUtils.h>
 #include <WorkspacesLib/WorkspacesData.h>
 #include <WorkspacesLib/trace.h>
 
 #include <AppLauncher.h>
+#include <LauncherUIHelper.h>
 #include <utils.h>
 
 #include <Generated Files/resource.h>
@@ -171,12 +172,15 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         return 1;
     }
 
+    // start WorkspacesLauncherUI
+    LauncherUIHelper uiHelper;
+    uiHelper.LaunchUI();
+
     // launch apps
     Logger::info(L"Launch Workspace {} : {}", projectToLaunch.name, projectToLaunch.id);
-    auto monitors = MonitorUtils::IdentifyMonitors();
     std::vector<std::pair<std::wstring, std::wstring>> launchErrors{};
     auto start = std::chrono::high_resolution_clock::now();
-    bool launchedSuccessfully = Launch(projectToLaunch, monitors, launchErrors);
+    bool launchedSuccessfully = Launch(projectToLaunch, uiHelper, launchErrors);
     
     // update last-launched time
     if (invokePoint != InvokePoint::LaunchAndEdit)
@@ -199,6 +203,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     std::chrono::duration<double> duration = end - start;
     Logger::trace(L"Launching time: {} s", duration.count());
 
+    auto monitors = MonitorUtils::IdentifyMonitors();
     bool differentSetup = monitors.size() != projectToLaunch.monitors.size();
     if (!differentSetup)
     {

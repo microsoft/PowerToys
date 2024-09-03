@@ -168,7 +168,7 @@ bool Launch(const WorkspacesData::WorkspacesProject::Application& app, ErrorList
     return launched;
 }
 
-bool Launch(WorkspacesData::WorkspacesProject& project, const std::vector<WorkspacesData::WorkspacesProject::Monitor>& monitors, ErrorList& launchErrors)
+bool Launch(WorkspacesData::WorkspacesProject& project, const LauncherUIHelper& uiHelper, ErrorList& launchErrors)
 {
     bool launchedSuccessfully{ true };
 

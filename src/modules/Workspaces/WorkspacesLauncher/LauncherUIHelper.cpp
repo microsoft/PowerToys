@@ -59,7 +59,7 @@ void LauncherUIHelper::LaunchUI()
     }
 }
 
-void LauncherUIHelper::UpdateLaunchStatus(LaunchingApps launchedApps)
+void LauncherUIHelper::UpdateLaunchStatus(LaunchingApps launchedApps) const
 {
     WorkspacesData::AppLaunchData appData = WorkspacesData::AppLaunchData();
     appData.appLaunchInfoList.reserve(launchedApps.size());

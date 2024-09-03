@@ -9,7 +9,7 @@ public:
     ~LauncherUIHelper();
 
     void LaunchUI();
-    void UpdateLaunchStatus(LaunchingApps launchedApps);
+    void UpdateLaunchStatus(LaunchingApps launchedApps) const;
 
 private:
     DWORD uiProcessId;
