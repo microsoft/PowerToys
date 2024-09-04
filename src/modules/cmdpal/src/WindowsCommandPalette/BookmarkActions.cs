@@ -384,6 +384,7 @@ public class UrlAction : InvokableCommand
                 return null;
             }
         }
+
         return uri;
     }
 
@@ -481,6 +482,7 @@ public class BookmarksActionProvider : ICommandProvider
                 {
                     continue;
                 }
+
                 var name = nameToken.ToString();
                 var url = urlToken.ToString();
                 var type = typeToken.ToString();
@@ -504,6 +506,7 @@ public class BookmarksActionProvider : ICommandProvider
         {
             LoadCommands();
         }
+
         return _commands.Select(action =>
         {
             var listItem = new ListItem(action);

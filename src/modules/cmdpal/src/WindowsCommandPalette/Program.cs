@@ -34,6 +34,7 @@ sealed class  Program
                 app = new App();
             });
         }
+
         return 0;
     }
 

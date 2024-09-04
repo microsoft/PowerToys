@@ -55,7 +55,8 @@ public class SectionInfoList : ObservableCollection<ListItemViewModel>
 
     private void Items_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        //DispatcherQueue.TryEnqueue(() => {
+        // DispatcherQueue.TryEnqueue(() => {
+
         if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null)
         {
             foreach (var i in e.NewItems)
@@ -66,28 +67,30 @@ public class SectionInfoList : ObservableCollection<ListItemViewModel>
                     {
                         ListItemViewModel vm = new(li);
                         this.Add(vm);
-
                     }
-                    //if (isDynamic)
-                    //{
+
+                    // if (isDynamic)
+                    // {
                     //    // Dynamic lists are in charge of their own
                     //    // filtering. They know if this thing was already
                     //    // filtered or not.
                     //    FilteredItems.Add(vm);
-                    //}
+                    // }
                 }
             }
         }
         else if (e.Action == NotifyCollectionChangedAction.Reset)
         {
             this.Clear();
-            //Items.Clear();
-            //if (isDynamic)
-            //{
+
+            // Items.Clear();
+            // if (isDynamic)
+            // {
             //    FilteredItems.Clear();
-            //}
+            // }
         }
-        //});
+
+        // });
     }
 }
 
@@ -265,7 +268,11 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
     {
         get
         {
-            if (ItemsList.SelectedItem is not ListItemViewModel li) return false;
+            if (ItemsList.SelectedItem is not ListItemViewModel li)
+            {
+                return false;
+            }
+
             return li.HasMoreCommands;
         }
     }
@@ -281,8 +288,10 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
         ViewModel = (ListPageViewModel?)e.Parameter;
         if (ViewModel == null) return;
 
-        if (e.NavigationMode == NavigationMode.New) {
-            ViewModel.InitialRender().ContinueWith( (t) => {
+        if (e.NavigationMode == NavigationMode.New)
+        {
+            ViewModel.InitialRender().ContinueWith((t) =>
+            {
                 DispatcherQueue.TryEnqueue(async () => { await UpdateFilter(FilterBox.Text); });
             });
 
@@ -376,7 +385,10 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
 
     private void FilterBox_KeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (e.Handled) return;
+        if (e.Handled)
+        {
+            return;
+        }
 
         var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(Windows.System.VirtualKey.Control).HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
         if (e.Key == Windows.System.VirtualKey.Up || e.Key == Windows.System.VirtualKey.Down)
@@ -387,6 +399,7 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
                 ItemsList.SelectedIndex = newIndex;
                 ItemsList.ScrollIntoView(ItemsList.SelectedItem);
             }
+
             e.Handled = true;
         }
         else if (e.Key == Windows.System.VirtualKey.Enter /* && ItemsList.SelectedItem != null */)
@@ -397,6 +410,7 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
                 {
                     DoAction(new(li.DefaultAction));
                 }
+
                 e.Handled = true;
             }
         }
@@ -410,6 +424,7 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
             {
                 ViewModel?.GoBack();
             }
+
             e.Handled = true;
         }
         // ctrl+k

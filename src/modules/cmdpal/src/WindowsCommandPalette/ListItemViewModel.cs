@@ -130,26 +130,18 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
             {
                 case "Name":
                 case nameof(Title):
-                    {
-                        this.Title = item.Title;
-                    }
+                    this.Title = item.Title;
                     break;
                 case nameof(Subtitle):
-                    {
-                        this.Subtitle = item.Subtitle;
-                    }
+                    this.Subtitle = item.Subtitle;
                     break;
                 case "MoreCommands":
-                    {
-                        BubbleXamlPropertyChanged(nameof(HasMoreCommands));
-                        BubbleXamlPropertyChanged(nameof(ContextActions));
-                    }
+                    BubbleXamlPropertyChanged(nameof(HasMoreCommands));
+                    BubbleXamlPropertyChanged(nameof(ContextActions));
                     break;
                 case nameof(Icon):
-                    {
-                        this.Icon = item.Command.Icon.Icon;
-                        BubbleXamlPropertyChanged(nameof(IcoElement));
-                    }
+                    this.Icon = item.Command.Icon.Icon;
+                    BubbleXamlPropertyChanged(nameof(IcoElement));
                     break;
             }
 
