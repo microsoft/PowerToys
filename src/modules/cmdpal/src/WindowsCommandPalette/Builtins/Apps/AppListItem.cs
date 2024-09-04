@@ -8,10 +8,12 @@ namespace WindowsCommandPalette.BuiltinCommands.AllApps;
 
 internal sealed class AppListItem : ListItem
 {
-    private readonly AppItem app;
-    public AppListItem(AppItem app) : base(new AppAction(app))
+    private readonly AppItem _app;
+
+    public AppListItem(AppItem app)
+        : base(new AppAction(app))
     {
-        this.app = app;
+        this._app = app;
         this.Title = app.Name;
         this.Subtitle = app.Subtitle;
         this.Details = new Details() { Title = this.Title, HeroImage = this.Command.Icon, Body = "### App" };
@@ -21,7 +23,7 @@ internal sealed class AppListItem : ListItem
         {
             // Win32 exe or other non UWP app
             this._MoreCommands = [
-                new CommandContextItem(new OpenPathAction(app.DirPath){ Name = "Open location", Icon=new("\ue838") })
+                new CommandContextItem(new OpenPathAction(app.DirPath) { Name = "Open location", Icon=new("\ue838") })
             ];
         }
         else

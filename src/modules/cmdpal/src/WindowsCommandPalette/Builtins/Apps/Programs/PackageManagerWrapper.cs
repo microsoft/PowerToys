@@ -25,23 +25,9 @@ public class PackageManagerWrapper : IPackageManager
         {
             var pkgs = _packageManager.FindPackagesForUser(user.Value);
 
-            return pkgs.Select(TryGetWrapperFromPackage).Where(package => package != null);
+            return pkgs.Select(PackageWrapper.GetWrapperFromPackage).Where(package => package != null);
         }
 
         return Enumerable.Empty<IPackage>();
-    }
-
-    private static PackageWrapper TryGetWrapperFromPackage(Package package)
-    {
-        try
-        {
-            return PackageWrapper.GetWrapperFromPackage(package);
-        }
-        catch (Exception )
-        {
-            // Log.Error(e.Message, typeof(PackageManagerWrapper));
-        }
-
-        return null;
     }
 }

@@ -114,7 +114,6 @@ public sealed partial class MainWindow : Window
         hotKeyPrc = HotKeyPrc;
         var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(hotKeyPrc);
         origPrc = Marshal.GetDelegateForFunctionPointer<WNDPROC>((IntPtr)Windows.Win32.PInvoke.SetWindowLongPtr(hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, hotKeyPrcPointer));
-
     }
 
     private void PositionCentered()
@@ -123,10 +122,11 @@ public sealed partial class MainWindow : Window
         DisplayArea displayArea = DisplayArea.GetFromWindowId(m_AppWindow.Id, DisplayAreaFallback.Nearest);
         if (displayArea is not null)
         {
-            var CenteredPosition = AppWindow.Position;
-            CenteredPosition.X = ((displayArea.WorkArea.Width - AppWindow.Size.Width) / 2);
-            CenteredPosition.Y = ((displayArea.WorkArea.Height - AppWindow.Size.Height) / 2);
-            AppWindow.Move(CenteredPosition);
+            var centeredPosition = AppWindow.Position;
+            centeredPosition.X = (displayArea.WorkArea.Width - AppWindow.Size.Width) / 2;
+            centeredPosition.Y = (displayArea.WorkArea.Height - AppWindow.Size.Height) / 2;
+
+            AppWindow.Move(centeredPosition);
         }
     }
 
@@ -146,14 +146,14 @@ public sealed partial class MainWindow : Window
             if (key != null)
             {
                 var o = key.GetValue("TaskbarGlomLevel");
-                if (o != null && o is Int32 i)
+                if (o != null && o is int i)
                 {
                     onLeft = i > 0;
                 }
                 if (!onLeft)
                 {
                     o = key.GetValue("TaskbarAl");
-                    if (o != null && o is Int32 j)
+                    if (o != null && o is int j)
                     {
                         onLeft = j == 0;
                     }
@@ -162,24 +162,25 @@ public sealed partial class MainWindow : Window
         }
         catch (Exception)
         {
-            //react appropriately
+            // react appropriately
         }
 
         Microsoft.UI.Windowing.DisplayArea displayArea = Microsoft.UI.Windowing.DisplayArea.GetFromWindowId(m_AppWindow.Id, Microsoft.UI.Windowing.DisplayAreaFallback.Nearest);
         if (displayArea is not null)
         {
-            var CenteredPosition = m_AppWindow.Position;
+            var centeredPosition = m_AppWindow.Position;
             if (onLeft)
             {
-                CenteredPosition.X = 16;
-                CenteredPosition.Y = ((displayArea.WorkArea.Height - m_AppWindow.Size.Height) - 16);
+                centeredPosition.X = 16;
+                centeredPosition.Y = displayArea.WorkArea.Height - m_AppWindow.Size.Height - 16;
             }
             else
             {
-                CenteredPosition.X = ((displayArea.WorkArea.Width - m_AppWindow.Size.Width) / 2);
-                CenteredPosition.Y = ((displayArea.WorkArea.Height - m_AppWindow.Size.Height) - 16);
+                centeredPosition.X = (displayArea.WorkArea.Width - m_AppWindow.Size.Width) / 2;
+                centeredPosition.Y = displayArea.WorkArea.Height - m_AppWindow.Size.Height - 16;
             }
-            m_AppWindow.Move(CenteredPosition);
+
+            m_AppWindow.Move(centeredPosition);
         }
     }
 

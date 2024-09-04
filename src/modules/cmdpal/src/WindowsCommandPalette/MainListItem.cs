@@ -14,7 +14,8 @@ public sealed class MainListItem : ListItem
 
     public IListItem Item => _listItem;
 
-    internal MainListItem(IListItem listItem) : base(listItem.Command)
+    internal MainListItem(IListItem listItem)
+        : base(listItem.Command)
     {
         _listItem = listItem;
 

@@ -27,7 +27,7 @@ internal sealed class AppAction : InvokableCommand
         {
             try
             {
-                appManager.ActivateApplication(amuid, /*queryArguments*/ "", noFlags, out var unusedPid);
+                appManager.ActivateApplication(amuid, /*queryArguments*/ string.Empty, noFlags, out var unusedPid);
             }
             catch (System.Exception)
             {

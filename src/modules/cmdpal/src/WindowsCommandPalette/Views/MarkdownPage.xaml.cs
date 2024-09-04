@@ -28,7 +28,8 @@ public sealed class MarkdownPageViewModel : PageViewModel
 
     internal IList<ContextItemViewModel> ContextActions => contextActions.Select(a => new ContextItemViewModel(a)).ToList();
 
-    public MarkdownPageViewModel(IMarkdownPage page) : base(page)
+    public MarkdownPageViewModel(IMarkdownPage page)
+        : base(page)
     {
     }
 

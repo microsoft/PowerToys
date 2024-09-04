@@ -44,21 +44,21 @@ public sealed class FormViewModel : System.ComponentModel.INotifyPropertyChanged
 
     internal void InitialRender()
     {
-        //var t = new Task<bool>(() => {
-            this.TemplateJson = this.form.TemplateJson();
-            try
-            {
-                this.DataJson = this.form.DataJson();
-            }
-            catch (Exception)
-            {
-                this.DataJson = "{}";
-            }
-            //return true;
-        //});
-        //t.Start();
-        //await t;
+        // var t = new Task<bool>(() => {
+        this.TemplateJson = this.form.TemplateJson();
+        try
+        {
+            this.DataJson = this.form.DataJson();
+        }
+        catch (Exception)
+        {
+            this.DataJson = "{}";
+        }
 
+        // return true;
+        // });
+        // t.Start();
+        // await t;
         AdaptiveCardTemplate template = new(TemplateJson);
         var cardJson = template.Expand(DataJson);
         this.card = AdaptiveCard.FromJsonString(cardJson);
@@ -103,7 +103,8 @@ public sealed class FormPageViewModel : PageViewModel
 
     internal ObservableCollection<FormViewModel> Forms = new();
 
-    public FormPageViewModel(IFormPage page) : base(page)
+    public FormPageViewModel(IFormPage page)
+        : base(page)
     {
     }
 

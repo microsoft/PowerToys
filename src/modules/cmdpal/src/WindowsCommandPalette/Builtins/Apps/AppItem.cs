@@ -6,12 +6,17 @@ namespace WindowsCommandPalette.BuiltinCommands.AllApps;
 
 internal sealed class AppItem
 {
-    public string Name { get; set; } = "";
-    public string Subtitle { get; set; } = "";
-    public string IcoPath { get; set; } = "";
-    public string ExePath { get; set; } = "";
-    public string DirPath { get; set; } = "";
-    public string UserModelId { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
+
+    public string Subtitle { get; set; } = string.Empty;
+
+    public string IcoPath { get; set; } = string.Empty;
+
+    public string ExePath { get; set; } = string.Empty;
+
+    public string DirPath { get; set; } = string.Empty;
+
+    public string UserModelId { get; set; } = string.Empty;
 
     public AppItem()
     {
