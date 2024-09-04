@@ -14,7 +14,7 @@ internal sealed class MastodonExtensionPage : ListPage
     public MastodonExtensionPage()
     {
         Icon = new("https://mastodon.social/packs/media/icons/android-chrome-36x36-4c61fdb42936428af85afdbf8c6a45a8.png");
-        Name = "Mastodon extension for cmdpal";
+        Name = "Mastodon";
     }
 
     public override ISection[] GetItems()
