@@ -35,32 +35,37 @@ public class BookmarksActionProvider : ICommandProvider
     {
         List<ICommand> collected = [];
         collected.Add(_addNewCommand);
+
         try
         {
             var jsonFile = StateJsonPath();
             if (File.Exists(jsonFile))
             {
-
                 var data = Bookmarks.ReadFromFile(jsonFile);
 
                 if (data != null)
                 {
                     var items = data?.Data;
-                    foreach (var item in items)
+
+                    if (items != null)
                     {
-                        var nameToken = item.Name;
-                        var urlToken = item.Bookmark;
-                        var typeToken = item.Type;
-
-                        if (nameToken == null || urlToken == null || typeToken == null)
+                        foreach (var item in items)
                         {
-                            continue;
-                        }
+                            var nameToken = item.Name;
+                            var urlToken = item.Bookmark;
+                            var typeToken = item.Type;
 
-                        var name = nameToken.ToString();
-                        var url = urlToken.ToString();
-                        var type = typeToken.ToString();
-                        collected.Add((url.Contains('{') && url.Contains('}')) ? new BookmarkPlaceholderPage(name, url, type) : new UrlAction(name, url, type));
+                            if (nameToken == null || urlToken == null || typeToken == null)
+                            {
+                                continue;
+                            }
+
+                            var name = nameToken.ToString();
+                            var url = urlToken.ToString();
+                            var type = typeToken.ToString();
+
+                            collected.Add((url.Contains('{') && url.Contains('}')) ? new BookmarkPlaceholderPage(name, url, type) : new UrlAction(name, url, type));
+                        }
                     }
                 }
             }
