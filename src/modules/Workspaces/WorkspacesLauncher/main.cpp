@@ -179,7 +179,8 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 
     // start WorkspacesWindowArranger
     WindowArrangerHelper windowArrangerHelper;
-    windowArrangerHelper.Launch(projectToLaunch.id);
+    bool launchElevated = std::find_if(projectToLaunch.apps.begin(), projectToLaunch.apps.end(), [](const WorkspacesData::WorkspacesProject::Application& app) { return app.isElevated; }) != projectToLaunch.apps.end();
+    windowArrangerHelper.Launch(projectToLaunch.id, launchElevated);
     
     // launch apps
     Logger::info(L"Launch Workspace {} : {}", projectToLaunch.name, projectToLaunch.id);
