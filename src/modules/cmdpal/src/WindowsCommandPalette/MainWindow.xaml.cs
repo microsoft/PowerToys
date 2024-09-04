@@ -63,6 +63,7 @@ public sealed partial class MainWindow : Window
     {
         Windows.Win32.PInvoke.ShowWindow(hwnd, Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_SHOW);
         Windows.Win32.PInvoke.SetForegroundWindow(hwnd);
+
         // Windows.Win32.PInvoke.SetFocus(hwnd);
         Windows.Win32.PInvoke.SetActiveWindow(hwnd);
         MainPage.ViewModel.Summon();
@@ -85,6 +86,7 @@ public sealed partial class MainWindow : Window
         AppTitleBar.SizeChanged += AppTitleBar_SizeChanged;
 
         ExtendsContentIntoTitleBar = true;
+
         // Hide our titlebar. We'll make the sides draggable later
         m_AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
         AppTitleTextBlock.Text = AppInfo.Current.DisplayInfo.DisplayName;
@@ -100,6 +102,7 @@ public sealed partial class MainWindow : Window
         _mainViewModel.QuitRequested += (s, e) =>
         {
             this.Close();
+
             // Application.Current.Exit();
         };
     }
@@ -149,6 +152,7 @@ public sealed partial class MainWindow : Window
                 {
                     onLeft = i > 0;
                 }
+
                 if (!onLeft)
                 {
                     o = key.GetValue("TaskbarAl");
@@ -277,7 +281,6 @@ public sealed partial class MainWindow : Window
         }
     }
 
-
     private static string KeybindingToString(VirtualKey key, VirtualKeyModifiers modifiers)
     {
         var keyString = key.ToString();
@@ -295,14 +298,17 @@ public sealed partial class MainWindow : Window
         {
             modifierString += "ctrl+";
         }
+
         if (modifiers.HasFlag(VirtualKeyModifiers.Shift))
         {
             modifierString += "shift+";
         }
+
         if (modifiers.HasFlag(VirtualKeyModifiers.Menu))
         {
             modifierString += "alt+";
         }
+
         if (modifiers.HasFlag(VirtualKeyModifiers.Windows))
         {
             modifierString += "win+";
@@ -352,14 +358,17 @@ public sealed partial class MainWindow : Window
         {
             mod |= Windows.Win32.UI.Input.KeyboardAndMouse.HOT_KEY_MODIFIERS.MOD_CONTROL;
         }
+
         if (modifiers.HasFlag(VirtualKeyModifiers.Shift))
         {
             mod |= Windows.Win32.UI.Input.KeyboardAndMouse.HOT_KEY_MODIFIERS.MOD_SHIFT;
         }
+
         if (modifiers.HasFlag(VirtualKeyModifiers.Menu))
         {
             mod |= Windows.Win32.UI.Input.KeyboardAndMouse.HOT_KEY_MODIFIERS.MOD_ALT;
         }
+
         if (modifiers.HasFlag(VirtualKeyModifiers.Windows))
         {
             mod |= Windows.Win32.UI.Input.KeyboardAndMouse.HOT_KEY_MODIFIERS.MOD_WIN;
@@ -371,11 +380,11 @@ public sealed partial class MainWindow : Window
     private void MainWindow_Closed(object sender, WindowEventArgs args)
     {
         Application.Current.GetService<IExtensionService>().SignalStopExtensionsAsync();
+
         // Log.Information("Terminating via MainWindow_Closed.");
 
         // WinUI bug is causing a crash on shutdown when FailFastOnErrors is set to true (#51773592).
         // Workaround by turning it off before shutdown.
         App.Current.DebugSettings.FailFastOnErrors = false;
     }
-
 }

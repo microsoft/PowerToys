@@ -37,7 +37,7 @@ public class SectionInfoList : ObservableCollection<ListItemViewModel>
 {
     public string Title { get; }
 
-    private readonly DispatcherQueue DispatcherQueue = DispatcherQueue.GetForCurrentThread();
+    private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
     public SectionInfoList(ISection? section, IEnumerable<ListItemViewModel> items)
         : base(items)
@@ -49,7 +49,7 @@ public class SectionInfoList : ObservableCollection<ListItemViewModel>
             observable.CollectionChanged += Items_CollectionChanged;
         }
 
-        if (this.DispatcherQueue == null)
+        if (this._dispatcherQueue == null)
         {
             throw new InvalidOperationException("DispatcherQueue is null");
         }
@@ -347,7 +347,7 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
     {
         FlyoutShowOptions options = new FlyoutShowOptions
         {
-            ShowMode = FlyoutShowMode.Standard
+            ShowMode = FlyoutShowMode.Standard,
         };
         MoreCommandsButton.Flyout.ShowAt(MoreCommandsButton, options);
         ActionsDropdown.SelectedIndex = 0;
@@ -486,7 +486,7 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
             {
                 FlyoutShowOptions options = new FlyoutShowOptions
                 {
-                    ShowMode = FlyoutShowMode.Standard
+                    ShowMode = FlyoutShowMode.Standard,
                 };
                 MoreCommandsButton.Flyout.ShowAt(MoreCommandsButton, options);
                 ActionsDropdown.SelectedIndex = 0;
