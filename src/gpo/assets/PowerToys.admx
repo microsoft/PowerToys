@@ -20,7 +20,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_81_0" displayName="$(string.SUPPORTED_POWERTOYS_0_81_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_81_1" displayName="$(string.SUPPORTED_POWERTOYS_0_81_1)"/>
       <definition name="SUPPORTED_POWERTOYS_0_83_0" displayName="$(string.SUPPORTED_POWERTOYS_0_83_0)"/>
-      <definition name="SUPPORTED_POWERTOYS_0_84_0" displayName="$(string.SUPPORTED_POWERTOYS_0_84_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_85_0" displayName="$(string.SUPPORTED_POWERTOYS_0_85_0)"/>
     </definitions>
   </supportedOn>
   <categories>
@@ -150,7 +150,7 @@
     </policy>
     <policy name="ConfigureEnabledUtilityFileExplorerPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerPreview)" explainText="$(string.ConfigureEnabledUtilityDescriptionFileExplorerPreview)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerPreview">
       <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_84_0" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_85_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>
