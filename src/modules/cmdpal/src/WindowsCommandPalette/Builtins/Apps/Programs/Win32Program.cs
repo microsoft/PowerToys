@@ -62,9 +62,6 @@ public class Win32Program // : IProgram
 
     public ApplicationType AppType { get; set; }
 
-    // Wrappers for File Operations
-    public static IFileVersionInfoWrapper FileVersionInfoWrapper { get; set; } = new FileVersionInfoWrapper();
-
     public static IShellLinkHelper ShellLinkHelper { get; set; } = new ShellLinkHelper();
 
     private const string ShortcutExtension = "lnk";
@@ -265,7 +262,8 @@ public class Win32Program // : IProgram
                 }
                 else
                 {
-                    var info = FileVersionInfoWrapper.GetVersionInfo(target);
+                    var info = FileVersionInfo.GetVersionInfo(path);
+
                     if (!string.IsNullOrEmpty(info?.FileDescription))
                     {
                         program.Description = info.FileDescription;
@@ -295,7 +293,7 @@ public class Win32Program // : IProgram
         try
         {
             var program = CreateWin32Program(path);
-            var info = FileVersionInfoWrapper.GetVersionInfo(path);
+            var info = FileVersionInfo.GetVersionInfo(path);
             if (!string.IsNullOrEmpty(info?.FileDescription))
             {
                 program.Description = info.FileDescription;
