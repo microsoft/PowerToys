@@ -95,7 +95,7 @@ public sealed partial class MainWindow : Window
 
         // PositionForStartMenu();
         PositionCentered();
-        _mainViewModel.HideRequested += _mainViewModel_HideRequested;
+        _mainViewModel.HideRequested += MainViewModel_HideRequested;
 
         _mainViewModel.QuitRequested += (s, e) =>
         {
@@ -183,7 +183,7 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    private void _mainViewModel_HideRequested(object sender, object? args)
+    private void MainViewModel_HideRequested(object sender, object? args)
     {
         Windows.Win32.PInvoke.ShowWindow(hwnd, Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_HIDE);
     }

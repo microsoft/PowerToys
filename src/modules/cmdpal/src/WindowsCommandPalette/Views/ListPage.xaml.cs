@@ -179,8 +179,7 @@ public sealed class ListPageViewModel : PageViewModel
                 section,
                 section.Items
                     .Where(i => i != null && !string.IsNullOrEmpty(i.Title))
-                    .Select(i => new ListItemViewModel(i))
-                );
+                    .Select(i => new ListItemViewModel(i)));
 
             // var items = section.Items;
             // for (var i = 0; i < items.Length; i++) {
