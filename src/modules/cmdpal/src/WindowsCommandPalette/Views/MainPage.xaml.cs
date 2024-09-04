@@ -11,6 +11,7 @@ using Microsoft.CmdPal.Common.Extensions;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
+using Microsoft.CmdPal.Ext.Settings;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -21,7 +22,6 @@ using Windows.Foundation;
 using Windows.Win32;
 using WindowsCommandPalette.BuiltinCommands;
 using WindowsCommandPalette.BuiltinCommands.AllApps;
-using WindowsCommandPalette.Builtins;
 
 namespace WindowsCommandPalette.Views;
 

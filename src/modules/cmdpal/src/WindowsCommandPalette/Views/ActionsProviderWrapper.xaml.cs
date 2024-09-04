@@ -19,7 +19,6 @@ using Windows.Foundation;
 using Windows.Win32;
 using WindowsCommandPalette.BuiltinCommands;
 using WindowsCommandPalette.BuiltinCommands.AllApps;
-using WindowsCommandPalette.Builtins;
 
 namespace WindowsCommandPalette.Views;
 
