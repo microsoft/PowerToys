@@ -6,7 +6,7 @@ using System;
 using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 using Windows.System;
 
-namespace Run.Bookmarks;
+namespace Microsoft.CmdPal.Ext.Bookmarks;
 
 public class UrlAction : InvokableCommand
 {

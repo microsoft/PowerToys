@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 using Windows.System;
 
-namespace Run.Bookmarks;
+namespace Microsoft.CmdPal.Ext.Bookmarks;
 
 internal sealed class BookmarkPlaceholderForm : Form
 {

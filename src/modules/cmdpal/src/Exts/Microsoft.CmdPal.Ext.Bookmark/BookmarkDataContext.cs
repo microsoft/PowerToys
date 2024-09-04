@@ -4,7 +4,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Run.Bookmarks;
+namespace Microsoft.CmdPal.Ext.Bookmarks;
 
 [JsonSerializable(typeof(BookmarkData))]
 [JsonSerializable(typeof(string))]

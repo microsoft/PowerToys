@@ -5,7 +5,7 @@
 using Microsoft.Windows.CommandPalette.Extensions;
 using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 
-namespace Run.Bookmarks;
+namespace Microsoft.CmdPal.Ext.Bookmarks;
 
 internal sealed class BookmarkPlaceholderPage : FormPage
 {

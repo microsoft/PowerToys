@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
-namespace Run.Bookmarks;
+namespace Microsoft.CmdPal.Ext.Bookmarks;
 
 public sealed class Bookmarks
 {

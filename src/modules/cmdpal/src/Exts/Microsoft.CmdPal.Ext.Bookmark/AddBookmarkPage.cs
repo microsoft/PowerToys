@@ -6,7 +6,7 @@ using Microsoft.Windows.CommandPalette.Extensions;
 using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 using Windows.Foundation;
 
-namespace Run.Bookmarks;
+namespace Microsoft.CmdPal.Ext.Bookmarks;
 
 internal sealed class AddBookmarkPage : FormPage
 {

@@ -9,7 +9,7 @@ using System.Linq;
 using Microsoft.Windows.CommandPalette.Extensions;
 using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 
-namespace Run.Bookmarks;
+namespace Microsoft.CmdPal.Ext.Bookmarks;
 
 public class BookmarksActionProvider : ICommandProvider
 {
