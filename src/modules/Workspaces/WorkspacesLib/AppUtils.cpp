@@ -238,6 +238,17 @@ namespace Utils
                 }
             }
 
+            // try by name if path not found
+            // apps list could contain a different path from that one we get from the process (for electron)
+            std::wstring exeName = std::filesystem::path(appPath).stem();
+            for (const auto& appData : apps)
+            {
+                if (appData.name == exeName)
+                {
+                    return appData;
+                }
+            }
+
             return AppData{
                 .installPath = appPath
             };
