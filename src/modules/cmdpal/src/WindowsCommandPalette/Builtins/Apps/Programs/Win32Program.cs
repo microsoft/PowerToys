@@ -18,34 +18,34 @@ public class Win32Program // : IProgram
         Enabled = false,
     };
 
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     // Localized name based on windows display language
     public string NameLocalized { get; set; } = string.Empty;
 
-    public string UniqueIdentifier { get; set; }
+    public string UniqueIdentifier { get; set; } = string.Empty;
 
-    public string IcoPath { get; set; }
+    public string IcoPath { get; set; } = string.Empty;
 
     public string Description { get; set; } = string.Empty;
 
     // Path of app executable or lnk target executable
-    public string FullPath { get; set; }
+    public string FullPath { get; set; } = string.Empty;
 
     // Localized path based on windows display language
     public string FullPathLocalized { get; set; } = string.Empty;
 
-    public string ParentDirectory { get; set; }
+    public string ParentDirectory { get; set; } = string.Empty;
 
-    public string ExecutableName { get; set; }
+    public string ExecutableName { get; set; } = string.Empty;
 
     // Localized executable name based on windows display language
     public string ExecutableNameLocalized { get; set; } = string.Empty;
 
     // Path to the lnk file on LnkProgram
-    public string LnkFilePath { get; set; }
+    public string LnkFilePath { get; set; } = string.Empty;
 
-    public string LnkResolvedExecutableName { get; set; }
+    public string LnkResolvedExecutableName { get; set; } = string.Empty;
 
     // Localized path based on windows display language
     public string LnkResolvedExecutableNameLocalized { get; set; } = string.Empty;
@@ -61,9 +61,6 @@ public class Win32Program // : IProgram
     public string Location => ParentDirectory;
 
     public ApplicationType AppType { get; set; }
-
-    // Wrappers for File Operations
-    public static IFileVersionInfoWrapper FileVersionInfoWrapper { get; set; } = new FileVersionInfoWrapper();
 
     public static IShellLinkHelper ShellLinkHelper { get; set; } = new ShellLinkHelper();
 
@@ -188,6 +185,7 @@ public class Win32Program // : IProgram
     {
         try
         {
+            var parDir = Directory.GetParent(path)?.FullName ?? string.Empty;
             return new Win32Program
             {
                 Name = Path.GetFileNameWithoutExtension(path),
@@ -197,7 +195,7 @@ public class Win32Program // : IProgram
                 // Using InvariantCulture since this is user facing
                 FullPath = path,
                 UniqueIdentifier = path,
-                ParentDirectory = Directory.GetParent(path).FullName,
+                ParentDirectory = parDir,
                 Description = string.Empty,
                 Valid = true,
                 Enabled = true,
@@ -264,7 +262,8 @@ public class Win32Program // : IProgram
                 }
                 else
                 {
-                    var info = FileVersionInfoWrapper.GetVersionInfo(target);
+                    var info = FileVersionInfo.GetVersionInfo(path);
+
                     if (!string.IsNullOrEmpty(info?.FileDescription))
                     {
                         program.Description = info.FileDescription;
@@ -294,7 +293,7 @@ public class Win32Program // : IProgram
         try
         {
             var program = CreateWin32Program(path);
-            var info = FileVersionInfoWrapper.GetVersionInfo(path);
+            var info = FileVersionInfo.GetVersionInfo(path);
             if (!string.IsNullOrEmpty(info?.FileDescription))
             {
                 program.Description = info.FileDescription;
@@ -487,7 +486,7 @@ public class Win32Program // : IProgram
     private static List<string> PathEnvironmentProgramPaths(IList<string> suffixes)
     {
         // To get all the locations stored in the PATH env variable
-        var pathEnvVariable = Environment.GetEnvironmentVariable("PATH");
+        var pathEnvVariable = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
         var searchPaths = pathEnvVariable.Split(Path.PathSeparator);
         var toFilterAllPaths = new List<string>();
         var isRecursiveSearch = true;
@@ -593,18 +592,18 @@ public class Win32Program // : IProgram
         }
     }
 
-    private static string? ExpandEnvironmentVariables(string path)
+    private static string ExpandEnvironmentVariables(string path)
     {
         return path != null
             ? Environment.ExpandEnvironmentVariables(path)
-            : null;
+            : string.Empty;
     }
 
     // Overriding the object.GetHashCode() function to aid in removing duplicates while adding and removing apps from the concurrent dictionary storage
     public override int GetHashCode()
         => Win32ProgramEqualityComparer.Default.GetHashCode(this);
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         return obj is Win32Program win32Program && Win32ProgramEqualityComparer.Default.Equals(this, win32Program);
     }
@@ -613,7 +612,7 @@ public class Win32Program // : IProgram
     {
         public static readonly Win32ProgramEqualityComparer Default = new();
 
-        public bool Equals(Win32Program app1, Win32Program app2)
+        public bool Equals(Win32Program? app1, Win32Program? app2)
         {
             if (app1 == null && app2 == null)
             {
@@ -656,7 +655,7 @@ public class Win32Program // : IProgram
 
     private static bool TryGetIcoPathForRunCommandProgram(Win32Program program, out string icoPath)
     {
-        icoPath = null;
+        icoPath = string.Empty;
 
         if (program.AppType != ApplicationType.RunCommand)
         {
@@ -685,13 +684,12 @@ public class Win32Program // : IProgram
             // ProgramLogger.Warn($"|Error whilst retrieving the redirection path from app execution alias {program.FullPath}", e, MethodBase.GetCurrentMethod().DeclaringType, program.FullPath);
         }
 
-        icoPath = null;
         return false;
     }
 
     private static Win32Program GetRunCommandProgramFromPath(string path)
     {
-        var program = GetProgramFromPath(path);
+        var program = GetProgramFromPath(path) ?? new Win32Program();
         program.AppType = ApplicationType.RunCommand;
 
         if (TryGetIcoPathForRunCommandProgram(program, out var icoPath))

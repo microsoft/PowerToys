@@ -12,7 +12,7 @@ namespace WindowsCommandPalette.BuiltinCommands.AllApps;
 
 public sealed class AllAppsPage : ListPage
 {
-    private ISection allAppsSection;
+    private ISection allAppsSection = new ListSection();
 
     public AllAppsPage()
     {
@@ -26,25 +26,20 @@ public sealed class AllAppsPage : ListPage
 
     public override ISection[] GetItems()
     {
-        if (this.allAppsSection == null)
+        if (this.allAppsSection == null || allAppsSection.Items.Length == 0)
         {
-            PopulateApps();
+            var apps = GetPrograms();
+            this.Loading = false;
+            this.allAppsSection = new ListSection()
+            {
+                Title = "Apps",
+                Items = apps
+                            .Select((app) => new AppListItem(app))
+                            .ToArray(),
+            };
         }
 
         return [allAppsSection];
-    }
-
-    private void PopulateApps()
-    {
-        var apps = GetPrograms();
-        this.Loading = false;
-        this.allAppsSection = new ListSection()
-        {
-            Title = "Apps",
-            Items = apps
-                        .Select((app) => new AppListItem(app))
-                        .ToArray(),
-        };
     }
 
     internal static List<AppItem> GetPrograms()

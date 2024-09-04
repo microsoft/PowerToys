@@ -45,9 +45,10 @@ public class CalculatorTopLevelListItem : ListItem, IFallbackHandler
         try
         {
             var result = new DataTable().Compute(equation, null);
-            var resultString = result.ToString();
+            var resultString = result.ToString() ?? string.Empty;
             ((CalculatorAction)Command).SetResult(resultString, true);
-            return result.ToString();
+
+            return resultString;
         }
         catch (Exception e)
         {

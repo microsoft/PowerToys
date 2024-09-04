@@ -45,7 +45,6 @@
                               Tapped="ListItem_Tapped"
                               MinHeight="32"
                               Height="24"
-                              DoubleTapped="ListViewItem_DoubleTapped"
                               Visibility="{x:Bind Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}">
                     <Grid>
                         <Grid.ColumnDefinitions>

@@ -55,7 +55,6 @@ public sealed partial class MarkdownPage : Page, System.ComponentModel.INotifyPr
         this.InitializeComponent();
     }
 
-
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
@@ -66,7 +65,6 @@ public sealed partial class MarkdownPage : Page, System.ComponentModel.INotifyPr
             return;
         }
 
-
         ViewModel.InitialRender(this).ContinueWith((t) => {
             DispatcherQueue.TryEnqueue(() =>
             {
@@ -76,12 +74,13 @@ public sealed partial class MarkdownPage : Page, System.ComponentModel.INotifyPr
                     mdTextBox.Text = ViewModel.MarkdownContent[0];
                     TitleBlock.Text = ViewModel.Title;
                 }
-                //        if (ViewModel.PageCommand != null)
-                //        {
+
+                // if (ViewModel.PageCommand != null)
+                // {
                 //            ActionsDropdown.ItemsSource = ViewModel.PageCommand.Commands;
                 //            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MoreCommandsAvailable)));
                 //            // this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedItemDefaultAction)));
-                //        }
+                // }
             });
         });
     }
@@ -91,7 +90,9 @@ public sealed partial class MarkdownPage : Page, System.ComponentModel.INotifyPr
         ViewModel?.DoAction(actionViewModel);
     }
 
-    private void Page_Loaded(object sender, RoutedEventArgs e) {}
+    private void Page_Loaded(object sender, RoutedEventArgs e)
+    {
+    }
 
     private void MarkdownScrollViewer_KeyDown(object sender, KeyRoutedEventArgs e)
     {
@@ -118,11 +119,12 @@ public sealed partial class MarkdownPage : Page, System.ComponentModel.INotifyPr
     {
         FlyoutShowOptions options = new FlyoutShowOptions
         {
-            ShowMode = FlyoutShowMode.Standard
+            ShowMode = FlyoutShowMode.Standard,
         };
         MoreCommandsButton.Flyout.ShowAt(MoreCommandsButton, options);
-        //ActionsDropdown.SelectedIndex = 0;
-        //ActionsDropdown.Focus(FocusState.Programmatic);
+
+        // ActionsDropdown.SelectedIndex = 0;
+        // ActionsDropdown.Focus(FocusState.Programmatic);
     }
 
 #pragma warning disable CA1822 // Mark members as static
@@ -130,8 +132,16 @@ public sealed partial class MarkdownPage : Page, System.ComponentModel.INotifyPr
 
     private void ActionListViewItem_KeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (sender is not ListViewItem listItem) return;
-        if (listItem.DataContext is not ContextItemViewModel vm) return;
+        if (sender is not ListViewItem listItem)
+        {
+            return;
+        }
+
+        if (listItem.DataContext is not ContextItemViewModel vm)
+        {
+            return;
+        }
+
         if (e.Key == Windows.System.VirtualKey.Enter || e.Key == Windows.System.VirtualKey.Space)
         {
             DoAction(new(vm.Command));
@@ -141,15 +151,27 @@ public sealed partial class MarkdownPage : Page, System.ComponentModel.INotifyPr
 
     private void ActionListViewItem_Tapped(object sender, TappedRoutedEventArgs e)
     {
-        if (sender is not ListViewItem listItem) return;
-        if (listItem.DataContext is not ContextItemViewModel vm) return;
+        if (sender is not ListViewItem listItem)
+        {
+            return;
+        }
+
+        if (listItem.DataContext is not ContextItemViewModel vm)
+        {
+            return;
+        }
+
         DoAction(new(vm.Command));
         e.Handled = true;
     }
 
     private void RootGrid_KeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (e.Handled) return;
+        if (e.Handled)
+        {
+            return;
+        }
+
         var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(Windows.System.VirtualKey.Control).HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
 
         if (ctrlPressed && e.Key == Windows.System.VirtualKey.K)
@@ -159,7 +181,7 @@ public sealed partial class MarkdownPage : Page, System.ComponentModel.INotifyPr
             {
                 FlyoutShowOptions options = new FlyoutShowOptions
                 {
-                    ShowMode = FlyoutShowMode.Standard
+                    ShowMode = FlyoutShowMode.Standard,
                 };
                 MoreCommandsButton.Flyout.ShowAt(MoreCommandsButton, options);
                 ActionsDropdown.SelectedIndex = 0;
@@ -167,5 +189,4 @@ public sealed partial class MarkdownPage : Page, System.ComponentModel.INotifyPr
             }
         }
     }
-
 }

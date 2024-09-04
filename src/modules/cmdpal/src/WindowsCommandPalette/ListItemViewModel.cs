@@ -123,38 +123,32 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
 
     private void ListItem_PropertyChanged(object sender, Microsoft.Windows.CommandPalette.Extensions.PropChangedEventArgs args)
     {
-        try{
+        try
+        {
             var item = ListItem.Unsafe;
             switch (args.PropertyName)
             {
                 case "Name":
                 case nameof(Title):
-                    {
-                        this.Title = item.Title;
-                    }
+                    this.Title = item.Title;
                     break;
                 case nameof(Subtitle):
-                    {
-                        this.Subtitle = item.Subtitle;
-                    }
+                    this.Subtitle = item.Subtitle;
                     break;
                 case "MoreCommands":
-                    {
-                        BubbleXamlPropertyChanged(nameof(HasMoreCommands));
-                        BubbleXamlPropertyChanged(nameof(ContextActions));
-                    }
+                    BubbleXamlPropertyChanged(nameof(HasMoreCommands));
+                    BubbleXamlPropertyChanged(nameof(ContextActions));
                     break;
                 case nameof(Icon):
-                    {
-                        this.Icon = item.Command.Icon.Icon;
-                        BubbleXamlPropertyChanged(nameof(IcoElement));
-                    }
+                    this.Icon = item.Command.Icon.Icon;
+                    BubbleXamlPropertyChanged(nameof(IcoElement));
                     break;
             }
 
             BubbleXamlPropertyChanged(args.PropertyName);
-
-        } catch (COMException) {
+        }
+        catch (COMException)
+        {
             /* log something */
         }
     }
@@ -166,6 +160,7 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
             // this is highly unusual
             return;
         }
+
         this.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
         {
             this.PropertyChanged?.Invoke(this, new(propertyName));

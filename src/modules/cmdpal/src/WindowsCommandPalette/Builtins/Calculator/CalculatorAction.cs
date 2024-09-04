@@ -12,7 +12,7 @@ namespace Calculator;
 public class CalculatorAction : InvokableCommand
 {
     private bool _success;
-    private string _result;
+    private string _result = string.Empty;
 
     public CalculatorAction()
     {
@@ -33,6 +33,7 @@ public class CalculatorAction : InvokableCommand
     {
         _result = result;
         _success = success;
+
         if (success)
         {
             Name = "Copy";

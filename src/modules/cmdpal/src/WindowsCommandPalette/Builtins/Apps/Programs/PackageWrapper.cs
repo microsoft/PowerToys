@@ -2,10 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.IO;
-using System.Reflection;
-// using Microsoft.Plugin.Program.Logger;
 using Windows.Foundation.Metadata;
 using Package = Windows.ApplicationModel.Package;
 
@@ -39,7 +35,7 @@ public class PackageWrapper : IPackage
         InstalledLocation = installedLocation;
     }
 
-    private static readonly Lazy<bool> IsPackageDotInstallationPathAvailable = new (() =>
+    private static readonly Lazy<bool> IsPackageDotInstallationPathAvailable = new(() =>
         ApiInformation.IsPropertyPresent(typeof(Package).FullName, nameof(Package.InstalledLocation.Path)));
 
     public static PackageWrapper GetWrapperFromPackage(Package package)
@@ -53,7 +49,7 @@ public class PackageWrapper : IPackage
         }
         catch (Exception e) when (e is ArgumentException || e is FileNotFoundException || e is DirectoryNotFoundException)
         {
-            //ProgramLogger.Exception($"Exception {package.Id.Name}", e, MethodBase.GetCurrentMethod().DeclaringType, "Path could not be determined");
+            // ProgramLogger.Exception($"Exception {package.Id.Name}", e, MethodBase.GetCurrentMethod().DeclaringType, "Path could not be determined");
             return new PackageWrapper(
                 package.Id.Name,
                 package.Id.FullName,

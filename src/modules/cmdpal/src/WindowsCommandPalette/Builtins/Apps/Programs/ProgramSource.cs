@@ -14,15 +14,11 @@ namespace AllApps.Programs;
 /// </remarks>
 public class ProgramSource
 {
-    //private static readonly IFileSystem FileSystem = new FileSystem();
+    public string Location { get; set; } = string.Empty;
 
-    private string name;
-
-    public string Location { get; set; }
-
-    public string Name { get => name ?? "" /*FileSystem.DirectoryInfo.FromDirectoryName(Location).Name*/; set => name = value; }
+    public string Name { get; set; } = string.Empty;
 
     public bool Enabled { get; set; } = true;
 
-    public string UniqueIdentifier { get; set; }
+    public string UniqueIdentifier { get; set; } = string.Empty;
 }

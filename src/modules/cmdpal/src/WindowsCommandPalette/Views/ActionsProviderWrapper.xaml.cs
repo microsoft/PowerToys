@@ -23,7 +23,7 @@ using WindowsCommandPalette.Builtins;
 
 namespace WindowsCommandPalette.Views;
 
-sealed class ActionsProviderWrapper
+internal sealed class ActionsProviderWrapper
 {
     public bool IsExtension => extensionWrapper != null;
 
@@ -88,4 +88,9 @@ sealed class ActionsProviderWrapper
     }
 
     public override bool Equals(object? obj) => obj is ActionsProviderWrapper wrapper && isValid == wrapper.isValid;
+
+    public override int GetHashCode()
+    {
+        throw new NotImplementedException();
+    }
 }

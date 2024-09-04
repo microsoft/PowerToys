@@ -39,7 +39,8 @@ public class SectionInfoList : ObservableCollection<ListItemViewModel>
 
     private readonly DispatcherQueue DispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
-    public SectionInfoList(ISection? section, IEnumerable<ListItemViewModel> items) : base(items)
+    public SectionInfoList(ISection? section, IEnumerable<ListItemViewModel> items)
+        : base(items)
     {
         Title = section?.Title ?? string.Empty;
         if (section != null && section is INotifyCollectionChanged observable)
@@ -47,6 +48,7 @@ public class SectionInfoList : ObservableCollection<ListItemViewModel>
             observable.CollectionChanged -= Items_CollectionChanged;
             observable.CollectionChanged += Items_CollectionChanged;
         }
+
         if (this.DispatcherQueue == null)
         {
             throw new InvalidOperationException("DispatcherQueue is null");
@@ -55,7 +57,7 @@ public class SectionInfoList : ObservableCollection<ListItemViewModel>
 
     private void Items_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        //DispatcherQueue.TryEnqueue(() => {
+        // DispatcherQueue.TryEnqueue(() => {
         if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null)
         {
             foreach (var i in e.NewItems)
@@ -66,34 +68,39 @@ public class SectionInfoList : ObservableCollection<ListItemViewModel>
                     {
                         ListItemViewModel vm = new(li);
                         this.Add(vm);
-
                     }
-                    //if (isDynamic)
-                    //{
+
+                    // if (isDynamic)
+                    // {
                     //    // Dynamic lists are in charge of their own
                     //    // filtering. They know if this thing was already
                     //    // filtered or not.
                     //    FilteredItems.Add(vm);
-                    //}
+                    // }
                 }
             }
         }
         else if (e.Action == NotifyCollectionChangedAction.Reset)
         {
             this.Clear();
-            //Items.Clear();
-            //if (isDynamic)
-            //{
+
+            // Items.Clear();
+            // if (isDynamic)
+            // {
             //    FilteredItems.Clear();
-            //}
+            // }
         }
-        //});
+
+        // });
     }
 }
 
 public sealed class NoOpAction : InvokableCommand
 {
-    public override ICommandResult Invoke() { return ActionResult.KeepOpen(); }
+    public override ICommandResult Invoke()
+    {
+        return ActionResult.KeepOpen();
+    }
 }
 
 public sealed class ErrorListItem : Microsoft.Windows.CommandPalette.Extensions.Helpers.ListItem
@@ -130,8 +137,8 @@ public sealed class ListPageViewModel : PageViewModel
     internal async Task UpdateListItems()
     {
         // on main thread
-
-        var t = new Task<ISection[]>(() => {
+        var t = new Task<ISection[]>(() =>
+        {
             try
             {
                 return dynamicPage != null ?
@@ -141,9 +148,13 @@ public sealed class ListPageViewModel : PageViewModel
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex);
-                return [new ListSection() { Title = "Error", Items = [new ErrorListItem(ex)] }];
+                return [new ListSection()
+                {
+                    Title = "Error",
+                    Items = [new ErrorListItem(ex)],
+                }
+                ];
             }
-
         });
         t.Start();
         var sections = await t;
@@ -154,9 +165,8 @@ public sealed class ListPageViewModel : PageViewModel
         // we already have, then rebuilding it. We shouldn't do that. We should
         // still use the results from GetItems and put them into the code in
         // UpdateFilter to intelligently add/remove as needed.
-        //Items.Clear();
-        //FilteredItems.Clear();
-
+        // Items.Clear();
+        // FilteredItems.Clear();
         Collection<SectionInfoList> newItems = new();
 
         var size = sections.Length;
@@ -186,12 +196,13 @@ public sealed class ListPageViewModel : PageViewModel
         ListHelpers.InPlaceUpdateList(FilteredItems, newItems);
     }
 
-    internal async Task<Collection<SectionInfoList>> GetFilteredItems(string query) {
-
+    internal async Task<Collection<SectionInfoList>> GetFilteredItems(string query)
+    {
         if (query == Query)
         {
             return FilteredItems;
         }
+
         Query = query;
         if (isDynamic)
         {
@@ -207,14 +218,15 @@ public sealed class ListPageViewModel : PageViewModel
             }
 
             //// TODO! Probably bad that this turns list view models into listitems back to NEW view models
-            //return ListHelpers.FilterList(Items.Select(vm => vm.ListItem), Query).Select(li => new ListItemViewModel(li)).ToList();
-            try{
+            // return ListHelpers.FilterList(Items.Select(vm => vm.ListItem), Query).Select(li => new ListItemViewModel(li)).ToList();
+            try
+            {
                 var allFilteredItems = ListHelpers.FilterList(
                     Items
                         .SelectMany(section => section)
                         .Select(vm => vm.ListItem.Unsafe),
-                    Query).Select(li => new ListItemViewModel(li)
-                );
+                    Query).Select(li => new ListItemViewModel(li));
+
                 var newSection = new SectionInfoList(null, allFilteredItems);
                 return [newSection];
             }
@@ -265,7 +277,11 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
     {
         get
         {
-            if (ItemsList.SelectedItem is not ListItemViewModel li) return false;
+            if (ItemsList.SelectedItem is not ListItemViewModel li)
+            {
+                return false;
+            }
+
             return li.HasMoreCommands;
         }
     }
@@ -279,13 +295,17 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
     {
         base.OnNavigatedTo(e);
         ViewModel = (ListPageViewModel?)e.Parameter;
-        if (ViewModel == null) return;
+        if (ViewModel == null)
+        {
+            return;
+        }
 
-        if (e.NavigationMode == NavigationMode.New) {
-            ViewModel.InitialRender().ContinueWith( (t) => {
+        if (e.NavigationMode == NavigationMode.New)
+        {
+            ViewModel.InitialRender().ContinueWith((t) =>
+            {
                 DispatcherQueue.TryEnqueue(async () => { await UpdateFilter(FilterBox.Text); });
             });
-
         }
         else
         {
@@ -303,8 +323,16 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
 
     private void ListItem_KeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (sender is not ListViewItem listItem) return;
-        if (listItem.DataContext is not ListItemViewModel li) return;
+        if (sender is not ListViewItem listItem)
+        {
+            return;
+        }
+
+        if (listItem.DataContext is not ListItemViewModel li)
+        {
+            return;
+        }
+
         if (e.OriginalKey == Windows.System.VirtualKey.Enter)
         {
             if (li.DefaultAction != null)
@@ -327,39 +355,53 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
 
     private void ListItem_Tapped(object sender, TappedRoutedEventArgs e)
     {
-        if (sender is not ListViewItem listItem) return;
-        if (listItem.DataContext is not ListItemViewModel li) return;
-        _ = li;
-        // For a bit I had double-clicks Invoke and single just select, but that crashes?
-        //ItemsList.SelectedItem = listItem;
+        if (sender is not ListViewItem listItem)
+        {
+            return;
+        }
 
+        if (listItem.DataContext is not ListItemViewModel li)
+        {
+            return;
+        }
+
+        _ = li;
+
+        // For a bit I had double-clicks Invoke and single just select, but that crashes?
+        // ItemsList.SelectedItem = listItem;
         if (li.DefaultAction != null)
         {
             DoAction(new(li.DefaultAction));
         }
     }
 
-    private void ListViewItem_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-    {
-        //if (sender is not ListViewItem listItem) return;
-        //if (listItem.DataContext is not ListItemViewModel li) return;
-        //if (li.DefaultAction != null)
-        //{
-        //    DoAction(new(li.DefaultAction));
-        //}
-    }
-
     private void ItemsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (sender is not ListView lv) return;
-        if (lv.SelectedItem is not ListItemViewModel li) return;
+        if (sender is not ListView lv)
+        {
+            return;
+        }
+
+        if (lv.SelectedItem is not ListItemViewModel li)
+        {
+            return;
+        }
+
         SelectedItem = li;
     }
 
     private void ActionListViewItem_KeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (sender is not ListViewItem listItem) return;
-        if (listItem.DataContext is not ContextItemViewModel vm) return;
+        if (sender is not ListViewItem listItem)
+        {
+            return;
+        }
+
+        if (listItem.DataContext is not ContextItemViewModel vm)
+        {
+            return;
+        }
+
         if (e.Key == Windows.System.VirtualKey.Enter || e.Key == Windows.System.VirtualKey.Space)
         {
             DoAction(new(vm.Command));
@@ -369,8 +411,16 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
 
     private void ActionListViewItem_Tapped(object sender, TappedRoutedEventArgs e)
     {
-        if (sender is not ListViewItem listItem) return;
-        if (listItem.DataContext is not ContextItemViewModel vm) return;
+        if (sender is not ListViewItem listItem)
+        {
+            return;
+        }
+
+        if (listItem.DataContext is not ContextItemViewModel vm)
+        {
+            return;
+        }
+
         DoAction(new(vm.Command));
         e.Handled = true;
     }
@@ -386,7 +436,10 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
 
     private void FilterBox_KeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (e.Handled) return;
+        if (e.Handled)
+        {
+            return;
+        }
 
         var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(Windows.System.VirtualKey.Control).HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
         if (e.Key == Windows.System.VirtualKey.Up || e.Key == Windows.System.VirtualKey.Down)
@@ -397,6 +450,7 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
                 ItemsList.SelectedIndex = newIndex;
                 ItemsList.ScrollIntoView(ItemsList.SelectedItem);
             }
+
             e.Handled = true;
         }
         else if (e.Key == Windows.System.VirtualKey.Enter /* && ItemsList.SelectedItem != null */)
@@ -407,6 +461,7 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
                 {
                     DoAction(new(li.DefaultAction));
                 }
+
                 e.Handled = true;
             }
         }
@@ -420,10 +475,10 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
             {
                 ViewModel?.GoBack();
             }
+
             e.Handled = true;
         }
-        // ctrl+k
-        else if (ctrlPressed && e.Key == Windows.System.VirtualKey.K)
+        else if (ctrlPressed && e.Key == Windows.System.VirtualKey.K) // ctrl+k
         {
             // Open the more actions flyout and focus the first item
             if (ActionsDropdown.Items.Count > 0)
@@ -441,14 +496,21 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
 
     private void FilterBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        if (ViewModel == null) return;
+        if (ViewModel == null)
+        {
+            return;
+        }
+
         // on the UI thread
         _ = UpdateFilter(FilterBox.Text);
     }
 
     private async Task UpdateFilter(string text)
     {
-        if (ViewModel == null) return;
+        if (ViewModel == null)
+        {
+            return;
+        }
 
         // ViewModel.Query = text;
 
@@ -456,9 +518,12 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
         // into us initially. We handle the filtering of these ones. Commands
         // from async querying happens later.
         var newMatches = await ViewModel.GetFilteredItems(text);
+
         // this.ItemsCVS.Source = ViewModel.FilteredItems;
         // Returns back on the UI thread
         ListHelpers.InPlaceUpdateList(ViewModel.FilteredItems, newMatches);
+
+        /*
         // for (var i = 0; i < ViewModel.FilteredItems.Count && i < newMatches.Count; i++)
         // {
         //     for (var j = i; j < ViewModel.FilteredItems.Count; j++)
@@ -490,6 +555,7 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
         // {
         //     ViewModel.FilteredItems.Add(newMatches[ViewModel.FilteredItems.Count]);
         // }
+        */
 
         // set the selected index to the first item in the list
         if (ItemsList.Items.Count > 0)
