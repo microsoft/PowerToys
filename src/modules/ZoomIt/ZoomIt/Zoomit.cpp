@@ -2243,7 +2243,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 
 			// Get the selected microphone
             int index = static_cast<int>(SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE ), static_cast<UINT>(CB_GETCURSEL), static_cast<WPARAM>(0), static_cast<LPARAM>(0) ));
-			_tcscpy( g_MicrophoneDeviceId, index == 0 ? L"" : microphones[index - 1].first.c_str() );
+			_tcscpy( g_MicrophoneDeviceId, index == 0 ? L"" : microphones[static_cast<size_t>(index) - 1].first.c_str() );
 
 			if( newToggleKey && !RegisterHotKey( GetParent( hDlg ), ZOOM_HOTKEY, newToggleMod, newToggleKey & 0xFF )) {
 
@@ -2611,8 +2611,8 @@ void DrawArrow( HDC hdc, int x1, int y1, int x2, int y2, double length, double w
 		bool UseGdiplus )
 {
 	// get normalized dx/dy
-	double dx = x2 - x1;
-	double dy = y2 - y1;
+    double dx = static_cast<double>(x2) - x1;
+    double dy = static_cast<double>(y2) - y1;
 	double bodyLen = sqrt( dx*dx + dy*dy );
 	if ( bodyLen )  {
 		dx /= bodyLen;

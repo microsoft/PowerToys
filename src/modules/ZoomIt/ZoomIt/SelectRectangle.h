@@ -32,7 +32,7 @@ private:
 
     bool m_cancel = false;
     const wchar_t* m_className = L"ZoomitSelectRectangle";
-    UINT m_dpi;
+    UINT m_dpi{};
     RECT m_oldClipRect{};
     bool m_selected{ false };
     bool m_setClip{ false };

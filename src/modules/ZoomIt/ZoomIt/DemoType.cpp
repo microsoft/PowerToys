@@ -934,7 +934,7 @@ LRESULT CALLBACK DemoTypeHookProc( int nCode, WPARAM wParam, LPARAM lParam )
                         }
                     }
                 }
-
+                [[fallthrough]];
             case WM_KEYDOWN:
             case WM_SYSKEYUP:
             case WM_SYSKEYDOWN:
