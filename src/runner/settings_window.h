@@ -20,6 +20,7 @@ enum class ESettingsWindowNames
     Hosts,
     MeasureTool,
     PowerOCR,
+    Workspaces,
     RegistryPreview,
     CropAndLock,
     EnvironmentVariables,

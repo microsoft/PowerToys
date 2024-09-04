@@ -14,13 +14,13 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using Common.UI;
-using interop;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using PowerLauncher.Telemetry.Events;
 using PowerLauncher.ViewModel;
+using PowerToys.Interop;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Interfaces;
@@ -449,14 +449,22 @@ namespace PowerLauncher
             // In terms of the hack itself, removing any of these three steps seems to fail in certain scenarios only,
             // so be careful with testing!
             var desiredScreen = GetScreen();
+            var workingArea = desiredScreen.WorkingArea;
+            Point ToDIP(double unitX, double unitY) => WindowsInteropHelper.TransformPixelsToDIP(this, unitX, unitY);
 
             // Move to top-left of desired screen.
-            Top = desiredScreen.WorkingArea.Top;
-            Left = desiredScreen.WorkingArea.Left;
+            Top = workingArea.Top;
+            Left = workingArea.Left;
 
             // Centralize twice.
-            WindowsInteropHelper.MoveToScreenCenter(this, desiredScreen);
-            WindowsInteropHelper.MoveToScreenCenter(this, desiredScreen);
+            void MoveToScreenTopCenter()
+            {
+                Left = ((ToDIP(workingArea.Width, 0).X - ActualWidth) / 2) + ToDIP(workingArea.X, 0).X;
+                Top = ((ToDIP(0, workingArea.Height).Y - SearchBox.ActualHeight) / 4) + ToDIP(0, workingArea.Y).Y;
+            }
+
+            MoveToScreenTopCenter();
+            MoveToScreenTopCenter();
         }
 
         private void OnLocationChanged(object sender, EventArgs e)
