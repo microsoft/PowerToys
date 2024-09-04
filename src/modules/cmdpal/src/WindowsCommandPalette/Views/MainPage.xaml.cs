@@ -9,6 +9,7 @@ using CmdPal.Models;
 using DeveloperCommandPalette;
 using Microsoft.CmdPal.Common.Extensions;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -49,7 +50,7 @@ public sealed class MainViewModel
 
     internal MainViewModel()
     {
-        _builtInCommands.Add(new Run.Bookmarks.BookmarksActionProvider());
+        _builtInCommands.Add(new BookmarksActionProvider());
         _builtInCommands.Add(new CalculatorActionProvider());
         _builtInCommands.Add(new SettingsActionProvider());
         _builtInCommands.Add(quitActionProvider);

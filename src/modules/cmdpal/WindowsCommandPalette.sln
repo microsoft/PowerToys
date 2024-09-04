@@ -34,6 +34,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Built-in Extensions", "Buil
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Calc", "src\Exts\Microsoft.CmdPal.Ext.Calc\Microsoft.CmdPal.Ext.Calc.csproj", "{42DB35EE-1EDB-41E4-9C9F-A3520EBC5CC4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Bookmarks", "src\Exts\Microsoft.CmdPal.Ext.Bookmark\Microsoft.CmdPal.Ext.Bookmarks.csproj", "{C5BADA22-70FF-41D1-9529-28F4891316A8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -150,6 +152,14 @@ Global
 		{42DB35EE-1EDB-41E4-9C9F-A3520EBC5CC4}.Release|ARM64.Build.0 = Release|ARM64
 		{42DB35EE-1EDB-41E4-9C9F-A3520EBC5CC4}.Release|x64.ActiveCfg = Release|x64
 		{42DB35EE-1EDB-41E4-9C9F-A3520EBC5CC4}.Release|x64.Build.0 = Release|x64
+		{C5BADA22-70FF-41D1-9529-28F4891316A8}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{C5BADA22-70FF-41D1-9529-28F4891316A8}.Debug|ARM64.Build.0 = Debug|ARM64
+		{C5BADA22-70FF-41D1-9529-28F4891316A8}.Debug|x64.ActiveCfg = Debug|x64
+		{C5BADA22-70FF-41D1-9529-28F4891316A8}.Debug|x64.Build.0 = Debug|x64
+		{C5BADA22-70FF-41D1-9529-28F4891316A8}.Release|ARM64.ActiveCfg = Release|ARM64
+		{C5BADA22-70FF-41D1-9529-28F4891316A8}.Release|ARM64.Build.0 = Release|ARM64
+		{C5BADA22-70FF-41D1-9529-28F4891316A8}.Release|x64.ActiveCfg = Release|x64
+		{C5BADA22-70FF-41D1-9529-28F4891316A8}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -167,6 +177,7 @@ Global
 		{EB13FDBD-7DD5-4E7E-8BEB-727B3C9331CB} = {B7FF739F-7716-4FC3-B622-705486187B87}
 		{65E22130-6A8F-4AB7-80EC-FF75475DE821} = {B7FF739F-7716-4FC3-B622-705486187B87}
 		{42DB35EE-1EDB-41E4-9C9F-A3520EBC5CC4} = {272D0E9A-8FC3-49F5-8FAD-79ABAE8AB1E4}
+		{C5BADA22-70FF-41D1-9529-28F4891316A8} = {272D0E9A-8FC3-49F5-8FAD-79ABAE8AB1E4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BC94BFC2-A741-4978-B6A4-9E01B7660E6B}

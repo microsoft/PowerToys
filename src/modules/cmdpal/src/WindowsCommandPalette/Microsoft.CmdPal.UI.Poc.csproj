@@ -69,6 +69,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\extensionsdk\Microsoft.Windows.CommandPalette.Extensions.Helpers\Microsoft.CmdPal.Extensions.Helpers.csproj" />
+    <ProjectReference Include="..\Exts\Microsoft.CmdPal.Ext.Bookmark\Microsoft.CmdPal.Ext.Bookmarks.csproj" />
     <ProjectReference Include="..\Exts\Microsoft.CmdPal.Ext.Calc\Microsoft.CmdPal.Ext.Calc.csproj" />
     <ProjectReference Include="..\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj" />
     <ProjectReference Include="..\Microsoft.Terminal.UI\Microsoft.Terminal.UI.vcxproj">
