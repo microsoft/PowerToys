@@ -125,7 +125,7 @@ RECT RectFromPointsMinSize( POINT a, POINT b, LONG minSize )
 //----------------------------------------------------------------------------
 int ScaleForDpi( int value, UINT dpi )
 {
-    return MulDiv( value, (int) dpi, USER_DEFAULT_SCREEN_DPI );
+    return MulDiv( value, static_cast<int>(dpi), USER_DEFAULT_SCREEN_DPI );
 }
 
 //----------------------------------------------------------------------------

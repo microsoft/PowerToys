@@ -202,43 +202,43 @@ type_pD3D11CreateDevice 						pD3D11CreateDevice;
 
 
 REG_SETTING RegSettings[] = {
-	{ L"ToggleKey", SETTING_TYPE_DWORD, 0, &g_ToggleKey, (DOUBLE)g_ToggleKey },
-	{ L"LiveZoomToggleKey", SETTING_TYPE_DWORD, 0, &g_LiveZoomToggleKey, (DOUBLE)g_LiveZoomToggleKey },
-	{ L"DrawToggleKey", SETTING_TYPE_DWORD, 0, &g_DrawToggleKey, (DOUBLE)g_DrawToggleKey },
-	{ L"RecordToggleKey", SETTING_TYPE_DWORD, 0, &g_RecordToggleKey, (DOUBLE)g_RecordToggleKey },
-	{ L"SnipToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipToggleKey, (DOUBLE)g_SnipToggleKey },
-	{ L"PenColor", SETTING_TYPE_DWORD, 0, &g_PenColor, (DOUBLE)g_PenColor },
-	{ L"PenWidth", SETTING_TYPE_DWORD, 0, &g_RootPenWidth, (DOUBLE)g_RootPenWidth },
-	{ L"OptionsShown", SETTING_TYPE_BOOLEAN, 0, &g_OptionsShown, (DOUBLE)g_OptionsShown },
-	{ L"BreakPenColor", SETTING_TYPE_DWORD, 0, &g_BreakPenColor, (DOUBLE)g_BreakPenColor },
-	{ L"BreakTimerKey", SETTING_TYPE_DWORD, 0, &g_BreakToggleKey, (DOUBLE)g_BreakToggleKey },
-	{ L"DemoTypeToggleKey", SETTING_TYPE_DWORD, 0, &g_DemoTypeToggleKey, (DOUBLE)g_DemoTypeToggleKey },
-	{ L"DemoTypeFile", SETTING_TYPE_STRING, sizeof( g_DemoTypeFile ), g_DemoTypeFile, (DOUBLE)0 },
-	{ L"DemoTypeSpeedSlider", SETTING_TYPE_DWORD, 0, &g_DemoTypeSpeedSlider, (DOUBLE)g_DemoTypeSpeedSlider },
-	{ L"DemoTypeUserDrivenMode", SETTING_TYPE_BOOLEAN, 0, &g_DemoTypeUserDriven, (DOUBLE)g_DemoTypeUserDriven },
-	{ L"BreakTimeout", SETTING_TYPE_BOOLEAN, 0, &g_BreakTimeout, (DOUBLE)g_BreakTimeout },
-	{ L"BreakOpacity", SETTING_TYPE_DWORD, 0, &g_BreakOpacity, (DOUBLE)g_BreakOpacity },
-	{ L"BreakPlaySoundFile", SETTING_TYPE_BOOLEAN, 0, &g_BreakPlaySoundFile, (DOUBLE)0},
-	{ L"BreakSoundFile", SETTING_TYPE_STRING, sizeof(g_BreakSoundFile), g_BreakSoundFile, (DOUBLE)0 },
-	{ L"BreakShowBackgroundFile", SETTING_TYPE_BOOLEAN, 0, &g_BreakShowBackgroundFile, (DOUBLE)g_BreakShowBackgroundFile },
-	{ L"BreakBackgroundStretch", SETTING_TYPE_BOOLEAN, 0, &g_BreakBackgroundStretch,(DOUBLE)g_BreakBackgroundStretch },
-	{ L"BreakBackgroundFile", SETTING_TYPE_STRING, sizeof(g_BreakBackgroundFile), g_BreakBackgroundFile, (DOUBLE)0 },
-	{ L"BreakTimerPosition", SETTING_TYPE_DWORD, 0, &g_BreakTimerPosition, (DOUBLE)g_BreakTimerPosition },
-	{ L"BreakShowDesktop", SETTING_TYPE_BOOLEAN, 0, &g_BreakShowDesktop, (DOUBLE)g_BreakShowDesktop },
-	{ L"BreakOnSecondary", SETTING_TYPE_BOOLEAN, 0, &g_BreakOnSecondary,(DOUBLE)g_BreakOnSecondary },
-	{ L"FontScale", SETTING_TYPE_DWORD, 0, &g_FontScale, (DOUBLE)g_FontScale },
-	{ L"ShowExpiredTime", SETTING_TYPE_BOOLEAN, 0, &g_ShowExpiredTime, (DOUBLE)g_ShowExpiredTime },
-	{ L"ShowTrayIcon", SETTING_TYPE_BOOLEAN, 0, &g_ShowTrayIcon, (DOUBLE)g_ShowTrayIcon },
-	{ L"AnimnateZoom", SETTING_TYPE_BOOLEAN, 0, &g_AnimateZoom, (DOUBLE)g_AnimateZoom },
-	{ L"TelescopeZoomOut", SETTING_TYPE_BOOLEAN, 0, &g_TelescopeZoomeOut, (DOUBLE)g_TelescopeZoomeOut },
-	{ L"SnapToGrid", SETTING_TYPE_BOOLEAN, 0, &g_SnapToGrid, (DOUBLE)g_SnapToGrid },
-	{ L"ZoominSliderLevel", SETTING_TYPE_DWORD, 0, &g_SliderZoomLevel, (DOUBLE)g_SliderZoomLevel },
-	{ L"Font", SETTING_TYPE_BINARY, sizeof g_LogFont, &g_LogFont, (DOUBLE)0 },
-	{ L"RecordFrameRate", SETTING_TYPE_DWORD, 0, &g_RecordFrameRate, (DOUBLE)g_RecordFrameRate },
-	{ L"RecordScaling", SETTING_TYPE_DWORD, 0, &g_RecordScaling, (DOUBLE)g_RecordScaling },
-	{ L"CaptureAudio", SETTING_TYPE_BOOLEAN, 0, &g_CaptureAudio, (DOUBLE)g_CaptureAudio },
-	{ L"MicrophoneDeviceId", SETTING_TYPE_STRING, sizeof(g_MicrophoneDeviceId), &g_MicrophoneDeviceId, (DOUBLE)0 },
-	{ NULL, SETTING_TYPE_DWORD, 0, NULL, (DOUBLE)0 }
+	{ L"ToggleKey", SETTING_TYPE_DWORD, 0, &g_ToggleKey, static_cast<DOUBLE>(g_ToggleKey) },
+	{ L"LiveZoomToggleKey", SETTING_TYPE_DWORD, 0, &g_LiveZoomToggleKey, static_cast<DOUBLE>(g_LiveZoomToggleKey) },
+	{ L"DrawToggleKey", SETTING_TYPE_DWORD, 0, &g_DrawToggleKey, static_cast<DOUBLE>(g_DrawToggleKey) },
+	{ L"RecordToggleKey", SETTING_TYPE_DWORD, 0, &g_RecordToggleKey, static_cast<DOUBLE>(g_RecordToggleKey) },
+	{ L"SnipToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipToggleKey, static_cast<DOUBLE>(g_SnipToggleKey) },
+	{ L"PenColor", SETTING_TYPE_DWORD, 0, &g_PenColor, static_cast<DOUBLE>(g_PenColor) },
+	{ L"PenWidth", SETTING_TYPE_DWORD, 0, &g_RootPenWidth, static_cast<DOUBLE>(g_RootPenWidth) },
+	{ L"OptionsShown", SETTING_TYPE_BOOLEAN, 0, &g_OptionsShown, static_cast<DOUBLE>(g_OptionsShown) },
+	{ L"BreakPenColor", SETTING_TYPE_DWORD, 0, &g_BreakPenColor, static_cast<DOUBLE>(g_BreakPenColor) },
+	{ L"BreakTimerKey", SETTING_TYPE_DWORD, 0, &g_BreakToggleKey, static_cast<DOUBLE>(g_BreakToggleKey) },
+	{ L"DemoTypeToggleKey", SETTING_TYPE_DWORD, 0, &g_DemoTypeToggleKey, static_cast<DOUBLE>(g_DemoTypeToggleKey) },
+	{ L"DemoTypeFile", SETTING_TYPE_STRING, sizeof( g_DemoTypeFile ), g_DemoTypeFile, static_cast<DOUBLE>(0) },
+	{ L"DemoTypeSpeedSlider", SETTING_TYPE_DWORD, 0, &g_DemoTypeSpeedSlider, static_cast<DOUBLE>(g_DemoTypeSpeedSlider) },
+	{ L"DemoTypeUserDrivenMode", SETTING_TYPE_BOOLEAN, 0, &g_DemoTypeUserDriven, static_cast<DOUBLE>(g_DemoTypeUserDriven) },
+	{ L"BreakTimeout", SETTING_TYPE_BOOLEAN, 0, &g_BreakTimeout, static_cast<DOUBLE>(g_BreakTimeout) },
+	{ L"BreakOpacity", SETTING_TYPE_DWORD, 0, &g_BreakOpacity, static_cast<DOUBLE>(g_BreakOpacity) },
+	{ L"BreakPlaySoundFile", SETTING_TYPE_BOOLEAN, 0, &g_BreakPlaySoundFile, static_cast<DOUBLE>(0) },
+	{ L"BreakSoundFile", SETTING_TYPE_STRING, sizeof(g_BreakSoundFile), g_BreakSoundFile, static_cast<DOUBLE>(0) },
+	{ L"BreakShowBackgroundFile", SETTING_TYPE_BOOLEAN, 0, &g_BreakShowBackgroundFile, static_cast<DOUBLE>(g_BreakShowBackgroundFile) },
+	{ L"BreakBackgroundStretch", SETTING_TYPE_BOOLEAN, 0, &g_BreakBackgroundStretch,static_cast<DOUBLE>(g_BreakBackgroundStretch) },
+	{ L"BreakBackgroundFile", SETTING_TYPE_STRING, sizeof(g_BreakBackgroundFile), g_BreakBackgroundFile, static_cast<DOUBLE>(0) },
+	{ L"BreakTimerPosition", SETTING_TYPE_DWORD, 0, &g_BreakTimerPosition, static_cast<DOUBLE>(g_BreakTimerPosition) },
+	{ L"BreakShowDesktop", SETTING_TYPE_BOOLEAN, 0, &g_BreakShowDesktop, static_cast<DOUBLE>(g_BreakShowDesktop) },
+	{ L"BreakOnSecondary", SETTING_TYPE_BOOLEAN, 0, &g_BreakOnSecondary,static_cast<DOUBLE>(g_BreakOnSecondary) },
+	{ L"FontScale", SETTING_TYPE_DWORD, 0, &g_FontScale, static_cast<DOUBLE>(g_FontScale) },
+	{ L"ShowExpiredTime", SETTING_TYPE_BOOLEAN, 0, &g_ShowExpiredTime, static_cast<DOUBLE>(g_ShowExpiredTime) },
+	{ L"ShowTrayIcon", SETTING_TYPE_BOOLEAN, 0, &g_ShowTrayIcon, static_cast<DOUBLE>(g_ShowTrayIcon) },
+	{ L"AnimnateZoom", SETTING_TYPE_BOOLEAN, 0, &g_AnimateZoom, static_cast<DOUBLE>(g_AnimateZoom) },
+	{ L"TelescopeZoomOut", SETTING_TYPE_BOOLEAN, 0, &g_TelescopeZoomeOut, static_cast<DOUBLE>(g_TelescopeZoomeOut) },
+	{ L"SnapToGrid", SETTING_TYPE_BOOLEAN, 0, &g_SnapToGrid, static_cast<DOUBLE>(g_SnapToGrid) },
+	{ L"ZoominSliderLevel", SETTING_TYPE_DWORD, 0, &g_SliderZoomLevel, static_cast<DOUBLE>(g_SliderZoomLevel) },
+	{ L"Font", SETTING_TYPE_BINARY, sizeof g_LogFont, &g_LogFont, static_cast<DOUBLE>(0) },
+	{ L"RecordFrameRate", SETTING_TYPE_DWORD, 0, &g_RecordFrameRate, static_cast<DOUBLE>(g_RecordFrameRate) },
+	{ L"RecordScaling", SETTING_TYPE_DWORD, 0, &g_RecordScaling, static_cast<DOUBLE>(g_RecordScaling) },
+	{ L"CaptureAudio", SETTING_TYPE_BOOLEAN, 0, &g_CaptureAudio, static_cast<DOUBLE>(g_CaptureAudio) },
+	{ L"MicrophoneDeviceId", SETTING_TYPE_STRING, sizeof(g_MicrophoneDeviceId), &g_MicrophoneDeviceId, static_cast<DOUBLE>(0) },
+	{ NULL, SETTING_TYPE_DWORD, 0, NULL, static_cast<DOUBLE>(0) }
 };
 CRegistry	reg( _T("Software\\Sysinternals\\") APPNAME );
 
@@ -259,13 +259,13 @@ bool SaveToClipboard( WCHAR* filePath, HWND hwnd )
 
 	size_t size = sizeof(DROPFILES) + sizeof(WCHAR) * ( _tcslen( filePath ) + 1 ) + sizeof(WCHAR);
 
-	HDROP hDrop   = (HDROP) GlobalAlloc( GHND, size );
+	HDROP hDrop   = static_cast<HDROP>(GlobalAlloc( GHND, size ));
 	if (hDrop == NULL)
 	{
 		return false; 
 	}
 
-	DROPFILES* dFiles = (DROPFILES*) GlobalLock( hDrop );
+	DROPFILES* dFiles = static_cast<DROPFILES*>(GlobalLock( hDrop ));
 	if (dFiles == NULL)
 	{
 		GlobalFree( hDrop );
@@ -275,7 +275,7 @@ bool SaveToClipboard( WCHAR* filePath, HWND hwnd )
 	dFiles->pFiles = sizeof(DROPFILES);
     dFiles->fWide = TRUE; 
 
-	wcscpy( (WCHAR*) & dFiles[1], filePath);
+	wcscpy( reinterpret_cast<WCHAR*>(& dFiles[1]), filePath);
 	GlobalUnlock( hDrop );
 
 	if( OpenClipboard( hwnd ) )
@@ -392,7 +392,7 @@ VOID ErrorDialog( HWND hParent, PCTSTR message, DWORD _Error )
 	FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
 					NULL, _Error, 
 					MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-					(LPTSTR) &lpMsgBuf, 0, NULL );
+					reinterpret_cast<LPTSTR>(&lpMsgBuf), 0, NULL );
 	_stprintf( errmsg, L"%s: %s", message, lpMsgBuf );
 	MessageBox( hParent, errmsg, APPNAME, MB_OK|MB_ICONERROR);
 }
@@ -436,7 +436,7 @@ void SetAutostartFilePath()
 		imageFile[0] = '"';
 		*(_tcschr( imageFile, 0 )) = '"';
 		error = RegSetValueEx( hZoomit, L"FilePath", 0, REG_SZ, (BYTE *) imageFile,
-			(DWORD) (_tcslen( imageFile ) + 1)* sizeof( TCHAR ) );
+			static_cast<DWORD>(_tcslen( imageFile ) + 1)* sizeof( TCHAR ));
 		RegCloseKey( hZoomit );
 	}
 }
@@ -474,7 +474,7 @@ bool ConfigureAutostart( HWND hParent, bool Enable )
 				if( error == ERROR_SUCCESS ) {		
 
 					error = RegSetValueEx( hRunKey, APPNAME, 0, REG_SZ, (BYTE *) imageFile,
-						(DWORD) (_tcslen(imageFile)+1)* sizeof(TCHAR));
+						static_cast<DWORD>(_tcslen(imageFile)+1) * sizeof(TCHAR));
 				}
 			}
 		} else {
@@ -835,7 +835,7 @@ BYTE* CreateBitmapMemoryDIB(HDC hdcScreenCompat, HDC hBitmapDc, Gdiplus::Rect* l
 	}
 
 	*hdcMem = CreateCompatibleDC(hdcScreenCompat);
-	*hPreviousBitmap = (HBITMAP)SelectObject(*hdcMem, *hDIBOrig);
+    *hPreviousBitmap = static_cast<HBITMAP>(SelectObject(*hdcMem, *hDIBOrig));
 
 	// Copy the relevant part of hdcScreenCompat to the DIB
 	BitBlt(*hdcMem, 0, 0, lineBounds->Width, lineBounds->Height, hBitmapDc, lineBounds->X, lineBounds->Y, SRCCOPY);
@@ -958,7 +958,7 @@ void DrawBlurredShape( DWORD Shape, Gdiplus::Pen *pen, HDC hdcScreenCompat, Gdip
 
 	// Expand for line drawing
 	if (Shape == DRAW_LINE) 
-		lineBounds.Inflate( (int)(g_PenWidth / 2), (int)(g_PenWidth / 2) );
+		lineBounds.Inflate( static_cast<int>(g_PenWidth / 2), static_cast<int>(g_PenWidth / 2) );
 
 	Gdiplus::Bitmap* lineBitmap = new Gdiplus::Bitmap(lineBounds.Width, lineBounds.Height, PixelFormat32bppARGB);
 	Gdiplus::Graphics lineGraphics(lineBitmap);
@@ -1123,7 +1123,7 @@ void DrawHighlightedShape( DWORD Shape, HDC hdcScreenCompat, Gdiplus::Brush *pBr
 
 	// Expand for line drawing
 	if (Shape == DRAW_LINE)
-		lineBounds.Inflate((int)(g_PenWidth / 2), (int)(g_PenWidth / 2));
+        lineBounds.Inflate(static_cast<int>(g_PenWidth / 2), static_cast<int>(g_PenWidth / 2));
 
 	Gdiplus::Bitmap* lineBitmap = CreateDrawingBitmap(lineBounds);
 	Gdiplus::Graphics lineGraphics(lineBitmap);
@@ -1227,7 +1227,7 @@ HBITMAP CreateFadedDesktopBackground( HDC hdc, LPRECT rcScreen, LPRECT rcCrop )
 	HDC		hdcScreen	= hdc;
 	HDC		hdcMem		= CreateCompatibleDC( hdcScreen );
 	HBITMAP	hBitmap		= CreateCompatibleBitmap( hdcScreen, width, height );
-	HBITMAP	hOld		= (HBITMAP) SelectObject( hdcMem, hBitmap );
+    HBITMAP	hOld		= static_cast<HBITMAP>(SelectObject( hdcMem, hBitmap ));
 	HBRUSH	hBrush		= CreateSolidBrush(RGB(0, 0, 0));
 	
 	// start with black background
@@ -1266,7 +1266,7 @@ HBITMAP CreateFadedDesktopBackground( HDC hdc, LPRECT rcScreen, LPRECT rcCrop )
 //----------------------------------------------------------------------------
 void AdjustToMoveBoundary( float zoomLevel, int *coordinate, int cursor, int size, int max )
 {
-	int diff = (int) ((float)size/ (float) LIVEZOOM_MOVEREGIONS);
+    int diff = static_cast<int> (static_cast<float>(size)/ static_cast<float>(LIVEZOOM_MOVEREGIONS));
 	if( cursor - *coordinate < diff ) 
 		*coordinate = max( 0, cursor - diff ); 
 	else if( (*coordinate + size) - cursor < diff ) 
@@ -1286,9 +1286,9 @@ void GetZoomedTopLeftCoordinates( float zoomLevel, POINT *cursorPos, int *x, int
 	float scaledWidth = width/zoomLevel;
 	float scaledHeight = height/zoomLevel;
 	*x = max( 0, min( (int) (width - scaledWidth), (int) (cursorPos->x - (int) (((float) cursorPos->x/ (float) width)*scaledWidth))));
-	AdjustToMoveBoundary( zoomLevel, x, cursorPos->x, (int) scaledWidth, width );
+    AdjustToMoveBoundary( zoomLevel, x, cursorPos->x, static_cast<int>(scaledWidth), width );
 	*y = max( 0, min( (int) (height - scaledHeight), (int) (cursorPos->y - (int) (((float) cursorPos->y/ (float) height)*scaledHeight))));
-	AdjustToMoveBoundary( zoomLevel, y, cursorPos->y, (int) scaledHeight, height );
+    AdjustToMoveBoundary( zoomLevel, y, cursorPos->y, static_cast<int>(scaledHeight), height );
 }
 
 
@@ -1331,7 +1331,7 @@ using namespace Gdiplus;
    if(size == 0)
       return -1;  // Failure
 
-   pImageCodecInfo = (ImageCodecInfo*)(malloc(size));
+   pImageCodecInfo = static_cast<ImageCodecInfo*>(malloc(size));
    if(pImageCodecInfo == NULL)
       return -1;  // Failure
 
@@ -1365,7 +1365,7 @@ ConvertToUnicode(
 {
 	size_t	len;
 
-	len = MultiByteToWideChar( CP_ACP, 0, aString, (int) strlen(aString), 
+	len = MultiByteToWideChar( CP_ACP, 0, aString, static_cast<int>(strlen(aString)), 
 				wString, wStringLength );
 	wString[len] = 0;
 }
@@ -1450,7 +1450,7 @@ void EnableDisableOpacity( HWND hWnd, BOOLEAN Enable )
 			exStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
 			SetWindowLong(hWnd, GWL_EXSTYLE, (exStyle | WS_EX_LAYERED));
 
-			pSetLayeredWindowAttributes(hWnd, 0, (BYTE) ((255 * g_BreakOpacity) / 100), LWA_ALPHA);
+			pSetLayeredWindowAttributes(hWnd, 0, static_cast<BYTE> ((255 * g_BreakOpacity) / 100), LWA_ALPHA);
 			RedrawWindow(hWnd, 0, 0, RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
 
 		} else {
@@ -1600,7 +1600,7 @@ INT_PTR CALLBACK AdvancedBreakProc( HWND hDlg, UINT message, WPARAM wParam, LPAR
 
 			_stprintf( opacity, L"%d%%", i );
 			SendMessage( GetDlgItem( hDlg, IDC_OPACITY ), CB_ADDSTRING, 0, 
-					(LPARAM) opacity );
+					reinterpret_cast<LPARAM>(opacity));
 		}
 		SendMessage( GetDlgItem( hDlg, IDC_OPACITY ), CB_SETCURSEL, 
 				g_BreakOpacity / 10 - 1, 0 );
@@ -1638,7 +1638,7 @@ INT_PTR CALLBACK AdvancedBreakProc( HWND hDlg, UINT message, WPARAM wParam, LPAR
 			memset( &openFileName, 0, sizeof(openFileName ));
 			openFileName.lStructSize       = OPENFILENAME_SIZE_VERSION_400;
 			openFileName.hwndOwner         = hDlg;
-			openFileName.hInstance         = (HINSTANCE) g_hInstance;
+            openFileName.hInstance         = static_cast<HINSTANCE>(g_hInstance);
 			openFileName.nMaxFile          = sizeof(filePath)/sizeof(filePath[0]);
 			openFileName.Flags				= OFN_LONGNAMES;
 			openFileName.lpstrTitle        = L"Specify sound file...";
@@ -1673,7 +1673,7 @@ INT_PTR CALLBACK AdvancedBreakProc( HWND hDlg, UINT message, WPARAM wParam, LPAR
 			memset( &openFileName, 0, sizeof(openFileName ));
 			openFileName.lStructSize       = OPENFILENAME_SIZE_VERSION_400;
 			openFileName.hwndOwner         = hDlg;
-			openFileName.hInstance         = (HINSTANCE) g_hInstance;
+            openFileName.hInstance         = static_cast<HINSTANCE>(g_hInstance);
 			openFileName.nMaxFile          = sizeof(filePath)/sizeof(filePath[0]);
 			openFileName.Flags				= OFN_LONGNAMES;
 			openFileName.lpstrTitle        = L"Specify background file...";
@@ -1805,10 +1805,10 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
 			chf.nSizeMin  = 16;
 			chf.nSizeMax  = 16;
 			chf.hInstance = g_hInstance;
-			chf.lpszStyle = (LPTSTR)NULL;
+            chf.lpszStyle = static_cast<LPTSTR>(NULL);
 			chf.nFontType = SCREEN_FONTTYPE;
-			chf.lpfnHook  = (LPCFHOOKPROC)(FARPROC)NULL;
-			chf.lpTemplateName = (LPTSTR)MAKEINTRESOURCE (FORMATDLGORD31);
+            chf.lpfnHook  = reinterpret_cast<LPCFHOOKPROC>(static_cast<FARPROC>(NULL));
+            chf.lpTemplateName = static_cast<LPTSTR>(MAKEINTRESOURCE (FORMATDLGORD31));
 			if( ChooseFont( &chf ) ) {
 				g_LogFont = lf;
 				InvalidateRect( hDlg, NULL, TRUE );
@@ -1818,7 +1818,7 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
 			memset( &openFileName, 0, sizeof( openFileName ) );
 			openFileName.lStructSize  = OPENFILENAME_SIZE_VERSION_400;
 			openFileName.hwndOwner    = hDlg;
-			openFileName.hInstance    = (HINSTANCE)g_hInstance;
+            openFileName.hInstance    = static_cast<HINSTANCE>(g_hInstance);
 			openFileName.nMaxFile     = sizeof( filePath ) / sizeof( filePath[0] );
 			openFileName.Flags        = OFN_LONGNAMES;
 			openFileName.lpstrTitle   = L"Specify DemoType file...";
@@ -1853,10 +1853,10 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
 			SelectObject( hDc, hFont );
 
 			GetWindowRect( hTextPreview, &previewRc );
-			MapWindowPoints( NULL, hDlg, (LPPOINT)&previewRc, 2); 
+            MapWindowPoints( NULL, hDlg, reinterpret_cast<LPPOINT>(&previewRc), 2); 
 
 			previewRc.top += 6;
-			DrawText( hDc, L"Sample", (int) _tcslen(L"Sample"), &previewRc, 
+            DrawText( hDc, L"Sample", static_cast<int>(_tcslen(L"Sample")), &previewRc, 
 				DT_CENTER|DT_VCENTER|DT_SINGLELINE );
 
 			EndPaint( hDlg, &ps );
@@ -1894,7 +1894,7 @@ VOID OptionsAddTabs( HWND hOptionsDlg, HWND hTabCtrl )
 	for( i = 0; i < sizeof( g_OptionsTabs )/sizeof(g_OptionsTabs[0]); i++ ) {
 
 		pageRc = rc;
-		MapWindowPoints( NULL, g_OptionsTabs[i].hPage, (LPPOINT)&pageRc, 2); 
+        MapWindowPoints( NULL, g_OptionsTabs[i].hPage, reinterpret_cast<LPPOINT>(&pageRc), 2); 
 
 		SetWindowPos( g_OptionsTabs[i].hPage,
 			 HWND_TOP,
@@ -1980,22 +1980,22 @@ void UpdateDrawTabHeaderFont()
 		HWND hHeader = GetDlgItem( g_OptionsTabs[DRAW_PAGE].hPage, headers[i] );
 		if( headerFont == nullptr )
 		{
-			HFONT hFont = (HFONT) SendMessage( hHeader, WM_GETFONT, 0, 0 );
+            HFONT hFont = reinterpret_cast<HFONT>(SendMessage( hHeader, WM_GETFONT, 0, 0 ));
 			LOGFONT lf = {};
 			GetObject( hFont, sizeof( LOGFONT ), &lf );
 			lf.lfWeight = FW_BOLD;
 			headerFont = CreateFontIndirect( &lf );
 		}
-		SendMessage( hHeader, WM_SETFONT, (WPARAM) headerFont, 0 );
+        SendMessage( hHeader, WM_SETFONT, reinterpret_cast<WPARAM>(headerFont), 0 );
 
 		// Resize the control to fit the text
 		GetWindowText( hHeader, text, sizeof( text ) / sizeof( text[0] ) );
 		RECT rc;
 		GetWindowRect( hHeader, &rc );
-		MapWindowPoints( NULL, g_OptionsTabs[DRAW_PAGE].hPage, (LPPOINT) &rc, 2 );
+        MapWindowPoints( NULL, g_OptionsTabs[DRAW_PAGE].hPage, reinterpret_cast<LPPOINT>(&rc), 2 );
 		HDC hDC = GetDC( hHeader );
 		SelectFont( hDC, headerFont );
-		DrawText( hDC, text, (int) _tcslen( text ), &rc, DT_CALCRECT | DT_SINGLELINE | DT_LEFT | DT_VCENTER );
+        DrawText( hDC, text, static_cast<int>(_tcslen( text )), &rc, DT_CALCRECT | DT_SINGLELINE | DT_LEFT | DT_VCENTER );
 		ReleaseDC( hHeader, hDC );
 		SetWindowPos( hHeader, nullptr, 0, 0, rc.right - rc.left + ScaleForDpi( 4, GetDpiForWindowHelper( hHeader ) ), rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER );
 	}
@@ -2047,7 +2047,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 
 		// Configure options
 		SendMessage( GetDlgItem( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_HOTKEY), HKM_SETRULES, 
-			(WPARAM) HKCOMB_NONE, // invalid key combinations 
+			static_cast<WPARAM>(HKCOMB_NONE), // invalid key combinations 
 			MAKELPARAM(HOTKEYF_ALT, 0));     // add ALT to invalid entries 
 
 		if( g_ToggleKey )		SendMessage( GetDlgItem( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_HOTKEY), HKM_SETHOTKEY, g_ToggleKey, 0 );
@@ -2096,21 +2096,21 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 		for (int i = 0; i < _countof(g_FramerateOptions); i++) {
 
 			_stprintf(text, L"%d", g_FramerateOptions[i]);
-			SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORDFRAMERATE), (UINT)CB_ADDSTRING,
-				(WPARAM)0, (LPARAM)text);
+            SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORDFRAMERATE), static_cast<UINT>(CB_ADDSTRING),
+				static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(text));
 			if (g_RecordFrameRate == g_FramerateOptions[i]) {
 
-				SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORDFRAMERATE), CB_SETCURSEL, (WPARAM)i, (LPARAM)0);
+				SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORDFRAMERATE), CB_SETCURSEL, static_cast<WPARAM>(i), static_cast<LPARAM>(0));
 			}
 		}
 		for(unsigned int i = 1; i < 11; i++) {
 
-			_stprintf(text, L"%2.1f", ((double) i) / 10 );
-			SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORDSCALING), (UINT)CB_ADDSTRING,
-				(WPARAM)0, (LPARAM)text);
+			_stprintf(text, L"%2.1f", (static_cast<double>(i)) / 10 );
+            SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORDSCALING), static_cast<UINT>(CB_ADDSTRING),
+				static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(text));
 			if (g_RecordScaling == i*10 ) {
 
-				SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORDSCALING), CB_SETCURSEL, (WPARAM)i-1, (LPARAM)0);
+				SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORDSCALING), CB_SETCURSEL, static_cast<WPARAM>(i)-1, static_cast<LPARAM>(0));
 			}
 		}
 
@@ -2125,17 +2125,17 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 		}).get();
 
 		// Add the microphone devices to the combo box and set the current selection
-		SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE ), (UINT) CB_ADDSTRING, (WPARAM) 0, (LPARAM) L"Default" );
+        SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(L"Default"));
 		size_t selection = 0;
 		for( size_t i = 0; i < microphones.size(); i++ )
 		{
-			SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE ), (UINT) CB_ADDSTRING, (WPARAM) 0, (LPARAM) microphones[i].second.c_str() );
+            SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(microphones[i].second.c_str()) );
 			if( selection == 0 && wcscmp( microphones[i].first.c_str(), g_MicrophoneDeviceId ) == 0 )
 			{
 				selection = i + 1;
 			}
 		}
-		SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE ), CB_SETCURSEL, (WPARAM) selection, (LPARAM) 0 );
+        SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE ), CB_SETCURSEL, static_cast<WPARAM>(selection), static_cast<LPARAM>(0) );
 
 		if( GetFileAttributes( g_DemoTypeFile ) == -1 )
 		{
@@ -2166,13 +2166,13 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 		break;
 
 	case WM_CTLCOLORSTATIC:
-		if( (HWND) lParam == GetDlgItem( hDlg, IDC_TITLE ) || 
-			(HWND) lParam == GetDlgItem( hDlg, IDC_DRAWING ) ||
-			(HWND) lParam == GetDlgItem( hDlg, IDC_ZOOM ) ||
-			(HWND) lParam == GetDlgItem( hDlg, IDC_BREAK ) ||
-			(HWND) lParam == GetDlgItem( hDlg, IDC_TYPE )) {
+		if( reinterpret_cast<HWND>(lParam) == GetDlgItem( hDlg, IDC_TITLE ) || 
+			reinterpret_cast<HWND>(lParam) == GetDlgItem(hDlg, IDC_DRAWING) ||
+            reinterpret_cast<HWND>(lParam) == GetDlgItem(hDlg, IDC_ZOOM) ||
+            reinterpret_cast<HWND>(lParam) == GetDlgItem(hDlg, IDC_BREAK) ||
+			reinterpret_cast<HWND>(lParam) == GetDlgItem( hDlg, IDC_TYPE )) {
 
-			HDC	hdc = (HDC)wParam;
+			HDC	hdc = reinterpret_cast<HDC>(wParam);
 			SetBkMode( hdc, TRANSPARENT );
 			SelectObject( hdc, hFontBold );
 			return PtrToLong(GetSysColorBrush( COLOR_BTNFACE ));
@@ -2180,7 +2180,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 		break;
 
 	case WM_NOTIFY:
-		notify = (PNMLINK) lParam;
+        notify = reinterpret_cast<PNMLINK>(lParam);
 		if( notify->hdr.idFrom == IDC_LINK )
 		{
 			switch( notify->hdr.code )
@@ -2213,13 +2213,13 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 			g_AnimateZoom = IsDlgButtonChecked( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ANIMATE_ZOOM ) == BST_CHECKED;
 			g_DemoTypeUserDriven = IsDlgButtonChecked( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPEUSERDRIVEN ) == BST_CHECKED;
 
-			newToggleKey = (DWORD) SendMessage( GetDlgItem( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_HOTKEY), HKM_GETHOTKEY, 0, 0 );
-			newLiveZoomToggleKey = (DWORD) SendMessage( GetDlgItem( g_OptionsTabs[LIVE_PAGE].hPage, IDC_LIVEHOTKEY), HKM_GETHOTKEY, 0, 0 );
-			newDrawToggleKey = (DWORD) SendMessage( GetDlgItem( g_OptionsTabs[DRAW_PAGE].hPage, IDC_DRAWHOTKEY), HKM_GETHOTKEY, 0, 0 );
-			newBreakToggleKey = (DWORD) SendMessage( GetDlgItem( g_OptionsTabs[BREAK_PAGE].hPage, IDC_BREAKHOTKEY), HKM_GETHOTKEY, 0, 0 );
-			newDemoTypeToggleKey = (DWORD)SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPEHOTKEY ), HKM_GETHOTKEY, 0, 0 );
-			newRecordToggleKey = (DWORD)SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORDHOTKEY), HKM_GETHOTKEY, 0, 0);
-			newSnipToggleKey = (DWORD) SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIPHOTKEY), HKM_GETHOTKEY, 0, 0 );
+			newToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newLiveZoomToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[LIVE_PAGE].hPage, IDC_LIVEHOTKEY), HKM_GETHOTKEY, 0, 0 ));
+			newDrawToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[DRAW_PAGE].hPage, IDC_DRAWHOTKEY), HKM_GETHOTKEY, 0, 0 ));
+			newBreakToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[BREAK_PAGE].hPage, IDC_BREAKHOTKEY), HKM_GETHOTKEY, 0, 0 ));
+			newDemoTypeToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPEHOTKEY ), HKM_GETHOTKEY, 0, 0 ));
+			newRecordToggleKey = static_cast<DWORD>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORDHOTKEY), HKM_GETHOTKEY, 0, 0));
+			newSnipToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIPHOTKEY), HKM_GETHOTKEY, 0, 0 ));
 
 			newToggleMod = GetKeyMod( newToggleKey );
 			newLiveZoomToggleMod = GetKeyMod( newLiveZoomToggleKey );
@@ -2229,8 +2229,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 			newRecordToggleMod = GetKeyMod(newRecordToggleKey);
 			newSnipToggleMod = GetKeyMod( newSnipToggleKey );
 
-			g_SliderZoomLevel = (int) SendMessage( GetDlgItem(g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ZOOMSLIDER), TBM_GETPOS, 0, 0 );
-			g_DemoTypeSpeedSlider = (int) SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPESPEEDSLIDER ), TBM_GETPOS, 0, 0 );
+			g_SliderZoomLevel = static_cast<int>(SendMessage( GetDlgItem(g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ZOOMSLIDER), TBM_GETPOS, 0, 0 ));
+            g_DemoTypeSpeedSlider = static_cast<int>(SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPESPEEDSLIDER ), TBM_GETPOS, 0, 0 ));
 
 			g_ShowExpiredTime = IsDlgButtonChecked(  g_OptionsTabs[BREAK_PAGE].hPage, IDC_CHECK_SHOWEXPIRED ) == BST_CHECKED;
 			g_CaptureAudio = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTUREAUDIO) == BST_CHECKED;
@@ -2238,11 +2238,11 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 			text[2] = 0;
 			newTimeout = _tstoi( text );
 
-			g_RecordFrameRate = g_FramerateOptions[SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORDFRAMERATE), (UINT)CB_GETCURSEL, (WPARAM)0, (LPARAM)0)];
-			g_RecordScaling = (int) SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORDSCALING), (UINT)CB_GETCURSEL, (WPARAM)0, (LPARAM)0) * 10 + 10;
+			g_RecordFrameRate = g_FramerateOptions[SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORDFRAMERATE), static_cast<UINT>(CB_GETCURSEL), static_cast<WPARAM>(0), static_cast<LPARAM>(0))];
+            g_RecordScaling = static_cast<int>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORDSCALING), static_cast<UINT>(CB_GETCURSEL), static_cast<WPARAM>(0), static_cast<LPARAM>(0)) * 10 + 10);
 
 			// Get the selected microphone
-			int index = (int) SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE ), (UINT) CB_GETCURSEL, (WPARAM) 0, (LPARAM) 0 );
+            int index = static_cast<int>(SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE ), static_cast<UINT>(CB_GETCURSEL), static_cast<WPARAM>(0), static_cast<LPARAM>(0) ));
 			_tcscpy( g_MicrophoneDeviceId, index == 0 ? L"" : microphones[index - 1].first.c_str() );
 
 			if( newToggleKey && !RegisterHotKey( GetParent( hDlg ), ZOOM_HOTKEY, newToggleMod, newToggleKey & 0xFF )) {
@@ -2486,7 +2486,7 @@ void PushDrawUndo( HDC hDc, PDRAW_UNDO *DrawUndoList, int width, int height )
 	}
 	if( hUndoBitmap ) {
 
-		newUndo = (PDRAW_UNDO) malloc( sizeof( DRAW_UNDO ));
+		newUndo = static_cast<PDRAW_UNDO>(malloc( sizeof( DRAW_UNDO )));
 		if (newUndo != NULL)
 		{
 			newUndo->hDc = CreateCompatibleDC(hDc);
@@ -2527,7 +2527,7 @@ void BlankScreenArea( HDC hDc, PRECT Rc, int BlankMode )
 
 		HBRUSH hBrush = CreateSolidBrush( RGB( 0, 0, 0 ));
 		FillRect( hDc, Rc, hBrush );
-		DeleteObject( (HGDIOBJ) hBrush );
+        DeleteObject( static_cast<HGDIOBJ>(hBrush) );
 
 	} else {
 
@@ -2565,12 +2565,12 @@ void DrawTypingCursor( HWND hWnd, POINT textPt, HDC hdcScreenCompat, HDC hdcScre
 	rc->left = textPt.x;
 	rc->top = textPt.y;
 	TCHAR vKey = '|';
-	DrawText( hdcScreenCompat, (PTCHAR) &vKey, 1, rc, DT_CALCRECT );
+    DrawText( hdcScreenCompat, static_cast<PTCHAR>(&vKey), 1, rc, DT_CALCRECT );
 
 	BitBlt(hdcScreenCursorCompat, 0, 0, rc->right -rc->left, rc->bottom - rc->top,
 		hdcScreenCompat, rc->left, rc->top, SRCCOPY|CAPTUREBLT );
 
-	DrawText( hdcScreenCompat, (PTCHAR) &vKey, 1, rc, DT_LEFT );
+	DrawText( hdcScreenCompat, static_cast<PTCHAR>(&vKey), 1, rc, DT_LEFT );
 	InvalidateRect( hWnd, NULL, TRUE );
 }
 
@@ -2587,9 +2587,9 @@ RECT BoundMouse( float zoomLevel, MONITORINFO *monInfo, int width, int height,
 
 	GetZoomedTopLeftCoordinates( zoomLevel, cursorPos, &x, width, &y, height );
 	rc.left = monInfo->rcMonitor.left + x; 
-	rc.right = rc.left + (int) (width/zoomLevel);
+	rc.right = rc.left + static_cast<int>(width/zoomLevel);
 	rc.top = monInfo->rcMonitor.top + y;
-	rc.bottom = rc.top + (int) (height/zoomLevel);
+    rc.bottom = rc.top + static_cast<int>(height/zoomLevel);
 
 	OutputDebug( L"x: %d y: %d width: %d height: %d zoomlevel: %g\n",
 		cursorPos->x, cursorPos->y, width, height, zoomLevel);
@@ -2623,27 +2623,27 @@ void DrawArrow( HDC hdc, int x1, int y1, int x2, int y2, double length, double w
 	}
 
 	// get midpoint of base
-	int xMid = x2 - (int)(length*dx+0.5);
-	int yMid = y2 - (int)(length*dy+0.5);
+    int xMid = x2 - static_cast<int>(length*dx+0.5);
+    int yMid = y2 - static_cast<int>(length*dy+0.5);
 	
 	// get left wing
-	int xLeft = xMid - (int)(dy*width+0.5);
-	int yLeft = yMid + (int)(dx*width+0.5);
+    int xLeft = xMid - static_cast<int>(dy*width+0.5);
+    int yLeft = yMid + static_cast<int>(dx*width+0.5);
 
 	// get right wing
-	int xRight = xMid + (int)(dy*width+0.5);
-	int yRight = yMid - (int)(dx*width+0.5);
+    int xRight = xMid + static_cast<int>(dy*width+0.5);
+    int yRight = yMid - static_cast<int>(dx*width+0.5);
 
 	// Bring midpoint in to make a nicer arrow
-	xMid = x2 - (int)(length/2*dx+0.5);
-	yMid = y2 - (int)(length/2*dy+0.5);
+    xMid = x2 - static_cast<int>(length/2*dx+0.5);
+    yMid = y2 - static_cast<int>(length/2*dy+0.5);
 	if (UseGdiplus) {
 
 		Gdiplus::Graphics	dstGraphics(hdc);
 
 		dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 		Gdiplus::Color	color = ColorFromCOLORREF(g_PenColor);
-		Gdiplus::Pen pen(color, (Gdiplus::REAL)g_PenWidth);
+        Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
 		pen.SetLineCap(Gdiplus::LineCapRound, Gdiplus::LineCapRound, Gdiplus::DashCapRound);
 #if 0
 		Gdiplus::PointF	pts[] = {
@@ -2658,12 +2658,12 @@ void DrawArrow( HDC hdc, int x1, int y1, int x2, int y2, double length, double w
 #else
 		Gdiplus::GraphicsPath path;
 		path.StartFigure();
-		path.AddLine((INT)x1, (INT)y1, (INT)x2, (INT)y2);
-		path.AddLine((INT)x2, (INT)y2, (INT)xMid, (INT)yMid);
-		path.AddLine((INT)xMid, (INT)yMid, (INT)xLeft, (INT)yLeft);
-		path.AddLine((INT)xLeft, (INT)yLeft, (INT)x2, (INT)y2);
-		path.AddLine((INT)x2, (INT)y2, (INT)xRight, (INT)yRight);
-		path.AddLine((INT)xRight, (INT)yRight, (INT)xMid, (INT)yMid);
+        path.AddLine(static_cast<INT>(x1), static_cast<INT>(y1), static_cast<INT>(x2), static_cast<INT>(y2));
+        path.AddLine(static_cast<INT>(x2), static_cast<INT>(y2), static_cast<INT>(xMid), static_cast<INT>(yMid));
+        path.AddLine(static_cast<INT>(xMid), static_cast<INT>(yMid), static_cast<INT>(xLeft), static_cast<INT>(yLeft));
+        path.AddLine(static_cast<INT>(xLeft), static_cast<INT>(yLeft), static_cast<INT>(x2), static_cast<INT>(y2));
+        path.AddLine(static_cast<INT>(x2), static_cast<INT>(y2), static_cast<INT>(xRight), static_cast<INT>(yRight));
+        path.AddLine(static_cast<INT>(xRight), static_cast<INT>(yRight), static_cast<INT>(xMid), static_cast<INT>(yMid));
 		pen.SetLineJoin(Gdiplus::LineJoinRound);
 		dstGraphics.DrawPath(&pen, &path);
 #endif
@@ -2703,7 +2703,7 @@ VOID DrawShape( DWORD Shape, HDC hDc, RECT *Rect, bool UseGdiPlus = false )
 
 	dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 	Gdiplus::Color	color = ColorFromCOLORREF(g_PenColor);
-	Gdiplus::Pen pen(color, (Gdiplus::REAL)g_PenWidth);
+    Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
 	pen.SetLineCap(Gdiplus::LineCapRound, Gdiplus::LineCapRound, Gdiplus::DashCapRound);
 
 	// Check for hihglighting or blur
@@ -2726,12 +2726,12 @@ VOID DrawShape( DWORD Shape, HDC hDc, RECT *Rect, bool UseGdiPlus = false )
 		if (UseGdiPlus)
 			if(pBrush)
 				DrawHighlightedShape(DRAW_RECTANGLE, hDc, pBrush, NULL, 
-					(int)(Rect->left - 1), (int)(Rect->top - 1),
-					(int)Rect->right, (int)Rect->bottom);
+					static_cast<int>(Rect->left - 1), static_cast<int>(Rect->top - 1),
+					static_cast<int>(Rect->right), static_cast<int>(Rect->bottom));
 			else if (isblur)
 				DrawBlurredShape( DRAW_RECTANGLE, &pen, hDc, &dstGraphics,
-					(int)(Rect->left - 1), (int)(Rect->top - 1),
-					(int)Rect->right, (int)Rect->bottom );
+					static_cast<int>(Rect->left - 1), static_cast<int>(Rect->top - 1),
+					static_cast<int>(Rect->right), static_cast<int>(Rect->bottom) );
 			else
 				dstGraphics.DrawRectangle(&pen,
 					Gdiplus::Rect::Rect(Rect->left - 1, Rect->top - 1,
@@ -2744,12 +2744,12 @@ VOID DrawShape( DWORD Shape, HDC hDc, RECT *Rect, bool UseGdiPlus = false )
 		if (UseGdiPlus)
 			if (pBrush)
 				DrawHighlightedShape(DRAW_ELLIPSE, hDc, pBrush, NULL,
-					(int)(Rect->left - 1), (int)(Rect->top - 1),
-					(int)Rect->right, (int)Rect->bottom);
+					static_cast<int>(Rect->left - 1), static_cast<int>(Rect->top - 1),
+					static_cast<int>(Rect->right), static_cast<int>(Rect->bottom));
 			else if (isblur)
 				DrawBlurredShape( DRAW_ELLIPSE, &pen, hDc, &dstGraphics,
-					(int)(Rect->left - 1), (int)(Rect->top - 1),
-					(int)Rect->right, (int)Rect->bottom );
+					static_cast<int>(Rect->left - 1), static_cast<int>(Rect->top - 1),
+					static_cast<int>(Rect->right), static_cast<int>(Rect->bottom));
 			else
 				dstGraphics.DrawEllipse(&pen,
 					Gdiplus::Rect::Rect(Rect->left - 1, Rect->top - 1,
@@ -2762,16 +2762,16 @@ VOID DrawShape( DWORD Shape, HDC hDc, RECT *Rect, bool UseGdiPlus = false )
 		if (UseGdiPlus)
 			if (pBrush)
 				DrawHighlightedShape(DRAW_LINE, hDc, NULL, &pen,
-					(int)Rect->left, (int)Rect->top,
-					(int)Rect->right, (int)Rect->bottom);
+					static_cast<int>(Rect->left), static_cast<int>(Rect->top),
+					static_cast<int>(Rect->right), static_cast<int>(Rect->bottom));
 			else if (isblur)
 				DrawBlurredShape(DRAW_LINE, &pen, hDc, &dstGraphics,
-					(int)Rect->left, (int)Rect->top,
-					(int)Rect->right, (int)Rect->bottom);
+					static_cast<int>(Rect->left), static_cast<int>(Rect->top),
+					static_cast<int>(Rect->right), static_cast<int>(Rect->bottom));
 			else
 				dstGraphics.DrawLine(&pen,
-					(INT)(Rect->left - 1), (INT)(Rect->top - 1),
-					(INT)Rect->right, (INT)Rect->bottom);
+					static_cast<INT>(Rect->left - 1), static_cast<INT>(Rect->top - 1),
+					static_cast<INT>(Rect->right), static_cast<INT>(Rect->bottom));
 		else {
 			MoveToEx(hDc, Rect->left, Rect->top, NULL);
 			LineTo(hDc, Rect->right + 1, Rect->bottom + 1);
@@ -2780,7 +2780,7 @@ VOID DrawShape( DWORD Shape, HDC hDc, RECT *Rect, bool UseGdiPlus = false )
 	case DRAW_ARROW:
 		DrawArrow(hDc, Rect->right + 1, Rect->bottom + 1,
 			Rect->left, Rect->top,
-			(double)g_PenWidth * 2.5, (double)g_PenWidth * 1.5, UseGdiPlus);
+			static_cast<double>(g_PenWidth) * 2.5, static_cast<double>(g_PenWidth) * 1.5, UseGdiPlus);
 		break;
 	}
 	if( pBrush ) delete pBrush;
@@ -2807,7 +2807,7 @@ VOID SendPenMessage(HWND hWnd, UINT Message, LPARAM lParam)
 
 		wParam |= MK_SHIFT;
 	}
-	SetMessageExtraInfo((LPARAM)MI_WP_SIGNATURE);
+    SetMessageExtraInfo(static_cast<LPARAM>(MI_WP_SIGNATURE));
 	SendMessage(hWnd, Message, wParam, lParam);
 }
 
@@ -2842,8 +2842,8 @@ LPARAM ScalePenPosition( float zoomLevel, MONITORINFO *monInfo, RECT boundRc,
 			x = LOWORD(lParam);
 			y = HIWORD(lParam);
 
-			x = (WORD)((x - (WORD) monInfo->rcMonitor.left)/ zoomLevel) + (WORD) (boundRc.left - monInfo->rcMonitor.left);
-			y = (WORD)((y - (WORD) monInfo->rcMonitor.top) / zoomLevel) + (WORD) (boundRc.top - monInfo->rcMonitor.top);
+			x = static_cast<WORD>((x - static_cast<WORD>(monInfo->rcMonitor.left))/ zoomLevel) + static_cast<WORD>(boundRc.left - monInfo->rcMonitor.left);
+            y = static_cast<WORD>((y - static_cast<WORD>(monInfo->rcMonitor.top)) / zoomLevel) + static_cast<WORD>(boundRc.top - monInfo->rcMonitor.top);
 
 			lParam = MAKELPARAM(x, y);
 		}
@@ -2872,8 +2872,8 @@ LPARAM ScalePenPosition( float zoomLevel, MONITORINFO *monInfo, RECT boundRc,
 //----------------------------------------------------------------------------
 BOOLEAN DrawHighlightedCursor( float ZoomLevel, int Width, int Height )
 {
-	DWORD zoomWidth = (DWORD) ((float) Width/ZoomLevel);
-	DWORD zoomHeight = (DWORD) ((float) Height/ZoomLevel);
+    DWORD zoomWidth = static_cast<DWORD> (static_cast<float>(Width)/ZoomLevel);
+    DWORD zoomHeight = static_cast<DWORD> (static_cast<float>(Height)/ZoomLevel);
 	if( g_PenWidth < 5 && zoomWidth > g_PenWidth * 100 && zoomHeight > g_PenWidth * 100 ) {
 
 		return TRUE;
@@ -2901,10 +2901,10 @@ void InvalidateCursorMoveArea( HWND hWnd, float zoomLevel, int width, int height
 		invWidth = g_PenWidth * 3 + 1;
 	}
 	GetZoomedTopLeftCoordinates( zoomLevel, &cursorPos, &x, width, &y, height );
-	rc.left = (int) max( 0, (int) ((min( prevPt.x, currentPt.x)-invWidth - x) * zoomLevel));
-	rc.right = (int) ((max( prevPt.x, currentPt.x)+invWidth - x) * zoomLevel);
-	rc.top = (int) max( 0, (int) ((min( prevPt.y, currentPt.y)-invWidth - y) * zoomLevel));
-	rc.bottom = (int) ((max( prevPt.y, currentPt.y)+invWidth -y) * zoomLevel);
+    rc.left = static_cast<int>(max( 0, (int) ((min( prevPt.x, currentPt.x)-invWidth - x) * zoomLevel)));
+    rc.right = static_cast<int>((max( prevPt.x, currentPt.x)+invWidth - x) * zoomLevel);
+    rc.top = static_cast<int>(max( 0, (int) ((min( prevPt.y, currentPt.y)-invWidth - y) * zoomLevel)));
+    rc.bottom = static_cast<int>((max( prevPt.y, currentPt.y)+invWidth -y) * zoomLevel);
 	InvalidateRect( hWnd, &rc, FALSE );
 
 	OutputDebug( L"INVALIDATE: (%d, %d) - (%d, %d)\n", rc.left, rc.top, rc.right, rc.bottom);
@@ -2921,8 +2921,8 @@ void SaveCursorArea( HDC hDcTarget, HDC hDcSource, POINT pt )
 	OutputDebug( L"SaveCursorArea\n");
 	int penWidth = g_PenWidth + 2;
 	BitBlt( hDcTarget, 0, 0, penWidth +CURSORARMLENGTH*2, penWidth +CURSORARMLENGTH*2,
-		hDcSource, (INT) (pt.x- penWidth /2)-CURSORARMLENGTH,
-		(INT) (pt.y- penWidth /2)-CURSORARMLENGTH, SRCCOPY|CAPTUREBLT );
+		hDcSource, static_cast<INT> (pt.x- penWidth /2)-CURSORARMLENGTH,
+		static_cast<INT>(pt.y- penWidth /2)-CURSORARMLENGTH, SRCCOPY|CAPTUREBLT );
 }
 
 //----------------------------------------------------------------------------
@@ -2934,8 +2934,8 @@ void RestoreCursorArea( HDC hDcTarget, HDC hDcSource, POINT pt )
 {
 	OutputDebug( L"RestoreCursorArea\n");
 	int penWidth = g_PenWidth + 2;
-	BitBlt( hDcTarget, (INT) (pt.x- penWidth /2)-CURSORARMLENGTH,
-		(INT) (pt.y- penWidth /2)-CURSORARMLENGTH, penWidth +CURSORARMLENGTH*2,
+    BitBlt( hDcTarget, static_cast<INT>(pt.x- penWidth /2)-CURSORARMLENGTH,
+		static_cast<INT>(pt.y- penWidth /2)-CURSORARMLENGTH, penWidth +CURSORARMLENGTH*2,
 		penWidth + CURSORARMLENGTH*2, hDcSource, 0, 0, SRCCOPY|CAPTUREBLT );
 }
 
@@ -2954,7 +2954,7 @@ void DrawCursor( HDC hDcTarget, POINT pt, float ZoomLevel, int Width, int Height
 		Gdiplus::Graphics	dstGraphics(hDcTarget);
 		dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 		Gdiplus::Color	color = ColorFromCOLORREF(g_PenColor);
-		Gdiplus::Pen pen(color, (Gdiplus::REAL)g_PenWidth);
+        Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
 
 		rc.left = pt.x - CURSORARMLENGTH;
 		rc.right = pt.x + CURSORARMLENGTH;
@@ -2963,11 +2963,11 @@ void DrawCursor( HDC hDcTarget, POINT pt, float ZoomLevel, int Width, int Height
 
 		Gdiplus::GraphicsPath path;
 		path.StartFigure();
-		path.AddLine((INT)rc.left-1, (INT)rc.top-1, (INT)rc.right, (INT)rc.bottom);
-		path.AddLine((INT)rc.left - 2, (INT)rc.top - 1, rc.left + (rc.right - rc.left) / 2, rc.top - 1);
-		path.AddLine((INT)rc.left - 1, (INT)rc.top - 2, rc.left - 1, rc.top + (rc.bottom - rc.top) / 2);
-		path.AddLine((INT)rc.left - 1, (INT)rc.top - 2, rc.left - 1, rc.top + (rc.bottom - rc.top) / 2);
-		path.AddLine((INT)rc.left + (rc.right - rc.left) / 2, rc.top - 1, rc.left - 1, rc.top + (rc.bottom - rc.top) / 2);
+        path.AddLine(static_cast<INT>(rc.left) - 1, static_cast<INT>(rc.top) - 1, static_cast<INT>(rc.right), static_cast<INT>(rc.bottom));
+        path.AddLine(static_cast<INT>(rc.left) - 2, static_cast<INT>(rc.top) - 1, rc.left + (rc.right - rc.left) / 2, rc.top - 1);
+        path.AddLine(static_cast<INT>(rc.left) - 1, static_cast<INT>(rc.top) - 2, rc.left - 1, rc.top + (rc.bottom - rc.top) / 2);
+        path.AddLine(static_cast<INT>(rc.left) - 1, static_cast<INT>(rc.top) - 2, rc.left - 1, rc.top + (rc.bottom - rc.top) / 2);
+        path.AddLine(static_cast<INT>(rc.left) + (rc.right - rc.left) / 2, rc.top - 1, rc.left - 1, rc.top + (rc.bottom - rc.top) / 2);
 		pen.SetLineJoin(Gdiplus::LineJoinRound);
 		dstGraphics.DrawPath(&pen, &path);
 		OutputDebug(L"DrawPointer: %d %d %d %d\n", rc.left, rc.top, rc.right, rc.bottom);
@@ -2978,7 +2978,7 @@ void DrawCursor( HDC hDcTarget, POINT pt, float ZoomLevel, int Width, int Height
 		Gdiplus::Graphics	dstGraphics(hDcTarget);
 		dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 		Gdiplus::Color	color = ColorFromCOLORREF(g_PenColor);
-		Gdiplus::Pen pen(color, (Gdiplus::REAL)g_PenWidth);
+        Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
 		Gdiplus::GraphicsPath path;
 		path.StartFigure();
 		pen.SetLineJoin(Gdiplus::LineJoinRound);
@@ -2999,8 +2999,8 @@ void DrawCursor( HDC hDcTarget, POINT pt, float ZoomLevel, int Width, int Height
 
 			Gdiplus::SolidBrush solidBrush(color);
 
-			dstGraphics.FillEllipse(&solidBrush, (INT) (pt.x-g_PenWidth/2), (INT) (pt.y-g_PenWidth/2),
-						(INT) (g_PenWidth), (INT) (g_PenWidth));
+			dstGraphics.FillEllipse(&solidBrush, static_cast<INT>(pt.x-g_PenWidth/2), static_cast<INT>(pt.y-g_PenWidth/2),
+						static_cast<INT>(g_PenWidth), static_cast<INT>(g_PenWidth));
 		}
 	}
 }
@@ -3026,12 +3026,12 @@ void ResizePen( HWND hWnd, HDC hdcScreenCompat, HDC hdcScreenCursorCompat, POINT
 		if( isUser )
 		{
 			// Amplify user delta proportional to LiveZoomLevel
-			newWidth = g_PenWidth + (int) ((newWidth - (int) g_PenWidth)*g_LiveZoomLevel);
+            newWidth = g_PenWidth + static_cast<int> ((newWidth - static_cast<int>(g_PenWidth))*g_LiveZoomLevel);
 		}
 
 		g_PenWidth = min( max( newWidth, MIN_PENWIDTH ),
-			min( (int) (MAX_PENWIDTH * g_LiveZoomLevel), MAX_LIVEPENWIDTH ) );
-		g_RootPenWidth = (int) (g_PenWidth / g_LiveZoomLevel);
+			min( static_cast<int>(MAX_PENWIDTH * g_LiveZoomLevel), MAX_LIVEPENWIDTH ) );
+        g_RootPenWidth = static_cast<int>(g_PenWidth / g_LiveZoomLevel);
 	}
 	else
 	{
@@ -3316,9 +3316,9 @@ inline auto CopyBytesFromTexture(winrt::com_ptr<ID3D11Texture2D> const& texture,
 
 	auto bytesStride = static_cast<size_t>(desc.Width) * bytesPerPixel;
 	std::vector<byte> bytes(bytesStride * static_cast<size_t>(desc.Height), 0);
-	auto source = reinterpret_cast<byte*>(mapped.pData);
+	auto source = static_cast<byte*>(mapped.pData);
 	auto dest = bytes.data();
-	for (auto i = 0; i < (int)desc.Height; i++)
+	for (auto i = 0; i < static_cast<int>(desc.Height); i++)
 	{
 		memcpy(dest, source, bytesStride);
 
@@ -3496,7 +3496,7 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
 
 			co_await file.MoveAndReplaceAsync( destFile );
 			g_RecordingSaveLocation = file.Path();
-			SaveToClipboard((WCHAR*)g_RecordingSaveLocation.c_str(), hWnd);
+            SaveToClipboard(const_cast<WCHAR*>(g_RecordingSaveLocation.c_str()), hWnd);
 		}
 		g_bSaveInProgress = false;
 
@@ -3645,11 +3645,11 @@ LRESULT APIENTRY MainWndProc(
 
 		for( const auto& line : g_TextBufferPreviousLines )
 		{
-			DrawText( hdcScreenCompat, line.c_str(), (int)line.length(), &rc, DT_CALCRECT );
+            DrawText( hdcScreenCompat, line.c_str(), static_cast<int>(line.length()), &rc, DT_CALCRECT );
 			const auto textWidth = rc.right - rc.left;
 			rc.left = textPt.x - textWidth;
 			rc.right = textPt.x;
-			DrawText( hdcScreenCompat, line.c_str(), (int)line.length(), &rc, DT_LEFT );
+            DrawText( hdcScreenCompat, line.c_str(), static_cast<int>(line.length()), &rc, DT_LEFT );
 			rc.top += lineHeight;
 		}
 		if( !g_TextBuffer.empty() )
@@ -3658,10 +3658,10 @@ LRESULT APIENTRY MainWndProc(
 			{
 				g_TextBuffer.pop_back();
 			}
-			DrawText( hdcScreenCompat, g_TextBuffer.c_str(), (int)g_TextBuffer.length(), &rc, DT_CALCRECT );
+            DrawText( hdcScreenCompat, g_TextBuffer.c_str(), static_cast<int>(g_TextBuffer.length()), &rc, DT_CALCRECT );
 			rc.left = textPt.x - (rc.right - rc.left);
 			rc.right = textPt.x;
-			DrawText( hdcScreenCompat, g_TextBuffer.c_str(), (int)g_TextBuffer.length(), &rc, DT_LEFT );
+            DrawText( hdcScreenCompat, g_TextBuffer.c_str(), static_cast<int>(g_TextBuffer.length()), &rc, DT_LEFT );
 		}
 	};
 
@@ -3943,7 +3943,7 @@ LRESULT APIENTRY MainWndProc(
 					g_hWndLiveZoom = CreateWindowEx( WS_EX_TOOLWINDOW | WS_EX_LAYERED | WS_EX_TRANSPARENT,
 						L"MagnifierClass", L"ZoomIt Live Zoom", 
 						WS_POPUP | WS_CLIPSIBLINGS,
-						0, 0, 0, 0, NULL, NULL, g_hInstance, (PVOID) GetForegroundWindow() );
+						0, 0, 0, 0, NULL, NULL, g_hInstance, static_cast<PVOID>(GetForegroundWindow()) );
 					pSetLayeredWindowAttributes( hWnd, 0, 0, LWA_ALPHA );
 					EnableWindow( g_hWndLiveZoom, FALSE );
 					pMagSetWindowFilterList( g_hWndLiveZoomMag, MW_FILTERMODE_EXCLUDE, 1, &hWnd );
@@ -3952,7 +3952,7 @@ LRESULT APIENTRY MainWndProc(
 #if WINDOWS_CURSOR_RECORDING_WORKAROUND
 					if( g_LiveZoomLevelOne ) {
 
-						SendMessage( g_hWndLiveZoom, WM_USER_SETZOOM, (WPARAM) g_LiveZoomLevel, 0 );
+						SendMessage( g_hWndLiveZoom, WM_USER_SETZOOM, static_cast<WPARAM>(g_LiveZoomLevel), 0 );
 					}
 					else {
 #endif
@@ -4205,8 +4205,8 @@ LRESULT APIENTRY MainWndProc(
 					}
 
 					// Get screen DCs
-					hdcScreen = CreateDC(L"DISPLAY", (PTCHAR) NULL, 
-							(PTCHAR) NULL, (CONST DEVMODE *) NULL); 
+                    hdcScreen = CreateDC(L"DISPLAY", static_cast<PTCHAR>(NULL),
+							static_cast<PTCHAR>(NULL), static_cast<CONST DEVMODE *>(NULL));
 					hdcScreenCompat = CreateCompatibleDC(hdcScreen); 
 					hdcScreenSaveCompat = CreateCompatibleDC(hdcScreen); 
 					hdcScreenCursorCompat = CreateCompatibleDC(hdcScreen); 
@@ -4220,25 +4220,25 @@ LRESULT APIENTRY MainWndProc(
 							cursorPos.x, cursorPos.y, width, height, zoomLevel );
 
 					// Create display bitmap
-					bmp.bmBitsPixel =  (BYTE) GetDeviceCaps(hdcScreen, BITSPIXEL); 
-					bmp.bmPlanes = (BYTE) GetDeviceCaps(hdcScreen, PLANES); 
+                    bmp.bmBitsPixel = static_cast<BYTE>(GetDeviceCaps(hdcScreen, BITSPIXEL));
+                    bmp.bmPlanes = static_cast<BYTE>(GetDeviceCaps(hdcScreen, PLANES));
 					bmp.bmWidth = width;
 					bmp.bmHeight = height;
 					bmp.bmWidthBytes = ((bmp.bmWidth + 15) &~15)/8; 
 					hbmpCompat = CreateBitmap(bmp.bmWidth, bmp.bmHeight, 
-						bmp.bmPlanes, bmp.bmBitsPixel, (CONST VOID *) NULL); 
+						bmp.bmPlanes, bmp.bmBitsPixel, static_cast<CONST VOID *>(NULL));
  					SelectObject(hdcScreenCompat, hbmpCompat); 
 
 					// Create saved bitmap
 					hbmpDrawingCompat = CreateBitmap(bmp.bmWidth, bmp.bmHeight, 
-						bmp.bmPlanes, bmp.bmBitsPixel, (CONST VOID *) NULL); 
+						bmp.bmPlanes, bmp.bmBitsPixel, static_cast<CONST VOID *>(NULL));
 					SelectObject(hdcScreenSaveCompat, hbmpDrawingCompat);
 
 					// Create cursor save bitmap
 					// (have to accomodate large fonts and LiveZoom pen scaling)
 					hbmpCursorCompat = CreateBitmap( MAX_LIVEPENWIDTH+CURSORARMLENGTH*2,
 						MAX_LIVEPENWIDTH+CURSORARMLENGTH*2, bmp.bmPlanes,
-						bmp.bmBitsPixel, (CONST VOID *) NULL );
+						bmp.bmBitsPixel, static_cast<CONST VOID *>(NULL));
 					SelectObject(hdcScreenCursorCompat, hbmpCursorCompat);
 
 					// Create typing font
@@ -4264,7 +4264,7 @@ LRESULT APIENTRY MainWndProc(
 						BITMAPINFO bitmapInfo = {};
 						bitmapInfo.bmiHeader.biSize = sizeof bitmapInfo.bmiHeader;
 						bitmapInfo.bmiHeader.biWidth = desc.Width;
-						bitmapInfo.bmiHeader.biHeight = -(LONG) desc.Height;
+                        bitmapInfo.bmiHeader.biHeight = -static_cast<LONG>(desc.Height);
 						bitmapInfo.bmiHeader.biPlanes = 1;
 						bitmapInfo.bmiHeader.biBitCount = 32;
 						bitmapInfo.bmiHeader.biCompression = BI_RGB;
@@ -4329,8 +4329,8 @@ LRESULT APIENTRY MainWndProc(
 #endif
 
 						// Enter drawing mode
-						g_LiveZoomSourceRect = *(RECT *) SendMessage( g_hWndLiveZoom, WM_USER_GETSOURCERECT, 0, 0 );
-						g_LiveZoomLevel = *(float *) SendMessage( g_hWndLiveZoom, WM_USER_GETZOOMLEVEL, 0, 0 );
+                        g_LiveZoomSourceRect = *reinterpret_cast<RECT *>(SendMessage( g_hWndLiveZoom, WM_USER_GETSOURCERECT, 0, 0 ));
+                        g_LiveZoomLevel = *reinterpret_cast<float*>(SendMessage(g_hWndLiveZoom, WM_USER_GETZOOMLEVEL, 0, 0));
 						
 						// Set live zoom level to 1 in preparation of us being full screen static
 						zoomLevel = 1.0;
@@ -4362,7 +4362,7 @@ LRESULT APIENTRY MainWndProc(
 						zoomTelescopeStep = ZOOMLEVEL_STEPIN;
 						zoomTelescopeTarget = g_ZoomLevels[g_SliderZoomLevel];
 						if( g_AnimateZoom ) 
-							zoomLevel = (float) 1.0 * zoomTelescopeStep; 
+							zoomLevel = static_cast<float>(1.0) * zoomTelescopeStep; 
 						else
 							zoomLevel = zoomTelescopeTarget;
 						SetTimer( hWnd, 1, ZOOMLEVEL_STEPTIME, NULL );
@@ -4615,10 +4615,10 @@ LRESULT APIENTRY MainWndProc(
 	case WM_IME_CHAR:
 	case WM_CHAR:
 
-		if( (g_TypeMode != TypeModeOff) && iswprint((TCHAR)wParam) || ((TCHAR) wParam == L'&')) {
+		if( (g_TypeMode != TypeModeOff) && iswprint(static_cast<TCHAR>(wParam)) || (static_cast<TCHAR>(wParam) == L'&')) {
 			g_HaveTyped = TRUE;
 
-			TCHAR	 vKey = (TCHAR) wParam;
+			TCHAR	 vKey = static_cast<TCHAR>(wParam);
 
 			g_HaveDrawn = TRUE;
 
@@ -4636,7 +4636,7 @@ LRESULT APIENTRY MainWndProc(
 
 				// Restore previous lines.
 				wParam = 'X';
-				DrawText(hdcScreenCompat, (PTCHAR)&wParam, 1, &rc, DT_CALCRECT);
+                DrawText(hdcScreenCompat, reinterpret_cast<PTCHAR>(&wParam), 1, &rc, DT_CALCRECT);
 				const auto lineHeight = rc.bottom - rc.top;
 
 				rc.top -= static_cast< LONG >( g_TextBufferPreviousLines.size() ) * lineHeight;
@@ -4653,7 +4653,7 @@ LRESULT APIENTRY MainWndProc(
 			InvalidateRect( hWnd, NULL, TRUE );
 
 			// Save the key for undo
-			PTYPED_KEY newKey = (PTYPED_KEY)malloc( sizeof(TYPED_KEY) );
+            PTYPED_KEY newKey = static_cast<PTYPED_KEY>(malloc( sizeof(TYPED_KEY) ));
 			newKey->rc = rc;
 			newKey->Next = typedKeyList;
 			typedKeyList = newKey;
@@ -4722,8 +4722,8 @@ LRESULT APIENTRY MainWndProc(
 
 	case WM_KEYDOWN:
 
-		if( (g_TypeMode != TypeModeOff) && g_HaveTyped && (char) wParam != VK_UP && (char) wParam != VK_DOWN &&
-			(isprint( (char) wParam ) || 
+		if( (g_TypeMode != TypeModeOff) && g_HaveTyped && static_cast<char>(wParam) != VK_UP && static_cast<char>(wParam) != VK_DOWN &&
+			(isprint( static_cast<char>(wParam)) || 
 			wParam == VK_RETURN || wParam == VK_DELETE || wParam == VK_BACK )) {
 
 			if( wParam == VK_RETURN ) {
@@ -4739,7 +4739,7 @@ LRESULT APIENTRY MainWndProc(
 				else
 				{
 					// Insert a fake return key in the list to undo.
-					PTYPED_KEY newKey = (PTYPED_KEY)malloc(sizeof(TYPED_KEY));
+                    PTYPED_KEY newKey = static_cast<PTYPED_KEY>(malloc(sizeof(TYPED_KEY)));
 					newKey->rc.left = textPt.x;
 					newKey->rc.top = textPt.y;
 					newKey->rc.right = newKey->rc.left;
@@ -4749,7 +4749,7 @@ LRESULT APIENTRY MainWndProc(
 				}
 
 				wParam = 'X';
-				DrawText( hdcScreenCompat, (PTCHAR) &wParam, 1, &rc, DT_CALCRECT );
+                DrawText( hdcScreenCompat, reinterpret_cast<PTCHAR>(&wParam), 1, &rc, DT_CALCRECT );
 				textPt.x = prevPt.x; // + g_PenWidth;
 				textPt.y += rc.bottom - rc.top;
 
@@ -4776,7 +4776,7 @@ LRESULT APIENTRY MainWndProc(
 
 						// Restore the previous lines.
 						wParam = 'X';
-						DrawText( hdcScreenCompat, (PTCHAR)&wParam, 1, &rc, DT_CALCRECT );
+                        DrawText( hdcScreenCompat, reinterpret_cast<PTCHAR>(&wParam), 1, &rc, DT_CALCRECT );
 						const auto lineHeight = rc.bottom - rc.top;
 
 						const bool lineWasEmpty = g_TextBuffer.empty();
@@ -4923,7 +4923,7 @@ LRESULT APIENTRY MainWndProc(
 				// Restore area where cursor was previously
 				RestoreCursorArea( hdcScreenCompat, hdcScreenCursorCompat, prevPt );
 				PushDrawUndo( hdcScreenCompat, &drawUndoList, width, height );
-				g_BlankedScreen = (int) wParam;
+                g_BlankedScreen = static_cast<int>(wParam);
 				rc.top = rc.left = 0;
 				rc.bottom = height;
 				rc.right = width;
@@ -5060,8 +5060,8 @@ LRESULT APIENTRY MainWndProc(
 					if( g_DrawingShape == DRAW_LINE ||
 						g_DrawingShape == DRAW_ARROW ) {
 
-						g_rcRectangle.right = (LONG) LOWORD(lParam);
-						g_rcRectangle.bottom = (LONG) HIWORD(lParam);
+						g_rcRectangle.right = static_cast<LONG>(LOWORD(lParam));
+                        g_rcRectangle.bottom = static_cast<LONG>(HIWORD(lParam));
 
 					} else {
 
@@ -5107,7 +5107,7 @@ LRESULT APIENTRY MainWndProc(
 					Gdiplus::Graphics	dstGraphics(hdcScreenCompat);
 					dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 					Gdiplus::Color	color = ColorFromCOLORREF(g_PenColor);
-					Gdiplus::Pen pen(color, (Gdiplus::REAL)g_PenWidth);
+                    Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
 					pen.SetLineCap(Gdiplus::LineCapRound, Gdiplus::LineCapRound, Gdiplus::DashCapRound);
 
 					// If hlighting, use a double layer approach
@@ -5231,8 +5231,8 @@ LRESULT APIENTRY MainWndProc(
 					else {
 
 						// Normal tracing
-						dstGraphics.DrawLine(&pen, (INT)(prevPt.x), (INT)(prevPt.y),
-								(INT)(currentPt.x), (INT)(currentPt.y));
+                        dstGraphics.DrawLine(&pen, static_cast<INT>(prevPt.x), static_cast<INT>(prevPt.y),
+								static_cast<INT>(currentPt.x), static_cast<INT>(currentPt.y));
 					}
 
 				} else {
@@ -5343,7 +5343,7 @@ LRESULT APIENTRY MainWndProc(
 					Gdiplus::Graphics	dstGraphics(hdcScreenCompat);
 					dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 					Gdiplus::Color	color = ColorFromCOLORREF(g_PenColor);
-					Gdiplus::Pen pen(color, (Gdiplus::REAL)g_PenWidth);
+                    Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
 					Gdiplus::GraphicsPath path;
 					pen.SetLineJoin(Gdiplus::LineJoinRound);
 					path.AddLine(prevPt.x, prevPt.y, prevPt.x, prevPt.y);
@@ -5394,7 +5394,7 @@ LRESULT APIENTRY MainWndProc(
 					Gdiplus::Graphics	dstGraphics(hdcScreenCursorCompat);
 					dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 					Gdiplus::Color	color = ColorFromCOLORREF(g_PenColor);
-					Gdiplus::Pen pen(color, (Gdiplus::REAL)g_PenWidth);
+                    Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
 					Gdiplus::GraphicsPath path;
 					pen.SetLineJoin(Gdiplus::LineJoinRound);
 					path.AddLine(prevPt.x, prevPt.y, prevPt.x, prevPt.y);
@@ -5408,10 +5408,10 @@ LRESULT APIENTRY MainWndProc(
 					forcePenResize = FALSE;
 
 					ResizePen( hWnd, hdcScreenCompat, hdcScreenCursorCompat, prevPt, g_Tracing,
-						&g_Drawing, g_LiveZoomLevel, FALSE, min( (int) (g_LiveZoomLevel * g_RootPenWidth),
-						(int) (g_LiveZoomLevel * MAX_PENWIDTH) ) );
+						&g_Drawing, g_LiveZoomLevel, FALSE, min( static_cast<int>(g_LiveZoomLevel * g_RootPenWidth),
+						static_cast<int>(g_LiveZoomLevel * MAX_PENWIDTH) ) );
 					OutputDebug( L"LIVEZOOMDRAW: zoomlevel: %d rootPenWidth: %d penWidth: %d\n",
-						(int) g_LiveZoomLevel, g_RootPenWidth, g_PenWidth );
+						static_cast<int>(g_LiveZoomLevel), g_RootPenWidth, g_PenWidth );
 				}
 				else if( !g_ZoomOnLiveZoom && forcePenResize )
 				{
@@ -5473,7 +5473,7 @@ LRESULT APIENTRY MainWndProc(
 				Gdiplus::Graphics	dstGraphics(hdcScreenCompat);
 				dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 				Gdiplus::Color	color = ColorFromCOLORREF(g_PenColor);
-				Gdiplus::Pen pen(color, (Gdiplus::REAL)g_PenWidth);
+                Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
 				Gdiplus::GraphicsPath path;
 				pen.SetLineJoin(Gdiplus::LineJoinRound);
 				path.AddLine(prevPt.x, prevPt.y, LOWORD(lParam), HIWORD(lParam));
@@ -5497,8 +5497,8 @@ LRESULT APIENTRY MainWndProc(
 				DrawShape( g_DrawingShape, hdcScreenCompat, &g_rcRectangle );
 
 				// Draw the final shape
-				HBRUSH hBrush = (HBRUSH) GetStockObject( NULL_BRUSH );
-				HBRUSH oldHbrush = (HBRUSH) SelectObject( hdcScreenCompat, hBrush );
+				HBRUSH hBrush = static_cast<HBRUSH>(GetStockObject( NULL_BRUSH ));
+                HBRUSH oldHbrush = static_cast<HBRUSH>(SelectObject( hdcScreenCompat, hBrush ));
 				SetROP2( hdcScreenCompat, R2_COPYPEN );
 
 				// smooth line
@@ -5538,10 +5538,10 @@ LRESULT APIENTRY MainWndProc(
 
 	case WM_GETMINMAXINFO:
 
-		((MINMAXINFO *) lParam)->ptMaxSize.x = width;
-		((MINMAXINFO *) lParam)->ptMaxSize.y = height;
-		((MINMAXINFO *) lParam)->ptMaxPosition.x = 0;
-		((MINMAXINFO *) lParam)->ptMaxPosition.y = 0;
+		reinterpret_cast<MINMAXINFO *>(lParam)->ptMaxSize.x = width;
+        reinterpret_cast<MINMAXINFO*>(lParam)->ptMaxSize.y = height;
+        reinterpret_cast<MINMAXINFO*>(lParam)->ptMaxPosition.x = 0;
+        reinterpret_cast<MINMAXINFO*>(lParam)->ptMaxPosition.y = 0;
 		return TRUE;
 
 	case WM_USER_TYPINGOFF:	{
@@ -5723,8 +5723,8 @@ LRESULT APIENTRY MainWndProc(
 				auto copyRc = selectRectangle.SelectedRect();
 				selectRectangle.Stop();
 				g_RecordCropping = FALSE;
-				x = (int) (x + copyRc.left / zoomLevel);
-				y = (int) (y + copyRc.top / zoomLevel);
+                x = static_cast<int>(x + copyRc.left / zoomLevel);
+                y = static_cast<int>(y + copyRc.top / zoomLevel);
 				copyWidth = copyRc.right - copyRc.left;
 				copyHeight = copyRc.bottom - copyRc.top;
 			}
@@ -5742,7 +5742,7 @@ LRESULT APIENTRY MainWndProc(
 			memset( &openFileName, 0, sizeof(openFileName ));
 			openFileName.lStructSize       = OPENFILENAME_SIZE_VERSION_400;
 			openFileName.hwndOwner         = hWnd;
-			openFileName.hInstance         = (HINSTANCE) g_hInstance;
+			openFileName.hInstance         = static_cast<HINSTANCE>(g_hInstance);
 			openFileName.nMaxFile          = sizeof(filePath)/sizeof(filePath[0]);
 			openFileName.Flags				= OFN_LONGNAMES|OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT;
 			openFileName.lpstrTitle        = L"Save zoomed screen...";
@@ -5766,8 +5766,8 @@ LRESULT APIENTRY MainWndProc(
 
 				} else {
 
-					saveWidth = (int) (copyWidth /zoomLevel);
-					saveHeight = (int) (copyHeight /zoomLevel);
+					saveWidth = static_cast<int>(copyWidth /zoomLevel);
+                    saveHeight = static_cast<int>(copyHeight /zoomLevel);
 				}
 				hSaveBitmap = CreateCompatibleBitmap( hdcScreenCompat, saveWidth, saveHeight );
 				hSaveDc = CreateCompatibleDC(hdcScreenCompat); 
@@ -5782,7 +5782,7 @@ LRESULT APIENTRY MainWndProc(
 						saveWidth, saveHeight, 
 						hdcScreenCompat, 
 						x, y, 
-						(int) (copyWidth / zoomLevel), (int)(copyHeight/ zoomLevel),
+						static_cast<int>(copyWidth / zoomLevel), static_cast<int>(copyHeight/ zoomLevel),
 						SRCCOPY|CAPTUREBLT ); 
 				
 				TCHAR targetFilePath[MAX_PATH];
@@ -5829,8 +5829,8 @@ LRESULT APIENTRY MainWndProc(
 				}
 				g_RecordCropping = FALSE;
 
-				x = (int) (x+ copyRc.left/zoomLevel);
-				y = (int) (y+ copyRc.top/zoomLevel);
+				x = static_cast<int>(x+ copyRc.left/zoomLevel);
+                y = static_cast<int>(y+ copyRc.top/zoomLevel);
 				saveWidth = copyRc.right - copyRc.left;
 				saveHeight = copyRc.bottom - copyRc.top;
 			}
@@ -5854,7 +5854,7 @@ LRESULT APIENTRY MainWndProc(
 					saveWidth, saveHeight, 
 					hdcScreenCompat, 
 					x, y, 
-					(int) (saveWidth/zoomLevel), (int) (saveHeight/zoomLevel),
+					static_cast<int>(saveWidth/zoomLevel), static_cast<int>(saveHeight/zoomLevel),
 					SRCCOPY|CAPTUREBLT ); 
 
 			if( OpenClipboard( hWnd )) {
@@ -5907,7 +5907,7 @@ LRESULT APIENTRY MainWndProc(
 				}
 			}
 
-			hdcScreen = CreateDC( L"DISPLAY", (PTCHAR)NULL, (PTCHAR)NULL, (CONST DEVMODE*)NULL );
+			hdcScreen = CreateDC( L"DISPLAY", static_cast<PTCHAR>(NULL), static_cast<PTCHAR>(NULL), static_cast<CONST DEVMODE*>(NULL) );
 
 			// toggle second monitor
 			// FIXFIX: we should save whether or not we've switched to a second monitor
@@ -5978,13 +5978,13 @@ LRESULT APIENTRY MainWndProc(
 
 			// Create backing bitmap
 			hdcScreenCompat = CreateCompatibleDC(hdcScreen); 
-			bmp.bmBitsPixel = (BYTE) GetDeviceCaps(hdcScreen, BITSPIXEL); 
-			bmp.bmPlanes = (BYTE) GetDeviceCaps(hdcScreen, PLANES); 
+			bmp.bmBitsPixel = static_cast<BYTE>(GetDeviceCaps(hdcScreen, BITSPIXEL));
+            bmp.bmPlanes = static_cast<BYTE>(GetDeviceCaps(hdcScreen, PLANES));
 			bmp.bmWidth = width;
 			bmp.bmHeight = height;
 			bmp.bmWidthBytes = ((bmp.bmWidth + 15) &~15)/8; 
 			hbmpCompat = CreateBitmap(bmp.bmWidth, bmp.bmHeight, 
-				bmp.bmPlanes, bmp.bmBitsPixel, (CONST VOID *) NULL); 
+				bmp.bmPlanes, bmp.bmBitsPixel, static_cast<CONST VOID *>(NULL)); 
  			SelectObject(hdcScreenCompat, hbmpCompat); 
 
 			SetTextColor( hdcScreenCompat, g_BreakPenColor );
@@ -6080,8 +6080,8 @@ LRESULT APIENTRY MainWndProc(
 					}
 					OutputDebug(L"FINAL MOUSE: x: %d y: %d\n", cursorPos.x, cursorPos.y );
 					GetZoomedTopLeftCoordinates(zoomLevel, &cursorPos, &x, width, &y, height);
-					cursorPos.x = monInfo.rcMonitor.left + x + (int) ((cursorPos.x - x) * zoomLevel);
-					cursorPos.y = monInfo.rcMonitor.top + y + (int)((cursorPos.y - y) * zoomLevel);		
+                    cursorPos.x = monInfo.rcMonitor.left + x + static_cast<int>((cursorPos.x - x) * zoomLevel);
+                    cursorPos.y = monInfo.rcMonitor.top + y + static_cast<int>((cursorPos.y - y) * zoomLevel);		
 					SetCursorPos(cursorPos.x, cursorPos.y);
 				}
 				if( hTargetWindow ) {
@@ -6096,7 +6096,7 @@ LRESULT APIENTRY MainWndProc(
 				// Restore live zoom if we came from that mode
 				if( g_ZoomOnLiveZoom ) {
 
-					SendMessage( g_hWndLiveZoom, WM_USER_SETZOOM, (WPARAM) g_LiveZoomLevel, (LPARAM) &g_LiveZoomSourceRect );
+					SendMessage( g_hWndLiveZoom, WM_USER_SETZOOM, static_cast<WPARAM>(g_LiveZoomLevel), reinterpret_cast<LPARAM>(&g_LiveZoomSourceRect) );
 					g_ZoomOnLiveZoom = FALSE;
 					forcePenResize = TRUE;
 				}
@@ -6169,7 +6169,7 @@ LRESULT APIENTRY MainWndProc(
 					bmp.bmWidth, bmp.bmHeight, 
 					hdcScreenCompat, 
 					x, y, 
-					(int) (width/zoomLevel), (int) (height/zoomLevel),
+					static_cast<int>(width/zoomLevel), static_cast<int>(height/zoomLevel),
 					SRCCOPY|CAPTUREBLT ); 
 #endif
 		} else if( g_TimerActive ) {
@@ -6213,7 +6213,7 @@ LRESULT APIENTRY MainWndProc(
 
 				_stprintf( negativeTimerText, L"(-% 2d:%02d)",
 						-breakTimeout/60, -breakTimeout % 60 );
-				HFONT prevFont = (HFONT) SelectObject( hdcScreenCompat, hNegativeTimerFont );
+                HFONT prevFont = static_cast<HFONT>(SelectObject( hdcScreenCompat, hNegativeTimerFont ));
 				DrawText( hdcScreenCompat, negativeTimerText, -1, &rc1, 
 					DT_NOCLIP|DT_LEFT|DT_NOPREFIX|DT_CALCRECT );
 				SelectObject( hdcScreenCompat, prevFont );
@@ -6265,7 +6265,7 @@ LRESULT APIENTRY MainWndProc(
 
 				rc1.top = rc.bottom + 10;
 				rc1.left = rc.left + ((rc.right - rc.left)-(rc1.right-rc1.left))/2;
-				HFONT prevFont = (HFONT) SelectObject( hdcScreenCompat, hNegativeTimerFont );
+                HFONT prevFont = static_cast<HFONT>(SelectObject( hdcScreenCompat, hNegativeTimerFont ));
 				DrawText( hdcScreenCompat, negativeTimerText, -1, &rc1, 
 					DT_NOCLIP|DT_LEFT|DT_NOPREFIX );
 				SelectObject( hdcScreenCompat, prevFont );
@@ -6349,7 +6349,7 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 		InvalidateRect( g_hWndLiveZoomMag, NULL, TRUE );
 
 		if( !g_fullScreenWorkaround )
-			SetForegroundWindow((HWND)((LPCREATESTRUCT)lParam)->lpCreateParams);
+            SetForegroundWindow(static_cast<HWND>(reinterpret_cast<LPCREATESTRUCT>(lParam)->lpCreateParams));
 
 		// If we're not on Win7+, then set a timer to go off two hours from
 		// now
@@ -6394,7 +6394,7 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
 				// Force a zoom to 2x without telescope
 				prevZoomStepTickCount = 0;
-				zoomLevel = (float ) 1.9;
+                zoomLevel = static_cast<float>(1.9);
 				zoomTelescopeTarget = 2.0;
 				zoomTelescopeStep = 2.0;
 
@@ -6406,11 +6406,11 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 				prevZoomStepTickCount = 0;
 				if( dwmEnabled ) {
 
-					zoomLevel = (float) 1; 
+					zoomLevel = static_cast<float>(1);
 
 				} else {
 
-					zoomLevel = (float) 1.9;
+					zoomLevel = static_cast<float>(1.9);
 				}
 			}
 			RegisterHotKey( hWnd, 0, MOD_CONTROL, VK_UP );
@@ -6506,9 +6506,9 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 				} else {
 
 					matrix.v[0][0] = zoomLevel;
-					matrix.v[0][2] = ((float) -lastSourceRect.left * zoomLevel);
+                    matrix.v[0][2] = (static_cast<float>(-lastSourceRect.left) * zoomLevel);
 					matrix.v[1][1] = zoomLevel;
-					matrix.v[1][2] = ((float) -lastSourceRect.top * zoomLevel );
+                    matrix.v[1][2] = (static_cast<float>(-lastSourceRect.top) * zoomLevel );
 					matrix.v[2][2] = 1.0f;
 				}
 				
@@ -6517,14 +6517,14 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 				//
 				adjustedCursorPos.x = cursorPos.x - monInfo.rcMonitor.left;
 				adjustedCursorPos.y = cursorPos.y - monInfo.rcMonitor.top;
-				GetZoomedTopLeftCoordinates( zoomLevel, &adjustedCursorPos, (int *) &zoomCenterPos.x, width, 
-								(int *) &zoomCenterPos.y, height );
+                GetZoomedTopLeftCoordinates( zoomLevel, &adjustedCursorPos, reinterpret_cast<int *>(&zoomCenterPos.x), width, 
+								reinterpret_cast<int *>(&zoomCenterPos.y), height );
 
 				//
 				// Add back monitor boundary
 				//
-				zoomCenterPos.x += monInfo.rcMonitor.left + (LONG) (width/zoomLevel/2);
-				zoomCenterPos.y += monInfo.rcMonitor.top + (LONG) (height/zoomLevel/2);
+                zoomCenterPos.x += monInfo.rcMonitor.left + static_cast<LONG>(width/zoomLevel/2);
+                zoomCenterPos.y += monInfo.rcMonitor.top + static_cast<LONG>(height/zoomLevel/2);
 
 			} else {
 
@@ -6548,8 +6548,8 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 				if( zoomCenterPos.x == 0 )
 					zoomCenterPos.x = lastSourceRect.left + sourceRectWidth/2;
 
-				int zoomWidth = (int)(width / zoomLevel);
-				int zoomHeight = (int)(height/ zoomLevel);
+				int zoomWidth = static_cast<int>(width / zoomLevel);
+                int zoomHeight = static_cast<int>(height/ zoomLevel);
 				sourceRect.left = zoomCenterPos.x - zoomWidth / 2;
 				sourceRect.top = zoomCenterPos.y -  zoomHeight / 2;
 
@@ -6567,11 +6567,11 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
 				if( g_ZoomOnLiveZoom ) {
 
-					matrix.v[0][0] = (float) 1.0;
-					matrix.v[0][2] = ((float) -monInfo.rcMonitor.left);
+					matrix.v[0][0] = static_cast<float>(1.0);
+                    matrix.v[0][2] = (static_cast<float>(-monInfo.rcMonitor.left));
 
-					matrix.v[1][1] = (float) 1.0;
-					matrix.v[1][2] = ((float) -monInfo.rcMonitor.top);
+					matrix.v[1][1] = static_cast<float>(1.0);
+                    matrix.v[1][2] = (static_cast<float>(-monInfo.rcMonitor.top));
 
 					matrix.v[2][2] = 1.0f;
 
@@ -6579,10 +6579,10 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 					lastSourceRect.top  != sourceRect.top ) {
 
 					matrix.v[0][0] = zoomLevel;
-					matrix.v[0][2] = ((float) -sourceRect.left * zoomLevel);
+                    matrix.v[0][2] = (static_cast<float>(-sourceRect.left) * zoomLevel);
 
 					matrix.v[1][1] = zoomLevel;
-					matrix.v[1][2] = ((float) -sourceRect.top * zoomLevel);
+                    matrix.v[1][2] = (static_cast<float>(-sourceRect.top) * zoomLevel);
 
 					matrix.v[2][2] = 1.0f;
 				}
@@ -6706,7 +6706,7 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 			zoomTelescopeTarget = 1.0;
 			if( !dwmEnabled ) {
 
-				zoomLevel = (float) 1.1;
+				zoomLevel = static_cast<float>(1.1);
 			}
 			break;
 
@@ -6732,10 +6732,10 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
         break;
 
 	case WM_USER_GETZOOMLEVEL:
-		return (LRESULT) &zoomLevel;
+        return reinterpret_cast<LRESULT>(&zoomLevel);
 
 	case WM_USER_GETSOURCERECT:
-		return (LRESULT) &lastSourceRect;
+        return reinterpret_cast<LRESULT>(&lastSourceRect);
 
 	case WM_USER_MAGNIFYCURSOR:
 		{
@@ -6763,14 +6763,14 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
 			if( lParam != NULL ) {
 
-				lastSourceRect = *(RECT *) lParam;
+				lastSourceRect = *reinterpret_cast<RECT *>(lParam);
 			}
 #if WINDOWS_CURSOR_RECORDING_WORKAROUND
 			if( g_LiveZoomLevelOne ) {
 
 				g_LiveZoomLevelOne = FALSE;
 
-				zoomTelescopeTarget = (float) wParam;
+				zoomTelescopeTarget = static_cast<float>(wParam);
 				zoomTelescopeStep = ZOOMLEVEL_STEPIN;
 				prevZoomStepTickCount = 0;
 				zoomLevel = 1.0;
@@ -6778,13 +6778,13 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 				break;
 			}
 #endif
-			zoomLevel = (float) wParam;
+            zoomLevel = static_cast<float>(wParam);
 			zoomTelescopeTarget = zoomLevel;
 			matrix.v[0][0] = zoomLevel;
-			matrix.v[0][2] = ((float) -lastSourceRect.left * (float)wParam);
+            matrix.v[0][2] = (static_cast<float>(-lastSourceRect.left) * static_cast<float>(wParam));
 
 			matrix.v[1][1] = zoomLevel;
-			matrix.v[1][2] = ((float) -lastSourceRect.top * (float)wParam);
+            matrix.v[1][2] = (static_cast<float>(-lastSourceRect.top) * static_cast<float>(wParam));
 
 			matrix.v[2][2] = 1.0f;
 

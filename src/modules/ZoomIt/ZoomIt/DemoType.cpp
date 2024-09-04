@@ -586,7 +586,7 @@ wchar_t InjectByClipboard( wchar_t lastCh, wchar_t ch, const std::wstring& overr
         SendVirtualKeyDown( VK_BACK );
         SendVirtualKeyUp  ( VK_BACK );
 
-        g_Index += i - 1;
+        g_Index += static_cast<unsigned long long>(i) - 1;
         return g_Text[g_Index];
     }
     else if( chunk )
