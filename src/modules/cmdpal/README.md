@@ -1,4 +1,4 @@
-# Developer Command Palette
+# Windows Command Palette
 
 Also known as "Developer Search"
 
@@ -10,20 +10,10 @@ Also known as "Dev Pal"
 
 ## Building
 
-Right now there are two separate slns that need to be build. The first is the
-`DeveloperCommandPalette.sln` solution which is the main dev pal app. The second
-is the `extensions\SampleExtension.sln` solution which has a bunch of test
-extensions in it.
+First things first: make sure you've opened up the root PowerToys.sln, and restored its NuGet packages. You will get nuget errors if you don't.
 
-```
-start DeveloperCommandPalette.sln
-start extensions\SampleExtension.sln
-```
-
-You may also need to manually
-
-```
-nuget restore DeveloperCommandPalette.sln
-```
-
-cause sometimes VS is just daft when it comes to C++ projects using nuget.
+Then, to build the Windows Command Palette, you can open up `WindowsCommandPalette.sln`. Projects of interest are:
+* `Microsoft.CmdPal.UI.Poc`: This is the main project for the Windows Command Palette. Build and run this to get the command palette..
+* `Microsoft.Windows.CommandPalette.Extensions`: This is the official extension interface.
+* `Microsoft.CmdPal.Extensions.Helpers`: This is a C# helper library for creating extensions. This makes writing extensions easier.
+* Everything under "Sample Plugins": These are example plugins to demo how to author extensions. Deploy any number of these.
