@@ -1517,7 +1517,7 @@ void EnableDisableStickyKeys( BOOLEAN Enable )
 // GetKeyMod
 //
 //----------------------------------------------------------------------------
-DWORD GetKeyMod( DWORD Key )
+constexpr DWORD GetKeyMod( DWORD Key )
 {
 	DWORD	 keyMod = 0;
 	if( (Key >> 8) & HOTKEYF_ALT ) keyMod |= MOD_ALT;
