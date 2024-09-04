@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.CommandPalette.Extensions;
+using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI.ViewManagement;
@@ -115,7 +116,9 @@ public sealed class FormPageViewModel : PageViewModel
                 var f = this.Page.Forms();
                 foreach (var form in f)
                 {
-                    Forms.Add(new FormViewModel(form));
+                    var formVm = new FormViewModel(form);
+                    formVm.RequestSubmitForm += RequestSubmitFormBubbler;
+                    Forms.Add(formVm);
                 }
             }
             catch (Exception)
@@ -133,6 +136,10 @@ public sealed class FormPageViewModel : PageViewModel
         await t;
     }
 
+    private void RequestSubmitFormBubbler(object sender, SubmitFormArgs args)
+    {
+        this.SubmitForm(args.FormData, args.Form);
+    }
 }
 
 public sealed partial class FormPage : Page

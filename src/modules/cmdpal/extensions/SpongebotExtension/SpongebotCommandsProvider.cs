@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
 using Microsoft.Windows.CommandPalette.Extensions;
 using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 
@@ -14,16 +15,28 @@ internal sealed class SpongebotCommandsProvider : ICommandProvider
 
     public IconDataType Icon => new(string.Empty);
 
+    private readonly SpongebotPage mainPage = new();
+
+    private readonly SpongebotSettingsPage settingsPage = new();
+
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
     public void Dispose() => throw new NotImplementedException();
 #pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
 
     public IListItem[] TopLevelCommands()
     {
-        var spongebotPage = new SpongebotPage();
-        var listItem = new ListItem(spongebotPage)
+        var settingsPath = SpongebotPage.StateJsonPath();
+        if (!File.Exists(settingsPath))
         {
-            MoreCommands = [new CommandContextItem(spongebotPage.CopyTextAction)],
+            return [new ListItem(settingsPage) { Title = "Spongebot settings", Subtitle = "Enter your imgflip credentials" }];
+        }
+
+        var listItem = new ListItem(mainPage)
+        {
+            MoreCommands = [
+                new CommandContextItem(mainPage.CopyTextAction),
+                new CommandContextItem(settingsPage),
+            ],
         };
         return [listItem];
     }
