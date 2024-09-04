@@ -47,7 +47,6 @@ internal sealed class OpenInTerminalAction : InvokableCommand
     }
 }
 
-
 internal sealed class BookmarkData
 {
     internal string name = string.Empty;
@@ -149,8 +148,6 @@ internal sealed class AddBookmarkForm : Form
             // Default to web if we can't determine the type
             bookmarkType = "web";
         }
-
-
 
         // Construct a new json blob with the name and url
         var json = string.Empty;
@@ -280,6 +277,7 @@ internal sealed class BookmarkPlaceholderForm: Microsoft.Windows.CommandPalette.
     public override ActionResult SubmitForm(string payload)
     {
         var target = _Bookmark;
+
         // parse the submitted JSON and then open the link
         var formInput = JsonNode.Parse(payload);
         var formObject = formInput?.AsObject();
@@ -315,7 +313,6 @@ internal sealed class BookmarkPlaceholderForm: Microsoft.Windows.CommandPalette.
 
         return ActionResult.GoHome();
     }
-
 }
 
 internal sealed class BookmarkPlaceholderPage : Microsoft.Windows.CommandPalette.Extensions.Helpers.FormPage
@@ -415,11 +412,11 @@ public class UrlAction : InvokableCommand
                 {
                     // return "🔗";
                 }
+
                 return "🔗";
         }
     }
 }
-
 
 public class BookmarksActionProvider : ICommandProvider
 {
@@ -443,7 +440,6 @@ public class BookmarksActionProvider : ICommandProvider
         _commands.Clear();
     }
 
-
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
     public void Dispose() => throw new NotImplementedException();
 #pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
@@ -464,7 +460,6 @@ public class BookmarksActionProvider : ICommandProvider
             {
                 return;
             }
-
 
             if (!jsonObject.ContainsKey("items"))
             {
@@ -495,7 +490,6 @@ public class BookmarksActionProvider : ICommandProvider
             Console.WriteLine($"Error loading commands: {ex.Message}");
         }
 
-
         _commands.Clear();
         _commands.AddRange(collected);
     }
@@ -518,21 +512,24 @@ public class BookmarksActionProvider : ICommandProvider
                     new CommandContextItem(new OpenInTerminalAction(urlAction.Url))
                 ];
             }
-            //listItem.Subtitle = "Bookmark";
+
+            // listItem.Subtitle = "Bookmark";
             if (action is AddBookmarkPage) { }
             else
             {
                 listItem.Tags = [
                     new Tag() {
                         Text = "Bookmark",
-                        //Icon = new("🔗"),
-                        //Color=Windows.UI.Color.FromArgb(255, 255, 0, 255)
+
+                        // Icon = new("🔗"),
+                        // Color=Windows.UI.Color.FromArgb(255, 255, 0, 255)
                     },
-                    //new Tag() {
+
+                    // new Tag() {
                     //    Text = "A test",
                     //    //Icon = new("🔗"),
                     //    Color=Windows.UI.Color.FromArgb(255, 255, 0, 0)
-                    //}
+                    // }
                 ];
             }
 
@@ -544,8 +541,10 @@ public class BookmarksActionProvider : ICommandProvider
     {
         // Get the path to our exe
         var path = System.Reflection.Assembly.GetExecutingAssembly().Location;
+        
         // Get the directory of the exe
         var directory = System.IO.Path.GetDirectoryName(path) ?? string.Empty;
+        
         // now, the state is just next to the exe
         return System.IO.Path.Combine(directory, "state.json");
     }

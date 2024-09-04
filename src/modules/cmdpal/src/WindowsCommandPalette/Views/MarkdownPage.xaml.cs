@@ -55,7 +55,6 @@ public sealed partial class MarkdownPage : Page, System.ComponentModel.INotifyPr
         this.InitializeComponent();
     }
 
-
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
@@ -66,7 +65,6 @@ public sealed partial class MarkdownPage : Page, System.ComponentModel.INotifyPr
             return;
         }
 
-
         ViewModel.InitialRender(this).ContinueWith((t) => {
             DispatcherQueue.TryEnqueue(() =>
             {
@@ -76,12 +74,13 @@ public sealed partial class MarkdownPage : Page, System.ComponentModel.INotifyPr
                     mdTextBox.Text = ViewModel.MarkdownContent[0];
                     TitleBlock.Text = ViewModel.Title;
                 }
-                //        if (ViewModel.PageCommand != null)
-                //        {
+
+                // if (ViewModel.PageCommand != null)
+                // {
                 //            ActionsDropdown.ItemsSource = ViewModel.PageCommand.Commands;
                 //            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MoreCommandsAvailable)));
                 //            // this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedItemDefaultAction)));
-                //        }
+                // }
             });
         });
     }

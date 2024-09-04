@@ -146,7 +146,6 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
             }
 
             BubbleXamlPropertyChanged(args.PropertyName);
-
         }
         catch (COMException)
         {

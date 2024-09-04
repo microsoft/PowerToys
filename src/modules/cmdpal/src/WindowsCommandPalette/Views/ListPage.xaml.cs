@@ -39,7 +39,8 @@ public class SectionInfoList : ObservableCollection<ListItemViewModel>
 
     private readonly DispatcherQueue DispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
-    public SectionInfoList(ISection? section, IEnumerable<ListItemViewModel> items) : base(items)
+    public SectionInfoList(ISection? section, IEnumerable<ListItemViewModel> items)
+        : base(items)
     {
         Title = section?.Title ?? string.Empty;
         if (section != null && section is INotifyCollectionChanged observable)
@@ -47,6 +48,7 @@ public class SectionInfoList : ObservableCollection<ListItemViewModel>
             observable.CollectionChanged -= Items_CollectionChanged;
             observable.CollectionChanged += Items_CollectionChanged;
         }
+
         if (this.DispatcherQueue == null)
         {
             throw new InvalidOperationException("DispatcherQueue is null");
@@ -133,8 +135,8 @@ public sealed class ListPageViewModel : PageViewModel
     internal async Task UpdateListItems()
     {
         // on main thread
-
-        var t = new Task<ISection[]>(() => {
+        var t = new Task<ISection[]>(() =>
+        {
             try
             {
                 return dynamicPage != null ?
@@ -144,9 +146,13 @@ public sealed class ListPageViewModel : PageViewModel
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex);
-                return [new ListSection() { Title = "Error", Items = [new ErrorListItem(ex)] }];
+                return [new ListSection()
+                {
+                    Title = "Error",
+                    Items = [new ErrorListItem(ex)],
+                }
+                ];
             }
-
         });
         t.Start();
         var sections = await t;
@@ -159,7 +165,6 @@ public sealed class ListPageViewModel : PageViewModel
         // UpdateFilter to intelligently add/remove as needed.
         // Items.Clear();
         // FilteredItems.Clear();
-
         Collection<SectionInfoList> newItems = new();
 
         var size = sections.Length;
@@ -189,12 +194,14 @@ public sealed class ListPageViewModel : PageViewModel
         ListHelpers.InPlaceUpdateList(FilteredItems, newItems);
     }
 
-    internal async Task<Collection<SectionInfoList>> GetFilteredItems(string query) {
+    internal async Task<Collection<SectionInfoList>> GetFilteredItems(string query)
+    {
 
         if (query == Query)
         {
             return FilteredItems;
         }
+
         Query = query;
         if (isDynamic)
         {
@@ -210,14 +217,15 @@ public sealed class ListPageViewModel : PageViewModel
             }
 
             //// TODO! Probably bad that this turns list view models into listitems back to NEW view models
-            //return ListHelpers.FilterList(Items.Select(vm => vm.ListItem), Query).Select(li => new ListItemViewModel(li)).ToList();
-            try{
+            // return ListHelpers.FilterList(Items.Select(vm => vm.ListItem), Query).Select(li => new ListItemViewModel(li)).ToList();
+            try
+            {
                 var allFilteredItems = ListHelpers.FilterList(
                     Items
                         .SelectMany(section => section)
                         .Select(vm => vm.ListItem.Unsafe),
-                    Query).Select(li => new ListItemViewModel(li)
-                );
+                    Query).Select(li => new ListItemViewModel(li));
+
                 var newSection = new SectionInfoList(null, allFilteredItems);
                 return [newSection];
             }
@@ -336,12 +344,20 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
 
     private void ListItem_Tapped(object sender, TappedRoutedEventArgs e)
     {
-        if (sender is not ListViewItem listItem) return;
-        if (listItem.DataContext is not ListItemViewModel li) return;
+        if (sender is not ListViewItem listItem)
+        {
+            return;
+        }
+
+        if (listItem.DataContext is not ListItemViewModel li)
+        {
+            return;
+        }
+
         _ = li;
+
         // For a bit I had double-clicks Invoke and single just select, but that crashes?
         // ItemsList.SelectedItem = listItem;
-
         if (li.DefaultAction != null)
         {
             DoAction(new(li.DefaultAction));
@@ -427,8 +443,7 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
 
             e.Handled = true;
         }
-        // ctrl+k
-        else if (ctrlPressed && e.Key == Windows.System.VirtualKey.K)
+        else if (ctrlPressed && e.Key == Windows.System.VirtualKey.K) // ctrl+k
         {
             // Open the more actions flyout and focus the first item
             if (ActionsDropdown.Items.Count > 0)
@@ -446,7 +461,11 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
 
     private void FilterBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        if (ViewModel == null) return;
+        if (ViewModel == null)
+        {
+            return;
+        }
+
         // on the UI thread
         _ = UpdateFilter(FilterBox.Text);
     }

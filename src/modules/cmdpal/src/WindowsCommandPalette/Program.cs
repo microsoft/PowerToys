@@ -53,6 +53,7 @@ sealed class  Program
             isRedirect = true;
             _ = keyInstance.RedirectActivationToAsync(args);
         }
+
         return isRedirect;
     }
 
@@ -60,7 +61,7 @@ sealed class  Program
     {
         ExtendedActivationKind kind = args.Kind;
         _ = kind;
-        //app?.
+
         // If we already have a form, display the message now.
         // Otherwise, add it to the collection for displaying later.
         if (App.Current is App thisApp)
