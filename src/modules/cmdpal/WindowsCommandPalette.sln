@@ -4,7 +4,7 @@ VisualStudioVersion = 17.11.34929.205
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.UI.Poc", "src\WindowsCommandPalette\Microsoft.CmdPal.UI.Poc.csproj", "{F71CF22B-A5C7-4328-A5B3-F4191AE57314}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sample Plugins", "Sample Plugins", "{B7FF739F-7716-4FC3-B622-705486187B87}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sample Extensions", "Sample Extensions", "{B7FF739F-7716-4FC3-B622-705486187B87}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.Terminal.UI", "src\Microsoft.Terminal.UI\Microsoft.Terminal.UI.vcxproj", "{6515F03F-E56D-4DB4-B23D-AC4FB80DB36F}"
 EndProject
@@ -29,6 +29,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TemplateExtension", "extensions\TemplateExtension\TemplateExtension.csproj", "{EB13FDBD-7DD5-4E7E-8BEB-727B3C9331CB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MastodonExtension", "extensions\MastodonExtension\MastodonExtension.csproj", "{65E22130-6A8F-4AB7-80EC-FF75475DE821}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Built-in Extensions", "Built-in Extensions", "{272D0E9A-8FC3-49F5-8FAD-79ABAE8AB1E4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Calc", "src\Exts\Microsoft.CmdPal.Ext.Calc\Microsoft.CmdPal.Ext.Calc.csproj", "{42DB35EE-1EDB-41E4-9C9F-A3520EBC5CC4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -138,6 +142,14 @@ Global
 		{65E22130-6A8F-4AB7-80EC-FF75475DE821}.Release|ARM64.Build.0 = Release|ARM64
 		{65E22130-6A8F-4AB7-80EC-FF75475DE821}.Release|x64.ActiveCfg = Release|x64
 		{65E22130-6A8F-4AB7-80EC-FF75475DE821}.Release|x64.Build.0 = Release|x64
+		{42DB35EE-1EDB-41E4-9C9F-A3520EBC5CC4}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{42DB35EE-1EDB-41E4-9C9F-A3520EBC5CC4}.Debug|ARM64.Build.0 = Debug|ARM64
+		{42DB35EE-1EDB-41E4-9C9F-A3520EBC5CC4}.Debug|x64.ActiveCfg = Debug|x64
+		{42DB35EE-1EDB-41E4-9C9F-A3520EBC5CC4}.Debug|x64.Build.0 = Debug|x64
+		{42DB35EE-1EDB-41E4-9C9F-A3520EBC5CC4}.Release|ARM64.ActiveCfg = Release|ARM64
+		{42DB35EE-1EDB-41E4-9C9F-A3520EBC5CC4}.Release|ARM64.Build.0 = Release|ARM64
+		{42DB35EE-1EDB-41E4-9C9F-A3520EBC5CC4}.Release|x64.ActiveCfg = Release|x64
+		{42DB35EE-1EDB-41E4-9C9F-A3520EBC5CC4}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -154,6 +166,7 @@ Global
 		{9456257A-3292-4A8D-AF63-9830EABE7ED2} = {B7FF739F-7716-4FC3-B622-705486187B87}
 		{EB13FDBD-7DD5-4E7E-8BEB-727B3C9331CB} = {B7FF739F-7716-4FC3-B622-705486187B87}
 		{65E22130-6A8F-4AB7-80EC-FF75475DE821} = {B7FF739F-7716-4FC3-B622-705486187B87}
+		{42DB35EE-1EDB-41E4-9C9F-A3520EBC5CC4} = {272D0E9A-8FC3-49F5-8FAD-79ABAE8AB1E4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BC94BFC2-A741-4978-B6A4-9E01B7660E6B}

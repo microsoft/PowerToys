@@ -9,7 +9,7 @@ using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
-namespace Calculator;
+namespace Microsoft.CmdPal.Ext.Calc;
 
 public class CalculatorTopLevelListItem : ListItem, IFallbackHandler
 {
