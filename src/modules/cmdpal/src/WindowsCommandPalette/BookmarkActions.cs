@@ -334,7 +334,7 @@ public class UrlAction : InvokableCommand
 
     public string Type { get; }
 
-    public string Url {  get; }
+    public string Url { get; }
 
     private readonly string _url;
 

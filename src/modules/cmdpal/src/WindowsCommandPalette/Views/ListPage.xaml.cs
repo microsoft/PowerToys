@@ -105,7 +105,9 @@ public sealed class NoOpAction : InvokableCommand
 
 public sealed class ErrorListItem : Microsoft.Windows.CommandPalette.Extensions.Helpers.ListItem
 {
-    public ErrorListItem(Exception ex) : base(new NoOpAction()) {
+    public ErrorListItem(Exception ex)
+        : base(new NoOpAction())
+    {
         this.Title = "Error in extension:";
         this.Subtitle = ex.Message;
     }
