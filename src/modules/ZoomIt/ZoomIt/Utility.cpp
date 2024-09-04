@@ -76,6 +76,12 @@ RECT GetMonitorRectFromCursor()
 // RectFromPointsMinSize
 //
 //----------------------------------------------------------------------------
+#ifdef _MSC_VER
+    // avoid making RectFromPointsMinSize constexpr since that leads to link errors
+    #pragma warning(push)
+    #pragma warning(disable: 26497)
+#endif
+
 RECT RectFromPointsMinSize( POINT a, POINT b, LONG minSize )
 {
     RECT rect;
@@ -117,7 +123,9 @@ RECT RectFromPointsMinSize( POINT a, POINT b, LONG minSize )
     }
     return rect;
 }
-
+#ifdef _MSC_VER
+    #pragma warning(pop)
+#endif
 //----------------------------------------------------------------------------
 //
 // ScaleForDpi

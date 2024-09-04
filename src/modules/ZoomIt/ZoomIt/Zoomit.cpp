@@ -851,7 +851,13 @@ BYTE* CreateBitmapMemoryDIB(HDC hdcScreenCompat, HDC hBitmapDc, Gdiplus::Rect* l
 // Locks the Gdi+ bitmap so that we can access its pixels in memory. 
 // 
 //----------------------------------------------------------------------------
-Gdiplus::BitmapData *LockGdiPlusBitmap( Gdiplus::Bitmap *Bitmap)
+#ifdef _MSC_VER
+	// Analyzers want us to use a scoped object instead of new. But given all the operations done in Bitmaps it seems better to leave it as a heap object.
+	#pragma warning(push)
+	#pragma warning(disable : 26402)
+#endif
+
+Gdiplus::BitmapData* LockGdiPlusBitmap(Gdiplus::Bitmap* Bitmap)
 {
 	Gdiplus::BitmapData *lineData = new Gdiplus::BitmapData();
 	Bitmap->GetPixelFormat();
@@ -860,6 +866,9 @@ Gdiplus::BitmapData *LockGdiPlusBitmap( Gdiplus::Bitmap *Bitmap)
 		Bitmap->GetPixelFormat(), lineData);
 	return lineData; 
 }
+#ifdef _MSC_VER
+	#pragma warning(pop)
+#endif
 
 
 //----------------------------------------------------------------------------
