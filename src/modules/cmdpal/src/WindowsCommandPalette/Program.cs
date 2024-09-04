@@ -13,9 +13,8 @@ namespace DeveloperCommandPalette;
 // cribbed heavily from
 //
 // https://github.com/microsoft/WindowsAppSDK-Samples/tree/main/Samples/AppLifecycle/Instancing/cs2/cs-winui-packaged/CsWinUiDesktopInstancing
-sealed class  Program
+sealed class Program
 {
-
     private static App? app;
 
     // LOAD BEARING

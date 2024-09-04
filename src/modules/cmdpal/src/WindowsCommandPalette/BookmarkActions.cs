@@ -295,7 +295,6 @@ internal sealed class BookmarkPlaceholderForm: Microsoft.Windows.CommandPalette.
 
         try
         {
-
             Uri? uri = UrlAction.GetUri(target);
             if (uri != null)
             {
@@ -430,12 +429,10 @@ public class BookmarksActionProvider : ICommandProvider
     public BookmarksActionProvider()
     {
         _addNewCommand.AddedAction += _addNewCommand_AddedAction;
-
     }
 
     private void _addNewCommand_AddedAction(object sender, object? args)
     {
-
         _addNewCommand.AddedAction += _addNewCommand_AddedAction;
         _commands.Clear();
     }
@@ -465,8 +462,12 @@ public class BookmarksActionProvider : ICommandProvider
             {
                 return;
             }
+
             var itemsJson = jsonObject["items"]?.AsArray();
-            if (itemsJson == null) { return; }
+            if (itemsJson == null)
+            {
+                return;
+            }
 
             foreach (var item in itemsJson)
             {
@@ -541,12 +542,11 @@ public class BookmarksActionProvider : ICommandProvider
     {
         // Get the path to our exe
         var path = System.Reflection.Assembly.GetExecutingAssembly().Location;
-        
+
         // Get the directory of the exe
         var directory = System.IO.Path.GetDirectoryName(path) ?? string.Empty;
-        
+
         // now, the state is just next to the exe
         return System.IO.Path.Combine(directory, "state.json");
     }
 }
-

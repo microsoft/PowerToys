@@ -58,7 +58,6 @@ public class SectionInfoList : ObservableCollection<ListItemViewModel>
     private void Items_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         // DispatcherQueue.TryEnqueue(() => {
-
         if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null)
         {
             foreach (var i in e.NewItems)
@@ -98,7 +97,10 @@ public class SectionInfoList : ObservableCollection<ListItemViewModel>
 
 public sealed class NoOpAction : InvokableCommand
 {
-    public override ICommandResult Invoke() { return ActionResult.KeepOpen(); }
+    public override ICommandResult Invoke()
+    {
+        return ActionResult.KeepOpen();
+    }
 }
 
 public sealed class ErrorListItem : Microsoft.Windows.CommandPalette.Extensions.Helpers.ListItem
@@ -196,7 +198,6 @@ public sealed class ListPageViewModel : PageViewModel
 
     internal async Task<Collection<SectionInfoList>> GetFilteredItems(string query)
     {
-
         if (query == Query)
         {
             return FilteredItems;
@@ -294,7 +295,10 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
     {
         base.OnNavigatedTo(e);
         ViewModel = (ListPageViewModel?)e.Parameter;
-        if (ViewModel == null) return;
+        if (ViewModel == null)
+        {
+            return;
+        }
 
         if (e.NavigationMode == NavigationMode.New)
         {
@@ -302,7 +306,6 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
             {
                 DispatcherQueue.TryEnqueue(async () => { await UpdateFilter(FilterBox.Text); });
             });
-
         }
         else
         {
@@ -320,8 +323,16 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
 
     private void ListItem_KeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (sender is not ListViewItem listItem) return;
-        if (listItem.DataContext is not ListItemViewModel li) return;
+        if (sender is not ListViewItem listItem)
+        {
+            return;
+        }
+
+        if (listItem.DataContext is not ListItemViewModel li)
+        {
+            return;
+        }
+
         if (e.OriginalKey == Windows.System.VirtualKey.Enter)
         {
             if (li.DefaultAction != null)
@@ -366,15 +377,31 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
 
     private void ItemsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (sender is not ListView lv) return;
-        if (lv.SelectedItem is not ListItemViewModel li) return;
+        if (sender is not ListView lv)
+        {
+            return;
+        }
+
+        if (lv.SelectedItem is not ListItemViewModel li)
+        {
+            return;
+        }
+
         SelectedItem = li;
     }
 
     private void ActionListViewItem_KeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (sender is not ListViewItem listItem) return;
-        if (listItem.DataContext is not ContextItemViewModel vm) return;
+        if (sender is not ListViewItem listItem)
+        {
+            return;
+        }
+
+        if (listItem.DataContext is not ContextItemViewModel vm)
+        {
+            return;
+        }
+
         if (e.Key == Windows.System.VirtualKey.Enter || e.Key == Windows.System.VirtualKey.Space)
         {
             DoAction(new(vm.Command));
@@ -384,8 +411,16 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
 
     private void ActionListViewItem_Tapped(object sender, TappedRoutedEventArgs e)
     {
-        if (sender is not ListViewItem listItem) return;
-        if (listItem.DataContext is not ContextItemViewModel vm) return;
+        if (sender is not ListViewItem listItem)
+        {
+            return;
+        }
+
+        if (listItem.DataContext is not ContextItemViewModel vm)
+        {
+            return;
+        }
+
         DoAction(new(vm.Command));
         e.Handled = true;
     }
@@ -472,7 +507,10 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
 
     private async Task UpdateFilter(string text)
     {
-        if (ViewModel == null) return;
+        if (ViewModel == null)
+        {
+            return;
+        }
 
         // ViewModel.Query = text;
 
@@ -480,9 +518,12 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
         // into us initially. We handle the filtering of these ones. Commands
         // from async querying happens later.
         var newMatches = await ViewModel.GetFilteredItems(text);
+
         // this.ItemsCVS.Source = ViewModel.FilteredItems;
         // Returns back on the UI thread
         ListHelpers.InPlaceUpdateList(ViewModel.FilteredItems, newMatches);
+
+        /*
         // for (var i = 0; i < ViewModel.FilteredItems.Count && i < newMatches.Count; i++)
         // {
         //     for (var j = i; j < ViewModel.FilteredItems.Count; j++)
@@ -514,6 +555,7 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
         // {
         //     ViewModel.FilteredItems.Add(newMatches[ViewModel.FilteredItems.Count]);
         // }
+        */
 
         // set the selected index to the first item in the list
         if (ItemsList.Items.Count > 0)
