@@ -28,23 +28,18 @@ public sealed class AllAppsPage : ListPage
     {
         if (this.allAppsSection == null)
         {
-            PopulateApps();
+            var apps = GetPrograms();
+            this.Loading = false;
+            this.allAppsSection = new ListSection()
+            {
+                Title = "Apps",
+                Items = apps
+                            .Select((app) => new AppListItem(app))
+                            .ToArray(),
+            };
         }
 
         return [allAppsSection];
-    }
-
-    private void PopulateApps()
-    {
-        var apps = GetPrograms();
-        this.Loading = false;
-        this.allAppsSection = new ListSection()
-        {
-            Title = "Apps",
-            Items = apps
-                        .Select((app) => new AppListItem(app))
-                        .ToArray(),
-        };
     }
 
     internal static List<AppItem> GetPrograms()

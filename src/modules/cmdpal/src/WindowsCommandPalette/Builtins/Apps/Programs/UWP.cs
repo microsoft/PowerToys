@@ -27,12 +27,12 @@ public partial class UWP
 
     public string FamilyName { get; }
 
-    public string Location { get; set; }
+    public string Location { get; set; } = string.Empty;
 
     // Localized path based on windows display language
-    public string LocationLocalized { get; set; }
+    public string LocationLocalized { get; set; } = string.Empty;
 
-    public IList<UWPApplication> Apps { get; private set; }
+    public IList<UWPApplication> Apps { get; private set; } = new List<UWPApplication>();
 
     public PackageVersion Version { get; set; }
 
@@ -172,7 +172,7 @@ public partial class UWP
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1309:Use ordinal string comparison", Justification = "Using CurrentCultureIgnoreCase since this is used with FamilyName")]
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (obj is UWP uwp)
         {

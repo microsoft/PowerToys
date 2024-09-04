@@ -17,19 +17,19 @@ public class UWPApplication : IProgram
     private static readonly IPath Path = FileSystem.Path;
     private static readonly IFile File = FileSystem.File;
 
-    public string AppListEntry { get; set; }
+    public string AppListEntry { get; set; } = string.Empty;
 
-    public string UniqueIdentifier { get; set; }
+    public string UniqueIdentifier { get; set; } = string.Empty;
 
-    public string DisplayName { get; set; }
+    public string DisplayName { get; set; } = string.Empty;
 
-    public string Description { get; set; }
+    public string Description { get; set; } = string.Empty;
 
-    public string UserModelId { get; set; }
+    public string UserModelId { get; set; } = string.Empty;
 
-    public string BackgroundColor { get; set; }
+    public string BackgroundColor { get; set; } = string.Empty;
 
-    public string EntryPoint { get; set; }
+    public string EntryPoint { get; set; } = string.Empty;
 
     public string Name => DisplayName;
 
@@ -42,7 +42,7 @@ public class UWPApplication : IProgram
 
     public bool CanRunElevated { get; set; }
 
-    public string LogoPath { get; set; }
+    public string LogoPath { get; set; } = string.Empty;
 
     public LogoType LogoType { get; set; }
 
@@ -112,13 +112,16 @@ public class UWPApplication : IProgram
                     var xmlDoc = new XmlDocument();
                     xmlDoc.LoadXml(file);
                     var xmlRoot = xmlDoc.DocumentElement;
-                    var namespaceManager = new XmlNamespaceManager(xmlDoc.NameTable);
-                    namespaceManager.AddNamespace("uap10", "http://schemas.microsoft.com/appx/manifest/uap/windows10/10");
-                    var trustLevelNode = xmlRoot.SelectSingleNode("//*[local-name()='Application' and @uap10:TrustLevel]", namespaceManager); // According to https://learn.microsoft.com/windows/apps/desktop/modernize/grant-identity-to-nonpackaged-apps#create-a-package-manifest-for-the-sparse-package and https://learn.microsoft.com/uwp/schemas/appxpackage/uapmanifestschema/element-application#attributes
-
-                    if (trustLevelNode?.Attributes["uap10:TrustLevel"]?.Value == "mediumIL")
+                    if (xmlRoot != null)
                     {
-                        return true;
+                        var namespaceManager = new XmlNamespaceManager(xmlDoc.NameTable);
+                        namespaceManager.AddNamespace("uap10", "http://schemas.microsoft.com/appx/manifest/uap/windows10/10");
+                        var trustLevelNode = xmlRoot.SelectSingleNode("//*[local-name()='Application' and @uap10:TrustLevel]", namespaceManager); // According to https://learn.microsoft.com/windows/apps/desktop/modernize/grant-identity-to-nonpackaged-apps#create-a-package-manifest-for-the-sparse-package and https://learn.microsoft.com/uwp/schemas/appxpackage/uapmanifestschema/element-application#attributes
+
+                        if (trustLevelNode?.Attributes?["uap10:TrustLevel"]?.Value == "mediumIL")
+                        {
+                            return true;
+                        }
                     }
                 }
                 catch (Exception)
