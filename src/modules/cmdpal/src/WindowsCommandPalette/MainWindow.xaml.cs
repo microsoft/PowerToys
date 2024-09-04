@@ -63,7 +63,7 @@ public sealed partial class MainWindow : Window
     {
         Windows.Win32.PInvoke.ShowWindow(hwnd, Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_SHOW);
         Windows.Win32.PInvoke.SetForegroundWindow(hwnd);
-        //Windows.Win32.PInvoke.SetFocus(hwnd);
+        // Windows.Win32.PInvoke.SetFocus(hwnd);
         Windows.Win32.PInvoke.SetActiveWindow(hwnd);
         MainPage.ViewModel.Summon();
     }
@@ -73,8 +73,7 @@ public sealed partial class MainWindow : Window
         this.InitializeComponent();
         this._mainViewModel = MainPage.ViewModel;
 
-
-         hwnd = new Windows.Win32.Foundation.HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
+        hwnd = new Windows.Win32.Foundation.HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
 
         _ = SetupHotkey();
 
@@ -94,7 +93,7 @@ public sealed partial class MainWindow : Window
 
         Application.Current.GetService<ILocalSettingsService>().SaveSettingAsync("ThisIsAVeryBizarreString", true);
 
-        //PositionForStartMenu();
+        // PositionForStartMenu();
         PositionCentered();
         _mainViewModel.HideRequested += _mainViewModel_HideRequested;
 
@@ -210,7 +209,6 @@ public sealed partial class MainWindow : Window
     private void SetRegionsForCustomTitleBar()
     {
         // Specify the interactive regions of the title bar.
-
         var scaleAdjustment = AppTitleBar.XamlRoot.RasterizationScale;
 
         RightPaddingColumn.Width = new GridLength(m_AppWindow.TitleBar.RightInset / scaleAdjustment);
@@ -218,12 +216,14 @@ public sealed partial class MainWindow : Window
 
         //// Get the rectangle around the content
         GeneralTransform transform = MainPage.TransformToVisual(null);
-        Rect bounds = transform.TransformBounds(new Rect(0, 0,
-                                                         MainPage.ActualWidth,
-                                                         MainPage.ActualHeight));
-        Windows.Graphics.RectInt32 contentRect = GetRect(bounds, scaleAdjustment);
+        Rect bounds = transform.TransformBounds(new Rect(
+            0,
+            0,
+            MainPage.ActualWidth,
+            MainPage.ActualHeight));
+        var contentRect = GetRect(bounds, scaleAdjustment);
 
-        var rectArray = new Windows.Graphics.RectInt32[] { contentRect };
+        var rectArray = new RectInt32[] { contentRect };
 
         InputNonClientPointerSource nonClientInputSrc =
             InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id);
@@ -232,23 +232,24 @@ public sealed partial class MainWindow : Window
         // Add four drag-able regions, around the sides of our content
         var w = ContentGrid.ActualWidth;
         var h = ContentGrid.ActualHeight;
-        var dragSides = new Windows.Graphics.RectInt32[] {
+        var dragSides = new RectInt32[]
+        {
             GetRect(new Rect(0, 0, w, 24), scaleAdjustment),
-            GetRect(new Rect(0, h-24, ContentGrid.ActualWidth, 24), scaleAdjustment),
+            GetRect(new Rect(0, h - 24, ContentGrid.ActualWidth, 24), scaleAdjustment),
             GetRect(new Rect(0, 0, 24, h), scaleAdjustment),
-            GetRect(new Rect(w-24, 0, 24, h), scaleAdjustment),
+            GetRect(new Rect(w - 24, 0, 24, h), scaleAdjustment),
         };
+
         nonClientInputSrc.SetRegionRects(NonClientRegionKind.Caption, dragSides);
     }
 
-    private static Windows.Graphics.RectInt32 GetRect(Rect bounds, double scale)
+    private static RectInt32 GetRect(Rect bounds, double scale)
     {
-        return new Windows.Graphics.RectInt32(
+        return new RectInt32(
             _X: (int)Math.Round(bounds.X * scale),
             _Y: (int)Math.Round(bounds.Y * scale),
             _Width: (int)Math.Round(bounds.Width * scale),
-            _Height: (int)Math.Round(bounds.Height * scale)
-        );
+            _Height: (int)Math.Round(bounds.Height * scale));
     }
 
     private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)

@@ -11,12 +11,6 @@
     <Nullable>enable</Nullable>
 	<TreatWarningsAsErrors>False</TreatWarningsAsErrors>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="Builtins\NewFolder\**" />
-    <EmbeddedResource Remove="Builtins\NewFolder\**" />
-    <None Remove="Builtins\NewFolder\**" />
-    <Page Remove="Builtins\NewFolder\**" />
-  </ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />

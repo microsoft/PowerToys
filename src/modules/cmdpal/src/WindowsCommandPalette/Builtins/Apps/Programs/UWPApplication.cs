@@ -178,7 +178,9 @@ public class UWPApplication : IProgram
                 {
                     var sourceFallback = $"@{{{packageFullName}? {parsedFallback}}}";
                     hResult = Native.SHLoadIndirectString(sourceFallback, outBuffer, outBuffer.Capacity, IntPtr.Zero);
-                    if (hResult == 0) // HRESULT.S_OK
+
+                    // HRESULT.S_OK
+                    if (hResult == 0)
                     {
                         var loaded = outBuffer.ToString();
                         if (!string.IsNullOrEmpty(loaded))

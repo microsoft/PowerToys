@@ -169,9 +169,12 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
 
     public void Dispose()
     {
-        try{
+        try
+        {
             this.ListItem.Unsafe.PropChanged -= ListItem_PropertyChanged;
-        } catch (COMException) {
+        }
+        catch (COMException)
+        {
             /* log something */
         }
     }

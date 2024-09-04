@@ -23,7 +23,7 @@ internal sealed class AppListItem : ListItem
         {
             // Win32 exe or other non UWP app
             this._MoreCommands = [
-                new CommandContextItem(new OpenPathAction(app.DirPath) { Name = "Open location", Icon=new("\ue838") })
+                new CommandContextItem(new OpenPathAction(app.DirPath) { Name = "Open location", Icon = new("\ue838") })
             ];
         }
         else

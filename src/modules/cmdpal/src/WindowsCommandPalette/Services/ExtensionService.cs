@@ -207,7 +207,7 @@ public class ExtensionService : IExtensionService, IDisposable
                             _enabledExtensions.Add(extensionWrapper);
                         }
 
-                        //TelemetryFactory.Get<ITelemetry>().Log(
+                        // TelemetryFactory.Get<ITelemetry>().Log(
                         //    "Extension_ReportInstalled",
                         //    LogLevel.Critical,
                         //    new ReportInstalledExtensionEvent(extensionUniqueId, isEnabled: !isExtensionDisabled));
@@ -347,6 +347,7 @@ public class ExtensionService : IExtensionService, IDisposable
         _enabledExtensions.Remove(extension.First());
     }
 
+    /*
     ///// <inheritdoc cref="IExtensionService.DisableExtensionIfWindowsFeatureNotAvailable(IExtensionWrapper)"/>
     //public async Task<bool> DisableExtensionIfWindowsFeatureNotAvailable(IExtensionWrapper extension)
     //{
@@ -362,5 +363,5 @@ public class ExtensionService : IExtensionService, IDisposable
     //    // Update the local settings so the next time the user launches Dev Home the extension will be disabled.
     //    await _localSettingsService.SaveSettingAsync(extension.ExtensionUniqueId + "-ExtensionDisabled", true);
     //    return true;
-    //}
+    //} */
 }
