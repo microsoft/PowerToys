@@ -154,8 +154,8 @@ public sealed class ListPageViewModel : PageViewModel
         // we already have, then rebuilding it. We shouldn't do that. We should
         // still use the results from GetItems and put them into the code in
         // UpdateFilter to intelligently add/remove as needed.
-        //Items.Clear();
-        //FilteredItems.Clear();
+        // Items.Clear();
+        // FilteredItems.Clear();
 
         Collection<SectionInfoList> newItems = new();
 
@@ -331,22 +331,12 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
         if (listItem.DataContext is not ListItemViewModel li) return;
         _ = li;
         // For a bit I had double-clicks Invoke and single just select, but that crashes?
-        //ItemsList.SelectedItem = listItem;
+        // ItemsList.SelectedItem = listItem;
 
         if (li.DefaultAction != null)
         {
             DoAction(new(li.DefaultAction));
         }
-    }
-
-    private void ListViewItem_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-    {
-        //if (sender is not ListViewItem listItem) return;
-        //if (listItem.DataContext is not ListItemViewModel li) return;
-        //if (li.DefaultAction != null)
-        //{
-        //    DoAction(new(li.DefaultAction));
-        //}
     }
 
     private void ItemsList_SelectionChanged(object sender, SelectionChangedEventArgs e)

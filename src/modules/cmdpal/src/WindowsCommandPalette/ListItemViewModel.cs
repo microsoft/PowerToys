@@ -123,7 +123,8 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
 
     private void ListItem_PropertyChanged(object sender, Microsoft.Windows.CommandPalette.Extensions.PropChangedEventArgs args)
     {
-        try{
+        try
+        {
             var item = ListItem.Unsafe;
             switch (args.PropertyName)
             {
@@ -154,7 +155,9 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
 
             BubbleXamlPropertyChanged(args.PropertyName);
 
-        } catch (COMException) {
+        }
+        catch (COMException)
+        {
             /* log something */
         }
     }
@@ -166,6 +169,7 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
             // this is highly unusual
             return;
         }
+
         this.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
         {
             this.PropertyChanged?.Invoke(this, new(propertyName));

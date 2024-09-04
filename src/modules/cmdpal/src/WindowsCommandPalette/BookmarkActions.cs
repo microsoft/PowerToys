@@ -180,7 +180,8 @@ internal sealed class AddBookmarkForm : Form
                 json = jsonState?.ToString();
             }
         }
-        else {
+        else
+        {
             json = $$"""
 {
     "items": [
@@ -199,7 +200,6 @@ internal sealed class AddBookmarkForm : Form
         AddedAction?.Invoke(this, null);
         return ActionResult.GoHome();
     }
-
 }
 
 internal sealed class AddBookmarkPage : Microsoft.Windows.CommandPalette.Extensions.Helpers.FormPage
@@ -455,8 +455,8 @@ public class BookmarksActionProvider : ICommandProvider
         {
             // Open state.json from the disk and read it
             var state = File.ReadAllText(BookmarksActionProvider.StateJsonPath());
-            // Parse the JSON
 
+            // Parse the JSON
             var json = JsonNode.Parse(state);
             var jsonObject = json?.AsObject();
             if (jsonObject == null)
