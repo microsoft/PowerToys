@@ -632,7 +632,7 @@ public class Win32Program // : IProgram
     public static List<Win32Program> DeduplicatePrograms(IEnumerable<Win32Program> programs)
         => new HashSet<Win32Program>(programs, Win32ProgramEqualityComparer.Default).ToList();
 
-    private static Win32Program? GetProgramFromPath(string path)
+    private static Win32Program GetProgramFromPath(string path)
     {
         var extension = Extension(path);
         if (ExecutableApplicationExtensions.Contains(extension))
@@ -649,7 +649,7 @@ public class Win32Program // : IProgram
             case InternetShortcutExtension:
                 return InternetShortcutProgram(path);
             default:
-                return null;
+                return new Win32Program();
         }
     }
 

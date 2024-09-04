@@ -2,16 +2,16 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics.CodeAnalysis;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-using Microsoft.Bot.AdaptiveExpressions.Core;
 using Microsoft.Windows.CommandPalette.Extensions;
 using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 using Windows.Foundation;
 using Windows.System;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Run.Bookmarks;
 
@@ -21,8 +21,8 @@ internal sealed class OpenInTerminalAction : InvokableCommand
 
     public OpenInTerminalAction(string folder)
     {
-        this.Name = "Open in Terminal";
-        this._folder = folder;
+        Name = "Open in Terminal";
+        _folder = folder;
     }
 
     public override ICommandResult Invoke()
@@ -34,7 +34,7 @@ internal sealed class OpenInTerminalAction : InvokableCommand
             {
                 FileName = "wt.exe",
                 Arguments = $"-d \"{_folder}\"",
-                UseShellExecute = true
+                UseShellExecute = true,
             };
             System.Diagnostics.Process.Start(startInfo);
         }
@@ -47,11 +47,16 @@ internal sealed class OpenInTerminalAction : InvokableCommand
     }
 }
 
-internal sealed class BookmarkData
+public class BookmarkData
 {
-    internal string name = string.Empty;
-    internal string bookmark = string.Empty;
-    internal string type = string.Empty;
+    public string Name = string.Empty;
+    public string Bookmark = string.Empty;
+    public string Type = string.Empty;
+}
+
+public sealed class Bookmarks
+{
+    public List<BookmarkData> Data { get; set; } = [];
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true)]
@@ -149,61 +154,48 @@ internal sealed class AddBookmarkForm : Form
             bookmarkType = "web";
         }
 
+        var formData = new BookmarkData()
+        {
+            Name = formName.ToString(),
+            Bookmark = formBookmark.ToString(),
+            Type = bookmarkType,
+        };
+
         // Construct a new json blob with the name and url
-        var json = string.Empty;
+        var jsonPath = BookmarksActionProvider.StateJsonPath();
+        Bookmarks data;
 
         // if the file exists, load it and append the new item
-        if (File.Exists(BookmarksActionProvider.StateJsonPath()))
+        if (File.Exists(jsonPath))
         {
-            var state = File.ReadAllText(BookmarksActionProvider.StateJsonPath());
-            var jsonState = JsonNode.Parse(state);
-            var items = jsonState?["items"]?.AsArray();
+            var jsonStringReading = File.ReadAllText(jsonPath);
 
-            if (items != null)
-            {
-                // var items = jsonState["items"];
-                var newItem = new JsonObject();
-                newItem["name"] = formName;
-                newItem["bookmark"] = formBookmark;
-                var formData = new BookmarkData()
-                {
-                    name = formName.ToString(),
-                    bookmark = formBookmark.ToString(),
-                    type = bookmarkType,
-                };
-
-                items.Add(JsonSerializer.SerializeToNode(formData, typeof(BookmarkData), SourceGenerationContext.Default));
-
-                json = jsonState?.ToString();
-            }
+            data = JsonSerializer.Deserialize<Bookmarks>(jsonStringReading);
         }
         else
         {
-            json = $$"""
-{
-    "items": [
-        {
-        "name": "{{formName}}",
-        "type": "{{bookmarkType}}",
-        "bookmark": "{{formBookmark}}",
-        "hasPlaceholder":"{{hasPlaceholder}}"
-        }
-    ]
-}
-""";
+            data = new Bookmarks();
         }
 
-        File.WriteAllText(BookmarksActionProvider.StateJsonPath(), json);
+        data.Data.Add(formData);
+        var options = new JsonSerializerOptions()
+        {
+            IncludeFields = true,
+        };
+        var jsonString = JsonSerializer.Serialize<Bookmarks>(data, options);
+
+        File.WriteAllText(BookmarksActionProvider.StateJsonPath(), jsonString);
         AddedAction?.Invoke(this, null);
         return ActionResult.GoHome();
     }
 }
 
-internal sealed class AddBookmarkPage : Microsoft.Windows.CommandPalette.Extensions.Helpers.FormPage
+internal sealed class AddBookmarkPage : FormPage
 {
     private readonly AddBookmarkForm _addBookmark = new();
 
-    internal event TypedEventHandler<object, object?>? AddedAction {
+    internal event TypedEventHandler<object, object?>? AddedAction
+    {
         add => _addBookmark.AddedAction += value;
         remove => _addBookmark.AddedAction -= value;
     }
@@ -217,23 +209,25 @@ internal sealed class AddBookmarkPage : Microsoft.Windows.CommandPalette.Extensi
     }
 }
 
-internal sealed class BookmarkPlaceholderForm: Microsoft.Windows.CommandPalette.Extensions.Helpers.Form
+internal sealed class BookmarkPlaceholderForm : Microsoft.Windows.CommandPalette.Extensions.Helpers.Form
 {
-    private List<string> placeholderNames { get; init; }
+    private readonly List<string> _placeholderNames;
 
-    private readonly string _Bookmark = string.Empty;
+    private readonly string _bookmark = string.Empty;
 
     // TODO pass in an array of placeholders
-    public BookmarkPlaceholderForm(string name, string url, string type) {
-        _Bookmark = url;
+    public BookmarkPlaceholderForm(string name, string url, string type)
+    {
+        _bookmark = url;
         Regex r = new Regex(Regex.Escape("{") + "(.*?)" + Regex.Escape("}"));
         MatchCollection matches = r.Matches(url);
-        placeholderNames = matches.Select(m => m.Groups[1].Value).ToList();
+        _placeholderNames = matches.Select(m => m.Groups[1].Value).ToList();
     }
 
     public override string TemplateJson()
     {
-        var inputs = placeholderNames.Select(p => {
+        var inputs = _placeholderNames.Select(p =>
+        {
             return $$"""
 {
     "type": "Input.Text",
@@ -276,7 +270,7 @@ internal sealed class BookmarkPlaceholderForm: Microsoft.Windows.CommandPalette.
 
     public override ActionResult SubmitForm(string payload)
     {
-        var target = _Bookmark;
+        var target = _bookmark;
 
         // parse the submitted JSON and then open the link
         var formInput = JsonNode.Parse(payload);
@@ -314,7 +308,7 @@ internal sealed class BookmarkPlaceholderForm: Microsoft.Windows.CommandPalette.
     }
 }
 
-internal sealed class BookmarkPlaceholderPage : Microsoft.Windows.CommandPalette.Extensions.Helpers.FormPage
+internal sealed class BookmarkPlaceholderPage : FormPage
 {
     private readonly IForm _bookmarkPlaceholder;
 
@@ -330,7 +324,7 @@ internal sealed class BookmarkPlaceholderPage : Microsoft.Windows.CommandPalette
 
 public class UrlAction : InvokableCommand
 {
-    private bool _containsPlaceholder => _url.Contains('{') && _url.Contains('}');
+    private bool IsContainsPlaceholder => _url.Contains('{') && _url.Contains('}');
 
     public string Type { get; }
 
@@ -428,12 +422,12 @@ public class BookmarksActionProvider : ICommandProvider
 
     public BookmarksActionProvider()
     {
-        _addNewCommand.AddedAction += _addNewCommand_AddedAction;
+        _addNewCommand.AddedAction += AddNewCommand_AddedAction;
     }
 
-    private void _addNewCommand_AddedAction(object sender, object? args)
+    private void AddNewCommand_AddedAction(object sender, object? args)
     {
-        _addNewCommand.AddedAction += _addNewCommand_AddedAction;
+        _addNewCommand.AddedAction += AddNewCommand_AddedAction;
         _commands.Clear();
     }
 
@@ -447,42 +441,37 @@ public class BookmarksActionProvider : ICommandProvider
         collected.Add(_addNewCommand);
         try
         {
-            // Open state.json from the disk and read it
-            var state = File.ReadAllText(BookmarksActionProvider.StateJsonPath());
-
-            // Parse the JSON
-            var json = JsonNode.Parse(state);
-            var jsonObject = json?.AsObject();
-            if (jsonObject == null)
+            var jsonFile = StateJsonPath();
+            if (File.Exists(jsonFile))
             {
-                return;
-            }
-
-            if (!jsonObject.ContainsKey("items"))
-            {
-                return;
-            }
-
-            var itemsJson = jsonObject["items"]?.AsArray();
-            if (itemsJson == null)
-            {
-                return;
-            }
-
-            foreach (var item in itemsJson)
-            {
-                var nameToken = item?["name"];
-                var urlToken = item?["bookmark"];
-                var typeToken = item?["type"];
-                if (nameToken == null || urlToken == null || typeToken == null)
+                // Open state.json from the disk and read it
+                var jsonString = File.ReadAllText(jsonFile);
+                var options = new JsonSerializerOptions()
                 {
-                    continue;
-                }
+                    IncludeFields = true,
+                };
+                var data = JsonSerializer.Deserialize<Bookmarks>(jsonString, options);
 
-                var name = nameToken.ToString();
-                var url = urlToken.ToString();
-                var type = typeToken.ToString();
-                collected.Add((url.Contains('{') && url.Contains('}')) ? new BookmarkPlaceholderPage(name, url, type) : new UrlAction(name, url, type));
+                if (data != null)
+                {
+                    var items = data?.Data;
+                    foreach (var item in items)
+                    {
+                        var nameToken = item.Name;
+                        var urlToken = item.Bookmark;
+                        var typeToken = item.Type;
+
+                        if (nameToken == null || urlToken == null || typeToken == null)
+                        {
+                            continue;
+                        }
+
+                        var name = nameToken.ToString();
+                        var url = urlToken.ToString();
+                        var type = typeToken.ToString();
+                        collected.Add((url.Contains('{') && url.Contains('}')) ? new BookmarkPlaceholderPage(name, url, type) : new UrlAction(name, url, type));
+                    }
+                }
             }
         }
         catch (Exception ex)
@@ -515,11 +504,11 @@ public class BookmarksActionProvider : ICommandProvider
             }
 
             // listItem.Subtitle = "Bookmark";
-            if (action is AddBookmarkPage) { }
-            else
+            if (action is not AddBookmarkPage)
             {
                 listItem.Tags = [
-                    new Tag() {
+                    new Tag()
+                    {
                         Text = "Bookmark",
 
                         // Icon = new("🔗"),
