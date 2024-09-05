@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Data;
 
 namespace AdvancedPaste.Converters;
 
-public sealed class CountToDoubleConverter : IValueConverter
+public sealed partial class CountToDoubleConverter : IValueConverter
 {
     public double ValueIfZero { get; set; }
 
