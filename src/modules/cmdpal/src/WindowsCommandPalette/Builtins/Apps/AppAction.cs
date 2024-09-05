@@ -14,9 +14,10 @@ internal sealed class AppAction : InvokableCommand
 
     internal AppAction(AppItem app)
     {
-        this._Name = "Run";
-        this._app = app;
-        this._Icon = new(_app.IcoPath);
+        _app = app;
+
+        Name = "Run";
+        Icon = new(_app.IcoPath);
     }
 
     internal static async Task StartApp(string amuid)
