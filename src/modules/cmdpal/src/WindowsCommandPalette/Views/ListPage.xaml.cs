@@ -2,243 +2,18 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Runtime.InteropServices;
 using DeveloperCommandPalette;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
-using Microsoft.Windows.CommandPalette.Extensions;
 using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 
 namespace WindowsCommandPalette.Views;
-
-public sealed class StringNotEmptyToVisibilityConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, string language)
-    {
-        return string.IsNullOrWhiteSpace((string)value) ? Visibility.Collapsed : Visibility.Visible;
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, string language)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public class SectionInfoList : ObservableCollection<ListItemViewModel>
-{
-    public string Title { get; }
-
-    private readonly DispatcherQueue DispatcherQueue = DispatcherQueue.GetForCurrentThread();
-
-    public SectionInfoList(ISection? section, IEnumerable<ListItemViewModel> items)
-        : base(items)
-    {
-        Title = section?.Title ?? string.Empty;
-        if (section != null && section is INotifyCollectionChanged observable)
-        {
-            observable.CollectionChanged -= Items_CollectionChanged;
-            observable.CollectionChanged += Items_CollectionChanged;
-        }
-
-        if (this.DispatcherQueue == null)
-        {
-            throw new InvalidOperationException("DispatcherQueue is null");
-        }
-    }
-
-    private void Items_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        // DispatcherQueue.TryEnqueue(() => {
-        if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null)
-        {
-            foreach (var i in e.NewItems)
-            {
-                if (i is IListItem li)
-                {
-                    if (!string.IsNullOrEmpty(li.Title))
-                    {
-                        ListItemViewModel vm = new(li);
-                        this.Add(vm);
-                    }
-
-                    // if (isDynamic)
-                    // {
-                    //    // Dynamic lists are in charge of their own
-                    //    // filtering. They know if this thing was already
-                    //    // filtered or not.
-                    //    FilteredItems.Add(vm);
-                    // }
-                }
-            }
-        }
-        else if (e.Action == NotifyCollectionChangedAction.Reset)
-        {
-            this.Clear();
-
-            // Items.Clear();
-            // if (isDynamic)
-            // {
-            //    FilteredItems.Clear();
-            // }
-        }
-
-        // });
-    }
-}
-
-public sealed class NoOpAction : InvokableCommand
-{
-    public override ICommandResult Invoke()
-    {
-        return ActionResult.KeepOpen();
-    }
-}
-
-public sealed class ErrorListItem : Microsoft.Windows.CommandPalette.Extensions.Helpers.ListItem
-{
-    public ErrorListItem(Exception ex)
-        : base(new NoOpAction())
-    {
-        this.Title = "Error in extension:";
-        this.Subtitle = ex.Message;
-    }
-}
-
-public sealed class ListPageViewModel : PageViewModel
-{
-    internal readonly ObservableCollection<SectionInfoList> Items = [];
-    internal readonly ObservableCollection<SectionInfoList> FilteredItems = [];
-
-    internal IListPage Page => (IListPage)this.pageAction;
-
-    private bool isDynamic => Page is IDynamicListPage;
-
-    private IDynamicListPage? dynamicPage => Page as IDynamicListPage;
-
-    private readonly DispatcherQueue DispatcherQueue = DispatcherQueue.GetForCurrentThread();
-    internal string Query = string.Empty;
-
-    public ListPageViewModel(IListPage page) : base(page)
-    {
-    }
-
-    internal Task InitialRender()
-    {
-        return UpdateListItems();
-    }
-
-    internal async Task UpdateListItems()
-    {
-        // on main thread
-        var t = new Task<ISection[]>(() =>
-        {
-            try
-            {
-                return dynamicPage != null ?
-                    dynamicPage.GetItems(Query) :
-                    this.Page.GetItems();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex);
-                return [new ListSection()
-                {
-                    Title = "Error",
-                    Items = [new ErrorListItem(ex)],
-                }
-                ];
-            }
-        });
-        t.Start();
-        var sections = await t;
-
-        // still on main thread
-
-        // TODO! For dynamic lists, we're clearing out the whole list of items
-        // we already have, then rebuilding it. We shouldn't do that. We should
-        // still use the results from GetItems and put them into the code in
-        // UpdateFilter to intelligently add/remove as needed.
-        // Items.Clear();
-        // FilteredItems.Clear();
-        Collection<SectionInfoList> newItems = new();
-
-        var size = sections.Length;
-        for (var sectionIndex = 0; sectionIndex < size; sectionIndex++)
-        {
-            var section = sections[sectionIndex];
-            var sectionItems = new SectionInfoList(
-                section,
-                section.Items
-                    .Where(i => i != null && !string.IsNullOrEmpty(i.Title))
-                    .Select(i => new ListItemViewModel(i))
-                );
-
-            // var items = section.Items;
-            // for (var i = 0; i < items.Length; i++) {
-            //     ListItemViewModel vm = new(items[i]);
-            //     Items.Add(vm);
-            //     FilteredItems.Add(vm);
-            // }
-            newItems.Add(sectionItems);
-
-            // Items.Add(sectionItems);
-            // FilteredItems.Add(sectionItems);
-        }
-
-        ListHelpers.InPlaceUpdateList(Items, newItems);
-        ListHelpers.InPlaceUpdateList(FilteredItems, newItems);
-    }
-
-    internal async Task<Collection<SectionInfoList>> GetFilteredItems(string query)
-    {
-        if (query == Query)
-        {
-            return FilteredItems;
-        }
-
-        Query = query;
-        if (isDynamic)
-        {
-            await UpdateListItems();
-            return FilteredItems;
-        }
-        else
-        {
-            // Static lists don't need to re-fetch the items
-            if (string.IsNullOrEmpty(query))
-            {
-                return Items;
-            }
-
-            //// TODO! Probably bad that this turns list view models into listitems back to NEW view models
-            // return ListHelpers.FilterList(Items.Select(vm => vm.ListItem), Query).Select(li => new ListItemViewModel(li)).ToList();
-            try
-            {
-                var allFilteredItems = ListHelpers.FilterList(
-                    Items
-                        .SelectMany(section => section)
-                        .Select(vm => vm.ListItem.Unsafe),
-                    Query).Select(li => new ListItemViewModel(li));
-
-                var newSection = new SectionInfoList(null, allFilteredItems);
-                return [newSection];
-            }
-            catch (COMException ex)
-            {
-                return [new SectionInfoList(null, [new ListItemViewModel(new ErrorListItem(ex))])];
-            }
-        }
-    }
-}
 
 /// <summary>
 /// An empty page that can be used on its own or navigated to within a Frame.
@@ -348,7 +123,7 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
     {
         FlyoutShowOptions options = new FlyoutShowOptions
         {
-            ShowMode = FlyoutShowMode.Standard
+            ShowMode = FlyoutShowMode.Standard,
         };
         MoreCommandsButton.Flyout.ShowAt(MoreCommandsButton, options);
         ActionsDropdown.SelectedIndex = 0;
@@ -487,7 +262,7 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
             {
                 FlyoutShowOptions options = new FlyoutShowOptions
                 {
-                    ShowMode = FlyoutShowMode.Standard
+                    ShowMode = FlyoutShowMode.Standard,
                 };
                 MoreCommandsButton.Flyout.ShowAt(MoreCommandsButton, options);
                 ActionsDropdown.SelectedIndex = 0;

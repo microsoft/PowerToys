@@ -18,8 +18,8 @@ sealed class Program
     private static App? app;
 
     // LOAD BEARING
-    // 
-    // Main cannot be async. If it is, then the clipboard won't work, and neither will narrator. 
+    //
+    // Main cannot be async. If it is, then the clipboard won't work, and neither will narrator.
     [STAThread]
     static int Main(string[] args)
     {
@@ -27,7 +27,8 @@ sealed class Program
         var isRedirect = DecideRedirection();
         if (!isRedirect)
         {
-            global::Microsoft.UI.Xaml.Application.Start((p) => {
+            global::Microsoft.UI.Xaml.Application.Start((p) =>
+            {
                 var context = new global::Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext(global::Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
                 global::System.Threading.SynchronizationContext.SetSynchronizationContext(context);
                 app = new App();

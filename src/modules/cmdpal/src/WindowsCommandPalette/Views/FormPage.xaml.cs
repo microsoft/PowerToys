@@ -156,7 +156,7 @@ public sealed partial class FormPage : Page
         // yep it's this dumb
         var foreground = settings.GetColorValue(UIColorType.Foreground);
         var lightTheme = foreground.R < 128;
-        Renderer.HostConfig = AdaptiveHostConfig.FromJsonString(lightTheme? LightHostConfig : DarkHostConfig).HostConfig;
+        Renderer.HostConfig = AdaptiveHostConfig.FromJsonString(lightTheme ? LightHostConfig : DarkHostConfig).HostConfig;
 
     }
 

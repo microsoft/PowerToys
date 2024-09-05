@@ -7,13 +7,6 @@ using Windows.Foundation;
 
 namespace DeveloperCommandPalette;
 
-public class SubmitFormArgs
-{
-    public required string FormData { get; set; }
-
-    public required IForm Form { get; set; }
-}
-
 public class PageViewModel
 {
     private bool nested;
@@ -22,7 +15,7 @@ public class PageViewModel
 
     protected IPage pageAction { get; }
 
-    //public IPage PageAction { get => pageAction; set => pageAction = value; }
+    // public IPage PageAction { get => pageAction; set => pageAction = value; }
     public ActionViewModel Command { get; }
 
     public event TypedEventHandler<object, ActionViewModel>? RequestDoAction;

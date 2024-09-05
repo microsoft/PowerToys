@@ -2,11 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-//using System.Runtime.InteropServices.ComTypes;
 using Windows.Win32.System.Com;
-// using Wox.Plugin.Common.Win32;
 
 namespace AllApps.Programs;
 
@@ -36,7 +33,8 @@ public static class AppxPackageHelper
 
     public static T CheckHRAndReturnOrThrow<T>(int hr, T result)
     {
-        if (hr != 0) // HRESULT.S_OK)
+        // HRESULT.S_OK
+        if (hr != 0)
         {
             Marshal.ThrowExceptionForHR((int)hr);
         }

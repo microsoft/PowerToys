@@ -300,7 +300,7 @@ public sealed class MainListPage : Microsoft.Windows.CommandPalette.Extensions.H
             {
                 if (item is ExtensionObject<IListItem> listItem)
                 {
-                    foreach (var mainListItem in _mainSection._Items) // MainListItem
+                    foreach (var mainListItem in _mainSection._Items)
                     {
                         if (mainListItem.Item == listItem)
                         {

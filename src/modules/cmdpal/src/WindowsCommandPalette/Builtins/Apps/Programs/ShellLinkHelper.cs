@@ -2,12 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
-//using Accessibility;
-//using Wox.Plugin.Logger;
 
 namespace WindowsCommandPalette.BuiltinCommands.AllApps;
 
@@ -142,7 +139,7 @@ public class ShellLinkHelper : IShellLinkHelper
         }
         catch (System.IO.FileNotFoundException)
         {
-            //Log.Exception("Path could not be retrieved", ex, GetType(), path);
+            // Log.Exception("Path could not be retrieved", ex, GetType(), path);
             return string.Empty;
         }
 
@@ -167,7 +164,7 @@ public class ShellLinkHelper : IShellLinkHelper
             }
             catch (System.Exception )
             {
-                //Log.Exception($"Failed to fetch description for {target}, {e.Message}", e, GetType());
+                // Log.Exception($"Failed to fetch description for {target}, {e.Message}", e, GetType());
                 Description = string.Empty;
             }
 

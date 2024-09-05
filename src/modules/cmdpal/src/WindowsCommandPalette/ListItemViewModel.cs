@@ -14,7 +14,7 @@ namespace DeveloperCommandPalette;
 
 public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
 {
-    private readonly DispatcherQueue DispatcherQueue;
+    private readonly DispatcherQueue _dispatcherQueue;
 
     internal ExtensionObject<IListItem> ListItem { get; init; }
 
@@ -49,7 +49,7 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
 
     internal IconElement IcoElement => Microsoft.Terminal.UI.IconPathConverter.IconMUX(Icon);
 
-    private IEnumerable<ICommandContextItem> contextActions
+    private IEnumerable<ICommandContextItem> AllCommands
     {
         get
         {
@@ -68,7 +68,7 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
-    internal bool HasMoreCommands => contextActions.Any();
+    internal bool HasMoreCommands => AllCommands.Any();
 
     internal TagViewModel[] Tags = [];
 
@@ -80,9 +80,14 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
         {
             try
             {
-                var l = contextActions.Select(a => new ContextItemViewModel(a)).ToList();
+                var l = AllCommands.Select(a => new ContextItemViewModel(a)).ToList();
                 var def = DefaultAction;
-                if (def!=null) l.Insert(0, new(def));
+
+                if (def != null)
+                {
+                    l.Insert(0, new(def));
+                }
+
                 return l;
             }
             catch (COMException)
@@ -100,12 +105,14 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
         this.Title = model.Title;
         this.Subtitle = model.Subtitle;
         this.Icon = model.Command.Icon.Icon;
+
         if (model.Tags != null)
         {
             this.Tags = model.Tags.Select(t => new TagViewModel(t)).ToArray();
         }
 
-        this._Details = new(() => {
+        this._Details = new(() =>
+        {
             try
             {
                 var item = this.ListItem.Unsafe;
@@ -118,7 +125,7 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
             }
         });
 
-        this.DispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        this._dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     }
 
     private void ListItem_PropertyChanged(object sender, Microsoft.Windows.CommandPalette.Extensions.PropChangedEventArgs args)
@@ -155,13 +162,13 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
 
     private void BubbleXamlPropertyChanged(string propertyName)
     {
-        if (this.DispatcherQueue == null)
+        if (this._dispatcherQueue == null)
         {
             // this is highly unusual
             return;
         }
 
-        this.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
+        this._dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
         {
             this.PropertyChanged?.Invoke(this, new(propertyName));
         });
@@ -169,9 +176,12 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
 
     public void Dispose()
     {
-        try{
+        try
+        {
             this.ListItem.Unsafe.PropChanged -= ListItem_PropertyChanged;
-        } catch (COMException) {
+        }
+        catch (COMException)
+        {
             /* log something */
         }
     }
