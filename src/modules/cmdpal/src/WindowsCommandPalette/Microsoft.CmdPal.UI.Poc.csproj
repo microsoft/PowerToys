@@ -107,9 +107,6 @@
      <Copy SourceFiles="$(PkgAdaptiveCards_ObjectModel_WinUI3)\runtimes\win10-$(Platform)\native\AdaptiveCards.ObjectModel.WinUI3.dll" DestinationFolder="$(TargetDir)" />
      <Copy SourceFiles="$(PkgAdaptiveCards_Rendering_WinUI3)\runtimes\win10-$(Platform)\native\AdaptiveCards.Rendering.WinUI3.dll" DestinationFolder="$(TargetDir)" />
    </Target>
-   <ItemGroup>
-     <PRIResource Remove="Builtins\NewFolder\**" />
-   </ItemGroup>
    <!-- </AdaptiveCardsWorkaround> -->
 
 </Project>
