@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using Microsoft.Windows.CommandPalette.Extensions.Helpers;
+using Microsoft.CmdPal.Extensions.Helpers;
 using Windows.System;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;

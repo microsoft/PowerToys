@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.Windows.CommandPalette.Extensions;
-using Microsoft.Windows.CommandPalette.Extensions.Helpers;
+using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.Extensions.Helpers;
 using Windows.Foundation;
 
 namespace DeveloperCommandPalette;
@@ -29,7 +29,7 @@ public sealed class MainListItem : ListItem
         _listItem.PropChanged += Action_PropertyChanged;
     }
 
-    private void Action_PropertyChanged(object sender, Microsoft.Windows.CommandPalette.Extensions.PropChangedEventArgs args)
+    private void Action_PropertyChanged(object sender, Microsoft.CmdPal.Extensions.PropChangedEventArgs args)
     {
         if (args.PropertyName == "Name")
         {

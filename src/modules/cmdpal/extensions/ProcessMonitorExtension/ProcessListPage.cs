@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using Microsoft.Windows.CommandPalette.Extensions;
-using Microsoft.Windows.CommandPalette.Extensions.Helpers;
+using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace ProcessMonitorExtension;
 

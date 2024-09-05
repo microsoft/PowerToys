@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.Windows.CommandPalette.Extensions.Helpers;
+using Microsoft.CmdPal.Extensions.Helpers;
 using Windows.System;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;

@@ -8,7 +8,7 @@ using AdaptiveCards.Rendering.WinUI3;
 using AdaptiveCards.Templating;
 using DeveloperCommandPalette;
 using Microsoft.UI.Xaml;
-using Microsoft.Windows.CommandPalette.Extensions;
+using Microsoft.CmdPal.Extensions;
 using Windows.Foundation;
 using Windows.System;
 

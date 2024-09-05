@@ -10,7 +10,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
-using Microsoft.Windows.CommandPalette.Extensions;
+using Microsoft.CmdPal.Extensions;
 
 namespace WindowsCommandPalette.Views;
 

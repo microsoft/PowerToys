@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using DeveloperCommandPalette;
-using Microsoft.Windows.CommandPalette.Extensions;
+using Microsoft.CmdPal.Extensions;
 
 namespace WindowsCommandPalette.Views;
 

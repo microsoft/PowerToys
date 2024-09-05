@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.Windows.CommandPalette.Extensions;
+using Microsoft.CmdPal.Extensions;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.

@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using CmdPal.Models;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.Windows.CommandPalette.Extensions;
+using Microsoft.CmdPal.Extensions;
 using WindowsCommandPalette.Views;
 
 namespace DeveloperCommandPalette;
@@ -128,7 +128,7 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
         this._dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     }
 
-    private void ListItem_PropertyChanged(object sender, Microsoft.Windows.CommandPalette.Extensions.PropChangedEventArgs args)
+    private void ListItem_PropertyChanged(object sender, Microsoft.CmdPal.Extensions.PropChangedEventArgs args)
     {
         try
         {

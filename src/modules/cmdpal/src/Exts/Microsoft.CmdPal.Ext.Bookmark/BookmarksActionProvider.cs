@@ -6,8 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.Windows.CommandPalette.Extensions;
-using Microsoft.Windows.CommandPalette.Extensions.Helpers;
+using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 

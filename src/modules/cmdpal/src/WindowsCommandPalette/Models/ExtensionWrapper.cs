@@ -4,7 +4,7 @@
 
 using System.Runtime.InteropServices;
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.Windows.CommandPalette.Extensions;
+using Microsoft.CmdPal.Extensions;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.AppExtensions;
 using Windows.Win32;

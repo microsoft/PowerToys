@@ -358,7 +358,7 @@ extensions simpler.
 Below details the SDK that developers can use to create extensions for the
 DevPal. These interfaces are exposed through the `Microsoft.Windows.Run`
 namespace. We'll expose an SDK with helper classes and default implementations
-in the `Microsoft.Windows.CommandPalette.Extensions` namespace.
+in the `Microsoft.CmdPal.Extensions` namespace.
 
 > [NOTE!]
 >
@@ -1146,7 +1146,7 @@ thinking about storing credentials securely.
 
 ## Helper SDK Classes
 
-As a part of the `Microsoft.Windows.CommandPalette.Extensions` namespace, we'll provide a set of
+As a part of the `Microsoft.CmdPal.Extensions` namespace, we'll provide a set of
 default implementations and helper classes that developers can use to make
 authoring extensions easier.
 
@@ -1369,7 +1369,7 @@ The `.idl` for this SDK can be generated directly from this file. To do so, run 
 Or, to generate straight to the place I'm consuming it from:
 
 ```ps1
-.\doc\initial-sdk-spec\generate-interface.ps1 > .\extensionsdk\Microsoft.Windows.CommandPalette.Extensions\Microsoft.Windows.Run.Extensions.idl
+.\doc\initial-sdk-spec\generate-interface.ps1 > .\extensionsdk\Microsoft.CmdPal.Extensions\Microsoft.Windows.Run.Extensions.idl
 ```
 
 [^1]: In this example, as in other places, I've referenced a

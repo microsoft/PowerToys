@@ -6,8 +6,8 @@ using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using DeveloperCommandPalette;
 using Microsoft.UI.Dispatching;
-using Microsoft.Windows.CommandPalette.Extensions;
-using Microsoft.Windows.CommandPalette.Extensions.Helpers;
+using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace WindowsCommandPalette.Views;
 

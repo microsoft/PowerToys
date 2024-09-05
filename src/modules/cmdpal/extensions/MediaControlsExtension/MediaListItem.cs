@@ -4,7 +4,7 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.Windows.CommandPalette.Extensions.Helpers;
+using Microsoft.CmdPal.Extensions.Helpers;
 using Windows.Media.Control;
 
 namespace MediaControlsExtension;

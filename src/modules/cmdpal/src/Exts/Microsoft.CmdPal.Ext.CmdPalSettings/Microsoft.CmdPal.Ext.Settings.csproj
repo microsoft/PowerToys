@@ -4,6 +4,6 @@
     <RootNamespace>Microsoft.CmdPal.Ext.Settings</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\extensionsdk\Microsoft.Windows.CommandPalette.Extensions.Helpers\Microsoft.CmdPal.Extensions.Helpers.csproj" />
+    <ProjectReference Include="..\..\..\extensionsdk\Microsoft.CmdPal.Extensions.Helpers\Microsoft.CmdPal.Extensions.Helpers.csproj" />
   </ItemGroup>
 </Project>

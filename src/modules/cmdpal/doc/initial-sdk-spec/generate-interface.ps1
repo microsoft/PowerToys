@@ -11,7 +11,7 @@ foreach ($item in $json.children) {
         if ($item.language -eq 'c#') {
             $code = $item.children.content
             # Each line that starts with with `runtimeclass` or `interface` should be prefixed with the contract attribute
-            $code = $code -replace "(?m)^(runtimeclass|interface) ", "[contract(Microsoft.Windows.CommandPalette.Extensions.RunContract, 1)]`n`$1 "
+            $code = $code -replace "(?m)^(runtimeclass|interface) ", "[contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]`n`$1 "
 
             # all the lines that start with `(whitespace)async (T)` should be translated to `IAsyncOperation<T>`
             $code = $code -replace "(?m)^(\s*)async\s+(void)\s+([A-Za-z0-9_]+)\s*\(", "`$1Windows.Foundation.IAsyncAction `$3("
@@ -31,7 +31,7 @@ foreach ($item in $json.children) {
         if ($item.language -eq 'csharp') {
             $code = $item.children.content
             # Each line that starts with with `runtimeclass` or `interface` should be prefixed with the contract attribute
-            $code = $code -replace "(?m)^(runtimeclass|interface) ", "[contract(Microsoft.Windows.CommandPalette.Extensions.RunContract, 1)]`n`$1 "
+            $code = $code -replace "(?m)^(runtimeclass|interface) ", "[contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]`n`$1 "
 
             # all the lines that start with `(whitespace)async (T)` should be translated to `IAsyncOperation<T>`
             $code = $code -replace "(?m)^(\s*)async\s+(void)\s+([A-Za-z0-9_]+)\s*\(", "`$1Windows.Foundation.IAsyncAction `$3("
@@ -48,34 +48,34 @@ foreach ($item in $json.children) {
 
 # now, write the fully formatted interface with headers and all:
 Write-Output @"
-namespace Microsoft.Windows.CommandPalette.Extensions
+namespace Microsoft.CmdPal.Extensions
 {
     [contractversion(1)]
-    apicontract RunContract {}
+    apicontract ExtensionsContract {}
 
-    [contract(Microsoft.Windows.CommandPalette.Extensions.RunContract, 1)]
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     interface IExtension {
         IInspectable GetProvider(ProviderType providerType);
         void Dispose();
     };
 
-    [contract(Microsoft.Windows.CommandPalette.Extensions.RunContract, 1)]
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     enum ProviderType {
         Commands = 0,
     };
 
-    [contract(Microsoft.Windows.CommandPalette.Extensions.RunContract, 1)]
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     runtimeclass IconDataType {
         IconDataType(String iconString);
         String Icon { get; };
     };
 
-    [contract(Microsoft.Windows.CommandPalette.Extensions.RunContract, 1)]
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     interface INotifyPropChanged {
         event Windows.Foundation.TypedEventHandler<Object, PropChangedEventArgs> PropChanged;
     };
 
-    [contract(Microsoft.Windows.CommandPalette.Extensions.RunContract, 1)]
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     runtimeclass PropChangedEventArgs {
         PropChangedEventArgs(String propertyName);
         String PropertyName { get; };

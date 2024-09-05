@@ -5,7 +5,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Microsoft.Windows.CommandPalette.Extensions;
+using Microsoft.CmdPal.Extensions;
 
 namespace SpongebotExtension;
 

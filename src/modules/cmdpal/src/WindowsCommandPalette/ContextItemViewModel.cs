@@ -17,7 +17,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using Microsoft.Windows.CommandPalette.Extensions;
+using Microsoft.CmdPal.Extensions;
 using Windows.ApplicationModel.AppExtensions;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -50,7 +50,7 @@ public sealed class ContextItemViewModel : INotifyPropertyChanged
         this.Command.PropChanged += Action_PropertyChanged;
     }
 
-    private void Action_PropertyChanged(object sender, Microsoft.Windows.CommandPalette.Extensions.PropChangedEventArgs args)
+    private void Action_PropertyChanged(object sender, Microsoft.CmdPal.Extensions.PropChangedEventArgs args)
     {
         this.PropertyChanged?.Invoke(this, new(args.PropertyName));
     }

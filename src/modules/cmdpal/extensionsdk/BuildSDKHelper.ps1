@@ -61,7 +61,7 @@ Try {
         ("$PSScriptRoot\CmdPalSDK.sln"),
         ("/p:Platform="+$platform),
         ("/p:Configuration="+$config),
-        ("/binaryLogger:Microsoft.Windows.CommandPalette.Extensions.$platform.$config.binlog"),
+        ("/binaryLogger:Microsoft.CmdPal.Extensions.$platform.$config.binlog"),
         ("/p:VersionNumber="+$VersionOfSDK)
       )
 
@@ -78,7 +78,7 @@ Try {
 foreach ($config in $Configuration.Split(",")) {
   if ($config -eq "release")
   {
-    & $nugetPath pack (Join-Path $PSScriptRoot "nuget\Microsoft.Windows.CommandPalette.Extensions.nuspec") -Version $VersionOfSDK -OutputDirectory "$PSScriptRoot\_build"
+    & $nugetPath pack (Join-Path $PSScriptRoot "nuget\Microsoft.CmdPal.Extensions.nuspec") -Version $VersionOfSDK -OutputDirectory "$PSScriptRoot\_build"
   } else {
 Write-Host @"
 WARNING: You are currently building as '$config' configuration.

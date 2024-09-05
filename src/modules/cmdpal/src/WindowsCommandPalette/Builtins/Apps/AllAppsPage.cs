@@ -5,8 +5,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using AllApps.Programs;
-using Microsoft.Windows.CommandPalette.Extensions;
-using Microsoft.Windows.CommandPalette.Extensions.Helpers;
+using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace WindowsCommandPalette.BuiltinCommands.AllApps;
 

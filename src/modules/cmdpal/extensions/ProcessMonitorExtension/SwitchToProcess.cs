@@ -4,7 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Microsoft.Windows.CommandPalette.Extensions.Helpers;
+using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace ProcessMonitorExtension;
 

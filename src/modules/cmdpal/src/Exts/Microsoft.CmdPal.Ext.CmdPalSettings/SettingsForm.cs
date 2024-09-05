@@ -4,7 +4,7 @@
 
 using System;
 using System.Text.Json.Nodes;
-using Microsoft.Windows.CommandPalette.Extensions.Helpers;
+using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.Settings;
 

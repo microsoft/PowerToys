@@ -4,7 +4,7 @@
 
 using System.Diagnostics;
 using AllApps.Programs;
-using Microsoft.Windows.CommandPalette.Extensions.Helpers;
+using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace WindowsCommandPalette.BuiltinCommands.AllApps;
 

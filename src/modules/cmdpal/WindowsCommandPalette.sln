@@ -10,9 +10,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.Terminal.UI", "sr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extension SDK", "Extension SDK", "{FAA24D36-5515-467C-91E7-101A189AAF48}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.Windows.CommandPalette.Extensions", "extensionsdk\Microsoft.Windows.CommandPalette.Extensions\Microsoft.Windows.CommandPalette.Extensions.vcxproj", "{305DD37E-C85D-4B08-AAFE-7381FA890463}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.CmdPal.Extensions", "extensionsdk\Microsoft.CmdPal.Extensions\Microsoft.CmdPal.Extensions.vcxproj", "{305DD37E-C85D-4B08-AAFE-7381FA890463}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.Extensions.Helpers", "extensionsdk\Microsoft.Windows.CommandPalette.Extensions.Helpers\Microsoft.CmdPal.Extensions.Helpers.csproj", "{79060D06-7174-4D66-8D0B-4FF021154049}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.Extensions.Helpers", "extensionsdk\Microsoft.CmdPal.Extensions.Helpers\Microsoft.CmdPal.Extensions.Helpers.csproj", "{79060D06-7174-4D66-8D0B-4FF021154049}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.Common", "src\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj", "{05CDE6EE-23AE-42AF-A9F5-E398C382675F}"
 EndProject
