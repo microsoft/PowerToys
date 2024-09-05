@@ -281,6 +281,8 @@ namespace SnapshotUtils
                         Logger::info(L"Installed parent app not found: {}", processPath);
                         continue;
                     }
+
+                    processPath = parentProcessPath;
                 }
                 else
                 {
@@ -292,7 +294,7 @@ namespace SnapshotUtils
             WorkspacesData::WorkspacesProject::Application app{
                 .name = data.value().name,
                 .title = title,
-                .path = data.value().installPath,
+                .path = processPath,
                 .packageFullName = data.value().packageFullName,
                 .appUserModelId = data.value().appUserModelId,
                 .commandLineArgs = L"", // GetCommandLineArgs(pid, wbemHelper),
