@@ -22,14 +22,14 @@ internal sealed class AppListItem : ListItem
         if (string.IsNullOrEmpty(app.UserModelId))
         {
             // Win32 exe or other non UWP app
-            this._MoreCommands = [
+            MoreCommands = [
                 new CommandContextItem(new OpenPathAction(app.DirPath) { Name = "Open location", Icon = new("\ue838") })
             ];
         }
         else
         {
             // UWP app
-            this._MoreCommands = [];
+            MoreCommands = [];
         }
     }
 }

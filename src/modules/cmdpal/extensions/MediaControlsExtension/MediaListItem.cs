@@ -31,7 +31,7 @@ internal sealed class MediaListItem : ListItem
         });
 
         // task.Start();
-        this._MoreCommands = null;
+        MoreCommands = null;
     }
 
     private async Task UpdateProperties()
