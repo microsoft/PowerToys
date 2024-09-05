@@ -278,16 +278,21 @@ namespace SnapshotUtils
                     data = Utils::Apps::GetApp(parentProcessPath, installedApps);
                     if (!data.has_value() || data->name.empty())
                     {
-                        Logger::info(L"Installed parent app not found: {}, {}", title, processPath);
+                        Logger::info(L"Installed parent app not found: {}", processPath);
                         continue;
                     }
+                }
+                else
+                {
+                    Logger::info(L"Parent process path not found");
+                    continue;
                 }
             }
 
             WorkspacesData::WorkspacesProject::Application app{
                 .name = data.value().name,
                 .title = title,
-                .path = processPath,
+                .path = data.value().installPath,
                 .packageFullName = data.value().packageFullName,
                 .appUserModelId = data.value().appUserModelId,
                 .commandLineArgs = L"", // GetCommandLineArgs(pid, wbemHelper),
