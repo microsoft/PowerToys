@@ -37,7 +37,7 @@ public class ShellLinkHelper : IShellLinkHelper
     }
 
     [Flags]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "<Pending>")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Implements COM Interface")]
     public enum SLR_FLAGS
     {
         SLR_NO_UI = 0x1,

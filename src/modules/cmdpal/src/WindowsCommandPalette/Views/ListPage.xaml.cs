@@ -18,26 +18,26 @@ namespace WindowsCommandPalette.Views;
 /// <summary>
 /// An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
-public sealed partial class ListPage : Page, System.ComponentModel.INotifyPropertyChanged
+public sealed partial class ListPage : Page, INotifyPropertyChanged
 {
-    private ListPageViewModel? ViewModel;
+    public ListPageViewModel? ViewModel { get; set; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    private ListItemViewModel? _SelectedItem;
+    private ListItemViewModel? _selectedItem;
 
     public ListItemViewModel? SelectedItem
     {
-        get => _SelectedItem;
+        get => _selectedItem;
         set
         {
-            _SelectedItem = value;
-            PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(SelectedItem)));
-            PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(MoreCommandsAvailable)));
+            _selectedItem = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedItem)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MoreCommandsAvailable)));
 
-            if (ViewModel != null && _SelectedItem?.Details != null && ViewModel.Page.ShowDetails)
+            if (ViewModel != null && _selectedItem?.Details != null && ViewModel.Page.ShowDetails)
             {
-                this.DetailsContent.Child = new DetailsControl(_SelectedItem.Details);
+                this.DetailsContent.Child = new DetailsControl(_selectedItem.Details);
                 this.DetailsContent.Visibility = Visibility.Visible;
                 this.DetailsColumn.Width = new GridLength(2, GridUnitType.Star);
             }
@@ -125,6 +125,7 @@ public sealed partial class ListPage : Page, System.ComponentModel.INotifyProper
         {
             ShowMode = FlyoutShowMode.Standard,
         };
+
         MoreCommandsButton.Flyout.ShowAt(MoreCommandsButton, options);
         ActionsDropdown.SelectedIndex = 0;
         ActionsDropdown.Focus(FocusState.Programmatic);

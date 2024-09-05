@@ -116,8 +116,9 @@ public class ExtensionService : IExtensionService, IDisposable
         {
             if (package.Id?.FullName == extension.Package?.Id?.FullName)
             {
-                var (CmdPalProvider, classId) = await GetCmdPalExtensionPropertiesAsync(extension);
-                return CmdPalProvider != null && classId.Count != 0;
+                var (cmdPalProvider, classId) = await GetCmdPalExtensionPropertiesAsync(extension);
+
+                return cmdPalProvider != null && classId.Count != 0;
             }
         }
 
@@ -134,22 +135,22 @@ public class ExtensionService : IExtensionService, IDisposable
             return (null, classIds);
         }
 
-        var CmdPalProvider = GetSubPropertySet(properties, "CmdPalProvider");
-        if (CmdPalProvider is null)
+        var cmdPalProvider = GetSubPropertySet(properties, "CmdPalProvider");
+        if (cmdPalProvider is null)
         {
             return (null, classIds);
         }
 
-        var activation = GetSubPropertySet(CmdPalProvider, "Activation");
+        var activation = GetSubPropertySet(cmdPalProvider, "Activation");
         if (activation is null)
         {
-            return (CmdPalProvider, classIds);
+            return (cmdPalProvider, classIds);
         }
 
         // Handle case where extension creates multiple instances.
         classIds.AddRange(GetCreateInstanceList(activation));
 
-        return (CmdPalProvider, classIds);
+        return (cmdPalProvider, classIds);
     }
 
     private static async Task<IEnumerable<AppExtension>> GetInstalledAppExtensionsAsync()
