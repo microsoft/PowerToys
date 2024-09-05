@@ -109,7 +109,7 @@
                                     Padding="24,6"
                                     AutomationProperties.Name="{x:Static props:Resources.Delete}"
                                     Background="{DynamicResource TertiaryBackgroundBrush}"
-                                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                                    BorderBrush="{DynamicResource SecondaryBorderBrush}"
                                     BorderThickness="2"
                                     Click="DeleteButtonClicked"
                                     Content="{Binding DeleteButtonContent, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
