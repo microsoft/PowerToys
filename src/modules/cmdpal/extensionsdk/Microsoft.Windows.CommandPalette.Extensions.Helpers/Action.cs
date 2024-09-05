@@ -2,8 +2,8 @@
 
 public class Action : BaseObservable, ICommand
 {
-    private string _name = "";
-    private IconDataType _icon = new("");
+    private string _name = string.Empty;
+    private IconDataType _icon = new(string.Empty);
 
     public string Name
     {
