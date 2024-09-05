@@ -2,12 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
+namespace AllApps.Programs;
 
-namespace AllApps.Programs
+public interface IPackageManager
 {
-    public interface IPackageManager
-    {
-        IEnumerable<IPackage> FindPackagesForCurrentUser();
-    }
+    IEnumerable<IPackage> FindPackagesForCurrentUser();
 }

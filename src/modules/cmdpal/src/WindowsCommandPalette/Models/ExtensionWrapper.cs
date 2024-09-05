@@ -22,7 +22,7 @@ public class ExtensionWrapper : IExtensionWrapper
 
     private readonly Dictionary<Type, ProviderType> _providerTypeMap = new()
     {
-        [typeof(ICommandProvider)] = ProviderType.Commands
+        [typeof(ICommandProvider)] = ProviderType.Commands,
     };
 
     private IExtension? _extensionObject;

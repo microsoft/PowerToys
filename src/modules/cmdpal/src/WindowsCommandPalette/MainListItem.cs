@@ -48,6 +48,7 @@ public sealed class MainListItem : ListItem
         {
             this.MoreCommands = this._listItem.MoreCommands;
         }
+
         OnPropertyChanged(args.PropertyName);
     }
 }

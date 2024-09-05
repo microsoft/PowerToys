@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using System.Threading.Tasks;
 using AllApps.Programs;
 using Microsoft.Windows.CommandPalette.Extensions.Helpers;
 
@@ -19,6 +18,7 @@ internal sealed class AppAction : InvokableCommand
         this._app = app;
         this._Icon = new(_app.IcoPath);
     }
+
     internal static async Task StartApp(string amuid)
     {
         var appManager = new ApplicationActivationManager();
@@ -34,15 +34,18 @@ internal sealed class AppAction : InvokableCommand
             }
         }).ConfigureAwait(false);
     }
+
     internal static async Task StartExe(string path)
     {
         var appManager = new ApplicationActivationManager();
+
         // const ActivateOptions noFlags = ActivateOptions.None;
         await Task.Run(() =>
         {
             Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
         });
     }
+
     internal async Task Launch()
     {
         if (string.IsNullOrEmpty(_app.ExePath))
@@ -54,6 +57,7 @@ internal sealed class AppAction : InvokableCommand
             await StartExe(_app.ExePath);
         }
     }
+
     public override ActionResult Invoke()
     {
         _ = Launch();

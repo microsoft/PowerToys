@@ -16,8 +16,6 @@ namespace Microsoft.Windows.CommandPalette.Services;
 
 public class ExtensionService : IExtensionService, IDisposable
 {
-    // private readonly ILogger _log = Log.ForContext("SourceContext", nameof(ExtensionService));
-
     public event EventHandler OnExtensionsChanged = (_, _) => { };
 
     private static readonly PackageCatalog _catalog = PackageCatalog.OpenForCurrentUser();

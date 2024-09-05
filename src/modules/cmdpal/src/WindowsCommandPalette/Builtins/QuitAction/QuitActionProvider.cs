@@ -8,34 +8,6 @@ using Windows.Foundation;
 
 namespace WindowsCommandPalette.BuiltinCommands;
 
-public class QuitAction : InvokableCommand, IFallbackHandler
-{
-    public event TypedEventHandler<object?, object?>? QuitRequested;
-
-    public QuitAction()
-    {
-        Icon = new("\uE711");
-    }
-
-    public override ICommandResult Invoke()
-    {
-        QuitRequested?.Invoke(this, new());
-        return ActionResult.KeepOpen();
-    }
-
-    public void UpdateQuery(string query)
-    {
-        if (query.StartsWith('q'))
-        {
-            Name = "Quit";
-        }
-        else
-        {
-            Name = string.Empty;
-        }
-    }
-}
-
 public class QuitActionProvider : ICommandProvider
 {
     public string DisplayName => string.Empty;
