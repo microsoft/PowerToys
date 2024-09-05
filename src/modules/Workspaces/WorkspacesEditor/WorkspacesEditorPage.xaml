@@ -104,13 +104,13 @@
                             </StackPanel>
                             <controls:ResetIsEnabled Grid.Column="4">
                                 <Button
-                                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
-                                    BorderThickness="2"
                                     Width="Auto"
                                     Margin="10,5"
                                     Padding="24,6"
                                     AutomationProperties.Name="{x:Static props:Resources.Delete}"
                                     Background="{DynamicResource TertiaryBackgroundBrush}"
+                                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                                    BorderThickness="2"
                                     Click="DeleteButtonClicked"
                                     Content="{Binding DeleteButtonContent, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                     IsEnabled="True" />
@@ -333,8 +333,6 @@
                     Source="{Binding PreviewImage, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                     Stretch="Fill" />
                 <Button
-                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
-                    BorderThickness="2"
                     x:Name="RevertButton"
                     Height="36"
                     Margin="0,0,20,10"
@@ -342,13 +340,13 @@
                     HorizontalAlignment="Right"
                     AutomationProperties.Name="{x:Static props:Resources.Revert}"
                     Background="{DynamicResource SecondaryBackgroundBrush}"
+                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                    BorderThickness="2"
                     Click="RevertButtonClicked"
                     Content="{x:Static props:Resources.Revert}"
                     DockPanel.Dock="Right"
                     IsEnabled="{Binding IsRevertEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                 <Button
-                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
-                    BorderThickness="2"
                     x:Name="LaunchEditButton"
                     Height="36"
                     Margin="0,0,10,10"
@@ -356,6 +354,8 @@
                     HorizontalAlignment="Right"
                     AutomationProperties.Name="{x:Static props:Resources.LaunchEdit}"
                     Background="{DynamicResource SecondaryBackgroundBrush}"
+                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                    BorderThickness="2"
                     Click="LaunchEditButtonClicked"
                     Content="{x:Static props:Resources.LaunchEdit}"
                     DockPanel.Dock="Right" />
@@ -402,14 +402,14 @@
                 DockPanel.Dock="Right"
                 Orientation="Horizontal">
                 <Button
-                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
-                    BorderThickness="2"
                     x:Name="CancelButton"
                     Height="36"
                     Margin="20,0,0,0"
                     Padding="24,0,24,0"
                     AutomationProperties.Name="{x:Static props:Resources.Cancel}"
                     Background="{DynamicResource SecondaryBackgroundBrush}"
+                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                    BorderThickness="2"
                     Click="CancelButtonClicked"
                     Content="{x:Static props:Resources.Cancel}" />
                 <Button
