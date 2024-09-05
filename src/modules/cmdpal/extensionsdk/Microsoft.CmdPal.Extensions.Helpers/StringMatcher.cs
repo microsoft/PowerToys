@@ -4,10 +4,6 @@
 
 using System.Globalization;
 
-//[assembly: InternalsVisibleTo("Microsoft.Plugin.Program.UnitTests")]
-//[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.System.UnitTests")]
-//[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests")]
-
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
 public class StringMatcher

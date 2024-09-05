@@ -1,4 +1,8 @@
-﻿namespace Microsoft.CmdPal.Extensions.Helpers;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+namespace Microsoft.CmdPal.Extensions.Helpers;
 
 public class ListItem : BaseObservable, IListItem
 {
@@ -26,7 +30,7 @@ public class ListItem : BaseObservable, IListItem
     public ICommand Command { get => _command; set { _command = value; OnPropertyChanged(nameof(Command)); } }
     public IContextItem[] MoreCommands { get => _moreCommands; set { _moreCommands = value; OnPropertyChanged(nameof(MoreCommands)); } }
 
-    public IFallbackHandler? FallbackHandler { get => _fallbackHandler ?? _command as IFallbackHandler; init { _fallbackHandler = value; } }
+    public IFallbackHandler? FallbackHandler { get => _fallbackHandler ?? _command as IFallbackHandler; init => _fallbackHandler = value; }
 
     public ListItem(ICommand command)
     {
