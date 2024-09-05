@@ -25,7 +25,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 | [Peek](https://aka.ms/PowerToysOverview_Peek) | [Paste as Plain Text](https://aka.ms/PowerToysOverview_PastePlain) | [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) |
 | [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) | [Quick Accent](https://aka.ms/PowerToysOverview_QuickAccent) | [Registry Preview](https://aka.ms/PowerToysOverview_RegistryPreview) |
 | [Screen Ruler](https://aka.ms/PowerToysOverview_ScreenRuler) | [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) |
-| [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) |
+| [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) | [Workspaces](https://aka.ms/PowerToysOverview_Workspaces) |
 
 ## Installing and running Microsoft PowerToys
 
@@ -41,19 +41,19 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and click on `Assets` at the bottom to show the files available in the release. Please use the appropriate PowerToys installer that matches your machine's architecture and install scope. For most, it is `x64` and per-user.
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.84%22
-[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.83%22
-[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.83.0/PowerToysUserSetup-0.83.0-x64.exe 
-[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.83.0/PowerToysUserSetup-0.83.0-arm64.exe 
-[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.83.0/PowerToysSetup-0.83.0-x64.exe 
-[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.83.0/PowerToysSetup-0.83.0-arm64.exe
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.85%22
+[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.84%22
+[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.84.0/PowerToysUserSetup-0.84.0-x64.exe
+[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.84.0/PowerToysUserSetup-0.84.0-arm64.exe
+[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.84.0/PowerToysSetup-0.84.0-x64.exe
+[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.84.0/PowerToysSetup-0.84.0-arm64.exe
  
 |  Description   | Filename | sha256 hash |
 |----------------|----------|-------------|
-| Per user - x64       | [PowerToysUserSetup-0.83.0-x64.exe][ptUserX64] | C78E24F21C611F2BD774D8460ADD4B9AC8519085CA1253941CB46129331AB8C8 |
-| Per user - ARM64     | [PowerToysUserSetup-0.83.0-arm64.exe][ptUserArm64] | BA1C16003D55587D523A41B960D4A03718123CA37577D5F2A75E151D7653E6D3 |
-| Machine wide - x64   | [PowerToysSetup-0.83.0-x64.exe][ptMachineX64] | 7EC435A10849187D21A383E56A69213C1FF110B7FECA65900D9319D2F8162F35 |
-| Machine wide - ARM64 | [PowerToysSetup-0.83.0-arm64.exe][ptMachineArm64] | 5E147424D1D12DFCA88DC4AA0657B7CC1F3B02812F1EBA3E564FAF691908D840 |
+| Per user - x64       | [PowerToysUserSetup-0.84.0-x64.exe][ptUserX64] | 6792180D697ED9FDF9AA7B3F0AB92767CF4C79B526715C802F545E2DCB201BE3 |
+| Per user - ARM64     | [PowerToysUserSetup-0.84.0-arm64.exe][ptUserArm64] | 3D071F009B5E3DBAD21D7450ADB53CBC85CAFB21016E44F414E2A03C188D2FAF |
+| Machine wide - x64   | [PowerToysSetup-0.84.0-x64.exe][ptMachineX64] | 67B7E685AAF635803A87D8EE96CA1AF5024910B0BF00A9277CD77C810D049446 |
+| Machine wide - ARM64 | [PowerToysSetup-0.84.0-arm64.exe][ptMachineArm64] | 259DA1EFB33A616CF64840B8D8AB84F86A43F61687578B43849D5DE11F77AF82 |
 
 This is our preferred method.
 
@@ -99,117 +99,99 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.83 - July 2024 Update
+### 0.84 - August 2024 Update
 
-In this release, we focused on stability and improvements.
+In this release, we focused on adding a new utility (PowerToys Workspaces), Advanced paste custom actions feature, stability, and improvements.
 
 **Highlights**
 
- - Awake Quality of Life changes, including changing the tray icon to reflect the current mode. Thanks [@dend](https://github.com/dend)!
- - Changes to general GPO policies and new policies for Mouse Without Borders. The names for some intune policy configuration sets might need to be updated as seen in https://github.com/MicrosoftDocs/windows-dev-docs/pull/5045/files . Thanks [@htcfreek](https://github.com/htcfreek)!
+ - New utility: PowerToys Workspaces - this utility can launch a set of applications to a custom layout and configuration on the desktop. App arrangements can be saved as a workspace and then relaunched with one click from the Workspaces Editor or from a desktop shortcut. In the editor, app configuration can be customized using CLI arguments and "launch as admin" modifiers, and app window sizes and positions can be updated as desired. This is our first public version of Workspaces and we are excited for you to try it out for yourself! Make sure to file issues you encounter on our GitHub so the team can continue to improve the utility.
+    - Known issues - the team is actively working on fixing these:
+       - Apps that launch as admin are unable to be repositioned to the desired layout.
+       - Border of "Remove" / "Add Back" app button in editor is not clearly visible on light themes.
+ - Added Awake --use-parent-pid CLI argument to attach to parent process. Thanks [@dend](https://github.com/dend)!
+ - Added custom actions - user-specified pre-defined prompts for the AI model. Additionally, actions (both standard and custom) are now searchable from prompt box and Ctrl + number in-app shortcuts are now applicable for first 9 search results.
+ - Ported all C++/CX code to C++/WinRT as part of a refactor and upgrade series aimed at enabling AOT (Ahead of Time) compilation for enhanced performance and reduced disk footprint.
 
 ### General
- - Reordered GPO policies, making it easier to find some policies. Thanks [@htcfreek](https://github.com/htcfreek)!
 
+ - Added DSC support for ImageResizer resize sizes property.
+ 
 ### Advanced Paste
 
- - Fixed CSV parser to support double quotes and escape delimiters when pasting as JSON. Thanks [@GhostVaibhav](https://github.com/GhostVaibhav)!
- - Improved double quote handling in the CSV parser when pasting as JSON. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Added custom actions - user-specified pre-defined prompts for the AI model. Additionally, actions (both standard and custom) are now searchable from prompt box and Ctrl + number in-app shortcuts are now applicable for first 9 search results.
 
 ### Awake
 
- - Different modes will now show different icons in the system tray. Thanks [@dend](https://github.com/dend), and [@niels9001](https://github.com/niels9001) for the icon design!
- - Removed the dependency on Windows Forms and used native Win32 APIs instead for the tray icon. Thanks [@dend](https://github.com/dend) and [@BrianPeek](https://github.com/BrianPeek)!
- - Fixed an issue where the UI would become non-responsive after selecting no time for the timed mode. Thanks [@dend](https://github.com/dend)!
- - Refactored code for easier maintenance. Thanks [@dend](https://github.com/dend)!
- - The tray icon will now be shown when running Awake standalone to signal mode. Thanks [@dend](https://github.com/dend)!
- - The tray icon tooltip shows how much time is left on the timer. Thanks [@dend](https://github.com/dend)!
- - Added DPI awareness to the tray icon context menu. Thanks [@dend](https://github.com/dend)!
+ - Added --use-parent-pid CLI argument to attach to parent process and fixed issue causing tray icon to disappear. Thanks [@dend](https://github.com/dend)!
 
-### Color Picker
+### Hosts File Editor
 
- - Added support to using the mouse wheel to scroll through the color history. Thanks [@Fefedu973](https://github.com/Fefedu973)!
+ -  Fixed save failure when the hosts file is hidden. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### File Explorer add-ons
 
- - Allow copying from the right-click menu in Monaco and Markdown previewers.
+ - Fixed multiple preview form positioning issues causing floating, detached windows, CoreWebView2 related exception and process leak. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
-### File Locksmith
+### Keyboard Manager
 
- - Fixed a crash when there were a big number of entries being shown by moving the opened files of a process to another dialog.
-
-### Installer
-
- - Fixed the path where DSC module files were installed for the user-scope installer. (This was a hotfix for 0.82)
-
-### Mouse Without Borders
-
- - Disabled non supported options in the old Mouse Without Borders UI. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Added new GPO policies to control the use of some features. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Convert RemapBufferRow to a struct with descriptive field names. Thanks [@masaru-iritani](https://github.com/masaru-iritani)!
+ - Fixed issue causing stuck Ctrl key when shortcuts contain AltGr key.
 
 ### Peek
 
- - Allow copying from the right-click menu in Dev files and Markdown previews.
-
-### PowerToys Run
-
- - Fixed a crash on Windows 11 build 22000. (This was a hotfix for 0.82)
- - Blocked a transparency fix code from running on Windows 10, since it was causing graphical glitches. (This was a hotfix for 0.82)
- - Accept speed abbreviations like kilometers per hour (kmph) in the Unit Converter plugin. Thanks [@GhostVaibhav](https://github.com/GhostVaibhav)!
- - Added settings to configure behavior of the "First week of year" and "First day of week" calculations in the DateTime plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Fixed wrong initial position of the PowerToys Run when switching between monitors with different dpi values.
- - Started allowing interchangeable use of / and \ in the registry plugin paths.
- - Added support to automatic sign-in after rebooting with the System plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Added suggested use example results to the Value Generator plugin. Thanks [@azlkiniue](https://github.com/azlkiniue)!
+ - Added long paths support. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Quick Accent
 
- - Added support for the Bulgarian character set. Thanks [@octastylos-pseudodipteros](https://github.com/octastylos-pseudodipteros)!
+ - Moved number superscripts and subscripts from Portuguese to all languages definition. Thanks [@octastylos-pseudodipteros](https://github.com/octastylos-pseudodipteros)!
 
-### Runner
+### PowerRename
 
- - Add code to handle release tags with an upper V when trying to detect new updates. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Updated the tooltip text of the replace box info button. Thanks [@Agnibaan](https://github.com/Agnibaan)!
+
+### PowerToys Run
+
+ - Fixed window positioning on start-up introduced in 0.83.
+ - Improved default web browser detection. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed volume ounces conversion to support both imperial and metric. Thanks [@GhostVaibhav](https://github.com/GhostVaibhav)!
+ - Fixed thread-safety issue causing results not to be shown on first launch.
+
+### Screen Ruler
+
+ - Added multiple measurements support for all measuring tools.
 
 ### Settings
 
- - Fixed the UI spacing in the "update available" card. Thanks [@Agnibaan](https://github.com/Agnibaan)!
- - Fixed the information bars in the Mouse Without Borders settings page to hide when the module is disabled. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Improved consistency of the icons used in the Mouse Without Borders settings page. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Improved action keyword information bar padding in the PowerToys Run plugins section. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Fixed a crash in the dashboard when Keyboard Manager Editor settings file became locked.
+ - Improved disabled animations InfoBar in Find My Mouse page. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+
+### Workspaces
+
+ - New utility: PowerToys Workspaces - this utility can launch a set of applications to a custom layout and configuration on the desktop. App arrangements can be saved as a workspace and then relaunched with one click from the Workspaces Editor or from a desktop shortcut. In the editor, app configuration can be customized using CLI arguments and "launch as admin" modifiers, and app window sizes and positions can be updated as desired. This is our first public version of Workspaces and we are excited for you to try it out for yourself! Make sure to file issues you encounter on our GitHub so the team can continue to improve the utility.
 
 ### Documentation
 
- - Added the RDP plugin to PowerToys Run thirdPartyRunPlugins.md docs. Thanks [@anthony81799](https://github.com/anthony81799)!
- - Added the GitHubRepo and ProcessKiller plugins to PowerToys Run thirdPartyRunPlugins.md docs. Thanks [@8LWXpg](https://github.com/8LWXpg)!
- - Fixed a typo in the 0.82.0 release notes in README. Thanks [@walex999](https://github.com/walex999)!
+ - Added ChatGPTPowerToys plugin mention to thirdPartyRunPlugins.md. Thanks [@ferraridavide](https://github.com/ferraridavide)!
 
 ### Development
 
- - Disabled FancyZone UI tests, to unblock PRs. We plan to bring them back in the future. (This was a hotfix for 0.82)
- - Fixed an issue where flakiness in CI was causing the installer custom actions DLL from being signed. (This was a hotfix for 0.82)
- - Upgraded the Microsoft.Windows.Compatibility dependency to 8.0.7.
- - Upgraded the System.Text.Json dependency to 8.0.4.
- - Upgraded the Microsoft.Data.Sqlite dependency to 8.0.7.
- - Upgraded the MSBuildCache dependency to 0.1.283-preview. Thanks [@dfederm](https://github.com/dfederm)!
- - Removed an unneeded /Zm compiler flag from Keyboard Manager Editor common build flags.
- - Fixed the winget publish action to handle upper case V in the tag name. Thanks [@mdanish-kh](https://github.com/mdanish-kh)!
- - Removed wildcard items from vcxproj files. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Removed the similar issues bot GitHub actions. Thanks [@craigloewen-msft](https://github.com/craigloewen-msft)!
- - Fixed CODEOWNERS to better protect changes in some files.
- - Switched machines being used in CI and pointed status badges in README to the new machines.
- - Fixed NU1503 build warnings when building PowerToys. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Use the MSTest meta dependency for running the tests instead of the individual testing packages. Thanks [@stan-sz](https://github.com/stan-sz)!
- - Added missing CppWinRT references.
+ - Ported all C++/CX code to C++/WinRT.
+ - Moved Version.props import to Directory.Build.props.
+ - Extracted self-containment related .csproj properties to src/Common.SelfContained.props.
+ - Unused and obsolete dependencies cleanup. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Extracted CSWinRT related .csproj properties to src/Common.Dotnet.CsWinRT.props.
+ - Upgraded Microsoft.Windows.CsWinRT to 2.0.8 and updated verifyDepsJsonLibraryVersions.ps1 to unblock PRs.
+ - Explicitly Set NuGet Audit Mode to Direct in Directory.Build.props to revert changes made with VS 17.12 update. Thanks [@snickler](https://github.com/snickler)!
+ - Upgraded UnitsNet to 5.56.0.
 
 #### What is being planned for version 0.84
 
-For [v0.84][github-next-release-work], we'll work on the items below:
+For [v0.85][github-next-release-work], we'll work on the items below:
 
  - Stability / bug fixes
- - New utility: Dev Projects
  - Language selection
  - New module: File Actions Menu
+ - New module: New+
 
 ## PowerToys Community
 

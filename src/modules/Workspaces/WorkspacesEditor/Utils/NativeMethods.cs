@@ -30,7 +30,7 @@ namespace WorkspacesEditor.Utils
         public static extern IntPtr GetForegroundWindow();
 
         [DllImport("user32.dll")]
-        public static extern uint GetWindowThreadProcessId(IntPtr hWnd, IntPtr processId);
+        public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out int processId);
 
         [DllImport("kernel32.dll")]
         public static extern uint GetCurrentThreadId();

@@ -151,4 +151,8 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::WORKSPACES_LAUNCH_EDITOR_EVENT;
     }
+    hstring Constants::WorkspacesHotkeyEvent()
+    {
+        return CommonSharedConstants::WORKSPACES_HOTKEY_EVENT;
+    }
 }
