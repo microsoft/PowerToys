@@ -10,11 +10,11 @@ namespace WindowsCommandPalette.Views;
 
 public sealed partial class DetailsControl : UserControl
 {
-    private readonly DetailsViewModel ViewModel;
+    public DetailsViewModel ViewModel { get; set; }
 
     public DetailsControl(DetailsViewModel vm)
     {
-        this.ViewModel = vm;
-        this.InitializeComponent();
+        ViewModel = vm;
+        InitializeComponent();
     }
 }
