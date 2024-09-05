@@ -14,19 +14,19 @@ namespace WindowsCommandPalette.Views;
 
 public sealed partial class FormPage : Page
 {
-    private FormPageViewModel? ViewModel;
     private readonly AdaptiveCardRenderer Renderer = new();
+    private FormPageViewModel? ViewModel;
 
     public FormPage()
     {
         this.InitializeComponent();
         UISettings settings = new UISettings();
+
         // yep this is the way to check if you're in light theme or dark.
         // yep it's this dumb
         var foreground = settings.GetColorValue(UIColorType.Foreground);
         var lightTheme = foreground.R < 128;
         Renderer.HostConfig = AdaptiveHostConfig.FromJsonString(lightTheme ? LightHostConfig : DarkHostConfig).HostConfig;
-
     }
 
     private void AddCardElement(FormViewModel form)
@@ -39,9 +39,15 @@ public sealed partial class FormPage : Page
         base.OnNavigatedTo(e);
 
         ViewModel = (FormPageViewModel?)e.Parameter;
-        if (ViewModel == null) return;
-        ViewModel.InitialRender().ContinueWith((t) => {
-            DispatcherQueue.TryEnqueue(() => {
+        if (ViewModel == null)
+        {
+            return;
+        }
+
+        ViewModel.InitialRender().ContinueWith((t) =>
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
                 foreach (var form in this.ViewModel.Forms)
                 {
                     AddCardElement(form);
@@ -61,7 +67,6 @@ public sealed partial class FormPage : Page
     {
         ViewModel?.GoBack();
     }
-
 
     private static readonly string DarkHostConfig = """
 {

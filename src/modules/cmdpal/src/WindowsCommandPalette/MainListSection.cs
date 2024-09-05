@@ -22,7 +22,7 @@ public sealed class MainListSection : ISection, INotifyCollectionChanged
     public string Title => "Actions";
 
     private readonly MainViewModel _mainViewModel;
-    private readonly DispatcherQueue DispatcherQueue = DispatcherQueue.GetForCurrentThread();
+    private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
     // Top-level list items, from builtin commands and extensions
     internal ObservableCollection<MainListItem> _Items { get; set; }
@@ -65,7 +65,7 @@ public sealed class MainListSection : ISection, INotifyCollectionChanged
 
     private void Bubble_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        DispatcherQueue.TryEnqueue(() =>
+        _dispatcherQueue.TryEnqueue(() =>
         {
             CollectionChanged?.Invoke(this, e);
         });

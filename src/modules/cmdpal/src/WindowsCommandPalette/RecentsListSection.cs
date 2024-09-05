@@ -18,7 +18,7 @@ public sealed class RecentsListSection : ListSection, INotifyCollectionChanged
 {
     public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
-    private readonly DispatcherQueue DispatcherQueue = DispatcherQueue.GetForCurrentThread();
+    private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     private readonly MainViewModel _mainViewModel;
 
     internal ObservableCollection<MainListItem> _Items { get; set; } = [];
@@ -46,7 +46,7 @@ public sealed class RecentsListSection : ListSection, INotifyCollectionChanged
 
     private void Bubble_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        DispatcherQueue.TryEnqueue(() =>
+        _dispatcherQueue.TryEnqueue(() =>
         {
             CollectionChanged?.Invoke(this, e);
         });

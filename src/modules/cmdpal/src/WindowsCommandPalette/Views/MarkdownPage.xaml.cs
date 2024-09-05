@@ -37,7 +37,8 @@ public sealed partial class MarkdownPage : Page, INotifyPropertyChanged
             return;
         }
 
-        ViewModel.InitialRender(this).ContinueWith((t) => {
+        ViewModel.InitialRender(this).ContinueWith((t) =>
+        {
             DispatcherQueue.TryEnqueue(() =>
             {
                 if (ViewModel.MarkdownContent.Length > 0)

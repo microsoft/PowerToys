@@ -16,7 +16,7 @@ public sealed class MainListPage : DynamicListPage
     private readonly MainListSection _mainSection;
     private readonly RecentsListSection _recentsListSection;
     private readonly FilteredListSection _filteredSection;
-    private readonly ISection[] _Sections;
+    private readonly ISection[] _sections;
 
     public MainListPage(MainViewModel viewModel)
     {
@@ -28,7 +28,7 @@ public sealed class MainListPage : DynamicListPage
 
         _mainViewModel.TopLevelCommands.CollectionChanged += TopLevelCommands_CollectionChanged;
 
-        _Sections = [
+        _sections = [
             _recentsListSection,
             _mainSection
         ];
@@ -40,7 +40,7 @@ public sealed class MainListPage : DynamicListPage
 
     public override ISection[] GetItems()
     {
-        return _Sections;
+        return _sections;
     }
 
     public override ISection[] GetItems(string query)
@@ -49,7 +49,7 @@ public sealed class MainListPage : DynamicListPage
         _mainSection.UpdateQuery(query);
         if (string.IsNullOrEmpty(query))
         {
-            return _Sections;
+            return _sections;
         }
         else
         {
@@ -71,7 +71,7 @@ public sealed class MainListPage : DynamicListPage
                         _mainSection._Items.Add(new MainListItem(listItem.Unsafe));
                     }
 
-                    _filteredSection._Items.Add(new MainListItem(listItem.Unsafe));
+                    _filteredSection.TopLevelItems.Add(new MainListItem(listItem.Unsafe));
                 }
             }
         }

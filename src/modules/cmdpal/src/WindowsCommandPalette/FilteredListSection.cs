@@ -23,13 +23,13 @@ public sealed class FilteredListSection : ISection, INotifyCollectionChanged
     public string Title => string.Empty;
 
     private readonly MainViewModel _mainViewModel;
-    private readonly DispatcherQueue DispatcherQueue = DispatcherQueue.GetForCurrentThread();
+    private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
     // Top-level list items, from builtin commands and extensions
-    internal ObservableCollection<MainListItem> _Items { get; set; }
+    public ObservableCollection<MainListItem> TopLevelItems { get; set; }
 
     // Apps, from the apps built in command.
-    private IEnumerable<IListItem> _apps => _mainViewModel.apps.GetItems().First().Items;
+    private IEnumerable<IListItem> AllApps => _mainViewModel.apps.GetItems().First().Items;
 
     // Results from the last searched text
     private IEnumerable<IListItem>? lastSearchResults;
@@ -40,21 +40,21 @@ public sealed class FilteredListSection : ISection, INotifyCollectionChanged
     // * OR one of:
     //   * Just the top-level actions (if there's no query)
     //   * OR the top-level actions AND the apps (if there's a query)
-    private IEnumerable<IListItem> itemsToEnumerate =>
+    private IEnumerable<IListItem> ItemsToEnumerate =>
         lastSearchResults != null ?
             lastSearchResults :
-            _Items.Concat(_apps);
+            TopLevelItems.Concat(AllApps);
 
-    internal string lastQuery = string.Empty;
+    private string _lastQuery = string.Empty;
 
     // Setting this will enumerate all the actions and installed apps.
     internal string Query
     {
-        get => lastQuery;
+        get => _lastQuery;
         set
         {
             if (string.IsNullOrEmpty(value) ||
-                !lastQuery.StartsWith(value, true, System.Globalization.CultureInfo.CurrentCulture))
+                !_lastQuery.StartsWith(value, true, System.Globalization.CultureInfo.CurrentCulture))
             {
                 lastSearchResults = null;
             }
@@ -66,8 +66,8 @@ public sealed class FilteredListSection : ISection, INotifyCollectionChanged
                 this.lastSearchResults = null;
             }
 
-            lastQuery = value;
-            var results = ListHelpers.FilterList(itemsToEnumerate, Query);
+            _lastQuery = value;
+            var results = ListHelpers.FilterList(ItemsToEnumerate, Query);
             this.lastSearchResults = string.IsNullOrEmpty(value) ? null : results;
         }
     }
@@ -81,20 +81,20 @@ public sealed class FilteredListSection : ISection, INotifyCollectionChanged
     //
     // instead run the query once when the action query changes, and store the
     // results.
-    public IListItem[] Items => itemsToEnumerate.Where(i => i != null).ToArray();
+    public IListItem[] Items => ItemsToEnumerate.Where(i => i != null).ToArray();
 
     public FilteredListSection(MainViewModel viewModel)
     {
         this._mainViewModel = viewModel;
 
         // TODO: We should probably just get rid of MainListItem entirely, so I'm leaveing these uncaught
-        _Items = new(_mainViewModel.TopLevelCommands.Where(wrapper => wrapper.Unsafe != null).Select(wrapper => new MainListItem(wrapper.Unsafe!)));
-        _Items.CollectionChanged += Bubble_CollectionChanged;
+        TopLevelItems = new(_mainViewModel.TopLevelCommands.Where(wrapper => wrapper.Unsafe != null).Select(wrapper => new MainListItem(wrapper.Unsafe!)));
+        TopLevelItems.CollectionChanged += Bubble_CollectionChanged;
     }
 
     private void Bubble_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        DispatcherQueue.TryEnqueue(() =>
+        _dispatcherQueue.TryEnqueue(() =>
         {
             CollectionChanged?.Invoke(this, e);
         });
@@ -102,7 +102,7 @@ public sealed class FilteredListSection : ISection, INotifyCollectionChanged
 
     internal void Reset()
     {
-        _Items.Clear();
+        TopLevelItems.Clear();
         lastSearchResults = null;
     }
 }
