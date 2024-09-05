@@ -12,7 +12,7 @@ public class ListHelpers
     // TODO! This has side effects! This calls UpdateQuery on fallback handlers and that's async
     public static int ScoreListItem(string query, IListItem listItem)
     {
-        bool isFallback = false;
+        var isFallback = false;
         if (listItem.FallbackHandler != null)
         {
             isFallback = true;
