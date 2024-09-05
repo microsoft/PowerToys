@@ -23,7 +23,7 @@
                 <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
 
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_AppLayouts" Style="{StaticResource TextButtonStyle}">
+                    <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_Workspaces" Style="{StaticResource TextButtonStyle}">
                         <TextBlock x:Uid="LearnMore_Workspaces" TextWrapping="Wrap" />
                     </HyperlinkButton>
                 </StackPanel>
