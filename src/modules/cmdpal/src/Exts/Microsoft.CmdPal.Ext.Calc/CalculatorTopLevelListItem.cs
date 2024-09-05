@@ -18,7 +18,7 @@ public class CalculatorTopLevelListItem : ListItem, IFallbackHandler
     {
         // In the case of the calculator, the ListItem itself is the fallback
         // handler, so that it can update it's Title and Subtitle accodingly.
-        _FallbackHandler = this;
+        FallbackHandler = this;
         Subtitle = "Type an equation";
     }
 

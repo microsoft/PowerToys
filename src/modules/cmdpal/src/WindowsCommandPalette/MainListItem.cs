@@ -19,11 +19,11 @@ public sealed class MainListItem : ListItem
     {
         _listItem = listItem;
 
-        _Title = _listItem.Title ?? _listItem.Command.Name;
-        _Subtitle = _listItem.Subtitle;
-        _MoreCommands = _listItem.MoreCommands;
-        _FallbackHandler = _listItem.FallbackHandler;
-        _Tags = _listItem.Tags;
+        Title = _listItem.Title ?? _listItem.Command.Name;
+        Subtitle = _listItem.Subtitle;
+        MoreCommands = _listItem.MoreCommands;
+        FallbackHandler = _listItem.FallbackHandler;
+        Tags = _listItem.Tags;
 
         Command.PropChanged += Action_PropertyChanged;
         _listItem.PropChanged += Action_PropertyChanged;
