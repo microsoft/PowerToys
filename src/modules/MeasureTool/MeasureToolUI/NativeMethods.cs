@@ -15,4 +15,13 @@ internal static class NativeMethods
     internal const uint SWP_NOMOVE = 0x0002;
     internal const uint SWP_NOACTIVATE = 0x0010;
     internal const uint SWP_SHOWWINDOW = 0x0040;
+
+    [DllImport("user32.dll", SetLastError = true)]
+    internal static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+    [DllImport("user32.dll")]
+    internal static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
+    internal const int GWL_STYLE = -16;
+    internal const int WS_CAPTION = 0x00C00000;
 }
