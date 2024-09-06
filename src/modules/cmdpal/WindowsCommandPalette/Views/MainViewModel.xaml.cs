@@ -20,14 +20,14 @@ namespace WindowsCommandPalette.Views;
 
 public sealed class MainViewModel : IDisposable
 {
-    private readonly QuitActionProvider _quitActionProvider = new();
-    private readonly ReloadExtensionsActionProvider _reloadActionProvider = new();
+    private readonly QuitCommandProvider _quitCommandProvider = new();
+    private readonly ReloadExtensionsCommandProvider _reloadCommandProvider = new();
 
     public AllAppsPage Apps { get; set; } = new();
 
-    public event TypedEventHandler<object, object?>? QuitRequested { add => _quitActionProvider.QuitRequested += value; remove => _quitActionProvider.QuitRequested -= value; }
+    public event TypedEventHandler<object, object?>? QuitRequested { add => _quitCommandProvider.QuitRequested += value; remove => _quitCommandProvider.QuitRequested -= value; }
 
-    public ObservableCollection<ActionsProviderWrapper> ActionsProvider { get; set; } = [];
+    public ObservableCollection<CommandProviderWrapper> ActionsProvider { get; set; } = [];
 
     public ObservableCollection<ExtensionObject<IListItem>> TopLevelCommands { get; set; } = [];
 
@@ -47,11 +47,11 @@ public sealed class MainViewModel : IDisposable
 
     internal MainViewModel()
     {
-        BuiltInCommands.Add(new BookmarksActionProvider());
-        BuiltInCommands.Add(new CalculatorActionProvider());
-        BuiltInCommands.Add(new SettingsActionProvider());
-        BuiltInCommands.Add(_quitActionProvider);
-        BuiltInCommands.Add(_reloadActionProvider);
+        BuiltInCommands.Add(new BookmarksCommandProvider());
+        BuiltInCommands.Add(new CalculatorCommandProvider());
+        BuiltInCommands.Add(new SettingsCommandProvider());
+        BuiltInCommands.Add(_quitCommandProvider);
+        BuiltInCommands.Add(_reloadCommandProvider);
 
         ResetTopLevel();
 
@@ -184,7 +184,7 @@ public sealed class MainViewModel : IDisposable
 
     public void Dispose()
     {
-        _quitActionProvider.Dispose();
-        _reloadActionProvider.Dispose();
+        _quitCommandProvider.Dispose();
+        _reloadCommandProvider.Dispose();
     }
 }

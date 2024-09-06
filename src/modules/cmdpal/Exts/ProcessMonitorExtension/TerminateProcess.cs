@@ -18,10 +18,10 @@ internal sealed class TerminateProcess : InvokableCommand
         Name = "End task";
     }
 
-    public override ActionResult Invoke()
+    public override CommandResult Invoke()
     {
         var process = Process.GetProcessById(_process.ProcessId);
         process.Kill();
-        return ActionResult.KeepOpen();
+        return CommandResult.KeepOpen();
     }
 }

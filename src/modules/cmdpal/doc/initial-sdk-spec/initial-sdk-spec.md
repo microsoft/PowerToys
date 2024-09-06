@@ -488,6 +488,7 @@ information that the host application will then use to render the page.
 
 ```csharp
 interface IPage requires ICommand {
+    String Title { get; };
     Boolean Loading { get; };
 }
 ```
@@ -499,6 +500,9 @@ Pages can be one of several types, each detailed below:
 * [List](#List)
 * [Markdown](#Markdown)
 * [Form](#Form)
+
+If a page returns a null or empty `Title`, DevPal will display the `Name` of the
+`ICommand` instead.
 
 Pages have a `Loading` property which they can use to indicate to DevPal that
 the content is still loading. When `Loading` is `true`, DevPal will show an
@@ -551,10 +555,11 @@ interface ICommandContextItem requires IContextItem {
 interface ISeparatorContextItem requires IContextItem {}
 
 interface IListItem requires INotifyPropChanged {
+    IconDataType Icon{ get; };
     String Title{ get; };
     String Subtitle{ get; };
     ICommand Command{ get; };
-    IContextItem[] MoreCommands{ get; };  // TODO: name should be better
+    IContextItem[] MoreCommands{ get; };
     ITag[] Tags{ get; };
     IDetails Details{ get; };
     IFallbackHandler FallbackHandler{ get; };
@@ -595,9 +600,14 @@ they like.
 * For example: An "Agenda" extension may want to have one section for each day,
   with each section's items containing the events for the day.
 
+![Another mockup of the elements of a list item](./list-elements-mock-002.png)
 
-Each ListItem has one default `Action`. This is the action that will be run when
-the user selects the item. ListItems may also have a list of `MoreCommands`.
+Each ListItem has one default `Command`. This is the command that will be run
+when the user selects the item. If the IListItem has a non-null `Icon`, that
+icon will be displayed in the list. If the `Icon` is null, DevPal will display
+the `Icon` of the list item's `Command` instead.
+
+ ListItems may also have a list of `MoreCommands`.
 These are additional commands that the user can take on the item. These will be
 displayed to the user in the "More commands" flyout when the user has that item
 selected. As the user moves focus through the list to select different items, we
@@ -897,7 +907,6 @@ simple formatting options.
 
 ```csharp
 interface IMarkdownPage requires IPage {
-    String Title { get; };
     String[] Bodies(); // TODO! should this be an IBody, so we can make it observable?
     IDetails Details();
     IContextItem[] Commands { get; };
@@ -1289,6 +1298,7 @@ classDiagram
     }
     IPage --|> ICommand
     class IPage  {
+        String Title
         Boolean Loading
     }
 
@@ -1311,7 +1321,6 @@ classDiagram
 
     IMarkdownPage --|> IPage
     class IMarkdownPage  {
-        String Title
         String[] Bodies()
         IDetails Details()
         IContextItem[] Commands
@@ -1346,6 +1355,7 @@ classDiagram
 
     %% IListItem --|> INotifyPropChanged
     class IListItem  {
+        IconDataType Icon
         String Title
         String Subtitle
         ICommand Command

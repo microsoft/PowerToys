@@ -7,7 +7,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace ProcessMonitorExtension;
 
-internal sealed class ProcessMonitorActionProvider : ICommandProvider
+internal sealed class ProcessMonitorCommandProvider : ICommandProvider
 {
     public string DisplayName => "Process Monitor Commands";
 

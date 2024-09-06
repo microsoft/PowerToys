@@ -27,7 +27,7 @@ public class UrlAction : InvokableCommand
         Url = url;
     }
 
-    public override ActionResult Invoke()
+    public override CommandResult Invoke()
     {
         var target = _url;
         try
@@ -47,7 +47,7 @@ public class UrlAction : InvokableCommand
             System.Diagnostics.Debug.WriteLine($"Error launching URL: {ex.Message}");
         }
 
-        return ActionResult.Dismiss();
+        return CommandResult.Dismiss();
     }
 
     internal static Uri? GetUri(string url)

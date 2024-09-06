@@ -23,7 +23,7 @@ internal sealed class MastodonExtensionPage : ListPage
             new ListSection()
             {
                 Items = [
-                    new ListItem(new NoOpAction()) { Title = "TODO: Implement your extension here" }
+                    new ListItem(new NoOpCommand()) { Title = "TODO: Implement your extension here" }
                 ],
             }
         ];

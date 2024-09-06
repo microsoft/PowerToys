@@ -26,6 +26,6 @@ public class CopyTextAction : InvokableCommand
         Clipboard.SetContent(dataPackage);
 
         // ClipboardHelper.SetText(Text);
-        return ActionResult.KeepOpen();
+        return CommandResult.KeepOpen();
     }
 }

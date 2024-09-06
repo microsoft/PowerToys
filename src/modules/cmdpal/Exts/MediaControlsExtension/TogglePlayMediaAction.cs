@@ -17,13 +17,13 @@ public sealed class TogglePlayMediaAction : InvokableCommand
         Icon = new(string.Empty);
     }
 
-    public override ActionResult Invoke()
+    public override CommandResult Invoke()
     {
         if (MediaSession != null)
         {
             _ = MediaSession.TryTogglePlayPauseAsync();
         }
 
-        return ActionResult.KeepOpen();
+        return CommandResult.KeepOpen();
     }
 }

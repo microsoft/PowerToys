@@ -36,6 +36,6 @@ internal sealed class OpenInTerminalAction : InvokableCommand
             System.Diagnostics.Debug.WriteLine($"Error launching Windows Terminal: {ex.Message}");
         }
 
-        return ActionResult.Dismiss();
+        return CommandResult.Dismiss();
     }
 }

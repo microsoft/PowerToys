@@ -4,7 +4,7 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class InvokableCommand : Action, IInvokableCommand
+public class InvokableCommand : Command, IInvokableCommand
 {
     public virtual ICommandResult Invoke() => throw new NotImplementedException();
 }

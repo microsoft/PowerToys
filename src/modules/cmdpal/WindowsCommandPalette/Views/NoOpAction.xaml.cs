@@ -11,6 +11,6 @@ public sealed class NoOpAction : InvokableCommand
 {
     public override ICommandResult Invoke()
     {
-        return ActionResult.KeepOpen();
+        return CommandResult.KeepOpen();
     }
 }

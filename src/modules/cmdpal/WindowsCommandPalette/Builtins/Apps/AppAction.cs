@@ -59,9 +59,9 @@ internal sealed class AppAction : InvokableCommand
         }
     }
 
-    public override ActionResult Invoke()
+    public override CommandResult Invoke()
     {
         _ = Launch();
-        return ActionResult.GoHome();
+        return CommandResult.GoHome();
     }
 }

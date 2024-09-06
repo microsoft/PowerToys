@@ -22,9 +22,9 @@ internal sealed class SwitchToProcess : InvokableCommand
         this.Name = "Switch to";
     }
 
-    public override ActionResult Invoke()
+    public override CommandResult Invoke()
     {
         SwitchToThisWindow(process.Process.MainWindowHandle, true);
-        return ActionResult.KeepOpen();
+        return CommandResult.KeepOpen();
     }
 }

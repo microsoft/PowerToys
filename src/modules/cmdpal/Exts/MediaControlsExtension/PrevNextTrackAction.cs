@@ -41,6 +41,6 @@ internal sealed class PrevNextTrackAction : InvokableCommand
             _ = _mediaSession.TrySkipNextAsync();
         }
 
-        return ActionResult.KeepOpen();
+        return CommandResult.KeepOpen();
     }
 }

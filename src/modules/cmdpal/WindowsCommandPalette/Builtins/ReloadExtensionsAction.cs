@@ -17,7 +17,7 @@ public class ReloadExtensionsAction : InvokableCommand, IFallbackHandler
 
     public override ICommandResult Invoke()
     {
-        return ActionResult.GoHome();
+        return CommandResult.GoHome();
     }
 
     public void UpdateQuery(string query)

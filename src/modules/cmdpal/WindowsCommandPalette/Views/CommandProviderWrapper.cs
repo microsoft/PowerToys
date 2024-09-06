@@ -8,26 +8,26 @@ using Windows.Win32;
 
 namespace WindowsCommandPalette.Views;
 
-public sealed class ActionsProviderWrapper
+public sealed class CommandProviderWrapper
 {
     public bool IsExtension => extensionWrapper != null;
 
     private readonly bool isValid;
 
-    private ICommandProvider ActionProvider { get; }
+    private ICommandProvider CommandProvider { get; }
 
     private readonly IExtensionWrapper? extensionWrapper;
     private IListItem[] _topLevelItems = [];
 
     public IListItem[] TopLevelItems => _topLevelItems;
 
-    public ActionsProviderWrapper(ICommandProvider provider)
+    public CommandProviderWrapper(ICommandProvider provider)
     {
-        ActionProvider = provider;
+        CommandProvider = provider;
         isValid = true;
     }
 
-    public ActionsProviderWrapper(IExtensionWrapper extension)
+    public CommandProviderWrapper(IExtensionWrapper extension)
     {
         extensionWrapper = extension;
         var extensionImpl = extension.GetExtensionObject();
@@ -36,7 +36,7 @@ public sealed class ActionsProviderWrapper
             throw new ArgumentException("extension didn't actually implement ICommandProvider");
         }
 
-        ActionProvider = provider;
+        CommandProvider = provider;
         isValid = true;
     }
 
@@ -47,7 +47,7 @@ public sealed class ActionsProviderWrapper
             return;
         }
 
-        var t = new Task<IListItem[]>(() => ActionProvider.TopLevelCommands());
+        var t = new Task<IListItem[]>(() => CommandProvider.TopLevelCommands());
         t.Start();
         var commands = await t.ConfigureAwait(false);
 
@@ -72,7 +72,7 @@ public sealed class ActionsProviderWrapper
         }
     }
 
-    public override bool Equals(object? obj) => obj is ActionsProviderWrapper wrapper && isValid == wrapper.isValid;
+    public override bool Equals(object? obj) => obj is CommandProviderWrapper wrapper && isValid == wrapper.isValid;
 
     public override int GetHashCode()
     {

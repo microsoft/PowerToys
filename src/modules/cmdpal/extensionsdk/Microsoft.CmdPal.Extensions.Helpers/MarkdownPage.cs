@@ -4,31 +4,10 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class MarkdownPage : Action, IMarkdownPage
+public class MarkdownPage : Page, IMarkdownPage
 {
-    private bool _loading;
     private ITag[] _tags = [];
-    private string _title = "";
 
-    public string Title
-    {
-        get => !string.IsNullOrEmpty(_title) ? _title : Name;
-        set
-        {
-            _title = value;
-            OnPropertyChanged(nameof(Title));
-        }
-    }
-
-    public bool Loading
-    {
-        get => _loading;
-        set
-        {
-            _loading = value;
-            OnPropertyChanged(nameof(Loading));
-        }
-    }
     public ITag[] Tags
     {
         get => _tags;

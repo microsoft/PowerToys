@@ -20,10 +20,10 @@ internal sealed class OpenPathAction(string target) : InvokableCommand
         });
     }
 
-    public override ActionResult Invoke()
+    public override CommandResult Invoke()
     {
         LaunchTarget(_target).Start();
 
-        return ActionResult.GoHome();
+        return CommandResult.GoHome();
     }
 }

@@ -4,18 +4,17 @@
 
 using System;
 using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.Extensions.Helpers;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-namespace Microsoft.CmdPal.Ext.Calc;
+namespace Microsoft.CmdPal.Ext.Settings;
 
-public class CalculatorActionProvider : ICommandProvider
+public class SettingsCommandProvider : ICommandProvider
 {
-    public string DisplayName => $"Calculator";
+    public string DisplayName => $"Settings";
 
-    private readonly CalculatorTopLevelListItem calculatorCommand = new();
+    private readonly SettingsPage settingsPage = new();
 
-    public CalculatorActionProvider()
+    public SettingsCommandProvider()
     {
     }
 
@@ -27,6 +26,6 @@ public class CalculatorActionProvider : ICommandProvider
 
     public IListItem[] TopLevelCommands()
     {
-        return [calculatorCommand];
+        return [new ListItem(settingsPage) { Subtitle = "CmdPal settings" }];
     }
 }

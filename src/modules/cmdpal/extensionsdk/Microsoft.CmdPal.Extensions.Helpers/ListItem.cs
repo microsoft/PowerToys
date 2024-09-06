@@ -8,6 +8,7 @@ namespace Microsoft.CmdPal.Extensions.Helpers;
 
 public class ListItem : BaseObservable, IListItem
 {
+    private IconDataType? _icon;
     private string _title = string.Empty;
     private string _subtitle = string.Empty;
     private ITag[] _tags = [];
@@ -15,6 +16,16 @@ public class ListItem : BaseObservable, IListItem
     private ICommand? _command;
     private IContextItem[] _moreCommands = [];
     private IFallbackHandler? _fallbackHandler;
+
+    public IconDataType? Icon
+    {
+        get => _icon ?? _command?.Icon;
+        set
+        {
+            _icon = value;
+            OnPropertyChanged(nameof(Icon));
+        }
+    }
 
     public string Title
     {

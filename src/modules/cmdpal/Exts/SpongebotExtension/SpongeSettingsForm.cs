@@ -56,12 +56,12 @@ internal sealed class SpongeSettingsForm : Form
 
     public override string StateJson() => throw new NotImplementedException();
 
-    public override ActionResult SubmitForm(string payload)
+    public override CommandResult SubmitForm(string payload)
     {
         var formInput = JsonNode.Parse(payload);
         if (formInput == null)
         {
-            return ActionResult.GoHome();
+            return CommandResult.GoHome();
         }
 
         // get the name and url out of the values
@@ -77,6 +77,6 @@ internal sealed class SpongeSettingsForm : Form
 """;
 
         File.WriteAllText(SpongebotPage.StateJsonPath(), json);
-        return ActionResult.GoHome();
+        return CommandResult.GoHome();
     }
 }

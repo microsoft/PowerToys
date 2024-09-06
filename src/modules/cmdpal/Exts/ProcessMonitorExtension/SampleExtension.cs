@@ -26,7 +26,7 @@ public sealed class SampleExtension : IExtension
         switch (providerType)
         {
             case ProviderType.Commands:
-                return new ProcessMonitorActionProvider();
+                return new ProcessMonitorCommandProvider();
             default:
                 return null;
         }

@@ -11,7 +11,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
-public class BookmarksActionProvider : ICommandProvider
+public class BookmarksCommandProvider : ICommandProvider
 {
     public string DisplayName => $"Bookmarks";
 
@@ -20,7 +20,7 @@ public class BookmarksActionProvider : ICommandProvider
     private readonly List<ICommand> _commands = [];
     private readonly AddBookmarkPage _addNewCommand = new();
 
-    public BookmarksActionProvider()
+    public BookmarksCommandProvider()
     {
         _addNewCommand.AddedAction += AddNewCommand_AddedAction;
     }

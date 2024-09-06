@@ -20,7 +20,7 @@ public class QuitAction : InvokableCommand, IFallbackHandler
     public override ICommandResult Invoke()
     {
         QuitRequested?.Invoke(this, new());
-        return ActionResult.KeepOpen();
+        return CommandResult.KeepOpen();
     }
 
     public void UpdateQuery(string query)

@@ -1,11 +1,10 @@
 ﻿namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class ListPage : Action, IListPage
+public class ListPage : Page, IListPage
 {
     private string _placeholderText = string.Empty;
     private string _searchText = string.Empty;
     private bool _showDetails;
-    private bool _loading;
     private IFilters? _filters;
     private IGridProperties? _gridProperties;
 
@@ -36,16 +35,6 @@ public class ListPage : Action, IListPage
         {
             _showDetails = value;
             OnPropertyChanged(nameof(ShowDetails));
-        }
-    }
-
-    public bool Loading
-    {
-        get => _loading;
-        set
-        {
-            _loading = value;
-            OnPropertyChanged(nameof(Loading));
         }
     }
 

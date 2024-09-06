@@ -91,7 +91,7 @@ public sealed partial class MainPage : Page
         // TODO! I don't understand async enough to get why this has to be ConfigureAwait(false)
         foreach (var provider in ViewModel.BuiltInCommands)
         {
-            var wrapper = new ActionsProviderWrapper(provider);
+            var wrapper = new CommandProviderWrapper(provider);
             ViewModel.ActionsProvider.Add(wrapper);
 
             await LoadTopLevelCommandsFromProvider(wrapper).ConfigureAwait(false);
@@ -271,7 +271,7 @@ public sealed partial class MainPage : Page
         try
         {
             await extension.StartExtensionAsync();
-            var wrapper = new ActionsProviderWrapper(extension);
+            var wrapper = new CommandProviderWrapper(extension);
             ViewModel.ActionsProvider.Add(wrapper);
             await LoadTopLevelCommandsFromProvider(wrapper);
         }
@@ -281,11 +281,11 @@ public sealed partial class MainPage : Page
         }
     }
 
-    private async Task LoadTopLevelCommandsFromProvider(ActionsProviderWrapper actionProvider)
+    private async Task LoadTopLevelCommandsFromProvider(CommandProviderWrapper CommandProvider)
     {
         // TODO! do this better async
-        await actionProvider.LoadTopLevelCommands().ConfigureAwait(false);
-        foreach (var i in actionProvider.TopLevelItems)
+        await CommandProvider.LoadTopLevelCommands().ConfigureAwait(false);
+        foreach (var i in CommandProvider.TopLevelItems)
         {
             ViewModel.TopLevelCommands.Add(new(i));
         }

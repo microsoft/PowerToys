@@ -18,9 +18,9 @@ internal sealed class CommentAction : InvokableCommand
         Icon = new("\ue8f2"); // chat bubbles
     }
 
-    public override ActionResult Invoke()
+    public override CommandResult Invoke()
     {
         Process.Start(new ProcessStartInfo(_post.CommentsLink) { UseShellExecute = true });
-        return ActionResult.KeepOpen();
+        return CommandResult.KeepOpen();
     }
 }

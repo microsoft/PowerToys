@@ -77,15 +77,15 @@ internal sealed class SettingsForm : Form
 
     public override string StateJson() => throw new NotImplementedException();
 
-    public override ActionResult SubmitForm(string payload)
+    public override CommandResult SubmitForm(string payload)
     {
         var formInput = JsonNode.Parse(payload)?.AsObject();
         if (formInput == null)
         {
-            return ActionResult.GoHome();
+            return CommandResult.GoHome();
         }
 
         // Application.Current.GetService<ILocalSettingsService>().SaveSettingAsync("GlobalHotkey", formInput["hotkey"]?.ToString() ?? string.Empty);
-        return ActionResult.GoHome();
+        return CommandResult.GoHome();
     }
 }

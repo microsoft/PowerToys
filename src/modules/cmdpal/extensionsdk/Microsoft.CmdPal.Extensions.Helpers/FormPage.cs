@@ -4,19 +4,7 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class FormPage : Action, IFormPage
+public class FormPage : Page, IFormPage
 {
-    private bool _loading;
-
-    public bool Loading
-    {
-        get => _loading;
-        set
-        {
-            _loading = value;
-            OnPropertyChanged(nameof(Loading));
-        }
-    }
-
     public virtual IForm[] Forms() => throw new NotImplementedException();
 }

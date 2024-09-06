@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "MastodonExtension (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "MastodonExtension (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

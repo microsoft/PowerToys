@@ -39,6 +39,6 @@ public sealed class Bookmarks
     {
         var jsonString = JsonSerializer.Serialize(data, _jsonOptions);
 
-        File.WriteAllText(BookmarksActionProvider.StateJsonPath(), jsonString);
+        File.WriteAllText(BookmarksCommandProvider.StateJsonPath(), jsonString);
     }
 }

@@ -8,7 +8,7 @@ using Windows.Foundation;
 
 namespace WindowsCommandPalette.BuiltinCommands;
 
-public class ReloadExtensionsActionProvider : ICommandProvider
+public class ReloadExtensionsCommandProvider : ICommandProvider
 {
     public string DisplayName => string.Empty;
 

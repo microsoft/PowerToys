@@ -124,6 +124,7 @@ namespace Microsoft.CmdPal.Extensions
     
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     interface IPage requires ICommand {
+        String Title { get; };
         Boolean Loading { get; };
     }
     
@@ -150,10 +151,11 @@ namespace Microsoft.CmdPal.Extensions
     
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     interface IListItem requires INotifyPropChanged {
+        IconDataType Icon{ get; };
         String Title{ get; };
         String Subtitle{ get; };
         ICommand Command{ get; };
-        IContextItem[] MoreCommands{ get; };  // TODO: name should be better
+        IContextItem[] MoreCommands{ get; };
         ITag[] Tags{ get; };
         IDetails Details{ get; };
         IFallbackHandler FallbackHandler{ get; };
@@ -188,7 +190,6 @@ namespace Microsoft.CmdPal.Extensions
     
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     interface IMarkdownPage requires IPage {
-        String Title { get; };
         String[] Bodies(); // TODO! should this be an IBody, so we can make it observable?
         IDetails Details();
         IContextItem[] Commands { get; };

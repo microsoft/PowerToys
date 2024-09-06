@@ -31,7 +31,7 @@ public class CalculatorAction : InvokableCommand
             // ClipboardHelper.SetText(_result);
         }
 
-        return ActionResult.KeepOpen();
+        return CommandResult.KeepOpen();
     }
 
     internal void SetResult(string result, bool success)

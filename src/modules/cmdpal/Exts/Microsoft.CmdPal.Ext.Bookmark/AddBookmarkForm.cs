@@ -58,12 +58,12 @@ internal sealed class AddBookmarkForm : Form
 
     public override string StateJson() => throw new NotImplementedException();
 
-    public override ActionResult SubmitForm(string payload)
+    public override CommandResult SubmitForm(string payload)
     {
         var formInput = JsonNode.Parse(payload);
         if (formInput == null)
         {
-            return ActionResult.GoHome();
+            return CommandResult.GoHome();
         }
 
         // get the name and url out of the values
@@ -100,7 +100,7 @@ internal sealed class AddBookmarkForm : Form
         };
 
         // Construct a new json blob with the name and url
-        var jsonPath = BookmarksActionProvider.StateJsonPath();
+        var jsonPath = BookmarksCommandProvider.StateJsonPath();
         var data = Bookmarks.ReadFromFile(jsonPath);
 
         data.Data.Add(formData);
@@ -108,6 +108,6 @@ internal sealed class AddBookmarkForm : Form
         Bookmarks.WriteToFile(jsonPath, data);
 
         AddedAction?.Invoke(this, null);
-        return ActionResult.GoHome();
+        return CommandResult.GoHome();
     }
 }

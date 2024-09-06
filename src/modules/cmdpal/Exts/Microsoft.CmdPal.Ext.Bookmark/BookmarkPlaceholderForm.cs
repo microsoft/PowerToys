@@ -71,7 +71,7 @@ internal sealed class BookmarkPlaceholderForm : Form
 
     public override string StateJson() => throw new NotImplementedException();
 
-    public override ActionResult SubmitForm(string payload)
+    public override CommandResult SubmitForm(string payload)
     {
         var target = _bookmark;
 
@@ -80,7 +80,7 @@ internal sealed class BookmarkPlaceholderForm : Form
         var formObject = formInput?.AsObject();
         if (formObject == null)
         {
-            return ActionResult.GoHome();
+            return CommandResult.GoHome();
         }
 
         foreach (var (key, value) in formObject)
@@ -107,6 +107,6 @@ internal sealed class BookmarkPlaceholderForm : Form
             System.Diagnostics.Debug.WriteLine($"Error launching URL: {ex.Message}");
         }
 
-        return ActionResult.GoHome();
+        return CommandResult.GoHome();
     }
 }

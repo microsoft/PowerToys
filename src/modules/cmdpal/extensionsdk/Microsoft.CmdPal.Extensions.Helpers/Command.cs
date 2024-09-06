@@ -4,7 +4,7 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class Action : BaseObservable, ICommand
+public class Command : BaseObservable, ICommand
 {
     private string _name = string.Empty;
     private IconDataType _icon = new(string.Empty);

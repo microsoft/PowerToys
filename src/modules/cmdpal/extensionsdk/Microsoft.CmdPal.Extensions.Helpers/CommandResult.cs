@@ -4,7 +4,7 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class ActionResult : ICommandResult
+public class CommandResult : ICommandResult
 {
     // TODO: is Args needed?
     private ICommandResultArgs? _args;
@@ -15,25 +15,25 @@ public class ActionResult : ICommandResult
 
     public CommandResultKind Kind => _kind;
 
-    public static ActionResult Dismiss()
+    public static CommandResult Dismiss()
     {
-        return new ActionResult()
+        return new CommandResult()
         {
             _kind = CommandResultKind.Dismiss
         };
     }
 
-    public static ActionResult GoHome()
+    public static CommandResult GoHome()
     {
-        return new ActionResult()
+        return new CommandResult()
         {
             _kind = CommandResultKind.GoHome,
             _args = null,
         };
     }
-    public static ActionResult KeepOpen()
+    public static CommandResult KeepOpen()
     {
-        return new ActionResult()
+        return new CommandResult()
         {
             _kind = CommandResultKind.KeepOpen,
             _args = null,
