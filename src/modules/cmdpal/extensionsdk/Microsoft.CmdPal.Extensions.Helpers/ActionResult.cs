@@ -6,11 +6,12 @@ namespace Microsoft.CmdPal.Extensions.Helpers;
 
 public class ActionResult : ICommandResult
 {
-    private ICommandResultArgs _args;
-    
+    // TODO: is Args needed?
+    private ICommandResultArgs? _args;
     private CommandResultKind _kind = CommandResultKind.Dismiss;
-    
-    public ICommandResultArgs Args => _args;
+
+    // TODO: is Args needed?
+    public ICommandResultArgs? Args => _args;
 
     public CommandResultKind Kind => _kind;
 
@@ -26,14 +27,16 @@ public class ActionResult : ICommandResult
     {
         return new ActionResult()
         {
-            _kind = CommandResultKind.GoHome
+            _kind = CommandResultKind.GoHome,
+            _args = null,
         };
     }
     public static ActionResult KeepOpen()
     {
         return new ActionResult()
         {
-            _kind = CommandResultKind.KeepOpen
+            _kind = CommandResultKind.KeepOpen,
+            _args = null,
         };
     }
 }

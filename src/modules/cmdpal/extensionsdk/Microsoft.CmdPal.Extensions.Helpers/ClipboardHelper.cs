@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-
+/*
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -122,7 +122,7 @@ public static partial class ClipboardHelper
                     if (data != IntPtr.Zero)
                     {
                         data = GlobalLock(data);
-                        text = Marshal.PtrToStringUni(data);
+                        text = Marshal.PtrToStringUni(data) ?? string.Empty;
                         GlobalUnlock(data);
                         return true;
                     }
@@ -136,7 +136,7 @@ public static partial class ClipboardHelper
                     if (data != IntPtr.Zero)
                     {
                         data = GlobalLock(data);
-                        text = Marshal.PtrToStringAnsi(data);
+                        text = Marshal.PtrToStringAnsi(data) ?? string.Empty;
                         GlobalUnlock(data);
                         return true;
                     }
@@ -268,7 +268,7 @@ public static partial class ClipboardHelper
             return;
         }
 
-        Exception exception = null;
+        Exception? exception = null;
         var thread = new Thread(() =>
         {
             try
@@ -294,3 +294,4 @@ public static partial class ClipboardHelper
         }
     }
 }
+*/

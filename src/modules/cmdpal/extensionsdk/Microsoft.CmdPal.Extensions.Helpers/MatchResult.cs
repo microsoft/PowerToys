@@ -38,10 +38,7 @@ public class MatchResult
 
     public int RawScore
     {
-        get
-        {
-            return _rawScore;
-        }
+        get => _rawScore;
 
         set
         {

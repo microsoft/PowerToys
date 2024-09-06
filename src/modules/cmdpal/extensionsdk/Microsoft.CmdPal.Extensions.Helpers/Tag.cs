@@ -12,7 +12,7 @@ public class Tag : BaseObservable, ITag
     private IconDataType _icon = new(string.Empty);
     private string _text = string.Empty;
     private string _ToolTip = string.Empty;
-    private ICommand? _command = null;
+    private ICommand? _command;
 
     public Color Color
     {

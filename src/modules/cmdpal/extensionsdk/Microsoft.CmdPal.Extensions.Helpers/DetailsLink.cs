@@ -6,6 +6,7 @@ namespace Microsoft.CmdPal.Extensions.Helpers;
 
 public class DetailsLink : IDetailsLink
 {
-    public Uri Link { get; set; }
-    public string Text { get; set; }
+    public Uri Link { get; set; } = new(string.Empty);
+
+    public string Text { get; set; } = string.Empty;
 }

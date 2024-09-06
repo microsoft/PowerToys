@@ -6,8 +6,8 @@ public class ListPage : Action, IListPage
     private string _searchText = string.Empty;
     private bool _showDetails;
     private bool _loading;
-    private IFilters _filters;
-    private IGridProperties _gridProperties;
+    private IFilters? _filters;
+    private IGridProperties? _gridProperties;
 
     public string PlaceholderText
     {
@@ -49,7 +49,7 @@ public class ListPage : Action, IListPage
         }
     }
 
-    public IFilters Filters
+    public IFilters? Filters
     {
         get => _filters;
         set
@@ -59,7 +59,7 @@ public class ListPage : Action, IListPage
         }
     }
 
-    public IGridProperties GridProperties
+    public IGridProperties? GridProperties
     {
         get => _gridProperties;
         set
