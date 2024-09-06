@@ -92,7 +92,7 @@ public sealed partial class MainPage : Page
         foreach (var provider in ViewModel.BuiltInCommands)
         {
             var wrapper = new ActionsProviderWrapper(provider);
-            ViewModel.CommandsProviders.Add(wrapper);
+            ViewModel.ActionsProvider.Add(wrapper);
 
             await LoadTopLevelCommandsFromProvider(wrapper).ConfigureAwait(false);
         }
@@ -139,7 +139,7 @@ public sealed partial class MainPage : Page
 
     private void TryAllowForeground(ICommand action)
     {
-        foreach (var provider in ViewModel.CommandsProviders)
+        foreach (var provider in ViewModel.ActionsProvider)
         {
             if (!provider.IsExtension)
             {
@@ -272,7 +272,7 @@ public sealed partial class MainPage : Page
         {
             await extension.StartExtensionAsync();
             var wrapper = new ActionsProviderWrapper(extension);
-            ViewModel.CommandsProviders.Add(wrapper);
+            ViewModel.ActionsProvider.Add(wrapper);
             await LoadTopLevelCommandsFromProvider(wrapper);
         }
         catch (Exception ex)

@@ -8,7 +8,7 @@ using Windows.Win32;
 
 namespace WindowsCommandPalette.Views;
 
-internal sealed class ActionsProviderWrapper
+public sealed class ActionsProviderWrapper
 {
     public bool IsExtension => extensionWrapper != null;
 

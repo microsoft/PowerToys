@@ -20,13 +20,14 @@ namespace WindowsCommandPalette.Views;
 
 public sealed class MainViewModel : IDisposable
 {
-    internal readonly AllAppsPage apps = new();
-    internal readonly QuitActionProvider quitActionProvider = new();
-    internal readonly ReloadExtensionsActionProvider reloadActionProvider = new();
+    private readonly QuitActionProvider _quitActionProvider = new();
+    private readonly ReloadExtensionsActionProvider _reloadActionProvider = new();
 
-    public event TypedEventHandler<object, object?>? QuitRequested { add => quitActionProvider.QuitRequested += value; remove => quitActionProvider.QuitRequested -= value; }
+    public AllAppsPage Apps { get; set; } = new();
 
-    internal readonly ObservableCollection<ActionsProviderWrapper> CommandsProviders = new();
+    public event TypedEventHandler<object, object?>? QuitRequested { add => _quitActionProvider.QuitRequested += value; remove => _quitActionProvider.QuitRequested -= value; }
+
+    public ObservableCollection<ActionsProviderWrapper> ActionsProvider { get; set; } = [];
 
     public ObservableCollection<ExtensionObject<IListItem>> TopLevelCommands { get; set; } = [];
 
@@ -49,8 +50,8 @@ public sealed class MainViewModel : IDisposable
         BuiltInCommands.Add(new BookmarksActionProvider());
         BuiltInCommands.Add(new CalculatorActionProvider());
         BuiltInCommands.Add(new SettingsActionProvider());
-        BuiltInCommands.Add(quitActionProvider);
-        BuiltInCommands.Add(reloadActionProvider);
+        BuiltInCommands.Add(_quitActionProvider);
+        BuiltInCommands.Add(_reloadActionProvider);
 
         ResetTopLevel();
 
@@ -67,7 +68,7 @@ public sealed class MainViewModel : IDisposable
     public void ResetTopLevel()
     {
         TopLevelCommands.Clear();
-        TopLevelCommands.Add(new(new ListItem(apps)));
+        TopLevelCommands.Add(new(new ListItem(Apps)));
     }
 
     internal void RequestHide()
@@ -108,7 +109,7 @@ public sealed class MainViewModel : IDisposable
             return false;
         }).Select(i => i!);
 
-    public IEnumerable<IListItem> AppItems => LoadedApps ? apps.GetItems().First().Items : [];
+    public IEnumerable<IListItem> AppItems => LoadedApps ? Apps.GetItems().First().Items : [];
 
     public IEnumerable<ExtensionObject<IListItem>> Everything => TopLevelCommands
         .Concat(AppItems.Select(i => new ExtensionObject<IListItem>(i)))
@@ -183,7 +184,7 @@ public sealed class MainViewModel : IDisposable
 
     public void Dispose()
     {
-        quitActionProvider.Dispose();
-        reloadActionProvider.Dispose();
+        _quitActionProvider.Dispose();
+        _reloadActionProvider.Dispose();
     }
 }
