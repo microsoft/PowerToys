@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2024-08-26
+last updated: 2024-09-06
 issue id: n/a
 ---
 
@@ -67,6 +67,7 @@ functionality.
     - [Using the Clipboard](#using-the-clipboard)
   - [Advanced scenarios](#advanced-scenarios)
     - [Status messages](#status-messages)
+  - [Class diagram](#class-diagram)
   - [Future considerations](#future-considerations)
     - [Arbitrary parameters and arguments](#arbitrary-parameters-and-arguments)
     - [URI activation](#uri-activation)
@@ -1271,6 +1272,164 @@ enum PageStatusKind {
 
 push pop sounds wrong. Maybe `AddStatus` and `ClearStatus`?
 
+## Class diagram
+
+This is a diagram attempting to show the relationships between the various types we've defined for the SDK. Some elements are omitted for clarity. (Notably, `IconDataType` and `IPropChanged`, which are used in many places.)
+
+The notes on the arrows help indicate the multiplicity of the relationship.
+* "*" means 0 or more (for arrays)
+* "?" means 0 or 1 (for optional/nullable properties)
+* "1" means exactly 1 (for required properties)
+
+```mermaid
+classDiagram
+    class ICommand {
+        String Name
+        IconDataType Icon
+    }
+    IPage --|> ICommand
+    class IPage  {
+        Boolean Loading
+    }
+
+    IInvokableCommand --|> ICommand
+    class IInvokableCommand  {
+        ICommandResult Invoke()
+    }
+
+    class IForm {
+        String TemplateJson()
+        String DataJson()
+        String StateJson()
+        ICommandResult SubmitForm(String payload)
+    }
+    IFormPage --|> IPage
+    class IFormPage  {
+        IForm[] Forms()
+    }
+    IForm "*" *-- IFormPage
+
+    IMarkdownPage --|> IPage
+    class IMarkdownPage  {
+        String Title
+        String[] Bodies()
+        IDetails Details()
+        IContextItem[] Commands
+    }
+    %% IMarkdownPage *-- IDetails
+    IContextItem "*" *-- IMarkdownPage
+    IDetails "?" *-- IMarkdownPage
+    %%%%%%%%%
+
+    class IFilterItem
+
+    ISeparatorFilterItem --|> IFilterItem
+    class ISeparatorFilterItem
+
+    IFilter --|> IFilterItem
+    class IFilter  {
+        String Id
+        String Name
+        IconDataType Icon
+    }
+
+    class IFilters {
+        String CurrentFilterId
+        IFilterItem[] AvailableFilters()
+    }
+    IFilterItem "*" *-- IFilters
+
+    class IFallbackHandler {
+        void UpdateQuery(String query)
+    }
+
+
+    %% IListItem --|> INotifyPropChanged
+    class IListItem  {
+        String Title
+        String Subtitle
+        ICommand Command
+        IContextItem[] MoreCommands
+        ITag[] Tags
+        IDetails Details
+        IFallbackHandler FallbackHandler
+    }
+    IContextItem "*" *-- IListItem
+    IDetails "?" *-- IListItem
+    ICommand "?" *-- IListItem
+    ITag "*" *-- IListItem
+    IFallbackHandler "?" *-- IListItem
+
+    class ISection {
+        String Title
+        IListItem[] Items
+    }
+    IListItem "*" *-- ISection
+
+    class IGridProperties  {
+        Windows.Foundation.Size TileSize
+    }
+
+    IListPage --|> IPage
+    class IListPage  {
+        String SearchText
+        String PlaceholderText
+        Boolean ShowDetails
+        IFilters Filters
+        IGridProperties GridProperties
+
+        ISection[] GetItems()
+    }
+    IGridProperties "?" *-- IListPage
+    ISection "*" *-- IListPage
+    IFilters "*" *-- IListPage
+
+    IDynamicListPage --|> IListPage
+    class IDynamicListPage  {
+        ISection[] GetItems(String query)
+    }
+
+    class IDetails {
+        IconDataType HeroImage
+        String Title
+        String Body
+        IDetailsElement[] Metadata
+    }
+
+    class ITag {
+        IconDataType Icon
+        String Text
+        Windows.UI.Color Color
+        String ToolTip
+        ICommand Command
+    }
+    ICommand "?" *-- ITag
+
+    %%%%%%
+    class IContextItem
+
+    ISeparatorContextItem --|> IContextItem
+    class ISeparatorContextItem
+    ICommandContextItem --|> IContextItem
+    class ICommandContextItem  {
+        ICommand Command
+        String Tooltip
+        Boolean IsCritical
+    }
+    ICommand "?" *-- ICommandContextItem
+
+
+
+    class ICommandProvider {
+        String DisplayName
+        IconDataType Icon
+
+        IListItem[] TopLevelCommands()
+    }
+    IListItem "*" *-- ICommandProvider
+```
+
+
 ## Future considerations
 
 ### Arbitrary parameters and arguments
@@ -1355,6 +1514,7 @@ We should consider how to allow for extensions to specify a custom element to be
 shown to the user when the page stops loading and the list of elements filtered
 is empty.
 Is that just a `Details` object? A markdown body?
+
 
 ## Footnotes
 
