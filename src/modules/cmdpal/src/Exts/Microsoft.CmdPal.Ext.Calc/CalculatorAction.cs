@@ -4,6 +4,7 @@
 
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
+using Windows.ApplicationModel.DataTransfer;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -23,7 +24,11 @@ public class CalculatorAction : InvokableCommand
     {
         if (_success)
         {
-            ClipboardHelper.SetText(_result);
+            var dataPackage = new DataPackage();
+            dataPackage.SetText(_result);
+            Clipboard.SetContent(dataPackage);
+
+            // ClipboardHelper.SetText(_result);
         }
 
         return ActionResult.KeepOpen();

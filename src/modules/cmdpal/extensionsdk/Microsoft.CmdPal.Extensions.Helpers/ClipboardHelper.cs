@@ -1,6 +1,7 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+/*
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -25,11 +26,12 @@ public static partial class ClipboardHelper
             return _internalClipboard ?? string.Empty;
         }
 
-        string tool = string.Empty;
-        string args = string.Empty;
-            string clipboardText = string.Empty;
-            ExecuteOnStaThread(() => GetTextImpl(out clipboardText));
-            return clipboardText;
+        var tool = string.Empty;
+        var args = string.Empty;
+        var clipboardText = string.Empty;
+
+        ExecuteOnStaThread(() => GetTextImpl(out clipboardText));
+        return clipboardText;
     }
 
     public static void SetText(string text)
@@ -40,10 +42,10 @@ public static partial class ClipboardHelper
             return;
         }
 
-        string tool = string.Empty;
-        string args = string.Empty;
-            ExecuteOnStaThread(() => SetClipboardData(Tuple.Create(text, CF_UNICODETEXT)));
-            return;
+        var tool = string.Empty;
+        var args = string.Empty;
+        ExecuteOnStaThread(() => SetClipboardData(Tuple.Create(text, CF_UNICODETEXT)));
+        return;
     }
 
     public static void SetRtf(string plainText, string rtfText)
@@ -120,7 +122,7 @@ public static partial class ClipboardHelper
                     if (data != IntPtr.Zero)
                     {
                         data = GlobalLock(data);
-                        text = Marshal.PtrToStringUni(data);
+                        text = Marshal.PtrToStringUni(data) ?? string.Empty;
                         GlobalUnlock(data);
                         return true;
                     }
@@ -134,7 +136,7 @@ public static partial class ClipboardHelper
                     if (data != IntPtr.Zero)
                     {
                         data = GlobalLock(data);
-                        text = Marshal.PtrToStringAnsi(data);
+                        text = Marshal.PtrToStringAnsi(data) ?? string.Empty;
                         GlobalUnlock(data);
                         return true;
                     }
@@ -183,8 +185,8 @@ public static partial class ClipboardHelper
 
     private static bool SetSingleClipboardData(string text, uint format)
     {
-        IntPtr hGlobal = IntPtr.Zero;
-        IntPtr data = IntPtr.Zero;
+        var hGlobal = IntPtr.Zero;
+        var data = IntPtr.Zero;
 
         try
         {
@@ -216,7 +218,7 @@ public static partial class ClipboardHelper
                 return false;
             }
 
-            IntPtr dataCopy = GlobalLock(hGlobal);
+            var dataCopy = GlobalLock(hGlobal);
             if (dataCopy == IntPtr.Zero)
             {
                 return false;
@@ -254,7 +256,7 @@ public static partial class ClipboardHelper
     private static void ExecuteOnStaThread(Func<bool> action)
     {
         const int RetryCount = 5;
-        int tries = 0;
+        var tries = 0;
 
         if (Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
         {
@@ -266,7 +268,7 @@ public static partial class ClipboardHelper
             return;
         }
 
-        Exception exception = null;
+        Exception? exception = null;
         var thread = new Thread(() =>
         {
             try
@@ -292,3 +294,4 @@ public static partial class ClipboardHelper
         }
     }
 }
+*/

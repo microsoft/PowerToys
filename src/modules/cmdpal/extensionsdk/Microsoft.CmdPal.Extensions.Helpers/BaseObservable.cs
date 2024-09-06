@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
@@ -11,6 +15,8 @@ public class BaseObservable : INotifyPropChanged
     protected void OnPropertyChanged(string propertyName)
     {
         if (PropChanged != null)
-            PropChanged.Invoke(this, new Microsoft.CmdPal.Extensions.PropChangedEventArgs(propertyName));
+        {
+            PropChanged.Invoke(this, new PropChangedEventArgs(propertyName));
+        }
     }
 }
