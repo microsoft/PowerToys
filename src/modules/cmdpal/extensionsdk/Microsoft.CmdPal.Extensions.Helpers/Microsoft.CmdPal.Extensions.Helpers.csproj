@@ -1,12 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
   <PropertyGroup>
-    <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <DebugType>pdbonly</DebugType>
-    <!-- Remove once new CsWinRT version is available and Uri.cs is removed -->
-    <NoWarn>0436</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
