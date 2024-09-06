@@ -18,12 +18,12 @@ public sealed class ListPageViewModel : PageViewModel
 
     internal IListPage Page => (IListPage)this.pageAction;
 
-    private bool isDynamic => Page is IDynamicListPage;
+    private bool IsDynamic => Page is IDynamicListPage;
 
-    private IDynamicListPage? dynamicPage => Page as IDynamicListPage;
+    private IDynamicListPage? IsDynamicPage => Page as IDynamicListPage;
 
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-    internal string Query = string.Empty;
+    private string _query = string.Empty;
 
     public ListPageViewModel(IListPage page)
         : base(page)
@@ -42,8 +42,8 @@ public sealed class ListPageViewModel : PageViewModel
         {
             try
             {
-                return dynamicPage != null ?
-                    dynamicPage.GetItems(Query) :
+                return IsDynamicPage != null ?
+                    IsDynamicPage.GetItems(_query) :
                     this.Page.GetItems();
             }
             catch (Exception ex)
@@ -98,13 +98,13 @@ public sealed class ListPageViewModel : PageViewModel
 
     internal async Task<Collection<SectionInfoList>> GetFilteredItems(string query)
     {
-        if (query == Query)
+        if (query == _query)
         {
             return FilteredItems;
         }
 
-        Query = query;
-        if (isDynamic)
+        _query = query;
+        if (IsDynamic)
         {
             await UpdateListItems();
             return FilteredItems;
@@ -125,7 +125,7 @@ public sealed class ListPageViewModel : PageViewModel
                     Items
                         .SelectMany(section => section)
                         .Select(vm => vm.ListItem.Unsafe),
-                    Query).Select(li => new ListItemViewModel(li));
+                    _query).Select(li => new ListItemViewModel(li));
 
                 var newSection = new SectionInfoList(null, allFilteredItems);
                 return [newSection];
