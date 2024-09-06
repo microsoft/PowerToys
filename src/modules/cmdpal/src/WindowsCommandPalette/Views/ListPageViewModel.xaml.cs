@@ -16,7 +16,7 @@ public sealed class ListPageViewModel : PageViewModel
     internal readonly ObservableCollection<SectionInfoList> Items = [];
     internal readonly ObservableCollection<SectionInfoList> FilteredItems = [];
 
-    internal IListPage Page => (IListPage)this.pageAction;
+    internal IListPage Page => (IListPage)this.PageAction;
 
     private bool IsDynamic => Page is IDynamicListPage;
 

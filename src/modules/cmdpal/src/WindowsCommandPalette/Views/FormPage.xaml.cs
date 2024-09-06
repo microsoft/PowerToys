@@ -14,8 +14,9 @@ namespace WindowsCommandPalette.Views;
 
 public sealed partial class FormPage : Page
 {
-    private readonly AdaptiveCardRenderer Renderer = new();
-    private FormPageViewModel? ViewModel;
+    private readonly AdaptiveCardRenderer _renderer = new();
+
+    public FormPageViewModel? ViewModel { get; set; }
 
     public FormPage()
     {
@@ -26,12 +27,12 @@ public sealed partial class FormPage : Page
         // yep it's this dumb
         var foreground = settings.GetColorValue(UIColorType.Foreground);
         var lightTheme = foreground.R < 128;
-        Renderer.HostConfig = AdaptiveHostConfig.FromJsonString(lightTheme ? LightHostConfig : DarkHostConfig).HostConfig;
+        _renderer.HostConfig = AdaptiveHostConfig.FromJsonString(lightTheme ? LightHostConfig : DarkHostConfig).HostConfig;
     }
 
     private void AddCardElement(FormViewModel form)
     {
-        form.RenderToXaml(Renderer);
+        form.RenderToXaml(_renderer);
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)

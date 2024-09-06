@@ -10,7 +10,7 @@ namespace DeveloperCommandPalette;
 
 public sealed class ContextItemViewModel : INotifyPropertyChanged
 {
-    internal ICommand Command;
+    public ICommand Command { get; set; }
 
     internal string Name => Command.Name;
 
@@ -22,9 +22,9 @@ public sealed class ContextItemViewModel : INotifyPropertyChanged
 
     internal IconElement IcoElement => Microsoft.Terminal.UI.IconPathConverter.IconMUX(Icon.Icon);
 
-    public ContextItemViewModel(ICommand action)
+    public ContextItemViewModel(ICommand cmd)
     {
-        this.Command = action;
+        this.Command = cmd;
         this.Command.PropChanged += Action_PropertyChanged;
     }
 

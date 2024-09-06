@@ -9,11 +9,9 @@ namespace DeveloperCommandPalette;
 
 public class PageViewModel
 {
-    private bool nested;
+    public bool Nested { get; set; }
 
-    public bool Nested { get => nested; set => nested = value; }
-
-    protected IPage pageAction { get; }
+    public IPage PageAction { get; }
 
     // public IPage PageAction { get => pageAction; set => pageAction = value; }
     public ActionViewModel Command { get; }
@@ -26,8 +24,8 @@ public class PageViewModel
 
     protected PageViewModel(IPage page)
     {
-        this.pageAction = page;
-        this.Command = new(page);
+        PageAction = page;
+        Command = new(page);
     }
 
     public void DoAction(ActionViewModel action)

@@ -10,7 +10,7 @@ namespace WindowsCommandPalette.Views;
 
 public sealed class FormPageViewModel : PageViewModel
 {
-    internal IFormPage Page => (IFormPage)this.pageAction;
+    internal IFormPage Page => (IFormPage)this.PageAction;
 
     internal ObservableCollection<FormViewModel> Forms = new();
 

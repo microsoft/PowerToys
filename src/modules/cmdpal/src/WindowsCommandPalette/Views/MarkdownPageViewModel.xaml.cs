@@ -9,7 +9,7 @@ namespace WindowsCommandPalette.Views;
 
 public sealed class MarkdownPageViewModel : PageViewModel
 {
-    public IMarkdownPage Page => (IMarkdownPage)pageAction;
+    public IMarkdownPage Page => (IMarkdownPage)PageAction;
 
     public string[] MarkdownContent { get; set; } = [string.Empty];
 
