@@ -4,12 +4,9 @@
 
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Linq;
-using CmdPal.Models;
-using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.UI.Dispatching;
 using WindowsCommandPalette.Views;
 
 namespace DeveloperCommandPalette;

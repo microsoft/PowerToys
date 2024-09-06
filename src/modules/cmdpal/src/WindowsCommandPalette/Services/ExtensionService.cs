@@ -6,8 +6,8 @@ using CmdPal.Models;
 using Microsoft.CmdPal.Common.Contracts;
 using Microsoft.CmdPal.Common.Extensions;
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.UI.Xaml;
 using Microsoft.CmdPal.Extensions;
+using Microsoft.UI.Xaml;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.AppExtensions;
 using Windows.Foundation.Collections;
@@ -168,8 +168,9 @@ public class ExtensionService : IExtensionService, IDisposable
                 var extensions = await GetInstalledAppExtensionsAsync();
                 foreach (var extension in extensions)
                 {
-                    var (CmdPalProvider, classIds) = await GetCmdPalExtensionPropertiesAsync(extension);
-                    if (CmdPalProvider == null || classIds.Count == 0)
+                    var (cmdPalProvider, classIds) = await GetCmdPalExtensionPropertiesAsync(extension);
+
+                    if (cmdPalProvider == null || classIds.Count == 0)
                     {
                         continue;
                     }
@@ -178,7 +179,7 @@ public class ExtensionService : IExtensionService, IDisposable
                     {
                         var extensionWrapper = new ExtensionWrapper(extension, classId);
 
-                        var supportedInterfaces = GetSubPropertySet(CmdPalProvider, "SupportedInterfaces");
+                        var supportedInterfaces = GetSubPropertySet(cmdPalProvider, "SupportedInterfaces");
                         if (supportedInterfaces is not null)
                         {
                             foreach (var supportedInterface in supportedInterfaces)

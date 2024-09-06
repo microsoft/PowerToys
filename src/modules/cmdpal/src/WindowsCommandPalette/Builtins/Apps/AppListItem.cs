@@ -13,17 +13,28 @@ internal sealed class AppListItem : ListItem
     public AppListItem(AppItem app)
         : base(new AppAction(app))
     {
-        this._app = app;
-        this.Title = app.Name;
-        this.Subtitle = app.Subtitle;
-        this.Details = new Details() { Title = this.Title, HeroImage = this.Command.Icon, Body = "### App" };
-        this.Tags = [new Tag() { Text = "App" }];
+        _app = app;
+        Title = app.Name;
+        Subtitle = app.Subtitle;
+        Tags = [new Tag() { Text = "App" }];
+
+        Details = new Details()
+        {
+            Title = this.Title,
+            HeroImage = Command?.Icon ?? new(string.Empty),
+            Body = "### App",
+        };
 
         if (string.IsNullOrEmpty(app.UserModelId))
         {
             // Win32 exe or other non UWP app
             MoreCommands = [
-                new CommandContextItem(new OpenPathAction(app.DirPath) { Name = "Open location", Icon = new("\ue838") })
+                new CommandContextItem(
+                    new OpenPathAction(app.DirPath)
+                    {
+                        Name = "Open location",
+                        Icon = new("\ue838"),
+                    })
             ];
         }
         else

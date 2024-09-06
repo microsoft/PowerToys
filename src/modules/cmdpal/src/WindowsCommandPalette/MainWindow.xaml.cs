@@ -32,15 +32,19 @@ public sealed partial class MainWindow : Window
     private MainViewModel _mainViewModel { get; init; }
 
     private readonly HWND hwnd;
-    private const uint DOT_KEY = 0xBE;
-    private const uint WM_HOTKEY = 0x0312;
     private WNDPROC? origPrc;
     private WNDPROC? hotKeyPrc;
 
-    private Windows.Win32.Foundation.LRESULT HotKeyPrc(Windows.Win32.Foundation.HWND hwnd,
-            uint uMsg,
-            Windows.Win32.Foundation.WPARAM wParam,
-            Windows.Win32.Foundation.LPARAM lParam)
+#pragma warning disable SA1310 // Field names should not contain underscore
+    private const uint DOT_KEY = 0xBE;
+    private const uint WM_HOTKEY = 0x0312;
+#pragma warning restore SA1310 // Field names should not contain underscore
+
+    private LRESULT HotKeyPrc(
+        HWND hwnd,
+        uint uMsg,
+        WPARAM wParam,
+        LPARAM lParam)
     {
         if (uMsg == WM_HOTKEY)
         {
@@ -317,7 +321,7 @@ public sealed partial class MainWindow : Window
         return modifierString + keyString;
     }
 
-    private static (VirtualKey key, VirtualKeyModifiers modifiers) StringToKeybinding(string keybinding)
+    private static (VirtualKey Key, VirtualKeyModifiers Modifiers) StringToKeybinding(string keybinding)
     {
         var parts = keybinding.Split('+');
         var modifiers = VirtualKeyModifiers.None;
@@ -351,9 +355,10 @@ public sealed partial class MainWindow : Window
         return (key, modifiers);
     }
 
-    private static (uint vk, Windows.Win32.UI.Input.KeyboardAndMouse.HOT_KEY_MODIFIERS mod) UwpToWin32(VirtualKey key, VirtualKeyModifiers modifiers)
+    private static (uint Vk, Windows.Win32.UI.Input.KeyboardAndMouse.HOT_KEY_MODIFIERS Mod) UwpToWin32(VirtualKey key, VirtualKeyModifiers modifiers)
     {
-        Windows.Win32.UI.Input.KeyboardAndMouse.HOT_KEY_MODIFIERS mod = new();
+        Windows.Win32.UI.Input.KeyboardAndMouse.HOT_KEY_MODIFIERS mod = default;
+
         if (modifiers.HasFlag(VirtualKeyModifiers.Control))
         {
             mod |= Windows.Win32.UI.Input.KeyboardAndMouse.HOT_KEY_MODIFIERS.MOD_CONTROL;

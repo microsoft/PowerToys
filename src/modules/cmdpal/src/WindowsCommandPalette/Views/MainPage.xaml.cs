@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 using DeveloperCommandPalette;
 using Microsoft.CmdPal.Common.Extensions;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Extensions;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
-using Microsoft.CmdPal.Extensions;
 
 namespace WindowsCommandPalette.Views;
 

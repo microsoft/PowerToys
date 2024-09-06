@@ -4,49 +4,50 @@
 
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
-using Windows.Foundation;
 
 namespace DeveloperCommandPalette;
 
 public sealed class MainListItem : ListItem
 {
-    private readonly IListItem _listItem;
-
-    public IListItem Item => _listItem;
+    public IListItem Item { get; set; }
 
     internal MainListItem(IListItem listItem)
         : base(listItem.Command)
     {
-        _listItem = listItem;
+        Item = listItem;
 
-        Title = _listItem.Title ?? _listItem.Command.Name;
-        Subtitle = _listItem.Subtitle;
-        MoreCommands = _listItem.MoreCommands;
-        FallbackHandler = _listItem.FallbackHandler;
-        Tags = _listItem.Tags;
+        Title = Item.Title ?? Item.Command.Name;
+        Subtitle = Item.Subtitle;
+        MoreCommands = Item.MoreCommands;
+        FallbackHandler = Item.FallbackHandler;
+        Tags = Item.Tags;
 
-        Command.PropChanged += Action_PropertyChanged;
-        _listItem.PropChanged += Action_PropertyChanged;
+        if (Command != null)
+        {
+            Command.PropChanged += Action_PropertyChanged;
+        }
+
+        Item.PropChanged += Action_PropertyChanged;
     }
 
-    private void Action_PropertyChanged(object sender, Microsoft.CmdPal.Extensions.PropChangedEventArgs args)
+    private void Action_PropertyChanged(object sender, PropChangedEventArgs args)
     {
         if (args.PropertyName == "Name")
         {
-            this.Title = !string.IsNullOrEmpty(this._listItem.Title) ? this._listItem.Title : Command.Name;
+            Title = !string.IsNullOrEmpty(Item.Title) ? Item.Title : Command?.Name ?? string.Empty;
             OnPropertyChanged(nameof(Title));
         }
         else if (args.PropertyName == nameof(Title))
         {
-            this.Title = this._listItem.Title;
+            Title = Item.Title;
         }
         else if (args.PropertyName == nameof(Subtitle))
         {
-            this.Subtitle = this._listItem.Subtitle;
+            Subtitle = Item.Subtitle;
         }
         else if (args.PropertyName == nameof(MoreCommands))
         {
-            this.MoreCommands = this._listItem.MoreCommands;
+            MoreCommands = Item.MoreCommands;
         }
 
         OnPropertyChanged(args.PropertyName);

@@ -7,25 +7,18 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using CmdPal.Models;
 using DeveloperCommandPalette;
-using Microsoft.CmdPal.Common.Extensions;
-using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
 using Microsoft.CmdPal.Ext.Settings;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 using Windows.Foundation;
-using Windows.Win32;
 using WindowsCommandPalette.BuiltinCommands;
 using WindowsCommandPalette.BuiltinCommands.AllApps;
 
 namespace WindowsCommandPalette.Views;
 
-public sealed class MainViewModel
+public sealed class MainViewModel : IDisposable
 {
     internal readonly AllAppsPage apps = new();
     internal readonly QuitActionProvider quitActionProvider = new();
@@ -61,7 +54,8 @@ public sealed class MainViewModel
         // On a background thread, warm up the app cache since we want it more often than not
         new Task(() =>
         {
-            var _ = AppCache.Instance.Value;
+            _ = AppCache.Instance.Value;
+
             LoadedApps = true;
             AppsReady?.Invoke(this, null);
         }).Start();
@@ -182,5 +176,11 @@ public sealed class MainViewModel
             { /* log something */
             }
         }
+    }
+
+    public void Dispose()
+    {
+        quitActionProvider.Dispose();
+        reloadActionProvider.Dispose();
     }
 }

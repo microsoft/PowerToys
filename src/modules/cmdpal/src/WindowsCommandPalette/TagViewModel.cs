@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
+using Microsoft.CmdPal.Extensions;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.CmdPal.Extensions;
 using Windows.UI;
 
 namespace DeveloperCommandPalette;
