@@ -14,55 +14,56 @@ using Windows.System;
 
 namespace WindowsCommandPalette.Views;
 
-public sealed class FormViewModel : System.ComponentModel.INotifyPropertyChanged
+public sealed class FormViewModel : INotifyPropertyChanged
 {
-    internal readonly IForm form;
-    internal AdaptiveCardParseResult? card;
-    internal RenderedAdaptiveCard? RenderedAdaptiveCard;
-    internal string TemplateJson = "{}";
-    internal string DataJson = "{}";
+    private readonly IForm _form;
+    private AdaptiveCardParseResult? _card;
+    private RenderedAdaptiveCard? _renderedAdaptiveCard;
+    private string _templateJson = "{}";
+    private string _dataJson = "{}";
 
     public event TypedEventHandler<object, SubmitFormArgs>? RequestSubmitForm;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public bool ShouldDisplay => RenderedAdaptiveCard?.FrameworkElement != null;
+    public bool ShouldDisplay => _renderedAdaptiveCard?.FrameworkElement != null;
 
-    public FrameworkElement? RenderedChildElement => RenderedAdaptiveCard?.FrameworkElement;
+    public FrameworkElement? RenderedChildElement => _renderedAdaptiveCard?.FrameworkElement;
 
     public FormViewModel(IForm form)
     {
-        this.form = form;
+        this._form = form;
     }
 
     internal void InitialRender()
     {
         // var t = new Task<bool>(() => {
-        this.TemplateJson = this.form.TemplateJson();
+        this._templateJson = this._form.TemplateJson();
+
         try
         {
-            this.DataJson = this.form.DataJson();
+            this._dataJson = this._form.DataJson();
         }
         catch (Exception)
         {
-            this.DataJson = "{}";
+            this._dataJson = "{}";
         }
 
         // return true;
         // });
         // t.Start();
         // await t;
-        AdaptiveCardTemplate template = new(TemplateJson);
-        var cardJson = template.Expand(DataJson);
-        this.card = AdaptiveCard.FromJsonString(cardJson);
+        AdaptiveCardTemplate template = new(_templateJson);
+        var cardJson = template.Expand(_dataJson);
+        this._card = AdaptiveCard.FromJsonString(cardJson);
     }
 
     internal void RenderToXaml(AdaptiveCardRenderer renderer)
     {
-        if (this.card != null)
+        if (this._card != null)
         {
-            RenderedAdaptiveCard = renderer.RenderAdaptiveCard(card.AdaptiveCard);
-            RenderedAdaptiveCard.Action += RenderedAdaptiveCard_Action;
+            _renderedAdaptiveCard = renderer.RenderAdaptiveCard(_card.AdaptiveCard);
+            _renderedAdaptiveCard.Action += RenderedAdaptiveCard_Action;
 
             var handlers = this.PropertyChanged;
             handlers?.Invoke(this, new PropertyChangedEventArgs(nameof(ShouldDisplay)));
@@ -86,7 +87,7 @@ public sealed class FormViewModel : System.ComponentModel.INotifyPropertyChanged
 
             // Process them as desired
             var handlers = RequestSubmitForm;
-            handlers?.Invoke(this, new() { FormData = inputs, Form = form });
+            handlers?.Invoke(this, new() { FormData = inputs, Form = _form });
         }
     }
 }
