@@ -13,7 +13,7 @@ namespace DeveloperCommandPalette;
 // cribbed heavily from
 //
 // https://github.com/microsoft/WindowsAppSDK-Samples/tree/main/Samples/AppLifecycle/Instancing/cs2/cs-winui-packaged/CsWinUiDesktopInstancing
-sealed class Program
+internal sealed class Program
 {
     private static App? app;
 
@@ -21,7 +21,7 @@ sealed class Program
     //
     // Main cannot be async. If it is, then the clipboard won't work, and neither will narrator.
     [STAThread]
-    static int Main(string[] args)
+    private static int Main(string[] args)
     {
         WinRT.ComWrappersSupport.InitializeComWrappers();
         var isRedirect = DecideRedirection();
