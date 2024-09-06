@@ -7,14 +7,11 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace DeveloperCommandPalette;
 
-public sealed class ActionViewModel(ICommand model)
+public sealed class ActionViewModel(ICommand cmd)
 {
-    public ICommand Command => model;
+    public ICommand Command => cmd;
 
-    internal readonly string Name = model.Name;
-    internal readonly string Icon = model.Icon.Icon;
+    internal bool CanInvoke => cmd is IInvokableCommand;
 
-    internal bool CanInvoke => model is IInvokableCommand;
-
-    internal IconElement IcoElement => Microsoft.Terminal.UI.IconPathConverter.IconMUX(Icon);
+    internal IconElement IcoElement => Microsoft.Terminal.UI.IconPathConverter.IconMUX(Command.Icon.Icon);
 }
