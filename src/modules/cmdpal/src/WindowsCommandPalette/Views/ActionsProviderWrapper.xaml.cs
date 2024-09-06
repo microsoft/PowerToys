@@ -2,27 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.ObjectModel;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.WindowsRuntime;
-using CmdPal.Models;
-using DeveloperCommandPalette;
-using Microsoft.CmdPal.Common.Extensions;
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
-using Windows.Foundation;
 using Windows.Win32;
-using WindowsCommandPalette.BuiltinCommands;
-using WindowsCommandPalette.BuiltinCommands.AllApps;
 
 namespace WindowsCommandPalette.Views;
 
-internal sealed class ActionsProviderWrapper
+public sealed class ActionsProviderWrapper
 {
     public bool IsExtension => extensionWrapper != null;
 

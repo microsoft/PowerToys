@@ -6,10 +6,10 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using CmdPal.Models;
-using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using WindowsCommandPalette.Views;
 
 namespace DeveloperCommandPalette;
@@ -29,7 +29,7 @@ public sealed class FilteredListSection : ISection, INotifyCollectionChanged
     public ObservableCollection<MainListItem> TopLevelItems { get; set; }
 
     // Apps, from the apps built in command.
-    private IEnumerable<IListItem> AllApps => _mainViewModel.apps.GetItems().First().Items;
+    private IEnumerable<IListItem> AllApps => _mainViewModel.Apps.GetItems().First().Items;
 
     // Results from the last searched text
     private IEnumerable<IListItem>? lastSearchResults;

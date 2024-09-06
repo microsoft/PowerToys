@@ -68,7 +68,7 @@ public sealed class MainListPage : DynamicListPage
                     // Eh, it's fine to be unsafe here, we're probably tossing MainListItem
                     if (!_mainViewModel.Recent.Contains(listItem))
                     {
-                        _mainSection._Items.Add(new MainListItem(listItem.Unsafe));
+                        _mainSection.TopLevelItems.Add(new MainListItem(listItem.Unsafe));
                     }
 
                     _filteredSection.TopLevelItems.Add(new MainListItem(listItem.Unsafe));
@@ -81,11 +81,11 @@ public sealed class MainListPage : DynamicListPage
             {
                 if (item is ExtensionObject<IListItem> listItem)
                 {
-                    foreach (var mainListItem in _mainSection._Items)
+                    foreach (var mainListItem in _mainSection.TopLevelItems)
                     {
                         if (mainListItem.Item == listItem)
                         {
-                            _mainSection._Items.Remove(mainListItem);
+                            _mainSection.TopLevelItems.Remove(mainListItem);
                             break;
                         }
                     }

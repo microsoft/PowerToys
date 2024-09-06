@@ -4,19 +4,19 @@
 
 using System.ComponentModel;
 using DeveloperCommandPalette;
+using Microsoft.CmdPal.Extensions;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
-using Microsoft.CmdPal.Extensions;
 
 namespace WindowsCommandPalette.Views;
 
 public sealed partial class MarkdownPage : Page, INotifyPropertyChanged
 {
-    private MarkdownPageViewModel? ViewModel;
+    public MarkdownPageViewModel? ViewModel { get; set; }
 
 #pragma warning disable CS0067
     public event PropertyChangedEventHandler? PropertyChanged;

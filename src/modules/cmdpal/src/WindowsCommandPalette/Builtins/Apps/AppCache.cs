@@ -8,7 +8,12 @@ namespace WindowsCommandPalette.BuiltinCommands.AllApps;
 
 public sealed class AppCache
 {
-    internal IList<Win32Program> Win32s = Win32Program.All();
-    internal IList<UWPApplication> UWPs = UWP.All();
+    private readonly IList<Win32Program> _win32s = Win32Program.All();
+    private readonly IList<UWPApplication> _uwps = UWP.All();
+
+    public IList<Win32Program> Win32s => _win32s;
+
+    public IList<UWPApplication> UWPs => _uwps;
+
     public static readonly Lazy<AppCache> Instance = new(() => new());
 }

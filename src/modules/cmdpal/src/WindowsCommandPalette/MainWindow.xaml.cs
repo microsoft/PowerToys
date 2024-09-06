@@ -27,20 +27,24 @@ namespace DeveloperCommandPalette;
 /// </summary>
 public sealed partial class MainWindow : Window
 {
-    private readonly AppWindow m_AppWindow;
+    private readonly AppWindow _appWindow;
 
-    private MainViewModel _mainViewModel { get; init; }
+    private readonly MainViewModel _mainViewModel;
 
     private readonly HWND hwnd;
-    private const uint DOT_KEY = 0xBE;
-    private const uint WM_HOTKEY = 0x0312;
     private WNDPROC? origPrc;
     private WNDPROC? hotKeyPrc;
 
-    private Windows.Win32.Foundation.LRESULT HotKeyPrc(Windows.Win32.Foundation.HWND hwnd,
-            uint uMsg,
-            Windows.Win32.Foundation.WPARAM wParam,
-            Windows.Win32.Foundation.LPARAM lParam)
+#pragma warning disable SA1310 // Field names should not contain underscore
+    private const uint DOT_KEY = 0xBE;
+    private const uint WM_HOTKEY = 0x0312;
+#pragma warning restore SA1310 // Field names should not contain underscore
+
+    private LRESULT HotKeyPrc(
+        HWND hwnd,
+        uint uMsg,
+        WPARAM wParam,
+        LPARAM lParam)
     {
         if (uMsg == WM_HOTKEY)
         {
@@ -71,8 +75,8 @@ public sealed partial class MainWindow : Window
 
     public MainWindow()
     {
-        this.InitializeComponent();
-        this._mainViewModel = MainPage.ViewModel;
+        InitializeComponent();
+        _mainViewModel = MainPage.ViewModel;
 
         hwnd = new Windows.Win32.Foundation.HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
 
@@ -80,7 +84,7 @@ public sealed partial class MainWindow : Window
 
         // Assumes "this" is a XAML Window. In projects that don't use
         // WinUI 3 1.3 or later, use interop APIs to get the AppWindow.
-        m_AppWindow = this.AppWindow;
+        _appWindow = AppWindow;
 
         Activated += MainWindow_Activated;
         AppTitleBar.SizeChanged += AppTitleBar_SizeChanged;
@@ -88,10 +92,10 @@ public sealed partial class MainWindow : Window
         ExtendsContentIntoTitleBar = true;
 
         // Hide our titlebar. We'll make the sides draggable later
-        m_AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
+        _appWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
         AppTitleTextBlock.Text = AppInfo.Current.DisplayInfo.DisplayName;
 
-        m_AppWindow.Title = AppTitleTextBlock.Text;
+        _appWindow.Title = AppTitleTextBlock.Text;
 
         Application.Current.GetService<ILocalSettingsService>().SaveSettingAsync("ThisIsAVeryBizarreString", true);
 
@@ -101,7 +105,7 @@ public sealed partial class MainWindow : Window
 
         _mainViewModel.QuitRequested += (s, e) =>
         {
-            this.Close();
+            Close();
 
             // Application.Current.Exit();
         };
@@ -120,8 +124,8 @@ public sealed partial class MainWindow : Window
 
     private void PositionCentered()
     {
-        m_AppWindow.Resize(new SizeInt32 { Width = 860, Height = 512 });
-        DisplayArea displayArea = DisplayArea.GetFromWindowId(m_AppWindow.Id, DisplayAreaFallback.Nearest);
+        _appWindow.Resize(new SizeInt32 { Width = 860, Height = 512 });
+        DisplayArea displayArea = DisplayArea.GetFromWindowId(_appWindow.Id, DisplayAreaFallback.Nearest);
         if (displayArea is not null)
         {
             var centeredPosition = AppWindow.Position;
@@ -134,7 +138,7 @@ public sealed partial class MainWindow : Window
 
     private void PositionForStartMenu()
     {
-        m_AppWindow.Resize(new Windows.Graphics.SizeInt32(768, 768));
+        _appWindow.Resize(new Windows.Graphics.SizeInt32(768, 768));
 
         // now put the window in the right place
         //
@@ -168,22 +172,22 @@ public sealed partial class MainWindow : Window
             // react appropriately
         }
 
-        Microsoft.UI.Windowing.DisplayArea displayArea = Microsoft.UI.Windowing.DisplayArea.GetFromWindowId(m_AppWindow.Id, Microsoft.UI.Windowing.DisplayAreaFallback.Nearest);
+        Microsoft.UI.Windowing.DisplayArea displayArea = Microsoft.UI.Windowing.DisplayArea.GetFromWindowId(_appWindow.Id, Microsoft.UI.Windowing.DisplayAreaFallback.Nearest);
         if (displayArea is not null)
         {
-            var centeredPosition = m_AppWindow.Position;
+            var centeredPosition = _appWindow.Position;
             if (onLeft)
             {
                 centeredPosition.X = 16;
-                centeredPosition.Y = displayArea.WorkArea.Height - m_AppWindow.Size.Height - 16;
+                centeredPosition.Y = displayArea.WorkArea.Height - _appWindow.Size.Height - 16;
             }
             else
             {
-                centeredPosition.X = (displayArea.WorkArea.Width - m_AppWindow.Size.Width) / 2;
-                centeredPosition.Y = displayArea.WorkArea.Height - m_AppWindow.Size.Height - 16;
+                centeredPosition.X = (displayArea.WorkArea.Width - _appWindow.Size.Width) / 2;
+                centeredPosition.Y = displayArea.WorkArea.Height - _appWindow.Size.Height - 16;
             }
 
-            m_AppWindow.Move(centeredPosition);
+            _appWindow.Move(centeredPosition);
         }
     }
 
@@ -215,8 +219,8 @@ public sealed partial class MainWindow : Window
         // Specify the interactive regions of the title bar.
         var scaleAdjustment = AppTitleBar.XamlRoot.RasterizationScale;
 
-        RightPaddingColumn.Width = new GridLength(m_AppWindow.TitleBar.RightInset / scaleAdjustment);
-        LeftPaddingColumn.Width = new GridLength(m_AppWindow.TitleBar.LeftInset / scaleAdjustment);
+        RightPaddingColumn.Width = new GridLength(_appWindow.TitleBar.RightInset / scaleAdjustment);
+        LeftPaddingColumn.Width = new GridLength(_appWindow.TitleBar.LeftInset / scaleAdjustment);
 
         //// Get the rectangle around the content
         GeneralTransform transform = MainPage.TransformToVisual(null);
@@ -317,7 +321,7 @@ public sealed partial class MainWindow : Window
         return modifierString + keyString;
     }
 
-    private static (VirtualKey key, VirtualKeyModifiers modifiers) StringToKeybinding(string keybinding)
+    private static (VirtualKey Key, VirtualKeyModifiers Modifiers) StringToKeybinding(string keybinding)
     {
         var parts = keybinding.Split('+');
         var modifiers = VirtualKeyModifiers.None;
@@ -351,9 +355,10 @@ public sealed partial class MainWindow : Window
         return (key, modifiers);
     }
 
-    private static (uint vk, Windows.Win32.UI.Input.KeyboardAndMouse.HOT_KEY_MODIFIERS mod) UwpToWin32(VirtualKey key, VirtualKeyModifiers modifiers)
+    private static (uint Vk, Windows.Win32.UI.Input.KeyboardAndMouse.HOT_KEY_MODIFIERS Mod) UwpToWin32(VirtualKey key, VirtualKeyModifiers modifiers)
     {
-        Windows.Win32.UI.Input.KeyboardAndMouse.HOT_KEY_MODIFIERS mod = new();
+        Windows.Win32.UI.Input.KeyboardAndMouse.HOT_KEY_MODIFIERS mod = default;
+
         if (modifiers.HasFlag(VirtualKeyModifiers.Control))
         {
             mod |= Windows.Win32.UI.Input.KeyboardAndMouse.HOT_KEY_MODIFIERS.MOD_CONTROL;

@@ -4,12 +4,9 @@
 
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Linq;
-using CmdPal.Models;
-using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.UI.Dispatching;
 using WindowsCommandPalette.Views;
 
 namespace DeveloperCommandPalette;
@@ -21,26 +18,27 @@ public sealed class RecentsListSection : ListSection, INotifyCollectionChanged
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     private readonly MainViewModel _mainViewModel;
 
-    internal ObservableCollection<MainListItem> _Items { get; set; } = [];
+    private readonly ObservableCollection<MainListItem> _items = [];
 
     private bool loadedApps;
 
     public RecentsListSection(MainViewModel viewModel)
     {
-        this.Title = "Recent";
-        this._mainViewModel = viewModel;
+        Title = "Recent";
+        _mainViewModel = viewModel;
 
         var recent = _mainViewModel.RecentActions;
         Reset();
-        _Items.CollectionChanged += Bubble_CollectionChanged;
+        _items.CollectionChanged += Bubble_CollectionChanged;
 
-        _mainViewModel.AppsReady += _mainViewModel_AppsReady;
+        _mainViewModel.AppsReady += MainViewModel_AppsReady;
     }
 
-    private void _mainViewModel_AppsReady(object sender, object? args)
+    private void MainViewModel_AppsReady(object sender, object? args)
     {
         loadedApps = true;
-        _mainViewModel.AppsReady -= _mainViewModel_AppsReady;
+        _mainViewModel.AppsReady -= MainViewModel_AppsReady;
+
         AddApps();
     }
 
@@ -52,11 +50,11 @@ public sealed class RecentsListSection : ListSection, INotifyCollectionChanged
         });
     }
 
-    public override IListItem[] Items => _Items.ToArray();
+    public override IListItem[] Items => _items.ToArray();
 
     internal void Reset()
     {
-        _Items.Clear();
+        _items.Clear();
         if (loadedApps)
         {
             AddApps();
@@ -68,7 +66,7 @@ public sealed class RecentsListSection : ListSection, INotifyCollectionChanged
         var apps = _mainViewModel.Recent;
         foreach (var app in apps)
         {
-            _Items.Add(new MainListItem(app.Unsafe)); // we know these are all local
+            _items.Add(new MainListItem(app.Unsafe)); // we know these are all local
         }
     }
 }

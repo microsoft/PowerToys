@@ -7,40 +7,37 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using CmdPal.Models;
 using DeveloperCommandPalette;
-using Microsoft.CmdPal.Common.Extensions;
-using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
 using Microsoft.CmdPal.Ext.Settings;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 using Windows.Foundation;
-using Windows.Win32;
 using WindowsCommandPalette.BuiltinCommands;
 using WindowsCommandPalette.BuiltinCommands.AllApps;
 
 namespace WindowsCommandPalette.Views;
 
-public sealed class MainViewModel
+public sealed class MainViewModel : IDisposable
 {
-    internal readonly AllAppsPage apps = new();
-    internal readonly QuitActionProvider quitActionProvider = new();
-    internal readonly ReloadExtensionsActionProvider reloadActionProvider = new();
+    private readonly QuitActionProvider _quitActionProvider = new();
+    private readonly ReloadExtensionsActionProvider _reloadActionProvider = new();
 
-    public event TypedEventHandler<object, object?>? QuitRequested { add => quitActionProvider.QuitRequested += value; remove => quitActionProvider.QuitRequested -= value; }
+    public AllAppsPage Apps { get; set; } = new();
 
-    internal readonly ObservableCollection<ActionsProviderWrapper> CommandsProviders = new();
-    internal readonly ObservableCollection<ExtensionObject<IListItem>> TopLevelCommands = [];
+    public event TypedEventHandler<object, object?>? QuitRequested { add => _quitActionProvider.QuitRequested += value; remove => _quitActionProvider.QuitRequested -= value; }
 
-    internal readonly List<ICommandProvider> _builtInCommands = [];
+    public ObservableCollection<ActionsProviderWrapper> ActionsProvider { get; set; } = [];
 
-    internal bool Loaded;
-    internal bool LoadingExtensions;
-    internal bool LoadedApps;
+    public ObservableCollection<ExtensionObject<IListItem>> TopLevelCommands { get; set; } = [];
+
+    public List<ICommandProvider> BuiltInCommands { get; set; } = [];
+
+    public bool Loaded { get; set; }
+
+    public bool LoadingExtensions { get; set; }
+
+    public bool LoadedApps { get; set; }
 
     public event TypedEventHandler<object, object?>? HideRequested;
 
@@ -50,18 +47,19 @@ public sealed class MainViewModel
 
     internal MainViewModel()
     {
-        _builtInCommands.Add(new BookmarksActionProvider());
-        _builtInCommands.Add(new CalculatorActionProvider());
-        _builtInCommands.Add(new SettingsActionProvider());
-        _builtInCommands.Add(quitActionProvider);
-        _builtInCommands.Add(reloadActionProvider);
+        BuiltInCommands.Add(new BookmarksActionProvider());
+        BuiltInCommands.Add(new CalculatorActionProvider());
+        BuiltInCommands.Add(new SettingsActionProvider());
+        BuiltInCommands.Add(_quitActionProvider);
+        BuiltInCommands.Add(_reloadActionProvider);
 
         ResetTopLevel();
 
         // On a background thread, warm up the app cache since we want it more often than not
         new Task(() =>
         {
-            var _ = AppCache.Instance.Value;
+            _ = AppCache.Instance.Value;
+
             LoadedApps = true;
             AppsReady?.Invoke(this, null);
         }).Start();
@@ -70,7 +68,7 @@ public sealed class MainViewModel
     public void ResetTopLevel()
     {
         TopLevelCommands.Clear();
-        TopLevelCommands.Add(new(new ListItem(apps)));
+        TopLevelCommands.Add(new(new ListItem(Apps)));
     }
 
     internal void RequestHide()
@@ -111,7 +109,7 @@ public sealed class MainViewModel
             return false;
         }).Select(i => i!);
 
-    public IEnumerable<IListItem> AppItems => LoadedApps ? apps.GetItems().First().Items : [];
+    public IEnumerable<IListItem> AppItems => LoadedApps ? Apps.GetItems().First().Items : [];
 
     public IEnumerable<ExtensionObject<IListItem>> Everything => TopLevelCommands
         .Concat(AppItems.Select(i => new ExtensionObject<IListItem>(i)))
@@ -182,5 +180,11 @@ public sealed class MainViewModel
             { /* log something */
             }
         }
+    }
+
+    public void Dispose()
+    {
+        _quitActionProvider.Dispose();
+        _reloadActionProvider.Dispose();
     }
 }

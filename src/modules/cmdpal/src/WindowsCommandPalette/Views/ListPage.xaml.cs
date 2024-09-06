@@ -4,6 +4,7 @@
 
 using System.ComponentModel;
 using DeveloperCommandPalette;
+using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
@@ -11,7 +12,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
-using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace WindowsCommandPalette.Views;
 
@@ -255,20 +255,16 @@ public sealed partial class ListPage : Page, INotifyPropertyChanged
             }
 
             e.Handled = true;
-        }
-        else if (ctrlPressed && e.Key == Windows.System.VirtualKey.K) // ctrl+k
+        } // ctrl+k
+        else if (ctrlPressed && e.Key == Windows.System.VirtualKey.K && ActionsDropdown.Items.Count > 0)
         {
-            // Open the more actions flyout and focus the first item
-            if (ActionsDropdown.Items.Count > 0)
+            FlyoutShowOptions options = new FlyoutShowOptions
             {
-                FlyoutShowOptions options = new FlyoutShowOptions
-                {
-                    ShowMode = FlyoutShowMode.Standard,
-                };
-                MoreCommandsButton.Flyout.ShowAt(MoreCommandsButton, options);
-                ActionsDropdown.SelectedIndex = 0;
-                ActionsDropdown.Focus(FocusState.Programmatic);
-            }
+                ShowMode = FlyoutShowMode.Standard,
+            };
+            MoreCommandsButton.Flyout.ShowAt(MoreCommandsButton, options);
+            ActionsDropdown.SelectedIndex = 0;
+            ActionsDropdown.Focus(FocusState.Programmatic);
         }
     }
 

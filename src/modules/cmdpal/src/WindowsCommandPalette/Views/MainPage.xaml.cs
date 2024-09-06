@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 using DeveloperCommandPalette;
 using Microsoft.CmdPal.Common.Extensions;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Extensions;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
-using Microsoft.CmdPal.Extensions;
 
 namespace WindowsCommandPalette.Views;
 
@@ -89,10 +89,11 @@ public sealed partial class MainPage : Page
     {
         // Load commands from builtins
         // TODO! I don't understand async enough to get why this has to be ConfigureAwait(false)
-        foreach (var provider in ViewModel._builtInCommands)
+        foreach (var provider in ViewModel.BuiltInCommands)
         {
             var wrapper = new ActionsProviderWrapper(provider);
-            ViewModel.CommandsProviders.Add(wrapper);
+            ViewModel.ActionsProvider.Add(wrapper);
+
             await LoadTopLevelCommandsFromProvider(wrapper).ConfigureAwait(false);
         }
     }
@@ -138,7 +139,7 @@ public sealed partial class MainPage : Page
 
     private void TryAllowForeground(ICommand action)
     {
-        foreach (var provider in ViewModel.CommandsProviders)
+        foreach (var provider in ViewModel.ActionsProvider)
         {
             if (!provider.IsExtension)
             {
@@ -271,7 +272,7 @@ public sealed partial class MainPage : Page
         {
             await extension.StartExtensionAsync();
             var wrapper = new ActionsProviderWrapper(extension);
-            ViewModel.CommandsProviders.Add(wrapper);
+            ViewModel.ActionsProvider.Add(wrapper);
             await LoadTopLevelCommandsFromProvider(wrapper);
         }
         catch (Exception ex)
