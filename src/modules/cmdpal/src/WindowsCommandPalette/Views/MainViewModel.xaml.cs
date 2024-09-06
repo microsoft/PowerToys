@@ -27,13 +27,16 @@ public sealed class MainViewModel : IDisposable
     public event TypedEventHandler<object, object?>? QuitRequested { add => quitActionProvider.QuitRequested += value; remove => quitActionProvider.QuitRequested -= value; }
 
     internal readonly ObservableCollection<ActionsProviderWrapper> CommandsProviders = new();
-    internal readonly ObservableCollection<ExtensionObject<IListItem>> TopLevelCommands = [];
 
-    internal readonly List<ICommandProvider> _builtInCommands = [];
+    public ObservableCollection<ExtensionObject<IListItem>> TopLevelCommands { get; set; } = [];
 
-    internal bool Loaded;
-    internal bool LoadingExtensions;
-    internal bool LoadedApps;
+    public List<ICommandProvider> BuiltInCommands { get; set; } = [];
+
+    public bool Loaded { get; set; }
+
+    public bool LoadingExtensions { get; set; }
+
+    public bool LoadedApps { get; set; }
 
     public event TypedEventHandler<object, object?>? HideRequested;
 
@@ -43,11 +46,11 @@ public sealed class MainViewModel : IDisposable
 
     internal MainViewModel()
     {
-        _builtInCommands.Add(new BookmarksActionProvider());
-        _builtInCommands.Add(new CalculatorActionProvider());
-        _builtInCommands.Add(new SettingsActionProvider());
-        _builtInCommands.Add(quitActionProvider);
-        _builtInCommands.Add(reloadActionProvider);
+        BuiltInCommands.Add(new BookmarksActionProvider());
+        BuiltInCommands.Add(new CalculatorActionProvider());
+        BuiltInCommands.Add(new SettingsActionProvider());
+        BuiltInCommands.Add(quitActionProvider);
+        BuiltInCommands.Add(reloadActionProvider);
 
         ResetTopLevel();
 

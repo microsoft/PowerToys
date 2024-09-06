@@ -89,10 +89,11 @@ public sealed partial class MainPage : Page
     {
         // Load commands from builtins
         // TODO! I don't understand async enough to get why this has to be ConfigureAwait(false)
-        foreach (var provider in ViewModel._builtInCommands)
+        foreach (var provider in ViewModel.BuiltInCommands)
         {
             var wrapper = new ActionsProviderWrapper(provider);
             ViewModel.CommandsProviders.Add(wrapper);
+
             await LoadTopLevelCommandsFromProvider(wrapper).ConfigureAwait(false);
         }
     }
