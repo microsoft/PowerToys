@@ -2,11 +2,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.34929.205
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.UI.Poc", "src\WindowsCommandPalette\Microsoft.CmdPal.UI.Poc.csproj", "{F71CF22B-A5C7-4328-A5B3-F4191AE57314}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.UI.Poc", "WindowsCommandPalette\Microsoft.CmdPal.UI.Poc.csproj", "{F71CF22B-A5C7-4328-A5B3-F4191AE57314}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sample Extensions", "Sample Extensions", "{B7FF739F-7716-4FC3-B622-705486187B87}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.Terminal.UI", "src\Microsoft.Terminal.UI\Microsoft.Terminal.UI.vcxproj", "{6515F03F-E56D-4DB4-B23D-AC4FB80DB36F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.Terminal.UI", "Microsoft.Terminal.UI\Microsoft.Terminal.UI.vcxproj", "{6515F03F-E56D-4DB4-B23D-AC4FB80DB36F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extension SDK", "Extension SDK", "{FAA24D36-5515-467C-91E7-101A189AAF48}"
 EndProject
@@ -14,29 +14,29 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.CmdPal.Extensions
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.Extensions.Helpers", "extensionsdk\Microsoft.CmdPal.Extensions.Helpers\Microsoft.CmdPal.Extensions.Helpers.csproj", "{79060D06-7174-4D66-8D0B-4FF021154049}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.Common", "src\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj", "{05CDE6EE-23AE-42AF-A9F5-E398C382675F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.Common", "Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj", "{05CDE6EE-23AE-42AF-A9F5-E398C382675F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpongebotExtension", "extensions\SpongebotExtension\SpongebotExtension.csproj", "{57617906-DEC8-4D62-A270-6EBE3F8E5C0D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpongebotExtension", "Exts\SpongebotExtension\SpongebotExtension.csproj", "{57617906-DEC8-4D62-A270-6EBE3F8E5C0D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HackerNewsExtension", "extensions\HackerNewsExtension\HackerNewsExtension.csproj", "{1A506BBA-06A9-476E-B5D3-1495F299D53F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HackerNewsExtension", "Exts\HackerNewsExtension\HackerNewsExtension.csproj", "{1A506BBA-06A9-476E-B5D3-1495F299D53F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaControlsExtension", "extensions\MediaControlsExtension\MediaControlsExtension.csproj", "{D08AE85F-B6FE-4E1C-8402-DB396B70D6DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaControlsExtension", "Exts\MediaControlsExtension\MediaControlsExtension.csproj", "{D08AE85F-B6FE-4E1C-8402-DB396B70D6DA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProcessMonitorExtension", "extensions\ProcessMonitorExtension\ProcessMonitorExtension.csproj", "{9456257A-3292-4A8D-AF63-9830EABE7ED2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProcessMonitorExtension", "Exts\ProcessMonitorExtension\ProcessMonitorExtension.csproj", "{9456257A-3292-4A8D-AF63-9830EABE7ED2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Prototype", "Prototype", "{B4B13D2C-8C19-43D0-9FD4-3084F42EA4C2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TemplateExtension", "extensions\TemplateExtension\TemplateExtension.csproj", "{EB13FDBD-7DD5-4E7E-8BEB-727B3C9331CB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TemplateExtension", "Exts\TemplateExtension\TemplateExtension.csproj", "{EB13FDBD-7DD5-4E7E-8BEB-727B3C9331CB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MastodonExtension", "extensions\MastodonExtension\MastodonExtension.csproj", "{65E22130-6A8F-4AB7-80EC-FF75475DE821}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MastodonExtension", "Exts\MastodonExtension\MastodonExtension.csproj", "{65E22130-6A8F-4AB7-80EC-FF75475DE821}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Built-in Extensions", "Built-in Extensions", "{272D0E9A-8FC3-49F5-8FAD-79ABAE8AB1E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Bookmarks", "src\Exts\Microsoft.CmdPal.Ext.Bookmark\Microsoft.CmdPal.Ext.Bookmarks.csproj", "{C5BADA22-70FF-41D1-9529-28F4891316A8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Bookmarks", "Exts\Microsoft.CmdPal.Ext.Bookmark\Microsoft.CmdPal.Ext.Bookmarks.csproj", "{C5BADA22-70FF-41D1-9529-28F4891316A8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Calc", "src\Exts\Microsoft.CmdPal.Ext.Calc\Microsoft.CmdPal.Ext.Calc.csproj", "{42DB35EE-1EDB-41E4-9C9F-A3520EBC5CC4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Calc", "Exts\Microsoft.CmdPal.Ext.Calc\Microsoft.CmdPal.Ext.Calc.csproj", "{42DB35EE-1EDB-41E4-9C9F-A3520EBC5CC4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Settings", "src\Exts\Microsoft.CmdPal.Ext.CmdPalSettings\Microsoft.CmdPal.Ext.Settings.csproj", "{7F6796A4-4233-4CEC-914F-95EC7A5283A0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Settings", "Exts\Microsoft.CmdPal.Ext.CmdPalSettings\Microsoft.CmdPal.Ext.Settings.csproj", "{7F6796A4-4233-4CEC-914F-95EC7A5283A0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
