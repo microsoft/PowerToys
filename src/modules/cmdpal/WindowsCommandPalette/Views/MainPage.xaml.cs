@@ -281,11 +281,11 @@ public sealed partial class MainPage : Page
         }
     }
 
-    private async Task LoadTopLevelCommandsFromProvider(CommandProviderWrapper CommandProvider)
+    private async Task LoadTopLevelCommandsFromProvider(CommandProviderWrapper commandProvider)
     {
         // TODO! do this better async
-        await CommandProvider.LoadTopLevelCommands().ConfigureAwait(false);
-        foreach (var i in CommandProvider.TopLevelItems)
+        await commandProvider.LoadTopLevelCommands().ConfigureAwait(false);
+        foreach (var i in commandProvider.TopLevelItems)
         {
             ViewModel.TopLevelCommands.Add(new(i));
         }
