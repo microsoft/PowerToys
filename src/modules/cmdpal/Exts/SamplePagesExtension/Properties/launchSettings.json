@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SSHKeychainExtension (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "SSHKeychainExtension (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

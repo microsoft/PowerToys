@@ -26,9 +26,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProcessMonitorExtension", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Prototype", "Prototype", "{B4B13D2C-8C19-43D0-9FD4-3084F42EA4C2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TemplateExtension", "extensions\TemplateExtension\TemplateExtension.csproj", "{EB13FDBD-7DD5-4E7E-8BEB-727B3C9331CB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TemplateExtension", "exts\TemplateExtension\TemplateExtension.csproj", "{EB13FDBD-7DD5-4E7E-8BEB-727B3C9331CB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MastodonExtension", "extensions\MastodonExtension\MastodonExtension.csproj", "{65E22130-6A8F-4AB7-80EC-FF75475DE821}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MastodonExtension", "exts\MastodonExtension\MastodonExtension.csproj", "{65E22130-6A8F-4AB7-80EC-FF75475DE821}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Built-in Extensions", "Built-in Extensions", "{272D0E9A-8FC3-49F5-8FAD-79ABAE8AB1E4}"
 EndProject
@@ -38,9 +38,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.Ext.Calc",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.Ext.Settings", "src\Exts\Microsoft.CmdPal.Ext.CmdPalSettings\Microsoft.CmdPal.Ext.Settings.csproj", "{7F6796A4-4233-4CEC-914F-95EC7A5283A0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SSHKeychainExtension", "extensions\SSHKeychainExtension\SSHKeychainExtension.csproj", "{77D99BE0-F69C-4F27-8153-951CEC5110FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SSHKeychainExtension", "exts\SSHKeychainExtension\SSHKeychainExtension.csproj", "{77D99BE0-F69C-4F27-8153-951CEC5110FE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SamplePagesExtension", "extensions\SamplePagesExtension\SamplePagesExtension.csproj", "{399B53F1-5AA6-4FE0-8C3C-66E07B84E6F1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SamplePagesExtension", "exts\SamplePagesExtension\SamplePagesExtension.csproj", "{399B53F1-5AA6-4FE0-8C3C-66E07B84E6F1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
