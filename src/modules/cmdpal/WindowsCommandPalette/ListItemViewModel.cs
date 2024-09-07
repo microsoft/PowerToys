@@ -24,9 +24,9 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
 
     internal string Icon { get; private set; }
 
-    internal Lazy<DetailsViewModel?> _Details;
+    private readonly Lazy<DetailsViewModel?> _details;
 
-    internal DetailsViewModel? Details => _Details.Value;
+    internal DetailsViewModel? Details => _details.Value;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -70,7 +70,7 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
 
     internal bool HasMoreCommands => AllCommands.Any();
 
-    internal TagViewModel[] Tags = [];
+    public TagViewModel[] Tags { get; set; } = [];
 
     internal bool HasTags => Tags.Length > 0;
 
@@ -111,7 +111,7 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
             this.Tags = model.Tags.Select(t => new TagViewModel(t)).ToArray();
         }
 
-        this._Details = new(() =>
+        this._details = new(() =>
         {
             try
             {

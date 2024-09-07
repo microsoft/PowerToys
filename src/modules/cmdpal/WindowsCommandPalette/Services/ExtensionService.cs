@@ -125,7 +125,7 @@ public class ExtensionService : IExtensionService, IDisposable
         return false;
     }
 
-    private static async Task<(IPropertySet?, List<string>)> GetCmdPalExtensionPropertiesAsync(AppExtension extension)
+    private static async Task<(IPropertySet? CmdPalProvider, List<string> ClassIds)> GetCmdPalExtensionPropertiesAsync(AppExtension extension)
     {
         var classIds = new List<string>();
         var properties = await extension.GetExtensionPropertiesAsync();

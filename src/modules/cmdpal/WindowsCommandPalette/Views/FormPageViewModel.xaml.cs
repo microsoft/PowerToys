@@ -12,7 +12,7 @@ public sealed class FormPageViewModel : PageViewModel
 {
     internal IFormPage Page => (IFormPage)this.PageAction;
 
-    internal ObservableCollection<FormViewModel> Forms = new();
+    public ObservableCollection<FormViewModel> Forms { get; set; } = new();
 
     public FormPageViewModel(IFormPage page)
         : base(page)

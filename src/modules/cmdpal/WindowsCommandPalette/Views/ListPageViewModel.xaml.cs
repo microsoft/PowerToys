@@ -13,8 +13,9 @@ namespace WindowsCommandPalette.Views;
 
 public sealed class ListPageViewModel : PageViewModel
 {
-    internal readonly ObservableCollection<SectionInfoList> Items = [];
-    internal readonly ObservableCollection<SectionInfoList> FilteredItems = [];
+    private readonly ObservableCollection<SectionInfoList> _items = [];
+
+    public ObservableCollection<SectionInfoList> FilteredItems { get; set; } = [];
 
     internal IListPage Page => (IListPage)this.PageAction;
 
@@ -92,7 +93,7 @@ public sealed class ListPageViewModel : PageViewModel
             // FilteredItems.Add(sectionItems);
         }
 
-        ListHelpers.InPlaceUpdateList(Items, newItems);
+        ListHelpers.InPlaceUpdateList(_items, newItems);
         ListHelpers.InPlaceUpdateList(FilteredItems, newItems);
     }
 
@@ -114,7 +115,7 @@ public sealed class ListPageViewModel : PageViewModel
             // Static lists don't need to re-fetch the items
             if (string.IsNullOrEmpty(query))
             {
-                return Items;
+                return _items;
             }
 
             //// TODO! Probably bad that this turns list view models into listitems back to NEW view models
@@ -122,7 +123,7 @@ public sealed class ListPageViewModel : PageViewModel
             try
             {
                 var allFilteredItems = ListHelpers.FilterList(
-                    Items
+                    _items
                         .SelectMany(section => section)
                         .Select(vm => vm.ListItem.Unsafe),
                     _query).Select(li => new ListItemViewModel(li));
