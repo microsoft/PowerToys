@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 using SSHKeychainExtension.Data;
 
@@ -24,7 +25,7 @@ internal sealed class LaunchSSHHostCommand : InvokableCommand
         this.Icon = new("\uE8A7");
     }
 
-    public override ActionResult Invoke()
+    public override CommandResult Invoke()
     {
         try
         {
@@ -35,6 +36,6 @@ internal sealed class LaunchSSHHostCommand : InvokableCommand
             Process.Start(new ProcessStartInfo("cmd.exe", $"/k ssh {_host.HostName}") { UseShellExecute = true });
         }
 
-        return ActionResult.KeepOpen();
+        return CommandResult.KeepOpen();
     }
 }

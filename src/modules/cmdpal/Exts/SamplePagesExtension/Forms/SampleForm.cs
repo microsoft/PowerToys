@@ -47,17 +47,17 @@ internal sealed class SampleForm : Form
 
     public override string StateJson() => throw new NotImplementedException();
 
-    public override ActionResult SubmitForm(string payload)
+    public override CommandResult SubmitForm(string payload)
     {
         var formInput = JsonNode.Parse(payload);
         if (formInput == null)
         {
-            return ActionResult.GoHome();
+            return CommandResult.GoHome();
         }
 
         // get the name and url out of the values
 
         // var testInput = formInput["test1"] ?? string.Empty;
-        return ActionResult.GoHome();
+        return CommandResult.GoHome();
     }
 }

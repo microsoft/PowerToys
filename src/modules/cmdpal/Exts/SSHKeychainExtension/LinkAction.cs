@@ -18,9 +18,9 @@ internal sealed class LinkAction : InvokableCommand
         this.Icon = new("\uE8A7");
     }
 
-    public override ActionResult Invoke()
+    public override CommandResult Invoke()
     {
         Process.Start(new ProcessStartInfo(_post.Link) { UseShellExecute = true });
-        return ActionResult.KeepOpen();
+        return CommandResult.KeepOpen();
     }
 }

@@ -76,7 +76,6 @@ internal sealed class SSHHostsListPage : ListPage
             {
                 Title = host.HostName,
                 Subtitle = host.EscapedHost,
-                MoreCommands = [new CommandContextItem(new LaunchSSHHostCommand(host))],
             }).ToArray(),
         };
         return [s];

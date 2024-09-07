@@ -35,9 +35,9 @@ internal sealed class SampleListPage : ListPage
             {
                 Title = "Sample List Page",
                 Items = [
-                    new ListItem(new NoOpAction()) { Title = "TODO: Implement your extension here" },
-                    new ListItem(new NoOpAction()) { Title = "This one has a subtitle too", Subtitle = "Example Subtitle" },
-                    new ListItem(new NoOpAction())
+                    new ListItem(new NoOpCommand()) { Title = "TODO: Implement your extension here" },
+                    new ListItem(new NoOpCommand()) { Title = "This one has a subtitle too", Subtitle = "Example Subtitle" },
+                    new ListItem(new NoOpCommand())
                     {
                         Title = "This one has a tag too",
                         Subtitle = "the one with a tag",
