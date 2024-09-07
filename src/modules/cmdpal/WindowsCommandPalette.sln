@@ -26,17 +26,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProcessMonitorExtension", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Prototype", "Prototype", "{B4B13D2C-8C19-43D0-9FD4-3084F42EA4C2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TemplateExtension", "extensions\TemplateExtension\TemplateExtension.csproj", "{EB13FDBD-7DD5-4E7E-8BEB-727B3C9331CB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TemplateExtension", "extensions\TemplateExtension\TemplateExtension.csproj", "{EB13FDBD-7DD5-4E7E-8BEB-727B3C9331CB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MastodonExtension", "extensions\MastodonExtension\MastodonExtension.csproj", "{65E22130-6A8F-4AB7-80EC-FF75475DE821}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MastodonExtension", "extensions\MastodonExtension\MastodonExtension.csproj", "{65E22130-6A8F-4AB7-80EC-FF75475DE821}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Built-in Extensions", "Built-in Extensions", "{272D0E9A-8FC3-49F5-8FAD-79ABAE8AB1E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Bookmarks", "src\Exts\Microsoft.CmdPal.Ext.Bookmark\Microsoft.CmdPal.Ext.Bookmarks.csproj", "{C5BADA22-70FF-41D1-9529-28F4891316A8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.Ext.Bookmarks", "src\Exts\Microsoft.CmdPal.Ext.Bookmark\Microsoft.CmdPal.Ext.Bookmarks.csproj", "{C5BADA22-70FF-41D1-9529-28F4891316A8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Calc", "src\Exts\Microsoft.CmdPal.Ext.Calc\Microsoft.CmdPal.Ext.Calc.csproj", "{42DB35EE-1EDB-41E4-9C9F-A3520EBC5CC4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.Ext.Calc", "src\Exts\Microsoft.CmdPal.Ext.Calc\Microsoft.CmdPal.Ext.Calc.csproj", "{42DB35EE-1EDB-41E4-9C9F-A3520EBC5CC4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Settings", "src\Exts\Microsoft.CmdPal.Ext.CmdPalSettings\Microsoft.CmdPal.Ext.Settings.csproj", "{7F6796A4-4233-4CEC-914F-95EC7A5283A0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.Ext.Settings", "src\Exts\Microsoft.CmdPal.Ext.CmdPalSettings\Microsoft.CmdPal.Ext.Settings.csproj", "{7F6796A4-4233-4CEC-914F-95EC7A5283A0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SSHKeychainExtension", "extensions\SSHKeychainExtension\SSHKeychainExtension.csproj", "{77D99BE0-F69C-4F27-8153-951CEC5110FE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -170,6 +172,18 @@ Global
 		{7F6796A4-4233-4CEC-914F-95EC7A5283A0}.Release|ARM64.Build.0 = Release|ARM64
 		{7F6796A4-4233-4CEC-914F-95EC7A5283A0}.Release|x64.ActiveCfg = Release|x64
 		{7F6796A4-4233-4CEC-914F-95EC7A5283A0}.Release|x64.Build.0 = Release|x64
+		{77D99BE0-F69C-4F27-8153-951CEC5110FE}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{77D99BE0-F69C-4F27-8153-951CEC5110FE}.Debug|ARM64.Build.0 = Debug|ARM64
+		{77D99BE0-F69C-4F27-8153-951CEC5110FE}.Debug|ARM64.Deploy.0 = Debug|ARM64
+		{77D99BE0-F69C-4F27-8153-951CEC5110FE}.Debug|x64.ActiveCfg = Debug|x64
+		{77D99BE0-F69C-4F27-8153-951CEC5110FE}.Debug|x64.Build.0 = Debug|x64
+		{77D99BE0-F69C-4F27-8153-951CEC5110FE}.Debug|x64.Deploy.0 = Debug|x64
+		{77D99BE0-F69C-4F27-8153-951CEC5110FE}.Release|ARM64.ActiveCfg = Release|ARM64
+		{77D99BE0-F69C-4F27-8153-951CEC5110FE}.Release|ARM64.Build.0 = Release|ARM64
+		{77D99BE0-F69C-4F27-8153-951CEC5110FE}.Release|ARM64.Deploy.0 = Release|ARM64
+		{77D99BE0-F69C-4F27-8153-951CEC5110FE}.Release|x64.ActiveCfg = Release|x64
+		{77D99BE0-F69C-4F27-8153-951CEC5110FE}.Release|x64.Build.0 = Release|x64
+		{77D99BE0-F69C-4F27-8153-951CEC5110FE}.Release|x64.Deploy.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -189,6 +203,7 @@ Global
 		{C5BADA22-70FF-41D1-9529-28F4891316A8} = {272D0E9A-8FC3-49F5-8FAD-79ABAE8AB1E4}
 		{42DB35EE-1EDB-41E4-9C9F-A3520EBC5CC4} = {272D0E9A-8FC3-49F5-8FAD-79ABAE8AB1E4}
 		{7F6796A4-4233-4CEC-914F-95EC7A5283A0} = {272D0E9A-8FC3-49F5-8FAD-79ABAE8AB1E4}
+		{77D99BE0-F69C-4F27-8153-951CEC5110FE} = {B7FF739F-7716-4FC3-B622-705486187B87}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BC94BFC2-A741-4978-B6A4-9E01B7660E6B}
