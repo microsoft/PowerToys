@@ -26,6 +26,11 @@ public class SamplePagesCommandsProvider : ICommandProvider
            Title = "List Page Sample Command",
            Subtitle = "SamplePages Extension",
        },
+       new ListItem(new SampleListPage())
+       {
+           Title = "Form Page Sample Command",
+           Subtitle = "SamplePages Extension",
+       }
     ];
 
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
