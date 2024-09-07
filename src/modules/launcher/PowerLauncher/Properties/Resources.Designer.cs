@@ -142,11 +142,20 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Plugins: {0} - fail to load and would be disabled, please contact plugins creator for help.
+        ///   Looks up a localized string similar to Fail to initialize plugins: {0}.
         /// </summary>
         public static string FailedToInitializePluginsDescription {
             get {
                 return ResourceManager.GetString("FailedToInitializePluginsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please report the bug to https://aka.ms/powerToysReportBug. (For third-party plugins, please contact the plugin author.).
+        /// </summary>
+        public static string FailedToInitializePluginsDescriptionPartTwo {
+            get {
+                return ResourceManager.GetString("FailedToInitializePluginsDescriptionPartTwo", resourceCulture);
             }
         }
         
