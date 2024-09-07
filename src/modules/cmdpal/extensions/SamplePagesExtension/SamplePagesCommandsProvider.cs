@@ -26,7 +26,7 @@ public class SamplePagesCommandsProvider : ICommandProvider
            Title = "List Page Sample Command",
            Subtitle = "SamplePages Extension",
        },
-       new ListItem(new SampleListPage())
+       new ListItem(new SampleFormPage())
        {
            Title = "Form Page Sample Command",
            Subtitle = "SamplePages Extension",
