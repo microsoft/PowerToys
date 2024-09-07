@@ -5,7 +5,6 @@
 using System;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
-using SSHKeychainExtension;
 
 namespace SamplePagesExtension;
 

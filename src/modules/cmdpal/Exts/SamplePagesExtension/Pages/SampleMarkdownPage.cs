@@ -15,8 +15,6 @@ using System.Xml.Linq;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.UI.Windowing;
-using SSHKeychainExtension.Commands;
-using SSHKeychainExtension.Data;
 
 namespace SamplePagesExtension;
 

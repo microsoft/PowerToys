@@ -3,61 +3,69 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
 using System.Text.Json.Nodes;
-using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace SamplePagesExtension;
 
 internal sealed class SampleForm : Form
 {
+    public SampleForm()
+    {
+    }
+
     public override string TemplateJson()
     {
         var json = $$"""
 {
-  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-  "type": "AdaptiveCard",
-  "version": "1.5",
-  "body": [
-    {
-      "type": "Input.Text",
-      "style": "text",
-      "id": "text1",
-      "label": "Input.Text",
-      "isRequired": true,
-      "errorMessage": "Text is required"
-    }
-  ],
-  "actions": [
-    {
-      "type": "Action.Submit",
-      "title": "Action.Submit",
-      "data": {
-        "text1": "text1",
-      }
-    }
-  ]
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.5",
+    "body": [
+        {
+          "type": "TextBlock",
+          "text": "🚧 This is a sample form 🚧",
+          "weight": "bolder",
+          "size": "extraLarge",
+          "spacing": "none",
+          "wrap": true,
+          "style": "heading"
+        },
+        {
+            "type": "Input.Text",
+            "style": "text",
+            "id": "hotkey",
+            "label": "Input.Text Example",
+            "value": "example value",
+            "isRequired": false
+        }
+    ],
+    "actions": [
+        {
+            "type": "Action.Submit",
+            "title": "Save",
+            "data": {
+                "name": "name",
+                "url": "url"
+            }
+        }
+    ]
 }
 """;
         return json;
     }
 
-    public override string DataJson() => throw new NotImplementedException();
-
     public override string StateJson() => throw new NotImplementedException();
 
     public override CommandResult SubmitForm(string payload)
     {
-        var formInput = JsonNode.Parse(payload);
+        var formInput = JsonNode.Parse(payload)?.AsObject();
         if (formInput == null)
         {
             return CommandResult.GoHome();
         }
 
-        // get the name and url out of the values
-
-        // var testInput = formInput["test1"] ?? string.Empty;
+        // Application.Current.GetService<ILocalSettingsService>().SaveSettingAsync("GlobalHotkey", formInput["hotkey"]?.ToString() ?? string.Empty);
         return CommandResult.GoHome();
     }
 }
