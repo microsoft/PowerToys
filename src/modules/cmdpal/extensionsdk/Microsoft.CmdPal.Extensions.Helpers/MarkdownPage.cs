@@ -1,30 +1,13 @@
-﻿namespace Microsoft.CmdPal.Extensions.Helpers;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
-public class MarkdownPage : Action, IMarkdownPage
+namespace Microsoft.CmdPal.Extensions.Helpers;
+
+public class MarkdownPage : Page, IMarkdownPage
 {
-    private bool _loading;
     private ITag[] _tags = [];
-    private string _title = "";
 
-    public string Title
-    {
-        get => !string.IsNullOrEmpty(_title) ? _title : Name;
-        set
-        {
-            _title = value;
-            OnPropertyChanged(nameof(Title));
-        }
-    }
-
-    public bool Loading
-    {
-        get => _loading;
-        set
-        {
-            _loading = value;
-            OnPropertyChanged(nameof(Loading));
-        }
-    }
     public ITag[] Tags
     {
         get => _tags;

@@ -4,10 +4,6 @@
 
 using System.Globalization;
 
-//[assembly: InternalsVisibleTo("Microsoft.Plugin.Program.UnitTests")]
-//[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.System.UnitTests")]
-//[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests")]
-
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
 public class StringMatcher
@@ -23,24 +19,23 @@ public class StringMatcher
         //_alphabet = alphabet;
     }
 
-    public static StringMatcher Instance { get; set; }
+    private static StringMatcher? _instance;
+    public static StringMatcher Instance 
+    {
+        get
+        {
+            _instance ??= new StringMatcher();
+
+            return _instance;
+        }
+        set => _instance = value;
+    }
 
     private static readonly char[] Separator = new[] { ' ' };
 
-    [Obsolete("This method is obsolete and should not be used. Please use the static function StringMatcher.FuzzySearch")]
-    public static int Score(string source, string target)
-    {
-        return FuzzySearch(target, source).Score;
-    }
-
-    [Obsolete("This method is obsolete and should not be used. Please use the static function StringMatcher.FuzzySearch")]
-    public static bool IsMatch(string source, string target)
-    {
-        return Score(source, target) > 0;
-    }
-
     public static MatchResult FuzzySearch(string query, string stringToCompare)
     {
+
         return Instance.FuzzyMatch(query, stringToCompare);
     }
 

@@ -1,5 +1,6 @@
-﻿// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
 
@@ -11,7 +12,7 @@ public class ListHelpers
     // TODO! This has side effects! This calls UpdateQuery on fallback handlers and that's async
     public static int ScoreListItem(string query, IListItem listItem)
     {
-        bool isFallback = false;
+        var isFallback = false;
         if (listItem.FallbackHandler != null)
         {
             isFallback = true;

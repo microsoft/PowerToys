@@ -38,10 +38,7 @@ public class MatchResult
 
     public int RawScore
     {
-        get
-        {
-            return _rawScore;
-        }
+        get => _rawScore;
 
         set
         {
@@ -53,7 +50,7 @@ public class MatchResult
     /// <summary>
     /// Gets matched data to highlight.
     /// </summary>
-    public List<int> MatchData { get; private set; }
+    public List<int> MatchData { get; private set; } = new();
 
     public SearchPrecisionScore SearchPrecision { get; set; }
 

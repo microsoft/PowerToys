@@ -1,10 +1,10 @@
-﻿namespace Microsoft.CmdPal.Extensions.Helpers;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
-public class FormPage : Action, IFormPage
+namespace Microsoft.CmdPal.Extensions.Helpers;
+
+public class FormPage : Page, IFormPage
 {
-    private bool _Loading = false;
-
-    public bool Loading { get => _Loading; set { _Loading = value; OnPropertyChanged(nameof(Loading)); } }
-
     public virtual IForm[] Forms() => throw new NotImplementedException();
 }

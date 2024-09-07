@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "MediaControlsExtension (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "MediaControlsExtension (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2024-08-26
+last updated: 2024-09-06
 issue id: n/a
 ---
 
@@ -67,6 +67,7 @@ functionality.
     - [Using the Clipboard](#using-the-clipboard)
   - [Advanced scenarios](#advanced-scenarios)
     - [Status messages](#status-messages)
+  - [Class diagram](#class-diagram)
   - [Future considerations](#future-considerations)
     - [Arbitrary parameters and arguments](#arbitrary-parameters-and-arguments)
     - [URI activation](#uri-activation)
@@ -487,6 +488,7 @@ information that the host application will then use to render the page.
 
 ```csharp
 interface IPage requires ICommand {
+    String Title { get; };
     Boolean Loading { get; };
 }
 ```
@@ -498,6 +500,9 @@ Pages can be one of several types, each detailed below:
 * [List](#List)
 * [Markdown](#Markdown)
 * [Form](#Form)
+
+If a page returns a null or empty `Title`, DevPal will display the `Name` of the
+`ICommand` instead.
 
 Pages have a `Loading` property which they can use to indicate to DevPal that
 the content is still loading. When `Loading` is `true`, DevPal will show an
@@ -550,10 +555,11 @@ interface ICommandContextItem requires IContextItem {
 interface ISeparatorContextItem requires IContextItem {}
 
 interface IListItem requires INotifyPropChanged {
+    IconDataType Icon{ get; };
     String Title{ get; };
     String Subtitle{ get; };
     ICommand Command{ get; };
-    IContextItem[] MoreCommands{ get; };  // TODO: name should be better
+    IContextItem[] MoreCommands{ get; };
     ITag[] Tags{ get; };
     IDetails Details{ get; };
     IFallbackHandler FallbackHandler{ get; };
@@ -594,9 +600,14 @@ they like.
 * For example: An "Agenda" extension may want to have one section for each day,
   with each section's items containing the events for the day.
 
+![Another mockup of the elements of a list item](./list-elements-mock-002.png)
 
-Each ListItem has one default `Action`. This is the action that will be run when
-the user selects the item. ListItems may also have a list of `MoreCommands`.
+Each ListItem has one default `Command`. This is the command that will be run
+when the user selects the item. If the IListItem has a non-null `Icon`, that
+icon will be displayed in the list. If the `Icon` is null, DevPal will display
+the `Icon` of the list item's `Command` instead.
+
+ ListItems may also have a list of `MoreCommands`.
 These are additional commands that the user can take on the item. These will be
 displayed to the user in the "More commands" flyout when the user has that item
 selected. As the user moves focus through the list to select different items, we
@@ -896,7 +907,6 @@ simple formatting options.
 
 ```csharp
 interface IMarkdownPage requires IPage {
-    String Title { get; };
     String[] Bodies(); // TODO! should this be an IBody, so we can make it observable?
     IDetails Details();
     IContextItem[] Commands { get; };
@@ -1271,6 +1281,165 @@ enum PageStatusKind {
 
 push pop sounds wrong. Maybe `AddStatus` and `ClearStatus`?
 
+## Class diagram
+
+This is a diagram attempting to show the relationships between the various types we've defined for the SDK. Some elements are omitted for clarity. (Notably, `IconDataType` and `IPropChanged`, which are used in many places.)
+
+The notes on the arrows help indicate the multiplicity of the relationship.
+* "*" means 0 or more (for arrays)
+* "?" means 0 or 1 (for optional/nullable properties)
+* "1" means exactly 1 (for required properties)
+
+```mermaid
+classDiagram
+    class ICommand {
+        String Name
+        IconDataType Icon
+    }
+    IPage --|> ICommand
+    class IPage  {
+        String Title
+        Boolean Loading
+    }
+
+    IInvokableCommand --|> ICommand
+    class IInvokableCommand  {
+        ICommandResult Invoke()
+    }
+
+    class IForm {
+        String TemplateJson()
+        String DataJson()
+        String StateJson()
+        ICommandResult SubmitForm(String payload)
+    }
+    IFormPage --|> IPage
+    class IFormPage  {
+        IForm[] Forms()
+    }
+    IForm "*" *-- IFormPage
+
+    IMarkdownPage --|> IPage
+    class IMarkdownPage  {
+        String[] Bodies()
+        IDetails Details()
+        IContextItem[] Commands
+    }
+    %% IMarkdownPage *-- IDetails
+    IContextItem "*" *-- IMarkdownPage
+    IDetails "?" *-- IMarkdownPage
+    %%%%%%%%%
+
+    class IFilterItem
+
+    ISeparatorFilterItem --|> IFilterItem
+    class ISeparatorFilterItem
+
+    IFilter --|> IFilterItem
+    class IFilter  {
+        String Id
+        String Name
+        IconDataType Icon
+    }
+
+    class IFilters {
+        String CurrentFilterId
+        IFilterItem[] AvailableFilters()
+    }
+    IFilterItem "*" *-- IFilters
+
+    class IFallbackHandler {
+        void UpdateQuery(String query)
+    }
+
+
+    %% IListItem --|> INotifyPropChanged
+    class IListItem  {
+        IconDataType Icon
+        String Title
+        String Subtitle
+        ICommand Command
+        IContextItem[] MoreCommands
+        ITag[] Tags
+        IDetails Details
+        IFallbackHandler FallbackHandler
+    }
+    IContextItem "*" *-- IListItem
+    IDetails "?" *-- IListItem
+    ICommand "?" *-- IListItem
+    ITag "*" *-- IListItem
+    IFallbackHandler "?" *-- IListItem
+
+    class ISection {
+        String Title
+        IListItem[] Items
+    }
+    IListItem "*" *-- ISection
+
+    class IGridProperties  {
+        Windows.Foundation.Size TileSize
+    }
+
+    IListPage --|> IPage
+    class IListPage  {
+        String SearchText
+        String PlaceholderText
+        Boolean ShowDetails
+        IFilters Filters
+        IGridProperties GridProperties
+
+        ISection[] GetItems()
+    }
+    IGridProperties "?" *-- IListPage
+    ISection "*" *-- IListPage
+    IFilters "*" *-- IListPage
+
+    IDynamicListPage --|> IListPage
+    class IDynamicListPage  {
+        ISection[] GetItems(String query)
+    }
+
+    class IDetails {
+        IconDataType HeroImage
+        String Title
+        String Body
+        IDetailsElement[] Metadata
+    }
+
+    class ITag {
+        IconDataType Icon
+        String Text
+        Windows.UI.Color Color
+        String ToolTip
+        ICommand Command
+    }
+    ICommand "?" *-- ITag
+
+    %%%%%%
+    class IContextItem
+
+    ISeparatorContextItem --|> IContextItem
+    class ISeparatorContextItem
+    ICommandContextItem --|> IContextItem
+    class ICommandContextItem  {
+        ICommand Command
+        String Tooltip
+        Boolean IsCritical
+    }
+    ICommand "?" *-- ICommandContextItem
+
+
+
+    class ICommandProvider {
+        String DisplayName
+        IconDataType Icon
+
+        IListItem[] TopLevelCommands()
+    }
+    IListItem "*" *-- ICommandProvider
+```
+
+
 ## Future considerations
 
 ### Arbitrary parameters and arguments
@@ -1355,6 +1524,7 @@ We should consider how to allow for extensions to specify a custom element to be
 shown to the user when the page stops loading and the list of elements filtered
 is empty.
 Is that just a `Details` object? A markdown body?
+
 
 ## Footnotes
 
