@@ -60,72 +60,77 @@ namespace Awake
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAwakeEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
                 Exit("PowerToys.Awake tried to start with a group policy setting that disables the tool. Please contact your system administrator.", 1);
-                return 0;
+                return 1;
             }
-
-            if (!instantiated)
+            else
             {
-                Exit(Core.Constants.AppName + " is already running! Exiting the application.", 1);
-            }
+                if (!instantiated)
+                {
+                    // Awake is already running - there is no need for us to process
+                    // anything further.
+                    Exit(Core.Constants.AppName + " is already running! Exiting the application.", 1);
+                    return 1;
+                }
+                else
+                {
+                    Logger.LogInfo($"Launching {Core.Constants.AppName}...");
+                    Logger.LogInfo(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion);
+                    Logger.LogInfo($"Build: {Core.Constants.BuildId}");
+                    Logger.LogInfo($"OS: {Environment.OSVersion}");
+                    Logger.LogInfo($"OS Build: {Manager.GetOperatingSystemBuild()}");
 
-            Logger.LogInfo($"Launching {Core.Constants.AppName}...");
-            Logger.LogInfo(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion);
-            Logger.LogInfo($"Build: {Core.Constants.BuildId}");
-            Logger.LogInfo($"OS: {Environment.OSVersion}");
-            Logger.LogInfo($"OS Build: {Manager.GetOperatingSystemBuild()}");
+                    TaskScheduler.UnobservedTaskException += (sender, args) =>
+                    {
+                        Trace.WriteLine($"Task scheduler error: {args.Exception.Message}"); // somebody forgot to check!
+                        args.SetObserved();
+                    };
 
-            TaskScheduler.UnobservedTaskException += (sender, args) =>
-            {
-                Trace.WriteLine($"Task scheduler error: {args.Exception.Message}"); // somebody forgot to check!
-                args.SetObserved();
-            };
+                    // To make it easier to diagnose future issues, let's get the
+                    // system power capabilities and aggregate them in the log.
+                    Bridge.GetPwrCapabilities(out _powerCapabilities);
+                    Logger.LogInfo(JsonSerializer.Serialize(_powerCapabilities));
 
-            // To make it easier to diagnose future issues, let's get the
-            // system power capabilities and aggregate them in the log.
-            Bridge.GetPwrCapabilities(out _powerCapabilities);
-            Logger.LogInfo(JsonSerializer.Serialize(_powerCapabilities));
+                    Logger.LogInfo("Parsing parameters...");
 
-            Logger.LogInfo("Parsing parameters...");
+                    var configOption = new Option<bool>(AliasesConfigOption, () => false, Resources.AWAKE_CMD_HELP_CONFIG_OPTION)
+                    {
+                        Arity = ArgumentArity.ZeroOrOne,
+                        IsRequired = false,
+                    };
 
-            var configOption = new Option<bool>(AliasesConfigOption, () => false, Resources.AWAKE_CMD_HELP_CONFIG_OPTION)
-            {
-                Arity = ArgumentArity.ZeroOrOne,
-                IsRequired = false,
-            };
+                    var displayOption = new Option<bool>(AliasesDisplayOption, () => true, Resources.AWAKE_CMD_HELP_DISPLAY_OPTION)
+                    {
+                        Arity = ArgumentArity.ZeroOrOne,
+                        IsRequired = false,
+                    };
 
-            var displayOption = new Option<bool>(AliasesDisplayOption, () => true, Resources.AWAKE_CMD_HELP_DISPLAY_OPTION)
-            {
-                Arity = ArgumentArity.ZeroOrOne,
-                IsRequired = false,
-            };
+                    var timeOption = new Option<uint>(AliasesTimeOption, () => 0, Resources.AWAKE_CMD_HELP_TIME_OPTION)
+                    {
+                        Arity = ArgumentArity.ExactlyOne,
+                        IsRequired = false,
+                    };
 
-            var timeOption = new Option<uint>(AliasesTimeOption, () => 0, Resources.AWAKE_CMD_HELP_TIME_OPTION)
-            {
-                Arity = ArgumentArity.ExactlyOne,
-                IsRequired = false,
-            };
+                    var pidOption = new Option<int>(AliasesPidOption, () => 0, Resources.AWAKE_CMD_HELP_PID_OPTION)
+                    {
+                        Arity = ArgumentArity.ZeroOrOne,
+                        IsRequired = false,
+                    };
 
-            var pidOption = new Option<int>(AliasesPidOption, () => 0, Resources.AWAKE_CMD_HELP_PID_OPTION)
-            {
-                Arity = ArgumentArity.ZeroOrOne,
-                IsRequired = false,
-            };
+                    var expireAtOption = new Option<string>(AliasesExpireAtOption, () => string.Empty, Resources.AWAKE_CMD_HELP_EXPIRE_AT_OPTION)
+                    {
+                        Arity = ArgumentArity.ZeroOrOne,
+                        IsRequired = false,
+                    };
 
-            var expireAtOption = new Option<string>(AliasesExpireAtOption, () => string.Empty, Resources.AWAKE_CMD_HELP_EXPIRE_AT_OPTION)
-            {
-                Arity = ArgumentArity.ZeroOrOne,
-                IsRequired = false,
-            };
+                    var parentPidOption = new Option<bool>(AliasesParentPidOption, () => true, Resources.AWAKE_CMD_PARENT_PID_OPTION)
+                    {
+                        Arity = ArgumentArity.ZeroOrOne,
+                        IsRequired = false,
+                    };
 
-            var parentPidOption = new Option<bool>(AliasesParentPidOption, () => true, Resources.AWAKE_CMD_PARENT_PID_OPTION)
-            {
-                Arity = ArgumentArity.ZeroOrOne,
-                IsRequired = false,
-            };
-
-            RootCommand? rootCommand =
-            [
-                configOption,
+                    RootCommand? rootCommand =
+                    [
+                        configOption,
                 displayOption,
                 timeOption,
                 pidOption,
@@ -133,10 +138,12 @@ namespace Awake
                 parentPidOption,
             ];
 
-            rootCommand.Description = Core.Constants.AppName;
-            rootCommand.SetHandler(HandleCommandLineArguments, configOption, displayOption, timeOption, pidOption, expireAtOption, parentPidOption);
+                    rootCommand.Description = Core.Constants.AppName;
+                    rootCommand.SetHandler(HandleCommandLineArguments, configOption, displayOption, timeOption, pidOption, expireAtOption, parentPidOption);
 
-            return rootCommand.InvokeAsync(args).Result;
+                    return rootCommand.InvokeAsync(args).Result;
+                }
+            }
         }
 
         private static void AwakeUnhandledExceptionCatcher(object sender, UnhandledExceptionEventArgs e)
