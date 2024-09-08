@@ -52,9 +52,7 @@ namespace Awake
         {
             _settingsUtils = new SettingsUtils();
             LockMutex = new Mutex(true, Core.Constants.AppName, out bool instantiated);
-
             Logger.InitializeLogger(Path.Combine("\\", Core.Constants.AppName, "Logs"));
-
             AppDomain.CurrentDomain.UnhandledException += AwakeUnhandledExceptionCatcher;
 
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAwakeEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
@@ -182,6 +180,7 @@ namespace Awake
             }
             else
             {
+                Logger.LogInfo("Starting with PID binding.");
                 _startedFromPowerToys = true;
             }
 
