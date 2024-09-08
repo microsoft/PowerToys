@@ -21,6 +21,9 @@ The build ID moniker is made up of two components - a reference to a [Halo](http
 
 ### `PROMETHEAN_09082024` (September 8, 2024)
 
+>[!NOTE]
+>See pull request: [Awake - `PROMETHEAN_09082024`](https://github.com/microsoft/PowerToys/pull/34717)
+
 - Updating the initialization logic to make sure that settings are respected for proper group policy and single-instance detection.
 
 ### `VISEGRADRELAY_08152024` (August 15, 2024)
