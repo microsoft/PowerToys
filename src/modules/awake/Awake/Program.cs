@@ -122,7 +122,7 @@ namespace Awake
                         IsRequired = false,
                     };
 
-                    var parentPidOption = new Option<bool>(AliasesParentPidOption, () => true, Resources.AWAKE_CMD_PARENT_PID_OPTION)
+                    var parentPidOption = new Option<bool>(AliasesParentPidOption, () => false, Resources.AWAKE_CMD_PARENT_PID_OPTION)
                     {
                         Arity = ArgumentArity.ZeroOrOne,
                         IsRequired = false,
@@ -131,12 +131,12 @@ namespace Awake
                     RootCommand? rootCommand =
                     [
                         configOption,
-                displayOption,
-                timeOption,
-                pidOption,
-                expireAtOption,
-                parentPidOption,
-            ];
+                        displayOption,
+                        timeOption,
+                        pidOption,
+                        expireAtOption,
+                        parentPidOption,
+                    ];
 
                     rootCommand.Description = Core.Constants.AppName;
                     rootCommand.SetHandler(HandleCommandLineArguments, configOption, displayOption, timeOption, pidOption, expireAtOption, parentPidOption);
