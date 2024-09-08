@@ -171,14 +171,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		src\.editorconfig = src\.editorconfig
 		.vsconfig = .vsconfig
+		src\Common.Dotnet.CsWinRT.props = src\Common.Dotnet.CsWinRT.props
+		src\Common.SelfContained.props = src\Common.SelfContained.props
 		Cpp.Build.props = Cpp.Build.props
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
 		Directory.Packages.props = Directory.Packages.props
 		Solution.props = Solution.props
 		src\Version.props = src\Version.props
-		src\Common.SelfContained.props = src\Common.SelfContained.props
-		src\Common.Dotnet.CsWinRT.props = src\Common.Dotnet.CsWinRT.props
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Settings.UI.Library", "src\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj", "{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}"
@@ -277,6 +277,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{B39DC643
 		src\common\utils\modulesRegistry.h = src\common\utils\modulesRegistry.h
 		src\common\utils\MsiUtils.h = src\common\utils\MsiUtils.h
 		src\common\utils\MsWindowsSettings.h = src\common\utils\MsWindowsSettings.h
+		src\common\utils\OnThreadExecutor.h = src\common\utils\OnThreadExecutor.h
 		src\common\utils\os-detect.h = src\common\utils\os-detect.h
 		src\common\utils\package.h = src\common\utils\package.h
 		src\common\utils\ProcessWaiter.h = src\common\utils\ProcessWaiter.h
@@ -456,7 +457,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileLocksmithExt", "src\mod
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileLocksmithUI", "src\modules\FileLocksmith\FileLocksmithUI\FileLocksmithUI.csproj", "{E69B044A-2F8A-45AA-AD0B-256C59421807}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileLocksmithLibInterop", "src\modules\FileLocksmith\FileLocksmithLibInterop\FileLocksmithLibInterop.vcxproj", "{C604B37E-9D0E-4484-8778-E8B31B0E1B3A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToys.FileLocksmithLib.Interop", "src\modules\FileLocksmith\FileLocksmithLibInterop\FileLocksmithLibInterop.vcxproj", "{C604B37E-9D0E-4484-8778-E8B31B0E1B3A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GPOWrapper", "src\common\GPOWrapper\GPOWrapper.vcxproj", "{E599C30B-9DC8-4E5A-BF27-93D4CCEDE788}"
 EndProject
@@ -582,6 +583,37 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerToys.Settings.DSC.Sche
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToys.Interop", "src\common\interop\PowerToys.Interop.vcxproj", "{F055103B-F80B-4D0C-BF48-057C55620033}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workspaces", "Workspaces", "{A2221D7E-55E7-4BEA-90D1-4F162D670BBF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workspaces-common", "workspaces-common", "{BE126CBB-AE12-406A-9837-A05ACFCA57A7}"
+	ProjectSection(SolutionItems) = preProject
+		src\modules\Workspaces\workspaces-common\GuidUtils.h = src\modules\Workspaces\workspaces-common\GuidUtils.h
+		src\modules\Workspaces\workspaces-common\InvokePoint.h = src\modules\Workspaces\workspaces-common\InvokePoint.h
+		src\modules\Workspaces\workspaces-common\MonitorEnumerator.h = src\modules\Workspaces\workspaces-common\MonitorEnumerator.h
+		src\modules\Workspaces\workspaces-common\MonitorUtils.h = src\modules\Workspaces\workspaces-common\MonitorUtils.h
+		src\modules\Workspaces\workspaces-common\VirtualDesktop.h = src\modules\Workspaces\workspaces-common\VirtualDesktop.h
+		src\modules\Workspaces\workspaces-common\WindowEnumerator.h = src\modules\Workspaces\workspaces-common\WindowEnumerator.h
+		src\modules\Workspaces\workspaces-common\WindowFilter.h = src\modules\Workspaces\workspaces-common\WindowFilter.h
+		src\modules\Workspaces\workspaces-common\WindowUtils.h = src\modules\Workspaces\workspaces-common\WindowUtils.h
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WindowProperties", "WindowProperties", "{14CB58B7-D280-4A7A-95DE-4B2DF14EA000}"
+	ProjectSection(SolutionItems) = preProject
+		src\modules\Workspaces\WindowProperties\WorkspacesWindowPropertyUtils.h = src\modules\Workspaces\WindowProperties\WorkspacesWindowPropertyUtils.h
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WorkspacesLib", "src\modules\Workspaces\WorkspacesLib\WorkspacesLib.vcxproj", "{B31FCC55-B5A4-4EA7-B414-2DCEAE6AF332}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkspacesLauncherUI", "src\modules\Workspaces\WorkspacesLauncherUI\WorkspacesLauncherUI.csproj", "{9C53CC25-0623-4569-95BC-B05410675EE3}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WorkspacesModuleInterface", "src\modules\Workspaces\WorkspacesModuleInterface\WorkspacesModuleInterface.vcxproj", "{45285DF2-9742-4ECA-9AC9-58951FC26489}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WorkspacesSnapshotTool", "src\modules\Workspaces\WorkspacesSnapshotTool\WorkspacesSnapshotTool.vcxproj", "{3D63307B-9D27-44FD-B033-B26F39245B85}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkspacesEditor", "src\modules\Workspaces\WorkspacesEditor\WorkspacesEditor.csproj", "{367D7543-7DBA-4381-99F1-BF6142A996C4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WorkspacesLauncher", "src\modules\Workspaces\WorkspacesLauncher\WorkspacesLauncher.vcxproj", "{2CAC093E-5FCF-4102-9C2C-AC7DD5D9EB96}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -2601,6 +2633,78 @@ Global
 		{F055103B-F80B-4D0C-BF48-057C55620033}.Release|x64.Build.0 = Release|x64
 		{F055103B-F80B-4D0C-BF48-057C55620033}.Release|x86.ActiveCfg = Release|x64
 		{F055103B-F80B-4D0C-BF48-057C55620033}.Release|x86.Build.0 = Release|x64
+		{B31FCC55-B5A4-4EA7-B414-2DCEAE6AF332}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{B31FCC55-B5A4-4EA7-B414-2DCEAE6AF332}.Debug|ARM64.Build.0 = Debug|ARM64
+		{B31FCC55-B5A4-4EA7-B414-2DCEAE6AF332}.Debug|x64.ActiveCfg = Debug|x64
+		{B31FCC55-B5A4-4EA7-B414-2DCEAE6AF332}.Debug|x64.Build.0 = Debug|x64
+		{B31FCC55-B5A4-4EA7-B414-2DCEAE6AF332}.Debug|x86.ActiveCfg = Debug|x64
+		{B31FCC55-B5A4-4EA7-B414-2DCEAE6AF332}.Debug|x86.Build.0 = Debug|x64
+		{B31FCC55-B5A4-4EA7-B414-2DCEAE6AF332}.Release|ARM64.ActiveCfg = Release|ARM64
+		{B31FCC55-B5A4-4EA7-B414-2DCEAE6AF332}.Release|ARM64.Build.0 = Release|ARM64
+		{B31FCC55-B5A4-4EA7-B414-2DCEAE6AF332}.Release|x64.ActiveCfg = Release|x64
+		{B31FCC55-B5A4-4EA7-B414-2DCEAE6AF332}.Release|x64.Build.0 = Release|x64
+		{B31FCC55-B5A4-4EA7-B414-2DCEAE6AF332}.Release|x86.ActiveCfg = Release|x64
+		{B31FCC55-B5A4-4EA7-B414-2DCEAE6AF332}.Release|x86.Build.0 = Release|x64
+		{9C53CC25-0623-4569-95BC-B05410675EE3}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{9C53CC25-0623-4569-95BC-B05410675EE3}.Debug|ARM64.Build.0 = Debug|ARM64
+		{9C53CC25-0623-4569-95BC-B05410675EE3}.Debug|x64.ActiveCfg = Debug|x64
+		{9C53CC25-0623-4569-95BC-B05410675EE3}.Debug|x64.Build.0 = Debug|x64
+		{9C53CC25-0623-4569-95BC-B05410675EE3}.Debug|x86.ActiveCfg = Debug|x64
+		{9C53CC25-0623-4569-95BC-B05410675EE3}.Debug|x86.Build.0 = Debug|x64
+		{9C53CC25-0623-4569-95BC-B05410675EE3}.Release|ARM64.ActiveCfg = Release|ARM64
+		{9C53CC25-0623-4569-95BC-B05410675EE3}.Release|ARM64.Build.0 = Release|ARM64
+		{9C53CC25-0623-4569-95BC-B05410675EE3}.Release|x64.ActiveCfg = Release|x64
+		{9C53CC25-0623-4569-95BC-B05410675EE3}.Release|x64.Build.0 = Release|x64
+		{9C53CC25-0623-4569-95BC-B05410675EE3}.Release|x86.ActiveCfg = Release|x64
+		{9C53CC25-0623-4569-95BC-B05410675EE3}.Release|x86.Build.0 = Release|x64
+		{45285DF2-9742-4ECA-9AC9-58951FC26489}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{45285DF2-9742-4ECA-9AC9-58951FC26489}.Debug|ARM64.Build.0 = Debug|ARM64
+		{45285DF2-9742-4ECA-9AC9-58951FC26489}.Debug|x64.ActiveCfg = Debug|x64
+		{45285DF2-9742-4ECA-9AC9-58951FC26489}.Debug|x64.Build.0 = Debug|x64
+		{45285DF2-9742-4ECA-9AC9-58951FC26489}.Debug|x86.ActiveCfg = Debug|x64
+		{45285DF2-9742-4ECA-9AC9-58951FC26489}.Debug|x86.Build.0 = Debug|x64
+		{45285DF2-9742-4ECA-9AC9-58951FC26489}.Release|ARM64.ActiveCfg = Release|ARM64
+		{45285DF2-9742-4ECA-9AC9-58951FC26489}.Release|ARM64.Build.0 = Release|ARM64
+		{45285DF2-9742-4ECA-9AC9-58951FC26489}.Release|x64.ActiveCfg = Release|x64
+		{45285DF2-9742-4ECA-9AC9-58951FC26489}.Release|x64.Build.0 = Release|x64
+		{45285DF2-9742-4ECA-9AC9-58951FC26489}.Release|x86.ActiveCfg = Release|x64
+		{45285DF2-9742-4ECA-9AC9-58951FC26489}.Release|x86.Build.0 = Release|x64
+		{3D63307B-9D27-44FD-B033-B26F39245B85}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{3D63307B-9D27-44FD-B033-B26F39245B85}.Debug|ARM64.Build.0 = Debug|ARM64
+		{3D63307B-9D27-44FD-B033-B26F39245B85}.Debug|x64.ActiveCfg = Debug|x64
+		{3D63307B-9D27-44FD-B033-B26F39245B85}.Debug|x64.Build.0 = Debug|x64
+		{3D63307B-9D27-44FD-B033-B26F39245B85}.Debug|x86.ActiveCfg = Debug|x64
+		{3D63307B-9D27-44FD-B033-B26F39245B85}.Debug|x86.Build.0 = Debug|x64
+		{3D63307B-9D27-44FD-B033-B26F39245B85}.Release|ARM64.ActiveCfg = Release|ARM64
+		{3D63307B-9D27-44FD-B033-B26F39245B85}.Release|ARM64.Build.0 = Release|ARM64
+		{3D63307B-9D27-44FD-B033-B26F39245B85}.Release|x64.ActiveCfg = Release|x64
+		{3D63307B-9D27-44FD-B033-B26F39245B85}.Release|x64.Build.0 = Release|x64
+		{3D63307B-9D27-44FD-B033-B26F39245B85}.Release|x86.ActiveCfg = Release|x64
+		{3D63307B-9D27-44FD-B033-B26F39245B85}.Release|x86.Build.0 = Release|x64
+		{367D7543-7DBA-4381-99F1-BF6142A996C4}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{367D7543-7DBA-4381-99F1-BF6142A996C4}.Debug|ARM64.Build.0 = Debug|ARM64
+		{367D7543-7DBA-4381-99F1-BF6142A996C4}.Debug|x64.ActiveCfg = Debug|x64
+		{367D7543-7DBA-4381-99F1-BF6142A996C4}.Debug|x64.Build.0 = Debug|x64
+		{367D7543-7DBA-4381-99F1-BF6142A996C4}.Debug|x86.ActiveCfg = Debug|x64
+		{367D7543-7DBA-4381-99F1-BF6142A996C4}.Debug|x86.Build.0 = Debug|x64
+		{367D7543-7DBA-4381-99F1-BF6142A996C4}.Release|ARM64.ActiveCfg = Release|ARM64
+		{367D7543-7DBA-4381-99F1-BF6142A996C4}.Release|ARM64.Build.0 = Release|ARM64
+		{367D7543-7DBA-4381-99F1-BF6142A996C4}.Release|x64.ActiveCfg = Release|x64
+		{367D7543-7DBA-4381-99F1-BF6142A996C4}.Release|x64.Build.0 = Release|x64
+		{367D7543-7DBA-4381-99F1-BF6142A996C4}.Release|x86.ActiveCfg = Release|x64
+		{367D7543-7DBA-4381-99F1-BF6142A996C4}.Release|x86.Build.0 = Release|x64
+		{2CAC093E-5FCF-4102-9C2C-AC7DD5D9EB96}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{2CAC093E-5FCF-4102-9C2C-AC7DD5D9EB96}.Debug|ARM64.Build.0 = Debug|ARM64
+		{2CAC093E-5FCF-4102-9C2C-AC7DD5D9EB96}.Debug|x64.ActiveCfg = Debug|x64
+		{2CAC093E-5FCF-4102-9C2C-AC7DD5D9EB96}.Debug|x64.Build.0 = Debug|x64
+		{2CAC093E-5FCF-4102-9C2C-AC7DD5D9EB96}.Debug|x86.ActiveCfg = Debug|x64
+		{2CAC093E-5FCF-4102-9C2C-AC7DD5D9EB96}.Debug|x86.Build.0 = Debug|x64
+		{2CAC093E-5FCF-4102-9C2C-AC7DD5D9EB96}.Release|ARM64.ActiveCfg = Release|ARM64
+		{2CAC093E-5FCF-4102-9C2C-AC7DD5D9EB96}.Release|ARM64.Build.0 = Release|ARM64
+		{2CAC093E-5FCF-4102-9C2C-AC7DD5D9EB96}.Release|x64.ActiveCfg = Release|x64
+		{2CAC093E-5FCF-4102-9C2C-AC7DD5D9EB96}.Release|x64.Build.0 = Release|x64
+		{2CAC093E-5FCF-4102-9C2C-AC7DD5D9EB96}.Release|x86.ActiveCfg = Release|x64
+		{2CAC093E-5FCF-4102-9C2C-AC7DD5D9EB96}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2817,6 +2921,15 @@ Global
 		{C0974915-8A1D-4BF0-977B-9587D3807AB7} = {D1D6BC88-09AE-4FB4-AD24-5DED46A791DD}
 		{1D6893CB-BC0C-46A8-A76C-9728706CA51A} = {557C4636-D7E1-4838-A504-7D19B725EE95}
 		{F055103B-F80B-4D0C-BF48-057C55620033} = {5A7818A8-109C-4E1C-850D-1A654E234B0E}
+		{A2221D7E-55E7-4BEA-90D1-4F162D670BBF} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
+		{BE126CBB-AE12-406A-9837-A05ACFCA57A7} = {A2221D7E-55E7-4BEA-90D1-4F162D670BBF}
+		{14CB58B7-D280-4A7A-95DE-4B2DF14EA000} = {A2221D7E-55E7-4BEA-90D1-4F162D670BBF}
+		{B31FCC55-B5A4-4EA7-B414-2DCEAE6AF332} = {A2221D7E-55E7-4BEA-90D1-4F162D670BBF}
+		{9C53CC25-0623-4569-95BC-B05410675EE3} = {A2221D7E-55E7-4BEA-90D1-4F162D670BBF}
+		{45285DF2-9742-4ECA-9AC9-58951FC26489} = {A2221D7E-55E7-4BEA-90D1-4F162D670BBF}
+		{3D63307B-9D27-44FD-B033-B26F39245B85} = {A2221D7E-55E7-4BEA-90D1-4F162D670BBF}
+		{367D7543-7DBA-4381-99F1-BF6142A996C4} = {A2221D7E-55E7-4BEA-90D1-4F162D670BBF}
+		{2CAC093E-5FCF-4102-9C2C-AC7DD5D9EB96} = {A2221D7E-55E7-4BEA-90D1-4F162D670BBF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

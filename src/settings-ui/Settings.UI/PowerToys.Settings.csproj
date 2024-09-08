@@ -117,4 +117,13 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Page Update="SettingsXAML\OOBE\Views\OobeWorkspaces.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
+    <Page Update="SettingsXAML\Views\WorkspacesPage.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
+  </ItemGroup>
+
 </Project>

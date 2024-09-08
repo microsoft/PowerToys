@@ -116,6 +116,14 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                     break;
 
+                case ModuleType.Workspaces: // Launch Workspaces Editor
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.WorkspacesLaunchEditorEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
+                    break;
+
                 case ModuleType.ShortcutGuide: // Launch Shortcut Guide
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShortcutGuideTriggerEvent()))
                     {

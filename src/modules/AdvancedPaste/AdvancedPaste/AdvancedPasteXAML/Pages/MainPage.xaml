@@ -5,14 +5,21 @@
     xmlns:controls="using:AdvancedPaste.Controls"
     xmlns:converters="using:AdvancedPaste.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:library="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:local="using:AdvancedPaste.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     KeyDown="Page_KeyDown"
     KeyboardAcceleratorPlacementMode="Hidden"
     mc:Ignorable="d">
     <Page.Resources>
-        <converters:ListViewIndexConverter x:Name="listViewIndexConverter" />
+        <tkconverters:BoolToVisibilityConverter x:Name="BoolToVisibilityConverter" />
+        <converters:CountToVisibilityConverter x:Name="countToVisibilityConverter" />
+        <converters:CountToDoubleConverter
+            x:Name="customActionsCountToMinHeightConverter"
+            ValueIfNonZero="40"
+            ValueIfZero="0" />
         <Style
             x:Key="PaddingLessFlyoutPresenterStyle"
             BasedOn="{StaticResource DefaultFlyoutPresenterStyle}"
@@ -21,6 +28,38 @@
                 <Setter Property="Padding" Value="0" />
             </Style.Setters>
         </Style>
+        <DataTemplate x:Key="PasteFormatTemplate" x:DataType="local:PasteFormat">
+            <Grid>
+                <ToolTipService.ToolTip>
+                    <TextBlock Text="{x:Bind ToolTip}" />
+                </ToolTipService.ToolTip>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="26" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <FontIcon
+                    Margin="0,0,0,0"
+                    VerticalAlignment="Center"
+                    AutomationProperties.AccessibilityView="Raw"
+                    FontSize="16"
+                    Glyph="{x:Bind IconGlyph}" />
+                <TextBlock
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    x:Phase="1"
+                    Text="{x:Bind Name}" />
+                <TextBlock
+                    Grid.Column="2"
+                    Margin="0,0,8,0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind ShortcutText, Mode=OneWay}"
+                    Visibility="{x:Bind ShortcutText.Length, Mode=OneWay, Converter={StaticResource countToVisibilityConverter}}" />
+            </Grid>
+        </DataTemplate>
     </Page.Resources>
     <Page.KeyboardAccelerators>
         <KeyboardAccelerator Key="Escape" Invoked="KeyboardAccelerator_Invoked" />
@@ -34,6 +73,30 @@
             Modifiers="Control" />
         <KeyboardAccelerator
             Key="Number3"
+            Invoked="KeyboardAccelerator_Invoked"
+            Modifiers="Control" />
+        <KeyboardAccelerator
+            Key="Number4"
+            Invoked="KeyboardAccelerator_Invoked"
+            Modifiers="Control" />
+        <KeyboardAccelerator
+            Key="Number5"
+            Invoked="KeyboardAccelerator_Invoked"
+            Modifiers="Control" />
+        <KeyboardAccelerator
+            Key="Number6"
+            Invoked="KeyboardAccelerator_Invoked"
+            Modifiers="Control" />
+        <KeyboardAccelerator
+            Key="Number7"
+            Invoked="KeyboardAccelerator_Invoked"
+            Modifiers="Control" />
+        <KeyboardAccelerator
+            Key="Number8"
+            Invoked="KeyboardAccelerator_Invoked"
+            Modifiers="Control" />
+        <KeyboardAccelerator
+            Key="Number9"
             Invoked="KeyboardAccelerator_Invoked"
             Modifiers="Control" />
     </Page.KeyboardAccelerators>
@@ -103,73 +166,55 @@
             BorderThickness="0,1,0,0"
             RowSpacing="4">
             <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" MinHeight="{x:Bind ViewModel.CustomActionPasteFormats.Count, Mode=OneWay, Converter={StaticResource customActionsCountToMinHeightConverter}}" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-
             <ListView
                 x:Name="PasteOptionsListView"
+                Grid.Row="0"
                 VerticalAlignment="Bottom"
+                IsEnabled="{x:Bind ViewModel.IsClipboardDataText, Mode=OneWay}"
                 IsItemClickEnabled="True"
-                ItemClick="PasteOptionsListView_ItemClick"
+                ItemClick="ListView_Click"
                 ItemContainerTransitions="{x:Null}"
-                ItemsSource="{x:Bind pasteFormats, Mode=OneWay}"
+                ItemTemplate="{StaticResource PasteFormatTemplate}"
+                ItemsSource="{x:Bind ViewModel.StandardPasteFormats, Mode=OneWay}"
                 SelectionMode="None"
-                TabIndex="1">
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="local:PasteFormat">
-                        <Grid>
-                            <ToolTipService.ToolTip>
-                                <TextBlock>
-                                    <Run Text="{x:Bind Name}" />
-                                    <Run Text="(" /><Run Text="Ctrl" /><Run Text="+" /><Run Text="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource listViewIndexConverter}}" /><Run Text=")" />
-                                </TextBlock>
-                            </ToolTipService.ToolTip>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="26" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <Viewbox
-                                x:Name="IconHolderBox"
-                                MaxWidth="16"
-                                MaxHeight="16"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center">
-                                <ContentPresenter
-                                    x:Name="IconHolder"
-                                    x:Phase="2"
-                                    Content="{x:Bind Icon}" />
-                            </Viewbox>
-                            <TextBlock
-                                Grid.Column="1"
-                                VerticalAlignment="Center"
-                                x:Phase="1"
-                                Text="{x:Bind Name}" />
-
-                            <TextBlock
-                                Grid.Column="2"
-                                Margin="0,0,8,0"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Style="{StaticResource CaptionTextBlockStyle}">
-                                <Run Text="Ctrl" /><Run Text="+" /><Run Text="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource listViewIndexConverter}}" />
-                            </TextBlock>
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
+                TabIndex="1" />
 
             <Rectangle
                 Grid.Row="1"
                 Height="1"
                 HorizontalAlignment="Stretch"
+                Fill="{ThemeResource DividerStrokeColorDefaultBrush}"
+                Visibility="{x:Bind ViewModel.CustomActionPasteFormats.Count, Mode=OneWay, Converter={StaticResource countToVisibilityConverter}}" />
+
+            <ListView
+                x:Name="CustomActionsListView"
+                Grid.Row="2"
+                VerticalAlignment="Top"
+                IsEnabled="{x:Bind ViewModel.IsCustomAIEnabled, Mode=OneWay}"
+                IsItemClickEnabled="True"
+                ItemClick="ListView_Click"
+                ItemContainerTransitions="{x:Null}"
+                ItemTemplate="{StaticResource PasteFormatTemplate}"
+                ItemsSource="{x:Bind ViewModel.CustomActionPasteFormats, Mode=OneWay}"
+                ScrollViewer.VerticalScrollBarVisibility="Visible"
+                ScrollViewer.VerticalScrollMode="Auto"
+                SelectionMode="None"
+                TabIndex="2" />
+
+            <Rectangle
+                Grid.Row="3"
+                Height="1"
+                HorizontalAlignment="Stretch"
                 Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
             <!--  x:Uid="ClipboardHistoryButton"  -->
             <Button
-                Grid.Row="2"
+                Grid.Row="4"
                 Height="32"
                 Margin="4,0,4,4"
                 Padding="{StaticResource ButtonPadding}"

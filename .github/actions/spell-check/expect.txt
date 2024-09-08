@@ -56,11 +56,14 @@ APPBARDATA
 appdata
 APPEXECLINK
 Appium
+applayout
 Applicationcan
+APPLICATIONFRAMEHOST
 appmanifest
 APPNAME
 appref
 appsettings
+appsfolder
 appwindow
 appwiz
 APSTUDIO
@@ -240,6 +243,7 @@ CONTEXTMENUHANDLER
 CONTROLL
 CONTROLPARENT
 copiedcolorrepresentation
+COREWINDOW
 cotaskmem
 COULDNOT
 countof
@@ -832,6 +836,7 @@ lpwcx
 lpwndpl
 LReader
 LRESULT
+LSTATUS
 lstrcmp
 lstrcmpi
 lstrlen
@@ -1205,6 +1210,8 @@ projectname
 PROPBAG
 PROPERTYKEY
 propkey
+propsys
+PROPVARIANT
 propvarutil
 prvpane
 psapi
@@ -1370,6 +1377,7 @@ sddl
 SDKDDK
 sdns
 searchterm
+SEARCHUI
 secpol
 SENDCHANGE
 sendinput
@@ -1552,7 +1560,9 @@ SYSKEYUP
 SYSLIB
 SYSMENU
 SYSTEMAPPS
+systemsettings
 SYSTEMTIME
+SYSTEMWOW
 tapp
 TApplication
 TApplied
@@ -1664,9 +1674,11 @@ urlmon
 Usb
 USEDEFAULT
 USEFILEATTRIBUTES
+USEPOSITION
 USERDATA
 Userenv
 USESHOWWINDOW
+USESIZE
 USESTDHANDLES
 USRDLL
 UType
@@ -1734,6 +1746,7 @@ vswhere
 Vtbl
 WANTPALM
 wbem
+Wbemidl
 wbemuuid
 WBounds
 Wca
@@ -1821,6 +1834,9 @@ WNDCLASSEXW
 WNDCLASSW
 WNDPROC
 workarounds
+WORKSPACESEDITOR
+WORKSPACESLAUNCHER
+WORKSPACESSNAPSHOTTOOL
 wox
 wparam
 wpf
