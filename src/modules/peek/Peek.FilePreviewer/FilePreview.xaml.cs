@@ -337,10 +337,8 @@ namespace Peek.FilePreviewer
             }
 
             // Fetch and format available file properties
-            var sb = new StringBuilder(256);
-
             string fileNameFormatted = ReadableStringHelper.FormatResourceString("PreviewTooltip_FileName", Item.Name);
-            sb.Append(fileNameFormatted);
+            var sb = new StringBuilder(fileNameFormatted, 256);
 
             cancellationToken.ThrowIfCancellationRequested();
             string fileType = await Task.Run(Item.GetContentTypeAsync);
@@ -366,13 +364,12 @@ namespace Peek.FilePreviewer
             var previewControl = sender as FrameworkElement;
             if (previewControl != null)
             {
-                var placement = (e.GetCurrentPoint(previewControl).Position.Y < previewControl.ActualHeight / 2) ?
-                    PlacementMode.Bottom : PlacementMode.Top;
-
                 var toolTip = ToolTipService.GetToolTip(previewControl) as ToolTip;
                 if (toolTip != null)
                 {
-                    toolTip.Placement = placement;
+                    var pos = e.GetCurrentPoint(previewControl).Position;
+                    toolTip.Placement = pos.Y < previewControl.ActualHeight / 2 ?
+                        PlacementMode.Bottom : PlacementMode.Top;
                 }
             }
         }
