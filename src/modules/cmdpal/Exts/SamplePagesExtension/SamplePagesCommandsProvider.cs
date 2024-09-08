@@ -30,11 +30,16 @@ public class SamplePagesCommandsProvider : ICommandProvider
            Title = "Form Page Sample Command",
            Subtitle = "SamplePages Extension",
        },
-        new ListItem(new SampleListPageWithDetails())
-        {
-            Title = "List Page With Details Sample Command",
-            Subtitle = "SamplePages Extension",
-        }
+       new ListItem(new SampleListPageWithDetails())
+       {
+           Title = "List Page With Details Sample Command",
+           Subtitle = "SamplePages Extension",
+       },
+       new ListItem(new SampleDynamicListPage())
+       {
+           Title = "Dynamic List Page Command",
+           Subtitle = "SamplePages Extension",
+       }
     ];
 
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize

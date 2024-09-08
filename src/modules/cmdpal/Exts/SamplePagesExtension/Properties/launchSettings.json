@@ -1,9 +1,9 @@
 {
   "profiles": {
-    "SSHKeychainExtension (Package)": {
+    "SamplePagesExtension (Package)": {
       "commandName": "MsixPackage"
     },
-    "SSHKeychainExtension (Unpackaged)": {
+    "SamplePagesExtension (Unpackaged)": {
       "commandName": "Project"
     }
   }
