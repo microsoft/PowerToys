@@ -303,40 +303,46 @@ namespace Awake
         {
             try
             {
-                var directory = Path.GetDirectoryName(settingsPath)!;
-                var fileName = Path.GetFileName(settingsPath);
-
-                _watcher = new FileSystemWatcher
-                {
-                    Path = directory,
-                    EnableRaisingEvents = true,
-                    NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime,
-                    Filter = fileName,
-                };
-
-                var mergedObservable = Observable.Merge(
-                    Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
-                        h => _watcher.Changed += h,
-                        h => _watcher.Changed -= h),
-                    Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
-                        h => _watcher.Created += h,
-                        h => _watcher.Created -= h));
-
-                mergedObservable
-                    .Throttle(TimeSpan.FromMilliseconds(25))
-                    .SubscribeOn(TaskPoolScheduler.Default)
-                    .Select(e => e.EventArgs)
-                    .Subscribe(HandleAwakeConfigChange);
-
-                var settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Core.Constants.AppName) ?? new AwakeSettings();
-                TrayHelper.SetTray(settings, _startedFromPowerToys);
-
+                SetupFileSystemWatcher(settingsPath);
+                InitializeSettings();
                 ProcessSettings();
             }
             catch (Exception ex)
             {
                 Logger.LogError($"An error occurred scaffolding the configuration. Error details: {ex.Message}");
             }
+        }
+
+        private static void SetupFileSystemWatcher(string settingsPath)
+        {
+            var directory = Path.GetDirectoryName(settingsPath)!;
+            var fileName = Path.GetFileName(settingsPath);
+
+            _watcher = new FileSystemWatcher
+            {
+                Path = directory,
+                EnableRaisingEvents = true,
+                NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime,
+                Filter = fileName,
+            };
+
+            Observable.Merge(
+                Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
+                    h => _watcher.Changed += h,
+                    h => _watcher.Changed -= h),
+                Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
+                    h => _watcher.Created += h,
+                    h => _watcher.Created -= h))
+            .Throttle(TimeSpan.FromMilliseconds(25))
+            .SubscribeOn(TaskPoolScheduler.Default)
+            .Select(e => e.EventArgs)
+            .Subscribe(HandleAwakeConfigChange);
+        }
+
+        private static void InitializeSettings()
+        {
+            var settings = Manager.ModuleSettings?.GetSettings<AwakeSettings>(Core.Constants.AppName) ?? new AwakeSettings();
+            TrayHelper.SetTray(settings, _startedFromPowerToys);
         }
 
         private static void HandleAwakeConfigChange(FileSystemEventArgs fileEvent)
