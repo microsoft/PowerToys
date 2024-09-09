@@ -4285,6 +4285,26 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Workspaces_ShortDescription" xml:space="preserve">
     <value>Create and launch Workspaces</value>
   </data>
+  <data name="Shell_ZoomIt.Content" xml:space="preserve">
+    <value>ZoomIt</value>
+    <comment>{Locked="ZoomIt"}</comment>
+  </data>
+  <data name="ZoomIt_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable ZoomIt</value>
+    <comment>{Locked="ZoomIt"}</comment>
+  </data>
+  <data name="ZoomIt.ModuleDescription" xml:space="preserve">
+    <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
+    <comment>{Locked="ZoomIt"}</comment>
+  </data>
+  <data name="ZoomIt.ModuleTitle" xml:space="preserve">
+    <value>ZoomIt</value>
+    <comment>{Locked="ZoomIt"}</comment>
+  </data>
+  <data name="LearnMore_ZoomIt.Text" xml:space="preserve">
+    <value>Learn more about ZoomIt</value>
+    <comment>{Locked="ZoomIt"}</comment>
+  </data>
   <data name="MouseWithoutBorders_PolicyIPAddressMappingInfo.Title" xml:space="preserve">
     <value>Rules defined by your organization</value>
   </data>
