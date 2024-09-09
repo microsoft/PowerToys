@@ -40,6 +40,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredTextExtractorEnabledValue();
         static GpoRuleConfigured GetConfiguredAdvancedPasteEnabledValue();
         static GpoRuleConfigured GetConfiguredVideoConferenceMuteEnabledValue();
+        static GpoRuleConfigured GetConfiguredZoomItEnabledValue();
         static GpoRuleConfigured GetConfiguredPeekEnabledValue();
         static GpoRuleConfigured GetDisableNewUpdateToastValue();
         static GpoRuleConfigured GetDisableAutomaticUpdateDownloadValue();

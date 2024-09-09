@@ -57,9 +57,7 @@ public:
     // Return the configured status for the gpo policy for the module
     virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
     {
-        // TODO: GPO
-        // return powertoys_gpo::getConfiguredZoomItEnabledValue();
-        return powertoys_gpo::gpo_rule_configured_not_configured;
+        return powertoys_gpo::getConfiguredZoomItEnabledValue();
     }
 
     // Return JSON with the configuration options.
