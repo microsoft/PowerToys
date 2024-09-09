@@ -55,18 +55,18 @@ namespace Awake
             Logger.InitializeLogger(Path.Combine("\\", Core.Constants.AppName, "Logs"));
             AppDomain.CurrentDomain.UnhandledException += AwakeUnhandledExceptionCatcher;
 
-            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAwakeEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            if (!instantiated)
             {
-                Exit("PowerToys.Awake tried to start with a group policy setting that disables the tool. Please contact your system administrator.", 1);
+                // Awake is already running - there is no need for us to process
+                // anything further
+                Exit(Core.Constants.AppName + " is already running! Exiting the application.", 1);
                 return 1;
             }
             else
             {
-                if (!instantiated)
+                if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAwakeEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
                 {
-                    // Awake is already running - there is no need for us to process
-                    // anything further.
-                    Exit(Core.Constants.AppName + " is already running! Exiting the application.", 1);
+                    Exit("PowerToys.Awake tried to start with a group policy setting that disables the tool. Please contact your system administrator.", 1);
                     return 1;
                 }
                 else
@@ -171,12 +171,7 @@ namespace Awake
             if (pid == 0 && !useParentPid)
             {
                 Logger.LogInfo("No PID specified. Allocating console...");
-                Manager.AllocateConsole();
-
-                _handler += new ConsoleEventHandler(ExitHandler);
-                Manager.SetConsoleControlHandler(_handler, true);
-
-                Trace.Listeners.Add(new ConsoleTraceListener());
+                AllocateLocalConsole();
             }
             else
             {
@@ -238,7 +233,7 @@ namespace Awake
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError($"There was a problem with the configuration file. Make sure it exists.\n{ex.Message}");
+                    Logger.LogError($"There was a problem with the configuration file. Make sure it exists. {ex.Message}");
                 }
             }
             else if (pid != 0 || useParentPid)
@@ -297,6 +292,16 @@ namespace Awake
                     }
                 }
             }
+        }
+
+        private static void AllocateLocalConsole()
+        {
+            Manager.AllocateConsole();
+
+            _handler += new ConsoleEventHandler(ExitHandler);
+            Manager.SetConsoleControlHandler(_handler, true);
+
+            Trace.Listeners.Add(new ConsoleTraceListener());
         }
 
         private static void ScaffoldConfiguration(string settingsPath)
@@ -362,7 +367,9 @@ namespace Awake
         {
             try
             {
-                var settings = _settingsUtils!.GetSettings<AwakeSettings>(Core.Constants.AppName) ?? throw new InvalidOperationException("Settings are null.");
+                var settings = _settingsUtils!.GetSettings<AwakeSettings>(Core.Constants.AppName)
+                    ?? throw new InvalidOperationException("Settings are null.");
+
                 Logger.LogInfo($"Identified custom time shortcuts for the tray: {settings.Properties.CustomTrayTimes.Count}");
 
                 switch (settings.Properties.Mode)
@@ -376,7 +383,7 @@ namespace Awake
                         break;
 
                     case AwakeMode.TIMED:
-                        uint computedTime = (settings.Properties.IntervalHours * 60 * 60) + (settings.Properties.IntervalMinutes * 60);
+                        uint computedTime = (settings.Properties.IntervalHours * 3600) + (settings.Properties.IntervalMinutes * 60);
                         Manager.SetTimedKeepAwake(computedTime, settings.Properties.KeepDisplayOn);
                         break;
 
