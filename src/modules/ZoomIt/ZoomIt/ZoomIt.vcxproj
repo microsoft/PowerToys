@@ -33,6 +33,7 @@
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
+    <TargetName>PowerToys.$(MSBuildProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <UseOfMfc>false</UseOfMfc>
