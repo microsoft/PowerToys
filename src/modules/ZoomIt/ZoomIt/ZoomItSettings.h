@@ -1,8 +1,7 @@
 #pragma once
-#include "pch.h"
-
 #include "zoomit.h"
-#include "Utility.h"
+#include "Registry.h"
+#include "DemoType.h"
 
 DWORD	g_ToggleKey = (HOTKEYF_CONTROL << 8)| '1';
 DWORD	g_LiveZoomToggleKey = ((HOTKEYF_CONTROL) << 8)| '4';

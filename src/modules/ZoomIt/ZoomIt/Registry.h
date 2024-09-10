@@ -7,6 +7,7 @@
 // Registry.h
 //
 //============================================================================
+#pragma once
 
 typedef enum {
 	SETTING_TYPE_DWORD,
