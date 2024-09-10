@@ -18,12 +18,6 @@
     <ClCompile Include="Zoomit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="modules\Common\dll.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="modules\Common\Eula\eula.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="VideoRecordingSession.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -31,9 +25,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="modules\Common\WindowsVersions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SelectRectangle.cpp">
@@ -48,6 +39,15 @@
     <ClCompile Include="DemoType.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\common\sysinternals\dll.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\common\sysinternals\Eula\eula.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\common\sysinternals\WindowsVersions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Registry.h">
@@ -57,9 +57,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ZoomIt.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="modules\Common\Eula\Eula.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
@@ -75,6 +72,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DemoType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\common\sysinternals\Eula\Eula.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ZoomItSettings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -7,6 +7,7 @@
 // Screen zoom and annotation tool.
 //
 //============================================================================
+#pragma once
 
 // Ignore getversion deprecation warning
 #pragma warning( disable: 4996 )

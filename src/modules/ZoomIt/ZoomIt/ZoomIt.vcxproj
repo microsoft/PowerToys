@@ -280,6 +280,7 @@
     <ClInclude Include="Utility.h" />
     <ClInclude Include="DemoType.h" />
     <ClInclude Include="ZoomIt.h" />
+    <ClInclude Include="ZoomItSettings.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="appicon.ico" />
