@@ -248,6 +248,7 @@ configuration:
           action: Opened
       - bodyContains:
           pattern: 'Area\(s\) with issue\?\s*\nWorkspaces'
+
           isRegex: True
       then:
       - addLabel:
