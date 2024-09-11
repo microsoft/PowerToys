@@ -8,21 +8,28 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Common.UI;
 using ManagedCommon;
 
 namespace Peek.FilePreviewer.Previewers
 {
-    public class MonacoHelper
+    public partial class MonacoHelper
     {
-        public static readonly HashSet<string> SupportedMonacoFileTypes = GetExtensions();
+        public static readonly HashSet<string> SupportedMonacoFileTypes;
+
+        static MonacoHelper()
+        {
+            SupportedMonacoFileTypes = GetExtensions().Union(GetExtraSupportedExtensions()).ToHashSet();
+        }
 
         public static HashSet<string> GetExtensions()
         {
-            HashSet<string> set = new HashSet<string>();
+            HashSet<string> set = [];
+
             try
             {
-                JsonDocument languageListDocument = Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.GetLanguages();
+                using JsonDocument languageListDocument = Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.GetLanguages();
                 JsonElement languageList = languageListDocument.RootElement.GetProperty("list");
                 foreach (JsonElement e in languageList.EnumerateArray())
                 {
@@ -42,6 +49,36 @@ namespace Peek.FilePreviewer.Previewers
 
             return set;
         }
+
+        /// <summary>
+        /// Get the file extensions which are not present in the JSON languages document but which
+        /// may still be previewed by Monaco.
+        /// </summary>
+        private static IEnumerable<string> GetExtraSupportedExtensions()
+        {
+            try
+            {
+                string path = Path.Combine(
+                    Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.GetRuntimeMonacoDirectory(),
+                    "monacoExtraExtensions.txt");
+
+                return File.Exists(path) ?
+                    File.ReadAllLines(path)
+                        .Select(line => ExtensionsFileRegex().Match(line))
+                        .Where(match => match.Success)
+                        .Select(match => match.Groups[1].Value) : [];
+            }
+            catch
+            {
+                return [];
+            }
+        }
+
+        /// <summary>
+        /// Extracts the extensions from the extra supported extensions file, ignoring comments.
+        /// </summary>
+        [GeneratedRegex(@"^\s*(\.\w+)\s*(#.*)?$")]
+        private static partial Regex ExtensionsFileRegex();
 
         /// <summary>
         /// Prepares temp html for the previewing

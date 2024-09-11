@@ -1,0 +1,5 @@
+# Extra file extensions to preview with Monaco.
+
+.ahk	# AutoHotKey scripts
+.csv	# comma-separated values
+.tsv	# tab-separated values
