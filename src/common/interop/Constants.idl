@@ -16,6 +16,7 @@ namespace PowerToys
             static String AdvancedPasteShowUIMessage();
             static String AdvancedPasteMarkdownMessage();
             static String AdvancedPasteJsonMessage();
+            static String AdvancedPasteAdditionalActionMessage();
             static String AdvancedPasteCustomActionMessage();
             static String ShowPowerOCRSharedEvent();
             static String MouseJumpShowPreviewEvent();

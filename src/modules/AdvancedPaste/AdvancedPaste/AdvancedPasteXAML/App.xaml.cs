@@ -3,11 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
+using AdvancedPaste.Models;
 using AdvancedPaste.Settings;
 using AdvancedPaste.ViewModels;
 using ManagedCommon;
@@ -30,6 +33,13 @@ namespace AdvancedPaste
     public partial class App : Application, IDisposable
     {
         public IHost Host { get; private set; }
+
+        private static readonly Dictionary<string, PasteFormats> AdditionalActionIPCKeys =
+                 typeof(PasteFormats).GetFields()
+                                     .Where(field => field.IsLiteral)
+                                     .Select(field => (Format: (PasteFormats)field.GetRawConstantValue(), field.GetCustomAttribute<PasteFormatMetadataAttribute>().IPCKey))
+                                     .Where(field => field.IPCKey != null)
+                                     .ToDictionary(field => field.IPCKey, field => field.Format);
 
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         private readonly OptionsViewModel viewModel;
@@ -128,6 +138,10 @@ namespace AdvancedPaste
             {
                 OnAdvancedPasteJsonHotkey();
             }
+            else if (messageType == PowerToys.Interop.Constants.AdvancedPasteAdditionalActionMessage())
+            {
+                OnAdvancedPasteAdditionalActionHotkey(messageParts);
+            }
             else if (messageType == PowerToys.Interop.Constants.AdvancedPasteCustomActionMessage())
             {
                 OnAdvancedPasteCustomActionHotkey(messageParts);
@@ -154,6 +168,27 @@ namespace AdvancedPaste
         private void OnAdvancedPasteHotkey()
         {
             ShowWindow();
+        }
+
+        private void OnAdvancedPasteAdditionalActionHotkey(string[] messageParts)
+        {
+            if (messageParts.Length != 2)
+            {
+                Logger.LogWarning("Unexpected additional action message");
+            }
+            else
+            {
+                if (!AdditionalActionIPCKeys.TryGetValue(messageParts[1], out PasteFormats pasteFormat))
+                {
+                    Logger.LogWarning($"Unexpected additional action type {messageParts[1]}");
+                }
+                else
+                {
+                    ShowWindow();
+                    viewModel.ReadClipboard();
+                    viewModel.ExecuteAdditionalAction(pasteFormat);
+                }
+            }
         }
 
         private void OnAdvancedPasteCustomActionHotkey(string[] messageParts)

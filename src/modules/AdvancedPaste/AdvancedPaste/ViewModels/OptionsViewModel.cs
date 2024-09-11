@@ -3,10 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
@@ -33,15 +35,14 @@ namespace AdvancedPaste.ViewModels
         private readonly IUserSettings _userSettings;
         private readonly AICompletionsHelper aiHelper;
         private readonly App app = App.Current as App;
-        private readonly PasteFormat[] _allStandardPasteFormats;
 
         public DataPackageView ClipboardData { get; set; }
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ClipboardHasData))]
         [NotifyPropertyChangedFor(nameof(InputTxtBoxPlaceholderText))]
         [NotifyPropertyChangedFor(nameof(GeneralErrorText))]
-        [NotifyPropertyChangedFor(nameof(IsCustomAIEnabled))]
-        private bool _isClipboardDataText;
+        private ClipboardFormat _availableClipboardFormats;
 
         [ObservableProperty]
         private bool _clipboardHistoryEnabled;
@@ -65,7 +66,9 @@ namespace AdvancedPaste.ViewModels
 
         public ObservableCollection<PasteFormat> CustomActionPasteFormats { get; } = [];
 
-        public bool IsCustomAIEnabled => IsAllowedByGPO && IsClipboardDataText && aiHelper.IsAIEnabled;
+        public bool IsCustomAIEnabled => IsAllowedByGPO && aiHelper.IsAIEnabled;
+
+        public bool ClipboardHasData => AvailableClipboardFormats != ClipboardFormat.None;
 
         public event EventHandler<CustomActionActivatedEventArgs> CustomActionActivated;
 
@@ -75,13 +78,6 @@ namespace AdvancedPaste.ViewModels
             _userSettings = userSettings;
 
             ApiRequestStatus = (int)HttpStatusCode.OK;
-
-            _allStandardPasteFormats =
-            [
-                new PasteFormat { IconGlyph = "\uE8E9", Name = ResourceLoaderInstance.ResourceLoader.GetString("PasteAsPlainText"), Format = PasteFormats.PlainText },
-                new PasteFormat { IconGlyph = "\ue8a5", Name = ResourceLoaderInstance.ResourceLoader.GetString("PasteAsMarkdown"), Format = PasteFormats.Markdown },
-                new PasteFormat { IconGlyph = "\uE943", Name = ResourceLoaderInstance.ResourceLoader.GetString("PasteAsJson"), Format = PasteFormats.Json },
-            ];
 
             GeneratedResponses = new ObservableCollection<string>();
             GeneratedResponses.CollectionChanged += (s, e) =>
@@ -97,10 +93,12 @@ namespace AdvancedPaste.ViewModels
             _clipboardTimer.Start();
 
             RefreshPasteFormats();
-            _userSettings.CustomActions.CollectionChanged += (_, _) => EnqueueRefreshPasteFormats();
+            _userSettings.Changed += (_, _) => EnqueueRefreshPasteFormats();
             PropertyChanged += (_, e) =>
             {
-                if (e.PropertyName == nameof(Query))
+                string[] dirtyingProperties = [nameof(Query), nameof(IsCustomAIEnabled), nameof(AvailableClipboardFormats)];
+
+                if (dirtyingProperties.Contains(e.PropertyName))
                 {
                     EnqueueRefreshPasteFormats();
                 }
@@ -131,10 +129,12 @@ namespace AdvancedPaste.ViewModels
             });
         }
 
+        private PasteFormat CreatePasteFormat(PasteFormats format) => new(format, AvailableClipboardFormats, IsCustomAIEnabled, ResourceLoaderInstance.ResourceLoader.GetString);
+
+        private PasteFormat CreatePasteFormat(AdvancedPasteCustomAction customAction) => new(customAction, AvailableClipboardFormats, IsCustomAIEnabled);
+
         private void RefreshPasteFormats()
         {
-            bool Filter(string text) => text.Contains(Query, StringComparison.CurrentCultureIgnoreCase);
-
             var ctrlString = ResourceLoaderInstance.ResourceLoader.GetString("CtrlKey");
             int shortcutNum = 0;
 
@@ -144,25 +144,33 @@ namespace AdvancedPaste.ViewModels
                 return shortcutNum <= 9 ? $"{ctrlString}+{shortcutNum}" : string.Empty;
             }
 
-            StandardPasteFormats.Clear();
-            foreach (var format in _allStandardPasteFormats)
+            IEnumerable<PasteFormat> FilterAndSort(IEnumerable<PasteFormat> pasteFormats) =>
+                from pasteFormat in pasteFormats
+                let comparison = StringComparison.CurrentCultureIgnoreCase
+                where pasteFormat.Name.Contains(Query, comparison) || pasteFormat.Prompt.Contains(Query, comparison)
+                orderby pasteFormat.IsEnabled descending
+                select pasteFormat;
+
+            void UpdateFormats(ObservableCollection<PasteFormat> collection, IEnumerable<PasteFormat> pasteFormats)
             {
-                if (Filter(format.Name))
+                collection.Clear();
+
+                foreach (var format in FilterAndSort(pasteFormats))
                 {
-                    format.ShortcutText = GetNextShortcutText();
-                    format.ToolTip = $"{format.Name} ({format.ShortcutText})";
-                    StandardPasteFormats.Add(format);
+                    if (format.IsEnabled)
+                    {
+                        format.ShortcutText = GetNextShortcutText();
+                    }
+
+                    collection.Add(format);
                 }
             }
 
-            CustomActionPasteFormats.Clear();
-            foreach (var customAction in _userSettings.CustomActions)
-            {
-                if (Filter(customAction.Name) || Filter(customAction.Prompt))
-                {
-                    CustomActionPasteFormats.Add(new PasteFormat(customAction, GetNextShortcutText()));
-                }
-            }
+            UpdateFormats(StandardPasteFormats, Enum.GetValues<PasteFormats>()
+                                                    .Where(format => PasteFormat.MetadataDict[format].IsCoreAction || _userSettings.AdditionalActions.Contains(format))
+                                                    .Select(CreatePasteFormat));
+
+            UpdateFormats(CustomActionPasteFormats, _userSettings.CustomActions.Select(CreatePasteFormat));
         }
 
         public void Dispose()
@@ -174,7 +182,18 @@ namespace AdvancedPaste.ViewModels
         public void ReadClipboard()
         {
             ClipboardData = Clipboard.GetContent();
-            IsClipboardDataText = ClipboardData.Contains(StandardDataFormats.Text);
+
+            (string DataFormat, ClipboardFormat ClipboardFormat)[] formats =
+            [
+                (StandardDataFormats.Text, ClipboardFormat.Text),
+                (StandardDataFormats.Html, ClipboardFormat.Html),
+                (StandardDataFormats.Bitmap, ClipboardFormat.Image),
+                (StandardDataFormats.StorageItems, ClipboardFormat.File),
+            ];
+
+            AvailableClipboardFormats = formats.Aggregate(
+                ClipboardFormat.None,
+                (result, formatTuple) => ClipboardData.Contains(formatTuple.DataFormat) ? (result | formatTuple.ClipboardFormat) : result);
         }
 
         public void OnShow()
@@ -247,7 +266,7 @@ namespace AdvancedPaste.ViewModels
             {
                 app.GetMainWindow().ClearInputText();
 
-                return IsClipboardDataText ? ResourceLoaderInstance.ResourceLoader.GetString("CustomFormatTextBox/PlaceholderText") : GeneralErrorText;
+                return ClipboardHasData ? ResourceLoaderInstance.ResourceLoader.GetString("CustomFormatTextBox/PlaceholderText") : GeneralErrorText;
             }
         }
 
@@ -255,9 +274,9 @@ namespace AdvancedPaste.ViewModels
         {
             get
             {
-                if (!IsClipboardDataText)
+                if (!ClipboardHasData)
                 {
-                    return ResourceLoaderInstance.ResourceLoader.GetString("ClipboardDataTypeMismatchWarning");
+                    return ResourceLoaderInstance.ResourceLoader.GetString("ClipboardEmptyWarning");
                 }
 
                 if (!IsAllowedByGPO)
@@ -403,10 +422,40 @@ namespace AdvancedPaste.ViewModels
             }
         }
 
+        internal void ImageToTextFunction()
+        {
+            Task.Factory
+                .StartNew(async () => await ImageToTextFunctionAsync(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        internal async Task ImageToTextFunctionAsync(bool pasteAlways = false)
+        {
+            try
+            {
+                Logger.LogTrace();
+
+                var bitmap = await ClipboardHelper.GetClipboardImageContentAsync(ClipboardData);
+                var text = await OcrHelpers.GetTextAsync(bitmap);
+                SetClipboardContentAndHideWindow(text);
+
+                if (pasteAlways || _userSettings.SendPasteKeyCombination)
+                {
+                    ClipboardHelper.SendPasteKeyCombination();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Unable to extract text from image", ex);
+
+                await app.GetMainWindow().ShowMessageDialogAsync(ResourceLoaderInstance.ResourceLoader.GetString("PasteError"));
+            }
+        }
+
         internal void ExecutePasteFormat(VirtualKey key)
         {
-            var index = key - VirtualKey.Number1;
-            var pasteFormat = StandardPasteFormats.ElementAtOrDefault(index) ?? CustomActionPasteFormats.ElementAtOrDefault(index - StandardPasteFormats.Count);
+            var pasteFormat = StandardPasteFormats.Concat(CustomActionPasteFormats)
+                                                  .Where(pasteFormat => pasteFormat.IsEnabled)
+                                                  .ElementAtOrDefault(key - VirtualKey.Number1);
 
             if (pasteFormat != null)
             {
@@ -417,7 +466,7 @@ namespace AdvancedPaste.ViewModels
 
         internal void ExecutePasteFormat(PasteFormat pasteFormat)
         {
-            if (!IsClipboardDataText || (pasteFormat.Format == PasteFormats.Custom && !IsCustomAIEnabled))
+            if (!pasteFormat.IsEnabled)
             {
                 return;
             }
@@ -436,11 +485,32 @@ namespace AdvancedPaste.ViewModels
                     ToJsonFunction();
                     break;
 
+                case PasteFormats.AudioToText:
+                    throw new NotImplementedException();
+
+                case PasteFormats.ImageToText:
+                    ImageToTextFunction();
+                    break;
+
+                case PasteFormats.PasteAsTxtFile:
+                    throw new NotImplementedException();
+
+                case PasteFormats.PasteAsPngFile:
+                    throw new NotImplementedException();
+
+                case PasteFormats.PasteAsHtmlFile:
+                    throw new NotImplementedException();
+
                 case PasteFormats.Custom:
                     Query = pasteFormat.Prompt;
                     CustomActionActivated?.Invoke(this, new CustomActionActivatedEventArgs(pasteFormat.Prompt, false));
                     break;
             }
+        }
+
+        internal void ExecuteAdditionalAction(PasteFormats format)
+        {
+            ExecutePasteFormat(CreatePasteFormat(format));
         }
 
         internal void ExecuteCustomActionWithPaste(int customActionId)
@@ -465,7 +535,7 @@ namespace AdvancedPaste.ViewModels
                 return string.Empty;
             }
 
-            if (!IsClipboardDataText)
+            if (!AvailableClipboardFormats.HasFlag(ClipboardFormat.Text))
             {
                 Logger.LogWarning("Clipboard does not contain text data");
                 return string.Empty;
@@ -475,7 +545,7 @@ namespace AdvancedPaste.ViewModels
             {
                 try
                 {
-                    string text = await ClipboardData.GetTextAsync() as string;
+                    string text = await ClipboardData.GetTextAsync();
                     return text;
                 }
                 catch (Exception)
@@ -530,11 +600,7 @@ namespace AdvancedPaste.ViewModels
                 return;
             }
 
-            string currentClipboardText = Task.Run(async () =>
-            {
-                string text = await clipboardData.GetTextAsync() as string;
-                return text;
-            }).Result;
+            var currentClipboardText = Task.Run(async () => await clipboardData.GetTextAsync()).Result;
 
             var queryData = new CustomQuery
             {

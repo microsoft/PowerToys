@@ -3,11 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
-using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Graphics.Imaging;
+using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.System;
 
@@ -134,6 +134,39 @@ namespace AdvancedPaste.Helpers
             SendSingleKeyboardInput((short)VirtualKey.Control, (uint)NativeMethods.KeyEventF.KeyUp);
 
             Logger.LogInfo("Paste sent");
+        }
+
+        internal static async Task<SoftwareBitmap> GetClipboardImageContentAsync(DataPackageView clipboardData)
+        {
+            using var stream = await GetClipboardImageStreamAsync(clipboardData);
+            if (stream != null)
+            {
+                var decoder = await BitmapDecoder.CreateAsync(stream);
+                return await decoder.GetSoftwareBitmapAsync();
+            }
+
+            return null;
+        }
+
+        private static async Task<IRandomAccessStream> GetClipboardImageStreamAsync(DataPackageView clipboardData)
+        {
+            if (clipboardData.Contains(StandardDataFormats.StorageItems))
+            {
+                var storageItems = await clipboardData.GetStorageItemsAsync();
+                var file = storageItems[0] as StorageFile;
+                if (file != null)
+                {
+                    return await file.OpenReadAsync();
+                }
+            }
+
+            if (clipboardData.Contains(StandardDataFormats.Bitmap))
+            {
+                var imageStreamReference = await clipboardData.GetBitmapAsync();
+                return await imageStreamReference.OpenReadAsync();
+            }
+
+            return null;
         }
     }
 }

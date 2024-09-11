@@ -129,9 +129,9 @@ namespace AdvancedPaste.Pages
             }
         }
 
-        private void ListView_Click(object sender, ItemClickEventArgs e)
+        private void ListView_Button_Click(object sender, RoutedEventArgs e)
         {
-            if (e.ClickedItem is PasteFormat format)
+            if (sender is Button { DataContext: PasteFormat format })
             {
                 ViewModel.ExecutePasteFormat(format);
             }

@@ -346,7 +346,7 @@
                     x:Name="InputTxtBox"
                     HorizontalAlignment="Stretch"
                     x:FieldModifier="public"
-                    IsEnabled="{x:Bind ViewModel.IsClipboardDataText, Mode=OneWay}"
+                    IsEnabled="{x:Bind ViewModel.ClipboardHasData, Mode=OneWay}"
                     KeyDown="InputTxtBox_KeyDown"
                     PlaceholderText="{x:Bind ViewModel.InputTxtBoxPlaceholderText, Mode=OneWay}"
                     Style="{StaticResource CustomTextBoxStyle}"

@@ -120,8 +120,8 @@
   <data name="AIMistakeNote.Text" xml:space="preserve">
     <value>AI can make mistakes.</value>
   </data>
-  <data name="ClipboardDataTypeMismatchWarning" xml:space="preserve">
-    <value>Clipboard data is not text</value>
+  <data name="ClipboardEmptyWarning" xml:space="preserve">
+    <value>Clipboard is empty</value>
   </data>
   <data name="OpenAINotConfigured" xml:space="preserve">
     <value>To custom with AI is not enabled</value>
@@ -135,6 +135,9 @@
   <data name="OpenAIApiKeyError" xml:space="preserve">
     <value>OpenAI request failed with status code: </value>
   </data>
+  <data name="PasteError" xml:space="preserve">
+    <value>An error occurred during the paste operation</value>
+  </data>  
   <data name="ClipboardHistoryButton.Text" xml:space="preserve">
     <value>Clipboard history</value>
   </data>
@@ -162,6 +165,21 @@
   <data name="PasteAsPlainText" xml:space="preserve">
     <value>Paste as plain text</value>
   </data>
+  <data name="AudioToText" xml:space="preserve">
+    <value>Audio to text</value>
+  </data>
+  <data name="ImageToText" xml:space="preserve">
+    <value>Image to text</value>
+  </data>
+  <data name="PasteAsTxtFile" xml:space="preserve">
+    <value>Paste as .txt file</value>
+  </data>
+  <data name="PasteAsPngFile" xml:space="preserve">
+    <value>Paste as .png file</value>
+  </data>
+  <data name="PasteAsHtmlFile" xml:space="preserve">
+    <value>Paste as .html file</value>
+  </data>  
   <data name="PasteButtonAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Paste</value>
   </data>

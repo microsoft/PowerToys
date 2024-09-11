@@ -38,6 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private readonly AdvancedPasteSettings _advancedPasteSettings;
         private readonly ObservableCollection<AdvancedPasteCustomAction> _customActions;
+        private readonly AdvancedPasteAdditionalActions _additionalActions;
         private Timer _delayedTimer;
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
@@ -69,6 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _advancedPasteSettings = advancedPasteSettingsRepository.SettingsConfig;
 
             _customActions = _advancedPasteSettings.Properties.CustomActions.Value;
+            _additionalActions = _advancedPasteSettings.Properties.AdditionalActions;
 
             InitializeEnabledValue();
 
@@ -87,6 +89,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _customActions.CollectionChanged += OnCustomActionsCollectionChanged;
             UpdateCustomActionsCanMoveUpDown();
+
+            foreach (var action in _additionalActions.AllActions)
+            {
+                action.PropertyChanged += (_, _) => SaveAndNotifySettings();
+            }
         }
 
         private void InitializeEnabledValue()
@@ -141,6 +148,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         public ObservableCollection<AdvancedPasteCustomAction> CustomActions => _customActions;
+
+        public AdvancedPasteAdditionalActions AdditionalActions => _additionalActions;
 
         private bool OpenAIKeyExists()
         {

@@ -40,6 +40,7 @@ namespace
 {
     const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
     const wchar_t JSON_KEY_CUSTOM_ACTIONS[] = L"custom-actions";
+    const wchar_t JSON_KEY_ADDITIONAL_ACTIONS[] = L"additional-actions";
     const wchar_t JSON_KEY_SHORTCUT[] = L"shortcut";
     const wchar_t JSON_KEY_IS_SHOWN[] = L"isShown";
     const wchar_t JSON_KEY_ID[] = L"id";
@@ -68,7 +69,6 @@ private:
 
     HANDLE m_hProcess;
 
-    std::thread create_pipe_thread;
     std::unique_ptr<CAtlFile> m_write_pipe;
 
     // Time to wait for process to close after sending WM_CLOSE signal
@@ -81,8 +81,18 @@ private:
     Hotkey m_paste_as_markdown_hotkey{};
     Hotkey m_paste_as_json_hotkey{};
 
-    std::vector<Hotkey> m_custom_action_hotkeys;
-    std::vector<int> m_custom_action_ids;
+    template <class TKey>
+    struct ActionData
+    {
+        TKey id;
+        Hotkey hotkey;
+    };
+
+    using AdditionalAction = ActionData<std::wstring>;
+    std::vector<AdditionalAction> m_additional_actions;
+
+    using CustomAction = ActionData<int>;
+    std::vector<CustomAction> m_custom_actions;
 
     bool m_preview_custom_format_output = true;
 
@@ -164,6 +174,39 @@ private:
         return false;
     }
 
+    void process_additional_action(const winrt::hstring& actionName, const winrt::Windows::Data::Json::IJsonValue& actionValue)
+    {
+        if (actionValue.ValueType() != winrt::Windows::Data::Json::JsonValueType::Object)
+        {
+            return;
+        }
+
+        const auto action = actionValue.GetObjectW();
+
+        if (!action.GetNamedBoolean(JSON_KEY_IS_SHOWN, false))
+        {
+            return;
+        }
+
+        if (action.HasKey(JSON_KEY_SHORTCUT))
+        {
+            const AdditionalAction additionalAction
+            {
+                actionName.c_str(),
+                parse_single_hotkey(action.GetNamedObject(JSON_KEY_SHORTCUT))
+            };
+
+            m_additional_actions.push_back(additionalAction);
+        }
+        else
+        {
+            for (const auto& [subActionName, subAction] : action)
+            {
+                process_additional_action(subActionName, subAction);
+            }
+        }
+    }
+
     void parse_hotkeys(PowerToysSettings::PowerToyValues& settings)
     {
         auto settingsObject = settings.get_raw_json();
@@ -206,12 +249,22 @@ private:
                     *hotkey = parse_single_hotkey(keyName, settingsObject);
                 }
 
-                m_custom_action_hotkeys.clear();
-                m_custom_action_ids.clear();
+                m_additional_actions.clear();
+                m_custom_actions.clear();
 
                 if (settingsObject.HasKey(JSON_KEY_PROPERTIES))
                 {
                     const auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+
+                    if (propertiesObject.HasKey(JSON_KEY_ADDITIONAL_ACTIONS))
+                    {
+                        const auto additionalActions = propertiesObject.GetNamedObject(JSON_KEY_ADDITIONAL_ACTIONS);
+
+                        for (const auto& [actionName, additionalAction] : additionalActions)
+                        {
+                            process_additional_action(actionName, additionalAction);
+                        }
+                    }
 
                     if (propertiesObject.HasKey(JSON_KEY_CUSTOM_ACTIONS))
                     {
@@ -223,8 +276,13 @@ private:
 
                             if (object.GetNamedBoolean(JSON_KEY_IS_SHOWN, false))
                             {
-                                m_custom_action_hotkeys.push_back(parse_single_hotkey(object.GetNamedObject(JSON_KEY_SHORTCUT)));
-                                m_custom_action_ids.push_back(static_cast<int>(object.GetNamedNumber(JSON_KEY_ID)));
+                                const CustomAction customActionData
+                                {
+                                    static_cast<int>(object.GetNamedNumber(JSON_KEY_ID)),
+                                    parse_single_hotkey(object.GetNamedObject(JSON_KEY_SHORTCUT))
+                                };
+
+                                m_custom_actions.push_back(customActionData);
                             }
                         }
                     }
@@ -296,7 +354,7 @@ private:
             return;
         }
 
-        create_pipe_thread = std::thread([&] { start_named_pipe_server(pipe_name.value()); });
+        std::thread create_pipe_thread ([&]{ start_named_pipe_server(pipe_name.value()); });
         launch_process(pipe_name.value());
         create_pipe_thread.join();
     }
@@ -789,11 +847,22 @@ public:
                 return true;
             }
 
-            const auto custom_action_index = hotkeyId - NUM_DEFAULT_HOTKEYS;
 
-            if (custom_action_index < m_custom_action_ids.size())
+            const auto additional_action_index = hotkeyId - NUM_DEFAULT_HOTKEYS;
+            if (additional_action_index < m_additional_actions.size())
             {
-                const auto id = m_custom_action_ids.at(custom_action_index);
+                const auto& id = m_additional_actions.at(additional_action_index).id;
+
+                Logger::trace(L"Starting additional action id={}", id);
+
+                send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_ADDITIONAL_ACTION_MESSAGE, id);
+                return true;
+            }
+
+            const auto custom_action_index = additional_action_index - m_additional_actions.size();
+            if (custom_action_index < m_custom_actions.size())
+            {
+                const auto id = m_custom_actions.at(custom_action_index).id;
 
                 Logger::trace(L"Starting custom action id={}", id);
 
@@ -807,7 +876,7 @@ public:
 
     virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
     {
-        const size_t num_hotkeys = NUM_DEFAULT_HOTKEYS + m_custom_action_hotkeys.size();
+        const size_t num_hotkeys = NUM_DEFAULT_HOTKEYS + m_additional_actions.size() + m_custom_actions.size();
 
         if (hotkeys && buffer_size >= num_hotkeys)
         {
@@ -815,9 +884,11 @@ public:
                                                  m_advanced_paste_ui_hotkey,
                                                  m_paste_as_markdown_hotkey,
                                                  m_paste_as_json_hotkey };
-
             std::copy(default_hotkeys.begin(), default_hotkeys.end(), hotkeys);
-            std::copy(m_custom_action_hotkeys.begin(), m_custom_action_hotkeys.end(), hotkeys + NUM_DEFAULT_HOTKEYS);
+
+            const auto get_action_hotkey = [](const auto& action) { return action.hotkey; };
+            std::transform(m_additional_actions.begin(), m_additional_actions.end(), hotkeys + NUM_DEFAULT_HOTKEYS, get_action_hotkey);
+            std::transform(m_custom_actions.begin(), m_custom_actions.end(), hotkeys + NUM_DEFAULT_HOTKEYS + m_additional_actions.size(), get_action_hotkey);
         }
 
         return num_hotkeys;

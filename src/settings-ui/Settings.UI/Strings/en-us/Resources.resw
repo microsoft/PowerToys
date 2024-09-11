@@ -2042,6 +2042,24 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="PasteAsCustom_Shortcut.Header" xml:space="preserve">
     <value>Paste as Custom with AI directly</value>
   </data>
+  <data name="AudioToText.Header" xml:space="preserve">
+    <value>Audio to text</value>
+  </data>
+  <data name="ImageToText.Header" xml:space="preserve">
+    <value>Image to text</value>
+  </data>
+  <data name="PasteAsFile.Header" xml:space="preserve">
+    <value>Paste as file</value>
+  </data>
+  <data name="PasteAsTxtFile.Header" xml:space="preserve">
+    <value>Paste as .txt file</value>
+  </data>
+  <data name="PasteAsPngFile.Header" xml:space="preserve">
+    <value>Paste as .png file</value>
+  </data>
+  <data name="PasteAsHtmlFile.Header" xml:space="preserve">
+    <value>Paste as .html file</value>
+  </data>
   <data name="AdvancedPaste_EnableAIDialogOpenAIApiKey.Text" xml:space="preserve">
     <value>OpenAI API key:</value>
   </data>
