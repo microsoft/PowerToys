@@ -621,6 +621,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZoomIt", "src\modules\ZoomI
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZoomItModuleInterface", "src\modules\ZoomIt\ZoomItModuleInterface\ZoomItModuleInterface.vcxproj", "{E4585179-2AC1-4D5F-A3FF-CFC5392F694C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZoomItSettingsInterop", "src\modules\ZoomIt\ZoomItSettingsInterop\ZoomItSettingsInterop.vcxproj", "{CA7D8106-30B9-4AEC-9D05-B69B31B8C461}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -2735,6 +2737,18 @@ Global
 		{E4585179-2AC1-4D5F-A3FF-CFC5392F694C}.Release|x64.Build.0 = Release|x64
 		{E4585179-2AC1-4D5F-A3FF-CFC5392F694C}.Release|x86.ActiveCfg = Release|x64
 		{E4585179-2AC1-4D5F-A3FF-CFC5392F694C}.Release|x86.Build.0 = Release|x64
+		{CA7D8106-30B9-4AEC-9D05-B69B31B8C461}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{CA7D8106-30B9-4AEC-9D05-B69B31B8C461}.Debug|ARM64.Build.0 = Debug|ARM64
+		{CA7D8106-30B9-4AEC-9D05-B69B31B8C461}.Debug|x64.ActiveCfg = Debug|x64
+		{CA7D8106-30B9-4AEC-9D05-B69B31B8C461}.Debug|x64.Build.0 = Debug|x64
+		{CA7D8106-30B9-4AEC-9D05-B69B31B8C461}.Debug|x86.ActiveCfg = Debug|x64
+		{CA7D8106-30B9-4AEC-9D05-B69B31B8C461}.Debug|x86.Build.0 = Debug|x64
+		{CA7D8106-30B9-4AEC-9D05-B69B31B8C461}.Release|ARM64.ActiveCfg = Release|ARM64
+		{CA7D8106-30B9-4AEC-9D05-B69B31B8C461}.Release|ARM64.Build.0 = Release|ARM64
+		{CA7D8106-30B9-4AEC-9D05-B69B31B8C461}.Release|x64.ActiveCfg = Release|x64
+		{CA7D8106-30B9-4AEC-9D05-B69B31B8C461}.Release|x64.Build.0 = Release|x64
+		{CA7D8106-30B9-4AEC-9D05-B69B31B8C461}.Release|x86.ActiveCfg = Release|x64
+		{CA7D8106-30B9-4AEC-9D05-B69B31B8C461}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2963,6 +2977,7 @@ Global
 		{DD6E12FE-5509-4ABC-ACC2-3D6DC98A238C} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 		{0A84F764-3A88-44CD-AA96-41BDBD48627B} = {DD6E12FE-5509-4ABC-ACC2-3D6DC98A238C}
 		{E4585179-2AC1-4D5F-A3FF-CFC5392F694C} = {DD6E12FE-5509-4ABC-ACC2-3D6DC98A238C}
+		{CA7D8106-30B9-4AEC-9D05-B69B31B8C461} = {DD6E12FE-5509-4ABC-ACC2-3D6DC98A238C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

@@ -8,7 +8,6 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
-#include "../ZoomIt/ZoomItSettings.h"
 
 #include <shellapi.h>
 #include <common/interop/shared_constants.h>
