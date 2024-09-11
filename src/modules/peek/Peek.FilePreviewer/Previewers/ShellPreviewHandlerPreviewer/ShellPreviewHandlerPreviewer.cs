@@ -206,9 +206,14 @@ namespace Peek.FilePreviewer.Previewers
             }
         }
 
+        public static bool IsExtensionSupported(string extension)
+        {
+            return !string.IsNullOrEmpty(GetPreviewHandlerGuid(extension));
+        }
+
         public static bool IsItemSupported(IFileSystemItem item)
         {
-            return !string.IsNullOrEmpty(GetPreviewHandlerGuid(item.Extension));
+            return IsExtensionSupported(item.Extension);
         }
 
         private static string? GetPreviewHandlerGuid(string fileExt)

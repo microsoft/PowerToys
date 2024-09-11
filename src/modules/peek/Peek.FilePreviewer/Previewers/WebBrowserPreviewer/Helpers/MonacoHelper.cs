@@ -54,6 +54,8 @@ namespace Peek.FilePreviewer.Previewers
         /// Get the file extensions which are not present in the JSON languages document but which
         /// may still be previewed by Monaco.
         /// </summary>
+        /// <remarks>Filters out extensions handled by Shell preview handlers, so Office will still
+        /// handle rendering .csv and others if it is installed.</remarks>
         private static IEnumerable<string> GetExtraSupportedExtensions()
         {
             try
@@ -65,7 +67,8 @@ namespace Peek.FilePreviewer.Previewers
                 return File.Exists(path) ?
                     File.ReadAllLines(path)
                         .Select(line => ExtensionsFileRegex().Match(line))
-                        .Where(match => match.Success)
+                        .Where(match => match.Success &&
+                            !ShellPreviewHandlerPreviewer.IsExtensionSupported(match.Groups[1].Value))
                         .Select(match => match.Groups[1].Value) : [];
             }
             catch
