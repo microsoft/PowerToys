@@ -36,6 +36,7 @@
     <ClInclude Include="JsonUtils.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Result.h" />
+    <ClInclude Include="utils.h" />
     <ClInclude Include="WorkspacesData.h" />
     <ClInclude Include="trace.h" />
   </ItemGroup>

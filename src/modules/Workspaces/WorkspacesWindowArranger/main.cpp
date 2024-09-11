@@ -1,6 +1,7 @@
-﻿#include "pch.h"
+#include "pch.h"
 
 #include <WorkspacesLib/JsonUtils.h>
+#include <WorkspacesLib/utils.h>
 #include <WorkspacesLib/WorkspacesData.h>
 
 #include <workspaces-common/MonitorUtils.h>
@@ -28,7 +29,13 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     
-    std::wstring id(GetCommandLineW());
+    std::wstring commandLine{ GetCommandLineW() };
+    if (commandLine.empty())
+    {
+        Logger::warn("Empty command line arguments");
+        return 1;
+    }
+
     if (id.empty())
     {
         Logger::warn("Incorrect command line arguments: no workspace id");

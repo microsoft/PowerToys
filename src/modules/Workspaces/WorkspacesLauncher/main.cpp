@@ -1,12 +1,12 @@
 #include "pch.h"
 
 #include <WorkspacesLib/JsonUtils.h>
+#include <WorkspacesLib/utils.h>
 #include <WorkspacesLib/WorkspacesData.h>
 #include <WorkspacesLib/trace.h>
 
 #include <AppLauncher.h>
 #include <LauncherUIHelper.h>
-#include <utils.h>
 #include <WindowArrangerHelper.h>
 
 #include <Generated Files/resource.h>
@@ -61,16 +61,16 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     
-    std::string cmdLineStr(cmdline);
-    auto cmdArgs = split(cmdLineStr, " ");
-    if (cmdArgs.size() < 1)
+    std::wstring cmdLineStr{ GetCommandLineW()  };
+    auto cmdArgs = split(cmdLineStr, L" ");
+    if (cmdArgs.size() < 2)
     {
         Logger::warn("Incorrect command line arguments");
         MessageBox(NULL, GET_RESOURCE_STRING(IDS_INCORRECT_ARGS).c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
         return 1;
     }
     
-    std::wstring id(cmdArgs[0].begin(), cmdArgs[0].end());
+    std::wstring id(cmdArgs[1].begin(), cmdArgs[1].end());
     if (id.empty())
     {
         Logger::warn("Incorrect command line arguments: no workspace id");
@@ -79,11 +79,11 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     }
 
     InvokePoint invokePoint = InvokePoint::EditorButton;
-    if (cmdArgs.size() > 1)
+    if (cmdArgs.size() > 2)
     {
         try
         {
-            invokePoint = static_cast<InvokePoint>(std::stoi(cmdArgs[1]));
+            invokePoint = static_cast<InvokePoint>(std::stoi(cmdArgs[2]));
         }
         catch (std::exception)
         {
