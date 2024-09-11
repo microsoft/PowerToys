@@ -247,8 +247,8 @@ configuration:
       - isAction:
           action: Opened
       - bodyContains:
-              pattern: ### Area\(s\) with issue\?\s*\nWorkspaces
-              isRegex: True
+          pattern: ### Area\(s\) with issue\?\s*\nWorkspaces
+          isRegex: True
       then:
       - addLabel:
           label: Product-Workspaces
