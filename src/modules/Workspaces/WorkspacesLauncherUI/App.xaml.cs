@@ -38,15 +38,15 @@ namespace WorkspacesLauncherUI
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            Logger.InitializeLogger("\\Workspaces\\Logs");
+            Logger.InitializeLogger("\\Workspaces\\WorkspacesLauncherUI");
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
-            const string appName = "Local\\PowerToys_Workspaces_Launcher_InstanceMutex";
+            const string appName = "Local\\PowerToys_Workspaces_LauncherUI_InstanceMutex";
             bool createdNew;
             _instanceMutex = new Mutex(true, appName, out createdNew);
             if (!createdNew)
             {
-                Logger.LogWarning("Another instance of Workspaces Launcher is already running. Exiting this instance.");
+                Logger.LogWarning("Another instance of Workspaces Launcher UI is already running. Exiting this instance.");
                 _instanceMutex = null;
                 Shutdown(0);
                 return;
