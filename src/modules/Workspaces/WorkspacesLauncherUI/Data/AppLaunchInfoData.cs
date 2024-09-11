@@ -20,7 +20,7 @@ namespace WorkspacesLauncherUI.Data
             public string Path { get; set; }
 
             [JsonPropertyName("state")]
-            public string State { get; set; }
+            public LaunchingState State { get; set; }
         }
     }
 }

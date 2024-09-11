@@ -424,7 +424,7 @@ namespace WorkspacesData
             json::JsonObject json{};
             json.SetNamedValue(NonLocalizable::NameID, json::value(data.name));
             json.SetNamedValue(NonLocalizable::PathID, json::value(data.path));
-            json.SetNamedValue(NonLocalizable::StateID, json::value(data.state));
+            json.SetNamedValue(NonLocalizable::StateID, json::value(static_cast<int>(data.state)));
             return json;
         }
     }

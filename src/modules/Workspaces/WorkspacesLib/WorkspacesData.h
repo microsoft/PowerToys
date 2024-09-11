@@ -2,6 +2,8 @@
 
 #include <common/utils/json.h>
 
+#include <WorkspacesLib/LaunchingStateEnum.h>
+
 namespace WorkspacesData
 {
     std::wstring WorkspacesFile();
@@ -83,7 +85,7 @@ namespace WorkspacesData
     {
         std::wstring name;
         std::wstring path;
-        std::wstring state;
+        LaunchingState state{ LaunchingState::Waiting };
     };
 
     namespace AppLaunchInfoJSON

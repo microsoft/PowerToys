@@ -14,6 +14,7 @@ using System.Text.RegularExpressions;
 using System.Windows.Media.Imaging;
 using ManagedCommon;
 using Windows.Management.Deployment;
+using WorkspacesLauncherUI.Data;
 
 namespace WorkspacesLauncherUI.Models
 {
@@ -28,7 +29,7 @@ namespace WorkspacesLauncherUI.Models
 
         public string AppPath { get; set; }
 
-        public bool Loading => LaunchState == "waiting";
+        public bool Loading => LaunchState == LaunchingState.Waiting;
 
         private Icon _icon;
 
@@ -66,7 +67,7 @@ namespace WorkspacesLauncherUI.Models
 
         public string Name { get; set; }
 
-        public string LaunchState { get; set; }
+        public LaunchingState LaunchState { get; set; }
 
         public string StateGlyph
         {

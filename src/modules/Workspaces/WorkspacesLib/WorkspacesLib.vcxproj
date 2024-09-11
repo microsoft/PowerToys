@@ -35,6 +35,7 @@
     <ClInclude Include="AppUtils.h" />
     <ClInclude Include="IPCHelper.h" />
     <ClInclude Include="JsonUtils.h" />
+    <ClInclude Include="LaunchingStateEnum.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Result.h" />
     <ClInclude Include="utils.h" />

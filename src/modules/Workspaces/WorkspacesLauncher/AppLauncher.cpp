@@ -42,7 +42,7 @@ namespace
                 }
             }
 
-            launchedApps.push_back({ app, nullptr, L"waiting" });
+            launchedApps.push_back({ app, nullptr });
         }
 
         return launchedApps;
@@ -206,7 +206,7 @@ bool Launch(WorkspacesData::WorkspacesProject& project, const LauncherUIHelper& 
         if (!Launch(app.application, launchErrors))
         {
             Logger::error(L"Failed to launch {}", app.application.name);
-            app.state = L"failed";
+            app.state = LaunchingState::Failed;
             uiHelper.UpdateLaunchStatus(launchedApps);
             launchedSuccessfully = false;
         }
