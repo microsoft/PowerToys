@@ -3,22 +3,17 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using ManagedCommon;
-using Microsoft.VisualBasic.Devices;
-using Windows.ApplicationModel;
 using Windows.Management.Deployment;
 
 namespace WorkspacesLauncherUI.Models
@@ -33,6 +28,8 @@ namespace WorkspacesLauncherUI.Models
         }
 
         public string AppPath { get; set; }
+
+        public bool Loading => LaunchState == "waiting";
 
         private Icon _icon;
 
@@ -72,14 +69,23 @@ namespace WorkspacesLauncherUI.Models
 
         public string LaunchState { get; set; }
 
-        public string StateImageSource
+        public string StateGlyph
         {
             get => LaunchState switch
             {
-                "waiting" => "../images/spinner.gif",
-                "launched" => "../images/checkmark.png",
-                "failed" => "../images/failed.png",
-                _ => "../images/spinner.gif",
+                "launched" => "\U0000F78C",
+                "failed" => "\U0000EF2C",
+                _ => "\U0000EF2C",
+            };
+        }
+
+        public System.Windows.Media.Brush StateColor
+        {
+            get => LaunchState switch
+            {
+                "launched" => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 0, 128, 0)),
+                "failed" => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 254, 0, 0)),
+                _ => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 254, 0, 0)),
             };
         }
 

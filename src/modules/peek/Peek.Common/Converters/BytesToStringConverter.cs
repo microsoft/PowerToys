@@ -8,7 +8,7 @@ using Peek.Common.Helpers;
 
 namespace Peek.Common.Converters
 {
-    public class BytesToStringConverter : IValueConverter
+    public partial class BytesToStringConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
