@@ -1,11 +1,12 @@
 #pragma once
 
 #include <LaunchingApp.h>
+#include <WorkspacesLib/IPCHelper.h>
 
 class LauncherUIHelper
 {
 public:
-    LauncherUIHelper() = default;
+    LauncherUIHelper();
     ~LauncherUIHelper();
 
     void LaunchUI();
@@ -13,4 +14,5 @@ public:
 
 private:
     DWORD uiProcessId;
+    IPCHelper ipcHelper;
 };

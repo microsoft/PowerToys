@@ -21,12 +21,6 @@ namespace WorkspacesData
         std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
         return settingsFolderPath + L"\\temp-workspaces.json";
     }
-
-    std::wstring LaunchWorkspacesFile()
-    {
-        std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
-        return settingsFolderPath + L"\\launch-workspaces.json";
-    }
     
     RECT WorkspacesProject::Application::Position::toRect() const noexcept
     {

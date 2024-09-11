@@ -5,11 +5,9 @@
 using System;
 using System.Threading;
 using System.Windows;
-using System.Windows.Forms.Design.Behavior;
-
 using Common.UI;
 using ManagedCommon;
-using WorkspacesLauncherUI.Utils;
+using PowerToys.Interop;
 using WorkspacesLauncherUI.ViewModels;
 
 namespace WorkspacesLauncherUI
@@ -21,6 +19,9 @@ namespace WorkspacesLauncherUI
     {
         private static Mutex _instanceMutex;
 
+        // Create an instance of the  IPC wrapper.
+        private static TwoWayPipeMessageIPCManaged ipcmanager;
+
         private StatusWindow _mainWindow;
 
         private MainViewModel _mainViewModel;
@@ -28,6 +29,8 @@ namespace WorkspacesLauncherUI
         public static ThemeManager ThemeManager { get; set; }
 
         private bool _isDisposed;
+
+        public static Action<string> IPCMessageReceivedCallback { get; set; }
 
         public App()
         {
@@ -55,6 +58,15 @@ namespace WorkspacesLauncherUI
                 Shutdown(0);
                 return;
             }
+
+            ipcmanager = new TwoWayPipeMessageIPCManaged("\\\\.\\pipe\\powertoys_workspaces_ui_", "\\\\.\\pipe\\powertoys_workspaces_launcher_", (string message) =>
+            {
+                if (IPCMessageReceivedCallback != null && message.Length > 0)
+                {
+                    IPCMessageReceivedCallback(message);
+                }
+            });
+            ipcmanager.Start();
 
             ThemeManager = new ThemeManager(this);
 
@@ -97,6 +109,10 @@ namespace WorkspacesLauncherUI
                 if (disposing)
                 {
                     ThemeManager?.Dispose();
+
+                    ipcmanager?.End();
+                    ipcmanager?.Dispose();
+
                     _instanceMutex?.Dispose();
                 }
 

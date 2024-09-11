@@ -9,6 +9,12 @@
 
 #include <AppLauncher.h>
 
+LauncherUIHelper::LauncherUIHelper() :
+    uiProcessId{},
+    ipcHelper(IPCHelperStrings::LauncherPipeName, IPCHelperStrings::UIPipeName, nullptr)
+{
+}
+
 LauncherUIHelper::~LauncherUIHelper()
 {
     OnThreadExecutor().submit(OnThreadExecutor::task_t{ [&] {
@@ -27,8 +33,6 @@ LauncherUIHelper::~LauncherUIHelper()
         {
             Logger::error(L"Unable to find UI process: {}", get_last_error_or_default(GetLastError()));
         }
-        
-        std::filesystem::remove(WorkspacesData::LaunchWorkspacesFile());
     } }).wait();
 }
 
@@ -68,5 +72,5 @@ void LauncherUIHelper::UpdateLaunchStatus(LaunchingApps launchedApps) const
         appData.appLaunchInfoList.push_back(appLaunchInfo);
     }
 
-    json::to_file(WorkspacesData::LaunchWorkspacesFile(), WorkspacesData::AppLaunchDataJSON::ToJson(appData));
+    ipcHelper.send(WorkspacesData::AppLaunchDataJSON::ToJson(appData).ToString().c_str());
 }
