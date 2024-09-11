@@ -81,10 +81,10 @@ private:
     Hotkey m_paste_as_markdown_hotkey{};
     Hotkey m_paste_as_json_hotkey{};
 
-    template <class TKey>
+    template<class Id>
     struct ActionData
     {
-        TKey id;
+        Id id;
         Hotkey hotkey;
     };
 
