@@ -42,6 +42,10 @@ map<wstring, vector<wstring>> escapeInfo = {
         L"remapShortcuts/appSpecific/openUri",
         } }, // avoid leaking personal information from text, URI or application mappings
     { L"Workspaces/workspaces.json", { L"workspaces/applications/command-line-arguments" } },
+    { L"AdvancedPaste/settings.json", {
+        L"properties/custom-actions/value/name",
+        L"properties/custom-actions/value/prompt"
+        } },
 };
 
 vector<wstring> filesToDelete = {
