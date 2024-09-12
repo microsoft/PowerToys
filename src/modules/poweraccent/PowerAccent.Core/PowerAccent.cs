@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Text;
 using System.Unicode;
 using System.Windows;
+
 using ManagedCommon;
 using PowerAccent.Core.Services;
 using PowerAccent.Core.Tools;
