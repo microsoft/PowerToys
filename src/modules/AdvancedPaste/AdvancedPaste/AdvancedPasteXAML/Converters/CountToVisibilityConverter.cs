@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Data;
 
 namespace AdvancedPaste.Converters;
 
-public sealed class CountToVisibilityConverter : IValueConverter
+public sealed partial class CountToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {

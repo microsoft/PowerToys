@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Data;
 
 namespace EnvironmentVariablesUILib.Converters;
 
-public class EnvironmentStateToVisibilityConverter : IValueConverter
+public partial class EnvironmentStateToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
