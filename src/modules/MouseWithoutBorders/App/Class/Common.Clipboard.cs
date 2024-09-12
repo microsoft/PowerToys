@@ -16,6 +16,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+
 using Microsoft.PowerToys.Telemetry;
 
 // <summary>
@@ -28,6 +29,7 @@ using Microsoft.PowerToys.Telemetry;
 // </history>
 using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Exceptions;
+
 using SystemClipboard = System.Windows.Forms.Clipboard;
 
 namespace MouseWithoutBorders
