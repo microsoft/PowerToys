@@ -7,7 +7,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace SamplePagesExtension;
 
-internal sealed class SampleFormPage : FormPage
+internal sealed partial class SampleFormPage : FormPage
 {
     private readonly SampleForm sampleForm = new();
 

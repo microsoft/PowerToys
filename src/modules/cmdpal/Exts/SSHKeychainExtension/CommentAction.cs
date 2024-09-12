@@ -7,7 +7,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace SSHKeychainExtension;
 
-internal sealed class CommentAction : InvokableCommand
+internal sealed partial class CommentAction : InvokableCommand
 {
     private readonly NewsPost _post;
 

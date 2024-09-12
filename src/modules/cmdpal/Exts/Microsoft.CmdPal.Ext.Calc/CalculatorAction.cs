@@ -10,7 +10,7 @@ using Windows.ApplicationModel.DataTransfer;
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace Microsoft.CmdPal.Ext.Calc;
 
-public class CalculatorAction : InvokableCommand
+public partial class CalculatorAction : InvokableCommand
 {
     private bool _success;
     private string _result = string.Empty;

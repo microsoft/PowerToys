@@ -7,7 +7,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
-internal sealed class BookmarkPlaceholderPage : FormPage
+internal sealed partial class BookmarkPlaceholderPage : FormPage
 {
     private readonly IForm _bookmarkPlaceholder;
 

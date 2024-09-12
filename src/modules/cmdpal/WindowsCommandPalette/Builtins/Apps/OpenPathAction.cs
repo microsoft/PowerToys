@@ -8,7 +8,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 namespace WindowsCommandPalette.BuiltinCommands.AllApps;
 
 // NOTE this is pretty close to what we'd put in the SDK
-internal sealed class OpenPathAction(string target) : InvokableCommand
+internal sealed partial class OpenPathAction(string target) : InvokableCommand
 {
     private readonly string _target = target;
 

@@ -7,7 +7,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace ProcessMonitorExtension;
 
-internal sealed class TerminateProcess : InvokableCommand
+internal sealed partial class TerminateProcess : InvokableCommand
 {
     private readonly ProcessItem _process;
 

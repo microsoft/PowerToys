@@ -12,7 +12,7 @@ namespace ProcessMonitorExtension;
 [ComVisible(true)]
 [Guid("8BD7A6C4-7185-4426-AE8D-61E438A3E740")]
 [ComDefaultInterface(typeof(IExtension))]
-public sealed class SampleExtension : IExtension
+public sealed partial class SampleExtension : IExtension
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
 

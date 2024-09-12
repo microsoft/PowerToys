@@ -56,6 +56,11 @@ namespace MeasureToolUI
             this.SetIsMaximizable(false);
             IsTitleBarVisible = false;
 
+            // Remove the caption style from the window style. Windows App SDK 1.6 added it, which made the title bar and borders appear for Measure Tool. This code removes it.
+            var windowStyle = GetWindowLong(hwnd, GWL_STYLE);
+            windowStyle = windowStyle & (~WS_CAPTION);
+            _ = SetWindowLong(hwnd, GWL_STYLE, windowStyle);
+
             _coreLogic = core;
             Closed += MainWindow_Closed;
             DisplayArea displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest);

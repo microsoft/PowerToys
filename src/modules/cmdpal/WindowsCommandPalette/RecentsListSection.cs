@@ -11,7 +11,7 @@ using WindowsCommandPalette.Views;
 
 namespace DeveloperCommandPalette;
 
-public sealed class RecentsListSection : ListSection, INotifyCollectionChanged
+public sealed partial class RecentsListSection : ListSection, INotifyCollectionChanged
 {
     public event NotifyCollectionChangedEventHandler? CollectionChanged;
 

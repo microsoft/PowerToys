@@ -12,7 +12,7 @@ namespace TemplateExtension;
 [ComVisible(true)]
 [Guid("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF")]
 [ComDefaultInterface(typeof(IExtension))]
-public sealed class SampleExtension : IExtension
+public sealed partial class SampleExtension : IExtension
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
 

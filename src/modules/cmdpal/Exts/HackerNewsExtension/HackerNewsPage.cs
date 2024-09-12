@@ -13,7 +13,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace HackerNewsExtension;
 
-internal sealed class HackerNewsPage : ListPage
+internal sealed partial class HackerNewsPage : ListPage
 {
     public HackerNewsPage()
     {

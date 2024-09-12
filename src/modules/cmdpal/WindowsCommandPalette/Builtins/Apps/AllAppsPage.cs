@@ -10,7 +10,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace WindowsCommandPalette.BuiltinCommands.AllApps;
 
-public sealed class AllAppsPage : ListPage
+public sealed partial class AllAppsPage : ListPage
 {
     private ISection allAppsSection = new ListSection();
 

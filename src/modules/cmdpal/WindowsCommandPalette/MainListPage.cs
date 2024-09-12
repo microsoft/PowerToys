@@ -10,7 +10,7 @@ using WindowsCommandPalette.Views;
 
 namespace DeveloperCommandPalette;
 
-public sealed class MainListPage : DynamicListPage
+public sealed partial class MainListPage : DynamicListPage
 {
     private readonly MainViewModel _mainViewModel;
     private readonly MainListSection _mainSection;

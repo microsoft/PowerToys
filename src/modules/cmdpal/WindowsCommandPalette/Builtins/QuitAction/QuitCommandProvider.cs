@@ -8,7 +8,7 @@ using Windows.Foundation;
 
 namespace WindowsCommandPalette.BuiltinCommands;
 
-public class QuitCommandProvider : ICommandProvider
+public partial class QuitCommandProvider : ICommandProvider
 {
     public string DisplayName => string.Empty;
 

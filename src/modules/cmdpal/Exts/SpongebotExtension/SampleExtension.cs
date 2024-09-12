@@ -12,7 +12,7 @@ namespace SpongebotExtension;
 [ComVisible(true)]
 [Guid("a50859fc-a214-4852-b47b-62ada70df7bc")]
 [ComDefaultInterface(typeof(IExtension))]
-public sealed class SampleExtension : IExtension
+public sealed partial class SampleExtension : IExtension
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
 

@@ -10,7 +10,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace SpongebotExtension;
 
-internal sealed class SpongeSettingsForm : Form
+internal sealed partial class SpongeSettingsForm : Form
 {
     public override string TemplateJson()
     {

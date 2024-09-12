@@ -9,7 +9,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace Microsoft.CmdPal.Ext.Settings;
 
-internal sealed class SettingsPage : FormPage
+internal sealed partial class SettingsPage : FormPage
 {
     private readonly SettingsForm _settings = new();
 

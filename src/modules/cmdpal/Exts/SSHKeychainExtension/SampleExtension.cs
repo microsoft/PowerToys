@@ -12,7 +12,7 @@ namespace SSHKeychainExtension;
 [ComVisible(true)]
 [Guid("D07A5785-2334-4686-9A49-AE19D992284F")]
 [ComDefaultInterface(typeof(IExtension))]
-public sealed class SampleExtension : IExtension
+public sealed partial class SampleExtension : IExtension
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
 

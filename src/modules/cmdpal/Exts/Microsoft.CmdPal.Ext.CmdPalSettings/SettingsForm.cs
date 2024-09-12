@@ -8,7 +8,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.Settings;
 
-internal sealed class SettingsForm : Form
+internal sealed partial class SettingsForm : Form
 {
     public SettingsForm()
     {

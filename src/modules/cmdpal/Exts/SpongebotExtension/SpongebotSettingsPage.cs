@@ -7,7 +7,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace SpongebotExtension;
 
-internal sealed class SpongebotSettingsPage : FormPage
+internal sealed partial class SpongebotSettingsPage : FormPage
 {
     private readonly SpongeSettingsForm settingsForm = new();
 

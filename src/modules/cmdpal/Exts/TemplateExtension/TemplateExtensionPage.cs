@@ -9,7 +9,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 namespace TemplateExtension;
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]
-internal sealed class TemplateExtensionPage : ListPage
+internal sealed partial class TemplateExtensionPage : ListPage
 {
     public TemplateExtensionPage()
     {
@@ -31,7 +31,7 @@ internal sealed class TemplateExtensionPage : ListPage
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]
-public class TemplateExtensionActionsProvider : ICommandProvider
+public partial class TemplateExtensionActionsProvider : ICommandProvider
 {
     public string DisplayName => $"TemplateDisplayName Commands";
 

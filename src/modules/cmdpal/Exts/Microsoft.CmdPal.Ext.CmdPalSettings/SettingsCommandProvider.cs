@@ -8,7 +8,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.Settings;
 
-public class SettingsCommandProvider : ICommandProvider
+public partial class SettingsCommandProvider : ICommandProvider
 {
     public string DisplayName => $"Settings";
 

@@ -8,7 +8,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
-internal sealed class AddBookmarkPage : FormPage
+internal sealed partial class AddBookmarkPage : FormPage
 {
     private readonly AddBookmarkForm _addBookmark = new();
 

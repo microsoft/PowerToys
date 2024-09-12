@@ -12,7 +12,7 @@ namespace SamplePagesExtension;
 [ComVisible(true)]
 [Guid("6112D28D-6341-45C8-92C3-83ED55853A9F")]
 [ComDefaultInterface(typeof(IExtension))]
-public sealed class SampleExtension : IExtension
+public sealed partial class SampleExtension : IExtension
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
 

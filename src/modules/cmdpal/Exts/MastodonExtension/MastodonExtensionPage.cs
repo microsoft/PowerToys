@@ -9,7 +9,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 namespace MastodonExtension;
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]
-internal sealed class MastodonExtensionPage : ListPage
+internal sealed partial class MastodonExtensionPage : ListPage
 {
     public MastodonExtensionPage()
     {
@@ -31,7 +31,7 @@ internal sealed class MastodonExtensionPage : ListPage
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]
-public class MastodonExtensionActionsProvider : ICommandProvider
+public partial class MastodonExtensionActionsProvider : ICommandProvider
 {
     public string DisplayName => $"Mastodon extension for cmdpal Commands";
 

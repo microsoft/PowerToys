@@ -7,7 +7,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace WindowsCommandPalette.Views;
 
-public sealed class NoOpAction : InvokableCommand
+public sealed partial class NoOpAction : InvokableCommand
 {
     public override ICommandResult Invoke()
     {

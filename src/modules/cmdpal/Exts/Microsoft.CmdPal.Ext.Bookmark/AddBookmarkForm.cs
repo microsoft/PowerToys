@@ -10,7 +10,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
-internal sealed class AddBookmarkForm : Form
+internal sealed partial class AddBookmarkForm : Form
 {
     internal event TypedEventHandler<object, object?>? AddedAction;
 

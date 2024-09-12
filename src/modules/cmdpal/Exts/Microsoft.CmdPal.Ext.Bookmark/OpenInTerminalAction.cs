@@ -8,7 +8,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
-internal sealed class OpenInTerminalAction : InvokableCommand
+internal sealed partial class OpenInTerminalAction : InvokableCommand
 {
     private readonly string _folder;
 
