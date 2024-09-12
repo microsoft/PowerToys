@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Settings;
 using ManagedCommon;
