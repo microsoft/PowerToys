@@ -6,7 +6,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace WindowsCommandPalette.Views;
 
-public sealed class ErrorListItem : ListItem
+public sealed partial class ErrorListItem : ListItem
 {
     public ErrorListItem(Exception ex)
         : base(new NoOpAction())

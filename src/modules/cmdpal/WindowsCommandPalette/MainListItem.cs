@@ -7,7 +7,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace DeveloperCommandPalette;
 
-public sealed class MainListItem : ListItem
+public sealed partial class MainListItem : ListItem
 {
     public IListItem Item { get; set; }
 

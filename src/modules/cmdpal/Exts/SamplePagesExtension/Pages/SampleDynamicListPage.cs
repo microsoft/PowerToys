@@ -18,7 +18,7 @@ using Microsoft.UI.Windowing;
 
 namespace SamplePagesExtension;
 
-internal sealed class SampleDynamicListPage : DynamicListPage
+internal sealed partial class SampleDynamicListPage : DynamicListPage
 {
     public SampleDynamicListPage()
     {

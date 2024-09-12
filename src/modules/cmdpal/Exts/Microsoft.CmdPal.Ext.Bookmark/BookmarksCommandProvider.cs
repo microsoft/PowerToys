@@ -11,7 +11,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
-public class BookmarksCommandProvider : ICommandProvider
+public partial class BookmarksCommandProvider : ICommandProvider
 {
     public string DisplayName => $"Bookmarks";
 

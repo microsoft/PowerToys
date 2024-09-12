@@ -16,7 +16,7 @@ namespace DeveloperCommandPalette;
 
 // The FilteredListSection is for when we've got any filter at all. It starts by
 // enumerating all actions and apps, and returns the subset that matches.
-public sealed class FilteredListSection : ISection, INotifyCollectionChanged
+public sealed partial class FilteredListSection : ISection, INotifyCollectionChanged
 {
     public event NotifyCollectionChangedEventHandler? CollectionChanged;
 

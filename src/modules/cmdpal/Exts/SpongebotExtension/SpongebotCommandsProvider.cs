@@ -9,7 +9,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace SpongebotExtension;
 
-internal sealed class SpongebotCommandsProvider : ICommandProvider
+internal sealed partial class SpongebotCommandsProvider : ICommandProvider
 {
     public string DisplayName => $"Spongebob, mocking";
 

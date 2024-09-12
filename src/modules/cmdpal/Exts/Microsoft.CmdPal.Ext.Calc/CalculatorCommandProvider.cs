@@ -9,7 +9,7 @@ using Microsoft.CmdPal.Extensions;
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace Microsoft.CmdPal.Ext.Calc;
 
-public class CalculatorCommandProvider : ICommandProvider
+public partial class CalculatorCommandProvider : ICommandProvider
 {
     public string DisplayName => $"Calculator";
 

@@ -18,7 +18,7 @@ using Microsoft.UI.Windowing;
 
 namespace SamplePagesExtension;
 
-internal sealed class SampleMarkdownPage : MarkdownPage
+internal sealed partial class SampleMarkdownPage : MarkdownPage
 {
     private readonly string _markdown = @"
 # Markdown Guide

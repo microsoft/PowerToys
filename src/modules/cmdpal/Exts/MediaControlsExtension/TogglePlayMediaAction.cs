@@ -7,7 +7,7 @@ using Windows.Media.Control;
 
 namespace MediaControlsExtension;
 
-public sealed class TogglePlayMediaAction : InvokableCommand
+public sealed partial class TogglePlayMediaAction : InvokableCommand
 {
     public GlobalSystemMediaTransportControlsSession MediaSession { get; set; }
 

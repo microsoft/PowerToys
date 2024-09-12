@@ -11,7 +11,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace ProcessMonitorExtension;
 
-internal sealed class ProcessListPage : ListPage
+internal sealed partial class ProcessListPage : ListPage
 {
     public ProcessListPage()
     {

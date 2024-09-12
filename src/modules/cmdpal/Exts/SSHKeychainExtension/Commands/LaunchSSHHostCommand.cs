@@ -14,7 +14,7 @@ using SSHKeychainExtension.Data;
 
 namespace SSHKeychainExtension.Commands;
 
-internal sealed class LaunchSSHHostCommand : InvokableCommand
+internal sealed partial class LaunchSSHHostCommand : InvokableCommand
 {
     private readonly SSHKeychainItem _host;
 

@@ -12,7 +12,7 @@ namespace MastodonExtension;
 [ComVisible(true)]
 [Guid("f0e93f1a-2b64-4896-abcc-8d2145480ede")]
 [ComDefaultInterface(typeof(IExtension))]
-public sealed class SampleExtension : IExtension
+public sealed partial class SampleExtension : IExtension
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
 

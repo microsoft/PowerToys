@@ -12,7 +12,7 @@ namespace MediaControlsExtension;
 [ComVisible(true)]
 [Guid("bb60a98a-0197-4378-9b40-b684f4068d1d")]
 [ComDefaultInterface(typeof(IExtension))]
-public sealed class SampleExtension : IExtension
+public sealed partial class SampleExtension : IExtension
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
 

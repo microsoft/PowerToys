@@ -8,7 +8,7 @@ using Windows.Foundation;
 
 namespace WindowsCommandPalette.BuiltinCommands;
 
-public class QuitAction : InvokableCommand, IFallbackHandler
+public partial class QuitAction : InvokableCommand, IFallbackHandler
 {
     public event TypedEventHandler<object?, object?>? QuitRequested;
 

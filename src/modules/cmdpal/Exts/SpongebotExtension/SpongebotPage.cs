@@ -12,7 +12,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace SpongebotExtension;
 
-public class SpongebotPage : MarkdownPage, IFallbackHandler
+public partial class SpongebotPage : MarkdownPage, IFallbackHandler
 {
     public CopyTextAction CopyTextAction { get; set; } = new(string.Empty);
 

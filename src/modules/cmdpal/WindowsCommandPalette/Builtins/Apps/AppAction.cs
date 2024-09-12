@@ -8,7 +8,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace WindowsCommandPalette.BuiltinCommands.AllApps;
 
-internal sealed class AppAction : InvokableCommand
+internal sealed partial class AppAction : InvokableCommand
 {
     private readonly AppItem _app;
 

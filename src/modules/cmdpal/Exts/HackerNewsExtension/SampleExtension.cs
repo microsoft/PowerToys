@@ -12,7 +12,7 @@ namespace HackerNewsExtension;
 [ComVisible(true)]
 [Guid("283DDB0F-1AD9-406F-B359-699BFBD2DA68")]
 [ComDefaultInterface(typeof(IExtension))]
-public sealed class SampleExtension : IExtension
+public sealed partial class SampleExtension : IExtension
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
 

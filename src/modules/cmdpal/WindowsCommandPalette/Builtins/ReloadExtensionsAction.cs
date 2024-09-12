@@ -8,7 +8,7 @@ using Windows.Foundation;
 
 namespace WindowsCommandPalette.BuiltinCommands;
 
-public class ReloadExtensionsAction : InvokableCommand, IFallbackHandler
+public partial class ReloadExtensionsAction : InvokableCommand, IFallbackHandler
 {
     public ReloadExtensionsAction()
     {

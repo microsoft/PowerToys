@@ -12,7 +12,7 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
-internal sealed class BookmarkPlaceholderForm : Form
+internal sealed partial class BookmarkPlaceholderForm : Form
 {
     private readonly List<string> _placeholderNames;
 

@@ -18,7 +18,7 @@ using Microsoft.UI.Windowing;
 
 namespace SamplePagesExtension;
 
-internal sealed class SampleListPageWithDetails : ListPage
+internal sealed partial class SampleListPageWithDetails : ListPage
 {
     public SampleListPageWithDetails()
     {

@@ -6,7 +6,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace WindowsCommandPalette.BuiltinCommands.AllApps;
 
-internal sealed class AppListItem : ListItem
+internal sealed partial class AppListItem : ListItem
 {
     private readonly AppItem _app;
 

@@ -11,7 +11,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace Microsoft.CmdPal.Ext.Calc;
 
-public class CalculatorTopLevelListItem : ListItem, IFallbackHandler
+public partial class CalculatorTopLevelListItem : ListItem, IFallbackHandler
 {
     public CalculatorTopLevelListItem()
         : base(new CalculatorAction())

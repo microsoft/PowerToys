@@ -8,7 +8,7 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace SpongebotExtension;
 
-public class CopyTextAction : InvokableCommand
+public partial class CopyTextAction : InvokableCommand
 {
     internal string Text { get; set; }
 

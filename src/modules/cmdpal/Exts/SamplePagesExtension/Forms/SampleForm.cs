@@ -8,7 +8,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace SamplePagesExtension;
 
-internal sealed class SampleForm : Form
+internal sealed partial class SampleForm : Form
 {
     public SampleForm()
     {

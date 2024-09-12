@@ -20,7 +20,7 @@ using SSHKeychainExtension.Data;
 
 namespace SSHKeychainExtension;
 
-internal sealed class SSHHostsListPage : ListPage
+internal sealed partial class SSHHostsListPage : ListPage
 {
     private static readonly string _defaultConfigFile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\.ssh\\config";
 

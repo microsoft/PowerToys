@@ -7,7 +7,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace HackerNewsExtension;
 
-internal sealed class LinkAction : InvokableCommand
+internal sealed partial class LinkAction : InvokableCommand
 {
     private readonly NewsPost _post;
 
