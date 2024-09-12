@@ -164,22 +164,6 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         }
 
         /// <summary>
-        /// The plural form "feet" is not recognized by UniteNets. Replace it with "ft".
-        /// </summary>
-        public static void FeetToFt(ref string[] split)
-        {
-            if (string.Equals(split[1], "feet", StringComparison.OrdinalIgnoreCase))
-            {
-                split[1] = "ft";
-            }
-
-            if (string.Equals(split[3], "feet", StringComparison.OrdinalIgnoreCase))
-            {
-                split[3] = "ft";
-            }
-        }
-
-        /// <summary>
         /// Converts spelling "kph" to "km/h"
         /// </summary>
         public static void KPHHandler(ref string[] split)
@@ -291,7 +275,6 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
             InputInterpreter.DegreePrefixer(ref split);
             InputInterpreter.MetreToMeter(ref split);
-            InputInterpreter.FeetToFt(ref split);
             InputInterpreter.KPHHandler(ref split);
             InputInterpreter.GallonHandler(ref split, CultureInfo.CurrentCulture);
             InputInterpreter.OunceHandler(ref split, CultureInfo.CurrentCulture);
