@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Data;
 
 namespace EnvironmentVariablesUILib.Converters;
 
-public class VariableTypeToGlyphConverter : IValueConverter
+public partial class VariableTypeToGlyphConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {

@@ -5,11 +5,10 @@
 using System;
 using System.IO;
 using Microsoft.UI.Xaml.Data;
-using PowerToys.FileLocksmithLib.Interop;
 
 namespace PowerToys.FileLocksmithUI.Converters
 {
-    public sealed class FileListToDescriptionConverter : IValueConverter
+    public sealed partial class FileListToDescriptionConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {

@@ -241,6 +241,17 @@ configuration:
       then:
       - addReply:
           reply: Hi! Your last comment indicates to our system, that you might want to contribute to this feature/fix this bug. Thank you! Please make us aware on our ["Would you like to contribute to PowerToys?" thread](https://github.com/microsoft/PowerToys/issues/28769), as we don't see all the comments. <br /><br />_I'm a bot (beep!) so please excuse any mistakes I may make_
+      description:
+    - if:
+      - payloadType: Issues
+      - isAction:
+          action: Opened
+      - bodyContains:
+          pattern: 'Area\(s\) with issue\?\s*\nWorkspaces'
+          isRegex: True
+      then:
+      - addLabel:
+          label: Product-Workspaces
       description: 
 onFailure: 
 onSuccess: 
