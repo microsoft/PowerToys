@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
+
 using IOPath = System.IO.Path;
 
 namespace ImageResizer
