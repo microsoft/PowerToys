@@ -91,7 +91,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
                             if (!isFeet || !isInches)
                             {
-                                // atleast one could not be parsed correctly
+                                // at least one could not be parsed correctly
                                 break;
                             }
 
@@ -114,7 +114,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         }
 
         /// <summary>
-        /// Adds degree prefixes to degree units for shorthand notation. E.g. '10 c in fahrenheit' becomes '10 °c in DegreeFahrenheit'.
+        /// Adds degree prefixes to degree units for shorthand notation. E.g. '10 c in fahrenheit' becomes '10 °C in DegreeFahrenheit'.
         /// </summary>
         public static void DegreePrefixer(ref string[] split)
         {
@@ -129,11 +129,11 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     break;
 
                 case "c":
-                    split[1] = "°c";
+                    split[1] = "°C";
                     break;
 
                 case "f":
-                    split[1] = "°f";
+                    split[1] = "°F";
                     break;
 
                 default:
@@ -151,11 +151,11 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     break;
 
                 case "c":
-                    split[3] = "°c";
+                    split[3] = "°C";
                     break;
 
                 case "f":
-                    split[3] = "°f";
+                    split[3] = "°F";
                     break;
 
                 default:
