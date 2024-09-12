@@ -4,6 +4,7 @@
 
 using System;
 using System.Drawing;
+
 using MouseJumpUI.Common.Models.Drawing;
 
 namespace MouseJumpUI.Common.Imaging;
