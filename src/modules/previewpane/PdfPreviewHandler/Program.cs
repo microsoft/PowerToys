@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 using System.Globalization;
 using System.Windows.Threading;
+
 using Common.UI;
 using PowerToys.Interop;
 
