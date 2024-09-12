@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
+
 using Microsoft.Plugin.Folder.Sources;
 using Microsoft.Plugin.Folder.Sources.Result;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
