@@ -5,6 +5,7 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+
 using ManagedCommon;
 using Windows.Storage;
 
