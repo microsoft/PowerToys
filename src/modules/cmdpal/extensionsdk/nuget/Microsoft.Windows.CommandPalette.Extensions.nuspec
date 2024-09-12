@@ -15,7 +15,7 @@
     <projectUrl>https://github.com/microsoft/powertoys</projectUrl> <!-- TODO!: make repo lmao -->
     <dependencies>
       <group targetFramework="net8.0-windows10.0.19041.0">
-        <dependency id="Microsoft.Windows.CsWinRT" version="2.0.1" />
+        <dependency id="Microsoft.Windows.CsWinRT" version="2.1.1" />
       </group>
     </dependencies>
   </metadata>

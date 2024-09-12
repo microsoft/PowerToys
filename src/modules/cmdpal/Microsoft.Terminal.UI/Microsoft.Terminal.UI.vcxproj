@@ -2,7 +2,7 @@
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <PathToRoot>..\..\..\..\</PathToRoot>
-    <WasdkNuget>$(PathToRoot)packages\Microsoft.WindowsAppSDK.1.5.240428000</WasdkNuget>
+    <WasdkNuget>$(PathToRoot)packages\Microsoft.WindowsAppSDK.1.6.240829007</WasdkNuget>
     <CppWinRTNuget>$(PathToRoot)packages\Microsoft.Windows.CppWinRT.2.0.240111.5</CppWinRTNuget>
   </PropertyGroup>
   <Import Project="$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.props" Condition="Exists('$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.props')" />
