@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -35,6 +35,11 @@
   -->
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Data\" />
+    <Folder Include="Forms\" />
+    <Folder Include="Commands\" />
   </ItemGroup>
 
   <!--
