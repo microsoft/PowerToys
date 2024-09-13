@@ -173,7 +173,7 @@ CGraphicsInit	g_GraphicsInit;
 // Saves specified filePath to clipboard. 
 //
 //----------------------------------------------------------------------------
-bool SaveToClipboard( WCHAR* filePath, HWND hwnd )
+bool SaveToClipboard( const WCHAR* filePath, HWND hwnd )
 {
 	if( filePath == NULL || hwnd == NULL || wcslen( filePath ) == 0 )
 	{
@@ -3428,7 +3428,7 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
 
 			co_await file.MoveAndReplaceAsync( destFile );
 			g_RecordingSaveLocation = file.Path();
-            SaveToClipboard(const_cast<WCHAR*>(g_RecordingSaveLocation.c_str()), hWnd);
+            SaveToClipboard(g_RecordingSaveLocation.c_str(), hWnd);
 		}
 		g_bSaveInProgress = false;
 
