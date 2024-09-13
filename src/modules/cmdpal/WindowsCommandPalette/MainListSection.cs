@@ -15,7 +15,7 @@ public sealed partial class MainListSection : ISection, INotifyCollectionChanged
 {
     public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
-    public string Title => "Actions";
+    public string Title => "Commands";
 
     private readonly MainViewModel _mainViewModel;
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();

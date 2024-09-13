@@ -155,7 +155,7 @@ When we're done building the extension, the Command Palette should look somethin
 We've made it easy to build a new extension. Just follow these steps:
 
 1. Navigate to the src\modules\cmdpal folder
-2. Run the following PowerShell script, replacing "MastodonExtension" with the name of your extension and "Mastodon extension for cmdpal" with the display name **of the [command that will show up in the root view**](#root-view) of the Command Palette:
+2. Run the following PowerShell script, replacing "MastodonExtension" with the `Name` of your extension and "Mastodon extension for cmdpal" with the `DisplayName` of the [command that will show up in the root view](#root-view) of the Command Palette:
     
 ```powershell
 .\Exts\NewExtension.ps1 -name MastodonExtension -DisplayName "Mastodon extension for cmdpal"
@@ -172,6 +172,10 @@ We've made it easy to build a new extension. Just follow these steps:
 
 ![alt text](image-11.png)
 
+At this point you should have your command that you created show up in the root view of the Command Palette! If you've set up everything correctly, it should look something like this (note - your example won't have icons yet): 
+
+
+![alt text](44e3593f-cfc0-4df3-ba74-dede09b0de5a.gif)
 
 #### Step 1: Provide a Top Level Command
 
