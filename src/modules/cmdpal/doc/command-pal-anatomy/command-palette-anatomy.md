@@ -162,7 +162,7 @@ We've made it easy to build a new extension. Just follow these steps:
 ```
 
 3. Open the solution in Visual Studio.
-4. Right click on the directory titled 'SampleExtensions' and select 'Add' -> 'New Project'.
+4. Right click on the directory titled 'SampleExtensions' and select 'Add' -> 'Existing Project'.
 
 ![alt text](image-12.png)
 
