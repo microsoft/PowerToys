@@ -4,13 +4,7 @@
 
 Let's start with the root view of the Command Palette. The root view is the view that is displayed when the Command Palette is first opened. It is the first thing the user sees: 
 
-2. Run the following PowerShell script, replacing "MastodonExtension" with the name of your extension and "Mastodon extension for cmdpal" with the display name **of the [command that will show up in the root view**](#root-view) of the Command Palette:
-3. Open the solution in Visual Studio and build the project.
-4.  and  .Right click on the 'Ddirectory titled 'SampleExtensions' 4. Right click on the directory titled 'SampleExtensions' and select 'Add' -> 'New Item'.Project'.
-5. Navigate to the '\Ext5. Navigate to the '\Exts folder, and find the *.csproj file that was created by the PowerShell script. It will be in a folder with the same name as the extension you provided in the PowerShell script.
-6. Right click on the new project you've just created and select 'Deploy'.
-7. Build the project by clicking the play button in Visual Studio.
-
+![alt text](image-1.png)
 
 The root view is a special kind of [ListPage](#listpage). It's special because it displays all of the top level commands: [built-in commands](INSERT SECTION SOMEWHERE) and [commands provided by installed extensions](#icommandprovider).
 
