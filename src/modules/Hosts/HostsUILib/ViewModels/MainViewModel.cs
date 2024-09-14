@@ -283,7 +283,7 @@ namespace HostsUILib.ViewModels
         [RelayCommand]
         public void OverwriteHosts()
         {
-            _hostsService.RemoveReadOnly();
+            _hostsService.RemoveReadOnlyAttribute();
             _ = Task.Run(SaveAsync);
         }
 

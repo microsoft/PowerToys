@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "GPOWrapper.g.h"
 #include <common/utils/gpo.h>
 
@@ -51,6 +51,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredQoiThumbnailsEnabledValue();
         static GpoRuleConfigured GetConfiguredFileActionsMenuEnabledValue();
         static GpoRuleConfigured GetAllowedAdvancedPasteOnlineAIModelsValue();
+        static GpoRuleConfigured GetConfiguredWorkspacesEnabledValue();
         static GpoRuleConfigured GetConfiguredMwbClipboardSharingEnabledValue();
         static GpoRuleConfigured GetConfiguredMwbFileTransferEnabledValue();
         static GpoRuleConfigured GetConfiguredMwbUseOriginalUserInterfaceValue();

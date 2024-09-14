@@ -76,5 +76,10 @@ namespace PowerToys.GPOWrapperProjection
         {
             return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetRunPluginEnabledValue(pluginID);
         }
+
+        public static GpoRuleConfigured GetConfiguredWorkspacesEnabledValue()
+        {
+            return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetConfiguredWorkspacesEnabledValue();
+        }
     }
 }

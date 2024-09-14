@@ -57,11 +57,14 @@ APPBARDATA
 appdata
 APPEXECLINK
 Appium
+applayout
 Applicationcan
+APPLICATIONFRAMEHOST
 appmanifest
 APPNAME
 appref
 appsettings
+appsfolder
 appwindow
 appwiz
 APSTUDIO
@@ -191,7 +194,6 @@ CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
 closesocket
-clrcall
 CLSCTX
 Clusion
 cmder
@@ -202,8 +204,8 @@ CMINVOKECOMMANDINFO
 CMINVOKECOMMANDINFOEX
 CMock
 CMONITORS
-cmph
 cmpgt
+cmph
 cne
 CNF
 coclass
@@ -243,16 +245,14 @@ CONTEXTMENUHANDLER
 CONTROLL
 CONTROLPARENT
 copiedcolorrepresentation
+COREWINDOW
 cotaskmem
 COULDNOT
 countof
 cph
 CPower
 cppblog
-cppruntime
-cppstd
 cppwinrt
-CProj
 createdump
 CREATESCHEDULEDTASK
 CREATESTRUCT
@@ -268,6 +268,7 @@ CSettings
 cso
 CSRW
 CStyle
+cswinrt
 CSY
 CTest
 currentculture
@@ -409,6 +410,7 @@ dxgi
 dxgidebug
 dxgiformat
 dxguid
+easeofaccess
 ecount
 EData
 Edid
@@ -606,7 +608,6 @@ hmenu
 hmodule
 hmonitor
 homljgmgpmcbpjbnjpfijnhipfkiclkd
-HOOKPROC
 Hostbackdropbrush
 hotkeycontrol
 hotkeys
@@ -839,6 +840,7 @@ lpwcx
 lpwndpl
 LReader
 LRESULT
+LSTATUS
 lstrcmp
 lstrcmpi
 lstrlen
@@ -935,7 +937,6 @@ MRT
 mru
 mrw
 msc
-msclr
 mscorlib
 msdata
 msedge
@@ -1115,6 +1116,7 @@ PATINVERT
 PATPAINT
 PAUDIO
 pbc
+pbi
 PBlob
 pcb
 pcch
@@ -1128,6 +1130,7 @@ pdo
 pdto
 pdtobj
 pdw
+Peb
 pef
 PElems
 Pels
@@ -1214,6 +1217,8 @@ projectname
 PROPBAG
 PROPERTYKEY
 propkey
+propsys
+PROPVARIANT
 propvarutil
 prvpane
 psapi
@@ -1380,6 +1385,7 @@ sddl
 SDKDDK
 sdns
 searchterm
+SEARCHUI
 secpol
 SENDCHANGE
 sendinput
@@ -1511,7 +1517,6 @@ STATICEDGE
 STATSTG
 stdafx
 STDAPI
-stdcpp
 stdcpplatest
 STDMETHODCALLTYPE
 STDMETHODIMP
@@ -1563,7 +1568,9 @@ SYSKEYUP
 SYSLIB
 SYSMENU
 SYSTEMAPPS
+systemsettings
 SYSTEMTIME
+SYSTEMWOW
 tapp
 TApplication
 TApplied
@@ -1677,9 +1684,11 @@ urlmon
 Usb
 USEDEFAULT
 USEFILEATTRIBUTES
+USEPOSITION
 USERDATA
 Userenv
 USESHOWWINDOW
+USESIZE
 USESTDHANDLES
 USRDLL
 UType
@@ -1717,8 +1726,10 @@ VIDEOINFOHEADER
 viewmodel
 vih
 VIRTUALDESK
+VISEGRADRELAY
 visiblecolorformats
 Visibletrue
+visualeffects
 VKey
 vmovl
 vorrq
@@ -1746,6 +1757,7 @@ Vtbl
 WANTPALM
 Wagnerp
 wbem
+Wbemidl
 wbemuuid
 WBounds
 Wca
@@ -1833,6 +1845,9 @@ WNDCLASSEXW
 WNDCLASSW
 WNDPROC
 workarounds
+WORKSPACESEDITOR
+WORKSPACESLAUNCHER
+WORKSPACESSNAPSHOTTOOL
 wox
 wparam
 wpf

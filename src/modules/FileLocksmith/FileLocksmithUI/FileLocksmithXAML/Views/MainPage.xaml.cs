@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using FileLocksmith.Interop;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using PowerToys.FileLocksmithLib.Interop;
 using PowerToys.FileLocksmithUI.ViewModels;
 
 namespace PowerToys.FileLocksmithUI.Views

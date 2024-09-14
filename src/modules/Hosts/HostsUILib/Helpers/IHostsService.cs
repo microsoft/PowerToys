@@ -25,6 +25,6 @@ namespace HostsUILib.Helpers
 
         void OpenHostsFile();
 
-        void RemoveReadOnly();
+        void RemoveReadOnlyAttribute();
     }
 }

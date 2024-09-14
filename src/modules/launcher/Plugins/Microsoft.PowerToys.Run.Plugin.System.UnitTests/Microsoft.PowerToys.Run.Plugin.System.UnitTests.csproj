@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />	
 
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
     <IsPackable>false</IsPackable>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.System.UnitTests</RootNamespace>
   </PropertyGroup>
@@ -14,6 +15,4 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.PowerToys.Run.Plugin.System\Microsoft.PowerToys.Run.Plugin.System.csproj" />
   </ItemGroup>
-
-
 </Project>

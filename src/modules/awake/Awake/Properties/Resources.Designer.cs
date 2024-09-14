@@ -115,6 +115,15 @@ namespace Awake.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Uses the parent process as the bound target - once the process terminates, Awake stops..
+        /// </summary>
+        internal static string AWAKE_CMD_PARENT_PID_OPTION {
+            get {
+                return ResourceManager.GetString("AWAKE_CMD_PARENT_PID_OPTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Exit.
         /// </summary>
         internal static string AWAKE_EXIT {
