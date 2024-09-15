@@ -7,11 +7,10 @@ using System.Drawing;
 using System.IO;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Windows.Storage;
 
 namespace PowerToys.FileLocksmithUI.Converters
 {
-    public sealed class PidToIconConverter : IValueConverter
+    public sealed partial class PidToIconConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
