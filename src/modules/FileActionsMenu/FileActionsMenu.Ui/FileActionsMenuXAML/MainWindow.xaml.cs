@@ -250,15 +250,18 @@ namespace FileActionsMenu.Ui
             _actionStarted = true;
             try
             {
-                await action.Execute(sender, e);
+                Task closeAction = action.Execute(sender, e);
+
+                Close();
+
+                await closeAction;
+
+                Environment.Exit(0);
             }
             catch (Exception ex)
             {
                 MessageBox.Show("There was an error executing the action: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            Close();
-            Environment.Exit(0);
         }
 
         [DllImport("user32.dll")]
