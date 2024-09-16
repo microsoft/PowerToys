@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Xml.Linq;
+
 using Microsoft.Plugin.Program.Logger;
 using Wox.Plugin.Common.Win32;
 using Wox.Plugin.Logger;

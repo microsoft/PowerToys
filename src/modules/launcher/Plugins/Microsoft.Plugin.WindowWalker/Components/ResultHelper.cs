@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.Plugin.WindowWalker.Properties;
 using Wox.Infrastructure;
 using Wox.Plugin;

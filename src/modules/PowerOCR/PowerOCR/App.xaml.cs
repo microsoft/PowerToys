@@ -5,6 +5,7 @@
 using System;
 using System.Threading;
 using System.Windows;
+
 using ManagedCommon;
 using PowerOCR.Keyboard;
 using PowerOCR.Settings;

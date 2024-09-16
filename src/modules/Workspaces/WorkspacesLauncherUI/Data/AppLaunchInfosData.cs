@@ -5,7 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+
 using Workspaces.Data;
+
 using static WorkspacesLauncherUI.Data.AppLaunchInfoData;
 using static WorkspacesLauncherUI.Data.AppLaunchInfosData;
 

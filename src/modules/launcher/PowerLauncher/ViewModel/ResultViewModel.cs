@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
+
 using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using Wox.Infrastructure.Image;

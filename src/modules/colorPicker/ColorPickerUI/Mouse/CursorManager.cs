@@ -4,6 +4,7 @@
 
 using System;
 using System.IO.Abstractions;
+
 using ManagedCommon;
 using Microsoft.Win32;
 
