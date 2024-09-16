@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
-using DeveloperCommandPalette;
 using Microsoft.CmdPal.Common.Extensions;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Extensions;

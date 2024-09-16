@@ -5,7 +5,7 @@
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 
-namespace DeveloperCommandPalette;
+namespace WindowsCommandPalette;
 
 public sealed partial class MainListItem : ListItem
 {

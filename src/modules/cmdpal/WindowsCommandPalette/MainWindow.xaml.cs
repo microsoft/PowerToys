@@ -20,7 +20,7 @@ using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WindowsCommandPalette.Views;
 
-namespace DeveloperCommandPalette;
+namespace WindowsCommandPalette;
 
 /// <summary>
 /// An empty window that can be used on its own or navigated to within a Frame.

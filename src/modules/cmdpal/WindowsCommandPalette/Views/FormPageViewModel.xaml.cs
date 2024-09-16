@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
-using DeveloperCommandPalette;
 using Microsoft.CmdPal.Extensions;
 
 namespace WindowsCommandPalette.Views;

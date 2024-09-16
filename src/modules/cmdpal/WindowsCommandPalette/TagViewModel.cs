@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI;
 
-namespace DeveloperCommandPalette;
+namespace WindowsCommandPalette;
 
 public sealed class TagViewModel : INotifyPropertyChanged
 {

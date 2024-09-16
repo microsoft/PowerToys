@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using CmdPal.Models;
 using Microsoft.CmdPal.Common.Contracts;
 using Microsoft.CmdPal.Common.Extensions;
 using Microsoft.CmdPal.Common.Services;
@@ -11,8 +10,9 @@ using Microsoft.UI.Xaml;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.AppExtensions;
 using Windows.Foundation.Collections;
+using WindowsCommandPalette.Models;
 
-namespace Microsoft.Windows.CommandPalette.Services;
+namespace WindowsCommandPalette.Services;
 
 public class ExtensionService : IExtensionService, IDisposable
 {

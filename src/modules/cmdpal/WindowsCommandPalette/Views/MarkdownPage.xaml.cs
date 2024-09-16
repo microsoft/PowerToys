@@ -3,8 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
-using DeveloperCommandPalette;
-using Microsoft.CmdPal.Extensions;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
