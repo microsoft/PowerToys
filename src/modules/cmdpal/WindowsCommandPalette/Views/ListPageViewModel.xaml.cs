@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.UI.Dispatching;
-using WindowsCommandPalette;
 
 namespace WindowsCommandPalette.Views;
 

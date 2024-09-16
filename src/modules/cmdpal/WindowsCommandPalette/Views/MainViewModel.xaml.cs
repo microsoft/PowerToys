@@ -5,7 +5,6 @@
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
-using CmdPal.Models;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
 using Microsoft.CmdPal.Ext.Settings;
@@ -14,6 +13,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 using Windows.Foundation;
 using WindowsCommandPalette.BuiltinCommands;
 using WindowsCommandPalette.BuiltinCommands.AllApps;
+using WindowsCommandPalette.Models;
 
 namespace WindowsCommandPalette.Views;
 

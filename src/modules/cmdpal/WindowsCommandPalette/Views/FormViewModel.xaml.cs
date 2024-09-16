@@ -10,7 +10,6 @@ using Microsoft.CmdPal.Extensions;
 using Microsoft.UI.Xaml;
 using Windows.Foundation;
 using Windows.System;
-using WindowsCommandPalette;
 
 namespace WindowsCommandPalette.Views;
 

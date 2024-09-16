@@ -4,10 +4,10 @@
 
 using System.ComponentModel;
 using System.Runtime.InteropServices;
-using CmdPal.Models;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
+using WindowsCommandPalette.Models;
 using WindowsCommandPalette.Views;
 
 namespace WindowsCommandPalette;
