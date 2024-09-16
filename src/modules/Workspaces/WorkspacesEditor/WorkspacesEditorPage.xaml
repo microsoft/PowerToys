@@ -109,6 +109,8 @@
                                     Padding="24,6"
                                     AutomationProperties.Name="{x:Static props:Resources.Delete}"
                                     Background="{DynamicResource TertiaryBackgroundBrush}"
+                                    BorderBrush="{DynamicResource SecondaryBorderBrush}"
+                                    BorderThickness="2"
                                     Click="DeleteButtonClicked"
                                     Content="{Binding DeleteButtonContent, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                     IsEnabled="True" />
@@ -338,6 +340,8 @@
                     HorizontalAlignment="Right"
                     AutomationProperties.Name="{x:Static props:Resources.Revert}"
                     Background="{DynamicResource SecondaryBackgroundBrush}"
+                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                    BorderThickness="2"
                     Click="RevertButtonClicked"
                     Content="{x:Static props:Resources.Revert}"
                     DockPanel.Dock="Right"
@@ -350,6 +354,8 @@
                     HorizontalAlignment="Right"
                     AutomationProperties.Name="{x:Static props:Resources.LaunchEdit}"
                     Background="{DynamicResource SecondaryBackgroundBrush}"
+                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                    BorderThickness="2"
                     Click="LaunchEditButtonClicked"
                     Content="{x:Static props:Resources.LaunchEdit}"
                     DockPanel.Dock="Right" />
@@ -402,6 +408,8 @@
                     Padding="24,0,24,0"
                     AutomationProperties.Name="{x:Static props:Resources.Cancel}"
                     Background="{DynamicResource SecondaryBackgroundBrush}"
+                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                    BorderThickness="2"
                     Click="CancelButtonClicked"
                     Content="{x:Static props:Resources.Cancel}" />
                 <Button
