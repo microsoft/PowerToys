@@ -59,7 +59,7 @@ namespace WorkspacesLauncherUI
                 return;
             }
 
-            ipcmanager = new TwoWayPipeMessageIPCManaged("\\\\.\\pipe\\powertoys_workspaces_ui_", "\\\\.\\pipe\\powertoys_workspaces_launcher_", (string message) =>
+            ipcmanager = new TwoWayPipeMessageIPCManaged("\\\\.\\pipe\\powertoys_workspaces_ui_", "\\\\.\\pipe\\powertoys_workspaces_launcher_ui_", (string message) =>
             {
                 if (IPCMessageReceivedCallback != null && message.Length > 0)
                 {

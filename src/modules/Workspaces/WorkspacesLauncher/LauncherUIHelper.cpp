@@ -11,7 +11,7 @@
 
 LauncherUIHelper::LauncherUIHelper() :
     uiProcessId{},
-    ipcHelper(IPCHelperStrings::LauncherPipeName, IPCHelperStrings::UIPipeName, nullptr)
+    ipcHelper(IPCHelperStrings::LauncherUIPipeName, IPCHelperStrings::UIPipeName, nullptr)
 {
 }
 
@@ -64,9 +64,8 @@ void LauncherUIHelper::UpdateLaunchStatus(LaunchingApps launchedApps) const
     appData.launcherProcessID = GetCurrentProcessId();
     for (auto& app : launchedApps)
     {
-        WorkspacesData::AppLaunchInfo appLaunchInfo = WorkspacesData::AppLaunchInfo();
-        appLaunchInfo.name = app.application.name;
-        appLaunchInfo.path = app.application.path;
+        WorkspacesData::LaunchingApp appLaunchInfo = WorkspacesData::LaunchingApp();
+        appLaunchInfo.application = app.application;
         appLaunchInfo.state = app.state;
 
         appData.appLaunchInfoList.push_back(appLaunchInfo);

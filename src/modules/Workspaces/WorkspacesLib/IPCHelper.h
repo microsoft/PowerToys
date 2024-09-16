@@ -5,9 +5,11 @@
 
 namespace IPCHelperStrings
 {
-    static std::wstring LauncherPipeName(L"\\\\.\\pipe\\powertoys_workspaces_launcher_");
-    static std::wstring WindowArrangerPipeName(L"\\\\.\\pipe\\powertoys_workspaces_window_arranger_");
+    static std::wstring LauncherUIPipeName(L"\\\\.\\pipe\\powertoys_workspaces_launcher_ui_");
     static std::wstring UIPipeName(L"\\\\.\\pipe\\powertoys_workspaces_ui_");
+
+    static std::wstring LauncherArrangerPipeName(L"\\\\.\\pipe\\powertoys_workspaces_launcher_arranger_");
+    static std::wstring WindowArrangerPipeName(L"\\\\.\\pipe\\powertoys_workspaces_window_arranger_");
 }
 
 class IPCHelper
