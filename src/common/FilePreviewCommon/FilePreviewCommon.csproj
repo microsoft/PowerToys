@@ -26,6 +26,9 @@
     <None Update="Assets\Monaco\index.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Assets\Monaco\monacoExtraExtensions.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Assets\Monaco\monacoSpecialLanguages.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
