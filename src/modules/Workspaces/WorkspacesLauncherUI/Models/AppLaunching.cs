@@ -27,7 +27,7 @@ namespace WorkspacesLauncherUI.Models
             PropertyChanged?.Invoke(this, e);
         }
 
-        public string AppPath { get; set; }
+        public ApplicationWrapper Application { get; set; }
 
         public bool Loading => LaunchState == LaunchingState.Waiting;
 
@@ -50,12 +50,12 @@ namespace WorkspacesLauncherUI.Models
                         }
                         else
                         {
-                            _icon = Icon.ExtractAssociatedIcon(AppPath);
+                            _icon = Icon.ExtractAssociatedIcon(Application.ApplicationPath);
                         }
                     }
                     catch (Exception)
                     {
-                        Logger.LogWarning($"Icon not found on app path: {AppPath}. Using default icon");
+                        Logger.LogWarning($"Icon not found on app path: {Application.ApplicationPath}. Using default icon");
                         IsNotFound = true;
                         _icon = new Icon(@"images\DefaultIcon.ico");
                     }
@@ -65,7 +65,13 @@ namespace WorkspacesLauncherUI.Models
             }
         }
 
-        public string Name { get; set; }
+        public string Name
+        {
+            get
+            {
+                return Application.Application;
+            }
+        }
 
         public LaunchingState LaunchState { get; set; }
 
@@ -138,13 +144,13 @@ namespace WorkspacesLauncherUI.Models
             {
                 if (_isPackagedApp == null)
                 {
-                    if (!AppPath.StartsWith("C:\\Program Files\\WindowsApps\\", StringComparison.InvariantCultureIgnoreCase))
+                    if (!Application.ApplicationPath.StartsWith("C:\\Program Files\\WindowsApps\\", StringComparison.InvariantCultureIgnoreCase))
                     {
                         _isPackagedApp = false;
                     }
                     else
                     {
-                        string appPath = AppPath.Replace("C:\\Program Files\\WindowsApps\\", string.Empty);
+                        string appPath = Application.ApplicationPath.Replace("C:\\Program Files\\WindowsApps\\", string.Empty);
                         Regex packagedAppPathRegex = new Regex(@"(?<APPID>[^_]*)_\d+.\d+.\d+.\d+_x64__(?<PublisherID>[^\\]*)", RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
                         Match match = packagedAppPathRegex.Match(appPath);
                         _isPackagedApp = match.Success;
@@ -199,7 +205,7 @@ namespace WorkspacesLauncherUI.Models
                     }
                     catch (Exception e)
                     {
-                        Logger.LogError($"Exception while drawing icon for app with path: {AppPath}. Exception message: {e.Message}");
+                        Logger.LogError($"Exception while drawing icon for app with path: {Application.ApplicationPath}. Exception message: {e.Message}");
                     }
                 }
 

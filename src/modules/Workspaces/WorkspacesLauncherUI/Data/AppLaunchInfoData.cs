@@ -13,11 +13,8 @@ namespace WorkspacesLauncherUI.Data
     {
         public struct AppLaunchInfoWrapper
         {
-            [JsonPropertyName("name")]
-            public string Name { get; set; }
-
-            [JsonPropertyName("path")]
-            public string Path { get; set; }
+            [JsonPropertyName("application")]
+            public ApplicationWrapper Application { get; set; }
 
             [JsonPropertyName("state")]
             public LaunchingState State { get; set; }

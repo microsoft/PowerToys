@@ -63,8 +63,7 @@ namespace WorkspacesLauncherUI.ViewModels
             {
                 appLaunchingList.Add(new AppLaunching()
                 {
-                    Name = app.Name,
-                    AppPath = app.Path,
+                    Application = app.Application,
                     LaunchState = app.State,
                 });
             }

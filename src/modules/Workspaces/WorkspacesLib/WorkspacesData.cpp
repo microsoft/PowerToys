@@ -414,16 +414,14 @@ namespace WorkspacesData
     {
         namespace NonLocalizable
         {
-            const static wchar_t* NameID = L"name";
-            const static wchar_t* PathID = L"path";
+            const static wchar_t* ApplicationID = L"application";
             const static wchar_t* StateID = L"state";
         }
 
         json::JsonObject ToJson(const AppLaunchInfo& data)
         {
             json::JsonObject json{};
-            json.SetNamedValue(NonLocalizable::NameID, json::value(data.name));
-            json.SetNamedValue(NonLocalizable::PathID, json::value(data.path));
+            json.SetNamedValue(NonLocalizable::ApplicationID, WorkspacesProjectJSON::ApplicationJSON::ToJson(data.application));
             json.SetNamedValue(NonLocalizable::StateID, json::value(static_cast<int>(data.state)));
             return json;
         }
