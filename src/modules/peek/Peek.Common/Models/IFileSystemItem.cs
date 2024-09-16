@@ -19,7 +19,7 @@ namespace Peek.Common.Models
             {
                 try
                 {
-                    return string.IsNullOrEmpty(Path) ? null : System.IO.File.GetCreationTime(Path);
+                    return string.IsNullOrEmpty(Path) ? null : System.IO.File.GetLastWriteTime(Path);
                 }
                 catch
                 {
