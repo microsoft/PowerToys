@@ -154,6 +154,9 @@ namespace Peek.FilePreviewer
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource = new();
 
+            // Clear up any unmanaged resources before creating a new previewer instance.
+            (Previewer as IDisposable)?.Dispose();
+
             if (Item == null)
             {
                 Previewer = null;
