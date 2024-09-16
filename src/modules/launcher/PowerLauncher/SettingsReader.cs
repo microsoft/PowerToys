@@ -9,10 +9,10 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using System.Windows.Input;
-using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
+using PowerToys.GPOWrapperProjection;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
@@ -183,6 +183,11 @@ namespace PowerLauncher
                     if (_settings.TitleFontSize != overloadSettings.Properties.TitleFontSize)
                     {
                         _settings.TitleFontSize = overloadSettings.Properties.TitleFontSize;
+                    }
+
+                    if (_settings.ShowPreview != overloadSettings.Properties.ShowPreview)
+                    {
+                        _settings.ShowPreview = overloadSettings.Properties.ShowPreview;
                     }
 
                     retry = false;

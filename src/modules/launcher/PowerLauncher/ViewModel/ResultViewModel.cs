@@ -80,6 +80,17 @@ namespace PowerLauncher.ViewModel
             }
 
             _settings = settings;
+            _settings.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(_settings.ShowPreview))
+                {
+                    if (!string.IsNullOrEmpty(Result.IcoPath))
+                    {
+                        _imageLoaded = false;
+                        ImageLoader.Unload(Result.IcoPath);
+                    }
+                }
+            };
 
             ContextMenuSelectedIndex = NoSelectionIndex;
             LoadContextMenu();
@@ -237,7 +248,8 @@ namespace PowerLauncher.ViewModel
         {
             var imagePath = Result.IcoPath;
             var iconDelegate = Result.Icon;
-            Image = await LoadImageInternalAsync(imagePath, iconDelegate, false).ConfigureAwait(false);
+
+            Image = await LoadImageInternalAsync(imagePath, iconDelegate, _settings.ShowPreview).ConfigureAwait(false);
         }
 
         // Returns false if we've already reached the last item.

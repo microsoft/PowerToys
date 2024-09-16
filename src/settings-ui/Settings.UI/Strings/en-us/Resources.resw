@@ -778,6 +778,12 @@
   <data name="PowerLauncher_UsePinyin.Description" xml:space="preserve">
     <value>Experimental: Use Pinyin on the search query. May not work for every plugin.</value>
   </data>
+  <data name="PowerLauncher_ShowPreview.Header" xml:space="preserve">
+    <value>Show preview</value>
+  </data>
+  <data name="PowerLauncher_ShowPreview.Description" xml:space="preserve">
+    <value>Show the preview panel.</value>
+  </data>
   <data name="PowerLauncher_SearchResultPreference_MostRecentlyUsed" xml:space="preserve">
     <value>Most recently used</value>
   </data>
