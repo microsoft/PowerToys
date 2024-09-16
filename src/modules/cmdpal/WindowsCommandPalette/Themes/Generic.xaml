@@ -1,7 +1,6 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:DeveloperCommandPalette">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- Using custom style to remove header divider from list view headers -->
     <Style x:Key="CustomHeaderContainerStyle" TargetType="ListViewHeaderItem">

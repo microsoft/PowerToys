@@ -10,7 +10,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using WindowsCommandPalette.Views;
 
-namespace DeveloperCommandPalette;
+namespace WindowsCommandPalette;
 
 public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
 {

@@ -4,10 +4,10 @@
 
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
-using DeveloperCommandPalette;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.UI.Dispatching;
+using WindowsCommandPalette;
 
 namespace WindowsCommandPalette.Views;
 

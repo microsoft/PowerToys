@@ -8,7 +8,7 @@ using Microsoft.CmdPal.Extensions;
 using Microsoft.UI.Dispatching;
 using WindowsCommandPalette.Views;
 
-namespace DeveloperCommandPalette;
+namespace WindowsCommandPalette;
 
 // The MainListSection is for all non-recent actions. No apps.
 public sealed partial class MainListSection : ISection, INotifyCollectionChanged

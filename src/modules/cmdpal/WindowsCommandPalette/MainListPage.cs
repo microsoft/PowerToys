@@ -8,7 +8,7 @@ using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 using WindowsCommandPalette.Views;
 
-namespace DeveloperCommandPalette;
+namespace WindowsCommandPalette;
 
 public sealed partial class MainListPage : DynamicListPage
 {

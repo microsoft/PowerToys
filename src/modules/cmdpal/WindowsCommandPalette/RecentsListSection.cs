@@ -9,7 +9,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.UI.Dispatching;
 using WindowsCommandPalette.Views;
 
-namespace DeveloperCommandPalette;
+namespace WindowsCommandPalette;
 
 public sealed partial class RecentsListSection : ListSection, INotifyCollectionChanged
 {

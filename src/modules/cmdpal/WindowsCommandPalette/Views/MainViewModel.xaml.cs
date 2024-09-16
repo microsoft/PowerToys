@@ -6,7 +6,6 @@ using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using CmdPal.Models;
-using DeveloperCommandPalette;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
 using Microsoft.CmdPal.Ext.Settings;
