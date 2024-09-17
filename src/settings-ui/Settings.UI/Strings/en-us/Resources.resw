@@ -4322,6 +4322,12 @@ Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or s
   <data name="ZoomIt_Zoom_Shortcut.Header" xml:space="preserve">
     <value>Zoom Toggle Hotkey</value>
   </data>
+  <data name="ZoomIt_Toggle_AnimateZoom.Header" xml:space="preserve">
+    <value>Animate zoom in and zoom out</value>
+  </data>
+  <data name="ZoomIt_Slider_InitialMagnification.Header" xml:space="preserve">
+    <value>Specify the initial level of magnification when zooming in</value>
+  </data>
   <data name="ZoomIt_LiveZoomGroup.Header" xml:space="preserve">
     <value>Live Zoom</value>
   </data>

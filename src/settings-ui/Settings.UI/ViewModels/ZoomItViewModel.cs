@@ -125,6 +125,34 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool AnimateZoom
+        {
+            get => _zoomItSettings.Properties.AnimnateZoom.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.AnimnateZoom.Value != value)
+                {
+                    _zoomItSettings.Properties.AnimnateZoom.Value = value;
+                    OnPropertyChanged(nameof(AnimateZoom));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public int ZoominSliderLevel
+        {
+            get => _zoomItSettings.Properties.ZoominSliderLevel.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.ZoominSliderLevel.Value != value)
+                {
+                    _zoomItSettings.Properties.ZoominSliderLevel.Value = value;
+                    OnPropertyChanged(nameof(ZoominSliderLevel));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public HotkeySettings LiveZoomToggleKey
         {
             get => _zoomItSettings.Properties.LiveZoomToggleKey.Value;
