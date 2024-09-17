@@ -96,7 +96,17 @@
      <Content Include="$(TargetDir)\AdaptiveCards.Rendering.WinUI3.dll" Link="AdaptiveCards.Rendering.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
    </ItemGroup>
    <ItemGroup>
+     <Page Update="Styles\TextBox.xaml">
+       <Generator>MSBuild:Compile</Generator>
+     </Page>
+   </ItemGroup>
+   <ItemGroup>
      <Page Update="DetailsControl.xaml">
+       <Generator>MSBuild:Compile</Generator>
+     </Page>
+   </ItemGroup>
+   <ItemGroup>
+     <Page Update="Styles\Button.xaml">
        <Generator>MSBuild:Compile</Generator>
      </Page>
    </ItemGroup>
