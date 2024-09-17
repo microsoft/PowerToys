@@ -4,15 +4,12 @@
 
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Linq;
-using CmdPal.Models;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml;
 using WindowsCommandPalette.Views;
 
-namespace DeveloperCommandPalette;
+namespace WindowsCommandPalette;
 
 // The FilteredListSection is for when we've got any filter at all. It starts by
 // enumerating all actions and apps, and returns the subset that matches.

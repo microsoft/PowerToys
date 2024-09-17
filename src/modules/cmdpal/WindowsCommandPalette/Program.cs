@@ -2,13 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Threading;
-using Microsoft.UI.Dispatching;
 using Microsoft.Windows.AppLifecycle;
-using Windows.ApplicationModel.Activation;
-using Windows.Storage;
 
-namespace DeveloperCommandPalette;
+namespace WindowsCommandPalette;
 
 // cribbed heavily from
 //

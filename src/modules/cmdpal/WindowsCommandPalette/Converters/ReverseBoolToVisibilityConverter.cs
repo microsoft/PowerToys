@@ -5,13 +5,13 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 
-namespace WindowsCommandPalette.Views;
+namespace WindowsCommandPalette.Converters;
 
-public sealed partial class StringNotEmptyToVisibilityConverter : IValueConverter
+public sealed partial class ReverseBoolToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        return string.IsNullOrWhiteSpace((string)value) ? Visibility.Collapsed : Visibility.Visible;
+        return ((bool)value) ? Visibility.Collapsed : Visibility.Visible;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)

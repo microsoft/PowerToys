@@ -5,7 +5,7 @@
 using Microsoft.CmdPal.Extensions;
 using Windows.Foundation;
 
-namespace DeveloperCommandPalette;
+namespace WindowsCommandPalette;
 
 public class PageViewModel
 {

@@ -3,9 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Extensions;
-using Windows.Foundation;
 
-namespace DeveloperCommandPalette;
+namespace WindowsCommandPalette;
 
 public class SubmitFormArgs
 {

@@ -11,7 +11,7 @@ using Windows.Win32;
 using Windows.Win32.System.Com;
 using WinRT;
 
-namespace CmdPal.Models;
+namespace WindowsCommandPalette.Models;
 
 public class ExtensionWrapper : IExtensionWrapper
 {

@@ -4,7 +4,6 @@
 
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using DeveloperCommandPalette;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.UI.Dispatching;
 

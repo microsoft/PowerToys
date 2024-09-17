@@ -5,7 +5,7 @@
 using Microsoft.CmdPal.Extensions;
 using Microsoft.UI.Xaml.Controls;
 
-namespace DeveloperCommandPalette;
+namespace WindowsCommandPalette;
 
 public sealed class ActionViewModel(ICommand cmd)
 {

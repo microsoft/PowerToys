@@ -7,6 +7,9 @@ using System.Text.RegularExpressions;
 using Microsoft.CmdPal.Common.Contracts;
 using Microsoft.CmdPal.Common.Extensions;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.UI;
+using Microsoft.UI.Composition;
+using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -19,13 +22,16 @@ using Windows.System;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WindowsCommandPalette.Views;
+using WinRT;
 
-namespace DeveloperCommandPalette;
+namespace WindowsCommandPalette;
 
 /// <summary>
 /// An empty window that can be used on its own or navigated to within a Frame.
 /// </summary>
+#pragma warning disable CA1001 // Types that own disposable fields should be disposable
 public sealed partial class MainWindow : Window
+#pragma warning restore CA1001 // Types that own disposable fields should be disposable
 {
     private readonly AppWindow _appWindow;
 
@@ -73,7 +79,9 @@ public sealed partial class MainWindow : Window
         MainPage.ViewModel.Summon();
     }
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     public MainWindow()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     {
         InitializeComponent();
         _mainViewModel = MainPage.ViewModel;
@@ -88,7 +96,7 @@ public sealed partial class MainWindow : Window
 
         Activated += MainWindow_Activated;
         AppTitleBar.SizeChanged += AppTitleBar_SizeChanged;
-
+        SetAcrylic();
         ExtendsContentIntoTitleBar = true;
 
         // Hide our titlebar. We'll make the sides draggable later
@@ -124,7 +132,7 @@ public sealed partial class MainWindow : Window
 
     private void PositionCentered()
     {
-        _appWindow.Resize(new SizeInt32 { Width = 860, Height = 512 });
+        _appWindow.Resize(new SizeInt32 { Width = 860, Height = 560 });
         DisplayArea displayArea = DisplayArea.GetFromWindowId(_appWindow.Id, DisplayAreaFallback.Nearest);
         if (displayArea is not null)
         {
@@ -264,8 +272,9 @@ public sealed partial class MainWindow : Window
     {
         if (args.WindowActivationState == WindowActivationState.Deactivated)
         {
-            AppTitleTextBlock.Foreground =
-                (SolidColorBrush)App.Current.Resources["WindowCaptionForegroundDisabled"];
+            AppTitleTextBlock.Foreground = (SolidColorBrush)App.Current.Resources["WindowCaptionForegroundDisabled"];
+
+            _configurationSource.IsInputActive = false;
 
             // If there's a debugger attached...
             if (System.Diagnostics.Debugger.IsAttached)
@@ -280,8 +289,8 @@ public sealed partial class MainWindow : Window
         }
         else
         {
-            AppTitleTextBlock.Foreground =
-                (SolidColorBrush)App.Current.Resources["WindowCaptionForeground"];
+            AppTitleTextBlock.Foreground = (SolidColorBrush)App.Current.Resources["WindowCaptionForeground"];
+            _configurationSource.IsInputActive = true;
         }
     }
 
@@ -391,5 +400,87 @@ public sealed partial class MainWindow : Window
         // WinUI bug is causing a crash on shutdown when FailFastOnErrors is set to true (#51773592).
         // Workaround by turning it off before shutdown.
         App.Current.DebugSettings.FailFastOnErrors = false;
+        DisposeAcrylic();
+    }
+
+    private DesktopAcrylicController _acrylicController;
+    private SystemBackdropConfiguration _configurationSource;
+
+    // We want to use DesktopAcrylicKind.Thin and custom colors as this is the default material other Shell surfaces are using, this cannot be set in XAML however.
+    private void SetAcrylic()
+    {
+        if (DesktopAcrylicController.IsSupported())
+        {
+            // Hooking up the policy object.
+            _configurationSource = new SystemBackdropConfiguration();
+
+            ((FrameworkElement)this.Content).ActualThemeChanged += MainWindow_ActualThemeChanged;
+
+            // Initial configuration state.
+            _configurationSource.IsInputActive = true;
+            UpdateAcrylic();
+        }
+    }
+
+    private void UpdateAcrylic()
+    {
+        _acrylicController = GetAcrylicConfig();
+
+        // Enable the system backdrop.
+        // Note: Be sure to have "using WinRT;" to support the Window.As<...>() call.
+        _acrylicController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
+        _acrylicController.SetSystemBackdropConfiguration(_configurationSource);
+    }
+
+    private DesktopAcrylicController GetAcrylicConfig()
+    {
+        if (((FrameworkElement)this.Content).ActualTheme == ElementTheme.Light)
+        {
+            return new DesktopAcrylicController()
+            {
+                Kind = DesktopAcrylicKind.Thin,
+                TintColor = Windows.UI.Color.FromArgb(255, 243, 243, 243),
+                LuminosityOpacity = 0.90f,
+                TintOpacity = 0.0f,
+                FallbackColor = Windows.UI.Color.FromArgb(255, 238, 238, 238),
+            };
+        }
+        else
+        {
+            return new DesktopAcrylicController()
+            {
+                Kind = DesktopAcrylicKind.Thin,
+                TintColor = Windows.UI.Color.FromArgb(255, 32, 32, 32),
+                LuminosityOpacity = 0.96f,
+                TintOpacity = 0.5f,
+                FallbackColor = Windows.UI.Color.FromArgb(255, 28, 28, 28),
+            };
+        }
+    }
+
+    private void MainWindow_ActualThemeChanged(FrameworkElement sender, object args)
+    {
+        SetConfigurationSourceTheme(sender.ActualTheme);
+        UpdateAcrylic();
+    }
+
+    private void SetConfigurationSourceTheme(ElementTheme theme)
+    {
+        switch (theme)
+        {
+            case ElementTheme.Dark: _configurationSource.Theme = SystemBackdropTheme.Dark; break;
+            case ElementTheme.Light: _configurationSource.Theme = SystemBackdropTheme.Light; break;
+            case ElementTheme.Default: _configurationSource.Theme = SystemBackdropTheme.Default; break;
+        }
+    }
+
+    private void DisposeAcrylic()
+    {
+        if (_acrylicController != null)
+        {
+            _acrylicController.Dispose();
+            _acrylicController = null!;
+            _configurationSource = null!;
+        }
     }
 }
