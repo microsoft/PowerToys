@@ -24,45 +24,44 @@
                     Margin="0,0,0,0"
                     Padding="8"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource AccentControlElevationBorderBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     Child="{x:Bind RenderedChildElement, Mode=OneWay}"
-                    CornerRadius="4"
+                    CornerRadius="{StaticResource OverlayCornerRadius}"
                     TabFocusNavigation="Cycle"
                     Visibility="{x:Bind ShouldDisplay, Mode=OneWay}" />
-
             </DataTemplate>
-
         </ResourceDictionary>
     </Page.Resources>
 
-    <Grid Padding="24">
-        <StackPanel>
-            <StackPanel
-                Margin="8,0,0,8"
-                Padding="-24,-32,0,0"
-                Orientation="Horizontal">
-                <Button
-                    x:Name="BackButton"
-                    Grid.Row="0"
-                    Width="16"
-                    Height="16"
-                    Margin="-8,0,8,0"
-                    IsEnabled="{x:Bind ViewModel.Nested}"
-                    Style="{StaticResource NavigationBackButtonNormalStyle}"
-                    Tapped="BackButton_Tapped"
-                    ToolTipService.ToolTip="Back"
-                    Visibility="{x:Bind ViewModel.Nested}" />
-                <TextBlock FontSize="24" Text="{x:Bind ViewModel.Page.Name}" />
-            </StackPanel>
-
-            <Grid x:Name="FormContent" Margin="-24,0,-24,0">
-                <ItemsRepeater
-                    ItemTemplate="{StaticResource CardTemplate}"
-                    ItemsSource="{x:Bind ViewModel.Forms, Mode=OneWay}"
-                    Layout="{StaticResource VerticalStackLayout}" />
-            </Grid>
-
-
+    <Grid Padding="12" RowSpacing="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            <Button
+                x:Name="BackButton"
+                Grid.Row="0"
+                Padding="6"
+                IsEnabled="{x:Bind ViewModel.Nested}"
+                Style="{StaticResource SubtleButtonStyle}"
+                Tapped="BackButton_Tapped"
+                ToolTipService.ToolTip="Back"
+                Visibility="{x:Bind ViewModel.Nested}">
+                <FontIcon FontSize="16" Glyph="&#xE72B;" />
+            </Button>
+            <TextBlock
+                Margin="0,-2,0,0"
+                VerticalAlignment="Center"
+                Style="{StaticResource BodyStrongTextBlockStyle}"
+                Text="{x:Bind ViewModel.Page.Name}" />
         </StackPanel>
+
+        <Grid x:Name="FormContent" Grid.Row="1">
+            <ItemsRepeater
+                ItemTemplate="{StaticResource CardTemplate}"
+                ItemsSource="{x:Bind ViewModel.Forms, Mode=OneWay}"
+                Layout="{StaticResource VerticalStackLayout}" />
+        </Grid>
     </Grid>
 </Page>

@@ -60,73 +60,36 @@
     </Page.Resources>
 
     <Grid
-        HorizontalAlignment="Stretch"
-        VerticalAlignment="Stretch"
-        KeyDown="RootGrid_KeyDown">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="Auto" />
-        </Grid.ColumnDefinitions>
+        Padding="12"
+        KeyDown="RootGrid_KeyDown"
+        RowSpacing="16">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-
-        <!--  Row 0: Back button and Title  -->
-        <Grid Grid.Row="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <!--  Back button  -->
+        <StackPanel Orientation="Horizontal" Spacing="12">
             <Button
                 x:Name="BackButton"
-                Grid.Column="0"
-                Width="24"
-                Height="24"
-                Margin="0,0,10,0"
-                HorizontalAlignment="Left"
+                Padding="6"
                 IsEnabled="{x:Bind ViewModel.Nested}"
-                Style="{StaticResource NavigationBackButtonNormalStyle}"
+                Style="{StaticResource SubtleButtonStyle}"
                 Tapped="BackButton_Tapped"
                 ToolTipService.ToolTip="Back"
-                Visibility="{x:Bind ViewModel.Nested}" />
-
-            <!--  Search box  -->
+                Visibility="{x:Bind ViewModel.Nested}">
+                <FontIcon FontSize="16" Glyph="&#xE72B;" />
+            </Button>
             <TextBlock
-                x:Name="TitleBlock"
-                Grid.Column="1"
-                MinHeight="32"
-                HorizontalAlignment="Stretch"
-                FontSize="24"
-                IsTextSelectionEnabled="True"
-                Text="{x:Bind ViewModel.Title}" />
-        </Grid>
-
-        <!--  Extension name after clicking on a command  -->
-        <StackPanel
-            Grid.Row="1"
-            Grid.Column="0"
-            Margin="4,4,20,4"
-            HorizontalAlignment="Left"
-            Orientation="Horizontal"
-            Visibility="{x:Bind ViewModel.Nested}">
-            <!--<BitmapIcon Width="20" Margin="4, 0, 8, 0" ShowAsMonochrome="False" UseLayoutRounding="False" UriSource="{x:Bind ViewModel.Command.IconUri}" HorizontalAlignment="Left"/>-->
-
-            <!--<ContentControl Grid.Column="0" Margin="4, 0, 8, 0" Width="24" Height="24" Content="{x:Bind ViewModel.Page.IcoElement}" />-->
-            <!--<ContentControl Grid.Column="0" Margin="4, 0, 8, 0" Width="20" Height="20" Content="{x:Bind ViewModel.Command.IcoElement}" />-->
-            <!--<TextBlock Foreground="{ThemeResource TextFillColorTertiaryBrush}" FontSize="14" Text="{x:Bind ViewModel.Title}"></TextBlock>-->
+                Margin="0,-2,0,0"
+                VerticalAlignment="Center"
+                Style="{StaticResource BodyStrongTextBlockStyle}"
+                Text="{x:Bind ViewModel.Page.Name}" />
         </StackPanel>
 
         <!--  ScrollViewer for MarkdownTextBlock  -->
         <ScrollViewer
             x:Name="MarkdownScrollViewer"
-            Grid.Row="2"
-            Margin="0,8,0,0"
+            Grid.Row="1"
             KeyDown="MarkdownScrollViewer_KeyDown">
             <toolkit:MarkdownTextBlock
                 x:Name="mdTextBox"
@@ -136,12 +99,13 @@
         </ScrollViewer>
 
         <!--  Footer  -->
-        <Grid Grid.Row="3" Margin="4">
+        <Grid Grid.Row="3" Padding="8,0,12,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
+
             <!-- <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Column="0" Orientation="Horizontal" Visibility="{x:Bind SelectedItemDefaultAction, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}">
         <TextBlock Text="{x:Bind SelectedItemDefaultAction, Mode=OneWay}" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
         <FontIcon Glyph="&#xE751;" FontSize="12" VerticalAlignment="Center" Margin="4,0,0,0" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
