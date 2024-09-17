@@ -69,15 +69,11 @@ public sealed partial class MainPage : Page
         }
     }
 
-    private void Page_Loaded(object sender, RoutedEventArgs e)
-    {
-    }
-
     private async Task LoadAllCommands()
     {
         ViewModel.ResetTopLevel();
 
-        // Load builtins syncronously...
+        // Load builtins synchronously...
         await LoadBuiltinCommandsAsync();
 
         // ...and extensions on a fire_and_forget
