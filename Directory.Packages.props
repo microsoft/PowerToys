@@ -15,7 +15,7 @@
     <PackageVersion Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.0.240109" />
     <PackageVersion Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.0.240109" />
     <PackageVersion Include="CommunityToolkit.WinUI.Controls.Sizers" Version="8.0.240109" />
-    <PackageVersion Include="CommunityToolkit.WinUI.Converters" Version="8.0.240109" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Converters" Version="8.1.240916" />
     <PackageVersion Include="CommunityToolkit.WinUI.Extensions" Version="8.0.240109" />
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
