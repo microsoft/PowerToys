@@ -23,7 +23,7 @@ internal sealed partial class SampleListPage : ListPage
     public SampleListPage()
     {
         Icon = new(string.Empty);
-        Name = "SSH Keychain";
+        Name = "Sample List Page";
     }
 
     public override ISection[] GetItems()
@@ -34,8 +34,8 @@ internal sealed partial class SampleListPage : ListPage
                 Title = "Sample List Page",
                 Items = [
                     new ListItem(new NoOpCommand()) { Title = "TODO: Implement your extension here" },
-                    new ListItem(new NoOpCommand()) { Title = "This one has a subtitle too", Subtitle = "Example Subtitle" },
-                    new ListItem(new NoOpCommand())
+                    new ListItem(new SampleListPageWithDetails()) { Title = "This one has a subtitle too", Subtitle = "Example Subtitle" },
+                    new ListItem(new SampleMarkdownPage())
                     {
                         Title = "This one has a tag too",
                         Subtitle = "the one with a tag",
