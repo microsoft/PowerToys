@@ -239,7 +239,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void NotifySettingsChanged()
         {
-            // TODO: Send new settings to Adpater.
+            global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.SaveSettingsJson(
+                JsonSerializer.Serialize(_zoomItSettings));
+
             // Using InvariantCulture as this is an IPC message
             /*SendConfigMSG(
                    string.Format(

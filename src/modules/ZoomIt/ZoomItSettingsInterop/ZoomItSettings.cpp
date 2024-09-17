@@ -93,6 +93,110 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
 
     void ZoomItSettings::SaveSettingsJson(hstring json)
     {
+        reg.ReadRegSettings(RegSettings);
 
+        // Parse the input JSON string.
+        PowerToysSettings::PowerToyValues valuesFromSettings =
+            PowerToysSettings::PowerToyValues::from_json_string(json, L"ZoomIt");
+
+        PREG_SETTING curSetting = RegSettings;
+        while (curSetting->Valuename)
+        {
+            switch (curSetting->Type)
+            {
+            case SETTING_TYPE_DWORD:
+            {
+                auto special_semantics = settings_with_special_semantics.find(curSetting->Valuename);
+                if (special_semantics == settings_with_special_semantics.end())
+                {
+                    auto possibleValue = valuesFromSettings.get_uint_value(curSetting->Valuename);
+                    if (possibleValue.has_value())
+                    {
+                        *static_cast<PDWORD>(curSetting->Setting) = possibleValue.value();
+                    }
+                }
+                else
+                {
+                    if (special_semantics->second == SPECIAL_SEMANTICS_SHORTCUT)
+                    {
+                        auto possibleValue = valuesFromSettings.get_json(curSetting->Valuename);
+                        if (possibleValue.has_value())
+                        {
+                            auto hotkey = PowerToysSettings::HotkeyObject::from_json(possibleValue.value());
+                            unsigned int value = 0;
+                            value |= hotkey.get_code();
+                            if (hotkey.ctrl_pressed())
+                            {
+                                value |= (HOTKEYF_CONTROL << 8);
+                            }
+                            if (hotkey.alt_pressed())
+                            {
+                                value |= (HOTKEYF_ALT << 8);
+                            }
+                            if (hotkey.shift_pressed())
+                            {
+                                value |= (HOTKEYF_SHIFT << 8);
+                            }
+                            if (hotkey.win_pressed())
+                            {
+                                value |= (HOTKEYF_EXT << 8);
+                            }
+                            *static_cast<PDWORD>(curSetting->Setting) = value;
+                        }
+                    }
+                    else if (special_semantics->second == SPECIAL_SEMANTICS_COLOR)
+                    {
+                        auto possibleValue = valuesFromSettings.get_string_value(curSetting->Valuename);
+                        if (possibleValue.has_value())
+                        {
+                            uint8_t r, g, b;
+                            if (checkValidRGB(possibleValue.value(), &r, &g, &b))
+                            {
+                                *static_cast<PDWORD>(curSetting->Setting) = RGB(r, g, b);
+                            }
+
+                        }
+                    }
+                }
+                break;
+            }
+            case SETTING_TYPE_BOOLEAN:
+            {
+                auto possibleValue = valuesFromSettings.get_bool_value(curSetting->Valuename);
+                if (possibleValue.has_value())
+                {
+                    *static_cast<PBOOLEAN>(curSetting->Setting) = static_cast<BOOLEAN>(possibleValue.value());
+                }
+                break;
+            }
+            case SETTING_TYPE_DOUBLE:
+                assert(false); // ZoomIt doesn't use this type of setting.
+                break;
+            case SETTING_TYPE_WORD:
+                assert(false); // ZoomIt doesn't use this type of setting.
+                break;
+            case SETTING_TYPE_STRING:
+            {
+                auto possibleValue = valuesFromSettings.get_string_value(curSetting->Valuename);
+                if (possibleValue.has_value())
+                {
+                    const TCHAR* value = possibleValue.value().c_str();
+                    _tcscpy_s(static_cast<PTCHAR>(curSetting->Setting), curSetting->Size / sizeof(TCHAR), value);
+                }
+                break;
+            }
+            case SETTING_TYPE_DWORD_ARRAY:
+                assert(false); // ZoomIt doesn't use this type of setting.
+                break;
+            case SETTING_TYPE_WORD_ARRAY:
+                assert(false); // ZoomIt doesn't use this type of setting.
+                break;
+            case SETTING_TYPE_BINARY:
+                // TODO: How to support this type.
+                break;
+            }
+            curSetting++;
+        }
+        reg.WriteRegSettings(RegSettings);
     }
 }

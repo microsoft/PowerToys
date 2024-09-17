@@ -78,6 +78,6 @@ REG_SETTING RegSettings[] = {
 	{ L"RecordFrameRate", SETTING_TYPE_DWORD, 0, &g_RecordFrameRate, static_cast<DOUBLE>(g_RecordFrameRate) },
 	{ L"RecordScaling", SETTING_TYPE_DWORD, 0, &g_RecordScaling, static_cast<DOUBLE>(g_RecordScaling) },
 	{ L"CaptureAudio", SETTING_TYPE_BOOLEAN, 0, &g_CaptureAudio, static_cast<DOUBLE>(g_CaptureAudio) },
-	{ L"MicrophoneDeviceId", SETTING_TYPE_STRING, sizeof(g_MicrophoneDeviceId), &g_MicrophoneDeviceId, static_cast<DOUBLE>(0) },
+	{ L"MicrophoneDeviceId", SETTING_TYPE_STRING, sizeof(g_MicrophoneDeviceId), g_MicrophoneDeviceId, static_cast<DOUBLE>(0) },
 	{ NULL, SETTING_TYPE_DWORD, 0, NULL, static_cast<DOUBLE>(0) }
 };

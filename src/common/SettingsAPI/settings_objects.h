@@ -83,6 +83,7 @@ namespace PowerToysSettings
 
         std::optional<bool> get_bool_value(std::wstring_view property_name) const;
         std::optional<int> get_int_value(std::wstring_view property_name) const;
+        std::optional<unsigned int> get_uint_value(std::wstring_view property_name) const;
         std::optional<std::wstring> get_string_value(std::wstring_view property_name) const;
         std::optional<json::JsonObject> get_json(std::wstring_view property_name) const;
         json::JsonObject get_raw_json();
