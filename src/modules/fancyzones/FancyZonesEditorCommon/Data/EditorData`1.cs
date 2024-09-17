@@ -4,6 +4,7 @@
 
 using System;
 using System.Text.Json;
+
 using FancyZonesEditorCommon.Utils;
 
 namespace FancyZonesEditorCommon.Data

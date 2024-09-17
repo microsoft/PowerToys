@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Windows.Forms;
+
 using Microsoft.PowerToys.PreviewHandler.Svg;
 using Microsoft.PowerToys.STATestExtension;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

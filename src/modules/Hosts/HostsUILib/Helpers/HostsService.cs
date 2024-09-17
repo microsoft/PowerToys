@@ -13,6 +13,7 @@ using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
 using HostsUILib.Exceptions;
 using HostsUILib.Models;
 using HostsUILib.Settings;
@@ -23,6 +24,7 @@ namespace HostsUILib.Helpers
     public class HostsService : IHostsService, IDisposable
     {
         private const string _backupSuffix = $"_PowerToysBackup_";
+        private const int _defaultBufferSize = 4096; // From System.IO.File source code
 
         private readonly SemaphoreSlim _asyncLock = new SemaphoreSlim(1, 1);
         private readonly IFileSystem _fileSystem;
@@ -197,7 +199,16 @@ namespace HostsUILib.Helpers
                     _backupDone = true;
                 }
 
-                await _fileSystem.File.WriteAllLinesAsync(HostsFilePath, lines, Encoding);
+                // FileMode.OpenOrCreate is necessary to prevent UnauthorizedAccessException when the hosts file is hidden
+                using var stream = _fileSystem.FileStream.Create(HostsFilePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read, _defaultBufferSize, FileOptions.Asynchronous);
+                using var writer = new StreamWriter(stream, Encoding);
+                foreach (var line in lines)
+                {
+                    await writer.WriteLineAsync(line.AsMemory());
+                }
+
+                stream.SetLength(stream.Position);
+                await writer.FlushAsync();
             }
             finally
             {
@@ -292,7 +303,7 @@ namespace HostsUILib.Helpers
             }
         }
 
-        public void RemoveReadOnly()
+        public void RemoveReadOnlyAttribute()
         {
             var fileInfo = _fileSystem.FileInfo.FromFileName(HostsFilePath);
             if (fileInfo.IsReadOnly)

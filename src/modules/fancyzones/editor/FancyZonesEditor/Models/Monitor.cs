@@ -6,6 +6,7 @@ using System;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Media;
+
 using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor.Models

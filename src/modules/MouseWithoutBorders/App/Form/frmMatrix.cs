@@ -9,6 +9,7 @@ using System.Drawing;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+
 using Microsoft.PowerToys.Telemetry;
 
 // <summary>
@@ -20,6 +21,7 @@ using Microsoft.PowerToys.Telemetry;
 //     2023- Included in PowerToys.
 // </history>
 using MouseWithoutBorders.Class;
+
 using Timer = System.Windows.Forms.Timer;
 
 [module: SuppressMessage("Microsoft.Globalization", "CA1300:SpecifyMessageBoxOptions", Scope = "member", Target = "MouseWithoutBorders.frmMatrix.#buttonOK_Click(System.Object,System.EventArgs)", Justification = "Dotnet port with style preservation")]

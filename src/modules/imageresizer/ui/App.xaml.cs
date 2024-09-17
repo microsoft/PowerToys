@@ -5,6 +5,7 @@
 using System;
 using System.Text;
 using System.Windows;
+
 using ImageResizer.Models;
 using ImageResizer.Properties;
 using ImageResizer.Utilities;

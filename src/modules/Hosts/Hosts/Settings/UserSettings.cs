@@ -5,6 +5,7 @@
 using System;
 using System.IO.Abstractions;
 using System.Threading;
+
 using HostsUILib.Settings;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;

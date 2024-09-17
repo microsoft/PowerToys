@@ -4,6 +4,7 @@
 
 using System;
 using System.Globalization;
+
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

@@ -281,19 +281,19 @@ void KeyDropDownControl::SetSelectionHandler(StackPanel& table, StackPanel row, 
             std::vector<int32_t> selectedKeyCodes = GetSelectedCodesFromStackPanel(parent);
             if (!isHybridControl)
             {
-                std::get<Shortcut>(shortcutRemapBuffer[validationResult.second].first[colIndex]).SetKeyCodes(selectedKeyCodes);
+                std::get<Shortcut>(shortcutRemapBuffer[validationResult.second].mapping[colIndex]).SetKeyCodes(selectedKeyCodes);
             }
             else
             {
                 // If exactly one key is selected consider it to be a key remap
                 if (GetNumberOfSelectedKeys(selectedKeyCodes) == 1)
                 {
-                    shortcutRemapBuffer[validationResult.second].first[colIndex] = (DWORD)selectedKeyCodes[0];
+                    shortcutRemapBuffer[validationResult.second].mapping[colIndex] = (DWORD)selectedKeyCodes[0];
                 }
                 else
                 {
                     // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
-                    shortcutRemapBuffer[validationResult.second].first[colIndex] = Shortcut(selectedKeyCodes);
+                    shortcutRemapBuffer[validationResult.second].mapping[colIndex] = Shortcut(selectedKeyCodes);
                 }
             }
 
@@ -305,11 +305,11 @@ void KeyDropDownControl::SetSelectionHandler(StackPanel& table, StackPanel row, 
                 std::transform(lowercaseDefAppName.begin(), lowercaseDefAppName.end(), lowercaseDefAppName.begin(), towlower);
                 if (newText == lowercaseDefAppName)
                 {
-                    shortcutRemapBuffer[validationResult.second].second = L"";
+                    shortcutRemapBuffer[validationResult.second].appName = L"";
                 }
                 else
                 {
-                    shortcutRemapBuffer[validationResult.second].second = targetApp.Text().c_str();
+                    shortcutRemapBuffer[validationResult.second].appName = targetApp.Text().c_str();
                 }
             }
         }

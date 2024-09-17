@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+
 using Common.UI;
 using Microsoft.Win32;
 using Wox.Plugin.Common.VirtualDesktop.Interop;

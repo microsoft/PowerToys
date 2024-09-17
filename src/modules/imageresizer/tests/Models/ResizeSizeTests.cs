@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+
 using ImageResizer.Properties;
 using ImageResizer.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

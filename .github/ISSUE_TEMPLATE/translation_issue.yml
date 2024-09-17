@@ -50,6 +50,7 @@ body:
     - System tray interaction
     - TextExtractor
     - Video Conference Mute
+    - Workspaces
     - Welcome / PowerToys Tour window
   validations:
     required: true

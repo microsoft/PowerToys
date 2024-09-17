@@ -4,6 +4,7 @@
 
 using System;
 using System.Reflection;
+
 using Microsoft.Plugin.WindowWalker.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

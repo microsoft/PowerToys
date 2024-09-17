@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows;
+
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 using Wox.Plugin;
 using Wox.Plugin.Logger;

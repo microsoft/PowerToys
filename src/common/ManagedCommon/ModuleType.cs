@@ -30,5 +30,6 @@ namespace ManagedCommon
         MeasureTool,
         ShortcutGuide,
         PowerOCR,
+        Workspaces,
     }
 }

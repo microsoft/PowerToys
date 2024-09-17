@@ -15,27 +15,12 @@
 namespace NonLocalizable
 {
     const wchar_t PowerToysAppFZEditor[] = L"POWERTOYS.FANCYZONESEDITOR.EXE";
+    const wchar_t PowerToysWorkspacesEditor[] = L"POWERTOYS.WORKSPACESEDITOR.EXE";
     const char SplashClassName[] = "MsoSplash";
     const wchar_t CoreWindow[] = L"Windows.UI.Core.CoreWindow";
     const wchar_t SearchUI[] = L"SearchUI.exe";
     const wchar_t SystemAppsFolder[] = L"SYSTEMAPPS";
 }
-
-// Placeholder enums since dwmapi.h doesn't have these until SDK 22000.
-// TODO: Remove once SDK targets 22000 or above.
-enum DWMWINDOWATTRIBUTE_CUSTOM
-{
-    DWMWA_WINDOW_CORNER_PREFERENCE = 33
-
-};
-
-enum DWM_WINDOW_CORNER_PREFERENCE
-{
-    DWMWCP_DEFAULT = 0,
-    DWMWCP_DONOTROUND = 1,
-    DWMWCP_ROUND = 2,
-    DWMWCP_ROUNDSMALL = 3
-};
 
 namespace
 {
@@ -200,7 +185,7 @@ bool FancyZonesWindowUtils::IsExcludedByDefault(const HWND& hwnd, const std::wst
         return true;
     }
 
-    static std::vector<std::wstring> defaultExcludedApps = { NonLocalizable::PowerToysAppFZEditor, NonLocalizable::CoreWindow, NonLocalizable::SearchUI };
+    static std::vector<std::wstring> defaultExcludedApps = { NonLocalizable::PowerToysAppFZEditor, NonLocalizable::PowerToysWorkspacesEditor, NonLocalizable::CoreWindow, NonLocalizable::SearchUI };
     return (check_excluded_app(hwnd, processPath, defaultExcludedApps));
 }
 
