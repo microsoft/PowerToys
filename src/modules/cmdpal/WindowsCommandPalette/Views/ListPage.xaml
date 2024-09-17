@@ -3,6 +3,7 @@
     x:Class="WindowsCommandPalette.Views.ListPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:WindowsCommandPalette.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:devpal="using:WindowsCommandPalette"
     xmlns:local="using:WindowsCommandPalette.Views"
@@ -16,14 +17,13 @@
 
     <Page.Resources>
         <ResourceDictionary>
-            <local:StringNotEmptyToVisibilityConverter x:Key="StringNotEmptyToVisibilityConverter" />
-
+            <converters:StringNotEmptyToVisibilityConverter x:Key="StringNotEmptyToVisibilityConverter" />
+            <converters:ReverseBoolToVisibilityConverter x:Key="ReverseBoolToVisibilityConverter" />
             <CollectionViewSource x:Name="ItemsCVS" IsSourceGrouped="True" />
             <StackLayout
                 x:Name="HorizontalStackLayout"
                 Orientation="Horizontal"
                 Spacing="8" />
-
 
             <DataTemplate x:Key="TagTemplate" x:DataType="devpal:TagViewModel">
                 <Border
@@ -152,57 +152,66 @@
             <RowDefinition Height="56" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="56" />
+            <RowDefinition Height="Auto" MinHeight="36" />
         </Grid.RowDefinitions>
 
         <!--  Row 0: Back button and search box  -->
         <Grid Grid.Row="0" Margin="-2,0,0,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="48" />
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
             <!--  Back button  -->
             <FontIcon
+                Margin="24,0,2,0"
                 HorizontalAlignment="Right"
                 AutomationProperties.AccessibilityView="Raw"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Glyph="&#xE721;" />
+                Glyph="&#xE721;"
+                Visibility="{x:Bind ViewModel.Nested, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}" />
             <Button
                 x:Name="BackButton"
-                Width="24"
-                Height="24"
-                Padding="8"
+                Height="32"
+                Margin="16,4,4,4"
+                Padding="12,0,12,0"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
+                Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                CornerRadius="16"
                 FontSize="16"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 IsEnabled="{x:Bind ViewModel.Nested}"
-                Style="{StaticResource SubtleButtonStyle}"
                 Tapped="BackButton_Tapped"
                 ToolTipService.ToolTip="Back"
-                Visibility="{x:Bind ViewModel.Nested}" />
-            <StackPanel
-                Grid.Column="1"
-                Margin="4,4,20,4"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Orientation="Horizontal"
                 Visibility="{x:Bind ViewModel.Nested}">
-                <!--<BitmapIcon Width="20" Margin="4, 0, 8, 0" ShowAsMonochrome="False" UseLayoutRounding="False" UriSource="{x:Bind ViewModel.Command.IconUri}" HorizontalAlignment="Left"/>-->
+                <StackPanel
+                    Grid.Column="1"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="8"
+                    Visibility="{x:Bind ViewModel.Nested}">
+                    <!--<BitmapIcon Width="20" Margin="4, 0, 8, 0" ShowAsMonochrome="False" UseLayoutRounding="False" UriSource="{x:Bind ViewModel.Command.IconUri}" HorizontalAlignment="Left"/>-->
 
-                <ContentControl
-                    Grid.Column="0"
-                    Width="20"
-                    Height="20"
-                    Margin="4,0,8,0"
-                    Content="{x:Bind ViewModel.Command.IcoElement}" />
-                <TextBlock
-                    FontSize="14"
-                    Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                    Text="{x:Bind ViewModel.Page.Name}" />
-            </StackPanel>
+                    <Viewbox Width="16" Height="16">
+                        <ContentControl VerticalAlignment="Center" Content="{x:Bind ViewModel.Command.IcoElement}" />
+                    </Viewbox>
+
+                    <TextBlock
+                        Margin="0,-2,0,0"
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                        Text="{x:Bind ViewModel.Page.Name}" />
+                    <FontIcon
+                        Margin="4,2,0,0"
+                        FontSize="12"
+                        Glyph="&#xE894;" />
+                </StackPanel>
+            </Button>
 
             <!--  Search box  -->
             <TextBox
@@ -217,13 +226,6 @@
                 Style="{StaticResource SearchTextBoxStyle}"
                 TextChanged="FilterBox_TextChanged" />
         </Grid>
-
-        <!--  Extension name after clicking on a command  -->
-
-
-        <!--  List of commands  -->
-
-
         <Grid
             Grid.Row="2"
             Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
@@ -271,14 +273,15 @@
                 Grid.Column="1"
                 Margin="12"
                 Padding="8"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                CornerRadius="8"
+                BorderThickness="1"
+                CornerRadius="{ThemeResource OverlayCornerRadius}"
                 Visibility="Collapsed" />
         </Grid>
 
         <!--  Footer  -->
-        <Grid Grid.Row="3" Padding="8,0,12,0">
+        <Grid Grid.Row="3" Padding="8,0,8,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
@@ -287,7 +290,7 @@
 
             <StackPanel
                 Margin="12,0,0,0"
-                Padding="4,2,4,2"
+                Padding="6,2,4,3"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center"
                 BorderBrush="{ThemeResource ControlStrokeColorSecondaryBrush}"
@@ -311,7 +314,10 @@
             <SplitButton
                 x:Name="MoreCommandsButton"
                 Grid.Column="2"
+                Margin="0,-2,0,0"
+                VerticalAlignment="Center"
                 Content="Actions"
+                FontSize="12"
                 Visibility="{x:Bind MoreCommandsAvailable, Mode=OneWay}">
                 <SplitButton.Flyout>
                     <Flyout Placement="TopEdgeAlignedRight">
