@@ -4,12 +4,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-
+using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers;
 using Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;

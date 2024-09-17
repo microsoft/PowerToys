@@ -78,6 +78,12 @@ namespace Microsoft.PowerToys.Settings.UI
         {
             Logger.InitializeLogger(@"\Settings\Logs");
 
+            string appLanguage = LanguageHelper.LoadLanguage();
+            if (!string.IsNullOrEmpty(appLanguage))
+            {
+                Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
+            }
+
             InitializeComponent();
 
             UnhandledException += App_UnhandledException;
