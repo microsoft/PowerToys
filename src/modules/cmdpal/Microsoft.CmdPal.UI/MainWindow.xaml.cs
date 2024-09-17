@@ -13,28 +13,10 @@ namespace Microsoft.CmdPal.UI;
 /// <summary>
 /// An empty window that can be used on its own or navigated to within a Frame.
 /// </summary>
-public sealed partial class MainWindow : Window, IRecipient<NavigateToDetailsMessage>, IRecipient<NavigateBackMessage>
+public sealed partial class MainWindow : Window
 {
     public MainWindow()
     {
         InitializeComponent();
-
-        // how we are doing navigation around
-        WeakReferenceMessenger.Default.RegisterAll(this);
-
-        RootFrame.Navigate(typeof(MainPage));
-    }
-
-    public void Receive(NavigateToDetailsMessage message)
-    {
-        RootFrame.Navigate(typeof(ListDetailPage), message.ListItem);
-    }
-
-    public void Receive(NavigateBackMessage message)
-    {
-        if (RootFrame.CanGoBack)
-        {
-            RootFrame.GoBack();
-        }
     }
 }
