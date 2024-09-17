@@ -13,5 +13,5 @@ public partial class ListItemViewModel : ObservableObject
     private string _header = string.Empty;
 
     [ObservableProperty]
-    private string _subheader = string.Empty;
+    private string _subHeader = string.Empty;
 }

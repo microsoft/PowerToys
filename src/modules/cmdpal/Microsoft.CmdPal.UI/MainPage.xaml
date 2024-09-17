@@ -11,6 +11,7 @@
     xmlns:Interactions="using:Microsoft.Xaml.Interactions.Core"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
     <Page.Resources>
         <!-- https://learn.microsoft.com/en-us/windows/apps/design/controls/itemsview#specify-the-look-of-the-items -->
         <DataTemplate x:Key="ListItemViewModelTemplate" x:DataType="viewmodels:ListItemViewModel">
@@ -23,12 +24,13 @@
                     <TextBlock 
                             Text="{x:Bind Header}" />
                     <TextBlock
-                        Text="{x:Bind Subheader}" 
+                        Text="{x:Bind SubHeader}" 
                         Foreground="{ThemeResource SystemAccentColor}"/>
                 </StackPanel>
             </ItemContainer>
         </DataTemplate>
     </Page.Resources>
+
     <Grid>
         <!-- not using Interactivity:Interaction.Behaviors due to wanting to do AoT -->
         <ItemsView 
