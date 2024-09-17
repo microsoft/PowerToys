@@ -12,9 +12,21 @@ namespace YouTubeExtension.Helper;
 
 public sealed class YouTubeVideo
 {
+    // The title of the video
     public string Title { get; init; } = string.Empty;
 
+    // The URL link to the video
     public string Link { get; init; } = string.Empty;
 
+    // The author or channel name of the video
     public string Author { get; init; } = string.Empty;
+
+    // The URL to the thumbnail image of the video
+    public string ThumbnailUrl { get; init; } = string.Empty;
+
+    // Captions or subtitles associated with the video
+    public string Captions { get; init; } = string.Empty;
+
+    // The date and time the video was published
+    public DateTime PublishedAt { get; set; }
 }

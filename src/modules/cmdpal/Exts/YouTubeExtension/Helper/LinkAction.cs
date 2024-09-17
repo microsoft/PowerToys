@@ -20,7 +20,7 @@ internal sealed partial class LinkAction : InvokableCommand
     {
         this._video = video;
         this.Name = "Open link";
-        this.Icon = new("\uE8A7");
+        this.Icon = new("https://www.youtube.com/favicon.ico");
     }
 
     public override CommandResult Invoke()

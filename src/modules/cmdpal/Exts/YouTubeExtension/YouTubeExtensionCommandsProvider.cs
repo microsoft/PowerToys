@@ -56,7 +56,7 @@ public partial class YouTubeExtensionActionsProvider : ICommandProvider
         // Validate the API key using YouTube API
         if (string.IsNullOrWhiteSpace(apiKey) || !await IsApiKeyValid(apiKey))
         {
-            return new[] { new ListItem(apiPage) { Title = "YouTube", Subtitle = "Current API Invalid. Please enter a new API key." } };
+            return new[] { new ListItem(apiPage) { Title = "YouTube", Subtitle = "API quota hit or current key invalid. Try entering a new API key." } };
         }
 
         // If file exists and API key is valid, return commands
