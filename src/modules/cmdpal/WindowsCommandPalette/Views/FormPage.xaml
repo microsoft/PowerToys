@@ -3,56 +3,65 @@
     x:Class="WindowsCommandPalette.Views.FormPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:WindowsCommandPalette.Views"
     xmlns:ac="using:AdaptiveCards.Rendering.WinUI3"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:WindowsCommandPalette.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
     Background="Transparent"
-    Loaded="Page_Loaded">
+    Loaded="Page_Loaded"
+    mc:Ignorable="d">
 
     <Page.Resources>
         <ResourceDictionary>
-            <StackLayout x:Name="VerticalStackLayout" Orientation="Vertical" Spacing="8"/>
+            <StackLayout
+                x:Name="VerticalStackLayout"
+                Orientation="Vertical"
+                Spacing="8" />
 
             <DataTemplate x:Key="CardTemplate" x:DataType="local:FormViewModel">
-                <Border x:Name="DetailsContent"
-                        Visibility="{x:Bind ShouldDisplay, Mode=OneWay}"
-                        Margin="0,0,0,0"
-                        Padding="8"
-                        Translation="0,0,16"
-                        Shadow="{StaticResource SharedShadow}"
-                        BorderBrush="{ThemeResource AccentControlElevationBorderBrush}"
-                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                        CornerRadius="4"
-                        TabFocusNavigation="Cycle"
-                        Child="{x:Bind RenderedChildElement, Mode=OneWay}"
-                    />
+                <Border
+                    x:Name="DetailsContent"
+                    Margin="0,0,0,0"
+                    Padding="8"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource AccentControlElevationBorderBrush}"
+                    Child="{x:Bind RenderedChildElement, Mode=OneWay}"
+                    CornerRadius="4"
+                    Shadow="{StaticResource SharedShadow}"
+                    TabFocusNavigation="Cycle"
+                    Translation="0,0,16"
+                    Visibility="{x:Bind ShouldDisplay, Mode=OneWay}" />
 
             </DataTemplate>
 
         </ResourceDictionary>
     </Page.Resources>
-    
+
     <Grid Padding="24">
         <StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="8,0,0,8" Padding="-24,-32,0,0">
-                <Button x:Name="BackButton"
-                        Grid.Row="0"
-                        Margin="-8,0,8,0"
-                        Width="16" Height="16"
-                        Style="{StaticResource NavigationBackButtonNormalStyle}"
-                        Visibility="{x:Bind ViewModel.Nested}"
-                        IsEnabled="{x:Bind ViewModel.Nested}"
-                        Tapped="BackButton_Tapped"
-                        ToolTipService.ToolTip="Back"/>
-                <TextBlock Text="{x:Bind ViewModel.Page.Name}" FontSize="24" />
+            <StackPanel
+                Margin="8,0,0,8"
+                Padding="-24,-32,0,0"
+                Orientation="Horizontal">
+                <Button
+                    x:Name="BackButton"
+                    Grid.Row="0"
+                    Width="16"
+                    Height="16"
+                    Margin="-8,0,8,0"
+                    IsEnabled="{x:Bind ViewModel.Nested}"
+                    Style="{StaticResource NavigationBackButtonNormalStyle}"
+                    Tapped="BackButton_Tapped"
+                    ToolTipService.ToolTip="Back"
+                    Visibility="{x:Bind ViewModel.Nested}" />
+                <TextBlock FontSize="24" Text="{x:Bind ViewModel.Page.Name}" />
             </StackPanel>
-            
+
             <Grid x:Name="FormContent" Margin="-24,0,-24,0">
-                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Forms, Mode=OneWay}" 
-                               ItemTemplate="{StaticResource CardTemplate}"
-                               Layout="{StaticResource VerticalStackLayout}"/>
+                <ItemsRepeater
+                    ItemTemplate="{StaticResource CardTemplate}"
+                    ItemsSource="{x:Bind ViewModel.Forms, Mode=OneWay}"
+                    Layout="{StaticResource VerticalStackLayout}" />
             </Grid>
 
 

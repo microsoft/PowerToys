@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Window
     x:Class="WindowsCommandPalette.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -10,44 +10,51 @@
     mc:Ignorable="d">
 
     <Window.SystemBackdrop>
-        <MicaBackdrop Kind="BaseAlt"/>
+        <DesktopAcrylicBackdrop />
     </Window.SystemBackdrop>
 
     <Grid x:Name="RootGrid">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
         </Grid.RowDefinitions>
-
-
-        <Grid x:Name="AppTitleBar" Background="Transparent" Height="0">
-            <!-- Width of the padding columns is set in LayoutMetricsChanged handler. -->
-            <!-- Using padding columns instead of Margin ensures that the background
-             paints the area under the caption control buttons (for transparent buttons). -->
+        <Grid
+            x:Name="AppTitleBar"
+            Height="0"
+            Background="Transparent">
+            <!--  Width of the padding columns is set in LayoutMetricsChanged handler.  -->
+            <!--
+                Using padding columns instead of Margin ensures that the background
+                paints the area under the caption control buttons (for transparent buttons).
+            -->
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>
-                <ColumnDefinition/>
-                <ColumnDefinition x:Name="RightPaddingColumn" Width="0"/>
+                <ColumnDefinition x:Name="LeftPaddingColumn" Width="0" />
+                <ColumnDefinition />
+                <ColumnDefinition x:Name="RightPaddingColumn" Width="0" />
             </Grid.ColumnDefinitions>
-            <StackPanel Orientation="Horizontal"
-                Grid.Column="1">
-
-                <Image Source="Assets/WindowIcon.png"
-                   HorizontalAlignment="Left"
-                   Width="16" Height="16"
-                   Margin="8,0,0,0"/>
-                <TextBlock x:Name="AppTitleTextBlock"
-                   Text="App title"
-                   Visibility="Collapsed"
-                   Style="{StaticResource CaptionTextBlockStyle}"
-                   Grid.Column="1"
-                   VerticalAlignment="Center"
-                   Margin="28,0,0,0"/>
-
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Image
+                    Width="16"
+                    Height="16"
+                    Margin="8,0,0,0"
+                    HorizontalAlignment="Left"
+                    Source="Assets/WindowIcon.png" />
+                <TextBlock
+                    x:Name="AppTitleTextBlock"
+                    Grid.Column="1"
+                    Margin="28,0,0,0"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="App title"
+                    Visibility="Collapsed" />
             </StackPanel>
         </Grid>
-        <Grid x:Name="ContentGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="24,24,24,4" Grid.Row="1">
-            <cmdpal:MainPage x:Name="MainPage"/>
+        <Grid
+            x:Name="ContentGrid"
+            Grid.Row="1"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch">
+            <cmdpal:MainPage x:Name="MainPage" />
         </Grid>
     </Grid>
 </Window>

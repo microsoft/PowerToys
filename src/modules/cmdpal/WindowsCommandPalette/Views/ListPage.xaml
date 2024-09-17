@@ -1,96 +1,393 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="WindowsCommandPalette.Views.ListPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:devpal="using:WindowsCommandPalette"
     xmlns:local="using:WindowsCommandPalette.Views"
-    xmlns:rsdk="using:Microsoft.CmdPal.Extensions"
-    xmlns:mtu="using:Microsoft.Terminal.UI"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
+    xmlns:mtu="using:Microsoft.Terminal.UI"
+    xmlns:rsdk="using:Microsoft.CmdPal.Extensions"
     Background="Transparent"
-    Loaded="Page_Loaded">
+    Loaded="Page_Loaded"
+    mc:Ignorable="d">
+
 
     <Page.Resources>
         <ResourceDictionary>
             <local:StringNotEmptyToVisibilityConverter x:Key="StringNotEmptyToVisibilityConverter" />
 
+            <Style x:Key="CustomTextBoxStyle" TargetType="TextBox">
+                <Setter Property="Foreground" Value="{ThemeResource TextControlForeground}" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderBrush" Value="Transparent" />
+                <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextControlSelectionHighlightColor}" />
+                <Setter Property="BorderThickness" Value="{ThemeResource TextControlBorderThemeThickness}" />
+                <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+                <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+                <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Auto" />
+                <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
+                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+                <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
+                <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
+                <Setter Property="MinHeight" Value="{ThemeResource TextControlThemeMinHeight}" />
+                <Setter Property="MinWidth" Value="{ThemeResource TextControlThemeMinWidth}" />
+                <Setter Property="Padding" Value="{ThemeResource TextControlThemePadding}" />
+                <Setter Property="UseSystemFocusVisuals" Value="{ThemeResource IsApplicationFocusVisualKindReveal}" />
+                <Setter Property="ContextFlyout" Value="{StaticResource TextControlCommandBarContextFlyout}" />
+                <Setter Property="SelectionFlyout" Value="{StaticResource TextControlCommandBarSelectionFlyout}" />
+                <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+                <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="TextBox">
+                            <Grid>
+                                <Grid.Resources>
+                                    <Style x:Name="DeleteButtonStyle" TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Grid
+                                                        x:Name="ButtonLayoutGrid"
+                                                        Margin="{ThemeResource TextBoxInnerButtonMargin}"
+                                                        Background="Transparent"
+                                                        BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                                                        BorderBrush="{ThemeResource TextControlButtonBorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="{TemplateBinding CornerRadius}">
+                                                        <TextBlock
+                                                            x:Name="GlyphElement"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"
+                                                            AutomationProperties.AccessibilityView="Raw"
+                                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                            FontSize="{ThemeResource TextBoxIconFontSize}"
+                                                            FontStyle="Normal"
+                                                            Foreground="{ThemeResource TextControlButtonForeground}"
+                                                            Text="&#xE894;" />
+                                                        <VisualStateManager.VisualStateGroups>
+                                                            <VisualStateGroup x:Name="CommonStates">
+                                                                <VisualState x:Name="Normal" />
+                                                                <VisualState x:Name="PointerOver">
+                                                                    <Storyboard>
+                                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ButtonLayoutGrid" Storyboard.TargetProperty="Background">
+                                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlButtonBackgroundPointerOver}" />
+                                                                        </ObjectAnimationUsingKeyFrames>
+                                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ButtonLayoutGrid" Storyboard.TargetProperty="BorderBrush">
+                                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlButtonBorderBrushPointerOver}" />
+                                                                        </ObjectAnimationUsingKeyFrames>
+                                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="GlyphElement" Storyboard.TargetProperty="Foreground">
+                                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlButtonForegroundPointerOver}" />
+                                                                        </ObjectAnimationUsingKeyFrames>
+                                                                    </Storyboard>
+                                                                </VisualState>
+                                                                <VisualState x:Name="Pressed">
+                                                                    <Storyboard>
+                                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ButtonLayoutGrid" Storyboard.TargetProperty="Background">
+                                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlButtonBackgroundPressed}" />
+                                                                        </ObjectAnimationUsingKeyFrames>
+                                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ButtonLayoutGrid" Storyboard.TargetProperty="BorderBrush">
+                                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlButtonBorderBrushPressed}" />
+                                                                        </ObjectAnimationUsingKeyFrames>
+                                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="GlyphElement" Storyboard.TargetProperty="Foreground">
+                                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlButtonForegroundPressed}" />
+                                                                        </ObjectAnimationUsingKeyFrames>
+                                                                    </Storyboard>
+                                                                </VisualState>
+                                                                <VisualState x:Name="Disabled">
+                                                                    <Storyboard>
+                                                                        <DoubleAnimation
+                                                                            Storyboard.TargetName="ButtonLayoutGrid"
+                                                                            Storyboard.TargetProperty="Opacity"
+                                                                            To="0"
+                                                                            Duration="0" />
+                                                                    </Storyboard>
+                                                                </VisualState>
+                                                            </VisualStateGroup>
+                                                        </VisualStateManager.VisualStateGroups>
+                                                    </Grid>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Grid.Resources>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter
+                                    x:Name="HeaderContentPresenter"
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    Grid.ColumnSpan="2"
+                                    Margin="{ThemeResource TextBoxTopHeaderMargin}"
+                                    VerticalAlignment="Top"
+                                    x:DeferLoadStrategy="Lazy"
+                                    Content="{TemplateBinding Header}"
+                                    ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                    FontWeight="Normal"
+                                    Foreground="{ThemeResource TextControlHeaderForeground}"
+                                    TextWrapping="Wrap"
+                                    Visibility="Collapsed" />
+                                <Border
+                                    x:Name="BorderElement"
+                                    Grid.Row="1"
+                                    Grid.RowSpan="1"
+                                    Grid.Column="0"
+                                    Grid.ColumnSpan="2"
+                                    MinWidth="{TemplateBinding MinWidth}"
+                                    MinHeight="{TemplateBinding MinHeight}"
+                                    VerticalAlignment="Stretch"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    Control.IsTemplateFocusTarget="True"
+                                    CornerRadius="{TemplateBinding CornerRadius}" />
+                                <ScrollViewer
+                                    x:Name="ContentElement"
+                                    Grid.Row="1"
+                                    Grid.Column="0"
+                                    Margin="{TemplateBinding BorderThickness}"
+                                    Padding="{TemplateBinding Padding}"
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    Foreground="{TemplateBinding Foreground}"
+                                    HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                    HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+                                    IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                                    IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
+                                    IsTabStop="False"
+                                    IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
+                                    VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                    VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+                                    ZoomMode="Disabled" />
+                                <TextBlock
+                                    x:Name="PlaceholderTextContentPresenter"
+                                    Grid.Row="1"
+                                    Grid.Column="0"
+                                    Grid.ColumnSpan="2"
+                                    Margin="{TemplateBinding BorderThickness}"
+                                    Padding="{TemplateBinding Padding}"
+                                    VerticalAlignment="Center"
+                                    Foreground="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForeground}}"
+                                    IsHitTestVisible="False"
+                                    Text="{TemplateBinding PlaceholderText}"
+                                    TextAlignment="{TemplateBinding TextAlignment}"
+                                    TextWrapping="{TemplateBinding TextWrapping}" />
+                                <Button
+                                    x:Name="DeleteButton"
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Width="30"
+                                    Padding="{ThemeResource HelperButtonThemePadding}"
+                                    VerticalAlignment="Stretch"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="{TemplateBinding CornerRadius}"
+                                    FontSize="{TemplateBinding FontSize}"
+                                    IsTabStop="False"
+                                    Style="{StaticResource DeleteButtonStyle}"
+                                    Visibility="Collapsed" />
+                                <ContentPresenter
+                                    x:Name="DescriptionPresenter"
+                                    Grid.Row="2"
+                                    Grid.Column="0"
+                                    Grid.ColumnSpan="2"
+                                    x:Load="False"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    Content="{TemplateBinding Description}"
+                                    Foreground="{ThemeResource SystemControlDescriptionTextForegroundBrush}" />
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="CommonStates">
+                                        <VisualState x:Name="Normal" />
+                                        <VisualState x:Name="Disabled">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HeaderContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlHeaderForegroundDisabled}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="Transparent" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="Transparent" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlForegroundDisabled}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundDisabled}}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="PointerOver">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="Transparent" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="Transparent" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundPointerOver}}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlForegroundPointerOver}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="Focused">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundFocused}}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="Transparent" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="Transparent" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderThickness">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBorderThemeThicknessFocused}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlForegroundFocused}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                    <VisualStateGroup x:Name="ButtonStates">
+                                        <VisualState x:Name="ButtonVisible">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DeleteButton" Storyboard.TargetProperty="Visibility">
+                                                    <DiscreteObjectKeyFrame KeyTime="0">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <Visibility>Visible</Visibility>
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="ButtonCollapsed" />
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+
             <CollectionViewSource x:Name="ItemsCVS" IsSourceGrouped="True" />
-            <StackLayout x:Name="HorizontalStackLayout" Orientation="Horizontal" Spacing="8"/>
+            <StackLayout
+                x:Name="HorizontalStackLayout"
+                Orientation="Horizontal"
+                Spacing="8" />
 
 
             <DataTemplate x:Key="TagTemplate" x:DataType="devpal:TagViewModel">
-                <Border BorderBrush="{x:Bind BorderBrush, Mode=OneWay}"
-                        BorderThickness="1"
-                        CornerRadius="4"
-                        Background="{x:Bind BackgroundBrush, Mode=OneWay}"
-                        Padding="4, 2, 4, 2"
-                        VerticalAlignment="Center">
+                <Border
+                    Padding="4,2,4,2"
+                    VerticalAlignment="Center"
+                    Background="{x:Bind BackgroundBrush, Mode=OneWay}"
+                    BorderBrush="{x:Bind BorderBrush, Mode=OneWay}"
+                    BorderThickness="1"
+                    CornerRadius="4">
                     <StackPanel Orientation="Horizontal">
-                        <ContentControl Width="12"
-                                        Height="12"
-                                        Margin="0, 0, 4, 0"
-                                        Visibility="{x:Bind HasIcon, Mode=OneWay}"
-                                        Content="{x:Bind IcoElement, Mode=OneWay}" />
-                        <TextBlock VerticalAlignment="Center" Foreground="{x:Bind TextBrush, Mode=OneWay}" FontSize="10" Text="{x:Bind Text, Mode=OneWay}"/>
+                        <ContentControl
+                            Width="12"
+                            Height="12"
+                            Margin="0,0,4,0"
+                            Content="{x:Bind IcoElement, Mode=OneWay}"
+                            Visibility="{x:Bind HasIcon, Mode=OneWay}" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="10"
+                            Foreground="{x:Bind TextBrush, Mode=OneWay}"
+                            Text="{x:Bind Text, Mode=OneWay}" />
                     </StackPanel>
                 </Border>
             </DataTemplate>
 
-            <!--Template for items in the main list view -->
+            <!--  Template for items in the main list view  -->
             <DataTemplate x:Key="ListItemTemplate" x:DataType="devpal:ListItemViewModel">
-                <ListViewItem KeyDown="ListItem_KeyDown"
-                              Tapped="ListItem_Tapped"
-                              MinHeight="32"
-                              Height="24"
-                              Visibility="{x:Bind Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}">
-                    <Grid>
+                <ListViewItem
+                    MinHeight="40"
+                    KeyDown="ListItem_KeyDown"
+                    Tapped="ListItem_Tapped"
+                    Visibility="{x:Bind Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}">
+                    <Grid ColumnSpacing="12">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="24"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="24" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <ContentControl Grid.Column="0"
-                                        Width="24"
-                                        Height="24"
-                                        Content="{x:Bind IcoElement, Mode=OneWay}" />
-                        <StackPanel Grid.Column="1"
-                                    Orientation="Horizontal"
-                                    Padding="8,4,4,4">
-                            <TextBlock VerticalAlignment="Center"
-                                       FontSize="16"
-                                       Text="{x:Bind Title, Mode=OneWay}"/>
-                            <TextBlock Margin="8,0,0,0"
-                                       VerticalAlignment="Center"
-                                       Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                                       FontSize="12"
-                                       Text="{x:Bind Subtitle, Mode=OneWay}"
-                                       Visibility="{x:Bind Subtitle, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}"/>
+
+                        <Viewbox
+                            Width="20"
+                            Height="20"
+                            VerticalAlignment="Center">
+                            <ContentControl
+                                Width="24"
+                                Height="24"
+                                Content="{x:Bind IcoElement, Mode=OneWay}" />
+                        </Viewbox>
+
+                        <StackPanel
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Text="{x:Bind Title, Mode=OneWay}"
+                                TextTrimming="CharacterEllipsis" />
+                            <TextBlock
+                                Margin="4,0,0,0"
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                TextTrimming="CharacterEllipsis"
+                                Visibility="{x:Bind Subtitle, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}">
+                                <Run Text=" - " />
+                                <Run Text="{x:Bind Subtitle, Mode=OneWay}" />
+                            </TextBlock>
                         </StackPanel>
-                        <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Visibility="{x:Bind HasTags}">
-                            <ItemsRepeater ItemsSource="{x:Bind Tags}"
-                                           ItemTemplate="{StaticResource TagTemplate}"
-                                           Layout="{StaticResource HorizontalStackLayout}"/>
+                        <StackPanel
+                            Grid.Column="2"
+                            HorizontalAlignment="Right"
+                            Orientation="Horizontal"
+                            Visibility="{x:Bind HasTags}">
+                            <ItemsRepeater
+                                ItemTemplate="{StaticResource TagTemplate}"
+                                ItemsSource="{x:Bind Tags}"
+                                Layout="{StaticResource HorizontalStackLayout}" />
                         </StackPanel>
                     </Grid>
                 </ListViewItem>
             </DataTemplate>
 
-            <!--Template for actions in the mode actions dropdown button -->
+            <!--  Template for actions in the mode actions dropdown button  -->
             <DataTemplate x:Key="ContextMenuViewModelTemplate" x:DataType="devpal:ContextItemViewModel">
                 <ListViewItem KeyDown="ActionListViewItem_KeyDown" Tapped="ActionListViewItem_Tapped">
-                    <Grid>
+                    <Grid ColumnSpacing="8">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="24"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="24" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <ContentControl Grid.Column="0" Width="24" Height="24" Content="{x:Bind IcoElement, Mode=OneWay}" />
-                        <StackPanel Grid.Column="1">
-                            <TextBlock Text="{x:Bind Name}"/>
-                        </StackPanel>
+                        <Viewbox Width="16" Height="16">
+                            <ContentControl
+                                Grid.Column="0"
+                                Width="24"
+                                Height="24"
+                                Content="{x:Bind IcoElement, Mode=OneWay}" />
+                        </Viewbox>
+                        <TextBlock Grid.Column="1" Text="{x:Bind Name}" />
                     </Grid>
                 </ListViewItem>
             </DataTemplate>
@@ -98,8 +395,7 @@
             <!--
                 Remove all item animations from lists. They're entirely too slow to let that UI be usable.
             -->
-            <Style x:Key="NoAnimationsPlease"
-                   TargetType="ListView">
+            <Style x:Key="NoAnimationsPlease" TargetType="ListView">
                 <Setter Property="ItemContainerTransitions">
                     <Setter.Value>
                         <TransitionCollection>
@@ -117,86 +413,117 @@
     </Page.Resources>
 
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="56" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="56" />
         </Grid.RowDefinitions>
 
-         <!--Row 0: Back button and search box-->
-        <Grid Grid.Row="0">
+        <!--  Row 0: Back button and search box  -->
+        <Grid Grid.Row="0" Margin="-2,0,0,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="48" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!--Back button-->
-            <Button x:Name="BackButton"
-                    Grid.Column="0"
-                    Width="24" Height="24"
-                    HorizontalAlignment="Left"
-                    Margin="0,0,10,0"
-                    Style="{StaticResource NavigationBackButtonNormalStyle}"
-                    Visibility="{x:Bind ViewModel.Nested}"
-                    IsEnabled="{x:Bind ViewModel.Nested}"
-                    Tapped="BackButton_Tapped"
-                    ToolTipService.ToolTip="Back"/>
+            <!--  Back button  -->
+            <FontIcon
+                HorizontalAlignment="Right"
+                AutomationProperties.AccessibilityView="Raw"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Glyph="&#xE721;" />
+            <Button
+                x:Name="BackButton"
+                Width="24"
+                Height="24"
+                Padding="8"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                FontSize="16"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                IsEnabled="{x:Bind ViewModel.Nested}"
+         
+                Tapped="BackButton_Tapped"
+                ToolTipService.ToolTip="Back"
+                Visibility="{x:Bind ViewModel.Nested}" />
+            <StackPanel
+                Grid.Column="1"
+                Margin="4,4,20,4"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                Orientation="Horizontal"
+                Visibility="{x:Bind ViewModel.Nested}">
+                <!--<BitmapIcon Width="20" Margin="4, 0, 8, 0" ShowAsMonochrome="False" UseLayoutRounding="False" UriSource="{x:Bind ViewModel.Command.IconUri}" HorizontalAlignment="Left"/>-->
 
-            <!--Search box-->
-            <TextBox x:Name="FilterBox"
-                     MinHeight="32"
-                     FontSize="24"
-                     Grid.Column="1"
-                     PlaceholderText="Type here to search"
-                     HorizontalAlignment="Stretch" KeyDown="FilterBox_KeyDown" TextChanged="FilterBox_TextChanged"/>
+                <ContentControl
+                    Grid.Column="0"
+                    Width="20"
+                    Height="20"
+                    Margin="4,0,8,0"
+                    Content="{x:Bind ViewModel.Command.IcoElement}" />
+                <TextBlock
+                    FontSize="14"
+                    Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                    Text="{x:Bind ViewModel.Page.Name}" />
+            </StackPanel>
+
+            <!--  Search box  -->
+            <TextBox
+                x:Name="FilterBox"
+                Grid.Column="2"
+                MinHeight="32"
+                VerticalAlignment="Stretch"
+                VerticalContentAlignment="Stretch"
+                FontSize="18"
+                KeyDown="FilterBox_KeyDown"
+                PlaceholderText="Type here to search..."
+                Style="{StaticResource CustomTextBoxStyle}"
+                TextChanged="FilterBox_TextChanged" />
         </Grid>
 
-        <!--Extension name after clicking on a command-->
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="0" Margin="4,4,20,4" Visibility="{x:Bind ViewModel.Nested}">
-            <!--<BitmapIcon Width="20" Margin="4, 0, 8, 0" ShowAsMonochrome="False" UseLayoutRounding="False" UriSource="{x:Bind ViewModel.Command.IconUri}" HorizontalAlignment="Left"/>-->
+        <!--  Extension name after clicking on a command  -->
 
-            <ContentControl Grid.Column="0" Margin="4, 0, 8, 0" Width="20" Height="20" Content="{x:Bind ViewModel.Command.IcoElement}" />
-            <TextBlock Foreground="{ThemeResource TextFillColorTertiaryBrush}" FontSize="14" Text="{x:Bind ViewModel.Page.Name}"></TextBlock>
-        </StackPanel>
 
-        <!--List of commands-->
-        <Grid Grid.Row="2"
-                  Margin="0,8,0,0"
-              Grid.ColumnSpan="3">
+        <!--  List of commands  -->
 
+
+        <Grid
+            Grid.Row="2"
+            Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*"/>
-                <ColumnDefinition x:Name="DetailsColumn" Width="2*"/>
+                <ColumnDefinition Width="3*" />
+                <ColumnDefinition x:Name="DetailsColumn" Width="2*" />
             </Grid.ColumnDefinitions>
 
-            <ListView ItemsSource="{x:Bind ItemsCVS.View, Mode=OneWay}"
-                  Style="{StaticResource NoAnimationsPlease}"
-                      Grid.Column="0"
-                  x:Name="ItemsList"
-                  SelectionChanged="ItemsList_SelectionChanged"
-                  ItemTemplate="{StaticResource ListItemTemplate}"
-                  IsItemClickEnabled="True">
-
+            <ListView
+                x:Name="ItemsList"
+                Grid.Column="0"
+                Margin="4,0,0,0"
+                IsItemClickEnabled="True"
+                ItemTemplate="{StaticResource ListItemTemplate}"
+                ItemsSource="{x:Bind ItemsCVS.View, Mode=OneWay}"
+                SelectionChanged="ItemsList_SelectionChanged"
+                Style="{StaticResource NoAnimationsPlease}">
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <ItemsStackPanel AreStickyGroupHeadersEnabled="False"/>
+                        <ItemsStackPanel AreStickyGroupHeadersEnabled="False" />
                     </ItemsPanelTemplate>
                 </ListView.ItemsPanel>
                 <ListView.GroupStyle>
-                    <GroupStyle HidesIfEmpty="True" HeaderContainerStyle="{StaticResource CustomHeaderContainerStyle}">
+                    <GroupStyle HeaderContainerStyle="{StaticResource CustomHeaderContainerStyle}" HidesIfEmpty="True">
                         <GroupStyle.HeaderTemplate>
                             <DataTemplate x:DataType="local:SectionInfoList">
-                                <TextBlock Text="{x:Bind Title}" Padding="8,0,0,0"
-                                           Visibility="{x:Bind Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}"
-                                            Style="{StaticResource CaptionTextBlockStyle}"
-                                            Foreground="{ThemeResource TextFillColorSecondary}"
-                                            AutomationProperties.AccessibilityView="Raw"/>
+                                <TextBlock
+                                    Padding="20,12,0,8"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    FontSize="14"
+                                    FontWeight="SemiBold"
+                                    Text="{x:Bind Title}"
+                                    Visibility="{x:Bind Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
                             </DataTemplate>
                         </GroupStyle.HeaderTemplate>
                     </GroupStyle>
@@ -204,36 +531,61 @@
 
             </ListView>
 
-            <Border x:Name="DetailsContent"
-
-                    Visibility="Collapsed"
-                    Margin="8,0,0,0"
-                    Padding="8"
-                    Translation="0,0,32"
-                    Shadow="{StaticResource SharedShadow}"
-                    BorderBrush="{ThemeResource AccentControlElevationBorderBrush}"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    CornerRadius="4"
-                    Grid.Column="1"/>
-
+            <Border
+                x:Name="DetailsContent"
+                Grid.Column="1"
+                Margin="12"
+                Padding="8"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                CornerRadius="8"
+                Visibility="Collapsed" />
         </Grid>
 
-        <!--Footer-->
-        <Grid Grid.Row="3" Margin="4" MinHeight="32">
+        <!--  Footer  -->
+        <Grid Grid.Row="3" Padding="8,0,12,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
-                <ColumnDefinition Width="*"></ColumnDefinition>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Column="0" Orientation="Horizontal" Visibility="{x:Bind SelectedItem.DefaultAction.Name, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}">
-                <TextBlock Text="{x:Bind SelectedItem.DefaultAction.Name, Mode=OneWay}" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
-                <FontIcon Glyph="&#xE751;" FontSize="12" VerticalAlignment="Center" Margin="4,0,0,0" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+
+            <StackPanel
+                Margin="12,0,0,0"
+                Padding="4,2,4,2"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                BorderBrush="{ThemeResource ControlStrokeColorSecondaryBrush}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Orientation="Horizontal"
+                Visibility="{x:Bind SelectedItem.DefaultAction.Name, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}">
+                <TextBlock
+                    FontSize="11"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind SelectedItem.DefaultAction.Name, Mode=OneWay}" />
+                <FontIcon
+                    Margin="4,0,0,0"
+                    VerticalAlignment="Center"
+                    FontSize="11"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Glyph="&#xE751;" />
             </StackPanel>
-            <SplitButton x:Name="MoreCommandsButton" Grid.Column="2" Visibility="{x:Bind MoreCommandsAvailable, Mode=OneWay}">
-                <TextBlock>Actions</TextBlock>
+
+            <SplitButton
+                x:Name="MoreCommandsButton"
+                Grid.Column="2"
+                Content="Actions"
+                Visibility="{x:Bind MoreCommandsAvailable, Mode=OneWay}">
                 <SplitButton.Flyout>
                     <Flyout Placement="TopEdgeAlignedRight">
-                        <ListView ItemsSource="{x:Bind SelectedItem.ContextActions, Mode=OneWay}" Style="{StaticResource NoAnimationsPlease}" Margin="-12" x:Name="ActionsDropdown" ItemTemplate="{StaticResource ContextMenuViewModelTemplate}" />
+                        <ListView
+                            x:Name="ActionsDropdown"
+                            Margin="-12"
+                            ItemTemplate="{StaticResource ContextMenuViewModelTemplate}"
+                            ItemsSource="{x:Bind SelectedItem.ContextActions, Mode=OneWay}"
+                            Style="{StaticResource NoAnimationsPlease}" />
                     </Flyout>
                 </SplitButton.Flyout>
             </SplitButton>
