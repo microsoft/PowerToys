@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Microsoft.CmdPal.UI (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Microsoft.CmdPal.UI (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
