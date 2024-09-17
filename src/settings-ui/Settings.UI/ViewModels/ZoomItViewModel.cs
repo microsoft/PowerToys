@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using AllExperiments;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -20,7 +21,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
+        private readonly ZoomItSettings _zoomItSettings;
+
         private Func<string, int> SendConfigMSG { get; }
+
+        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
+        {
+            MaxDepth = 0,
+            IncludeFields = true,
+        };
 
         public ZoomItViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
@@ -33,9 +42,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
+            var zoomItSettings = global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.LoadSettingsJson();
+            _zoomItSettings = JsonSerializer.Deserialize<ZoomItSettings>(zoomItSettings, _serializerOptions);
+
             InitializeEnabledValue();
 
-            // set the callback functions value to handle outgoing IPC message.
+            // set the callback functions value to handle outgoing IPC message for the enabled value.
             SendConfigMSG = ipcMSGCallBackFunc;
         }
 
@@ -83,6 +95,130 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsEnabledGpoConfigured
         {
             get => _enabledStateIsGPOConfigured;
+        }
+
+        public bool ShowTrayIcon
+        {
+            get => _zoomItSettings.Properties.ShowTrayIcon.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.ShowTrayIcon.Value != value)
+                {
+                    _zoomItSettings.Properties.ShowTrayIcon.Value = value;
+                    OnPropertyChanged(nameof(ShowTrayIcon));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public HotkeySettings ZoomToggleKey
+        {
+            get => _zoomItSettings.Properties.ToggleKey.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.ToggleKey.Value != value)
+                {
+                    _zoomItSettings.Properties.ToggleKey.Value = value ?? ZoomItProperties.DefaultToggleKey;
+                    OnPropertyChanged(nameof(ZoomToggleKey));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public HotkeySettings LiveZoomToggleKey
+        {
+            get => _zoomItSettings.Properties.LiveZoomToggleKey.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.LiveZoomToggleKey.Value != value)
+                {
+                    _zoomItSettings.Properties.LiveZoomToggleKey.Value = value ?? ZoomItProperties.DefaultLiveZoomToggleKey;
+                    OnPropertyChanged(nameof(LiveZoomToggleKey));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public HotkeySettings DrawToggleKey
+        {
+            get => _zoomItSettings.Properties.DrawToggleKey.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.DrawToggleKey.Value != value)
+                {
+                    _zoomItSettings.Properties.DrawToggleKey.Value = value ?? ZoomItProperties.DefaultDrawToggleKey;
+                    OnPropertyChanged(nameof(DrawToggleKey));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public HotkeySettings RecordToggleKey
+        {
+            get => _zoomItSettings.Properties.RecordToggleKey.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.RecordToggleKey.Value != value)
+                {
+                    _zoomItSettings.Properties.RecordToggleKey.Value = value ?? ZoomItProperties.DefaultRecordToggleKey;
+                    OnPropertyChanged(nameof(RecordToggleKey));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public HotkeySettings SnipToggleKey
+        {
+            get => _zoomItSettings.Properties.SnipToggleKey.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.SnipToggleKey.Value != value)
+                {
+                    _zoomItSettings.Properties.SnipToggleKey.Value = value ?? ZoomItProperties.DefaultSnipToggleKey;
+                    OnPropertyChanged(nameof(SnipToggleKey));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public HotkeySettings BreakTimerKey
+        {
+            get => _zoomItSettings.Properties.BreakTimerKey.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.BreakTimerKey.Value != value)
+                {
+                    _zoomItSettings.Properties.BreakTimerKey.Value = value ?? ZoomItProperties.DefaultBreakTimerKey;
+                    OnPropertyChanged(nameof(BreakTimerKey));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public HotkeySettings DemoTypeToggleKey
+        {
+            get => _zoomItSettings.Properties.DemoTypeToggleKey.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.DemoTypeToggleKey.Value != value)
+                {
+                    _zoomItSettings.Properties.DemoTypeToggleKey.Value = value ?? ZoomItProperties.DefaultDemoTypeToggleKey;
+                    OnPropertyChanged(nameof(DemoTypeToggleKey));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        private void NotifySettingsChanged()
+        {
+            // TODO: Send new settings to Adpater.
+            // Using InvariantCulture as this is an IPC message
+            /*SendConfigMSG(
+                   string.Format(
+                       CultureInfo.InvariantCulture,
+                       "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                       ZoomItSettings.ModuleName,
+                       JsonSerializer.Serialize(_zoomItSettings)));*/
         }
 
         public void RefreshEnabledState()
