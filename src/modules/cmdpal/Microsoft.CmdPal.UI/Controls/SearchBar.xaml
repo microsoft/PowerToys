@@ -16,7 +16,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <!--  Row 0: Back button and search box  -->
+    <!--  Back button and search box  -->
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -26,62 +26,63 @@
 
         <!--  Back button  -->
         <FontIcon
-                Margin="24,0,2,0"
-                HorizontalAlignment="Right"
-                AutomationProperties.AccessibilityView="Raw"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Glyph="&#xE721;"
-                Visibility="{x:Bind Nested, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}" />
+            Margin="24,0,2,0"
+            HorizontalAlignment="Right"
+            AutomationProperties.AccessibilityView="Raw"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            Glyph="&#xE721;"
+            Visibility="{x:Bind Nested, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}" />
         <Button
-                x:Name="BackButton"
-                Height="32"
-                Margin="16,4,4,4"
-                Padding="12,0,12,0"
-                HorizontalAlignment="Right"
+            x:Name="BackButton"
+            Height="32"
+            Margin="16,4,4,4"
+            Padding="12,0,12,0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center"
+            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+            CornerRadius="16"
+            FontSize="16"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            IsEnabled="{x:Bind Nested}"
+            Tapped="BackButton_Tapped"
+            ToolTipService.ToolTip="Back"
+            Visibility="{x:Bind Nested}">
+            <StackPanel
+                Grid.Column="1"
+                HorizontalAlignment="Left"
                 VerticalAlignment="Center"
-                Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                BorderBrush="Red"
-                BorderThickness="1"
-                CornerRadius="16"
-                FontSize="16"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                ToolTipService.ToolTip="Back"
+                Orientation="Horizontal"
+                Spacing="8"
                 Visibility="{x:Bind Nested}">
-                <StackPanel
-                    Grid.Column="1"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
-                    Orientation="Horizontal"
-                    Spacing="8">
 
                 <Viewbox Width="16" Height="16">
                     <!-- <ContentControl VerticalAlignment="Center" Content="{x:Bind ViewModel.Command.IcoElement}" />-->
                 </Viewbox>
 
                 <TextBlock
-                        Margin="0,-2,0,0"
-                        VerticalAlignment="Center"
-                        FontSize="12"
-                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                        Text="PageName" />
+                    Margin="0,-2,0,0"
+                    VerticalAlignment="Center"
+                    FontSize="12"
+                    Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                    Text="PageName" />
                 <FontIcon
-                        Margin="4,2,0,0"
-                        FontSize="12"
-                        Glyph="&#xE894;" />
+                    Margin="4,2,0,0"
+                    FontSize="12"
+                    Glyph="&#xE894;" />
             </StackPanel>
         </Button>
 
         <!--  Search box  -->
         <TextBox
-                x:Name="FilterBox"
-                Grid.Column="2"
-                MinHeight="32"
-                VerticalAlignment="Stretch"
-                VerticalContentAlignment="Stretch"
-                FontSize="18"
-
-                PlaceholderText="Type here to search..."
-                Style="{StaticResource SearchTextBoxStyle}"
-                 />
+            x:Name="FilterBox"
+            Grid.Column="2"
+            MinHeight="32"
+            VerticalAlignment="Stretch"
+            VerticalContentAlignment="Stretch"
+            FontSize="18"
+            KeyDown="FilterBox_KeyDown"
+            PlaceholderText="Type here to search..."
+            Style="{StaticResource SearchTextBoxStyle}"
+            TextChanged="FilterBox_TextChanged" />
     </Grid>
 </UserControl>
