@@ -444,7 +444,7 @@
                 FontSize="16"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 IsEnabled="{x:Bind ViewModel.Nested}"
-         
+                Style="{StaticResource SubtleButtonStyle}"
                 Tapped="BackButton_Tapped"
                 ToolTipService.ToolTip="Back"
                 Visibility="{x:Bind ViewModel.Nested}" />

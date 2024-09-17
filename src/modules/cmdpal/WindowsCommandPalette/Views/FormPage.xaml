@@ -27,9 +27,7 @@
                     BorderBrush="{ThemeResource AccentControlElevationBorderBrush}"
                     Child="{x:Bind RenderedChildElement, Mode=OneWay}"
                     CornerRadius="4"
-                    Shadow="{StaticResource SharedShadow}"
                     TabFocusNavigation="Cycle"
-                    Translation="0,0,16"
                     Visibility="{x:Bind ShouldDisplay, Mode=OneWay}" />
 
             </DataTemplate>
