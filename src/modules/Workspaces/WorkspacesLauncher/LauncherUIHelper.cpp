@@ -57,18 +57,13 @@ void LauncherUIHelper::LaunchUI()
     }
 }
 
-void LauncherUIHelper::UpdateLaunchStatus(LaunchingApps launchedApps) const
+void LauncherUIHelper::UpdateLaunchStatus(WorkspacesData::LaunchingAppStateMap launchedApps) const
 {
-    WorkspacesData::AppLaunchData appData = WorkspacesData::AppLaunchData();
-    appData.appLaunchInfoList.reserve(launchedApps.size());
+    WorkspacesData::AppLaunchData appData;
     appData.launcherProcessID = GetCurrentProcessId();
-    for (auto& app : launchedApps)
+    for (auto& [app, data] : launchedApps)
     {
-        WorkspacesData::LaunchingApp appLaunchInfo = WorkspacesData::LaunchingApp();
-        appLaunchInfo.application = app.application;
-        appLaunchInfo.state = app.state;
-
-        appData.appLaunchInfoList.push_back(appLaunchInfo);
+        appData.appsStateList.insert({ app, { app, nullptr, data.state } });
     }
 
     ipcHelper.send(WorkspacesData::AppLaunchDataJSON::ToJson(appData).ToString().c_str());

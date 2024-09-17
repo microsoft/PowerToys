@@ -38,6 +38,9 @@
     <ClInclude Include="LaunchingStateEnum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LaunchingStatus.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -59,6 +62,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="two_way_pipe_message_ipc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LaunchingStatus.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

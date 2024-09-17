@@ -24,9 +24,6 @@
     <ClInclude Include="ArrangeWindows.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LaunchingApp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">

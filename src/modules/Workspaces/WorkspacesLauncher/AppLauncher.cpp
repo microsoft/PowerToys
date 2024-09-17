@@ -12,40 +12,29 @@
 
 #include <WorkspacesLib/AppUtils.h>
 
-#include <LaunchingApp.h>
 #include <RegistryUtils.h>
 
 using namespace winrt;
 using namespace Windows::Foundation;
 using namespace Windows::Management::Deployment;
 
-namespace
+void UpdatePackagedApps(std::vector<WorkspacesData::WorkspacesProject::Application>& apps, const Utils::Apps::AppList& installedApps)
 {
-    LaunchingApps Prepare(std::vector<WorkspacesData::WorkspacesProject::Application>& apps, const Utils::Apps::AppList& installedApps)
+    for (auto& app : apps)
     {
-        LaunchingApps launchedApps{};
-        launchedApps.reserve(apps.size());
-
-        for (auto& app : apps)
+        // Packaged apps have version in the path, it will be outdated after update.
+        // We need make sure the current package is up to date.
+        if (!app.packageFullName.empty())
         {
-            // Packaged apps have version in the path, it will be outdated after update.
-            // We need make sure the current package is up to date.
-            if (!app.packageFullName.empty())
+            auto installedApp = std::find_if(installedApps.begin(), installedApps.end(), [&](const Utils::Apps::AppData& val) { return val.name == app.name; });
+            if (installedApp != installedApps.end() && app.packageFullName != installedApp->packageFullName)
             {
-                auto installedApp = std::find_if(installedApps.begin(), installedApps.end(), [&](const Utils::Apps::AppData& val) { return val.name == app.name; });
-                if (installedApp != installedApps.end() && app.packageFullName != installedApp->packageFullName)
-                {
-                    std::wstring exeFileName = app.path.substr(app.path.find_last_of(L"\\") + 1);
-                    app.packageFullName = installedApp->packageFullName;
-                    app.path = installedApp->installPath + L"\\" + exeFileName;
-                    Logger::trace(L"Updated package full name for {}: {}", app.name, app.packageFullName);
-                }
+                std::wstring exeFileName = app.path.substr(app.path.find_last_of(L"\\") + 1);
+                app.packageFullName = installedApp->packageFullName;
+                app.path = installedApp->installPath + L"\\" + exeFileName;
+                Logger::trace(L"Updated package full name for {}: {}", app.name, app.packageFullName);
             }
-
-            launchedApps.push_back({ app, nullptr });
         }
-
-        return launchedApps;
     }
 }
 
@@ -191,23 +180,20 @@ bool Launch(const WorkspacesData::WorkspacesProject::Application& app, ErrorList
     return launched;
 }
 
-bool Launch(WorkspacesData::WorkspacesProject& project, const LauncherUIHelper& uiHelper, ErrorList& launchErrors)
+bool Launch(WorkspacesData::WorkspacesProject& project, LaunchingStatus& launchingStatus, ErrorList& launchErrors)
 {
     bool launchedSuccessfully{ true };
 
     auto installedApps = Utils::Apps::GetAppsList();
-    auto launchedApps = Prepare(project.apps, installedApps);
-
-    uiHelper.UpdateLaunchStatus(launchedApps);
+    UpdatePackagedApps(project.apps, installedApps);
 
     // Launch apps
-    for (auto& app : launchedApps)
+    for (auto& app : project.apps)
     {
-        if (!Launch(app.application, launchErrors))
+        if (!Launch(app, launchErrors))
         {
-            Logger::error(L"Failed to launch {}", app.application.name);
-            app.state = LaunchingState::Failed;
-            uiHelper.UpdateLaunchStatus(launchedApps);
+            Logger::error(L"Failed to launch {}", app.name);
+            launchingStatus.Update(app, LaunchingState::Failed);
             launchedSuccessfully = false;
         }
     }

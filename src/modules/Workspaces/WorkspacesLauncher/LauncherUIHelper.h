@@ -1,6 +1,6 @@
 #pragma once
 
-#include <LaunchingApp.h>
+#include <WorkspacesLib/WorkspacesData.h>
 #include <WorkspacesLib/IPCHelper.h>
 
 class LauncherUIHelper
@@ -10,7 +10,7 @@ public:
     ~LauncherUIHelper();
 
     void LaunchUI();
-    void UpdateLaunchStatus(LaunchingApps launchedApps) const;
+    void UpdateLaunchStatus(WorkspacesData::LaunchingAppStateMap launchedApps) const;
 
 private:
     DWORD uiProcessId;

@@ -138,7 +138,6 @@
   <ItemGroup>
     <ClInclude Include="AppLauncher.h" />
     <ClInclude Include="LauncherUIHelper.h" />
-    <ClInclude Include="LaunchingApp.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RegistryUtils.h" />
     <ClInclude Include="resource.h" />

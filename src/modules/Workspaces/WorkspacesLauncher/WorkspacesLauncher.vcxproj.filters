@@ -30,9 +30,6 @@
     <ClInclude Include="LauncherUIHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LaunchingApp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="WindowArrangerHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -418,12 +418,35 @@ namespace WorkspacesData
             const static wchar_t* StateID = L"state";
         }
 
-        json::JsonObject ToJson(const AppLaunchInfo& data)
+        json::JsonObject ToJson(const LaunchingAppState& data)
         {
             json::JsonObject json{};
             json.SetNamedValue(NonLocalizable::ApplicationID, WorkspacesProjectJSON::ApplicationJSON::ToJson(data.application));
             json.SetNamedValue(NonLocalizable::StateID, json::value(static_cast<int>(data.state)));
             return json;
+        }
+
+        std::optional<LaunchingAppState> FromJson(const json::JsonObject& json)
+        {
+            LaunchingAppState result{};
+
+            try
+            {
+                auto app = WorkspacesProjectJSON::ApplicationJSON::FromJson(json.GetNamedObject(NonLocalizable::ApplicationID));
+                if (!app.has_value())
+                {
+                    return std::nullopt;
+                }
+
+                result.application = app.value();
+                result.state = static_cast<LaunchingState>(json.GetNamedNumber(NonLocalizable::StateID));
+            }
+            catch (const winrt::hresult_error&)
+            {
+                return std::nullopt;
+            }
+
+            return result;
         }
     }
 
@@ -434,17 +457,45 @@ namespace WorkspacesData
             const static wchar_t* AppLaunchInfoID = L"appLaunchInfos";
         }
 
-        json::JsonObject ToJson(const std::vector<AppLaunchInfo>& data)
+        json::JsonObject ToJson(const LaunchingAppStateMap& data)
         {
             json::JsonObject json{};
             json::JsonArray appLaunchInfoArray{};
             for (const auto& appLaunchInfo : data)
             {
-                appLaunchInfoArray.Append(AppLaunchInfoJSON::ToJson(appLaunchInfo));
+                appLaunchInfoArray.Append(AppLaunchInfoJSON::ToJson(appLaunchInfo.second));
             }
 
             json.SetNamedValue(NonLocalizable::AppLaunchInfoID, appLaunchInfoArray);
             return json;
+        }
+
+        std::optional<LaunchingAppStateMap> FromJson(const json::JsonObject& json)
+        {
+            LaunchingAppStateMap result{};
+
+            try
+            {
+                auto array = json.GetNamedArray(NonLocalizable::AppLaunchInfoID);
+                for (uint32_t i = 0; i < array.Size(); ++i)
+                {
+                    auto obj = AppLaunchInfoJSON::FromJson(array.GetObjectAt(i));
+                    if (obj.has_value())
+                    {
+                        result.insert({ obj.value().application, obj.value() });
+                    }
+                    else
+                    {
+                        return std::nullopt;
+                    }
+                }
+            }
+            catch (const winrt::hresult_error&)
+            {
+                return std::nullopt;
+            }
+
+            return result;
         }
     }
 
@@ -459,7 +510,7 @@ namespace WorkspacesData
         json::JsonObject ToJson(const AppLaunchData& data)
         {
             json::JsonObject json{};
-            json.SetNamedValue(NonLocalizable::AppsID, AppLaunchInfoListJSON::ToJson(data.appLaunchInfoList));
+            json.SetNamedValue(NonLocalizable::AppsID, AppLaunchInfoListJSON::ToJson(data.appsStateList));
             json.SetNamedValue(NonLocalizable::ProcessID, json::value(data.launcherProcessID));
             return json;
         }

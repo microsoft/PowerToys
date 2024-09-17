@@ -14,7 +14,6 @@
 
 #include <WorkspacesLib/AppUtils.h>
 
-#include <LaunchingApp.h>
 
 namespace FancyZones
 {

@@ -177,6 +177,9 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     LauncherUIHelper uiHelper;
     uiHelper.LaunchUI();
 
+    // Launching status
+    LaunchingStatus launchingStatus(projectToLaunch, std::bind(&LauncherUIHelper::UpdateLaunchStatus, &uiHelper, std::placeholders::_1));
+
     // start WorkspacesWindowArranger
     WindowArrangerHelper windowArrangerHelper;
     bool launchElevated = std::find_if(projectToLaunch.apps.begin(), projectToLaunch.apps.end(), [](const WorkspacesData::WorkspacesProject::Application& app) { return app.isElevated; }) != projectToLaunch.apps.end();
@@ -186,7 +189,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     Logger::info(L"Launch Workspace {} : {}", projectToLaunch.name, projectToLaunch.id);
     std::vector<std::pair<std::wstring, std::wstring>> launchErrors{};
     auto start = std::chrono::high_resolution_clock::now();
-    bool launchedSuccessfully = Launch(projectToLaunch, uiHelper, launchErrors);
+    bool launchedSuccessfully = Launch(projectToLaunch, launchingStatus, launchErrors);
     
     // update last-launched time
     if (invokePoint != InvokePoint::LaunchAndEdit)
