@@ -33,6 +33,7 @@ namespace AdvancedPaste.Helpers
                     Thread.Sleep(50);
                 }
 
+#if DEBUG
                 try
                 {
                     string clipContent = Clipboard.GetContent().GetTextAsync().GetAwaiter().GetResult();
@@ -42,6 +43,7 @@ namespace AdvancedPaste.Helpers
                 {
                     Logger.LogError("Failed to get clipboard content: ", ex.GetBaseException());
                 }
+#endif
 
                 // TODO(stefan): For some reason Flush() fails from time to time when directly activated via hotkey.
                 // Calling inside a loop makes it work.
