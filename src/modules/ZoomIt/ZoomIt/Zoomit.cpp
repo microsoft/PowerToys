@@ -13,6 +13,8 @@
 #include "Utility.h"
 #include "WindowsVersions.h"
 #include "ZoomItSettings.h"
+#include <common/interop/shared_constants.h>
+#include <common/utils/ProcessWaiter.h>
 
 namespace winrt
 {
@@ -129,6 +131,10 @@ std::list<std::wstring> g_TextBufferPreviousLines;
 #if WINDOWS_CURSOR_RECORDING_WORKAROUND
 bool	g_LiveZoomLevelOne = false;
 #endif
+
+// True if ZoomIt was started by PowerToys instead of standalone.
+BOOLEAN g_StartedByPowerToys = FALSE;
+BOOLEAN g_running = TRUE;
 
 // Screen recording globals
 #define DEFAULT_RECORDING_FILE		L"Recording.mp4"
@@ -5621,6 +5627,19 @@ LRESULT APIENTRY MainWndProc(
 		}
 		break;
 
+	case WM_USER_RELOADSETTINGS:
+		// Reload the settings
+		reg.ReadRegSettings(RegSettings);
+
+		// Apply tray icon setting
+		EnableDisableTrayIcon( hWnd, g_ShowTrayIcon );
+
+		// Apply hotkey settings
+		UnregisterAllHotkeys(hWnd);
+		RegisterAllHotkeys(hWnd);
+		
+		break;
+
 	case WM_COMMAND:
 
 		switch(LOWORD( wParam )) {
@@ -5812,7 +5831,12 @@ LRESULT APIENTRY MainWndProc(
 			break;
 
 		case IDC_OPTIONS:
-			DialogBox( g_hInstance, L"OPTIONS", hWnd, OptionsProc );
+			// Don't show win32 forms options if started by PowerToys.
+			// TODO: Call Settings app instead.
+			if (!g_StartedByPowerToys)
+			{
+				DialogBox( g_hInstance, L"OPTIONS", hWnd, OptionsProc );
+			}
 			break;
 
 		case IDC_BREAK:
@@ -6858,21 +6882,46 @@ HWND InitInstance( HINSTANCE hInstance, int nCmdShow )
 // WinMain
 //
 //----------------------------------------------------------------------------
-int APIENTRY WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
-	_In_ LPSTR lpCmdLine, _In_ int nCmdShow )
+int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
+	_In_ PWSTR lpCmdLine, _In_ int nCmdShow )
 {
 	MSG					msg; 	
 	HACCEL				hAccel;
 
 	if( !ShowEula( APPNAME, NULL, NULL )) return 1;
 
-#ifndef _WIN64
-	// Launch 64-bit version if necessary
-	SetAutostartFilePath();
-	if( RunningOnWin64()) {
+    std::wstring pid = std::wstring(lpCmdLine); // The PowerToys pid is the argument to the process.
+	auto mainThreadId = GetCurrentThreadId();
+    if (!pid.empty())
+    {
+		g_StartedByPowerToys = TRUE;
+        ProcessWaiter::OnProcessTerminate(pid, [mainThreadId](int err) {
+            if (err != ERROR_SUCCESS)
+            {
+                //Logger::error(L"Failed to wait for parent process exit. {}", get_last_error_or_default(err));
+            }
+            else
+            {
+                //Logger::trace(L"PowerToys runner exited.");
+            }
 
-		// Record where we are if we're the 32-bit version
-		return Run64bitVersion();
+            //Logger::trace(L"Exiting ZoomIt");
+            PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
+        });
+    }
+
+
+#ifndef _WIN64
+
+	if(!g_StartedByPowerToys)
+	{
+		// Launch 64-bit version if necessary
+		SetAutostartFilePath();
+		if( RunningOnWin64()) {
+
+			// Record where we are if we're the 32-bit version
+			return Run64bitVersion();
+		}
 	}
 #endif
 
@@ -6990,6 +7039,59 @@ int APIENTRY WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	if (!g_hWndMain )
 		return FALSE;
 	
+	HANDLE m_reload_settings_event_handle = NULL;
+	HANDLE m_exit_event_handle = NULL;
+	std::thread m_event_triggers_thread;
+
+	if (g_StartedByPowerToys) {
+		// Start a thread to listen to PowerToys Events.
+		m_reload_settings_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_REFRESH_SETTINGS_EVENT);
+		m_exit_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_EXIT_EVENT);
+        if (!m_reload_settings_event_handle || !m_exit_event_handle)
+		{
+			//Logger::warn(L"Failed to create events. {}", get_last_error_or_default(GetLastError()));
+			return 1;
+		}
+		m_event_triggers_thread = std::thread([&]() {
+			MSG msg;
+			HANDLE event_handles[2] = {m_reload_settings_event_handle, m_exit_event_handle};
+			while (g_running)
+			{
+				DWORD dwEvt = MsgWaitForMultipleObjects(2, event_handles, false, INFINITE, QS_ALLINPUT);
+				if (!g_running)
+				{
+					break;
+				}
+				switch (dwEvt)
+				{
+				case WAIT_OBJECT_0:
+				{
+					// Reload Settings Event
+					//Logger::trace(L"Received a reload settings event.");
+                    PostMessage(g_hWndMain, WM_USER_RELOADSETTINGS, 0, 0);
+					break;
+				}
+				case WAIT_OBJECT_0 + 1:
+				{
+					// Exit Event
+					//Logger::trace(L"Received an exit event.");
+                    PostMessage(g_hWndMain, WM_QUIT, 0, 0);
+					break;
+				}
+				case WAIT_OBJECT_0 + 2:
+					if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
+					{
+						TranslateMessage(&msg);
+						DispatchMessageW(&msg);
+					}
+					break;
+				default:
+					break;
+				}
+			}
+		});
+	}
+
 	/* Acquire and dispatch messages until a WM_QUIT message is received. */
 	while (GetMessage(&msg,	NULL, 0, 0 ))  {
 		if( !TranslateAccelerator( g_hWndMain, hAccel, &msg )) {
@@ -6997,5 +7099,18 @@ int APIENTRY WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 			DispatchMessage(&msg);
 		}
 	}
-	return (int) msg.wParam;  								 
+	int retCode = (int) msg.wParam;
+
+    g_running = FALSE;
+ 
+	if(g_StartedByPowerToys)
+	{
+		// Needed to unblock MsgWaitForMultipleObjects one last time
+		SetEvent(m_reload_settings_event_handle);
+		CloseHandle(m_reload_settings_event_handle);
+		CloseHandle(m_exit_event_handle);
+		m_event_triggers_thread.join();
+	}
+
+	return retCode;
 }

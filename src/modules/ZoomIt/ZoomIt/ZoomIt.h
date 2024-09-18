@@ -59,6 +59,7 @@ type_pEnableThemeDialogTexture    pEnableThemeDialogTexture;
 #define WM_USER_RESTORECURSOR   WM_USER+107
 #define WM_USER_MAGNIFYCURSOR	WM_USER+108
 #define WM_USER_EXITMODE		WM_USER+109
+#define WM_USER_RELOADSETTINGS	WM_USER+110
 
 typedef struct _TYPED_KEY {
 	RECT		rc;

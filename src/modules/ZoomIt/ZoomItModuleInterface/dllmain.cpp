@@ -121,6 +121,8 @@ public:
         app_name = L"ZoomIt";
         app_key = NonLocalizable::ModuleKey;
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", LogSettings::zoomItLoggerName);
+        m_reload_settings_event_handle = CreateDefaultEvent(CommonSharedConstants::ZOOMIT_REFRESH_SETTINGS_EVENT);
+        m_exit_event_handle = CreateDefaultEvent(CommonSharedConstants::ZOOMIT_EXIT_EVENT);
     }
 
 private:
@@ -140,7 +142,10 @@ private:
         unsigned long powertoys_pid = GetCurrentProcessId();
         std::wstring executable_args = L"";
         executable_args.append(std::to_wstring(powertoys_pid));
-        
+
+        ResetEvent(m_reload_settings_event_handle);
+        ResetEvent(m_exit_event_handle);
+
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
         sei.lpFile = NonLocalizable::ModulePath;
@@ -166,6 +171,11 @@ private:
     {
         m_enabled = false;
 
+        // Tell the ZoomIt process to exit.
+        SetEvent(m_exit_event_handle);
+
+        ResetEvent(m_reload_settings_event_handle);
+
         // Log telemetry
         if (traceEvent)
         {
@@ -184,12 +194,32 @@ private:
         return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
     }
 
+    virtual void call_custom_action(const wchar_t* action) override
+    {
+        try
+        {
+            PowerToysSettings::CustomActionObject action_object =
+                PowerToysSettings::CustomActionObject::from_json_string(action);
+
+            if (action_object.get_name() == L"refresh_settings")
+            {
+                SetEvent(m_reload_settings_event_handle);
+            }
+        }
+        catch (std::exception&)
+        {
+            Logger::error(L"Failed to parse action. {}", action);
+        }
+    }
+
     std::wstring app_name;
     std::wstring app_key; //contains the non localized key of the powertoy
 
     bool m_enabled = false;
     HANDLE m_hProcess = nullptr;
 
+    HANDLE m_reload_settings_event_handle = NULL;
+    HANDLE m_exit_event_handle = NULL;
 };
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()

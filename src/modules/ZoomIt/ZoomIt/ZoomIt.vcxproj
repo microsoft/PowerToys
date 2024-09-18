@@ -69,7 +69,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <DisableSpecificWarnings>4100;4091;4245</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\..\common\sysinternals</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\;$(MSBuildThisFileDirectory)..\..\..\common\sysinternals;%(AdditionalIncludeDirectories);</AdditionalIncludeDirectories>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>

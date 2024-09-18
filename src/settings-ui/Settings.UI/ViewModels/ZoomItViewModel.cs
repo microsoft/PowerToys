@@ -83,6 +83,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private void SendCustomAction(string actionName)
+        {
+            SendConfigMSG("{\"action\":{\"ZoomIt\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
+        }
+
         public bool IsEnabled
         {
             get => _isEnabled;
@@ -300,6 +305,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.SaveSettingsJson(
                 JsonSerializer.Serialize(_zoomItSettings));
+            SendCustomAction("refresh_settings");
         }
 
         private void SelectDemoTypeFileAction()
