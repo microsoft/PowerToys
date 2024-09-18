@@ -284,6 +284,33 @@ namespace AdvancedPaste.ViewModels
             }
         }
 
+        public ObservableCollection<Tuple<string, string>> AvailableFormatsText
+        {
+            get
+            {
+                List<Tuple<ClipboardFormat, string>> formatQueryList = new()
+                {
+                    new Tuple<ClipboardFormat, string>(ClipboardFormat.Text, "Text "),
+                    new Tuple<ClipboardFormat, string>(ClipboardFormat.Html, "Html "),
+                    new Tuple<ClipboardFormat, string>(ClipboardFormat.Audio, "Audio "),
+                    new Tuple<ClipboardFormat, string>(ClipboardFormat.Image, "Image "),
+                    new Tuple<ClipboardFormat, string>(ClipboardFormat.ImageFile, "ImageFile "),
+                };
+
+                ObservableCollection<Tuple<string, string>> returnList = new();
+
+                foreach (var formatQuery in formatQueryList)
+                {
+                    if (AvailableClipboardFormats.HasFlag(formatQuery.Item1))
+                    {
+                        returnList.Add(new Tuple<string, string>(formatQuery.Item2, "Hello world"));
+                    }
+                }
+
+                return returnList;
+            }
+        }
+
         [ObservableProperty]
         private string _customFormatResult;
 

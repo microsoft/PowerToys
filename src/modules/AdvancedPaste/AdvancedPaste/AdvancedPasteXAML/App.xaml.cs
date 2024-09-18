@@ -71,6 +71,8 @@ namespace AdvancedPaste
             viewModel = GetService<OptionsViewModel>();
 
             UnhandledException += App_UnhandledException;
+
+            var throwAway = ShowWindow();
         }
 
         public MainWindow GetMainWindow()

@@ -335,7 +335,7 @@
     <Grid x:Name="PromptBoxGrid" Loaded="Grid_Loaded">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
-            <RowDefinition Height="40" />
+            <RowDefinition Height="60" />
         </Grid.RowDefinitions>
         <local:AnimatedContentControl
             x:Name="Loader"
