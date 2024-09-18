@@ -20,9 +20,6 @@ parameters:
     default:
       - x64
       - arm64
-  - name: versionNumber
-    type: string
-    default: '0.0.1'
   - name: signingParameters
     type: object
     default:
@@ -83,13 +80,6 @@ extends:
           submodules: true
           persistCredentials: True
 
-      # Sets versions for all PowerToy created DLLs
-        - task: PowerShell@1
-          displayName: Set Versions.Prop
-          inputs:
-            scriptName: .pipelines/versionSetting.ps1
-            arguments: -versionNumber '${{ parameters.versionNumber }}' -DevEnvironment ''
-
       # ESRP needs 'Microsoft.NETCore.App', version '6.0.0' (x64)
         - task: UseDotNet@2
           displayName: 'Use .NET 6 SDK'
@@ -120,6 +110,13 @@ extends:
       # - Webcam report tool
       # - Installer
       # - Bootstrapper Installer
+
+        - pwsh: |-
+            nuget install Microsoft.Windows.Terminal.Versioning -OutputDirectory _versioning -Source https://pkgs.dev.azure.com/shine-oss/terminal/_packaging/TerminalDependencies/nuget/v3/index.json
+            $VersionRoot = (Get-Item _versioning\Microsoft.Windows.*).FullName
+            & "$VersionRoot\build\Setup.ps1" -ProjectDirectory "$(Build.SourcesDirectory)" -Verbose
+          displayName: Set up versioning via M.W.T.V
+
         - task: PowerShell@2
           displayName: Download and install WiX 3.14 development build
           inputs:
@@ -487,7 +484,6 @@ extends:
         - template: .pipelines/installer-steps.yml@self
           parameters:
             signingParameters: ${{ parameters.signingParameters }}
-            versionNumber: ${{ parameters.versionNumber }}
             perUserArg: "false"
             buildSubDir: "MachineSetup"
             installerPrefix: "PowerToysSetup"
@@ -502,7 +498,6 @@ extends:
         - template: .pipelines/installer-steps.yml@self
           parameters:
             signingParameters: ${{ parameters.signingParameters }}
-            versionNumber: ${{ parameters.versionNumber }}
             perUserArg: "true"
             buildSubDir: "UserSetup"
             installerPrefix: "PowerToysUserSetup"

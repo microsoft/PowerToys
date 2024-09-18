@@ -1,0 +1,6 @@
+<Project>
+  <Sdk Name="Microsoft.Build.CopyOnWrite" Version="1.0.282" />
+
+  <Import Project="$(MSBuildCachePackageRoot)\build\$(MSBuildCachePackageName).targets" Condition="'$(MSBuildCacheEnabled)' == 'true'" />
+  <Import Project="$(MSBuildCacheSharedCompilationPackageRoot)\build\Microsoft.MSBuildCache.SharedCompilation.targets" Condition="'$(MSBuildCacheEnabled)' == 'true'" />
+</Project>

@@ -176,7 +176,6 @@ In this release, we focused on adding a new utility (PowerToys Workspaces), Adva
 ### Development
 
  - Ported all C++/CX code to C++/WinRT.
- - Moved Version.props import to Directory.Build.props.
  - Extracted self-containment related .csproj properties to src/Common.SelfContained.props.
  - Unused and obsolete dependencies cleanup. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Extracted CSWinRT related .csproj properties to src/Common.Dotnet.CsWinRT.props.

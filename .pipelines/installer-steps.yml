@@ -1,7 +1,4 @@
 parameters:
-  - name: versionNumber
-    type: string
-    default: "0.0.1"
   - name: perUserArg
     type: string
     default: "false"
@@ -53,7 +50,7 @@ steps:
     displayName: "Extracting MSI to verify contents"
     inputs:
       script: |
-        "C:\Program Files (x86)\WiX Toolset v3.14\bin\dark.exe" -x $(build.sourcesdirectory)\extractedMsi installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}\${{parameters.installerPrefix}}-${{ parameters.versionNumber }}-$(BuildPlatform).msi
+        "C:\Program Files (x86)\WiX Toolset v3.14\bin\dark.exe" -x $(build.sourcesdirectory)\extractedMsi installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}\${{parameters.installerPrefix}}-$(XES_BINARYVERSION)-$(BuildPlatform).msi
         dir $(build.sourcesdirectory)\extractedMsi
 
   # Check if deps.json files don't reference different dll versions.
@@ -102,7 +99,7 @@ steps:
   - task: CmdLine@2
     displayName: "Insignia: Extract Engine from Bundle"
     inputs:
-      script: '"C:\Program Files (x86)\WiX Toolset v3.14\bin\insignia.exe" -ib installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}\${{parameters.installerPrefix}}-${{ parameters.versionNumber }}-$(BuildPlatform).exe -o installer\engine.exe'
+      script: '"C:\Program Files (x86)\WiX Toolset v3.14\bin\insignia.exe" -ib installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}\${{parameters.installerPrefix}}-$(XES_BINARYVERSION)-$(BuildPlatform).exe -o installer\engine.exe'
 
   - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@5
     displayName: "ESRP CodeSigning (Engine)"
@@ -138,7 +135,7 @@ steps:
   - task: CmdLine@2
     displayName: "Insignia: Merge Engine into Bundle"
     inputs:
-      script: '"C:\Program Files (x86)\WiX Toolset v3.14\bin\insignia.exe" -ab installer\engine.exe installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}\${{parameters.installerPrefix}}-${{ parameters.versionNumber }}-$(BuildPlatform).exe -o installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}\${{parameters.installerPrefix}}-${{ parameters.versionNumber }}-$(BuildPlatform).exe'
+      script: '"C:\Program Files (x86)\WiX Toolset v3.14\bin\insignia.exe" -ab installer\engine.exe installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}\${{parameters.installerPrefix}}-$(XES_BINARYVERSION)-$(BuildPlatform).exe -o installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}\${{parameters.installerPrefix}}-$(XES_BINARYVERSION)-$(BuildPlatform).exe'
 
   - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@5
     displayName: Sign Bootstrapper
