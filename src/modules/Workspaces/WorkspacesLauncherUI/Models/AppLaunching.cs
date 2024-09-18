@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using ManagedCommon;
 using Windows.Management.Deployment;
@@ -79,8 +80,8 @@ namespace WorkspacesLauncherUI.Models
         {
             get => LaunchState switch
             {
-                "launched" => "\U0000F78C",
-                "failed" => "\U0000EF2C",
+                LaunchingState.Launched => "\U0000F78C",
+                LaunchingState.Failed => "\U0000EF2C",
                 _ => "\U0000EF2C",
             };
         }
@@ -89,8 +90,8 @@ namespace WorkspacesLauncherUI.Models
         {
             get => LaunchState switch
             {
-                "launched" => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 0, 128, 0)),
-                "failed" => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 254, 0, 0)),
+                LaunchingState.Launched => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 0, 128, 0)),
+                LaunchingState.Failed => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 254, 0, 0)),
                 _ => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 254, 0, 0)),
             };
         }
