@@ -139,42 +139,6 @@
                                 HotkeySettings="{x:Bind Path=ViewModel.PasteAsJsonShortcut, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
 
-                        <tkcontrols:SettingsCard x:Uid="AudioToText" DataContext="{x:Bind ViewModel.AdditionalActions.AudioToText, Mode=OneWay}">
-                            <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
-                        </tkcontrols:SettingsCard>
-
-                        <tkcontrols:SettingsCard x:Uid="ImageToText" DataContext="{x:Bind ViewModel.AdditionalActions.ImageToText, Mode=OneWay}">
-                            <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
-                        </tkcontrols:SettingsCard>
-
-                        <tkcontrols:SettingsExpander
-                            x:Uid="PasteAsFile"
-                            DataContext="{x:Bind ViewModel.AdditionalActions.PasteAsFile}"
-                            HeaderIcon="{ui:FontIcon Glyph=&#xEC50;}"
-                            IsExpanded="{Binding IsShown, Mode=OneWay}">
-                            <tkcontrols:SettingsExpander.Content>
-                                <ToggleSwitch
-                                    IsOn="{Binding IsShown, Mode=TwoWay}"
-                                    OffContent=""
-                                    OnContent="" />
-                            </tkcontrols:SettingsExpander.Content>
-                            <tkcontrols:SettingsExpander.Items>
-                                <!--  HACK: For some weird reason, a Shortcut Control is not working correctly if it's the first or last item in the expander, so we add an invisible card.  -->
-                                <tkcontrols:SettingsCard Visibility="Collapsed" />
-                                <tkcontrols:SettingsCard x:Uid="PasteAsTxtFile" DataContext="{Binding PasteAsTxtFile, Mode=TwoWay}">
-                                    <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
-                                </tkcontrols:SettingsCard>
-                                <tkcontrols:SettingsCard x:Uid="PasteAsPngFile" DataContext="{Binding PasteAsPngFile, Mode=TwoWay}">
-                                    <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
-                                </tkcontrols:SettingsCard>
-                                <tkcontrols:SettingsCard x:Uid="PasteAsHtmlFile" DataContext="{Binding PasteAsHtmlFile, Mode=TwoWay}">
-                                    <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
-                                </tkcontrols:SettingsCard>
-                                <!--  HACK: For some weird reason, a Shortcut Control is not working correctly if it's the first or last item in the expander, so we add an invisible card.  -->
-                                <tkcontrols:SettingsCard Visibility="Collapsed" />
-                            </tkcontrols:SettingsExpander.Items>
-                        </tkcontrols:SettingsExpander>
-
                         <ItemsControl
                             x:Name="CustomActions"
                             x:Uid="CustomActions"
@@ -245,6 +209,51 @@
                             IsClosable="False"
                             IsOpen="{x:Bind ViewModel.IsConflictingCopyShortcut, Mode=OneWay}"
                             IsTabStop="{x:Bind ViewModel.IsConflictingCopyShortcut, Mode=OneWay}"
+                            Severity="Warning" />
+                    </controls:SettingsGroup>
+
+                    <controls:SettingsGroup x:Uid="AdvancedPaste_Additional_Actions_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsCard x:Uid="AudioToText" DataContext="{x:Bind ViewModel.AdditionalActions.AudioToText, Mode=OneWay}">
+                            <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
+                        </tkcontrols:SettingsCard>
+
+                        <tkcontrols:SettingsCard x:Uid="ImageToText" DataContext="{x:Bind ViewModel.AdditionalActions.ImageToText, Mode=OneWay}">
+                            <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
+                        </tkcontrols:SettingsCard>
+
+                        <tkcontrols:SettingsExpander
+                            x:Uid="PasteAsFile"
+                            DataContext="{x:Bind ViewModel.AdditionalActions.PasteAsFile}"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xEC50;}"
+                            IsExpanded="{Binding IsShown, Mode=OneWay}">
+                            <tkcontrols:SettingsExpander.Content>
+                                <ToggleSwitch
+                                    IsOn="{Binding IsShown, Mode=TwoWay}"
+                                    OffContent=""
+                                    OnContent="" />
+                            </tkcontrols:SettingsExpander.Content>
+                            <tkcontrols:SettingsExpander.Items>
+                                <!--  HACK: For some weird reason, a ShortcutControl does not work correctly if it's the first or last item in the expander, so we add an invisible card.  -->
+                                <tkcontrols:SettingsCard Visibility="Collapsed" />
+                                <tkcontrols:SettingsCard x:Uid="PasteAsTxtFile" DataContext="{Binding PasteAsTxtFile, Mode=TwoWay}">
+                                    <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard x:Uid="PasteAsPngFile" DataContext="{Binding PasteAsPngFile, Mode=TwoWay}">
+                                    <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard x:Uid="PasteAsHtmlFile" DataContext="{Binding PasteAsHtmlFile, Mode=TwoWay}">
+                                    <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
+                                </tkcontrols:SettingsCard>
+                                <!--  HACK: For some weird reason, a ShortcutControl does not work correctly if it's the first or last item in the expander, so we add an invisible card.  -->
+                                <tkcontrols:SettingsCard Visibility="Collapsed" />
+                            </tkcontrols:SettingsExpander.Items>
+                        </tkcontrols:SettingsExpander>
+
+                        <InfoBar
+                            x:Uid="AdvancedPaste_ShortcutWarning"
+                            IsClosable="False"
+                            IsOpen="{x:Bind ViewModel.IsAdditionalActionConflictingCopyShortcut, Mode=OneWay}"
+                            IsTabStop="{x:Bind ViewModel.IsAdditionalActionConflictingCopyShortcut, Mode=OneWay}"
                             Severity="Warning" />
                     </controls:SettingsGroup>
                 </StackPanel>

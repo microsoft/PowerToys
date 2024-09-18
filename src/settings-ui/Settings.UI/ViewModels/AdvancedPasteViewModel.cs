@@ -92,7 +92,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             foreach (var action in _additionalActions.AllActions)
             {
-                action.PropertyChanged += (_, _) => SaveAndNotifySettings();
+                action.PropertyChanged += OnAdditionalActionPropertyChanged;
             }
         }
 
@@ -344,12 +344,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsConflictingCopyShortcut
-        {
-            get => _customActions.Select(customAction => customAction.Shortcut)
-                                 .Concat([PasteAsPlainTextShortcut, AdvancedPasteUIShortcut, PasteAsMarkdownShortcut, PasteAsJsonShortcut])
-                                 .Any(hotkey => WarnHotkeys.Contains(hotkey.ToString()));
-        }
+        public bool IsConflictingCopyShortcut =>
+            _customActions.Select(customAction => customAction.Shortcut)
+                          .Concat([PasteAsPlainTextShortcut, AdvancedPasteUIShortcut, PasteAsMarkdownShortcut, PasteAsJsonShortcut])
+                          .Any(hotkey => WarnHotkeys.Contains(hotkey.ToString()));
+
+        public bool IsAdditionalActionConflictingCopyShortcut =>
+            _additionalActions.AllActions
+                              .OfType<AdvancedPasteAdditionalAction>()
+                              .Select(additionalAction => additionalAction.Shortcut)
+                              .Any(hotkey => WarnHotkeys.Contains(hotkey.ToString()));
 
         private void DelayedTimer_Tick(object sender, EventArgs e)
         {
@@ -465,6 +469,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             _settingsUtils.SaveSettings(_advancedPasteSettings.ToJsonString(), AdvancedPasteSettings.ModuleName);
             NotifySettingsChanged();
+        }
+
+        private void OnAdditionalActionPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            SaveAndNotifySettings();
+
+            if (e.PropertyName == nameof(AdvancedPasteAdditionalAction.Shortcut))
+            {
+                OnPropertyChanged(nameof(IsAdditionalActionConflictingCopyShortcut));
+            }
         }
 
         private void OnCustomActionPropertyChanged(object sender, PropertyChangedEventArgs e)

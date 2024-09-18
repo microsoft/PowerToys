@@ -722,6 +722,9 @@
   <data name="AdvancedPaste_Direct_Access_Hotkeys_GroupSettings.Header" xml:space="preserve">
     <value>Actions</value>
   </data>
+  <data name="AdvancedPaste_Additional_Actions_GroupSettings.Header" xml:space="preserve">
+    <value>Additional actions</value>
+  </data>
   <data name="RemapKeysList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Current Key Remappings</value>
   </data>
