@@ -3,9 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CmdPal.Extensions.Helpers;
 
-namespace WindowsCommandPalette.BuiltinCommands.AllApps;
+namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 // NOTE this is pretty close to what we'd put in the SDK
 internal sealed partial class OpenPathAction(string target) : InvokableCommand

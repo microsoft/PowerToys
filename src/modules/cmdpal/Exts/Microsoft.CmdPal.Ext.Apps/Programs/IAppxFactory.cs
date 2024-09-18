@@ -5,7 +5,7 @@
 using System.Runtime.InteropServices;
 using Windows.Win32.System.Com;
 
-namespace AllApps.Programs;
+namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 [Guid("BEB94909-E451-438B-B5A7-D79E767B75D8")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]

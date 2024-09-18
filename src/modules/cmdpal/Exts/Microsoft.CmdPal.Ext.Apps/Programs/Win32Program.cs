@@ -2,12 +2,15 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Security;
 using Microsoft.Win32;
-using WindowsCommandPalette.BuiltinCommands.AllApps;
 
-namespace AllApps.Programs;
+namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 [Serializable]
 public class Win32Program // : IProgram
