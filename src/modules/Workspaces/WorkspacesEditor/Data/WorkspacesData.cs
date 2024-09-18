@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+
 using Workspaces.Data;
 using WorkspacesEditor.Utils;
+
 using static WorkspacesEditor.Data.ProjectData;
 using static WorkspacesEditor.Data.WorkspacesData;
 

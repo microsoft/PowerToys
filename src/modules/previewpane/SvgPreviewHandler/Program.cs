@@ -4,6 +4,7 @@
 
 using System.Globalization;
 using System.Windows.Threading;
+
 using Common.UI;
 using PowerToys.Interop;
 

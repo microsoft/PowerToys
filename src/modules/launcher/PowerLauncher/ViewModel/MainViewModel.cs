@@ -16,6 +16,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
+
 using Common.UI;
 using Mages.Core.Runtime.Converters;
 using Microsoft.PowerLauncher.Telemetry;

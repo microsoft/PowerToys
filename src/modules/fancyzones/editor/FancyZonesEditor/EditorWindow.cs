@@ -4,6 +4,7 @@
 
 using System;
 using System.Windows;
+
 using FancyZonesEditor.Models;
 using ManagedCommon;
 

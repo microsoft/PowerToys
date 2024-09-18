@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Text;
+
 using Wox.Plugin.Logger;
 
 namespace Community.PowerToys.Run.Plugin.ValueGenerator.Uri
