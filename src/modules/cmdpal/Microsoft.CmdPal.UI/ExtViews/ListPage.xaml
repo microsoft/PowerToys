@@ -15,11 +15,11 @@
     <Page.Resources>
         <!--  https://learn.microsoft.com/en-us/windows/apps/design/controls/itemsview#specify-the-look-of-the-items  -->
         <DataTemplate x:Key="ListItemViewModelTemplate" x:DataType="viewmodels:ListItemViewModel">
-            <ItemContainer AutomationProperties.Name="{x:Bind Header}">
+            <ItemContainer AutomationProperties.Name="{x:Bind Title}">
 
                 <StackPanel Background="{ThemeResource SystemControlBackgroundBaseMediumBrush}" Orientation="Horizontal">
-                    <TextBlock Text="{x:Bind Header}" />
-                    <TextBlock Foreground="{ThemeResource SystemAccentColor}" Text="{x:Bind SubHeader}" />
+                    <TextBlock Text="{x:Bind Title}" />
+                    <TextBlock Foreground="{ThemeResource SystemAccentColor}" Text="{x:Bind Subtitle}" />
                 </StackPanel>
             </ItemContainer>
         </DataTemplate>

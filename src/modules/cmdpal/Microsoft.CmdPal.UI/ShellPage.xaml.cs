@@ -5,7 +5,9 @@
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Animation;
 
 namespace Microsoft.CmdPal.UI;
 
@@ -14,10 +16,13 @@ namespace Microsoft.CmdPal.UI;
 /// </summary>
 public sealed partial class ShellPage :
     Page,
+    IRecipient<NavigateBackMessage>,
     IRecipient<NavigateToDetailsMessage>,
-    IRecipient<NavigateBackMessage>
+    IRecipient<NavigateToListMessage>
 {
-    public ShellViewModel ViewModel { get; private set; } = new ShellViewModel();
+    private readonly DrillInNavigationTransitionInfo _drillInNavigationTransitionInfo = new();
+
+    public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
 
     public ShellPage()
     {
@@ -29,10 +34,7 @@ public sealed partial class ShellPage :
         RootFrame.Navigate(typeof(LoadingPage), ViewModel);
     }
 
-    public void Receive(NavigateToDetailsMessage message)
-    {
-        RootFrame.Navigate(typeof(ListDetailPage), message.ListItem);
-    }
+    public void Receive(NavigateToDetailsMessage message) => RootFrame.Navigate(typeof(ListDetailPage), message.ListItem, _drillInNavigationTransitionInfo);
 
     public void Receive(NavigateBackMessage message)
     {
@@ -41,4 +43,6 @@ public sealed partial class ShellPage :
             RootFrame.GoBack();
         }
     }
+
+    public void Receive(NavigateToListMessage message) => RootFrame.Navigate(typeof(ListPage), message.ViewModel, _drillInNavigationTransitionInfo);
 }

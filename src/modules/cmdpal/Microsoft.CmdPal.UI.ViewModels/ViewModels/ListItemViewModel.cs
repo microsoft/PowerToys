@@ -3,15 +3,33 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.Models;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class ListItemViewModel : ObservableObject
 {
-    // Observable from MVVM Toolkit will auto create public properties that use INotifyPropertyChange
-    [ObservableProperty]
-    private string _header = string.Empty;
+    private readonly ExtensionObject<IListItem> _listItemModel;
 
-    [ObservableProperty]
-    private string _subHeader = string.Empty;
+    public string Title => _listItemModel.Unsafe.Title;
+
+    public string Subtitle => _listItemModel.Unsafe.Subtitle;
+
+    /// <summary>
+    /// Gets the path for the icon to load in the View layer. TODO: Converter/Cache
+    /// </summary>
+    public string IconUri => _listItemModel.Unsafe.Icon.Icon;
+
+    public ITag[] Tags => _listItemModel.Unsafe.Tags;
+
+    public bool HasTags => Tags.Length > 0;
+
+    public ListItemViewModel(IListItem model)
+    {
+        _listItemModel = new(model);
+        _listItemModel.Unsafe.PropChanged += Model_PropChanged;
+    }
+
+    private void Model_PropChanged(object sender, PropChangedEventArgs args) => OnPropertyChanged(args.PropertyName);
 }

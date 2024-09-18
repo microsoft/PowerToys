@@ -4,6 +4,7 @@
 
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.CmdPal.UI;
 
@@ -12,21 +13,28 @@ namespace Microsoft.CmdPal.UI;
 /// </summary>
 public sealed partial class ListPage : Page
 {
-    public ListViewModel ViewModel { get; set;  } = new();
+    public ListViewModel? ViewModel { get; set;  }
 
     public ListPage()
     {
         this.InitializeComponent();
-        ViewModel.Items.Add(new ListItemViewModel { Header = "Hello", SubHeader = "World" });
-        ViewModel.Items.Add(new ListItemViewModel { Header = "Clint", SubHeader = "Rutkas" });
-        ViewModel.Items.Add(new ListItemViewModel { Header = "Michael", SubHeader = "Hawker" });
+    }
+
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        if (e.Parameter is ListViewModel lvm)
+        {
+            ViewModel = lvm;
+        }
+
+        base.OnNavigatedTo(e);
     }
 
     private void ItemsView_ItemInvoked(ItemsView sender, ItemsViewItemInvokedEventArgs args)
     {
         if (args.InvokedItem is ListItemViewModel item)
         {
-            ViewModel.InvokeItemCommand.Execute(item);
+            ViewModel?.InvokeItemCommand.Execute(item);
         }
     }
 }

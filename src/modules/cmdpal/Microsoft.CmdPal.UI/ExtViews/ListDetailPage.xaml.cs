@@ -16,7 +16,7 @@ namespace Microsoft.CmdPal.UI;
 /// </summary>
 public sealed partial class ListDetailPage : Page
 {
-    public ListItemViewModel ViewModel { get; set; } = new ListItemViewModel();
+    public ListItemViewModel? ViewModel { get; set; }
 
     public ListDetailPage()
     {
