@@ -16,8 +16,9 @@
     <Page.Resources>
         <tkconverters:BoolToVisibilityConverter x:Name="BoolToVisibilityConverter" />
         <converters:CountToVisibilityConverter x:Name="countToVisibilityConverter" />
+        <converters:PasteFormatsToHeightConverter x:Name="standardPasteFormatsToHeightConverter" />
         <converters:CountToDoubleConverter
-            x:Name="customActionsCountToMinHeightConverter"
+            x:Name="customActionsToMinHeightConverter"
             ValueIfNonZero="40"
             ValueIfZero="0" />
         <Style
@@ -179,9 +180,9 @@
             BorderThickness="0,1,0,0"
             RowSpacing="4">
             <Grid.RowDefinitions>
+                <RowDefinition Height="{x:Bind ViewModel.StandardPasteFormats.Count, Mode=OneWay, Converter={StaticResource standardPasteFormatsToHeightConverter}}" />
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" MinHeight="{x:Bind ViewModel.CustomActionPasteFormats.Count, Mode=OneWay, Converter={StaticResource customActionsCountToMinHeightConverter}}" />
+                <RowDefinition Height="*" MinHeight="{x:Bind ViewModel.CustomActionPasteFormats.Count, Mode=OneWay, Converter={StaticResource customActionsToMinHeightConverter}}" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
@@ -193,6 +194,8 @@
                 ItemContainerTransitions="{x:Null}"
                 ItemTemplate="{StaticResource PasteFormatTemplate}"
                 ItemsSource="{x:Bind ViewModel.StandardPasteFormats, Mode=OneWay}"
+                ScrollViewer.VerticalScrollBarVisibility="Visible"
+                ScrollViewer.VerticalScrollMode="Auto"
                 SelectionMode="None"
                 TabIndex="1">
                 <ListView.ItemContainerStyle>

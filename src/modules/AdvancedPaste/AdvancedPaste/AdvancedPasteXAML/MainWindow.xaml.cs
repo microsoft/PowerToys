@@ -4,7 +4,9 @@
 
 using System;
 using System.Linq;
+using AdvancedPaste.Converters;
 using AdvancedPaste.Helpers;
+using AdvancedPaste.Models;
 using AdvancedPaste.Settings;
 using ManagedCommon;
 using Microsoft.UI.Windowing;
@@ -23,16 +25,19 @@ namespace AdvancedPaste
 
         public MainWindow()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
             _userSettings = App.GetService<IUserSettings>();
 
             var baseHeight = MinHeight;
+            var coreActionCount = PasteFormat.MetadataDict.Values.Count(metadata => metadata.IsCoreAction);
 
             void UpdateHeight()
             {
                 double GetHeight(int maxCustomActionCount) =>
-                    baseHeight + (40 * (_userSettings.AdditionalActions.Count + Math.Min(_userSettings.CustomActions.Count, maxCustomActionCount)));
+                    baseHeight +
+                    new PasteFormatsToHeightConverter().Convert(coreActionCount + _userSettings.AdditionalActions.Count) +
+                    new PasteFormatsToHeightConverter() { MaxItems = maxCustomActionCount }.Convert(_userSettings.CustomActions.Count);
 
                 MinHeight = GetHeight(1);
                 Height = GetHeight(5);
