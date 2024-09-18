@@ -4,11 +4,10 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using AllApps.Programs;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 
-namespace WindowsCommandPalette.BuiltinCommands.AllApps;
+namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 public sealed partial class AllAppsPage : ListPage
 {

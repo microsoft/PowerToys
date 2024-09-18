@@ -3,10 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using AllApps.Programs;
+using System.Threading.Tasks;
 using Microsoft.CmdPal.Extensions.Helpers;
 
-namespace WindowsCommandPalette.BuiltinCommands.AllApps;
+namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 internal sealed partial class AppAction : InvokableCommand
 {

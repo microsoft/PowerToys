@@ -4,7 +4,7 @@
 
 using Microsoft.CmdPal.Extensions.Helpers;
 
-namespace WindowsCommandPalette.BuiltinCommands.AllApps;
+namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 internal sealed partial class AppListItem : ListItem
 {
