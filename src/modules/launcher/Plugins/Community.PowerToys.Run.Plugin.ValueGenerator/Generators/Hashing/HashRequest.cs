@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+
 using Wox.Plugin.Logger;
 
 namespace Community.PowerToys.Run.Plugin.ValueGenerator.Hashing

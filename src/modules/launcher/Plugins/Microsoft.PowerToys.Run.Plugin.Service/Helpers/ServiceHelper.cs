@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using System.ServiceProcess;
 using System.Threading.Tasks;
+
 using Microsoft.PowerToys.Run.Plugin.Service.Properties;
 using Microsoft.Win32;
 using Wox.Infrastructure;

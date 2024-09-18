@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+
 using HtmlAgilityPack;
 using ManagedCommon;
 using Windows.ApplicationModel.DataTransfer;

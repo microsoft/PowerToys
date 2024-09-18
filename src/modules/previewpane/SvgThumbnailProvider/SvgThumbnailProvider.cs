@@ -125,27 +125,36 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                     {
                         var svgContent = SvgContents.Substring(SvgContents.IndexOf("<svg", StringComparison.OrdinalIgnoreCase), SvgContents.IndexOf("</svg>", StringComparison.OrdinalIgnoreCase) - SvgContents.IndexOf("<svg", StringComparison.OrdinalIgnoreCase) + "</svg>".Length);
 
-                        // Get style from SvgContents
-                        var svgDocument = XDocument.Parse(svgContent);
-                        var svgElement = svgDocument.Root;
-                        var currentStyle = svgElement?.Attribute("style")?.Value;
+                        Dictionary<string, string> styleDict = new Dictionary<string, string>();
 
-                        // Construct the new style attribute with preserved styles
-                        var styleDict = new Dictionary<string, string>();
-
-                        if (!string.IsNullOrEmpty(currentStyle) && currentStyle != "null")
+                        // Try to parse the SVG content
+                        try
                         {
-                            foreach (var stylePart in currentStyle.Split(';'))
+                            // Attempt to parse the svgContent
+                            var svgDocument = XDocument.Parse(svgContent);
+                            var svgElement = svgDocument.Root;
+                            var currentStyle = svgElement?.Attribute("style")?.Value;
+
+                            // If style attribute exists, preserve existing styles
+                            if (!string.IsNullOrEmpty(currentStyle) && currentStyle != "null")
                             {
-                                if (!string.IsNullOrEmpty(stylePart))
+                                foreach (var stylePart in currentStyle.Split(';'))
                                 {
-                                    var styleKeyValue = stylePart.Split(':');
-                                    if (styleKeyValue.Length == 2)
+                                    if (!string.IsNullOrEmpty(stylePart))
                                     {
-                                        styleDict[styleKeyValue[0].Trim()] = styleKeyValue[1].Trim();
+                                        var styleKeyValue = stylePart.Split(':');
+                                        if (styleKeyValue.Length == 2)
+                                        {
+                                            styleDict[styleKeyValue[0].Trim()] = styleKeyValue[1].Trim();
+                                        }
                                     }
                                 }
                             }
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log the error if the SVG content is not valid or parsing fails
+                            Logger.LogError($"Failed to parse SVG content: {ex.Message}");
                         }
 
                         // Add or replace width and height in the existing style
@@ -247,7 +256,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                     catch (Exception ex)
                     {
                         Logger.LogError($"Initialization attempt {attempt} failed: {ex.Message}");
-                        if (attempt == 3)
+                        if (attempt == 2)
                         {
                             Logger.LogError($"Failed running webView2Environment completed for {FilePath} : ", ex);
                             thumbnailDone.Set();

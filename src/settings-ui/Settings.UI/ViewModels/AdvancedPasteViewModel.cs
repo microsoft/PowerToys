@@ -3,8 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
+using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Timers;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -17,6 +24,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class AdvancedPasteViewModel : Observable, IDisposable
     {
+        private static readonly HashSet<string> WarnHotkeys = ["Ctrl + V", "Ctrl + Shift + V"];
+
         private bool disposedValue;
 
         // Delay saving of settings in order to avoid calling save multiple times and hitting file in use exception. If there is no other request to save settings in given interval, we proceed to save it, otherwise we schedule saving it after this interval
@@ -28,6 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly object _delayedActionLock = new object();
 
         private readonly AdvancedPasteSettings _advancedPasteSettings;
+        private readonly ObservableCollection<AdvancedPasteCustomAction> _customActions;
         private Timer _delayedTimer;
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
@@ -58,6 +68,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _advancedPasteSettings = advancedPasteSettingsRepository.SettingsConfig;
 
+            _customActions = _advancedPasteSettings.Properties.CustomActions.Value;
+
             InitializeEnabledValue();
 
             // set the callback functions value to handle outgoing IPC message.
@@ -67,6 +79,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _delayedTimer.Interval = SaveSettingsDelayInMs;
             _delayedTimer.Elapsed += DelayedTimer_Tick;
             _delayedTimer.AutoReset = false;
+
+            foreach (var customAction in _customActions)
+            {
+                customAction.PropertyChanged += OnCustomActionPropertyChanged;
+            }
+
+            _customActions.CollectionChanged += OnCustomActionsCollectionChanged;
+            UpdateCustomActionsCanMoveUpDown();
         }
 
         private void InitializeEnabledValue()
@@ -119,6 +139,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
         }
+
+        public ObservableCollection<AdvancedPasteCustomAction> CustomActions => _customActions;
 
         private bool OpenAIKeyExists()
         {
@@ -234,8 +256,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(AdvancedPasteUIShortcut));
                     OnPropertyChanged(nameof(IsConflictingCopyShortcut));
 
-                    _settingsUtils.SaveSettings(_advancedPasteSettings.ToJsonString(), AdvancedPasteSettings.ModuleName);
-                    NotifySettingsChanged();
+                    SaveAndNotifySettings();
                 }
             }
         }
@@ -251,8 +272,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(PasteAsPlainTextShortcut));
                     OnPropertyChanged(nameof(IsConflictingCopyShortcut));
 
-                    _settingsUtils.SaveSettings(_advancedPasteSettings.ToJsonString(), AdvancedPasteSettings.ModuleName);
-                    NotifySettingsChanged();
+                    SaveAndNotifySettings();
                 }
             }
         }
@@ -268,8 +288,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(PasteAsMarkdownShortcut));
                     OnPropertyChanged(nameof(IsConflictingCopyShortcut));
 
-                    _settingsUtils.SaveSettings(_advancedPasteSettings.ToJsonString(), AdvancedPasteSettings.ModuleName);
-                    NotifySettingsChanged();
+                    SaveAndNotifySettings();
                 }
             }
         }
@@ -285,8 +304,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(PasteAsJsonShortcut));
                     OnPropertyChanged(nameof(IsConflictingCopyShortcut));
 
-                    _settingsUtils.SaveSettings(_advancedPasteSettings.ToJsonString(), AdvancedPasteSettings.ModuleName);
-                    NotifySettingsChanged();
+                    SaveAndNotifySettings();
                 }
             }
         }
@@ -319,13 +337,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsConflictingCopyShortcut
         {
-            get
-            {
-                return PasteAsPlainTextShortcut.ToString() == "Ctrl + V" || PasteAsPlainTextShortcut.ToString() == "Ctrl + Shift + V" ||
-                    AdvancedPasteUIShortcut.ToString() == "Ctrl + V" || AdvancedPasteUIShortcut.ToString() == "Ctrl + Shift + V" ||
-                    PasteAsMarkdownShortcut.ToString() == "Ctrl + V" || PasteAsMarkdownShortcut.ToString() == "Ctrl + Shift + V" ||
-                    PasteAsJsonShortcut.ToString() == "Ctrl + V" || PasteAsJsonShortcut.ToString() == "Ctrl + Shift + V";
-            }
+            get => _customActions.Select(customAction => customAction.Shortcut)
+                                 .Concat([PasteAsPlainTextShortcut, AdvancedPasteUIShortcut, PasteAsMarkdownShortcut, PasteAsJsonShortcut])
+                                 .Any(hotkey => WarnHotkeys.Contains(hotkey.ToString()));
         }
 
         private void DelayedTimer_Tick(object sender, EventArgs e)
@@ -400,6 +414,115 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             catch (Exception)
             {
+            }
+        }
+
+        internal AdvancedPasteCustomAction GetNewCustomAction(string namePrefix)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(namePrefix);
+
+            var maxUsedPrefix = _customActions.Select(customAction => customAction.Name)
+                                  .Where(name => name.StartsWith(namePrefix, StringComparison.InvariantCulture))
+                                  .Select(name => int.TryParse(name.AsSpan(namePrefix.Length), out int number) ? number : 0)
+                                  .DefaultIfEmpty(0)
+                                  .Max();
+
+            var maxUsedId = _customActions.Select(customAction => customAction.Id)
+                                          .DefaultIfEmpty(-1)
+                                          .Max();
+            return new()
+            {
+                Id = maxUsedId + 1,
+                Name = $"{namePrefix} {maxUsedPrefix + 1}",
+                IsShown = true,
+            };
+        }
+
+        internal void AddCustomAction(AdvancedPasteCustomAction customAction)
+        {
+            if (_customActions.Any(existingCustomAction => existingCustomAction.Id == customAction.Id))
+            {
+                throw new ArgumentException("Duplicate custom action", nameof(customAction));
+            }
+
+            _customActions.Add(customAction);
+        }
+
+        internal void DeleteCustomAction(AdvancedPasteCustomAction customAction) => _customActions.Remove(customAction);
+
+        private void SaveCustomActions() => SaveAndNotifySettings();
+
+        private void SaveAndNotifySettings()
+        {
+            _settingsUtils.SaveSettings(_advancedPasteSettings.ToJsonString(), AdvancedPasteSettings.ModuleName);
+            NotifySettingsChanged();
+        }
+
+        private void OnCustomActionPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (typeof(AdvancedPasteCustomAction).GetProperty(e.PropertyName).GetCustomAttribute<JsonIgnoreAttribute>() == null)
+            {
+                SaveCustomActions();
+            }
+
+            if (e.PropertyName == nameof(AdvancedPasteCustomAction.Shortcut))
+            {
+                OnPropertyChanged(nameof(IsConflictingCopyShortcut));
+            }
+        }
+
+        private void OnCustomActionsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            void AddRange(System.Collections.IList items)
+            {
+                foreach (AdvancedPasteCustomAction item in items)
+                {
+                    item.PropertyChanged += OnCustomActionPropertyChanged;
+                }
+            }
+
+            void RemoveRange(System.Collections.IList items)
+            {
+                foreach (AdvancedPasteCustomAction item in items)
+                {
+                    item.PropertyChanged -= OnCustomActionPropertyChanged;
+                }
+            }
+
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    AddRange(e.NewItems);
+                    break;
+
+                case NotifyCollectionChangedAction.Remove:
+                    RemoveRange(e.OldItems);
+                    break;
+
+                case NotifyCollectionChangedAction.Replace:
+                    AddRange(e.NewItems);
+                    RemoveRange(e.OldItems);
+                    break;
+
+                case NotifyCollectionChangedAction.Move:
+                    break;
+
+                default:
+                    throw new ArgumentException($"Unsupported {nameof(e.Action)} {e.Action}", nameof(e));
+            }
+
+            OnPropertyChanged(nameof(IsConflictingCopyShortcut));
+            UpdateCustomActionsCanMoveUpDown();
+            SaveCustomActions();
+        }
+
+        private void UpdateCustomActionsCanMoveUpDown()
+        {
+            for (int index = 0; index < _customActions.Count; index++)
+            {
+                var customAction = _customActions[index];
+                customAction.CanMoveUp = index != 0;
+                customAction.CanMoveDown = index != _customActions.Count - 1;
             }
         }
     }

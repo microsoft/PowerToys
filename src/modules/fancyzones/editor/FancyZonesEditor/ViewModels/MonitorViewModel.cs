@@ -4,6 +4,7 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+
 using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor.ViewModels

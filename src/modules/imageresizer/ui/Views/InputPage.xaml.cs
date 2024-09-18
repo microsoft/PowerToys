@@ -5,8 +5,10 @@
 
 using System.Windows.Controls;
 using System.Windows.Input;
+
 using ImageResizer.ViewModels;
 using Wpf.Ui.Controls;
+
 using static ImageResizer.ViewModels.InputViewModel;
 
 namespace ImageResizer.Views

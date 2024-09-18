@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Settings;
 using ManagedCommon;
@@ -25,6 +26,18 @@ namespace AdvancedPaste
             this.InitializeComponent();
 
             _userSettings = App.GetService<IUserSettings>();
+
+            var baseHeight = MinHeight;
+
+            void UpdateHeight()
+            {
+                var trimmedCustomActionCount = Math.Min(_userSettings.CustomActions.Count, 5);
+                Height = MinHeight = baseHeight + (trimmedCustomActionCount * 40);
+            }
+
+            UpdateHeight();
+
+            _userSettings.CustomActions.CollectionChanged += (_, _) => UpdateHeight();
 
             AppWindow.SetIcon("Assets/AdvancedPaste/AdvancedPaste.ico");
             this.ExtendsContentIntoTitleBar = true;

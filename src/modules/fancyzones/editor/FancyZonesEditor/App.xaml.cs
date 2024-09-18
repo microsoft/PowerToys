@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
+
 using Common.UI;
 using FancyZonesEditor.Utils;
 using ManagedCommon;
@@ -145,7 +146,7 @@ namespace FancyZonesEditor
         private void App_WaitExit()
         {
             NativeEventWaiter.WaitForEventLoop(
-            interop.Constants.FZEExitEvent(),
+            PowerToys.Interop.Constants.FZEExitEvent(),
             () =>
             {
                 Logger.LogInfo("Exit event triggered");

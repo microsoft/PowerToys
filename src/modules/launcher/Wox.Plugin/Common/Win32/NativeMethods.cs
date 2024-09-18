@@ -5,7 +5,9 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
+
 using Wox.Plugin.Common.Interfaces;
+
 using SuppressMessageAttribute = System.Diagnostics.CodeAnalysis.SuppressMessageAttribute;
 
 #pragma warning disable SA1649, CA1051, CA1707, CA1028, CA1714, CA1069, SA1402

@@ -8,6 +8,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Dispatching;
 using Microsoft.Win32;
@@ -21,6 +22,7 @@ using Windows.Win32;
 using Windows.Win32.System.Com;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.Shell.PropertiesSystem;
+
 using IShellItem = Windows.Win32.UI.Shell.IShellItem;
 
 namespace Peek.FilePreviewer.Previewers

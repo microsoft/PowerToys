@@ -10,7 +10,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
 {
-    public sealed class RunOptionTemplateSelector : DataTemplateSelector
+    public sealed partial class RunOptionTemplateSelector : DataTemplateSelector
     {
         public DataTemplate CheckBoxTemplate { get; set; }
 
