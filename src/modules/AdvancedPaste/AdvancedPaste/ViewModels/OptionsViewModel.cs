@@ -334,7 +334,7 @@ namespace AdvancedPaste.ViewModels
             (App.Current as App).GetMainWindow().Close();
         }
 
-        internal async Task ExceutePasteFormatAsync(PasteFormats format, PasteActionSource source)
+        internal async Task ExecutePasteFormatAsync(PasteFormats format, PasteActionSource source)
         {
             await ReadClipboard();
             await ExecutePasteFormatAsync(CreatePasteFormat(format), source);
