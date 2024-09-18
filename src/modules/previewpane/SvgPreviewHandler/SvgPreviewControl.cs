@@ -5,6 +5,7 @@
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+
 using Common;
 using Common.Utilities;
 using Microsoft.PowerToys.PreviewHandler.Svg.Telemetry.Events;

@@ -6,8 +6,10 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Input;
+
 using ColorPicker.Helpers;
 using ManagedCommon;
+
 using static ColorPicker.NativeMethods;
 
 namespace ColorPicker.Mouse

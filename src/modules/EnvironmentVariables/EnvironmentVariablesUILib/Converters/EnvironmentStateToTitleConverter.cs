@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+
 using EnvironmentVariablesUILib.Helpers;
 using EnvironmentVariablesUILib.Models;
 using Microsoft.UI.Xaml.Data;

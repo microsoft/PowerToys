@@ -13,6 +13,7 @@ using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
 using HostsUILib.Exceptions;
 using HostsUILib.Models;
 using HostsUILib.Settings;

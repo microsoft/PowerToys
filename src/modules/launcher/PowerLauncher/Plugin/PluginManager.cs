@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+
 using global::PowerToys.GPOWrapper;
 using PowerLauncher.Properties;
 using Wox.Infrastructure.Storage;

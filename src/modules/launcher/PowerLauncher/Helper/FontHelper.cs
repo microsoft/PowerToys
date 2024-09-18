@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Media;
+
 using Wox.Plugin.Logger;
 
 namespace PowerLauncher.Helper

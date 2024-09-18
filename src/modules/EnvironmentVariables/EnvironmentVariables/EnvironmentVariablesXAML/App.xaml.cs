@@ -4,6 +4,7 @@
 
 using System;
 using System.IO.Abstractions;
+
 using EnvironmentVariables.Telemetry;
 using EnvironmentVariablesUILib;
 using EnvironmentVariablesUILib.Helpers;
