@@ -27,7 +27,7 @@ internal sealed partial class YouTubeAPIForm : Form
                       "body": [
                         {
                           "type": "Input.Text",
-                          "style": "text",
+                          "style": "password",
                           "id": "apiKey",
                           "label": "API Key",
                           "isRequired": true,

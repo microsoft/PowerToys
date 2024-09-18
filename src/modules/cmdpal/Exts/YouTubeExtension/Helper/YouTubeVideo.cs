@@ -21,6 +21,12 @@ public sealed class YouTubeVideo
     // The author or channel name of the video
     public string Author { get; init; } = string.Empty;
 
+    // The channel id (needed for the channel URL)
+    public string ChannelId { get; set; }
+
+    // The URL link to the channel
+    public string ChannelUrl { get; set; }
+
     // The URL to the thumbnail image of the video
     public string ThumbnailUrl { get; init; } = string.Empty;
 

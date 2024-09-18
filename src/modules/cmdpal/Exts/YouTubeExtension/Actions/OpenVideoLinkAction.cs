@@ -12,15 +12,15 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace YouTubeExtension.Helper;
 
-internal sealed partial class LinkAction : InvokableCommand
+internal sealed partial class OpenVideoLinkAction : InvokableCommand
 {
     private readonly YouTubeVideo _video;
 
-    internal LinkAction(YouTubeVideo video)
+    internal OpenVideoLinkAction(YouTubeVideo video)
     {
         this._video = video;
-        this.Name = "Open link";
-        this.Icon = new("https://www.youtube.com/favicon.ico");
+        this.Name = "Open video";
+        this.Icon = new("\uE714");
     }
 
     public override CommandResult Invoke()

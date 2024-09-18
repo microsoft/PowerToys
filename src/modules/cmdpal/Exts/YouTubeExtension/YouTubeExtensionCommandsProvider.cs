@@ -25,6 +25,7 @@ public partial class YouTubeExtensionActionsProvider : ICommandProvider
 
     private readonly IListItem[] _commands = [
         new ListItem(new YouTubeVideosPage()) { Title = "Search Videos", Subtitle = "YouTube" },
+        new ListItem(new YouTubeChannelsPage()) { Title = "Search Channels", Subtitle = "YouTube" },
     ];
 
     private readonly YouTubeAPIPage apiPage = new();

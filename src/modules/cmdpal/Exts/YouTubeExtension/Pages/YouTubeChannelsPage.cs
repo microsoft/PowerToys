@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -8,20 +8,19 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json.Nodes;
-using System.Threading.Channels;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
-using SamplePagesExtension;
 using YouTubeExtension.Helper;
-using YouTubeExtension.Pages;
 
-namespace YouTubeExtension;
+namespace YouTubeExtension.Pages;
 
-internal sealed partial class YouTubeVideosPage : DynamicListPage
+internal sealed partial class YouTubeChannelsPage : DynamicListPage
 {
-    public YouTubeVideosPage()
+    public YouTubeChannelsPage()
     {
         Icon = new("https://www.youtube.com/favicon.ico");
         Name = "YouTube";
@@ -57,11 +56,6 @@ internal sealed partial class YouTubeVideosPage : DynamicListPage
                                    Text = video.PublishedAt.ToString("MMMM dd, yyyy", CultureInfo.InvariantCulture), // Show the date of the video post
                                }
                         ],
-                MoreCommands = [
-                    new CommandContextItem(new OpenChannelLinkAction(video)),
-                    new CommandContextItem(new YouTubeVideoInfoMarkdownPage()),
-                    new CommandContextItem(new YouTubeAPIPage()),
-                ],
             }).ToArray(),
         };
 
@@ -77,7 +71,7 @@ internal sealed partial class YouTubeVideosPage : DynamicListPage
 
         var videos = new List<YouTubeVideo>();
 
-        using (HttpClient client = new HttpClient())
+        using HttpClient client = new HttpClient();
         {
             try
             {
@@ -96,8 +90,6 @@ internal sealed partial class YouTubeVideosPage : DynamicListPage
                             Title = item["snippet"]?["title"]?.ToString() ?? string.Empty,
                             Link = $"https://www.youtube.com/watch?v={item["id"]?["videoId"]?.ToString()}",
                             Author = item["snippet"]?["channelTitle"]?.ToString() ?? string.Empty,
-                            ChannelId = item["snippet"]?["channelId"]?.ToString() ?? string.Empty,
-                            ChannelUrl = $"https://www.youtube.com/channel/{item["snippet"]?["channelId"]?.ToString()}" ?? string.Empty,
                             ThumbnailUrl = item["snippet"]?["thumbnails"]?["default"]?["url"]?.ToString() ?? string.Empty, // Get the default thumbnail URL
                             Captions = "Captions not available", // Placeholder for captions; You can integrate with another API if needed
                             PublishedAt = DateTime.Parse(item["snippet"]?["publishedAt"]?.ToString(), CultureInfo.InvariantCulture), // Use CultureInfo.InvariantCulture
