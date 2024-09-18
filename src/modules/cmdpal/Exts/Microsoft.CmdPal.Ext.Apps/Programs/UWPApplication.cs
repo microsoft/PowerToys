@@ -94,10 +94,10 @@ public class UWPApplication : IProgram
 
         // logoUri = "";
         Enabled = true;
-        CanRunElevated = IfApplicationcanRunElevated();
+        CanRunElevated = IfApplicationCanRunElevated();
     }
 
-    private bool IfApplicationcanRunElevated()
+    private bool IfApplicationCanRunElevated()
     {
         if (EntryPoint == "Windows.FullTrustApplication")
         {
@@ -119,7 +119,11 @@ public class UWPApplication : IProgram
                     {
                         var namespaceManager = new XmlNamespaceManager(xmlDoc.NameTable);
                         namespaceManager.AddNamespace("uap10", "http://schemas.microsoft.com/appx/manifest/uap/windows10/10");
-                        var trustLevelNode = xmlRoot.SelectSingleNode("//*[local-name()='Application' and @uap10:TrustLevel]", namespaceManager); // According to https://learn.microsoft.com/windows/apps/desktop/modernize/grant-identity-to-nonpackaged-apps#create-a-package-manifest-for-the-sparse-package and https://learn.microsoft.com/uwp/schemas/appxpackage/uapmanifestschema/element-application#attributes
+
+                        // According to
+                        // https://learn.microsoft.com/windows/apps/desktop/modernize/grant-identity-to-nonpackaged-apps#create-a-package-manifest-for-the-sparse-package
+                        // and https://learn.microsoft.com/uwp/schemas/appxpackage/uapmanifestschema/element-application#attributes
+                        var trustLevelNode = xmlRoot.SelectSingleNode("//*[local-name()='Application' and @uap10:TrustLevel]", namespaceManager);
 
                         if (trustLevelNode?.Attributes?["uap10:TrustLevel"]?.Value == "mediumIL")
                         {
@@ -263,7 +267,7 @@ public class UWPApplication : IProgram
         { PackageVersion.Windows8, new List<int> { 100 } },
     };
 
-    private bool SetScaleIcons(string path, string colorscheme, bool highContrast = false)
+    private bool SetScaleIcons(string path, string colorScheme, bool highContrast = false)
     {
         var extension = Path.GetExtension(path);
         if (extension != null)
@@ -283,8 +287,8 @@ public class UWPApplication : IProgram
                 {
                     if (highContrast)
                     {
-                        paths.Add($"{prefix}.scale-{factor}_{colorscheme}{extension}");
-                        paths.Add($"{prefix}.{colorscheme}_scale-{factor}{extension}");
+                        paths.Add($"{prefix}.scale-{factor}_{colorScheme}{extension}");
+                        paths.Add($"{prefix}.{colorScheme}_scale-{factor}{extension}");
                     }
                     else
                     {
@@ -313,7 +317,7 @@ public class UWPApplication : IProgram
         return false;
     }
 
-    private bool SetTargetSizeIcon(string path, string colorscheme, bool highContrast = false)
+    private bool SetTargetSizeIcon(string path, string colorScheme, bool highContrast = false)
     {
         var extension = Path.GetExtension(path);
         if (extension != null)
@@ -329,8 +333,8 @@ public class UWPApplication : IProgram
             {
                 if (highContrast)
                 {
-                    var suffixThemePath = $"{prefix}.targetsize-{factor}_{colorscheme}{extension}";
-                    var prefixThemePath = $"{prefix}.{colorscheme}_targetsize-{factor}{extension}";
+                    var suffixThemePath = $"{prefix}.targetsize-{factor}_{colorScheme}{extension}";
+                    var prefixThemePath = $"{prefix}.{colorScheme}_targetsize-{factor}{extension}";
 
                     paths.Add(suffixThemePath);
                     paths.Add(prefixThemePath);
@@ -369,27 +373,27 @@ public class UWPApplication : IProgram
         return false;
     }
 
-    private bool SetColoredIcon(string path, string colorscheme)
+    private bool SetColoredIcon(string path, string colorScheme)
     {
-        var isSetColoredScaleIcon = SetScaleIcons(path, colorscheme);
+        var isSetColoredScaleIcon = SetScaleIcons(path, colorScheme);
         if (isSetColoredScaleIcon)
         {
             return true;
         }
 
-        var isSetColoredTargetIcon = SetTargetSizeIcon(path, colorscheme);
+        var isSetColoredTargetIcon = SetTargetSizeIcon(path, colorScheme);
         if (isSetColoredTargetIcon)
         {
             return true;
         }
 
-        var isSetHighContrastScaleIcon = SetScaleIcons(path, colorscheme, true);
+        var isSetHighContrastScaleIcon = SetScaleIcons(path, colorScheme, true);
         if (isSetHighContrastScaleIcon)
         {
             return true;
         }
 
-        var isSetHighContrastTargetIcon = SetTargetSizeIcon(path, colorscheme, true);
+        var isSetHighContrastTargetIcon = SetTargetSizeIcon(path, colorScheme, true);
         if (isSetHighContrastTargetIcon)
         {
             return true;
@@ -398,27 +402,27 @@ public class UWPApplication : IProgram
         return false;
     }
 
-    private bool SetHighContrastIcon(string path, string colorscheme)
+    private bool SetHighContrastIcon(string path, string colorScheme)
     {
-        var isSetHighContrastScaleIcon = SetScaleIcons(path, colorscheme, true);
+        var isSetHighContrastScaleIcon = SetScaleIcons(path, colorScheme, true);
         if (isSetHighContrastScaleIcon)
         {
             return true;
         }
 
-        var isSetHighContrastTargetIcon = SetTargetSizeIcon(path, colorscheme, true);
+        var isSetHighContrastTargetIcon = SetTargetSizeIcon(path, colorScheme, true);
         if (isSetHighContrastTargetIcon)
         {
             return true;
         }
 
-        var isSetColoredScaleIcon = SetScaleIcons(path, colorscheme);
+        var isSetColoredScaleIcon = SetScaleIcons(path, colorScheme);
         if (isSetColoredScaleIcon)
         {
             return true;
         }
 
-        var isSetColoredTargetIcon = SetTargetSizeIcon(path, colorscheme);
+        var isSetColoredTargetIcon = SetTargetSizeIcon(path, colorScheme);
         if (isSetColoredTargetIcon)
         {
             return true;

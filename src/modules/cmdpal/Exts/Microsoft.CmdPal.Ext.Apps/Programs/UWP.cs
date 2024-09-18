@@ -89,7 +89,7 @@ public partial class UWP
     // http://www.hanselman.com/blog/GetNamespacesFromAnXMLDocumentWithXPathDocumentAndLINQToXML.aspx
     private static string[] XmlNamespaces(string path)
     {
-        XDocument z = XDocument.Load(path);
+        var z = XDocument.Load(path);
         if (z.Root != null)
         {
             var namespaces = z.Root.Attributes().

@@ -148,7 +148,7 @@ public class ShellLinkHelper : IShellLinkHelper
         ((IShellLinkW)link).Resolve(ref hwnd, 0);
 
         const int MAX_PATH = 260;
-        StringBuilder buffer = new StringBuilder(MAX_PATH);
+        var buffer = new StringBuilder(MAX_PATH);
 
         var data = default(WIN32_FIND_DATAW);
         ((IShellLinkW)link).GetPath(buffer, buffer.Capacity, ref data, SLGP_FLAGS.SLGP_SHORTPATH);
@@ -169,7 +169,7 @@ public class ShellLinkHelper : IShellLinkHelper
                 Description = string.Empty;
             }
 
-            StringBuilder argumentBuffer = new StringBuilder(MAX_PATH);
+            var argumentBuffer = new StringBuilder(MAX_PATH);
             ((IShellLinkW)link).GetArguments(argumentBuffer, argumentBuffer.Capacity);
             Arguments = argumentBuffer.ToString();
 

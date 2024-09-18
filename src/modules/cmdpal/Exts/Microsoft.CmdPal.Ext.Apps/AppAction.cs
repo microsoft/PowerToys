@@ -20,7 +20,7 @@ internal sealed partial class AppAction : InvokableCommand
         Icon = new(_app.IcoPath);
     }
 
-    internal static async Task StartApp(string amuid)
+    internal static async Task StartApp(string aumid)
     {
         var appManager = new ApplicationActivationManager();
         const ActivateOptions noFlags = ActivateOptions.None;
@@ -28,7 +28,7 @@ internal sealed partial class AppAction : InvokableCommand
         {
             try
             {
-                appManager.ActivateApplication(amuid, /*queryArguments*/ string.Empty, noFlags, out var unusedPid);
+                appManager.ActivateApplication(aumid, /*queryArguments*/ string.Empty, noFlags, out var unusedPid);
             }
             catch (System.Exception)
             {

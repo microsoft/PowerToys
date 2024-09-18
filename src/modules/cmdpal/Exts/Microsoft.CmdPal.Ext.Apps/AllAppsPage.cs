@@ -52,7 +52,7 @@ public sealed partial class AllAppsPage : ListPage
         // * RegistryAppProgramPaths
         // for now. I've disabled the "PATH" source too, because it's n o i s y
         //
-        // This also doesn't include Packaged apps, cause they're enumerated entirely seperately.
+        // This also doesn't include Packaged apps, cause they're enumerated entirely separately.
         var cache = AppCache.Instance.Value;
         var uwps = cache.UWPs;
         var win32s = cache.Win32s;
