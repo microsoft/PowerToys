@@ -2,7 +2,7 @@
   <PropertyGroup Label="Version">
     <VersionMajor>0</VersionMajor>
     <VersionMinor>86</VersionMinor>
-    <VersionInfoProductName>Microsoft PowerToys</VersionInfoProductName>
+    <VersionInfoProductName>PowerToys</VersionInfoProductName>
   </PropertyGroup>
   <PropertyGroup>
     <Copyright>Copyright (C) Microsoft Corporation. All rights reserved.</Copyright>
