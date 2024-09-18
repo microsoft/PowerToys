@@ -1,12 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <PtEmbeddedMajor>$(VersionProductMajor)</PtEmbeddedMajor>
+    <PtEmbeddedMinor>$(VersionProductMinor)</PtEmbeddedMinor>
+    <PtEmbeddedRevision>$(VersionProductBuildRevision)</PtEmbeddedRevision>
+    <PtEmbeddedMajor Condition="'$(PtEmbeddedMajor)'==''">0</PtEmbeddedMajor>
+    <PtEmbeddedMinor Condition="'$(PtEmbeddedMinor)'==''">0</PtEmbeddedMinor>
+    <PtEmbeddedRevision Condition="'$(PtEmbeddedRevision)'==''">0</PtEmbeddedRevision>
+  </PropertyGroup>
   
   <Target Name="GenerateVersionData" BeforeTargets="PrepareForBuild">
     <ItemGroup>
       <HeaderLines Include="#pragma once" />
-      <HeaderLines Include="#define VERSION_MAJOR $(Version.Split('.')[0])" />
-      <HeaderLines Include="#define VERSION_MINOR $(Version.Split('.')[1])" />
-      <HeaderLines Include="#define VERSION_REVISION $(Version.Split('.')[2])" />
+      <HeaderLines Include="#define VERSION_MAJOR $(PtEmbeddedMajor)" />
+      <HeaderLines Include="#define VERSION_MINOR $(PtEmbeddedMinor)" />
+      <HeaderLines Include="#define VERSION_REVISION $(PtEmbeddedRevision)" />
     </ItemGroup>
     <WriteLinesToFile File="Generated Files\version_gen.h" Lines="@(HeaderLines)" Overwrite="true" Encoding="Unicode" WriteOnlyWhenDifferent="true" />
   </Target>
