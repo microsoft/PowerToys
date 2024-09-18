@@ -5532,14 +5532,20 @@ LRESULT APIENTRY MainWndProc(
 			POINT pt;
 			GetCursorPos( &pt );
 			hPopupMenu = CreatePopupMenu();
-			InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDCANCEL, L"E&xit" );
-			InsertMenu( hPopupMenu, 0, MF_BYPOSITION|MF_SEPARATOR, 0, NULL );
+			if(!g_StartedByPowerToys) {
+				// Exiting will happen through disabling in PowerToys, not the context menu.
+				InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDCANCEL, L"E&xit" );
+				InsertMenu( hPopupMenu, 0, MF_BYPOSITION|MF_SEPARATOR, 0, NULL );
+			}
 			InsertMenu( hPopupMenu, 0, MF_BYPOSITION | ( g_RecordToggle ? MF_CHECKED : 0 ), IDC_RECORD, L"&Record" );
 			InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDC_ZOOM, L"&Zoom" );
 			InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDC_DRAW, L"&Draw" );
 			InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDC_BREAK, L"&Break Timer" );
-			InsertMenu( hPopupMenu, 0, MF_BYPOSITION|MF_SEPARATOR, 0, NULL );
-			InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDC_OPTIONS, L"&Options" );
+			if(!g_StartedByPowerToys) {
+				// When started by PowerToys, options are configured through the PowerToys Settings.
+				InsertMenu( hPopupMenu, 0, MF_BYPOSITION|MF_SEPARATOR, 0, NULL );
+				InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDC_OPTIONS, L"&Options" );
+			}
 			TrackPopupMenu( hPopupMenu, 0, pt.x , pt.y, 0, hWnd, NULL );
 			DestroyMenu( hPopupMenu );
 			break;
