@@ -112,7 +112,7 @@ extends:
       # - Bootstrapper Installer
 
         - pwsh: |-
-            nuget install Microsoft.Windows.Terminal.Versioning -OutputDirectory _versioning -Source https://pkgs.dev.azure.com/shine-oss/terminal/_packaging/TerminalDependencies/nuget/v3/index.json
+            nuget install Microsoft.Windows.Terminal.Versioning -OutputDirectory _versioning
             $VersionRoot = (Get-Item _versioning\Microsoft.Windows.*).FullName
             & "$VersionRoot\build\Setup.ps1" -ProjectDirectory "$(Build.SourcesDirectory)" -Verbose
           displayName: Set up versioning via M.W.T.V
