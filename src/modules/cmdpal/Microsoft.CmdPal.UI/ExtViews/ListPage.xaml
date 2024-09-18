@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Microsoft.CmdPal.UI.ListPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Interactions="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.CmdPal.UI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <!--  https://learn.microsoft.com/en-us/windows/apps/design/controls/itemsview#specify-the-look-of-the-items  -->
+        <DataTemplate x:Key="ListItemViewModelTemplate" x:DataType="viewmodels:ListItemViewModel">
+            <ItemContainer AutomationProperties.Name="{x:Bind Header}">
+
+                <StackPanel Background="{ThemeResource SystemControlBackgroundBaseMediumBrush}" Orientation="Horizontal">
+                    <TextBlock Text="{x:Bind Header}" />
+                    <TextBlock Foreground="{ThemeResource SystemAccentColor}" Text="{x:Bind SubHeader}" />
+                </StackPanel>
+            </ItemContainer>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid>
+        <!--  not using Interactivity:Interaction.Behaviors due to wanting to do AoT  -->
+        <ItemsView
+            IsItemInvokedEnabled="True"
+            ItemInvoked="ItemsView_ItemInvoked"
+            ItemTemplate="{StaticResource ListItemViewModelTemplate}"
+            ItemsSource="{x:Bind ViewModel.Items}" />
+    </Grid>
+</Page>

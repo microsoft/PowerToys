@@ -14,7 +14,9 @@
   <ItemGroup>
     <None Remove="Controls\SearchBar.xaml" />
     <None Remove="ListDetailPage.xaml" />
+    <None Remove="LoadingPage.xaml" />
     <None Remove="MainPage.xaml" />
+    <None Remove="ShellPage.xaml" />
     <None Remove="Styles\Button.xaml" />
     <None Remove="Styles\TextBox.xaml" />
   </ItemGroup>
@@ -31,6 +33,7 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />
+    <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
@@ -48,6 +51,16 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.CmdPal.UI.ViewModels\Microsoft.CmdPal.UI.ViewModels.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="LoadingPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="ShellPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>
