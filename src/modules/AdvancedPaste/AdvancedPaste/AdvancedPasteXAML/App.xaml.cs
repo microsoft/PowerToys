@@ -135,11 +135,11 @@ namespace AdvancedPaste
             }
             else if (messageType == PowerToys.Interop.Constants.AdvancedPasteMarkdownMessage())
             {
-                await viewModel.ExceutePasteFormatAsync(PasteFormats.Markdown, PasteActionSource.GlobalKeyboardShortcut);
+                await viewModel.ExecutePasteFormatAsync(PasteFormats.Markdown, PasteActionSource.GlobalKeyboardShortcut);
             }
             else if (messageType == PowerToys.Interop.Constants.AdvancedPasteJsonMessage())
             {
-                await viewModel.ExceutePasteFormatAsync(PasteFormats.Json, PasteActionSource.GlobalKeyboardShortcut);
+                await viewModel.ExecutePasteFormatAsync(PasteFormats.Json, PasteActionSource.GlobalKeyboardShortcut);
             }
             else if (messageType == PowerToys.Interop.Constants.AdvancedPasteAdditionalActionMessage())
             {
@@ -171,7 +171,7 @@ namespace AdvancedPaste
                 else
                 {
                     await ShowWindow();
-                    await viewModel.ExceutePasteFormatAsync(pasteFormat, PasteActionSource.GlobalKeyboardShortcut);
+                    await viewModel.ExecutePasteFormatAsync(pasteFormat, PasteActionSource.GlobalKeyboardShortcut);
                 }
             }
         }
