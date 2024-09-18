@@ -6,9 +6,8 @@
     xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels" 
-    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity" 
-    xmlns:Interactions="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -32,8 +31,18 @@
     </Page.Resources>
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <controls:SearchBar
+            Grid.Row="0"
+            VerticalAlignment="Top" />
+
         <!-- not using Interactivity:Interaction.Behaviors due to wanting to do AoT -->
         <ItemsView 
+            Grid.Row="1"
             IsItemInvokedEnabled="True"
             ItemsSource="{x:Bind ViewModel.Items}" 
             ItemTemplate="{StaticResource ListItemViewModelTemplate}"
