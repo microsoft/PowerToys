@@ -191,6 +191,17 @@ namespace SnapshotUtils
         return res;
     }
 
+    bool IsFileManagerApp(std::wstring processPath)
+    {
+        std::wstring appName = std::filesystem::path(processPath).stem();
+        std::transform(appName.begin(), appName.end(), appName.begin(), towupper);
+        return ((appName == L"EXPLORER") // windows explorer
+                || (appName.starts_with(L"TOTALCMD")) // total commander
+                || (appName == L"DOPUS") // directory opus
+                || (appName == L"Q-DIR") // Q-Dir
+                || (appName.starts_with(L"XPLORER2"))); // Xplorer2
+    }
+
     std::vector<WorkspacesData::WorkspacesProject::Application> GetApps(const std::function<unsigned int(HWND)> getMonitorNumberFromWindowHandle)
     {
         std::vector<WorkspacesData::WorkspacesProject::Application> apps{};
@@ -269,25 +280,59 @@ namespace SnapshotUtils
             if (!data.has_value() || data->name.empty())
             {
                 Logger::info(L"Installed app not found: {}, try parent process", processPath);
-                
+
+                bool standaloneApp = false;
+                bool steamLikeApp = false;
+
                 // try with parent process (fix for Steam)
                 auto parentPid = GetParentPid(pid);
                 auto parentProcessPath = get_process_path(parentPid);
-                if (!parentProcessPath.empty())
-                {
-                    data = Utils::Apps::GetApp(parentProcessPath, installedApps);
-                    if (!data.has_value() || data->name.empty())
-                    {
-                        Logger::info(L"Installed parent app not found: {}", processPath);
-                        continue;
-                    }
 
-                    processPath = parentProcessPath;
+                // check if original process is in the subfolder of the parent process which is a sign of an steam-like app
+                auto processDir = std::filesystem::path(processPath).parent_path();
+                auto parentProcessDir = std::filesystem::path(parentProcessPath).parent_path();
+
+                if (std::wstring(processDir).starts_with(std::wstring(parentProcessDir)))
+                {
+                    Logger::info(L"parent process: {}, original process is in the subfolder of the parent process, it is a steam-like app", parentProcessPath);
+                    steamLikeApp = true;
+                }
+                else if (IsFileManagerApp(parentProcessPath))
+                {
+                    Logger::info(L"parent process: {}, The parent process is a known file manager app, it is a standalone app", parentProcessPath);
+                    standaloneApp = true;
                 }
                 else
                 {
-                    Logger::info(L"Parent process path not found");
-                    continue;
+                    Logger::info(L"parent process: {}, The parent process is NOT a known file manager app, it is a steam-like app", parentProcessPath);
+                    steamLikeApp = true;
+                }
+
+                if (standaloneApp)
+                {
+                    data = Utils::Apps::AppData{
+                        .name = std::filesystem::path(processPath).stem(),
+                        .installPath = processPath,
+                    };
+                }
+                else if (steamLikeApp)
+                {
+                    if (!parentProcessPath.empty())
+                    {
+                        data = Utils::Apps::GetApp(parentProcessPath, installedApps);
+                        if (!data.has_value() || data->name.empty())
+                        {
+                            Logger::info(L"Installed parent app not found: {}", processPath);
+                            continue;
+                        }
+
+                        processPath = parentProcessPath;
+                    }
+                    else
+                    {
+                        Logger::info(L"Parent process path not found");
+                        continue;
+                    }
                 }
             }
 

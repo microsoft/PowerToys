@@ -188,7 +188,7 @@ namespace
             auto insertionIter = launchedApps.end();
             for (auto iter = launchedApps.begin(); iter != launchedApps.end(); ++iter)
             {
-                if (iter->window == nullptr && installedAppData.value().name == iter->application.name)
+                if (iter->window == nullptr && (installedAppData.value().name == iter->application.name) || (installedAppData.value().installPath == iter->application.path))
                 {
                     insertionIter = iter;
                 }
