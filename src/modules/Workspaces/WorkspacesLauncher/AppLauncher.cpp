@@ -40,9 +40,80 @@ namespace AppLauncher
         }
     }
 
-    Result<SHELLEXECUTEINFO, std::wstring> LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated)
+    bool AllWindowsFound(const LaunchingApps& launchedApps)
     {
-        std::wstring dir = std::filesystem::path(appPath).parent_path();
+        return std::find_if(launchedApps.begin(), launchedApps.end(), [&](const LaunchingApp& val) {
+                   return val.window == nullptr;
+               }) == launchedApps.end();
+    };
+
+    bool AddOpenedWindows(LaunchingApps& launchedApps, const std::vector<HWND>& windows, const Utils::Apps::AppList& installedApps)
+    {
+        bool statusChanged = false;
+        for (HWND window : windows)
+        {
+            auto installedAppData = Utils::Apps::GetApp(window, installedApps);
+            if (!installedAppData.has_value())
+            {
+                continue;
+            }
+
+            auto insertionIter = launchedApps.end();
+            for (auto iter = launchedApps.begin(); iter != launchedApps.end(); ++iter)
+            {
+                if (iter->window == nullptr && (installedAppData.value().name == iter->application.name) || (installedAppData.value().installPath == iter->application.path))
+                {
+                    insertionIter = iter;
+                }
+
+                // keep the window at the same position if it's already opened
+                WINDOWPLACEMENT placement{};
+                ::GetWindowPlacement(window, &placement);
+                HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY);
+                UINT dpi = DPIAware::DEFAULT_DPI;
+                DPIAware::GetScreenDPIForMonitor(monitor, dpi);
+
+                float x = static_cast<float>(placement.rcNormalPosition.left);
+                float y = static_cast<float>(placement.rcNormalPosition.top);
+                float width = static_cast<float>(placement.rcNormalPosition.right - placement.rcNormalPosition.left);
+                float height = static_cast<float>(placement.rcNormalPosition.bottom - placement.rcNormalPosition.top);
+
+                DPIAware::InverseConvert(monitor, x, y);
+                DPIAware::InverseConvert(monitor, width, height);
+
+                WorkspacesData::WorkspacesProject::Application::Position windowPosition{
+                    .x = static_cast<int>(std::round(x)),
+                    .y = static_cast<int>(std::round(y)),
+                    .width = static_cast<int>(std::round(width)),
+                    .height = static_cast<int>(std::round(height)),
+                };
+                if (iter->application.position == windowPosition)
+                {
+                    Logger::debug(L"{} window already found at {} {}.", iter->application.name, iter->application.position.x, iter->application.position.y);
+                    insertionIter = iter;
+                    break;
+                }
+            }
+
+            if (insertionIter != launchedApps.end())
+            {
+                insertionIter->window = window;
+                insertionIter->state = L"launched";
+                statusChanged = true;
+            }
+
+            if (AllWindowsFound(launchedApps))
+            {
+                break;
+            }
+        }
+        return statusChanged;
+    }
+}
+
+bool LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated, ErrorList& launchErrors)
+{
+    std::wstring dir = std::filesystem::path(appPath).parent_path();
 
         SHELLEXECUTEINFO sei = { 0 };
         sei.cbSize = sizeof(SHELLEXECUTEINFO);
