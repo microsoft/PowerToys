@@ -71,6 +71,9 @@
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_DemoType_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.DemoTypeToggleKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="ZoomIt_DemoType_File" Description="{x:Bind ViewModel.DemoTypeFile, Mode=OneWay}">
+                        <Button x:Uid="ZoomIt_DemoType_File_BrowseButton" Command="{x:Bind ViewModel.SelectDemoTypeFileCommand, Mode=OneWay}"/>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_BreakGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Break_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">

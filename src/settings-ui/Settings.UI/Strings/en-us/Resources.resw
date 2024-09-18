@@ -4385,6 +4385,18 @@ When you reach the end of the file, ZoomIt will reload the file and start at the
   <data name="ZoomIt_DemoType_Shortcut.Header" xml:space="preserve">
     <value>Demo Type Toggle Hotkey</value>
   </data>
+  <data name="ZoomIt_DemoType_File.Header" xml:space="preserve">
+    <value>Input file</value>
+  </data>
+  <data name="ZoomIt_DemoType_File_BrowseButton.Content" xml:space="preserve">
+    <value>Browse</value>
+  </data>
+  <data name="ZoomIt_DemoType_File_Picker_Dialog_Title" xml:space="preserve">
+    <value>Specify DemoType file...</value>
+  </data>
+  <data name="FilePicker_AllFilesFilter" xml:space="preserve">
+    <value>All Files</value>
+  </data>
   <data name="ZoomIt_BreakGroup.Header" xml:space="preserve">
     <value>Break</value>
   </data>

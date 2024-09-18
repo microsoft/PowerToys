@@ -8,10 +8,13 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using AllExperiments;
 using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -25,13 +28,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
+        private Func<string, string, string> PickFileDialog { get; }
+
+        public ButtonClickCommand SelectDemoTypeFileCommand { get; set; }
+
         private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
         {
             MaxDepth = 0,
             IncludeFields = true,
         };
 
-        public ZoomItViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public ZoomItViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, string, string> pickFileDialog)
         {
             ArgumentNullException.ThrowIfNull(settingsUtils);
 
@@ -49,6 +56,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback functions value to handle outgoing IPC message for the enabled value.
             SendConfigMSG = ipcMSGCallBackFunc;
+
+            // set the callback for when we need the user to pick a file.
+            PickFileDialog = pickFileDialog;
+
+            SelectDemoTypeFileCommand = new ButtonClickCommand(SelectDemoTypeFileAction);
         }
 
         private void InitializeEnabledValue()
@@ -237,18 +249,44 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public string DemoTypeFile
+        {
+            get => _zoomItSettings.Properties.DemoTypeFile.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.DemoTypeFile.Value != value)
+                {
+                    _zoomItSettings.Properties.DemoTypeFile.Value = value;
+                    OnPropertyChanged(nameof(DemoTypeFile));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         private void NotifySettingsChanged()
         {
             global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.SaveSettingsJson(
                 JsonSerializer.Serialize(_zoomItSettings));
+        }
 
-            // Using InvariantCulture as this is an IPC message
-            /*SendConfigMSG(
-                   string.Format(
-                       CultureInfo.InvariantCulture,
-                       "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
-                       ZoomItSettings.ModuleName,
-                       JsonSerializer.Serialize(_zoomItSettings)));*/
+        private void SelectDemoTypeFileAction()
+        {
+            // TODO: Localize
+            try
+            {
+                ResourceLoader resourceLoader = ResourceLoaderInstance.ResourceLoader;
+                string title = resourceLoader.GetString("ZoomIt_DemoType_File_Picker_Dialog_Title");
+                string allFilesFilter = resourceLoader.GetString("FilePicker_AllFilesFilter");
+                string pickedFile = PickFileDialog($"{allFilesFilter}\0*.*\0\0", title);
+                if (pickedFile != null)
+                {
+                    DemoTypeFile = pickedFile;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error picking Demo Type file.", ex);
+            }
         }
 
         public void RefreshEnabledState()
