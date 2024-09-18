@@ -6,13 +6,6 @@ using System;
 
 namespace AdvancedPaste.Models;
 
-[Flags]
-public enum ClipboardFormat
+public sealed class PasteActionException(string message) : Exception(message)
 {
-    None,
-    Text = 1 << 0,
-    Html = 1 << 1,
-    Audio = 1 << 2,
-    Image = 1 << 3,
-    ImageFile = 1 << 4,
 }

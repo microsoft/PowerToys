@@ -589,7 +589,7 @@
                         Background="Transparent"
                         Visibility="{x:Bind ViewModel.IsCustomAIEnabled, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                         <ToolTipService.ToolTip>
-                            <ToolTip Content="{x:Bind ViewModel.GeneralErrorText}" />
+                            <ToolTip Content="{x:Bind ViewModel.AIDisabledErrorText}" />
                         </ToolTipService.ToolTip>
                     </Grid>
                 </Grid>

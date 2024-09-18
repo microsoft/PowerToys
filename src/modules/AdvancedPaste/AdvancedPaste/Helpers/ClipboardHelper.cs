@@ -3,9 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using AdvancedPaste.Models;
 using ManagedCommon;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Data.Html;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Streams;
@@ -15,6 +19,34 @@ namespace AdvancedPaste.Helpers
 {
     internal static class ClipboardHelper
     {
+        private static readonly HashSet<string> ImageFileTypes = new(StringComparer.InvariantCultureIgnoreCase) { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".ico", ".svg" };
+
+        private static readonly (string DataFormat, ClipboardFormat ClipboardFormat)[] DataFormats =
+        [
+            (StandardDataFormats.Text, ClipboardFormat.Text),
+            (StandardDataFormats.Html, ClipboardFormat.Html),
+            (StandardDataFormats.Bitmap, ClipboardFormat.Image),
+        ];
+
+        internal static async Task<ClipboardFormat> GetAvailableClipboardFormats(DataPackageView clipboardData)
+        {
+            var availableClipboardFormats = DataFormats.Aggregate(
+                ClipboardFormat.None,
+                (result, formatPair) => clipboardData.Contains(formatPair.DataFormat) ? (result | formatPair.ClipboardFormat) : result);
+
+            if (clipboardData.Contains(StandardDataFormats.StorageItems))
+            {
+                var storageItems = await clipboardData.GetStorageItemsAsync();
+
+                if (storageItems.Count == 1 && storageItems.Single() is StorageFile file && ImageFileTypes.Contains(file.FileType))
+                {
+                    availableClipboardFormats |= ClipboardFormat.ImageFile;
+                }
+            }
+
+            return availableClipboardFormats;
+        }
+
         internal static void SetClipboardTextContent(string text)
         {
             Logger.LogTrace();
@@ -25,31 +57,41 @@ namespace AdvancedPaste.Helpers
                 output.SetText(text);
                 Clipboard.SetContentWithOptions(output, null);
 
-                // TODO(stefan): For some reason Flush() fails from time to time when directly activated via hotkey.
-                // Calling inside a loop makes it work.
-                bool flushed = false;
-                for (int i = 0; i < 5; i++)
+                Flush();
+            }
+        }
+
+        private static bool Flush()
+        {
+            // TODO(stefan): For some reason Flush() fails from time to time when directly activated via hotkey.
+            // Calling inside a loop makes it work.
+            for (int i = 0; i < 5; i++)
+            {
+                try
                 {
-                    if (flushed)
-                    {
-                        break;
-                    }
-
-                    try
-                    {
-                        Task.Run(() =>
-                        {
-                            Clipboard.Flush();
-                        }).Wait();
-
-                        flushed = true;
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError("Clipboard.Flush() failed", ex);
-                    }
+                    Task.Run(Clipboard.Flush).Wait();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"{nameof(Clipboard)}.{nameof(Flush)}() failed", ex);
                 }
             }
+
+            return false;
+        }
+
+        private static async Task<bool> FlushAsync() => await Task.Run(Flush);
+
+        internal static async Task SetClipboardFileContentAsync(string fileName)
+        {
+            var storageFile = await StorageFile.GetFileFromPathAsync(fileName);
+
+            DataPackage output = new();
+            output.SetStorageItems([storageFile]);
+            Clipboard.SetContent(output);
+
+            await FlushAsync();
         }
 
         internal static void SetClipboardImageContent(RandomAccessStreamReference image)
@@ -62,30 +104,7 @@ namespace AdvancedPaste.Helpers
                 output.SetBitmap(image);
                 Clipboard.SetContentWithOptions(output, null);
 
-                // TODO(stefan): For some reason Flush() fails from time to time when directly activated via hotkey.
-                // Calling inside a loop makes it work.
-                bool flushed = false;
-                for (int i = 0; i < 5; i++)
-                {
-                    if (flushed)
-                    {
-                        break;
-                    }
-
-                    try
-                    {
-                        Task.Run(() =>
-                        {
-                            Clipboard.Flush();
-                        }).Wait();
-
-                        flushed = true;
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError("Clipboard.Flush() failed", ex);
-                    }
-                }
+                Flush();
             }
         }
 
@@ -136,6 +155,26 @@ namespace AdvancedPaste.Helpers
             Logger.LogInfo("Paste sent");
         }
 
+        internal static async Task<string> GetClipboardTextOrHtmlText(DataPackageView clipboardData)
+        {
+            if (clipboardData.Contains(StandardDataFormats.Text))
+            {
+                return await clipboardData.GetTextAsync();
+            }
+            else if (clipboardData.Contains(StandardDataFormats.Html))
+            {
+                var html = await clipboardData.GetHtmlFormatAsync();
+                return HtmlUtilities.ConvertToText(html);
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        internal static async Task<string> GetClipboardHtmlContent(DataPackageView clipboardData) =>
+            clipboardData.Contains(StandardDataFormats.Html) ? await clipboardData.GetHtmlFormatAsync() : string.Empty;
+
         internal static async Task<SoftwareBitmap> GetClipboardImageContentAsync(DataPackageView clipboardData)
         {
             using var stream = await GetClipboardImageStreamAsync(clipboardData);
@@ -153,7 +192,7 @@ namespace AdvancedPaste.Helpers
             if (clipboardData.Contains(StandardDataFormats.StorageItems))
             {
                 var storageItems = await clipboardData.GetStorageItemsAsync();
-                var file = storageItems[0] as StorageFile;
+                var file = storageItems.Count == 1 ? storageItems[0] as StorageFile : null;
                 if (file != null)
                 {
                     return await file.OpenReadAsync();
@@ -162,8 +201,8 @@ namespace AdvancedPaste.Helpers
 
             if (clipboardData.Contains(StandardDataFormats.Bitmap))
             {
-                var imageStreamReference = await clipboardData.GetBitmapAsync();
-                return await imageStreamReference.OpenReadAsync();
+                var bitmap = await clipboardData.GetBitmapAsync();
+                return await bitmap.OpenReadAsync();
             }
 
             return null;

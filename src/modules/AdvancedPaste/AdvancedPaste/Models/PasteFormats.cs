@@ -20,16 +20,16 @@ public enum PasteFormats
     [PasteFormatMetadata(IsCoreAction = false, ResourceId = "AudioToText", IconGlyph = "\uF8B1", RequiresAIService = true, SupportedClipboardFormats = ClipboardFormat.Audio, IPCKey = AdvancedPasteAdditionalActions.PropertyNames.AudioToText)]
     AudioToText,
 
-    [PasteFormatMetadata(IsCoreAction = false, ResourceId = "ImageToText", IconGlyph = "\uE91B", RequiresAIService = false, SupportedClipboardFormats = ClipboardFormat.Image | ClipboardFormat.File, IPCKey = AdvancedPasteAdditionalActions.PropertyNames.ImageToText)]
+    [PasteFormatMetadata(IsCoreAction = false, ResourceId = "ImageToText", IconGlyph = "\uE91B", RequiresAIService = false, SupportedClipboardFormats = ClipboardFormat.Image | ClipboardFormat.ImageFile, IPCKey = AdvancedPasteAdditionalActions.PropertyNames.ImageToText)]
     ImageToText,
 
     [PasteFormatMetadata(IsCoreAction = false, ResourceId = "PasteAsTxtFile", IconGlyph = "\uE8D2", RequiresAIService = false, SupportedClipboardFormats = ClipboardFormat.Text | ClipboardFormat.Html, IPCKey = AdvancedPastePasteAsFileAction.PropertyNames.PasteAsTxtFile)]
     PasteAsTxtFile,
 
-    [PasteFormatMetadata(IsCoreAction = false, ResourceId = "PasteAsPngFile", IconGlyph = "\uE8B9", RequiresAIService = false, SupportedClipboardFormats = ClipboardFormat.Image, IPCKey = AdvancedPastePasteAsFileAction.PropertyNames.PasteAsPngFile)]
+    [PasteFormatMetadata(IsCoreAction = false, ResourceId = "PasteAsPngFile", IconGlyph = "\uE8B9", RequiresAIService = false, SupportedClipboardFormats = ClipboardFormat.Image | ClipboardFormat.ImageFile, IPCKey = AdvancedPastePasteAsFileAction.PropertyNames.PasteAsPngFile)]
     PasteAsPngFile,
 
-    [PasteFormatMetadata(IsCoreAction = false, ResourceId = "PasteAsHtmlFile", IconGlyph = "\uF6FA", RequiresAIService = false, SupportedClipboardFormats = ClipboardFormat.Text | ClipboardFormat.Html, IPCKey = AdvancedPastePasteAsFileAction.PropertyNames.PasteAsHtmlFile)]
+    [PasteFormatMetadata(IsCoreAction = false, ResourceId = "PasteAsHtmlFile", IconGlyph = "\uF6FA", RequiresAIService = false, SupportedClipboardFormats = ClipboardFormat.Html, IPCKey = AdvancedPastePasteAsFileAction.PropertyNames.PasteAsHtmlFile)]
     PasteAsHtmlFile,
 
     [PasteFormatMetadata(IsCoreAction = false, IconGlyph = "\uE945", RequiresAIService = true, SupportedClipboardFormats = ClipboardFormat.Text)]

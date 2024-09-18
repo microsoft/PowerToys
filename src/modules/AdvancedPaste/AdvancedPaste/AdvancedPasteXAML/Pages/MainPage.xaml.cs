@@ -129,15 +129,15 @@ namespace AdvancedPaste.Pages
             }
         }
 
-        private void ListView_Button_Click(object sender, RoutedEventArgs e)
+        private async void ListView_Button_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button { DataContext: PasteFormat format })
             {
-                ViewModel.ExecutePasteFormat(format);
+                await ViewModel.ExecutePasteFormatAsync(format, PasteActionSource.ContextMenu);
             }
         }
 
-        private void KeyboardAccelerator_Invoked(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender, Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
+        private async void KeyboardAccelerator_Invoked(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender, Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
         {
             if (GetMainWindow()?.Visible is false)
             {
@@ -170,7 +170,7 @@ namespace AdvancedPaste.Pages
                 case VirtualKey.Number7:
                 case VirtualKey.Number8:
                 case VirtualKey.Number9:
-                    ViewModel.ExecutePasteFormat(sender.Key);
+                    await ViewModel.ExecutePasteFormat(sender.Key);
                     break;
 
                 default:

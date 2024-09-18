@@ -123,6 +123,9 @@
   <data name="ClipboardEmptyWarning" xml:space="preserve">
     <value>Clipboard is empty</value>
   </data>
+  <data name="ClipboardDataNotTextWarning" xml:space="preserve">
+    <value>Clipboard data is not text</value>
+  </data>  
   <data name="OpenAINotConfigured" xml:space="preserve">
     <value>To custom with AI is not enabled</value>
   </data>
@@ -154,7 +157,7 @@
     <value>Privacy</value>
   </data>
   <data name="LoadingText.Text" xml:space="preserve">
-    <value>Connecting to AI services and generating output..</value>
+    <value>Generating output...</value>
   </data>
   <data name="PasteAsJson" xml:space="preserve">
     <value>Paste as JSON</value>
@@ -246,4 +249,7 @@
   <data name="CtrlKey" xml:space="preserve">
     <value>Ctrl</value>
   </data>
+  <data name="PasteAsFile_FilePrefix" xml:space="preserve">
+    <value>PowerToys_Paste_</value>
+  </data>  
 </root>

@@ -55,5 +55,7 @@ public sealed class PasteFormat
 
     public string ToolTip => string.IsNullOrEmpty(Prompt) ? $"{Name} ({ShortcutText})" : Prompt;
 
+    public string Query => string.IsNullOrEmpty(Prompt) ? Name : Prompt;
+
     public string ShortcutText { get; set; } = string.Empty;
 }

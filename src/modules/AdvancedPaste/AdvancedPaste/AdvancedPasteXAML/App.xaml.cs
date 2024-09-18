@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
+using AdvancedPaste.Services;
 using AdvancedPaste.Settings;
 using AdvancedPaste.ViewModels;
 using ManagedCommon;
@@ -61,8 +62,10 @@ namespace AdvancedPaste
 
             Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory).ConfigureServices((context, services) =>
             {
-                services.AddSingleton<OptionsViewModel>();
                 services.AddSingleton<IUserSettings, UserSettings>();
+                services.AddSingleton<AICompletionsHelper>();
+                services.AddSingleton<OptionsViewModel>();
+                services.AddSingleton<IPasteFormatExecutor, PasteFormatExecutor>();
             }).Build();
 
             viewModel = GetService<OptionsViewModel>();
@@ -112,7 +115,7 @@ namespace AdvancedPaste
 
         private void ProcessNamedPipe(string pipeName)
         {
-            void OnMessage(string message) => _dispatcherQueue.TryEnqueue(() => OnNamedPipeMessage(message));
+            void OnMessage(string message) => _dispatcherQueue.TryEnqueue(async () => await OnNamedPipeMessage(message));
 
             Task.Run(async () =>
             {
@@ -121,30 +124,30 @@ namespace AdvancedPaste
             });
         }
 
-        private void OnNamedPipeMessage(string message)
+        private async Task OnNamedPipeMessage(string message)
         {
             var messageParts = message.Split();
             var messageType = messageParts.First();
 
             if (messageType == PowerToys.Interop.Constants.AdvancedPasteShowUIMessage())
             {
-                OnAdvancedPasteHotkey();
+                await ShowWindow();
             }
             else if (messageType == PowerToys.Interop.Constants.AdvancedPasteMarkdownMessage())
             {
-                OnAdvancedPasteMarkdownHotkey();
+                await viewModel.ExceutePasteFormatAsync(PasteFormats.Markdown, PasteActionSource.GlobalKeyboardShortcut);
             }
             else if (messageType == PowerToys.Interop.Constants.AdvancedPasteJsonMessage())
             {
-                OnAdvancedPasteJsonHotkey();
+                await viewModel.ExceutePasteFormatAsync(PasteFormats.Json, PasteActionSource.GlobalKeyboardShortcut);
             }
             else if (messageType == PowerToys.Interop.Constants.AdvancedPasteAdditionalActionMessage())
             {
-                OnAdvancedPasteAdditionalActionHotkey(messageParts);
+                await OnAdvancedPasteAdditionalActionHotkey(messageParts);
             }
             else if (messageType == PowerToys.Interop.Constants.AdvancedPasteCustomActionMessage())
             {
-                OnAdvancedPasteCustomActionHotkey(messageParts);
+                await OnAdvancedPasteCustomActionHotkey(messageParts);
             }
         }
 
@@ -153,24 +156,7 @@ namespace AdvancedPaste
             Logger.LogError("Unhandled exception", e.Exception);
         }
 
-        private void OnAdvancedPasteJsonHotkey()
-        {
-            viewModel.ReadClipboard();
-            viewModel.ToJsonFunction(true);
-        }
-
-        private void OnAdvancedPasteMarkdownHotkey()
-        {
-            viewModel.ReadClipboard();
-            viewModel.ToMarkdownFunction(true);
-        }
-
-        private void OnAdvancedPasteHotkey()
-        {
-            ShowWindow();
-        }
-
-        private void OnAdvancedPasteAdditionalActionHotkey(string[] messageParts)
+        private async Task OnAdvancedPasteAdditionalActionHotkey(string[] messageParts)
         {
             if (messageParts.Length != 2)
             {
@@ -184,14 +170,13 @@ namespace AdvancedPaste
                 }
                 else
                 {
-                    ShowWindow();
-                    viewModel.ReadClipboard();
-                    viewModel.ExecuteAdditionalAction(pasteFormat);
+                    await ShowWindow();
+                    await viewModel.ExceutePasteFormatAsync(pasteFormat, PasteActionSource.GlobalKeyboardShortcut);
                 }
             }
         }
 
-        private void OnAdvancedPasteCustomActionHotkey(string[] messageParts)
+        private async Task OnAdvancedPasteCustomActionHotkey(string[] messageParts)
         {
             if (messageParts.Length != 2)
             {
@@ -205,16 +190,15 @@ namespace AdvancedPaste
                 }
                 else
                 {
-                    ShowWindow();
-                    viewModel.ReadClipboard();
-                    viewModel.ExecuteCustomActionWithPaste(customActionId);
+                    await ShowWindow();
+                    await viewModel.ExecuteCustomAction(customActionId, PasteActionSource.GlobalKeyboardShortcut);
                 }
             }
         }
 
-        private void ShowWindow()
+        private async Task ShowWindow()
         {
-            viewModel.OnShow();
+            await viewModel.OnShow();
 
             if (window is null)
             {
