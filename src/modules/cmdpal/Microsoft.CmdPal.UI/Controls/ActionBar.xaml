@@ -7,7 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    Loaded="ActionBar_Loaded"
+    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
     mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -15,7 +15,7 @@
             <converters:StringVisibilityConverter x:Key="StringNotEmptyToVisibilityConverter" EmptyValue="Collapsed" NotEmptyValue="Visible" />
 
             <!--  Template for actions in the mode actions dropdown button  -->
-            <DataTemplate x:Key="ContextMenuViewModelTemplate">
+            <DataTemplate x:Key="ContextMenuViewModelTemplate" x:DataType="viewmodels:ActionBarContextItemViewModel">
                 <ListViewItem KeyDown="ActionListViewItem_KeyDown" Tapped="ActionListViewItem_Tapped">
                     <Grid ColumnSpacing="8">
                         <Grid.ColumnDefinitions>
@@ -24,6 +24,7 @@
                         </Grid.ColumnDefinitions>
 
                         <Viewbox Width="16" Height="16">
+                            <!--  TODO bind to icon  -->
                             <ContentControl
                                 Grid.Column="0"
                                 Width="24"
@@ -31,7 +32,7 @@
                                 <SymbolIcon Symbol="Emoji" />
                             </ContentControl>
                         </Viewbox>
-                        <TextBlock Grid.Column="1" Text="Placeholder" />
+                        <TextBlock Grid.Column="1" Text="{x:Bind Name}" />
                     </Grid>
                 </ListViewItem>
             </DataTemplate>
@@ -70,12 +71,12 @@
             BorderThickness="1"
             CornerRadius="4"
             Orientation="Horizontal"
-            Visibility="{x:Bind ActionName, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}">
+            Visibility="{x:Bind ViewModel.ActionName, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}">
             <TextBlock
                 FontSize="11"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Style="{StaticResource CaptionTextBlockStyle}"
-                Text="{x:Bind ActionName, Mode=OneWay}" />
+                Text="{x:Bind ViewModel.ActionName, Mode=OneWay}" />
             <FontIcon
                 Margin="4,0,0,0"
                 VerticalAlignment="Center"
@@ -91,14 +92,14 @@
             VerticalAlignment="Center"
             Content="Actions"
             FontSize="12"
-            Visibility="{x:Bind MoreCommandsAvailable, Mode=OneWay}">
+            Visibility="{x:Bind ViewModel.MoreCommandsAvailable, Mode=OneWay}">
             <SplitButton.Flyout>
                 <Flyout Placement="TopEdgeAlignedRight">
                     <ListView
                         x:Name="ActionsDropdown"
                         Margin="-12"
                         ItemTemplate="{StaticResource ContextMenuViewModelTemplate}"
-                        ItemsSource="{x:Bind _contextActions, Mode=OneWay}"
+                        ItemsSource="{x:Bind ViewModel.ContextActions, Mode=OneWay}"
                         Style="{StaticResource NoAnimationsPlease}" />
                 </Flyout>
             </SplitButton.Flyout>
