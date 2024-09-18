@@ -23,6 +23,7 @@
             Name="RootFrame"
             Grid.Row="1"
             IsNavigationStackEnabled="True" />
-        <!--  TODO: Actions Bar/Control Here  -->
+
+        <controls:ActionBar Grid.Row="2" VerticalAlignment="Top" />
     </Grid>
 </Page>

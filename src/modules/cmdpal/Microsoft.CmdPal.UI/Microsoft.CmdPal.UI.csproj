@@ -12,6 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Controls\ActionBar.xaml" />
     <None Remove="Controls\SearchBar.xaml" />
     <None Remove="ListDetailPage.xaml" />
     <None Remove="LoadingPage.xaml" />
@@ -52,12 +53,11 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.CmdPal.UI.ViewModels\Microsoft.CmdPal.UI.ViewModels.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <Page Update="LoadingPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-  </ItemGroup>
-  <ItemGroup>
     <Page Update="ShellPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
