@@ -32,6 +32,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ButtonClickCommand SelectDemoTypeFileCommand { get; set; }
 
+        // These values should track what's in DemoType.h
+        public int DemoTypeMaxTypingSpeed { get; } = 10;
+
+        public int DemoTypeMinTypingSpeed { get; } = 100;
+
         private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
         {
             MaxDepth = 0,
@@ -258,6 +263,34 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _zoomItSettings.Properties.DemoTypeFile.Value = value;
                     OnPropertyChanged(nameof(DemoTypeFile));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool DemoTypeUserDrivenMode
+        {
+            get => _zoomItSettings.Properties.DemoTypeUserDrivenMode.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.DemoTypeUserDrivenMode.Value != value)
+                {
+                    _zoomItSettings.Properties.DemoTypeUserDrivenMode.Value = value;
+                    OnPropertyChanged(nameof(DemoTypeUserDrivenMode));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public int DemoTypeSpeedSlider
+        {
+            get => _zoomItSettings.Properties.DemoTypeSpeedSlider.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.DemoTypeSpeedSlider.Value != value)
+                {
+                    _zoomItSettings.Properties.DemoTypeSpeedSlider.Value = value;
+                    OnPropertyChanged(nameof(DemoTypeSpeedSlider));
                     NotifySettingsChanged();
                 }
             }

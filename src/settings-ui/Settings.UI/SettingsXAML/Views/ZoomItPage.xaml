@@ -13,6 +13,7 @@
 
     <Page.Resources>
         <converters:ZoomItInitialZoomConverter x:Key="ZoomItInitialZoomConverter" />
+        <converters:ZoomItTypeSpeedSliderConverter x:Key="ZoomItTypeSpeedSliderConverter" />
     </Page.Resources>
 
     <controls:SettingsPageControl
@@ -68,11 +69,21 @@
                 <controls:SettingsGroup x:Uid="ZoomIt_TypeGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_DemoTypeGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="ZoomIt_DemoType_File" Description="{x:Bind ViewModel.DemoTypeFile, Mode=OneWay}">
+                        <Button x:Uid="ZoomIt_DemoType_File_BrowseButton" Command="{x:Bind ViewModel.SelectDemoTypeFileCommand, Mode=OneWay}"/>
+                    </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_DemoType_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.DemoTypeToggleKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="ZoomIt_DemoType_File" Description="{x:Bind ViewModel.DemoTypeFile, Mode=OneWay}">
-                        <Button x:Uid="ZoomIt_DemoType_File_BrowseButton" Command="{x:Bind ViewModel.SelectDemoTypeFileCommand, Mode=OneWay}"/>
+                    <tkcontrols:SettingsCard x:Uid="ZoomIt_DemoType_Toggle_UserDrivenMode">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.DemoTypeUserDrivenMode, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="ZoomIt_DemoType_SpeedSlider" Description="{x:Bind ViewModel.DemoTypeSpeedSlider, Mode=OneWay}">
+                        <Slider MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                Minimum="{x:Bind ViewModel.DemoTypeMaxTypingSpeed, Mode=OneWay}"
+                                Maximum="{x:Bind ViewModel.DemoTypeMinTypingSpeed, Mode=OneWay}"
+                                ThumbToolTipValueConverter="{StaticResource ZoomItTypeSpeedSliderConverter}"
+                                Value="{x:Bind ViewModel.DemoTypeSpeedSlider, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_BreakGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">

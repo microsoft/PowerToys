@@ -4397,6 +4397,15 @@ When you reach the end of the file, ZoomIt will reload the file and start at the
   <data name="FilePicker_AllFilesFilter" xml:space="preserve">
     <value>All Files</value>
   </data>
+  <data name="ZoomIt_DemoType_Toggle_UserDrivenMode.Header" xml:space="preserve">
+    <value>Drive input with typing</value>
+  </data>
+  <data name="ZoomIt_DemoType_SpeedSlider.Header" xml:space="preserve">
+    <value>DemoType typing speed (milliseconds per character)</value>
+  </data>
+  <data name="ZoomIt_DemoType_SpeedSlider_Thumbnail_Explanation" xml:space="preserve">
+    <value>smaller is faster</value>
+  </data>
   <data name="ZoomIt_BreakGroup.Header" xml:space="preserve">
     <value>Break</value>
   </data>
