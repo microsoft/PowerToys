@@ -35,6 +35,10 @@ parameters:
     default:
       - x64
       - arm64
+  - name: enableCaching
+    type: boolean
+    displayName: "Enable Caching"
+    default: false
 
 stages:
   - stage: Precheck
@@ -42,7 +46,6 @@ stages:
       - template: ./templates/job-ci-precheck.yml
 
   - ${{ each platform in parameters.buildPlatforms }}:
-
     - stage: Build_${{ platform }}
       displayName: Build ${{ platform }}
       dependsOn: [Precheck]
@@ -58,3 +61,4 @@ stages:
             buildPlatforms:
               - ${{ platform }}
             buildConfigurations: [Release]
+            enableCaching: ${{ parameters.enableCaching }}
