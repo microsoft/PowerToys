@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using Common.UI;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -93,6 +94,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     }
                 }
             }
+        }
+
+        public bool IsWin10OrLower
+        {
+            get => !OSVersionHelper.IsWindows11();
         }
 
         public string TemplateLocation

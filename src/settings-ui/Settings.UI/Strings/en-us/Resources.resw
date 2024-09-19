@@ -4299,6 +4299,9 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Enable New+</value>
     <comment>Localize product name in accordance with Windows New</comment>
   </data>
+  <data name="NewPlus_NoWindows10SupportlWarning.Title" xml:space="preserve">
+    <value>New+ is not supported in Windows 10 and is not expected to work.</value>
+  </data>
   <data name="NewPlus_Templates.Header" xml:space="preserve">
     <value>Templates</value>
     <comment>Templates label</comment>
