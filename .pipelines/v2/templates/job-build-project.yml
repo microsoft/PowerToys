@@ -332,7 +332,7 @@ jobs:
           /p:VCRTForwarders-IncludeDebugCRT=false
           /p:PowerToysRoot=$(Build.SourcesDirectory)
           /p:PublishProfile=InstallationPublishProfile.pubxml
-          /bl:$(LogOutputDirectory)\publish-${{ join("_",split(project, "/")) }}.binlog
+          /bl:$(LogOutputDirectory)\publish-${{ join('_',split(project, '/')) }}.binlog
         platform: $(BuildPlatform)
         configuration: $(BuildConfiguration)
         maximumCpuCount: true
