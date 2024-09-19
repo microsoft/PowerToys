@@ -61,9 +61,6 @@
     <Page Update="ShellPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-  </ItemGroup>
-
-  <ItemGroup>
     <Page Update="ListDetailPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

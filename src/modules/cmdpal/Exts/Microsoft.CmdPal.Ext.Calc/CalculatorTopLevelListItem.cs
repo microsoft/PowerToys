@@ -7,8 +7,6 @@ using System.Data;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace Microsoft.CmdPal.Ext.Calc;
 
 public partial class CalculatorTopLevelListItem : ListItem, IFallbackHandler
@@ -17,7 +15,7 @@ public partial class CalculatorTopLevelListItem : ListItem, IFallbackHandler
         : base(new CalculatorAction())
     {
         // In the case of the calculator, the ListItem itself is the fallback
-        // handler, so that it can update it's Title and Subtitle accodingly.
+        // handler so that it can update its Title and Subtitle accordingly.
         FallbackHandler = this;
         Subtitle = "Type an equation";
     }

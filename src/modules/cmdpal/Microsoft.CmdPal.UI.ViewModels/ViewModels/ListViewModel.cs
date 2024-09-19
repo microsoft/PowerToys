@@ -13,7 +13,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class ListViewModel : ObservableObject
 {
-    // Observable from MVVM Toolkit will auto create public properties that use inotifyproperty change
+    // Observable from MVVM Toolkit will auto create public properties that use INotifyPropertyChange
     [ObservableProperty]
     private ObservableCollection<ListItemViewModel> _items = [];
 
