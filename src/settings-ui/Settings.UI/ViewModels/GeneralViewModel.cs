@@ -211,7 +211,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private string _backupRestoreMessageSeverity;
 
         private int _languagesIndex;
-        private int _initlanguagesIndex;
+        private int _initLanguagesIndex;
         private bool _languageChanged;
 
         // Gets or sets a value indicating whether run powertoys on start-up.
@@ -793,7 +793,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _languagesIndex = value;
                     OnPropertyChanged(nameof(LanguagesIndex));
                     NotifyLanguageChanged();
-                    if (_initlanguagesIndex != value)
+                    if (_initLanguagesIndex != value)
                     {
                         LanguageChanged = true;
                     }
@@ -1090,7 +1090,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 if (item.Key.Equals(lang, StringComparison.Ordinal))
                 {
-                    _initlanguagesIndex = i;
+                    _initLanguagesIndex = i;
                     LanguagesIndex = i;
                 }
 

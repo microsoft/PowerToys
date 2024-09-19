@@ -1552,7 +1552,7 @@ Stubless
 STYLECHANGED
 STYLECHANGING
 subkeys
-SUBLANG
+sublang
 subquery
 Superbar
 sut
