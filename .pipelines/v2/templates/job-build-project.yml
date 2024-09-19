@@ -11,9 +11,6 @@ parameters:
     default:
       - x64
       - arm64
-  - name: publishSymbolsToPublic
-    type: boolean
-    default: false
   - name: codeSign
     type: boolean
     default: false
@@ -35,12 +32,6 @@ parameters:
   - name: publishArtifacts
     type: boolean
     default: true
-  - name: symbolPublishingSubscription
-    type: string
-    default: ''
-  - name: symbolPublishingProject
-    type: string
-    default: ''
   - name: signingIdentity
     type: object
     default: {}

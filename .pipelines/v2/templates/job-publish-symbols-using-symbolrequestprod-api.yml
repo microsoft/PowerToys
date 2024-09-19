@@ -8,6 +8,9 @@ parameters:
   - name: dependsOn
     type: object
     default: null
+  - name: versionNumber
+    type: string
+    default: '0.0.1'
   - name: artifactStem
     type: string
     default: ''
@@ -36,6 +39,7 @@ jobs:
   dependsOn: ${{ parameters.dependsOn }}
   variables:
     ${{ insert }}: ${{ parameters.variables }}
+    SymbolsArtifactName: "PowerToys_${{parameters.versionNumber}}_$(Build.BuildNumber)"
   steps:
   - checkout: self
     clean: true
@@ -44,13 +48,11 @@ jobs:
     submodules: true
     persistCredentials: True
 
-  - template: steps-setup-versioning.yml
-
   - task: DownloadPipelineArtifact@2
     displayName: Download all PDBs from all prior build phases
     inputs:
       itemPattern: '**/*.pdb'
-      targetPath: '$(Build.SourcesDirectory)/bin'
+      targetPath: '$(Build.SourcesDirectory)/symbolStaging'
 
   - powershell: |-
       Get-PackageProvider -Name NuGet -ForceBootstrap
@@ -74,15 +76,15 @@ jobs:
     displayName: Publish Symbols (to current Azure DevOps tenant)
     continueOnError: True
     inputs:
-      SymbolsFolder: '$(Build.SourcesDirectory)/bin'
+      SymbolsFolder: '$(Build.SourcesDirectory)/symbolStaging'
       SearchPattern: '**/*.pdb'
       IndexSources: false
       DetailedLog: true
       SymbolsMaximumWaitTime: 30
       SymbolServerType: 'TeamServices'
-      SymbolsProduct: 'Windows Terminal Converged Symbols'
-      SymbolsVersion: '$(XES_APPXMANIFESTVERSION)'
-      SymbolsArtifactName: 'WindowsTerminal_$(XES_APPXMANIFESTVERSION)'
+      SymbolsProduct: 'PowerToys Converged Symbols'
+      SymbolsVersion: '${{ parameters.versionNumber }}'
+      SymbolsArtifactName: $(SymbolsArtifactName)
       SymbolExpirationInDays: ${{ parameters.symbolExpiryTime }}
     env:
       LIB: $(Build.SourcesDirectory)
@@ -98,7 +100,7 @@ jobs:
       # Prepare the request
       $expiration = (Get-Date).Add([TimeSpan]::FromDays(${{ parameters.symbolExpiryTime }}))
       $createRequestBody = @{
-        requestName = "WindowsTerminal_$(XES_APPXMANIFESTVERSION)";
+        requestName = "$(SymbolsArtifactName)";
         expirationTime = $expiration.ToString();
       }
       Write-Host "##[debug]Starting request $($createRequestBody.requestName) with expiration date of $($createRequestBody.expirationTime)"

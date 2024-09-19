@@ -66,6 +66,7 @@ extends:
                 # IsExperimentationLive: 1 # The build and installer use this to turn on experimentation
               buildPlatforms: ${{ parameters.buildPlatforms }}
               buildConfigurations: ${{ parameters.buildConfigurations }}
+              versionNumber: ${{ parameters.versionNumber }}
               codeSign: true
               signingIdentity:
                 serviceName: $(SigningServiceName)
@@ -74,9 +75,6 @@ extends:
                 akvName: $(SigningAKVName)
                 authCertName: $(SigningAuthCertName)
                 signCertName: $(SigningSignCertName)
-              publishSymbolsToPublic: ${{ parameters.publishSymbolsToPublic }}
-              symbolPublishingSubscription: $(SymbolPublishingServiceConnection)
-              symbolPublishingProject: $(SymbolPublishingProject)
               # Have msbuild use the release nuget config profile
               additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config"
               beforeBuildSteps:
@@ -88,3 +86,14 @@ extends:
                     move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TraceLoggingDefines.h" "src\common\Telemetry\TraceLoggingDefines.h" || exit /b 1
                     move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TelemetryBase.cs" "src\common\Telemetry\TelemetryBase.cs" || exit /b 1
                   displayName: Emplace telemetry files
+
+      - stage: Publish
+        displayName: Publish
+        dependsOn: [Build]
+        jobs:
+          - template: .pipelines/v2/templates/job-publish-symbols-using-symbolrequestprod-api.yml@self
+            parameters:
+              versionNumber: ${{ parameters.versionNumber }}
+              includePublicSymbolServer: ${{ parameters.publishSymbolsToPublic }}
+              subscription: $(SymbolPublishingServiceConnection)
+              symbolProject: $(SymbolPublishingProject)
