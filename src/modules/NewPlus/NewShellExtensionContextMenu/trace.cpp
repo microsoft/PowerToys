@@ -24,7 +24,7 @@ void Trace::EventToggleOnOff(_In_ const bool enabled) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "New_EventToggleOnOff",
+        "NewPlus_EventToggleOnOff",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingBoolean(enabled, "Enabled"));
@@ -34,7 +34,7 @@ void Trace::EventChangedTemplateLocation() noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "New_ChangedTemplateLocation",
+        "NewPlus_ChangedTemplateLocation",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
@@ -43,7 +43,7 @@ void Trace::EventShowTemplateItems(const size_t number_of_templates) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "New_EventShowTemplateItems",
+        "NewPlus_EventShowTemplateItems",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingValue(number_of_templates, "Count"));
@@ -53,7 +53,7 @@ void Trace::EventCopyTemplate(_In_ const std::wstring template_file_extension) n
 {
     TraceLoggingWrite(
         g_hProvider,
-        "New_EventCopyTemplate",
+        "NewPlus_EventCopyTemplate",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingWideString(template_file_extension.c_str(), "Ext"));
@@ -63,7 +63,7 @@ void Trace::EventCopyTemplateResult(_In_ const HRESULT hr) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "New_EventCopyTemplateResult",
+        "NewPlus_EventCopyTemplateResult",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingHResult(hr),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
