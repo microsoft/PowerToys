@@ -126,16 +126,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ArrangeWindows.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="WindowArranger.cpp" />
+    <ClCompile Include="WindowCreationHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ArrangeWindows.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="WindowArranger.h" />
+    <ClInclude Include="WindowCreationHandler.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

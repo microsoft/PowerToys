@@ -1,17 +1,15 @@
-#include "pch.h"
+﻿#include "pch.h"
 
 #include <WorkspacesLib/JsonUtils.h>
+#include <WorkspacesLib/IPCHelper.h>
 #include <WorkspacesLib/utils.h>
-#include <WorkspacesLib/WorkspacesData.h>
-
-#include <workspaces-common/MonitorUtils.h>
 
 #include <common/utils/gpo.h>
 #include <common/utils/logger_helper.h>
-#include <common/utils/process_path.h>
 #include <common/utils/UnhandledExceptionHandler.h>
+#include <common/utils/window.h>
 
-#include <ArrangeWindows.h>
+#include <WindowArranger.h>
 
 const std::wstring moduleName = L"Workspaces\\WorkspacesWindowArranger";
 const std::wstring internalPath = L"";
@@ -36,6 +34,17 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         return 1;
     }
 
+    auto args = split(commandLine, L" ");
+    std::wstring id{};
+    if (args.size() == 1)
+    {
+        id = args[0];
+    }
+    else if (args.size() == 2)
+    {
+        id = args[1];
+    }
+    
     if (id.empty())
     {
         Logger::warn("Incorrect command line arguments: no workspace id");
@@ -57,6 +66,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         }
         else
         {
+            Logger::error(L"Error reading temp file");
             return 1;
         }
     }
@@ -89,11 +99,16 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         Logger::critical(L"Workspace {} not found", id);
         return 1;
     }
-
+    
+    // IPC
+    IPCHelper ipc(IPCHelperStrings::WindowArrangerPipeName, IPCHelperStrings::LauncherArrangerPipeName, nullptr);
+    
     // arrange windows
-    Logger::info(L"Arrange widnows from Workspace {} : {}", projectToLaunch.name, projectToLaunch.id);
-    auto monitors = MonitorUtils::IdentifyMonitors();
-    ArrangeWindows(projectToLaunch, monitors);
+    Logger::info(L"Arrange windows from Workspace {} : {}", projectToLaunch.name, projectToLaunch.id);
+    WindowArranger windowArranger(projectToLaunch, ipc);
+    //run_message_loop();
+    
+    Logger::debug(L"Arranger finished");
     
     CoUninitialize();
     return 0;
