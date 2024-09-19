@@ -13,6 +13,6 @@ public:
     void UpdateLaunchStatus(WorkspacesData::LaunchingAppStateMap launchedApps) const;
 
 private:
-    DWORD uiProcessId;
-    IPCHelper ipcHelper;
+    DWORD m_processId;
+    IPCHelper m_ipcHelper;
 };

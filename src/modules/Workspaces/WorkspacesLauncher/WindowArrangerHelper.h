@@ -14,7 +14,7 @@ public:
     void Launch(const std::wstring& projectId, bool elevated, std::function<bool()> allWindowsFoundCallback);
 
 private:
-    DWORD processId;
-    IPCHelper ipcHelper;
+    DWORD m_processId;
+    IPCHelper m_ipcHelper;
     OnThreadExecutor m_threadExecutor;
 };

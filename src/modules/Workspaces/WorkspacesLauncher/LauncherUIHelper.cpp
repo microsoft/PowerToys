@@ -10,8 +10,8 @@
 #include <AppLauncher.h>
 
 LauncherUIHelper::LauncherUIHelper() :
-    uiProcessId{},
-    ipcHelper(IPCHelperStrings::LauncherUIPipeName, IPCHelperStrings::UIPipeName, nullptr)
+    m_processId{},
+    m_ipcHelper(IPCHelperStrings::LauncherUIPipeName, IPCHelperStrings::UIPipeName, nullptr)
 {
 }
 
@@ -20,9 +20,9 @@ LauncherUIHelper::~LauncherUIHelper()
     OnThreadExecutor().submit(OnThreadExecutor::task_t{ [&] {
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-        Logger::info(L"Stopping WorkspacesLauncherUI with pid {}", uiProcessId);
+        Logger::info(L"Stopping WorkspacesLauncherUI with pid {}", m_processId);
     
-        HANDLE uiProcess = OpenProcess(PROCESS_ALL_ACCESS, false, uiProcessId);
+        HANDLE uiProcess = OpenProcess(PROCESS_ALL_ACCESS, false, m_processId);
         if (uiProcess)
         {
             bool res = TerminateProcess(uiProcess, 0);
@@ -50,9 +50,9 @@ void LauncherUIHelper::LaunchUI()
     if (res.isOk())
     {
         auto value = res.value();
-        uiProcessId = GetProcessId(value.hProcess);
+        m_processId = GetProcessId(value.hProcess);
         CloseHandle(value.hProcess);
-        Logger::info(L"WorkspacesLauncherUI started with pid {}", uiProcessId);
+        Logger::info(L"WorkspacesLauncherUI started with pid {}", m_processId);
     }
     else
     {
@@ -69,5 +69,5 @@ void LauncherUIHelper::UpdateLaunchStatus(WorkspacesData::LaunchingAppStateMap l
         appData.appsStateList.insert({ app, { app, nullptr, data.state } });
     }
 
-    ipcHelper.send(WorkspacesData::AppLaunchDataJSON::ToJson(appData).ToString().c_str());
+    m_ipcHelper.send(WorkspacesData::AppLaunchDataJSON::ToJson(appData).ToString().c_str());
 }

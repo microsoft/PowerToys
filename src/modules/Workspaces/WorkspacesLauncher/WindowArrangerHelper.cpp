@@ -11,16 +11,16 @@
 #include <AppLauncher.h>
 
 WindowArrangerHelper::WindowArrangerHelper(std::function<void(const std::wstring&)> ipcCallback) :
-    processId{},
-    ipcHelper(IPCHelperStrings::LauncherArrangerPipeName, IPCHelperStrings::WindowArrangerPipeName, ipcCallback)
+    m_processId{},
+    m_ipcHelper(IPCHelperStrings::LauncherArrangerPipeName, IPCHelperStrings::WindowArrangerPipeName, ipcCallback)
 {
 }
 
 WindowArrangerHelper::~WindowArrangerHelper()
 {
-    Logger::info(L"Stopping WorkspacesWindowArranger with pid {}", processId);
+    Logger::info(L"Stopping WorkspacesWindowArranger with pid {}", m_processId);
     
-    HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, false, processId);
+    HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, false, m_processId);
     if (process)
     {
         bool res = TerminateProcess(process, 0);
@@ -47,8 +47,8 @@ void WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated, 
     if (res.isOk())
     {
         auto value = res.value();
-        processId = GetProcessId(value.hProcess);
-        Logger::info(L"WorkspacesWindowArranger started with pid {}", processId);
+        m_processId = GetProcessId(value.hProcess);
+        Logger::info(L"WorkspacesWindowArranger started with pid {}", m_processId);
         std::atomic_bool timeoutExpired = false;
         m_threadExecutor.submit(OnThreadExecutor::task_t{
             [&] {
