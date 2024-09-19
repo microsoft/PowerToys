@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    Background="Transparent"
     mc:Ignorable="d">
 
     <UserControl.Resources>
