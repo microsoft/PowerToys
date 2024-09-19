@@ -10,6 +10,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Awake.Core.Models;
 using Awake.Core.Native;
 using Awake.Properties;

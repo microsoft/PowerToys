@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
@@ -21,6 +22,7 @@ using WorkspacesEditor.Data;
 using WorkspacesEditor.Models;
 using WorkspacesEditor.Telemetry;
 using WorkspacesEditor.Utils;
+
 using static WorkspacesEditor.Data.WorkspacesData;
 
 namespace WorkspacesEditor.ViewModels

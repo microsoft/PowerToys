@@ -16,12 +16,14 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+
 using Microsoft.VisualStudio.Threading;
 using Newtonsoft.Json;
 using StreamJsonRpc;
 
 #if !MM_HELPER
 using MouseWithoutBorders.Class;
+
 #endif
 using SystemClipboard = System.Windows.Forms.Clipboard;
 

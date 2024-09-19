@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
+
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 using Wox.Infrastructure;
 using Wox.Plugin;

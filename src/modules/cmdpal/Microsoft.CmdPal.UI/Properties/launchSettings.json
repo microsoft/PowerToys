@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Microsoft.CmdPal.UI (Package)": {
+      "commandName": "MsixPackage",
+      "nativeDebugging": true
+    },
+    "Microsoft.CmdPal.UI (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

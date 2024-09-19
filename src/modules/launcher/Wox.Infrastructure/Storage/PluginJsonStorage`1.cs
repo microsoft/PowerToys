@@ -4,6 +4,7 @@
 
 using System.IO.Abstractions;
 using System.Text.Json;
+
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 

@@ -7,12 +7,7 @@
     xmlns:local="using:WindowsCommandPalette.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="Transparent"
-    Loaded="Page_Loaded"
     mc:Ignorable="d">
-
-    <Page.Resources>
-        <ResourceDictionary />
-    </Page.Resources>
 
     <Grid
         HorizontalAlignment="Stretch"

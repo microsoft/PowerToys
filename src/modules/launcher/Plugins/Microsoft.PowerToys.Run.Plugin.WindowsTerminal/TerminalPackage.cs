@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Windows.Media.Imaging;
+
 using Wox.Infrastructure.Image;
 
 namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
