@@ -67,6 +67,7 @@ extends:
               buildPlatforms: ${{ parameters.buildPlatforms }}
               buildConfigurations: ${{ parameters.buildConfigurations }}
               versionNumber: ${{ parameters.versionNumber }}
+              publishArtifacts: false # 1ES PT handles publication for us.
               codeSign: true
               signingIdentity:
                 serviceName: $(SigningServiceName)
