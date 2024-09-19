@@ -4,6 +4,7 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -14,19 +15,23 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class ListViewModel : ObservableObject
 {
-    // Observable from MVVM Toolkit will auto create public properties that use INotifyPropertyChange
+    // Observable from MVVM Toolkit will auto create public properties that use INotifyPropertyChange change
+    // https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/observablegroupedcollections for grouping support
     [ObservableProperty]
-    private ObservableCollection<ListItemViewModel> _items = [];
+    private ObservableGroupedCollection<string, ListItemViewModel> _items = [];
 
     public ListViewModel(IListPage model)
     {
         foreach (var section in model.GetItems())
         {
-            // TODO: Ignoring sections for now
+            ObservableGroup<string, ListItemViewModel> group = new(section.Title);
+
             foreach (var item in section.Items)
             {
-                _items.Add(new(item));
+                group.Add(new(item));
             }
+
+            Items.AddGroup(group);
         }
     }
 

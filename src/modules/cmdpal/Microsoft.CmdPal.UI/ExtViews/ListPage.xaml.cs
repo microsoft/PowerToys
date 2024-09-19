@@ -4,6 +4,7 @@
 
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.CmdPal.UI;
@@ -30,9 +31,9 @@ public sealed partial class ListPage : Page
         base.OnNavigatedTo(e);
     }
 
-    private void ItemsView_ItemInvoked(ItemsView sender, ItemsViewItemInvokedEventArgs args)
+    private void ListView_ItemClick(object sender, ItemClickEventArgs e)
     {
-        if (args.InvokedItem is ListItemViewModel item)
+        if (e.ClickedItem is ListItemViewModel item)
         {
             ViewModel?.InvokeItemCommand.Execute(item);
         }
