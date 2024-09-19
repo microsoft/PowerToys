@@ -7,6 +7,7 @@
     xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    Closed="MainWindow_Closed"
     mc:Ignorable="d">
 
     <local:ShellPage />
