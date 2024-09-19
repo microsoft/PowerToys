@@ -1,30 +1,7 @@
 parameters:
-  - name: branding
-    type: string
-    default: Dev
   - name: additionalBuildOptions
     type: string
     default: ''
-  - name: buildTerminal
-    type: boolean
-    default: true
-  - name: buildConPTY
-    type: boolean
-    default: false
-  - name: buildWPF
-    type: boolean
-    default: false
-  - name: buildWPFDotNetComponents # This weird hack is to make sure we sign and source index the .NET pieces
-    type: boolean
-    default: false
-  - name: buildEverything
-    displayName: "Build Everything (Overrides all other build options)"
-    type: boolean
-    default: false
-  - name: pgoBuildMode
-    type: string
-    default: None
-    values: [Optimize, Instrument, None]
   - name: buildConfigurations
     type: object
     default:
@@ -33,17 +10,13 @@ parameters:
     type: object
     default:
       - x64
-      - x86
       - arm64
-  - name: generateSbom
+  - name: publishSymbolsToPublic
     type: boolean
     default: false
   - name: codeSign
     type: boolean
     default: false
-  - name: keepAllExpensiveBuildOutputs
-    type: boolean
-    default: true
   - name: artifactStem
     type: string
     default: ''
@@ -62,15 +35,32 @@ parameters:
   - name: publishArtifacts
     type: boolean
     default: true
-  - name: removeAllNonSignedFiles
-    type: boolean
-    default: false
+  - name: symbolPublishingSubscription
+    type: string
+    default: ''
+  - name: symbolPublishingProject
+    type: string
+    default: ''
   - name: signingIdentity
     type: object
     default: {}
   - name: enableCaching
     type: boolean
     default: false
+
+  - name: versionNumber
+    type: string
+    default: '0.0.1'
+  - name: csProjectsToPublish
+    type: object
+    default:
+      - 'src/settings-ui/Settings.UI/PowerToys.Settings.csproj'
+      - 'src/modules/launcher/PowerLauncher/PowerLauncher.csproj'
+      - 'src/modules/previewpane/MonacoPreviewHandler/MonacoPreviewHandler.csproj'
+      - 'src/modules/previewpane/MarkdownPreviewHandler/MarkdownPreviewHandler.csproj'
+      - 'src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj'
+      - 'src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.csproj'
+      - 'src/modules/FileLocksmith/FileLocksmithUI/FileLocksmithUI.csproj'
 
 jobs:
 - job: ${{ parameters.jobName }}
@@ -90,59 +80,34 @@ jobs:
             ${{ else }}:
               OutputBuildPlatform: ${{ platform }}
   variables:
-    MakeAppxPath: 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x86\MakeAppx.exe'
-    Terminal.BinDir: $(Build.SourcesDirectory)/bin/$(OutputBuildPlatform)/$(BuildConfiguration)
     # Azure DevOps abhors a vacuum
     # If these are blank, expansion will fail later on... which will result in direct substitution of the variable *names*
     # later on. We'll just... set them to a single space and if we need to, check IsNullOrWhiteSpace.
     # Yup.
-    BuildTargetParameter: ' '
-    SelectedSigningFragments: ' '
     MSBuildCacheParameters: ' '
-    # When building the unpackaged distribution, build it in portable mode if it's Canary-branded
-    ${{ if eq(parameters.branding, 'Canary') }}:
-      UnpackagedBuildArguments: -PortableMode
-    ${{ else }}:
-      UnpackagedBuildArguments: ' '
-    JobOutputDirectory: $(Terminal.BinDir)
+    JobOutputDirectory: $(Build.ArtifactStagingDirectory)
     JobOutputArtifactName: build-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
+    NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
+    NODE_OPTIONS: --max_old_space_size=16384
     ${{ insert }}: ${{ parameters.variables }}
   displayName: Build
   timeoutInMinutes: 240
   cancelTimeoutInMinutes: 1
+  templateContext: # Required when this template is hosted in 1ES PT
+    outputs:
+    - output: pipelineArtifact
+      artifactName: setup-$(BuildPlatform)
+      targetPath: $(Build.ArtifactStagingDirectory)
   steps:
   - checkout: self
     clean: true
     submodules: true
     persistCredentials: True
 
-  # This generates either nothing for BuildTargetParameter, or /t:X;Y;Z, to control targets later.
+  # Sets versions for all PowerToy created DLLs
   - pwsh: |-
-      If (-Not [bool]::Parse("${{ parameters.buildEverything }}")) {
-        $BuildTargets = @()
-        $SignFragments = @()
-        If ([bool]::Parse("${{ parameters.buildTerminal }}")) {
-          $BuildTargets += "Terminal\CascadiaPackage"
-          $SignFragments += "terminal_constituents"
-        }
-        If ([bool]::Parse("${{ parameters.buildWPFDotNetComponents }}")) {
-          $BuildTargets += "Terminal\wpf\WpfTerminalControl"
-          $SignFragments += "wpfdotnet"
-        }
-        If ([bool]::Parse("${{ parameters.buildWPF }}")) {
-          $BuildTargets += "Terminal\Control\Microsoft_Terminal_Control"
-          $SignFragments += "wpf"
-        }
-        If ([bool]::Parse("${{ parameters.buildConPTY }}")) {
-          $BuildTargets += "Conhost\Host_EXE;Conhost\winconpty_DLL"
-          $SignFragments += "conpty"
-        }
-        Write-Host "Targets: $($BuildTargets -Join ";")"
-        Write-Host "Sign targets: $($SignFragments -Join ";")"
-        Write-Host "##vso[task.setvariable variable=BuildTargetParameter]/t:$($BuildTargets -Join ";")"
-        Write-Host "##vso[task.setvariable variable=SelectedSigningFragments]$($SignFragments -Join ";")"
-      }
-    displayName: Prepare Build and Sign Targets
+      .pipelines/versionSetting.ps1 -versionNumber '${{ parameters.versionNumber }}' -DevEnvironment ''
+    displayName: Set Versions.Prop
 
   - ${{ if eq(parameters.enableCaching, true) }}:
     - pwsh: |-
@@ -155,29 +120,35 @@ jobs:
         Write-Host "##vso[task.setvariable variable=MSBuildCacheParameters]$MSBuildCacheParameters"
       displayName: Prepare MSBuildCache variables
 
-  - pwsh: |-
-      .\build\scripts\Generate-ThirdPartyNotices.ps1 -MarkdownNoticePath .\NOTICE.md -OutputPath .\src\cascadia\CascadiaPackage\NOTICE.html
-    displayName: Generate NOTICE.html from NOTICE.md
-
-  - template: .\steps-install-vcpkg.yml
+  - task: UseDotNet@2
+    displayName: 'Use .NET 8 SDK'
+    inputs:
+      packageType: sdk
+      version: '8.x'
 
   - template: .\steps-restore-nuget.yml
 
   - pwsh: |-
-      .\build\scripts\Set-LatestVCToolsVersion.ps1
+      & "$(build.sourcesdirectory)\.pipelines\verifyAndSetLatestVCToolsVersion.ps1"
     displayName: Work around DD-1541167 (VCToolsVersion)
+
+  - pwsh: |-
+      & "$(build.sourcesdirectory)\.pipelines\installWiX.ps1"
+    displayName: Download and install WiX 3.14 development build
 
   - ${{ parameters.beforeBuildSteps }}
 
   - task: VSBuild@1
-    displayName: Build OpenConsole.sln
+    displayName: Build PowerToys main project
     inputs:
-      solution: 'OpenConsole.sln'
+      solution: 'PowerToys.sln'
+      vsVersion: 17.0
       msbuildArgs: >-
-        /p:WindowsTerminalOfficialBuild=true;WindowsTerminalBranding=${{ parameters.branding }};PGOBuildMode=${{ parameters.pgoBuildMode }}
-        ${{ parameters.additionalBuildOptions }}
+        -restore -graph
+        /p:RestorePackagesConfig=true
+        /p:CIBuild=true
         /bl:$(Build.SourcesDirectory)\msbuild.binlog
-        $(BuildTargetParameter)
+        ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
@@ -187,6 +158,7 @@ jobs:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
+  # Stage build logs into the Artifacts folder, or publish them directly.
   - ${{ if eq(parameters.publishArtifacts, true) }}:
     - publish: $(Build.SourcesDirectory)/msbuild.binlog
       artifact: logs-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
@@ -202,139 +174,260 @@ jobs:
       displayName: Copy Build Log
       inputs:
         contents: $(Build.SourcesDirectory)/msbuild.binlog
-        TargetFolder: $(Terminal.BinDir)
+        TargetFolder: $(JobOutputDirectory)
     - ${{ if eq(parameters.enableCaching, true) }}:
       - task: CopyFiles@2
         displayName: Copy MSBuildCache Logs
         inputs:
           contents: $(Build.SourcesDirectory)/MSBuildCacheLogs/**
-          TargetFolder: $(Terminal.BinDir)/MSBuildCacheLogs
-
-  # This saves ~2GiB per architecture. We won't need these later.
-  # Removes:
-  # - All .lib that do not have an associated .exp (which would indicate that they are import libs)
-  # - All .pdbs from those .libs (which were only used during linking)
-  # - Directories ending in Lib (static lib projects that we fully linked into DLLs which may also contain unnecessary resources)
-  # - All LocalTests_ project outputs, as they were subsumed into TestHostApp
-  # - All PDB files inside the WindowsTerminal/ output, which do not belong there.
-  # - console.dll, which apparently breaks XFGCheck? lol.
-  - pwsh: |-
-      $binDir = '$(Terminal.BinDir)'
-      $ImportLibs = Get-ChildItem $binDir -Recurse -File -Filter '*.exp' | ForEach-Object { $_.FullName -Replace "exp$","lib" }
-      $StaticLibs = Get-ChildItem $binDir -Recurse -File -Filter '*.lib' | Where-Object FullName -NotIn $ImportLibs
-
-      $Items = @()
-      $Items += $StaticLibs
-      $Items += Get-Item ($StaticLibs.FullName -Replace "lib$","pdb") -ErrorAction:Ignore
-      $Items += Get-ChildItem $binDir -Directory -Filter '*Lib'
-      $Items += Get-ChildItem $binDir -Directory -Filter 'LocalTests_*'
-      $Items += Get-ChildItem "${$binDir}\WindowsTerminal" -Filter '*.pdb' -ErrorAction:Ignore
-
-      If (-Not [bool]::Parse('${{ parameters.keepAllExpensiveBuildOutputs }}')) {
-        $Items += Get-ChildItem '$(Terminal.BinDir)' -Filter '*.pdb' -Recurse
-      }
-
-      $Items += Get-ChildItem $binDir -Filter 'console.dll'
-
-      $Items | Remove-Item -Recurse -Force -Verbose -ErrorAction:Ignore
-    displayName: Clean up static libs and extra symbols
-    errorActionPreference: silentlyContinue # It's OK if this silently fails
-
-  # We cannot index PDBs that we have deleted!
-  - ${{ if eq(parameters.keepAllExpensiveBuildOutputs, true) }}:
-    - pwsh: |-
-        build\scripts\Index-Pdbs.ps1 -SearchDir '$(Terminal.BinDir)' -SourceRoot '$(Build.SourcesDirectory)' -recursive -Verbose -CommitId $(Build.SourceVersion)
-      displayName: Source Index PDBs
-      errorActionPreference: silentlyContinue
-
-  - ${{ if or(parameters.buildTerminal, parameters.buildEverything) }}:
-    - pwsh: |-
-        $Package = (Get-ChildItem -Recurse -Filter "CascadiaPackage*.msix" | Select -First 1)
-        $PackageFilename = $Package.FullName
-        Write-Host "##vso[task.setvariable variable=WindowsTerminalPackagePath]${PackageFilename}"
-      displayName: Locate the MSIX
-
-    # CHECK EXCEPTION
-    # PGO requires a desktop CRT
-    - ${{ if ne(parameters.pgoBuildMode, 'Instrument') }}:
-      - pwsh: |-
-          .\build\scripts\Test-WindowsTerminalPackage.ps1 -Verbose -Path "$(WindowsTerminalPackagePath)"
-        displayName: Check MSIX for common regressions
-        condition: and(succeeded(), ne(variables.WindowsTerminalPackagePath, ''))
-      
-    - ${{ if eq(parameters.codeSign, true) }}:
-      - pwsh: |-
-          & "$(MakeAppxPath)" unpack /p "$(WindowsTerminalPackagePath)" /d "$(Terminal.BinDir)/PackageContents"
-        displayName: Unpack the MSIX for signing
+          TargetFolder: $(JobOutputDirectory)/MSBuildCacheLogs
 
   - ${{ if eq(parameters.codeSign, true) }}:
-    - template: steps-create-signing-config.yml
-      parameters:
-        outFile: '$(Build.SourcesDirectory)/ESRPSigningConfig.json'
-        stage: build
-        fragments: $(SelectedSigningFragments)
-
-    # Code-sign everything we just put together.
-    # We run the signing in Terminal.BinDir, because all of the signing batches are relative to the final architecture/configuration output folder.
     - template: steps-esrp-signing.yml
       parameters:
-        displayName: Submit Signing Request
+        displayName: Submit Signing Request (Utilities)
         signingIdentity: ${{ parameters.signingIdentity }}
         inputs:
-          FolderPath: '$(Terminal.BinDir)'
+          FolderPath: 'src/modules'
           signType: batchSigning
-          batchSignPolicyFile: '$(Build.SourcesDirectory)/ESRPSigningConfig.json'
+          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_abstracted_utils_dll.json'
+          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
-    # We only need to re-pack the MSIX if we actually signed, so this can stay in the codeSign conditional
-    - ${{ if or(parameters.buildTerminal, parameters.buildEverything) }}:
-      - pwsh: |-
-          $outDir = New-Item -Type Directory "$(Terminal.BinDir)/_appx" -ErrorAction:Ignore
-          $PackageFilename = Join-Path $outDir.FullName (Split-Path -Leaf "$(WindowsTerminalPackagePath)")
-          & "$(MakeAppxPath)" pack /h SHA256 /o /p $PackageFilename /d "$(Terminal.BinDir)/PackageContents"
-          Write-Host "##vso[task.setvariable variable=WindowsTerminalPackagePath]${PackageFilename}"
-        displayName: Re-pack the new Terminal package after signing
+  - task: VSBuild@1
+    displayName: Create Hosts File Editor package
+    inputs:
+      solution: '**\HostsUILib.csproj'
+      vsVersion: 17.0
+      msbuildArgs: /p:CIBuild=true -t:pack /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      configuration: $(BuildConfiguration)
+      maximumCpuCount: true
 
-    # Some of our governed pipelines explicitly fail builds that have *any* non-codesigned filed (!)
-    - ${{ if eq(parameters.removeAllNonSignedFiles, true) }}:
-      - pwsh: |-
-          Get-ChildItem "$(Terminal.BinDir)" -Recurse -Include "*.dll","*.exe" |
-            Where-Object { (Get-AuthenticodeSignature $_).Status -Ne "Valid" } |
-            Remove-Item -Verbose -Force
-        displayName: Remove all non-signed output files
+  - task: VSBuild@1
+    displayName: Create Environment Variables Editor package
+    inputs:
+      solution: '**\EnvironmentVariablesUILib.csproj'
+      vsVersion: 17.0
+      msbuildArgs: /p:CIBuild=true -t:pack /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      configuration: $(BuildConfiguration)
+      maximumCpuCount: true
 
-  - ${{ else }}: # No Signing
-    - ${{ if or(parameters.buildTerminal, parameters.buildEverything) }}:
-      - pwsh: |-
-          $outDir = New-Item -Type Directory "$(Terminal.BinDir)/_appx" -ErrorAction:Ignore
-          $PackageFilename = Join-Path $outDir.FullName (Split-Path -Leaf "$(WindowsTerminalPackagePath)")
-          Copy-Item "$(WindowsTerminalPackagePath)" $PackageFilename
-          Write-Host "##vso[task.setvariable variable=WindowsTerminalPackagePath]${PackageFilename}"
-        displayName: Stage the package (unsigned)
-        condition: and(succeeded(), ne(variables.WindowsTerminalPackagePath, ''))
+  - task: VSBuild@1
+    displayName: Create Registry Preview package
+    inputs:
+      solution: '**\RegistryPreviewUILib.csproj'
+      vsVersion: 17.0
+      msbuildArgs: /p:CIBuild=true -t:pack /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      configuration: $(BuildConfiguration)
+      maximumCpuCount: true
 
-  - ${{ if or(parameters.buildTerminal, parameters.buildEverything) }}:
-    - pwsh: |-
-        $XamlAppxPath = (Get-Item "src\cascadia\CascadiaPackage\AppPackages\*\Dependencies\$(BuildPlatform)\Microsoft.UI.Xaml*.appx").FullName
-        $outDir = New-Item -Type Directory "$(Terminal.BinDir)/_unpackaged" -ErrorAction:Ignore
-        & .\build\scripts\New-UnpackagedTerminalDistribution.ps1 $(UnpackagedBuildArguments) -TerminalAppX $(WindowsTerminalPackagePath) -XamlAppX $XamlAppxPath -Destination $outDir.FullName
-      displayName: Build Unpackaged Distribution (from MSIX)
-      condition: and(succeeded(), ne(variables.WindowsTerminalPackagePath, ''))
+  - task: CopyFiles@2
+    displayName: Copying nuget packages file over
+    inputs:
+      contents: "**/bin/Release/PowerToys*.nupkg"
+      flattenFolders: True
+      targetFolder: $(JobOutputDirectory)/nupkg
 
-  - ${{ if eq(parameters.generateSbom, true) }}:
-    - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
-      displayName: 'Generate SBOM manifest'
+  - ${{ if eq(parameters.codeSign, true) }}:
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: Submit NuGet packages to ESRP for code signing
+        inputs:
+          FolderPath: $(JobOutputDirectory)/nupkg
+          Pattern: '*.nupkg'
+          UseMinimatch: true
+          signConfigType: inlineSignParams
+          inlineOperation: >-
+            [
+                {
+                    "KeyCode": "CP-401405",
+                    "OperationCode": "NuGetSign",
+                    "Parameters": {},
+                    "ToolName": "sign",
+                    "ToolVersion": "1.0"
+                },
+                {
+                    "KeyCode": "CP-401405",
+                    "OperationCode": "NuGetVerify",
+                    "Parameters": {},
+                    "ToolName": "sign",
+                    "ToolVersion": "1.0"
+                }
+            ]
+
+  - task: VSBuild@1
+    displayName: Build BugReportTool
+    inputs:
+      solution: '**/tools/BugReportTool/BugReportTool.sln'
+      vsVersion: 17.0
+      msbuildArgs: >-
+        -restore -graph
+        /p:RestorePackagesConfig=true
+        /p:CIBuild=true
+        /bl:$(Build.SourcesDirectory)\msbuild.binlog
+        ${{ parameters.additionalBuildOptions }}
+        $(MSBuildCacheParameters)
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      maximumCpuCount: true
+
+  - task: VSBuild@1
+    displayName: Build WebcamReportTool
+    inputs:
+      solution: '**/tools/WebcamReportTool/WebcamReportTool.sln'
+      vsVersion: 17.0
+      msbuildArgs: >-
+        -restore -graph
+        /p:RestorePackagesConfig=true
+        /p:CIBuild=true
+        /bl:$(Build.SourcesDirectory)\msbuild.binlog
+        ${{ parameters.additionalBuildOptions }}
+        $(MSBuildCacheParameters)
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      maximumCpuCount: true
+
+  - task: VSBuild@1
+    displayName: Build StylesReportTool
+    inputs:
+      solution: '**/tools/StylesReportTool/StylesReportTool.sln'
+      vsVersion: 17.0
+      msbuildArgs: >-
+        -restore -graph
+        /p:RestorePackagesConfig=true
+        /p:CIBuild=true
+        /bl:$(Build.SourcesDirectory)\msbuild.binlog
+        ${{ parameters.additionalBuildOptions }}
+        $(MSBuildCacheParameters)
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      maximumCpuCount: true
+
+  - ${{ each project in parameters.csProjectsToPublish }}:
+    - task: VSBuild@1
+      displayName: Publish ${{ project }} for Packaging
       inputs:
-        BuildDropPath: '$(Terminal.BinDir)'
+        solution: ${{ project }}
+        vsVersion: 17.0
+        msbuildArgs: >-
+          /target:Publish
+          /graph
+          /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
+          /p:VCRTForwarders-IncludeDebugCRT=false
+          /p:PowerToysRoot=$(Build.SourcesDirectory)
+          /p:PublishProfile=InstallationPublishProfile.pubxml
+        platform: $(BuildPlatform)
+        configuration: $(BuildConfiguration)
+        maximumCpuCount: true
 
-    - task: DropValidatorTask@0
-      displayName: 'Validate SBOM manifest'
-      inputs:
-        BuildDropPath: '$(Terminal.BinDir)'
-        OutputPath: 'output.json'
-        ValidateSignature: true
-        Verbosity: 'Verbose'
+  # Check if deps.json files don't reference different dll versions.
+  - pwsh: |-
+      & '.pipelines/verifyDepsJsonLibraryVersions.ps1' -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+    displayName: Audit deps.json files for all applications
+
+  # Check if asset files on the main application paths are playing nice and avoiding basic conflicts.
+  - pwsh: |-
+      & '.pipelines/verifyPossibleAssetConflicts.ps1' -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+    displayName: Audit base applications path asset conflicts
+
+  - pwsh: |-
+      & '.pipelines/verifyPossibleAssetConflicts.ps1' -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)\WinUI3Apps'
+    displayName: Audit WinAppSDK applications path asset conflicts
+
+  - ${{ if eq(parameters.codeSign, true) }}:
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: Sign Core PT
+        inputs:
+          FolderPath: '$(BuildPlatform)/$(BuildConfiguration)' # Video conf uses x86 and x64.
+          signType: batchSigning
+          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_core.json'
+          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: Sign DSC Powershell files
+        inputs:
+          FolderPath: 'src/dsc/Microsoft.PowerToys.Configure'
+          signType: batchSigning
+          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_DSC.json'
+          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: Sign x86 directshow VCM
+        inputs:
+          FolderPath: 'x86/$(BuildConfiguration)' # Video conf uses x86 and x64.
+          signType: batchSigning
+          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_vcm.json'
+          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+  - task: CopyFiles@2
+    displayName: Copy Symbols
+    inputs:
+      contents: >-
+        **/*.pdb
+        -**/vc143.pdb
+        -**/*test*.pdb
+      flattenFolders: True
+      targetFolder: $(JobOutputDirectory)/symbols-$(BuildPlatform)/
+
+  - template: .pipelines/installer-steps.yml@self
+    parameters:
+      signingParameters: ${{ parameters.signingParameters }}
+      versionNumber: ${{ parameters.versionNumber }}
+      perUserArg: "false"
+      buildSubDir: "MachineSetup"
+      installerPrefix: "PowerToysSetup"
+
+  - pwsh: |-
+      & git clean -xfd -e *exe -- .\installer\
+    displayName: Clean installer dir before building per-user installer
+
+  - template: .pipelines/installer-steps.yml@self
+    parameters:
+      signingParameters: ${{ parameters.signingParameters }}
+      versionNumber: ${{ parameters.versionNumber }}
+      perUserArg: "true"
+      buildSubDir: "UserSetup"
+      installerPrefix: "PowerToysUserSetup"
+
+  - task: CopyFiles@2
+    displayName: Copying setup file over
+    inputs:
+      contents: "**/PowerToys*Setup-*.exe"
+      flattenFolders: True
+      targetFolder: $(JobOutputDirectory)
+
+  - pwsh: |-
+      $p = "$(JobOutputDirectory)\"
+      $userHash = ((Get-Item $p\PowerToysUserSetup*.exe | Get-FileHash).Hash);
+      $machineHash = ((Get-Item $p\PowerToysSetup*.exe | Get-FileHash).Hash);
+      $userPlat = "hash_user_$(BuildPlatform).txt";
+      $machinePlat = "hash_machine_$(BuildPlatform).txt";
+      $combinedUserPath = $p + $userPlat;
+      $combinedMachinePath = $p + $machinePlat;
+      
+      echo $p
+
+      echo $userPlat
+      echo $userHash
+      echo $combinedUserPath
+
+      echo $machinePlat
+      echo $machineHash
+      echo $combinedMachinePath
+      
+      $userHash | out-file -filepath $combinedUserPath
+      $machineHash | out-file -filepath $combinedMachinePath
+    displayName: 'Calculating SHA256 hash'
+
+  # Publishing the GPO files
+  - pwsh: |-
+      New-Item "$(JobOutputDirectory)/gpo" -Type Directory
+      Copy-Item src\gpo\assets\* "$(JobOutputDirectory)/gpo" -Recurse
+    displayName: Stage the GPO files
 
   - ${{ if eq(parameters.publishArtifacts, true) }}:
-    - publish: $(Terminal.BinDir)
+    - publish: $(JobOutputDirectory)
       artifact: $(JobOutputArtifactName)
       displayName: Publish All Outputs
