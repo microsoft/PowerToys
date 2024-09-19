@@ -113,7 +113,6 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project, const 
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-        Logger::debug(L"attempt {}", attempt);
         std::vector<HWND> windowsAfter = WindowEnumerator::Enumerate(WindowFilter::Filter);
         std::vector<HWND> windowsDiff{};
         std::copy_if(windowsAfter.begin(), windowsAfter.end(), std::back_inserter(windowsDiff), [&](HWND window) { return std::find(m_windowsBefore.begin(), m_windowsBefore.end(), window) == m_windowsBefore.end(); });
