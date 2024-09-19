@@ -20,6 +20,8 @@ LauncherUIHelper::~LauncherUIHelper()
     OnThreadExecutor().submit(OnThreadExecutor::task_t{ [&] {
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
+        Logger::info(L"Stopping WorkspacesLauncherUI with pid {}", uiProcessId);
+    
         HANDLE uiProcess = OpenProcess(PROCESS_ALL_ACCESS, false, uiProcessId);
         if (uiProcess)
         {
@@ -50,6 +52,7 @@ void LauncherUIHelper::LaunchUI()
         auto value = res.value();
         uiProcessId = GetProcessId(value.hProcess);
         CloseHandle(value.hProcess);
+        Logger::info(L"WorkspacesLauncherUI started with pid {}", uiProcessId);
     }
     else
     {

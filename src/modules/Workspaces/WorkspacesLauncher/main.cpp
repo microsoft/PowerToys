@@ -2,17 +2,10 @@
 
 #include <WorkspacesLib/JsonUtils.h>
 #include <WorkspacesLib/utils.h>
-#include <WorkspacesLib/WorkspacesData.h>
-#include <WorkspacesLib/trace.h>
 
-#include <AppLauncher.h>
-#include <LauncherUIHelper.h>
-#include <WindowArrangerHelper.h>
+#include <Launcher.h>
 
 #include <Generated Files/resource.h>
-
-#include <workspaces-common/InvokePoint.h>
-#include <workspaces-common/MonitorUtils.h>
 
 #include <common/utils/elevation.h>
 #include <common/utils/gpo.h>
@@ -173,62 +166,9 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         return 1;
     }
 
-    // start WorkspacesLauncherUI
-    LauncherUIHelper uiHelper;
-    uiHelper.LaunchUI();
+    Launcher launcher(projectToLaunch, workspaces, invokePoint);
 
-    // Launching status
-    LaunchingStatus launchingStatus(projectToLaunch, std::bind(&LauncherUIHelper::UpdateLaunchStatus, &uiHelper, std::placeholders::_1));
-
-    // start WorkspacesWindowArranger
-    WindowArrangerHelper windowArrangerHelper;
-    bool launchElevated = std::find_if(projectToLaunch.apps.begin(), projectToLaunch.apps.end(), [](const WorkspacesData::WorkspacesProject::Application& app) { return app.isElevated; }) != projectToLaunch.apps.end();
-    windowArrangerHelper.Launch(projectToLaunch.id, launchElevated);
-    
-    // launch apps
-    Logger::info(L"Launch Workspace {} : {}", projectToLaunch.name, projectToLaunch.id);
-    std::vector<std::pair<std::wstring, std::wstring>> launchErrors{};
-    auto start = std::chrono::high_resolution_clock::now();
-    bool launchedSuccessfully = Launch(projectToLaunch, launchingStatus, launchErrors);
-    
-    // update last-launched time
-    if (invokePoint != InvokePoint::LaunchAndEdit)
-    {
-        time_t launchedTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        projectToLaunch.lastLaunchedTime = launchedTime;
-        for (int i = 0; i < workspaces.size(); i++)
-        {
-            if (workspaces[i].id == projectToLaunch.id)
-            {
-                workspaces[i] = projectToLaunch;
-                break;
-            }
-        }
-        json::to_file(WorkspacesData::WorkspacesFile(), WorkspacesData::WorkspacesListJSON::ToJson(workspaces));
-    }
-
-    // telemetry
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> duration = end - start;
-    Logger::trace(L"Launching time: {} s", duration.count());
-
-    auto monitors = MonitorUtils::IdentifyMonitors();
-    bool differentSetup = monitors.size() != projectToLaunch.monitors.size();
-    if (!differentSetup)
-    {
-        for (const auto& monitor : projectToLaunch.monitors)
-        {
-            auto setup = std::find_if(monitors.begin(), monitors.end(), [&](const WorkspacesData::WorkspacesProject::Monitor& val) { return val.dpi == monitor.dpi && val.monitorRectDpiAware == monitor.monitorRectDpiAware; });
-            if (setup == monitors.end())
-            {
-                differentSetup = true;
-                break;
-            }
-        }
-    }
-
-    Trace::Workspaces::Launch(launchedSuccessfully, projectToLaunch, invokePoint, duration.count(), differentSetup, launchErrors);
-
+    Logger::trace("Finished");
     CoUninitialize();
     return 0;
 }

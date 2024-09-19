@@ -6,6 +6,7 @@
 LaunchingStatus::LaunchingStatus(const WorkspacesData::WorkspacesProject& project, std::function<void(const WorkspacesData::LaunchingAppStateMap&)> updateCallback) :
     m_updateCallback(updateCallback)
 {
+    std::unique_lock lock(m_mutex);
     for (const auto& app : project.apps)
     {
         m_appsState.insert({ app, { app, nullptr, LaunchingState::Waiting } });
@@ -13,17 +14,27 @@ LaunchingStatus::LaunchingStatus(const WorkspacesData::WorkspacesProject& projec
 
     if (m_updateCallback)
     {
-        m_updateCallback(Get());
+        m_updateCallback(m_appsState);
     }
 }
 
-const WorkspacesData::LaunchingAppStateMap& LaunchingStatus::Get() const noexcept
+bool LaunchingStatus::Ready() noexcept
 {
-    return m_appsState;
+    std::shared_lock lock(m_mutex);
+    for (const auto& [app, data] : m_appsState)
+    {
+        if (data.state == LaunchingState::Waiting)
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void LaunchingStatus::Update(const WorkspacesData::WorkspacesProject::Application& app, LaunchingState state)
 {
+    std::unique_lock lock(m_mutex);
     if (!m_appsState.contains(app))
     {
         Logger::error(L"Error updating state: app {} is not tracked in the project", app.name);
@@ -34,6 +45,6 @@ void LaunchingStatus::Update(const WorkspacesData::WorkspacesProject::Applicatio
 
     if (m_updateCallback)
     {
-        m_updateCallback(Get());
+        m_updateCallback(m_appsState);
     }
 }

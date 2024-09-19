@@ -127,6 +127,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AppLauncher.cpp" />
+    <ClCompile Include="Launcher.cpp" />
     <ClCompile Include="LauncherUIHelper.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp">
@@ -137,6 +138,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AppLauncher.h" />
+    <ClInclude Include="Launcher.h" />
     <ClInclude Include="LauncherUIHelper.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RegistryUtils.h" />

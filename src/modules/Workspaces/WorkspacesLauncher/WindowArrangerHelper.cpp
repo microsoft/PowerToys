@@ -10,29 +10,32 @@
 
 #include <AppLauncher.h>
 
-WindowArrangerHelper::~WindowArrangerHelper()
+WindowArrangerHelper::WindowArrangerHelper(std::function<void(const std::wstring&)> ipcCallback) :
+    processId{},
+    ipcHelper(IPCHelperStrings::LauncherArrangerPipeName, IPCHelperStrings::WindowArrangerPipeName, ipcCallback)
 {
-    OnThreadExecutor().submit(OnThreadExecutor::task_t{
-        [&] {
-            std::this_thread::sleep_for(std::chrono::milliseconds(6000));
-
-            HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, false, processId);
-            if (process)
-            {
-                bool res = TerminateProcess(process, 0);
-                if (!res)
-                {
-                    Logger::error(L"Unable to terminate PowerToys.WorkspacesWindowArranger process: {}", get_last_error_or_default(GetLastError()));
-                }
-            }
-            else
-            {
-                Logger::error(L"Unable to find PowerToys.WorkspacesWindowArranger process: {}", get_last_error_or_default(GetLastError()));
-            }
-        } }).wait();
 }
 
-void WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated)
+WindowArrangerHelper::~WindowArrangerHelper()
+{
+    Logger::info(L"Stopping WorkspacesWindowArranger with pid {}", processId);
+    
+    HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, false, processId);
+    if (process)
+    {
+        bool res = TerminateProcess(process, 0);
+        if (!res)
+        {
+            Logger::error(L"Unable to terminate PowerToys.WorkspacesWindowArranger process: {}", get_last_error_or_default(GetLastError()));
+        }
+    }
+    else
+    {
+        Logger::error(L"Unable to find PowerToys.WorkspacesWindowArranger process: {}", get_last_error_or_default(GetLastError()));
+    }
+}
+
+void WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated, std::function<bool()> allWindowsFoundCallback)
 {
     Logger::trace(L"Starting WorkspacesWindowArranger");
 
@@ -45,7 +48,19 @@ void WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated)
     {
         auto value = res.value();
         processId = GetProcessId(value.hProcess);
-        CloseHandle(value.hProcess);
+        Logger::info(L"WorkspacesWindowArranger started with pid {}", processId);
+        std::atomic_bool timeoutExpired = false;
+        m_threadExecutor.submit(OnThreadExecutor::task_t{
+            [&] {
+                while (!timeoutExpired && !allWindowsFoundCallback())
+                {
+                    WaitForSingleObject(value.hProcess, 100);
+                }
+                
+                Logger::trace(L"Finished waiting WorkspacesWindowArranger");
+                CloseHandle(value.hProcess);
+            }}).wait_for(std::chrono::milliseconds(5000));
+        timeoutExpired = true;
     }
     else
     {
