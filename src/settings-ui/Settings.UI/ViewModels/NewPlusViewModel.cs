@@ -194,7 +194,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 Directory.CreateDirectory(templateLocation);
             }
 
-            if (Directory.GetFiles(templateLocation).Length == 0)
+            if (Directory.GetFiles(templateLocation).Length == 0 && Directory.GetDirectories(templateLocation).Length == 0)
             {
                 // No files in templateLocation directory
                 // Copy over examples files from <Program Files>\PowerToys\WinUI3Apps\Assets\NewPlus\Templates
