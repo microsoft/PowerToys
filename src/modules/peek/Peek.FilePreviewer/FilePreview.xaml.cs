@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
@@ -152,6 +153,9 @@ namespace Peek.FilePreviewer
             // Cancel previous loading task
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource = new();
+
+            // Clear up any unmanaged resources before creating a new previewer instance.
+            (Previewer as IDisposable)?.Dispose();
 
             if (Item == null)
             {

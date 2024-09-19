@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
 using System.Text.Json.Serialization;
+
 using ImageResizer.Properties;
 
 namespace ImageResizer.Models

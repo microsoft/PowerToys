@@ -4,6 +4,7 @@
 
 using System.Collections;
 using System.Linq;
+
 using Microsoft.PowerToys.Run.Plugin.Registry.Helper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

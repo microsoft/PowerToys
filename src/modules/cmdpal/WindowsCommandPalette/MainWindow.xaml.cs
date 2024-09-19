@@ -7,15 +7,11 @@ using System.Text.RegularExpressions;
 using Microsoft.CmdPal.Common.Contracts;
 using Microsoft.CmdPal.Common.Extensions;
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.UI;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.SystemBackdrops;
-using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
-using Windows.ApplicationModel;
 using Windows.Foundation;
 using Windows.Graphics;
 using Windows.System;
@@ -95,15 +91,11 @@ public sealed partial class MainWindow : Window
         _appWindow = AppWindow;
 
         Activated += MainWindow_Activated;
-        AppTitleBar.SizeChanged += AppTitleBar_SizeChanged;
         SetAcrylic();
         ExtendsContentIntoTitleBar = true;
 
         // Hide our titlebar. We'll make the sides draggable later
         _appWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
-        AppTitleTextBlock.Text = AppInfo.Current.DisplayInfo.DisplayName;
-
-        _appWindow.Title = AppTitleTextBlock.Text;
 
         Application.Current.GetService<ILocalSettingsService>().SaveSettingAsync("ThisIsAVeryBizarreString", true);
 
@@ -204,61 +196,6 @@ public sealed partial class MainWindow : Window
         Windows.Win32.PInvoke.ShowWindow(hwnd, Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_HIDE);
     }
 
-    private void AppTitleBar_Loaded(object sender, RoutedEventArgs e)
-    {
-        if (ExtendsContentIntoTitleBar == true)
-        {
-            // Set the initial interactive regions.
-            SetRegionsForCustomTitleBar();
-        }
-    }
-
-    private void AppTitleBar_SizeChanged(object sender, SizeChangedEventArgs e)
-    {
-        if (ExtendsContentIntoTitleBar == true)
-        {
-            // Update interactive regions if the size of the window changes.
-            SetRegionsForCustomTitleBar();
-        }
-    }
-
-    private void SetRegionsForCustomTitleBar()
-    {
-        // Specify the interactive regions of the title bar.
-        var scaleAdjustment = AppTitleBar.XamlRoot.RasterizationScale;
-
-        RightPaddingColumn.Width = new GridLength(_appWindow.TitleBar.RightInset / scaleAdjustment);
-        LeftPaddingColumn.Width = new GridLength(_appWindow.TitleBar.LeftInset / scaleAdjustment);
-
-        //// Get the rectangle around the content
-        GeneralTransform transform = MainPage.TransformToVisual(null);
-        Rect bounds = transform.TransformBounds(new Rect(
-            0,
-            0,
-            MainPage.ActualWidth,
-            MainPage.ActualHeight));
-        var contentRect = GetRect(bounds, scaleAdjustment);
-
-        var rectArray = new RectInt32[] { contentRect };
-
-        InputNonClientPointerSource nonClientInputSrc =
-            InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id);
-        nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, rectArray);
-
-        // Add four drag-able regions, around the sides of our content
-        var w = ContentGrid.ActualWidth;
-        var h = ContentGrid.ActualHeight;
-        var dragSides = new RectInt32[]
-        {
-            GetRect(new Rect(0, 0, w, 24), scaleAdjustment),
-            GetRect(new Rect(0, h - 24, ContentGrid.ActualWidth, 24), scaleAdjustment),
-            GetRect(new Rect(0, 0, 24, h), scaleAdjustment),
-            GetRect(new Rect(w - 24, 0, 24, h), scaleAdjustment),
-        };
-
-        nonClientInputSrc.SetRegionRects(NonClientRegionKind.Caption, dragSides);
-    }
-
     private static RectInt32 GetRect(Rect bounds, double scale)
     {
         return new RectInt32(
@@ -272,8 +209,6 @@ public sealed partial class MainWindow : Window
     {
         if (args.WindowActivationState == WindowActivationState.Deactivated)
         {
-            AppTitleTextBlock.Foreground = (SolidColorBrush)App.Current.Resources["WindowCaptionForegroundDisabled"];
-
             _configurationSource.IsInputActive = false;
 
             // If there's a debugger attached...
@@ -289,7 +224,6 @@ public sealed partial class MainWindow : Window
         }
         else
         {
-            AppTitleTextBlock.Foreground = (SolidColorBrush)App.Current.Resources["WindowCaptionForeground"];
             _configurationSource.IsInputActive = true;
         }
     }

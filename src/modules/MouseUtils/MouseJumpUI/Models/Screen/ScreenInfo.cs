@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+
 using MouseJumpUI.Models.Drawing;
 
 namespace MouseJumpUI.Models.Screen;

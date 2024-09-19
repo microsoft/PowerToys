@@ -23,7 +23,7 @@ internal sealed partial class SampleListPageWithDetails : ListPage
     public SampleListPageWithDetails()
     {
         Icon = new(string.Empty);
-        Name = "SSH Keychain";
+        Name = "Sample List Page with Details";
         this.ShowDetails = true;
     }
 

@@ -8,8 +8,10 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+
 using Workspaces.Data;
 using WorkspacesLauncherUI.Utils;
+
 using static WorkspacesLauncherUI.Data.AppLaunchData;
 using static WorkspacesLauncherUI.Data.AppLaunchInfoData;
 using static WorkspacesLauncherUI.Data.AppLaunchInfosData;

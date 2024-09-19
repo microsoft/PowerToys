@@ -18,6 +18,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Xml;
+
 using ManagedCommon;
 using Microsoft.Plugin.Program.Logger;
 using Wox.Infrastructure;
@@ -26,6 +27,7 @@ using Wox.Plugin;
 using Wox.Plugin.Common;
 using Wox.Plugin.Common.Win32;
 using Wox.Plugin.Logger;
+
 using PackageVersion = Microsoft.Plugin.Program.Programs.UWP.PackageVersion;
 
 namespace Microsoft.Plugin.Program.Programs

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows;
+
 using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
@@ -22,6 +23,7 @@ using Wox.Infrastructure.Image;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
+
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace PowerLauncher

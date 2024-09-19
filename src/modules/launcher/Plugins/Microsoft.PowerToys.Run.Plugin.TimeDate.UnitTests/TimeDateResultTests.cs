@@ -5,6 +5,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
