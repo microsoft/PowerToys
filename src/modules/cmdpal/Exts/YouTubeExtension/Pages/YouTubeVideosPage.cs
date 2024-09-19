@@ -80,7 +80,7 @@ internal sealed partial class YouTubeVideosPage : DynamicListPage
             try
             {
                 // Send the request to the YouTube API with the provided query
-                var response = await client.GetStringAsync($"https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q={query}&key={apiKey}&maxResults=2");
+                var response = await client.GetStringAsync($"https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q={query}&key={apiKey}&maxResults=20");
                 var json = JsonNode.Parse(response);
 
                 // Parse the response

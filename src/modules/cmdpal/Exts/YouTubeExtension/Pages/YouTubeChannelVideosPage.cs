@@ -24,7 +24,7 @@ internal sealed partial class YouTubeChannelVideosPage : DynamicListPage
     public YouTubeChannelVideosPage(string channelId = null, string channelName = null)
     {
         Icon = new("https://www.youtube.com/favicon.ico");
-        Name = $"YouTube ({channelName ?? "Channel Video Search"})";
+        Name = $"YouTube (Video Search) - {channelName ?? "Channel Video Search"}";
         this.ShowDetails = true;
 
         // Ensure either a ChannelId or ChannelName is provided
@@ -97,12 +97,12 @@ internal sealed partial class YouTubeChannelVideosPage : DynamicListPage
                 if (!string.IsNullOrEmpty(channelId))
                 {
                     // If ChannelId is provided, filter by channelId
-                    requestUrl = $"https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&channelId={channelId}&q={query}&key={apiKey}&maxResults=10";
+                    requestUrl = $"https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&channelId={channelId}&q={query}&key={apiKey}&maxResults=20";
                 }
                 else
                 {
                     // If ChannelName is provided, search by the channel name
-                    requestUrl = $"https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q={query}+{channelName}&key={apiKey}&maxResults=10";
+                    requestUrl = $"https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q={query}+{channelName}&key={apiKey}&maxResults=20";
                 }
 
                 // Send the request to the YouTube API

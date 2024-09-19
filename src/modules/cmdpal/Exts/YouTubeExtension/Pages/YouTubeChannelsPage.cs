@@ -51,7 +51,7 @@ internal sealed partial class YouTubeChannelsPage : DynamicListPage
                 },
                 MoreCommands = [
                     new CommandContextItem(new YouTubeChannelInfoMarkdownPage(channel)),
-                    new CommandContextItem(new YouTubeChannelVideosPage(channel.ChannelId, channel.Name)),
+                    new CommandContextItem(new YouTubeChannelVideosPage(channel.ChannelId, channel.Name) { Title = $"Search for Videos by {channel.Name}" }),
                     new CommandContextItem(new YouTubeAPIPage()),
                 ],
             }).ToArray(),
@@ -74,7 +74,7 @@ internal sealed partial class YouTubeChannelsPage : DynamicListPage
             try
             {
                 // Send the request to the YouTube API with the provided query to search for channels
-                var response = await client.GetStringAsync($"https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q={query}&key={apiKey}&maxResults=5");
+                var response = await client.GetStringAsync($"https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q={query}&key={apiKey}&maxResults=20");
                 var json = JsonNode.Parse(response);
 
                 // Parse the response
