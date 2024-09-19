@@ -17,7 +17,7 @@ template_item::template_item(const std::filesystem::path entry)
     path = entry;
 }
 
-std::wstring template_item::get_menu_title(const bool show_extention, const bool show_starting_digits) const
+std::wstring template_item::get_menu_title(const bool show_extension, const bool show_starting_digits) const
 {
     std::wstring title = path.filename();
 
@@ -27,7 +27,7 @@ std::wstring template_item::get_menu_title(const bool show_extention, const bool
         title = remove_starting_digits_from_filename(title);
     }
 
-    if (show_extention || !path.has_extension())
+    if (show_extension || !path.has_extension())
     {
         return title;
     }

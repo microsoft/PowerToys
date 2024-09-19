@@ -54,7 +54,7 @@ public:
     virtual void set_config(PCWSTR config) override
     {
         // The following just checks to see if the Template Location was changed for metrics purposes
-        // Note: We are not saving the settings here and instead relying on read/write of json in Settings App .cs codepaths
+        // Note: We are not saving the settings here and instead relying on read/write of json in Settings App .cs code paths
         try
         {
             json::JsonObject config_as_json = json::JsonValue::Parse(winrt::to_hstring(config)).GetObjectW();

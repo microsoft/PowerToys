@@ -26,7 +26,6 @@ advapi
 advfirewall
 AFeature
 AFFINETRANSFORM
-AFolder
 AFX
 AGGREGATABLE
 AHybrid
@@ -211,7 +210,6 @@ cne
 CNF
 coclass
 codeofconduct
-codepaths
 codereview
 Codespaces
 codicon
@@ -481,7 +479,6 @@ exsb
 exstyle
 EXTENDEDKEY
 EXTENDEDVERBS
-extention
 EXTRINSICPROPERTIES
 eyetracker
 FANCYZONESDRAWLAYOUTTEST
@@ -525,7 +522,6 @@ FROMTOUCH
 fsmgmt
 Functiondiscoverykeys
 FZE
-gaardmark
 gacutil
 Gaeilge
 Gaidhlig

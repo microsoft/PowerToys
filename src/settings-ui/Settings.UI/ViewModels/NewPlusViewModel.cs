@@ -228,14 +228,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private async void PickNewTemplateFolder()
         {
-            var newPath = await PickAFolderDialog();
+            var newPath = await PickFolderDialog();
             if (newPath.Length > 1)
             {
                 TemplateLocation = newPath;
             }
         }
 
-        private async Task<string> PickAFolderDialog()
+        private async Task<string> PickFolderDialog()
         {
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
             string pathFolder = await Task.FromResult<string>(ShellGetFolder.GetFolderDialogWithFlags(hwnd, ShellGetFolder.FolderDialogFlags._BIF_NEWDIALOGSTYLE));
