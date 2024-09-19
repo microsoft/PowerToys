@@ -58,6 +58,13 @@
 
                     </tkcontrols:SettingsCard>
 
+                    <InfoBar
+                        x:Uid="NewPlus_TemplatesNotBackupAndRestoreWarning"
+                        IsClosable="True"
+                        IsOpen="True"
+                        IsTabStop="True"
+                        Severity="Informational" />
+
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="NewPlus_Display_Options" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
