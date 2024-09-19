@@ -35,6 +35,7 @@
         <!--  not using Interactivity:Interaction.Behaviors due to wanting to do AoT  -->
         <!--  sticking with ListView as ItemsView doesn't have grouping built-in, could investigate coordinating keyboards between them and using ItemsRepeater for group headers, though that wouldn't use CVS either  -->
         <ListView
+            x:Name="ItemsList"
             IsItemClickEnabled="True"
             ItemClick="ListView_ItemClick"
             ItemTemplate="{StaticResource ListItemViewModelTemplate}"
