@@ -85,6 +85,7 @@ jobs:
     # Yup.
     MSBuildCacheParameters: ' '
     JobOutputDirectory: $(Build.ArtifactStagingDirectory)
+    LogOutputDirectory: $(Build.ArtifactStagingDirectory)\logs
     JobOutputArtifactName: build-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
@@ -114,7 +115,7 @@ jobs:
         $MSBuildCacheParameters += " -graph"
         $MSBuildCacheParameters += " -reportfileaccesses"
         $MSBuildCacheParameters += " -p:MSBuildCacheEnabled=true"
-        $MSBuildCacheParameters += " -p:MSBuildCacheLogDirectory=$(Build.SourcesDirectory)\MSBuildCacheLogs"
+        $MSBuildCacheParameters += " -p:MSBuildCacheLogDirectory=$(LogOutputDirectory)\MSBuildCacheLogs"
         Write-Host "MSBuildCacheParameters: $MSBuildCacheParameters"
         Write-Host "##vso[task.setvariable variable=MSBuildCacheParameters]$MSBuildCacheParameters"
       displayName: Prepare MSBuildCache variables
@@ -185,7 +186,7 @@ jobs:
         -restore -graph
         /p:RestorePackagesConfig=true
         /p:CIBuild=true
-        /bl:$(Build.SourcesDirectory)\msbuild.binlog
+        /bl:$(LogOutputDirectory)\build-0-main.binlog
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
         /t:Build;Test
@@ -196,30 +197,6 @@ jobs:
     ${{ if eq(parameters.enableCaching, true) }}:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
-  # Stage build logs into the Artifacts folder, or publish them directly.
-  - ${{ if eq(parameters.publishArtifacts, true) }}:
-    - publish: $(Build.SourcesDirectory)/msbuild.binlog
-      artifact: logs-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
-      condition: always()
-      displayName: Publish Build Log
-    - ${{ if eq(parameters.enableCaching, true) }}:
-      - publish: $(Build.SourcesDirectory)\MSBuildCacheLogs
-        artifact: logs-msbuildcache-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
-        condition: always()
-        displayName: Publish MSBuildCache Logs
-  - ${{ else }}:
-    - task: CopyFiles@2
-      displayName: Copy Build Log
-      inputs:
-        contents: $(Build.SourcesDirectory)/msbuild.binlog
-        TargetFolder: $(JobOutputDirectory)
-    - ${{ if eq(parameters.enableCaching, true) }}:
-      - task: CopyFiles@2
-        displayName: Copy MSBuildCache Logs
-        inputs:
-          contents: $(Build.SourcesDirectory)/MSBuildCacheLogs/**
-          TargetFolder: $(JobOutputDirectory)/MSBuildCacheLogs
 
   - ${{ if eq(parameters.codeSign, true) }}:
     - template: steps-esrp-signing.yml
@@ -237,7 +214,7 @@ jobs:
     inputs:
       solution: '**\HostsUILib.csproj'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true -t:pack /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      msbuildArgs: /p:CIBuild=true -t:pack /bl:$(LogOutputDirectory)\build-hosts.binlog
       configuration: $(BuildConfiguration)
       maximumCpuCount: true
 
@@ -246,7 +223,7 @@ jobs:
     inputs:
       solution: '**\EnvironmentVariablesUILib.csproj'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true -t:pack /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      msbuildArgs: /p:CIBuild=true -t:pack /bl:$(LogOutputDirectory)\build-env-var-editor.binlog
       configuration: $(BuildConfiguration)
       maximumCpuCount: true
 
@@ -255,7 +232,7 @@ jobs:
     inputs:
       solution: '**\RegistryPreviewUILib.csproj'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true -t:pack /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      msbuildArgs: /p:CIBuild=true -t:pack /bl:$(LogOutputDirectory)\build-registry-preview.binlog
       configuration: $(BuildConfiguration)
       maximumCpuCount: true
 
@@ -303,7 +280,7 @@ jobs:
         -restore -graph
         /p:RestorePackagesConfig=true
         /p:CIBuild=true
-        /bl:$(Build.SourcesDirectory)\msbuild.binlog
+        /bl:$(LogOutputDirectory)\build-bug-report.binlog
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
       platform: $(BuildPlatform)
@@ -319,7 +296,7 @@ jobs:
         -restore -graph
         /p:RestorePackagesConfig=true
         /p:CIBuild=true
-        /bl:$(Build.SourcesDirectory)\msbuild.binlog
+        /bl:$(LogOutputDirectory)\build-webcam-report.binlog
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
       platform: $(BuildPlatform)
@@ -335,7 +312,7 @@ jobs:
         -restore -graph
         /p:RestorePackagesConfig=true
         /p:CIBuild=true
-        /bl:$(Build.SourcesDirectory)\msbuild.binlog
+        /bl:$(LogOutputDirectory)\build-styles-report.binlog
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
       platform: $(BuildPlatform)
@@ -355,6 +332,7 @@ jobs:
           /p:VCRTForwarders-IncludeDebugCRT=false
           /p:PowerToysRoot=$(Build.SourcesDirectory)
           /p:PublishProfile=InstallationPublishProfile.pubxml
+          /bl:$(LogOutputDirectory)\publish-${{ join("_",split(project, "/")) }}.binlog
         platform: $(BuildPlatform)
         configuration: $(BuildConfiguration)
         maximumCpuCount: true
@@ -497,3 +475,4 @@ jobs:
     - publish: $(JobOutputDirectory)
       artifact: $(JobOutputArtifactName)
       displayName: Publish All Outputs
+      condition: always()

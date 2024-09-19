@@ -43,11 +43,12 @@ steps:
         /t:PowerToysSetupCustomActions
         /p:RunBuildEvents=true;PerUser=${{parameters.buildUserInstaller}};RestorePackagesConfig=true;CIBuild=true
         -restore -graph
-        /bl:$(Build.SourcesDirectory)\msbuild.binlog
+        /bl:$(LogOutputDirectory)\installer-$(InstallerBuildSlug)-actions.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: true
+      msbuildArchitecture: x64
       maximumCpuCount: true
 
   - ${{ if eq(parameters.codeSign, true) }}:
@@ -69,12 +70,15 @@ steps:
       solution: "**/installer/PowerToysSetup.sln"
       vsVersion: 17.0
       msbuildArgs: >-
+        -restore
         /t:PowerToysInstaller
         /p:RunBuildEvents=false;PerUser=${{parameters.buildUserInstaller}};BuildProjectReferences=false;CIBuild=true
+        /bl:$(LogOutputDirectory)\installer-$(InstallerBuildSlug)-msi.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: false # don't undo our hard work above by deleting the CustomActions dll
+      msbuildArchitecture: x64
       maximumCpuCount: true
 
   - script: |-
@@ -114,11 +118,13 @@ steps:
       msbuildArgs: >-
         /t:PowerToysBootstrapper
         /p:PerUser=${{parameters.buildUserInstaller}};CIBuild=true
+        /bl:$(LogOutputDirectory)\installer-$(InstallerBuildSlug)-bootstrapper.binlog
         -restore -graph
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: false # don't undo our hard work above by deleting the MSI
+      msbuildArchitecture: x64
       maximumCpuCount: true
 
   # The entirety of bundle unpacking/re-packing is unnecessary if we are not code signing it.
