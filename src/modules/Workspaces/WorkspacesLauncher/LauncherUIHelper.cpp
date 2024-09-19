@@ -44,7 +44,7 @@ void LauncherUIHelper::LaunchUI()
     GetModuleFileName(NULL, buffer, MAX_PATH);
     std::wstring path = std::filesystem::path(buffer).parent_path();
 
-    auto res = LaunchApp(path + L"\\PowerToys.WorkspacesLauncherUI.exe", L"", false);
+    auto res = AppLauncher::LaunchApp(path + L"\\PowerToys.WorkspacesLauncherUI.exe", L"", false);
     if (res.isOk())
     {
         auto value = res.value();

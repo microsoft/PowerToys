@@ -40,7 +40,7 @@ void WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated)
     GetModuleFileName(NULL, buffer, MAX_PATH);
     std::wstring path = std::filesystem::path(buffer).parent_path();
 
-    auto res = LaunchApp(path + L"\\PowerToys.WorkspacesWindowArranger.exe", projectId, elevated);
+    auto res = AppLauncher::LaunchApp(path + L"\\PowerToys.WorkspacesWindowArranger.exe", projectId, elevated);
     if (res.isOk())
     {
         auto value = res.value();
