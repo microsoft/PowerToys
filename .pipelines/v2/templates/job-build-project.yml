@@ -117,6 +117,39 @@ jobs:
       packageType: sdk
       version: '8.x'
 
+  - task: VisualStudioTestPlatformInstaller@1
+    displayName: Ensure VSTest Platform
+
+  - pwsh: |-
+    displayName: Verify formatting, nuget, and ARM64 configurations
+    inputs:
+      & '.pipelines/applyXamlStyling.ps1' -Passive
+      & '.pipelines/verifyNugetPackages.ps1' -solution '$(build.sourcesdirectory)\PowerToys.sln'
+      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\PowerToys.sln'
+      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\BugReportTool\BugReportTool.sln'
+      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\WebcamReportTool\WebcamReportTool.sln'
+      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\StylesReportTool\StylesReportTool.sln'
+      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.sln'
+
+  - ${{ if eq(parameters.enableCaching, true) }}:
+    - task: Cache@2
+      displayName: 'Cache nuget packages (PackageReference)'
+      inputs:
+        key: '"PackageReference" | "$(Agent.OS)" | Directory.Packages.props'
+        restoreKeys: |
+           "PackageReference" | "$(Agent.OS)"
+           "PackageReference"
+        path: $(NUGET_PACKAGES)
+
+    - task: Cache@2
+      displayName: 'Cache nuget packages (packages.config)'
+      inputs:
+        key: '"packages.config" | "$(Agent.OS)" | **/packages.config'
+        restoreKeys: |
+           "packages.config" | "$(Agent.OS)"
+           "packages.config"
+        path: packages
+
   - template: .\steps-restore-nuget.yml
 
   - pwsh: |-
@@ -130,7 +163,7 @@ jobs:
   - ${{ parameters.beforeBuildSteps }}
 
   - task: VSBuild@1
-    displayName: Build PowerToys main project
+    displayName: Build and Test PowerToys main project
     inputs:
       solution: 'PowerToys.sln'
       vsVersion: 17.0
@@ -141,6 +174,7 @@ jobs:
         /bl:$(Build.SourcesDirectory)\msbuild.binlog
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
+        /t:Build;Test
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
@@ -324,6 +358,34 @@ jobs:
   - pwsh: |-
       & '.pipelines/verifyPossibleAssetConflicts.ps1' -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)\WinUI3Apps'
     displayName: Audit WinAppSDK applications path asset conflicts
+
+  - pwsh: |-
+      & '.pipelines/verifyNoticeMdAgainstNugetPackages.ps1' -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)\WinUI3Apps'
+    displayName: Verify NOTICE.md and NuGet packages match
+
+  # Publish test results which ran in MSBuild
+  - task: PublishTestResults@2
+    displayName: 'Publish Test Results'
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: '**/*.trx'
+    condition: ne(variables['BuildPlatform'],'arm64')
+
+  # Native dlls
+  - task: VSTest@2
+    condition: ne(variables['BuildPlatform'],'arm64') # No arm64 agents to run the tests.
+    displayName: 'Native Tests'
+    inputs:
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      testSelector: 'testAssemblies'
+      testAssemblyVer2: |
+        **\KeyboardManagerEngineTest.dll
+        **\KeyboardManagerEditorTest.dll
+        **\UnitTests-CommonLib.dll
+        **\PowerRenameUnitTests.dll
+        **\UnitTests-FancyZones.dll
+        !**\obj\**
 
   - ${{ if eq(parameters.codeSign, true) }}:
     - template: steps-esrp-signing.yml
