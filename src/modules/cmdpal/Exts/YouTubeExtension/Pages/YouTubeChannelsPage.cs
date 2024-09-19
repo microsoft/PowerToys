@@ -51,7 +51,7 @@ internal sealed partial class YouTubeChannelsPage : DynamicListPage
                 },
                 MoreCommands = [
                     new CommandContextItem(new YouTubeChannelInfoMarkdownPage(channel)),
-                    new CommandContextItem(new YouTubeChannelVideosPage(channel.ChannelId, channel.Name) { Title = $"Search for Videos by {channel.Name}" }),
+                    new CommandContextItem(new YouTubeChannelVideosPage(channel.ChannelId, channel.Name)),
                     new CommandContextItem(new YouTubeAPIPage()),
                 ],
             }).ToArray(),
