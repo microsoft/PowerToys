@@ -438,9 +438,6 @@ jobs:
       signingIdentity: ${{ parameters.signingIdentity }}
       versionNumber: ${{ parameters.versionNumber }}
       additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
-      perUserArg: "false"
-      buildSubDir: "MachineSetup"
-      installerPrefix: "PowerToysSetup"
 
   - template: steps-build-installer.yml
     parameters:
@@ -448,9 +445,7 @@ jobs:
       signingIdentity: ${{ parameters.signingIdentity }}
       versionNumber: ${{ parameters.versionNumber }}
       additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
-      perUserArg: "true"
-      buildSubDir: "UserSetup"
-      installerPrefix: "PowerToysUserSetup"
+      buildUserInstaller: true # NOTE: This is the distinction between the above and below rules
 
   - task: CopyFiles@2
     displayName: Copying setup file over
