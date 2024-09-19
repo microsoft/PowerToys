@@ -20,6 +20,12 @@ parameters:
   - name: jobName
     type: string
     default: 'Build'
+  - name: condition
+    type: string
+    default: ''
+  - name: dependsOn
+    type: object
+    default: []
   - name: pool
     type: object
     default: []
@@ -57,6 +63,8 @@ jobs:
 - job: ${{ parameters.jobName }}
   ${{ if ne(length(parameters.pool), 0) }}:
     pool: ${{ parameters.pool }}
+  dependsOn: ${{ parameters.dependsOn }}
+  condition: ${{ parameters.condition }}
   strategy:
     matrix:
       ${{ each config in parameters.buildConfigurations }}:

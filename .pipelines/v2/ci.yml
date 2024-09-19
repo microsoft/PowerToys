@@ -3,36 +3,33 @@ trigger:
   branches:
     include:
       - main
-      - feature/*
-      - gh-readonly-queue/*
+      - stable
   paths:
     exclude:
       - doc/*
-      - samples/*
+      - temp/*
       - tools/*
+      - '**.md'
 
 pr:
   branches:
     include:
       - main
-      - feature/*
+      - stable
   paths:
     exclude:
-      - doc/*
-      - samples/*
-      - tools/*
+      - '**.md'
+      - doc
 
 variables:
   - name: runCodesignValidationInjectionBG
     value: false
+  - name: EnablePipelineCache
+    value: true
 
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
 parameters:
-  - name: runTests
-    displayName: "Run Tests"
-    type: boolean
-    default: true
   - name: buildPlatforms
     type: object
     default:
@@ -41,12 +38,17 @@ parameters:
 
 stages:
   - ${{ each platform in parameters.buildPlatforms }}:
+    - stage: Precheck
+      jobs:
+        - template: .pipelines/ci/templates/build-powertoys-precheck.yml
+
     - stage: Build_${{ platform }}
       displayName: Build ${{ platform }}
-      dependsOn: []
+      dependsOn: [Precheck]
       jobs:
         - template: ./templates/job-build-project.yml
           parameters:
+            condition: and(succeeded(),ne(stageDependencies.Precheck.Precheck.outputs['verifyBuildRequest.skipBuild'], 'Yes'))
             pool:
               ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
                 name: SHINE-INT-L
@@ -54,16 +56,3 @@ stages:
                 name: SHINE-OSS-L
             buildPlatforms: [ ${{ platform }} ]
             buildConfigurations: [Release]
-
-    - ${{ if eq(parameters.runTests, true) }}:
-      - stage: Test_${{ platform }}
-        displayName: Test ${{ platform }}
-        dependsOn:
-          - Build_${{ platform }}
-        condition: succeeded()
-        jobs:
-          - template: ./templates/job-test-project.yml
-            parameters:
-              platform: ${{ platform }}
-              # The tests might be run more than once; log one artifact per attempt.
-              outputArtifactStem: -$(System.JobAttempt)
