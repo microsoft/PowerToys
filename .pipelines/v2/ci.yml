@@ -39,7 +39,7 @@ parameters:
 stages:
   - stage: Precheck
     jobs:
-      - template: .pipelines/ci/templates/build-powertoys-precheck.yml@self
+      - template: /.pipelines/ci/templates/build-powertoys-precheck.yml@self
 
   - ${{ each platform in parameters.buildPlatforms }}:
 
