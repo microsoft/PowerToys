@@ -16,38 +16,38 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             Id = id;
             Name = string.Empty;
-            Fit = (int)ResizeFit.Fit;
+            Fit = ResizeFit.Fit;
             Width = 0;
             Height = 0;
-            Unit = (int)ResizeUnit.Pixel;
+            Unit = ResizeUnit.Pixel;
         }
 
         public ImageSize()
         {
             Id = 0;
             Name = string.Empty;
-            Fit = (int)ResizeFit.Fit;
+            Fit = ResizeFit.Fit;
             Width = 0;
             Height = 0;
-            Unit = (int)ResizeUnit.Pixel;
+            Unit = ResizeUnit.Pixel;
         }
 
         public ImageSize(int id, string name, ResizeFit fit, double width, double height, ResizeUnit unit)
         {
             Id = id;
             Name = name;
-            Fit = (int)fit;
+            Fit = fit;
             Width = width;
             Height = height;
-            Unit = (int)unit;
+            Unit = unit;
         }
 
         private int _id;
         private string _name;
-        private int _fit;
+        private ResizeFit _fit;
         private double _height;
         private double _width;
-        private int _unit;
+        private ResizeUnit _unit;
 
         public int Id
         {
@@ -70,7 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             get
             {
-                if (Unit == 2 && Fit != 2)
+                if (Unit == ResizeUnit.Percent && Fit != ResizeFit.Stretch)
                 {
                     return 0;
                 }
@@ -85,7 +85,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             get
             {
-                if (Unit == 2 && Fit != 2)
+                if (Unit == ResizeUnit.Percent && Fit != ResizeFit.Stretch)
                 {
                     return false;
                 }
@@ -115,7 +115,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         }
 
         [JsonPropertyName("fit")]
-        public int Fit
+        public ResizeFit Fit
         {
             get
             {
@@ -193,7 +193,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         }
 
         [JsonPropertyName("unit")]
-        public int Unit
+        public ResizeUnit Unit
         {
             get
             {

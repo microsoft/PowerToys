@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MouseJumpUI.Common.Helpers;
 using MouseJumpUI.Common.Imaging;

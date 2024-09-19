@@ -7,7 +7,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Principal;
+
 using Wox.Plugin.Logger;
+
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace PowerLauncher.Helper

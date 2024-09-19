@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Media;
+
 using static ColorPicker.NativeMethods;
 
 namespace ColorPicker.Helpers

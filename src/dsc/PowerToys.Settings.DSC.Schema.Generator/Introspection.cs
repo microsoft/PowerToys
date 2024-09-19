@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
+
 using Settings.UI.Library.Attributes;
 
 namespace PowerToys.Settings.DSC.Schema;

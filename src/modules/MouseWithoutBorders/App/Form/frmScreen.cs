@@ -10,6 +10,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Windows.Forms;
+
 using Microsoft.PowerToys.Telemetry;
 
 // <summary>
@@ -22,6 +23,7 @@ using Microsoft.PowerToys.Telemetry;
 // </history>
 using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Properties;
+
 using Timer = System.Windows.Forms.Timer;
 
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.frmScreen.#ShowMouseWithoutBordersUiOnWinLogonDesktop(System.Boolean)", Justification = "Dotnet port with style preservation")]

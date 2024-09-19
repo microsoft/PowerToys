@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+
 using ImageResizer.Helpers;
 using ImageResizer.Models;
 using ImageResizer.Properties;

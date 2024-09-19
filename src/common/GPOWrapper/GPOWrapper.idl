@@ -54,6 +54,7 @@ namespace PowerToys
             static GpoRuleConfigured GetConfiguredQoiPreviewEnabledValue();
             static GpoRuleConfigured GetConfiguredQoiThumbnailsEnabledValue();
             static GpoRuleConfigured GetAllowedAdvancedPasteOnlineAIModelsValue();
+            static GpoRuleConfigured GetConfiguredWorkspacesEnabledValue();
             static GpoRuleConfigured GetConfiguredMwbClipboardSharingEnabledValue();
             static GpoRuleConfigured GetConfiguredMwbFileTransferEnabledValue();
             static GpoRuleConfigured GetConfiguredMwbUseOriginalUserInterfaceValue();

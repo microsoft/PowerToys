@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+
 using Microsoft.Win32.SafeHandles;
 using Windows.Storage.Streams;
 using Wox.Plugin;
