@@ -1,0 +1,15 @@
+jobs:
+- job: CodeFormatCheck
+  displayName: Check Code Format
+  pool: { vmImage: windows-2022 }
+
+  steps:
+  - checkout: self
+    fetchDepth: 1
+    fetchTags: false # Tags still result in depth > 1 fetch; we don't need them here
+    submodules: false
+    clean: true
+
+  - powershell: |-
+      .\build\scripts\Invoke-FormattingCheck.ps1
+    displayName: 'Run formatters'

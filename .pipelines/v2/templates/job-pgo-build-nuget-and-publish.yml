@@ -1,0 +1,82 @@
+parameters:
+  - name: buildConfiguration
+    type: string
+  - name: pool
+    type: object
+    default: []
+  - name: dependsOn
+    type: object
+    default: null
+  - name: artifactStem
+    type: string
+    default: ''
+  - name: jobName
+    type: string
+    default: BuildAndPublishPGONuget
+
+jobs:
+- job: ${{ parameters.jobName }}
+  ${{ if ne(length(parameters.pool), 0) }}:
+    pool: ${{ parameters.pool }}
+  dependsOn: ${{ parameters.dependsOn }}
+  displayName: Package and Publish PGO Databases
+
+  variables:
+    artifactsPath: $(Build.SourcesDirectory)\Artifacts
+    pgoToolsPath: $(Build.SourcesDirectory)\build\PGO
+    nuspecPath: $(pgoToolsPath)\NuSpecs
+    nuspecFilename: PGO.nuspec
+
+  steps:
+  - checkout: self
+    clean: true
+    # It is important that this be 0, otherwise git will not fetch the branch ref names that the PGO rules require.
+    fetchDepth: 0
+    submodules: false
+    persistCredentials: false
+
+  - task: DownloadPipelineArtifact@2
+    displayName: Download Final PGO Databases
+    inputs:
+      artifact: pgd-merged-${{ parameters.buildConfiguration }}${{ parameters.artifactStem }}
+      downloadPath: $(artifactsPath)
+
+  - template: steps-ensure-nuget-version.yml
+
+  - task: NuGetAuthenticate@1
+    inputs:
+      nuGetServiceConnections: 'Terminal Public Artifact Feed'
+
+  # In the Microsoft Azure DevOps tenant, NuGetCommand is ambiguous.
+  # This should be `task: NuGetCommand@2`
+  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+    displayName: Restore NuGet packages for extraneous build actions
+    inputs:
+      command: restore
+      feedsToUse: config
+      configPath: NuGet.config
+      restoreSolution: build/packages.config
+      restoreDirectory: '$(Build.SourcesDirectory)\packages'
+
+  - task: MSBuild@1
+    displayName: 'Create PGO Nuget'
+    inputs:
+      solution: $(pgoToolsPath)\PGO.DB.proj
+      msbuildArguments: '/t:CreatePGONuGet /p:PGOBuildMode=Instrument /p:PGDPathForAllArch=$(artifactsPath) /p:PGOOutputPath=$(Build.ArtifactStagingDirectory)'
+
+  - publish: $(Build.ArtifactStagingDirectory)
+    artifact: pgo-nupkg-${{ parameters.buildConfiguration }}${{ parameters.artifactStem }}
+    displayName: "Publish Pipeline Artifact"
+
+  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+    displayName: 'NuGet push'
+    inputs:
+      command: push
+      nuGetFeedType: external
+      packagesToPush: $(Build.ArtifactStagingDirectory)/*.nupkg
+      # The actual URL and PAT for this feed is configured at
+      # https://microsoft.visualstudio.com/Dart/_settings/adminservices
+      # This is the name of that connection
+      publishFeedCredentials: 'Terminal Public Artifact Feed'
+      feedsToUse: config
+      nugetConfigPath: '$(Build.SourcesDirectory)/NuGet.config'

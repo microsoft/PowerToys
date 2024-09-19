@@ -1,0 +1,27 @@
+parameters:
+  - name: branding
+    type: string
+
+variables:
+  # If we are building a branch called "release-*", change the NuGet suffix
+  # to "preview". If we don't do that, XES will set the suffix to "release1"
+  # because it truncates the value after the first period.
+  # We also want to disable the suffix entirely if we're Release branded while
+  # on a release branch.
+  # main is special, however. XES ignores main. Since we never produce actual
+  # shipping builds from main, we want to force it to have a beta label as
+  # well.
+  #
+  # In effect:
+  # BRANCH / BRANDING | Release                    | Preview
+  # ------------------|----------------------------|-----------------------------
+  # release-*         | 1.12.20220427              | 1.13.20220427-preview
+  # main              | 1.14.20220427-experimental | 1.14.20220427-experimental
+  # all others        | 1.14.20220427-mybranch     | 1.14.20220427-mybranch
+  ${{ if startsWith(variables['Build.SourceBranchName'], 'release-') }}:
+    ${{ if eq(parameters.branding, 'Release') }}:
+      NoNuGetPackBetaVersion: true
+    ${{ else }}:
+      NuGetPackBetaVersion: preview
+  ${{ elseif eq(variables['Build.SourceBranchName'], 'main') }}:
+    NuGetPackBetaVersion: experimental

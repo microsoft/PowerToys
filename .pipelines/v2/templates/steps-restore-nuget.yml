@@ -1,0 +1,38 @@
+steps:
+- template: steps-ensure-nuget-version.yml
+
+- task: NuGetAuthenticate@1
+
+- script: |-
+    echo ##vso[task.setvariable variable=NUGET_RESTORE_MSBUILD_ARGS]/p:Platform=$(BuildPlatform)
+  displayName: Ensure NuGet restores for $(BuildPlatform)
+  condition: and(succeeded(), ne(variables['BuildPlatform'], 'Any CPU'))
+
+# In the Microsoft Azure DevOps tenant, NuGetCommand is ambiguous.
+# This should be `task: NuGetCommand@2`
+- task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+  displayName: Restore NuGet packages for extraneous build actions
+  inputs:
+    command: restore
+    feedsToUse: config
+    configPath: NuGet.config
+    restoreSolution: build/packages.config
+    restoreDirectory: '$(Build.SourcesDirectory)\packages'
+
+- task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+  displayName: Restore NuGet packages for solution
+  inputs:
+    command: restore
+    feedsToUse: config
+    configPath: NuGet.config
+    restoreSolution: OpenConsole.sln
+    restoreDirectory: '$(Build.SourcesDirectory)\packages'
+
+- task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+  displayName: Restore NuGet packages for global nuget
+  inputs:
+    command: restore
+    feedsToUse: config
+    configPath: NuGet.config
+    restoreSolution: dep/nuget/packages.config
+    restoreDirectory: '$(Build.SourcesDirectory)\packages'

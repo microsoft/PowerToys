@@ -1,0 +1,7 @@
+parameters:
+  - name: containerVersion
+    type: string
+    default: latest
+
+variables:
+  WindowsContainerImage: 'onebranch.azurecr.io/windows/ltsc2022/vse2022:${{ parameters.containerVersion }}'

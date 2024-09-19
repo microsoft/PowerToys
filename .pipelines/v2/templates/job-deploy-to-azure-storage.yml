@@ -1,0 +1,92 @@
+parameters:
+  - name: buildConfiguration
+    type: string
+  - name: buildPlatforms
+    type: object
+  - name: pool
+    type: object
+    default: []
+  - name: dependsOn
+    type: object
+    default: null
+  - name: artifactStem
+    type: string
+    default: ''
+  - name: variables
+    type: object
+    default: {}
+  - name: environment
+    type: string
+  - name: storagePublicRootURL
+    type: string
+  - name: subscription
+    type: string
+  - name: storageAccount
+    type: string
+  - name: storageContainer
+    type: string
+
+jobs:
+- job: DeployAzure
+  ${{ if ne(length(parameters.pool), 0) }}:
+    pool: ${{ parameters.pool }}
+  displayName: Publish to Azure Storage (Prod)
+  dependsOn: ${{ parameters.dependsOn }}
+  variables:
+    ${{ insert }}: ${{ parameters.variables }}
+  steps:
+  - download: none
+
+  - checkout: self
+    clean: true
+    fetchDepth: 1
+    fetchTags: false # Tags still result in depth > 1 fetch; we don't need them here
+    submodules: true
+    persistCredentials: True
+
+  - task: DownloadPipelineArtifact@2
+    displayName: Download MSIX Bundle Artifact
+    inputs:
+      artifactName: appxbundle-${{ parameters.buildConfiguration }}${{ parameters.artifactStem }}
+      downloadPath: '$(Build.SourcesDirectory)/_out'
+      itemPattern: '**/*.msixbundle'
+
+  - ${{ each platform in parameters.buildPlatforms }}:
+    - task: DownloadPipelineArtifact@2
+      displayName: Download unpackaged build for ${{ platform }} ${{ parameters.buildConfiguration }}
+      inputs:
+        artifactName: build-${{ platform }}-${{ parameters.buildConfiguration }}${{ parameters.artifactStem }}
+        downloadPath: '$(Build.SourcesDirectory)/_unpackaged'
+        itemPattern: '**/_unpackaged/*.zip'
+
+  - pwsh: |-
+      $b = Get-Item _out/*.msixbundle
+      ./build/scripts/New-AppInstallerFromTemplateAndBundle.ps1 -BundlePath $b.FullName -AppInstallerTemplatePath ./build/config/template.appinstaller -AppInstallerRoot "${{ parameters.storagePublicRootURL }}" -OutputPath _out/Microsoft.WindowsTerminalCanary.appinstaller
+    displayName: "Produce AppInstaller for MSIX bundle"
+
+  - pwsh: |-
+      $zips = Get-ChildItem -Recurse -Filter *.zip _unpackaged
+      $zips | ForEach-Object {
+        $name = $_.Name
+        $parts = $name.Split('_')
+        $parts[1] = "latest"
+        $name = [String]::Join('_', $parts)
+        $_ | Move-Item -Destination (Join-Path "_out" $name)
+      }
+    displayName: "Wrangle Unpackaged builds into place, rename"
+
+  - powershell: |-
+      Get-PackageProvider -Name NuGet -ForceBootstrap
+      Install-Module -Verbose -AllowClobber -Force Az.Accounts, Az.Storage, Az.Network, Az.Resources, Az.Compute
+    displayName: Install Azure Module Dependencies
+
+  - task: AzureFileCopy@6
+    displayName: Publish to Storage Account
+    inputs:
+      sourcePath: _out/*
+      Destination: AzureBlob
+      azureSubscription: ${{ parameters.subscription }}
+      storage: ${{ parameters.storageAccount }}
+      ContainerName: ${{ parameters.storageContainer }}
+      AdditionalArgumentsForBlobCopy: "--content-type application/octet-stream"
+

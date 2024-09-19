@@ -1,0 +1,340 @@
+parameters:
+  - name: branding
+    type: string
+    default: Dev
+  - name: additionalBuildOptions
+    type: string
+    default: ''
+  - name: buildTerminal
+    type: boolean
+    default: true
+  - name: buildConPTY
+    type: boolean
+    default: false
+  - name: buildWPF
+    type: boolean
+    default: false
+  - name: buildWPFDotNetComponents # This weird hack is to make sure we sign and source index the .NET pieces
+    type: boolean
+    default: false
+  - name: buildEverything
+    displayName: "Build Everything (Overrides all other build options)"
+    type: boolean
+    default: false
+  - name: pgoBuildMode
+    type: string
+    default: None
+    values: [Optimize, Instrument, None]
+  - name: buildConfigurations
+    type: object
+    default:
+      - Release
+  - name: buildPlatforms
+    type: object
+    default:
+      - x64
+      - x86
+      - arm64
+  - name: generateSbom
+    type: boolean
+    default: false
+  - name: codeSign
+    type: boolean
+    default: false
+  - name: keepAllExpensiveBuildOutputs
+    type: boolean
+    default: true
+  - name: artifactStem
+    type: string
+    default: ''
+  - name: jobName
+    type: string
+    default: 'Build'
+  - name: pool
+    type: object
+    default: []
+  - name: beforeBuildSteps
+    type: stepList
+    default: []
+  - name: variables
+    type: object
+    default: {}
+  - name: publishArtifacts
+    type: boolean
+    default: true
+  - name: removeAllNonSignedFiles
+    type: boolean
+    default: false
+  - name: signingIdentity
+    type: object
+    default: {}
+  - name: enableCaching
+    type: boolean
+    default: false
+
+jobs:
+- job: ${{ parameters.jobName }}
+  ${{ if ne(length(parameters.pool), 0) }}:
+    pool: ${{ parameters.pool }}
+  strategy:
+    matrix:
+      ${{ each config in parameters.buildConfigurations }}:
+        ${{ each platform in parameters.buildPlatforms }}:
+          ${{ config }}_${{ platform }}:
+            BuildConfiguration: ${{ config }}
+            BuildPlatform: ${{ platform }}
+            ${{ if eq(platform, 'x86') }}:
+              OutputBuildPlatform: Win32
+            ${{ elseif eq(platform, 'Any CPU') }}:
+              OutputBuildPlatform: AnyCPU
+            ${{ else }}:
+              OutputBuildPlatform: ${{ platform }}
+  variables:
+    MakeAppxPath: 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x86\MakeAppx.exe'
+    Terminal.BinDir: $(Build.SourcesDirectory)/bin/$(OutputBuildPlatform)/$(BuildConfiguration)
+    # Azure DevOps abhors a vacuum
+    # If these are blank, expansion will fail later on... which will result in direct substitution of the variable *names*
+    # later on. We'll just... set them to a single space and if we need to, check IsNullOrWhiteSpace.
+    # Yup.
+    BuildTargetParameter: ' '
+    SelectedSigningFragments: ' '
+    MSBuildCacheParameters: ' '
+    # When building the unpackaged distribution, build it in portable mode if it's Canary-branded
+    ${{ if eq(parameters.branding, 'Canary') }}:
+      UnpackagedBuildArguments: -PortableMode
+    ${{ else }}:
+      UnpackagedBuildArguments: ' '
+    JobOutputDirectory: $(Terminal.BinDir)
+    JobOutputArtifactName: build-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
+    ${{ insert }}: ${{ parameters.variables }}
+  displayName: Build
+  timeoutInMinutes: 240
+  cancelTimeoutInMinutes: 1
+  steps:
+  - checkout: self
+    clean: true
+    submodules: true
+    persistCredentials: True
+
+  # This generates either nothing for BuildTargetParameter, or /t:X;Y;Z, to control targets later.
+  - pwsh: |-
+      If (-Not [bool]::Parse("${{ parameters.buildEverything }}")) {
+        $BuildTargets = @()
+        $SignFragments = @()
+        If ([bool]::Parse("${{ parameters.buildTerminal }}")) {
+          $BuildTargets += "Terminal\CascadiaPackage"
+          $SignFragments += "terminal_constituents"
+        }
+        If ([bool]::Parse("${{ parameters.buildWPFDotNetComponents }}")) {
+          $BuildTargets += "Terminal\wpf\WpfTerminalControl"
+          $SignFragments += "wpfdotnet"
+        }
+        If ([bool]::Parse("${{ parameters.buildWPF }}")) {
+          $BuildTargets += "Terminal\Control\Microsoft_Terminal_Control"
+          $SignFragments += "wpf"
+        }
+        If ([bool]::Parse("${{ parameters.buildConPTY }}")) {
+          $BuildTargets += "Conhost\Host_EXE;Conhost\winconpty_DLL"
+          $SignFragments += "conpty"
+        }
+        Write-Host "Targets: $($BuildTargets -Join ";")"
+        Write-Host "Sign targets: $($SignFragments -Join ";")"
+        Write-Host "##vso[task.setvariable variable=BuildTargetParameter]/t:$($BuildTargets -Join ";")"
+        Write-Host "##vso[task.setvariable variable=SelectedSigningFragments]$($SignFragments -Join ";")"
+      }
+    displayName: Prepare Build and Sign Targets
+
+  - ${{ if eq(parameters.enableCaching, true) }}:
+    - pwsh: |-
+        $MSBuildCacheParameters = ""
+        $MSBuildCacheParameters += " -graph"
+        $MSBuildCacheParameters += " -reportfileaccesses"
+        $MSBuildCacheParameters += " -p:MSBuildCacheEnabled=true"
+        $MSBuildCacheParameters += " -p:MSBuildCacheLogDirectory=$(Build.SourcesDirectory)\MSBuildCacheLogs"
+        Write-Host "MSBuildCacheParameters: $MSBuildCacheParameters"
+        Write-Host "##vso[task.setvariable variable=MSBuildCacheParameters]$MSBuildCacheParameters"
+      displayName: Prepare MSBuildCache variables
+
+  - pwsh: |-
+      .\build\scripts\Generate-ThirdPartyNotices.ps1 -MarkdownNoticePath .\NOTICE.md -OutputPath .\src\cascadia\CascadiaPackage\NOTICE.html
+    displayName: Generate NOTICE.html from NOTICE.md
+
+  - template: .\steps-install-vcpkg.yml
+
+  - template: .\steps-restore-nuget.yml
+
+  - pwsh: |-
+      .\build\scripts\Set-LatestVCToolsVersion.ps1
+    displayName: Work around DD-1541167 (VCToolsVersion)
+
+  - ${{ parameters.beforeBuildSteps }}
+
+  - task: VSBuild@1
+    displayName: Build OpenConsole.sln
+    inputs:
+      solution: 'OpenConsole.sln'
+      msbuildArgs: >-
+        /p:WindowsTerminalOfficialBuild=true;WindowsTerminalBranding=${{ parameters.branding }};PGOBuildMode=${{ parameters.pgoBuildMode }}
+        ${{ parameters.additionalBuildOptions }}
+        /bl:$(Build.SourcesDirectory)\msbuild.binlog
+        $(BuildTargetParameter)
+        $(MSBuildCacheParameters)
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+    ${{ if eq(parameters.enableCaching, true) }}:
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+  - ${{ if eq(parameters.publishArtifacts, true) }}:
+    - publish: $(Build.SourcesDirectory)/msbuild.binlog
+      artifact: logs-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
+      condition: always()
+      displayName: Publish Build Log
+    - ${{ if eq(parameters.enableCaching, true) }}:
+      - publish: $(Build.SourcesDirectory)\MSBuildCacheLogs
+        artifact: logs-msbuildcache-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
+        condition: always()
+        displayName: Publish MSBuildCache Logs
+  - ${{ else }}:
+    - task: CopyFiles@2
+      displayName: Copy Build Log
+      inputs:
+        contents: $(Build.SourcesDirectory)/msbuild.binlog
+        TargetFolder: $(Terminal.BinDir)
+    - ${{ if eq(parameters.enableCaching, true) }}:
+      - task: CopyFiles@2
+        displayName: Copy MSBuildCache Logs
+        inputs:
+          contents: $(Build.SourcesDirectory)/MSBuildCacheLogs/**
+          TargetFolder: $(Terminal.BinDir)/MSBuildCacheLogs
+
+  # This saves ~2GiB per architecture. We won't need these later.
+  # Removes:
+  # - All .lib that do not have an associated .exp (which would indicate that they are import libs)
+  # - All .pdbs from those .libs (which were only used during linking)
+  # - Directories ending in Lib (static lib projects that we fully linked into DLLs which may also contain unnecessary resources)
+  # - All LocalTests_ project outputs, as they were subsumed into TestHostApp
+  # - All PDB files inside the WindowsTerminal/ output, which do not belong there.
+  # - console.dll, which apparently breaks XFGCheck? lol.
+  - pwsh: |-
+      $binDir = '$(Terminal.BinDir)'
+      $ImportLibs = Get-ChildItem $binDir -Recurse -File -Filter '*.exp' | ForEach-Object { $_.FullName -Replace "exp$","lib" }
+      $StaticLibs = Get-ChildItem $binDir -Recurse -File -Filter '*.lib' | Where-Object FullName -NotIn $ImportLibs
+
+      $Items = @()
+      $Items += $StaticLibs
+      $Items += Get-Item ($StaticLibs.FullName -Replace "lib$","pdb") -ErrorAction:Ignore
+      $Items += Get-ChildItem $binDir -Directory -Filter '*Lib'
+      $Items += Get-ChildItem $binDir -Directory -Filter 'LocalTests_*'
+      $Items += Get-ChildItem "${$binDir}\WindowsTerminal" -Filter '*.pdb' -ErrorAction:Ignore
+
+      If (-Not [bool]::Parse('${{ parameters.keepAllExpensiveBuildOutputs }}')) {
+        $Items += Get-ChildItem '$(Terminal.BinDir)' -Filter '*.pdb' -Recurse
+      }
+
+      $Items += Get-ChildItem $binDir -Filter 'console.dll'
+
+      $Items | Remove-Item -Recurse -Force -Verbose -ErrorAction:Ignore
+    displayName: Clean up static libs and extra symbols
+    errorActionPreference: silentlyContinue # It's OK if this silently fails
+
+  # We cannot index PDBs that we have deleted!
+  - ${{ if eq(parameters.keepAllExpensiveBuildOutputs, true) }}:
+    - pwsh: |-
+        build\scripts\Index-Pdbs.ps1 -SearchDir '$(Terminal.BinDir)' -SourceRoot '$(Build.SourcesDirectory)' -recursive -Verbose -CommitId $(Build.SourceVersion)
+      displayName: Source Index PDBs
+      errorActionPreference: silentlyContinue
+
+  - ${{ if or(parameters.buildTerminal, parameters.buildEverything) }}:
+    - pwsh: |-
+        $Package = (Get-ChildItem -Recurse -Filter "CascadiaPackage*.msix" | Select -First 1)
+        $PackageFilename = $Package.FullName
+        Write-Host "##vso[task.setvariable variable=WindowsTerminalPackagePath]${PackageFilename}"
+      displayName: Locate the MSIX
+
+    # CHECK EXCEPTION
+    # PGO requires a desktop CRT
+    - ${{ if ne(parameters.pgoBuildMode, 'Instrument') }}:
+      - pwsh: |-
+          .\build\scripts\Test-WindowsTerminalPackage.ps1 -Verbose -Path "$(WindowsTerminalPackagePath)"
+        displayName: Check MSIX for common regressions
+        condition: and(succeeded(), ne(variables.WindowsTerminalPackagePath, ''))
+      
+    - ${{ if eq(parameters.codeSign, true) }}:
+      - pwsh: |-
+          & "$(MakeAppxPath)" unpack /p "$(WindowsTerminalPackagePath)" /d "$(Terminal.BinDir)/PackageContents"
+        displayName: Unpack the MSIX for signing
+
+  - ${{ if eq(parameters.codeSign, true) }}:
+    - template: steps-create-signing-config.yml
+      parameters:
+        outFile: '$(Build.SourcesDirectory)/ESRPSigningConfig.json'
+        stage: build
+        fragments: $(SelectedSigningFragments)
+
+    # Code-sign everything we just put together.
+    # We run the signing in Terminal.BinDir, because all of the signing batches are relative to the final architecture/configuration output folder.
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: Submit Signing Request
+        signingIdentity: ${{ parameters.signingIdentity }}
+        inputs:
+          FolderPath: '$(Terminal.BinDir)'
+          signType: batchSigning
+          batchSignPolicyFile: '$(Build.SourcesDirectory)/ESRPSigningConfig.json'
+
+    # We only need to re-pack the MSIX if we actually signed, so this can stay in the codeSign conditional
+    - ${{ if or(parameters.buildTerminal, parameters.buildEverything) }}:
+      - pwsh: |-
+          $outDir = New-Item -Type Directory "$(Terminal.BinDir)/_appx" -ErrorAction:Ignore
+          $PackageFilename = Join-Path $outDir.FullName (Split-Path -Leaf "$(WindowsTerminalPackagePath)")
+          & "$(MakeAppxPath)" pack /h SHA256 /o /p $PackageFilename /d "$(Terminal.BinDir)/PackageContents"
+          Write-Host "##vso[task.setvariable variable=WindowsTerminalPackagePath]${PackageFilename}"
+        displayName: Re-pack the new Terminal package after signing
+
+    # Some of our governed pipelines explicitly fail builds that have *any* non-codesigned filed (!)
+    - ${{ if eq(parameters.removeAllNonSignedFiles, true) }}:
+      - pwsh: |-
+          Get-ChildItem "$(Terminal.BinDir)" -Recurse -Include "*.dll","*.exe" |
+            Where-Object { (Get-AuthenticodeSignature $_).Status -Ne "Valid" } |
+            Remove-Item -Verbose -Force
+        displayName: Remove all non-signed output files
+
+  - ${{ else }}: # No Signing
+    - ${{ if or(parameters.buildTerminal, parameters.buildEverything) }}:
+      - pwsh: |-
+          $outDir = New-Item -Type Directory "$(Terminal.BinDir)/_appx" -ErrorAction:Ignore
+          $PackageFilename = Join-Path $outDir.FullName (Split-Path -Leaf "$(WindowsTerminalPackagePath)")
+          Copy-Item "$(WindowsTerminalPackagePath)" $PackageFilename
+          Write-Host "##vso[task.setvariable variable=WindowsTerminalPackagePath]${PackageFilename}"
+        displayName: Stage the package (unsigned)
+        condition: and(succeeded(), ne(variables.WindowsTerminalPackagePath, ''))
+
+  - ${{ if or(parameters.buildTerminal, parameters.buildEverything) }}:
+    - pwsh: |-
+        $XamlAppxPath = (Get-Item "src\cascadia\CascadiaPackage\AppPackages\*\Dependencies\$(BuildPlatform)\Microsoft.UI.Xaml*.appx").FullName
+        $outDir = New-Item -Type Directory "$(Terminal.BinDir)/_unpackaged" -ErrorAction:Ignore
+        & .\build\scripts\New-UnpackagedTerminalDistribution.ps1 $(UnpackagedBuildArguments) -TerminalAppX $(WindowsTerminalPackagePath) -XamlAppX $XamlAppxPath -Destination $outDir.FullName
+      displayName: Build Unpackaged Distribution (from MSIX)
+      condition: and(succeeded(), ne(variables.WindowsTerminalPackagePath, ''))
+
+  - ${{ if eq(parameters.generateSbom, true) }}:
+    - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
+      displayName: 'Generate SBOM manifest'
+      inputs:
+        BuildDropPath: '$(Terminal.BinDir)'
+
+    - task: DropValidatorTask@0
+      displayName: 'Validate SBOM manifest'
+      inputs:
+        BuildDropPath: '$(Terminal.BinDir)'
+        OutputPath: 'output.json'
+        ValidateSignature: true
+        Verbosity: 'Verbose'
+
+  - ${{ if eq(parameters.publishArtifacts, true) }}:
+    - publish: $(Terminal.BinDir)
+      artifact: $(JobOutputArtifactName)
+      displayName: Publish All Outputs

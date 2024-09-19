@@ -1,0 +1,83 @@
+parameters:
+  buildConfiguration: 'Release'
+  buildPlatform: ''
+  artifactStem: ''
+  testLogPath: '$(Build.BinariesDirectory)\$(BuildPlatform)\$(BuildConfiguration)\testsOnBuildMachine.wtl'
+
+jobs:
+- job: PGO${{ parameters.buildPlatform }}${{ parameters.buildConfiguration }}
+  displayName: PGO ${{ parameters.buildPlatform }} ${{ parameters.buildConfiguration }}
+  variables:
+    BuildConfiguration: ${{ parameters.buildConfiguration }}
+    BuildPlatform: ${{ parameters.buildPlatform }}
+    OutputBuildPlatform: ${{ parameters.buildPlatform }}
+    Terminal.BinDir: $(Build.SourcesDirectory)/bin/$(OutputBuildPlatform)/$(BuildConfiguration)
+  pool:
+    ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+      ${{ if ne(parameters.buildPlatform, 'ARM64') }}:
+        name: SHINE-INT-Testing-x64
+      ${{ else }}:
+        name: SHINE-INT-Testing-arm64
+    ${{ else }}:
+      ${{ if ne(parameters.buildPlatform, 'ARM64') }}:
+        name: SHINE-OSS-Testing-x64
+      ${{ else }}:
+        name: SHINE-OSS-Testing-arm64
+
+  steps:
+  - checkout: self
+    submodules: false
+    clean: true
+    fetchDepth: 1
+    fetchTags: false # Tags still result in depth > 1 fetch; we don't need them here
+
+  - task: DownloadPipelineArtifact@2
+    displayName: Download artifacts
+    inputs:
+      artifactName: build-${{ parameters.buildPlatform }}-$(BuildConfiguration)${{ parameters.artifactStem }}
+      downloadPath: $(Terminal.BinDir)
+
+  # The tests expect Terminal to be an unpackaged distribution named terminal-0.0.1.0 (after the dev build version scheme)
+  # Extract to that folder explicitly and strip the embedded folder name from the unpackaged archive.
+  - powershell: |-
+      $TargetDirectory = New-Item -Type Directory (Join-Path "$(Terminal.BinDir)" "terminal-0.0.1.0")
+      & tar.exe -x -v -f (Get-Item "$(Terminal.BinDir)/_unpackaged/*.zip") -C $TargetDirectory.FullName --strip-components=1
+    displayName: Extract the unpackaged build for PGO
+
+  - template: steps-ensure-nuget-version.yml
+
+  - powershell: |-
+      $Package = 'Microsoft.Internal.Windows.Terminal.TestContent'
+      $Version = '1.0.1'
+      & nuget.exe install $Package -Version $Version
+      Write-Host "##vso[task.setvariable variable=TerminalTestContentPath]$(Build.SourcesDirectory)\packages\${Package}.${Version}\content"
+    displayName: Install Test Content
+
+  - task: PowerShell@2
+    displayName: 'Run PGO Tests'
+    inputs:
+      pwsh: true
+      targetType: filePath
+      filePath: build\scripts\Run-Tests.ps1
+      arguments: >-
+        -MatchPattern '*UIA.Tests.dll'
+        -Platform '$(OutputBuildPlatform)'
+        -Configuration '$(BuildConfiguration)'
+        -LogPath '${{ parameters.testLogPath }}'
+        -Root "$(Terminal.BinDir)"
+        -AdditionalTaefArguments '/select:(@IsPGO=true)','/p:WTTestContent=$(TerminalTestContentPath)'
+
+  - task: CopyFiles@2
+    displayName: 'Copy PGO outputs to Artifacts'
+    condition: always()
+    inputs:
+      Contents: |
+       **/*.pgc
+       ${{ parameters.testLogPath }}
+      TargetFolder: '$(Build.ArtifactStagingDirectory)/$(BuildConfiguration)/$(BuildPlatform)/pgc'
+      OverWrite: true
+      flattenFolders: true
+
+  - publish: '$(Build.ArtifactStagingDirectory)/$(BuildConfiguration)/$(BuildPlatform)/pgc'
+    artifact: pgc-intermediates-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
+    condition: always()

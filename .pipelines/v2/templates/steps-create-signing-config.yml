@@ -1,0 +1,35 @@
+parameters:
+  - name: stage
+    type: string
+  - name: outFile
+    type: string
+  - name: fragments
+    type: string
+
+# This build step template takes all files named "esrp.STAGE.batch.*.json"
+# and merges them into a single output signing config.
+#
+# We generate the batch signing config by sticking together multiple "batches".
+# The filter below (with Fragments) works by splitting the filename, esrp.s.batch.x.json,
+# to get 'x' and then checking whether x is in Fragments.
+# We have to manually strip comments out of the batch fragments due to https://github.com/PowerShell/PowerShell/issues/14553
+
+steps:
+  - pwsh: |-
+      $SignBatchFiles = (Get-Item build/config/esrp.${{ parameters.stage }}.batch.*.json)
+      $Fragments = "${{ parameters.fragments }}"
+      If (-Not [String]::IsNullOrWhiteSpace($Fragments)) {
+        $FragmentList = $Fragments -Split ";"
+        If ($FragmentList.Length -Gt 0) {
+          $SignBatchFiles = $SignBatchFiles | Where-Object { ($_.Name -Split '\.')[3] -In $FragmentList }
+        }
+      }
+      Write-Host "Found $(@($SignBatchFiles).Length) Signing Configs"
+      Write-Host ($SignBatchFiles.Name -Join ";")
+      $FinalSignConfig = @{
+        Version = "1.0.0";
+        UseMinimatch = $false;
+        SignBatches = @($SignBatchFiles | ForEach-Object { Get-Content $_ | Where-Object { $_ -NotMatch "^\s*\/\/" } | ConvertFrom-Json -Depth 10 });
+      }
+      $FinalSignConfig | ConvertTo-Json -Depth 10 | Out-File -Encoding utf8 "${{ parameters.outFile }}"
+    displayName: Merge ${{ parameters.stage }} signing configs (${{ parameters.outFile }})

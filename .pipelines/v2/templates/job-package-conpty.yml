@@ -1,0 +1,130 @@
+parameters:
+  - name: buildConfigurations
+    type: object
+  - name: buildPlatforms
+    type: object
+  - name: generateSbom
+    type: boolean
+    default: false
+  - name: codeSign
+    type: boolean
+    default: false
+  - name: pool
+    type: object
+    default: []
+  - name: dependsOn
+    type: object
+    default: null
+  - name: artifactStem
+    type: string
+    default: ''
+  - name: jobName
+    type: string
+    default: PackConPTY
+  - name: variables
+    type: object
+    default: {}
+  - name: publishArtifacts
+    type: boolean
+    default: true
+  - name: signingIdentity
+    type: object
+    default: {}
+
+jobs:
+- job: ${{ parameters.jobName }}
+  ${{ if ne(length(parameters.pool), 0) }}:
+    pool: ${{ parameters.pool }}
+  ${{ if eq(parameters.codeSign, true) }}:
+    displayName: Pack and Sign Microsoft.Windows.Console.ConPTY
+  ${{ else }}:
+    displayName: Pack Microsoft.Windows.Console.ConPTY
+  strategy:
+    matrix:
+      ${{ each config in parameters.buildConfigurations }}:
+        ${{ config }}:
+          BuildConfiguration: ${{ config }}
+  dependsOn: ${{ parameters.dependsOn }}
+  variables:
+    JobOutputDirectory: $(Build.ArtifactStagingDirectory)\nupkg
+    JobOutputArtifactName: conpty-nupkg-$(BuildConfiguration)${{ parameters.artifactStem }}
+    ${{ insert }}: ${{ parameters.variables }}
+  steps:
+  - checkout: self
+    clean: true
+    fetchDepth: 1
+    fetchTags: false # Tags still result in depth > 1 fetch; we don't need them here
+    submodules: true
+    persistCredentials: True
+
+  - template: steps-setup-versioning.yml
+
+  - template: steps-download-bin-dir-artifact.yml
+    parameters:
+      buildPlatforms: ${{ parameters.buildPlatforms }}
+      # This build is already matrix'd on configuration, so
+      # just pass a single config into the download template.
+      buildConfigurations:
+        - $(BuildConfiguration)
+      artifactStem: ${{ parameters.artifactStem }}
+
+  - template: steps-ensure-nuget-version.yml
+
+# In the Microsoft Azure DevOps tenant, NuGetCommand is ambiguous.
+# This should be `task: NuGetCommand@2`
+  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+    displayName: NuGet pack
+    inputs:
+      command: pack
+      packagesToPack: $(Build.SourcesDirectory)\src\winconpty\package\winconpty.nuspec
+      packDestination: '$(Build.ArtifactStagingDirectory)/nupkg'
+      versioningScheme: byEnvVar
+      versionEnvVar: XES_PACKAGEVERSIONNUMBER
+
+  - ${{ if eq(parameters.codeSign, true) }}:
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: Submit *.nupkg to ESRP for code signing
+        signingIdentity: ${{ parameters.signingIdentity }}
+        inputs:
+          FolderPath: $(Build.ArtifactStagingDirectory)/nupkg
+          Pattern: '*.nupkg'
+          UseMinimatch: true
+          signConfigType: inlineSignParams
+          inlineOperation: >-
+            [
+                {
+                    "KeyCode": "CP-401405",
+                    "OperationCode": "NuGetSign",
+                    "Parameters": {},
+                    "ToolName": "sign",
+                    "ToolVersion": "1.0"
+                },
+                {
+                    "KeyCode": "CP-401405",
+                    "OperationCode": "NuGetVerify",
+                    "Parameters": {},
+                    "ToolName": "sign",
+                    "ToolVersion": "1.0"
+                }
+            ]
+
+  - ${{ if eq(parameters.generateSbom, true) }}:
+    - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
+      displayName: 'Generate SBOM manifest (conpty)'
+      inputs:
+       BuildDropPath: '$(System.ArtifactsDirectory)/nupkg'
+       BuildComponentPath: '$(Build.SourcesDirectory)/bin'
+
+    - task: DropValidatorTask@0
+      displayName: 'Validate conpty SBOM manifest'
+      inputs:
+        BuildDropPath: '$(System.ArtifactsDirectory)/nupkg'
+        OutputPath: 'output.json'
+        ValidateSignature: true
+        Verbosity: 'Verbose'
+
+  - ${{ if eq(parameters.publishArtifacts, true) }}:
+    - publish: $(JobOutputDirectory)
+      artifact: $(JobOutputArtifactName)
+      displayName: Publish nupkg

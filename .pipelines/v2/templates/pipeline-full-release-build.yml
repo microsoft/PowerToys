@@ -1,0 +1,171 @@
+# This build should never run as CI or against a pull request.
+trigger: none
+
+parameters:
+  - name: branding
+    type: string
+    default: Release
+  - name: buildTerminal
+    type: boolean
+    default: true
+  - name: buildConPTY
+    type: boolean
+    default: false
+  - name: buildWPF
+    type: boolean
+    default: false
+  - name: pgoBuildMode
+    type: string
+    default: Optimize
+    values:
+      - Optimize
+      - Instrument
+      - None
+  - name: buildConfigurations
+    type: object
+    default:
+      - Release
+  - name: buildPlatforms
+    type: object
+    default:
+      - x64
+      - x86
+      - arm64
+  - name: codeSign
+    type: boolean
+    default: false
+  - name: generateSbom
+    type: boolean
+    default: true
+  - name: terminalInternalPackageVersion
+    type: string
+    default: '0.0.8'
+
+  - name: publishSymbolsToPublic
+    type: boolean
+    default: true
+  - name: symbolExpiryTime
+    type: string
+    default: 36530 # This is the default from PublishSymbols@2
+  - name: publishVpackToWindows
+    type: boolean
+    default: false
+
+  - name: extraPublishJobs
+    type: object
+    default: []
+  - name: pool
+    type: object
+    default:
+      name: SHINE-INT-S # By default, send jobs to the small agent pool.
+      demands: ImageOverride -equals SHINE-VS17-Latest
+
+variables:
+  - template: variables-nuget-package-version.yml
+    parameters:
+      branding: ${{ parameters.branding }}
+
+resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: main
+
+stages:
+  - stage: Build
+    displayName: Build
+    pool: ${{ parameters.pool }}
+    dependsOn: []
+    jobs:
+      - template: ./job-build-project.yml
+        parameters:
+          pool:
+            name: SHINE-INT-L # Run the compilation on the large agent pool, rather than the default small one.
+            demands: ImageOverride -equals SHINE-VS17-Latest
+          branding: ${{ parameters.branding }}
+          buildTerminal: ${{ parameters.buildTerminal }}
+          buildConPTY: ${{ parameters.buildConPTY }}
+          buildWPF: ${{ parameters.buildWPF }}
+          pgoBuildMode: ${{ parameters.pgoBuildMode }}
+          buildConfigurations: ${{ parameters.buildConfigurations }}
+          buildPlatforms: ${{ parameters.buildPlatforms }}
+          generateSbom: ${{ parameters.generateSbom }}
+          codeSign: ${{ parameters.codeSign }}
+          beforeBuildSteps: # Right before we build, lay down the universal package and localizations
+            - template: ./build/pipelines/templates-v2/steps-setup-versioning.yml@self
+
+            - task: UniversalPackages@0
+              displayName: Download terminal-internal Universal Package
+              inputs:
+                feedListDownload: 2b3f8893-a6e8-411f-b197-a9e05576da48
+                packageListDownload: e82d490c-af86-4733-9dc4-07b772033204
+                versionListDownload: ${{ parameters.terminalInternalPackageVersion }}
+
+      - ${{ if eq(parameters.buildWPF, true) }}:
+        # Add an Any CPU build flavor for the WPF control bits
+        - template: ./job-build-project.yml
+          parameters:
+            # This job is allowed to run on the default small pool.
+            jobName: BuildWPF
+            branding: ${{ parameters.branding }}
+            buildTerminal: false
+            buildWPFDotNetComponents: true
+            buildConfigurations: ${{ parameters.buildConfigurations }}
+            buildPlatforms:
+              - Any CPU
+            generateSbom: ${{ parameters.generateSbom }}
+            codeSign: ${{ parameters.codeSign }}
+            beforeBuildSteps:
+              - template: ./build/pipelines/templates-v2/steps-setup-versioning.yml@self
+              # WPF doesn't need the localizations or the universal package, but if it does... put them here.
+
+  - stage: Package
+    displayName: Package
+    pool: ${{ parameters.pool }}
+    dependsOn: [Build]
+    jobs:
+      - ${{ if eq(parameters.buildTerminal, true) }}:
+        - template: ./job-merge-msix-into-bundle.yml
+          parameters:
+            jobName: Bundle
+            branding: ${{ parameters.branding }}
+            buildConfigurations: ${{ parameters.buildConfigurations }}
+            buildPlatforms: ${{ parameters.buildPlatforms }}
+            generateSbom: ${{ parameters.generateSbom }}
+            codeSign: ${{ parameters.codeSign }}
+
+      - ${{ if eq(parameters.buildConPTY, true) }}:
+        - template: ./job-package-conpty.yml
+          parameters:
+            buildConfigurations: ${{ parameters.buildConfigurations }}
+            buildPlatforms: ${{ parameters.buildPlatforms }}
+            generateSbom: ${{ parameters.generateSbom }}
+            codeSign: ${{ parameters.codeSign }}
+
+      - ${{ if eq(parameters.buildWPF, true) }}:
+        - template: ./job-build-package-wpf.yml
+          parameters:
+            buildConfigurations: ${{ parameters.buildConfigurations }}
+            buildPlatforms: ${{ parameters.buildPlatforms }}
+            generateSbom: ${{ parameters.generateSbom }}
+            codeSign: ${{ parameters.codeSign }}
+
+  - stage: Publish
+    displayName: Publish
+    pool: ${{ parameters.pool }}
+    dependsOn: [Build, Package]
+    jobs:
+      # We only support the vpack for Release builds that include Terminal
+      - ${{ if and(containsValue(parameters.buildConfigurations, 'Release'), parameters.buildTerminal, parameters.publishVpackToWindows) }}:
+        - template: ./job-submit-windows-vpack.yml
+          parameters:
+            buildConfiguration: Release
+            generateSbom: ${{ parameters.generateSbom }}
+
+      - template: ./job-publish-symbols.yml
+        parameters:
+          includePublicSymbolServer: ${{ parameters.publishSymbolsToPublic }}
+          symbolExpiryTime: ${{ parameters.symbolExpiryTime }}
+
+      - ${{ parameters.extraPublishJobs }}
+...

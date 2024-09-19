@@ -1,0 +1,94 @@
+parameters:
+  - name: includePublicSymbolServer
+    type: boolean
+    default: false
+  - name: pool
+    type: object
+    default: []
+  - name: dependsOn
+    type: object
+    default: null
+  - name: artifactStem
+    type: string
+    default: ''
+  - name: jobName
+    type: string
+    default: PublishSymbols
+  - name: symbolExpiryTime
+    type: string
+    default: 36530 # This is the default from PublishSymbols@2
+  - name: variables
+    type: object
+    default: {}
+  - name: symbolPatGoesInTaskInputs
+    type: boolean
+    default: false
+
+jobs:
+- job: ${{ parameters.jobName }}
+  ${{ if ne(length(parameters.pool), 0) }}:
+    pool: ${{ parameters.pool }}
+  ${{ if eq(parameters.includePublicSymbolServer, true) }}:
+    displayName: Publish Symbols to Internal and MSDL
+  ${{ else }}:
+    displayName: Publish Symbols Internally
+  dependsOn: ${{ parameters.dependsOn }}
+  variables:
+    ${{ insert }}: ${{ parameters.variables }}
+  steps:
+  - checkout: self
+    clean: true
+    fetchDepth: 1
+    fetchTags: false # Tags still result in depth > 1 fetch; we don't need them here
+    submodules: true
+    persistCredentials: True
+
+  - template: steps-setup-versioning.yml
+
+  - task: DownloadPipelineArtifact@2
+    displayName: Download all PDBs from all prior build phases
+    inputs:
+      itemPattern: '**/*.pdb'
+      targetPath: '$(Build.SourcesDirectory)/bin'
+
+  - task: PublishSymbols@2
+    displayName: Publish Symbols (to current Azure DevOps tenant)
+    continueOnError: True
+    inputs:
+      SymbolsFolder: '$(Build.SourcesDirectory)/bin'
+      SearchPattern: '**/*.pdb'
+      IndexSources: false
+      DetailedLog: true
+      SymbolsMaximumWaitTime: 30
+      SymbolServerType: 'TeamServices'
+      SymbolsProduct: 'Windows Terminal Converged Symbols'
+      SymbolsVersion: '$(XES_APPXMANIFESTVERSION)'
+      SymbolExpirationInDays: ${{ parameters.symbolExpiryTime }}
+    env:
+      LIB: $(Build.SourcesDirectory)
+
+  - ${{ if eq(parameters.includePublicSymbolServer, true) }}:
+    - task: PublishSymbols@2
+      displayName: 'Publish symbols to MSDL'
+      continueOnError: True
+      inputs:
+        SymbolsFolder: '$(Build.SourcesDirectory)/bin'
+        SearchPattern: '**/*.pdb'
+        IndexSources: false
+        DetailedLog: true
+        SymbolsMaximumWaitTime: 30
+        SymbolServerType: 'TeamServices'
+        SymbolsProduct: 'Windows Terminal Converged Symbols'
+        SymbolsVersion: '$(XES_APPXMANIFESTVERSION)'
+        SymbolExpirationInDays: ${{ parameters.symbolExpiryTime }}
+        ${{ if eq(parameters.symbolPatGoesInTaskInputs, true) }}:
+          Pat: $(ADO_microsoftpublicsymbols_PAT)
+        # The ADO task does not support indexing of GitHub sources.
+      # There is a bug which causes this task to fail if LIB includes an inaccessible path (even though it does not depend on it).
+      # To work around this issue, we just force LIB to be any dir that we know exists.
+      # Copied from https://github.com/microsoft/icu/blob/f869c214adc87415dfe751d81f42f1bca55dcf5f/build/azure-nuget.yml#L564-L583
+      env:
+        LIB: $(Build.SourcesDirectory)
+        ArtifactServices_Symbol_AccountName: microsoftpublicsymbols
+        ${{ if ne(parameters.symbolPatGoesInTaskInputs, true) }}:
+          ArtifactServices_Symbol_PAT: $(ADO_microsoftpublicsymbols_PAT)

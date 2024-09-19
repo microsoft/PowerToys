@@ -1,0 +1,16 @@
+steps:
+  - pwsh: |-
+      $VsInstallRoot = & 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' -requires Microsoft.VisualStudio.Component.Vcpkg -property installationPath
+      If ([String]::IsNullOrEmpty($VsInstallRoot)) {
+        Remove-Item -Recurse -Force dep/vcpkg -ErrorAction:Ignore
+        git clone https://github.com/microsoft/vcpkg dep/vcpkg
+        cd dep/vcpkg
+        & ./bootstrap-vcpkg.bat
+        $VcpkgRoot = $PWD
+        Write-Host "Using vcpkg from local checkout ($VcpkgRoot)"
+      } Else {
+        $VcpkgRoot = Join-Path $VsInstallRoot "VC\vcpkg"
+        Write-Host "Using vcpkg from Visual Studio installation ($VcpkgRoot)"
+      }
+      echo "##vso[task.setvariable variable=VCPKG_ROOT]$VcpkgRoot"
+    displayName: Detect VS vcpkg or bootstrap locally

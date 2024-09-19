@@ -1,0 +1,101 @@
+parameters:
+  configuration: 'Release'
+  platform: ''
+  testLogPath: '$(Build.BinariesDirectory)\$(BuildPlatform)\$(BuildConfiguration)\testsOnBuildMachine.wtl'
+  inputArtifactStem: ''
+  outputArtifactStem: ''
+
+jobs:
+- job: Test${{ parameters.platform }}${{ parameters.configuration }}
+  displayName: Test ${{ parameters.platform }} ${{ parameters.configuration }}
+  variables:
+    BuildConfiguration: ${{ parameters.configuration }}
+    BuildPlatform: ${{ parameters.platform }}
+    ${{ if eq(parameters.platform, 'x86') }}:
+      OutputBuildPlatform: Win32
+    ${{ else }}:
+      OutputBuildPlatform: ${{ parameters.platform }}
+    Terminal.BinDir: $(Build.SourcesDirectory)/bin/$(OutputBuildPlatform)/$(BuildConfiguration)
+  pool:
+    ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+      ${{ if ne(parameters.platform, 'ARM64') }}:
+        name: SHINE-INT-Testing-x64
+      ${{ else }}:
+        name: SHINE-INT-Testing-arm64
+    ${{ else }}:
+      ${{ if ne(parameters.platform, 'ARM64') }}:
+        name: SHINE-OSS-Testing-x64
+      ${{ else }}:
+        name: SHINE-OSS-Testing-arm64
+
+  steps:
+  - checkout: self
+    submodules: false
+    clean: true
+    fetchDepth: 1
+    fetchTags: false # Tags still result in depth > 1 fetch; we don't need them here
+
+  - task: DownloadPipelineArtifact@2
+    displayName: Download artifacts
+    inputs:
+      artifactName: build-${{ parameters.platform }}-$(BuildConfiguration)${{ parameters.inputArtifactStem }}
+      downloadPath: $(Terminal.BinDir)
+
+  - task: PowerShell@2
+    displayName: 'Run Unit Tests'
+    inputs:
+      pwsh: true
+      targetType: filePath
+      filePath: build\scripts\Run-Tests.ps1
+      arguments: -MatchPattern '*unit.test*.dll' -Platform '$(OutputBuildPlatform)' -Configuration '$(BuildConfiguration)' -LogPath '${{ parameters.testLogPath }}' -Root "$(Terminal.BinDir)"
+
+  - ${{ if or(eq(parameters.platform, 'x64'), eq(parameters.platform, 'arm64')) }}:
+    - task: PowerShell@2
+      displayName: 'Run Feature Tests'
+      inputs:
+        pwsh: true
+        targetType: filePath
+        filePath: build\scripts\Run-Tests.ps1
+        arguments: -MatchPattern '*feature.test*.dll' -Platform '$(OutputBuildPlatform)' -Configuration '$(BuildConfiguration)' -LogPath '${{ parameters.testLogPath }}' -Root "$(Terminal.BinDir)"
+
+  - task: PowerShell@2
+    displayName: 'Convert Test Logs from WTL to xUnit format'
+    condition: always()
+    inputs:
+      targetType: filePath
+      filePath: build\Helix\ConvertWttLogToXUnit.ps1
+      arguments: -WttInputPath '${{ parameters.testLogPath }}' -WttSingleRerunInputPath 'unused.wtl' -WttMultipleRerunInputPath 'unused2.wtl' -XUnitOutputPath 'onBuildMachineResults.xml' -TestNamePrefix '$(BuildConfiguration).$(BuildPlatform)'
+
+  - task: PowerShell@2
+    displayName: 'Manually log test failures'
+    condition: always()
+    inputs:
+      targetType: filePath
+      filePath: build\Helix\OutputTestErrorsForAzureDevops.ps1
+      arguments: -XUnitOutputPath 'onBuildMachineResults.xml'
+
+  - task: PublishTestResults@2
+    displayName: 'Upload converted test logs'
+    condition: always()
+    inputs:
+      testResultsFormat: 'xUnit' # Options: JUnit, NUnit, VSTest, xUnit, cTest
+      testResultsFiles: '**/onBuildMachineResults.xml'
+      testRunTitle: 'On Build Machine Tests' # Optional
+      buildPlatform: $(BuildPlatform) # Optional
+      buildConfiguration: $(BuildConfiguration) # Optional
+
+  - task: CopyFiles@2
+    displayName: 'Copy result logs to Artifacts'
+    condition: always()
+    inputs:
+      Contents: |
+       **/*.wtl
+       **/*onBuildMachineResults.xml
+       ${{ parameters.testLogPath }}
+      TargetFolder: '$(Build.ArtifactStagingDirectory)/$(BuildConfiguration)/$(BuildPlatform)/test-logs'
+      OverWrite: true
+      flattenFolders: true
+
+  - publish: '$(Build.ArtifactStagingDirectory)/$(BuildConfiguration)/$(BuildPlatform)/test-logs'
+    artifact: test-logs-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.outputArtifactStem }}
+    condition: always()

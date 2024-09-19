@@ -1,0 +1,75 @@
+parameters:
+  - name: buildConfiguration
+    type: string
+  - name: buildPlatforms
+    type: object
+  - name: pool
+    type: object
+    default: []
+  - name: dependsOn
+    type: object
+    default: null
+  - name: artifactStem
+    type: string
+    default: ''
+  - name: jobName
+    type: string
+    default: MergePGD
+
+jobs:
+- job: ${{ parameters.jobName }}
+  ${{ if ne(length(parameters.pool), 0) }}:
+    pool: ${{ parameters.pool }}
+  dependsOn: ${{ parameters.dependsOn }}
+  displayName: Merge PGO Counts for ${{ parameters.buildConfiguration }}
+
+  steps:
+  # The environment variable VCToolsInstallDir isn't defined on lab machines, so we need to retrieve it ourselves.
+  - script: |
+      "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -Latest -requires Microsoft.Component.MSBuild -property InstallationPath > %TEMP%\vsinstalldir.txt
+      set /p _VSINSTALLDIR15=<%TEMP%\vsinstalldir.txt
+      del %TEMP%\vsinstalldir.txt
+      call "%_VSINSTALLDIR15%\Common7\Tools\VsDevCmd.bat"
+      echo VCToolsInstallDir = %VCToolsInstallDir%
+      echo ##vso[task.setvariable variable=VCToolsInstallDir]%VCToolsInstallDir%
+    displayName: 'Retrieve VC tools directory'
+
+  - ${{ each platform in parameters.buildPlatforms }}:
+    - task: DownloadPipelineArtifact@2
+      displayName: Download PGO Databases for ${{ platform }}
+      inputs:
+        artifactName: build-${{ platform }}-${{ parameters.buildConfiguration }}${{ parameters.artifactStem }}
+        itemPattern: '**/*.pgd'
+        downloadPath: '$(Build.SourcesDirectory)/pgd/${{ platform }}/${{ parameters.buildConfiguration }}'
+    - task: DownloadPipelineArtifact@2
+      displayName: Download PGO Counts for ${{ platform }}
+      inputs:
+        artifactName: pgc-intermediates-${{ platform }}-${{ parameters.buildConfiguration }}${{ parameters.artifactStem }}
+        downloadPath: '$(Build.SourcesDirectory)/pgc/${{ platform }}/${{ parameters.buildConfiguration }}'
+    - pwsh: |-
+        $Arch = '${{ platform }}'
+        $Conf = '${{ parameters.buildConfiguration }}'
+        $PGCDir = '$(Build.SourcesDirectory)/pgc/${{ platform }}/${{ parameters.buildConfiguration }}'
+        $PGDDir = '$(Build.SourcesDirectory)/pgd/${{ platform }}/${{ parameters.buildConfiguration }}'
+        # Flatten the PGD directory
+        Get-ChildItem $PGDDir -Recurse -Filter *.pgd | Move-Item -Destination $PGDDir -Verbose
+        Get-ChildItem $PGCDir -Filter *.pgc |
+          ForEach-Object {
+            $Parts = $_.Name -Split "!";
+            $_ | Add-Member Module $Parts[0] -PassThru
+          } |
+          Group-Object Module |
+          ForEach-Object {
+            & "$(VCToolsInstallDir)\bin\Hostx64\${{ platform }}\pgomgr.exe" /merge $_.Group.FullName "$PGDDir\$($_.Name).pgd"
+          }
+      displayName: Merge PGO Counts for ${{ platform }}
+    - task: CopyFiles@2
+      displayName: 'Copy merged pgds to artifact staging'
+      inputs:
+        sourceFolder: '$(Build.SourcesDirectory)/pgd/${{ platform }}/${{ parameters.buildConfiguration }}'
+        contents: '**\*.pgd'
+        targetFolder: '$(Build.ArtifactStagingDirectory)\out-pgd\${{ platform }}'
+
+  - publish: $(Build.ArtifactStagingDirectory)\out-pgd
+    artifact: pgd-merged-${{ parameters.buildConfiguration }}${{ parameters.artifactStem }}
+    displayName: "Publish merged PGDs"

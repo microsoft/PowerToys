@@ -1,0 +1,6 @@
+steps:
+  - pwsh: |-
+      nuget install Microsoft.Windows.Terminal.Versioning -OutputDirectory _versioning
+      $VersionRoot = (Get-Item _versioning\Microsoft.Windows.*).FullName
+      & "$VersionRoot\build\Setup.ps1" -ProjectDirectory "$(Build.SourcesDirectory)" -Verbose
+    displayName: Set up versioning via M.W.T.V

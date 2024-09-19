@@ -1,0 +1,92 @@
+trigger: none
+pr: none
+
+# Expose all of these parameters for user configuration.
+parameters:
+  - name: branding
+    displayName: "Branding (Build Type)"
+    type: string
+    default: Release
+    values:
+      - Release
+      - Preview
+      - Canary
+      - Dev
+  - name: buildTerminal
+    displayName: "Build Windows Terminal MSIX"
+    type: boolean
+    default: true
+  - name: buildConPTY
+    displayName: "Build ConPTY NuGet"
+    type: boolean
+    default: false
+  - name: buildWPF
+    displayName: "Build Terminal WPF Control"
+    type: boolean
+    default: false
+  - name: pgoBuildMode
+    displayName: "PGO Build Mode"
+    type: string
+    default: None # BODGY - OneBranch is on VS 17.10, which is known to be the worst
+    values:
+      - Optimize
+      - Instrument
+      - None
+  - name: buildConfigurations
+    displayName: "Build Configurations"
+    type: object
+    default:
+      - Release
+  - name: buildPlatforms
+    displayName: "Build Platforms"
+    type: object
+    default:
+      - x64
+      - x86
+      - arm64
+  - name: terminalInternalPackageVersion
+    displayName: "Terminal Internal Package Version"
+    type: string
+    default: '0.0.8'
+
+  - name: publishSymbolsToPublic
+    displayName: "Publish Symbols to MSDL"
+    type: boolean
+    default: true
+  - name: publishVpackToWindows
+    displayName: "Publish VPack to Windows"
+    type: boolean
+    default: false
+
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+
+variables:
+  - template: templates-v2/variables-nuget-package-version.yml
+    parameters:
+      branding: ${{ parameters.branding }}
+  - template: templates-v2/variables-onebranch-config.yml
+
+extends:
+  template: templates-v2/pipeline-onebranch-full-release-build.yml
+  parameters:
+    official: true
+    branding: ${{ parameters.branding }}
+    buildTerminal: ${{ parameters.buildTerminal }}
+    buildConPTY: ${{ parameters.buildConPTY }}
+    buildWPF: ${{ parameters.buildWPF }}
+    pgoBuildMode: ${{ parameters.pgoBuildMode }}
+    buildConfigurations: ${{ parameters.buildConfigurations }}
+    buildPlatforms: ${{ parameters.buildPlatforms }}
+    codeSign: true
+    signingIdentity:
+      serviceName: $(SigningServiceName)
+      appId: $(SigningAppId)
+      tenantId: $(SigningTenantId)
+      akvName: $(SigningAKVName)
+      authCertName: $(SigningAuthCertName)
+      signCertName: $(SigningSignCertName)
+    terminalInternalPackageVersion: ${{ parameters.terminalInternalPackageVersion }}
+    publishSymbolsToPublic: ${{ parameters.publishSymbolsToPublic }}
+    publishVpackToWindows: ${{ parameters.publishVpackToWindows }}
+    symbolPublishingSubscription: $(SymbolPublishingServiceConnection)
+    symbolPublishingProject: $(SymbolPublishingProject)

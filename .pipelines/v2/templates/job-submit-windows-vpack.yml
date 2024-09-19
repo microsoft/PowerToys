@@ -1,0 +1,78 @@
+parameters:
+  - name: buildConfiguration
+    type: string
+  - name: generateSbom
+    type: boolean
+    default: false
+  - name: pool
+    type: object
+    default: []
+  - name: dependsOn
+    type: object
+    default: null
+  - name: artifactStem
+    type: string
+    default: ''
+  - name: variables
+    type: object
+    default: {}
+  - name: publishArtifacts
+    type: boolean
+    default: true
+
+jobs:
+- job: VPack
+  ${{ if ne(length(parameters.pool), 0) }}:
+    pool: ${{ parameters.pool }}
+  displayName: Create and Submit Windows vPack
+  dependsOn: ${{ parameters.dependsOn }}
+  variables:
+    JobOutputDirectory: $(XES_VPACKMANIFESTDIRECTORY)
+    JobOutputArtifactName: vpack-manifest${{ parameters.artifactStem }}
+    ${{ insert }}: ${{ parameters.variables }}
+  steps:
+  - checkout: self
+    clean: true
+    fetchDepth: 1
+    fetchTags: false # Tags still result in depth > 1 fetch; we don't need them here
+    submodules: true
+    persistCredentials: True
+
+  - template: steps-setup-versioning.yml
+
+  - task: DownloadPipelineArtifact@2
+    displayName: Download MSIX Bundle Artifact
+    inputs:
+      artifactName: appxbundle-${{ parameters.buildConfiguration }}${{ parameters.artifactStem }}
+      downloadPath: '$(Build.SourcesDirectory)/bundle'
+
+  # Rename to known/fixed name for Windows build system
+  - powershell: |-
+      # Create vpack directory and place item inside
+      $TargetFolder = New-Item -Type Directory '$(Build.SourcesDirectory)/WindowsTerminal.app'
+      Get-ChildItem bundle/Microsoft.WindowsTerminal_*.msixbundle | Move-Item (Join-Path $TargetFolder.FullName 'Microsoft.WindowsTerminal_8wekyb3d8bbwe.msixbundle') -Verbose
+    displayName: Stage packages for vpack
+
+  - task: PkgESVPack@12
+    displayName: 'Package ES - VPack'
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    inputs:
+      sourceDirectory: '$(Build.SourcesDirectory)/WindowsTerminal.app'
+      description: VPack for the Windows Terminal Application
+      pushPkgName: WindowsTerminal.app
+      owner: conhost
+      githubToken: $(GitHubTokenForVpackProvenance)
+
+  - ${{ if eq(parameters.publishArtifacts, true) }}:
+    - publish: $(JobOutputDirectory)
+      artifact: $(JobOutputArtifactName)
+      displayName: 'Publish VPack Manifest to Drop'
+
+  - task: PkgESFCIBGit@12
+    displayName: 'Submit VPack Manifest to Windows'
+    inputs:
+      configPath: '$(Build.SourcesDirectory)\build\config\GitCheckin.json'
+      artifactsDirectory: $(XES_VPACKMANIFESTDIRECTORY)
+      prTimeOut: 5
+

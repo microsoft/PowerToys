@@ -1,0 +1,22 @@
+parameters:
+  - name: displayName
+    type: string
+    default: ESRP Code Signing
+  - name: inputs
+    type: object
+    default: {}
+  - name: signingIdentity
+    type: object
+    default: {}
+
+steps:
+  - task: EsrpCodeSigning@5
+    displayName: ${{ parameters.displayName }}
+    inputs:
+      ConnectedServiceName: ${{ parameters.signingIdentity.serviceName }}
+      AppRegistrationClientId: ${{ parameters.signingIdentity.appId }}
+      AppRegistrationTenantId: ${{ parameters.signingIdentity.tenantId }}
+      AuthAKVName: ${{ parameters.signingIdentity.akvName }}
+      AuthCertName: ${{ parameters.signingIdentity.authCertName }}
+      AuthSignCertName: ${{ parameters.signingIdentity.signCertName }}
+      ${{ insert }}: ${{ parameters.inputs }}
