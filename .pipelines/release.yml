@@ -97,3 +97,4 @@ extends:
               includePublicSymbolServer: ${{ parameters.publishSymbolsToPublic }}
               subscription: $(SymbolPublishingServiceConnection)
               symbolProject: $(SymbolPublishingProject)
+              symbolExpiryTime: 4 ## TODO FOR NOW USE 4 DAYS
