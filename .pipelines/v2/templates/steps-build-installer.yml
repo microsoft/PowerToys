@@ -76,7 +76,7 @@ steps:
       clean: false # don't undo our hard work above by deleting the CustomActions dll
       maximumCpuCount: true
 
-  - script:
+  - script: |-
       "C:\Program Files (x86)\WiX Toolset v3.14\bin\dark.exe" -x $(build.sourcesdirectory)\extractedMsi installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}\${{parameters.installerPrefix}}-${{ parameters.versionNumber }}-$(BuildPlatform).msi
       dir $(build.sourcesdirectory)\extractedMsi
     displayName: "Extracting MSI to verify contents"
