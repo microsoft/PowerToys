@@ -120,7 +120,7 @@ steps:
   - ${{ if eq(parameters.codeSign, true) }}:
     - script: |-
         "C:\Program Files (x86)\WiX Toolset v3.14\bin\insignia.exe" -ib installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}\${{parameters.installerPrefix}}-${{ parameters.versionNumber }}-$(BuildPlatform).exe -o installer\engine.exe
-      displayName: Insignia: Extract Engine from Bundle
+      displayName: "Insignia: Extract Engine from Bundle"
 
     - template: steps-esrp-signing.yml
       parameters:
