@@ -45,7 +45,6 @@ steps:
         -restore -graph
         /bl:$(Build.SourcesDirectory)\msbuild.binlog
         ${{ parameters.additionalBuildOptions }}
-        $(MSBuildCacheParameters)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: true
@@ -71,10 +70,8 @@ steps:
       vsVersion: 17.0
       msbuildArgs: >-
         /t:PowerToysInstaller
-        /p:RunBuildEvents=false;PerUser=${{parameters.buildUserInstaller}};BuildProjectReferences=false;RestorePackagesConfig=true;CIBuild=true
-        -restore -graph
+        /p:RunBuildEvents=false;PerUser=${{parameters.buildUserInstaller}};BuildProjectReferences=false;CIBuild=true
         ${{ parameters.additionalBuildOptions }}
-        $(MSBuildCacheParameters)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: false # don't undo our hard work above by deleting the CustomActions dll
@@ -119,7 +116,6 @@ steps:
         /p:PerUser=${{parameters.buildUserInstaller}};CIBuild=true
         -restore -graph
         ${{ parameters.additionalBuildOptions }}
-        $(MSBuildCacheParameters)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: false # don't undo our hard work above by deleting the MSI
