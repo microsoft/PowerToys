@@ -4,7 +4,7 @@ parameters:
     default: false
 
 steps:
-  - task: TouchdownBuildTask@1
+  - task: TouchdownBuildTask@3
     displayName: 'Download Localization Files -- PowerToys 37400'
     inputs:
       teamId: 37400
