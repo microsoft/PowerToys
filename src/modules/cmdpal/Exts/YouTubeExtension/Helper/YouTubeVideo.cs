@@ -8,31 +8,46 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace YouTubeExtension.Helper;
+namespace YouTubeExtension.Actions;
 
 public sealed class YouTubeVideo
 {
     // The title of the video
-    public string Title { get; init; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+
+    // The unique id of the video
+    public string VideoId { get; set; } = string.Empty;
 
     // The URL link to the video
-    public string Link { get; init; } = string.Empty;
+    public string Link { get; set; } = string.Empty;
 
     // The author or channel name of the video
-    public string Author { get; init; } = string.Empty;
+    public string Channel { get; set; } = string.Empty;
 
     // The channel id (needed for the channel URL)
-    public string ChannelId { get; set; }
+    public string ChannelId { get; set; } = string.Empty;
 
     // The URL link to the channel
-    public string ChannelUrl { get; set; }
+    public string ChannelUrl { get; set; } = string.Empty;
+
+    // The URL to the profile picture of the channel
+    public string ChannelProfilePicUrl { get; set; }
+
+    // Number of subscribers the channel has
+    public long SubscriberCount { get; set; }
 
     // The URL to the thumbnail image of the video
-    public string ThumbnailUrl { get; init; } = string.Empty;
+    public string ThumbnailUrl { get; set; } = string.Empty;
 
     // Captions or subtitles associated with the video
-    public string Captions { get; init; } = string.Empty;
+    public string Caption { get; set; } = string.Empty;
 
     // The date and time the video was published
-    public DateTime PublishedAt { get; set; }
+    public DateTime PublishedAt { get; set; } = DateTime.MinValue;
+
+    // Number of views the video has
+    public long ViewCount { get; set; }
+
+    // Number of likes the video has
+    public long LikeCount { get; set; }
 }

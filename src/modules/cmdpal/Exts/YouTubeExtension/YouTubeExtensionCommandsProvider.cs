@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 using Windows.UI.ApplicationSettings;
-using YouTubeExtension.Helper;
+using YouTubeExtension.Actions;
 using YouTubeExtension.Pages;
 
 namespace YouTubeExtension;
@@ -24,8 +24,8 @@ public partial class YouTubeExtensionActionsProvider : ICommandProvider
     public IconDataType Icon => new(string.Empty);
 
     private readonly IListItem[] _commands = [
-        new ListItem(new YouTubeVideosPage()) { Title = "Search Videos", Subtitle = "YouTube" },
-        new ListItem(new YouTubeChannelsPage()) { Title = "Search Channels", Subtitle = "YouTube" },
+        new ListItem(new YouTubeVideosPage()) { Title = "Search Videos on YouTube", Subtitle = "YouTube" },
+        new ListItem(new YouTubeChannelsPage()) { Title = "Search Channels on YouTube", Subtitle = "YouTube" },
     ];
 
     private readonly YouTubeAPIPage apiPage = new();

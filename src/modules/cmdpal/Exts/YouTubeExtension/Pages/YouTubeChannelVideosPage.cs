@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
@@ -17,13 +16,25 @@ using YouTubeExtension.Actions;
 
 namespace YouTubeExtension.Pages;
 
-internal sealed partial class YouTubeVideosPage : DynamicListPage
+internal sealed partial class YouTubeChannelVideosPage : DynamicListPage
 {
-    public YouTubeVideosPage()
+    private readonly string _channelId;
+    private readonly string _channelName;
+
+    public YouTubeChannelVideosPage(string channelId = null, string channelName = null)
     {
         Icon = new("https://www.youtube.com/favicon.ico");
-        Name = "YouTube (Video Search)";
+        Name = $"YouTube ({channelName ?? "Channel Video Search"})";
         this.ShowDetails = true;
+
+        // Ensure either a ChannelId or ChannelName is provided
+        if (string.IsNullOrEmpty(channelId) && string.IsNullOrEmpty(channelName))
+        {
+            throw new ArgumentException("Either channelId or channelName must be provided.");
+        }
+
+        _channelId = channelId;
+        _channelName = channelName;
     }
 
     public override ISection[] GetItems(string query)
@@ -33,13 +44,13 @@ internal sealed partial class YouTubeVideosPage : DynamicListPage
 
     private async Task<ISection[]> DoGetItems(string query)
     {
-        // Fetch YouTube videos based on the query
-        List<YouTubeVideo> items = await GetYouTubeVideos(query);
+        // Fetch YouTube videos scoped to the channel
+        List<YouTubeVideo> items = await GetYouTubeChannelVideos(query, _channelId, _channelName);
 
         // Create a section and populate it with the video results
         var section = new ListSection()
         {
-            Title = "Search Results",
+            Title = $"Videos from {_channelName ?? _channelId}",
             Items = items.Select(video => new ListItem(new OpenVideoLinkAction(video.Link))
             {
                 Title = video.Title,
@@ -50,11 +61,12 @@ internal sealed partial class YouTubeVideosPage : DynamicListPage
                     HeroImage = new(video.ThumbnailUrl),
                     Body = $"{video.Channel}",
                 },
-                Tags = [new Tag()
-                               {
-                                   Text = video.PublishedAt.ToString("MMMM dd, yyyy", CultureInfo.InvariantCulture), // Show the date of the video post
-                               }
-                        ],
+                Tags = [
+                    new Tag()
+                    {
+                        Text = video.PublishedAt.ToString("MMMM dd, yyyy", CultureInfo.InvariantCulture), // Show the date of the video post
+                    }
+                ],
                 MoreCommands = [
                     new CommandContextItem(new OpenChannelLinkAction(video.ChannelUrl)),
                     new CommandContextItem(new YouTubeVideoInfoMarkdownPage(video)),
@@ -66,8 +78,8 @@ internal sealed partial class YouTubeVideosPage : DynamicListPage
         return new[] { section }; // Properly return an array of sections
     }
 
-    // Method to fetch videos from YouTube API
-    private static async Task<List<YouTubeVideo>> GetYouTubeVideos(string query)
+    // Method to fetch videos from a specific channel
+    private static async Task<List<YouTubeVideo>> GetYouTubeChannelVideos(string query, string channelId, string channelName)
     {
         var state = File.ReadAllText(YouTubeHelper.StateJsonPath());
         var jsonState = JsonNode.Parse(state);
@@ -79,8 +91,22 @@ internal sealed partial class YouTubeVideosPage : DynamicListPage
         {
             try
             {
-                // Send the request to the YouTube API with the provided query
-                var response = await client.GetStringAsync($"https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q={query}&key={apiKey}&maxResults=2");
+                // Build the YouTube API URL for fetching channel-specific videos
+                string requestUrl;
+
+                if (!string.IsNullOrEmpty(channelId))
+                {
+                    // If ChannelId is provided, filter by channelId
+                    requestUrl = $"https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&channelId={channelId}&q={query}&key={apiKey}&maxResults=10";
+                }
+                else
+                {
+                    // If ChannelName is provided, search by the channel name
+                    requestUrl = $"https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q={query}+{channelName}&key={apiKey}&maxResults=10";
+                }
+
+                // Send the request to the YouTube API
+                var response = await client.GetStringAsync(requestUrl);
                 var json = JsonNode.Parse(response);
 
                 // Parse the response

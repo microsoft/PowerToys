@@ -8,13 +8,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
-using YouTubeExtension.Helper;
+using YouTubeExtension.Actions;
 
 namespace YouTubeExtension.Pages;
 
@@ -23,7 +21,7 @@ internal sealed partial class YouTubeChannelsPage : DynamicListPage
     public YouTubeChannelsPage()
     {
         Icon = new("https://www.youtube.com/favicon.ico");
-        Name = "YouTube";
+        Name = "YouTube (Channel Search)";
         this.ShowDetails = true;
     }
 
@@ -34,49 +32,49 @@ internal sealed partial class YouTubeChannelsPage : DynamicListPage
 
     private async Task<ISection[]> DoGetItems(string query)
     {
-        // Fetch YouTube videos based on the query
-        List<YouTubeVideo> items = await GetYouTubeVideos(query);
+        // Fetch YouTube channels based on the query
+        List<YouTubeChannel> items = await GetYouTubeChannels(query);
 
-        // Create a section and populate it with the video results
+        // Create a section and populate it with the channel results
         var section = new ListSection()
         {
             Title = "Search Results",
-            Items = items.Select(video => new ListItem(new OpenVideoLinkAction(video))
+            Items = items.Select(channel => new ListItem(new OpenChannelLinkAction(channel.ChannelUrl))
             {
-                Title = video.Title,
-                Subtitle = $"{video.Author}",
+                Title = channel.Name,
+                Subtitle = $"{channel.SubscriberCount} subscribers",
                 Details = new Details()
                 {
-                    Title = video.Title,
-                    HeroImage = new(video.ThumbnailUrl),
-                    Body = $"{video.Author}",
+                    Title = channel.Name,
+                    HeroImage = new(channel.ProfilePicUrl),
+                    Body = $"Subscribers: {channel.SubscriberCount}\nChannel Description: {channel.Description}",
                 },
-                Tags = [new Tag()
-                               {
-                                   Text = video.PublishedAt.ToString("MMMM dd, yyyy", CultureInfo.InvariantCulture), // Show the date of the video post
-                               }
-                        ],
+                MoreCommands = [
+                    new CommandContextItem(new YouTubeChannelInfoMarkdownPage(channel)),
+                    new CommandContextItem(new YouTubeChannelVideosPage(channel.ChannelId, channel.Name)),
+                    new CommandContextItem(new YouTubeAPIPage()),
+                ],
             }).ToArray(),
         };
 
         return new[] { section }; // Properly return an array of sections
     }
 
-    // Method to fetch videos from YouTube API
-    private static async Task<List<YouTubeVideo>> GetYouTubeVideos(string query)
+    // Method to fetch channels from YouTube API
+    private static async Task<List<YouTubeChannel>> GetYouTubeChannels(string query)
     {
         var state = File.ReadAllText(YouTubeHelper.StateJsonPath());
         var jsonState = JsonNode.Parse(state);
         var apiKey = jsonState["apiKey"]?.ToString() ?? string.Empty;
 
-        var videos = new List<YouTubeVideo>();
+        var channels = new List<YouTubeChannel>();
 
-        using HttpClient client = new HttpClient();
+        using (HttpClient client = new HttpClient())
         {
             try
             {
-                // Send the request to the YouTube API with the provided query
-                var response = await client.GetStringAsync($"https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q={query}&key={apiKey}&maxResults=2");
+                // Send the request to the YouTube API with the provided query to search for channels
+                var response = await client.GetStringAsync($"https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q={query}&key={apiKey}&maxResults=5");
                 var json = JsonNode.Parse(response);
 
                 // Parse the response
@@ -84,15 +82,15 @@ internal sealed partial class YouTubeChannelsPage : DynamicListPage
                 {
                     foreach (var item in itemsArray)
                     {
-                        // Add each video to the list with title, link, author, thumbnail, and captions (if available)
-                        videos.Add(new YouTubeVideo
+                        // Add each channel to the list with channel details
+                        channels.Add(new YouTubeChannel
                         {
-                            Title = item["snippet"]?["title"]?.ToString() ?? string.Empty,
-                            Link = $"https://www.youtube.com/watch?v={item["id"]?["videoId"]?.ToString()}",
-                            Author = item["snippet"]?["channelTitle"]?.ToString() ?? string.Empty,
-                            ThumbnailUrl = item["snippet"]?["thumbnails"]?["default"]?["url"]?.ToString() ?? string.Empty, // Get the default thumbnail URL
-                            Captions = "Captions not available", // Placeholder for captions; You can integrate with another API if needed
-                            PublishedAt = DateTime.Parse(item["snippet"]?["publishedAt"]?.ToString(), CultureInfo.InvariantCulture), // Use CultureInfo.InvariantCulture
+                            Name = item["snippet"]?["channelTitle"]?.ToString() ?? string.Empty,
+                            ChannelId = item["snippet"]?["channelId"]?.ToString() ?? string.Empty,
+                            ChannelUrl = $"https://www.youtube.com/channel/{item["snippet"]?["channelId"]?.ToString()}" ?? string.Empty,
+                            ProfilePicUrl = item["snippet"]?["thumbnails"]?["default"]?["url"]?.ToString() ?? string.Empty, // Get the default profile picture
+                            Description = item["snippet"]?["description"]?.ToString() ?? string.Empty,
+                            SubscriberCount = await GetChannelSubscriberCount(apiKey, item["snippet"]?["channelId"]?.ToString()), // Fetch the subscriber count
                         });
                     }
                 }
@@ -100,18 +98,43 @@ internal sealed partial class YouTubeChannelsPage : DynamicListPage
             catch (Exception ex)
             {
                 // Handle any errors from the API call or parsing
-                videos.Add(new YouTubeVideo
+                channels.Add(new YouTubeChannel
                 {
-                    Title = "Error fetching data",
-                    Link = string.Empty,
-                    Author = $"Error: {ex.Message}",
-                    ThumbnailUrl = string.Empty,
-                    Captions = string.Empty,
-                    PublishedAt = DateTime.MinValue,
+                    Name = "Error fetching data",
+                    Description = $"Error: {ex.Message}",
                 });
             }
         }
 
-        return videos;
+        return channels;
+    }
+
+    // Fetch subscriber count for each channel using a separate API call
+    private static async Task<long> GetChannelSubscriberCount(string apiKey, string channelId)
+    {
+        using HttpClient client = new HttpClient();
+        {
+            try
+            {
+                var response = await client.GetStringAsync($"https://www.googleapis.com/youtube/v3/channels?part=statistics&id={channelId}&key={apiKey}");
+                var json = JsonNode.Parse(response);
+
+                if (json?["items"] is JsonArray itemsArray && itemsArray.Count > 0)
+                {
+                    var statistics = itemsArray[0]?["statistics"];
+                    if (long.TryParse(statistics?["subscriberCount"]?.ToString(), out var subscriberCount))
+                    {
+                        return subscriberCount;
+                    }
+                }
+            }
+            catch
+            {
+                // In case of any error, return 0 subscribers
+                return 0;
+            }
+        }
+
+        return 0;
     }
 }

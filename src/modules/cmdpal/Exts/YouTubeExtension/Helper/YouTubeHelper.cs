@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace YouTubeExtension.Helper;
+namespace YouTubeExtension.Actions;
 
 internal sealed class YouTubeHelper
 {

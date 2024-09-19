@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Extensions.Helpers;
 
-namespace YouTubeExtension.Helper;
+namespace YouTubeExtension.Actions;
 
 internal sealed partial class GetVideoInfoAction : InvokableCommand
 {

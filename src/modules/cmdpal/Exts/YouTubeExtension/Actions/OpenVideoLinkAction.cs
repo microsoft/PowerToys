@@ -10,22 +10,22 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Extensions.Helpers;
 
-namespace YouTubeExtension.Helper;
+namespace YouTubeExtension.Actions;
 
 internal sealed partial class OpenVideoLinkAction : InvokableCommand
 {
-    private readonly YouTubeVideo _video;
+    private readonly string _videourl;
 
-    internal OpenVideoLinkAction(YouTubeVideo video)
+    internal OpenVideoLinkAction(string url)
     {
-        this._video = video;
+        this._videourl = url;
         this.Name = "Open video";
         this.Icon = new("\uE714");
     }
 
     public override CommandResult Invoke()
     {
-        Process.Start(new ProcessStartInfo(_video.Link) { UseShellExecute = true });
+        Process.Start(new ProcessStartInfo(_videourl) { UseShellExecute = true });
         return CommandResult.KeepOpen();
     }
 }
