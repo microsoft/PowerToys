@@ -17,3 +17,4 @@ steps:
     feedsToUse: config
     configPath: NuGet.config
     restoreSolution: packages.config
+    restoreDirectory: '$(Build.SourcesDirectory)\packages'
