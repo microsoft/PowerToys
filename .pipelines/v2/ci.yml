@@ -37,10 +37,11 @@ parameters:
       - arm64
 
 stages:
+  - stage: Precheck
+    jobs:
+      - template: .pipelines/ci/templates/build-powertoys-precheck.yml
+
   - ${{ each platform in parameters.buildPlatforms }}:
-    - stage: Precheck
-      jobs:
-        - template: .pipelines/ci/templates/build-powertoys-precheck.yml
 
     - stage: Build_${{ platform }}
       displayName: Build ${{ platform }}
@@ -54,5 +55,6 @@ stages:
                 name: SHINE-INT-L
               ${{ else }}:
                 name: SHINE-OSS-L
-            buildPlatforms: [ ${{ platform }} ]
+            buildPlatforms:
+              - ${{ platform }}
             buildConfigurations: [Release]
