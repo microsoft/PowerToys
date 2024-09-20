@@ -112,7 +112,7 @@ jobs:
   # Sets versions for all PowerToy created DLLs
   - pwsh: |-
       .pipelines/versionSetting.ps1 -versionNumber '${{ parameters.versionNumber }}' -DevEnvironment ''
-    displayName: Set Versions.Prop
+    displayName: Prepare versioning
 
   - ${{ if eq(parameters.enableCaching, true) }}:
     - pwsh: |-
@@ -239,7 +239,7 @@ jobs:
       maximumCpuCount: true
 
   - task: CopyFiles@2
-    displayName: Copying nuget packages file over
+    displayName: Stage NuGet packages
     inputs:
       contents: "**/bin/Release/PowerToys*.nupkg"
       flattenFolders: True
@@ -248,7 +248,7 @@ jobs:
   - ${{ if eq(parameters.codeSign, true) }}:
     - template: steps-esrp-signing.yml
       parameters:
-        displayName: Sign NuGet Packages
+        displayName: Sign NuGet packages
         signingIdentity: ${{ parameters.signingIdentity }}
         inputs:
           FolderPath: $(JobOutputDirectory)/nupkg
@@ -404,14 +404,14 @@ jobs:
       buildUserInstaller: true # NOTE: This is the distinction between the above and below rules
 
   - task: CopyFiles@2
-    displayName: Copying setup file over
+    displayName: Stage Installers
     inputs:
       contents: "**/PowerToys*Setup-*.exe"
       flattenFolders: True
       targetFolder: $(JobOutputDirectory)
 
   - task: CopyFiles@2
-    displayName: Copy Symbols
+    displayName: Stage Symbols
     inputs:
       contents: |-
         **\*.pdb
@@ -441,13 +441,13 @@ jobs:
       
       $userHash | out-file -filepath $combinedUserPath
       $machineHash | out-file -filepath $combinedMachinePath
-    displayName: 'Calculating SHA256 hash'
+    displayName: Calculate file hashes
 
   # Publishing the GPO files
   - pwsh: |-
       New-Item "$(JobOutputDirectory)/gpo" -Type Directory
       Copy-Item src\gpo\assets\* "$(JobOutputDirectory)/gpo" -Recurse
-    displayName: Stage the GPO files
+    displayName: Stage GPO files
 
   # Running the tests may result in future jobs consuming artifacts out of this build
   - ${{ if eq(parameters.runTests, true) }}:
@@ -461,5 +461,5 @@ jobs:
   - ${{ if eq(parameters.publishArtifacts, true) }}:
     - publish: $(JobOutputDirectory)
       artifact: $(JobOutputArtifactName)
-      displayName: Publish All Outputs
+      displayName: Publish all outputs
       condition: always()
