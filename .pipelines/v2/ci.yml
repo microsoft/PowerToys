@@ -70,3 +70,14 @@ stages:
             buildConfigurations: [Release]
             enableCaching: ${{ parameters.enableCaching }}
             runTests: ${{ parameters.runTests }}
+
+    - ${{ if eq(parameters.runTests, true) }}:
+      - stage: Test_${{ platform }}
+        displayName: Test ${{ platform }}
+        dependsOn:
+          - Build_${{platform}}
+        jobs:
+          - template: ./templates/job-run-ui-tests.yml
+            parameters:
+              platform: ${{ platform }}
+              configuration: Release

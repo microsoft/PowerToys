@@ -480,6 +480,15 @@ jobs:
       Copy-Item src\gpo\assets\* "$(JobOutputDirectory)/gpo" -Recurse
     displayName: Stage the GPO files
 
+  # Running the tests may result in future jobs consuming artifacts out of this build
+  - ${{ if eq(parameters.runTests, true) }}:
+    - task: CopyFiles@2
+      displayName: Stage entire build output
+      inputs:
+        sourceFolder: '$(Build.SourcesDirectory)'
+        contents: '$(BuildPlatform)/$(BuildConfiguration)/**/*'
+        targetFolder: '$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+
   - ${{ if eq(parameters.publishArtifacts, true) }}:
     - publish: $(JobOutputDirectory)
       artifact: $(JobOutputArtifactName)
