@@ -52,13 +52,14 @@ void WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated, 
         std::atomic_bool timeoutExpired = false;
         m_threadExecutor.submit(OnThreadExecutor::task_t{
             [&] {
+                HANDLE process = value.hProcess;
                 while (!timeoutExpired && !allWindowsFoundCallback())
                 {
-                    WaitForSingleObject(value.hProcess, 100);
+                    WaitForSingleObject(process, 100);
                 }
                 
                 Logger::trace(L"Finished waiting WorkspacesWindowArranger");
-                CloseHandle(value.hProcess);
+                CloseHandle(process);
             }}).wait_for(std::chrono::milliseconds(5000));
         timeoutExpired = true;
     }
