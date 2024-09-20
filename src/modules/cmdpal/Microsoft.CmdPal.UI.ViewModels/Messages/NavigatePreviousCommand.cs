@@ -5,7 +5,7 @@
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
 /// <summary>
-/// Used to navigate to the next command in the page when pressing the Down key in the Searchbox.
+/// Used to navigate to the previous command in the page when pressing the Down key in the SearchBox.
 /// </summary>
 public record NavigatePreviousCommand
 {

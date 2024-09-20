@@ -16,7 +16,8 @@ public partial class MainListPage : DynamicListPage
 {
     private readonly ISection[] _sections;
 
-    // TODO: Thinking we may want a separate MainViewModel from the ShellViewModel and/or a CommandService/Provider which holds the TopLevelCommands and anything that needs to access those functions...
+    // TODO: Thinking we may want a separate MainViewModel from the ShellViewModel and/or a CommandService/Provider
+    // which holds the TopLevelCommands and anything that needs to access those functions...
     public MainListPage(ShellViewModel shellViewModel)
     {
         _sections = [new MainListSection()
