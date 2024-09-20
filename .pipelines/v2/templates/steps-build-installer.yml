@@ -95,6 +95,7 @@ steps:
     - pwsh: |-
         & .pipelines/versionAndSignCheck.ps1 -targetDir '$(build.sourcesdirectory)\extractedMsi\File'
         & .pipelines/versionAndSignCheck.ps1 -targetDir '$(build.sourcesdirectory)\extractedMsi\Binary'
+        git clean -xfd ./extractedMsi
       displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Verifying entire build is signed and version set
 
     - template: steps-esrp-signing.yml

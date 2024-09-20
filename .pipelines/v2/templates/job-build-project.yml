@@ -449,10 +449,10 @@ jobs:
   - task: CopyFiles@2
     displayName: Copy Symbols
     inputs:
-      contents: >-
-        **/*.pdb
-        !**/vc143.pdb
-        !**/*test*.pdb
+      contents: |-
+        **\*.pdb
+        !**\vc143.pdb
+        !**\*test*.pdb
       flattenFolders: True
       targetFolder: $(JobOutputDirectory)/symbols-$(BuildPlatform)/
 
