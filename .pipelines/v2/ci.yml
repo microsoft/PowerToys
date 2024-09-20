@@ -79,7 +79,7 @@ stages:
         dependsOn:
           - Build_${{platform}}
         jobs:
-          - template: ./templates/job-run-ui-tests.yml
+          - template: ./templates/job-test-project.yml
             parameters:
               platform: ${{ platform }}
               configuration: Release
