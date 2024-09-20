@@ -110,6 +110,8 @@ jobs:
     clean: true
     submodules: true
     persistCredentials: True
+    fetchTags: false
+    fetchDepth: 1
 
   # Sets versions for all PowerToy created DLLs
   - pwsh: |-
