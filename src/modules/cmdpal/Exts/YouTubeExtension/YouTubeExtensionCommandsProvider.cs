@@ -24,8 +24,26 @@ public partial class YouTubeExtensionActionsProvider : ICommandProvider
     public IconDataType Icon => new(string.Empty);
 
     private readonly IListItem[] _commands = [
-        new ListItem(new YouTubeVideosPage()) { Title = "Search Videos on YouTube", Subtitle = "YouTube" },
-        new ListItem(new YouTubeChannelsPage()) { Title = "Search Channels on YouTube", Subtitle = "YouTube" },
+        new ListItem(new YouTubeVideosPage())
+            {
+                Title = "Search Videos on YouTube",
+                Subtitle = "YouTube",
+                Tags = [new Tag()
+                        {
+                            Text = "Extension",
+                        }
+                ],
+            },
+        new ListItem(new YouTubeChannelsPage())
+            {
+                Title = "Search Channels on YouTube",
+                Subtitle = "YouTube",
+                Tags = [new Tag()
+                        {
+                            Text = "Extension",
+                        }
+                ],
+            },
     ];
 
     private readonly YouTubeAPIPage apiPage = new();
@@ -46,7 +64,19 @@ public partial class YouTubeExtensionActionsProvider : ICommandProvider
         // Check if the settings file exists
         if (!File.Exists(settingsPath))
         {
-            return new[] { new ListItem(apiPage) { Title = "YouTube", Subtitle = "Enter your API key." } };
+            return new[]
+            {
+                new ListItem(apiPage)
+                    {
+                        Title = "YouTube Extension",
+                        Subtitle = "Enter your API key.",
+                        Tags = [new Tag()
+                                {
+                                    Text = "Extension",
+                                }
+                        ],
+                    },
+            };
         }
 
         // Read the file and parse the API key
@@ -57,7 +87,19 @@ public partial class YouTubeExtensionActionsProvider : ICommandProvider
         // Validate the API key using YouTube API
         if (string.IsNullOrWhiteSpace(apiKey) || !await IsApiKeyValid(apiKey))
         {
-            return new[] { new ListItem(apiPage) { Title = "YouTube", Subtitle = "API quota hit or current key invalid. Try entering a new API key." } };
+            return new[]
+            {
+                new ListItem(apiPage)
+                    {
+                        Title = "YouTube Extension",
+                        Subtitle = "Enter your API key.",
+                        Tags = [new Tag()
+                                {
+                                    Text = "Extension",
+                                }
+                        ],
+                    },
+            };
         }
 
         // If file exists and API key is valid, return commands
