@@ -45,18 +45,21 @@ parameters:
     default: true
 
 stages:
-  - stage: Precheck
-    jobs:
-      - template: ./templates/job-ci-precheck.yml
+  # Allow manual builds to skip pre-check
+  - ${{ if ne(variables['Build.Reason'], 'Manual') }}:
+    - stage: Precheck
+      jobs:
+        - template: ./templates/job-ci-precheck.yml
 
   - ${{ each platform in parameters.buildPlatforms }}:
     - stage: Build_${{ platform }}
       displayName: Build ${{ platform }}
-      dependsOn: [Precheck]
+      ${{ if ne(variables['Build.Reason'], 'Manual') }}:
+        dependsOn: [Precheck]
       jobs:
         - template: ./templates/job-build-project.yml
           parameters:
-            condition: and(succeeded(), ne(stageDependencies.Precheck.Precheck.outputs['verifyBuildRequest.skipBuild'], 'Yes'))
+            condition: and(succeeded(), or(eq(variables['Build.Reason'], 'Manual'), ne(stageDependencies.Precheck.Precheck.outputs['verifyBuildRequest.skipBuild'], 'Yes')))
             pool:
               ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
                 name: SHINE-INT-L
