@@ -29,7 +29,6 @@ jobs:
         name: SHINE-OSS-Testing-arm64
   steps:
   - checkout: self
-    fetchDepth: 1
     submodules: false
     clean: true
     fetchDepth: 1
