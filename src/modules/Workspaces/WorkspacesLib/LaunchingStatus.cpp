@@ -11,11 +11,6 @@ LaunchingStatus::LaunchingStatus(const WorkspacesData::WorkspacesProject& projec
     {
         m_appsState.insert({ app, { app, nullptr, LaunchingState::Waiting } });
     }
-
-    if (m_updateCallback)
-    {
-        m_updateCallback(m_appsState);
-    }
 }
 
 const WorkspacesData::LaunchingAppStateMap& LaunchingStatus::Get() noexcept
