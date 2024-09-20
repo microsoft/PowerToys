@@ -11,7 +11,7 @@ parameters:
 
 steps:
   - task: EsrpCodeSigning@5
-    displayName: ${{ parameters.displayName }}
+    displayName: 🔏 ${{ parameters.displayName }}
     inputs:
       ConnectedServiceName: ${{ parameters.signingIdentity.serviceName }}
       AppRegistrationClientId: ${{ parameters.signingIdentity.appId }}

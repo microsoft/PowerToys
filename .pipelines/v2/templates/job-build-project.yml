@@ -209,7 +209,7 @@ jobs:
   - ${{ if eq(parameters.codeSign, true) }}:
     - template: steps-esrp-signing.yml
       parameters:
-        displayName: Submit Signing Request (Utilities)
+        displayName: Sign Utilities
         signingIdentity: ${{ parameters.signingIdentity }}
         inputs:
           FolderPath: 'src/modules'
@@ -254,7 +254,7 @@ jobs:
   - ${{ if eq(parameters.codeSign, true) }}:
     - template: steps-esrp-signing.yml
       parameters:
-        displayName: Submit NuGet packages to ESRP for code signing
+        displayName: Sign NuGet Packages
         signingIdentity: ${{ parameters.signingIdentity }}
         inputs:
           FolderPath: $(JobOutputDirectory)/nupkg
@@ -391,7 +391,7 @@ jobs:
   - ${{ if eq(parameters.codeSign, true) }}:
     - template: steps-esrp-signing.yml
       parameters:
-        displayName: Sign Core PT
+        displayName: Sign Core PowerToys
         signingIdentity: ${{ parameters.signingIdentity }}
         inputs:
           FolderPath: '$(BuildPlatform)/$(BuildConfiguration)' # Video conf uses x86 and x64.
@@ -401,7 +401,7 @@ jobs:
 
     - template: steps-esrp-signing.yml
       parameters:
-        displayName: Sign DSC Powershell files
+        displayName: Sign DSC files
         signingIdentity: ${{ parameters.signingIdentity }}
         inputs:
           FolderPath: 'src/dsc/Microsoft.PowerToys.Configure'
@@ -411,7 +411,7 @@ jobs:
 
     - template: steps-esrp-signing.yml
       parameters:
-        displayName: Sign x86 directshow VCM
+        displayName: Sign x86 DirectShow VCM
         signingIdentity: ${{ parameters.signingIdentity }}
         inputs:
           FolderPath: 'x86/$(BuildConfiguration)' # Video conf uses x86 and x64.
