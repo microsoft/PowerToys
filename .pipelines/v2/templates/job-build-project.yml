@@ -186,7 +186,10 @@ jobs:
   - ${{ parameters.beforeBuildSteps }}
 
   - task: VSBuild@1
-    displayName: Build and Test PowerToys main project
+    ${{ if eq(parameters.runTests, true) }}:
+      displayName: Build and Test PowerToys main project
+    ${{ else }}:
+      displayName: Build PowerToys main project
     inputs:
       solution: 'PowerToys.sln'
       vsVersion: 17.0
