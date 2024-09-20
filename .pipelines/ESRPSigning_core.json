@@ -178,6 +178,9 @@
                 "PowerToys.MouseWithoutBordersHelper.dll",
                 "PowerToys.MouseWithoutBordersHelper.exe",
 
+                "WinUI3Apps\\PowerToys.NewPlus.ShellExtension.dll",
+                "WinUI3Apps\\NewPlusPackage.msix",
+
                 "PowerAccent.Core.dll",
                 "PowerToys.PowerAccent.dll",
                 "PowerToys.PowerAccent.exe",
