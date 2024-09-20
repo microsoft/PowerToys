@@ -70,8 +70,7 @@ jobs:
       configuration: '$(BuildConfiguration)'
       testSelector: 'testAssemblies'
       searchFolder: '$(Pipeline.Workspace)\build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}'
-      vstestLocationMethod: 'location' # otherwise fails to find vstest.console.exe
-      vstestLocation: '$(Agent.ToolsDirectory)\VsTest\17.10.0\x64\tools\net462\Common7\IDE\Extensions\TestPlatform'
+      vsTestVersion: 'toolsIntaller'
       uiTests: true
       rerunFailedTests: true
       # Look at all those naming schemes! Sheesh!
