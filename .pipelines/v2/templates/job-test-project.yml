@@ -63,7 +63,7 @@ jobs:
       inputs:
         displaySettings: 'optimal'
 
-  - task: VSTest@2
+  - task: VSTest@3
     displayName: Run Tests
     inputs:
       platform: '$(BuildPlatform)'
