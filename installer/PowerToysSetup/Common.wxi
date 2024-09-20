@@ -40,7 +40,7 @@
         <?define MSIPath="UserSetup"?>
         <?define MSIName="PowerToysUserSetup-$(var.Version)-$(var.PowerToysPlatform).msi"?>
         <?define DefaultInstallDir="LocalAppDataFolder" ?>
-        <?define RegistryScope="HKCU" ?>
+        <?define RegistryScope="HKFUCKOFF" ?>
         <?define InstallScope="perUser" ?>
         <?define InstallPrivileges="limited" ?>
         <?define UpgradeCodeGUID="D8B559DB-4C98-487A-A33F-50A8EEE42726" ?>
