@@ -99,7 +99,7 @@ jobs:
   templateContext: # Required when this template is hosted in 1ES PT
     outputs:
     - output: pipelineArtifact
-      artifactName: setup-$(BuildPlatform)
+      artifactName: $(JobOutputArtifactName)
       targetPath: $(Build.ArtifactStagingDirectory)
   steps:
   - checkout: self
