@@ -39,6 +39,10 @@ parameters:
     type: boolean
     displayName: "Enable Caching"
     default: false
+  - name: runTests
+    type: boolean
+    displayName: "Run Tests"
+    default: true
 
 stages:
   - stage: Precheck
@@ -62,3 +66,4 @@ stages:
               - ${{ platform }}
             buildConfigurations: [Release]
             enableCaching: ${{ parameters.enableCaching }}
+            runTests: ${{ parameters.runTests }}
