@@ -18,6 +18,12 @@ LaunchingStatus::LaunchingStatus(const WorkspacesData::WorkspacesProject& projec
     }
 }
 
+const WorkspacesData::LaunchingAppStateMap& LaunchingStatus::Get() noexcept
+{
+    std::shared_lock lock(m_mutex);
+    return m_appsState;
+}
+
 bool LaunchingStatus::Ready() noexcept
 {
     std::shared_lock lock(m_mutex);

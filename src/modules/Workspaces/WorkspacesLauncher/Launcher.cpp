@@ -21,6 +21,8 @@ Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
     m_launchingStatus(m_project, std::bind(&LauncherUIHelper::UpdateLaunchStatus, m_uiHelper.get(), std::placeholders::_1))
 {
     m_uiHelper->LaunchUI();
+    m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
+
     bool launchElevated = std::find_if(m_project.apps.begin(), m_project.apps.end(), [](const WorkspacesData::WorkspacesProject::Application& app) { return app.isElevated; }) != m_project.apps.end();
     m_windowArrangerHelper->Launch(m_project.id, launchElevated, std::bind(&LaunchingStatus::Ready, &m_launchingStatus));
 }

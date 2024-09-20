@@ -12,6 +12,7 @@ public:
     ~LaunchingStatus() = default;
 
     bool Ready() noexcept;
+    const WorkspacesData::LaunchingAppStateMap& Get() noexcept;
 
     void Update(const WorkspacesData::WorkspacesProject::Application& app, LaunchingState state);
     
