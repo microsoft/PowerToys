@@ -58,9 +58,10 @@ jobs:
       & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
     displayName: Download and install WinAppDriver
 
-  - task: ScreenResolutionUtility@1
-    inputs:
-      displaySettings: 'optimal'
+  - ${{ if ne(parameters.platform, 'arm64') }}:
+    - task: ScreenResolutionUtility@1
+      inputs:
+        displaySettings: 'optimal'
 
   - task: VSTest@2
     displayName: 'UI Tests'
@@ -73,7 +74,15 @@ jobs:
       vstestLocation: '$(Agent.ToolsDirectory)\VsTest\17.10.0\x64\tools\net462\Common7\IDE\Extensions\TestPlatform'
       uiTests: true
       rerunFailedTests: true
+      # Look at all those naming schemes! Sheesh!
       testAssemblyVer2: |
+        **\UnitTests-*.dll
+        **\UnitTest-*.dll
+        **\*UnitTests.dll
+        **\*.UnitTest.dll
+        **\*.Tests.dll
+        **\*.Test.dll
+        **\KeyboardManager*Test.dll
         **\UITests-FancyZones.dll
         **\UITests-FancyZonesEditor.dll
         !**\obj\**

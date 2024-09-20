@@ -92,10 +92,6 @@ jobs:
     JobOutputArtifactName: build-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
-    ${{ if eq(parameters.runTests, true) }}:
-      MSBuildMainBuildTargets: Build;Test
-    ${{ else }}:
-      MSBuildMainBuildTargets: Build
     ${{ insert }}: ${{ parameters.variables }}
   displayName: Build
   timeoutInMinutes: 240
@@ -142,10 +138,6 @@ jobs:
       packageType: sdk
       version: '8.x'
 
-  - ${{ if eq(parameters.runTests, true) }}:
-    - task: VisualStudioTestPlatformInstaller@1
-      displayName: Ensure VSTest Platform
-
   - pwsh: |-
       & '.pipelines/applyXamlStyling.ps1' -Passive
       & '.pipelines/verifyNugetPackages.ps1' -solution '$(build.sourcesdirectory)\PowerToys.sln'
@@ -188,10 +180,7 @@ jobs:
   - ${{ parameters.beforeBuildSteps }}
 
   - task: VSBuild@1
-    ${{ if eq(parameters.runTests, true) }}:
-      displayName: Build and Test PowerToys main project
-    ${{ else }}:
-      displayName: Build PowerToys main project
+    displayName: Build PowerToys main project
     inputs:
       solution: 'PowerToys.sln'
       vsVersion: 17.0
@@ -202,7 +191,7 @@ jobs:
         /bl:$(LogOutputDirectory)\build-0-main.binlog
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
-        /t:$(MSBuildMainBuildTargets)
+        /t:Build
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
@@ -367,31 +356,6 @@ jobs:
   - pwsh: |-
       & '.pipelines/verifyNoticeMdAgainstNugetPackages.ps1' -path '$(build.sourcesdirectory)\'
     displayName: Verify NOTICE.md and NuGet packages match
-
-  - ${{ if eq(parameters.runTests, true) }}:
-    # Publish test results which ran in MSBuild
-    - task: PublishTestResults@2
-      displayName: 'Publish Test Results'
-      inputs:
-        testResultsFormat: VSTest
-        testResultsFiles: '**/*.trx'
-      condition: ne(variables['BuildPlatform'],'arm64')
-
-    # Native dlls
-    - task: VSTest@2
-      condition: ne(variables['BuildPlatform'],'arm64') # No arm64 agents to run the tests.
-      displayName: 'Native Tests'
-      inputs:
-        platform: '$(BuildPlatform)'
-        configuration: '$(BuildConfiguration)'
-        testSelector: 'testAssemblies'
-        testAssemblyVer2: |
-          **\KeyboardManagerEngineTest.dll
-          **\KeyboardManagerEditorTest.dll
-          **\UnitTests-CommonLib.dll
-          **\PowerRenameUnitTests.dll
-          **\UnitTests-FancyZones.dll
-          !**\obj\**
 
   - ${{ if eq(parameters.codeSign, true) }}:
     - template: steps-esrp-signing.yml
