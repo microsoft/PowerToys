@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "YouTubeExtension (Package)": {
+      "commandName": "MsixPackage",
+      "commandLineArgs": "-RegisterProcessAsComServer"
+    },
+    "YouTubeExtension (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
