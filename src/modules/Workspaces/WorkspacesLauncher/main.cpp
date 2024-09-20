@@ -97,7 +97,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         // check the temp file in case the project is just created and not saved to the workspaces.json yet
         auto file = WorkspacesData::TempWorkspacesFile();
         auto res = JsonUtils::ReadSingleWorkspace(file);
-        if (res.isOk())
+        if (res.isOk() && projectToLaunch.id == id)
         {
             projectToLaunch = res.getValue();
         }
