@@ -56,6 +56,8 @@ stages:
       displayName: Build ${{ platform }}
       ${{ if ne(variables['Build.Reason'], 'Manual') }}:
         dependsOn: [Precheck]
+      ${{ else }}:
+        dependsOn: []
       jobs:
         - template: ./templates/job-build-project.yml
           parameters:
