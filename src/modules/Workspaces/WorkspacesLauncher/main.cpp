@@ -28,24 +28,6 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         return 0;
     }
 
-    std::wstring cmdLineStr{ GetCommandLineW() };
-    Logger::debug(cmdLineStr);
-    auto cmdArgs = split(cmdLineStr, L" ");
-    if (cmdArgs.size() < 2)
-    {
-        Logger::warn("Incorrect command line arguments");
-        MessageBox(NULL, GET_RESOURCE_STRING(IDS_INCORRECT_ARGS).c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
-        return 1;
-    }
-
-    std::wstring id = cmdArgs[1];
-    if (id.empty())
-    {
-        Logger::warn("Incorrect command line arguments: no workspace id");
-        MessageBox(NULL, GET_RESOURCE_STRING(IDS_INCORRECT_ARGS).c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
-        return 1;
-    }
-
     if (is_process_elevated())
     {
         Logger::warn("Workspaces Launcher is elevated, restart");
@@ -55,14 +37,11 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         GetModuleFileNameW(nullptr, exe_path.get(), exe_path_size);
 
         const auto modulePath = get_module_folderpath();
+        
+        std::string cmdLineStr(cmdline);
+        std::wstring cmdLineWStr(cmdLineStr.begin(), cmdLineStr.end());
 
-        std::wstring cmd{};
-        for (int i = 1; i < cmdArgs.size(); i++)
-        {
-            cmd += cmdArgs[i] + std::wstring(L" ");
-        }
-
-        RunNonElevatedEx(exe_path.get(), cmd, modulePath.c_str());
+        run_non_elevated(exe_path.get(), cmdLineWStr, nullptr, modulePath.c_str());
         return 1;
     }
 
@@ -75,6 +54,23 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     
+    std::wstring cmdLineStr{ GetCommandLineW()  };
+    auto cmdArgs = split(cmdLineStr, L" ");
+    if (cmdArgs.size() < 2)
+    {
+        Logger::warn("Incorrect command line arguments");
+        MessageBox(NULL, GET_RESOURCE_STRING(IDS_INCORRECT_ARGS).c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
+        return 1;
+    }
+    
+    std::wstring id(cmdArgs[1].begin(), cmdArgs[1].end());
+    if (id.empty())
+    {
+        Logger::warn("Incorrect command line arguments: no workspace id");
+        MessageBox(NULL, GET_RESOURCE_STRING(IDS_INCORRECT_ARGS).c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
+        return 1;
+    }
+
     InvokePoint invokePoint = InvokePoint::EditorButton;
     if (cmdArgs.size() > 2)
     {
