@@ -13,24 +13,46 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <!--  https://learn.microsoft.com/en-us/windows/apps/design/controls/itemsview#specify-the-look-of-the-items  -->
-        <DataTemplate x:Key="ListItemViewModelTemplate" x:DataType="viewmodels:ListItemViewModel">
-            <ItemContainer AutomationProperties.Name="{x:Bind Header}">
+        <!--  https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.data.collectionviewsource  -->
+        <CollectionViewSource
+            x:Name="ItemsCVS"
+            IsSourceGrouped="True"
+            Source="{x:Bind ViewModel.Items, Mode=OneWay}" />
 
-                <StackPanel Background="{ThemeResource SystemControlBackgroundBaseMediumBrush}" Orientation="Horizontal">
-                    <TextBlock Text="{x:Bind Header}" />
-                    <TextBlock Foreground="{ThemeResource SystemAccentColor}" Text="{x:Bind SubHeader}" />
-                </StackPanel>
-            </ItemContainer>
+        <!--  https://learn.microsoft.com/windows/apps/design/controls/itemsview#specify-the-look-of-the-items  -->
+        <DataTemplate x:Key="ListItemViewModelTemplate" x:DataType="viewmodels:ListItemViewModel">
+            <StackPanel
+                AutomationProperties.Name="{x:Bind Title}"
+                Orientation="Horizontal"
+                Spacing="8">
+                <TextBlock Text="{x:Bind Title}" />
+                <TextBlock Foreground="{ThemeResource SystemAccentColor}" Text="{x:Bind Subtitle}" />
+            </StackPanel>
         </DataTemplate>
     </Page.Resources>
 
     <Grid>
         <!--  not using Interactivity:Interaction.Behaviors due to wanting to do AoT  -->
-        <ItemsView
-            IsItemInvokedEnabled="True"
-            ItemInvoked="ItemsView_ItemInvoked"
+        <!--  sticking with ListView as ItemsView doesn't have grouping built-in, could investigate coordinating
+              keyboards between them and using ItemsRepeater for group headers, though that wouldn't use CVS either  -->
+        <ListView
+            x:Name="ItemsList"
+            IsItemClickEnabled="True"
+            ItemClick="ListView_ItemClick"
             ItemTemplate="{StaticResource ListItemViewModelTemplate}"
-            ItemsSource="{x:Bind ViewModel.Items}" />
+            ItemsSource="{x:Bind ItemsCVS.View, Mode=OneWay}">
+            <ListView.GroupStyle>
+                <GroupStyle HidesIfEmpty="True">
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock
+                                FontFamily="Segoe UI"
+                                FontSize="16"
+                                Text="{Binding Key}" />
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+                </GroupStyle>
+            </ListView.GroupStyle>
+        </ListView>
     </Grid>
 </Page>

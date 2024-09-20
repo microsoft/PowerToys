@@ -1,17 +1,17 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.ListDetailPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="Transparent"
     mc:Ignorable="d">
 
     <Grid>
-        <!-- not using Interactivity:Interaction.Behaviors due to wanting to do AoT -->
-        <TextBlock Text="{x:Bind ViewModel.Header}" />
+        <!--  not using Interactivity:Interaction.Behaviors due to wanting to do AoT  -->
+        <TextBlock Text="{x:Bind ViewModel.Title}" />
         <Button Click="Button_Click">Go Back</Button>
     </Grid>
 </Page>

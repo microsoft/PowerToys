@@ -34,15 +34,10 @@ public sealed partial class LoadingPage : Page
             {
                 await shellVM.LoadCommand.ExecutionTask!;
 
-                if (shellVM.LoadCommand.ExecutionTask.Status == TaskStatus.RanToCompletion)
+                if (shellVM.LoadCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
                 {
-                    await _queue.EnqueueAsync(() =>
-                    {
-                        Frame.Navigate(typeof(ListPage), new ListViewModel(), new DrillInNavigationTransitionInfo());
-                    });
+                    // TODO: Handle failure case
                 }
-
-                // TODO: Handle failure case
             });
         }
 
