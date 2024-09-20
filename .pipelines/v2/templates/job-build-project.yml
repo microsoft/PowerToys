@@ -403,6 +403,21 @@ jobs:
       additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
       buildUserInstaller: true # NOTE: This is the distinction between the above and below rules
 
+  # This saves ~1GiB per architecture. We won't need these later.
+  # Removes:
+  # - All .pdbs from any static libs .libs (which were only used during linking)
+  - pwsh: |-
+      $binDir = '$(Build.SourcesDirectory)'
+      $ImportLibs = Get-ChildItem $binDir -Recurse -File -Filter '*.exp' | ForEach-Object { $_.FullName -Replace "exp$","lib" }
+      $StaticLibs = Get-ChildItem $binDir -Recurse -File -Filter '*.lib' | Where-Object FullName -NotIn $ImportLibs
+
+      $Items = @()
+      $Items += Get-Item ($StaticLibs.FullName -Replace "lib$","pdb") -ErrorAction:Ignore
+
+      $Items | Remove-Item -Recurse -Force -Verbose -ErrorAction:Ignore
+    displayName: Clean up static libs PDBs
+    errorActionPreference: silentlyContinue # It's OK if this silently fails
+
   - task: CopyFiles@2
     displayName: Stage Installers
     inputs:
