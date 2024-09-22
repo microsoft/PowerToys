@@ -12,7 +12,6 @@ using Microsoft.UI.Xaml.Input;
 using Peek.Common.Constants;
 using Peek.Common.Extensions;
 using Peek.FilePreviewer.Models;
-using Peek.Helper.Extensions;
 using Peek.Helpers;
 using Peek.Helpers.Extensions;
 using Peek.UI.Telemetry.Events;

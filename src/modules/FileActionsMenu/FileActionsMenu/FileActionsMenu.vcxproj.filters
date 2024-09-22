@@ -29,31 +29,22 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="FileActionsMenu.base.rc">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Resource.resx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="resource.base.h">
-      <Filter>Header Files</Filter>
-    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Generated Files\resource.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
     <ClInclude Include="trace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Generated Files\FileActionsMenu.rc">
+    <ResourceCompile Include="FileActionsMenu.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
   </ItemGroup>
 </Project>

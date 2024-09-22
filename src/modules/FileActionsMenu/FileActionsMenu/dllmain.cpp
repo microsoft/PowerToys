@@ -46,7 +46,7 @@ namespace
 // The PowerToy name that will be shown in the settings.
 const static wchar_t* MODULE_NAME = L"FileActionsMenu";
 // Add a description that will we shown in the module settings page.
-const static wchar_t* MODULE_DESC = L"A module that previews an image file.";
+const static wchar_t* MODULE_DESC = L"A module that adds an extra menu to Explorer.";
 
 // Implement the PowerToy Module Interface and all the required methods.
 class FileActionsMenu : public PowertoyModuleIface
@@ -254,7 +254,6 @@ private:
 
         std::wstring executable_args = L"";
 
-        Logger::trace("Starting FileActionsMenu non elevated from elevated process");
         const auto modulePath = get_module_folderpath();
         std::wstring runExecutablePath = modulePath;
         runExecutablePath += L"\\WinUi3Apps\\PowerToys.FileActionsMenu.Ui.exe";

@@ -44,7 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         // This function is required to implement the ISettingsConfig interface and obtain the settings configurations.
         public string GetModuleName()
         {
-            string moduleName = FileLocksmithSettings.ModuleName;
+            string moduleName = FileActionsMenuSettings.ModuleName;
             return moduleName;
         }
 

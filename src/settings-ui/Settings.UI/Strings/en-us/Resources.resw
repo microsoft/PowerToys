@@ -4195,7 +4195,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Not included in global results</value>
   </data>
   <data name="FileActionsMenu_FileActionsMenu.Description" xml:space="preserve">
-    <value>File Actions Menu adds a menu to the Windows File Explorer, that enables you to execute certain actions. The menu is accessible with a shortcut aswell as in the right-click menu of Explorer.</value>
+    <value>File Actions Menu adds a menu to the Windows File Explorer, that enables you to execute certain actions. The menu can be opened via a shortcut.</value>
   </data>
   <data name="FileActionsMenu_FileActionsMenu.Header" xml:space="preserve">
     <value>File Actions Menu</value>

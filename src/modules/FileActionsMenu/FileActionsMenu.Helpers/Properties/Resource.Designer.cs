@@ -556,6 +556,15 @@ namespace FileActionsMenu.Helpers.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Saving file.
+        /// </summary>
+        internal static string Move_Copy_Actions_SaveAs_Progress {
+            get {
+                return ResourceManager.GetString("Move_Copy_Actions.SaveAs.Progress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Save file as.
         /// </summary>
         internal static string Move_Copy_Actions_SaveAs_Title {

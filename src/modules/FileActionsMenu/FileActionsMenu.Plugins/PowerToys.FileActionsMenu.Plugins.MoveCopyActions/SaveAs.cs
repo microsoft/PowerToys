@@ -43,7 +43,7 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
 
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                FileActionProgressHelper fileActionProgressHelper = new("Saving file", 1, () => { });
+                FileActionProgressHelper fileActionProgressHelper = new(ResourceHelper.GetResource("Move_Copy_Actions.SaveAs.Title"), 1, () => { });
 
                 fileActionProgressHelper.UpdateProgress(0, Path.GetFileName(SelectedItems[0]));
 

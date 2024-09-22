@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Navigation;
 using Peek.Common.Models;
-using Peek.Helper.Extensions;
+using Peek.Helpers.Extensions;
 using Peek.Helpers;
 using Windows.Win32.Foundation;
 

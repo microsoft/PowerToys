@@ -9,7 +9,7 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
 
-namespace Peek.Helper.Extensions
+namespace Peek.Helpers.Extensions
 {
     public static class HWNDExtensions
     {

@@ -53,9 +53,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.CropAndLock: return generalSettingsConfig.Enabled.CropAndLock;
                 case ModuleType.EnvironmentVariables: return generalSettingsConfig.Enabled.EnvironmentVariables;
                 case ModuleType.FancyZones: return generalSettingsConfig.Enabled.FancyZones;
-                case ModuleType.FileActionsMenu:
-                    SettingsRepository<FileActionsMenuSettings> repository = SettingsRepository<FileActionsMenuSettings>.GetInstance(new SettingsUtils());
-                    return repository.SettingsConfig.Properties.EnableFileActionsMenu;
+                case ModuleType.FileActionsMenu: return generalSettingsConfig.Enabled.FileActionsMenu;
                 case ModuleType.FileLocksmith: return generalSettingsConfig.Enabled.FileLocksmith;
                 case ModuleType.FindMyMouse: return generalSettingsConfig.Enabled.FindMyMouse;
                 case ModuleType.Hosts: return generalSettingsConfig.Enabled.Hosts;

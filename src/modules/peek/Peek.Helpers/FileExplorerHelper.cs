@@ -5,7 +5,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Peek.Common.Models;
-using Peek.Helper.Extensions;
+using Peek.Helpers.Extensions;
 using SHDocVw;
 using Windows.Win32;
 using Windows.Win32.Foundation;

@@ -19,10 +19,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        private string _settingsConfigFileFolder = string.Empty;
-
-        private GeneralSettings GeneralSettingsConfig { get; set; }
-
         private GpoRuleConfigured _fileActionsMenuEnabledGpoRuleConfiguration;
         private bool _fileActionsMenuEnabledStateIsGPOConfigured;
         private bool _fileActionsMenuIsEnabled;
@@ -30,13 +26,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public FileActionsMenuViewModel(ISettingsRepository<FileActionsMenuSettings> moduleSettingsRepository, ISettingsRepository<GeneralSettings> generalSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
-            // Update Settings file folder:
-            _settingsConfigFileFolder = configFileSubfolder;
-
             // To obtain the general Settings configurations of PowerToys
             ArgumentNullException.ThrowIfNull(generalSettingsRepository);
-
-            GeneralSettingsConfig = generalSettingsRepository.SettingsConfig;
 
             // To obtain the PowerPreview settings if it exists.
             // If the file does not exist, to create a new one and return the default settings configurations.
@@ -95,7 +86,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _fileActionsMenuShortcut = value ?? Settings.Properties.DefaultFileActionsMenuShortcut;
                     Settings.Properties.FileActionsMenuShortcut = value;
-                    OnPropertyChanged(nameof(FileActionsMenuShortcut));
                     RaisePropertyChanged();
                 }
             }

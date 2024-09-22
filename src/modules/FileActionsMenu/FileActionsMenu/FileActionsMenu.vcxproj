@@ -39,7 +39,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="trace.h" />
   </ItemGroup>
   <ItemGroup>
@@ -48,9 +47,6 @@
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="trace.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="FileActionsMenu.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
