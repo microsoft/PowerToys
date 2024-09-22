@@ -252,7 +252,7 @@ namespace powertoys_gpo {
             return getConfiguredValue(POLICY_CONFIGURE_ENABLED_GLOBAL_ALL_UTILITIES);
         }
     }
-#pragma endregion ReadRegsitryMethods
+#pragma endregion ReadRegistryMethods
 
     // Utility enabled state policies
 #pragma region UtilityEnabledStatePolicies
