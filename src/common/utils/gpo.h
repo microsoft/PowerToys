@@ -84,7 +84,7 @@ namespace powertoys_gpo {
     const std::wstring POLICY_MWB_POLICY_DEFINED_IP_MAPPING_RULES = L"MwbPolicyDefinedIpMappingRules";
 
     // Methods used for reading the registry
-#pragma region ReadRegsitryMethods
+#pragma region ReadRegistryMethods
     inline std::optional<std::wstring> readRegistryStringValue(HKEY hRootKey, const std::wstring& subKey, const std::wstring& value_name, const bool is_multi_line_text = false)
     {
         // Set value type
