@@ -22,7 +22,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Title => "As for XML encoded string";
+        public string Title => ResourceHelper.GetResource("File_Content_Actions.CopyContentAsXmlEncoded.Title");
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

@@ -51,8 +51,6 @@ namespace CommonSharedConstants
 
     const wchar_t SHOW_HOSTS_ADMIN_EVENT[] = L"Local\\Hosts-ShowHostsAdminEvent-60ff44e2-efd3-43bf-928a-f4d269f98bec";
 
-    const wchar_t SHOW_FILE_ACTIONS_MENU_EVENT[] = L"Local\\FileActionsMenu-ShowFileActionsMenuEvent-5a0c0aae-5ff5-40f5-95c2-20e37ed671f1";
-
     // Path to the event used by Awake
     const wchar_t AWAKE_EXIT_EVENT[] = L"Local\\PowerToysAwakeExitEvent-c0d5e305-35fc-4fb5-83ec-f6070cfaf7fe";
     
