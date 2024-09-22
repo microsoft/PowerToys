@@ -1,0 +1,6 @@
+<!-- No idea why this is needed, but it makes it work -->
+<Project>
+  <Target Name="FixWebView2" BeforeTargets="_CopyOutOfDateSourceItemsToOutputDirectory">
+    <Copy SourceFiles="..\..\..\..\..\$(Platform)\$(Configuration)\FileActionsMenu.Interfaces\runtimes\win-x64\native\WebView2Loader.dll" DestinationFolder="..\..\..\..\..\$(Platform)\$(Configuration)\FileActionsMenu.Helpers\runtimes\win-x64\native" />
+  </Target>
+</Project>
