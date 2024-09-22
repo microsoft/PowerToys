@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.Tracing;
+
 using AdvancedPaste.Models;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.PowerToys.Telemetry.Events;

@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 // Used for STA tests in PreviewPane

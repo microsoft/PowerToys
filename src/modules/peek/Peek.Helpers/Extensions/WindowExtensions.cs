@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
+
 using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Windows.Win32;

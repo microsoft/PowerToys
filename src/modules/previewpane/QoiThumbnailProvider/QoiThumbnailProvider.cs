@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+
 using Microsoft.PowerToys.FilePreviewCommon;
 
 namespace Microsoft.PowerToys.ThumbnailHandler.Qoi

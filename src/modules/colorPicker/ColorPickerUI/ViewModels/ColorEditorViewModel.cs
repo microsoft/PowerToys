@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Input;
 using System.Windows.Media;
+
 using ColorPicker.Common;
 using ColorPicker.Helpers;
 using ColorPicker.Models;

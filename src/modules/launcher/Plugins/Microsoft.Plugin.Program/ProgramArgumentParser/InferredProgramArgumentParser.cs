@@ -4,6 +4,7 @@
 
 using System.Linq;
 using System.Text.RegularExpressions;
+
 using Wox.Plugin;
 
 namespace Microsoft.Plugin.Program

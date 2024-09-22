@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
+
 using ManagedCommon;
 using Wox.Plugin;
 

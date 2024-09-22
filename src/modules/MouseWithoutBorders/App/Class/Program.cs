@@ -27,6 +27,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Telemetry;

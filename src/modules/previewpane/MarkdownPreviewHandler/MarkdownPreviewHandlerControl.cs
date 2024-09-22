@@ -6,6 +6,7 @@ using System.IO.Abstractions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+
 using Common;
 using Microsoft.PowerToys.PreviewHandler.Markdown.Properties;
 using Microsoft.PowerToys.PreviewHandler.Markdown.Telemetry.Events;

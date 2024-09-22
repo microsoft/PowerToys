@@ -51,6 +51,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredQoiThumbnailsEnabledValue();
         static GpoRuleConfigured GetConfiguredFileActionsMenuEnabledValue();
         static GpoRuleConfigured GetAllowedAdvancedPasteOnlineAIModelsValue();
+        static GpoRuleConfigured GetConfiguredNewPlusEnabledValue();
         static GpoRuleConfigured GetConfiguredWorkspacesEnabledValue();
         static GpoRuleConfigured GetConfiguredMwbClipboardSharingEnabledValue();
         static GpoRuleConfigured GetConfiguredMwbFileTransferEnabledValue();

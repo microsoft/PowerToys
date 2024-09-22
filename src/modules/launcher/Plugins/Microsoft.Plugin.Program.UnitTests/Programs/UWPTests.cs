@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+
 using Castle.Core.Internal;
 using Microsoft.Plugin.Program.Programs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

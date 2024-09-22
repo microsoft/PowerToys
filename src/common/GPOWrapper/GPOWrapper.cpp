@@ -180,6 +180,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPasteOnlineAIModelsValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredNewPlusEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredNewPlusEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredWorkspacesEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredWorkspacesEnabledValue());

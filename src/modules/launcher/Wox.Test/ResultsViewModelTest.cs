@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Windows.Input;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerLauncher.ViewModel;
 using Wox.Plugin;

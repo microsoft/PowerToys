@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+
 using Microsoft.PowerToys.Run.Plugin.System.Properties;
 using Wox.Plugin;
 using Wox.Plugin.Common.Win32;

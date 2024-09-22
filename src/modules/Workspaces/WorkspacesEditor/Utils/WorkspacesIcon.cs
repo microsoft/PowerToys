@@ -8,6 +8,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+
 using ManagedCommon;
 
 namespace WorkspacesEditor.Utils

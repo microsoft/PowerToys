@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
