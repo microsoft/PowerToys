@@ -10,8 +10,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Navigation;
 using Peek.Common.Models;
-using Peek.Helpers.Extensions;
 using Peek.Helpers;
+using Peek.Helpers.Extensions;
 using Windows.Win32.Foundation;
 
 namespace FileActionsMenu.Ui.Helpers
