@@ -51,6 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _hideStartingDigits = Settings.HideStartingDigits;
             _templateLocation = Settings.TemplateLocation;
             InitializeEnabledValue();
+            InitializeGpoValues();
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -74,7 +75,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private void InitializeGpoValues()
         {
             // Policy for hide file extension setting
-            _hideFileExtensionGpoRuleConfiguration = GPOWrapper.GetConfiguredNewPlusHideTemplateFilenameExtension();
+            _hideFileExtensionGpoRuleConfiguration = GPOWrapper.getConfiguredNewPlusHideTemplateFilenameExtensionValue();
             _hideFileExtensionIsGPOConfigured = _hideFileExtensionGpoRuleConfiguration == GpoRuleConfigured.Disabled || _hideFileExtensionGpoRuleConfiguration == GpoRuleConfigured.Enabled;
         }
 

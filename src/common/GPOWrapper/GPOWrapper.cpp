@@ -220,8 +220,8 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         // Convert std::wstring to winrt::hstring
         return to_hstring(rules.c_str());
     }
-    GpoRuleConfigured GPOWrapper::GetConfiguredNewPlusHideTemplateFilenameExtension()
+    GpoRuleConfigured GPOWrapper::getConfiguredNewPlusHideTemplateFilenameExtensionValue()
     {
-        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredNewPlusHideTemplateFilenameExtension());
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredNewPlusHideTemplateFilenameExtensionValue());
     }
 }

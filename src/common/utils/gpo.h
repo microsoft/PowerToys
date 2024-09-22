@@ -577,7 +577,7 @@ namespace powertoys_gpo {
         }
     }
 
-    inline gpo_rule_configured_t getConfiguredNewPlusHideTemplateFilenameExtension()
+    inline gpo_rule_configured_t getConfiguredNewPlusHideTemplateFilenameExtensionValue()
     {
         return getConfiguredValue(POLICY_NEW_PLUS_HIDE_TEMPLATE_FILENAME_EXTENSION);
     }

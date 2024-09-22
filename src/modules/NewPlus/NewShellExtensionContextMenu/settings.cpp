@@ -175,7 +175,7 @@ bool NewSettings::GetEnabled()
 
 bool NewSettings::GetHideFileExtension() const
 {
-    auto gpoSetting = powertoys_gpo::getConfiguredNewPlusHideTemplateFilenameExtension();
+    auto gpoSetting = powertoys_gpo::getConfiguredNewPlusHideTemplateFilenameExtensionValue();
     if (gpoSetting == powertoys_gpo::gpo_rule_configured_enabled)
     {
         return true;
