@@ -255,6 +255,7 @@ namespace powertoys_gpo {
 #pragma endregion ReadRegistryMethods
 
     // Utility enabled state policies
+    // (Always use 'getUtilityEnabledValue()'.)
 #pragma region UtilityEnabledStatePolicies
     inline gpo_rule_configured_t getConfiguredAlwaysOnTopEnabledValue()
     {
@@ -453,6 +454,7 @@ namespace powertoys_gpo {
 #pragma endregion UtilityEnabledStatePolicies
 
     // Individual module setting policies
+    // (Never use 'getUtilityEnabledValue()'!)
 #pragma region IndividualModuleSettingPolicies
     inline gpo_rule_configured_t getDisablePerUserInstallationValue()
     {
