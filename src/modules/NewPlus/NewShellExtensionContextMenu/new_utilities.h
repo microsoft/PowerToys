@@ -79,6 +79,7 @@ namespace newplus::utilities
 
     inline bool get_newplus_setting_hide_extension()
     {
+        // ToDo: Add code to read policy value.
         return NewSettingsInstance().GetHideFileExtension();
     }
 
