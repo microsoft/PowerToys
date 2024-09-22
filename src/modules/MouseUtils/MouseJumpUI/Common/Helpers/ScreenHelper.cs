@@ -6,8 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+
 using MouseJumpUI.Common.Models.Drawing;
 using MouseJumpUI.Common.NativeMethods;
+
 using static MouseJumpUI.Common.NativeMethods.Core;
 using static MouseJumpUI.Common.NativeMethods.User32;
 

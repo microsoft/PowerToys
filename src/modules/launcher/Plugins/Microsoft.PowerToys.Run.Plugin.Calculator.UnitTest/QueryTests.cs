@@ -4,6 +4,7 @@
 
 using System.Globalization;
 using System.Linq;
+
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;

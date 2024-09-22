@@ -5,6 +5,7 @@
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
+
 using Common;
 using ManagedCommon;
 using Microsoft.PowerToys.PreviewHandler.Monaco.Properties;

@@ -749,8 +749,6 @@ public:
             {
                 Logger::trace(L"Launching new process");
                 launch_process_and_named_pipe();
-
-                Trace::AdvancedPaste_Invoked(L"AdvancedPasteUI");
             }
 
             // hotkeyId in same order as set by get_hotkeys
@@ -774,18 +772,21 @@ public:
 
                 bring_process_to_front();
                 send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_MESSAGE);
+                Trace::AdvancedPaste_Invoked(L"AdvancedPasteUI");
                 return true;
             }
             if (hotkeyId == 2)
             { // m_paste_as_markdown_hotkey
                 Logger::trace(L"Starting paste as markdown directly");
                 send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_MARKDOWN_MESSAGE);
+                Trace::AdvancedPaste_Invoked(L"MarkdownDirect");
                 return true;
             }
             if (hotkeyId == 3)
             { // m_paste_as_json_hotkey
                 Logger::trace(L"Starting paste as json directly");
                 send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_JSON_MESSAGE);
+                Trace::AdvancedPaste_Invoked(L"JsonDirect");
                 return true;
             }
 
@@ -798,6 +799,7 @@ public:
                 Logger::trace(L"Starting custom action id={}", id);
 
                 send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_CUSTOM_ACTION_MESSAGE, std::to_wstring(id));
+                Trace::AdvancedPaste_Invoked(L"CustomActionDirect");
                 return true;
             }
         }

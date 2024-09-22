@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+
 using MouseJumpUI.Common.Models.Drawing;
 using MouseJumpUI.Common.Models.Styles;
 

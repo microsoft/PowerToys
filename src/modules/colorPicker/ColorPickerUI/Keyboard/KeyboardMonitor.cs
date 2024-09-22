@@ -6,9 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Windows.Input;
+
 using ColorPicker.Helpers;
 using ColorPicker.Settings;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+
 using static ColorPicker.NativeMethods;
 
 namespace ColorPicker.Keyboard

@@ -12,6 +12,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+
 using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;

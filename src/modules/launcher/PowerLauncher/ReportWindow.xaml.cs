@@ -11,6 +11,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media.Imaging;
+
 using PowerLauncher.Helper;
 using Wox.Infrastructure.Image;
 using Wox.Plugin.Logger;

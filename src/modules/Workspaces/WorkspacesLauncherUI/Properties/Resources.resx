@@ -124,6 +124,6 @@
     <value>Dismiss</value>
   </data>
   <data name="LauncherWindowTitle" xml:space="preserve">
-    <value>Your project is launching. Waiting on ...</value>
+    <value>Your workspace is launching. Waiting on ...</value>
   </data>
 </root>

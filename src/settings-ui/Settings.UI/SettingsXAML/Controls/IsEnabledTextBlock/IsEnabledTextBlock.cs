@@ -10,7 +10,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     [TemplateVisualState(Name = "Normal", GroupName = "CommonStates")]
     [TemplateVisualState(Name = "Disabled", GroupName = "CommonStates")]
-    public class IsEnabledTextBlock : Control
+    public partial class IsEnabledTextBlock : Control
     {
         public IsEnabledTextBlock()
         {

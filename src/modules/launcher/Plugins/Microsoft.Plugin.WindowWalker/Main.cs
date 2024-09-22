@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Controls;
+
 using ManagedCommon;
 using Microsoft.Plugin.WindowWalker.Components;
 using Microsoft.PowerToys.Settings.UI.Library;
