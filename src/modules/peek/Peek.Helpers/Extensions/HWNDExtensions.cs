@@ -5,7 +5,6 @@
 using System.Text;
 using Peek.Helpers.Native;
 
-using Peek.UI.Native;
 using Windows.Foundation;
 using Windows.Win32;
 using Windows.Win32.Foundation;
