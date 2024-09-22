@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Security;
 using System.Text.Json;
 using System.Windows;
+using FileActionsMenu.Helpers;
 using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
