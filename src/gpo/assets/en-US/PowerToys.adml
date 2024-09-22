@@ -191,7 +191,7 @@ Please enter one mapping per line in the format: "hostname IP"
 
 If you disable or don't configure this policy, no predefined rules are applied.
 </string>
-      <string id="NewPlusHideTemplateFilenameExtensionDescription">This policy configures, if the template filenames are shown with extension or not.
+      <string id="NewPlusHideTemplateFilenameExtensionDescription">This policy configures if the template filenames are shown with extension or not.
 
 If you enable this policy, the setting is enabled and the extension is hidden.
 
