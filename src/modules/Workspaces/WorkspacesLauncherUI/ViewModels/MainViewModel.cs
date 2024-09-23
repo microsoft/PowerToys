@@ -35,8 +35,6 @@ namespace WorkspacesLauncherUI.ViewModels
             // receive IPC Message
             App.IPCMessageReceivedCallback = (string msg) =>
             {
-                Logger.LogDebug(msg);
-
                 try
                 {
                     AppLaunchData parser = new AppLaunchData();
