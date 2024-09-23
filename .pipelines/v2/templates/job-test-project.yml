@@ -58,10 +58,12 @@ jobs:
       & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
     displayName: Download and install WinAppDriver
 
-  - ${{ if ne(parameters.platform, 'arm64') }}:
-    - task: ScreenResolutionUtility@1
-      inputs:
-        displaySettings: 'optimal'
+  - task: ScreenResolutionUtility@1
+    displayName: Set resolution to 1920x1080
+    inputs:
+      displaySettings: 'specific'
+      width: 1920
+      height: 1080
 
   - task: VSTest@3
     displayName: Run Tests
