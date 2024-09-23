@@ -22,7 +22,7 @@ stages:
   - ${{ if ne(variables['Build.Reason'], 'Manual') }}:
     - stage: Precheck
       jobs:
-        - template: ./templates/job-ci-precheck.yml
+        - template: .pipelines/v2/templates/job-ci-precheck.yml@self
 
   - ${{ each platform in parameters.buildPlatforms }}:
     - stage: Build_${{ platform }}
@@ -32,7 +32,7 @@ stages:
       ${{ else }}:
         dependsOn: []
       jobs:
-        - template: ./templates/job-build-project.yml
+        - template: .pipelines/v2/templates/job-build-project.yml@self
           parameters:
             condition: and(succeeded(), or(eq(variables['Build.Reason'], 'Manual'), ne(stageDependencies.Precheck.Precheck.outputs['verifyBuildRequest.skipBuild'], 'Yes')))
             pool:
@@ -53,7 +53,7 @@ stages:
         dependsOn:
           - Build_${{platform}}
         jobs:
-          - template: ./templates/job-test-project.yml
+          - template: .pipelines/v2/templates/job-test-project.yml@self
             parameters:
               platform: ${{ platform }}
               configuration: Release
