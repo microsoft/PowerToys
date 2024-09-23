@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json;
+
 using static FancyZonesEditorCommon.Data.CustomLayouts;
 
 namespace FancyZonesEditorCommon.Data

@@ -8,6 +8,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using AdvancedPaste.Models;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;

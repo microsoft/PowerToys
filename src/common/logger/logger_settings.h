@@ -69,6 +69,7 @@ struct LogSettings
     inline const static std::string environmentVariablesLoggerName = "environment-variables";
     inline const static std::wstring cmdNotFoundLogPath = L"Logs\\cmd-not-found-log.txt";
     inline const static std::string cmdNotFoundLoggerName = "cmd-not-found";
+    inline const static std::string newLoggerName = "NewPlus";
     inline const static std::string workspacesLauncherLoggerName = "workspaces-launcher";
     inline const static std::wstring workspacesLauncherLogPath = L"workspaces-launcher-log.txt";
     inline const static std::string workspacesSnapshotToolLoggerName = "workspaces-snapshot-tool";

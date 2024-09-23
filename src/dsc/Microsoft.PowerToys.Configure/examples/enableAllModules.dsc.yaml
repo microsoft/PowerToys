@@ -35,6 +35,8 @@ properties:
           Enabled: true
         MouseWithoutBorders:
           Enabled: true
+        NewPlus:
+          Enabled: true
         Peek:
           Enabled: true
         PowerRename:

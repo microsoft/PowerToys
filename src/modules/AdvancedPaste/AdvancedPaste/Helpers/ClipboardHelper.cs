@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using AdvancedPaste.Models;
 using ManagedCommon;
 using Windows.ApplicationModel.DataTransfer;

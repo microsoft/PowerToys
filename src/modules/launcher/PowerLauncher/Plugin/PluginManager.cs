@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+
 using global::PowerToys.GPOWrapper;
 using PowerLauncher.Properties;
 using Wox.Infrastructure.Storage;
@@ -183,8 +184,8 @@ namespace PowerLauncher.Plugin
 
             if (!failedPlugins.IsEmpty)
             {
-                var failed = string.Join(",", failedPlugins.Select(x => x.Metadata.Name));
-                var description = string.Format(CultureInfo.CurrentCulture, FailedToInitializePluginsDescription, failed);
+                var failed = string.Join(", ", failedPlugins.Select(x => x.Metadata.Name));
+                var description = $"{string.Format(CultureInfo.CurrentCulture, FailedToInitializePluginsDescription, failed)}\n\n{Resources.FailedToInitializePluginsDescriptionPartTwo}";
                 Application.Current.Dispatcher.InvokeAsync(() => API.ShowMsg(Resources.FailedToInitializePluginsTitle, description, string.Empty, false));
             }
         }

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+
 using AdvancedPaste.Models;
 using Microsoft.PowerToys.Settings.UI.Library;
 

@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+
 using Wox.Plugin;
 
 namespace Microsoft.Plugin.Program
