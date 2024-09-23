@@ -11,7 +11,7 @@ public:
     WindowArrangerHelper(std::function<void(const std::wstring&)> ipcCallback);
     ~WindowArrangerHelper();
 
-    void Launch(const std::wstring& projectId, bool elevated, std::function<bool()> allWindowsFoundCallback);
+    void Launch(const std::wstring& projectId, bool elevated, std::function<bool()> keepWaitingCallback);
 
 private:
     DWORD m_processId;

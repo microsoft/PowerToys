@@ -35,7 +35,7 @@ WindowArrangerHelper::~WindowArrangerHelper()
     }
 }
 
-void WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated, std::function<bool()> allWindowsFoundCallback)
+void WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated, std::function<bool()> keepWaitingCallback)
 {
     Logger::trace(L"Starting WorkspacesWindowArranger");
 
@@ -53,14 +53,15 @@ void WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated, 
         m_threadExecutor.submit(OnThreadExecutor::task_t{
             [&] {
                 HANDLE process = value.hProcess;
-                while (!timeoutExpired && !allWindowsFoundCallback())
+                while (keepWaitingCallback())
                 {
                     WaitForSingleObject(process, 100);
                 }
                 
                 Logger::trace(L"Finished waiting WorkspacesWindowArranger");
                 CloseHandle(process);
-            }}).wait_for(std::chrono::milliseconds(5000));
+            }}).wait();
+
         timeoutExpired = true;
     }
     else

@@ -24,7 +24,26 @@ Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
     m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
 
     bool launchElevated = std::find_if(m_project.apps.begin(), m_project.apps.end(), [](const WorkspacesData::WorkspacesProject::Application& app) { return app.isElevated; }) != m_project.apps.end();
-    m_windowArrangerHelper->Launch(m_project.id, launchElevated, std::bind(&LaunchingStatus::Ready, &m_launchingStatus));
+    m_windowArrangerHelper->Launch(m_project.id, launchElevated, [&]() -> bool
+        {
+            if (m_launchingStatus.AllLaunchedAndMoved())
+            {
+                return false;
+            }
+
+            if (m_launchingStatus.AllLaunched())
+            {
+                static auto arrangerTimeDelay = std::chrono::high_resolution_clock::now();
+                auto currentTime = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<double> timeDiff = currentTime - arrangerTimeDelay;
+                if (timeDiff.count() >= 5)
+                {
+                    return false;
+                }
+            }
+            
+            return true;
+        });
 }
 
 Launcher::~Launcher()

@@ -11,7 +11,8 @@ public:
     LaunchingStatus(const WorkspacesData::WorkspacesProject& project, std::function<void(const WorkspacesData::LaunchingAppStateMap&)> updateCallback);
     ~LaunchingStatus() = default;
 
-    bool Ready() noexcept;
+    bool AllLaunchedAndMoved() noexcept;
+    bool AllLaunched() noexcept;
     const WorkspacesData::LaunchingAppStateMap& Get() noexcept;
 
     void Update(const WorkspacesData::WorkspacesProject::Application& app, LaunchingState state);

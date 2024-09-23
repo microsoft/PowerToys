@@ -19,7 +19,22 @@ const WorkspacesData::LaunchingAppStateMap& LaunchingStatus::Get() noexcept
     return m_appsState;
 }
 
-bool LaunchingStatus::Ready() noexcept
+bool LaunchingStatus::AllLaunchedAndMoved() noexcept
+{
+    std::shared_lock lock(m_mutex);
+    for (const auto& [app, data] : m_appsState)
+    {
+        if (data.state != LaunchingState::Failed && data.state != LaunchingState::LaunchedAndMoved)
+        {
+            Logger::debug(data.state);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool LaunchingStatus::AllLaunched() noexcept
 {
     std::shared_lock lock(m_mutex);
     for (const auto& [app, data] : m_appsState)
