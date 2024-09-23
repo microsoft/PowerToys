@@ -28,7 +28,7 @@ internal sealed partial class SSHHostsListPage : ListPage
 
     public SSHHostsListPage()
     {
-        Icon = new(string.Empty);
+        Icon = new("https://cdn-icons-png.flaticon.com/512/5558/5558264.png");
         Name = "SSH Keychain";
     }
 
@@ -76,6 +76,7 @@ internal sealed partial class SSHHostsListPage : ListPage
             {
                 Title = host.HostName,
                 Subtitle = host.EscapedHost,
+                MoreCommands = [new CommandContextItem(new OpenConfigFileCommand(_defaultConfigFile))],
             }).ToArray(),
         };
         return [s];
