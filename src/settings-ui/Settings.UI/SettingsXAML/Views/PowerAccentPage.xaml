@@ -78,12 +78,12 @@
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Lithuanian" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Macedonian" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Maori" />
-                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_MiddleEastern" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Norwegian" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Pinyin" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Polish" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Portuguese" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Romanian" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Romanization" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Slovak" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Slovenian" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Spanish" />

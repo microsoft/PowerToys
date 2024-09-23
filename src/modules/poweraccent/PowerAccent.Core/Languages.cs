@@ -34,7 +34,6 @@ namespace PowerAccent.Core
         IT,
         KU,
         LT,
-        ME,
         MK,
         MI,
         NL,
@@ -43,6 +42,7 @@ namespace PowerAccent.Core
         PL,
         PT,
         RO,
+        ROM,
         SK,
         SL,
         SP,
@@ -81,7 +81,6 @@ namespace PowerAccent.Core
                 Language.IT => GetDefaultLetterKeyIT(letter), // Italian
                 Language.KU => GetDefaultLetterKeyKU(letter), // Kurdish
                 Language.LT => GetDefaultLetterKeyLT(letter), // Lithuanian
-                Language.ME => GetDefaultLetterKeyME(letter), // Middle Eastern
                 Language.MK => GetDefaultLetterKeyMK(letter), // Macedonian
                 Language.MI => GetDefaultLetterKeyMI(letter), // Maori
                 Language.NL => GetDefaultLetterKeyNL(letter), // Dutch
@@ -90,6 +89,7 @@ namespace PowerAccent.Core
                 Language.PL => GetDefaultLetterKeyPL(letter), // Polish
                 Language.PT => GetDefaultLetterKeyPT(letter), // Portuguese
                 Language.RO => GetDefaultLetterKeyRO(letter), // Romanian
+                Language.ROM => GetDefaultLetterKeyROM(letter), // Middle Eastern Romanization
                 Language.SK => GetDefaultLetterKeySK(letter), // Slovak
                 Language.SL => GetDefaultLetterKeySL(letter), // Slovenian
                 Language.SP => GetDefaultLetterKeySP(letter), // Spain
@@ -131,7 +131,7 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeyIT(letter))
                 .Union(GetDefaultLetterKeyKU(letter))
                 .Union(GetDefaultLetterKeyLT(letter))
-                .Union(GetDefaultLetterKeyME(letter))
+                .Union(GetDefaultLetterKeyROM(letter))
                 .Union(GetDefaultLetterKeyMK(letter))
                 .Union(GetDefaultLetterKeyMI(letter))
                 .Union(GetDefaultLetterKeyNL(letter))
@@ -497,8 +497,8 @@ namespace PowerAccent.Core
             };
         }
 
-        // Middle Eastern
-        private static string[] GetDefaultLetterKeyME(LetterKey letter)
+        // Middle Eastern Romanization
+        private static string[] GetDefaultLetterKeyROM(LetterKey letter)
         {
             return letter switch
             {
