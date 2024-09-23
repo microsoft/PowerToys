@@ -68,10 +68,10 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="NewPlus_Display_Options" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_File_Extension_Toggle" IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                    <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_File_Extension_Toggle">
                         <ToggleSwitch x:Uid="HideFileExtensionToggle" IsOn="{x:Bind ViewModel.HideFileExtension, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_Starting_Digits_Toggle" IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                    <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_Starting_Digits_Toggle">
                         <ToggleSwitch x:Uid="HideStartingDigitsToggle" IsOn="{x:Bind ViewModel.HideStartingDigits, Mode=TwoWay}" />
                         <tkcontrols:SettingsCard.Description>
                             <TextBlock x:Uid="NewPlus_Hide_Starting_Digits_Description" />
