@@ -75,7 +75,7 @@ jobs:
       vsTestVersion: 'toolsInstaller'
       uiTests: true
       rerunFailedTests: true
-      # Look at all those naming schemes! Sheesh!
+      # Look at all those naming schemes!
       testAssemblyVer2: |
         **\UnitTests-*.dll
         **\UnitTest-*.dll
