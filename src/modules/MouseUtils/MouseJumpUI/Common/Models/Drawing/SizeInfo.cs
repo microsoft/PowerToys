@@ -4,7 +4,9 @@
 
 using System;
 using System.Drawing;
+
 using MouseJumpUI.Common.Models.Styles;
+
 using BorderStyle = MouseJumpUI.Common.Models.Styles.BorderStyle;
 
 namespace MouseJumpUI.Common.Models.Drawing;

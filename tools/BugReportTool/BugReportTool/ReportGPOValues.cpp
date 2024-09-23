@@ -67,6 +67,7 @@ void ReportGPOValues(const std::filesystem::path& tmpDir)
     report << "getConfiguredMouseWithoutBordersEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMouseWithoutBordersEnabledValue()) << std::endl;
     report << "getConfiguredPowerRenameEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredPowerRenameEnabledValue()) << std::endl;
     report << "getConfiguredPowerLauncherEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredPowerLauncherEnabledValue()) << std::endl;
+    report << "getConfiguredWorkspacesEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredWorkspacesEnabledValue()) << std::endl;
     report << "getConfiguredQuickAccentEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredQuickAccentEnabledValue()) << std::endl;
     report << "getConfiguredScreenRulerEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredScreenRulerEnabledValue()) << std::endl;
     report << "getConfiguredShortcutGuideEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredShortcutGuideEnabledValue()) << std::endl;
@@ -89,4 +90,5 @@ void ReportGPOValues(const std::filesystem::path& tmpDir)
     report << "getConfiguredMwbValidateRemoteIpValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbValidateRemoteIpValue()) << std::endl;
     report << "getConfiguredMwbDisableUserDefinedIpMappingRulesValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbDisableUserDefinedIpMappingRulesValue()) << std::endl;
     report << "getConfiguredMwbPolicyDefinedIpMappingRules: " << gpo_string_to_string(powertoys_gpo::getConfiguredMwbPolicyDefinedIpMappingRules()) << std::endl;
+    report << "getConfiguredNewPlusEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredNewPlusEnabledValue()) << std::endl;
 }

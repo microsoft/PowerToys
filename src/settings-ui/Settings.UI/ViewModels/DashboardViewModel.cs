@@ -125,6 +125,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private void EnabledChangedOnUI(DashboardListItem dashboardListItem)
         {
             Views.ShellPage.UpdateGeneralSettingsCallback(dashboardListItem.Tag, dashboardListItem.IsEnabled);
+
+            if (dashboardListItem.Tag == ModuleType.NewPlus && dashboardListItem.IsEnabled == true)
+            {
+                var settingsUtils = new SettingsUtils();
+                var settings = NewPlusViewModel.LoadSettings(settingsUtils);
+                NewPlusViewModel.CopyTemplateExamples(settings.TemplateLocation);
+            }
         }
 
         public void ModuleEnabledChangedOnSettingsPage()
@@ -173,10 +180,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.PowerRename => GetModuleItemsPowerRename(),
                 ModuleType.PowerLauncher => GetModuleItemsPowerLauncher(),
                 ModuleType.PowerAccent => GetModuleItemsPowerAccent(),
+                ModuleType.Workspaces => GetModuleItemsWorkspaces(),
                 ModuleType.RegistryPreview => GetModuleItemsRegistryPreview(),
                 ModuleType.MeasureTool => GetModuleItemsMeasureTool(),
                 ModuleType.ShortcutGuide => GetModuleItemsShortcutGuide(),
                 ModuleType.PowerOCR => GetModuleItemsPowerOCR(),
+                ModuleType.NewPlus => GetModuleItemsNewPlus(),
                 _ => new ObservableCollection<DashboardModuleItem>(), // never called, all values listed above
             };
         }
@@ -437,6 +446,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsWorkspaces()
+        {
+            ISettingsRepository<WorkspacesSettings> moduleSettingsRepository = SettingsRepository<WorkspacesSettings>.GetInstance(new SettingsUtils());
+            var settings = moduleSettingsRepository.SettingsConfig;
+
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("Workspaces_ShortDescription"), Shortcut = settings.Properties.Hotkey.Value.GetKeysList() },
+                new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("Workspaces_LaunchEditorButtonControl/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("FancyZones_LaunchEditorButtonControl/Description"), ButtonGlyph = "\uEB3C", ButtonClickHandler = WorkspacesLaunchClicked },
+            };
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
         private ObservableCollection<DashboardModuleItem> GetModuleItemsRegistryPreview()
         {
             var list = new List<DashboardModuleItem>
@@ -481,6 +503,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsNewPlus()
+        {
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleTextItem() { Label = resourceLoader.GetString("NewPlus_Product_Description/Description") },
+            };
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
         internal void SWVersionButtonClicked()
         {
             NavigationService.Navigate(typeof(GeneralPage));
@@ -504,6 +535,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             // send message to launch the zones editor;
             SendConfigMSG("{\"action\":{\"FancyZones\":{\"action_name\":\"ToggledFZEditor\", \"value\":\"\"}}}");
+        }
+
+        private void WorkspacesLaunchClicked(object sender, RoutedEventArgs e)
+        {
+            // send message to launch the Workspaces editor;
+            SendConfigMSG("{\"action\":{\"Workspaces\":{\"action_name\":\"LaunchEditor\", \"value\":\"\"}}}");
         }
 
         private void KbmKeyLaunchClicked(object sender, RoutedEventArgs e)

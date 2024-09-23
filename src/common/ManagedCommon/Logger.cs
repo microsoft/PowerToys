@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO.Abstractions;
 using System.Reflection;
+
 using PowerToys.Interop;
 
 namespace ManagedCommon

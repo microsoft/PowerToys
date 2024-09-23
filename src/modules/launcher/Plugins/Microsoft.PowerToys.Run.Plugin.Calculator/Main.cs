@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Windows.Controls;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.Calculator.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;

@@ -6,10 +6,12 @@ using System;
 using System.ComponentModel.Composition;
 using System.Windows;
 using System.Windows.Interop;
+
 using ColorPicker.Settings;
 using ColorPicker.ViewModelContracts;
 using Common.UI;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
+
 using static ColorPicker.Helpers.NativeMethodsHelper;
 
 namespace ColorPicker.Helpers

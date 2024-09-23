@@ -122,6 +122,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}"
                     Tag="MouseWithoutBorders" />
                 <NavigationViewItem
+                    x:Uid="NewPlus_Product_Name"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}"
+                    Tag="NewPlus" />
+                <NavigationViewItem
                     x:Uid="Shell_Peek"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Peek.png}"
                     Tag="Peek" />
@@ -157,6 +161,10 @@
                     x:Uid="Shell_VideoConference"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/VideoConferenceMute.png}"
                     Tag="VideoConference" />
+                <NavigationViewItem
+                    x:Uid="Shell_Workspaces"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}"
+                    Tag="Workspaces" />
             </NavigationView.MenuItems>
             <NavigationView.FooterMenuItems>
                 <NavigationViewItem

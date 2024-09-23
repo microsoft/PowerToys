@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper;
 using Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties;

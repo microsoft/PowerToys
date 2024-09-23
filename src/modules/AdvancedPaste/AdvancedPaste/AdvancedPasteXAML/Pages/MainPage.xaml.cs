@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.ViewModels;
@@ -25,6 +26,7 @@ namespace AdvancedPaste.Pages
     {
         private readonly ObservableCollection<ClipboardItem> clipboardHistory;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+        private (VirtualKey Key, DateTime Timestamp) _lastKeyEvent = (VirtualKey.None, DateTime.MinValue);
 
         public OptionsViewModel ViewModel { get; private set; }
 
@@ -144,6 +146,15 @@ namespace AdvancedPaste.Pages
             }
 
             Logger.LogTrace();
+
+            var thisKeyEvent = (sender.Key, Timestamp: DateTime.Now);
+            if (thisKeyEvent.Key == _lastKeyEvent.Key && (thisKeyEvent.Timestamp - _lastKeyEvent.Timestamp) < TimeSpan.FromMilliseconds(200))
+            {
+                // Sometimes, multiple keyboard accelerator events are raised for a single Ctrl + VirtualKey press.
+                return;
+            }
+
+            _lastKeyEvent = thisKeyEvent;
 
             switch (sender.Key)
             {

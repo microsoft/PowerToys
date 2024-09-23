@@ -4,6 +4,7 @@
 
 using System;
 using System.Windows.Media;
+
 using ColorPicker.Helpers;
 using ManagedCommon;
 

@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.Settings;
@@ -22,6 +23,7 @@ using Microsoft.Win32;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using WinUIEx;
+
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 namespace AdvancedPaste.ViewModels
@@ -61,17 +63,11 @@ namespace AdvancedPaste.ViewModels
 
         private bool _pasteFormatsDirty;
 
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IsCustomAIEnabled))]
-        private bool _isCustomAIEnabledOverride = false;
-
         public ObservableCollection<PasteFormat> StandardPasteFormats { get; } = [];
 
         public ObservableCollection<PasteFormat> CustomActionPasteFormats { get; } = [];
 
-        public bool IsCustomAIEnabled => IsCustomAIEnabledOverride || IsCustomAIEnabledCore;
-
-        private bool IsCustomAIEnabledCore => IsAllowedByGPO && IsClipboardDataText && aiHelper.IsAIEnabled;
+        public bool IsCustomAIEnabled => IsAllowedByGPO && IsClipboardDataText && aiHelper.IsAIEnabled;
 
         public event EventHandler<CustomActionActivatedEventArgs> CustomActionActivated;
 
@@ -218,20 +214,6 @@ namespace AdvancedPaste.ViewModels
 
             ClipboardHistoryEnabled = IsClipboardHistoryEnabled();
             GeneratedResponses.Clear();
-
-            _dispatcherQueue.TryEnqueue(async () =>
-            {
-                // Work-around for ListViews being disabled but sometimes not appearing grayed out.
-                // It appears that this is sometimes only triggered by a change event. This
-                // work-around sometimes still doesn't work, but it's better than not having it.
-                await Task.Delay(5);
-                IsClipboardDataText = true;
-                IsCustomAIEnabledOverride = true;
-
-                await Task.Delay(150);
-                ReadClipboard();
-                IsCustomAIEnabledOverride = false;
-            });
         }
 
         // List to store generated responses
@@ -437,7 +419,7 @@ namespace AdvancedPaste.ViewModels
 
         internal void ExecutePasteFormat(PasteFormat pasteFormat)
         {
-            if (!IsClipboardDataText || (pasteFormat.Format == PasteFormats.Custom && !IsCustomAIEnabledCore))
+            if (!IsClipboardDataText || (pasteFormat.Format == PasteFormats.Custom && !IsCustomAIEnabled))
             {
                 return;
             }

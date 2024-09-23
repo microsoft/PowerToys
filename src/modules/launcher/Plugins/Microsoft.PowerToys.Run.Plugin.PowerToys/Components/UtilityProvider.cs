@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+
 using Microsoft.PowerToys.Run.Plugin.PowerToys.Components;
 using Microsoft.PowerToys.Run.Plugin.PowerToys.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -184,6 +185,20 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
                     }));
             }
 
+            if (GPOWrapper.GetConfiguredWorkspacesEnabledValue() != GpoRuleConfigured.Disabled)
+            {
+                _utilities.Add(new Utility(
+                UtilityKey.Workspaces,
+                Resources.Workspaces_Editor,
+                generalSettings.Enabled.Workspaces,
+                (_) =>
+                {
+                    using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.WorkspacesLaunchEditorEvent());
+                    eventHandle.Set();
+                    return true;
+                }));
+            }
+
             _watcher = new FileSystemWatcher
             {
                 Path = Path.GetDirectoryName(settingsUtils.GetSettingsFilePath()),
@@ -229,6 +244,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
                                 case UtilityKey.RegistryPreview: u.Enable(generalSettings.Enabled.RegistryPreview); break;
                                 case UtilityKey.CropAndLock: u.Enable(generalSettings.Enabled.CropAndLock); break;
                                 case UtilityKey.EnvironmentVariables: u.Enable(generalSettings.Enabled.EnvironmentVariables); break;
+                                case UtilityKey.Workspaces: u.Enable(generalSettings.Enabled.Workspaces); break;
                             }
                         }
 

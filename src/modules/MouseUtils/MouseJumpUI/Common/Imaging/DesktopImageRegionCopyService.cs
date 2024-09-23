@@ -5,8 +5,10 @@
 using System;
 using System.Diagnostics;
 using System.Drawing;
+
 using MouseJumpUI.Common.Models.Drawing;
 using MouseJumpUI.Common.NativeMethods;
+
 using static MouseJumpUI.Common.NativeMethods.Core;
 
 namespace MouseJumpUI.Common.Imaging;

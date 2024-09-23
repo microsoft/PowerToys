@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading.Tasks;
+
 using ManagedCommon;
 using Windows.Storage;
 

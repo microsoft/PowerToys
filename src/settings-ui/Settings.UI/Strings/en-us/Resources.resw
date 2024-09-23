@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -2094,6 +2094,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Oobe_PowerRename.Description" xml:space="preserve">
     <value>PowerRename enables you to perform simple bulk renaming, searching and replacing file names.</value>
   </data>
+  <data name="Oobe_Workspaces.Description" xml:space="preserve">
+    <value>The Workspaces utility enables you to launch a set of applications to a custom layout and configuration all at once.</value>
+  </data>
   <data name="Oobe_Run.Description" xml:space="preserve">
     <value>PowerToys Run is a quick launcher for power users that contains some additional features without sacrificing performance.</value>
   </data>
@@ -2180,6 +2183,16 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_PowerRename_HowToUse.Text" xml:space="preserve">
     <value>In File Explorer, right-click one or more selected files and select **Rename with PowerRename** from the context menu.</value>
   </data>
+  <data name="Oobe_Workspaces_HowToUse_Shortcut.Text" xml:space="preserve">
+    <value>to open the Workspaces Editor.</value>
+    <comment>{Locked="Workspaces"}</comment>
+  </data>
+  <data name="Oobe_Workspaces_HowToUse.Text" xml:space="preserve">
+    <value>In the Workspaces Editor window create Workspaces - a set of applications arranged in a custom layout. You can launch Workspaces from the Workspaces Editor or by shortcuts created in the Workspaces Editor.</value>
+  </data>
+  <data name="Oobe_Workspaces_TipsAndTricks.Text" xml:space="preserve">
+    <value>Customize the configuration of your apps on launch by adding CLI arguments to each app in the Workspaces Editor.</value>
+  </data>
   <data name="Oobe_PowerRename_TipsAndTricks.Text" xml:space="preserve">
     <value>PowerRename supports searching for files using regular expressions to enable more advanced renaming functionalities.</value>
   </data>
@@ -2242,6 +2255,10 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_PowerRename.Title" xml:space="preserve">
     <value>PowerRename</value>
+    <comment>Do not localize this string</comment>
+  </data>
+  <data name="Oobe_Workspaces.Title" xml:space="preserve">
+    <value>Workspaces</value>
     <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_Run.Title" xml:space="preserve">
@@ -3147,6 +3164,32 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Shell_QuickAccent.Content" xml:space="preserve">
     <value>Quick Accent</value>
+  </data>
+  <data name="Shell_Workspaces.Content" xml:space="preserve">
+    <value>Workspaces</value>
+  </data>
+  <data name="Workspaces_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Workspaces</value>
+    <comment>"Workspaces" is the name of the utility</comment>
+  </data>
+  <data name="Workspaces_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="Workspaces_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to launch the Workspaces Editor</value>
+  </data>
+  <data name="Workspaces_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="Workspaces_LaunchEditorButtonControl.Description" xml:space="preserve">
+    <value>Create and manage Workspaces</value>
+  </data>
+  <data name="Workspaces_LaunchEditorButtonControl.Header" xml:space="preserve">
+    <value>Launch editor</value>
+  </data>
+  <data name="LearnMore_Workspaces.Text" xml:space="preserve">
+    <value>Learn more about the Workspaces utility</value>
+    <comment> Workspaces is the name of the module. </comment>
   </data>
   <data name="QuickAccent.ModuleDescription" xml:space="preserve">
     <value>Quick Accent is an alternative way to type accented characters, useful for when a keyboard doesn't support that specific accent.
@@ -4232,6 +4275,97 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AdvancedPaste_CloseAfterLosingFocus.Header" xml:space="preserve">
     <value>Automatically close the AdvancedPaste window after it loses focus</value>
     <comment>AdvancedPaste is a product name, do not loc</comment>
+  </data>
+  <data name="NewPlus.ModuleTitle" xml:space="preserve">
+    <value>New+</value>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="NewPlus.ModuleDescription" xml:space="preserve">
+    <value>Create files and folders from a personalized set of templates</value>
+  </data>
+  <data name="NewPlus_Product_Name.Content" xml:space="preserve">
+    <value>New+</value>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="NewPlus_Product_Description.Description" xml:space="preserve">
+    <value>Create files and folders from a personalized set of templates</value>
+    <comment>New+ product description</comment>
+  </data>
+  <data name="NewPlus_Learn_More.Text" xml:space="preserve">
+    <value>Learn more about New+</value>
+    <comment>New+ learn more link. Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="NewPlus_Enable_Toggle.Header" xml:space="preserve">
+    <value>Enable New+</value>
+    <comment>Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="NewPlus_NoWindows10SupportWarning.Title" xml:space="preserve">
+    <value>New+ is not supported in Windows 10 and is not expected to work.</value>
+  </data>
+  <data name="NewPlus_TemplatesNotBackupAndRestoreWarning.Title" xml:space="preserve">
+    <value>PowerToys "Backup and Restore" feature doesn't take templates into account at this moment. If you use that feature, templates will have to be copied manually.</value>
+  </data>
+  <data name="NewPlus_Templates.Header" xml:space="preserve">
+    <value>Templates</value>
+    <comment>Templates label</comment>
+  </data>
+  <data name="NewPlus_Templates_Location.Header" xml:space="preserve">
+    <value>Location</value>
+    <comment>Templates Location label</comment>
+  </data>
+  <data name="NewPlus_Templates_Location_Path.Text" xml:space="preserve">
+    <value>...</value>
+    <comment>Do not localize</comment>
+  </data>
+  <data name="NewPlus_Templates_Location_Learn_More.Content" xml:space="preserve">
+    <value>Learn more about template location</value>
+    <comment>Read more about templates location</comment>
+  </data>
+  <data name="NewPlus_Templates_Location_Change.Content" xml:space="preserve">
+    <value>Change</value>
+    <comment>Button where user can Change the location of New templates</comment>
+  </data>
+  <data name="NewPlus_Display_Options.Header" xml:space="preserve">
+    <value>Display options</value>
+    <comment>Display options label</comment>
+  </data>
+  <data name="NewPlus_Hide_File_Extension_Toggle.Header" xml:space="preserve">
+    <value>Hide template filename extension</value>
+    <comment>Template file name extension settings toggle</comment>
+  </data>
+  <data name="NewPlus_Hide_Starting_Digits_Toggle.Header" xml:space="preserve">
+    <value>Hide template filename starting digits, spaces, and dots</value>
+    <comment>Template filename starting digits settings toggle</comment>
+  </data>
+  <data name="NewPlus_Hide_Starting_Digits_Description.Text" xml:space="preserve">
+    <value>This option is useful when using digits, spaces and dots at the beginning of filenames to control the display order of templates</value>
+    <comment>Template filename starting digits settings toggle</comment>
+  </data>
+  <data name="NewPlus.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+    <comment>giving credit</comment>
+  </data>
+  <data name="Oobe_NewPlus.Title" xml:space="preserve">
+    <value>New+</value>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="Oobe_NewPlus.Description" xml:space="preserve">
+    <value>Create files and folders from a personalized set of templates.</value>
+  </data>
+  <data name="Oobe_NewPlus_HowToUse.Text" xml:space="preserve">
+    <value>In File Explorer, right-click the desktop or a folder and via the New+ from the context menu select your template. You can add new templates by opening the template folder via "Open templates" and add new files and folders there.</value>
+  </data>
+  <data name="Oobe_NewPlus_TipsAndTricks.Text" xml:space="preserve">
+    <value>You can have multiple templates of the same file type, and you can even template folders!</value>
+  </data>  
+  <data name="Workspaces.ModuleDescription" xml:space="preserve">
+    <value>Workspaces is a quick and easy way to launch a set of applications to custom positions and configurations with one-click.</value>
+  </data>
+  <data name="Workspaces.ModuleTitle" xml:space="preserve">
+    <value>Workspaces</value>
+  </data>
+  <data name="Workspaces_ShortDescription" xml:space="preserve">
+    <value>Create and launch Workspaces</value>
   </data>
   <data name="MouseWithoutBorders_PolicyIPAddressMappingInfo.Title" xml:space="preserve">
     <value>Rules defined by your organization</value>

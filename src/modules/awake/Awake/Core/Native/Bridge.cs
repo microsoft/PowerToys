@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+
 using Awake.Core.Models;
 
 namespace Awake.Core.Native
