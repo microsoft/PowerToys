@@ -53,7 +53,9 @@
 
             editor.getModel().onDidChangeContent((event) => {
                 window.chrome.webview.postMessage({ 'id': 'contentChanged', 'content': editor.getValue() });
-            });
+			});
+
+			editor.focus();
 
             window.editor = editor;
 		});      

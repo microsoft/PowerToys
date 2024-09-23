@@ -138,7 +138,8 @@
             x:Name="MonacoEditor"
             Grid.Row="1"
             Grid.RowSpan="3"
-            Grid.Column="0" />
+            Grid.Column="0"
+            IsTabStop="True" />
 
         <Border
             Grid.Row="1"

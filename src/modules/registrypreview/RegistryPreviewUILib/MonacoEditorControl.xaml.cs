@@ -83,6 +83,7 @@ namespace RegistryPreviewUILib
             IsLoading = false;
 
             Browser.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
+            Browser.Focus(FocusState.Programmatic);
         }
 
         private void CoreWebView2_WebMessageReceived(CoreWebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
