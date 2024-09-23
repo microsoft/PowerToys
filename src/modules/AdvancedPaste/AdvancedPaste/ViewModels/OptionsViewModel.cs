@@ -94,6 +94,7 @@ namespace AdvancedPaste.ViewModels
 
             ClipboardHistoryEnabled = IsClipboardHistoryEnabled();
             ReadClipboard();
+            UpdateAllowedByGPO();
             _clipboardTimer = new() { Interval = TimeSpan.FromSeconds(1) };
             _clipboardTimer.Tick += ClipboardTimer_Tick;
             _clipboardTimer.Start();
@@ -462,7 +463,7 @@ namespace AdvancedPaste.ViewModels
         {
             Logger.LogTrace();
 
-            if (string.IsNullOrWhiteSpace(inputInstructions))
+            if (string.IsNullOrWhiteSpace(inputInstructions) || !IsCustomAIEnabled)
             {
                 return string.Empty;
             }

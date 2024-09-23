@@ -13,7 +13,9 @@
 #include <common/interop/shared_constants.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/winapi_error.h>
+#include <common/utils/gpo.h>
 
+#include <winrt/Windows.Security.Credentials.h>
 #include <atlfile.h>
 #include <atlstr.h>
 #include <vector>
@@ -54,6 +56,9 @@ namespace
     const wchar_t JSON_KEY_PASTE_AS_JSON_HOTKEY[] = L"paste-as-json-hotkey";
     const wchar_t JSON_KEY_SHOW_CUSTOM_PREVIEW[] = L"ShowCustomPreview";
     const wchar_t JSON_KEY_VALUE[] = L"value";
+
+    const wchar_t OPENAI_VAULT_RESOURCE[] = L"https://platform.openai.com/api-keys";
+    const wchar_t OPENAI_VAULT_USERNAME[] = L"PowerToys_AdvancedPaste_OpenAIKey";
 }
 
 class AdvancedPaste : public PowertoyModuleIface
@@ -133,6 +138,27 @@ private:
         return jsonObject;
     }
 
+    static bool open_ai_key_exists()
+    {
+        try
+        {
+            winrt::Windows::Security::Credentials::PasswordVault vault;
+            return vault.Retrieve(OPENAI_VAULT_RESOURCE, OPENAI_VAULT_USERNAME) != nullptr;
+        }
+        catch (...)
+        {
+            Logger::warn("Unable to retrieve OpenAI key from vault; assuming there isn't one.");
+            return false;
+        }
+    }
+
+    bool is_open_ai_enabled()
+    {
+        return gpo_policy_enabled_configuration() != powertoys_gpo::gpo_rule_configured_disabled &&
+               powertoys_gpo::getAllowedAdvancedPasteOnlineAIModelsValue() != powertoys_gpo::gpo_rule_configured_disabled &&
+               open_ai_key_exists();
+    }
+
     bool migrate_data_and_remove_data_file(Hotkey& old_paste_as_plain_hotkey)
     {
         const wchar_t OLD_JSON_KEY_ACTIVATION_SHORTCUT[] = L"ActivationShortcut";
@@ -209,7 +235,7 @@ private:
                 m_custom_action_hotkeys.clear();
                 m_custom_action_ids.clear();
 
-                if (settingsObject.HasKey(JSON_KEY_PROPERTIES))
+                if (settingsObject.HasKey(JSON_KEY_PROPERTIES) && is_open_ai_enabled())
                 {
                     const auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
 
