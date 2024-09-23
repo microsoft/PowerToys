@@ -29,10 +29,6 @@ parameters:
     default:
       - x64
       - arm64
-  - name: enableMsBuildCaching
-    type: boolean
-    displayName: "Enable MSBuild Caching"
-    default: false
   - name: runTests
     type: boolean
     displayName: "Run Tests"
@@ -42,5 +38,5 @@ extends:
   template: templates/pipeline-ci-build.yml
   parameters:
     buildPlatforms: ${{ parameters.buildPlatforms }}
-    enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+    enableMsBuildCaching: true
     runTests: ${{ parameters.runTests }}

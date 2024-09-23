@@ -41,7 +41,10 @@ parameters:
   - name: signingIdentity
     type: object
     default: {}
-  - name: enableCaching
+  - name: enablePackageCaching
+    type: boolean
+    default: false
+  - name: enableMsBuildCaching
     type: boolean
     default: false
   - name: runTests
@@ -114,7 +117,7 @@ jobs:
       .pipelines/versionSetting.ps1 -versionNumber '${{ parameters.versionNumber }}' -DevEnvironment ''
     displayName: Prepare versioning
 
-  - ${{ if eq(parameters.enableCaching, true) }}:
+  - ${{ if eq(parameters.enableMsBuildCaching, true) }}:
     - pwsh: |-
         $MSBuildCacheParameters = ""
         $MSBuildCacheParameters += " -graph"
@@ -148,7 +151,7 @@ jobs:
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.sln'
     displayName: Verify formatting, nuget, and ARM64 configurations
 
-  - ${{ if eq(parameters.enableCaching, true) }}:
+  - ${{ if eq(parameters.enablePackageCaching, true) }}:
     - task: Cache@2
       displayName: 'Cache nuget packages (PackageReference)'
       inputs:
@@ -196,7 +199,7 @@ jobs:
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
-    ${{ if eq(parameters.enableCaching, true) }}:
+    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
