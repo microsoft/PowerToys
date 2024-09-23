@@ -5,6 +5,7 @@
 using System;
 using System.Windows;
 using System.Windows.Threading;
+
 using NLog;
 using Wox.Infrastructure.Exception;
 using Wox.Plugin;

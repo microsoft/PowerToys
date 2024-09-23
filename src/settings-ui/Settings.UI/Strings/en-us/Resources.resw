@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -704,6 +704,24 @@
   <data name="Shortcut.Header" xml:space="preserve">
     <value>Shortcut</value>
   </data>
+  <data name="AdvancedPaste_EnableAIButton.Content" xml:space="preserve">
+    <value>Enable</value>
+  </data>
+  <data name="AdvancedPaste_DisableAIButton.Content" xml:space="preserve">
+    <value>Disable</value>
+  </data>
+  <data name="AdvancedPaste_EnableAISettingsCard.Header" xml:space="preserve">
+    <value>Enable Paste with AI</value>
+  </data>
+  <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Header" xml:space="preserve">
+    <value>Clipboard history</value>
+  </data>
+  <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Description" xml:space="preserve">
+    <value>Save multiple items to your clipboard. This is an OS feature.</value>
+  </data>
+  <data name="AdvancedPaste_Direct_Access_Hotkeys_GroupSettings.Header" xml:space="preserve">
+    <value>Actions</value>
+  </data>
   <data name="RemapKeysList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Current Key Remappings</value>
   </data>
@@ -995,6 +1013,9 @@
   </data>
   <data name="General_SettingsBackupAndRestore_ButtonRestore.Content" xml:space="preserve">
     <value>Restore</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_ButtonSelectFolder.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Select folder</value>
   </data>
   <data name="General_SettingsBackupAndRestore_ButtonSelectLocation.Text" xml:space="preserve">
     <value>Select folder</value>
@@ -1488,6 +1509,9 @@
   <data name="ImageResizer_FallBackEncoderText.Header" xml:space="preserve">
     <value>Fallback encoder</value>
   </data>
+  <data name="ImageResizer_FallBackEncoderText.Description" xml:space="preserve">
+    <value>Used when missing encoder for original format</value>
+  </data>
   <data name="ImageResizer_FileFormatDescription.Text" xml:space="preserve">
     <value>The following parameters can be used:</value>
   </data>
@@ -1969,6 +1993,64 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Activation_Shortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to activate this module</value>
   </data>
+  <data name="PasteAsPlainText_Shortcut.Header" xml:space="preserve">
+    <value>Paste as plain text directly</value>
+  </data>
+  <data name="AdvancedPasteUI_Actions.Header" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="AdvancedPasteUI_Actions.Description" xml:space="preserve">
+    <value>Create and manage advanced paste custom actions</value>
+  </data>
+  <data name="AdvancedPasteUI_AddCustomActionButton.Content" xml:space="preserve">
+    <value>Add custom action</value>
+  </data>
+  <data name="AdvancedPasteUI_Shortcut.Header" xml:space="preserve">
+    <value>Open Advanced Paste window</value>
+  </data>
+  <data name="AdvancedPasteUI_NewCustomActionPrefix" xml:space="preserve">
+    <value>New custom action</value>
+    <comment>First part of the default name of new custom action that can be added in PT's settings ui.</comment>
+  </data>
+  <data name="AdvancedPasteUI_CustomAction_Name.Header" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="AdvancedPasteUI_CustomAction_Prompt.Header" xml:space="preserve">
+    <value>Prompt</value>
+  </data>
+  <data name="CustomActionDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="AddCustomAction" xml:space="preserve">
+    <value>Add custom action</value>
+  </data>
+  <data name="CustomActionSave" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="EditCustomAction" xml:space="preserve">
+    <value>Edit custom action</value>
+  </data>
+  <data name="CustomActionUpdate" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="PasteAsMarkdown_Shortcut.Header" xml:space="preserve">
+    <value>Paste as Markdown directly</value>
+  </data>
+  <data name="PasteAsJson_Shortcut.Header" xml:space="preserve">
+    <value>Paste as JSON directly</value>
+  </data>
+  <data name="PasteAsCustom_Shortcut.Header" xml:space="preserve">
+    <value>Paste as Custom with AI directly</value>
+  </data>
+  <data name="AdvancedPaste_EnableAIDialogOpenAIApiKey.Text" xml:space="preserve">
+    <value>OpenAI API key:</value>
+  </data>
+  <data name="EnableAIDialog_SaveBtnText" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="EnableAIDialog_CancelBtnText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
   <data name="Oobe_GetStarted.Text" xml:space="preserve">
     <value>Let's get started!</value>
   </data>
@@ -2011,6 +2093,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="Oobe_PowerRename.Description" xml:space="preserve">
     <value>PowerRename enables you to perform simple bulk renaming, searching and replacing file names.</value>
+  </data>
+  <data name="Oobe_Workspaces.Description" xml:space="preserve">
+    <value>The Workspaces utility enables you to launch a set of applications to a custom layout and configuration all at once.</value>
   </data>
   <data name="Oobe_Run.Description" xml:space="preserve">
     <value>PowerToys Run is a quick launcher for power users that contains some additional features without sacrificing performance.</value>
@@ -2098,6 +2183,16 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_PowerRename_HowToUse.Text" xml:space="preserve">
     <value>In File Explorer, right-click one or more selected files and select **Rename with PowerRename** from the context menu.</value>
   </data>
+  <data name="Oobe_Workspaces_HowToUse_Shortcut.Text" xml:space="preserve">
+    <value>to open the Workspaces Editor.</value>
+    <comment>{Locked="Workspaces"}</comment>
+  </data>
+  <data name="Oobe_Workspaces_HowToUse.Text" xml:space="preserve">
+    <value>In the Workspaces Editor window create Workspaces - a set of applications arranged in a custom layout. You can launch Workspaces from the Workspaces Editor or by shortcuts created in the Workspaces Editor.</value>
+  </data>
+  <data name="Oobe_Workspaces_TipsAndTricks.Text" xml:space="preserve">
+    <value>Customize the configuration of your apps on launch by adding CLI arguments to each app in the Workspaces Editor.</value>
+  </data>
   <data name="Oobe_PowerRename_TipsAndTricks.Text" xml:space="preserve">
     <value>PowerRename supports searching for files using regular expressions to enable more advanced renaming functionalities.</value>
   </data>
@@ -2160,6 +2255,10 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_PowerRename.Title" xml:space="preserve">
     <value>PowerRename</value>
+    <comment>Do not localize this string</comment>
+  </data>
+  <data name="Oobe_Workspaces.Title" xml:space="preserve">
+    <value>Workspaces</value>
     <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_Run.Title" xml:space="preserve">
@@ -2413,9 +2512,9 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Learn more about Mouse utilities</value>
     <comment>Mouse utilities is a product name, do not loc</comment>
   </data>
-  <data name="LearnMore_PastePlain.Text" xml:space="preserve">
-    <value>Learn more about Paste as Plain Text</value>
-    <comment> Paste as Plain Text is the name of the module. </comment>
+  <data name="LearnMore_AdvancedPaste.Text" xml:space="preserve">
+    <value>Learn more about Advanced Paste</value>
+    <comment> Advanced Paste is the name of the module. </comment>
   </data>
   <data name="LearnMore_MouseWithoutBorders.Text" xml:space="preserve">
     <value>Learn more about Mouse Without Borders</value>
@@ -2616,6 +2715,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Shake mouse</value>
     <comment>Mouse is the hardware peripheral.</comment>
   </data>
+  <data name="MouseUtils_Include_Win_Key.Content" xml:space="preserve">
+    <value>Only activate while holding the Windows key</value>
+    <comment>Specifies that the 'Find My Mouse' will only activate if the Windows key is held down while pressing the Ctrl key twice.</comment>
+  </data>
   <data name="MouseUtils_FindMyMouse_ExcludedApps.Description" xml:space="preserve">
     <value>Prevents module activation when an excluded application is the foreground application</value>
   </data>
@@ -2656,8 +2759,8 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Time before the spotlight appears (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
-  <data name="MouseUtils_FindMyMouse_AnimationDurationMs_Disabled.Message" xml:space="preserve">
-    <value>Animations are disabled by OS. See Settings &gt; Accessibility &gt; Visual effects</value>
+  <data name="MouseUtils_FindMyMouse_AnimationDurationMs_Disabled.Title" xml:space="preserve">
+    <value>Animations are disabled in your system settings.</value>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingMinimumDistance.Header" xml:space="preserve">
     <value>Shake minimum distance</value>
@@ -3062,6 +3165,32 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Shell_QuickAccent.Content" xml:space="preserve">
     <value>Quick Accent</value>
   </data>
+  <data name="Shell_Workspaces.Content" xml:space="preserve">
+    <value>Workspaces</value>
+  </data>
+  <data name="Workspaces_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Workspaces</value>
+    <comment>"Workspaces" is the name of the utility</comment>
+  </data>
+  <data name="Workspaces_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="Workspaces_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to launch the Workspaces Editor</value>
+  </data>
+  <data name="Workspaces_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="Workspaces_LaunchEditorButtonControl.Description" xml:space="preserve">
+    <value>Create and manage Workspaces</value>
+  </data>
+  <data name="Workspaces_LaunchEditorButtonControl.Header" xml:space="preserve">
+    <value>Launch editor</value>
+  </data>
+  <data name="LearnMore_Workspaces.Text" xml:space="preserve">
+    <value>Learn more about the Workspaces utility</value>
+    <comment> Workspaces is the name of the module. </comment>
+  </data>
   <data name="QuickAccent.ModuleDescription" xml:space="preserve">
     <value>Quick Accent is an alternative way to type accented characters, useful for when a keyboard doesn't support that specific accent.
 
@@ -3113,8 +3242,14 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="MouseWithoutBorders_ShortDescription" xml:space="preserve">
     <value>Move your cursor across multiple devices</value>
   </data>
-  <data name="PastePlain_ShortDescription" xml:space="preserve">
-    <value>Paste clipboard content without formatting</value>
+  <data name="AdvancedPaste_ShortDescription" xml:space="preserve">
+    <value>An AI powered tool to put your clipboard content into any format you need, focused towards developer workflows.</value>
+  </data>
+  <data name="AdvancedPaste_EnableAISettingsCardDescription.Text" xml:space="preserve">
+    <value>This feature allows you to format your clipboard content with the power of AI. An OpenAI API key is required.</value>
+  </data>
+  <data name="AdvancedPaste_EnableAISettingsCardDescriptionLearnMore.Content" xml:space="preserve">
+    <value>Learn more</value>
   </data>
   <data name="Peek_ShortDescription" xml:space="preserve">
     <value>Quick and easy previewer</value>
@@ -3386,8 +3521,14 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_All.Content" xml:space="preserve">
     <value>All available</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Bulgarian.Content" xml:space="preserve">
+    <value>Bulgarian</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Catalan.Content" xml:space="preserve">
     <value>Catalan</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Crimean.Content" xml:space="preserve">
+    <value>Crimean Tatar</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Currency.Content" xml:space="preserve">
     <value>Currency</value>
@@ -3426,6 +3567,13 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_SelectedLanguage_Estonian.Content" xml:space="preserve">
     <value>Estonian</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Esperanto.Content" xml:space="preserve">
+    <value>Esperanto</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_IPA.Content" xml:space="preserve">
+    <value>IPA</value>
+    <comment>International Phonetic Alphabet</comment>
   </data>
   <data name="QuickAccent_SelectedLanguage_Lithuanian.Content" xml:space="preserve">
     <value>Lithuanian</value>
@@ -3517,12 +3665,12 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="Hosts_LaunchButtonControl.Header" xml:space="preserve">
-    <value>Launch Host File Editor</value>
-    <comment>"Host File Editor" is a product name</comment>
+    <value>Launch Hosts File Editor</value>
+    <comment>"Hosts File Editor" is a product name</comment>
   </data>
   <data name="Hosts_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Launch Host File Editor</value>
-    <comment>"Host File Editor" is a product name</comment>
+    <value>Launch Hosts File Editor</value>
+    <comment>"Hosts File Editor" is a product name</comment>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Header" xml:space="preserve">
     <value>Position of additional content</value>
@@ -3679,30 +3827,54 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
     <value>Allow experimentation with new features</value>
   </data>
-  <data name="Shell_PastePlain.Content" xml:space="preserve">
-    <value>Paste As Plain Text</value>
-    <comment>Product name: Navigation view item name for Paste as Plain Text</comment>
+  <data name="Shell_AdvancedPaste.Content" xml:space="preserve">
+    <value>Advanced Paste</value>
+    <comment>Product name: Navigation view item name for Advanced Paste</comment>
   </data>
-  <data name="PastePlain.ModuleDescription" xml:space="preserve">
-    <value>Paste As Plain Text is a quick shortcut for pasting the text contents of your clipboard without formatting. Note: the formatted text in the clipboard is replaced with the unformatted text.</value>
+  <data name="AdvancedPaste.ModuleDescription" xml:space="preserve">
+    <value>Advanced Paste is a tool to put your clipboard content into any format you need. It can paste as plain text, markdown, or json directly with the UX or with a direct keystroke invoke. These are fully locally executed. In addition, it has an AI powered option that is 100% opt-in and requires an Open AI key.</value>
   </data>
-  <data name="PastePlain.ModuleTitle" xml:space="preserve">
-    <value>Paste As Plain Text</value>
+  <data name="AdvancedPaste.ModuleTitle" xml:space="preserve">
+    <value>Advanced Paste</value>
   </data>
-  <data name="PastePlain_Cancel" xml:space="preserve">
+  <data name="AdvancedPaste_Cancel" xml:space="preserve">
     <value>cancel</value>
   </data>
-  <data name="PastePlain_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable Paste As Plain Text</value>
+  <data name="AdvancedPaste_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Advanced Paste</value>
   </data>
-  <data name="Oobe_PastePlain.Description" xml:space="preserve">
-    <value>Paste As Plain Text strips rich formatting from your clipboard data and pastes it as non-formatted text.</value>
+  <data name="AdvancedPaste_EnableAISettingsGroup.Header" xml:space="preserve">
+    <value>Paste with AI</value>
   </data>
-  <data name="Oobe_PastePlain.Title" xml:space="preserve">
-    <value>Paste As Plain Text</value>
+  <data name="AdvancedPaste_BehaviorSettingsGroup.Header" xml:space="preserve">
+    <value>Behavior</value>
   </data>
-  <data name="Oobe_PastePlain_HowToUse.Text" xml:space="preserve">
-    <value>to paste your clipboard data as plain text. Note: this will replace the formatted text in your clipboard with the plain text.</value>
+  <data name="AdvancedPaste_ShowCustomPreviewSettingsCard.Header" xml:space="preserve">
+    <value>Custom format preview</value>
+  </data>
+  <data name="AdvancedPaste_ShowCustomPreviewSettingsCard.Description" xml:space="preserve">
+    <value>Preview the output of the custom format before pasting</value>
+  </data>
+  <data name="Oobe_AdvancedPaste.Description" xml:space="preserve">
+    <value>Advanced Paste is a tool to put your clipboard content into any format you need, focused towards developer workflows. It can paste as plain text, markdown, or json directly with the UX or with a direct keystroke invoke. These are fully locally executed. In addition, it has an AI powered option that is 100% opt-in and requires an Open AI key. Note: this will replace the formatted text in your clipboard with the selected format.</value>
+  </data>
+  <data name="Oobe_AdvancedPaste.Title" xml:space="preserve">
+    <value>Advanced Paste</value>
+  </data>
+  <data name="Oobe_AdvancedPasteUI_HowToUse.Text" xml:space="preserve">
+    <value>to open UI to select the format you want to paste your data as.</value>
+  </data>
+  <data name="Oobe_AdvancedPastePlain_HowToUse.Text" xml:space="preserve">
+    <value>to paste your clipboard data as plain text.</value>
+  </data>
+  <data name="Oobe_AdvancedPasteMarkdown_HowToUse.Text" xml:space="preserve">
+    <value>to paste your clipboard data as Markdown. Note: Clipboard content type has to be HTML.</value>
+  </data>
+  <data name="Oobe_AdvancedPasteJson_HowToUse.Text" xml:space="preserve">
+    <value>to paste your clipboard data as JSON. Note: Clipboard content data has to contain XML or CSV text.</value>
+  </data>
+  <data name="Oobe_AdvancedPasteCustom_HowToUse.Text" xml:space="preserve">
+    <value>to open AI-powered dialog to enter query and convert your data to any format you need.</value>
   </data>
   <data name="Shell_CmdNotFound.Content" xml:space="preserve">
     <value>Command Not Found</value>
@@ -3807,8 +3979,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="SettingsTooltip.Text" xml:space="preserve">
     <value>Settings</value>
   </data>
-  <data name="ShortcutsTxt.Text" xml:space="preserve">
-    <value>Shortcuts</value>
+  <data name="QuickAccessTxt.Text" xml:space="preserve">
+    <value>Quick access</value>
   </data>
   <data name="UpdateAvailable.Title" xml:space="preserve">
     <value>Update available</value>
@@ -3899,7 +4071,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Make Registry Preview default app for opening .reg files</value>
     <comment>Registry Preview is app name. Do not localize.</comment>
   </data>
-  <data name="PastePlain_ShortcutWarning.Title" xml:space="preserve">
+  <data name="AdvancedPaste_ShortcutWarning.Title" xml:space="preserve">
     <value>Using this shortcut may prevent non-text paste actions (e.g. images, files) or built-in paste plain text actions in other applications from functioning.</value>
   </data>
   <data name="MouseUtils_MouseJump_ThumbnailSize.Header" xml:space="preserve">
@@ -4037,9 +4209,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="GeneralPage_ShowWhatsNewAfterUpdates.Content" xml:space="preserve">
     <value>Show the release notes after an update</value>
   </data>
-  <data name="CmdNotFound_Arm64ArchBar.Title" xml:space="preserve">
-    <value>Command Not Found is not supported on the ARM64 architecture currently. We are actively working on a solution.</value>
-  </data>
   <data name="QuickAccent_Prevent_Activation_On_Game_Mode.Content" xml:space="preserve">
     <value>Do not activate when Game Mode is on</value>
     <comment>"Game mode" is the Windows feature to prevent notification when playing a game.</comment>
@@ -4058,5 +4227,156 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GPO_SomeThumbnailProvidersAreManaged.Title" xml:space="preserve">
     <value>The enabled state of some thumbnail handlers is managed by your organization.</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Monaco_Sticky_Scroll.Content" xml:space="preserve">
+    <value>Enable sticky scroll</value>
+  </data>
+  <data name="Peek_SourceCode_StickyScroll.Content" xml:space="preserve">
+    <value>Enable sticky scroll</value>
+  </data>
+  <data name="PrivacyLink.Text" xml:space="preserve">
+    <value>OpenAI Privacy</value>
+  </data>
+  <data name="TermsLink.Text" xml:space="preserve">
+    <value>OpenAI Terms</value>
+  </data>
+  <data name="AdvancedPaste_EnableAIDialog_Description.Text" xml:space="preserve">
+    <value>Paste with AI allows you to format your clipboard content into any format you need. Learn more about the terms of conditions while using OpenAI and privacy at Microsoft:</value>
+  </data>
+  <data name="AdvancedPaste_EnableAIDialog_LoginIntoText.Text" xml:space="preserve">
+    <value>• Login into your</value>
+  </data>
+  <data name="AdvancedPaste_EnableAIDialog_ConfigureOpenAIKey.Text" xml:space="preserve">
+    <value>Configure OpenAI key</value>
+  </data>
+  <data name="AdvancedPaste_EnableAIDialog_OpenAIApiKeysOverviewText.Text" xml:space="preserve">
+    <value>OpenAI API keys overview</value>
+  </data>
+  <data name="AdvancedPaste_EnableAIDialog_CreateNewKeyText.Text" xml:space="preserve">
+    <value>• Create a new secret key and paste it in the field below</value>
+  </data>
+  <data name="FileExplorerPreview_Toggle_Monaco_Font_Size.Description" xml:space="preserve">
+    <value>Font size of the editor in pt. Recommended: 14pt</value>
+    <comment>{Locked="pt"}</comment>
+  </data>
+  <data name="FileExplorerPreview_Toggle_Monaco_Font_Size.Header" xml:space="preserve">
+    <value>Font size </value>
+  </data>
+  <data name="Peek_SourceCode_FontSize.Description" xml:space="preserve">
+    <value>Font size of the editor in pt. Recommended: 14pt</value>
+    <comment>{Locked="pt"}</comment>
+  </data>
+  <data name="Peek_SourceCode_FontSize.Header" xml:space="preserve">
+    <value>Font size</value>
+  </data>
+  <data name="AdvancedPaste_EnableAIDialog_NoteAICreditsText.Text" xml:space="preserve">
+    <value>• NOTE: You need to have available paid credits in your OpenAI account to use this feature. If you do not have credits you will see an 'API key quota exceeded' error</value>
+  </data>
+  <data name="AdvancedPaste_EnableAIDialog_NoteAICreditsErrorText.Text" xml:space="preserve">
+    <value>If you do not have credits you will see an 'API key quota exceeded' error</value>
+  </data>
+  <data name="AdvancedPaste_CloseAfterLosingFocus.Header" xml:space="preserve">
+    <value>Automatically close the AdvancedPaste window after it loses focus</value>
+    <comment>AdvancedPaste is a product name, do not loc</comment>
+  </data>
+  <data name="NewPlus.ModuleTitle" xml:space="preserve">
+    <value>New+</value>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="NewPlus.ModuleDescription" xml:space="preserve">
+    <value>Create files and folders from a personalized set of templates</value>
+  </data>
+  <data name="NewPlus_Product_Name.Content" xml:space="preserve">
+    <value>New+</value>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="NewPlus_Product_Description.Description" xml:space="preserve">
+    <value>Create files and folders from a personalized set of templates</value>
+    <comment>New+ product description</comment>
+  </data>
+  <data name="NewPlus_Learn_More.Text" xml:space="preserve">
+    <value>Learn more about New+</value>
+    <comment>New+ learn more link. Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="NewPlus_Enable_Toggle.Header" xml:space="preserve">
+    <value>Enable New+</value>
+    <comment>Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="NewPlus_NoWindows10SupportWarning.Title" xml:space="preserve">
+    <value>New+ is not supported in Windows 10 and is not expected to work.</value>
+  </data>
+  <data name="NewPlus_TemplatesNotBackupAndRestoreWarning.Title" xml:space="preserve">
+    <value>PowerToys "Backup and Restore" feature doesn't take templates into account at this moment. If you use that feature, templates will have to be copied manually.</value>
+  </data>
+  <data name="NewPlus_Templates.Header" xml:space="preserve">
+    <value>Templates</value>
+    <comment>Templates label</comment>
+  </data>
+  <data name="NewPlus_Templates_Location.Header" xml:space="preserve">
+    <value>Location</value>
+    <comment>Templates Location label</comment>
+  </data>
+  <data name="NewPlus_Templates_Location_Path.Text" xml:space="preserve">
+    <value>...</value>
+    <comment>Do not localize</comment>
+  </data>
+  <data name="NewPlus_Templates_Location_Learn_More.Content" xml:space="preserve">
+    <value>Learn more about template location</value>
+    <comment>Read more about templates location</comment>
+  </data>
+  <data name="NewPlus_Templates_Location_Change.Content" xml:space="preserve">
+    <value>Change</value>
+    <comment>Button where user can Change the location of New templates</comment>
+  </data>
+  <data name="NewPlus_Display_Options.Header" xml:space="preserve">
+    <value>Display options</value>
+    <comment>Display options label</comment>
+  </data>
+  <data name="NewPlus_Hide_File_Extension_Toggle.Header" xml:space="preserve">
+    <value>Hide template filename extension</value>
+    <comment>Template file name extension settings toggle</comment>
+  </data>
+  <data name="NewPlus_Hide_Starting_Digits_Toggle.Header" xml:space="preserve">
+    <value>Hide template filename starting digits, spaces, and dots</value>
+    <comment>Template filename starting digits settings toggle</comment>
+  </data>
+  <data name="NewPlus_Hide_Starting_Digits_Description.Text" xml:space="preserve">
+    <value>This option is useful when using digits, spaces and dots at the beginning of filenames to control the display order of templates</value>
+    <comment>Template filename starting digits settings toggle</comment>
+  </data>
+  <data name="NewPlus.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+    <comment>giving credit</comment>
+  </data>
+  <data name="Oobe_NewPlus.Title" xml:space="preserve">
+    <value>New+</value>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="Oobe_NewPlus.Description" xml:space="preserve">
+    <value>Create files and folders from a personalized set of templates.</value>
+  </data>
+  <data name="Oobe_NewPlus_HowToUse.Text" xml:space="preserve">
+    <value>In File Explorer, right-click the desktop or a folder and via the New+ from the context menu select your template. You can add new templates by opening the template folder via "Open templates" and add new files and folders there.</value>
+  </data>
+  <data name="Oobe_NewPlus_TipsAndTricks.Text" xml:space="preserve">
+    <value>You can have multiple templates of the same file type, and you can even template folders!</value>
+  </data>  
+  <data name="Workspaces.ModuleDescription" xml:space="preserve">
+    <value>Workspaces is a quick and easy way to launch a set of applications to custom positions and configurations with one-click.</value>
+  </data>
+  <data name="Workspaces.ModuleTitle" xml:space="preserve">
+    <value>Workspaces</value>
+  </data>
+  <data name="Workspaces_ShortDescription" xml:space="preserve">
+    <value>Create and launch Workspaces</value>
+  </data>
+  <data name="MouseWithoutBorders_PolicyIPAddressMappingInfo.Title" xml:space="preserve">
+    <value>Rules defined by your organization</value>
+  </data>
+  <data name="MouseWithoutBorders_PolicyIPAddressMappingInfo_TextBoxControl.Description" xml:space="preserve">
+    <value>You can not change, remove or disable these enforced rules.</value>
+  </data>
+  <data name="OpenSettings.Content" xml:space="preserve">
+    <value>Open settings</value>
   </data>
 </root>

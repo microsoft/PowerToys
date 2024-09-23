@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO.Abstractions;
 using System.Runtime.CompilerServices;
 using System.Text;
+
 using NLog;
 using NLog.Config;
 using NLog.Targets;

@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
@@ -44,8 +45,6 @@ namespace Peek.FilePreviewer.Previewers
             Preview.DateModified = file.DateModified?.ToString(CultureInfo.CurrentCulture);
             Dispatcher = DispatcherQueue.GetForCurrentThread();
         }
-
-        public bool IsPreviewLoaded => Preview.IconPreview != null;
 
         private IFileSystemItem Item { get; }
 

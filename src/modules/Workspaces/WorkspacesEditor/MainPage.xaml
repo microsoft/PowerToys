@@ -1,0 +1,323 @@
+<Page
+    x:Class="WorkspacesEditor.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:WorkspacesEditor.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:WorkspacesEditor"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:props="clr-namespace:WorkspacesEditor.Properties"
+    Title="MainPage"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <converters:BooleanToInvertedVisibilityConverter x:Key="BooleanToInvertedVisibilityConverter" />
+        <Thickness x:Key="ContentDialogPadding">24,16,0,24</Thickness>
+        <Thickness x:Key="ContentDialogCommandSpaceMargin">0,24,24,0</Thickness>
+        <Style x:Key="DeleteButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource TertiaryBackgroundBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border
+                            x:Name="border"
+                            Padding="26,6,26,6"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="Transparent">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource TitleBarSecondaryForegroundBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource TitleBarSecondaryForegroundBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <local:HeadingTextBlock
+            x:Name="WorkspacesHeaderBlock"
+            Grid.Row="0"
+            Margin="40,20,40,20"
+            AutomationProperties.HeadingLevel="Level1"
+            FontSize="24"
+            FontWeight="SemiBold"
+            Foreground="{DynamicResource PrimaryForegroundBrush}"
+            Text="{x:Static props:Resources.Workspaces}" />
+
+        <Button
+            x:Name="NewProjectButton"
+            Grid.Row="0"
+            Height="36"
+            Margin="0,20,40,20"
+            Padding="0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            AutomationProperties.Name="{x:Static props:Resources.CreateWorkspace}"
+            Click="NewProjectButton_Click"
+            Style="{StaticResource AccentButtonStyle}"
+            TabIndex="3">
+            <StackPanel Margin="12,8,12,8" Orientation="Horizontal">
+                <TextBlock
+                    AutomationProperties.Name="{x:Static props:Resources.CreateWorkspace}"
+                    FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                    Foreground="{DynamicResource AccentButtonForeground}"
+                    Text="&#xE710;" />
+                <TextBlock
+                    Margin="12,-3,0,0"
+                    Foreground="{DynamicResource AccentButtonForeground}"
+                    Text="{x:Static props:Resources.CreateWorkspace}" />
+            </StackPanel>
+            <Button.Effect>
+                <DropShadowEffect
+                    BlurRadius="6"
+                    Opacity="0.32"
+                    ShadowDepth="1" />
+            </Button.Effect>
+        </Button>
+
+        <Border
+            Grid.Row="1"
+            Margin="40,0,0,0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            BorderThickness="2"
+            CornerRadius="5">
+            <StackPanel Orientation="Horizontal">
+                <Grid>
+                    <TextBox
+                        x:Name="SearchTextBox"
+                        Width="320"
+                        Background="{DynamicResource SecondaryBackgroundBrush}"
+                        BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                        Text="{Binding SearchTerm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        ToolTip="{x:Static props:Resources.SearchExplanation}" />
+                    <TextBlock
+                        Margin="10,0,0,0"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource SecondaryForegroundBrush}"
+                        IsHitTestVisible="False"
+                        Text="{x:Static props:Resources.Search}"
+                        ToolTip="{x:Static props:Resources.SearchExplanation}">
+                        <TextBlock.Style>
+                            <Style TargetType="{x:Type TextBlock}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Text, ElementName=SearchTextBox}" Value="">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+                <TextBlock
+                    Margin="-50,0,34,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="{x:Static props:Resources.Search}"
+                    FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                    Foreground="{DynamicResource SecondaryForegroundBrush}"
+                    Text="&#xE71E;" />
+            </StackPanel>
+        </Border>
+
+        <StackPanel
+            Grid.Row="1"
+            Margin="0,0,40,0"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal">
+            <TextBlock
+                Margin="10,0,10,0"
+                VerticalAlignment="Center"
+                Foreground="{DynamicResource PrimaryForegroundBrush}"
+                Text="{x:Static props:Resources.SortBy}" />
+            <ComboBox
+                Width="140"
+                Background="{DynamicResource SecondaryBackgroundBrush}"
+                BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                BorderThickness="2"
+                SelectedIndex="{Binding OrderByIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                <ComboBoxItem Content="{x:Static props:Resources.LastLaunched}" />
+                <ComboBoxItem Content="{x:Static props:Resources.Created}" />
+                <ComboBoxItem Content="{x:Static props:Resources.Name}" />
+            </ComboBox>
+        </StackPanel>
+        <TextBlock
+            Grid.Row="2"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            FontSize="20"
+            Foreground="{DynamicResource SecondaryForegroundBrush}"
+            Text="{Binding EmptyWorkspacesViewMessage, UpdateSourceTrigger=PropertyChanged}"
+            TextAlignment="Center"
+            Visibility="{Binding IsWorkspacesViewEmpty, Mode=OneWay, Converter={StaticResource BoolToVis}, UpdateSourceTrigger=PropertyChanged}" />
+        <ScrollViewer
+            Grid.Row="2"
+            Margin="40,15,40,40"
+            VerticalContentAlignment="Stretch"
+            VerticalScrollBarVisibility="Auto"
+            Visibility="{Binding IsWorkspacesViewEmpty, Mode=OneWay, Converter={StaticResource BooleanToInvertedVisibilityConverter}, UpdateSourceTrigger=PropertyChanged}">
+            <ItemsControl ItemsSource="{Binding WorkspacesView, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel
+                            HorizontalAlignment="Stretch"
+                            IsItemsHost="True"
+                            Orientation="Vertical" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="models:Project">
+                        <Button
+                            x:Name="EditButton"
+                            Margin="0,12,0,0"
+                            Padding="1"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            AutomationProperties.Name="{x:Static props:Resources.Edit}"
+                            Background="{DynamicResource SecondaryBackgroundBrush}"
+                            Click="EditButtonClicked">
+                            <Border
+                                HorizontalAlignment="Stretch"
+                                Background="{DynamicResource SecondaryBackgroundBrush}"
+                                CornerRadius="5">
+                                <Grid HorizontalAlignment="Stretch">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel
+                                        Margin="12,14,10,10"
+                                        HorizontalAlignment="Left"
+                                        Orientation="Vertical">
+                                        <TextBlock
+                                            Margin="0,0,0,8"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Center"
+                                            FontSize="16"
+                                            FontWeight="SemiBold"
+                                            Text="{Binding Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        <StackPanel
+                                            Margin="0,0,0,8"
+                                            VerticalAlignment="Center"
+                                            Orientation="Horizontal">
+                                            <Image Height="20" Source="{Binding PreviewIcons, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                                            <TextBlock
+                                                Margin="6,0,4,0"
+                                                VerticalAlignment="Center"
+                                                Text="{Binding AppsCountString}" />
+                                        </StackPanel>
+                                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                            <TextBlock
+                                                Margin="0,3,10,0"
+                                                FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                                Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                                Text="&#xE81C;" />
+                                            <TextBlock Text="{Binding LastLaunched, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <StackPanel
+                                        Grid.Column="1"
+                                        Margin="12,12,12,12"
+                                        Orientation="Vertical">
+                                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                                            <Button
+                                                x:Name="MoreButton"
+                                                HorizontalAlignment="Right"
+                                                Click="MoreButton_Click"
+                                                Style="{StaticResource IconOnlyButtonStyle}">
+                                                <TextBlock
+                                                    FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                                    Text="&#xE712;" />
+                                            </Button>
+                                            <Popup
+                                                AllowsTransparency="True"
+                                                IsOpen="{Binding IsPopupVisible, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                                Placement="Left"
+                                                PlacementTarget="{Binding ElementName=MoreButton}"
+                                                StaysOpen="False">
+                                                <Grid Background="{DynamicResource PrimaryBackgroundBrush}">
+                                                    <Grid.OpacityMask>
+                                                        <VisualBrush Visual="{Binding ElementName=OpacityBorder}" />
+                                                    </Grid.OpacityMask>
+                                                    <Border
+                                                        x:Name="OpacityBorder"
+                                                        HorizontalAlignment="Stretch"
+                                                        VerticalAlignment="Stretch"
+                                                        Background="Black"
+                                                        CornerRadius="5" />
+                                                    <StackPanel Background="{DynamicResource PrimaryBackgroundBrush}" Orientation="Vertical">
+                                                        <Button
+                                                            AutomationProperties.Name="{x:Static props:Resources.Edit}"
+                                                            Click="EditButtonClicked"
+                                                            Style="{StaticResource DeleteButtonStyle}">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    AutomationProperties.Name="{x:Static props:Resources.Edit}"
+                                                                    FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                                                    Text="&#xE70F;" />
+                                                                <TextBlock
+                                                                    Margin="10,0,0,0"
+                                                                    AutomationProperties.Name="{x:Static props:Resources.Edit}"
+                                                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                                                    Text="{x:Static props:Resources.Edit}" />
+                                                            </StackPanel>
+                                                        </Button>
+                                                        <Button
+                                                            AutomationProperties.Name="{x:Static props:Resources.Delete}"
+                                                            Click="DeleteButtonClicked"
+                                                            Style="{StaticResource DeleteButtonStyle}">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    AutomationProperties.Name="{x:Static props:Resources.Delete}"
+                                                                    FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                                                    Text="&#xE74D;" />
+                                                                <TextBlock
+                                                                    Margin="10,0,0,0"
+                                                                    AutomationProperties.Name="{x:Static props:Resources.Delete}"
+                                                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                                                    Text="{x:Static props:Resources.Delete}" />
+                                                            </StackPanel>
+                                                        </Button>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Popup>
+                                        </StackPanel>
+                                        <Button
+                                            Margin="0,6,0,0"
+                                            Padding="20,4,20,4"
+                                            HorizontalAlignment="Right"
+                                            AutomationProperties.Name="{x:Static props:Resources.Launch}"
+                                            Background="{DynamicResource TertiaryBackgroundBrush}"
+                                            BorderBrush="{DynamicResource SecondaryBorderBrush}"
+                                            BorderThickness="2"
+                                            Click="LaunchButton_Click"
+                                            Content="{x:Static props:Resources.Launch}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</Page>

@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
@@ -48,15 +49,17 @@ namespace Peek.FilePreviewer
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(ImagePreviewer))]
         [NotifyPropertyChangedFor(nameof(VideoPreviewer))]
+        [NotifyPropertyChangedFor(nameof(AudioPreviewer))]
         [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
         [NotifyPropertyChangedFor(nameof(ArchivePreviewer))]
         [NotifyPropertyChangedFor(nameof(ShellPreviewHandlerPreviewer))]
         [NotifyPropertyChangedFor(nameof(DrivePreviewer))]
+        [NotifyPropertyChangedFor(nameof(SpecialFolderPreviewer))]
         [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
         private IPreviewer? previewer;
 
         [ObservableProperty]
-        private string imageInfoTooltip = ResourceLoaderInstance.ResourceLoader.GetString("PreviewTooltip_Blank");
+        private string infoTooltip = ResourceLoaderInstance.ResourceLoader.GetString("PreviewTooltip_Blank");
 
         private CancellationTokenSource _cancellationTokenSource = new();
 
@@ -94,6 +97,8 @@ namespace Peek.FilePreviewer
 
         public IVideoPreviewer? VideoPreviewer => Previewer as IVideoPreviewer;
 
+        public IAudioPreviewer? AudioPreviewer => Previewer as IAudioPreviewer;
+
         public IBrowserPreviewer? BrowserPreviewer => Previewer as IBrowserPreviewer;
 
         public IArchivePreviewer? ArchivePreviewer => Previewer as IArchivePreviewer;
@@ -101,6 +106,8 @@ namespace Peek.FilePreviewer
         public IShellPreviewHandlerPreviewer? ShellPreviewHandlerPreviewer => Previewer as IShellPreviewHandlerPreviewer;
 
         public IDrivePreviewer? DrivePreviewer => Previewer as IDrivePreviewer;
+
+        public ISpecialFolderPreviewer? SpecialFolderPreviewer => Previewer as ISpecialFolderPreviewer;
 
         public IUnsupportedFilePreviewer? UnsupportedFilePreviewer => Previewer as IUnsupportedFilePreviewer;
 
@@ -147,22 +154,20 @@ namespace Peek.FilePreviewer
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource = new();
 
+            // Clear up any unmanaged resources before creating a new previewer instance.
+            (Previewer as IDisposable)?.Dispose();
+
             if (Item == null)
             {
                 Previewer = null;
                 ImagePreview.Visibility = Visibility.Collapsed;
                 VideoPreview.Visibility = Visibility.Collapsed;
+
+                AudioPreview.Visibility = Visibility.Collapsed;
                 BrowserPreview.Visibility = Visibility.Collapsed;
                 ArchivePreview.Visibility = Visibility.Collapsed;
                 DrivePreview.Visibility = Visibility.Collapsed;
                 UnsupportedFilePreview.Visibility = Visibility.Collapsed;
-
-                ImagePreview.FlowDirection = FlowDirection.LeftToRight;
-                VideoPreview.FlowDirection = FlowDirection.LeftToRight;
-                BrowserPreview.FlowDirection = FlowDirection.LeftToRight;
-                ArchivePreview.FlowDirection = FlowDirection.LeftToRight;
-                DrivePreview.FlowDirection = FlowDirection.LeftToRight;
-                UnsupportedFilePreview.FlowDirection = FlowDirection.LeftToRight;
 
                 return;
             }
@@ -203,7 +208,7 @@ namespace Peek.FilePreviewer
                     await Previewer.LoadPreviewAsync(cancellationToken);
 
                     cancellationToken.ThrowIfCancellationRequested();
-                    await UpdateImageTooltipAsync(cancellationToken);
+                    await UpdateTooltipAsync(cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {
@@ -224,7 +229,7 @@ namespace Peek.FilePreviewer
             VideoPreview.MediaPlayer.Pause();
             VideoPreview.MediaPlayer.Source = null;
             VideoPreview.Source = null;
-
+            AudioPreview.Source = null;
             ImagePreview.Source = null;
             ArchivePreview.Source = null;
             BrowserPreview.Source = null;
@@ -327,7 +332,7 @@ namespace Peek.FilePreviewer
             args.Handled = true;
         }
 
-        private async Task UpdateImageTooltipAsync(CancellationToken cancellationToken)
+        private async Task UpdateTooltipAsync(CancellationToken cancellationToken)
         {
             if (Item == null)
             {
@@ -353,7 +358,7 @@ namespace Peek.FilePreviewer
             string fileSizeFormatted = string.IsNullOrEmpty(fileSize) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_FileSize", fileSize);
             sb.Append(fileSizeFormatted);
 
-            ImageInfoTooltip = sb.ToString();
+            InfoTooltip = sb.ToString();
         }
     }
 }

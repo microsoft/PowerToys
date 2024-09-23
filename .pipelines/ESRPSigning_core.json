@@ -7,7 +7,7 @@
                 "*.resources.dll",
                 
                 "WinUI3Apps\\Assets\\Settings\\Scripts\\*.ps1",
-                
+
                 "PowerToys.ActionRunner.exe",
                 "PowerToys.Update.exe",
                 "PowerToys.BackgroundActivatorDLL.dll",
@@ -45,7 +45,9 @@
                 "PowerToys.PowerOCR.dll",
                 "PowerToys.PowerOCR.exe",
 
-                "PowerToys.PastePlainModuleInterface.dll",
+                "PowerToys.AdvancedPasteModuleInterface.dll",
+                "WinUI3Apps\\PowerToys.AdvancedPaste.exe",
+                "WinUI3Apps\\PowerToys.AdvancedPaste.dll",
 
                 "PowerToys.AwakeModuleInterface.dll",
                 "PowerToys.Awake.exe",
@@ -54,6 +56,7 @@
                 "fancyzones.dll",
                 "PowerToys.FancyZonesEditor.exe",
                 "PowerToys.FancyZonesEditor.dll",
+                "PowerToys.FancyZonesEditorCommon.dll",
                 "PowerToys.FancyZonesModuleInterface.dll",
                 "PowerToys.FancyZones.exe",
 
@@ -95,6 +98,7 @@
                 "PowerToys.SvgThumbnailProviderCpp.dll",
 
                 "WinUI3Apps\\PowerToys.HostsModuleInterface.dll",
+                "WinUI3Apps\\PowerToys.HostsUILib.dll",
                 "WinUI3Apps\\PowerToys.Hosts.dll",
                 "WinUI3Apps\\PowerToys.Hosts.exe",
 
@@ -112,6 +116,7 @@
                 "WinUI3Apps\\Powertoys.Peek.dll",
 
                 "WinUI3Apps\\PowerToys.EnvironmentVariablesModuleInterface.dll",
+                "WinUI3Apps\\PowerToys.EnvironmentVariablesUILib.dll",
                 "WinUI3Apps\\PowerToys.EnvironmentVariables.dll",
                 "WinUI3Apps\\PowerToys.EnvironmentVariables.exe",
 
@@ -173,6 +178,9 @@
                 "PowerToys.MouseWithoutBordersHelper.dll",
                 "PowerToys.MouseWithoutBordersHelper.exe",
 
+                "WinUI3Apps\\PowerToys.NewPlus.ShellExtension.dll",
+                "WinUI3Apps\\NewPlusPackage.msix",
+
                 "PowerAccent.Core.dll",
                 "PowerToys.PowerAccent.dll",
                 "PowerToys.PowerAccent.exe",
@@ -184,7 +192,16 @@
                 "WinUI3Apps\\PowerToys.PowerRenameContextMenu.dll",
                 "WinUI3Apps\\PowerRenameContextMenuPackage.msix",
 
+                "PowerToys.WorkspacesSnapshotTool.exe",
+                "PowerToys.WorkspacesLauncher.exe",
+                "PowerToys.WorkspacesEditor.exe",
+                "PowerToys.WorkspacesEditor.dll",
+                "PowerToys.WorkspacesLauncherUI.exe",
+                "PowerToys.WorkspacesLauncherUI.dll",
+                "PowerToys.WorkspacesModuleInterface.dll",
+
                 "WinUI3Apps\\PowerToys.RegistryPreviewExt.dll",
+                "WinUI3Apps\\PowerToys.RegistryPreviewUILib.dll",
                 "WinUI3Apps\\PowerToys.RegistryPreview.dll",
                 "WinUI3Apps\\PowerToys.RegistryPreview.exe",
 
@@ -299,7 +316,9 @@
                 "MessagePack.Annotations.dll",
                 "MessagePack.dll",
                 "Nerdbank.Streams.dll",
+                "WinUI3Apps\\ReverseMarkdown.dll",
                 "WinUI3Apps\\SharpCompress.dll",
+                "WinUI3Apps\\ZstdSharp.dll",
                 "ColorCode.Core.dll", 
                 "ColorCode.UWP.dll",
                 "UnitsNet.dll",

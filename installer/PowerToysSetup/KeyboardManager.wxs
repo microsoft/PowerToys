@@ -25,6 +25,9 @@
         <?if $(sys.BUILDARCH) = x64 ?>
           <File Source="$(var.BinDir)KeyboardManagerEditor\vcruntime140_1_app.dll" />
         <?endif ?>
+        <File Source="$(var.BinDir)KeyboardManagerEditor\vcruntime140.dll" />
+        <File Source="$(var.BinDir)KeyboardManagerEditor\vcruntime140_1.dll" />
+        <File Source="$(var.BinDir)KeyboardManagerEditor\msvcp140.dll" />
       </Component>
     </DirectoryRef>
 

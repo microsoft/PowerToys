@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -25,6 +26,8 @@ namespace FileLocksmithUI
             Logger.InitializeLogger("\\File Locksmith\\FileLocksmithUI\\Logs");
 
             this.InitializeComponent();
+
+            UnhandledException += App_UnhandledException;
         }
 
         /// <summary>
@@ -41,11 +44,11 @@ namespace FileLocksmithUI
                 return;
             }
 
-            bool isElevated = FileLocksmith.Interop.NativeMethods.IsProcessElevated();
+            bool isElevated = PowerToys.FileLocksmithLib.Interop.NativeMethods.IsProcessElevated();
 
             if (isElevated)
             {
-                if (!FileLocksmith.Interop.NativeMethods.SetDebugPrivilege())
+                if (!PowerToys.FileLocksmithLib.Interop.NativeMethods.SetDebugPrivilege())
                 {
                     Logger.LogWarning("Couldn't set debug privileges to see system processes.");
                 }
@@ -53,6 +56,11 @@ namespace FileLocksmithUI
 
             _window = new MainWindow(isElevated);
             _window.Activate();
+        }
+
+        private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            Logger.LogError("Unhandled exception", e.Exception);
         }
 
         private Window _window;

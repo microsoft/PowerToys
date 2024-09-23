@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Windows.Input;
+
 using ImageResizer.Helpers;
 using ImageResizer.Models;
 using ImageResizer.Views;

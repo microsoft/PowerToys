@@ -95,6 +95,7 @@
                     <!--  Disabled reordering by dragging  -->
                     <!--  CanReorderItems="True" AllowDrop="True"  -->
                     <ItemsControl
+                        x:Name="ColorFormats"
                         HorizontalAlignment="Stretch"
                         AutomationProperties.Name="{Binding ElementName=ColorFormatsSetting, Path=Header}"
                         IsTabStop="False"

@@ -5,12 +5,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Dispatching;
 using Peek.Common.Extensions;
@@ -28,6 +28,8 @@ namespace Peek.FilePreviewer.Previewers.Archives
 {
     public partial class ArchivePreviewer : ObservableObject, IArchivePreviewer
     {
+        private static readonly char[] _keySeparators = { '/', '\\' };
+
         private readonly IconCache _iconCache = new();
         private int _directoryCount;
         private int _fileCount;
@@ -111,9 +113,9 @@ namespace Peek.FilePreviewer.Previewers.Archives
             State = PreviewState.Loaded;
         }
 
-        public static bool IsFileTypeSupported(string fileExt)
+        public static bool IsItemSupported(IFileSystemItem item)
         {
-            return _supportedFileTypes.Contains(fileExt);
+            return _supportedFileTypes.Contains(item.Extension);
         }
 
         public void Dispose()
@@ -125,10 +127,12 @@ namespace Peek.FilePreviewer.Previewers.Archives
         {
             ArgumentNullException.ThrowIfNull(entry, nameof(entry));
 
-            var levels = entry!.Key
-                .Split('/', '\\')
-                .Where(l => !string.IsNullOrWhiteSpace(l))
-                .ToArray();
+            if (entry.Key == null)
+            {
+                return;
+            }
+
+            var levels = entry.Key.Split(_keySeparators, StringSplitOptions.RemoveEmptyEntries);
 
             ArchiveItem? parent = null;
             for (var i = 0; i < levels.Length; i++)
@@ -209,7 +213,7 @@ namespace Peek.FilePreviewer.Previewers.Archives
 
         private static readonly HashSet<string> _supportedFileTypes = new()
         {
-            ".zip", ".rar", ".7z", ".tar", ".nupkg", ".jar", ".gz", ".tar", ".tar.gz", ".tgz",
+            ".zip", ".rar", ".7z", ".tar", ".nupkg", ".jar", ".gz", ".tar.gz", ".tgz",
         };
     }
 }

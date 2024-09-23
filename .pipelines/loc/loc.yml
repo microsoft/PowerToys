@@ -25,12 +25,12 @@ steps:
   fetchDepth: 1 # Don't need a deep checkout for loc files!
   persistCredentials: true
 
-- task: MicrosoftTDBuild.tdbuild-task.tdbuild-task.TouchdownBuildTask@1
+- task: MicrosoftTDBuild.tdbuild-task.tdbuild-task.TouchdownBuildTask@3
   displayName: 'Touchdown Build - 37400, PRODEXT'
   inputs:
     teamId: 37400
-    authId: '$(TouchdownApplicationID)'
-    authKey: '$(TouchdownApplicationKey)'
+    TDBuildServiceConnection: $(TouchdownServiceConnection)
+    authType: SubjectNameIssuer
     resourceFilePath: |
      **\Resources.resx
      **\Resource.resx
@@ -43,10 +43,6 @@ steps:
 - powershell: 'tar czf LocOutput.tar.gz LocOutput'
   displayName: 'PowerShell Script'
 
-- task: PublishBuildArtifacts@1
+- publish: LocOutput.tar.gz
   displayName: 'Publish Artifact: LocOutput'
-  inputs:
-    PathtoPublish: LocOutput.tar.gz
-    ArtifactName: LocOutput
-
-
+  artifact: LocOutput

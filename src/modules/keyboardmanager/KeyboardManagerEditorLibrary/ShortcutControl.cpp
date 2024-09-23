@@ -217,7 +217,7 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
             return;
         }
 
-        shortcutRemapBuffer[rowIndex].first[1] = text.c_str();
+        shortcutRemapBuffer[rowIndex].mapping[1] = text.c_str();
     });
 
     const bool textSelected = newKeys.index() == 2;
@@ -338,7 +338,7 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
         KeyDropDownControl::ValidateShortcutFromDropDownList(parent, row, keyboardRemapControlObjects[rowIndex][1]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>(), 1, ShortcutControl::shortcutRemapBuffer, keyboardRemapControlObjects[rowIndex][1]->keyDropDownControlObjects, targetAppTextBox, true, false);
 
         // Reset the buffer based on the selected drop down items
-        std::get<Shortcut>(shortcutRemapBuffer[rowIndex].first[0]).SetKeyCodes(KeyDropDownControl::GetSelectedCodesFromStackPanel(keyboardRemapControlObjects[rowIndex][0]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>()));
+        std::get<Shortcut>(shortcutRemapBuffer[rowIndex].mapping[0]).SetKeyCodes(KeyDropDownControl::GetSelectedCodesFromStackPanel(keyboardRemapControlObjects[rowIndex][0]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>()));
         // second column is a hybrid column
 
         const bool regularShortcut = actionTypeCombo.SelectedIndex() == 0;
@@ -348,7 +348,7 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
 
         if (textSelected)
         {
-            shortcutRemapBuffer[rowIndex].first[1] = unicodeTextKeysInput.Text().c_str();
+            shortcutRemapBuffer[rowIndex].mapping[1] = unicodeTextKeysInput.Text().c_str();
         }
         else
         {
@@ -359,14 +359,14 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
                 // If exactly one key is selected consider it to be a key remap
                 if (selectedKeyCodes.size() == 1)
                 {
-                    shortcutRemapBuffer[rowIndex].first[1] = (DWORD)selectedKeyCodes[0];
+                    shortcutRemapBuffer[rowIndex].mapping[1] = (DWORD)selectedKeyCodes[0];
                 }
                 else
                 {
                     Shortcut tempShortcut;
                     tempShortcut.SetKeyCodes(selectedKeyCodes);
                     // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
-                    shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
+                    shortcutRemapBuffer[rowIndex].mapping[1] = tempShortcut;
                 }
             }
             else if (runProgram)
@@ -388,7 +388,7 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
                 tempShortcut.alreadyRunningAction = static_cast<Shortcut::ProgramAlreadyRunningAction>(runProgramAlreadyRunningAction.SelectedIndex());
 
                 // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
-                shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
+                shortcutRemapBuffer[rowIndex].mapping[1] = tempShortcut;
             }
             else if (openUri)
             {
@@ -401,11 +401,11 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
         std::transform(lowercaseDefAppName.begin(), lowercaseDefAppName.end(), lowercaseDefAppName.begin(), towlower);
         if (newText == lowercaseDefAppName)
         {
-            shortcutRemapBuffer[rowIndex].second = L"";
+            shortcutRemapBuffer[rowIndex].appName = L"";
         }
         else
         {
-            shortcutRemapBuffer[rowIndex].second = targetAppTextBox.Text().c_str();
+            shortcutRemapBuffer[rowIndex].appName = targetAppTextBox.Text().c_str();
         }
 
         // To set the accessible name of the target app text box when focus is lost
@@ -496,11 +496,11 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
         {
             // not sure why by we need to add the current item in here, so we have it even if does not change.
             auto newShortcut = std::get<Shortcut>(newKeys);
-            shortcutRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ Shortcut(), newShortcut }, std::wstring(targetAppName)));
+            shortcutRemapBuffer.push_back(RemapBufferRow{ RemapBufferItem{ Shortcut(), newShortcut }, std::wstring(targetAppName) });
         }
         else
         {
-            shortcutRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring(targetAppName)));
+            shortcutRemapBuffer.push_back(RemapBufferRow{ RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring(targetAppName) });
         }
 
         KeyDropDownControl::AddShortcutToControl(originalKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>(), *keyboardManagerState, 0, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->keyDropDownControlObjects, shortcutRemapBuffer, row, targetAppTextBox, false, false);
@@ -517,7 +517,7 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
         }
         else if (newKeys.index() == 2)
         {
-            shortcutRemapBuffer.back().first[1] = std::get<std::wstring>(newKeys);
+            shortcutRemapBuffer.back().mapping[1] = std::get<std::wstring>(newKeys);
             const auto& remapControl = keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1];
             actionTypeCombo.SelectedIndex(1);
             unicodeTextKeysInput.Text(std::get<std::wstring>(newKeys));
@@ -526,7 +526,7 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
     else
     {
         // Initialize both shortcuts as empty shortcuts
-        shortcutRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring(targetAppName)));
+        shortcutRemapBuffer.push_back(RemapBufferRow{ RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring(targetAppName) });
 
         KeyDropDownControl::AddShortcutToControl(originalKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>(), *keyboardManagerState, 0, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->keyDropDownControlObjects, shortcutRemapBuffer, row, targetAppTextBox, false, false);
 
@@ -571,7 +571,7 @@ StackPanel SetupOpenURIControls(StackPanel& parent, StackPanel& row, Shortcut& s
         Shortcut tempShortcut;
         tempShortcut.operationType = Shortcut::OperationType::OpenURI;
         tempShortcut.uriToOpen = ShortcutControl::RemoveExtraQuotes(uriTextBox.Text().c_str());
-        ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
+        ShortcutControl::shortcutRemapBuffer[rowIndex].mapping[1] = tempShortcut;
     });
 
     _controlStackPanel.Children().Append(openUriStackPanel);
@@ -666,7 +666,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_DO_NOTHING)));
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_CLOSE)));
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_TERMINATE)));
-    
+
     runProgramAlreadyRunningAction.SelectedIndex(0);
 
     controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramElevationTypeCombo, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABEL_ELEVATION), runProgramLabelWidth).as<StackPanel>());
@@ -689,7 +689,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
         }
         Shortcut tempShortcut;
         CreateNewTempShortcut(row, tempShortcut, rowIndex);
-        ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
+        ShortcutControl::shortcutRemapBuffer[rowIndex].mapping[1] = tempShortcut;
     });
 
     runProgramArgsForProgramInput.TextChanged([parent, row](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
@@ -701,7 +701,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
 
         Shortcut tempShortcut;
         CreateNewTempShortcut(row, tempShortcut, rowIndex);
-        ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
+        ShortcutControl::shortcutRemapBuffer[rowIndex].mapping[1] = tempShortcut;
     });
 
     runProgramStartInDirInput.TextChanged([parent, row](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
@@ -718,7 +718,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
 
         Shortcut tempShortcut;
         CreateNewTempShortcut(row, tempShortcut, rowIndex);
-        ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
+        ShortcutControl::shortcutRemapBuffer[rowIndex].mapping[1] = tempShortcut;
     });
 
     runProgramAlreadyRunningAction.SelectionChanged([parent, row](winrt::Windows::Foundation::IInspectable const&, SelectionChangedEventArgs const&) {
@@ -735,7 +735,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
 
         Shortcut tempShortcut;
         CreateNewTempShortcut(static_cast<StackPanel>(row), tempShortcut, rowIndex);
-        ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
+        ShortcutControl::shortcutRemapBuffer[rowIndex].mapping[1] = tempShortcut;
     });
 
     runProgramElevationTypeCombo.SelectionChanged([parent, row](winrt::Windows::Foundation::IInspectable const&, SelectionChangedEventArgs const&) {
@@ -751,7 +751,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
         }
         Shortcut tempShortcut;
         CreateNewTempShortcut(static_cast<StackPanel>(row), tempShortcut, rowIndex);
-        ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
+        ShortcutControl::shortcutRemapBuffer[rowIndex].mapping[1] = tempShortcut;
     });
 
     runProgramStartWindow.SelectionChanged([parent, row](winrt::Windows::Foundation::IInspectable const&, SelectionChangedEventArgs const&) {
@@ -769,7 +769,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
         Shortcut tempShortcut;
         CreateNewTempShortcut(static_cast<StackPanel>(row), tempShortcut, rowIndex);
 
-        ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
+        ShortcutControl::shortcutRemapBuffer[rowIndex].mapping[1] = tempShortcut;
     });
 
     pickFileBtn.Click([&, parent, row](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
@@ -943,17 +943,17 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     {
         if (colIndex == 0)
         {
-            shortcut = std::get<Shortcut>(shortcutRemapBuffer[rowIndex].first[0]);
+            shortcut = std::get<Shortcut>(shortcutRemapBuffer[rowIndex].mapping[0]);
         }
         else
         {
-            if (shortcutRemapBuffer[rowIndex].first[1].index() != 1)
+            if (shortcutRemapBuffer[rowIndex].mapping[1].index() != 1)
             {
                 // not a shortcut, let's fix that.
                 Shortcut newShortcut;
-                shortcutRemapBuffer[rowIndex].first[1] = newShortcut;
+                shortcutRemapBuffer[rowIndex].mapping[1] = newShortcut;
             }
-            shortcut = std::get<Shortcut>(shortcutRemapBuffer[rowIndex].first[1]);
+            shortcut = std::get<Shortcut>(shortcutRemapBuffer[rowIndex].mapping[1]);
         }
 
         if (!shortcut.IsEmpty() && shortcut.HasChord())
@@ -964,7 +964,7 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
         }
     }
 
-    //remapBuffer[rowIndex].first.
+    //remapBuffer[rowIndex].mapping.
 
     // ContentDialog for detecting shortcuts. This is the parent UI element.
     ContentDialog detectShortcutBox;
@@ -1033,7 +1033,7 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
 
     auto onReleaseSpace = [&keyboardManagerState,
                            allowChordSwitch] {
-        
+
         keyboardManagerState.AllowChord = !keyboardManagerState.AllowChord;
         allowChordSwitch.IsOn(keyboardManagerState.AllowChord);
     };

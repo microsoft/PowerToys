@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+
 using UnitsNet;
 
 namespace Community.PowerToys.Run.Plugin.UnitConverter
@@ -44,13 +45,13 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 return first.Value;
             }
 
-            if (UnitParser.Default.TryParse(unit, unitInfo.UnitType, out Enum enum_unit))
+            if (UnitsNetSetup.Default.UnitParser.TryParse(unit, unitInfo.UnitType, out Enum enum_unit))
             {
                 return enum_unit;
             }
 
             var cultureInfoEnglish = new System.Globalization.CultureInfo("en-US");
-            if (UnitParser.Default.TryParse(unit, unitInfo.UnitType, cultureInfoEnglish, out Enum enum_unit_en))
+            if (UnitsNetSetup.Default.UnitParser.TryParse(unit, unitInfo.UnitType, cultureInfoEnglish, out Enum enum_unit_en))
             {
                 return enum_unit_en;
             }

@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common.Helpers;
@@ -89,9 +90,9 @@ namespace Peek.FilePreviewer.Previewers.Drive
             State = PreviewState.Loaded;
         }
 
-        public static bool IsPathSupported(string path)
+        public static bool IsItemSupported(IFileSystemItem item)
         {
-            return DriveInfo.GetDrives().Any(d => d.Name == path);
+            return DriveInfo.GetDrives().Any(d => d.Name == item.Path);
         }
 
         private string GetDriveTypeDescription(DriveType driveType) => driveType switch

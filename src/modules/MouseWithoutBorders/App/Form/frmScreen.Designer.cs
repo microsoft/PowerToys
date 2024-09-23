@@ -54,7 +54,6 @@
             this.dUCTDOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tRUONG2DToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.NotifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
-            this.imgListIcon = new System.Windows.Forms.ImageList(this.components);
             this.picLogonLogo = new System.Windows.Forms.PictureBox();
             this.MainMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picLogonLogo)).BeginInit();
@@ -228,12 +227,6 @@
             this.NotifyIcon.Text = "Microsoft® Visual Studio® 2010";
             this.NotifyIcon.MouseDown += new System.Windows.Forms.MouseEventHandler(this.NotifyIcon_MouseDown);
             // 
-            // imgListIcon
-            // 
-            this.imgListIcon.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imgListIcon.ImageStream")));
-            this.imgListIcon.TransparentColor = System.Drawing.Color.Transparent;
-            this.imgListIcon.Images.SetKeyName(0, "Logo.ico");
-            // 
             // picLogonLogo
             // 
             this.picLogonLogo.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
@@ -286,7 +279,6 @@
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
         private System.Windows.Forms.ToolStripMenuItem dUCTDOToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem tRUONG2DToolStripMenuItem;
-        private System.Windows.Forms.ImageList imgListIcon;
         private System.Windows.Forms.ToolStripMenuItem menuSendScreenCapture;
         private System.Windows.Forms.ToolStripMenuItem menuSend2Myself;
         private System.Windows.Forms.ToolStripMenuItem menuGetScreenCapture;

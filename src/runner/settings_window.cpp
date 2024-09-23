@@ -671,7 +671,9 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
     case ESettingsWindowNames::MeasureTool:
         return "MeasureTool";
     case ESettingsWindowNames::PowerOCR:
-        return "PowerOCR";
+        return "PowerOcr";
+    case ESettingsWindowNames::Workspaces:
+        return "Workspaces";
     case ESettingsWindowNames::RegistryPreview:
         return "RegistryPreview";
     case ESettingsWindowNames::CropAndLock:
@@ -680,6 +682,10 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "EnvironmentVariables";
     case ESettingsWindowNames::Dashboard:
         return "Dashboard";
+    case ESettingsWindowNames::AdvancedPaste:
+        return "AdvancedPaste";
+    case ESettingsWindowNames::NewPlus:
+        return "NewPlus";
     default:
     {
         Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
@@ -747,9 +753,13 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     {
         return ESettingsWindowNames::MeasureTool;
     }
-    else if (value == "PowerOCR")
+    else if (value == "PowerOcr")
     {
         return ESettingsWindowNames::PowerOCR;
+    }
+    else if (value == "Workspaces")
+    {
+        return ESettingsWindowNames::Workspaces;
     }
     else if (value == "RegistryPreview")
     {
@@ -766,6 +776,14 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "Dashboard")
     {
         return ESettingsWindowNames::Dashboard;
+    }
+    else if (value == "AdvancedPaste")
+    {
+        return ESettingsWindowNames::AdvancedPaste;
+    }
+    else if (value == "NewPlus")
+    {
+        return ESettingsWindowNames::NewPlus;
     }
     else
     {

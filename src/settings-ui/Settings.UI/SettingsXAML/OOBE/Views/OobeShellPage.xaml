@@ -62,6 +62,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToys.png}"
                     Tag="Overview" />
                 <NavigationViewItem
+                    x:Uid="Shell_AdvancedPaste"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AdvancedPaste.png}"
+                    Tag="AdvancedPaste" />
+                <NavigationViewItem
                     x:Uid="Shell_AlwaysOnTop"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AlwaysOnTop.png}"
                     Tag="AlwaysOnTop" />
@@ -118,9 +122,9 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}"
                     Tag="MouseWithoutBorders" />
                 <NavigationViewItem
-                    x:Uid="Shell_PastePlain"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PasteAsPlainText.png}"
-                    Tag="PastePlain" />
+                    x:Uid="NewPlus_Product_Name"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}"
+                    Tag="NewPlus" />
                 <NavigationViewItem
                     x:Uid="Shell_Peek"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Peek.png}"
@@ -157,6 +161,10 @@
                     x:Uid="Shell_VideoConference"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/VideoConferenceMute.png}"
                     Tag="VideoConference" />
+                <NavigationViewItem
+                    x:Uid="Shell_Workspaces"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}"
+                    Tag="Workspaces" />
             </NavigationView.MenuItems>
             <NavigationView.FooterMenuItems>
                 <NavigationViewItem

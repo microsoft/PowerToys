@@ -25,6 +25,15 @@ namespace CommonSharedConstants
 
     const wchar_t COLOR_PICKER_SEND_SETTINGS_TELEMETRY_EVENT[] = L"Local\\ColorPickerSettingsTelemetryEvent-6c7071d8-4014-46ec-b687-913bd8a422f1";
 
+    // IPC Messages used in Advanced Paste
+    const wchar_t ADVANCED_PASTE_SHOW_UI_MESSAGE[] = L"ShowUI";
+
+    const wchar_t ADVANCED_PASTE_MARKDOWN_MESSAGE[] = L"PasteMarkdown";
+
+    const wchar_t ADVANCED_PASTE_JSON_MESSAGE[] = L"PasteJson";
+
+    const wchar_t ADVANCED_PASTE_CUSTOM_ACTION_MESSAGE[] = L"CustomAction";
+
     // Path to the event used to show Color Picker
     const wchar_t SHOW_COLOR_PICKER_SHARED_EVENT[] = L"Local\\ShowColorPickerEvent-8c46be2a-3e05-4186-b56b-4ae986ef2525";
 
@@ -33,6 +42,10 @@ namespace CommonSharedConstants
     const wchar_t SHORTCUT_GUIDE_EXIT_EVENT[] = L"Local\\ShortcutGuide-ExitEvent-35697cdd-a3d2-47d6-a246-34efcc73eac0";
 
     const wchar_t FANCY_ZONES_EDITOR_TOGGLE_EVENT[] = L"Local\\FancyZones-ToggleEditorEvent-1e174338-06a3-472b-874d-073b21c62f14";
+
+    // Path to the event used by Workspaces
+    const wchar_t WORKSPACES_LAUNCH_EDITOR_EVENT[] = L"Local\\Workspaces-LaunchEditorEvent-a55ff427-cf62-4994-a2cd-9f72139296bf";
+    const wchar_t WORKSPACES_HOTKEY_EVENT[] = L"Local\\PowerToys-Workspaces-HotkeyEvent-2625C3C8-BAC9-4DB3-BCD6-3B4391A26FD0";
 
     const wchar_t SHOW_HOSTS_EVENT[] = L"Local\\Hosts-ShowHostsEvent-5a0c0aae-5ff5-40f5-95c2-20e37ed671f0";
 

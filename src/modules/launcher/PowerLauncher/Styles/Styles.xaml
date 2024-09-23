@@ -127,10 +127,11 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="true">
                             <Setter TargetName="border" Property="Background" Value="Transparent" />
-                            <!--<Setter TargetName="border" Property="BorderBrush" Value="Transparent" />-->
+                            <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource KeyboardFocusBorderColorBrush}" />
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="border" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                            <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource KeyboardFocusBorderColorBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

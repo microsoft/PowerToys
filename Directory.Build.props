@@ -1,27 +1,28 @@
 <Project>
-
+  <Import Project="src\Version.props" />
   <PropertyGroup>
     <Copyright>Copyright (C) Microsoft Corporation. All rights reserved.</Copyright>
-    <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
     <AssemblyCopyright>Copyright (C) Microsoft Corporation. All rights reserved.</AssemblyCopyright>
     <AssemblyProduct>PowerToys</AssemblyProduct>
+    <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
     <Company>Microsoft Corporation</Company>
+    <Authors>Microsoft Corporation</Authors>
+    <Product>PowerToys</Product>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Platforms>x64;ARM64</Platforms>
     <PackageTags>PowerToys</PackageTags>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisMode>Recommended</AnalysisMode>
     <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
-    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion> <!-- Don't add source revision hash to the product version of binaries. -->
+    <NuGetAuditMode>direct</NuGetAuditMode>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>    <!-- Don't add source revision hash to the product version of binaries. -->
     <PlatformTarget>$(Platform)</PlatformTarget>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+    <Version>$(Version).0</Version>
     <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
@@ -34,7 +35,7 @@
     <PackageReference Include="StyleCop.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference> 
+    </PackageReference>
     <Compile Include="$(MSBuildThisFileDirectory)\src\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)\src\codeAnalysis\StyleCop.json" Link="StyleCop.json" />
 
@@ -43,6 +44,32 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+
+  <!-- Add ability to run tests via "msbuild /t:Test" -->
+  <!--
+    Workaround an MSBuild bug where Microsoft.Common.Test.targets is missing from the Arm64 installation.
+    See: https://github.com/dotnet/msbuild/pull/9984
+    NB 1: This means that using "/t:Test" is not supported for Arm64 builds and tests will need to be run in an alternate way,
+          eg running tests in VS or invoking vstest.console directly.
+    NB 2: <Sdk> elements do not support conditions, so this is also being worked around.
+          Once the change referenced above is fixed, the ImportGroup below can be replaced with:
+            <Sdk Name="Microsoft.Build.RunVSTest" Version="1.0.319" />
+  -->
+  <ImportGroup Condition="'$(PROCESSOR_ARCHITECTURE)' != 'ARM64'">
+    <Import Project="Sdk.props" Sdk="Microsoft.Build.RunVSTest" Version="1.0.319" />
+    <Import Project="Sdk.targets" Sdk="Microsoft.Build.RunVSTest" Version="1.0.319" />
+  </ImportGroup>
+  <PropertyGroup>
+    <VSTestLogger>trx</VSTestLogger>
+    <!--
+      RunVSTest by default uses %VSINSTALLDIR%\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe,
+      but some of the CI scenarios don't define %VSINSTALLDIR%, so be explicit about where to look for vstest.
+      Note: $(VsInstallRoot) is a built-in MSBuild property, so should always be defined.
+    -->
+    <VSTestToolPath>$(VsInstallRoot)\Common7\IDE\CommonExtensions\Microsoft\TestWindow</VSTestToolPath>
+    <!-- No arm64 agents to run the tests. -->
+    <RunVSTest Condition="'$(Platform)' == 'ARM64'">false</RunVSTest>
+  </PropertyGroup>
 
   <!-- MSBuildCache -->
   <PropertyGroup>
@@ -55,8 +82,11 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildCacheEnabled)' == 'true'">
+    <!-- Disable when running in a pipeline as the time to upload or download the massive .pch/.pchast to the cache is greater than the savings they provide. -->
+    <UsePrecompiledHeaders Condition="'$(TF_BUILD)' != ''">false</UsePrecompiledHeaders>
+
     <!-- Change this to bust the cache -->
-    <MSBuildCacheCacheUniverse Condition="'$(MSBuildCacheCacheUniverse)' == ''">202310210737</MSBuildCacheCacheUniverse>
+    <MSBuildCacheCacheUniverse Condition="'$(MSBuildCacheCacheUniverse)' == ''">202408150737</MSBuildCacheCacheUniverse>
 
     <!--
       Visual Studio telemetry reads various ApplicationInsights.config files and other files after the project is finished, likely in a detached process.
@@ -69,6 +99,13 @@
       $(LocalAppData)\Microsoft\Windows\INetCache\**;
       A:\;
       E:\;
+      $(windir)\**;
+    </MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns>
+
+    <!-- Unit tests of low-priv processes, eg the preview handler tests, may log to this location. -->
+    <MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns>
+      $(MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns);
+      $(USERPROFILE)\AppData\LocalLow\Microsoft\PowerToys\**;
     </MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns>
 
     <!-- 

@@ -4,6 +4,7 @@
 
 using System;
 using System.Windows;
+
 using ColorPicker.Helpers;
 using Common.UI;
 using Wpf.Ui.Controls;

@@ -24,16 +24,18 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories>..\..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\;..\..\common;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="DisplayUtils.h" />
+    <ClInclude Include="MonitorEnumerator.h" />
     <ClInclude Include="monitors.h" />
     <ClInclude Include="dpi_aware.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DisplayUtils.cpp" />
     <ClCompile Include="monitors.cpp" />
     <ClCompile Include="dpi_aware.cpp" />
   </ItemGroup>

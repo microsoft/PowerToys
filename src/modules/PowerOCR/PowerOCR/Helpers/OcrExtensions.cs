@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+
 using PowerOCR.Models;
 using Windows.Globalization;
 using Windows.Graphics.Imaging;
@@ -62,7 +63,7 @@ namespace PowerOCR.Helpers
             }
         }
 
-        public static async Task<string> GetRegionsTextAsTableAsync(Window passedWindow, Rectangle regionScaled, Language? language)
+        public static async Task<string> GetRegionsTextAsTableAsync(OCROverlay passedWindow, Rectangle regionScaled, Language? language)
         {
             if (language is null)
             {

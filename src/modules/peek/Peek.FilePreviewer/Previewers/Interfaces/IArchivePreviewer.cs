@@ -4,11 +4,12 @@
 
 using System;
 using System.Collections.ObjectModel;
+
 using Peek.FilePreviewer.Previewers.Archives.Models;
 
 namespace Peek.FilePreviewer.Previewers.Interfaces
 {
-    public interface IArchivePreviewer : IPreviewer, IDisposable
+    public interface IArchivePreviewer : IPreviewer, IPreviewTarget, IDisposable
     {
         ObservableCollection<ArchiveItem> Tree { get; }
 

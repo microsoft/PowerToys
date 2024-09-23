@@ -4,12 +4,14 @@
 
 using System;
 
-namespace Peek.FilePreviewer.Previewers
+namespace Peek.FilePreviewer.Previewers.Interfaces
 {
-    public interface IBrowserPreviewer : IPreviewer
+    public interface IBrowserPreviewer : IPreviewer, IPreviewTarget
     {
         public Uri? Preview { get; }
 
         public bool IsDevFilePreview { get; }
+
+        public bool CustomContextMenu { get; }
     }
 }

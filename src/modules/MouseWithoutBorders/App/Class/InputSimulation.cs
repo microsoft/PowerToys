@@ -15,8 +15,10 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Threading.Tasks;
+
 using Microsoft.PowerToys.Settings.UI.Library;
 using Windows.UI.Input.Preview.Injection;
+
 using static MouseWithoutBorders.Class.NativeMethods;
 
 [module: SuppressMessage("Microsoft.Portability", "CA1901:PInvokeDeclarationsShouldBePortable", Scope = "member", Target = "MouseWithoutBorders.InputSimulation.#keybd_event(System.Byte,System.Byte,System.UInt32,System.Int32)", MessageId = "3", Justification = "Dotnet port with style preservation")]

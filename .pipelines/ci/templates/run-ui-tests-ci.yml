@@ -1,0 +1,70 @@
+parameters:
+  configuration: 'Release'
+  platform: ''
+  
+jobs:
+- job: UITest
+  displayName: UI Test ${{ parameters.platform }} ${{ parameters.configuration }}
+  dependsOn: Build${{ parameters.platform }}${{ parameters.configuration }}
+  variables:
+    SrcPath: $(Build.Repository.LocalPath)
+  pool:
+    ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+      name: SHINE-INT-Testing-x64
+    ${{ else }}:
+      name: SHINE-OSS-Testing-x64
+  steps:
+  - checkout: self
+    fetchDepth: 1
+    submodules: false
+    clean: true
+    fetchTags: false
+
+  - download: current
+    displayName: Download artifacts
+    artifact: build-${{ parameters.platform }}-${{ parameters.configuration }}
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET 6 SDK'
+    inputs:
+      packageType: sdk
+      version: '6.x'
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET 8 SDK'
+    inputs:
+      packageType: sdk
+      version: '8.x'
+      includePreviewVersions: true
+
+  - task: VisualStudioTestPlatformInstaller@1
+    displayName: Ensure VSTest Platform
+
+  - task: PowerShell@2
+    displayName: Download and install WinAppDriver
+    inputs:
+      targetType: filePath
+      filePath: '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
+      
+  - task: ScreenResolutionUtility@1
+    inputs:
+      displaySettings: 'optimal'
+    
+  - task: VSTest@2
+    displayName: 'UI Tests'
+    condition: and(succeeded(), ne(variables['BuildPlatform'],'arm64')) # No arm64 agents to run the tests.
+    inputs:
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      testSelector: 'testAssemblies'
+      searchFolder: '$(Pipeline.Workspace)\build-${{ parameters.platform }}-${{ parameters.configuration }}'
+      vstestLocationMethod: 'location' # otherwise fails to find vstest.console.exe 
+      #vstestLocation: '$(Agent.ToolsDirectory)\VsTest\**\${{ parameters.platform }}\tools\net462\Common7\IDE\Extensions\TestPlatform'
+      vstestLocation: '$(Agent.ToolsDirectory)\VsTest\17.10.0\x64\tools\net462\Common7\IDE\Extensions\TestPlatform'
+      uiTests: true
+      rerunFailedTests: true
+      testAssemblyVer2: |
+        **\UITests-FancyZones.dll
+        **\UITests-FancyZonesEditor.dll
+        !**\obj\**
+        !**\ref\**

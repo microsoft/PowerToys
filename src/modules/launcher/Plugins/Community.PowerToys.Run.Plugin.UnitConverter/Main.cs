@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
+
 using ManagedCommon;
 using Wox.Plugin;
 
@@ -50,7 +51,6 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 return new List<Result>();
             }
 
-            // Convert
             return UnitHandler.Convert(convertModel)
                 .Select(x => GetResult(x))
                 .ToList();

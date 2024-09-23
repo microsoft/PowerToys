@@ -8,6 +8,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Dispatching;
 using Microsoft.Win32;
@@ -16,10 +17,12 @@ using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Helpers;
+using Peek.FilePreviewer.Previewers.Interfaces;
 using Windows.Win32;
 using Windows.Win32.System.Com;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.Shell.PropertiesSystem;
+
 using IShellItem = Windows.Win32.UI.Shell.IShellItem;
 
 namespace Peek.FilePreviewer.Previewers
@@ -205,9 +208,9 @@ namespace Peek.FilePreviewer.Previewers
             }
         }
 
-        public static bool IsFileTypeSupported(string fileExt)
+        public static bool IsItemSupported(IFileSystemItem item)
         {
-            return !string.IsNullOrEmpty(GetPreviewHandlerGuid(fileExt));
+            return !string.IsNullOrEmpty(GetPreviewHandlerGuid(item.Extension));
         }
 
         private static string? GetPreviewHandlerGuid(string fileExt)
