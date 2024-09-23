@@ -70,7 +70,7 @@ jobs:
       configuration: '$(BuildConfiguration)'
       testSelector: 'testAssemblies'
       searchFolder: '$(Pipeline.Workspace)\build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}'
-      vsTestVersion: 'toolsIntaller'
+      vsTestVersion: 'toolsInstaller'
       uiTests: true
       rerunFailedTests: true
       # Look at all those naming schemes! Sheesh!
