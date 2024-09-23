@@ -1,5 +1,3 @@
- **Rss builder by B!soft markbook rss feed**
-
 **Support**
 
 
