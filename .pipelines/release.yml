@@ -29,7 +29,7 @@ parameters:
       - arm64
 
   - name: publishSymbolsToPublic
-    displayName: "Publish Symbols to MSDL"
+    displayName: "Publish Symbols to **PUBLIC** (use only for Final Builds)"
     type: boolean
     default: true
 
