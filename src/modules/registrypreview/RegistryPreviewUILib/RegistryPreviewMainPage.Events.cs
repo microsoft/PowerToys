@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Threading.Tasks;
 
 using CommunityToolkit.WinUI.UI.Controls;
 using Microsoft.UI.Xaml;
@@ -40,43 +39,25 @@ namespace RegistryPreviewUILib
                     resourceLoader.GetString("YesNoCancelDialogSecondaryButtonText"),
                     resourceLoader.GetString("YesNoCancelDialogCloseButtonText"));
             }
-
-            // Check to see if the textbox's context menu is open
-            if (textBox.ContextFlyout != null && textBox.ContextFlyout.IsOpen)
-            {
-                textBox.ContextFlyout.Hide();
-
-                // if true, the app will not close yet
-                args.Handled = true;
-
-                // HACK: To fix https://github.com/microsoft/PowerToys/issues/28820, wait a bit for the close animation of the flyout to run before closing the application.
-                // This might be called many times if the flyout still hasn't been closed, as Window_Closed will be called again by App.Current.Exit
-                DispatcherQueue.TryEnqueue(async () =>
-                {
-                    await Task.Delay(100);
-                    Application.Current.Exit();
-                });
-                return;
-            }
         }
 
         /// <summary>
         /// Event that gets fired after the visual tree has been fully loaded; the app opens the reg file from here so it can show a message box successfully
         /// </summary>
-        private void GridPreview_Loaded(object sender, RoutedEventArgs e)
+        private async void GridPreview_Loaded(object sender, RoutedEventArgs e)
         {
             // static flag to track whether the Visual Tree is ready - if the main Grid has been loaded, the tree is ready.
             visualTreeReady = true;
 
             // Check to see if the REG file was opened and parsed successfully
-            if (OpenRegistryFile(_appFileName) == false)
+            if (await OpenRegistryFile(_appFileName) == false)
             {
                 if (File.Exists(_appFileName))
                 {
                     // Allow Refresh and Edit to be enabled because a broken Reg file might be fixable
                     UpdateToolBarAndUI(false, true, true);
                     _updateWindowTitleFunction(resourceLoader.GetString("InvalidRegistryFileTitle"));
-                    textBox.TextChanged += TextBox_TextChanged;
+                    MonacoEditor.TextChanged += MonacoEditor_TextChanged;
                     return;
                 }
                 else
@@ -87,10 +68,10 @@ namespace RegistryPreviewUILib
             }
             else
             {
-                textBox.TextChanged += TextBox_TextChanged;
+                MonacoEditor.TextChanged += MonacoEditor_TextChanged;
             }
 
-            textBox.Focus(FocusState.Programmatic);
+            MonacoEditor.Focus(FocusState.Programmatic);
         }
 
         /// <summary>
@@ -153,16 +134,15 @@ namespace RegistryPreviewUILib
             if (storageFile != null)
             {
                 // mute the TextChanged handler to make for clean UI
-                textBox.TextChanged -= TextBox_TextChanged;
-
+                MonacoEditor.TextChanged -= MonacoEditor_TextChanged;
                 _appFileName = storageFile.Path;
-                UpdateToolBarAndUI(OpenRegistryFile(_appFileName));
+                UpdateToolBarAndUI(await OpenRegistryFile(_appFileName));
 
                 // disable the Save button as it's a new file
                 saveButton.IsEnabled = false;
 
                 // Restore the event handler as we're loaded
-                textBox.TextChanged += TextBox_TextChanged;
+                MonacoEditor.TextChanged += MonacoEditor_TextChanged;
             }
         }
 
@@ -177,7 +157,7 @@ namespace RegistryPreviewUILib
         /// <summary>
         /// Uses a picker to save out a copy of the current reg file
         /// </summary>
-        private void SaveAsButton_Click(object sender, RoutedEventArgs e)
+        private async void SaveAsButton_Click(object sender, RoutedEventArgs e)
         {
             // Save out a new REG file and then open it - we have to use the direct Win32 method because FileOpenPicker crashes when it's
             // called while running as admin
@@ -195,24 +175,24 @@ namespace RegistryPreviewUILib
 
             _appFileName = filename;
             SaveFile();
-            UpdateToolBarAndUI(OpenRegistryFile(_appFileName));
+            UpdateToolBarAndUI(await OpenRegistryFile(_appFileName));
         }
 
         /// <summary>
         /// Reloads the current REG file from storage
         /// </summary>
-        private void RefreshButton_Click(object sender, RoutedEventArgs e)
+        private async void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
             // mute the TextChanged handler to make for clean UI
-            textBox.TextChanged -= TextBox_TextChanged;
+            MonacoEditor.TextChanged -= MonacoEditor_TextChanged;
 
             // reload the current Registry file and update the toolbar accordingly.
-            UpdateToolBarAndUI(OpenRegistryFile(_appFileName), true, true);
+            UpdateToolBarAndUI(await OpenRegistryFile(_appFileName), true, true);
 
             saveButton.IsEnabled = false;
 
             // restore the TextChanged handler
-            textBox.TextChanged += TextBox_TextChanged;
+            MonacoEditor.TextChanged += MonacoEditor_TextChanged;
         }
 
         /// <summary>
@@ -364,9 +344,9 @@ namespace RegistryPreviewUILib
         }
 
         /// <summary>
-        /// When the text in textBox changes, reload treeView and possibly dataGrid and reset the save button
+        /// When the text in editor changes, reload treeView and possibly dataGrid and reset the save button
         /// </summary>
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void MonacoEditor_TextChanged(object sender, EventArgs e)
         {
             RefreshRegistryFile();
             saveButton.IsEnabled = true;

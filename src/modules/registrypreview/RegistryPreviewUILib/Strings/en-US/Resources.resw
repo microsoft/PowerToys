@@ -199,9 +199,6 @@
   <data name="SuggestFileName" xml:space="preserve">
     <value>New Registry file</value>
   </data>
-  <data name="textBox.PlaceholderText" xml:space="preserve">
-    <value>Registry file text will appear here</value>
-  </data>
   <data name="titleBarText.ApplicationTitle" xml:space="preserve">
     <value>Registry Preview</value>
   </data>

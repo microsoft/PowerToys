@@ -38,5 +38,8 @@
     <None Update="Assets\Monaco\monaco_languages.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Assets\Monaco\registryEditorIndex.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>
