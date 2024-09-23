@@ -3,15 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using HackerNewsExtension.Data;
 using Microsoft.CmdPal.Extensions.Helpers;
 
-namespace HackerNewsExtension;
+namespace HackerNewsExtension.Commands;
 
-internal sealed partial class CommentAction : InvokableCommand
+internal sealed partial class CommentCommand : InvokableCommand
 {
     private readonly NewsPost _post;
 
-    internal CommentAction(NewsPost post)
+    internal CommentCommand(NewsPost post)
     {
         _post = post;
         Name = "Open comments";

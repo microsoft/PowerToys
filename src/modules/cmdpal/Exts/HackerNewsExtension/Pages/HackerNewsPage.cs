@@ -8,6 +8,8 @@ using System.Net.Http;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using HackerNewsExtension.Commands;
+using HackerNewsExtension.Data;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 
@@ -57,11 +59,11 @@ internal sealed partial class HackerNewsPage : ListPage
         var s = new ListSection()
         {
             Title = "Posts",
-            Items = items.Select((post) => new ListItem(new LinkAction(post))
+            Items = items.Select((post) => new ListItem(new LinkCommand(post))
             {
                 Title = post.Title,
                 Subtitle = post.Link,
-                MoreCommands = [new CommandContextItem(new CommentAction(post))],
+                MoreCommands = [new CommandContextItem(new CommentCommand(post))],
             }).ToArray(),
         };
         return [s];

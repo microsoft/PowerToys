@@ -8,7 +8,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace HackerNewsExtension;
 
-public partial class HackerNewsActionsProvider : ICommandProvider
+public partial class HackerNewsCommandsProvider : ICommandProvider
 {
     public string DisplayName => $"Hacker News Commands";
 

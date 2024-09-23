@@ -3,19 +3,20 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using HackerNewsExtension.Data;
 using Microsoft.CmdPal.Extensions.Helpers;
 
-namespace HackerNewsExtension;
+namespace HackerNewsExtension.Commands;
 
-internal sealed partial class LinkAction : InvokableCommand
+internal sealed partial class LinkCommand : InvokableCommand
 {
     private readonly NewsPost _post;
 
-    internal LinkAction(NewsPost post)
+    internal LinkCommand(NewsPost post)
     {
-        this._post = post;
-        this.Name = "Open link";
-        this.Icon = new("\uE8A7");
+        _post = post;
+        Name = "Open link";
+        Icon = new("\uE8A7");
     }
 
     public override CommandResult Invoke()

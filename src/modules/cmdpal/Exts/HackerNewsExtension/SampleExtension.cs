@@ -26,7 +26,7 @@ public sealed partial class SampleExtension : IExtension
         switch (providerType)
         {
             case ProviderType.Commands:
-                return new HackerNewsActionsProvider();
+                return new HackerNewsCommandsProvider();
             default:
                 return null;
         }
