@@ -198,6 +198,10 @@ namespace AppLauncher
                 launchingStatus.Update(app, LaunchingState::Failed);
                 launchedSuccessfully = false;
             }
+            else
+            {
+                launchingStatus.Update(app, LaunchingState::Launched);
+            }
         }
 
         return launchedSuccessfully;

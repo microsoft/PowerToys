@@ -5,5 +5,6 @@ enum class LaunchingState
 {
 	Waiting = 0,
 	Launched,
+	LaunchedAndMoved,
 	Failed
 };

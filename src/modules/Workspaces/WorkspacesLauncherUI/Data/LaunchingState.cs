@@ -9,6 +9,7 @@ namespace WorkspacesLauncherUI.Data
     {
         Waiting = 0,
         Launched,
+        LaunchedAndMoved,
         Failed,
     }
 }

@@ -30,7 +30,7 @@ namespace WorkspacesLauncherUI.Models
 
         public ApplicationWrapper Application { get; set; }
 
-        public bool Loading => LaunchState == LaunchingState.Waiting;
+        public bool Loading => LaunchState == LaunchingState.Waiting || LaunchState == LaunchingState.Launched;
 
         private Icon _icon;
 
@@ -80,7 +80,7 @@ namespace WorkspacesLauncherUI.Models
         {
             get => LaunchState switch
             {
-                LaunchingState.Launched => "\U0000F78C",
+                LaunchingState.LaunchedAndMoved => "\U0000F78C",
                 LaunchingState.Failed => "\U0000EF2C",
                 _ => "\U0000EF2C",
             };
@@ -90,7 +90,7 @@ namespace WorkspacesLauncherUI.Models
         {
             get => LaunchState switch
             {
-                LaunchingState.Launched => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 0, 128, 0)),
+                LaunchingState.LaunchedAndMoved => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 0, 128, 0)),
                 LaunchingState.Failed => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 254, 0, 0)),
                 _ => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 254, 0, 0)),
             };

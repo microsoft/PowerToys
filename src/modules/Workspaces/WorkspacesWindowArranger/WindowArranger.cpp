@@ -191,7 +191,7 @@ void WindowArranger::processWindow(HWND window)
     iter->second.window = window;
     if (moveWindow(window, iter->first))
     {
-        iter->second.state = LaunchingState::Launched;
+        iter->second.state = LaunchingState::LaunchedAndMoved;
     }
     else
     {
