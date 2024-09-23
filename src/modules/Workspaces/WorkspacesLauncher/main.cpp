@@ -105,7 +105,10 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
                     auto savedWorkspaces = WorkspacesData::WorkspacesProjectJSON::FromJson(savedWorkspacesJson.value());
                     if (savedWorkspaces.has_value())
                     {
-                        projectToLaunch = savedWorkspaces.value();
+                        if (savedWorkspaces.value().id == id)
+                        {
+                            projectToLaunch = savedWorkspaces.value();
+                        }
                     }
                     else
                     {

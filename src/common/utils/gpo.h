@@ -83,6 +83,8 @@ namespace powertoys_gpo {
     const std::wstring POLICY_MWB_DISABLE_USER_DEFINED_IP_MAPPING_RULES = L"MwbDisableUserDefinedIpMappingRules";
     const std::wstring POLICY_MWB_POLICY_DEFINED_IP_MAPPING_RULES = L"MwbPolicyDefinedIpMappingRules";
 
+    // Methods used for reading the registry
+#pragma region ReadRegistryMethods
     inline std::optional<std::wstring> readRegistryStringValue(HKEY hRootKey, const std::wstring& subKey, const std::wstring& value_name, const bool is_multi_line_text = false)
     {
         // Set value type
@@ -250,7 +252,11 @@ namespace powertoys_gpo {
             return getConfiguredValue(POLICY_CONFIGURE_ENABLED_GLOBAL_ALL_UTILITIES);
         }
     }
+#pragma endregion ReadRegistryMethods
 
+    // Utility enabled state policies
+    // (Always use 'getUtilityEnabledValue()'.)
+#pragma region UtilityEnabledStatePolicies
     inline gpo_rule_configured_t getConfiguredAlwaysOnTopEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_ALWAYS_ON_TOP);
@@ -431,6 +437,25 @@ namespace powertoys_gpo {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_ENVIRONMENT_VARIABLES);
     }
 
+    inline gpo_rule_configured_t getConfiguredQoiPreviewEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_QOI_PREVIEW);
+    }
+
+    inline gpo_rule_configured_t getConfiguredQoiThumbnailsEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_QOI_THUMBNAILS);
+    }
+
+    inline gpo_rule_configured_t getConfiguredNewPlusEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_NEWPLUS);
+    }
+#pragma endregion UtilityEnabledStatePolicies
+
+    // Individual module setting policies
+    // (Never use 'getUtilityEnabledValue()'!)
+#pragma region IndividualModuleSettingPolicies
     inline gpo_rule_configured_t getDisablePerUserInstallationValue()
     {
         return getConfiguredValue(POLICY_DISABLE_PER_USER_INSTALLATION);
@@ -501,59 +526,44 @@ namespace powertoys_gpo {
         }        
     }
 
-    inline gpo_rule_configured_t getConfiguredQoiPreviewEnabledValue()
-    {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_QOI_PREVIEW);
-    }
-
-    inline gpo_rule_configured_t getConfiguredQoiThumbnailsEnabledValue()
-    {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_QOI_THUMBNAILS);
-    }
-
     inline gpo_rule_configured_t getAllowedAdvancedPasteOnlineAIModelsValue()
     {
-        return getUtilityEnabledValue(POLICY_ALLOW_ADVANCED_PASTE_ONLINE_AI_MODELS);
-    }
-
-    inline gpo_rule_configured_t getConfiguredNewPlusEnabledValue()
-    {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_NEWPLUS);
+        return getConfiguredValue(POLICY_ALLOW_ADVANCED_PASTE_ONLINE_AI_MODELS);
     }
 
     inline gpo_rule_configured_t getConfiguredMwbClipboardSharingEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_MWB_CLIPBOARD_SHARING_ENABLED);
+        return getConfiguredValue(POLICY_MWB_CLIPBOARD_SHARING_ENABLED);
     }
 
     inline gpo_rule_configured_t getConfiguredMwbFileTransferEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_MWB_FILE_TRANSFER_ENABLED);
+        return getConfiguredValue(POLICY_MWB_FILE_TRANSFER_ENABLED);
     }
 
     inline gpo_rule_configured_t getConfiguredMwbUseOriginalUserInterfaceValue()
     {
-        return getUtilityEnabledValue(POLICY_MWB_USE_ORIGINAL_USER_INTERFACE);
+        return getConfiguredValue(POLICY_MWB_USE_ORIGINAL_USER_INTERFACE);
     }
 
     inline gpo_rule_configured_t getConfiguredMwbDisallowBlockingScreensaverValue()
     {
-        return getUtilityEnabledValue(POLICY_MWB_DISALLOW_BLOCKING_SCREENSAVER);
+        return getConfiguredValue(POLICY_MWB_DISALLOW_BLOCKING_SCREENSAVER);
     }
 
     inline gpo_rule_configured_t getConfiguredMwbSameSubnetOnlyValue()
     {
-        return getUtilityEnabledValue(POLICY_MWB_SAME_SUBNET_ONLY);
+        return getConfiguredValue(POLICY_MWB_SAME_SUBNET_ONLY);
     }
 
     inline gpo_rule_configured_t getConfiguredMwbValidateRemoteIpValue()
     {
-        return getUtilityEnabledValue(POLICY_MWB_VALIDATE_REMOTE_IP);
+        return getConfiguredValue(POLICY_MWB_VALIDATE_REMOTE_IP);
     }
 
     inline gpo_rule_configured_t getConfiguredMwbDisableUserDefinedIpMappingRulesValue()
     {
-        return getUtilityEnabledValue(POLICY_MWB_DISABLE_USER_DEFINED_IP_MAPPING_RULES);
+        return getConfiguredValue(POLICY_MWB_DISABLE_USER_DEFINED_IP_MAPPING_RULES);
     }
 
     inline std::wstring getConfiguredMwbPolicyDefinedIpMappingRules()
@@ -575,4 +585,5 @@ namespace powertoys_gpo {
             return std::wstring ();
         }
     }
+#pragma endregion IndividualModuleSettingPolicies
 }

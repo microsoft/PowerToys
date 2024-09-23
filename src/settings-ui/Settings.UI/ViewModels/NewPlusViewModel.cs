@@ -183,7 +183,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             try
             {
-                settings = settingsUtils.GetSettings<NewPlusSettings>(NewPlusSettings.ModuleName);
+                settings = settingsUtils.GetSettingsOrDefault<NewPlusSettings>(NewPlusSettings.ModuleName);
             }
             catch (Exception e)
             {
