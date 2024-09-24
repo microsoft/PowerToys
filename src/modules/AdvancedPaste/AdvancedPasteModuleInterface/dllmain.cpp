@@ -242,22 +242,24 @@ private:
                 m_custom_action_hotkeys.clear();
                 m_custom_action_ids.clear();
 
-                if (settingsObject.HasKey(JSON_KEY_PROPERTIES) && is_open_ai_enabled())
+                if (settingsObject.HasKey(JSON_KEY_PROPERTIES))
                 {
                     const auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
 
                     if (propertiesObject.HasKey(JSON_KEY_CUSTOM_ACTIONS))
                     {
                         const auto customActions = propertiesObject.GetNamedObject(JSON_KEY_CUSTOM_ACTIONS).GetNamedArray(JSON_KEY_VALUE);
-
-                        for (const auto& customAction : customActions)
+                        if (customActions.Size() > 0 && is_open_ai_enabled())
                         {
-                            const auto object = customAction.GetObjectW();
-
-                            if (object.GetNamedBoolean(JSON_KEY_IS_SHOWN, false))
+                            for (const auto& customAction : customActions)
                             {
-                                m_custom_action_hotkeys.push_back(parse_single_hotkey(object.GetNamedObject(JSON_KEY_SHORTCUT)));
-                                m_custom_action_ids.push_back(static_cast<int>(object.GetNamedNumber(JSON_KEY_ID)));
+                                const auto object = customAction.GetObjectW();
+
+                                if (object.GetNamedBoolean(JSON_KEY_IS_SHOWN, false))
+                                {
+                                    m_custom_action_hotkeys.push_back(parse_single_hotkey(object.GetNamedObject(JSON_KEY_SHORTCUT)));
+                                    m_custom_action_ids.push_back(static_cast<int>(object.GetNamedNumber(JSON_KEY_ID)));
+                                }
                             }
                         }
                     }
