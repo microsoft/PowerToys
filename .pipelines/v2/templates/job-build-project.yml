@@ -232,6 +232,7 @@ jobs:
       vsVersion: 17.0
       msbuildArgs: /p:CIBuild=true -t:pack /bl:$(LogOutputDirectory)\build-hosts.binlog
       configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
       maximumCpuCount: true
 
   - task: VSBuild@1
@@ -241,6 +242,7 @@ jobs:
       vsVersion: 17.0
       msbuildArgs: /p:CIBuild=true -t:pack /bl:$(LogOutputDirectory)\build-env-var-editor.binlog
       configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
       maximumCpuCount: true
 
   - task: VSBuild@1
@@ -250,6 +252,7 @@ jobs:
       vsVersion: 17.0
       msbuildArgs: /p:CIBuild=true -t:pack /bl:$(LogOutputDirectory)\build-registry-preview.binlog
       configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
       maximumCpuCount: true
 
   - task: CopyFiles@2
@@ -301,6 +304,7 @@ jobs:
         $(MSBuildCacheParameters)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
       maximumCpuCount: true
 
   - task: VSBuild@1
@@ -317,6 +321,7 @@ jobs:
         $(MSBuildCacheParameters)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
       maximumCpuCount: true
 
   - task: VSBuild@1
@@ -333,6 +338,7 @@ jobs:
         $(MSBuildCacheParameters)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
       maximumCpuCount: true
 
   - ${{ each project in parameters.csProjectsToPublish }}:
@@ -351,6 +357,7 @@ jobs:
           /bl:$(LogOutputDirectory)\publish-${{ join('_',split(project, '/')) }}.binlog
         platform: $(BuildPlatform)
         configuration: $(BuildConfiguration)
+        msbuildArchitecture: x64
         maximumCpuCount: true
 
   # Check if deps.json files don't reference different dll versions.
