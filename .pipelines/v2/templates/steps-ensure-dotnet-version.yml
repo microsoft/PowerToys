@@ -20,6 +20,7 @@ steps:
     & ./dotnet-install.ps1 -Channel "${{parameters.version}}" -InstallDir $NEW_DOTNET_ROOT
     Write-Host "##vso[task.setvariable variable=DOTNET_ROOT]${NEW_DOTNET_ROOT}"
     Write-Host "##vso[task.prependpath]${NEW_DOTNET_ROOT}"
+    Remove-Item dotnet-install.ps1 -ErrorAction:Ignore
   ${{ if eq(parameters.sdk, true) }}:
     displayName: "Install .NET ${{parameters.version}} SDK"
   ${{ else }}:
