@@ -108,8 +108,8 @@ namespace Peek.FilePreviewer.Previewers
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var iconBitmap = await IconHelper.GetThumbnailAsync(Item.Path, cancellationToken)
-                        ?? await IconHelper.GetIconAsync(Item.Path, cancellationToken);
+                    var iconBitmap = await ThumbnailHelper.GetThumbnailAsync(Item.Path, cancellationToken)
+                        ?? await ThumbnailHelper.GetIconAsync(Item.Path, cancellationToken);
 
                     cancellationToken.ThrowIfCancellationRequested();
 

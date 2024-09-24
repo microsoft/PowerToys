@@ -106,7 +106,7 @@ public partial class SpecialFolderPreviewer : ObservableObject, ISpecialFolderPr
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var iconBitmap = await IconHelper.GetIconAsync(Item.ParsingName, cancellationToken);
+                var iconBitmap = await ThumbnailHelper.GetIconAsync(Item.ParsingName, cancellationToken);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
