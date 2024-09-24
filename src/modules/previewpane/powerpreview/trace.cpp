@@ -2,6 +2,8 @@
 #include "trace.h"
 #include <string>
 
+#include <common/Telemetry/TraceBase.h>
+
 /*
 *
 * This file captures the telemetry for the File Explorer Custom Renders project.
@@ -19,30 +21,21 @@ TRACELOGGING_DEFINE_PROVIDER(
     (0x38e8889b, 0x9731, 0x53f5, 0xe9, 0x01, 0xe8, 0xa7, 0xc1, 0x75, 0x30, 0x74),
     TraceLoggingOptionProjectTelemetry());
 
-void Trace::RegisterProvider()
-{
-    TraceLoggingRegister(g_hProvider);
-}
-
-void Trace::UnregisterProvider()
-{
-    TraceLoggingUnregister(g_hProvider);
-}
-
 void Trace::EnabledPowerPreview(bool enabled)
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "PowerPreview_Enabled",
         TraceLoggingBoolean(enabled, "Enabled"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
 void Trace::PowerPreviewSettingsUpdated(LPCWSTR SettingsName, bool oldState, bool newState, bool globalState)
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "PowerPreview_TweakUISettings_SuccessfullyUpdatedSettings",
         TraceLoggingWideString(SettingsName, "Previewer_Settings_Name"),
@@ -51,12 +44,13 @@ void Trace::PowerPreviewSettingsUpdated(LPCWSTR SettingsName, bool oldState, boo
         TraceLoggingBoolean(globalState, "Global_File_Explorer_Settings_State"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
 void Trace::PowerPreviewSettingsUpdateFailed(LPCWSTR SettingsName, bool oldState, bool newState, bool globalState)
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "PowerPreview_TweakUISettings_FailedUpdatingSettings",
         TraceLoggingWideString(SettingsName, "Previewer_Settings_Name"),
@@ -65,38 +59,41 @@ void Trace::PowerPreviewSettingsUpdateFailed(LPCWSTR SettingsName, bool oldState
         TraceLoggingBoolean(globalState, "Global_File_Explorer_Settings_State"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
 void Trace::SetConfigInvalidJSON(const char* exceptionMessage)
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "PowerPreview_TweakUISettings_SetConfig__InvalidJSONGiven",
         TraceLoggingString(exceptionMessage, "ExceptionMessage"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
 void Trace::Destroyed()
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "PowerPreview_TweakUISettings_Destroyed",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
-void Trace::InitSetErrorLoadingFile(const char* exceptionMessage) 
+void Trace::InitSetErrorLoadingFile(const char* exceptionMessage)
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "PowerPreview_TweakUISettings_InitSet__ErrorLoadingFile",
         TraceLoggingString(exceptionMessage, "ExceptionMessage"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
-

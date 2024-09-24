@@ -763,6 +763,9 @@ public:
         Logger::trace("AdvancedPaste::disable()");
         if (m_enabled)
         {
+            send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_TERMINATE_APP_MESSAGE);
+            WaitForSingleObject(m_hProcess, 1000);
+
             m_write_pipe = nullptr;
 
             TerminateProcess(m_hProcess, 1);

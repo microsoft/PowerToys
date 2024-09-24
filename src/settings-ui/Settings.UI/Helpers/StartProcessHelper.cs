@@ -10,6 +10,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
     public static class StartProcessHelper
     {
         public const string ColorsSettings = "ms-settings:colors";
+        public const string DiagnosticsAndFeedback = "ms-settings:privacy-feedback";
 
         public static string AnimationsSettings => OSVersionHelper.IsWindows11()
             ? "ms-settings:easeofaccess-visualeffects"

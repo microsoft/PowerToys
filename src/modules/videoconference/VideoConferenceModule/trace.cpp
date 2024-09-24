@@ -2,6 +2,8 @@
 
 #include "trace.h"
 
+#include <common/Telemetry/TraceBase.h>
+
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,
     "Microsoft.PowerToys",
@@ -9,24 +11,15 @@ TRACELOGGING_DEFINE_PROVIDER(
     (0x38e8889b, 0x9731, 0x53f5, 0xe9, 0x01, 0xe8, 0xa7, 0xc1, 0x75, 0x30, 0x74),
     TraceLoggingOptionProjectTelemetry());
 
-void Trace::RegisterProvider() noexcept
-{
-    TraceLoggingRegister(g_hProvider);
-}
-
-void Trace::UnregisterProvider() noexcept
-{
-    TraceLoggingUnregister(g_hProvider);
-}
-
 // Log if the user has VCM enabled or disabled
 void Trace::EnableVideoConference(const bool enabled) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "VideoConference_EnableVideoConference",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(enabled, "Enabled"));
 }
 
@@ -34,7 +27,7 @@ void Trace::SettingsChanged(const struct VideoConferenceSettings& settings) noex
 {
     bool CustomOverlayImage = (settings.imageOverlayPath.length() > 0);
 
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "VideoConference_SettingsChanged",
         TraceLoggingWideString(settings.toolbarPositionString.c_str(), "ToolbarPosition"),
@@ -42,27 +35,30 @@ void Trace::SettingsChanged(const struct VideoConferenceSettings& settings) noex
         TraceLoggingBool(CustomOverlayImage, "CustomImageOverlayUsed"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
 void Trace::MicrophoneMuted() noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "VideoConference_MicrophoneMuted",
         TraceLoggingBoolean(true, "MicrophoneMuted"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }
 
 void Trace::CameraMuted() noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "VideoConference_CameraMuted",
         TraceLoggingBoolean(true, "CameraMuted"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
 }

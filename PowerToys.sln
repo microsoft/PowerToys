@@ -297,6 +297,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Telemetry", "Telemetry", "{
 	ProjectSection(SolutionItems) = preProject
 		src\common\Telemetry\ProjectTelemetry.h = src\common\Telemetry\ProjectTelemetry.h
 		src\common\Telemetry\TelemetryBase.cs = src\common\Telemetry\TelemetryBase.cs
+		src\common\Telemetry\TraceBase.h = src\common\Telemetry\TraceBase.h
 		src\common\Telemetry\TraceLoggingDefines.h = src\common\Telemetry\TraceLoggingDefines.h
 	EndProjectSection
 EndProject
@@ -621,6 +622,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WorkspacesLauncher", "src\modules\Workspaces\WorkspacesLauncher\WorkspacesLauncher.vcxproj", "{2CAC093E-5FCF-4102-9C2C-AC7DD5D9EB96}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WorkspacesWindowArranger", "src\modules\Workspaces\WorkspacesWindowArranger\WorkspacesWindowArranger.vcxproj", "{37D07516-4185-43A4-924F-3C7A5D95ECF6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EtwTrace", "src\common\Telemetry\EtwTrace\EtwTrace.vcxproj", "{8F021B46-362B-485C-BFBA-CCF83E820CBD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -2734,6 +2737,18 @@ Global
 		{37D07516-4185-43A4-924F-3C7A5D95ECF6}.Release|x64.Build.0 = Release|x64
 		{37D07516-4185-43A4-924F-3C7A5D95ECF6}.Release|x86.ActiveCfg = Release|x64
 		{37D07516-4185-43A4-924F-3C7A5D95ECF6}.Release|x86.Build.0 = Release|x64
+		{8F021B46-362B-485C-BFBA-CCF83E820CBD}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{8F021B46-362B-485C-BFBA-CCF83E820CBD}.Debug|ARM64.Build.0 = Debug|ARM64
+		{8F021B46-362B-485C-BFBA-CCF83E820CBD}.Debug|x64.ActiveCfg = Debug|x64
+		{8F021B46-362B-485C-BFBA-CCF83E820CBD}.Debug|x64.Build.0 = Debug|x64
+		{8F021B46-362B-485C-BFBA-CCF83E820CBD}.Debug|x86.ActiveCfg = Debug|x64
+		{8F021B46-362B-485C-BFBA-CCF83E820CBD}.Debug|x86.Build.0 = Debug|x64
+		{8F021B46-362B-485C-BFBA-CCF83E820CBD}.Release|ARM64.ActiveCfg = Release|ARM64
+		{8F021B46-362B-485C-BFBA-CCF83E820CBD}.Release|ARM64.Build.0 = Release|ARM64
+		{8F021B46-362B-485C-BFBA-CCF83E820CBD}.Release|x64.ActiveCfg = Release|x64
+		{8F021B46-362B-485C-BFBA-CCF83E820CBD}.Release|x64.Build.0 = Release|x64
+		{8F021B46-362B-485C-BFBA-CCF83E820CBD}.Release|x86.ActiveCfg = Release|x64
+		{8F021B46-362B-485C-BFBA-CCF83E820CBD}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2962,6 +2977,7 @@ Global
 		{367D7543-7DBA-4381-99F1-BF6142A996C4} = {A2221D7E-55E7-4BEA-90D1-4F162D670BBF}
 		{2CAC093E-5FCF-4102-9C2C-AC7DD5D9EB96} = {A2221D7E-55E7-4BEA-90D1-4F162D670BBF}
 		{37D07516-4185-43A4-924F-3C7A5D95ECF6} = {A2221D7E-55E7-4BEA-90D1-4F162D670BBF}
+		{8F021B46-362B-485C-BFBA-CCF83E820CBD} = {8F62026A-294B-41C6-8839-87463613F216}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

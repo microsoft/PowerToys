@@ -46,6 +46,7 @@ AMPROPSETID
 amr
 ANDSCANS
 animatedvisuals
+anr
 ansicolor
 ANull
 AOC
@@ -60,14 +61,12 @@ APPBARDATA
 appdata
 APPEXECLINK
 Appium
-applayout
 Applicationcan
 APPLICATIONFRAMEHOST
 appmanifest
 APPNAME
 appref
 appsettings
-appsfolder
 appwindow
 appwiz
 APSTUDIO
@@ -148,7 +147,6 @@ BTNFACE
 bugreport
 BUILDARCH
 BUILDNUMBER
-buildtask
 buildtransitive
 BVal
 BValue
@@ -272,7 +270,6 @@ CSettings
 cso
 CSRW
 CStyle
-cswinrt
 CSY
 CTest
 currentculture
@@ -354,7 +351,6 @@ devpkey
 DEVSOURCE
 DIIRFLAG
 dimm
-directshow
 DISABLEASACTIONKEY
 diskmgmt
 DISPLAYCHANGE
@@ -370,7 +366,6 @@ dllmain
 DNLEN
 DONOTROUND
 DONTVALIDATEPATH
-DOPUS
 dotnet
 DPICHANGED
 DPIs
@@ -386,6 +381,7 @@ drf
 drivedetectionwarning
 dshow
 DSTINVERT
+Dstr
 DUMMYUNIONNAME
 dutil
 DVASPECT
@@ -453,12 +449,14 @@ erwrite
 ESettings
 esrp
 etl
-ETW
+etw
 EUQ
 eurochange
 eventlog
+EVENTTAG
 eventvwr
 everytime
+evntrace
 evt
 EWXFORCE
 EWXFORCEIFHUNG
@@ -530,7 +528,6 @@ FZE
 gacutil
 Gaeilge
 Gaidhlig
-GBarm
 GCLP
 gdi
 gdiplus
@@ -1000,7 +997,6 @@ NCRENDERING
 ndp
 NEEDDISPATCH
 needinfo
-netcore
 netcoreapp
 netcpl
 netframework
@@ -1009,6 +1005,7 @@ netsh
 newcolor
 newdev
 NEWDIALOGSTYLE
+NEWFILE
 newitem
 newpath
 newplus
@@ -1077,7 +1074,6 @@ NTAPI
 ntdll
 ntfs
 NTSTATUS
-nugets
 nullonfailure
 numberbox
 nwc
@@ -1171,6 +1167,7 @@ phwnd
 pici
 pidl
 PIDLIST
+PII
 PINDIR
 pinfo
 pinvoke
@@ -1228,6 +1225,7 @@ proactively
 PROCESSENTRY
 PROCESSKEY
 processthreadsapi
+PROCESSTRACE
 PRODEXT
 PRODUCTVERSION
 Progman
@@ -1269,12 +1267,12 @@ PWSTR
 pwsz
 pwtd
 QDC
-QDir
 qianlifeng
 qit
 QITAB
 QITABENT
 qoi
+QPC
 Quarternary
 QUERYENDSESSION
 QUERYOPEN
@@ -1593,9 +1591,7 @@ SYSKEYUP
 SYSLIB
 SYSMENU
 SYSTEMAPPS
-SYSTEMSETTINGS
 SYSTEMTIME
-SYSTEMWOW
 tapp
 TApplication
 TApplied
@@ -1615,7 +1611,6 @@ TCustom
 tdbuild
 TDefault
 TDevice
-telem
 telephon
 templatenamespace
 testprocess
@@ -1647,11 +1642,12 @@ toolkitconverters
 Toolset
 toolwindow
 TOPDOWNDIB
-TOTALCMD
 TOUCHEVENTF
 TOUCHINPUT
 touchpad
+TRACEHANDLE
 tracelogging
+tracerpt
 trafficmanager
 traies
 transicc
@@ -1709,11 +1705,9 @@ urlmon
 Usb
 USEDEFAULT
 USEFILEATTRIBUTES
-USEPOSITION
 USERDATA
 Userenv
 USESHOWWINDOW
-USESIZE
 USESTDHANDLES
 USRDLL
 UType
@@ -1741,6 +1735,7 @@ VERBW
 VERIFYCONTEXT
 verrsrc
 VERSIONINFO
+vewng
 VFT
 vget
 vgetq
@@ -1806,7 +1801,6 @@ wgpocpl
 WIC
 wil
 winapi
-winappdriver
 wincodec
 Wincodecsdk
 wincolor
@@ -1870,6 +1864,7 @@ WNDCLASSEX
 WNDCLASSEXW
 WNDCLASSW
 WNDPROC
+wnode
 workarounds
 WORKSPACESEDITOR
 WORKSPACESLAUNCHER
@@ -1914,7 +1909,6 @@ XLoc
 XNamespace
 XPels
 XPixel
-xplorer
 XResource
 xsi
 XStr
@@ -1931,6 +1925,7 @@ YPels
 YResolution
 YStr
 YVIRTUALSCREEN
+yyy
 ZEROINIT
 zonable
 zoneset

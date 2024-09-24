@@ -46,6 +46,7 @@ namespace PowerLauncher
         private SettingWindowViewModel _settingsVM;
         private StringMatcher _stringMatcher;
         private SettingsReader _settingsReader;
+        private ETWTrace etwTrace = new ETWTrace();
 
         // To prevent two disposals running at the same time.
         private static readonly object _disposingLock = new object();
@@ -95,12 +96,15 @@ namespace PowerLauncher
             using (var application = new App())
             {
                 application.InitializeComponent();
+                application.etwTrace.Start();
 
                 Common.UI.NativeEventWaiter.WaitForEventLoop(
                     Constants.RunExitEvent(),
                     () =>
                     {
                         Log.Warn("RunExitEvent was signaled. Exiting PowerToys", typeof(App));
+                        application.etwTrace?.Dispose();
+                        application.etwTrace = null;
                         ExitPowerToys(application);
                     },
                     Application.Current.Dispatcher,
@@ -111,6 +115,8 @@ namespace PowerLauncher
                     RunnerHelper.WaitForPowerToysRunner(powerToysPid, () =>
                     {
                         Log.Info($"Runner with pid={powerToysPid} exited. Exiting PowerToys Run", typeof(App));
+                        application.etwTrace?.Dispose();
+                        application.etwTrace = null;
                         ExitPowerToys(application);
                     });
                 }

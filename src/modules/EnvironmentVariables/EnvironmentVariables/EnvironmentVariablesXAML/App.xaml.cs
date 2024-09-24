@@ -26,6 +26,8 @@ namespace EnvironmentVariables
     {
         public IHost Host { get; }
 
+        public ETWTrace EtwTrace { get; } = new ETWTrace();
+
         public static T GetService<T>()
             where T : class
         {
@@ -78,6 +80,8 @@ namespace EnvironmentVariables
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
+            EtwTrace.Start();
+
             var cmdArgs = Environment.GetCommandLineArgs();
             if (cmdArgs?.Length > 1)
             {

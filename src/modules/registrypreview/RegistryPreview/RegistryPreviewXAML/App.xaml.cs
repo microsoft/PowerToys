@@ -6,6 +6,7 @@ using System;
 using System.Web;
 
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
 using Windows.ApplicationModel.Activation;
@@ -46,6 +47,7 @@ namespace RegistryPreview
             // #if DEBUG
             // System.Diagnostics.Debugger.Launch();
             // #endif
+            EtwTrace.Start();
 
             // Open With... handler - gets activation arguments if they are available.
             AppActivationArguments activatedArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
@@ -111,5 +113,7 @@ namespace RegistryPreview
         public static string AppFilename;
 #pragma warning restore CA2211 // Non-constant fields should not be visible
 #pragma warning restore SA1401 // Fields should be private
+
+        public ETWTrace EtwTrace { get; private set; } = new ETWTrace();
     }
 }

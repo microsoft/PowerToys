@@ -21,6 +21,7 @@ using Awake.Core.Native;
 using Awake.Properties;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Telemetry;
 
 namespace Awake
 {
@@ -29,6 +30,7 @@ namespace Awake
         private static Mutex? _mutex;
         private static FileSystemWatcher? _watcher;
         private static SettingsUtils? _settingsUtils;
+        private static ETWTrace _etwTrace = new ETWTrace();
 
         private static bool _startedFromPowerToys;
 
@@ -50,6 +52,7 @@ namespace Awake
 
         private static int Main(string[] args)
         {
+            _etwTrace.Start();
             _settingsUtils = new SettingsUtils();
             LockMutex = new Mutex(true, Core.Constants.AppName, out bool instantiated);
             Logger.InitializeLogger(Path.Combine("\\", Core.Constants.AppName, "Logs"));
@@ -176,6 +179,7 @@ namespace Awake
 
         private static void Exit(string message, int exitCode)
         {
+            _etwTrace?.Dispose();
             Logger.LogInfo(message);
             Manager.CompleteExit(exitCode);
         }

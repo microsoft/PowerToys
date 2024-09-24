@@ -65,6 +65,7 @@ private:
     DWORD m_processPid = 0;
 
     HANDLE m_hInvokeEvent;
+    HANDLE m_hTerminateEvent;
 
     // Load the settings file.
     void init_settings()
@@ -321,6 +322,7 @@ public:
         init_settings();
 
         m_hInvokeEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_PEEK_SHARED_EVENT);
+        m_hTerminateEvent = CreateDefaultEvent(CommonSharedConstants::TERMINATE_PEEK_SHARED_EVENT);
     };
 
     ~Peek()
@@ -402,6 +404,8 @@ public:
         if (m_enabled)
         {
             ResetEvent(m_hInvokeEvent);
+            SetEvent(m_hTerminateEvent);
+            WaitForSingleObject(m_hProcess, 1000);
             auto result = TerminateProcess(m_hProcess, 1);
             if (result == 0)
             {
