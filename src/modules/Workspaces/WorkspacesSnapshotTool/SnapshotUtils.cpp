@@ -19,6 +19,15 @@ namespace SnapshotUtils
     namespace NonLocalizable
     {
         const std::wstring ApplicationFrameHost = L"ApplicationFrameHost.exe";
+
+        namespace FileManagers
+        {
+            const std::wstring FileExplorer = L"EXPLORER";      // windows explorer
+            const std::wstring TotalCommander = L"TOTALCMD";    // total commander
+            const std::wstring DirectoryOpus = L"DOPUS";        // directory opus
+            const std::wstring QDir = L"Q-DIR";                 // Q-Dir
+            const std::wstring Xplorer2 = L"XPLORER2";          // Xplorer2
+        }
     }
 
     class WbemHelper
@@ -195,11 +204,11 @@ namespace SnapshotUtils
     {
         std::wstring appName = std::filesystem::path(processPath).stem();
         std::transform(appName.begin(), appName.end(), appName.begin(), towupper);
-        return ((appName == L"EXPLORER") // windows explorer
-                || (appName.starts_with(L"TOTALCMD")) // total commander
-                || (appName == L"DOPUS") // directory opus
-                || (appName == L"Q-DIR") // Q-Dir
-                || (appName.starts_with(L"XPLORER2"))); // Xplorer2
+        return ((appName == NonLocalizable::FileManagers::FileExplorer)                 // windows explorer
+                || (appName.starts_with(NonLocalizable::FileManagers::TotalCommander))  // total commander
+                || (appName == NonLocalizable::FileManagers::DirectoryOpus)             // directory opus
+                || (appName == NonLocalizable::FileManagers::QDir)                      // Q-Dir
+                || (appName.starts_with(NonLocalizable::FileManagers::Xplorer2)));      // Xplorer2
     }
 
     std::vector<WorkspacesData::WorkspacesProject::Application> GetApps(const std::function<unsigned int(HWND)> getMonitorNumberFromWindowHandle)
