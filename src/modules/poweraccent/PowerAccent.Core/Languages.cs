@@ -161,7 +161,7 @@ namespace PowerAccent.Core
         {
             return letter switch
             {
-                LetterKey.VK_0 => new[] { "₀", "⁰", "↉" },
+                LetterKey.VK_0 => new[] { "₀", "⁰", "°", "↉" },
                 LetterKey.VK_1 => new[] { "₁", "¹", "½", "⅓", "¼", "⅕", "⅙", "⅐", "⅛", "⅑", "⅒" },
                 LetterKey.VK_2 => new[] { "₂", "²", "⅔", "⅖" },
                 LetterKey.VK_3 => new[] { "₃", "³", "¾", "⅗", "⅜" },
@@ -188,7 +188,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_P => new[] { "ṗ", "℗", "∏", "¶" },
                 LetterKey.VK_Q => new[] { "ℚ" },
                 LetterKey.VK_R => new[] { "ṙ", "®", "ℝ" },
-                LetterKey.VK_S => new[] { "ṡ", "§", "∑" },
+                LetterKey.VK_S => new[] { "ṡ", "§", "∑", "∫" },
                 LetterKey.VK_T => new[] { "ţ", "ṫ", "ŧ", "™" },
                 LetterKey.VK_U => new[] { "ŭ" },
                 LetterKey.VK_V => new[] { "V̇" },
@@ -197,7 +197,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_Y => new[] { "ẏ", "ꝡ" },
                 LetterKey.VK_Z => new[] { "ʒ", "ǯ", "ℤ" },
                 LetterKey.VK_COMMA => new[] { "∙", "₋", "⁻", "–", "√" }, // – is in VK_MINUS for other languages, but not VK_COMMA, so we add it here.
-                LetterKey.VK_PERIOD => new[] { "…", "\u0300", "\u0301", "\u0302", "\u0303", "\u0304", "\u0308", "\u030B", "\u030C" },
+                LetterKey.VK_PERIOD => new[] { "…", "⁝", "\u0300", "\u0301", "\u0302", "\u0303", "\u0304", "\u0308", "\u030B", "\u030C" },
                 LetterKey.VK_MINUS => new[] { "~", "‐", "‑", "‒", "—", "―", "⁓", "−", "⸺", "⸻", "∓" },
                 LetterKey.VK_SLASH_ => new[] { "÷", "√" },
                 LetterKey.VK_DIVIDE_ => new[] { "÷", "√" },
