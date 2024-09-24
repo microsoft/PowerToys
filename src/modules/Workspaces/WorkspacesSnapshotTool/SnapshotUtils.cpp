@@ -298,15 +298,15 @@ namespace SnapshotUtils
                 auto parentProcessPath = get_process_path(parentPid);
 
                 // check if original process is in the subfolder of the parent process which is a sign of an steam-like app
-                auto processDir = std::filesystem::path(processPath).parent_path();
-                auto parentProcessDir = std::filesystem::path(parentProcessPath).parent_path();
+                std::wstring processDir = std::filesystem::path(processPath).parent_path().c_str();
+                std::wstring parentProcessDir = std::filesystem::path(parentProcessPath).parent_path().c_str();
 
                 if (parentProcessPath == L"")
                 {
                     Logger::info(L"parent process unknown, the parent app is an already closed file manager app, it is a standalone app");
                     standaloneApp = true;
                 }
-                else if (std::wstring(processDir).starts_with(std::wstring(parentProcessDir)))
+                else if (processDir.starts_with(parentProcessDir))
                 {
                     Logger::info(L"parent process: {}, original process is in the subfolder of the parent process, it is a steam-like app", parentProcessPath);
                     steamLikeApp = true;
