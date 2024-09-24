@@ -64,7 +64,7 @@ jobs:
         displaySettings: 'optimal'
 
   - task: VSTest@3
-    displayName: Run Tests
+    displayName: Run UI Tests
     inputs:
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
@@ -73,15 +73,7 @@ jobs:
       vsTestVersion: 'toolsInstaller'
       uiTests: true
       rerunFailedTests: true
-      # Look at all those naming schemes!
       testAssemblyVer2: |
-        **\UnitTests-*.dll
-        **\UnitTest-*.dll
-        **\*UnitTests.dll
-        **\*.UnitTest.dll
-        **\*.Tests.dll
-        **\*.Test.dll
-        **\KeyboardManager*Test.dll
         **\UITests-FancyZones.dll
         **\UITests-FancyZonesEditor.dll
         !**\obj\**
