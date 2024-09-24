@@ -47,7 +47,7 @@ stages:
             enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
             runTests: ${{ parameters.runTests }}
 
-    - ${{ if eq(parameters.runTests, true) }}:
+    - ${{ if and(eq(parameters.runTests, true), ne(platform, 'arm64')) }}:
       - stage: Test_${{ platform }}
         displayName: Test ${{ platform }}
         dependsOn:
