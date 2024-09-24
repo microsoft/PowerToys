@@ -37,6 +37,10 @@ jobs:
   - download: current
     displayName: Download artifacts
     artifact: build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}
+    patterns: |-
+      **
+      !**\*.pdb
+      !**\*.lib
 
   - template: steps-ensure-dotnet-version.yml
     parameters:
