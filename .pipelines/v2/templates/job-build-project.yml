@@ -116,11 +116,6 @@ jobs:
     fetchTags: false
     fetchDepth: 1
 
-  # Sets versions for all PowerToy created DLLs
-  - pwsh: |-
-      .pipelines/versionSetting.ps1 -versionNumber '${{ parameters.versionNumber }}' -DevEnvironment ''
-    displayName: Prepare versioning
-
   - ${{ if eq(parameters.enableMsBuildCaching, true) }}:
     - pwsh: |-
         $MSBuildCacheParameters = ""
