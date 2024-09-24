@@ -64,6 +64,7 @@ namespace PowerToys
             static GpoRuleConfigured GetConfiguredMwbValidateRemoteIpValue();
             static GpoRuleConfigured GetConfiguredMwbDisableUserDefinedIpMappingRulesValue();
             static String GetConfiguredMwbPolicyDefinedIpMappingRules();
+            static GpoRuleConfigured GetConfiguredNewPlusHideTemplateFilenameExtensionValue();
         }
     }
 }
