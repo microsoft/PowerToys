@@ -175,6 +175,16 @@ bool NewSettings::GetEnabled()
 
 bool NewSettings::GetHideFileExtension() const
 {
+    auto gpoSetting = powertoys_gpo::getConfiguredNewPlusHideTemplateFilenameExtensionValue();
+    if (gpoSetting == powertoys_gpo::gpo_rule_configured_enabled)
+    {
+        return true;
+    }
+    if (gpoSetting == powertoys_gpo::gpo_rule_configured_disabled)
+    {
+        return false;
+    }
+
     return new_settings.hide_file_extension;
 }
 

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -2000,7 +2000,8 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Actions</value>
   </data>
   <data name="AdvancedPasteUI_Actions.Description" xml:space="preserve">
-    <value>Create and manage advanced paste custom actions</value>
+    <value>Create and manage advanced paste custom actions.
+(Requires Paste with AI to be enabled)</value>
   </data>
   <data name="AdvancedPasteUI_AddCustomActionButton.Content" xml:space="preserve">
     <value>Add custom action</value>
@@ -3583,6 +3584,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_SelectedLanguage_Maori.Content" xml:space="preserve">
     <value>Maori</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Romanization.Content" xml:space="preserve">
+    <value>Middle Eastern Romanization</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Dutch.Content" xml:space="preserve">
     <value>Dutch</value>
