@@ -18,7 +18,7 @@ steps:
     curl.exe -J -L -O "https://dot.net/v1/dotnet-install.ps1"
     $NEW_DOTNET_ROOT = "$(Agent.ToolsDirectory)\dotnet"
     & ./dotnet-install.ps1 -Channel "${{parameters.version}}" -InstallDir $NEW_DOTNET_ROOT
-    Write-Host "##vso[task.setvariable variabel=DOTNET_ROOT]${NEW_DOTNET_ROOT}"
+    Write-Host "##vso[task.setvariable variable=DOTNET_ROOT]${NEW_DOTNET_ROOT}"
     Write-Host "##vso[task.prependpath]${NEW_DOTNET_ROOT}"
   ${{ if eq(parameters.sdk, true) }}:
     displayName: "Install .NET ${{parameters.version}} SDK"
