@@ -145,9 +145,16 @@ private:
             winrt::Windows::Security::Credentials::PasswordVault vault;
             return vault.Retrieve(OPENAI_VAULT_RESOURCE, OPENAI_VAULT_USERNAME) != nullptr;
         }
-        catch (...)
+        catch (const winrt::hresult_error& ex)
         {
-            Logger::warn("Unable to retrieve OpenAI key from vault; assuming there isn't one.");
+            // Looks like the only way to access the PasswordVault is through the an API that throws an exception in case the resource doesn't exist.
+            // If the compiler breaks here when you're debugging, just continue.
+            // If you want to disable breaking here in a more permanent way, just add a condition in Visual Studio's Exception Settings to not break on win::hresult_error, but that might make you not hit other exceptions you might want to catch.
+            if (ex.code() == HRESULT_FROM_WIN32(ERROR_NOT_FOUND))
+            {
+                return false; // Credential doesn't exist.
+            }
+            Logger::error("Unexpected error while retrieving OpenAI key from vault: {}", winrt::to_string(ex.message()));
             return false;
         }
     }
