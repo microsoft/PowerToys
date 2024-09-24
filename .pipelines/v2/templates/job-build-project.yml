@@ -234,6 +234,9 @@ jobs:
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
+    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
   - task: VSBuild@1
     displayName: Create Environment Variables Editor package
@@ -244,6 +247,9 @@ jobs:
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
+    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
   - task: VSBuild@1
     displayName: Create Registry Preview package
@@ -254,6 +260,9 @@ jobs:
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
+    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
   - task: CopyFiles@2
     displayName: Stage NuGet packages
@@ -306,6 +315,9 @@ jobs:
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
+    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
   - task: VSBuild@1
     displayName: Build WebcamReportTool
@@ -323,6 +335,9 @@ jobs:
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
+    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
   - task: VSBuild@1
     displayName: Build StylesReportTool
@@ -340,6 +355,9 @@ jobs:
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
+    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
   - ${{ each project in parameters.csProjectsToPublish }}:
     - task: VSBuild@1
