@@ -38,11 +38,10 @@ jobs:
     displayName: Download artifacts
     artifact: build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}
 
-  - task: UseDotNet@2
-    displayName: 'Install .NET 8 SDK'
-    inputs:
-      packageType: sdk
-      version: '8.x'
+  - template: steps-ensure-dotnet-version.yml
+    parameters:
+      sdk: true
+      version: '8.0'
 
   - task: VisualStudioTestPlatformInstaller@1
     displayName: Ensure VSTest Platform

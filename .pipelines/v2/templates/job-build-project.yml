@@ -133,17 +133,16 @@ jobs:
       displayName: Prepare MSBuildCache variables
 
   - ${{ if eq(parameters.codeSign, true) }}:
-    - task: UseDotNet@2 # Only required if we're using ESRP
-      displayName: 'Install .NET 6 SDK'
-      inputs:
-        packageType: sdk
-        version: '6.x'
+    # Only required if we're using ESRP
+    - template: steps-ensure-dotnet-version.yml
+      parameters:
+        sdk: true
+        version: '6.0'
 
-  - task: UseDotNet@2
-    displayName: 'Install .NET 8 SDK'
-    inputs:
-      packageType: sdk
-      version: '8.x'
+  - template: steps-ensure-dotnet-version.yml
+    parameters:
+      sdk: true
+      version: '8.0'
 
   - ${{ if eq(parameters.runTests, true) }}:
     - task: VisualStudioTestPlatformInstaller@1
