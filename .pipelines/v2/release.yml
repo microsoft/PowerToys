@@ -10,6 +10,11 @@ resources:
 
 # Expose all of these parameters for user configuration.
 parameters:
+  - name: publishSymbolsToPublic
+    displayName: "Publish Symbols to **PUBLIC** (use only for Final Builds)"
+    type: boolean
+    default: false
+
   - name: versionNumber
     displayName: "Version Number"
     type: string
@@ -27,11 +32,6 @@ parameters:
     default:
       - x64
       - arm64
-
-  - name: publishSymbolsToPublic
-    displayName: "Publish Symbols to **PUBLIC** (use only for Final Builds)"
-    type: boolean
-    default: true
 
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
