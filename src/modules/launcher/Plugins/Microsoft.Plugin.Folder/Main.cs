@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Windows.Controls;
