@@ -8,7 +8,7 @@ using WorkspacesLauncherUI.Utils;
 
 namespace Workspaces.Data
 {
-    public class WorkspacesEditorData<T>
+    public class WorkspacesUIData<T>
     {
         protected JsonSerializerOptions JsonOptions
         {
@@ -22,10 +22,8 @@ namespace Workspaces.Data
             }
         }
 
-        public T Read(string file)
+        public T Deserialize(string data)
         {
-            IOUtils ioUtils = new IOUtils();
-            string data = ioUtils.ReadFile(file);
             return JsonSerializer.Deserialize<T>(data, JsonOptions);
         }
 
