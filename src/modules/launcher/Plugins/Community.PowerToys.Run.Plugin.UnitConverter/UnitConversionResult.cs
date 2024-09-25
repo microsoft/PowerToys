@@ -39,7 +39,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
             if (double.TryParse(formatted, provider, out double parsedNumber) &&
                 Math.Abs(ConvertedValue - parsedNumber) > double.Epsilon &&
-                !formatted.Contains('E', StringComparison.InvariantCultureIgnoreCase))
+                !formatted.Contains('E', StringComparison.OrdinalIgnoreCase))
             {
                 return formatted + "… " + UnitName;
             }
