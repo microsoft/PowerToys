@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Windows;
 using Common.UI;
@@ -40,6 +41,20 @@ namespace WorkspacesLauncherUI
         {
             Logger.InitializeLogger("\\Workspaces\\WorkspacesLauncherUI");
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+
+            var languageTag = LanguageHelper.LoadLanguage();
+
+            if (!string.IsNullOrEmpty(languageTag))
+            {
+                try
+                {
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(languageTag);
+                }
+                catch (CultureNotFoundException ex)
+                {
+                    Logger.LogError("CultureNotFoundException: " + ex.Message);
+                }
+            }
 
             const string appName = "Local\\PowerToys_Workspaces_LauncherUI_InstanceMutex";
             bool createdNew;
