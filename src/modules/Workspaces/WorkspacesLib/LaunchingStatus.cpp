@@ -64,3 +64,28 @@ void LaunchingStatus::Update(const WorkspacesData::WorkspacesProject::Applicatio
         m_updateCallback(m_appsState);
     }
 }
+
+LaunchingState LaunchingStatus::GetStatus(const WorkspacesData::WorkspacesProject::Application& app)
+{
+    std::shared_lock lock(m_mutex);
+    if (!m_appsState.contains(app))
+    {
+        Logger::error(L"Error getting state: app {} is not tracked in the project", app.name);
+        return LaunchingState::Failed;
+    }
+    return m_appsState[app].state;
+}
+
+bool LaunchingStatus::ExistsSameAppLaunched(const WorkspacesData::WorkspacesProject::Application& appToFind)
+{
+    std::shared_lock lock(m_mutex);
+    for (const auto& [app, data] : m_appsState)
+    {
+        if ((data.state == LaunchingState::Launched) && (app.path == appToFind.path))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}

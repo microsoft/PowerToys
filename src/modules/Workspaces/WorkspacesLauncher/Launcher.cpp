@@ -20,6 +20,7 @@ Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
     m_windowArrangerHelper(std::make_unique<WindowArrangerHelper>(std::bind(&Launcher::handleWindowArrangerMessage, this, std::placeholders::_1))),
     m_launchingStatus(m_project, std::bind(&LauncherUIHelper::UpdateLaunchStatus, m_uiHelper.get(), std::placeholders::_1))
 {
+    m_needAdditionalLaunch = false;
     m_uiHelper->LaunchUI();
     m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
 
@@ -89,17 +90,19 @@ Launcher::~Launcher()
     Trace::Workspaces::Launch(m_launchedSuccessfully, m_project, m_invokePoint, duration.count(), differentSetup, m_launchErrors);
 }
 
-void Launcher::Launch()
+bool Launcher::Launch()
 {
     Logger::info(L"Launch Workspace {} : {}", m_project.name, m_project.id);
-    m_launchedSuccessfully = AppLauncher::Launch(m_project, m_launchingStatus, m_launchErrors);
+    bool needAdditionalLaunch;
+    m_launchedSuccessfully = AppLauncher::Launch(m_project, m_launchingStatus, m_launchErrors, &needAdditionalLaunch);
+    return needAdditionalLaunch;
 }
 
 void Launcher::handleWindowArrangerMessage(const std::wstring& msg)
 {
     if (msg == L"ready")
     {
-        Launch();
+        m_needAdditionalLaunch = Launch();
     }
     else
     {
@@ -109,6 +112,10 @@ void Launcher::handleWindowArrangerMessage(const std::wstring& msg)
             if (data.has_value())
             {
                 m_launchingStatus.Update(data.value().application, data.value().state);
+                if (m_needAdditionalLaunch)
+                {
+                    m_needAdditionalLaunch = Launch();
+                }
             }
             else
             {

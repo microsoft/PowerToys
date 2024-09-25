@@ -16,6 +16,8 @@ public:
     const WorkspacesData::LaunchingAppStateMap& Get() noexcept;
 
     void Update(const WorkspacesData::WorkspacesProject::Application& app, LaunchingState state);
+    LaunchingState GetStatus(const WorkspacesData::WorkspacesProject::Application& app);
+    bool ExistsSameAppLaunched(const WorkspacesData::WorkspacesProject::Application& app);
     
 private:
     WorkspacesData::LaunchingAppStateMap m_appsState;

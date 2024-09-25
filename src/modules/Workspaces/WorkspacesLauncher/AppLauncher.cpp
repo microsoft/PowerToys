@@ -182,28 +182,36 @@ namespace AppLauncher
         return launched;
     }
 
-    bool Launch(WorkspacesData::WorkspacesProject& project, LaunchingStatus& launchingStatus, ErrorList& launchErrors)
+    bool Launch(WorkspacesData::WorkspacesProject& project, LaunchingStatus& launchingStatus, ErrorList& launchErrors, bool* needAdditionalLaunch)
     {
         bool launchedSuccessfully{ true };
 
         auto installedApps = Utils::Apps::GetAppsList();
         UpdatePackagedApps(project.apps, installedApps);
 
+        *needAdditionalLaunch =  false ;
+
         // Launch apps
         for (auto& app : project.apps)
         {
-            if (!Launch(app, launchErrors))
+            if (launchingStatus.ExistsSameAppLaunched(app))
             {
-                Logger::error(L"Failed to launch {}", app.name);
-                launchingStatus.Update(app, LaunchingState::Failed);
-                launchedSuccessfully = false;
+                *needAdditionalLaunch = true;
             }
-            else
+            else if (launchingStatus.GetStatus(app) == LaunchingState::Waiting)
             {
-                launchingStatus.Update(app, LaunchingState::Launched);
+                if (!Launch(app, launchErrors))
+                {
+                    Logger::error(L"Failed to launch {}", app.name);
+                    launchingStatus.Update(app, LaunchingState::Failed);
+                    launchedSuccessfully = false;
+                }
+                else
+                {
+                    launchingStatus.Update(app, LaunchingState::Launched);
+                }
             }
         }
-
         return launchedSuccessfully;
     }
 }
