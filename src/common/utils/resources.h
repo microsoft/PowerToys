@@ -30,7 +30,7 @@ inline std::wstring get_english_fallback_string(UINT resource_id, HINSTANCE inst
 
 inline std::wstring get_resource_string_language_override(UINT resource_id, HINSTANCE instance)
 {
-    std::wstring language = LanguageHelpers::load_language();
+    static std::wstring language = LanguageHelpers::load_language();
     unsigned lang = LANG_ENGLISH;
     unsigned sublang = SUBLANG_ENGLISH_US;
 
