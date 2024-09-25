@@ -51,6 +51,7 @@ namespace AdvancedPaste.ViewModels
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(InputTxtBoxPlaceholderText))]
         [NotifyPropertyChangedFor(nameof(GeneralErrorText))]
+        [NotifyPropertyChangedFor(nameof(IsPasteWithAIEnabled))]
         [NotifyPropertyChangedFor(nameof(IsCustomAIEnabled))]
         private bool _isAllowedByGPO;
 
@@ -67,7 +68,9 @@ namespace AdvancedPaste.ViewModels
 
         public ObservableCollection<PasteFormat> CustomActionPasteFormats { get; } = [];
 
-        public bool IsCustomAIEnabled => IsAllowedByGPO && IsClipboardDataText && aiHelper.IsAIEnabled;
+        public bool IsPasteWithAIEnabled => IsAllowedByGPO && aiHelper.IsAIEnabled;
+
+        public bool IsCustomAIEnabled => IsPasteWithAIEnabled && IsClipboardDataText;
 
         public event EventHandler<CustomActionActivatedEventArgs> CustomActionActivated;
 
@@ -94,7 +97,7 @@ namespace AdvancedPaste.ViewModels
 
             ClipboardHistoryEnabled = IsClipboardHistoryEnabled();
             ReadClipboard();
-            UpdateAllowedByGPO();
+            UpdateOpenAIKey();
             _clipboardTimer = new() { Interval = TimeSpan.FromSeconds(1) };
             _clipboardTimer.Tick += ClipboardTimer_Tick;
             _clipboardTimer.Start();
@@ -103,7 +106,7 @@ namespace AdvancedPaste.ViewModels
             _userSettings.CustomActions.CollectionChanged += (_, _) => EnqueueRefreshPasteFormats();
             PropertyChanged += (_, e) =>
             {
-                if (e.PropertyName == nameof(Query))
+                if (e.PropertyName == nameof(Query) || e.PropertyName == nameof(IsPasteWithAIEnabled))
                 {
                     EnqueueRefreshPasteFormats();
                 }
@@ -159,11 +162,14 @@ namespace AdvancedPaste.ViewModels
             }
 
             CustomActionPasteFormats.Clear();
-            foreach (var customAction in _userSettings.CustomActions)
+            if (IsPasteWithAIEnabled)
             {
-                if (Filter(customAction.Name) || Filter(customAction.Prompt))
+                foreach (var customAction in _userSettings.CustomActions)
                 {
-                    CustomActionPasteFormats.Add(new PasteFormat(customAction, GetNextShortcutText()));
+                    if (Filter(customAction.Name) || Filter(customAction.Prompt))
+                    {
+                        CustomActionPasteFormats.Add(new PasteFormat(customAction, GetNextShortcutText()));
+                    }
                 }
             }
         }
@@ -183,34 +189,19 @@ namespace AdvancedPaste.ViewModels
         public void OnShow()
         {
             ReadClipboard();
-            UpdateAllowedByGPO();
 
-            if (IsAllowedByGPO)
+            if (UpdateOpenAIKey())
             {
-                var openAIKey = AICompletionsHelper.LoadOpenAIKey();
-                var currentKey = aiHelper.GetKey();
-                bool keyChanged = openAIKey != currentKey;
+                app.GetMainWindow()?.StartLoading();
 
-                if (keyChanged)
+                _dispatcherQueue.TryEnqueue(() =>
                 {
-                    app.GetMainWindow().StartLoading();
-
-                    Task.Run(() =>
-                    {
-                        aiHelper.SetOpenAIKey(openAIKey);
-                    }).ContinueWith(
-                        (t) =>
-                        {
-                            _dispatcherQueue.TryEnqueue(() =>
-                            {
-                                app.GetMainWindow().FinishLoading(aiHelper.IsAIEnabled);
-                                OnPropertyChanged(nameof(InputTxtBoxPlaceholderText));
-                                OnPropertyChanged(nameof(GeneralErrorText));
-                                OnPropertyChanged(nameof(IsCustomAIEnabled));
-                            });
-                        },
-                        TaskScheduler.Default);
-                }
+                    app.GetMainWindow()?.FinishLoading(aiHelper.IsAIEnabled);
+                    OnPropertyChanged(nameof(InputTxtBoxPlaceholderText));
+                    OnPropertyChanged(nameof(GeneralErrorText));
+                    OnPropertyChanged(nameof(IsPasteWithAIEnabled));
+                    OnPropertyChanged(nameof(IsCustomAIEnabled));
+                });
             }
 
             ClipboardHistoryEnabled = IsClipboardHistoryEnabled();
@@ -573,6 +564,21 @@ namespace AdvancedPaste.ViewModels
         private void UpdateAllowedByGPO()
         {
             IsAllowedByGPO = PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOnlineAIModelsValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled;
+        }
+
+        private bool UpdateOpenAIKey()
+        {
+            UpdateAllowedByGPO();
+
+            if (IsAllowedByGPO)
+            {
+                var oldKey = aiHelper.GetKey();
+                var newKey = AICompletionsHelper.LoadOpenAIKey();
+                aiHelper.SetOpenAIKey(newKey);
+                return newKey != oldKey;
+            }
+
+            return false;
         }
     }
 }
