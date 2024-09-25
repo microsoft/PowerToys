@@ -229,6 +229,25 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="Appearance_Behavior" IsEnabled="True">
+                    <tkcontrols:SettingsCard x:Uid="LanguageHeader" HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}">
+                        <ComboBox
+                            x:Name="Languages_ComboBox"
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            DisplayMemberPath="Language"
+                            ItemsSource="{Binding Languages, Mode=TwoWay}"
+                            SelectedIndex="{Binding LanguagesIndex, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <InfoBar
+                        x:Uid="LanguageRestartInfo"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.LanguageChanged}"
+                        IsTabStop="True"
+                        Severity="Informational">
+                        <InfoBar.ActionButton>
+                            <Button x:Uid="LanguageRestartInfoButton" Click="Click_LanguageRestart" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
+
                     <tkcontrols:SettingsCard x:Uid="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
                         <tkcontrols:SettingsCard.Description>
                             <HyperlinkButton x:Uid="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
