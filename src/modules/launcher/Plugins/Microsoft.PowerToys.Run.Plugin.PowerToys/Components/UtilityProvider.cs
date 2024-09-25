@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+
 using Microsoft.PowerToys.Run.Plugin.PowerToys.Components;
 using Microsoft.PowerToys.Run.Plugin.PowerToys.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;

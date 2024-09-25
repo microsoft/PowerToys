@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+
 using ImageResizer.Helpers;
 using ImageResizer.Models;
 using ImageResizer.Views;

@@ -6,6 +6,7 @@ using System;
 using System.Threading;
 using System.Windows;
 using System.Windows.Forms.Design.Behavior;
+
 using Common.UI;
 using ManagedCommon;
 using WorkspacesLauncherUI.Utils;

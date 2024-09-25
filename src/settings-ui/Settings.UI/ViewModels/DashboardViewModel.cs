@@ -125,6 +125,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private void EnabledChangedOnUI(DashboardListItem dashboardListItem)
         {
             Views.ShellPage.UpdateGeneralSettingsCallback(dashboardListItem.Tag, dashboardListItem.IsEnabled);
+
+            if (dashboardListItem.Tag == ModuleType.NewPlus && dashboardListItem.IsEnabled == true)
+            {
+                var settingsUtils = new SettingsUtils();
+                var settings = NewPlusViewModel.LoadSettings(settingsUtils);
+                NewPlusViewModel.CopyTemplateExamples(settings.TemplateLocation);
+            }
         }
 
         public void ModuleEnabledChangedOnSettingsPage()
@@ -178,6 +185,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.MeasureTool => GetModuleItemsMeasureTool(),
                 ModuleType.ShortcutGuide => GetModuleItemsShortcutGuide(),
                 ModuleType.PowerOCR => GetModuleItemsPowerOCR(),
+                ModuleType.NewPlus => GetModuleItemsNewPlus(),
                 _ => new ObservableCollection<DashboardModuleItem>(), // never called, all values listed above
             };
         }
@@ -491,6 +499,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("PowerOcr_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.ActivationShortcut.GetKeysList() },
+            };
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsNewPlus()
+        {
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleTextItem() { Label = resourceLoader.GetString("NewPlus_Product_Description/Description") },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }

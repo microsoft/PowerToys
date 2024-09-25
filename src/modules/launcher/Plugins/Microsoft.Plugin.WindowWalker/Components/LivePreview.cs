@@ -4,6 +4,7 @@
 
 // Code forked from Betsegaw Tadele's https://github.com/betsegaw/windowwalker/
 using System;
+
 using Wox.Plugin.Common.Win32;
 
 namespace Microsoft.Plugin.WindowWalker.Components

@@ -29,18 +29,25 @@
             x:Name="ImagePreview"
             MaxWidth="{x:Bind ImagePreviewer.MaxImageSize.Width, Mode=OneWay}"
             MaxHeight="{x:Bind ImagePreviewer.MaxImageSize.Height, Mode=OneWay}"
+            PointerMoved="ToolTipParentControl_PointerMoved"
             Source="{x:Bind ImagePreviewer.Preview, Mode=OneWay}"
-            ToolTipService.ToolTip="{x:Bind InfoTooltip, Mode=OneWay}"
-            Visibility="{x:Bind IsPreviewVisible(ImagePreviewer, Previewer.State), Mode=OneWay}" />
+            Visibility="{x:Bind IsPreviewVisible(ImagePreviewer, Previewer.State), Mode=OneWay}">
+            <ToolTipService.ToolTip>
+                <ToolTip Content="{x:Bind InfoTooltip, Mode=OneWay}" />
+            </ToolTipService.ToolTip>
+        </Image>
 
         <MediaPlayerElement
             x:Name="VideoPreview"
             AreTransportControlsEnabled="True"
             AutoPlay="True"
             FlowDirection="LeftToRight"
+            PointerMoved="ToolTipParentControl_PointerMoved"
             Source="{x:Bind VideoPreviewer.Preview, Mode=OneWay}"
-            ToolTipService.ToolTip="{x:Bind InfoTooltip, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(VideoPreviewer, Previewer.State), Mode=OneWay}">
+            <ToolTipService.ToolTip>
+                <ToolTip Content="{x:Bind InfoTooltip, Mode=OneWay}" />
+            </ToolTipService.ToolTip>
             <MediaPlayerElement.KeyboardAccelerators>
                 <KeyboardAccelerator Key="Space" Invoked="KeyboardAccelerator_Space_Invoked" />
             </MediaPlayerElement.KeyboardAccelerators>

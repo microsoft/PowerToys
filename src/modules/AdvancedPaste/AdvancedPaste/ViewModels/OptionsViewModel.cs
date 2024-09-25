@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.Settings;
@@ -22,6 +23,7 @@ using Microsoft.Win32;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using WinUIEx;
+
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 namespace AdvancedPaste.ViewModels
@@ -92,6 +94,7 @@ namespace AdvancedPaste.ViewModels
 
             ClipboardHistoryEnabled = IsClipboardHistoryEnabled();
             ReadClipboard();
+            UpdateAllowedByGPO();
             _clipboardTimer = new() { Interval = TimeSpan.FromSeconds(1) };
             _clipboardTimer.Tick += ClipboardTimer_Tick;
             _clipboardTimer.Start();
@@ -460,7 +463,7 @@ namespace AdvancedPaste.ViewModels
         {
             Logger.LogTrace();
 
-            if (string.IsNullOrWhiteSpace(inputInstructions))
+            if (string.IsNullOrWhiteSpace(inputInstructions) || !IsCustomAIEnabled)
             {
                 return string.Empty;
             }
