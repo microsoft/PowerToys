@@ -35,17 +35,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     }
 
     auto args = split(commandLine, L" ");
-    std::wstring id{};
-    if (args.size() == 1)
-    {
-        id = args[0];
-    }
-    else if (args.size() == 2)
-    {
-        id = args[1];
-    }
-    
-    if (id.empty())
+    if (args.workspaceId.empty())
     {
         Logger::warn("Incorrect command line arguments: no workspace id");
         return 1;
@@ -60,11 +50,11 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     {
         auto file = WorkspacesData::TempWorkspacesFile();
         auto res = JsonUtils::ReadSingleWorkspace(file);
-        if (res.isOk() && res.value().id == id)
+        if (res.isOk() && res.value().id == args.workspaceId)
         {
             projectToLaunch = res.getValue();
         }
-        else
+        else if (res.isError())
         {
             Logger::error(L"Error reading temp file");
             return 1;
@@ -86,7 +76,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 
         for (const auto& proj : workspaces)
         {
-            if (proj.id == id)
+            if (proj.id == args.workspaceId)
             {
                 projectToLaunch = proj;
                 break;
@@ -96,7 +86,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 
     if (projectToLaunch.id.empty())
     {
-        Logger::critical(L"Workspace {} not found", id);
+        Logger::critical(L"Workspace {} not found", args.workspaceId);
         return 1;
     }
     
