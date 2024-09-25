@@ -31,7 +31,7 @@ parameters:
   - name: publishSymbolsToPublic
     displayName: "Publish Symbols to **PUBLIC** (use only for Final Builds)"
     type: boolean
-    default: true
+    default: false
 
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
