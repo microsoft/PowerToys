@@ -26,7 +26,6 @@ bool LaunchingStatus::AllLaunchedAndMoved() noexcept
     {
         if (data.state != LaunchingState::Failed && data.state != LaunchingState::LaunchedAndMoved)
         {
-            Logger::debug(data.state);
             return false;
         }
     }
