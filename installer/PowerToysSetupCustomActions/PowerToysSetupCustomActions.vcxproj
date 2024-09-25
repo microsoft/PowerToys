@@ -60,6 +60,7 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\ImageResizer.wxs"" ""$(ProjectDir)..\PowerToysSetup\ImageResizer.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\KeyboardManager.wxs"" ""$(ProjectDir)..\PowerToysSetup\KeyboardManager.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\MouseWithoutBorders.wxs"" ""$(ProjectDir)..\PowerToysSetup\MouseWithoutBorders.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\NewPlus.wxs"" ""$(ProjectDir)..\PowerToysSetup\NewPlus.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Peek.wxs"" ""$(ProjectDir)..\PowerToysSetup\Peek.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\PowerRename.wxs"" ""$(ProjectDir)..\PowerToysSetup\PowerRename.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Product.wxs"" ""$(ProjectDir)..\PowerToysSetup\Product.wxs.bk""""

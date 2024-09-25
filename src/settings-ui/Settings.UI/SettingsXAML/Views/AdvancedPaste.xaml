@@ -102,7 +102,10 @@
                     </controls:SettingsGroup>
 
                     <controls:SettingsGroup x:Uid="AdvancedPaste_Direct_Access_Hotkeys_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                        <tkcontrols:SettingsCard x:Uid="AdvancedPasteUI_Actions" HeaderIcon="{ui:FontIcon Glyph=&#xE792;}">
+                        <tkcontrols:SettingsCard
+                            x:Uid="AdvancedPasteUI_Actions"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE792;}"
+                            IsEnabled="{x:Bind ViewModel.IsOpenAIEnabled, Mode=OneWay}">
                             <Button
                                 x:Uid="AdvancedPasteUI_AddCustomActionButton"
                                 Click="AddCustomActionButton_Click"
@@ -130,6 +133,7 @@
                             x:Name="CustomActions"
                             x:Uid="CustomActions"
                             HorizontalAlignment="Stretch"
+                            IsEnabled="{x:Bind ViewModel.IsOpenAIEnabled, Mode=OneWay}"
                             IsTabStop="False"
                             ItemsSource="{x:Bind ViewModel.CustomActions, Mode=OneWay}">
                             <ItemsControl.ItemTemplate>

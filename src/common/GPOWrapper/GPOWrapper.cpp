@@ -176,6 +176,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPasteOnlineAIModelsValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredNewPlusEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredNewPlusEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredWorkspacesEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredWorkspacesEnabledValue());
@@ -215,5 +219,9 @@ namespace winrt::PowerToys::GPOWrapper::implementation
 
         // Convert std::wstring to winrt::hstring
         return to_hstring(rules.c_str());
+    }
+    GpoRuleConfigured GPOWrapper::GetConfiguredNewPlusHideTemplateFilenameExtensionValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredNewPlusHideTemplateFilenameExtensionValue());
     }
 }

@@ -54,6 +54,7 @@ namespace PowerToys
             static GpoRuleConfigured GetConfiguredQoiPreviewEnabledValue();
             static GpoRuleConfigured GetConfiguredQoiThumbnailsEnabledValue();
             static GpoRuleConfigured GetAllowedAdvancedPasteOnlineAIModelsValue();
+            static GpoRuleConfigured GetConfiguredNewPlusEnabledValue();
             static GpoRuleConfigured GetConfiguredWorkspacesEnabledValue();
             static GpoRuleConfigured GetConfiguredMwbClipboardSharingEnabledValue();
             static GpoRuleConfigured GetConfiguredMwbFileTransferEnabledValue();
@@ -63,6 +64,7 @@ namespace PowerToys
             static GpoRuleConfigured GetConfiguredMwbValidateRemoteIpValue();
             static GpoRuleConfigured GetConfiguredMwbDisableUserDefinedIpMappingRulesValue();
             static String GetConfiguredMwbPolicyDefinedIpMappingRules();
+            static GpoRuleConfigured GetConfiguredNewPlusHideTemplateFilenameExtensionValue();
         }
     }
 }
