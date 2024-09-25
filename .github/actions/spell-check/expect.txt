@@ -30,6 +30,7 @@ AFX
 AGGREGATABLE
 AHybrid
 AKV
+akv
 ALarger
 ALLAPPS
 ALLINPUT
@@ -728,6 +729,7 @@ ISettings
 IShell
 isocpp
 iss
+issecret
 ISSEPARATOR
 ITask
 ith
@@ -946,6 +948,7 @@ mrw
 msc
 mscorlib
 msdata
+MSDL
 msedge
 MSGFLT
 msiexec
@@ -1138,6 +1141,7 @@ pch
 pchast
 PCIDLIST
 PCWSTR
+pdbs
 pdisp
 pdo
 pdto
@@ -1203,6 +1207,7 @@ ppv
 prc
 Prefixer
 Preinstalled
+prependpath
 prevhost
 previewer
 PREVIEWHANDLERFRAMEINFO
@@ -1565,6 +1570,7 @@ SWC
 SWFO
 SWP
 SWRESTORE
+symbolrequestprod
 SYMCACHE
 SYMED
 SYMOPT
@@ -1640,6 +1646,7 @@ TOUCHEVENTF
 TOUCHINPUT
 touchpad
 tracelogging
+trafficmanager
 traies
 transicc
 TRAYMOUSEMESSAGE
