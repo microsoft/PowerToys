@@ -3,12 +3,12 @@
 #include <vector>
 #include <string>
 
-std::vector<std::string> split(std::string s, const std::string& delimiter)
+std::vector<std::wstring> split(std::wstring s, const std::wstring& delimiter)
 {
-    std::vector<std::string> tokens;
+    std::vector<std::wstring> tokens;
     size_t pos = 0;
-    std::string token;
-    while ((pos = s.find(delimiter)) != std::string::npos)
+    std::wstring token;
+    while ((pos = s.find(delimiter)) != std::wstring::npos)
     {
         token = s.substr(0, pos);
         tokens.push_back(token);

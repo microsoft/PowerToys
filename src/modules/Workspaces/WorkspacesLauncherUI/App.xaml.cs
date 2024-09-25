@@ -5,11 +5,9 @@
 using System;
 using System.Threading;
 using System.Windows;
-using System.Windows.Forms.Design.Behavior;
-
 using Common.UI;
 using ManagedCommon;
-using WorkspacesLauncherUI.Utils;
+using PowerToys.Interop;
 using WorkspacesLauncherUI.ViewModels;
 
 namespace WorkspacesLauncherUI
@@ -21,6 +19,9 @@ namespace WorkspacesLauncherUI
     {
         private static Mutex _instanceMutex;
 
+        // Create an instance of the  IPC wrapper.
+        private static TwoWayPipeMessageIPCManaged ipcmanager;
+
         private StatusWindow _mainWindow;
 
         private MainViewModel _mainViewModel;
@@ -29,21 +30,23 @@ namespace WorkspacesLauncherUI
 
         private bool _isDisposed;
 
+        public static Action<string> IPCMessageReceivedCallback { get; set; }
+
         public App()
         {
         }
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            Logger.InitializeLogger("\\Workspaces\\Logs");
+            Logger.InitializeLogger("\\Workspaces\\WorkspacesLauncherUI");
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
-            const string appName = "Local\\PowerToys_Workspaces_Launcher_InstanceMutex";
+            const string appName = "Local\\PowerToys_Workspaces_LauncherUI_InstanceMutex";
             bool createdNew;
             _instanceMutex = new Mutex(true, appName, out createdNew);
             if (!createdNew)
             {
-                Logger.LogWarning("Another instance of Workspaces Launcher is already running. Exiting this instance.");
+                Logger.LogWarning("Another instance of Workspaces Launcher UI is already running. Exiting this instance.");
                 _instanceMutex = null;
                 Shutdown(0);
                 return;
@@ -55,6 +58,15 @@ namespace WorkspacesLauncherUI
                 Shutdown(0);
                 return;
             }
+
+            ipcmanager = new TwoWayPipeMessageIPCManaged("\\\\.\\pipe\\powertoys_workspaces_ui_", "\\\\.\\pipe\\powertoys_workspaces_launcher_ui_", (string message) =>
+            {
+                if (IPCMessageReceivedCallback != null && message.Length > 0)
+                {
+                    IPCMessageReceivedCallback(message);
+                }
+            });
+            ipcmanager.Start();
 
             ThemeManager = new ThemeManager(this);
 
@@ -97,6 +109,10 @@ namespace WorkspacesLauncherUI
                 if (disposing)
                 {
                     ThemeManager?.Dispose();
+
+                    ipcmanager?.End();
+                    ipcmanager?.Dispose();
+
                     _instanceMutex?.Dispose();
                 }
 

@@ -18,22 +18,13 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AppLauncher.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RegistryUtils.h">
+    <ClInclude Include="WindowCreationHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LauncherUIHelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WindowArrangerHelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Launcher.h">
+    <ClInclude Include="WindowArranger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -44,30 +35,21 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AppLauncher.cpp">
+    <ClCompile Include="WindowCreationHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RegistryUtils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LauncherUIHelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WindowArrangerHelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Launcher.cpp">
+    <ClCompile Include="WindowArranger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="WorkspacesLauncherResource.base.rc">
+    <None Include="WorkspacesWindowArrangerResource.base.rc">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Generated Files/WorkspacesLauncherResource.rc">
+    <ResourceCompile Include="Generated Files/WorkspacesWindowArrangerResource.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
