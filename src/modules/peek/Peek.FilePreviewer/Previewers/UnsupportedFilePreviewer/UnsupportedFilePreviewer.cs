@@ -19,7 +19,6 @@ using Peek.Common.Models;
 using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Helpers;
 using Windows.Foundation;
-using Windows.System.Update;
 
 namespace Peek.FilePreviewer.Previewers
 {
