@@ -207,6 +207,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             try
             {
                 settings = settingsUtils.GetSettingsOrDefault<NewPlusSettings>(NewPlusSettings.ModuleName);
+
+                if (string.IsNullOrEmpty(settings.TemplateLocation))
+                {
+                    // This can happen when running the DEBUG Settings application without first letting the runner create the default settings file.
+                    settings.TemplateLocation = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "NewPlus", "Templates");
+                }
             }
             catch (Exception e)
             {
