@@ -208,6 +208,45 @@ jobs:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
+  - task: VSBuild@1
+    displayName: Build Hosts File Editor library for packaging
+    inputs:
+      solution: '**\HostsUILib.csproj'
+      vsVersion: 17.0
+      msbuildArgs: /p:CIBuild=true -t:build /bl:$(LogOutputDirectory)\build-hosts.binlog
+      configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+  - task: VSBuild@1
+    displayName: Build Environment Variables Editor library for packaging
+    inputs:
+      solution: '**\EnvironmentVariablesUILib.csproj'
+      vsVersion: 17.0
+      msbuildArgs: /p:CIBuild=true -t:build /bl:$(LogOutputDirectory)\build-env-var-editor.binlog
+      configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+  - task: VSBuild@1
+    displayName: Build Registry Preview library for packaging
+    inputs:
+      solution: '**\RegistryPreviewUILib.csproj'
+      vsVersion: 17.0
+      msbuildArgs: /p:CIBuild=true -t:build /bl:$(LogOutputDirectory)\build-registry-preview.binlog
+      configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
   - ${{ if eq(parameters.codeSign, true) }}:
     - template: steps-esrp-signing.yml
       parameters:
@@ -224,7 +263,7 @@ jobs:
     inputs:
       solution: '**\HostsUILib.csproj'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true -t:pack /bl:$(LogOutputDirectory)\build-hosts.binlog
+      msbuildArgs: /p:CIBuild=true -t:pack /bl:$(LogOutputDirectory)\pack-hosts.binlog
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
@@ -237,7 +276,7 @@ jobs:
     inputs:
       solution: '**\EnvironmentVariablesUILib.csproj'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true -t:pack /bl:$(LogOutputDirectory)\build-env-var-editor.binlog
+      msbuildArgs: /p:CIBuild=true -t:pack /bl:$(LogOutputDirectory)\pack-env-var-editor.binlog
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
@@ -250,7 +289,7 @@ jobs:
     inputs:
       solution: '**\RegistryPreviewUILib.csproj'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true -t:pack /bl:$(LogOutputDirectory)\build-registry-preview.binlog
+      msbuildArgs: /p:CIBuild=true -t:pack /bl:$(LogOutputDirectory)\pack-registry-preview.binlog
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
