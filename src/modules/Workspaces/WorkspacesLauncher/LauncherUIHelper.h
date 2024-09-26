@@ -1,16 +1,18 @@
 #pragma once
 
-#include <LaunchingApp.h>
+#include <WorkspacesLib/WorkspacesData.h>
+#include <WorkspacesLib/IPCHelper.h>
 
 class LauncherUIHelper
 {
 public:
-    LauncherUIHelper() = default;
+    LauncherUIHelper();
     ~LauncherUIHelper();
 
     void LaunchUI();
-    void UpdateLaunchStatus(LaunchingApps launchedApps);
+    void UpdateLaunchStatus(WorkspacesData::LaunchingAppStateMap launchedApps) const;
 
 private:
-    DWORD uiProcessId;
+    DWORD m_processId;
+    IPCHelper m_ipcHelper;
 };

@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Drawing;
+
 using MouseJump.Common.Models.Drawing;
 using MouseJump.Common.NativeMethods;
 using static MouseJump.Common.NativeMethods.Core;

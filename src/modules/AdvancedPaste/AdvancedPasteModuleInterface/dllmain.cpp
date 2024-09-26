@@ -13,7 +13,9 @@
 #include <common/interop/shared_constants.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/winapi_error.h>
+#include <common/utils/gpo.h>
 
+#include <winrt/Windows.Security.Credentials.h>
 #include <atlfile.h>
 #include <atlstr.h>
 #include <vector>
@@ -54,6 +56,9 @@ namespace
     const wchar_t JSON_KEY_PASTE_AS_JSON_HOTKEY[] = L"paste-as-json-hotkey";
     const wchar_t JSON_KEY_SHOW_CUSTOM_PREVIEW[] = L"ShowCustomPreview";
     const wchar_t JSON_KEY_VALUE[] = L"value";
+
+    const wchar_t OPENAI_VAULT_RESOURCE[] = L"https://platform.openai.com/api-keys";
+    const wchar_t OPENAI_VAULT_USERNAME[] = L"PowerToys_AdvancedPaste_OpenAIKey";
 }
 
 class AdvancedPaste : public PowertoyModuleIface
@@ -131,6 +136,34 @@ private:
         jsonObject.SetNamedValue(JSON_KEY_CODE, json::value(hotkey.key));
 
         return jsonObject;
+    }
+
+    static bool open_ai_key_exists()
+    {
+        try
+        {
+            winrt::Windows::Security::Credentials::PasswordVault().Retrieve(OPENAI_VAULT_RESOURCE, OPENAI_VAULT_USERNAME);
+            return true;
+        }
+        catch (const winrt::hresult_error& ex)
+        {
+            // Looks like the only way to access the PasswordVault is through the an API that throws an exception in case the resource doesn't exist.
+            // If the debugger breaks here, just continue.
+            // If you want to disable breaking here in a more permanent way, just add a condition in Visual Studio's Exception Settings to not break on win::hresult_error, but that might make you not hit other exceptions you might want to catch.
+            if (ex.code() == HRESULT_FROM_WIN32(ERROR_NOT_FOUND))
+            {
+                return false; // Credential doesn't exist.
+            }
+            Logger::error("Unexpected error while retrieving OpenAI key from vault: {}", winrt::to_string(ex.message()));
+            return false;
+        }
+    }
+
+    bool is_open_ai_enabled()
+    {
+        return gpo_policy_enabled_configuration() != powertoys_gpo::gpo_rule_configured_disabled &&
+               powertoys_gpo::getAllowedAdvancedPasteOnlineAIModelsValue() != powertoys_gpo::gpo_rule_configured_disabled &&
+               open_ai_key_exists();
     }
 
     bool migrate_data_and_remove_data_file(Hotkey& old_paste_as_plain_hotkey)
@@ -216,15 +249,17 @@ private:
                     if (propertiesObject.HasKey(JSON_KEY_CUSTOM_ACTIONS))
                     {
                         const auto customActions = propertiesObject.GetNamedObject(JSON_KEY_CUSTOM_ACTIONS).GetNamedArray(JSON_KEY_VALUE);
-
-                        for (const auto& customAction : customActions)
+                        if (customActions.Size() > 0 && is_open_ai_enabled())
                         {
-                            const auto object = customAction.GetObjectW();
-
-                            if (object.GetNamedBoolean(JSON_KEY_IS_SHOWN, false))
+                            for (const auto& customAction : customActions)
                             {
-                                m_custom_action_hotkeys.push_back(parse_single_hotkey(object.GetNamedObject(JSON_KEY_SHORTCUT)));
-                                m_custom_action_ids.push_back(static_cast<int>(object.GetNamedNumber(JSON_KEY_ID)));
+                                const auto object = customAction.GetObjectW();
+
+                                if (object.GetNamedBoolean(JSON_KEY_IS_SHOWN, false))
+                                {
+                                    m_custom_action_hotkeys.push_back(parse_single_hotkey(object.GetNamedObject(JSON_KEY_SHORTCUT)));
+                                    m_custom_action_ids.push_back(static_cast<int>(object.GetNamedNumber(JSON_KEY_ID)));
+                                }
                             }
                         }
                     }
@@ -749,8 +784,6 @@ public:
             {
                 Logger::trace(L"Launching new process");
                 launch_process_and_named_pipe();
-
-                Trace::AdvancedPaste_Invoked(L"AdvancedPasteUI");
             }
 
             // hotkeyId in same order as set by get_hotkeys
@@ -774,18 +807,21 @@ public:
 
                 bring_process_to_front();
                 send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_MESSAGE);
+                Trace::AdvancedPaste_Invoked(L"AdvancedPasteUI");
                 return true;
             }
             if (hotkeyId == 2)
             { // m_paste_as_markdown_hotkey
                 Logger::trace(L"Starting paste as markdown directly");
                 send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_MARKDOWN_MESSAGE);
+                Trace::AdvancedPaste_Invoked(L"MarkdownDirect");
                 return true;
             }
             if (hotkeyId == 3)
             { // m_paste_as_json_hotkey
                 Logger::trace(L"Starting paste as json directly");
                 send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_JSON_MESSAGE);
+                Trace::AdvancedPaste_Invoked(L"JsonDirect");
                 return true;
             }
 
@@ -798,6 +834,7 @@ public:
                 Logger::trace(L"Starting custom action id={}", id);
 
                 send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_CUSTOM_ACTION_MESSAGE, std::to_wstring(id));
+                Trace::AdvancedPaste_Invoked(L"CustomActionDirect");
                 return true;
             }
         }

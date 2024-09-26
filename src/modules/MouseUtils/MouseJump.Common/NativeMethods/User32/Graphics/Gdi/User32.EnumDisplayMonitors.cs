@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
+
 using static MouseJump.Common.NativeMethods.Core;
 
 namespace MouseJump.Common.NativeMethods;

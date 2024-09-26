@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Input;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.Service.Helpers;
 using Microsoft.PowerToys.Run.Plugin.Service.Properties;

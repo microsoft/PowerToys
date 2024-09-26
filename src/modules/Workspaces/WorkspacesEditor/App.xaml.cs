@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Windows;
+
 using Common.UI;
 using ManagedCommon;
 using WorkspacesEditor.Utils;
@@ -39,6 +41,20 @@ namespace WorkspacesEditor
             Logger.InitializeLogger("\\Workspaces\\Logs");
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
+            var languageTag = LanguageHelper.LoadLanguage();
+
+            if (!string.IsNullOrEmpty(languageTag))
+            {
+                try
+                {
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(languageTag);
+                }
+                catch (CultureNotFoundException ex)
+                {
+                    Logger.LogError("CultureNotFoundException: " + ex.Message);
+                }
+            }
+
             const string appName = "Local\\PowerToys_Workspaces_Editor_InstanceMutex";
             bool createdNew;
             _instanceMutex = new Mutex(true, appName, out createdNew);
@@ -55,6 +71,20 @@ namespace WorkspacesEditor
                 Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
                 Shutdown(0);
                 return;
+            }
+
+            var args = e?.Args;
+            int powerToysRunnerPid;
+            if (args?.Length > 0)
+            {
+                _ = int.TryParse(args[0], out powerToysRunnerPid);
+
+                Logger.LogInfo($"WorkspacesEditor started from the PowerToys Runner. Runner pid={powerToysRunnerPid}");
+                RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
+                {
+                    Logger.LogInfo("PowerToys Runner exited. Exiting WorkspacesEditor");
+                    Dispatcher.Invoke(Shutdown);
+                });
             }
 
             ThemeManager = new ThemeManager(this);
@@ -89,6 +119,7 @@ namespace WorkspacesEditor
             }
 
             Dispose();
+            Environment.Exit(0);
         }
 
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs args)

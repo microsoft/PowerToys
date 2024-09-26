@@ -4,8 +4,10 @@
 
 using System;
 using System.ComponentModel.Composition;
+using System.Globalization;
 using System.Threading;
 using System.Windows;
+
 using ColorPicker.Mouse;
 using ManagedCommon;
 
@@ -28,6 +30,19 @@ namespace ColorPickerUI
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            try
+            {
+                string appLanguage = LanguageHelper.LoadLanguage();
+                if (!string.IsNullOrEmpty(appLanguage))
+                {
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(appLanguage);
+                }
+            }
+            catch (CultureNotFoundException ex)
+            {
+                Logger.LogError("CultureNotFoundException: " + ex.Message);
+            }
+
             NativeThreadCTS = new CancellationTokenSource();
             ExitToken = NativeThreadCTS.Token;
 

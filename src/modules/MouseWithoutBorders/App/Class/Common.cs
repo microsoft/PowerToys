@@ -17,6 +17,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+
 using Microsoft.PowerToys.Settings.UI.Library;
 
 // <summary>

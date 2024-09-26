@@ -4,6 +4,7 @@
 
 using System;
 using System.Drawing;
+
 using MouseJump.Common.Models.Styles;
 using BorderStyle = MouseJump.Common.Models.Styles.BorderStyle;
 

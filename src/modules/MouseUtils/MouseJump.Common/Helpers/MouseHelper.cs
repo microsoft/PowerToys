@@ -4,6 +4,7 @@
 
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+
 using MouseJump.Common.Models.Drawing;
 using MouseJump.Common.NativeMethods;
 using static MouseJump.Common.NativeMethods.Core;

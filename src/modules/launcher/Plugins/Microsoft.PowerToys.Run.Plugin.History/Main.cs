@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.History.Properties;
 using PowerLauncher.Plugin;

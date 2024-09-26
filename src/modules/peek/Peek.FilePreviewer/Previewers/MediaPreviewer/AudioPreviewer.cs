@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -87,8 +88,8 @@ namespace Peek.FilePreviewer.Previewers.MediaPreviewer
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var thumbnail = await IconHelper.GetThumbnailAsync(Item.Path, cancellationToken)
-                        ?? await IconHelper.GetIconAsync(Item.Path, cancellationToken);
+                    var thumbnail = await ThumbnailHelper.GetThumbnailAsync(Item.Path, cancellationToken)
+                        ?? await ThumbnailHelper.GetIconAsync(Item.Path, cancellationToken);
 
                     cancellationToken.ThrowIfCancellationRequested();
 

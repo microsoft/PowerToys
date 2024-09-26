@@ -4,6 +4,7 @@
 
 using System;
 using System.Globalization;
+
 using ImageResizer.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

@@ -5,6 +5,7 @@
 using System;
 using System.Drawing;
 using System.Text.Json.Serialization;
+
 using MouseJump.Common.Models.Styles;
 using BorderStyle = MouseJump.Common.Models.Styles.BorderStyle;
 

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Drawing;
+
 using MouseJump.Common.Models.Drawing;
 
 namespace MouseJump.Common.Imaging;

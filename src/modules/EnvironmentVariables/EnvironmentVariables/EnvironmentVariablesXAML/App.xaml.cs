@@ -4,6 +4,7 @@
 
 using System;
 using System.IO.Abstractions;
+
 using EnvironmentVariables.Telemetry;
 using EnvironmentVariablesUILib;
 using EnvironmentVariablesUILib.Helpers;
@@ -43,6 +44,12 @@ namespace EnvironmentVariables
         /// </summary>
         public App()
         {
+            string appLanguage = LanguageHelper.LoadLanguage();
+            if (!string.IsNullOrEmpty(appLanguage))
+            {
+                Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
+            }
+
             this.InitializeComponent();
 
             Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory).ConfigureServices((context, services) =>

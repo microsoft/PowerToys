@@ -43,7 +43,9 @@ namespace CommonSharedConstants
 
     const wchar_t FANCY_ZONES_EDITOR_TOGGLE_EVENT[] = L"Local\\FancyZones-ToggleEditorEvent-1e174338-06a3-472b-874d-073b21c62f14";
 
+    // Path to the event used by Workspaces
     const wchar_t WORKSPACES_LAUNCH_EDITOR_EVENT[] = L"Local\\Workspaces-LaunchEditorEvent-a55ff427-cf62-4994-a2cd-9f72139296bf";
+    const wchar_t WORKSPACES_HOTKEY_EVENT[] = L"Local\\PowerToys-Workspaces-HotkeyEvent-2625C3C8-BAC9-4DB3-BCD6-3B4391A26FD0";
 
     const wchar_t SHOW_HOSTS_EVENT[] = L"Local\\Hosts-ShowHostsEvent-5a0c0aae-5ff5-40f5-95c2-20e37ed671f0";
 
@@ -99,8 +101,6 @@ namespace CommonSharedConstants
     // Path to the events used by EnvironmentVariables
     const wchar_t SHOW_ENVIRONMENT_VARIABLES_EVENT[] = L"Local\\PowerToysEnvironmentVariables-ShowEnvironmentVariablesEvent-1021f616-e951-4d64-b231-a8f972159978";
     const wchar_t SHOW_ENVIRONMENT_VARIABLES_ADMIN_EVENT[] = L"Local\\PowerToysEnvironmentVariables-EnvironmentVariablesAdminEvent-8c95d2ad-047c-49a2-9e8b-b4656326cfb2";
-
-    const wchar_t WORKSPACES_EXIT_EVENT[] = L"Local\\PowerToys-Workspaces-ExitEvent-29a1566f-f4f8-4d56-9435-d2a437f727c6";
 
     // Max DWORD for key code to disable keys.
     const DWORD VK_DISABLED = 0x100;
