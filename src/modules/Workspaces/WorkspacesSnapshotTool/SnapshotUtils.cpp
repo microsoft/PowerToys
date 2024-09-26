@@ -303,8 +303,16 @@ namespace SnapshotUtils
 
                 if (parentProcessPath == L"")
                 {
-                    Logger::info(L"parent process unknown, the parent app is an already closed file manager app, it is a standalone app");
-                    standaloneApp = true;
+                    if (processPath.ends_with(NonLocalizable::ApplicationFrameHost))
+                    {
+                        // filter out ApplicationFrameHost.exe
+                        continue;
+                    }
+                    else
+                    {
+                        Logger::info(L"parent process unknown, the parent app is an already closed file manager app, it is a standalone app");
+                        standaloneApp = true;
+                    }
                 }
                 else if (processDir.starts_with(parentProcessDir))
                 {
