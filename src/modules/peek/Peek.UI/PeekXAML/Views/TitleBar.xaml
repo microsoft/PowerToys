@@ -13,7 +13,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="SystemLeftPaddingColumn" Width="0" />
             <ColumnDefinition x:Name="DraggableColumn" Width="*" />
-            <ColumnDefinition x:Name="LaunchAppButtonColumn" Width="Auto" />
+            <ColumnDefinition x:Name="OpenAppButtonColumn" Width="Auto" />
             <ColumnDefinition x:Name="AppRightPaddingColumn" Width="8" />
             <ColumnDefinition x:Name="PinButtonColumn" Width="Auto" />
             <ColumnDefinition x:Name="SystemRightPaddingColumn" Width="180" />
@@ -65,7 +65,7 @@
         </Grid>
 
         <Button
-            x:Name="LaunchAppButton"
+            x:Name="OpenAppButton"
             Grid.Column="2"
             VerticalAlignment="Center"
             Command="{x:Bind LaunchDefaultAppButtonCommand, Mode=OneWay}"
@@ -74,11 +74,11 @@
             <Button.Content>
                 <StackPanel Orientation="Horizontal" Spacing="4">
                     <FontIcon
-                        x:Name="LaunchAppButton_Icon"
+                        x:Name="OpenAppButton_Icon"
                         FontSize="16"
                         Glyph="&#xE8E5;" />
                     <TextBlock
-                        x:Name="LaunchAppButton_Text"
+                        x:Name="OpenAppButton_Text"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{x:Bind OpenWithAppText, Mode=OneWay}" />
                 </StackPanel>
@@ -109,7 +109,7 @@
                         <AdaptiveTrigger MinWindowWidth="560" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="LaunchAppButton_Text.Visibility" Value="Visible" />
+                        <Setter Target="OpenAppButton_Text.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="MediumLayout">
@@ -117,7 +117,7 @@
                         <AdaptiveTrigger MinWindowWidth="340" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
+                        <Setter Target="OpenAppButton_Text.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="MinimumLayout">
@@ -125,8 +125,8 @@
                         <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
-                        <Setter Target="LaunchAppButton.Visibility" Value="Collapsed" />
+                        <Setter Target="OpenAppButton_Text.Visibility" Value="Collapsed" />
+                        <Setter Target="OpenAppButton.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
