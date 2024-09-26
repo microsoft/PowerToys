@@ -72,7 +72,7 @@ namespace Peek.FilePreviewer.Previewers
                     await LoadIconPreviewAsync(cancellationToken);
                 });
 
-                var progress = new Progress<string?>(update =>
+                var progress = new Progress<string>(update =>
                 {
                     Dispatcher.TryEnqueue(() =>
                     {
@@ -108,9 +108,9 @@ namespace Peek.FilePreviewer.Previewers
                 DefaultIcon;
         }
 
-        private async Task LoadDisplayInfoAsync(IProgress<string?> sizeProgress, CancellationToken cancellationToken)
+        private async Task LoadDisplayInfoAsync(IProgress<string> sizeProgress, CancellationToken cancellationToken)
         {
-            string? type = await Item.GetContentTypeAsync();
+            string type = await Item.GetContentTypeAsync();
 
             Dispatcher.TryEnqueue(() => Preview.FileType = type);
 
@@ -124,14 +124,13 @@ namespace Peek.FilePreviewer.Previewers
             }
         }
 
-        private void CalculateFolderSizeWithProgress(string path, IProgress<string?> progress, CancellationToken cancellationToken)
+        private void CalculateFolderSizeWithProgress(string path, IProgress<string> progress, CancellationToken cancellationToken)
         {
-            ulong totalFiles = 0;
             ulong folderSize = 0;
             TimeSpan updateInterval = TimeSpan.FromMilliseconds(1000 / MaxUpdateFps);
             DateTime nextUpdate = DateTime.UtcNow + updateInterval;
 
-            var files = new DirectoryInfo(path).EnumerateFiles("*", SearchOption.AllDirectories);
+            var files = new DirectoryInfo(path).EnumerateFiles("*", new EnumerationOptions { RecurseSubdirectories = true });
 
             foreach (var chunk in files.Chunk(FolderEnumerationChunkSize))
             {
@@ -145,7 +144,6 @@ namespace Peek.FilePreviewer.Previewers
 
                 foreach (var file in chunk)
                 {
-                    totalFiles++;
                     folderSize += (ulong)file.Length;
                 }
             }
@@ -153,7 +151,7 @@ namespace Peek.FilePreviewer.Previewers
             ReportProgress(progress, folderSize);
         }
 
-        private void ReportProgress(IProgress<string?> progress, ulong size)
+        private void ReportProgress(IProgress<string> progress, ulong size)
         {
             progress.Report(ReadableStringHelper.BytesToReadableString(size));
         }
