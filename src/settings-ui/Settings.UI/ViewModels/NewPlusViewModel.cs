@@ -207,6 +207,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             try
             {
                 settings = settingsUtils.GetSettingsOrDefault<NewPlusSettings>(NewPlusSettings.ModuleName);
+
+                if (string.IsNullOrEmpty(settings.TemplateLocation))
+                {
+                    // This can happen when running the DEBUG Settings application without first letting the runner create the default settings file.
+                    settings.TemplateLocation = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "NewPlus", "Templates");
+                }
             }
             catch (Exception e)
             {
@@ -261,7 +267,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private async void PickNewTemplateFolder()
         {
             var newPath = await PickFolderDialog();
-            if (newPath.Length > 1)
+            if (!string.IsNullOrEmpty(newPath))
             {
                 TemplateLocation = newPath;
             }
@@ -270,8 +276,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private async Task<string> PickFolderDialog()
         {
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
-            string pathFolder = await Task.FromResult<string>(ShellGetFolder.GetFolderDialogWithFlags(hwnd, ShellGetFolder.FolderDialogFlags._BIF_NEWDIALOGSTYLE));
-            return pathFolder;
+            return await Task.FromResult(GetFolderDialogWithFlags(hwnd, FolderDialogFlags._BIF_NEWDIALOGSTYLE));
         }
 
         private void SaveSettingsToJson()

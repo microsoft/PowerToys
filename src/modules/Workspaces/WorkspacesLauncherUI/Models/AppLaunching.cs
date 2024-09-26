@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -13,9 +13,9 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-
 using ManagedCommon;
 using Windows.Management.Deployment;
+using WorkspacesLauncherUI.Data;
 
 namespace WorkspacesLauncherUI.Models
 {
@@ -28,9 +28,9 @@ namespace WorkspacesLauncherUI.Models
             PropertyChanged?.Invoke(this, e);
         }
 
-        public string AppPath { get; set; }
+        public ApplicationWrapper Application { get; set; }
 
-        public bool Loading => LaunchState == "waiting";
+        public bool Loading => LaunchState == LaunchingState.Waiting || LaunchState == LaunchingState.Launched;
 
         private Icon _icon;
 
@@ -51,12 +51,12 @@ namespace WorkspacesLauncherUI.Models
                         }
                         else
                         {
-                            _icon = Icon.ExtractAssociatedIcon(AppPath);
+                            _icon = Icon.ExtractAssociatedIcon(Application.ApplicationPath);
                         }
                     }
                     catch (Exception)
                     {
-                        Logger.LogWarning($"Icon not found on app path: {AppPath}. Using default icon");
+                        Logger.LogWarning($"Icon not found on app path: {Application.ApplicationPath}. Using default icon");
                         IsNotFound = true;
                         _icon = new Icon(@"images\DefaultIcon.ico");
                     }
@@ -66,16 +66,22 @@ namespace WorkspacesLauncherUI.Models
             }
         }
 
-        public string Name { get; set; }
+        public string Name
+        {
+            get
+            {
+                return Application.Application;
+            }
+        }
 
-        public string LaunchState { get; set; }
+        public LaunchingState LaunchState { get; set; }
 
         public string StateGlyph
         {
             get => LaunchState switch
             {
-                "launched" => "\U0000F78C",
-                "failed" => "\U0000EF2C",
+                LaunchingState.LaunchedAndMoved => "\U0000F78C",
+                LaunchingState.Failed => "\U0000EF2C",
                 _ => "\U0000EF2C",
             };
         }
@@ -84,8 +90,8 @@ namespace WorkspacesLauncherUI.Models
         {
             get => LaunchState switch
             {
-                "launched" => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 0, 128, 0)),
-                "failed" => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 254, 0, 0)),
+                LaunchingState.LaunchedAndMoved => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 0, 128, 0)),
+                LaunchingState.Failed => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 254, 0, 0)),
                 _ => new SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 254, 0, 0)),
             };
         }
@@ -139,13 +145,13 @@ namespace WorkspacesLauncherUI.Models
             {
                 if (_isPackagedApp == null)
                 {
-                    if (!AppPath.StartsWith("C:\\Program Files\\WindowsApps\\", StringComparison.InvariantCultureIgnoreCase))
+                    if (!Application.ApplicationPath.StartsWith("C:\\Program Files\\WindowsApps\\", StringComparison.InvariantCultureIgnoreCase))
                     {
                         _isPackagedApp = false;
                     }
                     else
                     {
-                        string appPath = AppPath.Replace("C:\\Program Files\\WindowsApps\\", string.Empty);
+                        string appPath = Application.ApplicationPath.Replace("C:\\Program Files\\WindowsApps\\", string.Empty);
                         Regex packagedAppPathRegex = new Regex(@"(?<APPID>[^_]*)_\d+.\d+.\d+.\d+_x64__(?<PublisherID>[^\\]*)", RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
                         Match match = packagedAppPathRegex.Match(appPath);
                         _isPackagedApp = match.Success;
@@ -200,7 +206,7 @@ namespace WorkspacesLauncherUI.Models
                     }
                     catch (Exception e)
                     {
-                        Logger.LogError($"Exception while drawing icon for app with path: {AppPath}. Exception message: {e.Message}");
+                        Logger.LogError($"Exception while drawing icon for app with path: {Application.ApplicationPath}. Exception message: {e.Message}");
                     }
                 }
 

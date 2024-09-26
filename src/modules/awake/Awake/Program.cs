@@ -54,6 +54,20 @@ namespace Awake
             _settingsUtils = new SettingsUtils();
             LockMutex = new Mutex(true, Core.Constants.AppName, out bool instantiated);
             Logger.InitializeLogger(Path.Combine("\\", Core.Constants.AppName, "Logs"));
+
+            try
+            {
+                string appLanguage = LanguageHelper.LoadLanguage();
+                if (!string.IsNullOrEmpty(appLanguage))
+                {
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(appLanguage);
+                }
+            }
+            catch (CultureNotFoundException ex)
+            {
+                Logger.LogError("CultureNotFoundException: " + ex.Message);
+            }
+
             AppDomain.CurrentDomain.UnhandledException += AwakeUnhandledExceptionCatcher;
 
             if (!instantiated)

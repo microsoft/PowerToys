@@ -59,7 +59,10 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xsd:schema id="root"
+    xmlns=""
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
@@ -4379,5 +4382,86 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="OpenSettings.Content" xml:space="preserve">
     <value>Open settings</value>
+  </data>
+  <data name="LanguageHeader.Header" xml:space="preserve">
+    <value>Application language</value>
+  </data>
+  <data name="LanguageHeader.Description" xml:space="preserve">
+    <value>PowerToys will use OS language by default.</value>
+  </data>
+  <data name="LanguageRestartInfo.Title" xml:space="preserve">
+    <value>Restart PowerToys for language change to take effect.</value>
+  </data>
+  <data name="LanguageRestartInfoButton.Content" xml:space="preserve">
+    <value>Restart</value>
+  </data>
+  <data name="Default_Language" xml:space="preserve">
+    <value>Windows default</value>
+  </data>
+  <data name="Arabic_Saudi_Arabia_Language" xml:space="preserve">
+    <value>Arabic (Saudi Arabia)</value>
+  </data>
+  <data name="Czech_Language" xml:space="preserve">
+    <value>Czech</value>
+  </data>
+  <data name="German_Language" xml:space="preserve">
+    <value>German</value>
+  </data>
+  <data name="English_Language" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="Spanish_Language" xml:space="preserve">
+    <value>Spanish</value>
+  </data>
+  <data name="Persian_Farsi_Language" xml:space="preserve">
+    <value>Persian (Farsi)</value>
+  </data>
+  <data name="French_Language" xml:space="preserve">
+    <value>French</value>
+  </data>
+  <data name="Hebrew_Israel_Language" xml:space="preserve">
+    <value>Hebrew (Israel)</value>
+  </data>
+  <data name="Hungarian_Language" xml:space="preserve">
+    <value>Hungarian</value>
+  </data>
+  <data name="Italian_Language" xml:space="preserve">
+    <value>Italian</value>
+  </data>
+  <data name="Japanese_Language" xml:space="preserve">
+    <value>Japanese</value>
+  </data>
+  <data name="Korean_Language" xml:space="preserve">
+    <value>Korean</value>
+  </data>
+  <data name="Dutch_Language" xml:space="preserve">
+    <value>Dutch</value>
+  </data>
+  <data name="Polish_Language" xml:space="preserve">
+    <value>Polish</value>
+  </data>
+  <data name="Portuguese_Brazil_Language" xml:space="preserve">
+    <value>Portuguese (Brazil)</value>
+  </data>
+  <data name="Portuguese_Portugal_Language" xml:space="preserve">
+    <value>Portuguese (Portugal)</value>
+  </data>
+  <data name="Russian_Language" xml:space="preserve">
+    <value>Russian</value>
+  </data>
+  <data name="Swedish_Language" xml:space="preserve">
+    <value>Swedish</value>
+  </data>
+  <data name="Turkish_Language" xml:space="preserve">
+    <value>Turkish</value>
+  </data>
+  <data name="Ukrainian_Language" xml:space="preserve">
+    <value>Ukrainian</value>
+  </data>
+  <data name="Chinese_Simplified_Language" xml:space="preserve">
+    <value>Chinese (Simplified)</value>
+  </data>
+  <data name="Chinese_Traditional_Language" xml:space="preserve">
+    <value>Chinese (Traditional)</value>
   </data>
 </root>

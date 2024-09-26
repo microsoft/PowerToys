@@ -11,7 +11,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 {
     public static class UnitHandler
     {
-        private static readonly int _roundingFractionalDigits = 4;
+        private static readonly int _roundingSignificantDigits = 4;
 
         private static readonly QuantityInfo[] _included = new QuantityInfo[]
         {
@@ -72,7 +72,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
             var power = Math.Floor(Math.Log10(Math.Abs(value)));
             var exponent = Math.Pow(10, power);
-            var rounded = Math.Round(value / exponent, _roundingFractionalDigits) * exponent;
+            var rounded = Math.Round(value / exponent, _roundingSignificantDigits) * exponent;
             return rounded;
         }
 

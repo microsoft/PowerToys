@@ -1,0 +1,46 @@
+trigger:
+  batch: true
+  branches:
+    include:
+      - main
+      - stable
+  paths:
+    exclude:
+      - doc/*
+      - temp/*
+      - tools/*
+      - '**.md'
+
+pr:
+  branches:
+    include:
+      - main
+      - stable
+  paths:
+    exclude:
+      - '**.md'
+      - doc
+
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+
+parameters:
+  - name: buildPlatforms
+    type: object
+    default:
+      - x64
+      - arm64
+  - name: enableMsBuildCaching
+    type: boolean
+    displayName: "Enable MSBuild Caching"
+    default: true
+  - name: runTests
+    type: boolean
+    displayName: "Run Tests"
+    default: true
+
+extends:
+  template: templates/pipeline-ci-build.yml
+  parameters:
+    buildPlatforms: ${{ parameters.buildPlatforms }}
+    enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+    runTests: ${{ parameters.runTests }}
