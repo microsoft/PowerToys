@@ -56,6 +56,19 @@ namespace Awake
 
             Logger.InitializeLogger(Path.Combine("\\", Core.Constants.AppName, "Logs"));
 
+            try
+            {
+                string appLanguage = LanguageHelper.LoadLanguage();
+                if (!string.IsNullOrEmpty(appLanguage))
+                {
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(appLanguage);
+                }
+            }
+            catch (CultureNotFoundException ex)
+            {
+                Logger.LogError("CultureNotFoundException: " + ex.Message);
+            }
+
             AppDomain.CurrentDomain.UnhandledException += AwakeUnhandledExceptionCatcher;
 
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAwakeEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)

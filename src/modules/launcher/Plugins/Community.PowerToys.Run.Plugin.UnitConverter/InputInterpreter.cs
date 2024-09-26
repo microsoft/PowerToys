@@ -92,7 +92,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
                             if (!isFeet || !isInches)
                             {
-                                // atleast one could not be parsed correctly
+                                // at least one could not be parsed correctly
                                 break;
                             }
 
@@ -115,7 +115,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         }
 
         /// <summary>
-        /// Adds degree prefixes to degree units for shorthand notation. E.g. '10 c in fahrenheit' becomes '10 °c in DegreeFahrenheit'.
+        /// Adds degree prefixes to degree units for shorthand notation. E.g. '10 c in fahrenheit' becomes '10 °C in DegreeFahrenheit'.
         /// </summary>
         public static void DegreePrefixer(ref string[] split)
         {
@@ -130,11 +130,11 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     break;
 
                 case "c":
-                    split[1] = "°c";
+                    split[1] = "°C";
                     break;
 
                 case "f":
-                    split[1] = "°f";
+                    split[1] = "°F";
                     break;
 
                 default:
@@ -152,31 +152,15 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     break;
 
                 case "c":
-                    split[3] = "°c";
+                    split[3] = "°C";
                     break;
 
                 case "f":
-                    split[3] = "°f";
+                    split[3] = "°F";
                     break;
 
                 default:
                     break;
-            }
-        }
-
-        /// <summary>
-        /// The plural form "feet" is not recognized by UniteNets. Replace it with "ft".
-        /// </summary>
-        public static void FeetToFt(ref string[] split)
-        {
-            if (string.Equals(split[1], "feet", StringComparison.OrdinalIgnoreCase))
-            {
-                split[1] = "ft";
-            }
-
-            if (string.Equals(split[3], "feet", StringComparison.OrdinalIgnoreCase))
-            {
-                split[3] = "ft";
             }
         }
 
@@ -292,7 +276,6 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
             InputInterpreter.DegreePrefixer(ref split);
             InputInterpreter.MetreToMeter(ref split);
-            InputInterpreter.FeetToFt(ref split);
             InputInterpreter.KPHHandler(ref split);
             InputInterpreter.GallonHandler(ref split, CultureInfo.CurrentCulture);
             InputInterpreter.OunceHandler(ref split, CultureInfo.CurrentCulture);

@@ -1,0 +1,59 @@
+variables:
+  - name: runCodesignValidationInjectionBG
+    value: false
+  - name: EnablePipelineCache
+    value: true
+
+parameters:
+  - name: buildPlatforms
+    type: object
+    default:
+      - x64
+      - arm64
+  - name: enableMsBuildCaching
+    type: boolean
+    default: false
+  - name: runTests
+    type: boolean
+    default: true
+
+stages:
+  # Allow manual builds to skip pre-check
+  - ${{ if ne(variables['Build.Reason'], 'Manual') }}:
+    - stage: Precheck
+      jobs:
+        - template: job-ci-precheck.yml
+
+  - ${{ each platform in parameters.buildPlatforms }}:
+    - stage: Build_${{ platform }}
+      displayName: Build ${{ platform }}
+      ${{ if ne(variables['Build.Reason'], 'Manual') }}:
+        dependsOn: [Precheck]
+      ${{ else }}:
+        dependsOn: []
+      jobs:
+        - template: job-build-project.yml
+          parameters:
+            condition: and(succeeded(), or(eq(variables['Build.Reason'], 'Manual'), ne(stageDependencies.Precheck.Precheck.outputs['verifyBuildRequest.skipBuild'], 'Yes')))
+            pool:
+              ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+                name: SHINE-INT-L
+              ${{ else }}:
+                name: SHINE-OSS-L
+            buildPlatforms:
+              - ${{ platform }}
+            buildConfigurations: [Release]
+            enablePackageCaching: true
+            enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+            runTests: ${{ parameters.runTests }}
+
+    - ${{ if eq(parameters.runTests, true) }}:
+      - stage: Test_${{ platform }}
+        displayName: Test ${{ platform }}
+        dependsOn:
+          - Build_${{platform}}
+        jobs:
+          - template: job-test-project.yml
+            parameters:
+              platform: ${{ platform }}
+              configuration: Release

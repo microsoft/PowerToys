@@ -18,8 +18,6 @@
 #include "EditorConstants.h"
 #include <common/Themes/theme_listener.h>
 
-using namespace winrt::Windows::Foundation;
-
 static UINT g_currentDPI = DPIAware::DEFAULT_DPI;
 
 LRESULT CALLBACK EditShortcutsWindowProc(HWND, UINT, WPARAM, LPARAM);
@@ -51,7 +49,7 @@ static void handleTheme()
     }
 }
 
-static IAsyncAction OnClickAccept(
+static winrt::Windows::Foundation::IAsyncAction OnClickAccept(
     KBMEditor::KeyboardManagerState& keyboardManagerState,
     XamlRoot root,
     std::function<void()> ApplyRemappings)
