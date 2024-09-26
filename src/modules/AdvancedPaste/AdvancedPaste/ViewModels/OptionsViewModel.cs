@@ -50,6 +50,7 @@ namespace AdvancedPaste.ViewModels
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(AIDisabledErrorText))]
+        [NotifyPropertyChangedFor(nameof(IsPasteWithAIEnabled))]
         [NotifyPropertyChangedFor(nameof(IsCustomAIEnabled))]
         private bool _isAllowedByGPO;
 
@@ -68,7 +69,9 @@ namespace AdvancedPaste.ViewModels
 
         public ObservableCollection<PasteFormat> CustomActionPasteFormats { get; } = [];
 
-        public bool IsCustomAIEnabled => IsAllowedByGPO && _aiHelper.IsAIEnabled && ClipboardHasText;
+        public bool IsPasteWithAIEnabled => IsAllowedByGPO && _aiHelper.IsAIEnabled;
+
+        public bool IsCustomAIEnabled => IsPasteWithAIEnabled && ClipboardHasText;
 
         public bool ClipboardHasData => AvailableClipboardFormats != ClipboardFormat.None;
 
@@ -92,6 +95,7 @@ namespace AdvancedPaste.ViewModels
             };
 
             ClipboardHistoryEnabled = IsClipboardHistoryEnabled();
+            UpdateOpenAIKey();
             _clipboardTimer = new() { Interval = TimeSpan.FromSeconds(1) };
             _clipboardTimer.Tick += ClipboardTimer_Tick;
             _clipboardTimer.Start();
@@ -100,7 +104,7 @@ namespace AdvancedPaste.ViewModels
             _userSettings.Changed += (_, _) => EnqueueRefreshPasteFormats();
             PropertyChanged += (_, e) =>
             {
-                string[] dirtyingProperties = [nameof(Query), nameof(IsCustomAIEnabled), nameof(AvailableClipboardFormats)];
+                string[] dirtyingProperties = [nameof(Query), nameof(IsPasteWithAIEnabled), nameof(IsCustomAIEnabled), nameof(AvailableClipboardFormats)];
 
                 if (dirtyingProperties.Contains(e.PropertyName))
                 {
@@ -174,7 +178,7 @@ namespace AdvancedPaste.ViewModels
                                                     .Where(format => PasteFormat.MetadataDict[format].IsCoreAction || _userSettings.AdditionalActions.Contains(format))
                                                     .Select(CreatePasteFormat));
 
-            UpdateFormats(CustomActionPasteFormats, _userSettings.CustomActions.Select(CreatePasteFormat));
+            UpdateFormats(CustomActionPasteFormats, IsPasteWithAIEnabled ? _userSettings.CustomActions.Select(CreatePasteFormat) : []);
         }
 
         public void Dispose()
@@ -200,34 +204,19 @@ namespace AdvancedPaste.ViewModels
             Query = string.Empty;
 
             await ReadClipboard();
-            UpdateAllowedByGPO();
 
-            if (IsAllowedByGPO)
+            if (UpdateOpenAIKey())
             {
-                var openAIKey = AICompletionsHelper.LoadOpenAIKey();
-                var currentKey = _aiHelper.GetKey();
-                bool keyChanged = openAIKey != currentKey;
+                app.GetMainWindow()?.StartLoading();
 
-                if (keyChanged)
+                _dispatcherQueue.TryEnqueue(() =>
                 {
-                    app.GetMainWindow().StartLoading();
-
-                    await Task.Run(() =>
-                    {
-                        _aiHelper.SetOpenAIKey(openAIKey);
-                    }).ContinueWith(
-                        (t) =>
-                        {
-                            _dispatcherQueue.TryEnqueue(() =>
-                            {
-                                app.GetMainWindow().FinishLoading(_aiHelper.IsAIEnabled);
-                                OnPropertyChanged(nameof(InputTxtBoxPlaceholderText));
-                                OnPropertyChanged(nameof(AIDisabledErrorText));
-                                OnPropertyChanged(nameof(IsCustomAIEnabled));
-                            });
-                        },
-                        TaskScheduler.Default);
-                }
+                    app.GetMainWindow()?.FinishLoading(_aiHelper.IsAIEnabled);
+                    OnPropertyChanged(nameof(InputTxtBoxPlaceholderText));
+                    OnPropertyChanged(nameof(AIDisabledErrorText));
+                    OnPropertyChanged(nameof(IsPasteWithAIEnabled));
+                    OnPropertyChanged(nameof(IsCustomAIEnabled));
+                });
             }
 
             ClipboardHistoryEnabled = IsClipboardHistoryEnabled();
@@ -501,6 +490,21 @@ namespace AdvancedPaste.ViewModels
         private void UpdateAllowedByGPO()
         {
             IsAllowedByGPO = PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOnlineAIModelsValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled;
+        }
+
+        private bool UpdateOpenAIKey()
+        {
+            UpdateAllowedByGPO();
+
+            if (IsAllowedByGPO)
+            {
+                var oldKey = _aiHelper.GetKey();
+                var newKey = AICompletionsHelper.LoadOpenAIKey();
+                _aiHelper.SetOpenAIKey(newKey);
+                return newKey != oldKey;
+            }
+
+            return false;
         }
     }
 }

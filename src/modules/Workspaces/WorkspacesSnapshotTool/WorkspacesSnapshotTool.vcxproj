@@ -133,7 +133,6 @@
     <ClCompile Include="SnapshotUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="JsonUtils.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.base.h" />
     <ClInclude Include="SnapshotUtils.h" />

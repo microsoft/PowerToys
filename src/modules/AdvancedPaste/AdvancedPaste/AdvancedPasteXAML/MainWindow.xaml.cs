@@ -9,6 +9,8 @@ using AdvancedPaste.Converters;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.Settings;
+using AdvancedPaste.ViewModels;
+
 using ManagedCommon;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -30,6 +32,8 @@ namespace AdvancedPaste
 
             _userSettings = App.GetService<IUserSettings>();
 
+            var optionsViewModel = App.GetService<OptionsViewModel>();
+
             var baseHeight = MinHeight;
             var coreActionCount = PasteFormat.MetadataDict.Values.Count(metadata => metadata.IsCoreAction);
 
@@ -38,7 +42,7 @@ namespace AdvancedPaste
                 double GetHeight(int maxCustomActionCount) =>
                     baseHeight +
                     new PasteFormatsToHeightConverter().Convert(coreActionCount + _userSettings.AdditionalActions.Count) +
-                    new PasteFormatsToHeightConverter() { MaxItems = maxCustomActionCount }.Convert(_userSettings.CustomActions.Count);
+                    new PasteFormatsToHeightConverter() { MaxItems = maxCustomActionCount }.Convert(optionsViewModel.IsPasteWithAIEnabled ? _userSettings.CustomActions.Count : 0);
 
                 MinHeight = GetHeight(1);
                 Height = GetHeight(5);
@@ -47,6 +51,13 @@ namespace AdvancedPaste
             UpdateHeight();
 
             _userSettings.Changed += (_, _) => UpdateHeight();
+            optionsViewModel.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(optionsViewModel.IsPasteWithAIEnabled))
+                {
+                    UpdateHeight();
+                }
+            };
 
             AppWindow.SetIcon("Assets/AdvancedPaste/AdvancedPaste.ico");
             this.ExtendsContentIntoTitleBar = true;

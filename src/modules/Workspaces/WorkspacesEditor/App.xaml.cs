@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Windows;
 
@@ -39,6 +40,20 @@ namespace WorkspacesEditor
         {
             Logger.InitializeLogger("\\Workspaces\\Logs");
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+
+            var languageTag = LanguageHelper.LoadLanguage();
+
+            if (!string.IsNullOrEmpty(languageTag))
+            {
+                try
+                {
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(languageTag);
+                }
+                catch (CultureNotFoundException ex)
+                {
+                    Logger.LogError("CultureNotFoundException: " + ex.Message);
+                }
+            }
 
             const string appName = "Local\\PowerToys_Workspaces_Editor_InstanceMutex";
             bool createdNew;
