@@ -8,7 +8,7 @@ namespace AdvancedPaste.Models;
 
 public sealed class CustomActionActivatedEventArgs(string text, bool pasteResult) : EventArgs
 {
-    public string Text { get; private set; } = text;
+    public string Text { get; private init; } = text;
 
-    public bool PasteResult { get; private set; } = pasteResult;
+    public bool PasteResult { get; private init; } = pasteResult;
 }

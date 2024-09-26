@@ -16,9 +16,9 @@ public sealed partial class PasteFormatsToHeightConverter : IValueConverter
     public int MaxItems { get; set; } = 5;
 
     public object Convert(object value, Type targetType, object parameter, string language) =>
-        new GridLength(Convert((value is ICollection collection) ? collection.Count : (value is int intValue) ? intValue : 0));
+        new GridLength(GetHeight((value is ICollection collection) ? collection.Count : (value is int intValue) ? intValue : 0));
 
-    public int Convert(int itemCount) => Math.Min(MaxItems, itemCount) * ItemHeight;
+    public int GetHeight(int itemCount) => Math.Min(MaxItems, itemCount) * ItemHeight;
 
     public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotImplementedException();
 }

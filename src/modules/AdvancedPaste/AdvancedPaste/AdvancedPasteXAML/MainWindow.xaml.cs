@@ -41,8 +41,8 @@ namespace AdvancedPaste
             {
                 double GetHeight(int maxCustomActionCount) =>
                     baseHeight +
-                    new PasteFormatsToHeightConverter().Convert(coreActionCount + _userSettings.AdditionalActions.Count) +
-                    new PasteFormatsToHeightConverter() { MaxItems = maxCustomActionCount }.Convert(optionsViewModel.IsPasteWithAIEnabled ? _userSettings.CustomActions.Count : 0);
+                    new PasteFormatsToHeightConverter().GetHeight(coreActionCount + _userSettings.AdditionalActions.Count) +
+                    new PasteFormatsToHeightConverter() { MaxItems = maxCustomActionCount }.GetHeight(optionsViewModel.IsAIServiceEnabled ? _userSettings.CustomActions.Count : 0);
 
                 MinHeight = GetHeight(1);
                 Height = GetHeight(5);
@@ -53,7 +53,7 @@ namespace AdvancedPaste
             _userSettings.Changed += (_, _) => UpdateHeight();
             optionsViewModel.PropertyChanged += (_, e) =>
             {
-                if (e.PropertyName == nameof(optionsViewModel.IsPasteWithAIEnabled))
+                if (e.PropertyName == nameof(optionsViewModel.IsAIServiceEnabled))
                 {
                     UpdateHeight();
                 }

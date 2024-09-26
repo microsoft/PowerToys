@@ -19,21 +19,21 @@ public sealed class PasteFormat
                             .Where(field => field.IsLiteral)
                             .ToDictionary(field => (PasteFormats)field.GetRawConstantValue(), field => field.GetCustomAttribute<PasteFormatMetadataAttribute>());
 
-    private PasteFormat(PasteFormats format, ClipboardFormat clipboardFormats, bool isCustomAIEnabled)
+    private PasteFormat(PasteFormats format, ClipboardFormat clipboardFormats, bool isAIServiceEnabled)
     {
         Format = format;
-        IsEnabled = ((clipboardFormats & Metadata.SupportedClipboardFormats) != ClipboardFormat.None) && (isCustomAIEnabled || !Metadata.RequiresAIService);
+        IsEnabled = ((clipboardFormats & Metadata.SupportedClipboardFormats) != ClipboardFormat.None) && (isAIServiceEnabled || !Metadata.RequiresAIService);
     }
 
-    public PasteFormat(PasteFormats format, ClipboardFormat clipboardFormats, bool isCustomAIEnabled, Func<string, string> resourceLoader)
-        : this(format, clipboardFormats, isCustomAIEnabled)
+    public PasteFormat(PasteFormats format, ClipboardFormat clipboardFormats, bool isAIServiceEnabled, Func<string, string> resourceLoader)
+        : this(format, clipboardFormats, isAIServiceEnabled)
     {
         Name = Metadata.ResourceId == null ? string.Empty : resourceLoader(Metadata.ResourceId);
         Prompt = string.Empty;
     }
 
-    public PasteFormat(AdvancedPasteCustomAction customAction, ClipboardFormat clipboardFormats, bool isCustomAIEnabled)
-        : this(PasteFormats.Custom, clipboardFormats, isCustomAIEnabled)
+    public PasteFormat(AdvancedPasteCustomAction customAction, ClipboardFormat clipboardFormats, bool isAIServiceEnabled)
+        : this(PasteFormats.Custom, clipboardFormats, isAIServiceEnabled)
     {
         Name = customAction.Name;
         Prompt = customAction.Prompt;

@@ -69,7 +69,7 @@ public sealed class PasteFormatExecutor(AICompletionsHelper aiHelper) : IPasteFo
                 return await ToCustomAsync(pasteFormat.Prompt, clipboardData);
 
             default:
-                throw new ArgumentException("Unknown paste format", nameof(pasteFormat));
+                throw new ArgumentException($"Unknown paste format {pasteFormat.Format}", nameof(pasteFormat));
         }
     }
 
@@ -117,7 +117,7 @@ public sealed class PasteFormatExecutor(AICompletionsHelper aiHelper) : IPasteFo
         Logger.LogTrace();
 
         var bitmap = await ClipboardHelper.GetClipboardImageContentAsync(clipboardData);
-        var text = await OcrHelpers.GetTextAsync(bitmap);
+        var text = await OcrHelpers.ExtractTextAsync(bitmap);
         SetClipboardTextContent(text);
     }
 
@@ -139,7 +139,7 @@ public sealed class PasteFormatExecutor(AICompletionsHelper aiHelper) : IPasteFo
     {
         Logger.LogTrace();
 
-        var text = await ClipboardHelper.GetClipboardTextOrHtmlText(clipboardData);
+        var text = await ClipboardHelper.GetClipboardTextOrHtmlTextAsync(clipboardData);
         await SetClipboardFileContentAsync(text, "txt");
     }
 
@@ -147,31 +147,31 @@ public sealed class PasteFormatExecutor(AICompletionsHelper aiHelper) : IPasteFo
     {
         Logger.LogTrace();
 
-        var html = await ClipboardHelper.GetClipboardHtmlContent(clipboardData);
-        var cleanedHtml = RemoveHtmlMetadata(html);
+        var cfHtml = await ClipboardHelper.GetClipboardHtmlContentAsync(clipboardData);
+        var html = RemoveHtmlMetadata(cfHtml);
 
-        await SetClipboardFileContentAsync(cleanedHtml, "html");
+        await SetClipboardFileContentAsync(html, "html");
     }
 
     /// <summary>
     /// Removes leading CF_HTML metadata from HTML clipboard data.
     /// See: https://learn.microsoft.com/en-us/windows/win32/dataxchg/html-clipboard-format
     /// </summary>
-    private static string RemoveHtmlMetadata(string htmlFormat)
+    private static string RemoveHtmlMetadata(string cfHtml)
     {
         int? GetIntTagValue(string tagName)
         {
             var tagNameWithColon = tagName + ":";
-            int tagStartPos = htmlFormat.IndexOf(tagNameWithColon, StringComparison.InvariantCulture);
+            int tagStartPos = cfHtml.IndexOf(tagNameWithColon, StringComparison.InvariantCulture);
 
             const int tagValueLength = 10;
-            return tagStartPos != -1 && int.TryParse(htmlFormat.AsSpan(tagStartPos + tagNameWithColon.Length, tagValueLength), CultureInfo.InvariantCulture, out int result) ? result : null;
+            return tagStartPos != -1 && int.TryParse(cfHtml.AsSpan(tagStartPos + tagNameWithColon.Length, tagValueLength), CultureInfo.InvariantCulture, out int result) ? result : null;
         }
 
         var startFragmentIndex = GetIntTagValue("StartFragment");
         var endFragmentIndex = GetIntTagValue("EndFragment");
 
-        return (startFragmentIndex == null || endFragmentIndex == null) ? htmlFormat : htmlFormat[startFragmentIndex.Value..endFragmentIndex.Value];
+        return (startFragmentIndex == null || endFragmentIndex == null) ? cfHtml : cfHtml[startFragmentIndex.Value..endFragmentIndex.Value];
     }
 
     private static async Task SetClipboardFileContentAsync(string data, string fileExtension)

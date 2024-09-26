@@ -34,7 +34,6 @@ namespace AdvancedPaste.ViewModels
         private readonly IUserSettings _userSettings;
         private readonly IPasteFormatExecutor _pasteFormatExecutor;
         private readonly AICompletionsHelper _aiHelper;
-        private readonly App app = App.Current as App;
 
         public DataPackageView ClipboardData { get; set; }
 
@@ -50,7 +49,7 @@ namespace AdvancedPaste.ViewModels
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(AIDisabledErrorText))]
-        [NotifyPropertyChangedFor(nameof(IsPasteWithAIEnabled))]
+        [NotifyPropertyChangedFor(nameof(IsAIServiceEnabled))]
         [NotifyPropertyChangedFor(nameof(IsCustomAIEnabled))]
         private bool _isAllowedByGPO;
 
@@ -69,15 +68,15 @@ namespace AdvancedPaste.ViewModels
 
         public ObservableCollection<PasteFormat> CustomActionPasteFormats { get; } = [];
 
-        public bool IsPasteWithAIEnabled => IsAllowedByGPO && _aiHelper.IsAIEnabled;
+        public bool IsAIServiceEnabled => IsAllowedByGPO && _aiHelper.IsAIEnabled;
 
-        public bool IsCustomAIEnabled => IsPasteWithAIEnabled && ClipboardHasText;
+        public bool IsCustomAIEnabled => IsAIServiceEnabled && ClipboardHasText;
 
         public bool ClipboardHasData => AvailableClipboardFormats != ClipboardFormat.None;
 
         private bool ClipboardHasText => AvailableClipboardFormats.HasFlag(ClipboardFormat.Text);
 
-        private bool Visible => app?.GetMainWindow()?.Visible is true;
+        private bool Visible => GetMainWindow()?.Visible is true;
 
         public event EventHandler<CustomActionActivatedEventArgs> CustomActionActivated;
 
@@ -104,7 +103,7 @@ namespace AdvancedPaste.ViewModels
             _userSettings.Changed += (_, _) => EnqueueRefreshPasteFormats();
             PropertyChanged += (_, e) =>
             {
-                string[] dirtyingProperties = [nameof(Query), nameof(IsPasteWithAIEnabled), nameof(IsCustomAIEnabled), nameof(AvailableClipboardFormats)];
+                string[] dirtyingProperties = [nameof(Query), nameof(IsAIServiceEnabled), nameof(IsCustomAIEnabled), nameof(AvailableClipboardFormats)];
 
                 if (dirtyingProperties.Contains(e.PropertyName))
                 {
@@ -113,11 +112,13 @@ namespace AdvancedPaste.ViewModels
             };
         }
 
+        private static MainWindow GetMainWindow() => (App.Current as App)?.GetMainWindow();
+
         private async void ClipboardTimer_Tick(object sender, object e)
         {
             if (Visible)
             {
-                await ReadClipboard();
+                await ReadClipboardAsync();
                 UpdateAllowedByGPO();
             }
         }
@@ -137,9 +138,9 @@ namespace AdvancedPaste.ViewModels
             });
         }
 
-        private PasteFormat CreatePasteFormat(PasteFormats format) => new(format, AvailableClipboardFormats, IsCustomAIEnabled, ResourceLoaderInstance.ResourceLoader.GetString);
+        private PasteFormat CreatePasteFormat(PasteFormats format) => new(format, AvailableClipboardFormats, IsAIServiceEnabled, ResourceLoaderInstance.ResourceLoader.GetString);
 
-        private PasteFormat CreatePasteFormat(AdvancedPasteCustomAction customAction) => new(customAction, AvailableClipboardFormats, IsCustomAIEnabled);
+        private PasteFormat CreatePasteFormat(AdvancedPasteCustomAction customAction) => new(customAction, AvailableClipboardFormats, IsAIServiceEnabled);
 
         private void RefreshPasteFormats()
         {
@@ -178,7 +179,7 @@ namespace AdvancedPaste.ViewModels
                                                     .Where(format => PasteFormat.MetadataDict[format].IsCoreAction || _userSettings.AdditionalActions.Contains(format))
                                                     .Select(CreatePasteFormat));
 
-            UpdateFormats(CustomActionPasteFormats, IsPasteWithAIEnabled ? _userSettings.CustomActions.Select(CreatePasteFormat) : []);
+            UpdateFormats(CustomActionPasteFormats, IsAIServiceEnabled ? _userSettings.CustomActions.Select(CreatePasteFormat) : []);
         }
 
         public void Dispose()
@@ -187,7 +188,7 @@ namespace AdvancedPaste.ViewModels
             GC.SuppressFinalize(this);
         }
 
-        public async Task ReadClipboard()
+        public async Task ReadClipboardAsync()
         {
             if (Busy)
             {
@@ -195,26 +196,26 @@ namespace AdvancedPaste.ViewModels
             }
 
             ClipboardData = Clipboard.GetContent();
-            AvailableClipboardFormats = await ClipboardHelper.GetAvailableClipboardFormats(ClipboardData);
+            AvailableClipboardFormats = await ClipboardHelper.GetAvailableClipboardFormatsAsync(ClipboardData);
         }
 
-        public async Task OnShow()
+        public async Task OnShowAsync()
         {
             ApiErrorText = string.Empty;
             Query = string.Empty;
 
-            await ReadClipboard();
+            await ReadClipboardAsync();
 
             if (UpdateOpenAIKey())
             {
-                app.GetMainWindow()?.StartLoading();
+                GetMainWindow()?.StartLoading();
 
                 _dispatcherQueue.TryEnqueue(() =>
                 {
-                    app.GetMainWindow()?.FinishLoading(_aiHelper.IsAIEnabled);
+                    GetMainWindow()?.FinishLoading(_aiHelper.IsAIEnabled);
                     OnPropertyChanged(nameof(InputTxtBoxPlaceholderText));
                     OnPropertyChanged(nameof(AIDisabledErrorText));
-                    OnPropertyChanged(nameof(IsPasteWithAIEnabled));
+                    OnPropertyChanged(nameof(IsAIServiceEnabled));
                     OnPropertyChanged(nameof(IsCustomAIEnabled));
                 });
             }
@@ -322,12 +323,12 @@ namespace AdvancedPaste.ViewModels
         public void OpenSettings()
         {
             SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.AdvancedPaste, true);
-            (App.Current as App).GetMainWindow().Close();
+            GetMainWindow()?.Close();
         }
 
         internal async Task ExecutePasteFormatAsync(PasteFormats format, PasteActionSource source)
         {
-            await ReadClipboard();
+            await ReadClipboardAsync();
             await ExecutePasteFormatAsync(CreatePasteFormat(format), source);
         }
 
@@ -394,7 +395,7 @@ namespace AdvancedPaste.ViewModels
             Busy = false;
         }
 
-        internal async Task ExecutePasteFormat(VirtualKey key)
+        internal async Task ExecutePasteFormatAsync(VirtualKey key)
         {
             var pasteFormat = StandardPasteFormats.Concat(CustomActionPasteFormats)
                                                   .Where(pasteFormat => pasteFormat.IsEnabled)
@@ -406,11 +407,11 @@ namespace AdvancedPaste.ViewModels
             }
         }
 
-        internal async Task ExecuteCustomAction(int customActionId, PasteActionSource source)
+        internal async Task ExecuteCustomActionAsync(int customActionId, PasteActionSource source)
         {
             Logger.LogTrace();
 
-            await ReadClipboard();
+            await ReadClipboardAsync();
 
             var customAction = _userSettings.CustomActions.FirstOrDefault(customAction => customAction.Id == customActionId);
 
@@ -420,7 +421,7 @@ namespace AdvancedPaste.ViewModels
             }
         }
 
-        internal async Task GenerateCustomFunction(PasteActionSource triggerSource)
+        internal async Task GenerateCustomFunctionAsync(PasteActionSource triggerSource)
         {
             AdvancedPasteCustomAction customAction = new() { Name = "Default", Prompt = Query };
             await ExecutePasteFormatAsync(CreatePasteFormat(customAction), triggerSource);
@@ -428,7 +429,7 @@ namespace AdvancedPaste.ViewModels
 
         private void HideWindow()
         {
-            var mainWindow = app.GetMainWindow();
+            var mainWindow = GetMainWindow();
 
             if (mainWindow != null)
             {

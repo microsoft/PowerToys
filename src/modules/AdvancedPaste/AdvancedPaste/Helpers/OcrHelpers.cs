@@ -14,7 +14,7 @@ namespace AdvancedPaste.Helpers;
 
 public static class OcrHelpers
 {
-    public static async Task<string> GetTextAsync(SoftwareBitmap bitmap)
+    public static async Task<string> ExtractTextAsync(SoftwareBitmap bitmap)
     {
         var ocrLanguage = GetOCRLanguage() ?? throw new InvalidOperationException("Unable to determine OCR language");
 

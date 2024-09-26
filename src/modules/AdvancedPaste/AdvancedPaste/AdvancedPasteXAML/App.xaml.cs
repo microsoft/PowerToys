@@ -126,11 +126,7 @@ namespace AdvancedPaste
         {
             void OnMessage(string message) => _dispatcherQueue.TryEnqueue(async () => await OnNamedPipeMessage(message));
 
-            Task.Run(async () =>
-            {
-                var connectTimeout = TimeSpan.FromSeconds(10);
-                await NamedPipeProcessor.ProcessNamedPipeAsync(pipeName, connectTimeout, OnMessage, CancellationToken.None);
-            });
+            Task.Run(async () => await NamedPipeProcessor.ProcessNamedPipeAsync(pipeName, connectTimeout: TimeSpan.FromSeconds(10), OnMessage, CancellationToken.None));
         }
 
         private async Task OnNamedPipeMessage(string message)
@@ -200,14 +196,14 @@ namespace AdvancedPaste
                 else
                 {
                     await ShowWindow();
-                    await viewModel.ExecuteCustomAction(customActionId, PasteActionSource.GlobalKeyboardShortcut);
+                    await viewModel.ExecuteCustomActionAsync(customActionId, PasteActionSource.GlobalKeyboardShortcut);
                 }
             }
         }
 
         private async Task ShowWindow()
         {
-            await viewModel.OnShow();
+            await viewModel.OnShowAsync();
 
             if (window is null)
             {

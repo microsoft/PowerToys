@@ -37,8 +37,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly object _delayedActionLock = new object();
 
         private readonly AdvancedPasteSettings _advancedPasteSettings;
-        private readonly ObservableCollection<AdvancedPasteCustomAction> _customActions;
         private readonly AdvancedPasteAdditionalActions _additionalActions;
+        private readonly ObservableCollection<AdvancedPasteCustomAction> _customActions;
         private Timer _delayedTimer;
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
@@ -69,8 +69,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _advancedPasteSettings = advancedPasteSettingsRepository.SettingsConfig;
 
-            _customActions = _advancedPasteSettings.Properties.CustomActions.Value;
             _additionalActions = _advancedPasteSettings.Properties.AdditionalActions;
+            _customActions = _advancedPasteSettings.Properties.CustomActions.Value;
 
             InitializeEnabledValue();
 
@@ -82,6 +82,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _delayedTimer.Elapsed += DelayedTimer_Tick;
             _delayedTimer.AutoReset = false;
 
+            foreach (var action in _additionalActions.AllActions)
+            {
+                action.PropertyChanged += OnAdditionalActionPropertyChanged;
+            }
+
             foreach (var customAction in _customActions)
             {
                 customAction.PropertyChanged += OnCustomActionPropertyChanged;
@@ -89,11 +94,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _customActions.CollectionChanged += OnCustomActionsCollectionChanged;
             UpdateCustomActionsCanMoveUpDown();
-
-            foreach (var action in _additionalActions.AllActions)
-            {
-                action.PropertyChanged += OnAdditionalActionPropertyChanged;
-            }
         }
 
         private void InitializeEnabledValue()

@@ -171,7 +171,7 @@ namespace AdvancedPaste.Pages
                 case VirtualKey.Number7:
                 case VirtualKey.Number8:
                 case VirtualKey.Number9:
-                    await ViewModel.ExecutePasteFormat(sender.Key);
+                    await ViewModel.ExecutePasteFormatAsync(sender.Key);
                     break;
 
                 default:
@@ -199,8 +199,7 @@ namespace AdvancedPaste.Pages
                 }
                 else if (item.Image is not null)
                 {
-                    RandomAccessStreamReference image = null;
-                    image = await item.Item.Content.GetBitmapAsync();
+                    RandomAccessStreamReference image = await item.Item.Content.GetBitmapAsync();
                     ClipboardHelper.SetClipboardImageContent(image);
                 }
             }

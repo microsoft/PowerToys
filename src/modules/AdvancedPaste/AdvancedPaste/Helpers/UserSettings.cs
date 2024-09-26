@@ -22,8 +22,8 @@ namespace AdvancedPaste.Settings
         private readonly TaskScheduler _taskScheduler;
         private readonly IFileSystemWatcher _watcher;
         private readonly object _loadingSettingsLock = new();
-        private readonly List<AdvancedPasteCustomAction> _customActions;
         private readonly List<PasteFormats> _additionalActions;
+        private readonly List<AdvancedPasteCustomAction> _customActions;
 
         private const string AdvancedPasteModuleName = "AdvancedPaste";
         private const int MaxNumberOfRetry = 5;

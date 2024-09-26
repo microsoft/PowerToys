@@ -29,7 +29,7 @@ namespace AdvancedPaste.Helpers
             (StandardDataFormats.Bitmap, ClipboardFormat.Image),
         ];
 
-        internal static async Task<ClipboardFormat> GetAvailableClipboardFormats(DataPackageView clipboardData)
+        internal static async Task<ClipboardFormat> GetAvailableClipboardFormatsAsync(DataPackageView clipboardData)
         {
             var availableClipboardFormats = DataFormats.Aggregate(
                 ClipboardFormat.None,
@@ -156,7 +156,7 @@ namespace AdvancedPaste.Helpers
             Logger.LogInfo("Paste sent");
         }
 
-        internal static async Task<string> GetClipboardTextOrHtmlText(DataPackageView clipboardData)
+        internal static async Task<string> GetClipboardTextOrHtmlTextAsync(DataPackageView clipboardData)
         {
             if (clipboardData.Contains(StandardDataFormats.Text))
             {
@@ -173,7 +173,7 @@ namespace AdvancedPaste.Helpers
             }
         }
 
-        internal static async Task<string> GetClipboardHtmlContent(DataPackageView clipboardData) =>
+        internal static async Task<string> GetClipboardHtmlContentAsync(DataPackageView clipboardData) =>
             clipboardData.Contains(StandardDataFormats.Html) ? await clipboardData.GetHtmlFormatAsync() : string.Empty;
 
         internal static async Task<SoftwareBitmap> GetClipboardImageContentAsync(DataPackageView clipboardData)

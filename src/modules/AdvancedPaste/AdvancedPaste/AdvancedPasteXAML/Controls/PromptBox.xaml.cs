@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 using AdvancedPaste.Helpers;
@@ -52,7 +53,7 @@ namespace AdvancedPaste.Controls
             ViewModel.CustomActionActivated += ViewModel_CustomActionActivated;
         }
 
-        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(ViewModel.Busy) || e.PropertyName == nameof(ViewModel.ApiErrorText))
             {
@@ -61,7 +62,7 @@ namespace AdvancedPaste.Controls
             }
         }
 
-        private void ViewModel_CustomActionActivated(object sender, Models.CustomActionActivatedEventArgs e)
+        private void ViewModel_CustomActionActivated(object sender, CustomActionActivatedEventArgs e)
         {
             Logger.LogTrace();
 
@@ -78,7 +79,7 @@ namespace AdvancedPaste.Controls
         }
 
         [RelayCommand]
-        private async Task GenerateCustom() => await ViewModel.GenerateCustomFunction(PasteActionSource.PromptBox);
+        private async Task GenerateCustomAsync() => await ViewModel.GenerateCustomFunctionAsync(PasteActionSource.PromptBox);
 
         [RelayCommand]
         private void Recall()
@@ -100,7 +101,7 @@ namespace AdvancedPaste.Controls
         {
             if (e.Key == Windows.System.VirtualKey.Enter && InputTxtBox.Text.Length > 0 && ViewModel.IsCustomAIEnabled)
             {
-                await GenerateCustom();
+                await GenerateCustomAsync();
             }
         }
 

@@ -29,6 +29,12 @@
                 <Setter Property="Padding" Value="0" />
             </Style.Setters>
         </Style>
+        <Style x:Key="PasteFormatListViewItemStyle" TargetType="ListViewItem">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        </Style>
         <DataTemplate x:Key="PasteFormatTemplate" x:DataType="local:PasteFormat">
             <Button
                 Margin="0"
@@ -191,22 +197,14 @@
                 Grid.Row="0"
                 VerticalAlignment="Bottom"
                 IsItemClickEnabled="False"
+                ItemContainerStyle="{StaticResource PasteFormatListViewItemStyle}"
                 ItemContainerTransitions="{x:Null}"
                 ItemTemplate="{StaticResource PasteFormatTemplate}"
                 ItemsSource="{x:Bind ViewModel.StandardPasteFormats, Mode=OneWay}"
                 ScrollViewer.VerticalScrollBarVisibility="Visible"
                 ScrollViewer.VerticalScrollMode="Auto"
                 SelectionMode="None"
-                TabIndex="1">
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="Padding" Value="0" />
-                        <Setter Property="Margin" Value="0" />
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                        <Setter Property="VerticalContentAlignment" Value="Stretch" />
-                    </Style>
-                </ListView.ItemContainerStyle>
-            </ListView>
+                TabIndex="1" />
 
             <Rectangle
                 Grid.Row="1"
@@ -220,22 +218,14 @@
                 Grid.Row="2"
                 VerticalAlignment="Top"
                 IsItemClickEnabled="False"
+                ItemContainerStyle="{StaticResource PasteFormatListViewItemStyle}"
                 ItemContainerTransitions="{x:Null}"
                 ItemTemplate="{StaticResource PasteFormatTemplate}"
                 ItemsSource="{x:Bind ViewModel.CustomActionPasteFormats, Mode=OneWay}"
                 ScrollViewer.VerticalScrollBarVisibility="Visible"
                 ScrollViewer.VerticalScrollMode="Auto"
                 SelectionMode="None"
-                TabIndex="2">
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="Padding" Value="0" />
-                        <Setter Property="Margin" Value="0" />
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                        <Setter Property="VerticalContentAlignment" Value="Stretch" />
-                    </Style>
-                </ListView.ItemContainerStyle>
-            </ListView>
+                TabIndex="2" />
 
             <Rectangle
                 Grid.Row="3"
