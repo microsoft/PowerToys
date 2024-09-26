@@ -5,15 +5,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
-
 using Awake.Core.Models;
 using Awake.Core.Native;
+using Awake.Core.Threading;
 using Awake.Properties;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -32,6 +30,8 @@ namespace Awake.Core
         private static NotifyIconData _notifyIconData;
         private static IntPtr _trayMenu;
         private static IntPtr _hiddenWindowHandle;
+        private static SingleThreadSynchronizationContext? _syncContext;
+        private static Thread? _mainThread;
 
         private static IntPtr TrayMenu { get => _trayMenu; set => _trayMenu = value; }
 
@@ -81,8 +81,11 @@ namespace Awake.Core
             IntPtr hWnd = IntPtr.Zero;
 
             // Start the message loop asynchronously
-            Task.Run(() =>
+            _mainThread = new Thread(() =>
             {
+                _syncContext = new SingleThreadSynchronizationContext();
+                SynchronizationContext.SetSynchronizationContext(_syncContext);
+
                 RunOnMainThread(() =>
                 {
                     WndClassEx wcex = new()
@@ -129,18 +132,21 @@ namespace Awake.Core
 
                     Bridge.ShowWindow(hWnd, 0); // SW_HIDE
                     Bridge.UpdateWindow(hWnd);
+                    Logger.LogInfo($"Created HWND for the window: {hWnd}");
 
                     SetShellIcon(hWnd, text, icon);
                 });
-            }).Wait();
 
-            Task.Run(() =>
-            {
                 RunOnMainThread(() =>
                 {
                     RunMessageLoop();
                 });
+
+                _syncContext!.BeginMessageLoop();
             });
+
+            _mainThread.IsBackground = true;
+            _mainThread.Start();
         }
 
         internal static void SetShellIcon(IntPtr hWnd, string text, Icon? icon, TrayIconAction action = TrayIconAction.Add)
@@ -212,6 +218,8 @@ namespace Awake.Core
                 Bridge.TranslateMessage(ref msg);
                 Bridge.DispatchMessage(ref msg);
             }
+
+            Logger.LogInfo("Message loop terminated.");
         }
 
         private static int WndProc(IntPtr hWnd, uint message, IntPtr wParam, IntPtr lParam)
@@ -292,30 +300,20 @@ namespace Awake.Core
 
         internal static void RunOnMainThread(Action action)
         {
-            var syncContext = new SingleThreadSynchronizationContext();
-            SynchronizationContext.SetSynchronizationContext(syncContext);
-
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-            syncContext.Post(
-            _ =>
-            {
-                try
+            _syncContext!.Post(
+                _ =>
                 {
-                    action();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("Error: " + e.Message);
-                }
-                finally
-                {
-                    syncContext.EndMessageLoop();
-                }
-            },
-            null);
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-
-            syncContext.BeginMessageLoop();
+                    try
+                    {
+                        Logger.LogInfo($"Thread execution is on: {Environment.CurrentManagedThreadId}");
+                        action();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Error: " + e.Message);
+                    }
+                },
+                null);
         }
 
         internal static void SetTray(AwakeSettings settings, bool startedFromPowerToys)
@@ -350,6 +348,7 @@ namespace Awake.Core
         private static void CreateNewTrayMenu(bool startedFromPowerToys, bool keepDisplayOn, AwakeMode mode)
         {
             TrayMenu = Bridge.CreatePopupMenu();
+
             if (TrayMenu == IntPtr.Zero)
             {
                 return;
