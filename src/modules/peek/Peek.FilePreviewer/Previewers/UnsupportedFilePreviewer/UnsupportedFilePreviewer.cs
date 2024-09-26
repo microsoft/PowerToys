@@ -84,11 +84,10 @@ namespace Peek.FilePreviewer.Previewers
             }
             catch (OperationCanceledException)
             {
-                throw;
             }
             catch (Exception ex)
             {
-                Logger.LogError($"UnsupportedFilePreviewer error. {ex.Message}");
+                Logger.LogError("UnsupportedFilePreviewer error.", ex);
                 State = PreviewState.Error;
             }
         }
