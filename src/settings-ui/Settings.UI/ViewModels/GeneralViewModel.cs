@@ -509,7 +509,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Failed to get windows settingsd: {ex.Message}");
+                Logger.LogError($"Failed to get windows settings: {ex.Message}");
                 return "Failed to get windows settings\n";
             }
 
