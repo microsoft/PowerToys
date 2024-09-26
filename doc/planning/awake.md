@@ -25,6 +25,7 @@ The build ID moniker is made up of two components - a reference to a [Halo](http
 >See pull request: [Awake - `PROMETHEAN_09082024`](https://github.com/microsoft/PowerToys/pull/34717)
 
 - Updating the initialization logic to make sure that settings are respected for proper group policy and single-instance detection.
+- [#34148] Fixed a bug from the previous release that incorrectly synchronized threads for shell icon creation and initialized parent PID when it was not parented.
 
 ### `VISEGRADRELAY_08152024` (August 15, 2024)
 
