@@ -2049,9 +2049,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="PasteAsCustom_Shortcut.Header" xml:space="preserve">
     <value>Paste as Custom with AI directly</value>
   </data>
-  <data name="AudioToText.Header" xml:space="preserve">
-    <value>Audio to text</value>
-  </data>
   <data name="ImageToText.Header" xml:space="preserve">
     <value>Image to text</value>
   </data>

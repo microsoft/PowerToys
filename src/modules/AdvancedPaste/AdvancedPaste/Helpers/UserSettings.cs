@@ -105,7 +105,6 @@ namespace AdvancedPaste.Settings
                                 var sourceAdditionalActions = properties.AdditionalActions;
                                 (PasteFormats Format, IAdvancedPasteAction[] Actions)[] additionalActionFormats =
                                 [
-                                    (PasteFormats.AudioToText, [sourceAdditionalActions.AudioToText]),
                                     (PasteFormats.ImageToText, [sourceAdditionalActions.ImageToText]),
                                     (PasteFormats.PasteAsTxtFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsTxtFile]),
                                     (PasteFormats.PasteAsPngFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsPngFile]),

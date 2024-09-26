@@ -217,10 +217,6 @@
                     </controls:SettingsGroup>
 
                     <controls:SettingsGroup x:Uid="AdvancedPaste_Additional_Actions_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                        <tkcontrols:SettingsCard x:Uid="AudioToText" DataContext="{x:Bind ViewModel.AdditionalActions.AudioToText, Mode=OneWay}">
-                            <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
-                        </tkcontrols:SettingsCard>
-
                         <tkcontrols:SettingsCard x:Uid="ImageToText" DataContext="{x:Bind ViewModel.AdditionalActions.ImageToText, Mode=OneWay}">
                             <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
                         </tkcontrols:SettingsCard>

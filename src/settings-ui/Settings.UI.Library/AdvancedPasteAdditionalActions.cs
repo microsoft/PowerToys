@@ -12,13 +12,9 @@ public sealed class AdvancedPasteAdditionalActions
 {
     public static class PropertyNames
     {
-        public const string AudioToText = "audio-to-text";
         public const string ImageToText = "image-to-text";
         public const string PasteAsFile = "paste-as-file";
     }
-
-    [JsonPropertyName(PropertyNames.AudioToText)]
-    public AdvancedPasteAdditionalAction AudioToText { get; init; } = new();
 
     [JsonPropertyName(PropertyNames.ImageToText)]
     public AdvancedPasteAdditionalAction ImageToText { get; init; } = new();
@@ -27,5 +23,5 @@ public sealed class AdvancedPasteAdditionalActions
     public AdvancedPastePasteAsFileAction PasteAsFile { get; init; } = new();
 
     [JsonIgnore]
-    public IEnumerable<IAdvancedPasteAction> AllActions => new IAdvancedPasteAction[] { AudioToText, ImageToText, PasteAsFile }.Concat(PasteAsFile.SubActions);
+    public IEnumerable<IAdvancedPasteAction> AllActions => new IAdvancedPasteAction[] { ImageToText, PasteAsFile }.Concat(PasteAsFile.SubActions);
 }

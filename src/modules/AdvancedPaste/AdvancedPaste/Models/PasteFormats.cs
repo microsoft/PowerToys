@@ -17,9 +17,6 @@ public enum PasteFormats
     [PasteFormatMetadata(IsCoreAction = true, ResourceId = "PasteAsJson", IconGlyph = "\uE943", RequiresAIService = false, SupportedClipboardFormats = ClipboardFormat.Text)]
     Json,
 
-    [PasteFormatMetadata(IsCoreAction = false, ResourceId = "AudioToText", IconGlyph = "\uF8B1", RequiresAIService = true, SupportedClipboardFormats = ClipboardFormat.Audio, IPCKey = AdvancedPasteAdditionalActions.PropertyNames.AudioToText)]
-    AudioToText,
-
     [PasteFormatMetadata(IsCoreAction = false, ResourceId = "ImageToText", IconGlyph = "\uE91B", RequiresAIService = false, SupportedClipboardFormats = ClipboardFormat.Image | ClipboardFormat.ImageFile, IPCKey = AdvancedPasteAdditionalActions.PropertyNames.ImageToText)]
     ImageToText,
 

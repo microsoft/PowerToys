@@ -49,9 +49,6 @@ public sealed class PasteFormatExecutor(AICompletionsHelper aiHelper) : IPasteFo
                 ToJson(clipboardData);
                 return null;
 
-            case PasteFormats.AudioToText:
-                throw new NotImplementedException();
-
             case PasteFormats.ImageToText:
                 await ImageToTextAsync(clipboardData);
                 return null;

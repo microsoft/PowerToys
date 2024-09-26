@@ -168,9 +168,6 @@
   <data name="PasteAsPlainText" xml:space="preserve">
     <value>Paste as plain text</value>
   </data>
-  <data name="AudioToText" xml:space="preserve">
-    <value>Audio to text</value>
-  </data>
   <data name="ImageToText" xml:space="preserve">
     <value>Image to text</value>
   </data>
