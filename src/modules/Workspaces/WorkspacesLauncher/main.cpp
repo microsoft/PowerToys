@@ -1,18 +1,18 @@
 #include "pch.h"
 
-#include <WorkspacesLib/JsonUtils.h>
-#include <WorkspacesLib/utils.h>
-
-#include <Launcher.h>
-
-#include <Generated Files/resource.h>
-
 #include <common/utils/elevation.h>
 #include <common/utils/gpo.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/process_path.h>
 #include <common/utils/UnhandledExceptionHandler.h>
 #include <common/utils/resources.h>
+
+#include <WorkspacesLib/JsonUtils.h>
+#include <WorkspacesLib/utils.h>
+
+#include <Launcher.h>
+
+#include <Generated Files/resource.h>
 
 const std::wstring moduleName = L"Workspaces\\WorkspacesLauncher";
 const std::wstring internalPath = L"";
@@ -28,6 +28,15 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         return 0;
     }
 
+    std::wstring cmdLineStr{ GetCommandLineW() };
+    auto cmdArgs = split(cmdLineStr, L" ");
+    if (cmdArgs.workspaceId.empty())
+    {
+        Logger::warn("Incorrect command line arguments: no workspace id");
+        MessageBox(NULL, GET_RESOURCE_STRING(IDS_INCORRECT_ARGS).c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
+        return 1;
+    }
+
     if (is_process_elevated())
     {
         Logger::warn("Workspaces Launcher is elevated, restart");
@@ -41,7 +50,9 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         std::string cmdLineStr(cmdline);
         std::wstring cmdLineWStr(cmdLineStr.begin(), cmdLineStr.end());
 
-        run_non_elevated(exe_path.get(), cmdLineWStr, nullptr, modulePath.c_str());
+        std::wstring cmd = cmdArgs.workspaceId + L" " + std::to_wstring(cmdArgs.invokePoint);
+
+        RunNonElevatedEx(exe_path.get(), cmd, modulePath);
         return 1;
     }
 
@@ -54,50 +65,21 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     
-    std::wstring cmdLineStr{ GetCommandLineW()  };
-    auto cmdArgs = split(cmdLineStr, L" ");
-    if (cmdArgs.size() < 2)
-    {
-        Logger::warn("Incorrect command line arguments");
-        MessageBox(NULL, GET_RESOURCE_STRING(IDS_INCORRECT_ARGS).c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
-        return 1;
-    }
-    
-    std::wstring id(cmdArgs[1].begin(), cmdArgs[1].end());
-    if (id.empty())
-    {
-        Logger::warn("Incorrect command line arguments: no workspace id");
-        MessageBox(NULL, GET_RESOURCE_STRING(IDS_INCORRECT_ARGS).c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
-        return 1;
-    }
-
-    InvokePoint invokePoint = InvokePoint::EditorButton;
-    if (cmdArgs.size() > 2)
-    {
-        try
-        {
-            invokePoint = static_cast<InvokePoint>(std::stoi(cmdArgs[2]));
-        }
-        catch (std::exception)
-        {
-        }
-    }
-
-    Logger::trace(L"Invoke point: {}", invokePoint);
+    Logger::trace(L"Invoke point: {}", cmdArgs.invokePoint);
 
     // read workspaces
     std::vector<WorkspacesData::WorkspacesProject> workspaces;
     WorkspacesData::WorkspacesProject projectToLaunch{};
-    if (invokePoint == InvokePoint::LaunchAndEdit)
+    if (cmdArgs.invokePoint == InvokePoint::LaunchAndEdit)
     {
         // check the temp file in case the project is just created and not saved to the workspaces.json yet
         auto file = WorkspacesData::TempWorkspacesFile();
         auto res = JsonUtils::ReadSingleWorkspace(file);
-        if (res.isOk() && projectToLaunch.id == id)
+        if (res.isOk() && projectToLaunch.id == cmdArgs.workspaceId)
         {
             projectToLaunch = res.getValue();
         }
-        else
+        else if (res.isError())
         {
             std::wstring formattedMessage{};
             switch (res.error())
@@ -150,7 +132,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 
         for (const auto& proj : workspaces)
         {
-            if (proj.id == id)
+            if (proj.id == cmdArgs.workspaceId)
             {
                 projectToLaunch = proj;
                 break;
@@ -160,13 +142,13 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 
     if (projectToLaunch.id.empty())
     {
-        Logger::critical(L"Workspace {} not found", id);
-        std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_PROJECT_NOT_FOUND), id);
+        Logger::critical(L"Workspace {} not found", cmdArgs.workspaceId);
+        std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_PROJECT_NOT_FOUND), cmdArgs.workspaceId);
         MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
         return 1;
     }
 
-    Launcher launcher(projectToLaunch, workspaces, invokePoint);
+    Launcher launcher(projectToLaunch, workspaces, cmdArgs.invokePoint);
 
     Logger::trace("Finished");
     CoUninitialize();
