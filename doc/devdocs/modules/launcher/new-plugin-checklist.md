@@ -4,7 +4,6 @@
 - [ ] Microsoft plugin project name pattern: `Microsoft.PowerToys.Run.Plugin.{PluginName}`
 - [ ] Community plugin project name pattern: `Community.PowerToys.Run.Plugin.{PluginName}`
 - [ ] The plugin target framework should be `net8.0-windows`
-- [ ] The project file should import `Version.props` and specify `<Version>$(Version).0</Version>`
 - [ ] If the plugin uses any 3rd party dependencies the project file should import `DynamicPlugin.props`
 - [ ] The plugin has to contain a `plugin.json` file of the following format in its root folder:
 

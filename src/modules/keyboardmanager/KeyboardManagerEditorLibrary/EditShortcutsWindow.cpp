@@ -43,7 +43,7 @@ static ThemeListener theme_listener{};
 static void handleTheme()
 {
     auto theme = theme_listener.AppTheme;
-    auto isDark = theme == AppTheme::Dark;
+    auto isDark = theme == Theme::Dark;
     Logger::info(L"Theme is now {}", isDark ? L"Dark" : L"Light");
     if (hwndEditShortcutsNativeWindow != nullptr)
     {
@@ -90,7 +90,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         windowClass.lpfnWndProc = EditShortcutsWindowProc;
         windowClass.hInstance = hInst;
         windowClass.lpszClassName = szWindowClass;
-        windowClass.hbrBackground = CreateSolidBrush((ThemeHelpers::GetAppTheme() == AppTheme::Dark) ? 0x00000000 : 0x00FFFFFF);
+        windowClass.hbrBackground = CreateSolidBrush((ThemeHelpers::GetAppTheme() == Theme::Dark) ? 0x00000000 : 0x00FFFFFF);
         windowClass.hIcon = static_cast<HICON>(LoadImageW(
             windowClass.hInstance,
             MAKEINTRESOURCE(IDS_KEYBOARDMANAGER_ICON),
@@ -348,7 +348,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         auto indexToDelete = -1;
         for (int i = 0; i < ShortcutControl::shortcutRemapBuffer.size(); i++)
         {
-            auto tempShortcut = std::get<Shortcut>(ShortcutControl::shortcutRemapBuffer[i].first[0]);
+            auto tempShortcut = std::get<Shortcut>(ShortcutControl::shortcutRemapBuffer[i].mapping[0]);
             if (tempShortcut.ToHstringVK() == keysForShortcutToEdit)
             {
                 indexToDelete = i;

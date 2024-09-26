@@ -4,8 +4,9 @@
 
 using System;
 using System.Threading;
-using interop;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerToys.Interop;
 
 namespace Microsoft.Interop.Tests
 {

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
+
 using Microsoft.Plugin.WindowWalker.Properties;
 using Wox.Plugin;
 using Wox.Plugin.Logger;

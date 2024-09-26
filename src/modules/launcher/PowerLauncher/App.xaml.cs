@@ -9,19 +9,21 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows;
-using interop;
+
 using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using PowerLauncher.ViewModel;
+using PowerToys.Interop;
 using Wox;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
+
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace PowerLauncher

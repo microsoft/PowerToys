@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+
 using Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties;
 using Wox.Plugin;
 using Wox.Plugin.Logger;

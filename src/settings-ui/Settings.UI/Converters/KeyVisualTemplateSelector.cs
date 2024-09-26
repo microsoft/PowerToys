@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
 {
-    internal sealed class KeyVisualTemplateSelector : DataTemplateSelector
+    internal sealed partial class KeyVisualTemplateSelector : DataTemplateSelector
     {
         public DataTemplate KeyVisualTemplate { get; set; }
 

@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+
 using Peek.Common.Models;
 using Peek.UI.Extensions;
 using SHDocVw;
@@ -11,6 +12,7 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
+
 using IServiceProvider = Peek.Common.Models.IServiceProvider;
 
 namespace Peek.UI.Helpers

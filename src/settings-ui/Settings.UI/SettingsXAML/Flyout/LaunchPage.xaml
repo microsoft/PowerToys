@@ -65,45 +65,47 @@
                 </Button>
             </Grid>
             <Grid Grid.Row="1">
-                <ItemsControl
-                    Margin="12,26,12,24"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Top"
-                    ItemsSource="{x:Bind ViewModel.FlyoutMenuItems}"
-                    TabNavigation="Local">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <tkcontrols:WrapPanel HorizontalAlignment="Stretch" VerticalSpacing="12" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="viewModels:FlyoutMenuItem">
-                            <controls:FlyoutMenuButton
-                                AutomationProperties.Name="{x:Bind Label}"
-                                Click="ModuleButton_Click"
-                                Tag="{x:Bind Tag}"
-                                Visibility="{x:Bind Visible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <controls:FlyoutMenuButton.Content>
-                                    <TextBlock
-                                        Style="{StaticResource CaptionTextBlockStyle}"
-                                        Text="{x:Bind Label}"
-                                        TextAlignment="Center"
-                                        TextWrapping="Wrap" />
-                                </controls:FlyoutMenuButton.Content>
-                                <controls:FlyoutMenuButton.Icon>
-                                    <Image>
-                                        <Image.Source>
-                                            <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
-                                        </Image.Source>
-                                    </Image>
-                                </controls:FlyoutMenuButton.Icon>
-                                <ToolTipService.ToolTip>
-                                    <ToolTip Content="{x:Bind ToolTip}" Visibility="{x:Bind ToolTip, Converter={StaticResource StringVisibilityConverter}}" />
-                                </ToolTipService.ToolTip>
-                            </controls:FlyoutMenuButton>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <ScrollViewer>
+                    <ItemsControl
+                        Margin="12,26,12,24"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Top"
+                        ItemsSource="{x:Bind ViewModel.FlyoutMenuItems}"
+                        TabNavigation="Local">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <tkcontrols:WrapPanel HorizontalAlignment="Stretch" VerticalSpacing="12" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="viewModels:FlyoutMenuItem">
+                                <controls:FlyoutMenuButton
+                                    AutomationProperties.Name="{x:Bind Label}"
+                                    Click="ModuleButton_Click"
+                                    Tag="{x:Bind Tag}"
+                                    Visibility="{x:Bind Visible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <controls:FlyoutMenuButton.Content>
+                                        <TextBlock
+                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                            Text="{x:Bind Label}"
+                                            TextAlignment="Center"
+                                            TextWrapping="Wrap" />
+                                    </controls:FlyoutMenuButton.Content>
+                                    <controls:FlyoutMenuButton.Icon>
+                                        <Image>
+                                            <Image.Source>
+                                                <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
+                                            </Image.Source>
+                                        </Image>
+                                    </controls:FlyoutMenuButton.Icon>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="{x:Bind ToolTip}" Visibility="{x:Bind ToolTip, Converter={StaticResource StringVisibilityConverter}}" />
+                                    </ToolTipService.ToolTip>
+                                </controls:FlyoutMenuButton>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
             </Grid>
         </Grid>
         <Grid Grid.Row="2">

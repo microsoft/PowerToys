@@ -133,7 +133,7 @@ void InitializeReportBugLinkAsync()
 
                     if (bugReportResult.empty())
                     {
-                        message = L" Failed to generate bug report. bugReportResult is empty.";
+                        message = L"Failed to generate bug report. bugReportResult is empty.";
                     }
                     else
                     {

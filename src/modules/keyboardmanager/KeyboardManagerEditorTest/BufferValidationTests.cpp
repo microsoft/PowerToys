@@ -69,10 +69,10 @@ namespace RemappingUITests
 
                 // Assert that the element is validated and buffer is updated
                 Assert::AreEqual(true, error == ShortcutErrorType::NoError);
-                Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[0].first[0]));
-                Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[0].first[1]));
-                Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[1].first[0]));
-                Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[1].first[1]));
+                Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[0].mapping[0]));
+                Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[0].mapping[1]));
+                Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[1].mapping[0]));
+                Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[1].mapping[1]));
             }
 
             // Test if the ValidateAndUpdateKeyBufferElement method is successful when setting a key to non-null in a new row
@@ -89,8 +89,8 @@ namespace RemappingUITests
 
                 // Assert that the element is validated and buffer is updated
                 Assert::AreEqual(true, error == ShortcutErrorType::NoError);
-                Assert::AreEqual((DWORD)0x42, std::get<DWORD>(remapBuffer[0].first[0]));
-                Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[0].first[1]));
+                Assert::AreEqual((DWORD)0x42, std::get<DWORD>(remapBuffer[0].mapping[0]));
+                Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[0].mapping[1]));
             }
 
             // Test if the ValidateAndUpdateKeyBufferElement method is successful when setting a key to non-null in a valid key to key
@@ -107,8 +107,8 @@ namespace RemappingUITests
 
                 // Assert that the element is validated and buffer is updated
                 Assert::AreEqual(true, error == ShortcutErrorType::NoError);
-                Assert::AreEqual((DWORD)0x42, std::get<DWORD>(remapBuffer[0].first[0]));
-                Assert::AreEqual((DWORD)0x41, std::get<DWORD>(remapBuffer[0].first[1]));
+                Assert::AreEqual((DWORD)0x42, std::get<DWORD>(remapBuffer[0].mapping[0]));
+                Assert::AreEqual((DWORD)0x41, std::get<DWORD>(remapBuffer[0].mapping[1]));
             }
 
             // Test if the ValidateAndUpdateKeyBufferElement method is successful when setting a key to non-null in a valid key to shortcut
@@ -125,8 +125,8 @@ namespace RemappingUITests
 
                 // Assert that the element is validated and buffer is updated
                 Assert::AreEqual(true, error == ShortcutErrorType::NoError);
-                Assert::AreEqual((DWORD)0x42, std::get<DWORD>(remapBuffer[0].first[0]));
-                Assert::AreEqual(true, Shortcut(std::vector<int32_t>{ VK_CONTROL, 0x41 }) == std::get<Shortcut>(remapBuffer[0].first[1]));
+                Assert::AreEqual((DWORD)0x42, std::get<DWORD>(remapBuffer[0].mapping[0]));
+                Assert::AreEqual(true, Shortcut(std::vector<int32_t>{ VK_CONTROL, 0x41 }) == std::get<Shortcut>(remapBuffer[0].mapping[1]));
             }
 
             // Test if the ValidateAndUpdateKeyBufferElement method is unsuccessful when setting first column to the same value as the right column
@@ -143,8 +143,8 @@ namespace RemappingUITests
 
                 // Assert that the element is invalid and buffer is not updated
                 Assert::AreEqual(true, error == ShortcutErrorType::MapToSameKey);
-                Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[0].first[0]));
-                Assert::AreEqual((DWORD)0x41, std::get<DWORD>(remapBuffer[0].first[1]));
+                Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[0].mapping[0]));
+                Assert::AreEqual((DWORD)0x41, std::get<DWORD>(remapBuffer[0].mapping[1]));
             }
 
             // Test if the ValidateAndUpdateKeyBufferElement method is unsuccessful when setting first column of a key to key row to the same value as in another row
@@ -162,8 +162,8 @@ namespace RemappingUITests
 
                 // Assert that the element is invalid and buffer is not updated
                 Assert::AreEqual(true, error == ShortcutErrorType::SameKeyPreviouslyMapped);
-                Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[1].first[0]));
-                Assert::AreEqual((DWORD)0x43, std::get<DWORD>(remapBuffer[1].first[1]));
+                Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[1].mapping[0]));
+                Assert::AreEqual((DWORD)0x43, std::get<DWORD>(remapBuffer[1].mapping[1]));
             }
 
             // Test if the ValidateAndUpdateKeyBufferElement method is unsuccessful when setting first column of a key to shortcut row to the same value as in another row
@@ -181,8 +181,8 @@ namespace RemappingUITests
 
                 // Assert that the element is invalid and buffer is not updated
                 Assert::AreEqual(true, error == ShortcutErrorType::SameKeyPreviouslyMapped);
-                Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[1].first[0]));
-                Assert::AreEqual(true, Shortcut(std::vector<int32_t>{ VK_CONTROL, 0x41 }) == std::get<Shortcut>(remapBuffer[1].first[1]));
+                Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[1].mapping[0]));
+                Assert::AreEqual(true, Shortcut(std::vector<int32_t>{ VK_CONTROL, 0x41 }) == std::get<Shortcut>(remapBuffer[1].mapping[1]));
             }
 
             // Test if the ValidateAndUpdateKeyBufferElement method is unsuccessful when setting first column of a key to key row to a conflicting modifier with another row
@@ -200,8 +200,8 @@ namespace RemappingUITests
 
                 // Assert that the element is invalid and buffer is not updated
                 Assert::AreEqual(true, error == ShortcutErrorType::ConflictingModifierKey);
-                Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[1].first[0]));
-                Assert::AreEqual((DWORD)0x43, std::get<DWORD>(remapBuffer[1].first[1]));
+                Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[1].mapping[0]));
+                Assert::AreEqual((DWORD)0x43, std::get<DWORD>(remapBuffer[1].mapping[1]));
             }
 
             // Test if the ValidateAndUpdateKeyBufferElement method is unsuccessful when setting first column of a key to shortcut row to a conflicting modifier with another row
@@ -219,8 +219,8 @@ namespace RemappingUITests
 
                 // Assert that the element is invalid and buffer is not updated
                 Assert::AreEqual(true, error == ShortcutErrorType::ConflictingModifierKey);
-                Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[1].first[0]));
-                Assert::AreEqual(true, Shortcut(std::vector<int32_t>{ VK_CONTROL, 0x41 }) == std::get<Shortcut>(remapBuffer[1].first[1]));
+                Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[1].mapping[0]));
+                Assert::AreEqual(true, Shortcut(std::vector<int32_t>{ VK_CONTROL, 0x41 }) == std::get<Shortcut>(remapBuffer[1].mapping[1]));
             }
 
             // Test if the ValidateShortcutBufferElement method is successful and no drop down action is required on setting a column to null in a new or valid row

@@ -4,8 +4,10 @@
 
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+
 using MouseJumpUI.Common.Models.Drawing;
 using MouseJumpUI.Common.NativeMethods;
+
 using static MouseJumpUI.Common.NativeMethods.Core;
 using static MouseJumpUI.Common.NativeMethods.User32;
 

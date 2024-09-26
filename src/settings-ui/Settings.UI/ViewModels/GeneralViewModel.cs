@@ -247,6 +247,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 if (completedTask == showDialogTask && showDialogTask.GetResultOrDefault() == ContentDialogResult.Primary)
                 {
+                    Logger.LogInfo("Bug report generation has been cancelled.");
+
                     // Cancel the bug report task if the dialog was closed with Cancel
                     await cts.CancelAsync();
                 }
@@ -257,9 +259,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     // Bug report task completed
                     string reportResult = await bugReportTask;
 
-                    gitHubURL = "https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CNeeds-Triage&template=bug_report.yml" +
+                    if (string.IsNullOrEmpty(reportResult))
+                    {
+                        Logger.LogError("Failed to generate bug report. reportResult is empty.");
+                    }
+                    else
+                    {
+                        Logger.LogInfo("Bug report successfully generated.");
+                        gitHubURL = "https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CNeeds-Triage&template=bug_report.yml" +
                         "&version=" + version +
                         "&additionalInfo=" + additionalInfo;
+                    }
 
                     var dialog = new ContentDialog
                     {
@@ -274,6 +284,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             catch (Exception ex)
             {
+                Logger.LogError($"Failed to generate bug report. {ex.Message}");
                 await cts.CancelAsync();
                 loadingMessage.Hide();
                 var errorDialog = new ContentDialog
@@ -335,6 +346,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         }
                         catch (Exception ex)
                         {
+                            Logger.LogError($"Failed to start bug report tool: {ex.Message}");
                             MessageBox.Show("Failed to start bug report tool: " + ex.Message, "Error");
                         }
                         finally
@@ -424,6 +436,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             catch (Exception ex)
             {
+                Logger.LogError($"Failed to execute command: {ex.Message}");
                 return $"Failed to execute command: {ex.Message}";
             }
         }
@@ -459,8 +472,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 userLocale = CultureInfo.CurrentCulture.Name;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.LogError($"Failed to get windows settingsd: {ex.Message}");
                 return "Failed to get windows settings\n";
             }
 

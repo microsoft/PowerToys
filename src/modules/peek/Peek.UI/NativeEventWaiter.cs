@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading;
+
 using Microsoft.UI.Dispatching;
 
 namespace Peek.UI.Native

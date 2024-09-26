@@ -56,11 +56,14 @@ APPBARDATA
 appdata
 APPEXECLINK
 Appium
+applayout
 Applicationcan
+APPLICATIONFRAMEHOST
 appmanifest
 APPNAME
 appref
 appsettings
+appsfolder
 appwindow
 appwiz
 APSTUDIO
@@ -77,6 +80,8 @@ asf
 AShortcut
 ASingle
 ASSOCCHANGED
+ASSOCF
+ASSOCSTR
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
@@ -189,7 +194,6 @@ CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
 closesocket
-clrcall
 CLSCTX
 Clusion
 cmder
@@ -200,8 +204,8 @@ CMINVOKECOMMANDINFO
 CMINVOKECOMMANDINFOEX
 CMock
 CMONITORS
-cmph
 cmpgt
+cmph
 cne
 CNF
 coclass
@@ -241,16 +245,14 @@ CONTEXTMENUHANDLER
 CONTROLL
 CONTROLPARENT
 copiedcolorrepresentation
+COREWINDOW
 cotaskmem
 COULDNOT
 countof
 cph
 CPower
 cppblog
-cppruntime
-cppstd
 cppwinrt
-CProj
 createdump
 CREATESCHEDULEDTASK
 CREATESTRUCT
@@ -266,6 +268,7 @@ CSettings
 cso
 CSRW
 CStyle
+cswinrt
 CSY
 CTest
 currentculture
@@ -317,6 +320,7 @@ Dedup
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
 DEFAULTCOLOR
 DEFAULTFLAGS
+DEFAULTICON
 DEFAULTONLY
 DEFAULTTONEAREST
 DEFAULTTONULL
@@ -331,6 +335,7 @@ deletethis
 DENORMAL
 depersist
 deprioritized
+DESELECTOTHERS
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
 desktopshorcutinstalled
@@ -408,6 +413,7 @@ dxgi
 dxgidebug
 dxgiformat
 dxguid
+easeofaccess
 ecount
 EData
 Edid
@@ -427,6 +433,7 @@ encodedlaunch
 encryptor
 endpointvolume
 ENDSESSION
+ENSUREVISIBLE
 ENTERSIZEMOVE
 ENU
 EOAC
@@ -508,6 +515,7 @@ FOLDERID
 folderpath
 FORCEMINIMIZE
 formatetc
+FORPARSING
 FRAMECHANGED
 frm
 Froml
@@ -562,6 +570,7 @@ Hashset
 hashtag
 HASHVAL
 HASSTRINGS
+HASSUBCOMMANDS
 hbitmap
 hbm
 hbmp
@@ -605,7 +614,6 @@ hmenu
 hmodule
 hmonitor
 homljgmgpmcbpjbnjpfijnhipfkiclkd
-HOOKPROC
 Hostbackdropbrush
 hotkeycontrol
 hotkeys
@@ -642,6 +650,7 @@ ICapture
 IClass
 ICONERROR
 ICONINFORMATION
+ICONLOCATION
 IData
 IDCANCEL
 IDD
@@ -660,6 +669,7 @@ IFACEMETHOD
 IFACEMETHODIMP
 IFile
 IFilter
+IGNOREUNKNOWN
 IGraphics
 iid
 Iindex
@@ -721,6 +731,7 @@ ISettings
 IShell
 isocpp
 iss
+ISSEPARATOR
 ITask
 ith
 ITHUMBNAIL
@@ -839,6 +850,7 @@ lpwcx
 lpwndpl
 LReader
 LRESULT
+LSTATUS
 lstrcmp
 lstrcmpi
 lstrlen
@@ -935,7 +947,6 @@ MRT
 mru
 mrw
 msc
-msclr
 mscorlib
 msdata
 msedge
@@ -996,6 +1007,8 @@ newdev
 NEWDIALOGSTYLE
 newitem
 newpath
+newplus
+NEWPLUSCONTEXTMENU
 newrow
 newsgroups
 NIF
@@ -1008,7 +1021,10 @@ NOAGGREGATION
 NOASYNC
 NOCLOSEPROCESS
 NOCOALESCE
+NOCOMM
+NOCONFIRMMKDIR
 NOCOPYBITS
+NOCOPYSECURITYATTRIBS
 nodeca
 nodoc
 NODRAWCAPTION
@@ -1016,6 +1032,7 @@ NODRAWICON
 NOINHERITLAYOUT
 NOINTERFACE
 NOLINKINFO
+NOMCX
 NOMINMAX
 NOMIRRORBITMAP
 NOMOVE
@@ -1115,6 +1132,7 @@ PATINVERT
 PATPAINT
 PAUDIO
 pbc
+pbi
 PBlob
 pcb
 pcch
@@ -1128,6 +1146,7 @@ pdo
 pdto
 pdtobj
 pdw
+Peb
 pef
 PElems
 Pels
@@ -1211,6 +1230,8 @@ projectname
 PROPBAG
 PROPERTYKEY
 propkey
+propsys
+PROPVARIANT
 propvarutil
 prvpane
 psapi
@@ -1376,6 +1397,7 @@ sddl
 SDKDDK
 sdns
 searchterm
+SEARCHUI
 secpol
 SENDCHANGE
 sendinput
@@ -1411,6 +1433,8 @@ SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
 shellscalingapi
 SHFILEINFO
+SHFILEOPSTRUCT
+SHGDN
 SHGDNF
 SHGFI
 shinfo
@@ -1418,6 +1442,7 @@ shldisp
 shlobj
 shlwapi
 shmem
+SHNAMEMAPPING
 shobjidl
 SHORTCUTATLEAST
 shortcutcontrol
@@ -1507,7 +1532,6 @@ STATICEDGE
 STATSTG
 stdafx
 STDAPI
-stdcpp
 stdcpplatest
 STDMETHODCALLTYPE
 STDMETHODIMP
@@ -1523,7 +1547,7 @@ stringtable
 stringval
 Strm
 Strmiids
-Strret
+strret
 strsafe
 strutil
 sttngs
@@ -1539,10 +1563,12 @@ svchost
 SVGIn
 SVGIO
 svgz
+SVSI
 SWC
 SWFO
 SWP
 SWRESTORE
+SYMCACHE
 SYMED
 SYMOPT
 SYNCMFT
@@ -1559,7 +1585,9 @@ SYSKEYUP
 SYSLIB
 SYSMENU
 SYSTEMAPPS
+systemsettings
 SYSTEMTIME
+SYSTEMWOW
 tapp
 TApplication
 TApplied
@@ -1671,9 +1699,11 @@ urlmon
 Usb
 USEDEFAULT
 USEFILEATTRIBUTES
+USEPOSITION
 USERDATA
 Userenv
 USESHOWWINDOW
+USESIZE
 USESTDHANDLES
 USRDLL
 UType
@@ -1711,8 +1741,10 @@ VIDEOINFOHEADER
 viewmodel
 vih
 VIRTUALDESK
+VISEGRADRELAY
 visiblecolorformats
 Visibletrue
+visualeffects
 VKey
 vmovl
 vorrq
@@ -1737,8 +1769,10 @@ VSTHRD
 VSTT
 vswhere
 Vtbl
+WANTMAPPINGHANDLE
 WANTPALM
 wbem
+Wbemidl
 wbemuuid
 WBounds
 Wca
@@ -1747,6 +1781,7 @@ WCE
 wcex
 WClass
 wcsicmp
+wcsncpy
 wcsnicmp
 WDA
 wdp
@@ -1826,6 +1861,10 @@ WNDCLASSEXW
 WNDCLASSW
 WNDPROC
 workarounds
+WORKSPACESEDITOR
+WORKSPACESLAUNCHER
+WORKSPACESSNAPSHOTTOOL
+WORKSPACESWINDOWARRANGER
 wox
 wparam
 wpf

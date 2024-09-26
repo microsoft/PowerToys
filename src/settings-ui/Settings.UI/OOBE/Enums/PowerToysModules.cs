@@ -30,7 +30,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         VideoConference,
         MeasureTool,
         Hosts,
+        Workspaces,
         WhatsNew,
         RegistryPreview,
+        NewPlus,
     }
 }

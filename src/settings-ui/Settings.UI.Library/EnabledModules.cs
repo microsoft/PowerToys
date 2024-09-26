@@ -462,6 +462,39 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool newPlus;
+
+        [JsonPropertyName("NewPlus")] // This key must match newplus::constants::non_localizable
+        public bool NewPlus
+        {
+            get => newPlus;
+            set
+            {
+                if (newPlus != value)
+                {
+                    LogTelemetryEvent(value);
+                    newPlus = value;
+                }
+            }
+        }
+
+        private bool workspaces = true;
+
+        [JsonPropertyName("Workspaces")]
+        public bool Workspaces
+        {
+            get => workspaces;
+            set
+            {
+                if (workspaces != value)
+                {
+                    LogTelemetryEvent(value);
+                    workspaces = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();

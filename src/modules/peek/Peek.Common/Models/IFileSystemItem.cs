@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading.Tasks;
+
 using Peek.Common.Helpers;
 using Windows.Storage;
 
@@ -19,7 +20,7 @@ namespace Peek.Common.Models
             {
                 try
                 {
-                    return string.IsNullOrEmpty(Path) ? null : System.IO.File.GetCreationTime(Path);
+                    return string.IsNullOrEmpty(Path) ? null : System.IO.File.GetLastWriteTime(Path);
                 }
                 catch
                 {

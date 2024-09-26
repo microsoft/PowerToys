@@ -7,6 +7,7 @@ using System.ComponentModel.Composition;
 using System.Threading;
 using System.Windows;
 using System.Windows.Media;
+
 using ColorPicker.Common;
 using ColorPicker.Helpers;
 using ColorPicker.Keyboard;
@@ -14,8 +15,8 @@ using ColorPicker.Mouse;
 using ColorPicker.Settings;
 using ColorPicker.ViewModelContracts;
 using Common.UI;
-using interop;
 using ManagedCommon;
+using PowerToys.Interop;
 
 namespace ColorPicker.ViewModels
 {
