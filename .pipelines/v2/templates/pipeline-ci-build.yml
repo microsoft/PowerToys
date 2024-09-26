@@ -17,6 +17,10 @@ parameters:
     type: boolean
     default: true
 
+variables:
+  ${{ if eq(parameters.enableMsBuildCaching, true) }}:
+    EnablePipelineCache: true
+
 stages:
   # Allow manual builds to skip pre-check
   - ${{ if ne(variables['Build.Reason'], 'Manual') }}:
