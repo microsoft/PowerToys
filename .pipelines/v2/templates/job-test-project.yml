@@ -60,7 +60,7 @@ jobs:
         displaySettings: 'optimal'
 
   # The arm64 builder cannot run arm64 tests, so we have to run them here
-  - ${{ if ne(parameters.platform, 'arm64') }}:
+  - ${{ if eq(parameters.platform, 'arm64') }}:
     - task: VSTest@3
       displayName: Run Tests
       inputs:
