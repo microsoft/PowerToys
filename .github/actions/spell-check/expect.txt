@@ -30,6 +30,7 @@ AFX
 AGGREGATABLE
 AHybrid
 AKV
+akv
 ALarger
 ALLAPPS
 ALLINPUT
@@ -80,6 +81,8 @@ asf
 AShortcut
 ASingle
 ASSOCCHANGED
+ASSOCF
+ASSOCSTR
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
@@ -318,6 +321,7 @@ Dedup
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
 DEFAULTCOLOR
 DEFAULTFLAGS
+DEFAULTICON
 DEFAULTONLY
 DEFAULTTONEAREST
 DEFAULTTONULL
@@ -332,6 +336,7 @@ deletethis
 DENORMAL
 depersist
 deprioritized
+DESELECTOTHERS
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
 desktopshorcutinstalled
@@ -362,6 +367,7 @@ dllmain
 DNLEN
 DONOTROUND
 DONTVALIDATEPATH
+DOPUS
 dotnet
 DPICHANGED
 DPIs
@@ -428,6 +434,7 @@ encodedlaunch
 encryptor
 endpointvolume
 ENDSESSION
+ENSUREVISIBLE
 ENTERSIZEMOVE
 ENU
 EOAC
@@ -509,6 +516,7 @@ FOLDERID
 folderpath
 FORCEMINIMIZE
 formatetc
+FORPARSING
 FRAMECHANGED
 frm
 Froml
@@ -563,6 +571,7 @@ Hashset
 hashtag
 HASHVAL
 HASSTRINGS
+HASSUBCOMMANDS
 hbitmap
 hbm
 hbmp
@@ -641,6 +650,7 @@ IBeam
 ICapture
 IClass
 ICONERROR
+ICONLOCATION
 IData
 IDD
 IDesktop
@@ -658,6 +668,7 @@ IFACEMETHOD
 IFACEMETHODIMP
 IFile
 IFilter
+IGNOREUNKNOWN
 IGraphics
 iid
 Iindex
@@ -719,6 +730,8 @@ ISettings
 IShell
 isocpp
 iss
+issecret
+ISSEPARATOR
 ITask
 ith
 ITHUMBNAIL
@@ -936,6 +949,7 @@ mrw
 msc
 mscorlib
 msdata
+MSDL
 msedge
 MSGFLT
 msiexec
@@ -994,6 +1008,8 @@ newdev
 NEWDIALOGSTYLE
 newitem
 newpath
+newplus
+NEWPLUSCONTEXTMENU
 newrow
 newsgroups
 NIF
@@ -1006,7 +1022,10 @@ NOAGGREGATION
 NOASYNC
 NOCLOSEPROCESS
 NOCOALESCE
+NOCOMM
+NOCONFIRMMKDIR
 NOCOPYBITS
+NOCOPYSECURITYATTRIBS
 nodeca
 nodoc
 NODRAWCAPTION
@@ -1014,6 +1033,7 @@ NODRAWICON
 NOINHERITLAYOUT
 NOINTERFACE
 NOLINKINFO
+NOMCX
 NOMINMAX
 NOMIRRORBITMAP
 NOMOVE
@@ -1122,6 +1142,7 @@ pch
 pchast
 PCIDLIST
 PCWSTR
+pdbs
 pdisp
 pdo
 pdto
@@ -1187,6 +1208,7 @@ ppv
 prc
 Prefixer
 Preinstalled
+prependpath
 prevhost
 previewer
 PREVIEWHANDLERFRAMEINFO
@@ -1244,6 +1266,7 @@ PWSTR
 pwsz
 pwtd
 QDC
+QDir
 qianlifeng
 qit
 QITAB
@@ -1414,6 +1437,8 @@ SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
 shellscalingapi
 SHFILEINFO
+SHFILEOPSTRUCT
+SHGDN
 SHGDNF
 SHGFI
 shinfo
@@ -1421,6 +1446,7 @@ shldisp
 shlobj
 shlwapi
 shmem
+SHNAMEMAPPING
 shobjidl
 SHORTCUTATLEAST
 shortcutcontrol
@@ -1525,7 +1551,7 @@ stringtable
 stringval
 Strm
 Strmiids
-Strret
+strret
 strsafe
 strutil
 sttngs
@@ -1533,7 +1559,7 @@ Stubless
 STYLECHANGED
 STYLECHANGING
 subkeys
-SUBLANG
+sublang
 subquery
 Superbar
 sut
@@ -1541,10 +1567,13 @@ svchost
 SVGIn
 SVGIO
 svgz
+SVSI
 SWC
 SWFO
 SWP
 SWRESTORE
+symbolrequestprod
+SYMCACHE
 SYMED
 SYMOPT
 SYNCMFT
@@ -1615,10 +1644,12 @@ toolkitconverters
 Toolset
 toolwindow
 TOPDOWNDIB
+TOTALCMD
 TOUCHEVENTF
 TOUCHINPUT
 touchpad
 tracelogging
+trafficmanager
 traies
 transicc
 TRAYMOUSEMESSAGE
@@ -1745,6 +1776,7 @@ VSTHRD
 VSTT
 vswhere
 Vtbl
+WANTMAPPINGHANDLE
 WANTPALM
 wbem
 Wbemidl
@@ -1756,6 +1788,7 @@ WCE
 wcex
 WClass
 wcsicmp
+wcsncpy
 wcsnicmp
 WDA
 wdp
@@ -1838,6 +1871,7 @@ workarounds
 WORKSPACESEDITOR
 WORKSPACESLAUNCHER
 WORKSPACESSNAPSHOTTOOL
+WORKSPACESWINDOWARRANGER
 wox
 wparam
 wpf
@@ -1877,6 +1911,7 @@ XLoc
 XNamespace
 XPels
 XPixel
+xplorer
 XResource
 xsi
 XStr

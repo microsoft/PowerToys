@@ -9,10 +9,9 @@ using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
-
 using Awake.Core.Models;
 using Awake.Core.Native;
+using Awake.Core.Threading;
 using Awake.Properties;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -29,12 +28,12 @@ namespace Awake.Core
     internal static class TrayHelper
     {
         private static NotifyIconData _notifyIconData;
-
         private static IntPtr _trayMenu;
+        private static IntPtr _hiddenWindowHandle;
+        private static SingleThreadSynchronizationContext? _syncContext;
+        private static Thread? _mainThread;
 
         private static IntPtr TrayMenu { get => _trayMenu; set => _trayMenu = value; }
-
-        private static IntPtr _hiddenWindowHandle;
 
         internal static IntPtr HiddenWindowHandle { get => _hiddenWindowHandle; private set => _hiddenWindowHandle = value; }
 
@@ -46,42 +45,35 @@ namespace Awake.Core
 
         private static void ShowContextMenu(IntPtr hWnd)
         {
-            if (TrayMenu != IntPtr.Zero)
+            if (TrayMenu == IntPtr.Zero)
             {
-                Bridge.SetForegroundWindow(hWnd);
-
-                // Get the handle to the context menu associated with the tray icon
-                IntPtr hMenu = TrayMenu;
-
-                // Get the current cursor position
-                Bridge.GetCursorPos(out Models.Point cursorPos);
-
-                Bridge.ScreenToClient(hWnd, ref cursorPos);
-
-                MenuInfo menuInfo = new()
-                {
-                    CbSize = (uint)Marshal.SizeOf(typeof(MenuInfo)),
-                    FMask = Native.Constants.MIM_STYLE,
-                    DwStyle = Native.Constants.MNS_AUTO_DISMISS,
-                };
-                Bridge.SetMenuInfo(hMenu, ref menuInfo);
-
-                // Display the context menu at the cursor position
-                Bridge.TrackPopupMenuEx(
-                      hMenu,
-                      Native.Constants.TPM_LEFT_ALIGN | Native.Constants.TPM_BOTTOMALIGN | Native.Constants.TPM_LEFT_BUTTON,
-                      cursorPos.X,
-                      cursorPos.Y,
-                      hWnd,
-                      IntPtr.Zero);
-            }
-            else
-            {
-                // Tray menu was not initialized. Log the issue.
-                // This is normal when operating in "standalone mode" - that is, detached
-                // from the PowerToys configuration file.
                 Logger.LogError("Tried to create a context menu while the TrayMenu object is a null pointer. Normal when used in standalone mode.");
+                return;
             }
+
+            Bridge.SetForegroundWindow(hWnd);
+
+            // Get cursor position and convert it to client coordinates
+            Bridge.GetCursorPos(out Models.Point cursorPos);
+            Bridge.ScreenToClient(hWnd, ref cursorPos);
+
+            // Set menu information
+            var menuInfo = new MenuInfo
+            {
+                CbSize = (uint)Marshal.SizeOf<MenuInfo>(),
+                FMask = Native.Constants.MIM_STYLE,
+                DwStyle = Native.Constants.MNS_AUTO_DISMISS,
+            };
+            Bridge.SetMenuInfo(TrayMenu, ref menuInfo);
+
+            // Display the context menu at the cursor position
+            Bridge.TrackPopupMenuEx(
+                  TrayMenu,
+                  Native.Constants.TPM_LEFT_ALIGN | Native.Constants.TPM_BOTTOMALIGN | Native.Constants.TPM_LEFT_BUTTON,
+                  cursorPos.X,
+                  cursorPos.Y,
+                  hWnd,
+                  IntPtr.Zero);
         }
 
         public static void InitializeTray(Icon icon, string text)
@@ -89,8 +81,11 @@ namespace Awake.Core
             IntPtr hWnd = IntPtr.Zero;
 
             // Start the message loop asynchronously
-            Task.Run(() =>
+            _mainThread = new Thread(() =>
             {
+                _syncContext = new SingleThreadSynchronizationContext();
+                SynchronizationContext.SetSynchronizationContext(_syncContext);
+
                 RunOnMainThread(() =>
                 {
                     WndClassEx wcex = new()
@@ -137,74 +132,82 @@ namespace Awake.Core
 
                     Bridge.ShowWindow(hWnd, 0); // SW_HIDE
                     Bridge.UpdateWindow(hWnd);
+                    Logger.LogInfo($"Created HWND for the window: {hWnd}");
 
                     SetShellIcon(hWnd, text, icon);
                 });
-            }).Wait();
 
-            Task.Run(() =>
-            {
                 RunOnMainThread(() =>
                 {
                     RunMessageLoop();
                 });
+
+                _syncContext!.BeginMessageLoop();
             });
+
+            _mainThread.IsBackground = true;
+            _mainThread.Start();
         }
 
         internal static void SetShellIcon(IntPtr hWnd, string text, Icon? icon, TrayIconAction action = TrayIconAction.Add)
         {
-            Logger.LogInfo($"Setting the shell icon.\nText: {text}\nAction: {action}");
-
-            int message = Native.Constants.NIM_ADD;
-
-            switch (action)
+            if (hWnd != IntPtr.Zero && icon != null)
             {
-                case TrayIconAction.Update:
-                    message = Native.Constants.NIM_MODIFY;
-                    break;
-                case TrayIconAction.Delete:
-                    message = Native.Constants.NIM_DELETE;
-                    break;
-                case TrayIconAction.Add:
-                default:
-                    break;
-            }
+                int message = Native.Constants.NIM_ADD;
 
-            if (action == TrayIconAction.Add || action == TrayIconAction.Update)
-            {
-                Logger.LogInfo($"Adding or updating tray icon. HIcon handle is {icon?.Handle}\nHWnd: {hWnd}");
-
-                _notifyIconData = new NotifyIconData
+                switch (action)
                 {
-                    CbSize = Marshal.SizeOf(typeof(NotifyIconData)),
-                    HWnd = hWnd,
-                    UId = 1000,
-                    UFlags = Native.Constants.NIF_ICON | Native.Constants.NIF_TIP | Native.Constants.NIF_MESSAGE,
-                    UCallbackMessage = (int)Native.Constants.WM_USER,
-                    HIcon = icon?.Handle ?? IntPtr.Zero,
-                    SzTip = text,
-                };
-            }
-            else if (action == TrayIconAction.Delete)
-            {
-                _notifyIconData = new NotifyIconData
+                    case TrayIconAction.Update:
+                        message = Native.Constants.NIM_MODIFY;
+                        break;
+                    case TrayIconAction.Delete:
+                        message = Native.Constants.NIM_DELETE;
+                        break;
+                    case TrayIconAction.Add:
+                    default:
+                        break;
+                }
+
+                if (action == TrayIconAction.Add || action == TrayIconAction.Update)
                 {
-                    CbSize = Marshal.SizeOf(typeof(NotifyIconData)),
-                    HWnd = hWnd,
-                    UId = 1000,
-                    UFlags = 0,
-                };
-            }
+                    _notifyIconData = new NotifyIconData
+                    {
+                        CbSize = Marshal.SizeOf(typeof(NotifyIconData)),
+                        HWnd = hWnd,
+                        UId = 1000,
+                        UFlags = Native.Constants.NIF_ICON | Native.Constants.NIF_TIP | Native.Constants.NIF_MESSAGE,
+                        UCallbackMessage = (int)Native.Constants.WM_USER,
+                        HIcon = icon?.Handle ?? IntPtr.Zero,
+                        SzTip = text,
+                    };
+                }
+                else if (action == TrayIconAction.Delete)
+                {
+                    _notifyIconData = new NotifyIconData
+                    {
+                        CbSize = Marshal.SizeOf(typeof(NotifyIconData)),
+                        HWnd = hWnd,
+                        UId = 1000,
+                        UFlags = 0,
+                    };
+                }
 
-            if (!Bridge.Shell_NotifyIcon(message, ref _notifyIconData))
-            {
-                int errorCode = Marshal.GetLastWin32Error();
-                throw new Win32Exception(errorCode, $"Failed to change tray icon. Action: {action} and error code: {errorCode}");
-            }
+                if (!Bridge.Shell_NotifyIcon(message, ref _notifyIconData))
+                {
+                    int errorCode = Marshal.GetLastWin32Error();
+                    Logger.LogInfo($"Could not set the shell icon. Action: {action} and error code: {errorCode}. HIcon handle is {icon?.Handle} and HWnd is {hWnd}");
 
-            if (action == TrayIconAction.Delete)
+                    throw new Win32Exception(errorCode, $"Failed to change tray icon. Action: {action} and error code: {errorCode}");
+                }
+
+                if (action == TrayIconAction.Delete)
+                {
+                    _notifyIconData = default;
+                }
+            }
+            else
             {
-                _notifyIconData = default;
+                Logger.LogInfo($"Cannot set the shell icon - parent window handle is zero or icon is not available. Text: {text} Action: {action}");
             }
         }
 
@@ -215,6 +218,8 @@ namespace Awake.Core
                 Bridge.TranslateMessage(ref msg);
                 Bridge.DispatchMessage(ref msg);
             }
+
+            Logger.LogInfo("Message loop terminated.");
         }
 
         private static int WndProc(IntPtr hWnd, uint message, IntPtr wParam, IntPtr lParam)
@@ -295,30 +300,20 @@ namespace Awake.Core
 
         internal static void RunOnMainThread(Action action)
         {
-            var syncContext = new SingleThreadSynchronizationContext();
-            SynchronizationContext.SetSynchronizationContext(syncContext);
-
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-            syncContext.Post(
-            _ =>
-            {
-                try
+            _syncContext!.Post(
+                _ =>
                 {
-                    action();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("Error: " + e.Message);
-                }
-                finally
-                {
-                    syncContext.EndMessageLoop();
-                }
-            },
-            null);
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-
-            syncContext.BeginMessageLoop();
+                    try
+                    {
+                        Logger.LogInfo($"Thread execution is on: {Environment.CurrentManagedThreadId}");
+                        action();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Error: " + e.Message);
+                    }
+                },
+                null);
         }
 
         internal static void SetTray(AwakeSettings settings, bool startedFromPowerToys)
@@ -353,6 +348,7 @@ namespace Awake.Core
         private static void CreateNewTrayMenu(bool startedFromPowerToys, bool keepDisplayOn, AwakeMode mode)
         {
             TrayMenu = Bridge.CreatePopupMenu();
+
             if (TrayMenu == IntPtr.Zero)
             {
                 return;

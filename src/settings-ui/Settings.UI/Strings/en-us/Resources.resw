@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -59,7 +59,10 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xsd:schema id="root"
+    xmlns=""
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
@@ -2000,7 +2003,8 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Actions</value>
   </data>
   <data name="AdvancedPasteUI_Actions.Description" xml:space="preserve">
-    <value>Create and manage advanced paste custom actions</value>
+    <value>Create and manage advanced paste custom actions.
+(Requires Paste with AI to be enabled)</value>
   </data>
   <data name="AdvancedPasteUI_AddCustomActionButton.Content" xml:space="preserve">
     <value>Add custom action</value>
@@ -3584,6 +3588,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Maori.Content" xml:space="preserve">
     <value>Maori</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Romanization.Content" xml:space="preserve">
+    <value>Middle Eastern Romanization</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Dutch.Content" xml:space="preserve">
     <value>Dutch</value>
   </data>
@@ -4276,6 +4283,88 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Automatically close the AdvancedPaste window after it loses focus</value>
     <comment>AdvancedPaste is a product name, do not loc</comment>
   </data>
+  <data name="NewPlus.ModuleTitle" xml:space="preserve">
+    <value>New+</value>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="NewPlus.ModuleDescription" xml:space="preserve">
+    <value>Create files and folders from a personalized set of templates</value>
+  </data>
+  <data name="NewPlus_Product_Name.Content" xml:space="preserve">
+    <value>New+</value>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="NewPlus_Product_Description.Description" xml:space="preserve">
+    <value>Create files and folders from a personalized set of templates</value>
+    <comment>New+ product description</comment>
+  </data>
+  <data name="NewPlus_Learn_More.Text" xml:space="preserve">
+    <value>Learn more about New+</value>
+    <comment>New+ learn more link. Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="NewPlus_Enable_Toggle.Header" xml:space="preserve">
+    <value>Enable New+</value>
+    <comment>Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="NewPlus_NoWindows10SupportWarning.Title" xml:space="preserve">
+    <value>New+ is not supported in Windows 10 and is not expected to work.</value>
+  </data>
+  <data name="NewPlus_TemplatesNotBackupAndRestoreWarning.Title" xml:space="preserve">
+    <value>PowerToys "Backup and Restore" feature doesn't take templates into account at this moment. If you use that feature, templates will have to be copied manually.</value>
+  </data>
+  <data name="NewPlus_Templates.Header" xml:space="preserve">
+    <value>Templates</value>
+    <comment>Templates label</comment>
+  </data>
+  <data name="NewPlus_Templates_Location.Header" xml:space="preserve">
+    <value>Location</value>
+    <comment>Templates Location label</comment>
+  </data>
+  <data name="NewPlus_Templates_Location_Path.Text" xml:space="preserve">
+    <value>...</value>
+    <comment>Do not localize</comment>
+  </data>
+  <data name="NewPlus_Templates_Location_Learn_More.Content" xml:space="preserve">
+    <value>Learn more about template location</value>
+    <comment>Read more about templates location</comment>
+  </data>
+  <data name="NewPlus_Templates_Location_Change.Content" xml:space="preserve">
+    <value>Change</value>
+    <comment>Button where user can Change the location of New templates</comment>
+  </data>
+  <data name="NewPlus_Display_Options.Header" xml:space="preserve">
+    <value>Display options</value>
+    <comment>Display options label</comment>
+  </data>
+  <data name="NewPlus_Hide_File_Extension_Toggle.Header" xml:space="preserve">
+    <value>Hide template filename extension</value>
+    <comment>Template file name extension settings toggle</comment>
+  </data>
+  <data name="NewPlus_Hide_Starting_Digits_Toggle.Header" xml:space="preserve">
+    <value>Hide template filename starting digits, spaces, and dots</value>
+    <comment>Template filename starting digits settings toggle</comment>
+  </data>
+  <data name="NewPlus_Hide_Starting_Digits_Description.Text" xml:space="preserve">
+    <value>This option is useful when using digits, spaces and dots at the beginning of filenames to control the display order of templates</value>
+    <comment>Template filename starting digits settings toggle</comment>
+  </data>
+  <data name="NewPlus.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+    <comment>giving credit</comment>
+  </data>
+  <data name="Oobe_NewPlus.Title" xml:space="preserve">
+    <value>New+</value>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="Oobe_NewPlus.Description" xml:space="preserve">
+    <value>Create files and folders from a personalized set of templates.</value>
+  </data>
+  <data name="Oobe_NewPlus_HowToUse.Text" xml:space="preserve">
+    <value>In File Explorer, right-click the desktop or a folder and via the New+ from the context menu select your template. You can add new templates by opening the template folder via "Open templates" and add new files and folders there.</value>
+  </data>
+  <data name="Oobe_NewPlus_TipsAndTricks.Text" xml:space="preserve">
+    <value>You can have multiple templates of the same file type, and you can even template folders!</value>
+  </data>  
   <data name="Workspaces.ModuleDescription" xml:space="preserve">
     <value>Workspaces is a quick and easy way to launch a set of applications to custom positions and configurations with one-click.</value>
   </data>
@@ -4293,5 +4382,86 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="OpenSettings.Content" xml:space="preserve">
     <value>Open settings</value>
+  </data>
+  <data name="LanguageHeader.Header" xml:space="preserve">
+    <value>Application language</value>
+  </data>
+  <data name="LanguageHeader.Description" xml:space="preserve">
+    <value>PowerToys will use OS language by default.</value>
+  </data>
+  <data name="LanguageRestartInfo.Title" xml:space="preserve">
+    <value>Restart PowerToys for language change to take effect.</value>
+  </data>
+  <data name="LanguageRestartInfoButton.Content" xml:space="preserve">
+    <value>Restart</value>
+  </data>
+  <data name="Default_Language" xml:space="preserve">
+    <value>Windows default</value>
+  </data>
+  <data name="Arabic_Saudi_Arabia_Language" xml:space="preserve">
+    <value>Arabic (Saudi Arabia)</value>
+  </data>
+  <data name="Czech_Language" xml:space="preserve">
+    <value>Czech</value>
+  </data>
+  <data name="German_Language" xml:space="preserve">
+    <value>German</value>
+  </data>
+  <data name="English_Language" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="Spanish_Language" xml:space="preserve">
+    <value>Spanish</value>
+  </data>
+  <data name="Persian_Farsi_Language" xml:space="preserve">
+    <value>Persian (Farsi)</value>
+  </data>
+  <data name="French_Language" xml:space="preserve">
+    <value>French</value>
+  </data>
+  <data name="Hebrew_Israel_Language" xml:space="preserve">
+    <value>Hebrew (Israel)</value>
+  </data>
+  <data name="Hungarian_Language" xml:space="preserve">
+    <value>Hungarian</value>
+  </data>
+  <data name="Italian_Language" xml:space="preserve">
+    <value>Italian</value>
+  </data>
+  <data name="Japanese_Language" xml:space="preserve">
+    <value>Japanese</value>
+  </data>
+  <data name="Korean_Language" xml:space="preserve">
+    <value>Korean</value>
+  </data>
+  <data name="Dutch_Language" xml:space="preserve">
+    <value>Dutch</value>
+  </data>
+  <data name="Polish_Language" xml:space="preserve">
+    <value>Polish</value>
+  </data>
+  <data name="Portuguese_Brazil_Language" xml:space="preserve">
+    <value>Portuguese (Brazil)</value>
+  </data>
+  <data name="Portuguese_Portugal_Language" xml:space="preserve">
+    <value>Portuguese (Portugal)</value>
+  </data>
+  <data name="Russian_Language" xml:space="preserve">
+    <value>Russian</value>
+  </data>
+  <data name="Swedish_Language" xml:space="preserve">
+    <value>Swedish</value>
+  </data>
+  <data name="Turkish_Language" xml:space="preserve">
+    <value>Turkish</value>
+  </data>
+  <data name="Ukrainian_Language" xml:space="preserve">
+    <value>Ukrainian</value>
+  </data>
+  <data name="Chinese_Simplified_Language" xml:space="preserve">
+    <value>Chinese (Simplified)</value>
+  </data>
+  <data name="Chinese_Traditional_Language" xml:space="preserve">
+    <value>Chinese (Traditional)</value>
   </data>
 </root>

@@ -397,6 +397,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 PasswordCredential cred = vault.Retrieve("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey");
                 vault.Remove(cred);
                 OnPropertyChanged(nameof(IsOpenAIEnabled));
+                NotifySettingsChanged();
             }
             catch (Exception)
             {
@@ -411,6 +412,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 PasswordCredential cred = new PasswordCredential("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey", password);
                 vault.Add(cred);
                 OnPropertyChanged(nameof(IsOpenAIEnabled));
+                NotifySettingsChanged();
             }
             catch (Exception)
             {

@@ -27,13 +27,13 @@
     <ClInclude Include="RegistryUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LauncherUIHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LaunchingApp.h">
+    <ClInclude Include="WindowArrangerHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Launcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -51,6 +51,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LauncherUIHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowArrangerHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Launcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

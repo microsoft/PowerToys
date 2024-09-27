@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureNuGetPackageBuildImports"
-  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureNuGetPackageBuildImports" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\src\Version.props" Condition="Exists('..\..\src\Version.props')" />
   <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
-
   <PropertyGroup Condition="'$(Platform)' == 'x64'">
     <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\Assets\Monaco\monacoSRC</DefineConstants>
     <!-- THIS IS AN INNER LOOP OPTIMIZATION
@@ -18,7 +16,6 @@ call "..\..\..\publish.cmd" x64
 call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs"
     </PreBuildEvent>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Platform)' != 'x64'">
     <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\Assets\Monaco\monacoSRC</DefineConstants>
     <PreBuildEvent>IF NOT DEFINED IsPipeline (
@@ -32,31 +29,32 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
   <PropertyGroup>
     <RunPostBuildEvent>Always</RunPostBuildEvent>
     <PostBuildEvent>
-    call move /Y ..\..\..\AdvancedPaste.wxs.bk ..\..\..\AdvancedPaste.wxs
-    call move /Y ..\..\..\Awake.wxs.bk ..\..\..\Awake.wxs
-    call move /Y ..\..\..\BaseApplications.wxs.bk ..\..\..\BaseApplications.wxs
-    call move /Y ..\..\..\ColorPicker.wxs.bk ..\..\..\ColorPicker.wxs
-    call move /Y ..\..\..\Core.wxs.bk ..\..\..\Core.wxs
-    call move /Y ..\..\..\EnvironmentVariables.wxs.bk ..\..\..\EnvironmentVariables.wxs
-    call move /Y ..\..\..\FileExplorerPreview.wxs.bk ..\..\..\FileExplorerPreview.wxs
-    call move /Y ..\..\..\FileLocksmith.wxs.bk ..\..\..\FileLocksmith.wxs
-    call move /Y ..\..\..\Hosts.wxs.bk ..\..\..\Hosts.wxs
-    call move /Y ..\..\..\ImageResizer.wxs.bk ..\..\..\ImageResizer.wxs
-    call move /Y ..\..\..\KeyboardManager.wxs.bk ..\..\..\KeyboardManager.wxs
-    call move /Y ..\..\..\MouseWithoutBorders.wxs.bk ..\..\..\MouseWithoutBorders.wxs
-    call move /Y ..\..\..\Peek.wxs.bk ..\..\..\Peek.wxs
-    call move /Y ..\..\..\PowerRename.wxs.bk ..\..\..\PowerRename.wxs
-    call move /Y ..\..\..\Product.wxs.bk ..\..\..\Product.wxs
-    call move /Y ..\..\..\RegistryPreview.wxs.bk ..\..\..\RegistryPreview.wxs
-    call move /Y ..\..\..\Resources.wxs.bk ..\..\..\Resources.wxs
-    call move /Y ..\..\..\Run.wxs.bk ..\..\..\Run.wxs
-    call move /Y ..\..\..\Settings.wxs.bk ..\..\..\Settings.wxs
-    call move /Y ..\..\..\ShortcutGuide.wxs.bk ..\..\..\ShortcutGuide.wxs
-    call move /Y ..\..\..\Tools.wxs.bk ..\..\..\Tools.wxs
-    call move /Y ..\..\..\VideoConference.wxs.bk ..\..\..\VideoConference.wxs
-    call move /Y ..\..\..\WinAppSDK.wxs.bk ..\..\..\WinAppSDK.wxs
-    call move /Y ..\..\..\WinUI3Applications.wxs.bk ..\..\..\WinUI3Applications.wxs
-    </PostBuildEvent>
+      call move /Y ..\..\..\AdvancedPaste.wxs.bk ..\..\..\AdvancedPaste.wxs
+      call move /Y ..\..\..\Awake.wxs.bk ..\..\..\Awake.wxs
+      call move /Y ..\..\..\BaseApplications.wxs.bk ..\..\..\BaseApplications.wxs
+      call move /Y ..\..\..\ColorPicker.wxs.bk ..\..\..\ColorPicker.wxs
+      call move /Y ..\..\..\Core.wxs.bk ..\..\..\Core.wxs
+      call move /Y ..\..\..\EnvironmentVariables.wxs.bk ..\..\..\EnvironmentVariables.wxs
+      call move /Y ..\..\..\FileExplorerPreview.wxs.bk ..\..\..\FileExplorerPreview.wxs
+      call move /Y ..\..\..\FileLocksmith.wxs.bk ..\..\..\FileLocksmith.wxs
+      call move /Y ..\..\..\Hosts.wxs.bk ..\..\..\Hosts.wxs
+      call move /Y ..\..\..\ImageResizer.wxs.bk ..\..\..\ImageResizer.wxs
+      call move /Y ..\..\..\KeyboardManager.wxs.bk ..\..\..\KeyboardManager.wxs
+      call move /Y ..\..\..\MouseWithoutBorders.wxs.bk ..\..\..\MouseWithoutBorders.wxs
+      call move /Y ..\..\..\NewPlus.wxs.bk ..\..\..\NewPlus.wxs
+      call move /Y ..\..\..\Peek.wxs.bk ..\..\..\Peek.wxs
+      call move /Y ..\..\..\PowerRename.wxs.bk ..\..\..\PowerRename.wxs
+      call move /Y ..\..\..\Product.wxs.bk ..\..\..\Product.wxs
+      call move /Y ..\..\..\RegistryPreview.wxs.bk ..\..\..\RegistryPreview.wxs
+      call move /Y ..\..\..\Resources.wxs.bk ..\..\..\Resources.wxs
+      call move /Y ..\..\..\Run.wxs.bk ..\..\..\Run.wxs
+      call move /Y ..\..\..\Settings.wxs.bk ..\..\..\Settings.wxs
+      call move /Y ..\..\..\ShortcutGuide.wxs.bk ..\..\..\ShortcutGuide.wxs
+      call move /Y ..\..\..\Tools.wxs.bk ..\..\..\Tools.wxs
+      call move /Y ..\..\..\VideoConference.wxs.bk ..\..\..\VideoConference.wxs
+      call move /Y ..\..\..\WinAppSDK.wxs.bk ..\..\..\WinAppSDK.wxs
+      call move /Y ..\..\..\WinUI3Applications.wxs.bk ..\..\..\WinUI3Applications.wxs
+      </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <Name>PowerToysInstaller</Name>
@@ -67,7 +65,6 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
   <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' != 'true' ">
     <DefineConstants>$(DefineConstants);PerUser=false</DefineConstants>
   </PropertyGroup>
-
   <PropertyGroup>
     <!-- We do not support debug installer builds -->
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
@@ -102,8 +99,8 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="CustomDialogs\PTInstallDirDlg.wxs" />
     <Compile Include="CustomDialogs\PTLicenseDlg.wxs" />
     <Compile Include="CustomDialogs\WixUI_PTInstallDir.wxs" />
+    <Compile Include="NewPlus.wxs" />
     <Compile Include="Product.wxs" />
-
     <Compile Include="AdvancedPaste.wxs" />
     <Compile Include="Awake.wxs" />
     <Compile Include="BaseApplications.wxs" />
@@ -124,9 +121,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="VideoConference.wxs" />
     <Compile Include="MouseWithoutBorders.wxs" />
     <Compile Include="WinUI3Applications.wxs" />
-
     <Compile Include="MonacoSRC.wxs" />
-
     <Compile Include="Core.wxs" />
     <Compile Include="Resources.wxs" />
     <Compile Include="WinAppSDK.wxs" />
@@ -184,9 +179,8 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
 	<Target Name="AfterBuild">
 	</Target> -->
   <Target Name="BeforeBuild">
-    <HeatDirectory Directory="..\..\src\common\FilePreviewCommon\Assets\Monaco\monacoSRC" PreprocessorVariable="var.MonacoSRCHarvestPath" OutputFile="MonacoSRC.wxs" ComponentGroupName="MonacoSRCHeatGenerated" DirectoryRefId="MonacoPreviewHandlerMonacoSRCFolder" AutogenerateGuids="false" GenerateGuidsNow="true" ToolPath="$(WixToolPath)" RunAsSeparateProcess="true" SuppressFragments="false" SuppressRegistry="false" SuppressRootDirectory="true"/>
+    <HeatDirectory Directory="..\..\src\common\FilePreviewCommon\Assets\Monaco\monacoSRC" PreprocessorVariable="var.MonacoSRCHarvestPath" OutputFile="MonacoSRC.wxs" ComponentGroupName="MonacoSRCHeatGenerated" DirectoryRefId="MonacoPreviewHandlerMonacoSRCFolder" AutogenerateGuids="false" GenerateGuidsNow="true" ToolPath="$(WixToolPath)" RunAsSeparateProcess="true" SuppressFragments="false" SuppressRegistry="false" SuppressRootDirectory="true" />
   </Target>
-
   <!-- Prevents NU1503 -->
   <Target Name="_IsProjectRestoreSupported" Returns="@(_ValidProjectsForRestore)">
     <ItemGroup>

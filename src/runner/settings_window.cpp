@@ -233,6 +233,12 @@ void dispatch_received_json(const std::wstring& json_to_parse)
                 SendMessageW(pt_main_window, WM_CLOSE, 0, 0);
             }
         }
+        else if (name == L"language")
+        {
+            constexpr const wchar_t* language_filename = L"\\language.json";
+            const std::wstring save_file_location = PTSettingsHelper::get_root_save_folder_location() + language_filename;
+            json::to_file(save_file_location, j);
+        }
     }
     return;
 }
@@ -684,6 +690,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "Dashboard";
     case ESettingsWindowNames::AdvancedPaste:
         return "AdvancedPaste";
+    case ESettingsWindowNames::NewPlus:
+        return "NewPlus";
     default:
     {
         Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
@@ -778,6 +786,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "AdvancedPaste")
     {
         return ESettingsWindowNames::AdvancedPaste;
+    }
+    else if (value == "NewPlus")
+    {
+        return ESettingsWindowNames::NewPlus;
     }
     else
     {

@@ -53,91 +53,110 @@ namespace Awake
         {
             _settingsUtils = new SettingsUtils();
             LockMutex = new Mutex(true, Core.Constants.AppName, out bool instantiated);
-
             Logger.InitializeLogger(Path.Combine("\\", Core.Constants.AppName, "Logs"));
+
+            try
+            {
+                string appLanguage = LanguageHelper.LoadLanguage();
+                if (!string.IsNullOrEmpty(appLanguage))
+                {
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(appLanguage);
+                }
+            }
+            catch (CultureNotFoundException ex)
+            {
+                Logger.LogError("CultureNotFoundException: " + ex.Message);
+            }
 
             AppDomain.CurrentDomain.UnhandledException += AwakeUnhandledExceptionCatcher;
 
-            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAwakeEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
-            {
-                Exit("PowerToys.Awake tried to start with a group policy setting that disables the tool. Please contact your system administrator.", 1);
-                return 0;
-            }
-
             if (!instantiated)
             {
+                // Awake is already running - there is no need for us to process
+                // anything further
                 Exit(Core.Constants.AppName + " is already running! Exiting the application.", 1);
+                return 1;
             }
-
-            Logger.LogInfo($"Launching {Core.Constants.AppName}...");
-            Logger.LogInfo(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion);
-            Logger.LogInfo($"Build: {Core.Constants.BuildId}");
-            Logger.LogInfo($"OS: {Environment.OSVersion}");
-            Logger.LogInfo($"OS Build: {Manager.GetOperatingSystemBuild()}");
-
-            TaskScheduler.UnobservedTaskException += (sender, args) =>
+            else
             {
-                Trace.WriteLine($"Task scheduler error: {args.Exception.Message}"); // somebody forgot to check!
-                args.SetObserved();
-            };
+                if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAwakeEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+                {
+                    Exit("PowerToys.Awake tried to start with a group policy setting that disables the tool. Please contact your system administrator.", 1);
+                    return 1;
+                }
+                else
+                {
+                    Logger.LogInfo($"Launching {Core.Constants.AppName}...");
+                    Logger.LogInfo(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion);
+                    Logger.LogInfo($"Build: {Core.Constants.BuildId}");
+                    Logger.LogInfo($"OS: {Environment.OSVersion}");
+                    Logger.LogInfo($"OS Build: {Manager.GetOperatingSystemBuild()}");
 
-            // To make it easier to diagnose future issues, let's get the
-            // system power capabilities and aggregate them in the log.
-            Bridge.GetPwrCapabilities(out _powerCapabilities);
-            Logger.LogInfo(JsonSerializer.Serialize(_powerCapabilities));
+                    TaskScheduler.UnobservedTaskException += (sender, args) =>
+                    {
+                        Trace.WriteLine($"Task scheduler error: {args.Exception.Message}"); // somebody forgot to check!
+                        args.SetObserved();
+                    };
 
-            Logger.LogInfo("Parsing parameters...");
+                    // To make it easier to diagnose future issues, let's get the
+                    // system power capabilities and aggregate them in the log.
+                    Bridge.GetPwrCapabilities(out _powerCapabilities);
+                    Logger.LogInfo(JsonSerializer.Serialize(_powerCapabilities));
 
-            var configOption = new Option<bool>(AliasesConfigOption, () => false, Resources.AWAKE_CMD_HELP_CONFIG_OPTION)
-            {
-                Arity = ArgumentArity.ZeroOrOne,
-                IsRequired = false,
-            };
+                    Logger.LogInfo("Parsing parameters...");
 
-            var displayOption = new Option<bool>(AliasesDisplayOption, () => true, Resources.AWAKE_CMD_HELP_DISPLAY_OPTION)
-            {
-                Arity = ArgumentArity.ZeroOrOne,
-                IsRequired = false,
-            };
+                    var configOption = new Option<bool>(AliasesConfigOption, () => false, Resources.AWAKE_CMD_HELP_CONFIG_OPTION)
+                    {
+                        Arity = ArgumentArity.ZeroOrOne,
+                        IsRequired = false,
+                    };
 
-            var timeOption = new Option<uint>(AliasesTimeOption, () => 0, Resources.AWAKE_CMD_HELP_TIME_OPTION)
-            {
-                Arity = ArgumentArity.ExactlyOne,
-                IsRequired = false,
-            };
+                    var displayOption = new Option<bool>(AliasesDisplayOption, () => true, Resources.AWAKE_CMD_HELP_DISPLAY_OPTION)
+                    {
+                        Arity = ArgumentArity.ZeroOrOne,
+                        IsRequired = false,
+                    };
 
-            var pidOption = new Option<int>(AliasesPidOption, () => 0, Resources.AWAKE_CMD_HELP_PID_OPTION)
-            {
-                Arity = ArgumentArity.ZeroOrOne,
-                IsRequired = false,
-            };
+                    var timeOption = new Option<uint>(AliasesTimeOption, () => 0, Resources.AWAKE_CMD_HELP_TIME_OPTION)
+                    {
+                        Arity = ArgumentArity.ExactlyOne,
+                        IsRequired = false,
+                    };
 
-            var expireAtOption = new Option<string>(AliasesExpireAtOption, () => string.Empty, Resources.AWAKE_CMD_HELP_EXPIRE_AT_OPTION)
-            {
-                Arity = ArgumentArity.ZeroOrOne,
-                IsRequired = false,
-            };
+                    var pidOption = new Option<int>(AliasesPidOption, () => 0, Resources.AWAKE_CMD_HELP_PID_OPTION)
+                    {
+                        Arity = ArgumentArity.ZeroOrOne,
+                        IsRequired = false,
+                    };
 
-            var parentPidOption = new Option<bool>(AliasesParentPidOption, () => true, Resources.AWAKE_CMD_PARENT_PID_OPTION)
-            {
-                Arity = ArgumentArity.ZeroOrOne,
-                IsRequired = false,
-            };
+                    var expireAtOption = new Option<string>(AliasesExpireAtOption, () => string.Empty, Resources.AWAKE_CMD_HELP_EXPIRE_AT_OPTION)
+                    {
+                        Arity = ArgumentArity.ZeroOrOne,
+                        IsRequired = false,
+                    };
 
-            RootCommand? rootCommand =
-            [
-                configOption,
-                displayOption,
-                timeOption,
-                pidOption,
-                expireAtOption,
-                parentPidOption,
-            ];
+                    var parentPidOption = new Option<bool>(AliasesParentPidOption, () => false, Resources.AWAKE_CMD_PARENT_PID_OPTION)
+                    {
+                        Arity = ArgumentArity.ZeroOrOne,
+                        IsRequired = false,
+                    };
 
-            rootCommand.Description = Core.Constants.AppName;
-            rootCommand.SetHandler(HandleCommandLineArguments, configOption, displayOption, timeOption, pidOption, expireAtOption, parentPidOption);
+                    RootCommand? rootCommand =
+                    [
+                        configOption,
+                        displayOption,
+                        timeOption,
+                        pidOption,
+                        expireAtOption,
+                        parentPidOption,
+                    ];
 
-            return rootCommand.InvokeAsync(args).Result;
+                    rootCommand.Description = Core.Constants.AppName;
+                    rootCommand.SetHandler(HandleCommandLineArguments, configOption, displayOption, timeOption, pidOption, expireAtOption, parentPidOption);
+
+                    return rootCommand.InvokeAsync(args).Result;
+                }
+            }
         }
 
         private static void AwakeUnhandledExceptionCatcher(object sender, UnhandledExceptionEventArgs e)
@@ -167,15 +186,11 @@ namespace Awake
             if (pid == 0 && !useParentPid)
             {
                 Logger.LogInfo("No PID specified. Allocating console...");
-                Manager.AllocateConsole();
-
-                _handler += new ConsoleEventHandler(ExitHandler);
-                Manager.SetConsoleControlHandler(_handler, true);
-
-                Trace.Listeners.Add(new ConsoleTraceListener());
+                AllocateLocalConsole();
             }
             else
             {
+                Logger.LogInfo("Starting with PID binding.");
                 _startedFromPowerToys = true;
             }
 
@@ -233,7 +248,7 @@ namespace Awake
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError($"There was a problem with the configuration file. Make sure it exists.\n{ex.Message}");
+                    Logger.LogError($"There was a problem with the configuration file. Make sure it exists. {ex.Message}");
                 }
             }
             else if (pid != 0 || useParentPid)
@@ -294,44 +309,60 @@ namespace Awake
             }
         }
 
+        private static void AllocateLocalConsole()
+        {
+            Manager.AllocateConsole();
+
+            _handler += new ConsoleEventHandler(ExitHandler);
+            Manager.SetConsoleControlHandler(_handler, true);
+
+            Trace.Listeners.Add(new ConsoleTraceListener());
+        }
+
         private static void ScaffoldConfiguration(string settingsPath)
         {
             try
             {
-                var directory = Path.GetDirectoryName(settingsPath)!;
-                var fileName = Path.GetFileName(settingsPath);
-
-                _watcher = new FileSystemWatcher
-                {
-                    Path = directory,
-                    EnableRaisingEvents = true,
-                    NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime,
-                    Filter = fileName,
-                };
-
-                var mergedObservable = Observable.Merge(
-                    Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
-                        h => _watcher.Changed += h,
-                        h => _watcher.Changed -= h),
-                    Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
-                        h => _watcher.Created += h,
-                        h => _watcher.Created -= h));
-
-                mergedObservable
-                    .Throttle(TimeSpan.FromMilliseconds(25))
-                    .SubscribeOn(TaskPoolScheduler.Default)
-                    .Select(e => e.EventArgs)
-                    .Subscribe(HandleAwakeConfigChange);
-
-                var settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Core.Constants.AppName) ?? new AwakeSettings();
-                TrayHelper.SetTray(settings, _startedFromPowerToys);
-
+                SetupFileSystemWatcher(settingsPath);
+                InitializeSettings();
                 ProcessSettings();
             }
             catch (Exception ex)
             {
                 Logger.LogError($"An error occurred scaffolding the configuration. Error details: {ex.Message}");
             }
+        }
+
+        private static void SetupFileSystemWatcher(string settingsPath)
+        {
+            var directory = Path.GetDirectoryName(settingsPath)!;
+            var fileName = Path.GetFileName(settingsPath);
+
+            _watcher = new FileSystemWatcher
+            {
+                Path = directory,
+                EnableRaisingEvents = true,
+                NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime,
+                Filter = fileName,
+            };
+
+            Observable.Merge(
+                Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
+                    h => _watcher.Changed += h,
+                    h => _watcher.Changed -= h),
+                Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
+                    h => _watcher.Created += h,
+                    h => _watcher.Created -= h))
+            .Throttle(TimeSpan.FromMilliseconds(25))
+            .SubscribeOn(TaskPoolScheduler.Default)
+            .Select(e => e.EventArgs)
+            .Subscribe(HandleAwakeConfigChange);
+        }
+
+        private static void InitializeSettings()
+        {
+            var settings = Manager.ModuleSettings?.GetSettings<AwakeSettings>(Core.Constants.AppName) ?? new AwakeSettings();
+            TrayHelper.SetTray(settings, _startedFromPowerToys);
         }
 
         private static void HandleAwakeConfigChange(FileSystemEventArgs fileEvent)
@@ -351,7 +382,9 @@ namespace Awake
         {
             try
             {
-                var settings = _settingsUtils!.GetSettings<AwakeSettings>(Core.Constants.AppName) ?? throw new InvalidOperationException("Settings are null.");
+                var settings = _settingsUtils!.GetSettings<AwakeSettings>(Core.Constants.AppName)
+                    ?? throw new InvalidOperationException("Settings are null.");
+
                 Logger.LogInfo($"Identified custom time shortcuts for the tray: {settings.Properties.CustomTrayTimes.Count}");
 
                 switch (settings.Properties.Mode)
@@ -365,7 +398,7 @@ namespace Awake
                         break;
 
                     case AwakeMode.TIMED:
-                        uint computedTime = (settings.Properties.IntervalHours * 60 * 60) + (settings.Properties.IntervalMinutes * 60);
+                        uint computedTime = (settings.Properties.IntervalHours * 3600) + (settings.Properties.IntervalMinutes * 60);
                         Manager.SetTimedKeepAwake(computedTime, settings.Properties.KeepDisplayOn);
                         break;
 
