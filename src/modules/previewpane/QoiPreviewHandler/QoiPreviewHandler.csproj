@@ -10,7 +10,6 @@
     <AssemblyDescription>PowerToys QoiPreviewHandler</AssemblyDescription>
     <Description>PowerToys QoiPreviewHandler</Description>
     <DocumentationFile>..\..\..\..\$(Platform)\$(Configuration)\QoiPreviewPaneDocumentation.xml</DocumentationFile>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>

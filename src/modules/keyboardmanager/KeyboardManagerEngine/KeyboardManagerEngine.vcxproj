@@ -33,9 +33,6 @@
   <PropertyGroup>
     <TargetName>PowerToys.$(MSBuildProjectName)</TargetName>
   </PropertyGroup>
-  <PropertyGroup>
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
-  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)src\;$(SolutionDir)src\modules;$(SolutionDir)src\common\Telemetry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

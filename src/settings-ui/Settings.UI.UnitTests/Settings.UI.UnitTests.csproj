@@ -4,7 +4,6 @@
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
-    <OutputPath>..\..\..\$(Configuration)\$(Platform)\tests\SettingsTests\</OutputPath>
 
     <!-- TODO: fix issues and reenable -->
     <!-- These are caused by streamjsonrpc dependency on Microsoft.VisualStudio.Threading.Analyzers -->

@@ -23,7 +23,6 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
     <TargetName>PowerToys.Peek</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>

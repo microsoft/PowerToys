@@ -10,7 +10,6 @@
     <AssemblyDescription>PowerToys MarkdownPreviewHandler</AssemblyDescription>
     <Description>PowerToys MarkdownPreviewHandler</Description>
     <DocumentationFile>..\..\..\..\$(Platform)\$(Configuration)\MarkdownPreviewPaneDocumentation.xml</DocumentationFile>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>

@@ -5,7 +5,6 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <UseWinUI>true</UseWinUI>
     <ApplicationIcon>Assets\AdvancedPaste\AdvancedPaste.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>

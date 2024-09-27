@@ -10,8 +10,4 @@
   <ItemGroup>
     <PackageReference Include="System.IO.Abstractions" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\FancyZonesEditorCommon\</OutputPath>
-  </PropertyGroup>
 </Project>

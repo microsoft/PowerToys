@@ -26,7 +26,6 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>PowerToys.ColorPicker</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>

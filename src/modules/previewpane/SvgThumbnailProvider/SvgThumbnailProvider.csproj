@@ -13,7 +13,6 @@
     <AssemblyDescription>PowerToys SvgPreviewHandler</AssemblyDescription>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Description>PowerToys SvgPreviewHandler</Description>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>

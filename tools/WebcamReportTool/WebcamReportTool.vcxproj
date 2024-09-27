@@ -12,9 +12,6 @@
     <RootNamespace>WebcamReportTool</RootNamespace>
     <ProjectName>WebcamReportTool</ProjectName>
   </PropertyGroup>
-  <PropertyGroup>
-    <OutDir>$(SolutionDir)..\..\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
-  </PropertyGroup>
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="PropertySheets">

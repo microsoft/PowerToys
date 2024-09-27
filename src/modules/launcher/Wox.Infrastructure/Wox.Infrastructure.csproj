@@ -12,7 +12,6 @@
     
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WoxInfrastructure</OutputPath>
   </PropertyGroup>
 
   <!-- FOLLOW UP: Should this be self-contained? -->

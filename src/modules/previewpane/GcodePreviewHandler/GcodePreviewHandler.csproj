@@ -10,7 +10,6 @@
     <AssemblyDescription>PowerToys GcodePreviewHandler</AssemblyDescription>
     <Description>PowerToys GcodePreviewHandler</Description>
     <DocumentationFile>..\..\..\..\$(Platform)\$(Configuration)\GcodePreviewPaneDocumentation.xml</DocumentationFile>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>

@@ -5,7 +5,6 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <Nullable>enable</Nullable>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>

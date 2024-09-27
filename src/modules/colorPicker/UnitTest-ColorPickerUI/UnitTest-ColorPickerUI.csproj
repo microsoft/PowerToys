@@ -10,10 +10,6 @@
     <OutputType>Library</OutputType>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\UnitTest-ColorPickerUI\</OutputPath>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="MSTest" />
     <PackageReference Include="Microsoft.Win32.SystemEvents">

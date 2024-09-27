@@ -16,7 +16,6 @@
   <PropertyGroup>
     <ConfigurationType>Application</ConfigurationType>
     <TargetName>PowerToys.$(ProjectName)</TargetName>
-    <OutDir>$(SolutionDir)..\..\$(Platform)\$(Configuration)\Tools\</OutDir>
   </PropertyGroup>
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>

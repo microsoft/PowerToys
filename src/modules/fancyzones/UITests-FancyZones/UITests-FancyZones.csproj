@@ -13,10 +13,6 @@
     <RunVSTest>false</RunVSTest>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\UITests-FancyZones\</OutputPath>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Appium.WebDriver" />
     <PackageReference Include="MSTest" />

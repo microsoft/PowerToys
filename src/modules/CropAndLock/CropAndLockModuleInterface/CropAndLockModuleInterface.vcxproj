@@ -31,7 +31,6 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>PowerToys.CropAndLockModuleInterface</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>

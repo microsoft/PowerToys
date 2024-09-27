@@ -7,7 +7,6 @@
     <AssemblyTitle>PowerToys.FileLocksmith</AssemblyTitle>
     <AssemblyDescription>PowerToys File Locksmith</AssemblyDescription>
     <OutputType>WinExe</OutputType>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <RootNamespace>PowerToys.FileLocksmithUI</RootNamespace>
     <AssemblyName>PowerToys.FileLocksmithUI</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>

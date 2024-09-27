@@ -10,7 +10,6 @@
     <AssemblyDescription>PowerToys PdfPreviewHandler</AssemblyDescription>
     <Description>PowerToys PdfPreviewHandler</Description>
     <DocumentationFile>..\..\..\..\$(Platform)\$(Configuration)\PdfPreviewPaneDocumentation.xml</DocumentationFile>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>

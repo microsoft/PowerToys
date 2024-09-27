@@ -10,10 +10,6 @@
     <OutputType>Library</OutputType>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\MouseJumpUI.UnitTests\</OutputPath>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="MSTest" />
     <PackageReference Include="System.CodeDom">
