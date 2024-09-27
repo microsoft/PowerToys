@@ -81,7 +81,7 @@ public static class LoggerTests
 
             // get the expected test result from an embedded resource
             var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = $"{typeof(LoggerTests).Namespace}.logger.privatedump.expected.txt";
+            var resourceName = $"{typeof(LoggerTests).Namespace}.Logger.PrivateDump.expected.txt";
             using var stream = assembly.GetManifestResourceStream(resourceName)
                 ?? throw new InvalidOperationException();
             using var streamReader = new StreamReader(stream);
