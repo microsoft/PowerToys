@@ -909,7 +909,6 @@ Mouse Jump:
    - [ ] Create a Workspace with two monitors connected, disconnect a monitor, verify apps are opened on the remaining one.
 
 ## New+
-
  * Enable New+ in Settings.
    - [ ] Verify NewPlus menu is in Explorer context menu. (Windows 11 tier 1 context menu only. May need Explorer restart.)
  * Disable New+ in Settings.
