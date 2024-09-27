@@ -33,6 +33,7 @@ All:
 - DSC
 - Advanced Paste
 - Workspaces
+- New +
 ```
 
 ```
@@ -66,6 +67,7 @@ Group 2:
 - Peek
 - Environment Variables
 - DSC
+- Workspaces
 ```
 
 ```
@@ -82,6 +84,7 @@ Group 3:
 - Crop And Lock
 - Environment Variables
 - Advanced Paste
+- New +
 ```
 
 ```
@@ -98,7 +101,7 @@ Group 4:
 - Hosts File Editor
 - MWB
 - Command Not Found
-- Workspaces
+- New +
 ```
 
 ```
