@@ -66,7 +66,8 @@ namespace AdvancedPaste.Helpers
         {
             // TODO(stefan): For some reason Flush() fails from time to time when directly activated via hotkey.
             // Calling inside a loop makes it work.
-            for (int i = 0; i < 5; i++)
+            const int maxAttempts = 5;
+            for (int i = 1; i <= maxAttempts; i++)
             {
                 try
                 {
@@ -75,7 +76,10 @@ namespace AdvancedPaste.Helpers
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError($"{nameof(Clipboard)}.{nameof(Flush)}() failed", ex);
+                    if (i == maxAttempts)
+                    {
+                        Logger.LogError($"{nameof(Clipboard)}.{nameof(Flush)}() failed", ex);
+                    }
                 }
             }
 

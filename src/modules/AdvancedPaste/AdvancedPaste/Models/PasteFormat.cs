@@ -22,7 +22,7 @@ public sealed class PasteFormat
     private PasteFormat(PasteFormats format, ClipboardFormat clipboardFormats, bool isAIServiceEnabled)
     {
         Format = format;
-        IsEnabled = ((clipboardFormats & Metadata.SupportedClipboardFormats) != ClipboardFormat.None) && (isAIServiceEnabled || !Metadata.RequiresAIService);
+        IsEnabled = SupportsClipboardFormats(clipboardFormats) && (isAIServiceEnabled || !Metadata.RequiresAIService);
     }
 
     public PasteFormat(PasteFormats format, ClipboardFormat clipboardFormats, bool isAIServiceEnabled, Func<string, string> resourceLoader)
@@ -58,4 +58,6 @@ public sealed class PasteFormat
     public string Query => string.IsNullOrEmpty(Prompt) ? Name : Prompt;
 
     public string ShortcutText { get; set; } = string.Empty;
+
+    public bool SupportsClipboardFormats(ClipboardFormat clipboardFormats) => (clipboardFormats & Metadata.SupportedClipboardFormats) != ClipboardFormat.None;
 }

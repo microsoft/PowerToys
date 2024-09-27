@@ -121,7 +121,7 @@
     <value>AI can make mistakes.</value>
   </data>
   <data name="ClipboardEmptyWarning" xml:space="preserve">
-    <value>Clipboard is empty</value>
+    <value>Clipboard does not contain any usable formats</value>
   </data>
   <data name="ClipboardDataNotTextWarning" xml:space="preserve">
     <value>Clipboard data is not text</value>

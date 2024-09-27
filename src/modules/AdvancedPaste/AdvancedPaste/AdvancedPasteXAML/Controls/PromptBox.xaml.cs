@@ -55,9 +55,9 @@ namespace AdvancedPaste.Controls
 
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(ViewModel.Busy) || e.PropertyName == nameof(ViewModel.ApiErrorText))
+            if (e.PropertyName == nameof(ViewModel.Busy) || e.PropertyName == nameof(ViewModel.PasteOperationErrorText))
             {
-                var state = ViewModel.Busy ? "LoadingState" : string.IsNullOrEmpty(ViewModel.ApiErrorText) ? "DefaultState" : "ErrorState";
+                var state = ViewModel.Busy ? "LoadingState" : string.IsNullOrEmpty(ViewModel.PasteOperationErrorText) ? "DefaultState" : "ErrorState";
                 VisualStateManager.GoToState(this, state, true);
             }
         }

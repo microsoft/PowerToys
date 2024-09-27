@@ -638,7 +638,7 @@
                 FontWeight="SemiBold"
                 Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                 Style="{StaticResource CaptionTextBlockStyle}"
-                Text="{x:Bind ViewModel.ApiErrorText, Mode=OneWay}" />
+                Text="{x:Bind ViewModel.PasteOperationErrorText, Mode=OneWay}" />
             <HyperlinkButton
                 x:Uid="SettingsBtn"
                 Grid.Column="1"

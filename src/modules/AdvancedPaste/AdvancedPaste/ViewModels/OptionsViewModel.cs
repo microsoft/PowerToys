@@ -54,7 +54,7 @@ namespace AdvancedPaste.ViewModels
         private bool _isAllowedByGPO;
 
         [ObservableProperty]
-        private string _apiErrorText;
+        private string _pasteOperationErrorText;
 
         [ObservableProperty]
         private string _query = string.Empty;
@@ -201,7 +201,7 @@ namespace AdvancedPaste.ViewModels
 
         public async Task OnShowAsync()
         {
-            ApiErrorText = string.Empty;
+            PasteOperationErrorText = string.Empty;
             Query = string.Empty;
 
             await ReadClipboardAsync();
@@ -342,11 +342,13 @@ namespace AdvancedPaste.ViewModels
 
             if (!pasteFormat.IsEnabled)
             {
+                var resourceId = pasteFormat.SupportsClipboardFormats(AvailableClipboardFormats) ? "PasteError" : "ClipboardEmptyWarning";
+                PasteOperationErrorText = ResourceLoaderInstance.ResourceLoader.GetString(resourceId);
                 return;
             }
 
             Busy = true;
-            ApiErrorText = string.Empty;
+            PasteOperationErrorText = string.Empty;
             Query = pasteFormat.Query;
 
             if (pasteFormat.Format == PasteFormats.Custom)
@@ -389,7 +391,7 @@ namespace AdvancedPaste.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError("Error executing paste format", ex);
-                ApiErrorText = ex is PasteActionException ? ex.Message : ResourceLoaderInstance.ResourceLoader.GetString("PasteError");
+                PasteOperationErrorText = ex is PasteActionException ? ex.Message : ResourceLoaderInstance.ResourceLoader.GetString("PasteError");
             }
 
             Busy = false;
