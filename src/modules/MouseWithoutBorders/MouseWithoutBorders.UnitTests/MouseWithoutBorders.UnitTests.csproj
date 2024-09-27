@@ -10,13 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Core\Logger.PrivateDump2.expected.txt" />
-    <None Remove="Core\Logger.PrivateDump2.original.txt" />
+    <None Remove="Core\Logger.PrivateDump.expected.txt" />
+    <None Remove="Core\Logger.PrivateDump.original.txt" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Core\Logger.PrivateDump2.expected.txt" />
-    <EmbeddedResource Include="Core\Logger.PrivateDump2.original.txt" />
+    <EmbeddedResource Include="Core\Logger.PrivateDump.expected.txt" />
+    <EmbeddedResource Include="Core\Logger.PrivateDump.original.txt" />
   </ItemGroup>
 
   <ItemGroup>
