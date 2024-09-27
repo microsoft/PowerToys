@@ -79,7 +79,7 @@ namespace MouseWithoutBorders
 {
     internal partial class Common
     {
-        private Common()
+        internal Common()
         {
         }
 

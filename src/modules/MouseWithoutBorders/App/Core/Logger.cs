@@ -29,10 +29,9 @@ namespace MouseWithoutBorders.Core;
 
 internal static class Logger
 {
-    private static readonly string[] AllLogs = new string[MAX_LOG];
+    internal static readonly string[] AllLogs = new string[MAX_LOG];
     private static readonly object AllLogsLock = new();
     internal static readonly ConcurrentDictionary<string, int> LogCounter = new();
-    private static readonly int[] RepeatedLogIndexSelection = new[] { 1, 3, 10, 50, 100 };
     private const int MAX_LOG = 10000;
     private static int allLogsIndex;
 
@@ -108,20 +107,20 @@ internal static class Logger
 #endif
     }
 
-    internal static void Log(string format, params object[] args)
+    private static void Log(string format, params object[] args)
     {
         Logger.Log(string.Format(CultureInfo.InvariantCulture, format, args));
     }
 
-    private static PackageMonitor p1;
-    private static PackageMonitor p2;
+    private static PackageMonitor lastPackageSent;
+    private static PackageMonitor lastPackageReceived;
 
     [Conditional("DEBUG")]
     internal static void LogAll()
     {
         string log;
 
-        if (!p1.Equals(Common.PackageSent))
+        if (!lastPackageSent.Equals(Common.PackageSent))
         {
             log = string.Format(
                 CultureInfo.CurrentCulture,
@@ -141,10 +140,10 @@ internal static class Logger
                 Common.inputEventCount,
                 Common.PackageSent.Nil);
             Log(log);
-            p1 = Common.PackageSent; // Copy data
+            lastPackageSent = Common.PackageSent; // Copy data
         }
 
-        if (!p2.Equals(Common.PackageReceived))
+        if (!lastPackageReceived.Equals(Common.PackageReceived))
         {
             log = string.Format(
                 CultureInfo.CurrentCulture,
@@ -166,7 +165,7 @@ internal static class Logger
                 Common.processedPackageCount,
                 Common.skippedPackageCount);
             Log(log);
-            p2 = Common.PackageReceived;
+            lastPackageReceived = Common.PackageReceived;
         }
     }
 
@@ -197,8 +196,10 @@ internal static class Logger
                 myThreads.Add(t);
             }
 
-            _ = PrivateDump(sb, AllLogs, "[Program logs]\r\n===============\r\n", 0, level, false);
-            _ = PrivateDump(sb, new Common(), "[Other Logs]\r\n===============\r\n", 0, level, false);
+            _ = Logger.PrivateDump(sb, AllLogs, "[Program logs]\r\n===============\r\n", 0, level, false);
+            _ = Logger.PrivateDump(sb, new Common(), "[Other Logs]\r\n===============\r\n", 0, level, false);
+            sb.AppendLine("[Logger]\r\n===============");
+            Logger.DumpType(sb, typeof(Logger), 0, level);
 
             log = string.Format(
                 CultureInfo.CurrentCulture,
@@ -234,17 +235,7 @@ internal static class Logger
         }
     }
 
-    private static object GetFieldValue(object obj, string fieldName)
-    {
-        FieldInfo fi;
-        Type t;
-
-        t = obj.GetType();
-        fi = t.GetField(fieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
-        return fi?.GetValue(obj);
-    }
-
-    private static bool PrivateDump(StringBuilder sb, object obj, string objName, int level, int maxLevel, bool stop)
+    internal static bool PrivateDump(StringBuilder sb, object obj, string objName, int level, int maxLevel, bool stop)
     {
         Type t;
         string padStr = string.Empty;
@@ -270,11 +261,24 @@ internal static class Logger
         // strArr[2] = " ";
         // strArr[3] = t.FullName;
         strArr[4] = " = ";
-        strArr[5] = objName.Equals("myKey", StringComparison.OrdinalIgnoreCase) ? Common.GetDebugInfo(objString)
-            : objName.Equals("lastClipboardObject", StringComparison.OrdinalIgnoreCase) ? string.Empty
-            : objString.Replace("System.Windows.Forms.", string.Empty).Replace("System.Net.Sockets.", string.Empty).Replace("System.Security.Cryptography.", string.Empty).Replace("System.Threading.", string.Empty)
-            .Replace("System.ComponentModel.", string.Empty).Replace("System.Runtime.", string.Empty).Replace("System.Drawing.", string.Empty).Replace("System.Object", "O").Replace("System.Diagnostics.", string.Empty)
-            .Replace("System.Collections.", string.Empty).Replace("System.Drawing.", string.Empty).Replace("System.Int", string.Empty).Replace("System.EventHandler.", string.Empty);
+        strArr[5] = objName.Equals("myKey", StringComparison.OrdinalIgnoreCase)
+            ? Common.GetDebugInfo(objString)
+            : objName.Equals("lastClipboardObject", StringComparison.OrdinalIgnoreCase)
+                ? string.Empty
+                : objString
+                    .Replace("System.Windows.Forms.", string.Empty)
+                    .Replace("System.Net.Sockets.", string.Empty)
+                    .Replace("System.Security.Cryptography.", string.Empty)
+                    .Replace("System.Threading.", string.Empty)
+                    .Replace("System.ComponentModel.", string.Empty)
+                    .Replace("System.Runtime.", string.Empty)
+                    .Replace("System.Drawing.", string.Empty)
+                    .Replace("System.Object", "O")
+                    .Replace("System.Diagnostics.", string.Empty)
+                    .Replace("System.Collections.", string.Empty)
+                    .Replace("System.Drawing.", string.Empty)
+                    .Replace("System.Int", string.Empty)
+                    .Replace("System.EventHandler.", string.Empty);
         strArr[6] = "\r\n";
         _ = sb.Append(string.Concat(strArr).Replace(Common.BinaryName, "MM"));
 
@@ -283,15 +287,15 @@ internal static class Logger
             return false;
         }
 
-        DumpType(padStr, sb, obj, level, t, maxLevel);
+        Logger.DumpObject(sb, obj, level, t, maxLevel);
         return true;
     }
 
-    private static void DumpType(string initialStr, StringBuilder sb, object obj, int level, System.Type t, int maxLevel)
+    internal static void DumpObject(StringBuilder sb, object obj, int level, Type t, int maxLevel)
     {
         int i;
         bool stop;
-        if (t == typeof(System.Delegate))
+        if (t == typeof(Delegate))
         {
             return;
         }
@@ -299,8 +303,7 @@ internal static class Logger
         FieldInfo[] fi;
         string type;
 
-        if (obj is MouseWithoutBorders.PackageType or string or AddressFamily or ID or IPAddress
-            )
+        if (obj is PackageType or string or AddressFamily or ID or IPAddress)
         {
             return;
         }
@@ -313,7 +316,7 @@ internal static class Logger
             return;
         }
 
-        stop = obj == null || obj is MouseWithoutBorders.DATA || obj.GetType().BaseType == typeof(ValueType)
+        stop = obj == null || obj is DATA || obj.GetType().BaseType == typeof(ValueType)
             || obj.GetType().Namespace.Contains("System.Windows");
         fi = t.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
 
@@ -341,7 +344,7 @@ internal static class Logger
             }
         }
 
-        if (obj is System.Array)
+        if (obj is Array)
         {
             try
             {
@@ -390,6 +393,41 @@ internal static class Logger
             }
             catch (Exception)
             {
+            }
+        }
+    }
+
+    internal static void DumpType(StringBuilder sb, Type typeToDump, int level, int maxLevel)
+    {
+        if ((typeToDump == typeof(Delegate))
+            || (typeToDump == typeof(PackageType))
+            || (typeToDump == typeof(string))
+            || (typeToDump == typeof(AddressFamily))
+            || (typeToDump == typeof(ID))
+            || (typeToDump == typeof(IPAddress)))
+        {
+            return;
+        }
+
+        var typeFullName = typeToDump.ToString();
+        if (typeFullName.EndsWith("type", StringComparison.CurrentCultureIgnoreCase)
+            || typeFullName.Contains("Cryptography")
+            || typeFullName.EndsWith("AsyncEventBits", StringComparison.CurrentCultureIgnoreCase))
+        {
+            return;
+        }
+
+        var stop = (typeToDump == null)
+            || (typeToDump == typeof(DATA))
+            || (typeToDump.BaseType == typeof(ValueType))
+            || typeToDump.Namespace.Contains("System.Windows");
+
+        var fieldInfos = typeToDump.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+        foreach (var fieldInfo in fieldInfos)
+        {
+            if (fieldInfo.GetValue(null) != AllLogs)
+            {
+                _ = Logger.PrivateDump(sb, fieldInfo.GetValue(null), fieldInfo.Name, level + 1, maxLevel, stop);
             }
         }
     }
