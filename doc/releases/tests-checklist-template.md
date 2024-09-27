@@ -907,3 +907,19 @@ Mouse Jump:
 * Try to launch the Workspace with a different setup
    - [ ] Create a Workspace with one monitor connected, connect the second monitor, launch the Workspace, verify apps are opened on the first one, as captured.
    - [ ] Create a Workspace with two monitors connected, disconnect a monitor, verify apps are opened on the remaining one.
+
+## New+
+
+ * Enable New+ in Settings.
+   - [ ] Verify NewPlus menu is in Explorer context menu. (Windows 11 tier 1 context menu only. May need Explorer restart.)
+ * Disable New+ in Settings.
+   - [ ] Verify NewPlus menu is not in Explorer context menu.
+ * Choose a different path for template folder.
+   - [ ] Verify the folder is created and empty.
+   - [ ] Copy a file to the templates folder, verify it's added to the New+ context menu and that if you select it the file is created.
+   - [ ] Copy a folder with files inside to the templates folder, verify it's added to the New+ context menu and that if you select it the folder and files inside are created.
+   - [ ] Delete all files and folders from inside the templates folder. Verify that no templates are available in the context menu.
+   - [ ] Disable and re-Enable New+ while the templates folder is still empty. Verify the default templates were copied over and are available in the context menu.
+ * Test some Settings:
+   - [ ] Test the "Hide template filename extension" option in Settings.
+   - [ ] Test the "Hide template filename starting digits, spaces and dots" option in Settings.
