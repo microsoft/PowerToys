@@ -22,6 +22,7 @@ using Microsoft.PowerToys.Telemetry;
 //     2023- Included in PowerToys.
 // </history>
 using MouseWithoutBorders.Class;
+using MouseWithoutBorders.Core;
 using MouseWithoutBorders.Properties;
 
 using Timer = System.Windows.Forms.Timer;
@@ -81,7 +82,7 @@ namespace MouseWithoutBorders
             }
             catch (Exception e)
             {
-                Common.Log(e);
+                Logger.Log(e);
             }
         }
 
@@ -232,7 +233,7 @@ namespace MouseWithoutBorders
             }
             catch (Exception e)
             {
-                Common.Log(e);
+                Logger.Log(e);
             }
         }
 
@@ -273,7 +274,7 @@ namespace MouseWithoutBorders
             {
                 BackColor = Color.White;
                 Opacity = 0.15;
-                Common.Log(ex);
+                Logger.Log(ex);
             }
 
             helperTimer = new System.Windows.Forms.Timer();
@@ -355,7 +356,7 @@ namespace MouseWithoutBorders
                             if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && !Common.GetUserName())
                             {
                                 // While Windows 8 is hybrid-shutting down, user name would be empty (as returned from the .Net API), we should not do anything in this case.
-                                Common.LogDebug("No active user.");
+                                Logger.LogDebug("No active user.");
                                 Thread.Sleep(1000);
                                 busy = false;
                                 return;
@@ -432,7 +433,7 @@ namespace MouseWithoutBorders
                                 if (!Common.AtLeastOneSocketEstablished())
                                 {
                                     Common.GetMachineName();
-                                    Common.LogDebug("Common.pleaseReopenSocket: " + Common.PleaseReopenSocket.ToString(CultureInfo.InvariantCulture));
+                                    Logger.LogDebug("Common.pleaseReopenSocket: " + Common.PleaseReopenSocket.ToString(CultureInfo.InvariantCulture));
                                     Common.ReopenSockets(false);
                                     Common.NewDesMachineID = Common.DesMachineID = Common.MachineID;
                                 }
@@ -545,7 +546,7 @@ namespace MouseWithoutBorders
 
                     if (count % 20 == 0)
                     {
-                        Common.LogAll();
+                        Logger.LogAll();
 
                         // Need to review this code on why it is needed (moved from MoveToMyNeighbourIfNeeded(...))
                         for (int i = 0; i < Common.MachineMatrix.Length; i++)
@@ -579,14 +580,14 @@ namespace MouseWithoutBorders
 
                         if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && Common.IsMyDesktopActive() && (rv = Common.SendMessageToHelper(0x400, IntPtr.Zero, IntPtr.Zero)) <= 0)
                         {
-                            Common.TelemetryLogTrace($"{Common.HELPER_FORM_TEXT} not found: {rv}", SeverityLevel.Warning);
+                            Logger.TelemetryLogTrace($"{Common.HELPER_FORM_TEXT} not found: {rv}", SeverityLevel.Warning);
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Common.Log(ex);
+                Logger.Log(ex);
             }
             finally
             {
@@ -678,7 +679,7 @@ namespace MouseWithoutBorders
                 p.Dispose();
 #endif
 
-                Common.LogDebug($"Changing icon to {iconCode}.");
+                Logger.LogDebug($"Changing icon to {iconCode}.");
 
                 if (NotifyIcon.Icon != null)
                 {
@@ -690,13 +691,13 @@ namespace MouseWithoutBorders
             }
             catch (Exception e)
             {
-                Common.Log(e);
+                Logger.Log(e);
             }
         }
 
         internal void MenuAllPC_Click(object sender, EventArgs e)
         {
-            Common.LogDebug("menuAllPC_Click");
+            Logger.LogDebug("menuAllPC_Click");
             Common.SwitchToMultipleMode(MenuAllPC.Checked, true);
             CurIcon = MenuAllPC.Checked ? Common.ICON_ALL : Common.ICON_ONE;
             ChangeIcon(CurIcon);
@@ -801,7 +802,7 @@ namespace MouseWithoutBorders
 
                     if (h.ToInt32() > 0)
                     {
-                        Common.LogDebug("Hide Mouse Without Borders Helper.");
+                        Logger.LogDebug("Hide Mouse Without Borders Helper.");
 
                         // Common.ShowWindow(h, 1);
                         _ = NativeMethods.ShowWindow(h, 0);
@@ -813,7 +814,7 @@ namespace MouseWithoutBorders
                     break;
 
                 case NativeMethods.WM_CHECK_EXPLORER_DRAG_DROP:
-                    Common.LogDebug("Got WM_CHECK_EXPLORER_DRAG_DROP!");
+                    Logger.LogDebug("Got WM_CHECK_EXPLORER_DRAG_DROP!");
                     Common.DragDropStep04();
                     break;
 
@@ -825,7 +826,7 @@ namespace MouseWithoutBorders
                     break;
 
                 case WM_QUERYENDSESSION:
-                    Common.LogDebug("WM_QUERYENDSESSION...");
+                    Logger.LogDebug("WM_QUERYENDSESSION...");
                     Common.StartServiceAndSendLogoffSignal();
                     break;
 
@@ -993,7 +994,7 @@ namespace MouseWithoutBorders
             }
             catch (Exception e)
             {
-                Common.Log(e);
+                Logger.Log(e);
             }
         }
 
@@ -1210,7 +1211,7 @@ namespace MouseWithoutBorders
 
         private void MenuGenDumpFile_Click(object sender, EventArgs e)
         {
-            Common.GenerateLog();
+            Logger.GenerateLog();
         }
 
         private void MainMenu_Opening(object sender, CancelEventArgs e)

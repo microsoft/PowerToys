@@ -25,6 +25,7 @@ using System.Windows.Forms;
 //     2023- Included in PowerToys.
 // </history>
 using MouseWithoutBorders.Class;
+using MouseWithoutBorders.Core;
 using MouseWithoutBorders.Exceptions;
 
 namespace MouseWithoutBorders
@@ -81,7 +82,7 @@ namespace MouseWithoutBorders
         internal static string DumpThreadsStack()
         {
             string stack = "\r\nMANAGED THREADS: " + threads.Count.ToString(CultureInfo.InvariantCulture) + "\r\n";
-            stack += Common.GetStackTrace(new StackTrace());
+            stack += Logger.GetStackTrace(new StackTrace());
             return stack;
         }
 
