@@ -19,7 +19,7 @@ public static class LoggerTests
         [TestMethod]
         public void PrivateDumpShouldGenerateExpectedOutput()
         {
-            // this was used to create the contents of "logger.privatedump.original.txt"
+            // this was used to create the contents of "Logger.PrivateDump.original.txt"
             // when the "Core.Logger" class was "Common" in "Common.Log.cs"
 
             // PrivateDump throws an ArgumentNullException if this is null
