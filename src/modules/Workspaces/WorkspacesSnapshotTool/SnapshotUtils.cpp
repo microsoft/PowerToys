@@ -246,6 +246,7 @@ namespace SnapshotUtils
             if (!data.has_value() || data->name.empty())
             {
                 Logger::info(L"Installed app not found: {}", processPath);
+                continue;
             }
 
             WorkspacesData::WorkspacesProject::Application app{
