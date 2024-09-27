@@ -161,19 +161,16 @@ void WindowArranger::processWindow(HWND window)
         return;
     }
 
-    std::wstring title = WindowUtils::GetWindowTitle(window);
-    if (title.empty())
-    {
-        return;
-    }
-
     std::wstring processPath = get_process_path(window);
     if (processPath.empty())
     {
         return;
     }
 
-    auto data = Utils::Apps::GetApp(processPath, m_installedApps);
+    DWORD pid{};
+    GetWindowThreadProcessId(window, &pid);
+
+    auto data = Utils::Apps::GetApp(processPath, pid, m_installedApps);
     if (!data.has_value())
     {
         return;
@@ -189,7 +186,6 @@ void WindowArranger::processWindow(HWND window)
         return;
     }
 
-    Logger::debug(L"Move {}", title);
     iter->second.window = window;
     if (moveWindow(window, iter->first))
     {
