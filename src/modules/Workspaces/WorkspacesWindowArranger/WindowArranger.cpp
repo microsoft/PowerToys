@@ -174,13 +174,15 @@ void WindowArranger::processWindow(HWND window)
     }
 
     auto data = Utils::Apps::GetApp(processPath, m_installedApps);
-    if (!data.has_value() || data->name.empty())
+    if (!data.has_value())
     {
         return;
     }
 
     auto iter = std::find_if(m_launchingApps.begin(), m_launchingApps.end(), [&](const auto& val) 
-        { return val.second.state == LaunchingState::Waiting && val.first.name == data.value().name; });
+        { 
+            return val.second.state == LaunchingState::Waiting && !val.second.window && (val.first.name == data.value().name || val.first.path == data.value().installPath); 
+        });
     if (iter == m_launchingApps.end())
     {
         Logger::info(L"A window of {} is not in the project", processPath);
