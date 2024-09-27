@@ -209,6 +209,7 @@ For [v0.86][github-next-release-work], we'll work on the items below:
 
  - Stability / bug fixes
  - New module: File Actions Menu
+ - Integrate Sysinternals ZoomIt
 
 ## PowerToys Community
 
