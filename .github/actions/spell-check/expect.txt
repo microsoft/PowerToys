@@ -367,6 +367,7 @@ dllmain
 DNLEN
 DONOTROUND
 DONTVALIDATEPATH
+DOPUS
 dotnet
 DPICHANGED
 DPIs
@@ -1265,6 +1266,7 @@ PWSTR
 pwsz
 pwtd
 QDC
+QDir
 qianlifeng
 qit
 QITAB
@@ -1642,6 +1644,7 @@ toolkitconverters
 Toolset
 toolwindow
 TOPDOWNDIB
+TOTALCMD
 TOUCHEVENTF
 TOUCHINPUT
 touchpad
@@ -1908,6 +1911,7 @@ XLoc
 XNamespace
 XPels
 XPixel
+xplorer
 XResource
 xsi
 XStr

@@ -19,6 +19,15 @@ namespace SnapshotUtils
     namespace NonLocalizable
     {
         const std::wstring ApplicationFrameHost = L"ApplicationFrameHost.exe";
+
+        namespace FileManagers
+        {
+            const std::wstring FileExplorer = L"EXPLORER";      // windows explorer
+            const std::wstring TotalCommander = L"TOTALCMD";    // total commander
+            const std::wstring DirectoryOpus = L"DOPUS";        // directory opus
+            const std::wstring QDir = L"Q-DIR";                 // Q-Dir
+            const std::wstring Xplorer2 = L"XPLORER2";          // Xplorer2
+        }
     }
 
     class WbemHelper
@@ -191,6 +200,17 @@ namespace SnapshotUtils
         return res;
     }
 
+    bool IsFileManagerApp(std::wstring processPath)
+    {
+        std::wstring appName = std::filesystem::path(processPath).stem();
+        std::transform(appName.begin(), appName.end(), appName.begin(), towupper);
+        return ((appName == NonLocalizable::FileManagers::FileExplorer)                 // windows explorer
+                || (appName.starts_with(NonLocalizable::FileManagers::TotalCommander))  // total commander
+                || (appName == NonLocalizable::FileManagers::DirectoryOpus)             // directory opus
+                || (appName == NonLocalizable::FileManagers::QDir)                      // Q-Dir
+                || (appName.starts_with(NonLocalizable::FileManagers::Xplorer2)));      // Xplorer2
+    }
+
     std::vector<WorkspacesData::WorkspacesProject::Application> GetApps(const std::function<unsigned int(HWND)> getMonitorNumberFromWindowHandle)
     {
         std::vector<WorkspacesData::WorkspacesProject::Application> apps{};
@@ -269,25 +289,72 @@ namespace SnapshotUtils
             if (!data.has_value() || data->name.empty())
             {
                 Logger::info(L"Installed app not found: {}, try parent process", processPath);
-                
+
+                bool standaloneApp = false;
+                bool steamLikeApp = false;
+
                 // try with parent process (fix for Steam)
                 auto parentPid = GetParentPid(pid);
                 auto parentProcessPath = get_process_path(parentPid);
-                if (!parentProcessPath.empty())
+
+                // check if original process is in the subfolder of the parent process which is a sign of an steam-like app
+                std::wstring processDir = std::filesystem::path(processPath).parent_path().c_str();
+                std::wstring parentProcessDir = std::filesystem::path(parentProcessPath).parent_path().c_str();
+
+                if (parentProcessPath == L"")
                 {
-                    data = Utils::Apps::GetApp(parentProcessPath, installedApps);
-                    if (!data.has_value() || data->name.empty())
+                    if (processPath.ends_with(NonLocalizable::ApplicationFrameHost))
                     {
-                        Logger::info(L"Installed parent app not found: {}", processPath);
+                        // filter out ApplicationFrameHost.exe
                         continue;
                     }
-
-                    processPath = parentProcessPath;
+                    else
+                    {
+                        Logger::info(L"parent process unknown, the parent app is an already closed file manager app, it is a standalone app");
+                        standaloneApp = true;
+                    }
+                }
+                else if (processDir.starts_with(parentProcessDir))
+                {
+                    Logger::info(L"parent process: {}, original process is in the subfolder of the parent process, it is a steam-like app", parentProcessPath);
+                    steamLikeApp = true;
+                }
+                else if (IsFileManagerApp(parentProcessPath))
+                {
+                    Logger::info(L"parent process: {}, The parent process is a known file manager app, it is a standalone app", parentProcessPath);
+                    standaloneApp = true;
                 }
                 else
                 {
-                    Logger::info(L"Parent process path not found");
-                    continue;
+                    Logger::info(L"parent process: {}, The parent process is NOT a known file manager app, it is a steam-like app", parentProcessPath);
+                    steamLikeApp = true;
+                }
+
+                if (standaloneApp)
+                {
+                    data = Utils::Apps::AppData{
+                        .name = std::filesystem::path(processPath).stem(),
+                        .installPath = processPath,
+                    };
+                }
+                else if (steamLikeApp)
+                {
+                    if (!parentProcessPath.empty())
+                    {
+                        data = Utils::Apps::GetApp(parentProcessPath, installedApps);
+                        if (!data.has_value() || data->name.empty())
+                        {
+                            Logger::info(L"Installed parent app not found: {}", processPath);
+                            continue;
+                        }
+
+                        processPath = parentProcessPath;
+                    }
+                    else
+                    {
+                        Logger::info(L"Parent process path not found");
+                        continue;
+                    }
                 }
             }
 
