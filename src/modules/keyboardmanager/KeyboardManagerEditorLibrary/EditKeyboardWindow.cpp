@@ -24,8 +24,6 @@
 #include "EditorConstants.h"
 #include <common/Themes/theme_listener.h>
 
-using namespace winrt::Windows::Foundation;
-
 static UINT g_currentDPI = DPIAware::DEFAULT_DPI;
 
 LRESULT CALLBACK EditKeyboardWindowProc(HWND, UINT, WPARAM, LPARAM);
@@ -57,7 +55,7 @@ static void handleTheme()
     }
 }
 
-static IAsyncOperation<bool> OrphanKeysConfirmationDialog(
+static winrt::Windows::Foundation::IAsyncOperation<bool> OrphanKeysConfirmationDialog(
     KBMEditor::KeyboardManagerState& state,
     const std::vector<DWORD>& keys,
     XamlRoot root)
@@ -90,7 +88,7 @@ static IAsyncOperation<bool> OrphanKeysConfirmationDialog(
     co_return res == ContentDialogResult::Primary;
 }
 
-static IAsyncAction OnClickAccept(KBMEditor::KeyboardManagerState& keyboardManagerState, XamlRoot root, std::function<void()> ApplyRemappings)
+static winrt::Windows::Foundation::IAsyncAction OnClickAccept(KBMEditor::KeyboardManagerState& keyboardManagerState, XamlRoot root, std::function<void()> ApplyRemappings)
 {
     ShortcutErrorType isSuccess = LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(SingleKeyRemapControl::singleKeyRemapBuffer);
 

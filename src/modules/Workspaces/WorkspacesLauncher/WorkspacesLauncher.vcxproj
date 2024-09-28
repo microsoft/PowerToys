@@ -127,21 +127,23 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AppLauncher.cpp" />
+    <ClCompile Include="Launcher.cpp" />
     <ClCompile Include="LauncherUIHelper.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="RegistryUtils.cpp" />
+    <ClCompile Include="WindowArrangerHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AppLauncher.h" />
+    <ClInclude Include="Launcher.h" />
     <ClInclude Include="LauncherUIHelper.h" />
-    <ClInclude Include="LaunchingApp.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RegistryUtils.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="utils.h" />
+    <ClInclude Include="WindowArrangerHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -130,5 +130,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             string r = await Task.FromResult<string>(ShellGetFolder.GetFolderDialog(hwnd));
             return r;
         }
+
+        private void Click_LanguageRestart(object sender, RoutedEventArgs e)
+        {
+            ViewModel.Restart();
+        }
     }
 }

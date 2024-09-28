@@ -20,6 +20,7 @@
 
 // Non-localizable
 const std::wstring workspacesLauncherPath = L"PowerToys.WorkspacesLauncher.exe";
+const std::wstring workspacesWindowArrangerPath = L"PowerToys.WorkspacesWindowArranger.exe";
 const std::wstring workspacesSnapshotToolPath = L"PowerToys.WorkspacesSnapshotTool.exe";
 const std::wstring workspacesEditorPath = L"PowerToys.WorkspacesEditor.exe";
 
