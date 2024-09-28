@@ -1,4 +1,4 @@
-﻿<ui:FluentWindow
+﻿<Window
     x:Class="ImageResizer.Views.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -10,14 +10,11 @@
     Name="_this"
     Width="360"
     Height="506"
-    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
-    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     AutomationProperties.Name="{x:Static p:Resources.ImageResizer}"
-    ExtendsContentIntoTitleBar="True"
     Icon="/PowerToys.ImageResizer;component/Resources/ImageResizer.ico"
     ResizeMode="NoResize"
     SizeToContent="Height"
-    WindowCornerPreference="Default"
+    Title="Image Resizer"
     WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
@@ -47,7 +44,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <ui:TitleBar
+        <!--<ui:TitleBar
             x:Name="TitleBar"
             Title="{x:Static p:Resources.ImageResizer}"
             Grid.Row="0"
@@ -58,8 +55,8 @@
             <ui:TitleBar.Icon>
                 <ui:ImageIcon Source="/PowerToys.ImageResizer;component/Resources/ImageResizer.ico" />
             </ui:TitleBar.Icon>
-        </ui:TitleBar>
+        </ui:TitleBar>-->
 
         <ContentPresenter Grid.Row="1" Content="{Binding CurrentPage}" />
     </Grid>
-</ui:FluentWindow>
+</Window>

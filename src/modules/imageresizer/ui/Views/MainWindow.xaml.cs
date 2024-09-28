@@ -5,34 +5,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Common.UI;
+using System.Windows;
 using ImageResizer.ViewModels;
 using Microsoft.Win32;
-using Wpf.Ui.Controls;
 
 using AppResources = ImageResizer.Properties.Resources;
 
 namespace ImageResizer.Views
 {
-    public partial class MainWindow : FluentWindow, IMainView
+    public partial class MainWindow : Window, IMainView
     {
         public MainWindow(MainViewModel viewModel)
         {
             DataContext = viewModel;
 
             InitializeComponent();
-
-            if (OSVersionHelper.IsWindows11())
-            {
-                WindowBackdropType = WindowBackdropType.Mica;
-            }
-            else
-            {
-                WindowBackdropType = WindowBackdropType.None;
-            }
-
-            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType);
         }
 
         public IEnumerable<string> OpenPictureFiles()

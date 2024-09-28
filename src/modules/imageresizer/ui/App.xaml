@@ -5,14 +5,10 @@
     xmlns:m="clr-namespace:ImageResizer.Models"
     xmlns:sys="clr-namespace:System;assembly=System.Runtime"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    xmlns:v="clr-namespace:ImageResizer.Views">
+    xmlns:v="clr-namespace:ImageResizer.Views"
+    ThemeMode="Dark">
     <Application.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ui:ThemesDictionary Theme="Dark" />
-                <ui:ControlsDictionary />
-            </ResourceDictionary.MergedDictionaries>
-
             <v:SizeTypeToVisibilityConverter x:Key="SizeTypeToVisibilityConverter" />
             <v:EnumValueConverter x:Key="EnumValueConverter" />
             <v:AutoDoubleConverter x:Key="AutoDoubleConverter" />

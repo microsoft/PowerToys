@@ -91,32 +91,38 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <ui:SymbolIcon
+                <!--<ui:SymbolIcon
                     VerticalAlignment="Center"
                     AutomationProperties.Name="{x:Static p:Resources.Width}"
                     FontSize="20"
                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                     Symbol="AutoFitWidth20"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Width}" />-->
+                <TextBlock
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="{x:Static p:Resources.Width}"
+                    FontSize="20"
+                    FontFamily="Segoe Fluent Icons"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="&#xF577;"
                     ToolTipService.ToolTip="{x:Static p:Resources.Width}" />
-                <ui:NumberBox
+                <TextBox
                     Name="WidthNumberBox"
                     Grid.Column="1"
                     Margin="8,0,0,0"
                     HorizontalAlignment="Stretch"
                     AutomationProperties.Name="{x:Static p:Resources.Width}"
-                    KeyDown="Button_KeyDown"
-                    Minimum="0"
-                    SpinButtonPlacementMode="Inline">
-                    <ui:NumberBox.Value>
+                    KeyDown="Button_KeyDown">
+                    <TextBox.Text>
                         <Binding
                             ElementName="SizeComboBox"
                             Mode="TwoWay"
                             Path="SelectedValue.Width"
                             UpdateSourceTrigger="PropertyChanged" />
-                    </ui:NumberBox.Value>
-                </ui:NumberBox>
+                    </TextBox.Text>
+                </TextBox>
 
-                <ui:SymbolIcon
+                <!--<ui:SymbolIcon
                     Grid.Column="3"
                     VerticalAlignment="Center"
                     AutomationProperties.Name="{x:Static p:Resources.Height}"
@@ -124,8 +130,18 @@
                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                     Symbol="AutoFitHeight20"
                     ToolTipService.ToolTip="{x:Static p:Resources.Height}"
+                    Visibility="{Binding ElementName=SizeComboBox, Path=SelectedValue.ShowHeight, Converter={StaticResource BoolValueConverter}}" />-->
+                <TextBlock
+                    Grid.Column="3"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="{x:Static p:Resources.Height}"
+                    FontSize="20"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    FontFamily="Segoe Fluent Icons"
+                    Text="&#xF573;"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Height}"
                     Visibility="{Binding ElementName=SizeComboBox, Path=SelectedValue.ShowHeight, Converter={StaticResource BoolValueConverter}}" />
-                <ui:NumberBox
+                <TextBox
                     Name="HeightNumberBox"
                     Grid.Column="4"
                     Margin="8,0,0,0"
@@ -133,25 +149,32 @@
                     AutomationProperties.Name="{x:Static p:Resources.Height}"
                     DataContext="{Binding ElementName=SizeComboBox, Path=SelectedItem}"
                     KeyDown="Button_KeyDown"
-                    Minimum="0"
-                    SpinButtonPlacementMode="Inline"
                     Visibility="{Binding ElementName=SizeComboBox, Path=SelectedValue.ShowHeight, Converter={StaticResource BoolValueConverter}}">
-                    <ui:NumberBox.Value>
+                    <TextBox.Text>
                         <Binding
                             ElementName="SizeComboBox"
                             Mode="TwoWay"
                             Path="SelectedValue.Height"
                             UpdateSourceTrigger="PropertyChanged" />
-                    </ui:NumberBox.Value>
-                </ui:NumberBox>
+                    </TextBox.Text>
+                </TextBox>
 
-                <ui:SymbolIcon
+                <!--<ui:SymbolIcon
                     Grid.Row="2"
                     VerticalAlignment="Center"
                     FontSize="20"
                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                     Symbol="Crop20"
-                    ToolTipService.ToolTip="{x:Static p:Resources.Resize_Type}" />
+                    ToolTipService.ToolTip="{x:Static p:Resources.Resize_Type}" />-->
+
+                <TextBlock
+                     Grid.Row="2"
+                     VerticalAlignment="Center"
+                     FontSize="20"
+                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                     Text="&#xE7A8;"
+                     FontFamily="Segoe Fluent Icons"
+                     ToolTipService.ToolTip="{x:Static p:Resources.Resize_Type}" />
                 <ComboBox
                     Grid.Row="2"
                     Grid.Column="1"
@@ -167,14 +190,25 @@
                     </ComboBox.ItemTemplate>
                 </ComboBox>
 
-                <ui:SymbolIcon
+                <!--<ui:SymbolIcon
                     Grid.Row="2"
                     Grid.Column="3"
                     VerticalAlignment="Center"
                     FontSize="20"
                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                     Symbol="Ruler20"
-                    ToolTipService.ToolTip="{x:Static p:Resources.Unit}" />
+                     />-->
+
+                <TextBlock
+                     Grid.Row="2"
+                     Grid.Column="3"
+                     VerticalAlignment="Center"
+                     FontSize="20"
+                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                     Text="&#xED5E;"
+                     FontFamily="Segoe Fluent Icons"
+                     ToolTipService.ToolTip="{x:Static p:Resources.Unit}" />
+
                 <ComboBox
                     Grid.Row="2"
                     Grid.Column="4"
@@ -230,13 +264,14 @@
                 VerticalAlignment="Top"
                 Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
 
-            <ui:InfoBar
+            <!--What is this for ?-->
+            <!--<ui:InfoBar
                 Grid.Row="3"
                 Margin="16,0"
                 IsClosable="False"
                 IsOpen="{Binding TryingToResizeGifFiles}"
                 Message="{x:Static p:Resources.Input_GifWarning}"
-                Severity="Warning" />
+                Severity="Warning" />-->
 
             <!--  Buttons  -->
             <Grid Grid.Row="4" Margin="16,8,16,16">
@@ -246,32 +281,35 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <ui:Button
+                <Button
                     Padding="0"
                     AutomationProperties.Name="{x:Static p:Resources.Open_settings}"
                     Background="Transparent"
                     BorderBrush="Transparent"
                     Command="{Binding OpenSettingsCommand}"
                     ToolTipService.ToolTip="{x:Static p:Resources.Open_settings}">
-                    <ui:Button.Content>
-                        <ui:SymbolIcon FontSize="20" Symbol="Settings20" />
-                    </ui:Button.Content>
-                </ui:Button>
+                    <Button.Content>
+                        <!--<ui:SymbolIcon FontSize="20" Symbol="Settings20" />-->
+                        <TextBlock FontSize="18" FontFamily="Segoe Fluent Icons" Text="&#xE713;" />
+                    </Button.Content>
+                </Button>
 
-                <ui:Button
+                <Button
                     Grid.Column="1"
                     MinWidth="76"
-                    Appearance="Primary"
+                    Style="{DynamicResource AccentButtonStyle}"
                     AutomationProperties.Name="{x:Static p:Resources.Resize_Tooltip}"
                     Command="{Binding ResizeCommand}"
                     IsDefault="True">
                     <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon FontSize="16" Symbol="ResizeLarge16" />
+                        <!--<ui:SymbolIcon FontSize="16" Symbol="ResizeLarge16" />-->
+                        <!--Need a better way to deal with SymbolFont-->
+                        <TextBlock VerticalAlignment="Center" FontSize="16" FontFamily="Segoe Fluent Icons" Text="&#xE799;" />
                         <TextBlock Margin="8,0,0,0" Text="{x:Static p:Resources.Input_Resize}" />
                     </StackPanel>
-                </ui:Button>
+                </Button>
 
-                <ui:Button
+                <Button
                     Grid.Column="2"
                     MinWidth="76"
                     Margin="8,0,0,0"
