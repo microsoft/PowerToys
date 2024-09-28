@@ -8,11 +8,13 @@ using System.Globalization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.Web.WebView2.Core;
 using Peek.Common.Extensions;
@@ -54,6 +56,7 @@ namespace Peek.FilePreviewer
         [NotifyPropertyChangedFor(nameof(ArchivePreviewer))]
         [NotifyPropertyChangedFor(nameof(ShellPreviewHandlerPreviewer))]
         [NotifyPropertyChangedFor(nameof(DrivePreviewer))]
+        [NotifyPropertyChangedFor(nameof(SpecialFolderPreviewer))]
         [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
         private IPreviewer? previewer;
 
@@ -106,6 +109,8 @@ namespace Peek.FilePreviewer
 
         public IDrivePreviewer? DrivePreviewer => Previewer as IDrivePreviewer;
 
+        public ISpecialFolderPreviewer? SpecialFolderPreviewer => Previewer as ISpecialFolderPreviewer;
+
         public IUnsupportedFilePreviewer? UnsupportedFilePreviewer => Previewer as IUnsupportedFilePreviewer;
 
         public Queue<string> JavascriptCommandQueue { get; set; } = [];
@@ -153,6 +158,9 @@ namespace Peek.FilePreviewer
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource = new();
 
+            // Clear up any unmanaged resources before creating a new previewer instance.
+            (Previewer as IDisposable)?.Dispose();
+
             if (Item == null)
             {
                 Previewer = null;
@@ -164,15 +172,6 @@ namespace Peek.FilePreviewer
                 ArchivePreview.Visibility = Visibility.Collapsed;
                 DrivePreview.Visibility = Visibility.Collapsed;
                 UnsupportedFilePreview.Visibility = Visibility.Collapsed;
-
-                ImagePreview.FlowDirection = FlowDirection.LeftToRight;
-                VideoPreview.FlowDirection = FlowDirection.LeftToRight;
-
-                AudioPreview.FlowDirection = FlowDirection.LeftToRight;
-                BrowserPreview.FlowDirection = FlowDirection.LeftToRight;
-                ArchivePreview.FlowDirection = FlowDirection.LeftToRight;
-                DrivePreview.FlowDirection = FlowDirection.LeftToRight;
-                UnsupportedFilePreview.FlowDirection = FlowDirection.LeftToRight;
 
                 return;
             }
@@ -243,7 +242,6 @@ namespace Peek.FilePreviewer
             VideoPreview.MediaPlayer.Pause();
             VideoPreview.MediaPlayer.Source = null;
             VideoPreview.Source = null;
-
             AudioPreview.Source = null;
             ImagePreview.Source = null;
             ArchivePreview.Source = null;
@@ -357,10 +355,8 @@ namespace Peek.FilePreviewer
             }
 
             // Fetch and format available file properties
-            var sb = new StringBuilder();
-
             string fileNameFormatted = ReadableStringHelper.FormatResourceString("PreviewTooltip_FileName", Item.Name);
-            sb.Append(fileNameFormatted);
+            var sb = new StringBuilder(fileNameFormatted, 256);
 
             cancellationToken.ThrowIfCancellationRequested();
             string fileType = await Item.GetContentTypeAsync().ConfigureAwait(true);
@@ -376,6 +372,24 @@ namespace Peek.FilePreviewer
             sb.Append(fileSizeFormatted);
 
             InfoTooltip = sb.ToString();
+        }
+
+        /// <summary>
+        /// Set the placement of the tooltip for those previewers supporting the feature, ensuring it does not obscure the Main Window's title bar.
+        /// </summary>
+        private void ToolTipParentControl_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            var previewControl = sender as FrameworkElement;
+            if (previewControl != null)
+            {
+                var toolTip = ToolTipService.GetToolTip(previewControl) as ToolTip;
+                if (toolTip != null)
+                {
+                    var pos = e.GetCurrentPoint(previewControl).Position;
+                    toolTip.Placement = pos.Y < previewControl.ActualHeight / 2 ?
+                        PlacementMode.Bottom : PlacementMode.Top;
+                }
+            }
         }
     }
 }

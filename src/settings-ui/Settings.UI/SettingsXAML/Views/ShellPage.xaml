@@ -1,4 +1,4 @@
-<UserControl
+﻿<UserControl
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -106,6 +106,11 @@
                 <NavigationViewItemSeparator />
 
                 <NavigationViewItem
+                    x:Uid="Shell_AdvancedPaste"
+                    helpers:NavHelper.NavigateTo="views:AdvancedPastePage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AdvancedPaste.png}" />
+
+                <NavigationViewItem
                     x:Uid="Shell_AlwaysOnTop"
                     helpers:NavHelper.NavigateTo="views:AlwaysOnTopPage"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AlwaysOnTop.png}" />
@@ -176,9 +181,9 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}" />
 
                 <NavigationViewItem
-                    x:Uid="Shell_PastePlain"
-                    helpers:NavHelper.NavigateTo="views:PastePlainPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PasteAsPlainText.png}" />
+                    x:Uid="NewPlus_Product_Name"
+                    helpers:NavHelper.NavigateTo="views:NewPlusPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}" />
 
                 <NavigationViewItem
                     x:Uid="Shell_Peek"
@@ -224,6 +229,11 @@
                     helpers:NavHelper.NavigateTo="views:VideoConferencePage"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/VideoConferenceMute.png}"
                     IsEnabled="{x:Bind ViewModel.IsVideoConferenceBuild, Mode=OneWay}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_Workspaces"
+                    helpers:NavHelper.NavigateTo="views:WorkspacesPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}" />
             </NavigationView.MenuItems>
             <NavigationView.PaneFooter>
                 <StackPanel Orientation="Vertical">

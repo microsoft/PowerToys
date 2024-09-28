@@ -88,7 +88,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Opens Windows Terminal profiles..
+        ///   Looks up a localized string similar to Opens Windows Terminal profiles.
         /// </summary>
         internal static string plugin_description {
             get {

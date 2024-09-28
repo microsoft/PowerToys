@@ -14,5 +14,7 @@ namespace Peek.FilePreviewer.Previewers.Interfaces
         public bool IsDevFilePreview { get; }
 
         public Queue<string> JavascriptCommandQueue { get; set; }
+
+        public bool CustomContextMenu { get; }
     }
 }

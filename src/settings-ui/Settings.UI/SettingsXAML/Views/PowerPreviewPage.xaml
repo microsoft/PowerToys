@@ -63,16 +63,6 @@
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
 
-                    <tkcontrols:SettingsCard
-                        x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE943;}"
-                        IsEnabled="{x:Bind ViewModel.MDRenderIsGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch
-                            x:Uid="ToggleSwitch"
-                            IsEnabled="{x:Bind ViewModel.MDRenderIsGpoEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
-                            IsOn="{x:Bind ViewModel.MDRenderIsEnabled, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-
                     <tkcontrols:SettingsExpander
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_Monaco"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE99A;}"
@@ -99,8 +89,32 @@
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.MonacoPreviewMaxFileSize, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="FileExplorerPreview_Toggle_Monaco_Font_Size" IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="100"
+                                    Minimum="2"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.MonacoPreviewFontSize, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}">
+                                <CheckBox
+                                    x:Uid="FileExplorerPreview_ToggleSwitch_Monaco_Sticky_Scroll"
+                                    IsChecked="{x:Bind ViewModel.MonacoPreviewStickyScroll, Mode=TwoWay}"
+                                    IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}" />
+                            </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
+
+                    <tkcontrols:SettingsCard
+                        x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE943;}"
+                        IsEnabled="{x:Bind ViewModel.MDRenderIsGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsEnabled="{x:Bind ViewModel.MDRenderIsGpoEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                            IsOn="{x:Bind ViewModel.MDRenderIsEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_PDF"
@@ -183,6 +197,16 @@
                             IsOn="{x:Bind ViewModel.GCODEThumbnailIsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
+                    <tkcontrols:SettingsCard
+                        x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE914;}"
+                        IsEnabled="{x:Bind ViewModel.QOIThumbnailIsGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsEnabled="{x:Bind ViewModel.QOIThumbnailIsGpoEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                            IsOn="{x:Bind ViewModel.QOIThumbnailIsEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
                     <tkcontrols:SettingsExpander
                         x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_STL"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE914;}"
@@ -197,16 +221,6 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-
-                    <tkcontrols:SettingsCard
-                        x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE914;}"
-                        IsEnabled="{x:Bind ViewModel.QOIThumbnailIsGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch
-                            x:Uid="ToggleSwitch"
-                            IsEnabled="{x:Bind ViewModel.QOIThumbnailIsGpoEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
-                            IsOn="{x:Bind ViewModel.QOIThumbnailIsEnabled, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

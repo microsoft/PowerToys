@@ -4,9 +4,11 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
+
 using Common.UI;
 using FancyZonesEditor.Utils;
 using ManagedCommon;
@@ -54,6 +56,20 @@ namespace FancyZonesEditor
 
         public App()
         {
+            var languageTag = LanguageHelper.LoadLanguage();
+
+            if (!string.IsNullOrEmpty(languageTag))
+            {
+                try
+                {
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(languageTag);
+                }
+                catch (CultureNotFoundException ex)
+                {
+                    Logger.LogError("CultureNotFoundException: " + ex.Message);
+                }
+            }
+
             Logger.InitializeLogger("\\FancyZones\\Editor\\Logs");
 
             // DebugModeCheck();
@@ -145,7 +161,7 @@ namespace FancyZonesEditor
         private void App_WaitExit()
         {
             NativeEventWaiter.WaitForEventLoop(
-            interop.Constants.FZEExitEvent(),
+            PowerToys.Interop.Constants.FZEExitEvent(),
             () =>
             {
                 Logger.LogInfo("Exit event triggered");

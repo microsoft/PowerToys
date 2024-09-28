@@ -48,6 +48,7 @@
                 AutomationProperties.Name="{x:Static p:Resources.Color_History}"
                 ItemsSource="{Binding ColorsHistory}"
                 KeyboardNavigation.DirectionalNavigation="Contained"
+                MouseWheel="HistoryColors_OnMouseWheelScroll"
                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
                 SelectedIndex="{Binding SelectedColorIndex}"
                 SelectionMode="Extended"
@@ -230,7 +231,6 @@
                         IsTabStop="False"
                         ItemsSource="{Binding ColorRepresentations}"
                         KeyboardNavigation.DirectionalNavigation="Contained"
-                        KeyboardNavigation.TabNavigation="Once"
                         TabIndex="4">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>

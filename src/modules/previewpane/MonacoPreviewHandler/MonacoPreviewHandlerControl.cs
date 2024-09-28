@@ -4,6 +4,7 @@
 
 using System.Globalization;
 using System.Text;
+
 using Common;
 using ManagedCommon;
 using Microsoft.PowerToys.FilePreviewCommon;

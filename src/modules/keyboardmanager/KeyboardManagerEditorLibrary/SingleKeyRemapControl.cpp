@@ -72,7 +72,7 @@ SingleKeyRemapControl::SingleKeyRemapControl(StackPanel table, StackPanel row, c
                 return;
             }
 
-            singleKeyRemapBuffer[rowIndex].first[1] = text.c_str();
+            singleKeyRemapBuffer[rowIndex].mapping[1] = text.c_str();
         });
 
         auto typeCombo = ComboBox();
@@ -177,7 +177,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
     // Set the key text if the two keys are not null (i.e. default args)
     if (originalKey != NULL && !(newKey.index() == 0 && std::get<DWORD>(newKey) == NULL) && !(newKey.index() == 1 && !EditorHelpers::IsValidShortcut(std::get<Shortcut>(newKey))) && !(newKey.index() == 2 && std::get<std::wstring>(newKey).empty()))
     {
-        singleKeyRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ originalKey, newKey }, L""));
+        singleKeyRemapBuffer.push_back(RemapBufferRow{ RemapBufferItem{ originalKey, newKey }, L"" });
         keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->keyDropDownControlObjects[0]->SetSelectedValue(std::to_wstring(originalKey));
         if (newKey.index() == 0)
         {
@@ -201,7 +201,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
     else
     {
         // Initialize both keys to NULL
-        singleKeyRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ (DWORD)0, (DWORD)0 }, L""));
+        singleKeyRemapBuffer.push_back(RemapBufferRow{ RemapBufferItem{ (DWORD)0, (DWORD)0 }, L"" });
     }
 
     // Delete row button

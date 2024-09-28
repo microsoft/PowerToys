@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+
 using Microsoft.PowerToys.Run.Plugin.WindowsTerminal;
 using Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

@@ -20,9 +20,12 @@ enum class ESettingsWindowNames
     Hosts,
     MeasureTool,
     PowerOCR,
+    Workspaces,
     RegistryPreview,
     CropAndLock,
     EnvironmentVariables,
+    AdvancedPaste,
+    NewPlus,
 };
 
 std::string ESettingsWindowNames_to_string(ESettingsWindowNames value);

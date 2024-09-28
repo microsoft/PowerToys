@@ -8,20 +8,23 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Threading;
+
 using Common.UI;
-using interop;
 using Mages.Core.Runtime.Converters;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using PowerLauncher.Storage;
+using PowerToys.Interop;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Storage;
@@ -591,8 +594,7 @@ namespace PowerLauncher.ViewModel
                 _updateSource?.Dispose();
                 var currentUpdateSource = new CancellationTokenSource();
                 _updateSource = currentUpdateSource;
-                var currentCancellationToken = _updateSource.Token;
-                _updateToken = currentCancellationToken;
+                _updateToken = _updateSource.Token;
                 var queryText = QueryText.Trim();
 
                 var pluginQueryPairs = QueryBuilder.Build(queryText);
@@ -629,7 +631,7 @@ namespace PowerLauncher.ViewModel
                                             query.SelectedItems = _userSelectedRecord.GetGenericHistory();
                                             var results = PluginManager.QueryForPlugin(plugin, query);
                                             resultPluginPair[plugin.Metadata] = results;
-                                            currentCancellationToken.ThrowIfCancellationRequested();
+                                            _updateToken.ThrowIfCancellationRequested();
                                         }
                                         catch (OperationCanceledException)
                                         {
@@ -640,7 +642,7 @@ namespace PowerLauncher.ViewModel
                                 }
                                 else
                                 {
-                                    currentCancellationToken.ThrowIfCancellationRequested();
+                                    _updateToken.ThrowIfCancellationRequested();
 
                                     // To execute a query corresponding to each plugin
                                     foreach (KeyValuePair<PluginPair, Query> pluginQueryItem in pluginQueryPairs)
@@ -650,7 +652,7 @@ namespace PowerLauncher.ViewModel
                                         query.SelectedItems = _userSelectedRecord.GetGenericHistory();
                                         var results = PluginManager.QueryForPlugin(plugin, query);
                                         resultPluginPair[plugin.Metadata] = results;
-                                        currentCancellationToken.ThrowIfCancellationRequested();
+                                        _updateToken.ThrowIfCancellationRequested();
                                     }
                                 }
 
@@ -662,11 +664,11 @@ namespace PowerLauncher.ViewModel
                                         Results.Clear();
                                         foreach (var p in resultPluginPair)
                                         {
-                                            UpdateResultView(p.Value, queryText, currentCancellationToken);
-                                            currentCancellationToken.ThrowIfCancellationRequested();
+                                            UpdateResultView(p.Value, queryText, _updateToken);
+                                            _updateToken.ThrowIfCancellationRequested();
                                         }
 
-                                        currentCancellationToken.ThrowIfCancellationRequested();
+                                        _updateToken.ThrowIfCancellationRequested();
                                         numResults = Results.Results.Count;
                                         if (!doFinalSort)
                                         {
@@ -675,7 +677,7 @@ namespace PowerLauncher.ViewModel
                                         }
                                     }
 
-                                    currentCancellationToken.ThrowIfCancellationRequested();
+                                    _updateToken.ThrowIfCancellationRequested();
                                     if (!doFinalSort)
                                     {
                                         UpdateResultsListViewAfterQuery(queryText);
@@ -687,7 +689,7 @@ namespace PowerLauncher.ViewModel
                                 if (!delayedExecution.HasValue || delayedExecution.Value)
                                 {
                                     // Run the slower query of the DelayedExecution plugins
-                                    currentCancellationToken.ThrowIfCancellationRequested();
+                                    _updateToken.ThrowIfCancellationRequested();
                                     Parallel.ForEach(plugins, (plugin) =>
                                     {
                                         try
@@ -695,7 +697,7 @@ namespace PowerLauncher.ViewModel
                                             Query query;
                                             pluginQueryPairs.TryGetValue(plugin, out query);
                                             var results = PluginManager.QueryForPlugin(plugin, query, true);
-                                            currentCancellationToken.ThrowIfCancellationRequested();
+                                            _updateToken.ThrowIfCancellationRequested();
                                             if ((results?.Count ?? 0) != 0)
                                             {
                                                 lock (_addResultsLock)
@@ -703,16 +705,16 @@ namespace PowerLauncher.ViewModel
                                                     // Using CurrentCultureIgnoreCase since this is user facing
                                                     if (queryText.Equals(_currentQuery, StringComparison.CurrentCultureIgnoreCase))
                                                     {
-                                                        currentCancellationToken.ThrowIfCancellationRequested();
+                                                        _updateToken.ThrowIfCancellationRequested();
 
                                                         // Remove the original results from the plugin
                                                         Results.Results.RemoveAll(r => r.Result.PluginID == plugin.Metadata.ID);
-                                                        currentCancellationToken.ThrowIfCancellationRequested();
+                                                        _updateToken.ThrowIfCancellationRequested();
 
                                                         // Add the new results from the plugin
-                                                        UpdateResultView(results, queryText, currentCancellationToken);
+                                                        UpdateResultView(results, queryText, _updateToken);
 
-                                                        currentCancellationToken.ThrowIfCancellationRequested();
+                                                        _updateToken.ThrowIfCancellationRequested();
                                                         numResults = Results.Results.Count;
                                                         if (!doFinalSort)
                                                         {
@@ -720,7 +722,7 @@ namespace PowerLauncher.ViewModel
                                                         }
                                                     }
 
-                                                    currentCancellationToken.ThrowIfCancellationRequested();
+                                                    _updateToken.ThrowIfCancellationRequested();
                                                     if (!doFinalSort)
                                                     {
                                                         UpdateResultsListViewAfterQuery(queryText, noInitialResults, true);
@@ -749,7 +751,7 @@ namespace PowerLauncher.ViewModel
                             };
                             PowerToysTelemetry.Log.WriteEvent(queryEvent);
                         },
-                        currentCancellationToken);
+                        _updateToken);
 
                     if (doFinalSort)
                     {
@@ -761,7 +763,7 @@ namespace PowerLauncher.ViewModel
                                 Results.SelectedItem = Results.Results.FirstOrDefault();
                                 UpdateResultsListViewAfterQuery(queryText, false, false);
                             },
-                            currentCancellationToken);
+                            _updateToken);
                     }
                 }
             }
@@ -908,7 +910,7 @@ namespace PowerLauncher.ViewModel
             catch (Exception)
             {
                 string errorMsg = string.Format(CultureInfo.InvariantCulture, RegisterHotkeyFailed, hotkeyStr);
-                MessageBox.Show(errorMsg);
+                MessageBox.Show(errorMsg, Properties.Resources.RegisterHotkeyFailedTitle);
             }
         }
 
@@ -1006,6 +1008,46 @@ namespace PowerLauncher.ViewModel
             if (MainWindowVisibility != Visibility.Visible)
             {
                 MainWindowVisibility = Visibility.Visible;
+
+                // HACK: The following code in this if is a fix for https://github.com/microsoft/PowerToys/issues/30206 and https://github.com/microsoft/PowerToys/issues/33135
+                // WPF UI theme watcher removes the composition target background color, among other weird stuff.
+                // https://github.com/lepoco/wpfui/blob/303f0aefcd59a142bc681415dc4360a34a15f33d/src/Wpf.Ui/Controls/Window/WindowBackdrop.cs#L280
+                // So we set it back with https://github.com/lepoco/wpfui/blob/303f0aefcd59a142bc681415dc4360a34a15f33d/src/Wpf.Ui/Controls/Window/WindowBackdrop.cs#L191
+                var window = Application.Current.MainWindow;
+
+                // Only makes sense for Windows 11 or greater, since Windows 10 doesn't have Mica.
+                if (OSVersionHelper.IsWindows11())
+                {
+                    Wpf.Ui.Controls.WindowBackdrop.RemoveBackground(window);
+                }
+
+                // Setting uint titlebarPvAttribute = 0xFFFFFFFE; works on 22H2 or higher, 21H2 (aka SV1) this value causes a crash
+                if (OSVersionHelper.IsGreaterThanWindows11_21H2())
+                {
+                    // Taken from WPFUI's fix for the title bar issue. We should be able to remove this fix when WPF UI 4 is integrated.
+                    // https://github.com/lepoco/wpfui/pull/1122/files#diff-196b404f4db09632665ef546da6c8e57302b2f3e3d082eb4b5c295ae3482d94a
+                    IntPtr windowHandle = new WindowInteropHelper(window).Handle;
+                    if (windowHandle == IntPtr.Zero)
+                    {
+                        return;
+                    }
+
+                    HwndSource windowSource = HwndSource.FromHwnd(windowHandle);
+
+                    // Remove background from client area
+                    if (windowSource != null && windowSource.Handle != IntPtr.Zero && windowSource?.CompositionTarget != null)
+                    {
+                        // NOTE: https://learn.microsoft.com/en-us/windows/win32/api/dwmapi/ne-dwmapi-dwmwindowattribute
+                        // Specifying DWMWA_COLOR_DEFAULT (value 0xFFFFFFFF) for the color will reset the window back to using the system's default behavior for the caption color.
+                        uint titlebarPvAttribute = 0xFFFFFFFE;
+
+                        _ = Wox.Plugin.Common.Win32.NativeMethods.DwmSetWindowAttribute(
+                            windowSource.Handle,
+                            (int)Wox.Plugin.Common.Win32.DwmWindowAttributes.CaptionColor, // CaptionColor attribute is only available on Windows 11.
+                            ref titlebarPvAttribute,
+                            Marshal.SizeOf(typeof(uint)));
+                    }
+                }
             }
             else
             {
@@ -1157,14 +1199,7 @@ namespace PowerLauncher.ViewModel
         {
             bool isCurrentLanguageRightToLeft = System.Windows.Input.InputLanguageManager.Current.CurrentInputLanguage.TextInfo.IsRightToLeft;
 
-            if (isCurrentLanguageRightToLeft)
-            {
-                return FlowDirection.RightToLeft;
-            }
-            else
-            {
-                return FlowDirection.LeftToRight;
-            }
+            return isCurrentLanguageRightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
         }
 
         protected virtual void Dispose(bool disposing)

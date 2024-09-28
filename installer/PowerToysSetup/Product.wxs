@@ -72,8 +72,9 @@
       <ComponentGroupRef Id="VideoConferenceComponentGroup" />
       <ComponentGroupRef Id="MouseWithoutBordersComponentGroup" />
       <ComponentGroupRef Id="EnvironmentVariablesComponentGroup" />
-      <ComponentGroupRef Id="CmdNotFoundComponentGroup" />
-        
+      <ComponentGroupRef Id="AdvancedPasteComponentGroup" />
+      <ComponentGroupRef Id="NewPlusComponentGroup" />
+      <ComponentGroupRef Id="NewPlusTemplatesComponentGroup" />
       <ComponentGroupRef Id="ResourcesComponentGroup" />
       <ComponentGroupRef Id="WindowsAppSDKComponentGroup" />
       <ComponentGroupRef Id="ToolComponentGroup" />
@@ -135,7 +136,13 @@
       <Custom Action="DetectPrevInstallPath" After="AppSearch" />
       <Custom Action="SetLaunchPowerToysParam" Before="LaunchPowerToys" />
       <Custom Action="SetUninstallCommandNotFoundParam" Before="UninstallCommandNotFound" />
+      <Custom Action="SetUpgradeCommandNotFoundParam" Before="UpgradeCommandNotFound" />
       <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
+
+      <?if $(var.PerUser) = "true" ?>
+      <Custom Action="SetInstallDSCModuleParam" Before="InstallDSCModule" />
+      <?endif?>
+
       <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
       <Custom Action="CheckGPO" After="InstallInitialize">
         NOT Installed
@@ -149,7 +156,10 @@
       <!--<Custom Action="InstallEmbeddedMSIXTask" After="InstallFinalize">
         NOT Installed
       </Custom>-->
-      <Custom Action="TelemetryLogInstallSuccess" After="InstallFinalize">
+        <?if $(var.PerUser) = "true" ?>
+        <Custom Action="InstallDSCModule" After="InstallFiles"/>
+        <?endif?>
+        <Custom Action="TelemetryLogInstallSuccess" After="InstallFinalize">
         NOT Installed
       </Custom>
       <Custom Action="TelemetryLogUninstallSuccess" After="InstallFinalize">
@@ -161,8 +171,14 @@
       <Custom Action="UnRegisterContextMenuPackages" Before="RemoveFiles">
         Installed AND (REMOVE="ALL")
       </Custom>
+      <Custom Action="UnsetAdvancedPasteAPIKey" Before="RemoveFiles">
+        Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
+      </Custom>
       <Custom Action="UninstallCommandNotFound" Before="RemoveFiles">
         Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
+      </Custom>
+      <Custom Action="UpgradeCommandNotFound" After="InstallFiles">
+        WIX_UPGRADE_DETECTED
       </Custom>
       <Custom Action="UninstallServicesTask" After="InstallFinalize">
           Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
@@ -171,8 +187,12 @@
       <!--<Custom Action="UninstallEmbeddedMSIXTask" After="InstallFinalize">
         Installed AND (REMOVE="ALL")
       </Custom>-->
+      <?if $(var.PerUser) = "true" ?>
+      <Custom Action="UninstallDSCModule" After="InstallFinalize">
+          Installed AND (REMOVE="ALL")
+      </Custom>
+      <?endif?>
       <Custom Action="TerminateProcesses" Before="InstallValidate" />
-
       <Custom Action="LaunchPowerToys" Before="InstallFinalize">NOT Installed</Custom>
 
     </InstallExecuteSequence>
@@ -205,8 +225,16 @@
                     Property="UnApplyModulesRegistryChangeSets"
                     Value="[INSTALLFOLDER]" />
 
+    <CustomAction Id="SetInstallDSCModuleParam"
+                    Property="InstallDSCModule"
+                    Value="[INSTALLFOLDER]" />
+
     <CustomAction Id="SetUninstallCommandNotFoundParam"
                     Property="UninstallCommandNotFound"
+                    Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetUpgradeCommandNotFoundParam"
+                    Property="UpgradeCommandNotFound"
                     Value="[INSTALLFOLDER]" />
 
     <CustomAction Id="SetCreateWinAppSDKHardlinksParam"
@@ -255,6 +283,21 @@
                   DllEntry="UninstallEmbeddedMSIXCA"
                    />
 
+    <CustomAction Id="InstallDSCModule"
+                  Return="ignore"
+                  Impersonate="yes"
+                  Execute="deferred"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="InstallDSCModuleCA"
+                   />
+
+    <CustomAction Id="UninstallDSCModule"
+                  Return="ignore"
+                  Impersonate="yes"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="UninstallDSCModuleCA"
+                   />
+
       <CustomAction Id="UninstallServicesTask"
                     Return="ignore"
                     Impersonate="yes"
@@ -268,6 +311,22 @@
                     Execute="deferred"
                     BinaryKey="PTCustomActions"
                     DllEntry="UninstallCommandNotFoundModuleCA"
+                   />
+      
+      <CustomAction Id="UpgradeCommandNotFound"
+                    Return="ignore"
+                    Impersonate="yes"
+                    Execute="deferred"
+                    BinaryKey="PTCustomActions"
+                    DllEntry="UpgradeCommandNotFoundModuleCA"
+                   />
+
+      <CustomAction Id="UnsetAdvancedPasteAPIKey"
+                    Return="ignore"
+                    Impersonate="yes"
+                    Execute="deferred"
+                    BinaryKey="PTCustomActions"
+                    DllEntry="UnsetAdvancedPasteAPIKeyCA"
                    />
 
       <CustomAction Id="TelemetryLogInstallSuccess"
@@ -381,6 +440,7 @@
         <Directory Id="INSTALLFOLDER" Name="PowerToys">
           <Directory Id="BaseApplicationsAssetsFolder" Name="Assets">
           </Directory>
+          <Directory Id="DSCModulesReferenceFolder" Name="DSCModules" />
           <Directory Id="WinUI3AppsInstallFolder" Name="WinUI3Apps">
               <Directory Id="WinUI3AppsMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
                 <Directory Id="WinUI3AppsMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
@@ -395,7 +455,6 @@
         <Directory Id="ApplicationProgramsFolder" Name="PowerToys (Preview)"/>
       </Directory>
       <Directory Id="DesktopFolder" Name="Desktop" />
-      <Directory Id="PersonalFolder" Name="UserHomeDocuments" />
     </Directory>
   </Fragment>
 </Wix>

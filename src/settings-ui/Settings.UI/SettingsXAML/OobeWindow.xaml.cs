@@ -3,14 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using interop;
-using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using PowerToys.Interop;
 using Windows.Graphics;
 using WinUIEx;
 using WinUIEx.Messaging;
@@ -36,6 +35,9 @@ namespace Microsoft.PowerToys.Settings.UI
 
         public OobeWindow(PowerToysModules initialModule)
         {
+            App.ThemeService.ThemeChanged += OnThemeChanged;
+            App.ThemeService.ApplyTheme();
+
             this.InitializeComponent();
 
             // Set window icon
@@ -133,6 +135,13 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 mainWindow.CloseHiddenWindow();
             }
+
+            App.ThemeService.ThemeChanged -= OnThemeChanged;
+        }
+
+        private void OnThemeChanged(object sender, ElementTheme theme)
+        {
+            WindowHelper.SetTheme(this, theme);
         }
 
         private void Dispose(bool disposing)

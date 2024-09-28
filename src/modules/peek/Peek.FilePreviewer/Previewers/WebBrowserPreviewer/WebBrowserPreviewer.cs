@@ -45,6 +45,9 @@ namespace Peek.FilePreviewer.Previewers
         [ObservableProperty]
         private bool isDevFilePreview;
 
+        [ObservableProperty]
+        private bool customContextMenu;
+
         private bool disposed;
 
         public WebBrowserPreviewer(IFileSystemItem file, IPreviewSettings previewSettings)
@@ -124,9 +127,14 @@ namespace Peek.FilePreviewer.Previewers
                 {
                     bool isHtml = File.Extension == ".html" || File.Extension == ".htm";
                     bool isMarkdown = File.Extension == ".md";
-                    IsDevFilePreview = MonacoHelper.SupportedMonacoFileTypes.Contains(File.Extension);
 
-                    if (IsDevFilePreview && !isHtml && !isMarkdown)
+                    bool supportedByMonaco = MonacoHelper.SupportedMonacoFileTypes.Contains(File.Extension);
+                    bool useMonaco = supportedByMonaco && !isHtml && !isMarkdown;
+
+                    IsDevFilePreview = supportedByMonaco;
+                    CustomContextMenu = useMonaco;
+
+                    if (useMonaco)
                     {
                         string raw = await Task.Run(() => ReadHelper.Read(File.Path.ToString()));
                         (Preview, string vsCodeLangSet, string fileContent) = MonacoHelper.PreviewTempFile(raw, File.Extension, _previewSettings.SourceCodeTryFormat);

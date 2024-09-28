@@ -49,7 +49,6 @@ partial class MainForm
         panel1.Dock = DockStyle.Fill;
         panel1.Location = new System.Drawing.Point(0, 0);
         panel1.Name = "panel1";
-        panel1.Padding = new Padding(5);
         panel1.Size = new System.Drawing.Size(800, 450);
         panel1.TabIndex = 1;
         // 
@@ -59,7 +58,7 @@ partial class MainForm
         Thumbnail.Dock = DockStyle.Fill;
         Thumbnail.Location = new System.Drawing.Point(5, 5);
         Thumbnail.Name = "Thumbnail";
-        Thumbnail.Size = new System.Drawing.Size(790, 440);
+        Thumbnail.Size = new System.Drawing.Size(800, 450);
         Thumbnail.SizeMode = PictureBoxSizeMode.Normal;
         Thumbnail.TabIndex = 1;
         Thumbnail.TabStop = false;

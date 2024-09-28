@@ -4,9 +4,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+
 using Common.UI;
 using ManagedCommon;
 
@@ -48,10 +50,10 @@ namespace Peek.FilePreviewer.Previewers
         public static (Uri Uri, string VsCodeLangSet, string FileContent) PreviewTempFile(string fileText, string extension, bool tryFormat)
         {
             // TODO: check if file is too big, add MaxFileSize to settings
-            return InitializeIndexFileAndSelectedFile(fileText, extension, tryFormat);
+            return InitializeIndexFileAndSelectedFile(fileText, extension, tempFolder, tryFormat, wrapText, stickyScroll, fontSize);
         }
 
-        private static (Uri Uri, string VsCodeLangSet, string FileContent) InitializeIndexFileAndSelectedFile(string fileContent, string extension, bool tryFormat)
+        private static string InitializeIndexFileAndSelectedFile(string fileContent, string extension, string tempFolder, bool tryFormat, bool wrapText, bool stickyScroll, int fontSize)
         {
             string vsCodeLangSet = Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.GetLanguage(extension);
 
