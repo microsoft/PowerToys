@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
@@ -60,6 +61,8 @@ namespace Peek.FilePreviewer.Controls
 
         partial void OnSourceChanged(IPreviewHandler? value)
         {
+            EnsureContainerHwndCreated();
+
             if (Source != null)
             {
                 UpdatePreviewerTheme();
@@ -81,6 +84,8 @@ namespace Peek.FilePreviewer.Controls
 
         private void OnHandlerVisibilityChanged()
         {
+            EnsureContainerHwndCreated();
+
             if (HandlerVisibility == Visibility.Visible)
             {
                 PInvoke.ShowWindow(containerHwnd, SHOW_WINDOW_CMD.SW_SHOW);
@@ -137,8 +142,19 @@ namespace Peek.FilePreviewer.Controls
             return PInvoke.DefWindowProc(hWnd, msg, wParam, lParam);
         }
 
-        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        private void EnsureContainerHwndCreated()
         {
+            if (!containerHwnd.IsNull)
+            {
+                return;
+            }
+
+            var peekWindow = new HWND(Win32Interop.GetWindowFromWindowId(XamlRoot?.ContentIslandEnvironment?.AppWindowId ?? default));
+            if (peekWindow.IsNull)
+            {
+                return;
+            }
+
             fixed (char* pContainerClassName = "PeekShellPreviewHandlerContainer")
             {
                 PInvoke.RegisterClass(new WNDCLASSW()
@@ -157,7 +173,7 @@ namespace Peek.FilePreviewer.Controls
                     0, // Y
                     0, // Width
                     0, // Height
-                    (HWND)Win32Interop.GetWindowFromWindowId(XamlRoot.ContentIslandEnvironment.AppWindowId), // Peek UI window
+                    peekWindow,
                     HMENU.Null,
                     HINSTANCE.Null);
 
@@ -168,6 +184,8 @@ namespace Peek.FilePreviewer.Controls
 
         private void UserControl_EffectiveViewportChanged(FrameworkElement sender, EffectiveViewportChangedEventArgs args)
         {
+            EnsureContainerHwndCreated();
+
             var dpi = (float)PInvoke.GetDpiForWindow(containerHwnd) / 96;
 
             // Resize the container window

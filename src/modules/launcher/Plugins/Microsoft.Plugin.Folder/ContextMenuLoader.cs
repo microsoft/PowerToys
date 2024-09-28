@@ -8,6 +8,7 @@ using System.IO.Abstractions;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
+
 using Wox.Infrastructure;
 using Wox.Plugin;
 using Wox.Plugin.Logger;

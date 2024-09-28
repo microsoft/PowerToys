@@ -5,6 +5,7 @@
 using System;
 using System.IO.Abstractions;
 using System.Threading;
+
 using Common.UI;
 using HostsUILib.Helpers;
 using HostsUILib.Settings;
@@ -16,7 +17,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+
 using static HostsUILib.Settings.IUserSettings;
+
 using Host = Hosts.Helpers.Host;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -35,6 +38,12 @@ namespace Hosts
         /// </summary>
         public App()
         {
+            string appLanguage = LanguageHelper.LoadLanguage();
+            if (!string.IsNullOrEmpty(appLanguage))
+            {
+                Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
+            }
+
             InitializeComponent();
 
             Host.HostInstance = Microsoft.Extensions.Hosting.Host.

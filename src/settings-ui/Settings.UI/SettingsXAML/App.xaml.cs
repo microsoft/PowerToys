@@ -78,6 +78,12 @@ namespace Microsoft.PowerToys.Settings.UI
         {
             Logger.InitializeLogger(@"\Settings\Logs");
 
+            string appLanguage = LanguageHelper.LoadLanguage();
+            if (!string.IsNullOrEmpty(appLanguage))
+            {
+                Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
+            }
+
             InitializeComponent();
 
             UnhandledException += App_UnhandledException;
@@ -424,6 +430,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "Peek": return typeof(PeekPage);
                 case "CropAndLock": return typeof(CropAndLockPage);
                 case "EnvironmentVariables": return typeof(EnvironmentVariablesPage);
+                case "NewPlus": return typeof(NewPlusPage);
                 case "Workspaces": return typeof(WorkspacesPage);
                 default:
                     // Fallback to Dashboard

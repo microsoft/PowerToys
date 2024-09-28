@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Windows.Forms;
 using System.Windows.Threading;
+
 using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;

@@ -9,6 +9,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using EnvironmentVariablesUILib.Helpers;
 
@@ -63,7 +64,15 @@ namespace EnvironmentVariablesUILib.Models
 
         private bool IsList()
         {
-            List<string> listVariables = new() { "PATH", "PATHEXT", "PSMODULEPATH" };
+            List<string> listVariables = new()
+            {
+                "_NT_ALT_SYMBOL_PATH",
+                "_NT_SYMBOL_PATH",
+                "_NT_SYMCACHE_PATH",
+                "PATH",
+                "PATHEXT",
+                "PSMODULEPATH",
+            };
 
             foreach (var name in listVariables)
             {

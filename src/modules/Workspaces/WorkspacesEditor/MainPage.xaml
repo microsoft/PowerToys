@@ -150,6 +150,7 @@
                 Width="140"
                 Background="{DynamicResource SecondaryBackgroundBrush}"
                 BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                BorderThickness="2"
                 SelectedIndex="{Binding OrderByIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                 <ComboBoxItem Content="{x:Static props:Resources.LastLaunched}" />
                 <ComboBoxItem Content="{x:Static props:Resources.Created}" />
@@ -307,7 +308,7 @@
                                             AutomationProperties.Name="{x:Static props:Resources.Launch}"
                                             Background="{DynamicResource TertiaryBackgroundBrush}"
                                             BorderBrush="{DynamicResource SecondaryBorderBrush}"
-                                            BorderThickness="1"
+                                            BorderThickness="2"
                                             Click="LaunchButton_Click"
                                             Content="{x:Static props:Resources.Launch}" />
                                     </StackPanel>

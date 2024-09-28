@@ -9,7 +9,7 @@ namespace AdvancedPaste.Controls
 {
     [TemplatePart(Name = LoadingGrid, Type = typeof(Grid))]
     [TemplatePart(Name = LoadingBrush, Type = typeof(AnimatedBorderBrush))]
-    public class AnimatedContentControl : ContentControl
+    public partial class AnimatedContentControl : ContentControl
     {
         internal const string LoadingGrid = "PART_LoadingGrid";
         internal const string LoadingBrush = "PART_LoadingBrush";

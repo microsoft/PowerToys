@@ -932,7 +932,7 @@ namespace MouseWithoutBorders.Class
         /// <summary>
         /// Use this method to figure out if your code is running on a Microsoft computer.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>True if running on a Microsoft computer, otherwise false.</returns>
         internal static bool IsRunningAtMicrosoft()
         {
             string domain = GetDNSDomain();

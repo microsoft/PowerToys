@@ -11,10 +11,12 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+
 using ImageResizer.Extensions;
 using ImageResizer.Properties;
 using ImageResizer.Utilities;
 using Microsoft.VisualBasic.FileIO;
+
 using FileSystem = Microsoft.VisualBasic.FileIO.FileSystem;
 
 namespace ImageResizer.Models

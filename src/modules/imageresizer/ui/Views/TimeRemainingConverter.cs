@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.Text;
 using System.Windows.Data;
+
 using ImageResizer.Properties;
 
 namespace ImageResizer.Views

@@ -4,6 +4,7 @@
 
 using System;
 using System.Text;
+
 using Wox.Plugin.Common.Win32;
 using Wox.Plugin.Logger;
 

@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
@@ -105,7 +106,7 @@ public partial class SpecialFolderPreviewer : ObservableObject, ISpecialFolderPr
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var iconBitmap = await IconHelper.GetIconAsync(Item.ParsingName, cancellationToken);
+                var iconBitmap = await ThumbnailHelper.GetIconAsync(Item.ParsingName, cancellationToken);
 
                 cancellationToken.ThrowIfCancellationRequested();
 

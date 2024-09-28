@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
+
 using Microsoft.PowerToys.FilePreviewCommon.Monaco.Formatters;
 
 namespace Microsoft.PowerToys.FilePreviewCommon

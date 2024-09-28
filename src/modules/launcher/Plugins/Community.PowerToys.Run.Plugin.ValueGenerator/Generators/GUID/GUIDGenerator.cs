@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+
 using Wox.Plugin.Common.Win32;
 
 namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID

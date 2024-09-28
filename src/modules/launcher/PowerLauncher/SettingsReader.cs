@@ -9,6 +9,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using System.Windows.Input;
+
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerLauncher.Helper;
@@ -17,6 +18,7 @@ using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
+
 using JsonException = System.Text.Json.JsonException;
 
 namespace PowerLauncher

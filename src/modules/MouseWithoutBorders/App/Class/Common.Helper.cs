@@ -22,6 +22,7 @@ using System.Windows.Forms;
 // </history>
 using Microsoft.Win32;
 using MouseWithoutBorders.Class;
+
 using static System.Windows.Forms.Control;
 
 namespace MouseWithoutBorders

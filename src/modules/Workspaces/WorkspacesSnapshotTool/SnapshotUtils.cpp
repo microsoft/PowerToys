@@ -242,17 +242,17 @@ namespace SnapshotUtils
                 continue;
             }
 
-            auto data = Utils::Apps::GetApp(processPath, installedApps);
+            auto data = Utils::Apps::GetApp(processPath, pid, installedApps);
             if (!data.has_value() || data->name.empty())
             {
-                Logger::debug(L"Installed app not found: {}, {}", title, processPath);
+                Logger::info(L"Installed app not found: {}", processPath);
                 continue;
             }
 
             WorkspacesData::WorkspacesProject::Application app{
                 .name = data.value().name,
                 .title = title,
-                .path = processPath,
+                .path = data.value().installPath,
                 .packageFullName = data.value().packageFullName,
                 .appUserModelId = data.value().appUserModelId,
                 .commandLineArgs = L"", // GetCommandLineArgs(pid, wbemHelper),
