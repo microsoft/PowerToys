@@ -51,6 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _hideStartingDigits = Settings.HideStartingDigits;
             _templateLocation = Settings.TemplateLocation;
             InitializeEnabledValue();
+            InitializeGpoValues();
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -71,6 +72,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private void InitializeGpoValues()
+        {
+            // Policy for hide file extension setting
+            _hideFileExtensionGpoRuleConfiguration = GPOWrapper.GetConfiguredNewPlusHideTemplateFilenameExtensionValue();
+            _hideFileExtensionIsGPOConfigured = _hideFileExtensionGpoRuleConfiguration == GpoRuleConfigured.Disabled || _hideFileExtensionGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+        }
+
         public bool IsEnabled
         {
             get => _isNewPlusEnabled;
@@ -82,6 +90,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     GeneralSettingsConfig.Enabled.NewPlus = value;
                     OnPropertyChanged(nameof(IsEnabled));
+                    OnPropertyChanged(nameof(IsHideFileExtSettingsCardEnabled));
+                    OnPropertyChanged(nameof(IsHideFileExtSettingGPOConfigured));
 
                     OutGoingGeneralSettings outgoingMessage = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoingMessage.ToString());
@@ -121,10 +131,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool HideFileExtension
         {
-            get => _hideFileExtension;
+            get
+            {
+                if (_hideFileExtensionIsGPOConfigured)
+                {
+                    return _hideFileExtensionGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                }
+
+                return _hideFileExtension;
+            }
+
             set
             {
-                if (_hideFileExtension != value)
+                if (_hideFileExtension != value && !_hideFileExtensionIsGPOConfigured)
                 {
                     _hideFileExtension = value;
                     Settings.HideFileExtension = value;
@@ -136,6 +155,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
         }
+
+        public bool IsHideFileExtSettingsCardEnabled => _isNewPlusEnabled && !_hideFileExtensionIsGPOConfigured;
+
+        public bool IsHideFileExtSettingGPOConfigured => _isNewPlusEnabled && _hideFileExtensionIsGPOConfigured;
 
         public bool HideStartingDigits
         {
@@ -183,7 +206,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             try
             {
-                settings = settingsUtils.GetSettings<NewPlusSettings>(NewPlusSettings.ModuleName);
+                settings = settingsUtils.GetSettingsOrDefault<NewPlusSettings>(NewPlusSettings.ModuleName);
+
+                if (string.IsNullOrEmpty(settings.TemplateLocation))
+                {
+                    // This can happen when running the DEBUG Settings application without first letting the runner create the default settings file.
+                    settings.TemplateLocation = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "NewPlus", "Templates");
+                }
             }
             catch (Exception e)
             {
@@ -209,12 +238,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private GpoRuleConfigured _enabledGpoRuleConfiguration;
-        private bool _enabledStateIsGPOConfigured;
         private bool _isNewPlusEnabled;
         private string _templateLocation;
         private bool _hideFileExtension;
         private bool _hideStartingDigits;
+
+        private GpoRuleConfigured _enabledGpoRuleConfiguration;
+        private bool _enabledStateIsGPOConfigured;
+        private GpoRuleConfigured _hideFileExtensionGpoRuleConfiguration;
+        private bool _hideFileExtensionIsGPOConfigured;
 
         public void RefreshEnabledState()
         {
@@ -235,7 +267,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private async void PickNewTemplateFolder()
         {
             var newPath = await PickFolderDialog();
-            if (newPath.Length > 1)
+            if (!string.IsNullOrEmpty(newPath))
             {
                 TemplateLocation = newPath;
             }
@@ -244,8 +276,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private async Task<string> PickFolderDialog()
         {
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
-            string pathFolder = await Task.FromResult<string>(ShellGetFolder.GetFolderDialogWithFlags(hwnd, ShellGetFolder.FolderDialogFlags._BIF_NEWDIALOGSTYLE));
-            return pathFolder;
+            return await Task.FromResult(GetFolderDialogWithFlags(hwnd, FolderDialogFlags._BIF_NEWDIALOGSTYLE));
         }
 
         private void SaveSettingsToJson()

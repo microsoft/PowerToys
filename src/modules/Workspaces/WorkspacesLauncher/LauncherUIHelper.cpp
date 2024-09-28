@@ -7,12 +7,22 @@
 #include <common/utils/OnThreadExecutor.h>
 #include <common/utils/winapi_error.h>
 
+#include <AppLauncher.h>
+
+LauncherUIHelper::LauncherUIHelper() :
+    m_processId{},
+    m_ipcHelper(IPCHelperStrings::LauncherUIPipeName, IPCHelperStrings::UIPipeName, nullptr)
+{
+}
+
 LauncherUIHelper::~LauncherUIHelper()
 {
     OnThreadExecutor().submit(OnThreadExecutor::task_t{ [&] {
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-        HANDLE uiProcess = OpenProcess(PROCESS_ALL_ACCESS, false, uiProcessId);
+        Logger::info(L"Stopping WorkspacesLauncherUI with pid {}", m_processId);
+    
+        HANDLE uiProcess = OpenProcess(PROCESS_ALL_ACCESS, false, m_processId);
         if (uiProcess)
         {
             bool res = TerminateProcess(uiProcess, 0);
@@ -25,54 +35,39 @@ LauncherUIHelper::~LauncherUIHelper()
         {
             Logger::error(L"Unable to find UI process: {}", get_last_error_or_default(GetLastError()));
         }
-        
-        std::filesystem::remove(WorkspacesData::LaunchWorkspacesFile());
     } }).wait();
 }
 
 void LauncherUIHelper::LaunchUI()
 {
     Logger::trace(L"Starting WorkspacesLauncherUI");
-
-    STARTUPINFO info = { sizeof(info) };
-    PROCESS_INFORMATION pi = { 0 };
+    
     TCHAR buffer[MAX_PATH] = { 0 };
     GetModuleFileName(NULL, buffer, MAX_PATH);
     std::wstring path = std::filesystem::path(buffer).parent_path();
-    path.append(L"\\PowerToys.WorkspacesLauncherUI.exe");
-    auto succeeded = CreateProcessW(path.c_str(), nullptr, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &info, &pi);
-    if (succeeded)
+
+    auto res = AppLauncher::LaunchApp(path + L"\\PowerToys.WorkspacesLauncherUI.exe", L"", false);
+    if (res.isOk())
     {
-        if (pi.hProcess)
-        {
-            uiProcessId = pi.dwProcessId;
-            CloseHandle(pi.hProcess);
-        }
-        if (pi.hThread)
-        {
-            CloseHandle(pi.hThread);
-        }
+        auto value = res.value();
+        m_processId = GetProcessId(value.hProcess);
+        CloseHandle(value.hProcess);
+        Logger::info(L"WorkspacesLauncherUI started with pid {}", m_processId);
     }
     else
     {
-        Logger::error(L"CreateProcessW() failed. {}", get_last_error_or_default(GetLastError()));
+        Logger::error(L"Failed to launch PowerToys.WorkspacesLauncherUI: {}", res.error());
     }
 }
 
-void LauncherUIHelper::UpdateLaunchStatus(LaunchingApps launchedApps)
+void LauncherUIHelper::UpdateLaunchStatus(WorkspacesData::LaunchingAppStateMap launchedApps) const
 {
-    WorkspacesData::AppLaunchData appData = WorkspacesData::AppLaunchData();
-    appData.appLaunchInfoList.reserve(launchedApps.size());
+    WorkspacesData::AppLaunchData appData;
     appData.launcherProcessID = GetCurrentProcessId();
-    for (auto& app : launchedApps)
+    for (auto& [app, data] : launchedApps)
     {
-        WorkspacesData::AppLaunchInfo appLaunchInfo = WorkspacesData::AppLaunchInfo();
-        appLaunchInfo.name = app.application.name;
-        appLaunchInfo.path = app.application.path;
-        appLaunchInfo.state = app.state;
-
-        appData.appLaunchInfoList.push_back(appLaunchInfo);
+        appData.appsStateList.insert({ app, { app, nullptr, data.state } });
     }
 
-    json::to_file(WorkspacesData::LaunchWorkspacesFile(), WorkspacesData::AppLaunchDataJSON::ToJson(appData));
+    m_ipcHelper.send(WorkspacesData::AppLaunchDataJSON::ToJson(appData).ToString().c_str());
 }

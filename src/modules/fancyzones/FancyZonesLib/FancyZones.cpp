@@ -398,7 +398,7 @@ void FancyZones::WindowCreated(HWND window) noexcept
         return;
     }
 
-    if (!FancyZonesWindowProcessing::IsProcessable(window))
+    if (!FancyZonesWindowProcessing::IsProcessableAutomatically(window))
     {
         return;
     }
@@ -1084,7 +1084,7 @@ bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
     }
 
     auto window = GetForegroundWindow();
-    if (!FancyZonesWindowProcessing::IsProcessable(window))
+    if (!FancyZonesWindowProcessing::IsProcessableManually(window))
     {
         return false;
     }

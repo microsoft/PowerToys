@@ -6,6 +6,7 @@ using System;
 
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Settings;
+using AdvancedPaste.ViewModels;
 using ManagedCommon;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -26,18 +27,26 @@ namespace AdvancedPaste
             this.InitializeComponent();
 
             _userSettings = App.GetService<IUserSettings>();
+            var optionsViewModel = App.GetService<OptionsViewModel>();
 
             var baseHeight = MinHeight;
 
             void UpdateHeight()
             {
-                var trimmedCustomActionCount = Math.Min(_userSettings.CustomActions.Count, 5);
+                var trimmedCustomActionCount = optionsViewModel.IsPasteWithAIEnabled ? Math.Min(_userSettings.CustomActions.Count, 5) : 0;
                 Height = MinHeight = baseHeight + (trimmedCustomActionCount * 40);
             }
 
             UpdateHeight();
 
             _userSettings.CustomActions.CollectionChanged += (_, _) => UpdateHeight();
+            optionsViewModel.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(optionsViewModel.IsPasteWithAIEnabled))
+                {
+                    UpdateHeight();
+                }
+            };
 
             AppWindow.SetIcon("Assets/AdvancedPaste/AdvancedPaste.ico");
             this.ExtendsContentIntoTitleBar = true;

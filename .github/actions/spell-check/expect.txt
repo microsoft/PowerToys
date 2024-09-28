@@ -30,6 +30,7 @@ AFX
 AGGREGATABLE
 AHybrid
 AKV
+akv
 ALarger
 ALLAPPS
 ALLINPUT
@@ -368,6 +369,7 @@ dllmain
 DNLEN
 DONOTROUND
 DONTVALIDATEPATH
+DOPUS
 dotnet
 DPICHANGED
 DPIs
@@ -730,6 +732,7 @@ ISettings
 IShell
 isocpp
 iss
+issecret
 ISSEPARATOR
 ITask
 ith
@@ -949,6 +952,7 @@ mrw
 msc
 mscorlib
 msdata
+MSDL
 msedge
 MSGFLT
 msiexec
@@ -1141,6 +1145,7 @@ pch
 pchast
 PCIDLIST
 PCWSTR
+pdbs
 pdisp
 pdo
 pdto
@@ -1209,6 +1214,7 @@ ppv
 prc
 Prefixer
 Preinstalled
+prependpath
 prevhost
 previewer
 PREVIEWHANDLERFRAMEINFO
@@ -1266,6 +1272,7 @@ PWSTR
 pwsz
 pwtd
 QDC
+QDir
 qianlifeng
 qit
 QITAB
@@ -1559,7 +1566,7 @@ Stubless
 STYLECHANGED
 STYLECHANGING
 subkeys
-SUBLANG
+sublang
 subquery
 Superbar
 sut
@@ -1572,6 +1579,8 @@ SWC
 SWFO
 SWP
 SWRESTORE
+symbolrequestprod
+SYMCACHE
 SYMED
 SYMOPT
 SYNCMFT
@@ -1642,10 +1651,12 @@ toolkitconverters
 Toolset
 toolwindow
 TOPDOWNDIB
+TOTALCMD
 TOUCHEVENTF
 TOUCHINPUT
 touchpad
 tracelogging
+trafficmanager
 traies
 transicc
 TRAYMOUSEMESSAGE
@@ -1870,6 +1881,7 @@ workarounds
 WORKSPACESEDITOR
 WORKSPACESLAUNCHER
 WORKSPACESSNAPSHOTTOOL
+WORKSPACESWINDOWARRANGER
 wox
 wparam
 wpf
@@ -1909,6 +1921,7 @@ XLoc
 XNamespace
 XPels
 XPixel
+xplorer
 XResource
 xsi
 XStr
