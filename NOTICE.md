@@ -1340,8 +1340,6 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Extensions.Hosting.WindowsServices 8.0.0
 - Microsoft.Extensions.Logging 8.0.0
 - Microsoft.Extensions.Logging.Abstractions 8.0.0
-- Microsoft.NET.Test.Sdk 17.8.0
-- Microsoft.Security.Extensions 1.3.0
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
 - Microsoft.Web.WebView2 1.0.2739.15
 - Microsoft.Win32.SystemEvents 8.0.0
@@ -1384,8 +1382,6 @@ EXHIBIT A -Mozilla Public License.
 - UnicodeInformation 2.6.0
 - UnitsNet 5.56.0
 - UTF.Unknown 2.5.1
-- Vanara.PInvoke.Shell32 3.4.11
-- Vanara.PInvoke.User32 3.4.11
 - WindowsAPICodePack 7.0.4
 - WinUIEx 2.3.4
 - WPF-UI 3.0.0
