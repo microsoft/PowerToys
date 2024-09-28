@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -38,6 +39,12 @@ namespace Peek.FilePreviewer.Previewers
         /// The icon to display when a file or folder's thumbnail or icon could not be retrieved.
         /// </summary>
         private static readonly SvgImageSource DefaultIcon = new(new Uri("ms-appx:///Assets/Peek/DefaultFileIcon.svg"));
+
+        /// <summary>
+        /// The options to use for the folder size enumeration. We recurse through all files and all subfolders.
+        /// </summary>
+        private readonly EnumerationOptions _folderEnumerationOptions = new()
+            { RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint };
 
         [ObservableProperty]
         private UnsupportedFilePreviewData preview = new();
@@ -130,7 +137,7 @@ namespace Peek.FilePreviewer.Previewers
             TimeSpan updateInterval = TimeSpan.FromMilliseconds(1000 / MaxUpdateFps);
             DateTime nextUpdate = DateTime.UtcNow + updateInterval;
 
-            var files = new DirectoryInfo(path).EnumerateFiles("*", new EnumerationOptions { RecurseSubdirectories = true });
+            var files = new DirectoryInfo(path).EnumerateFiles("*", _folderEnumerationOptions);
 
             foreach (var chunk in files.Chunk(FolderEnumerationChunkSize))
             {
