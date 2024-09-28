@@ -567,7 +567,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FileActionsMenu", "FileActi
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{95B63A44-6287-4E7E-B96A-2294C21C3230}"
 	ProjectSection(SolutionItems) = preProject
-		src\modules\FileActionsMenu\FileActionsMenu.Plugins\WebView2Fix.props = src\modules\FileActionsMenu\FileActionsMenu.Plugins\WebView2Fix.props
+		src\modules\FileActionsMenu\FileActionsMenu.Plugins\FileActionsMenuPlugin.props = src\modules\FileActionsMenu\FileActionsMenu.Plugins\FileActionsMenuPlugin.props
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileActionsMenu.Interfaces", "src\modules\FileActionsMenu\FileActionsMenu.Interfaces\FileActionsMenu.Interfaces.csproj", "{9913D6FE-BAA1-4065-9825-C25AB4BB4475}"

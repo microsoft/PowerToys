@@ -1,25 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\FileActionsMenuPlugin.Props"/>
 
   <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\FileActionsMenuPlugins\PowerToys</OutputPath>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+    <FileActionsMenuPluginName>PowerToys</FileActionsMenuPluginName>
   </PropertyGroup>
 
-  <Import Project="..\WebView2Fix.Props"/>
-
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
     <ProjectReference Include="..\..\..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
     <ProjectReference Include="..\..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\..\..\peek\Peek.Common\Peek.Common.csproj" />
-    <ProjectReference Include="..\..\FileActionsMenu.Helpers\FileActionsMenu.Helpers.csproj" />
-    <ProjectReference Include="..\..\FileActionsMenu.Interfaces\FileActionsMenu.Interfaces.csproj"></ProjectReference>
   </ItemGroup>
 </Project>

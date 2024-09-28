@@ -1,23 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\FileActionsMenuPlugin.Props"/>
 
   <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\FileActionsMenuPlugins\ImageClipboardActions</OutputPath>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+    <FileActionsMenuPluginName>ImageClipboardActions</FileActionsMenuPluginName>
   </PropertyGroup>
-
-  <Import Project="..\WebView2Fix.Props"/>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
-    <PackageReference Include="System.IO.Hashing" />
-    <ProjectReference Include="..\..\FileActionsMenu.Helpers\FileActionsMenu.Helpers.csproj"/>
-    <ProjectReference Include="..\..\FileActionsMenu.Interfaces\FileActionsMenu.Interfaces.csproj"></ProjectReference>
-  </ItemGroup>
 </Project>

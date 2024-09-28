@@ -7,7 +7,7 @@ using FileActionsMenu.Interfaces;
 
 namespace PowerToys.FileActionsMenu.Plugins.PathCopy
 {
-    public class Class1 : IFileActionsMenuPlugin
+    public class PluginMain : IFileActionsMenuPlugin
     {
         public string Name => ResourceHelper.GetResource("Path_Copy.Name");
 

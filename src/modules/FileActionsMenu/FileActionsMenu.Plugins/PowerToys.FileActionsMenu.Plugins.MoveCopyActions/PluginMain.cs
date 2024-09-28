@@ -5,20 +5,22 @@
 using FileActionsMenu.Helpers;
 using FileActionsMenu.Interfaces;
 
-namespace PowerToys.FileActionsMenu.Plugins.ImageClipboardActions
+namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
 {
-    public class Class1 : IFileActionsMenuPlugin
+    public class PluginMain : IFileActionsMenuPlugin
     {
-        public string Name => ResourceHelper.GetResource("Image_Clipboard_Actions.Title");
+        public string Name => ResourceHelper.GetResource("Move_Copy_Actions.Title");
 
-        public string Description => ResourceHelper.GetResource("Image_Clipboard_Actions.Description");
+        public string Description => ResourceHelper.GetResource("Move_Copy_Actions.Description");
 
         public string Author => ResourceHelper.GetResource("PluginPublisher");
 
         public IAction[] TopLevelMenuActions =>
         [
-            new CopyImageToClipboard(),
-            new CopyImageFromClipboardToFolder(),
+            new MoveTo(),
+            new CopyTo(),
+            new SaveAs(),
+            new NewFolderWithSelection(),
         ];
     }
 }

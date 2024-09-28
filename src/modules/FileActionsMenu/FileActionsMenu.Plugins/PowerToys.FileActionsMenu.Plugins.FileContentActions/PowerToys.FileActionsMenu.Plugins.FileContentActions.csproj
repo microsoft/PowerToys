@@ -1,28 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\FileActionsMenuPlugin.Props"/>
 
   <PropertyGroup>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\FileActionsMenuPlugins\FileContentActions</OutputPath>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <UseWindowsForms>true</UseWindowsForms>
+    <FileActionsMenuPluginName>FileContentActions</FileActionsMenuPluginName>
   </PropertyGroup>
 
-  <Import Project="..\WebView2Fix.Props"/>
-
   <ItemGroup>
-    <PackageReference Include="System.IO.Hashing" />
-    <ProjectReference Include="..\..\FileActionsMenu.Helpers\FileActionsMenu.Helpers.csproj" />
-    <ProjectReference Include="..\..\FileActionsMenu.Interfaces\FileActionsMenu.Interfaces.csproj"></ProjectReference>
+    <Content Include="..\..\..\..\common\FilePreviewCommon\Assets\Monaco\monaco_languages.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
-
-	<ItemGroup>
-		<Content Include="..\..\..\..\common\FilePreviewCommon\Assets\Monaco\monaco_languages.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
 </Project>

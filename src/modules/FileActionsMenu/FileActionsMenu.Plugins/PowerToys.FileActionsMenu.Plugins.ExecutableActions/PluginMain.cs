@@ -5,21 +5,19 @@
 using FileActionsMenu.Helpers;
 using FileActionsMenu.Interfaces;
 
-namespace PowerToys.FileActionsMenu.Plugins.PowerToys
+namespace PowerToys.FileActionsMenu.Plugins.ExecutableActions
 {
-    public class Class1 : IFileActionsMenuPlugin
+    public class PluginMain : IFileActionsMenuPlugin
     {
-        public string Name => ResourceHelper.GetResource("PowerToys.Name");
+        public string Name => ResourceHelper.GetResource("Executable_Actions.Name");
 
-        public string Description => ResourceHelper.GetResource("PowerToys.Description");
+        public string Description => ResourceHelper.GetResource("Executable_Actions.Description");
 
         public string Author => ResourceHelper.GetResource("PluginPublisher");
 
         public IAction[] TopLevelMenuActions =>
         [
-            new PowerRename(),
-            new ImageResizer(),
-            new FileLocksmith(),
+            new Uninstall(),
         ];
     }
 }

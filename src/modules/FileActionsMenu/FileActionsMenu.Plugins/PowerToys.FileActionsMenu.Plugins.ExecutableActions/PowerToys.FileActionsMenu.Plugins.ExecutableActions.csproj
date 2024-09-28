@@ -1,25 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\FileActionsMenuPlugin.Props"/>
 
   <PropertyGroup>
-    <RootNamespace>PowerToys.FileActionsMenu.Plugins.ExecutableActions</RootNamespace>
-    <AssemblyName>PowerToys.FileActionsMenu.Plugins.ExecutableActions</AssemblyName>
-    <Nullable>enable</Nullable>
-    <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\FileActionsMenuPlugins\ExecutableActions</OutputPath>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <FileActionsMenuPluginName>ExecutableActions</FileActionsMenuPluginName>
   </PropertyGroup>
 
-  <Import Project="..\WebView2Fix.Props"/>
-
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="System.IO.Hashing" />
     <ProjectReference Include="..\..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
-    <ProjectReference Include="..\..\FileActionsMenu.Helpers\FileActionsMenu.Helpers.csproj" />
-    <ProjectReference Include="..\..\FileActionsMenu.Interfaces\FileActionsMenu.Interfaces.csproj"></ProjectReference>
   </ItemGroup>
 </Project>

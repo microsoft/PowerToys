@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Windows.Forms;
 using FileActionsMenu.Helpers;
 using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;

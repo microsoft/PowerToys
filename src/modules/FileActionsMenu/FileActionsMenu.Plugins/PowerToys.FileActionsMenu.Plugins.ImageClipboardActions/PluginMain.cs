@@ -5,20 +5,20 @@
 using FileActionsMenu.Helpers;
 using FileActionsMenu.Interfaces;
 
-namespace PowerToys.FileActionsMenu.Plugins.Hashes
+namespace PowerToys.FileActionsMenu.Plugins.ImageClipboardActions
 {
-    public class Class1 : IFileActionsMenuPlugin
+    public class PluginMain : IFileActionsMenuPlugin
     {
-        public string Name => ResourceHelper.GetResource("Hashes.Title");
+        public string Name => ResourceHelper.GetResource("Image_Clipboard_Actions.Title");
 
-        public string Description => ResourceHelper.GetResource("Hashes.Description");
+        public string Description => ResourceHelper.GetResource("Image_Clipboard_Actions.Description");
 
         public string Author => ResourceHelper.GetResource("PluginPublisher");
 
         public IAction[] TopLevelMenuActions =>
         [
-            new Hashes(Hashes.HashCallingAction.GENERATE),
-            new Hashes(Hashes.HashCallingAction.VERIFY),
+            new CopyImageToClipboard(),
+            new CopyImageFromClipboardToFolder(),
         ];
     }
 }

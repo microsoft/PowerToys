@@ -7,7 +7,7 @@ using FileActionsMenu.Interfaces;
 
 namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 {
-    public class Class1 : IFileActionsMenuPlugin
+    public class PluginMain : IFileActionsMenuPlugin
     {
         public string Name => ResourceHelper.GetResource("File_Content_Actions.Title");
 
