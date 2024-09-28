@@ -3,11 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
-using System.Net.NetworkInformation;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -48,8 +50,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ButtonClickCommand UpdateNowButtonEventHandler { get; set; }
 
-        public Func<string, int> UpdateUIThemeCallBack { get; }
-
         public Func<string, int> SendConfigMSG { get; }
 
         public Func<string, int> SendRestartAsAdminConfigMSG { get; }
@@ -68,7 +68,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private SettingsBackupAndRestoreUtils settingsBackupAndRestoreUtils = SettingsBackupAndRestoreUtils.Instance;
 
-        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, Action hideBackupAndRestoreMessageAreaAction = null, Action<int> doBackupAndRestoreDryRun = null, Func<Task<string>> pickSingleFolderDialog = null, object resourceLoader = null)
+        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, Action hideBackupAndRestoreMessageAreaAction = null, Action<int> doBackupAndRestoreDryRun = null, Func<Task<string>> pickSingleFolderDialog = null, object resourceLoader = null)
         {
             CheckForUpdatesEventHandler = new ButtonClickCommand(CheckForUpdatesClick);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
@@ -96,9 +96,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SendConfigMSG = ipcMSGCallBackFunc;
             SendCheckForUpdatesConfigMSG = ipcMSGCheckForUpdatesCallBackFunc;
             SendRestartAsAdminConfigMSG = ipcMSGRestartAsAdminMSGCallBackFunc;
-
-            // set the callback function value to update the UI theme.
-            UpdateUIThemeCallBack = updateTheme;
 
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
@@ -151,7 +148,37 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _fileWatcher = Helper.GetFileWatcher(string.Empty, UpdatingSettings.SettingsFile, dispatcherAction);
             }
+
+            InitializeLanguages();
         }
+
+        // Supported languages. Taken from Resources.wxs + default + en-US
+        private Dictionary<string, string> langTagsAndIds = new Dictionary<string, string>
+        {
+            { string.Empty, "Default_language" },
+            { "ar-SA", "Arabic_Saudi_Arabia_Language" },
+            { "cs-CZ", "Czech_Language" },
+            { "de-DE", "German_Language" },
+            { "en-US", "English_Language" },
+            { "es-ES", "Spanish_Language" },
+            { "fa-IR", "Persian_Farsi_Language" },
+            { "fr-FR", "French_Language" },
+            { "he-IL", "Hebrew_Israel_Language" },
+            { "hu-HU", "Hungarian_Language" },
+            { "it-IT", "Italian_Language" },
+            { "ja-JP", "Japanese_Language" },
+            { "ko-KR", "Korean_Language" },
+            { "nl-NL", "Dutch_Language" },
+            { "pl-PL", "Polish_Language" },
+            { "pt-BR", "Portuguese_Brazil_Language" },
+            { "pt-PT", "Portuguese_Portugal_Language" },
+            { "ru-RU", "Russian_Language" },
+            { "sv-SE", "Swedish_Language" },
+            { "tr-TR", "Turkish_Language" },
+            { "uk-UA", "Ukrainian_Language" },
+            { "zh-CN", "Chinese_Simplified_Language" },
+            { "zh-TW", "Chinese_Traditional_Language" },
+        };
 
         private static bool _isDevBuild;
         private bool _startup;
@@ -182,6 +209,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _settingsBackupRestoreMessageVisible;
         private string _settingsBackupMessage;
         private string _backupRestoreMessageSeverity;
+
+        private int _languagesIndex;
+        private int _initLanguagesIndex;
+        private bool _languageChanged;
 
         // Gets or sets a value indicating whether run powertoys on start-up.
         public bool Startup
@@ -440,14 +471,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     _themeIndex = value;
 
-                    try
-                    {
-                        UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.LogError("Exception encountered when changing Settings theme", e);
-                    }
+                    App.ThemeService.ApplyTheme();
 
                     NotifyPropertyChanged();
                 }
@@ -753,6 +777,51 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public ObservableCollection<LanguageModel> Languages { get; } = new ObservableCollection<LanguageModel>();
+
+        public int LanguagesIndex
+        {
+            get
+            {
+                return _languagesIndex;
+            }
+
+            set
+            {
+                if (_languagesIndex != value)
+                {
+                    _languagesIndex = value;
+                    OnPropertyChanged(nameof(LanguagesIndex));
+                    NotifyLanguageChanged();
+                    if (_initLanguagesIndex != value)
+                    {
+                        LanguageChanged = true;
+                    }
+                    else
+                    {
+                        LanguageChanged = false;
+                    }
+                }
+            }
+        }
+
+        public bool LanguageChanged
+        {
+            get
+            {
+                return _languageChanged;
+            }
+
+            set
+            {
+                if (_languageChanged != value)
+                {
+                    _languageChanged = value;
+                    OnPropertyChanged(nameof(LanguageChanged));
+                }
+            }
+        }
+
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null, bool reDoBackupDryRun = true)
         {
             // Notify UI of property change
@@ -1008,6 +1077,32 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 NotifyPropertyChanged(nameof(IsDownloadAllowed));
             }
+        }
+
+        private void InitializeLanguages()
+        {
+            var lang = LanguageModel.LoadSetting();
+            int i = 0;
+
+            foreach (var item in langTagsAndIds)
+            {
+                Languages.Add(new LanguageModel { Tag = item.Key, ResourceID = item.Value, Language = GetResourceString(item.Value) });
+
+                if (item.Key.Equals(lang, StringComparison.Ordinal))
+                {
+                    _initLanguagesIndex = i;
+                    LanguagesIndex = i;
+                }
+
+                i++;
+            }
+        }
+
+        private void NotifyLanguageChanged()
+        {
+            OutGoingLanguageSettings outsettings = new OutGoingLanguageSettings(langTagsAndIds.ElementAt(LanguagesIndex).Key);
+
+            SendConfigMSG(outsettings.ToString());
         }
     }
 }

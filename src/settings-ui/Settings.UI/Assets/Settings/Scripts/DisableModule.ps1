@@ -5,14 +5,14 @@ $linesToDeleteFound = $False
 $atLeastOneInstanceFound = $False
 
 $profileContent | ForEach-Object {
-  if ($_.Contains("34de4b3d-13a8-4540-b76d-b9e8d3851756") -and !$linesToDeleteFound)
+  if (($_.Contains("34de4b3d-13a8-4540-b76d-b9e8d3851756") -or $_.Contains("f45873b3-b655-43a6-b217-97c00aa0db58")) -and !$linesToDeleteFound)
   {
     $linesToDeleteFound = $True
     $atLeastOneInstanceFound = $True
     return
   }
 
-  if ($_.Contains("34de4b3d-13a8-4540-b76d-b9e8d3851756") -and $linesToDeleteFound)
+  if (($_.Contains("34de4b3d-13a8-4540-b76d-b9e8d3851756") -or $_.Contains("f45873b3-b655-43a6-b217-97c00aa0db58")) -and $linesToDeleteFound)
   {
     $linesToDeleteFound = $False
     return

@@ -4,13 +4,14 @@
 
 using System;
 using System.Collections.Generic;
+
 using UnitsNet;
 
 namespace Community.PowerToys.Run.Plugin.UnitConverter
 {
     public static class UnitHandler
     {
-        private static readonly int _roundingFractionalDigits = 4;
+        private static readonly int _roundingSignificantDigits = 4;
 
         private static readonly QuantityInfo[] _included = new QuantityInfo[]
         {
@@ -44,13 +45,13 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 return first.Value;
             }
 
-            if (UnitParser.Default.TryParse(unit, unitInfo.UnitType, out Enum enum_unit))
+            if (UnitsNetSetup.Default.UnitParser.TryParse(unit, unitInfo.UnitType, out Enum enum_unit))
             {
                 return enum_unit;
             }
 
             var cultureInfoEnglish = new System.Globalization.CultureInfo("en-US");
-            if (UnitParser.Default.TryParse(unit, unitInfo.UnitType, cultureInfoEnglish, out Enum enum_unit_en))
+            if (UnitsNetSetup.Default.UnitParser.TryParse(unit, unitInfo.UnitType, cultureInfoEnglish, out Enum enum_unit_en))
             {
                 return enum_unit_en;
             }
@@ -71,7 +72,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
             var power = Math.Floor(Math.Log10(Math.Abs(value)));
             var exponent = Math.Pow(10, power);
-            var rounded = Math.Round(value / exponent, _roundingFractionalDigits) * exponent;
+            var rounded = Math.Round(value / exponent, _roundingSignificantDigits) * exponent;
             return rounded;
         }
 

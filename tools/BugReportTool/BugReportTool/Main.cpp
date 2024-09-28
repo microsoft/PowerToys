@@ -41,14 +41,21 @@ map<wstring, vector<wstring>> escapeInfo = {
         L"remapShortcuts/appSpecific/runProgramStartInDir",
         L"remapShortcuts/appSpecific/openUri",
         } }, // avoid leaking personal information from text, URI or application mappings
+    { L"Workspaces/workspaces.json", { L"workspaces/applications/command-line-arguments" } },
+    { L"AdvancedPaste/settings.json", {
+        L"properties/custom-actions/value/name",
+        L"properties/custom-actions/value/prompt"
+        } },
 };
 
 vector<wstring> filesToDelete = {
+    L"AdvancedPaste\\lastQuery.json",
     L"PowerToys Run\\Cache",
     L"PowerRename\\replace-mru.json",
     L"PowerRename\\search-mru.json",
     L"PowerToys Run\\Settings\\UserSelectedRecord.json",
-    L"PowerToys Run\\Settings\\QueryHistory.json"
+    L"PowerToys Run\\Settings\\QueryHistory.json",
+    L"NewPlus\\Templates",
 };
 
 vector<wstring> GetXpathArray(wstring xpath)

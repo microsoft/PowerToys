@@ -20,7 +20,8 @@ $versionExceptions = @(
     "Microsoft.Xaml.Interactivity.dll",
     "hyjiacan.py4n.dll",
     "Microsoft.WindowsAppRuntime.Release.Net.dll",
-    "Microsoft.Windows.Widgets.Projection.dll") -join '|';
+    "Microsoft.Windows.Widgets.Projection.dll",
+    "WinRT.Host.Shim.dll") -join '|';
 $nullVersionExceptions = @(
     "codicon.ttf",
     "e_sqlite3.dll",

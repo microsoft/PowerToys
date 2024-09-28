@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.Threading;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -19,7 +20,7 @@ namespace Peek.UI
 
         private readonly SettingsUtils _settingsUtils;
         private readonly IFileSystemWatcher _watcher;
-        private readonly object _loadingSettingsLock = new object();
+        private readonly object _loadingSettingsLock = new();
 
         public bool CloseAfterLosingFocus { get; private set; }
 

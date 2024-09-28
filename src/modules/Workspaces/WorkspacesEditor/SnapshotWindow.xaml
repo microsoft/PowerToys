@@ -1,0 +1,60 @@
+﻿<Window
+    x:Class="WorkspacesEditor.SnapshotWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:WorkspacesEditor"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:props="clr-namespace:WorkspacesEditor.Properties"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    Title="{x:Static props:Resources.SnapshotWindowTitle}"
+    Width="350"
+    ui:TitleBar.Background="{DynamicResource PrimaryBackgroundBrush}"
+    ui:TitleBar.InactiveBackground="{DynamicResource TertiaryBackgroundBrush}"
+    ui:WindowHelper.UseModernWindowStyle="True"
+    Background="{DynamicResource PrimaryBackgroundBrush}"
+    BorderBrush="Red"
+    BorderThickness="5"
+    Closing="Window_Closing"
+    ResizeMode="NoResize"
+    SizeToContent="Height"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+    <Grid Margin="5" Background="Transparent">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
+        <TextBlock
+            Grid.ColumnSpan="2"
+            Margin="5,5,5,15"
+            Foreground="{DynamicResource PrimaryForegroundBrush}"
+            Text="{x:Static props:Resources.SnapshotDescription}"
+            TextWrapping="Wrap" />
+        <Button
+            x:Name="CancelButton"
+            Grid.Row="1"
+            Height="36"
+            Margin="5,5,5,5"
+            HorizontalAlignment="Stretch"
+            AutomationProperties.Name="{x:Static props:Resources.Cancel}"
+            Background="{DynamicResource SecondaryBackgroundBrush}"
+            Click="CancelButtonClicked"
+            Content="{x:Static props:Resources.Cancel}" />
+        <Button
+            x:Name="SnapshotButton"
+            Grid.Row="1"
+            Grid.Column="1"
+            Height="36"
+            Margin="5,5,5,5"
+            HorizontalAlignment="Stretch"
+            AutomationProperties.Name="{x:Static props:Resources.Take_Snapshot}"
+            Click="SnapshotButtonClicked"
+            Content="{x:Static props:Resources.Take_Snapshot}"
+            Style="{StaticResource AccentButtonStyle}" />
+    </Grid>
+</Window>

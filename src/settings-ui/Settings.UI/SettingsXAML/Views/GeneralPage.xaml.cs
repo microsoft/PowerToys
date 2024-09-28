@@ -8,11 +8,9 @@ using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Storage.Pickers;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -73,7 +71,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 loader.GetString("GeneralSettings_RunningAsUserText"),
                 ShellPage.IsElevated,
                 ShellPage.IsUserAnAdmin,
-                App.UpdateUIThemeMethod,
                 ShellPage.SendDefaultIPCMessage,
                 ShellPage.SendRestartAdminIPCMessage,
                 ShellPage.SendCheckForUpdatesIPCMessage,
@@ -132,6 +129,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
             string r = await Task.FromResult<string>(ShellGetFolder.GetFolderDialog(hwnd));
             return r;
+        }
+
+        private void Click_LanguageRestart(object sender, RoutedEventArgs e)
+        {
+            ViewModel.Restart();
         }
     }
 }

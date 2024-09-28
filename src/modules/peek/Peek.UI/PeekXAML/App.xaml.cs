@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using interop;
+
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -15,6 +15,7 @@ using Peek.FilePreviewer.Models;
 using Peek.UI.Native;
 using Peek.UI.Telemetry.Events;
 using Peek.UI.Views;
+using PowerToys.Interop;
 
 namespace Peek.UI
 {
@@ -39,6 +40,12 @@ namespace Peek.UI
         /// </summary>
         public App()
         {
+            string appLanguage = LanguageHelper.LoadLanguage();
+            if (!string.IsNullOrEmpty(appLanguage))
+            {
+                Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
+            }
+
             InitializeComponent();
             Logger.InitializeLogger("\\Peek\\Logs");
 
@@ -89,7 +96,7 @@ namespace Peek.UI
             var cmdArgs = Environment.GetCommandLineArgs();
             if (cmdArgs?.Length > 1)
             {
-                if (int.TryParse(cmdArgs[cmdArgs.Length - 1], out int powerToysRunnerPid))
+                if (int.TryParse(cmdArgs[^1], out int powerToysRunnerPid))
                 {
                     RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
                     {

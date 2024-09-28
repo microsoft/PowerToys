@@ -10,7 +10,6 @@ markdownpreviewhandler
 mousewithoutborders
 mwb
 oobe
-pasteplain
 poweraccent
 powerlauncher
 POWEROCR
@@ -29,14 +28,18 @@ videoconference
 
 # USERS
 
+LWXpg  # (number eight)LWXpg is actual user name but spell checker throws error with a numeric leading value ... which is kinda odd
+Adoumie
 Advaith
 alekhyareddy
 Aleks
 angularsen
+Anirudha
 arjunbalgovind
 Ashish
 Baltazar
 Bao
+Bartosz
 betadele
 betsegaw
 bricelam
@@ -51,15 +54,22 @@ crutkas
 damienleroy
 davidegiacometti
 debian
+Deibisu
+Deibisu
 Delimarsky
 Deondre
+DHowett
 ductdo
 Essey
+ethanfangg
+ferraridavide
 frankychen
+gaardmark
 gabime
 Galaxi
 Garside
 Gershaft
+Giordani
 Gokce
 Guo
 hanselman
@@ -68,11 +78,15 @@ Heiko
 Hemmerlein
 hlaueriksson
 Horvalds
+Howett
 htcfreek
 Huynh
 Jaswal
 jefflord
+Jordi
 jyuwono
+Kairu
+Kairu
 Kamra
 Kantarci
 Karthick
@@ -89,7 +103,10 @@ martinmoene
 Melman
 Mikhayelyan
 msft
+Mykhailo
 Myrvold
+Naro
+nathancartlidge
 Nemeth
 nielslaute
 oldnewthing
@@ -99,9 +116,13 @@ peteblois
 phoboslab
 Ponten
 Pooja
+Pylyp
+quachpas
 Quriz
 randyrants
 ricardosantos
+riri
+riri
 ritchielawrence
 robmikh
 Rutkas
@@ -115,20 +136,23 @@ Seraphima
 skttl
 somil
 Soref
+Sosnowski
 stefan
 Szablewski
 Tadele
 talynone
+Taras
 TBM
 tilovell
 Triet
 waaverecords
+Xpg
 ycv
 Yuniardi
 yuyoyuppe
+Zeol
 Zoltan
 Zykova
-
 
 # OTHERS
 
@@ -137,6 +161,7 @@ Controlz
 cortana
 fancymouse
 firefox
+gpt
 Inkscape
 Markdig
 modernwpf
@@ -145,6 +170,7 @@ mozilla
 mspaint
 Newtonsoft
 onenote
+openai
 Quickime
 regedit
 roslyn
@@ -161,4 +187,3 @@ xamlstyler
 Xavalon
 Xbox
 Youdao
-

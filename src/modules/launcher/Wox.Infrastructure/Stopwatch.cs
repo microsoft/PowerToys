@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+
 using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure

@@ -1,9 +1,12 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 properties:
   resources:
-    - resource: PowerToysConfigure
+    - resource: Microsoft.PowerToys.Configure/PowerToysConfigure
       directives:
         description: Configure PowerToys
       settings:
+        AdvancedPaste:
+          Enabled: false
         AlwaysOnTop:
           Enabled: false
         Awake:
@@ -32,6 +35,8 @@ properties:
           Enabled: false
         MouseWithoutBorders:
           Enabled: false
+        NewPlus:
+          Enabled: false
         Peek:
           Enabled: false
         PowerRename:
@@ -54,6 +59,8 @@ properties:
           EnableQoiThumbnail: false
         PowerOcr:
           Enabled: false
+        Workspaces:
+          Enabled: false
         ShortcutGuide:
           Enabled: false
         VideoConference:
@@ -61,8 +68,6 @@ properties:
         MeasureTool:
           Enabled: false
         Hosts:
-          Enabled: false
-        PastePlain:
           Enabled: false
         RegistryPreview:
           Enabled: false

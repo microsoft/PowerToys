@@ -4,6 +4,7 @@
 
 using System;
 using System.Security.Cryptography;
+
 using Wox.Plugin.Logger;
 
 namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID

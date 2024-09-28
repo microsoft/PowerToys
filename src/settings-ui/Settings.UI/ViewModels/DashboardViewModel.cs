@@ -64,8 +64,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             UpdatingSettings updatingSettingsConfig = UpdatingSettings.LoadSettings();
             UpdateAvailable = updatingSettingsConfig != null && (updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToInstall || updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToDownload);
-
-            App.UpdateUIThemeMethod(generalSettingsConfig.Theme);
         }
 
         private void AddDashboardListItem(ModuleType moduleType)
@@ -90,10 +88,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void LoadKBMSettingsFromJson()
         {
-            KeyboardManagerProfile kbmProfile = GetKBMProfile();
-            _kbmItem.RemapKeys = kbmProfile?.RemapKeys.InProcessRemapKeys;
-            _kbmItem.RemapShortcuts = KeyboardManagerViewModel.CombineShortcutLists(kbmProfile?.RemapShortcuts.GlobalRemapShortcuts, kbmProfile?.RemapShortcuts.AppSpecificRemapShortcuts);
-            dispatcher.Invoke(new Action(() => UpdateKBMItems()));
+            try
+            {
+                KeyboardManagerProfile kbmProfile = GetKBMProfile();
+                _kbmItem.RemapKeys = kbmProfile?.RemapKeys.InProcessRemapKeys;
+                _kbmItem.RemapShortcuts = KeyboardManagerViewModel.CombineShortcutLists(kbmProfile?.RemapShortcuts.GlobalRemapShortcuts, kbmProfile?.RemapShortcuts.AppSpecificRemapShortcuts);
+                dispatcher.Invoke(new Action(() => UpdateKBMItems()));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to load KBM settings: {ex.Message}");
+            }
         }
 
         private void UpdateKBMItems()
@@ -120,6 +125,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private void EnabledChangedOnUI(DashboardListItem dashboardListItem)
         {
             Views.ShellPage.UpdateGeneralSettingsCallback(dashboardListItem.Tag, dashboardListItem.IsEnabled);
+
+            if (dashboardListItem.Tag == ModuleType.NewPlus && dashboardListItem.IsEnabled == true)
+            {
+                var settingsUtils = new SettingsUtils();
+                var settings = NewPlusViewModel.LoadSettings(settingsUtils);
+                NewPlusViewModel.CopyTemplateExamples(settings.TemplateLocation);
+            }
         }
 
         public void ModuleEnabledChangedOnSettingsPage()
@@ -148,6 +160,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             return moduleType switch
             {
+                ModuleType.AdvancedPaste => GetModuleItemsAdvancedPaste(),
                 ModuleType.AlwaysOnTop => GetModuleItemsAlwaysOnTop(),
                 ModuleType.Awake => GetModuleItemsAwake(),
                 ModuleType.ColorPicker => GetModuleItemsColorPicker(),
@@ -163,15 +176,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.MouseJump => GetModuleItemsMouseJump(),
                 ModuleType.MousePointerCrosshairs => GetModuleItemsMousePointerCrosshairs(),
                 ModuleType.MouseWithoutBorders => GetModuleItemsMouseWithoutBorders(),
-                ModuleType.PastePlain => GetModuleItemsPastePlain(),
                 ModuleType.Peek => GetModuleItemsPeek(),
                 ModuleType.PowerRename => GetModuleItemsPowerRename(),
                 ModuleType.PowerLauncher => GetModuleItemsPowerLauncher(),
                 ModuleType.PowerAccent => GetModuleItemsPowerAccent(),
+                ModuleType.Workspaces => GetModuleItemsWorkspaces(),
                 ModuleType.RegistryPreview => GetModuleItemsRegistryPreview(),
                 ModuleType.MeasureTool => GetModuleItemsMeasureTool(),
                 ModuleType.ShortcutGuide => GetModuleItemsShortcutGuide(),
                 ModuleType.PowerOCR => GetModuleItemsPowerOCR(),
+                ModuleType.NewPlus => GetModuleItemsNewPlus(),
                 _ => new ObservableCollection<DashboardModuleItem>(), // never called, all values listed above
             };
         }
@@ -361,13 +375,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
-        private ObservableCollection<DashboardModuleItem> GetModuleItemsPastePlain()
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsAdvancedPaste()
         {
-            ISettingsRepository<PastePlainSettings> moduleSettingsRepository = SettingsRepository<PastePlainSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<AdvancedPasteSettings> moduleSettingsRepository = SettingsRepository<AdvancedPasteSettings>.GetInstance(new SettingsUtils());
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("PastePlain_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.ActivationShortcut.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AdvancedPasteUI_Shortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.AdvancedPasteUIShortcut.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("PasteAsPlainText_Shortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.PasteAsPlainTextShortcut.GetKeysList() },
             };
+
+            if (moduleSettingsRepository.SettingsConfig.Properties.PasteAsMarkdownShortcut.GetKeysList().Count > 0)
+            {
+                list.Add(new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("PasteAsMarkdown_Shortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.PasteAsMarkdownShortcut.GetKeysList() });
+            }
+
+            if (moduleSettingsRepository.SettingsConfig.Properties.PasteAsJsonShortcut.GetKeysList().Count > 0)
+            {
+                list.Add(new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("PasteAsJson_Shortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.PasteAsJsonShortcut.GetKeysList() });
+            }
+
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
@@ -420,6 +446,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsWorkspaces()
+        {
+            ISettingsRepository<WorkspacesSettings> moduleSettingsRepository = SettingsRepository<WorkspacesSettings>.GetInstance(new SettingsUtils());
+            var settings = moduleSettingsRepository.SettingsConfig;
+
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("Workspaces_ShortDescription"), Shortcut = settings.Properties.Hotkey.Value.GetKeysList() },
+                new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("Workspaces_LaunchEditorButtonControl/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("FancyZones_LaunchEditorButtonControl/Description"), ButtonGlyph = "\uEB3C", ButtonClickHandler = WorkspacesLaunchClicked },
+            };
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
         private ObservableCollection<DashboardModuleItem> GetModuleItemsRegistryPreview()
         {
             var list = new List<DashboardModuleItem>
@@ -464,6 +503,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsNewPlus()
+        {
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleTextItem() { Label = resourceLoader.GetString("NewPlus_Product_Description/Description") },
+            };
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
         internal void SWVersionButtonClicked()
         {
             NavigationService.Navigate(typeof(GeneralPage));
@@ -487,6 +535,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             // send message to launch the zones editor;
             SendConfigMSG("{\"action\":{\"FancyZones\":{\"action_name\":\"ToggledFZEditor\", \"value\":\"\"}}}");
+        }
+
+        private void WorkspacesLaunchClicked(object sender, RoutedEventArgs e)
+        {
+            // send message to launch the Workspaces editor;
+            SendConfigMSG("{\"action\":{\"Workspaces\":{\"action_name\":\"LaunchEditor\", \"value\":\"\"}}}");
         }
 
         private void KbmKeyLaunchClicked(object sender, RoutedEventArgs e)

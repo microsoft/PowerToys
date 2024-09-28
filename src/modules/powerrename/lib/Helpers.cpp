@@ -46,6 +46,11 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
 {
     std::locale::global(std::locale(""));
     HRESULT hr = E_INVALIDARG;
+
+    auto contractionOrSingleQuotedWordCheck = [](std::wstring stem, size_t i) {
+        return !i || stem[i - 1] != '\'' || (i == 1 || iswpunct(stem[i - 2]) || iswspace(stem[i - 2]));
+    };
+
     if (source && flags)
     {
         if (flags & Uppercase)
@@ -156,7 +161,7 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
 
                 for (size_t i = 0; i < stemLength; i++)
                 {
-                    if (!i || iswspace(stem[i - 1]) || iswpunct(stem[i - 1]))
+                    if (!i || iswspace(stem[i - 1]) || (iswpunct(stem[i - 1]) && contractionOrSingleQuotedWordCheck(stem, i)))
                     {
                         if (iswspace(stem[i]) || iswpunct(stem[i]))
                         {
@@ -167,7 +172,10 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
                         {
                             wordLength++;
                         }
-                        if (isFirstWord || i + wordLength == stemLength || std::find(exceptions.begin(), exceptions.end(), stem.substr(i, wordLength)) == exceptions.end())
+
+                        auto subStr = stem.substr(i, wordLength);
+                        std::transform(subStr.begin(), subStr.end(), subStr.begin(), ::towlower);
+                        if (isFirstWord || i + wordLength == stemLength || std::find(exceptions.begin(), exceptions.end(), subStr) == exceptions.end())
                         {
                             stem[i] = towupper(stem[i]);
                             isFirstWord = false;
@@ -205,13 +213,16 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
 
                 for (size_t i = 0; i < stemLength; i++)
                 {
-                    if (!i || iswspace(stem[i - 1]) || iswpunct(stem[i - 1]))
+                    if (!i || iswspace(stem[i - 1]) || (iswpunct(stem[i - 1]) && contractionOrSingleQuotedWordCheck(stem, i)))
                     {
                         if (iswspace(stem[i]) || iswpunct(stem[i]))
                         {
                             continue;
                         }
-                        stem[i] = towupper(stem[i]);
+                        else
+                        {
+                            stem[i] = towupper(stem[i]);
+                        }
                     }
                     else
                     {
@@ -649,4 +660,21 @@ bool LastModifiedTime(const std::wstring& filePath, FILETIME* lpFileTime)
         return true;
     }
     return false;
+}
+
+std::wstring CreateGuidStringWithoutBrackets()
+{
+    GUID guid;
+    if (CoCreateGuid(&guid) == S_OK)
+    {
+        OLECHAR* guidString;
+        if (StringFromCLSID(guid, &guidString) == S_OK)
+        {
+            std::wstring guidStr{ guidString };
+            CoTaskMemFree(guidString);
+            return guidStr.substr(1, guidStr.length() - 2);
+        }
+    }
+
+    return L"";
 }

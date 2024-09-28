@@ -12,11 +12,11 @@
     mc:Ignorable="d">
 
     <Grid
-        MaxWidth="1000"
-        Margin="48"
+        MaxWidth="800"
+        Margin="24"
         VerticalAlignment="Center"
-        ColumnSpacing="16"
-        RowSpacing="16">
+        ColumnSpacing="24"
+        RowSpacing="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
@@ -30,20 +30,14 @@
             Grid.Column="0"
             Width="180"
             Height="180"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"
             Source="{x:Bind Source.IconPreview, Mode=OneWay}" />
         <StackPanel
             Grid.Row="0"
             Grid.Column="1"
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
-            Spacing="5">
-            <TextBlock
-                FontSize="26"
-                FontWeight="SemiBold"
-                Text="{x:Bind Source.Name, Mode=OneWay}"
-                TextTrimming="CharacterEllipsis">
+            Spacing="4">
+            <TextBlock Style="{StaticResource TitleTextBlockStyle}" Text="{x:Bind Source.Name, Mode=OneWay}">
                 <ToolTipService.ToolTip>
                     <ToolTip Content="{x:Bind Source.Name, Mode=OneWay}" />
                 </ToolTipService.ToolTip>
@@ -68,29 +62,25 @@
         <Grid
             Grid.Row="1"
             Grid.ColumnSpan="2"
-            RowSpacing="5">
+            RowSpacing="4">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto" />
                 <RowDefinition Height="auto" />
             </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
             <Border
                 x:Name="CapacityBar"
                 Grid.Row="0"
                 Grid.ColumnSpan="2"
-                Height="20"
-                Background="{ThemeResource AccentFillColorDisabledBrush}"
-                CornerRadius="10" />
+                Height="16"
+                Background="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+                CornerRadius="8" />
 
             <Border
                 Grid.Row="0"
                 Grid.ColumnSpan="2"
-                Height="20"
+                Height="16"
                 Background="{ThemeResource AccentFillColorDefaultBrush}"
-                CornerRadius="10">
+                CornerRadius="8">
                 <Border.Clip>
                     <RectangleGeometry Rect="{x:Bind SpaceBarClip, Mode=OneWay}" />
                 </Border.Clip>
@@ -99,15 +89,12 @@
             <TextBlock
                 Grid.Row="1"
                 Grid.Column="0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Text="{x:Bind FormatUsedSpace(Source.UsedSpace), Mode=OneWay}" />
             <TextBlock
                 Grid.Row="1"
                 Grid.Column="1"
                 HorizontalAlignment="Right"
-                VerticalAlignment="Top"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Text="{x:Bind FormatFreeSpace(Source.FreeSpace), Mode=OneWay}" />
         </Grid>

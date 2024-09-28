@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text.RegularExpressions;
+
 using static PowerToys.Settings.DSC.Schema.Introspection;
 
 namespace PowerToys.Settings.DSC.Schema;
@@ -22,7 +22,7 @@ internal sealed class DSCGeneration
         public string Type;
     }
 
-    private static readonly Dictionary<string, AdditionalPropertiesInfo> AdditionalPropertiesInfoPerModule = new Dictionary<string, AdditionalPropertiesInfo> { { "PowerLauncher", new AdditionalPropertiesInfo { Name = "Plugins", Type = "Hashtable[]" } } };
+    private static readonly Dictionary<string, AdditionalPropertiesInfo> AdditionalPropertiesInfoPerModule = new Dictionary<string, AdditionalPropertiesInfo> { { "PowerLauncher", new AdditionalPropertiesInfo { Name = "Plugins", Type = "Hashtable[]" } }, { "ImageResizer", new AdditionalPropertiesInfo { Name = "ImageresizerSizes", Type = "Hashtable[]" } } };
 
     private static string EmitEnumDefinition(Type type)
     {
@@ -221,7 +221,7 @@ class {{module.Name}} {
         }
 
         var enumsBlock = string.Join(DoubleNewLine, enumsToEmit.Select(EmitEnumDefinition));
-        var version = interop.CommonManaged.GetProductVersion().Replace("v", string.Empty);
+        var version = PowerToys.Interop.CommonManaged.GetProductVersion().Replace("v", string.Empty);
         var outputResult = string.Empty;
 
         outputResult += $$"""
@@ -254,7 +254,12 @@ class {{module.Name}} {
                 if ($this.Debug -eq $true) {
                     $SettingsExePath = "{{debugSettingsPath}}"
                 } else {
-                    $installation = Get-CimInstance Win32_Product | Where-Object {$_.Name -eq "PowerToys (Preview)" -and $_.Version -eq "{{version}}"}
+                    $installation = Get-ChildItem HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\* | ForEach-Object { Get-ItemProperty $_.PsPath } | Where-Object { $_.DisplayName -eq "PowerToys (Preview)" -and $_.DisplayVersion -eq "{{version}}" }
+        
+                    if (-not $installation)
+                    {
+                        $installation = Get-ChildItem HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\* | ForEach-Object { Get-ItemProperty $_.PsPath } | Where-Object { $_.DisplayName -eq "PowerToys (Preview)" -and $_.DisplayVersion -eq "{{version}}" }
+                    }
                 
                     if ($installation) {
                         $SettingsExePath = Join-Path (Join-Path $installation.InstallLocation WinUI3Apps) PowerToys.Settings.exe
@@ -271,7 +276,12 @@ class {{module.Name}} {
 #else
         outputResult += $$"""
             [string] GetPowerToysSettingsPath() {
-                $installation = Get-CimInstance Win32_Product | Where-Object {$_.Name -eq "PowerToys (Preview)" -and $_.Version -eq "{{version}}"}
+                $installation = Get-ChildItem HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\* | ForEach-Object { Get-ItemProperty $_.PsPath } | Where-Object { $_.DisplayName -eq "PowerToys (Preview)" -and $_.DisplayVersion -eq "{{version}}" }
+
+                if (-not $installation)
+                {
+                    $installation = Get-ChildItem HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\* | ForEach-Object { Get-ItemProperty $_.PsPath } | Where-Object { $_.DisplayName -eq "PowerToys (Preview)" -and $_.DisplayVersion -eq "{{version}}" }
+                }
 
                 if ($installation) {
                     $SettingsExePath = Join-Path (Join-Path $installation.InstallLocation WinUI3Apps) PowerToys.Settings.exe
@@ -384,7 +394,7 @@ class {{module.Name}} {
 
     public static string EmitManifestFileContents()
     {
-        var version = interop.CommonManaged.GetProductVersion().Replace("v", string.Empty);
+        var version = PowerToys.Interop.CommonManaged.GetProductVersion().Replace("v", string.Empty) + ".0";
         var generatedDate = DateTime.Now.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture);
 
         return $$"""
