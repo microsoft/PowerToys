@@ -3,21 +3,22 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Runtime.CompilerServices;
+
 using AdvancedPaste.Helpers;
+using AdvancedPaste.Settings;
+using AdvancedPaste.ViewModels;
 using ManagedCommon;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Windows.Graphics;
 using WinUIEx;
 using WinUIEx.Messaging;
-using static AdvancedPaste.Helpers.NativeMethods;
 
 namespace AdvancedPaste
 {
     public sealed partial class MainWindow : WindowEx, IDisposable
     {
-        private WindowMessageMonitor _msgMonitor;
+        private readonly WindowMessageMonitor _msgMonitor;
+        private readonly IUserSettings _userSettings;
 
         private bool _disposedValue;
 
@@ -25,12 +26,36 @@ namespace AdvancedPaste
         {
             this.InitializeComponent();
 
+            _userSettings = App.GetService<IUserSettings>();
+            var optionsViewModel = App.GetService<OptionsViewModel>();
+
+            var baseHeight = MinHeight;
+
+            void UpdateHeight()
+            {
+                var trimmedCustomActionCount = optionsViewModel.IsPasteWithAIEnabled ? Math.Min(_userSettings.CustomActions.Count, 5) : 0;
+                Height = MinHeight = baseHeight + (trimmedCustomActionCount * 40);
+            }
+
+            UpdateHeight();
+
+            _userSettings.CustomActions.CollectionChanged += (_, _) => UpdateHeight();
+            optionsViewModel.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(optionsViewModel.IsPasteWithAIEnabled))
+                {
+                    UpdateHeight();
+                }
+            };
+
             AppWindow.SetIcon("Assets/AdvancedPaste/AdvancedPaste.ico");
             this.ExtendsContentIntoTitleBar = true;
             this.SetTitleBar(titleBar);
 
             var loader = ResourceLoaderInstance.ResourceLoader;
             Title = loader.GetString("WindowTitle");
+
+            Activated += OnActivated;
 
             _msgMonitor = new WindowMessageMonitor(this);
             _msgMonitor.WindowMessageReceived += (_, e) =>
@@ -45,6 +70,14 @@ namespace AdvancedPaste
             };
 
             WindowHelpers.BringToForeground(this.GetWindowHandle());
+        }
+
+        private void OnActivated(object sender, WindowActivatedEventArgs args)
+        {
+            if (_userSettings.CloseAfterLosingFocus && args.WindowActivationState == WindowActivationState.Deactivated)
+            {
+                Hide();
+            }
         }
 
         private void Dispose(bool disposing)
@@ -66,9 +99,13 @@ namespace AdvancedPaste
 
         private void WindowEx_Closed(object sender, Microsoft.UI.Xaml.WindowEventArgs args)
         {
-            Windows.Win32.PInvoke.ShowWindow((Windows.Win32.Foundation.HWND)this.GetWindowHandle(), Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_HIDE);
-
+            Hide();
             args.Handled = true;
+        }
+
+        private void Hide()
+        {
+            Windows.Win32.PInvoke.ShowWindow(new Windows.Win32.Foundation.HWND(this.GetWindowHandle()), Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_HIDE);
         }
 
         public void SetFocus()

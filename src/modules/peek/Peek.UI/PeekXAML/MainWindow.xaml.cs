@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;

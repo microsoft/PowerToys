@@ -357,7 +357,7 @@ UINT __stdcall InstallDSCModuleCA(MSIHANDLE hInstall)
             ExitOnFailure(hr, "Unable to determine Powershell modules path");
         }
 
-        const auto modulesPath = baseModulesPath / L"Microsoft.PowerToys.Configure" / get_product_version();
+        const auto modulesPath = baseModulesPath / L"Microsoft.PowerToys.Configure" / (get_product_version(false) + L".0");
 
         std::error_code errorCode;
         fs::create_directories(modulesPath, errorCode);
@@ -411,7 +411,7 @@ UINT __stdcall UninstallDSCModuleCA(MSIHANDLE hInstall)
         }
 
         const auto powerToysModulePath = baseModulesPath / L"Microsoft.PowerToys.Configure";
-        const auto versionedModulePath = powerToysModulePath / get_product_version();
+        const auto versionedModulePath = powerToysModulePath / (get_product_version(false) + L".0");
 
         std::error_code errorCode;
 
@@ -1148,7 +1148,7 @@ UINT __stdcall UnRegisterContextMenuPackagesCA(MSIHANDLE hInstall)
     try
     {
         // Packages to unregister
-        const std::vector<std::wstring> packagesToRemoveDisplayName{ { L"PowerRenameContextMenu" }, { L"ImageResizerContextMenu" }, { L"FileLocksmithContextMenu" } };
+        const std::vector<std::wstring> packagesToRemoveDisplayName{ { L"PowerRenameContextMenu" }, { L"ImageResizerContextMenu" }, { L"FileLocksmithContextMenu" }, { L"NewPlusContextMenu" } };
 
         PackageManager packageManager;
 
@@ -1223,7 +1223,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
     }
     processes.resize(bytes / sizeof(processes[0]));
 
-    std::array<std::wstring_view, 32> processesToTerminate = {
+    std::array<std::wstring_view, 37> processesToTerminate = {
         L"PowerToys.PowerLauncher.exe",
         L"PowerToys.Settings.exe",
         L"PowerToys.AdvancedPaste.exe",
@@ -1255,6 +1255,11 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.MouseWithoutBordersService.exe",
         L"PowerToys.CropAndLock.exe",
         L"PowerToys.EnvironmentVariables.exe",
+        L"PowerToys.WorkspacesSnapshotTool.exe",
+        L"PowerToys.WorkspacesLauncher.exe",
+        L"PowerToys.WorkspacesLauncherUI.exe",
+        L"PowerToys.WorkspacesEditor.exe",
+        L"PowerToys.WorkspacesWindowArranger.exe",
         L"PowerToys.exe",
     };
 

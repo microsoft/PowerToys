@@ -8,8 +8,8 @@
 
 | Architecture | Solution (Main) | Solution (Stable) | Installer (Main) |
 |--------------|-----------------|-------------------|------------------|
-| x64 | [![Build Status for Main](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=main&jobName=Build%20x64%20Release)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=main&jobName=Build%20x64%20Release) | [![Build Status for Stable](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=stable&jobName=Build%20x64%20Release)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=stable) | [![Build Status Installer pipeline](https://dev.azure.com/microsoft/Dart/_apis/build/status/PowerToys/PowerToys%20Signed%20YAML%20Release%20Build?branchName=main&jobName=Build&configuration=Build%20Release_x64)](https://dev.azure.com/microsoft/Dart/_build/latest?definitionId=76541&branchName=main) |
-| ARM64 | [![Build Status for Main](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=main&jobName=Build%20arm64%20Release)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=main) | [![Build Status for Main](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=main&jobName=Build%20arm64%20Release)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=stable) | [![Build Status Installer pipeline](https://dev.azure.com/microsoft/Dart/_apis/build/status/PowerToys/PowerToys%20Signed%20YAML%20Release%20Build?branchName=main&jobName=Build&configuration=Build%20Release_arm64)](https://dev.azure.com/microsoft/Dart/_build/latest?definitionId=76541&branchName=main) |
+| x64 | [![Build Status for Main](https://dev.azure.com/shine-oss/PowerToys/_apis/build/status%2FPowerToys%20CI?branchName=main&jobName=Build%20x64%20Release)](https://dev.azure.com/shine-oss/PowerToys/_build/latest?definitionId=3&branchName=main) | [![Build Status for Stable](https://dev.azure.com/shine-oss/PowerToys/_apis/build/status%2FPowerToys%20CI?branchName=stable&jobName=Build%20x64%20Release)](https://dev.azure.com/shine-oss/PowerToys/_build/latest?definitionId=3&branchName=stable) | [![Build Status Installer pipeline](https://dev.azure.com/microsoft/Dart/_apis/build/status/PowerToys/PowerToys%20Signed%20YAML%20Release%20Build?branchName=main&jobName=Build&configuration=Build%20Release_x64)](https://dev.azure.com/microsoft/Dart/_build/latest?definitionId=76541&branchName=main) |
+| ARM64 | [![Build Status for Main](https://dev.azure.com/shine-oss/PowerToys/_apis/build/status%2FPowerToys%20CI?branchName=main&jobName=Build%20arm64%20Release)](https://dev.azure.com/shine-oss/PowerToys/_build/latest?definitionId=3&branchName=main) | [![Build Status for Stable](https://dev.azure.com/shine-oss/PowerToys/_apis/build/status%2FPowerToys%20CI?branchName=main&jobName=Build%20arm64%20Release)](https://dev.azure.com/shine-oss/PowerToys/_build/latest?definitionId=3&branchName=main) | [![Build Status Installer pipeline](https://dev.azure.com/microsoft/Dart/_apis/build/status/PowerToys/PowerToys%20Signed%20YAML%20Release%20Build?branchName=main&jobName=Build&configuration=Build%20Release_arm64)](https://dev.azure.com/microsoft/Dart/_build/latest?definitionId=76541&branchName=main) |
 
 ## About
 
@@ -25,7 +25,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 | [Peek](https://aka.ms/PowerToysOverview_Peek) | [Paste as Plain Text](https://aka.ms/PowerToysOverview_PastePlain) | [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) |
 | [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) | [Quick Accent](https://aka.ms/PowerToysOverview_QuickAccent) | [Registry Preview](https://aka.ms/PowerToysOverview_RegistryPreview) |
 | [Screen Ruler](https://aka.ms/PowerToysOverview_ScreenRuler) | [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) |
-| [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) |
+| [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) | [Workspaces](https://aka.ms/PowerToysOverview_Workspaces) |
 
 ## Installing and running Microsoft PowerToys
 
@@ -41,19 +41,19 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and click on `Assets` at the bottom to show the files available in the release. Please use the appropriate PowerToys installer that matches your machine's architecture and install scope. For most, it is `x64` and per-user.
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.82%22
-[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F54
-[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.81.0/PowerToysUserSetup-0.81.0-x64.exe
-[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.81.0/PowerToysUserSetup-0.81.0-arm64.exe
-[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.81.0/PowerToysSetup-0.81.0-x64.exe
-[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.81.0/PowerToysSetup-0.81.0-arm64.exe
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.85%22
+[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.84%22
+[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.84.1/PowerToysUserSetup-0.84.1-x64.exe
+[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.84.1/PowerToysUserSetup-0.84.1-arm64.exe
+[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.84.1/PowerToysSetup-0.84.1-x64.exe
+[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.84.1/PowerToysSetup-0.84.1-arm64.exe
  
 |  Description   | Filename | sha256 hash |
 |----------------|----------|-------------|
-| Per user - x64       | [PowerToysUserSetup-0.81.0-x64.exe][ptUserX64] | E62B1EE81954A75355C04E7567B1C9AAD6034AA0C61AD22587F8746D0DC488C8 |
-| Per user - ARM64     | [PowerToysUserSetup-0.81.0-arm64.exe][ptUserArm64] | 75330A2DB4F9EF9B548B3B58F8BF3262C8C67E680042639BBBBC87EA244F24E2 |
-| Machine wide - x64   | [PowerToysSetup-0.81.0-x64.exe][ptMachineX64] | 29F151B01FE3C94D4FD75F2D6E8F09A6C0F0962385B83A5A733F6717312F639D |
-| Machine wide - ARM64 | [PowerToysSetup-0.81.0-arm64.exe][ptMachineArm64] | FCE636220E1FB854771258D9558E07B7532728AD4C722A7920338DEE60DEECF7 |
+| Per user - x64       | [PowerToysUserSetup-0.84.1-x64.exe][ptUserX64] | 1CDAF3482B031D84DAE15188DE292FB44C5D211698089921040D94B256EBD3CA |
+| Per user - ARM64     | [PowerToysUserSetup-0.84.1-arm64.exe][ptUserArm64] | E0207EF5147EE281D4F438E87A30586D8CAA24DE948950FF1B12E05454622CD9 |
+| Machine wide - x64   | [PowerToysSetup-0.84.1-x64.exe][ptMachineX64] | 10DF9774DE1857051E135B9790A18A92C5C7F42587C733DEE991186E67231EE0 |
+| Machine wide - ARM64 | [PowerToysSetup-0.84.1-arm64.exe][ptMachineArm64] | EB5DDA5EFBA17E813DBF24AFF668DDF5424ED3659234ABBC15441D478D812699 |
 
 This is our preferred method.
 
@@ -99,157 +99,99 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.81 - Build 2024 Update
+### 0.84 - August 2024 Update
 
-In this release, we focused on new features, stability and improvements.
+In this release, we focused on adding a new utility (PowerToys Workspaces), Advanced paste custom actions feature, stability, and improvements.
 
 **Highlights**
 
- - New utility: Advanced Paste - This is an evolution based on feedback of the Paste As Plain Text utility to do more. It can paste as plain text, markdown, or json directly with the new UX or with a direct keystroke invoke.  These are fully locally executed. In addition, it now has an AI powered option as well if you wish with the free form text box.  The AI feature is 100% opt-in and requires an Open AI key. This new system will allow us to have more freedom in the future to quickly add in new features like pasting an image directly to a file or handle additional meta data types past just text. 
-    - Thanks [@craigloewen-msft](https://github.com/craigloewen-msft) for the core functionality and [@niels9001](https://github.com/niels9001) for the UI/UX design!
- - Command Not Found now uses the PowerShell Gallery release and now supports ARM64. Thanks [@carlos-zamora](https://github.com/carlos-zamora)!
- - Fixed most accessibility issues opened after the latest accessibility review.
- - Refactored, packaged and released the main Environment Variables Editor, Hosts File Editor and Registry Preview utilities functionality as controls to be integrated into DevHome. Thanks [@dabhattimsft](https://github.com/dabhattimsft) for validating and integrating into DevHome!
+ - New utility: PowerToys Workspaces - this utility can launch a set of applications to a custom layout and configuration on the desktop. App arrangements can be saved as a workspace and then relaunched with one click from the Workspaces Editor or from a desktop shortcut. In the editor, app configuration can be customized using CLI arguments and "launch as admin" modifiers, and app window sizes and positions can be updated as desired. This is our first public version of Workspaces and we are excited for you to try it out for yourself! Make sure to file issues you encounter on our GitHub so the team can continue to improve the utility.
+    - Known issues - the team is actively working on fixing these:
+       - Apps that launch as admin are unable to be repositioned to the desired layout.
+       - Border of "Remove" / "Add Back" app button in editor is not clearly visible on light themes.
+ - Added Awake --use-parent-pid CLI argument to attach to parent process. Thanks [@dend](https://github.com/dend)!
+ - Added custom actions - user-specified pre-defined prompts for the AI model. Additionally, actions (both standard and custom) are now searchable from prompt box and Ctrl + number in-app shortcuts are now applicable for first 9 search results.
+ - Ported all C++/CX code to C++/WinRT as part of a refactor and upgrade series aimed at enabling AOT (Ahead of Time) compilation for enhanced performance and reduced disk footprint.
 
 ### General
 
- - Fixed crashes on older CPUS by updating .NET to 8.0.4. (This was a hotfix for 0.80)
-
+ - Added DSC support for ImageResizer resize sizes property.
+ 
 ### Advanced Paste
 
- - New utility: Advanced Paste - This is an evolution based on feedback of the Paste As Plain Text utility to do more. It can paste as plain text, markdown, or json directly with the new UX or with a direct keystroke invoke.  These are fully locally executed. In addition, it now has an AI powered option as well if you wish with the free form text box.  The AI feature is 100% opt-in and requires an Open AI key. This new system will allow us to have more freedom in the future to quickly add in new features like pasting an image directly to a file or handle additional meta data types past just text. 
-    - Thanks [@craigloewen-msft](https://github.com/craigloewen-msft) for the core functionality and [@niels9001](https://github.com/niels9001) for the UI/UX design!
+ - Added custom actions - user-specified pre-defined prompts for the AI model. Additionally, actions (both standard and custom) are now searchable from prompt box and Ctrl + number in-app shortcuts are now applicable for first 9 search results.
 
-### AlwaysOnTop
+### Awake
 
- - Enable border anti-aliasing. Thanks [@ewancg](https://github.com/ewancg)! 
-
-### Color Picker
-
- - Improved accessibility by making the Settings and Copy to clipboard buttons focusable.
- - Improved accessibility by supporting picking a color using the keyboard.
-
-### Command Not Found
-
- - Upgraded the Command Not Found to use the new PowerShell Gallery release and support ARM64. Thanks [@carlos-zamora](https://github.com/carlos-zamora)!
-
-### Environment Variables Editor
-
- - Refactored, packaged and released the main Environment Variables Editor functionality as a control to be integrated into DevHome. Thanks [@dabhattimsft](https://github.com/dabhattimsft) for validating and integrating into DevHome!
-
-### FancyZones
-
- - Fixed window wrap around behavior when overriding Windows key and arrow shortcuts on single monitor scenarios. Thanks [@DanRosenberry](https://github.com/DanRosenberry)!
- - Improved accessibility of the editor by listing the keyboard shortcuts in the Canvas Editor.
-
-### File Explorer add-ons
-
- - Updated Monaco to 0.47 and added the new sticky scroll setting for DevFiles viewer. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
- - Added the new font size setting for DevFiles viewer. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
- - Added support for .srt (subtitle) file previewing in DevFiles viewer. Thanks [@PesBandi](https://github.com/PesBandi)!
+ - Added --use-parent-pid CLI argument to attach to parent process and fixed issue causing tray icon to disappear. Thanks [@dend](https://github.com/dend)!
 
 ### Hosts File Editor
 
- - Refactored, packaged and released the main Hosts File Editor functionality as a control to be integrated into DevHome. Thanks [@dabhattimsft](https://github.com/dabhattimsft) for validating and integrating into DevHome!
+ -  Fixed save failure when the hosts file is hidden. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
-### Image Resizer
+### File Explorer add-ons
 
- - Supported narrator announcing the checkboxes in the UI and the sizes combobox. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Improved accessibility by increasing contrast in the text color of combobox items.
-
-### Installer
-
- - Fixed some install failures when the folders the DSC module is to be installed in isn't accessible by the WiX installer. (This was a hotfix for 0.80)
- - Detecting install location for DSC now uses registry instead of WMI to improve performance. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Fixed an error causing the machine scope installer to not install correctly in machines where the documents folder is in a UNC network path. We're still working in a fix for the user scope installer.
+ - Fixed multiple preview form positioning issues causing floating, detached windows, CoreWebView2 related exception and process leak. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Keyboard Manager
 
- - Fixed startup crashes in the editor when the Visual C++ Redistributable wasn't installed. (This was a hotfix for 0.80)
- - Fixed an accessibility issue where the first button wasn't focused after adding a new row in the editor.
- - Environment Variables are now expanded in arguments of programs started through a shortcut. Thanks [@HydroH](https://github.com/HydroH)!
-
-### Paste as Plain Text
-
- - Paste as Plain Text was removed as a separate utility, since its functionality is now part of the Advanced Paste utility.
+ - Convert RemapBufferRow to a struct with descriptive field names. Thanks [@masaru-iritani](https://github.com/masaru-iritani)!
+ - Fixed issue causing stuck Ctrl key when shortcuts contain AltGr key.
 
 ### Peek
 
- - Updated icons, tweaked UI and refactored internal code. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
- - Updated Monaco to 0.47 and added the new sticky scroll setting for DevFiles viewer. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
- - Added the new font size setting for DevFiles viewer. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
- - Upgrade the SharpCompress dependency to 0.37.2 and fixed archive parsing. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Fixed aliasing in the image viewer.
- - Added support for .srt (subtitle) file previewing in DevFiles viewer. Thanks [@PesBandi](https://github.com/PesBandi)!
-
-### Power Rename
-
- - Fixed the descriptions that were mixed up in the regex helper (\S and \w).
-
-### PowerToys Run
-
- - Added support for UNC paths starting with // in the Folder plugin. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Fixed the plugin load failed message to list the failed plugins. Thanks [@belkiss](https://github.com/belkiss)!
- - Icons for MSIX packages are now updated when a package update is detected. Thanks [@HydroH](https://github.com/HydroH)!
- - Use Mica backdrop instead of Acrylic to fix random crashes caused by the Windows composition being momentarily turned off.
- - Improved accessibility in the results list action buttons by improving contrast of hovered/focused buttons.
+ - Added long paths support. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Quick Accent
 
- - Added support for the Esperanto character set. Thanks [@salutontalk](https://github.com/salutontalk) and [@ccmywish](https://github.com/ccmywish)!
- - Added the ǽ and ϑ characters. Thanks [@PesBandi](https://github.com/PesBandi)!
+ - Moved number superscripts and subscripts from Portuguese to all languages definition. Thanks [@octastylos-pseudodipteros](https://github.com/octastylos-pseudodipteros)!
 
-### Registry Preview
+### PowerRename
 
- - Refactored, packaged and released the main Registry Preview functionality as a control to be integrated into DevHome. Thanks [@dabhattimsft](https://github.com/dabhattimsft) for validating and integrating into DevHome!
+ - Updated the tooltip text of the replace box info button. Thanks [@Agnibaan](https://github.com/Agnibaan)!
 
-### Text Extractor
+### PowerToys Run
 
- - Fixed an issue causing the Settings page to not be opened when clicking the Settings button in Text Extractor's overlay. (This was a hotfix for 0.80)
+ - Fixed window positioning on start-up introduced in 0.83.
+ - Improved default web browser detection. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed volume ounces conversion to support both imperial and metric. Thanks [@GhostVaibhav](https://github.com/GhostVaibhav)!
+ - Fixed thread-safety issue causing results not to be shown on first launch.
+
+### Screen Ruler
+
+ - Added multiple measurements support for all measuring tools.
 
 ### Settings
 
- - Improved UI ordering of the File Explorer add-ons. Thanks [@niels9001](https://github.com/niels9001)!
- - Applied fixes to theme overriding and cleaned up unneeded code. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Fixed misspells in references to the Hosts File Editor utility. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Improved accessibility of the Select Folder button in the Settings Backup UI.
- - Improved accessibility by improving focus and tab navigation in the ColorPicker page. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Added a description to the fallback encoder setting in the Image Resizer page. Thanks [@Kissaki](https://github.com/Kissaki)!
- - Refactored and improved performance in the PowerToys Run plugins UI in the Settings page. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Fixed a crash when a user cleared the contents of a Number Box in the PowerToys Run plugins additional options. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Update the PATH environment variables with the user scope PATH when entering the Command Not Found page to improve PowerShell detection.
+ - Improved disabled animations InfoBar in Find My Mouse page. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+
+### Workspaces
+
+ - New utility: PowerToys Workspaces - this utility can launch a set of applications to a custom layout and configuration on the desktop. App arrangements can be saved as a workspace and then relaunched with one click from the Workspaces Editor or from a desktop shortcut. In the editor, app configuration can be customized using CLI arguments and "launch as admin" modifiers, and app window sizes and positions can be updated as desired. This is our first public version of Workspaces and we are excited for you to try it out for yourself! Make sure to file issues you encounter on our GitHub so the team can continue to improve the utility.
 
 ### Documentation
 
- - Added the WebSearchShortcut plugin to PowerToys Run thirdPartyRunPlugins.md docs. Thanks [@Daydreamer-riri](https://github.com/Daydreamer-riri)!
- - Updated COMMUNITY.md with the project managers that are part of the core team.
- - Improved the DSC samples.
- - Added the 1Password plugin to PowerToys Run thirdPartyRunPlugins.md docs. Thanks [@KairuDeibisu](https://github.com/KairuDeibisu)!
- - Added the UnicodeInput plugin to PowerToys Run thirdPartyRunPlugins.md docs. Thanks [@nathancartlidge](https://github.com/nathancartlidge)!
+ - Added ChatGPTPowerToys plugin mention to thirdPartyRunPlugins.md. Thanks [@ferraridavide](https://github.com/ferraridavide)!
 
 ### Development
 
- - Updated System.Drawing.Common to 8.0.5 to fix CI builds after the .NET 8.0.5 upgrade was released.
- - Fixed file permissions when doing a build using cache on PR CI. Thanks [@dfederm](https://github.com/dfederm)!
- - Removed the Test SDK reference on ARM64 to fix local building for ARM64. Thanks [@dfederm](https://github.com/dfederm)!
- - Replaced make_pair with RemapBufferRow in Keyboard Manager internal code. Thanks [@masaru-iritani](https://github.com/masaru-iritani)!
- - Added CODEOWNERS file to protect sensitive parts of the repo. Thanks [@htcfreek](https://github.com/htcfreek) for the help in figuring out how to make the spellcheck folder an exception!
- - Added comments in code. to make it clear what the error badge in PowerToys Run plugin list in Settings means. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
- - Enabled caching by default in the PR CI pipelines. Thanks [@dfederm](https://github.com/dfederm)!
- - Disabled caching for PR started from forks, since those were failing. Thanks [@dfederm](https://github.com/dfederm)!
- - Removed baseline files for policy checking and turned on the "TSA" process in the release pipelines instead.
- - Added caching of nuget packages in the PR CI pipelines. Thanks [@dfederm](https://github.com/dfederm)!
- - Updated the release CI pipelines TouchdownBuildTask to v3.
- - Moved the release CI pipelines to ESRPv5.
- - Added a policy for GitHub Copilot Workspaces for the repo on GitHub. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+ - Ported all C++/CX code to C++/WinRT.
+ - Moved Version.props import to Directory.Build.props.
+ - Extracted self-containment related .csproj properties to src/Common.SelfContained.props.
+ - Unused and obsolete dependencies cleanup. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Extracted CSWinRT related .csproj properties to src/Common.Dotnet.CsWinRT.props.
+ - Upgraded Microsoft.Windows.CsWinRT to 2.0.8 and updated verifyDepsJsonLibraryVersions.ps1 to unblock PRs.
+ - Explicitly Set NuGet Audit Mode to Direct in Directory.Build.props to revert changes made with VS 17.12 update. Thanks [@snickler](https://github.com/snickler)!
+ - Upgraded UnitsNet to 5.56.0.
 
-#### What is being planned for version 0.82
+#### What is being planned for version 0.84
 
-For [v0.82][github-next-release-work], we'll work on the items below:
+For [v0.85][github-next-release-work], we'll work on the items below:
 
  - Stability / bug fixes
  - Language selection
  - New module: File Actions Menu
+ - New module: New+
 
 ## PowerToys Community
 

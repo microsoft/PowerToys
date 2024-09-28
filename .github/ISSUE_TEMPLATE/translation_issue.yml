@@ -39,6 +39,7 @@ body:
     - Keyboard Manager
     - Mouse Utilities
     - Mouse Without Borders
+    - New+
     - Peek
     - PowerRename
     - PowerToys Run
@@ -50,6 +51,7 @@ body:
     - System tray interaction
     - TextExtractor
     - Video Conference Mute
+    - Workspaces
     - Welcome / PowerToys Tour window
   validations:
     required: true

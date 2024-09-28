@@ -53,6 +53,7 @@
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.SelectedLangIndex, Mode=TwoWay}">
                             <!--  These should be in the same order as the array items in PowerAccentViewModel.cs  -->
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_All" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Bulgarian" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Catalan" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Crimean" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Currency" />
@@ -82,6 +83,7 @@
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Polish" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Portuguese" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Romanian" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Romanization" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Slovak" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Slovenian" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Spanish" />

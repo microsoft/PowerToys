@@ -30,6 +30,7 @@ AFX
 AGGREGATABLE
 AHybrid
 AKV
+akv
 ALarger
 ALLAPPS
 ALLINPUT
@@ -56,11 +57,14 @@ APPBARDATA
 appdata
 APPEXECLINK
 Appium
+applayout
 Applicationcan
+APPLICATIONFRAMEHOST
 appmanifest
 APPNAME
 appref
 appsettings
+appsfolder
 appwindow
 appwiz
 APSTUDIO
@@ -77,6 +81,8 @@ asf
 AShortcut
 ASingle
 ASSOCCHANGED
+ASSOCF
+ASSOCSTR
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
@@ -95,6 +101,7 @@ AUTOUPDATE
 AValid
 awakeness
 AWAYMODE
+azcliversion
 azman
 backtracer
 bbwe
@@ -119,11 +126,13 @@ BLURREGION
 bmi
 bms
 BNumber
+BODGY
 BOKMAL
 bootstrapper
 BOOTSTRAPPERINSTALLFOLDER
 bostrot
 BOTTOMALIGN
+boxmodel
 BPBF
 bpmf
 bpp
@@ -149,6 +158,7 @@ Cangjie
 CANRENAME
 CAPTUREBLT
 CAPTURECHANGED
+CARETBLINKING
 CAtl
 cch
 CCHDEVICENAME
@@ -163,6 +173,7 @@ CENTERALIGN
 ceq
 certlm
 certmgr
+cfp
 cguid
 CHANGECBCHAIN
 changecursor
@@ -184,7 +195,6 @@ CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
 closesocket
-clrcall
 CLSCTX
 Clusion
 cmder
@@ -196,6 +206,7 @@ CMINVOKECOMMANDINFOEX
 CMock
 CMONITORS
 cmpgt
+cmph
 cne
 CNF
 coclass
@@ -215,7 +226,6 @@ comdlg
 comexp
 cominterop
 commandline
-COMMANDTITLE
 commctrl
 commdlg
 compmgmt
@@ -236,15 +246,14 @@ CONTEXTMENUHANDLER
 CONTROLL
 CONTROLPARENT
 copiedcolorrepresentation
+COREWINDOW
 cotaskmem
 COULDNOT
 countof
+cph
 CPower
 cppblog
-cppruntime
-cppstd
 cppwinrt
-CProj
 createdump
 CREATESCHEDULEDTASK
 CREATESTRUCT
@@ -260,6 +269,7 @@ CSettings
 cso
 CSRW
 CStyle
+cswinrt
 CSY
 CTest
 currentculture
@@ -311,6 +321,7 @@ Dedup
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
 DEFAULTCOLOR
 DEFAULTFLAGS
+DEFAULTICON
 DEFAULTONLY
 DEFAULTTONEAREST
 DEFAULTTONULL
@@ -325,6 +336,7 @@ deletethis
 DENORMAL
 depersist
 deprioritized
+DESELECTOTHERS
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
 desktopshorcutinstalled
@@ -355,6 +367,7 @@ dllmain
 DNLEN
 DONOTROUND
 DONTVALIDATEPATH
+DOPUS
 dotnet
 DPICHANGED
 DPIs
@@ -401,6 +414,7 @@ dxgi
 dxgidebug
 dxgiformat
 dxguid
+easeofaccess
 ecount
 EData
 Edid
@@ -420,11 +434,12 @@ encodedlaunch
 encryptor
 endpointvolume
 ENDSESSION
+ENSUREVISIBLE
 ENTERSIZEMOVE
 ENU
 EOAC
-epu
 EPO
+epu
 ERASEBKGND
 EREOF
 EResize
@@ -479,7 +494,6 @@ FILEFLAGSMASK
 FILELOCKSMITH
 FILELOCKSMITHCONTEXTMENU
 FILELOCKSMITHEXT
-FILELOCKSMITHLIB
 FILELOCKSMITHLIBINTEROP
 FILEMUSTEXIST
 FILEOP
@@ -495,12 +509,14 @@ findfast
 FIXEDFILEINFO
 flac
 flyouts
+FMask
 FOF
 FOFX
 FOLDERID
 folderpath
 FORCEMINIMIZE
 formatetc
+FORPARSING
 FRAMECHANGED
 frm
 Froml
@@ -516,7 +532,6 @@ GCLP
 gdi
 gdiplus
 GDISCALED
-gdnbaselines
 GEmoji
 GETCLIENTAREAANIMATION
 GETDESKWALLPAPER
@@ -536,7 +551,6 @@ gpedit
 gpo
 GPOCA
 gpp
-GPT
 gpu
 GSM
 gtm
@@ -557,6 +571,7 @@ Hashset
 hashtag
 HASHVAL
 HASSTRINGS
+HASSUBCOMMANDS
 hbitmap
 hbm
 hbmp
@@ -600,7 +615,6 @@ hmenu
 hmodule
 hmonitor
 homljgmgpmcbpjbnjpfijnhipfkiclkd
-HOOKPROC
 Hostbackdropbrush
 hotkeycontrol
 hotkeys
@@ -636,6 +650,7 @@ IBeam
 ICapture
 IClass
 ICONERROR
+ICONLOCATION
 IData
 IDD
 IDesktop
@@ -653,6 +668,7 @@ IFACEMETHOD
 IFACEMETHODIMP
 IFile
 IFilter
+IGNOREUNKNOWN
 IGraphics
 iid
 Iindex
@@ -696,7 +712,6 @@ INSTALLSTARTMENUSHORTCUT
 INSTALLSTATE
 Inste
 Intelli
-interactable
 Interlop
 INTRESOURCE
 INVALIDARG
@@ -715,6 +730,8 @@ ISettings
 IShell
 isocpp
 iss
+issecret
+ISSEPARATOR
 ITask
 ith
 ITHUMBNAIL
@@ -725,7 +742,6 @@ IWeb
 IWIC
 iwr
 IYUV
-JArray
 jfi
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
@@ -752,10 +768,11 @@ KEYEVENTF
 KEYIMAGE
 keynum
 keyremaps
+keyvault
 KILLFOCUS
 killrunner
+kmph
 Knownfolders
-ksh
 KSPROPERTY
 Kybd
 languagesjson
@@ -791,7 +808,6 @@ LOADFROMFILE
 LOBYTE
 LOCALDISPLAY
 LOCALPACKAGE
-localport
 LOCALSYSTEM
 LOCATIONCHANGE
 LOGFONT
@@ -805,6 +821,7 @@ LOWORD
 lparam
 LPBITMAPINFOHEADER
 LPCITEMIDLIST
+lpcmi
 LPCMINVOKECOMMANDINFO
 LPCREATESTRUCT
 LPCRECT
@@ -829,9 +846,11 @@ lptpm
 LPTR
 LPTSTR
 LPW
+lpwcx
 lpwndpl
 LReader
 LRESULT
+LSTATUS
 lstrcmp
 lstrcmpi
 lstrlen
@@ -846,10 +865,10 @@ lwin
 LZero
 majortype
 makecab
-MAKELANGID
 MAKEINTRESOURCE
 MAKEINTRESOURCEA
 MAKEINTRESOURCEW
+MAKELANGID
 makepri
 manifestdependency
 MAPPEDTOSAMEKEY
@@ -869,7 +888,6 @@ mdwn
 MEDIASUBTYPE
 mediatype
 mef
-MENUBREAK
 MENUITEMINFO
 MENUITEMINFOW
 MERGECOPY
@@ -929,9 +947,9 @@ MRT
 mru
 mrw
 msc
-msclr
 mscorlib
 msdata
+MSDL
 msedge
 MSGFLT
 msiexec
@@ -990,6 +1008,8 @@ newdev
 NEWDIALOGSTYLE
 newitem
 newpath
+newplus
+NEWPLUSCONTEXTMENU
 newrow
 newsgroups
 NIF
@@ -1002,7 +1022,10 @@ NOAGGREGATION
 NOASYNC
 NOCLOSEPROCESS
 NOCOALESCE
+NOCOMM
+NOCONFIRMMKDIR
 NOCOPYBITS
+NOCOPYSECURITYATTRIBS
 nodeca
 nodoc
 NODRAWCAPTION
@@ -1010,6 +1033,7 @@ NODRAWICON
 NOINHERITLAYOUT
 NOINTERFACE
 NOLINKINFO
+NOMCX
 NOMINMAX
 NOMIRRORBITMAP
 NOMOVE
@@ -1032,6 +1056,7 @@ NOSEARCH
 NOSENDCHANGING
 NOSIZE
 NOTIFICATIONSDLL
+NOTIFYICONDATA
 NOTIFYICONDATAW
 NOTIMPL
 notlike
@@ -1068,7 +1093,6 @@ oldtheme
 oleaut
 OLECHAR
 onebranch
-OOBEPT
 opencode
 OPENFILENAME
 opensource
@@ -1092,7 +1116,6 @@ OVERLAPPEDWINDOW
 overlaywindow
 Oversampling
 OWNDC
-OWNERDRAW
 Packagemanager
 PACL
 PAINTSTRUCT
@@ -1106,11 +1129,11 @@ PARTIALCONFIRMATIONDIALOGTITLE
 PATCOPY
 pathcch
 PATHMUSTEXIST
-Pathto
 PATINVERT
 PATPAINT
 PAUDIO
 pbc
+pbi
 PBlob
 pcb
 pcch
@@ -1119,11 +1142,13 @@ pch
 pchast
 PCIDLIST
 PCWSTR
+pdbs
 pdisp
 pdo
 pdto
 pdtobj
 pdw
+Peb
 pef
 PElems
 Pels
@@ -1155,6 +1180,7 @@ ploca
 plocm
 pluginsmodel
 PMSIHANDLE
+pnid
 Pnp
 Popups
 POPUPWINDOW
@@ -1182,6 +1208,7 @@ ppv
 prc
 Prefixer
 Preinstalled
+prependpath
 prevhost
 previewer
 PREVIEWHANDLERFRAMEINFO
@@ -1206,6 +1233,8 @@ projectname
 PROPBAG
 PROPERTYKEY
 propkey
+propsys
+PROPVARIANT
 propvarutil
 prvpane
 psapi
@@ -1237,6 +1266,7 @@ PWSTR
 pwsz
 pwtd
 QDC
+QDir
 qianlifeng
 qit
 QITAB
@@ -1247,8 +1277,6 @@ QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
 QUNS
-qwertyuiopasdfghjklzxcvbnm
-qwrtyuiopsghjklzxvnm
 raf
 RAII
 RAlt
@@ -1265,7 +1293,6 @@ RECTDESTINATION
 rectp
 RECTSOURCE
 recyclebin
-redirectedfrom
 Redist
 redistributable
 reencode
@@ -1336,6 +1363,9 @@ RRF
 rrr
 rsop
 Rsp
+rstringalnum
+rstringalpha
+rstringdigit
 Rstrtmgr
 RTB
 RTLREADING
@@ -1344,12 +1374,11 @@ runas
 rundll
 rungameid
 RUNLEVEL
-runsettings
-runspace
 runtimeclass
 runtimeobject
 runtimepack
 runtimes
+ruuid
 rvm
 rwin
 rwl
@@ -1365,12 +1394,14 @@ SCID
 Scip
 scipbe
 Scode
+screensaver
 screenshots
 scrollviewer
 sddl
 SDKDDK
 sdns
 searchterm
+SEARCHUI
 secpol
 SENDCHANGE
 sendinput
@@ -1406,6 +1437,8 @@ SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
 shellscalingapi
 SHFILEINFO
+SHFILEOPSTRUCT
+SHGDN
 SHGDNF
 SHGFI
 shinfo
@@ -1413,6 +1446,7 @@ shldisp
 shlobj
 shlwapi
 shmem
+SHNAMEMAPPING
 shobjidl
 SHORTCUTATLEAST
 shortcutcontrol
@@ -1502,7 +1536,6 @@ STATICEDGE
 STATSTG
 stdafx
 STDAPI
-stdcpp
 stdcpplatest
 STDMETHODCALLTYPE
 STDMETHODIMP
@@ -1518,7 +1551,7 @@ stringtable
 stringval
 Strm
 Strmiids
-Strret
+strret
 strsafe
 strutil
 sttngs
@@ -1526,7 +1559,7 @@ Stubless
 STYLECHANGED
 STYLECHANGING
 subkeys
-SUBLANG
+sublang
 subquery
 Superbar
 sut
@@ -1534,10 +1567,13 @@ svchost
 SVGIn
 SVGIO
 svgz
+SVSI
 SWC
 SWFO
 SWP
 SWRESTORE
+symbolrequestprod
+SYMCACHE
 SYMED
 SYMOPT
 SYNCMFT
@@ -1554,7 +1590,9 @@ SYSKEYUP
 SYSLIB
 SYSMENU
 SYSTEMAPPS
+systemsettings
 SYSTEMTIME
+SYSTEMWOW
 tapp
 TApplication
 TApplied
@@ -1577,7 +1615,6 @@ TDevice
 telem
 telephon
 templatenamespace
-testhost
 testprocess
 TEXCOORD
 TEXTEXTRACTOR
@@ -1602,16 +1639,17 @@ tlb
 tlbimp
 TMPVAR
 TNP
-toggleswitch
 Toolhelp
 toolkitconverters
 Toolset
 toolwindow
 TOPDOWNDIB
+TOTALCMD
 TOUCHEVENTF
 TOUCHINPUT
 touchpad
 tracelogging
+trafficmanager
 traies
 transicc
 TRAYMOUSEMESSAGE
@@ -1632,9 +1670,11 @@ TYPESHORTCUT
 UAC
 UAL
 uap
+UCallback
 udit
 uefi
 uesc
+UFlags
 UHash
 UIA
 UIEx
@@ -1666,12 +1706,15 @@ urlmon
 Usb
 USEDEFAULT
 USEFILEATTRIBUTES
+USEPOSITION
 USERDATA
 Userenv
 USESHOWWINDOW
+USESIZE
 USESTDHANDLES
 USRDLL
 UType
+uuidv
 uwp
 uxtheme
 vabdq
@@ -1705,8 +1748,10 @@ VIDEOINFOHEADER
 viewmodel
 vih
 VIRTUALDESK
+VISEGRADRELAY
 visiblecolorformats
 Visibletrue
+visualeffects
 VKey
 vmovl
 vorrq
@@ -1731,8 +1776,10 @@ VSTHRD
 VSTT
 vswhere
 Vtbl
+WANTMAPPINGHANDLE
 WANTPALM
 wbem
+Wbemidl
 wbemuuid
 WBounds
 Wca
@@ -1741,6 +1788,7 @@ WCE
 wcex
 WClass
 wcsicmp
+wcsncpy
 wcsnicmp
 WDA
 wdp
@@ -1820,6 +1868,10 @@ WNDCLASSEXW
 WNDCLASSW
 WNDPROC
 workarounds
+WORKSPACESEDITOR
+WORKSPACESLAUNCHER
+WORKSPACESSNAPSHOTTOOL
+WORKSPACESWINDOWARRANGER
 wox
 wparam
 wpf
@@ -1859,6 +1911,7 @@ XLoc
 XNamespace
 XPels
 XPixel
+xplorer
 XResource
 xsi
 XStr

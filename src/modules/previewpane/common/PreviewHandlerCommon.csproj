@@ -1,4 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+
   <PropertyGroup>
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyTitle>PowerToys.PreviewHandlerCommon</AssemblyTitle>
@@ -10,15 +13,9 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <ProjectGuid>{AF2349B8-E5B6-4004-9502-687C1C7730B1}</ProjectGuid>
-    <TargetFramework>net8.0-windows</TargetFramework>
     <AssemblyName>PowerToys.PreviewHandlerCommon</AssemblyName>
   </PropertyGroup>
-
-  <Import Project="..\..\..\Version.props" />
 
   <ItemGroup>
     <Compile Update="examplehandler\CustomControlTest.cs" />
@@ -29,5 +26,4 @@
     <PackageReference Include="Microsoft.Web.WebView2" />
     <PackageReference Include="System.IO.Abstractions" />
   </ItemGroup>
-
 </Project>

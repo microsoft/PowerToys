@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading.Tasks;
+
 using Peek.Common.Helpers;
 using Windows.Storage;
 
@@ -17,25 +18,24 @@ namespace Peek.Common.Models
         {
             get
             {
-                DateTime? dateModified;
                 try
                 {
-                    dateModified = System.IO.File.GetCreationTime(Path);
+                    return string.IsNullOrEmpty(Path) ? null : System.IO.File.GetLastWriteTime(Path);
                 }
                 catch
                 {
-                    dateModified = null;
+                    return null;
                 }
-
-                return dateModified;
             }
         }
 
         public string Extension { get; }
 
-        public string Name { get; init; }
+        public string Name { get; }
 
-        public string Path { get; init; }
+        public string ParsingName { get; }
+
+        public string Path { get; }
 
         public ulong FileSizeBytes => PropertyStoreHelper.TryGetUlongProperty(Path, PropertyKey.FileSizeBytes) ?? 0;
 

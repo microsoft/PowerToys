@@ -9,6 +9,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Controls;
+
 using ManagedCommon;
 using Microsoft.Plugin.Indexer.DriveDetection;
 using Microsoft.Plugin.Indexer.Interop;

@@ -1,4 +1,4 @@
-<UserControl
+﻿<UserControl
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -181,6 +181,11 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}" />
 
                 <NavigationViewItem
+                    x:Uid="NewPlus_Product_Name"
+                    helpers:NavHelper.NavigateTo="views:NewPlusPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}" />
+
+                <NavigationViewItem
                     x:Uid="Shell_Peek"
                     helpers:NavHelper.NavigateTo="views:PeekPage"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Peek.png}" />
@@ -224,6 +229,11 @@
                     helpers:NavHelper.NavigateTo="views:VideoConferencePage"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/VideoConferenceMute.png}"
                     IsEnabled="{x:Bind ViewModel.IsVideoConferenceBuild, Mode=OneWay}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_Workspaces"
+                    helpers:NavHelper.NavigateTo="views:WorkspacesPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}" />
             </NavigationView.MenuItems>
             <NavigationView.PaneFooter>
                 <StackPanel Orientation="Vertical">

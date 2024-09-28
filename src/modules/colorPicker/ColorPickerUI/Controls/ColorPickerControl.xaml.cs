@@ -11,9 +11,11 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+
 using ColorPicker.Helpers;
 using ManagedCommon;
 using Wpf.Ui.Controls;
+
 using static System.Net.Mime.MediaTypeNames;
 
 namespace ColorPicker.Controls

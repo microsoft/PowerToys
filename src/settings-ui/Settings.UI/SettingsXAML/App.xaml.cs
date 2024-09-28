@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -18,6 +17,7 @@ using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
+using PowerToys.Interop;
 using Windows.UI.Popups;
 using WinRT.Interop;
 using WinUIEx;
@@ -76,9 +76,22 @@ namespace Microsoft.PowerToys.Settings.UI
         /// </summary>
         public App()
         {
-            Logger.InitializeLogger("\\Settings\\Logs");
+            Logger.InitializeLogger(@"\Settings\Logs");
 
-            this.InitializeComponent();
+            string appLanguage = LanguageHelper.LoadLanguage();
+            if (!string.IsNullOrEmpty(appLanguage))
+            {
+                Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
+            }
+
+            InitializeComponent();
+
+            UnhandledException += App_UnhandledException;
+        }
+
+        private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            Logger.LogError("Unhandled exception", e.Exception);
         }
 
         public static void OpenSettingsWindow(Type type = null, bool ensurePageIsSelected = false)
@@ -417,6 +430,8 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "Peek": return typeof(PeekPage);
                 case "CropAndLock": return typeof(CropAndLockPage);
                 case "EnvironmentVariables": return typeof(EnvironmentVariablesPage);
+                case "NewPlus": return typeof(NewPlusPage);
+                case "Workspaces": return typeof(WorkspacesPage);
                 default:
                     // Fallback to Dashboard
                     Debug.Assert(false, "Unexpected SettingsWindow argument value");

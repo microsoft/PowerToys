@@ -178,6 +178,9 @@
                 "PowerToys.MouseWithoutBordersHelper.dll",
                 "PowerToys.MouseWithoutBordersHelper.exe",
 
+                "WinUI3Apps\\PowerToys.NewPlus.ShellExtension.dll",
+                "WinUI3Apps\\NewPlusPackage.msix",
+
                 "PowerAccent.Core.dll",
                 "PowerToys.PowerAccent.dll",
                 "PowerToys.PowerAccent.exe",
@@ -188,6 +191,15 @@
                 "WinUI3Apps\\PowerToys.PowerRename.exe",
                 "WinUI3Apps\\PowerToys.PowerRenameContextMenu.dll",
                 "WinUI3Apps\\PowerRenameContextMenuPackage.msix",
+
+                "PowerToys.WorkspacesSnapshotTool.exe",
+                "PowerToys.WorkspacesLauncher.exe",
+                "PowerToys.WorkspacesWindowArranger.exe",
+                "PowerToys.WorkspacesEditor.exe",
+                "PowerToys.WorkspacesEditor.dll",
+                "PowerToys.WorkspacesLauncherUI.exe",
+                "PowerToys.WorkspacesLauncherUI.dll",
+                "PowerToys.WorkspacesModuleInterface.dll",
 
                 "WinUI3Apps\\PowerToys.RegistryPreviewExt.dll",
                 "WinUI3Apps\\PowerToys.RegistryPreviewUILib.dll",

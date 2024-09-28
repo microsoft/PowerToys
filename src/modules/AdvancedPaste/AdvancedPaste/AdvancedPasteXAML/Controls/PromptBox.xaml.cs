@@ -5,6 +5,7 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
+
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Settings;
 using AdvancedPaste.ViewModels;
@@ -19,29 +20,19 @@ namespace AdvancedPaste.Controls
 {
     public sealed partial class PromptBox : Microsoft.UI.Xaml.Controls.UserControl
     {
+        // Minimum time to show spinner when generating custom format using forcePasteCustom
+        private static readonly TimeSpan MinTaskTime = TimeSpan.FromSeconds(2);
+
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-
-        private UserSettings _userSettings;
-
-        public static readonly DependencyProperty PromptProperty = DependencyProperty.Register(
-          nameof(Prompt),
-          typeof(string),
-          typeof(PromptBox),
-          new PropertyMetadata(defaultValue: string.Empty));
+        private readonly IUserSettings _userSettings;
 
         public OptionsViewModel ViewModel { get; private set; }
 
-        public string Prompt
-        {
-            get => (string)GetValue(PromptProperty);
-            set => SetValue(PromptProperty, value);
-        }
-
         public static readonly DependencyProperty PlaceholderTextProperty = DependencyProperty.Register(
-         nameof(PlaceholderText),
-         typeof(string),
-         typeof(PromptBox),
-         new PropertyMetadata(defaultValue: string.Empty));
+            nameof(PlaceholderText),
+            typeof(string),
+            typeof(PromptBox),
+            new PropertyMetadata(defaultValue: string.Empty));
 
         public string PlaceholderText
         {
@@ -50,10 +41,10 @@ namespace AdvancedPaste.Controls
         }
 
         public static readonly DependencyProperty FooterProperty = DependencyProperty.Register(
-        nameof(Footer),
-        typeof(object),
-        typeof(PromptBox),
-        new PropertyMetadata(defaultValue: null));
+            nameof(Footer),
+            typeof(object),
+            typeof(PromptBox),
+            new PropertyMetadata(defaultValue: null));
 
         public object Footer
         {
@@ -65,9 +56,10 @@ namespace AdvancedPaste.Controls
         {
             this.InitializeComponent();
 
-            _userSettings = new UserSettings();
+            _userSettings = App.GetService<IUserSettings>();
 
             ViewModel = App.GetService<OptionsViewModel>();
+            ViewModel.CustomActionActivated += (_, e) => GenerateCustom(e.ForcePasteCustom);
         }
 
         private void Grid_Loaded(object sender, RoutedEventArgs e)
@@ -76,29 +68,30 @@ namespace AdvancedPaste.Controls
         }
 
         [RelayCommand]
-        private void GenerateCustom()
+        private void GenerateCustom() => GenerateCustom(false);
+
+        private void GenerateCustom(bool forcePasteCustom)
         {
             Logger.LogTrace();
 
-            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteGenerateCustomFormatEvent());
-
             VisualStateManager.GoToState(this, "LoadingState", true);
-            string inputInstructions = InputTxtBox.Text;
+            string inputInstructions = ViewModel.Query;
             ViewModel.SaveQuery(inputInstructions);
 
             var customFormatTask = ViewModel.GenerateCustomFunction(inputInstructions);
-
-            customFormatTask.ContinueWith(
-                t =>
+            var delayTask = forcePasteCustom ? Task.Delay(MinTaskTime) : Task.CompletedTask;
+            Task.WhenAll(customFormatTask, delayTask)
+                .ContinueWith(
+                _ =>
                 {
                     _dispatcherQueue.TryEnqueue(() =>
                     {
-                        ViewModel.CustomFormatResult = t.Result;
+                        ViewModel.CustomFormatResult = customFormatTask.Result;
 
                         if (ViewModel.ApiRequestStatus == (int)HttpStatusCode.OK)
                         {
                             VisualStateManager.GoToState(this, "DefaultState", true);
-                            if (_userSettings.ShowCustomPreview)
+                            if (_userSettings.ShowCustomPreview && !forcePasteCustom)
                             {
                                 PreviewGrid.Width = InputTxtBox.ActualWidth;
                                 PreviewFlyout.ShowAt(InputTxtBox);
@@ -134,14 +127,9 @@ namespace AdvancedPaste.Controls
             ClipboardHelper.SetClipboardTextContent(lastQuery.ClipboardData);
         }
 
-        private void InputTxtBox_TextChanging(Microsoft.UI.Xaml.Controls.TextBox sender, TextBoxTextChangingEventArgs args)
-        {
-            SendBtn.Visibility = InputTxtBox.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
-        }
-
         private void InputTxtBox_KeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
         {
-            if (e.Key == Windows.System.VirtualKey.Enter && InputTxtBox.Text.Length > 0)
+            if (e.Key == Windows.System.VirtualKey.Enter && InputTxtBox.Text.Length > 0 && ViewModel.IsCustomAIEnabled)
             {
                 GenerateCustom();
             }

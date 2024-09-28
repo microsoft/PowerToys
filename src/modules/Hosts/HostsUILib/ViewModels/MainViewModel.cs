@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI;
@@ -18,6 +19,7 @@ using HostsUILib.Helpers;
 using HostsUILib.Models;
 using HostsUILib.Settings;
 using Microsoft.UI.Dispatching;
+
 using static HostsUILib.Settings.IUserSettings;
 
 namespace HostsUILib.ViewModels
@@ -283,7 +285,7 @@ namespace HostsUILib.ViewModels
         [RelayCommand]
         public void OverwriteHosts()
         {
-            _hostsService.RemoveReadOnly();
+            _hostsService.RemoveReadOnlyAttribute();
             _ = Task.Run(SaveAsync);
         }
 

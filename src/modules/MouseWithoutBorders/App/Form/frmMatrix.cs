@@ -9,6 +9,7 @@ using System.Drawing;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+
 using Microsoft.PowerToys.Telemetry;
 
 // <summary>
@@ -20,6 +21,7 @@ using Microsoft.PowerToys.Telemetry;
 //     2023- Included in PowerToys.
 // </history>
 using MouseWithoutBorders.Class;
+
 using Timer = System.Windows.Forms.Timer;
 
 [module: SuppressMessage("Microsoft.Globalization", "CA1300:SpecifyMessageBoxOptions", Scope = "member", Target = "MouseWithoutBorders.frmMatrix.#buttonOK_Click(System.Object,System.EventArgs)", Justification = "Dotnet port with style preservation")]
@@ -797,6 +799,14 @@ namespace MouseWithoutBorders
                 checkBoxHideLogo.Enabled = false;
             }
 
+            // Note(@htcfreek): Disable checkboxes of settings that we don't support in the PowerToys implementation
+            checkBoxDisableCAD.Enabled = false;
+            checkBoxDisableCAD.Text = checkBoxDisableCAD.Text + " [Unsupported!]";
+            checkBoxHideLogo.Enabled = false;
+            checkBoxHideLogo.Text = checkBoxHideLogo.Text + " [Unsupported!]";
+            checkBoxSendLog.Enabled = false;
+            checkBoxSendLog.Text = checkBoxSendLog.Text + " [Unsupported!]";
+
             checkBoxShareClipboard.Checked = Setting.Values.ShareClipboard;
 
             if (!Setting.Values.ShareClipboard)
@@ -845,6 +855,56 @@ namespace MouseWithoutBorders
 
             comboBoxEasyMouse.Text = Setting.Values.HotKeyToggleEasyMouse == 0 ? "Disable" : new string(new char[] { (char)Setting.Values.HotKeyToggleEasyMouse });
 #endif
+
+            // Apply policy configuration on UI elements
+            // Has to be the last action
+            if (Setting.Values.ShareClipboardIsGpoConfigured)
+            {
+                checkBoxShareClipboard.Enabled = false;
+                checkBoxShareClipboard.Text += " [Managed]";
+
+                // transfer file setting depends on clipboard sharing
+                checkBoxTransferFile.Enabled = false;
+            }
+
+            if (Setting.Values.TransferFileIsGpoConfigured)
+            {
+                checkBoxTransferFile.Enabled = false;
+                checkBoxTransferFile.Text += " [Managed]";
+            }
+
+            if (Setting.Values.BlockScreenSaverIsGpoConfigured)
+            {
+                checkBoxBlockScreenSaver.Enabled = false;
+                checkBoxBlockScreenSaver.Text += " [Managed]";
+            }
+
+            if (Setting.Values.SameSubNetOnlyIsGpoConfigured)
+            {
+                checkBoxSameSubNet.Enabled = false;
+                checkBoxSameSubNet.Text += " [Managed]";
+            }
+
+            if (Setting.Values.ReverseLookupIsGpoConfigured)
+            {
+                checkBoxReverseLookup.Enabled = false;
+                checkBoxReverseLookup.Text += " [Managed]";
+            }
+
+            if (Setting.Values.Name2IpIsGpoConfigured)
+            {
+                textBoxMachineName2IP.Enabled = false;
+                groupBoxDNS.ForeColor = Color.DimGray;
+                groupBoxDNS.Text += " [Managed]";
+            }
+
+            if (Setting.Values.Name2IpPolicyListIsGpoConfigured)
+            {
+                pictureBoxMouseWithoutBorders.Visible = false;
+                groupBoxName2IPPolicyList.Visible = true;
+                textBoxMachineName2IPPolicyList.Visible = true;
+                textBoxMachineName2IPPolicyList.Text = Setting.Values.Name2IpPolicyList;
+            }
         }
 
         private void RadioButton_CheckedChanged(object sender, EventArgs e)

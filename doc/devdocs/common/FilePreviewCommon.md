@@ -47,7 +47,16 @@ registerAdditionalNewLanguage("id", [".fileExtension"], idDefinition(), monaco)
 
   * The id can be anything. Recommended is one of the file extensions. For example "php" or "reg".
 
-4. Execute the steps described in the [monaco_languages.json](#monaco_languagesjson) section.
+4. In case you wish to add a custom color for a token, you can do so by adding the following line to [`customTokenColors.js`](/src/common/FilePreviewCommon/Assets/Monaco/customTokenColors.js):
+```javascript
+{token: 'token-name', foreground: 'ff0000'}
+```
+> Replace `token-name` with the name of the token and `ff0000` with the hex code of the desired color.
+> Note: you can also specify a `background` and a `fontStyle` attribute for your token.
+
+* Keep in mind that these rules apply to all languages. Therefore, you should not change the colors of any default tokens. Instead, create new tokens specific to the language you are adding.
+
+5. Execute the steps described in the [monaco_languages.json](#monaco_languagesjson) section.
 
 ### Add a new file extension to an existing language
 

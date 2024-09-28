@@ -4,6 +4,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
 using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -20,8 +21,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             PasteAsPlainTextShortcut = DefaultPasteAsPlainTextShortcut;
             PasteAsMarkdownShortcut = new();
             PasteAsJsonShortcut = new();
+            CustomActions = new();
             ShowCustomPreview = true;
             SendPasteKeyCombination = true;
+            CloseAfterLosingFocus = false;
         }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
@@ -30,6 +33,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         [CmdConfigureIgnore]
         public bool SendPasteKeyCombination { get; set; }
+
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool CloseAfterLosingFocus { get; set; }
 
         [JsonPropertyName("advanced-paste-ui-hotkey")]
         public HotkeySettings AdvancedPasteUIShortcut { get; set; }
@@ -42,6 +48,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("paste-as-json-hotkey")]
         public HotkeySettings PasteAsJsonShortcut { get; set; }
+
+        [JsonPropertyName("custom-actions")]
+        [CmdConfigureIgnoreAttribute]
+        public AdvancedPasteCustomActions CustomActions { get; set; }
 
         public override string ToString()
             => JsonSerializer.Serialize(this);

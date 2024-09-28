@@ -148,7 +148,11 @@
                         IsClosable="False"
                         IsOpen="True"
                         Severity="Informational"
-                        Visibility="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                        Visibility="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                        <InfoBar.ActionButton>
+                            <HyperlinkButton x:Uid="OpenSettings" Click="OpenAnimationsSettings_Click" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
                     <tkcontrols:SettingsExpander
                         x:Uid="MouseUtils_FindMyMouse_ExcludedApps"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
@@ -384,7 +388,7 @@
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="10"
                                     Maximum="500"
-                                    Minimum="1"
+                                    Minimum="0"
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.MousePointerCrosshairsRadius, Mode=TwoWay}" />

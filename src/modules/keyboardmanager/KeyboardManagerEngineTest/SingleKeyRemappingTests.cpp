@@ -39,22 +39,24 @@ namespace RemappingLogicTests
         {
             // Remap A to B
             testState.AddSingleKeyRemap(0x41, (DWORD)0x42);
-            const int nInputs = 1;
 
-            INPUT input[nInputs] = {};
-            input[0].type = INPUT_KEYBOARD;
-            input[0].ki.wVk = 0x41;
+            std::vector<INPUT> inputs1{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+            };
 
             // Send A keydown
-            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(inputs1);
 
             // A key state should be unchanged, and B key state should be true
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x42), true);
-            input[0].ki.dwFlags = KEYEVENTF_KEYUP;
+
+            std::vector<INPUT> inputs2{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A', .dwFlags = KEYEVENTF_KEYUP } },
+            };
 
             // Send A keyup
-            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(inputs2);
 
             // A key state should be unchanged, and B key state should be false
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
@@ -66,21 +68,23 @@ namespace RemappingLogicTests
         {
             // Remap A to VK_DISABLE (disabled)
             testState.AddSingleKeyRemap(0x41, CommonSharedConstants::VK_DISABLED);
-            const int nInputs = 1;
 
-            INPUT input[nInputs] = {};
-            input[0].type = INPUT_KEYBOARD;
-            input[0].ki.wVk = 0x41;
+            std::vector<INPUT> inputs1{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+            };
 
             // Send A keydown
-            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(inputs1);
 
             // A key state should be unchanged
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
-            input[0].ki.dwFlags = KEYEVENTF_KEYUP;
+
+            std::vector<INPUT> inputs2{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A', .dwFlags = KEYEVENTF_KEYUP } },
+            };
 
             // Send A keyup
-            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(inputs2);
 
             // A key state should be unchanged
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
@@ -91,22 +95,24 @@ namespace RemappingLogicTests
         {
             // Remap A to Common Win key
             testState.AddSingleKeyRemap(0x41, CommonSharedConstants::VK_WIN_BOTH);
-            const int nInputs = 1;
 
-            INPUT input[nInputs] = {};
-            input[0].type = INPUT_KEYBOARD;
-            input[0].ki.wVk = 0x41;
+            std::vector<INPUT> inputs1{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+            };
 
             // Send A keydown
-            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(inputs1);
 
             // A key state should be unchanged, and common Win key state should be true
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_LWIN), true);
-            input[0].ki.dwFlags = KEYEVENTF_KEYUP;
+
+            std::vector<INPUT> inputs2{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A', .dwFlags = KEYEVENTF_KEYUP } },
+            };
 
             // Send A keyup
-            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(inputs2);
 
             // A key state should be unchanged, and common Win key state should be false
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
@@ -126,14 +132,13 @@ namespace RemappingLogicTests
 
             // Remap Caps Lock to Ctrl
             testState.AddSingleKeyRemap(VK_CAPITAL, (DWORD)VK_CONTROL);
-            const int nInputs = 1;
 
-            INPUT input[nInputs] = {};
-            input[0].type = INPUT_KEYBOARD;
-            input[0].ki.wVk = VK_CAPITAL;
+            std::vector<INPUT> inputs{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_CAPITAL } },
+            };
 
             // Send Caps Lock keydown
-            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(inputs);
 
             // SendVirtualInput should be called exactly once with the above condition
             Assert::AreEqual(1, mockedInputHandler.GetSendVirtualInputCallCount());
@@ -152,14 +157,13 @@ namespace RemappingLogicTests
 
             // Remap Ctrl to Caps Lock
             testState.AddSingleKeyRemap(VK_CONTROL, (DWORD)VK_CAPITAL);
-            const int nInputs = 1;
 
-            INPUT input[nInputs] = {};
-            input[0].type = INPUT_KEYBOARD;
-            input[0].ki.wVk = VK_CONTROL;
+            std::vector<INPUT> inputs{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_CONTROL } },
+            };
 
             // Send Ctrl keydown
-            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(inputs);
 
             // SendVirtualInput should be called exactly once with the above condition
             Assert::AreEqual(1, mockedInputHandler.GetSendVirtualInputCallCount());
@@ -182,14 +186,13 @@ namespace RemappingLogicTests
             dest.SetKey(VK_SHIFT);
             dest.SetKey(0x56);
             testState.AddSingleKeyRemap(VK_CAPITAL, dest);
-            const int nInputs = 1;
 
-            INPUT input[nInputs] = {};
-            input[0].type = INPUT_KEYBOARD;
-            input[0].ki.wVk = VK_CAPITAL;
+            std::vector<INPUT> inputs{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_CAPITAL } },
+            };
 
             // Send Caps Lock keydown
-            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(inputs);
 
             // SendVirtualInput should be called exactly twice with the above condition
             Assert::AreEqual(2, mockedInputHandler.GetSendVirtualInputCallCount());
@@ -211,14 +214,13 @@ namespace RemappingLogicTests
             dest.SetKey(VK_CONTROL);
             dest.SetKey(VK_CAPITAL);
             testState.AddSingleKeyRemap(VK_CONTROL, dest);
-            const int nInputs = 1;
 
-            INPUT input[nInputs] = {};
-            input[0].type = INPUT_KEYBOARD;
-            input[0].ki.wVk = VK_CONTROL;
+            std::vector<INPUT> inputs{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_CONTROL } },
+            };
 
             // Send Ctrl keydown
-            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(inputs);
 
             // SendVirtualInput should be called exactly once with the above condition
             Assert::AreEqual(1, mockedInputHandler.GetSendVirtualInputCallCount());
@@ -232,23 +234,25 @@ namespace RemappingLogicTests
             dest.SetKey(VK_CONTROL);
             dest.SetKey(0x56);
             testState.AddSingleKeyRemap(0x41, dest);
-            const int nInputs = 1;
 
-            INPUT input[nInputs] = {};
-            input[0].type = INPUT_KEYBOARD;
-            input[0].ki.wVk = 0x41;
+            std::vector<INPUT> inputs1{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+            };
 
             // Send A keydown
-            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(inputs1);
 
             // A key state should be unchanged, and Ctrl, V key state should be true
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), true);
-            input[0].ki.dwFlags = KEYEVENTF_KEYUP;
+
+            std::vector<INPUT> inputs2{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A', .dwFlags = KEYEVENTF_KEYUP } },
+            };
 
             // Send A keyup
-            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(inputs2);
 
             // A key state should be unchanged, and Ctrl, V key state should be false
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
@@ -265,24 +269,26 @@ namespace RemappingLogicTests
             dest.SetKey(VK_SHIFT);
             dest.SetKey(0x56);
             testState.AddSingleKeyRemap(0x41, dest);
-            const int nInputs = 1;
 
-            INPUT input[nInputs] = {};
-            input[0].type = INPUT_KEYBOARD;
-            input[0].ki.wVk = 0x41;
+            std::vector<INPUT> inputs1{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+            };
 
             // Send A keydown
-            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(inputs1);
 
             // A key state should be unchanged, and Ctrl, Shift, V key state should be true
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_SHIFT), true);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), true);
-            input[0].ki.dwFlags = KEYEVENTF_KEYUP;
+
+            std::vector<INPUT> inputs2{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A', .dwFlags = KEYEVENTF_KEYUP } },
+            };
 
             // Send A keyup
-            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(inputs2);
 
             // A key state should be unchanged, and Ctrl, Shift, V key state should be false
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
@@ -299,22 +305,24 @@ namespace RemappingLogicTests
             dest.SetKey(VK_LCONTROL);
             dest.SetKey(0x56);
             testState.AddSingleKeyRemap(VK_LCONTROL, dest);
-            const int nInputs = 1;
 
-            INPUT input[nInputs] = {};
-            input[0].type = INPUT_KEYBOARD;
-            input[0].ki.wVk = VK_LCONTROL;
+            std::vector<INPUT> inputs1{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LCONTROL } },
+            };
 
             // Send LCtrl keydown
-            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(inputs1);
 
             // LCtrl, V key state should be true
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_LCONTROL), true);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), true);
-            input[0].ki.dwFlags = KEYEVENTF_KEYUP;
+
+            std::vector<INPUT> inputs2{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LCONTROL, .dwFlags = KEYEVENTF_KEYUP } },
+            };
 
             // Send LCtrl keyup
-            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(inputs2);
 
             // LCtrl, V key state should be false
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_LCONTROL), false);

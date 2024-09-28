@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+
 using Common.UI;
 using ManagedCommon;
 
@@ -80,6 +81,7 @@ namespace Peek.FilePreviewer.Previewers
 
             html = html.Replace("[[PT_LANG]]", vsCodeLangSet, StringComparison.InvariantCulture);
             html = html.Replace("[[PT_WRAP]]", wrapText ? "1" : "0", StringComparison.InvariantCulture);
+            html = html.Replace("[[PT_CONTEXTMENU]]", "0", StringComparison.InvariantCulture);
             html = html.Replace("[[PT_STICKY_SCROLL]]", stickyScroll ? "1" : "0", StringComparison.InvariantCulture);
             html = html.Replace("[[PT_THEME]]", theme, StringComparison.InvariantCulture);
             html = html.Replace("[[PT_FONT_SIZE]]", fontSize.ToString(CultureInfo.InvariantCulture), StringComparison.InvariantCulture);

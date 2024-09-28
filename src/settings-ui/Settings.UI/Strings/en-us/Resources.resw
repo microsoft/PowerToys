@@ -59,7 +59,10 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xsd:schema id="root"
+    xmlns=""
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
@@ -720,7 +723,7 @@
     <value>Save multiple items to your clipboard. This is an OS feature.</value>
   </data>
   <data name="AdvancedPaste_Direct_Access_Hotkeys_GroupSettings.Header" xml:space="preserve">
-    <value>Shortcuts</value>
+    <value>Actions</value>
   </data>
   <data name="RemapKeysList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Current Key Remappings</value>
@@ -1996,8 +1999,43 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="PasteAsPlainText_Shortcut.Header" xml:space="preserve">
     <value>Paste as plain text directly</value>
   </data>
+  <data name="AdvancedPasteUI_Actions.Header" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="AdvancedPasteUI_Actions.Description" xml:space="preserve">
+    <value>Create and manage advanced paste custom actions.
+(Requires Paste with AI to be enabled)</value>
+  </data>
+  <data name="AdvancedPasteUI_AddCustomActionButton.Content" xml:space="preserve">
+    <value>Add custom action</value>
+  </data>
   <data name="AdvancedPasteUI_Shortcut.Header" xml:space="preserve">
     <value>Open Advanced Paste window</value>
+  </data>
+  <data name="AdvancedPasteUI_NewCustomActionPrefix" xml:space="preserve">
+    <value>New custom action</value>
+    <comment>First part of the default name of new custom action that can be added in PT's settings ui.</comment>
+  </data>
+  <data name="AdvancedPasteUI_CustomAction_Name.Header" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="AdvancedPasteUI_CustomAction_Prompt.Header" xml:space="preserve">
+    <value>Prompt</value>
+  </data>
+  <data name="CustomActionDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="AddCustomAction" xml:space="preserve">
+    <value>Add custom action</value>
+  </data>
+  <data name="CustomActionSave" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="EditCustomAction" xml:space="preserve">
+    <value>Edit custom action</value>
+  </data>
+  <data name="CustomActionUpdate" xml:space="preserve">
+    <value>Update</value>
   </data>
   <data name="PasteAsMarkdown_Shortcut.Header" xml:space="preserve">
     <value>Paste as Markdown directly</value>
@@ -2059,6 +2097,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="Oobe_PowerRename.Description" xml:space="preserve">
     <value>PowerRename enables you to perform simple bulk renaming, searching and replacing file names.</value>
+  </data>
+  <data name="Oobe_Workspaces.Description" xml:space="preserve">
+    <value>The Workspaces utility enables you to launch a set of applications to a custom layout and configuration all at once.</value>
   </data>
   <data name="Oobe_Run.Description" xml:space="preserve">
     <value>PowerToys Run is a quick launcher for power users that contains some additional features without sacrificing performance.</value>
@@ -2146,6 +2187,16 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_PowerRename_HowToUse.Text" xml:space="preserve">
     <value>In File Explorer, right-click one or more selected files and select **Rename with PowerRename** from the context menu.</value>
   </data>
+  <data name="Oobe_Workspaces_HowToUse_Shortcut.Text" xml:space="preserve">
+    <value>to open the Workspaces Editor.</value>
+    <comment>{Locked="Workspaces"}</comment>
+  </data>
+  <data name="Oobe_Workspaces_HowToUse.Text" xml:space="preserve">
+    <value>In the Workspaces Editor window create Workspaces - a set of applications arranged in a custom layout. You can launch Workspaces from the Workspaces Editor or by shortcuts created in the Workspaces Editor.</value>
+  </data>
+  <data name="Oobe_Workspaces_TipsAndTricks.Text" xml:space="preserve">
+    <value>Customize the configuration of your apps on launch by adding CLI arguments to each app in the Workspaces Editor.</value>
+  </data>
   <data name="Oobe_PowerRename_TipsAndTricks.Text" xml:space="preserve">
     <value>PowerRename supports searching for files using regular expressions to enable more advanced renaming functionalities.</value>
   </data>
@@ -2208,6 +2259,10 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_PowerRename.Title" xml:space="preserve">
     <value>PowerRename</value>
+    <comment>Do not localize this string</comment>
+  </data>
+  <data name="Oobe_Workspaces.Title" xml:space="preserve">
+    <value>Workspaces</value>
     <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_Run.Title" xml:space="preserve">
@@ -2708,8 +2763,8 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Time before the spotlight appears (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
-  <data name="MouseUtils_FindMyMouse_AnimationDurationMs_Disabled.Message" xml:space="preserve">
-    <value>Animations are disabled by OS. See Settings &gt; Accessibility &gt; Visual effects</value>
+  <data name="MouseUtils_FindMyMouse_AnimationDurationMs_Disabled.Title" xml:space="preserve">
+    <value>Animations are disabled in your system settings.</value>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingMinimumDistance.Header" xml:space="preserve">
     <value>Shake minimum distance</value>
@@ -3114,6 +3169,32 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Shell_QuickAccent.Content" xml:space="preserve">
     <value>Quick Accent</value>
   </data>
+  <data name="Shell_Workspaces.Content" xml:space="preserve">
+    <value>Workspaces</value>
+  </data>
+  <data name="Workspaces_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Workspaces</value>
+    <comment>"Workspaces" is the name of the utility</comment>
+  </data>
+  <data name="Workspaces_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="Workspaces_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to launch the Workspaces Editor</value>
+  </data>
+  <data name="Workspaces_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="Workspaces_LaunchEditorButtonControl.Description" xml:space="preserve">
+    <value>Create and manage Workspaces</value>
+  </data>
+  <data name="Workspaces_LaunchEditorButtonControl.Header" xml:space="preserve">
+    <value>Launch editor</value>
+  </data>
+  <data name="LearnMore_Workspaces.Text" xml:space="preserve">
+    <value>Learn more about the Workspaces utility</value>
+    <comment> Workspaces is the name of the module. </comment>
+  </data>
   <data name="QuickAccent.ModuleDescription" xml:space="preserve">
     <value>Quick Accent is an alternative way to type accented characters, useful for when a keyboard doesn't support that specific accent.
 
@@ -3444,6 +3525,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_All.Content" xml:space="preserve">
     <value>All available</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Bulgarian.Content" xml:space="preserve">
+    <value>Bulgarian</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Catalan.Content" xml:space="preserve">
     <value>Catalan</value>
   </data>
@@ -3503,6 +3587,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_SelectedLanguage_Maori.Content" xml:space="preserve">
     <value>Maori</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Romanization.Content" xml:space="preserve">
+    <value>Middle Eastern Romanization</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Dutch.Content" xml:space="preserve">
     <value>Dutch</value>
@@ -3763,8 +3850,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AdvancedPaste_EnableAISettingsGroup.Header" xml:space="preserve">
     <value>Paste with AI</value>
   </data>
-  <data name="AdvancedPaste_ClipboardHistorySettingsGroup.Header" xml:space="preserve">
-    <value>Clipboard history</value>
+  <data name="AdvancedPaste_BehaviorSettingsGroup.Header" xml:space="preserve">
+    <value>Behavior</value>
   </data>
   <data name="AdvancedPaste_ShowCustomPreviewSettingsCard.Header" xml:space="preserve">
     <value>Custom format preview</value>
@@ -4191,5 +4278,190 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="AdvancedPaste_EnableAIDialog_NoteAICreditsErrorText.Text" xml:space="preserve">
     <value>If you do not have credits you will see an 'API key quota exceeded' error</value>
+  </data>
+  <data name="AdvancedPaste_CloseAfterLosingFocus.Header" xml:space="preserve">
+    <value>Automatically close the AdvancedPaste window after it loses focus</value>
+    <comment>AdvancedPaste is a product name, do not loc</comment>
+  </data>
+  <data name="NewPlus.ModuleTitle" xml:space="preserve">
+    <value>New+</value>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="NewPlus.ModuleDescription" xml:space="preserve">
+    <value>Create files and folders from a personalized set of templates</value>
+  </data>
+  <data name="NewPlus_Product_Name.Content" xml:space="preserve">
+    <value>New+</value>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="NewPlus_Product_Description.Description" xml:space="preserve">
+    <value>Create files and folders from a personalized set of templates</value>
+    <comment>New+ product description</comment>
+  </data>
+  <data name="NewPlus_Learn_More.Text" xml:space="preserve">
+    <value>Learn more about New+</value>
+    <comment>New+ learn more link. Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="NewPlus_Enable_Toggle.Header" xml:space="preserve">
+    <value>Enable New+</value>
+    <comment>Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="NewPlus_NoWindows10SupportWarning.Title" xml:space="preserve">
+    <value>New+ is not supported in Windows 10 and is not expected to work.</value>
+  </data>
+  <data name="NewPlus_TemplatesNotBackupAndRestoreWarning.Title" xml:space="preserve">
+    <value>PowerToys "Backup and Restore" feature doesn't take templates into account at this moment. If you use that feature, templates will have to be copied manually.</value>
+  </data>
+  <data name="NewPlus_Templates.Header" xml:space="preserve">
+    <value>Templates</value>
+    <comment>Templates label</comment>
+  </data>
+  <data name="NewPlus_Templates_Location.Header" xml:space="preserve">
+    <value>Location</value>
+    <comment>Templates Location label</comment>
+  </data>
+  <data name="NewPlus_Templates_Location_Path.Text" xml:space="preserve">
+    <value>...</value>
+    <comment>Do not localize</comment>
+  </data>
+  <data name="NewPlus_Templates_Location_Learn_More.Content" xml:space="preserve">
+    <value>Learn more about template location</value>
+    <comment>Read more about templates location</comment>
+  </data>
+  <data name="NewPlus_Templates_Location_Change.Content" xml:space="preserve">
+    <value>Change</value>
+    <comment>Button where user can Change the location of New templates</comment>
+  </data>
+  <data name="NewPlus_Display_Options.Header" xml:space="preserve">
+    <value>Display options</value>
+    <comment>Display options label</comment>
+  </data>
+  <data name="NewPlus_Hide_File_Extension_Toggle.Header" xml:space="preserve">
+    <value>Hide template filename extension</value>
+    <comment>Template file name extension settings toggle</comment>
+  </data>
+  <data name="NewPlus_Hide_Starting_Digits_Toggle.Header" xml:space="preserve">
+    <value>Hide template filename starting digits, spaces, and dots</value>
+    <comment>Template filename starting digits settings toggle</comment>
+  </data>
+  <data name="NewPlus_Hide_Starting_Digits_Description.Text" xml:space="preserve">
+    <value>This option is useful when using digits, spaces and dots at the beginning of filenames to control the display order of templates</value>
+    <comment>Template filename starting digits settings toggle</comment>
+  </data>
+  <data name="NewPlus.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+    <comment>giving credit</comment>
+  </data>
+  <data name="Oobe_NewPlus.Title" xml:space="preserve">
+    <value>New+</value>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="Oobe_NewPlus.Description" xml:space="preserve">
+    <value>Create files and folders from a personalized set of templates.</value>
+  </data>
+  <data name="Oobe_NewPlus_HowToUse.Text" xml:space="preserve">
+    <value>In File Explorer, right-click the desktop or a folder and via the New+ from the context menu select your template. You can add new templates by opening the template folder via "Open templates" and add new files and folders there.</value>
+  </data>
+  <data name="Oobe_NewPlus_TipsAndTricks.Text" xml:space="preserve">
+    <value>You can have multiple templates of the same file type, and you can even template folders!</value>
+  </data>  
+  <data name="Workspaces.ModuleDescription" xml:space="preserve">
+    <value>Workspaces is a quick and easy way to launch a set of applications to custom positions and configurations with one-click.</value>
+  </data>
+  <data name="Workspaces.ModuleTitle" xml:space="preserve">
+    <value>Workspaces</value>
+  </data>
+  <data name="Workspaces_ShortDescription" xml:space="preserve">
+    <value>Create and launch Workspaces</value>
+  </data>
+  <data name="MouseWithoutBorders_PolicyIPAddressMappingInfo.Title" xml:space="preserve">
+    <value>Rules defined by your organization</value>
+  </data>
+  <data name="MouseWithoutBorders_PolicyIPAddressMappingInfo_TextBoxControl.Description" xml:space="preserve">
+    <value>You can not change, remove or disable these enforced rules.</value>
+  </data>
+  <data name="OpenSettings.Content" xml:space="preserve">
+    <value>Open settings</value>
+  </data>
+  <data name="LanguageHeader.Header" xml:space="preserve">
+    <value>Application language</value>
+  </data>
+  <data name="LanguageHeader.Description" xml:space="preserve">
+    <value>PowerToys will use OS language by default.</value>
+  </data>
+  <data name="LanguageRestartInfo.Title" xml:space="preserve">
+    <value>Restart PowerToys for language change to take effect.</value>
+  </data>
+  <data name="LanguageRestartInfoButton.Content" xml:space="preserve">
+    <value>Restart</value>
+  </data>
+  <data name="Default_Language" xml:space="preserve">
+    <value>Windows default</value>
+  </data>
+  <data name="Arabic_Saudi_Arabia_Language" xml:space="preserve">
+    <value>Arabic (Saudi Arabia)</value>
+  </data>
+  <data name="Czech_Language" xml:space="preserve">
+    <value>Czech</value>
+  </data>
+  <data name="German_Language" xml:space="preserve">
+    <value>German</value>
+  </data>
+  <data name="English_Language" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="Spanish_Language" xml:space="preserve">
+    <value>Spanish</value>
+  </data>
+  <data name="Persian_Farsi_Language" xml:space="preserve">
+    <value>Persian (Farsi)</value>
+  </data>
+  <data name="French_Language" xml:space="preserve">
+    <value>French</value>
+  </data>
+  <data name="Hebrew_Israel_Language" xml:space="preserve">
+    <value>Hebrew (Israel)</value>
+  </data>
+  <data name="Hungarian_Language" xml:space="preserve">
+    <value>Hungarian</value>
+  </data>
+  <data name="Italian_Language" xml:space="preserve">
+    <value>Italian</value>
+  </data>
+  <data name="Japanese_Language" xml:space="preserve">
+    <value>Japanese</value>
+  </data>
+  <data name="Korean_Language" xml:space="preserve">
+    <value>Korean</value>
+  </data>
+  <data name="Dutch_Language" xml:space="preserve">
+    <value>Dutch</value>
+  </data>
+  <data name="Polish_Language" xml:space="preserve">
+    <value>Polish</value>
+  </data>
+  <data name="Portuguese_Brazil_Language" xml:space="preserve">
+    <value>Portuguese (Brazil)</value>
+  </data>
+  <data name="Portuguese_Portugal_Language" xml:space="preserve">
+    <value>Portuguese (Portugal)</value>
+  </data>
+  <data name="Russian_Language" xml:space="preserve">
+    <value>Russian</value>
+  </data>
+  <data name="Swedish_Language" xml:space="preserve">
+    <value>Swedish</value>
+  </data>
+  <data name="Turkish_Language" xml:space="preserve">
+    <value>Turkish</value>
+  </data>
+  <data name="Ukrainian_Language" xml:space="preserve">
+    <value>Ukrainian</value>
+  </data>
+  <data name="Chinese_Simplified_Language" xml:space="preserve">
+    <value>Chinese (Simplified)</value>
+  </data>
+  <data name="Chinese_Traditional_Language" xml:space="preserve">
+    <value>Chinese (Traditional)</value>
   </data>
 </root>

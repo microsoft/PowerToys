@@ -5,6 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
+
 using Microsoft.PowerToys.Run.Plugin.Registry.Constants;
 
 namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
@@ -33,6 +35,18 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
         };
 
         /// <summary>
+        /// Sanitize the query to avoid issues with the regex
+        /// </summary>
+        /// <param name="query">Query containing front-slash</param>
+        /// <returns>A string replacing all the front-slashes with back-slashes</returns>
+        private static string SanitizeQuery(in string query)
+        {
+            var sanitizedQuery = Regex.Replace(query, @"/(?<=^(?:[^""]*""[^""]*"")*[^""]*)(?<!//.+)", "\\");
+
+            return sanitizedQuery.Replace("\"", string.Empty);
+        }
+
+        /// <summary>
         /// Return the parts of a given query
         /// </summary>
         /// <param name="query">The query that could contain parts</param>
@@ -41,14 +55,16 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
         /// <returns><see langword="true"/> when the query search for a key and a value name, otherwise <see langword="false"/></returns>
         internal static bool GetQueryParts(in string query, out string queryKey, out string queryValueName)
         {
-            if (!query.Contains(QuerySplitCharacter, StringComparison.InvariantCultureIgnoreCase))
+            var sanitizedQuery = SanitizeQuery(query);
+
+            if (!sanitizedQuery.Contains(QuerySplitCharacter, StringComparison.InvariantCultureIgnoreCase))
             {
-                queryKey = query;
+                queryKey = sanitizedQuery;
                 queryValueName = string.Empty;
                 return false;
             }
 
-            var querySplit = query.Split(QuerySplitCharacter);
+            var querySplit = sanitizedQuery.Split(QuerySplitCharacter);
 
             queryKey = querySplit.First();
             queryValueName = querySplit.Last();

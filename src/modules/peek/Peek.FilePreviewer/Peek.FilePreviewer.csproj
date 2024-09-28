@@ -1,11 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\Version.props" />
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+
   <PropertyGroup>
-    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
-    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <RootNamespace>Peek.FilePreviewer</RootNamespace>
-    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -21,6 +19,8 @@
     <None Remove="Controls\BrowserControl.xaml" />
     <None Remove="Controls\DriveControl.xaml" />
     <None Remove="Controls\ShellPreviewHandlerControl.xaml" />
+    <None Remove="Controls\SpecialFolderPreview\SpecialFolderInformationalPreviewControl.xaml" />
+    <None Remove="Controls\SpecialFolderPreview\SpecialFolderPreview.xaml" />
     <None Remove="Controls\UnsupportedFilePreview\FailedFallbackPreviewControl.xaml" />
     <None Remove="Controls\UnsupportedFilePreview\InformationalPreviewControl.xaml" />
     <None Remove="FilePreview.xaml" />
@@ -40,6 +40,27 @@
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <COMReference Include="Shell32">
+      <VersionMinor>0</VersionMinor>
+      <VersionMajor>1</VersionMajor>
+      <Guid>50a7e9b0-70ef-11d1-b75a-00a0c90564fe</Guid>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>false</Isolated>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="SHDocVw">
+      <VersionMinor>1</VersionMinor>
+      <VersionMajor>1</VersionMajor>
+      <Guid>eab22ac0-30c1-11cf-a7eb-0000c05bae0b</Guid>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>false</Isolated>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+    </COMReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -71,10 +92,7 @@
     <Page Update="Controls\ArchiveControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Controls\UnsupportedFilePreview\FailedFallbackPreviewControl.xaml">
+    <Page Update="Controls\SpecialFolderPreview\SpecialFolderInformationalPreviewControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
