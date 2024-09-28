@@ -44,16 +44,25 @@ namespace FileActionsMenu.Ui
 
             this.SetWindowOpacity(0);
 
-            string[] pluginPaths = Directory.EnumerateDirectories((Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new InvalidOperationException()) + "\\..\\FileActionsMenuPlugins").ToArray();
+            string[] ignoredDirectories = ["FileActionsMenu.Helpers", "FileActionsMenu.Interfaces", "runtimes", "Peek.Common", "PowerToys.FileActionsMenu.Plugins"];
+
+            string[] pluginPaths = Directory.EnumerateDirectories((Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new InvalidOperationException()) + "\\..\\FileActionsMenuPlugins").Where(folderName => !ignoredDirectories.Contains(Path.GetFileName(folderName))).ToArray();
             foreach (string pluginPath in pluginPaths)
             {
-                Assembly plugin = Assembly.LoadFrom(Directory.EnumerateFiles(pluginPath).First(file => Path.GetFileName(file).StartsWith("PowerToys.FileActionsMenu.Plugins", StringComparison.InvariantCultureIgnoreCase) && Path.GetFileName(file).EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase)));
-                plugin.GetExportedTypes().Where(type => type.GetInterfaces().Any(i => i.FullName?.EndsWith("IFileActionsMenuPlugin", StringComparison.InvariantCulture) ?? false)).ToList().ForEach(type =>
+                try
                 {
-                    dynamic pluginInstance = Activator.CreateInstance(type)!;
-                    Array.ForEach((IAction[])pluginInstance.TopLevelMenuActions, action => Array.Resize(ref _actions, _actions.Length + 1));
-                    pluginInstance.TopLevelMenuActions.CopyTo(_actions, _actions.Length - pluginInstance.TopLevelMenuActions.Length);
-                });
+                    Assembly plugin = Assembly.LoadFrom(Directory.EnumerateFiles(pluginPath).First(file => Path.GetFileName(file).StartsWith("PowerToys.FileActionsMenu.Plugins", StringComparison.InvariantCultureIgnoreCase) && Path.GetFileName(file).EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase)));
+                    plugin.GetExportedTypes().Where(type => type.GetInterfaces().Any(i => i.FullName?.EndsWith("IFileActionsMenuPlugin", StringComparison.InvariantCulture) ?? false)).ToList().ForEach(type =>
+                    {
+                        dynamic pluginInstance = Activator.CreateInstance(type)!;
+                        Array.ForEach((IAction[])pluginInstance.TopLevelMenuActions, action => Array.Resize(ref _actions, _actions.Length + 1));
+                        pluginInstance.TopLevelMenuActions.CopyTo(_actions, _actions.Length - pluginInstance.TopLevelMenuActions.Length);
+                    });
+                }
+                catch (InvalidOperationException)
+                {
+                    MessageBox.Show(ResourceHelper.GetResource("InvalidPlugin") + pluginPath, ResourceHelper.GetResource("Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
 
             PowerToysTelemetry.Log.WriteEvent(new FileActionsMenuInvokedEvent()

@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\FileActionsMenuPlugin.Props"/>
-
   <PropertyGroup>
     <FileActionsMenuPluginName>ExecutableActions</FileActionsMenuPluginName>
   </PropertyGroup>
+
+  <Import Project="..\FileActionsMenuPlugin.Props"/>
 
   <ItemGroup>
     <PackageReference Include="System.IO.Hashing" />

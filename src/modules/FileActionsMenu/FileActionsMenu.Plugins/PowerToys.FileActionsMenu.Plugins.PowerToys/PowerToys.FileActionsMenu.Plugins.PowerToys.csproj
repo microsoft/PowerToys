@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\FileActionsMenuPlugin.Props"/>
-
   <PropertyGroup>
     <FileActionsMenuPluginName>PowerToys</FileActionsMenuPluginName>
   </PropertyGroup>
+
+  <Import Project="..\FileActionsMenuPlugin.Props"/>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />

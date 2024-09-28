@@ -414,4 +414,14 @@
   <data name="Move_Copy_Actions.SaveAs.Progress" xml:space="preserve">
     <value>Saving file</value>
   </data>
+  <data name="InvalidPlugin" xml:space="preserve">
+    <value>Error loading plugin located at: </value>
+    <comment>Space at the end required. After this message comes a file path</comment>
+  </data>
+  <data name="InvalidExplorerItem" xml:space="preserve">
+    <value>File Actions menu can't be opened with the selected items.</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
 </root>

@@ -70,6 +70,15 @@ namespace FileActionsMenu.Helpers.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        internal static string Error {
+            get {
+                return ResourceManager.GetString("Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Adds actions for .exe and .dll files..
         /// </summary>
         internal static string Executable_Actions_Description {
@@ -480,6 +489,24 @@ namespace FileActionsMenu.Helpers.Properties {
         internal static string Image_Clipboard_Actions_Title {
             get {
                 return ResourceManager.GetString("Image_Clipboard_Actions.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File Actions menu can&apos;t be opened with the selected items..
+        /// </summary>
+        internal static string InvalidExplorerItem {
+            get {
+                return ResourceManager.GetString("InvalidExplorerItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error loading plugin located at: .
+        /// </summary>
+        internal static string InvalidPlugin {
+            get {
+                return ResourceManager.GetString("InvalidPlugin", resourceCulture);
             }
         }
         

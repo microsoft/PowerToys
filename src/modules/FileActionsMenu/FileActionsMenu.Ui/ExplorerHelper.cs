@@ -8,7 +8,9 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Windows;
 using System.Windows.Navigation;
+using FileActionsMenu.Helpers;
 using Peek.Common.Models;
 using Peek.Helpers;
 using Peek.Helpers.Extensions;
@@ -62,10 +64,17 @@ namespace FileActionsMenu.Ui.Helpers
                 }
             }
 
-            for (int i = 0; i < itemArray.GetCount(); i++)
+            try
             {
-                IShellItem item = itemArray.GetItemAt(i);
-                selected.Add(item.GetDisplayName(Windows.Win32.UI.Shell.SIGDN.SIGDN_FILESYSPATH));
+                for (int i = 0; i < itemArray.GetCount(); i++)
+                {
+                    IShellItem item = itemArray.GetItemAt(i);
+                    selected.Add(item.GetDisplayName(Windows.Win32.UI.Shell.SIGDN.SIGDN_FILESYSPATH));
+                }
+            }
+            catch (Exception)
+            {
+                MessageBox.Show(ResourceHelper.GetResource("InvalidExplorerItem"), ResourceHelper.GetResource("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
             return [.. selected];

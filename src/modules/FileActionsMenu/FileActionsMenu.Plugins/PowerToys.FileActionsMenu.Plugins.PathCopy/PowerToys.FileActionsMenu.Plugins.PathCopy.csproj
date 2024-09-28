@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\FileActionsMenuPlugin.Props"/>
-
   <PropertyGroup>
     <FileActionsMenuPluginName>PathCopy</FileActionsMenuPluginName>
   </PropertyGroup>
+
+  <Import Project="..\FileActionsMenuPlugin.Props"/>
 </Project>
