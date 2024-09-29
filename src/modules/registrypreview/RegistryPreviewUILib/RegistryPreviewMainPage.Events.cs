@@ -10,6 +10,7 @@ using System.Globalization;
 using System.IO;
 
 using CommunityToolkit.WinUI.UI.Controls;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
@@ -20,6 +21,8 @@ namespace RegistryPreviewUILib
 {
     public sealed partial class RegistryPreviewMainPage : Page
     {
+        private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+
         /// <summary>
         /// Event that is will prevent the app from closing if the "save file" flag is active
         /// </summary>
@@ -348,8 +351,11 @@ namespace RegistryPreviewUILib
         /// </summary>
         private void MonacoEditor_TextChanged(object sender, EventArgs e)
         {
-            RefreshRegistryFile();
-            saveButton.IsEnabled = true;
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                RefreshRegistryFile();
+                saveButton.IsEnabled = true;
+            });
         }
     }
 }

@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Web;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
@@ -15,8 +16,11 @@ using Microsoft.Web.WebView2.Core;
 namespace RegistryPreviewUILib
 {
     [INotifyPropertyChanged]
-    public sealed partial class MonacoEditorControl : UserControl
+    public sealed partial class MonacoEditorControl : UserControl, IDisposable
     {
+        private readonly Timer _textChangedThrottle;
+        private bool _textChangedThrottled;
+
         public string Text { get; private set; }
 
         [ObservableProperty]
@@ -28,18 +32,22 @@ namespace RegistryPreviewUILib
         {
             InitializeComponent();
 
+            _textChangedThrottle = new Timer(250);
+            _textChangedThrottle.Elapsed += OnTextChangedThrottleElapsed;
+            _textChangedThrottle.AutoReset = false;
+
             ActualThemeChanged += OnActualThemeChanged;
         }
 
         public async Task SetTextAsync(string text)
         {
-            if (IsLoading)
-            {
-                await Browser.EnsureCoreWebView2Async();
-            }
+            Text = text;
 
-            var encodedText = HttpUtility.JavaScriptStringEncode(text);
-            await Browser.CoreWebView2.ExecuteScriptAsync($"editor.setValue('{encodedText}')");
+            if (!IsLoading)
+            {
+                var encodedText = HttpUtility.JavaScriptStringEncode(text);
+                await Browser.CoreWebView2.ExecuteScriptAsync($"editor.setValue('{encodedText}')");
+            }
         }
 
         private async void OnActualThemeChanged(FrameworkElement sender, object args)
@@ -53,6 +61,7 @@ namespace RegistryPreviewUILib
 
             await Browser.EnsureCoreWebView2Async();
             Browser.CoreWebView2.NavigationCompleted += CoreWebView2_NavigationCompleted;
+            Browser.CoreWebView2.PermissionRequested += CoreWebView2_PermissionRequested;
             Browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
             Browser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
             Browser.CoreWebView2.Settings.AreHostObjectsAllowed = false;
@@ -72,15 +81,25 @@ namespace RegistryPreviewUILib
                 Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.MonacoDirectory,
                 CoreWebView2HostResourceAccessKind.Allow);
 
-            // TODO share Monaco src with other projects
-            Browser.CoreWebView2.Navigate(Path.Combine(Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.MonacoDirectory, "registryEditorIndex.html"));
+            var index = Path.Combine(Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.MonacoDirectory, "registryEditorIndex.html");
+            Browser.CoreWebView2.Navigate(index);
+        }
+
+        private void CoreWebView2_PermissionRequested(CoreWebView2 sender, CoreWebView2PermissionRequestedEventArgs args)
+        {
+            if (args.PermissionKind == CoreWebView2PermissionKind.ClipboardRead)
+            {
+                // Hide the permission request dialog
+                args.State = CoreWebView2PermissionState.Allow;
+                args.Handled = true;
+            }
         }
 
         private async void CoreWebView2_NavigationCompleted(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
             await SetThemeAsync();
-            await SetTextAsync(Text);
             IsLoading = false;
+            await SetTextAsync(Text);
 
             Browser.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
             Browser.Focus(FocusState.Programmatic);
@@ -107,13 +126,40 @@ namespace RegistryPreviewUILib
             }
 
             Text = content;
-            TextChanged?.Invoke(this, EventArgs.Empty);
+            ThrottleTextChanged();
         }
 
         private async Task SetThemeAsync()
         {
             var theme = Application.Current.RequestedTheme == ApplicationTheme.Light ? "vs" : "vs-dark";
             await Browser.CoreWebView2.ExecuteScriptAsync($"monaco.editor.setTheme('{theme}')");
+        }
+
+        private void OnTextChangedThrottleElapsed(object sender, ElapsedEventArgs e)
+        {
+            if (_textChangedThrottled)
+            {
+                _textChangedThrottled = false;
+                TextChanged?.Invoke(this, EventArgs.Empty);
+                _textChangedThrottle.Start();
+            }
+        }
+
+        private void ThrottleTextChanged()
+        {
+            if (_textChangedThrottle.Enabled)
+            {
+                _textChangedThrottled = true;
+                return;
+            }
+
+            TextChanged?.Invoke(this, EventArgs.Empty);
+            _textChangedThrottle.Start();
+        }
+
+        public void Dispose()
+        {
+            _textChangedThrottle?.Dispose();
         }
     }
 }
