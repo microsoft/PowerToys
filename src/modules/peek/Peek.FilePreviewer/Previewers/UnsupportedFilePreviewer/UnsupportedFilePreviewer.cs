@@ -42,14 +42,18 @@ namespace Peek.FilePreviewer.Previewers
         /// <summary>
         /// The options to use for the folder size enumeration. We recurse through all files and all subfolders.
         /// </summary>
-        private readonly EnumerationOptions _folderEnumerationOptions = new()
-            { RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint };
+        private static readonly EnumerationOptions FolderEnumerationOptions;
 
         [ObservableProperty]
         private UnsupportedFilePreviewData preview = new();
 
         [ObservableProperty]
         private PreviewState state;
+
+        static UnsupportedFilePreviewer()
+        {
+            FolderEnumerationOptions = new() { RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint };
+        }
 
         public UnsupportedFilePreviewer(IFileSystemItem file)
         {
@@ -136,7 +140,7 @@ namespace Peek.FilePreviewer.Previewers
             TimeSpan updateInterval = TimeSpan.FromMilliseconds(1000 / MaxUpdateFps);
             DateTime nextUpdate = DateTime.UtcNow + updateInterval;
 
-            var files = new DirectoryInfo(path).EnumerateFiles("*", _folderEnumerationOptions);
+            var files = new DirectoryInfo(path).EnumerateFiles("*", FolderEnumerationOptions);
 
             foreach (var chunk in files.Chunk(FolderEnumerationChunkSize))
             {
