@@ -26,11 +26,11 @@ namespace Utils
 
             constexpr const wchar_t* FileExplorerName = L"File Explorer";
             constexpr const wchar_t* FileExplorerPath = L"C:\\WINDOWS\\EXPLORER.EXE";
-            constexpr const wchar_t* SystemSettingsPath = L"SYSTEMSETTINGS.EXE";
             constexpr const wchar_t* PowerToys = L"PowerToys.exe";
             constexpr const wchar_t* PowerToysSettingsUpper = L"POWERTOYS.SETTINGS.EXE";
             constexpr const wchar_t* PowerToysSettings = L"PowerToys.Settings.exe";
             constexpr const wchar_t* ApplicationFrameHost = L"APPLICATIONFRAMEHOST.EXE";
+            constexpr const wchar_t* Exe = L".EXE";
         }
 
         AppList IterateAppsFolder()
@@ -258,8 +258,8 @@ namespace Utils
 
                     if (appPathUpper.contains(installPathUpper))
                     {
-                        // check if the found app is the System Settings. If yes, update the install path to the exe path
-                        if (appPathUpper.ends_with(NonLocalizable::SystemSettingsPath))
+                        // Update the install path to keep .exe in the path
+                        if (!installPathUpper.ends_with(NonLocalizable::Exe))
                         {
                             auto settingsAppData = appData;
                             settingsAppData.installPath = appPath;
