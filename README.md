@@ -173,7 +173,7 @@ In this release, we focused on new features, stability, and improvements.
  - Fixed flyout issues after the Windows App SDK upgrade. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Fixed initialization for the New+ settings page. Thanks [@htcfreek](https://github.com/htcfreek)!
  - Fixed enabled state of a control on the New+ settings page if the module is enabled by policy. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Fixed a crash when cancelling the template folder selection.
+ - Fixed a crash when cancelling the template folder selection in the New+ settings page.
 
 ### Workspaces
 
