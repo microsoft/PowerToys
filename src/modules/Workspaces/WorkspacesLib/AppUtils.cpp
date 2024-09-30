@@ -2,8 +2,9 @@
 #include "AppUtils.h"
 
 #include <atlbase.h>
-#include <ShlObj.h>
 #include <propvarutil.h>
+#include <ShlObj.h>
+#include <TlHelp32.h>
 
 #include <filesystem>
 
@@ -28,6 +29,7 @@ namespace Utils
             constexpr const wchar_t* PowerToys = L"PowerToys.exe";
             constexpr const wchar_t* PowerToysSettingsUpper = L"POWERTOYS.SETTINGS.EXE";
             constexpr const wchar_t* PowerToysSettings = L"PowerToys.Settings.exe";
+            constexpr const wchar_t* ApplicationFrameHost = L"APPLICATIONFRAMEHOST.EXE";
         }
 
         AppList IterateAppsFolder()
@@ -184,10 +186,38 @@ namespace Utils
             return IterateAppsFolder();
         }
 
-        std::optional<AppData> GetApp(const std::wstring& appPath, const AppList& apps)
+        DWORD GetParentPid(DWORD pid)
+        {
+            DWORD res = 0;
+            HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+            PROCESSENTRY32 pe = { 0 };
+            pe.dwSize = sizeof(PROCESSENTRY32);
+
+            if (Process32First(h, &pe))
+            {
+                do
+                {
+                    if (pe.th32ProcessID == pid)
+                    {
+                        res = pe.th32ParentProcessID;
+                    }
+                } while (Process32Next(h, &pe));
+            }
+
+            CloseHandle(h);
+            return res;
+        }
+
+        std::optional<AppData> GetApp(const std::wstring& appPath, DWORD pid, const AppList& apps)
         {
             std::wstring appPathUpper(appPath);
             std::transform(appPathUpper.begin(), appPathUpper.end(), appPathUpper.begin(), towupper);
+
+            // filter out ApplicationFrameHost.exe   
+            if (appPathUpper.ends_with(NonLocalizable::ApplicationFrameHost))
+            {
+                return std::nullopt;
+            }
 
             // edge case, "Windows Software Development Kit" has the same app path as "File Explorer"
             if (appPathUpper == NonLocalizable::FileExplorerPath)
@@ -217,6 +247,7 @@ namespace Utils
                 }
             }
 
+            // search in apps list
             for (const auto& appData : apps)
             {
                 if (!appData.installPath.empty())
@@ -251,11 +282,43 @@ namespace Utils
 
                 if (appNameUpper == exeNameUpper)
                 {
-                    return appData;
+                    auto result = appData;
+                    result.installPath = appPath;
+                    return result;
                 }
             }
 
+            // try with parent process (fix for Steam)
+            auto parentPid = GetParentPid(pid);
+            auto parentProcessPath = get_process_path(parentPid);
+
+            if (!parentProcessPath.empty())
+            {
+                std::wstring parentDirUpper = std::filesystem::path(parentProcessPath).parent_path().c_str();
+                std::transform(parentDirUpper.begin(), parentDirUpper.end(), parentDirUpper.begin(), towupper);
+
+                if (appPathUpper.starts_with(parentDirUpper))
+                {
+                    Logger::info(L"original process is in the subfolder of the parent process");
+
+                    for (const auto& appData : apps)
+                    {
+                        if (!appData.installPath.empty())
+                        {
+                            std::wstring installDirUpper = std::filesystem::path(appData.installPath).parent_path().c_str();
+                            std::transform(installDirUpper.begin(), installDirUpper.end(), installDirUpper.begin(), towupper);
+
+                            if (installDirUpper == parentDirUpper)
+                            {
+                                return appData;
+                            }
+                        }
+                    }
+                }
+            }
+            
             return AppData{
+                .name = std::filesystem::path(appPath).stem(),
                 .installPath = appPath
             };
         }
@@ -263,7 +326,11 @@ namespace Utils
         std::optional<AppData> GetApp(HWND window, const AppList& apps)
         {
             std::wstring processPath = get_process_path(window);
-            return Utils::Apps::GetApp(processPath, apps);
+            
+            DWORD pid{};
+            GetWindowThreadProcessId(window, &pid);
+
+            return Utils::Apps::GetApp(processPath, pid, apps);
         }
     }
 }
