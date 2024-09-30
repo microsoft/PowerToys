@@ -26,7 +26,6 @@ namespace Utils
 
             constexpr const wchar_t* FileExplorerName = L"File Explorer";
             constexpr const wchar_t* FileExplorerPath = L"C:\\WINDOWS\\EXPLORER.EXE";
-            constexpr const wchar_t* SystemSettingsName = L"System Settings";
             constexpr const wchar_t* SystemSettingsPath = L"SYSTEMSETTINGS.EXE";
             constexpr const wchar_t* PowerToys = L"PowerToys.exe";
             constexpr const wchar_t* PowerToysSettingsUpper = L"POWERTOYS.SETTINGS.EXE";
@@ -262,13 +261,9 @@ namespace Utils
                         // check if the found app is the System Settings. If yes, update the install path to the exe path
                         if (appPathUpper.ends_with(NonLocalizable::SystemSettingsPath))
                         {
-                            return AppData{
-                                .name = NonLocalizable::SystemSettingsName,
-                                .installPath = appPath,
-                                .packageFullName = appData.packageFullName,
-                                .appUserModelId = appData.appUserModelId,
-                                .canLaunchElevated = appData.canLaunchElevated
-                            };
+                            auto settingsAppData = appData;
+                            settingsAppData.installPath = appPath;
+                            return settingsAppData;
                         }
 
                         return appData;
