@@ -58,7 +58,7 @@ namespace WorkspacesLauncherUI.Models
                     {
                         Logger.LogWarning($"Icon not found on app path: {Application.ApplicationPath}. Using default icon");
                         IsNotFound = true;
-                        _icon = new Icon(@"images\DefaultIcon.ico");
+                        _icon = new Icon(@"Assets\Workspaces\DefaultIcon.ico");
                     }
                 }
 

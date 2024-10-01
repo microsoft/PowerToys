@@ -30,7 +30,7 @@
     <AssemblyName>PowerToys.WorkspacesLauncherUI</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="images\DefaultIcon.ico" />
+    <None Remove="Assets\Workspaces\DefaultIcon.ico" />
     <None Remove="images\Workspaces.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -54,7 +54,7 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="images\DefaultIcon.ico">
+    <Content Include="Assets\Workspaces\DefaultIcon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="images\Workspaces.ico">
