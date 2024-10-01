@@ -18,14 +18,14 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using Microsoft.VisualStudio.Threading;
-using MouseWithoutBorders.Core;
 using Newtonsoft.Json;
 using StreamJsonRpc;
 
 #if !MM_HELPER
 using MouseWithoutBorders.Class;
-
+using MouseWithoutBorders.Core;
 #endif
+
 using SystemClipboard = System.Windows.Forms.Clipboard;
 
 namespace MouseWithoutBorders
