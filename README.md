@@ -113,6 +113,7 @@ In this release, we focused on new features, stability, and improvements.
 ### General
 
  - Added a general setting to select which UI language should be used in PowerToys utilities.
+ - Fixed internal code of some policies for Group Policy Objects, that were reading registry entries using the wrong internal functions, and structured code better to avoid future mistakes of the same kind. Thanks [@htcfreek](https://github.com/htcfreek)!
 
 ### Advanced Paste
 
@@ -134,10 +135,6 @@ In this release, we focused on new features, stability, and improvements.
 ### File Locksmith
 
  - Fixed an issue causing File Locksmith to be triggered by unrelated verbs in the context menu.
-
-### Group Policy Objects
-
- - Fixed internal code of some policies, that were reading registry entries using the wrong internal functions, and structured code better to avoid future mistakes of the same kind. Thanks [@htcfreek](https://github.com/htcfreek)!
 
 ### Mouse Pointer Crosshairs
 
