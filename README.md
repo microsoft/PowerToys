@@ -185,6 +185,7 @@ In this release, we focused on new features, stability, and improvements.
  - Properly handle cases where the monitor where a workspace was saved is no longer present.
  - Fixed the workspace launcher restarting itself in a loop without success.
  - Properly handle standalone applications.
+ - Fixed issues causing icons to not show.
 
 ### Documentation
 
@@ -193,7 +194,7 @@ In this release, we focused on new features, stability, and improvements.
 ### Development
 
  - Upgraded Windows App SDK to 1.6.
- - Upgraded Community Toolkit to 8.1.240821.
+ - Upgraded the Target Platform Version to 10.0.22621.0.
  - Added a bot trigger to automatically add a label to Workspaces issues. Thanks [@plante-msft](https://github.com/plante-msft)!
  - Fixed a regular expression in the bot triggers for wanting to submit community contributions. Thanks [@PesBandi](https://github.com/PesBandi)!
  - Fixed analyzer errors after the Visual Studio 17.12 update. Thanks [@snickler](https://github.com/snickler)!
@@ -203,6 +204,7 @@ In this release, we focused on new features, stability, and improvements.
  - Fixed debugging of the New+ page of the Settings application when a settings file was not present.
  - Fixed setting the version of the App Manifest in the File Locksmith and New+ context menu app packages.
  - Fixed abstracted UI library nuget package signing on release CI.
+ - Removed build status from Github README.
 
 #### What is being planned for version 0.86
 
