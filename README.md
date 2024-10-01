@@ -204,7 +204,7 @@ In this release, we focused on new features, stability, and improvements.
  - Fixed debugging of the New+ page of the Settings application when a settings file was not present.
  - Fixed setting the version of the App Manifest in the File Locksmith and New+ context menu app packages.
  - Fixed abstracted UI library nuget package signing on release CI.
- - Removed build status from Github README.
+ - Removed build status from GitHub README.
 
 #### What is being planned for version 0.86
 
