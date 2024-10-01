@@ -38,6 +38,11 @@ public static class LoggerTests
         */
 
         [TestMethod]
+        [Ignore(
+            "This test relies on internal details of the dotnet platform and is sensitive to " +
+            "the specific version of dotnet being used. As a result it's likely to fail if the " +
+            "\"expected\" result was generated with a different version to the version used to " +
+            "run the test, so we're going to ignore it in the CI build process.")]
         public void PrivateDumpShouldGenerateExpectedOutput()
         {
             static string NormalizeLog(string log)
