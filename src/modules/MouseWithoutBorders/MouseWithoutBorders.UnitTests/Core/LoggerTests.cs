@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Concurrent;
+using System.Globalization;
 using System.Reflection;
 using System.Text;
 
@@ -38,13 +40,13 @@ public static class LoggerTests
         [TestMethod]
         public void PrivateDumpShouldGenerateExpectedOutput()
         {
-            // some parts of the PrivateDump output are impossible to reproduce -
-            // e.g. random numbers, system timestamps, thread ids, etc, so we'll need
-            // to normalize the output before we can compare it with the expected value
             static string NormalizeLog(string log)
             {
                 var lines = log.Split("\r\n");
-                var prefixes = new string[]
+
+                // some parts of the PrivateDump output are impossible to reproduce -
+                // e.g. random numbers, system timestamps, thread ids, etc, so we'll mask them
+                var maskPrefixes = new string[]
                 {
                     "----_s0 = ",
                     "----_s1 = ",
@@ -58,17 +60,32 @@ public static class LoggerTests
                 };
                 for (var i = 0; i < lines.Length; i++)
                 {
-                    foreach (var prefix in prefixes)
+                    foreach (var maskPrefix in maskPrefixes)
                     {
-                        if (lines[i].StartsWith(prefix, StringComparison.InvariantCulture))
+                        if (lines[i].StartsWith(maskPrefix, StringComparison.InvariantCulture))
                         {
                             // replace the trailing text with "?" characters
                             lines[i] = string.Concat(
-                                lines[i].AsSpan(0, prefix.Length),
+                                lines[i].AsSpan(0, maskPrefix.Length),
                                 new string('?', 12));
                         }
                     }
                 }
+
+                // hide some of the internals of concurrent dictionary lock tables
+                // as the size can vary across machines
+                var removeLines = new string[]
+                {
+                    "------[8] = 0",
+                    "------[9] = 0",
+                    "------[10] = 0",
+                    "------[11] = 0",
+                    "------[12] = 0",
+                    "------[13] = 0",
+                    "------[14] = 0",
+                    "------[15] = 0",
+                };
+                lines = lines.Where(line => !removeLines.Contains(line)).ToArray();
 
                 return string.Join("\r\n", lines);
             }
@@ -97,6 +114,42 @@ public static class LoggerTests
 
             expected = NormalizeLog(expected);
             actual = NormalizeLog(actual);
+
+            // Azure DevOps truncates debug output which makes it hard to see where
+            // the expected and actual differ, so we need to write a custom error message
+            // so we can just focus on the differences between expected and actual
+            var expectedLines = expected.Split("\r\n");
+            var actualLines = actual.Split("\r\n");
+            for (var i = 0; i < Math.Min(expectedLines.Length, actualLines.Length); i++)
+            {
+                if (actualLines[i] != expectedLines[i])
+                {
+                    var message = new StringBuilder();
+                    message.AppendLine(CultureInfo.InvariantCulture, $"{nameof(actual)} and {nameof(expected)} differ at line {i}:");
+
+                    message.AppendLine();
+                    message.AppendLine($"{nameof(actual)}:");
+                    for (var j = i; j < Math.Min(i + 5, actualLines.Length); j++)
+                    {
+                        message.AppendLine(CultureInfo.InvariantCulture, $"[{j}]: {actualLines[j]}:");
+                    }
+
+                    message.AppendLine();
+                    message.AppendLine($"{nameof(expected)}:");
+                    for (var j = i; j < Math.Min(i + 5, expectedLines.Length); j++)
+                    {
+                        message.AppendLine(CultureInfo.InvariantCulture, $"[{j}]: {expectedLines[j]}:");
+                    }
+
+                    var x = new ConcurrentDictionary<string, string>(-1, 16);
+
+                    Assert.Fail(message.ToString());
+                }
+            }
+
+            // finally, throw an exception if the two don't match
+            // just in case the above doesn't spot a difference
+            // (e.g. different number of lines in the output)
             Assert.AreEqual(expected, actual);
         }
     }
