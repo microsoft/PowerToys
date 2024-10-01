@@ -132,4 +132,10 @@
   <data name="plugin_name" xml:space="preserve">
     <value>Unit Converter</value>
   </data>
+  <data name="usage_prompt_subtitle" xml:space="preserve">
+    <value>e.g. 10 ft to m</value>
+  </data>
+  <data name="usage_prompt_title" xml:space="preserve">
+    <value>Usage: {0} [value] [fromUnit] to [toUnit]</value>
+  </data>
 </root>
