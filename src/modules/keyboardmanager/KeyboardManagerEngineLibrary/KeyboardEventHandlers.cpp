@@ -228,7 +228,7 @@ namespace KeyboardEventHandlers
         for (auto& itShortcut : state.GetSortedShortcutRemapVector(activatedApp))
         {
             const auto it = reMap.find(itShortcut);
-            static bool isAltRightKeyInvoked = false;
+            static bool isAltRightKeyInvoked = false;            
 
             // Release key and delete from previous modifier key vector
             if ((Helpers::IsModifierKey(data->lParam->vkCode) && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)))
@@ -246,11 +246,26 @@ namespace KeyboardEventHandlers
                     state.ResetPreviousModifierKey(it->first.GetCtrlKey());
                 }
 
+                if (data->lParam->vkCode == VK_RWIN || data->lParam->vkCode == VK_LWIN)
+                {
+                    it->second.winKeyInvoked = ModifierKey::Disabled;
+                }
+
                 ii.SendVirtualInput(keyEventList);
                 
             }
             else if ((Helpers::IsModifierKey(data->lParam->vkCode) && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)))
             {
+                // Remember which win key was pressed initially
+                if (data->lParam->vkCode == VK_RWIN)
+                {
+                    it->second.winKeyInvoked = ModifierKey::Right;
+                }
+                else if (data->lParam->vkCode == VK_LWIN)
+                {
+                    it->second.winKeyInvoked = ModifierKey::Left;
+                }
+
                 // Set the previous modifier key of the invoked shortcut
                 SetPreviousModifierKey(it, data->lParam->vkCode, state);
                 // Check if the right Alt key (AltGr) is pressed.
@@ -338,16 +353,6 @@ namespace KeyboardEventHandlers
                     }
 
                     std::vector<INPUT> keyEventList;
-
-                    // Remember which win key was pressed initially
-                    if (ii.GetVirtualKeyState(VK_RWIN))
-                    {
-                        it->second.winKeyInvoked = ModifierKey::Right;
-                    }
-                    else if (ii.GetVirtualKeyState(VK_LWIN))
-                    {
-                        it->second.winKeyInvoked = ModifierKey::Left;
-                    }
 
                     if (isRunProgram)
                     {

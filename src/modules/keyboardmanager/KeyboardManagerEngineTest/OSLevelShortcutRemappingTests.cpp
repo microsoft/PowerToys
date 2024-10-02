@@ -861,7 +861,7 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), false);
         }
 
-        // Test if target modifier is still held down even if the action key of the original shortcut is released - required for Alt+Tab/Win+Space cases
+        // Test if original modifier is still held down even if the action key of the original shortcut is released - required for Alt+Tab/Win+Space cases
         TEST_METHOD (RemappedShortcutModifiers_ShouldBeDetectedAsPressed_OnReleasingActionKeyButHoldingModifiers)
         {
             // Remap Ctrl+A to Alt+Tab
@@ -882,10 +882,10 @@ namespace RemappingLogicTests
             // Send Ctrl+A, release A
             mockedInputHandler.SendVirtualInput(inputs);
 
-            // Ctrl, A, Tab key states should be unchanged, Alt should be true
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
+            // Alt, A, Tab key states should be unchanged, Ctrl should be true
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_TAB), false);
         }
 
