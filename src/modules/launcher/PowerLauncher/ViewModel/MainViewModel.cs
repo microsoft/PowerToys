@@ -910,7 +910,7 @@ namespace PowerLauncher.ViewModel
             catch (Exception)
             {
                 string errorMsg = string.Format(CultureInfo.InvariantCulture, RegisterHotkeyFailed, hotkeyStr);
-                MessageBox.Show(errorMsg);
+                MessageBox.Show(errorMsg, Properties.Resources.RegisterHotkeyFailedTitle);
             }
         }
 
