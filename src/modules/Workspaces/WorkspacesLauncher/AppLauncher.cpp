@@ -206,7 +206,7 @@ namespace AppLauncher
         {
             if (ShouldMoveApp(app, project))
             {
-                // todo: need a snapshot before launch and check if the app is present. Possibly need a new state like NeedsMoving to indictae the arranger that the app is not newly launched
+                // todo: need a snapshot before launch and check if the app is present. Possibly need a new state like NeedsMoving to indicate the arranger that the app is not newly launched
             }
             else if (!Launch(app, launchErrors))
             {
