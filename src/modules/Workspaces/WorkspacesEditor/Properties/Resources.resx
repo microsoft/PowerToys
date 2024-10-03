@@ -175,6 +175,9 @@
   <data name="Delete_Workspace_Dialog_Announce" xml:space="preserve">
     <value>Delete Workspace dialog.</value>
   </data>
+  <data name="DoAsInWorkspace" xml:space="preserve">
+    <value>Do as in Workspace defined</value>
+  </data>
   <data name="Edit" xml:space="preserve">
     <value>Edit</value>
   </data>
@@ -229,6 +232,9 @@
   </data>
   <data name="MonthsAgo" xml:space="preserve">
     <value>months ago</value>
+  </data>
+  <data name="MoveAppIfExist" xml:space="preserve">
+    <value>Move app if present</value>
   </data>
   <data name="MoveIfExist" xml:space="preserve">
     <value>Move apps if present</value>

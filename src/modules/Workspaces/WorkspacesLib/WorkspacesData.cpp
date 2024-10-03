@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "WorkspacesData.h"
-
 #include <common/SettingsAPI/settings_helpers.h>
 
 namespace NonLocalizable
@@ -82,6 +81,7 @@ namespace WorkspacesData
                 const static wchar_t* CanLaunchElevatedID = L"can-launch-elevated";
                 const static wchar_t* MinimizedID = L"minimized";
                 const static wchar_t* MaximizedID = L"maximized";
+                const static wchar_t* MoveIfExistsID = L"move-if-exists";
                 const static wchar_t* PositionID = L"position";
                 const static wchar_t* MonitorID = L"monitor";
             }
@@ -99,6 +99,15 @@ namespace WorkspacesData
                 json.SetNamedValue(NonLocalizable::CanLaunchElevatedID, json::value(data.canLaunchElevated));
                 json.SetNamedValue(NonLocalizable::MinimizedID, json::value(data.isMinimized));
                 json.SetNamedValue(NonLocalizable::MaximizedID, json::value(data.isMaximized));
+                if (data.moveIfExists.has_value())
+                {
+                    json.SetNamedValue(NonLocalizable::MoveIfExistsID, json::value(data.moveIfExists.value()));
+                }
+                else
+                {
+                    json.SetNamedValue(NonLocalizable::MoveIfExistsID, json::JsonValue::CreateNullValue());
+                }
+
                 json.SetNamedValue(NonLocalizable::PositionID, PositionJSON::ToJson(data.position));
                 json.SetNamedValue(NonLocalizable::MonitorID, json::value(data.monitor));
 
@@ -141,6 +150,8 @@ namespace WorkspacesData
 
                     result.isMaximized = json.GetNamedBoolean(NonLocalizable::MaximizedID);
                     result.isMinimized = json.GetNamedBoolean(NonLocalizable::MinimizedID);
+                    result.moveIfExists = json.GetNamedBoolean(NonLocalizable::MoveIfExistsID);
+
                     result.monitor = static_cast<int>(json.GetNamedNumber(NonLocalizable::MonitorID));
                     if (json.HasKey(NonLocalizable::PositionID))
                     {

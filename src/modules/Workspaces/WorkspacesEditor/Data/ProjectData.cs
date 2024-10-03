@@ -45,6 +45,8 @@ namespace WorkspacesEditor.Data
 
             public bool Maximized { get; set; }
 
+            public bool? MoveIfExists { get; set; }
+
             public WindowPositionWrapper Position { get; set; }
 
             public int Monitor { get; set; }

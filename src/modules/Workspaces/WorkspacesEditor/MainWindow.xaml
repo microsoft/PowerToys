@@ -8,7 +8,7 @@
     xmlns:ui="http://schemas.modernwpf.com/2019"
     x:Name="WorkspacesMainWindow"
     Title="{x:Static props:Resources.MainTitle}"
-    MinWidth="700"
+    MinWidth="750"
     MinHeight="680"
     ui:TitleBar.Background="{DynamicResource PrimaryBackgroundBrush}"
     ui:TitleBar.InactiveBackground="{DynamicResource TertiaryBackgroundBrush}"

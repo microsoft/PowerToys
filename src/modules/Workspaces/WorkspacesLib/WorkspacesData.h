@@ -35,6 +35,7 @@ namespace WorkspacesData
             bool canLaunchElevated{};
             bool isMinimized{};
             bool isMaximized{};
+            std::optional<bool> moveIfExists{ std::nullopt };
             Position position{};
             unsigned int monitor{};
 

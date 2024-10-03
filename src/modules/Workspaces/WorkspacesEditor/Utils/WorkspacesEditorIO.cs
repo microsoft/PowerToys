@@ -107,6 +107,7 @@ namespace WorkspacesEditor.Utils
                         CanLaunchElevated = app.CanLaunchElevated,
                         Maximized = app.Maximized,
                         Minimized = app.Minimized,
+                        MoveIfExists = app.MoveIfExists,
                         Position = new ProjectData.ApplicationWrapper.WindowPositionWrapper
                         {
                             X = app.Position.X,

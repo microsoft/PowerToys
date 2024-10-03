@@ -168,6 +168,12 @@
                                 Checked="MinimizedChecked"
                                 Content="{x:Static props:Resources.Minimized}"
                                 IsChecked="{Binding Minimized, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <CheckBox
+                                MinWidth="10"
+                                Margin="15,0,0,0"
+                                IsThreeState="True"
+                                Content="{Binding MoveIfExistsString, UpdateSourceTrigger=PropertyChanged}"
+                                IsChecked="{Binding MoveIfExists, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
                         <StackPanel
                             Grid.Row="2"
@@ -396,6 +402,12 @@
                 DockPanel.Dock="Left"
                 FontSize="14"
                 IsChecked="{Binding IsShortcutNeeded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <CheckBox
+                Margin="20,0,0,0"
+                Content="{x:Static props:Resources.MoveIfExist}"
+                DockPanel.Dock="Left"
+                FontSize="14"
+                IsChecked="{Binding MoveExistingWindows, Mode=TwoWay}" />
             <StackPanel
                 Margin="40,0,0,0"
                 HorizontalAlignment="Right"

@@ -43,6 +43,7 @@ namespace WorkspacesEditor.Models
             Maximized = other.Maximized;
             Position = other.Position;
             MonitorNumber = other.MonitorNumber;
+            MoveIfExists = other.MoveIfExists;
 
             Parent = other.Parent;
             IsNotFound = other.IsNotFound;
@@ -161,6 +162,29 @@ namespace WorkspacesEditor.Models
                 OnPropertyChanged(new PropertyChangedEventArgs(nameof(EditPositionEnabled)));
                 RedrawPreviewImage();
             }
+        }
+
+        private bool? _moveIfExists;
+
+        public bool? MoveIfExists
+        {
+            get => _moveIfExists;
+            set
+            {
+                _moveIfExists = value;
+                OnPropertyChanged(new PropertyChangedEventArgs(nameof(MoveIfExists)));
+                OnPropertyChanged(new PropertyChangedEventArgs(nameof(MoveIfExistsString)));
+            }
+        }
+
+        public string MoveIfExistsString
+        {
+            get => _moveIfExists switch
+            {
+                true => Properties.Resources.MoveAppIfExist,
+                false => Properties.Resources.AlwaysLaunch,
+                _ => Properties.Resources.DoAsInWorkspace,
+            };
         }
 
         public bool EditPositionEnabled { get => !Minimized && !Maximized; }
