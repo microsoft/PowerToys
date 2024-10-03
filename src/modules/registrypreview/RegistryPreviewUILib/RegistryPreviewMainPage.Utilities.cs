@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
@@ -21,6 +22,8 @@ namespace RegistryPreviewUILib
 {
     public sealed partial class RegistryPreviewMainPage : Page
     {
+        private static SemaphoreSlim _dialogSemaphore = new(1);
+
         public delegate void UpdateWindowTitleFunction(string title);
 
         /// <summary>
@@ -776,21 +779,34 @@ namespace RegistryPreviewUILib
         /// </summary>
         private async void ShowMessageBox(string title, string content, string closeButtonText)
         {
-            ContentDialog contentDialog = new ContentDialog()
+            if (_dialogSemaphore.CurrentCount == 0)
             {
-                Title = title,
-                Content = content,
-                CloseButtonText = closeButtonText,
-            };
-
-            // Use this code to associate the dialog to the appropriate AppWindow by setting
-            // the dialog's XamlRoot to the same XamlRoot as an element that is already present in the AppWindow.
-            if (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 8))
-            {
-                contentDialog.XamlRoot = this.Content.XamlRoot;
+                return;
             }
 
-            await contentDialog.ShowAsync();
+            try
+            {
+                await _dialogSemaphore.WaitAsync();
+                ContentDialog contentDialog = new ContentDialog()
+                {
+                    Title = title,
+                    Content = content,
+                    CloseButtonText = closeButtonText,
+                };
+
+                // Use this code to associate the dialog to the appropriate AppWindow by setting
+                // the dialog's XamlRoot to the same XamlRoot as an element that is already present in the AppWindow.
+                if (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 8))
+                {
+                    contentDialog.XamlRoot = this.Content.XamlRoot;
+                }
+
+                await contentDialog.ShowAsync();
+            }
+            finally
+            {
+                _dialogSemaphore.Release();
+            }
         }
 
         /// <summary>
