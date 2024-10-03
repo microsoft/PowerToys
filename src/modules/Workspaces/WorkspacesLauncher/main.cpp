@@ -16,6 +16,7 @@
 
 const std::wstring moduleName = L"Workspaces\\WorkspacesLauncher";
 const std::wstring internalPath = L"";
+const std::wstring instanceMutexName = L"Local\\PowerToys_WorkspacesLauncher_InstanceMutex";
 
 int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cmdShow)
 {
@@ -25,6 +26,18 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     if (powertoys_gpo::getConfiguredWorkspacesEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
     {
         Logger::warn(L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+        return 0;
+    }
+
+    auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
+    if (mutex == nullptr)
+    {
+        Logger::error(L"Failed to create mutex. {}", get_last_error_or_default(GetLastError()));
+    }
+
+    if (GetLastError() == ERROR_ALREADY_EXISTS)
+    {
+        Logger::warn(L"WorkspacesLauncher instance is already running");
         return 0;
     }
 
