@@ -8,6 +8,7 @@
 #include <WorkspacesLib/trace.h>
 
 #include <AppLauncher.h>
+#include <WorkspacesLib/AppUtils.h>
 
 Launcher::Launcher(const WorkspacesData::WorkspacesProject& project, 
     std::vector<WorkspacesData::WorkspacesProject>& workspaces,
@@ -92,7 +93,53 @@ Launcher::~Launcher()
 void Launcher::Launch()
 {
     Logger::info(L"Launch Workspace {} : {}", m_project.name, m_project.id);
-    m_launchedSuccessfully = AppLauncher::Launch(m_project, m_launchingStatus, m_launchErrors);
+
+    bool launchedSuccessfully{ true };
+
+    {
+        auto installedApps = Utils::Apps::GetAppsList();
+        AppLauncher::UpdatePackagedApps(m_project.apps, installedApps);
+    }
+    
+    const long maxWaitTimeMs = 3000;
+    const long ms = 100;
+
+    // Launch apps
+    for (auto& app : m_project.apps)
+    {
+        long waitingTime = 0;
+        while (!m_launchingStatus.AllInstancesOfTheAppLaunchedAndMoved(app) && waitingTime < maxWaitTimeMs)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+            waitingTime += ms;
+        }
+
+        if (waitingTime >= maxWaitTimeMs)
+        {
+            Logger::info(L"Waiting time for launching next {} instance expired", app.name);
+        }
+
+        if (AppLauncher::Launch(app, m_launchErrors))
+        {
+            m_launchingStatus.Update(app, LaunchingState::Launched);
+        }
+        else
+        {
+            Logger::error(L"Failed to launch {}", app.name);
+            m_launchingStatus.Update(app, LaunchingState::Failed);
+            launchedSuccessfully = false;
+        }
+
+        auto status = m_launchingStatus.Get(app);
+        if (status.has_value())
+        {
+            m_windowArrangerHelper->UpdateLaunchStatus(status.value());
+        }
+
+        m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
+    }
+
+    m_launchedSuccessfully = launchedSuccessfully;
 }
 
 void Launcher::handleWindowArrangerMessage(const std::wstring& msg)

@@ -10,8 +10,6 @@
 
 #include <common/utils/winapi_error.h>
 
-#include <WorkspacesLib/AppUtils.h>
-
 #include <RegistryUtils.h>
 
 using namespace winrt;
@@ -180,30 +178,5 @@ namespace AppLauncher
 
         Logger::trace(L"{} {} at {}", app.name, (launched ? L"launched" : L"not launched"), app.path);
         return launched;
-    }
-
-    bool Launch(WorkspacesData::WorkspacesProject& project, LaunchingStatus& launchingStatus, ErrorList& launchErrors)
-    {
-        bool launchedSuccessfully{ true };
-
-        auto installedApps = Utils::Apps::GetAppsList();
-        UpdatePackagedApps(project.apps, installedApps);
-
-        // Launch apps
-        for (auto& app : project.apps)
-        {
-            if (!Launch(app, launchErrors))
-            {
-                Logger::error(L"Failed to launch {}", app.name);
-                launchingStatus.Update(app, LaunchingState::Failed);
-                launchedSuccessfully = false;
-            }
-            else
-            {
-                launchingStatus.Update(app, LaunchingState::Launched);
-            }
-        }
-
-        return launchedSuccessfully;
     }
 }
