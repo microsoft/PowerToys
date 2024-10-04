@@ -3,8 +3,7 @@
 
 #include <common/logger/logger.h>
 
-LaunchingStatus::LaunchingStatus(const WorkspacesData::WorkspacesProject& project, std::function<void(const WorkspacesData::LaunchingAppStateMap&)> updateCallback) :
-    m_updateCallback(updateCallback)
+LaunchingStatus::LaunchingStatus(const WorkspacesData::WorkspacesProject& project)
 {
     std::unique_lock lock(m_mutex);
     for (const auto& app : project.apps)
@@ -57,9 +56,4 @@ void LaunchingStatus::Update(const WorkspacesData::WorkspacesProject::Applicatio
     }
 
     m_appsState[app].state = state;
-
-    if (m_updateCallback)
-    {
-        m_updateCallback(m_appsState);
-    }
 }

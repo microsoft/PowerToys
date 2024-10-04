@@ -18,7 +18,7 @@ Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
     m_start(std::chrono::high_resolution_clock::now()),
     m_uiHelper(std::make_unique<LauncherUIHelper>()),
     m_windowArrangerHelper(std::make_unique<WindowArrangerHelper>(std::bind(&Launcher::handleWindowArrangerMessage, this, std::placeholders::_1))),
-    m_launchingStatus(m_project, std::bind(&LauncherUIHelper::UpdateLaunchStatus, m_uiHelper.get(), std::placeholders::_1))
+    m_launchingStatus(m_project)
 {
     m_uiHelper->LaunchUI();
     m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
@@ -109,6 +109,7 @@ void Launcher::handleWindowArrangerMessage(const std::wstring& msg)
             if (data.has_value())
             {
                 m_launchingStatus.Update(data.value().application, data.value().state);
+                m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
             }
             else
             {
