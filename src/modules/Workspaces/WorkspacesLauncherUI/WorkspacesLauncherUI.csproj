@@ -23,16 +23,20 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ApplicationIcon>images\Workspaces.ico</ApplicationIcon>
+    <ApplicationIcon>..\Assets\Workspaces\Workspaces.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>PowerToys.WorkspacesLauncherUI</AssemblyName>
   </PropertyGroup>
+  
   <ItemGroup>
-    <None Remove="images\DefaultIcon.ico" />
-    <None Remove="images\Workspaces.ico" />
+    <Content Include="..\Assets\**\*.*">
+      <Link>Assets\Workspaces\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
+
   <ItemGroup>
     <COMReference Include="IWshRuntimeLibrary">
       <WrapperTool>tlbimp</WrapperTool>
@@ -52,14 +56,6 @@
       <Isolated>false</Isolated>
       <EmbedInteropTypes>true</EmbedInteropTypes>
     </COMReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="images\DefaultIcon.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="images\Workspaces.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
  
   <ItemGroup>

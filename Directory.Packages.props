@@ -6,14 +6,14 @@
     <PackageVersion Include="Appium.WebDriver" Version="4.4.5" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.12" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-    <PackageVersion Include="CommunityToolkit.WinUI.Animations" Version="8.1.240821" />
-    <PackageVersion Include="CommunityToolkit.WinUI.Collections" Version="8.1.240821" />
-    <PackageVersion Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.1.240821" />
-    <PackageVersion Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.1.240821" />
-    <PackageVersion Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.1.240821" />
-    <PackageVersion Include="CommunityToolkit.WinUI.Controls.Sizers" Version="8.1.240821" />
-    <PackageVersion Include="CommunityToolkit.WinUI.Converters" Version="8.1.240821" />
-    <PackageVersion Include="CommunityToolkit.WinUI.Extensions" Version="8.1.240821" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Animations" Version="8.0.240109" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Collections" Version="8.0.240109" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.0.240109" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.0.240109" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.0.240109" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Controls.Sizers" Version="8.0.240109" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Converters" Version="8.0.240109" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Extensions" Version="8.0.240109" />
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
     <PackageVersion Include="ControlzEx" Version="6.0.0" />

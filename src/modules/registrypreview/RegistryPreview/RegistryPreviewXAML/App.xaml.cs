@@ -5,6 +5,7 @@
 using System;
 using System.Web;
 
+using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
 using Windows.ApplicationModel.Activation;
@@ -25,6 +26,13 @@ namespace RegistryPreview
         /// </summary>
         public App()
         {
+            string appLanguage = LanguageHelper.LoadLanguage();
+
+            if (!string.IsNullOrEmpty(appLanguage))
+            {
+                Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
+            }
+
             this.InitializeComponent();
         }
 

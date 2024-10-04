@@ -5,21 +5,21 @@
 #include <workspaces-common/GuidUtils.h>
 #include <workspaces-common/MonitorUtils.h>
 
+#include <WorkspacesLib/JsonUtils.h>
 #include <WorkspacesLib/WorkspacesData.h>
 
-#include <JsonUtils.h>
 #include <SnapshotUtils.h>
 
 #include <common/utils/gpo.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/UnhandledExceptionHandler.h>
 
-const std::wstring moduleName = L"Workspaces\\ProjectsSnapshotTool";
+const std::wstring moduleName = L"Workspaces\\WorkspacesSnapshotTool";
 const std::wstring internalPath = L"";
 
 int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cmdShow)
 {
-    LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::workspacesLauncherLoggerName);
+    LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::workspacesSnapshotToolLoggerName);
     InitUnhandledExceptionHandler();
 
     if (powertoys_gpo::getConfiguredWorkspacesEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
@@ -46,14 +46,6 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
         return -1;
     }
 
-    std::wstring fileName = WorkspacesData::WorkspacesFile();
-    std::string cmdLineStr(cmdLine);
-    if (!cmdLineStr.empty())
-    {
-        std::wstring fileNameParam(cmdLineStr.begin(), cmdLineStr.end());
-        fileName = fileNameParam;
-    }
-
     // create new project
     time_t creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     WorkspacesData::WorkspacesProject project{ .id = CreateGuidString(), .creationTime = creationTime };
@@ -75,7 +67,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
         return monitorNumber;
     });
 
-    WorkspacesJsonUtils::Write(WorkspacesData::TempWorkspacesFile(), project);
+    JsonUtils::Write(WorkspacesData::TempWorkspacesFile(), project);
     Logger::trace(L"WorkspacesProject {}:{} created", project.name, project.id);
 
     CoUninitialize();
