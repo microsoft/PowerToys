@@ -94,13 +94,13 @@ namespace FancyZones
 }
 
 
-WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project, const IPCHelper& ipcHelper) :
+WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
     m_project(project),
     m_windowsBefore(WindowEnumerator::Enumerate(WindowFilter::Filter)),
     m_monitors(MonitorUtils::IdentifyMonitors()),
     m_installedApps(Utils::Apps::GetAppsList()),
     //m_windowCreationHandler(std::bind(&WindowArranger::onWindowCreated, this, std::placeholders::_1)),
-    m_ipcHelper(ipcHelper)
+    m_ipcHelper(IPCHelperStrings::WindowArrangerPipeName, IPCHelperStrings::LauncherArrangerPipeName, std::bind(&WindowArranger::receiveIpcMessage, this, std::placeholders::_1)),
 {
     for (auto& app : project.apps)
     {
@@ -252,4 +252,29 @@ bool WindowArranger::allWindowsFound() const
     return std::find_if(m_launchingApps.begin(), m_launchingApps.end(), [&](const std::pair<WorkspacesData::WorkspacesProject::Application, WorkspacesData::LaunchingAppState>& val) {
                return val.second.window == nullptr;
            }) == m_launchingApps.end();
+}
+
+void WindowArranger::receiveIpcMessage(const std::wstring& message)
+{
+    try
+    {
+        auto data = WorkspacesData::AppLaunchInfoJSON::FromJson(json::JsonValue::Parse(message).GetObjectW());
+        if (data.has_value())
+        {
+            m_launchingStatus.Update(data.value().application, data.value().state);
+        }
+        else
+        {
+            Logger::error(L"Failed to parse message from WorkspacesLauncher");
+        }
+    }
+    catch (const winrt::hresult_error&)
+    {
+        Logger::error(L"Failed to parse message from WorkspacesLauncher");
+    }
+}
+
+void WindowArranger::sendUpdatedState(const WorkspacesData::LaunchingAppState& data) const
+{
+    m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({ data.application, nullptr, data.state }).ToString().c_str());
 }
