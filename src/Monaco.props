@@ -11,7 +11,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="$(MSBuildThisFileDirectory)\Monaco\index.html">
-      <Link>Assets\Monaco\monacoSpecialLanguages.js</Link>
+      <Link>Assets\Monaco\index.html</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="$(MSBuildThisFileDirectory)\Monaco\monaco_languages.json">

@@ -19,6 +19,7 @@ namespace RegistryPreviewUILib
     [INotifyPropertyChanged]
     public sealed partial class MonacoEditorControl : UserControl, IDisposable
     {
+        private readonly string _tempFolderPath = Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), @"\AppData\LocalLow\Microsoft\PowerToys\RegistryPreview-Temp");
         private readonly Timer _textChangedThrottle;
         private bool _textChangedThrottled;
 
@@ -32,6 +33,7 @@ namespace RegistryPreviewUILib
         public MonacoEditorControl()
         {
             InitializeComponent();
+            Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", _tempFolderPath, EnvironmentVariableTarget.Process);
 
             _textChangedThrottle = new Timer(250);
             _textChangedThrottle.Elapsed += OnTextChangedThrottleElapsed;
