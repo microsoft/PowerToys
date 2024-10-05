@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Timers;
@@ -75,13 +76,13 @@ namespace RegistryPreviewUILib
             Browser.CoreWebView2.Settings.AreDevToolsEnabled = false;
 #endif
 
-            // TODO decouple from FilePreviewCommon
             Browser.CoreWebView2.SetVirtualHostNameToFolderMapping(
-                Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName,
-                Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.MonacoDirectory,
+                MonacoHelper.VirtualHostName,
+                MonacoHelper.MonacoDirectory,
                 CoreWebView2HostResourceAccessKind.Allow);
 
-            var index = Path.Combine(Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.MonacoDirectory, "registryEditorIndex.html");
+            var assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty;
+            var index = Path.GetFullPath(Path.Combine(assemblyDir, "Assets", "RegistryPreview", "index.html"));
             Browser.CoreWebView2.Navigate(index);
         }
 
