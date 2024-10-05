@@ -13,13 +13,13 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
+using Windows.UI;
 
 namespace RegistryPreviewUILib
 {
     [INotifyPropertyChanged]
     public sealed partial class MonacoEditorControl : UserControl, IDisposable
     {
-        private readonly string _tempFolderPath = Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), @"\AppData\LocalLow\Microsoft\PowerToys\RegistryPreview-Temp");
         private readonly Timer _textChangedThrottle;
         private bool _textChangedThrottled;
 
@@ -33,7 +33,7 @@ namespace RegistryPreviewUILib
         public MonacoEditorControl()
         {
             InitializeComponent();
-            Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", _tempFolderPath, EnvironmentVariableTarget.Process);
+            Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", MonacoHelper.TempFolderPath, EnvironmentVariableTarget.Process);
 
             _textChangedThrottle = new Timer(250);
             _textChangedThrottle.Elapsed += OnTextChangedThrottleElapsed;
@@ -63,6 +63,7 @@ namespace RegistryPreviewUILib
             IsLoading = true;
 
             await Browser.EnsureCoreWebView2Async();
+            Browser.DefaultBackgroundColor = Color.FromArgb(0, 0, 0, 0);
             Browser.CoreWebView2.NavigationCompleted += CoreWebView2_NavigationCompleted;
             Browser.CoreWebView2.PermissionRequested += CoreWebView2_PermissionRequested;
             Browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;

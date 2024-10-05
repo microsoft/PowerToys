@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.IO;
 using System.Reflection;
 
@@ -13,6 +14,8 @@ namespace RegistryPreviewUILib
         /// Name of the virtual host
         /// </summary>
         public const string VirtualHostName = "PowerToysLocalMonaco";
+
+        public static string TempFolderPath { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"AppData\LocalLow\Microsoft\PowerToys\RegistryPreview-Temp");
 
         private static string _monacoDirectory;
 
