@@ -98,7 +98,7 @@ Launcher::~Launcher()
 void Launcher::Launch() // Launching thread
 {
     const long maxWaitTimeMs = 3000;
-    const long ms = 100;
+    const long ms = 300;
 
     // Launch apps
     for (auto appState = m_launchingStatus.GetNext(LaunchingState::Waiting); appState.has_value(); appState = m_launchingStatus.GetNext(LaunchingState::Waiting))
