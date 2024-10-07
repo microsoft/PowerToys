@@ -11,8 +11,6 @@ namespace AppLauncher
 {
     using ErrorList = std::vector<std::pair<std::wstring, std::wstring>>;
 
-    void UpdatePackagedApps(std::vector<WorkspacesData::WorkspacesProject::Application>& apps, const Utils::Apps::AppList& installedApps);
-
     bool Launch(const WorkspacesData::WorkspacesProject::Application& app, ErrorList& launchErrors);
     Result<SHELLEXECUTEINFO, std::wstring> LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated);
 }

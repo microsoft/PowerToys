@@ -18,26 +18,6 @@ using namespace Windows::Management::Deployment;
 
 namespace AppLauncher
 {
-    void UpdatePackagedApps(std::vector<WorkspacesData::WorkspacesProject::Application>& apps, const Utils::Apps::AppList& installedApps)
-    {
-        for (auto& app : apps)
-        {
-            // Packaged apps have version in the path, it will be outdated after update.
-            // We need make sure the current package is up to date.
-            if (!app.packageFullName.empty())
-            {
-                auto installedApp = std::find_if(installedApps.begin(), installedApps.end(), [&](const Utils::Apps::AppData& val) { return val.name == app.name; });
-                if (installedApp != installedApps.end() && app.packageFullName != installedApp->packageFullName)
-                {
-                    std::wstring exeFileName = app.path.substr(app.path.find_last_of(L"\\") + 1);
-                    app.packageFullName = installedApp->packageFullName;
-                    app.path = installedApp->installPath + L"\\" + exeFileName;
-                    Logger::trace(L"Updated package full name for {}: {}", app.name, app.packageFullName);
-                }
-            }
-        }
-    }
-
     Result<SHELLEXECUTEINFO, std::wstring> LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated)
     {
         std::wstring dir = std::filesystem::path(appPath).parent_path();

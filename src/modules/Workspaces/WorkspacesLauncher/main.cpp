@@ -13,6 +13,7 @@
 #include <Launcher.h>
 
 #include <Generated Files/resource.h>
+#include <WorkspacesLib/AppUtils.h>
 
 const std::wstring moduleName = L"Workspaces\\WorkspacesLauncher";
 const std::wstring internalPath = L"";
@@ -161,6 +162,24 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         return 1;
     }
 
+    // prepare project in advance
+    auto installedApps = Utils::Apps::GetAppsList();
+    if (Utils::Apps::UpdateWorkspacesApps(projectToLaunch, installedApps))
+    {
+        // update the file before launching, so WorkspacesWindowArranger and WorkspacesLauncherUI could get updated app paths
+        for (int i = 0; i < workspaces.size(); i++)
+        {
+            if (workspaces[i].id == projectToLaunch.id)
+            {
+                workspaces[i] = projectToLaunch;
+                break;
+            }
+        }
+
+        json::to_file(WorkspacesData::WorkspacesFile(), WorkspacesData::WorkspacesListJSON::ToJson(workspaces));
+    }
+
+    // launch
     Launcher launcher(projectToLaunch, workspaces, cmdArgs.invokePoint);
 
     Logger::trace("Finished");
