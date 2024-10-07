@@ -31,7 +31,9 @@ bool LaunchingStatus::AllLaunchedAndMoved() noexcept
     std::shared_lock lock(m_mutex);
     for (const auto& [app, data] : m_appsState)
     {
-        if (data.state != LaunchingState::Failed && data.state != LaunchingState::LaunchedAndMoved)
+        if (data.state != LaunchingState::Failed && 
+            data.state != LaunchingState::Canceled && 
+            data.state != LaunchingState::LaunchedAndMoved)
         {
             return false;
         }
@@ -75,6 +77,20 @@ std::optional<WorkspacesData::LaunchingAppState> LaunchingStatus::Get(const Work
     return std::nullopt;
 }
 
+std::optional<WorkspacesData::LaunchingAppState> LaunchingStatus::GetNext(LaunchingState state) noexcept
+{
+    std::shared_lock lock(m_mutex);
+    for (const auto& [app, appState] : m_appsState)
+    {
+        if (appState.state == state)
+        {
+            return appState;
+        }
+    }
+
+    return std::nullopt;
+}
+
 bool LaunchingStatus::IsWindowProcessed(HWND window) noexcept
 {
     std::shared_lock lock(m_mutex);
@@ -113,4 +129,16 @@ void LaunchingStatus::Update(const WorkspacesData::WorkspacesProject::Applicatio
 
     m_appsState[app].state = state;
     m_appsState[app].window = window;
+}
+
+void LaunchingStatus::Cancel()
+{
+    std::unique_lock lock(m_mutex);
+    for (auto& [app, state] : m_appsState)
+    {
+        if (state.state == LaunchingState::Waiting)
+        {
+            state.state = LaunchingState::Canceled;
+        }
+    }
 }

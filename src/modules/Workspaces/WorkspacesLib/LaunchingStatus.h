@@ -16,11 +16,13 @@ public:
 
     const WorkspacesData::LaunchingAppStateMap& Get() noexcept;
     std::optional<WorkspacesData::LaunchingAppState> Get(const WorkspacesData::WorkspacesProject::Application& app) noexcept;
+    std::optional<WorkspacesData::LaunchingAppState> GetNext(LaunchingState state) noexcept;
     
     bool IsWindowProcessed(HWND window) noexcept;
 
     void Update(const WorkspacesData::WorkspacesProject::Application& app, LaunchingState state);
     void Update(const WorkspacesData::WorkspacesProject::Application& app, HWND window, LaunchingState state);
+    void Cancel();
     
 private:
     WorkspacesData::LaunchingAppStateMap m_appsState;

@@ -17,7 +17,7 @@ Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
     m_workspaces(workspaces),
     m_invokePoint(invokePoint),
     m_start(std::chrono::high_resolution_clock::now()),
-    m_uiHelper(std::make_unique<LauncherUIHelper>()),
+    m_uiHelper(std::make_unique<LauncherUIHelper>(std::bind(&Launcher::handleUIMessage, this, std::placeholders::_1))),
     m_windowArrangerHelper(std::make_unique<WindowArrangerHelper>(std::bind(&Launcher::handleWindowArrangerMessage, this, std::placeholders::_1))),
     m_launchingStatus(m_project)
 {
@@ -101,8 +101,10 @@ void Launcher::Launch() // Launching thread
     const long ms = 100;
 
     // Launch apps
-    for (const auto& [app, status] : m_launchingStatus.Get())
+    for (auto appState = m_launchingStatus.GetNext(LaunchingState::Waiting); appState.has_value(); appState = m_launchingStatus.GetNext(LaunchingState::Waiting))
     {
+        auto app = appState.value().application;
+        
         long waitingTime = 0;
         while (!m_launchingStatus.AllInstancesOfTheAppLaunchedAndMoved(app) && waitingTime < maxWaitTimeMs)
         {
@@ -148,7 +150,7 @@ void Launcher::Launch() // Launching thread
     }
 }
 
-void Launcher::handleWindowArrangerMessage(const std::wstring& msg) // IPC thread
+void Launcher::handleWindowArrangerMessage(const std::wstring& msg) // WorkspacesArranger IPC thread
 {
     if (msg == L"ready")
     {
@@ -177,5 +179,13 @@ void Launcher::handleWindowArrangerMessage(const std::wstring& msg) // IPC threa
         {
             Logger::error(L"Failed to parse message from WorkspacesWindowArranger");
         }
+    }
+}
+
+void Launcher::handleUIMessage(const std::wstring& msg) // UI IPC thread
+{
+    if (msg == L"cancel")
+    {
+        m_launchingStatus.Cancel();
     }
 }
