@@ -21,6 +21,7 @@ private:
     //const WindowCreationHandler m_windowCreationHandler;
     const IPCHelper& m_ipcHelper;
     WorkspacesData::LaunchingAppStateMap m_launchingApps{};
+    HWND TryMoveWindow(const WorkspacesData::WorkspacesProject::Application& app, std::vector<HWND> movedWindows);
     
     //void onWindowCreated(HWND window);
     void processWindow(HWND window);

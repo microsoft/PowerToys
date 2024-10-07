@@ -182,18 +182,6 @@ namespace AppLauncher
         return launched;
     }
 
-    bool ShouldMoveApp(const WorkspacesData::WorkspacesProject::Application& app, WorkspacesData::WorkspacesProject& project)
-    {
-        if (!app.moveIfExists.has_value())
-        {
-            return project.moveExistingWindows;
-        }
-        else
-        {
-            return app.moveIfExists.value();
-        }
-    }
-
     bool Launch(WorkspacesData::WorkspacesProject& project, LaunchingStatus& launchingStatus, ErrorList& launchErrors)
     {
         bool launchedSuccessfully{ true };
@@ -204,11 +192,14 @@ namespace AppLauncher
         // Launch apps
         for (auto& app : project.apps)
         {
-            if (ShouldMoveApp(app, project))
+            auto currentStatus = launchingStatus.Get();
+            auto appStatus = currentStatus.find(app);
+            if (appStatus->second.state != LaunchingState::Waiting)
             {
-                // todo: need a snapshot before launch and check if the app is present. Possibly need a new state like NeedsMoving to indicate the arranger that the app is not newly launched
+                continue;
             }
-            else if (!Launch(app, launchErrors))
+
+            if (!Launch(app, launchErrors))
             {
                 Logger::error(L"Failed to launch {}", app.name);
                 launchingStatus.Update(app, LaunchingState::Failed);

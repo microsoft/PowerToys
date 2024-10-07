@@ -93,6 +93,79 @@ namespace FancyZones
     }
 }
 
+bool ShouldMoveApp(const WorkspacesData::WorkspacesProject::Application& app, WorkspacesData::WorkspacesProject& project)
+{
+    if (!app.moveIfExists.has_value())
+    {
+        return project.moveExistingWindows;
+    }
+    else
+    {
+        return app.moveIfExists.value();
+    }
+}
+
+HWND WindowArranger::TryMoveWindow(const WorkspacesData::WorkspacesProject::Application& app, std::vector<HWND> movedWindows)
+{
+    for (HWND window : m_windowsBefore)
+    {
+        if (std::find(movedWindows.begin(), movedWindows.end(), window) != movedWindows.end())
+        {
+            continue;
+        }
+          
+        std::wstring processPath = get_process_path(window);
+        if (processPath.empty())
+        {
+            continue;
+        }
+
+        DWORD pid{};
+        GetWindowThreadProcessId(window, &pid);
+
+        auto data = Utils::Apps::GetApp(processPath, pid, m_installedApps);
+        if (!data.has_value())
+        {
+            continue;
+        }
+
+        if (app.name == data.value().name || app.path == data.value().installPath)
+        {
+            Logger::info(L"The app {} is found at launch, moving it", app.name);
+            bool success = moveWindow(window, app);
+            auto iter = m_launchingApps.find(app);
+            if (success)
+            {
+                if (iter == m_launchingApps.end())
+                {
+                    Logger::info(L"The app {} is not found in the map of apps (unrealistic)", app.name);
+                }
+                else
+                {
+                    iter->second.state = LaunchingState::LaunchedAndMoved;
+                    m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({ app, nullptr, iter->second.state }).ToString().c_str());
+                }
+                return window;
+            }
+            else
+            {
+                if (iter == m_launchingApps.end())
+                {
+                    Logger::info(L"The app {} is not found in the map of apps (unrealistic)", app.name);
+                }
+                else
+                {
+                    Logger::info(L"Failed to move the existing app {} ", app.name);
+                    iter->second.state = LaunchingState::Failed;
+                    m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({ app, nullptr, iter->second.state }).ToString().c_str());
+                }
+                return NULL;
+            }
+        }
+    }
+    Logger::info(L"The app {} is not found at launch, cannot be moved, has to be started", app.name);
+    return NULL;
+}
 
 WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project, const IPCHelper& ipcHelper) :
     m_project(project),
@@ -102,9 +175,20 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project, const 
     //m_windowCreationHandler(std::bind(&WindowArranger::onWindowCreated, this, std::placeholders::_1)),
     m_ipcHelper(ipcHelper)
 {
+    std::vector<HWND> movedWindows;
+
     for (auto& app : project.apps)
     {
         m_launchingApps.insert({ app, { app, nullptr } });
+        // move the apps which are set to "Move-If-Exists" and are already present
+        if (ShouldMoveApp(app, project))
+        {
+            HWND movedWindow = TryMoveWindow(app, movedWindows);
+            if (movedWindow != NULL)
+            {
+                movedWindows.push_back(movedWindow);
+            }
+        }
     }
 
     m_ipcHelper.send(L"ready");
@@ -116,7 +200,7 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project, const 
         std::vector<HWND> windowsAfter = WindowEnumerator::Enumerate(WindowFilter::Filter);
         std::vector<HWND> windowsDiff{};
         std::copy_if(windowsAfter.begin(), windowsAfter.end(), std::back_inserter(windowsDiff), [&](HWND window) { return std::find(m_windowsBefore.begin(), m_windowsBefore.end(), window) == m_windowsBefore.end(); });
-        
+
         for (HWND window : windowsDiff)
         {
             processWindow(window);
@@ -176,10 +260,9 @@ void WindowArranger::processWindow(HWND window)
         return;
     }
 
-    auto iter = std::find_if(m_launchingApps.begin(), m_launchingApps.end(), [&](const auto& val) 
-        { 
-            return val.second.state == LaunchingState::Waiting && !val.second.window && (val.first.name == data.value().name || val.first.path == data.value().installPath); 
-        });
+    auto iter = std::find_if(m_launchingApps.begin(), m_launchingApps.end(), [&](const auto& val) {
+        return val.second.state == LaunchingState::Waiting && !val.second.window && (val.first.name == data.value().name || val.first.path == data.value().installPath);
+    });
     if (iter == m_launchingApps.end())
     {
         Logger::info(L"A window of {} is not in the project", processPath);
@@ -196,7 +279,7 @@ void WindowArranger::processWindow(HWND window)
         iter->second.state = LaunchingState::Failed;
     }
 
-    m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({iter->first, nullptr, iter->second.state}).ToString().c_str());
+    m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({ iter->first, nullptr, iter->second.state }).ToString().c_str());
 }
 
 bool WindowArranger::moveWindow(HWND window, const WorkspacesData::WorkspacesProject::Application& app)
