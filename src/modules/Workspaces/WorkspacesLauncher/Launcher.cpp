@@ -21,6 +21,9 @@ Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
     m_windowArrangerHelper(std::make_unique<WindowArrangerHelper>(std::bind(&Launcher::handleWindowArrangerMessage, this, std::placeholders::_1))),
     m_launchingStatus(m_project)
 {
+    // main thread
+    Logger::info(L"Launch Workspace {} : {}", m_project.name, m_project.id);
+
     m_uiHelper->LaunchUI();
     m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
 
@@ -49,6 +52,7 @@ Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
 
 Launcher::~Launcher()
 {
+    // main thread, will wait until arranger is finished
     Logger::trace(L"Finalizing launch");
 
     // update last-launched time
@@ -87,25 +91,17 @@ Launcher::~Launcher()
         }
     }
 
+    std::lock_guard lock(m_launchErrorsMutex);
     Trace::Workspaces::Launch(m_launchedSuccessfully, m_project, m_invokePoint, duration.count(), differentSetup, m_launchErrors);
 }
 
-void Launcher::Launch()
+void Launcher::Launch() // Launching thread
 {
-    Logger::info(L"Launch Workspace {} : {}", m_project.name, m_project.id);
-
-    bool launchedSuccessfully{ true };
-
-    {
-        auto installedApps = Utils::Apps::GetAppsList();
-        AppLauncher::UpdatePackagedApps(m_project.apps, installedApps);
-    }
-    
     const long maxWaitTimeMs = 3000;
     const long ms = 100;
 
     // Launch apps
-    for (auto& app : m_project.apps)
+    for (const auto& [app, status] : m_launchingStatus.Get())
     {
         long waitingTime = 0;
         while (!m_launchingStatus.AllInstancesOfTheAppLaunchedAndMoved(app) && waitingTime < maxWaitTimeMs)
@@ -119,7 +115,13 @@ void Launcher::Launch()
             Logger::info(L"Waiting time for launching next {} instance expired", app.name);
         }
 
-        if (AppLauncher::Launch(app, m_launchErrors))
+        bool launched{ false };
+        {
+            std::lock_guard lock(m_launchErrorsMutex);
+            launched = AppLauncher::Launch(app, m_launchErrors);
+        }
+
+        if (launched)
         {
             m_launchingStatus.Update(app, LaunchingState::Launched);
         }
@@ -127,26 +129,30 @@ void Launcher::Launch()
         {
             Logger::error(L"Failed to launch {}", app.name);
             m_launchingStatus.Update(app, LaunchingState::Failed);
-            launchedSuccessfully = false;
+            m_launchedSuccessfully = false;
         }
 
-        auto status = m_launchingStatus.Get(app);
+        auto status = m_launchingStatus.Get(app); // updated after launch status 
         if (status.has_value())
         {
-            m_windowArrangerHelper->UpdateLaunchStatus(status.value());
+            {
+                std::lock_guard lock(m_windowArrangerHelperMutex);
+                m_windowArrangerHelper->UpdateLaunchStatus(status.value());
+            }
         }
 
-        m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
+        {
+            std::lock_guard lock(m_uiHelperMutex);
+            m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
+        }
     }
-
-    m_launchedSuccessfully = launchedSuccessfully;
 }
 
-void Launcher::handleWindowArrangerMessage(const std::wstring& msg)
+void Launcher::handleWindowArrangerMessage(const std::wstring& msg) // IPC thread
 {
     if (msg == L"ready")
     {
-        Launch();
+        std::thread([&]() { Launch(); }).detach();
     }
     else
     {
@@ -156,7 +162,11 @@ void Launcher::handleWindowArrangerMessage(const std::wstring& msg)
             if (data.has_value())
             {
                 m_launchingStatus.Update(data.value().application, data.value().state);
-                m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
+                
+                {
+                    std::lock_guard lock(m_uiHelperMutex);
+                    m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
+                }
             }
             else
             {
