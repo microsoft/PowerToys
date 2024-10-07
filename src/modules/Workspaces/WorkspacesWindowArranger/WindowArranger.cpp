@@ -101,15 +101,11 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
     m_installedApps(Utils::Apps::GetAppsList()),
     //m_windowCreationHandler(std::bind(&WindowArranger::onWindowCreated, this, std::placeholders::_1)),
     m_ipcHelper(IPCHelperStrings::WindowArrangerPipeName, IPCHelperStrings::LauncherArrangerPipeName, std::bind(&WindowArranger::receiveIpcMessage, this, std::placeholders::_1)),
+    m_launchingStatus(m_project)
 {
-    for (auto& app : project.apps)
-    {
-        m_launchingApps.insert({ app, { app, nullptr } });
-    }
-
     m_ipcHelper.send(L"ready");
 
-    for (int attempt = 0; attempt < 50 && !allWindowsFound(); attempt++)
+    for (int attempt = 0; attempt < 50 && !m_launchingStatus.AllLaunchedAndMoved(); attempt++)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
@@ -123,7 +119,7 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
         }
     }
 
-    bool allFound = allWindowsFound();
+    bool allFound = m_launchingStatus.AllLaunchedAndMoved();
     Logger::info(L"Finished moving new windows, all windows found: {}", allFound);
 
     if (!allFound)
@@ -148,9 +144,7 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
 
 void WindowArranger::processWindow(HWND window)
 {
-    // check if this window is already handled
-    auto windowIter = std::find_if(m_launchingApps.begin(), m_launchingApps.end(), [&](const auto& val) { return val.second.window == window; });
-    if (windowIter != m_launchingApps.end())
+    if (m_launchingStatus.IsWindowProcessed(window))
     {
         return;
     }
@@ -176,27 +170,34 @@ void WindowArranger::processWindow(HWND window)
         return;
     }
 
-    auto iter = std::find_if(m_launchingApps.begin(), m_launchingApps.end(), [&](const auto& val) 
+    const auto& apps = m_launchingStatus.Get();
+    auto iter = std::find_if(apps.begin(), apps.end(), [&](const auto& val) 
         { 
-            return val.second.state == LaunchingState::Waiting && !val.second.window && (val.first.name == data.value().name || val.first.path == data.value().installPath); 
+            return val.second.state == LaunchingState::Launched && 
+                !val.second.window && 
+                (val.first.name == data.value().name || val.first.path == data.value().installPath); 
         });
-    if (iter == m_launchingApps.end())
+
+    if (iter == apps.end())
     {
-        Logger::info(L"A window of {} is not in the project", processPath);
+        Logger::info(L"Skip {}", processPath);
         return;
     }
 
-    iter->second.window = window;
     if (moveWindow(window, iter->first))
     {
-        iter->second.state = LaunchingState::LaunchedAndMoved;
+        m_launchingStatus.Update(iter->first, window, LaunchingState::LaunchedAndMoved);
     }
     else
     {
-        iter->second.state = LaunchingState::Failed;
+        m_launchingStatus.Update(iter->first, window, LaunchingState::Failed);
     }
 
-    m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({iter->first, nullptr, iter->second.state}).ToString().c_str());
+    auto state = m_launchingStatus.Get(iter->first);
+    if (state.has_value())
+    {
+        sendUpdatedState(state.value());
+    }
 }
 
 bool WindowArranger::moveWindow(HWND window, const WorkspacesData::WorkspacesProject::Application& app)
@@ -245,13 +246,6 @@ bool WindowArranger::moveWindow(HWND window, const WorkspacesData::WorkspacesPro
         Logger::error(L"Failed placing {}", app.name);
         return false;
     }
-}
-
-bool WindowArranger::allWindowsFound() const
-{
-    return std::find_if(m_launchingApps.begin(), m_launchingApps.end(), [&](const std::pair<WorkspacesData::WorkspacesProject::Application, WorkspacesData::LaunchingAppState>& val) {
-               return val.second.window == nullptr;
-           }) == m_launchingApps.end();
 }
 
 void WindowArranger::receiveIpcMessage(const std::wstring& message)

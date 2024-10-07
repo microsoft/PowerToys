@@ -12,10 +12,18 @@ LaunchingStatus::LaunchingStatus(const WorkspacesData::WorkspacesProject& projec
     }
 }
 
-const WorkspacesData::LaunchingAppStateMap& LaunchingStatus::Get() noexcept
+bool LaunchingStatus::AllLaunched() noexcept
 {
     std::shared_lock lock(m_mutex);
-    return m_appsState;
+    for (const auto& [app, data] : m_appsState)
+    {
+        if (data.state == LaunchingState::Waiting)
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool LaunchingStatus::AllLaunchedAndMoved() noexcept
@@ -32,18 +40,54 @@ bool LaunchingStatus::AllLaunchedAndMoved() noexcept
     return true;
 }
 
-bool LaunchingStatus::AllLaunched() noexcept
+bool LaunchingStatus::AllInstancesOfTheAppLaunchedAndMoved(const WorkspacesData::WorkspacesProject::Application& application) noexcept
 {
     std::shared_lock lock(m_mutex);
-    for (const auto& [app, data] : m_appsState)
+
+    for (const auto& [app, state] : m_appsState)
     {
-        if (data.state == LaunchingState::Waiting)
+        if (app.name == application.name || app.path == application.path)
         {
-            return false;
+            if (state.state == LaunchingState::Launched)
+            {
+                return false;
+            }
         }
     }
 
     return true;
+}
+
+const WorkspacesData::LaunchingAppStateMap& LaunchingStatus::Get() noexcept
+{
+    std::shared_lock lock(m_mutex);
+    return m_appsState;
+}
+
+std::optional<WorkspacesData::LaunchingAppState> LaunchingStatus::Get(const WorkspacesData::WorkspacesProject::Application& app) noexcept
+{
+    std::shared_lock lock(m_mutex);
+    if (m_appsState.contains(app))
+    {
+        return m_appsState.at(app);
+    }
+
+    return std::nullopt;
+}
+
+bool LaunchingStatus::IsWindowProcessed(HWND window) noexcept
+{
+    std::shared_lock lock(m_mutex);
+
+    for (const auto& [app, state] : m_appsState)
+    {
+        if (state.window == window)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void LaunchingStatus::Update(const WorkspacesData::WorkspacesProject::Application& app, LaunchingState state)
@@ -56,4 +100,17 @@ void LaunchingStatus::Update(const WorkspacesData::WorkspacesProject::Applicatio
     }
 
     m_appsState[app].state = state;
+}
+
+void LaunchingStatus::Update(const WorkspacesData::WorkspacesProject::Application& app, HWND window, LaunchingState state)
+{
+    std::unique_lock lock(m_mutex);
+    if (!m_appsState.contains(app))
+    {
+        Logger::error(L"Error updating state: app {} is not tracked in the project", app.name);
+        return;
+    }
+
+    m_appsState[app].state = state;
+    m_appsState[app].window = window;
 }
