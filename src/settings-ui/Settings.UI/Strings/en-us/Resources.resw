@@ -4417,6 +4417,12 @@ Change the break timer color using the same keys that the drawing color. The bre
   <data name="ZoomIt_Break_Shortcut.Header" xml:space="preserve">
     <value>Start Break Timer Hotkey</value>
   </data>
+  <data name="ZoomIt_Break_Timeout.Header" xml:space="preserve">
+    <value>Timer (minutes)</value>
+  </data>
+  <data name="ZoomIt_Break_ShowExpiredTime.Header" xml:space="preserve">
+    <value>Show Time Elapsed After Expiration</value>
+  </data>
   <data name="ZoomIt_RecordGroup.Header" xml:space="preserve">
     <value>Record</value>
   </data>

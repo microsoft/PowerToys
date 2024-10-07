@@ -57,7 +57,7 @@ REG_SETTING RegSettings[] = {
 	{ L"DemoTypeFile", SETTING_TYPE_STRING, sizeof( g_DemoTypeFile ), g_DemoTypeFile, static_cast<DOUBLE>(0) },
 	{ L"DemoTypeSpeedSlider", SETTING_TYPE_DWORD, 0, &g_DemoTypeSpeedSlider, static_cast<DOUBLE>(g_DemoTypeSpeedSlider) },
 	{ L"DemoTypeUserDrivenMode", SETTING_TYPE_BOOLEAN, 0, &g_DemoTypeUserDriven, static_cast<DOUBLE>(g_DemoTypeUserDriven) },
-	{ L"BreakTimeout", SETTING_TYPE_BOOLEAN, 0, &g_BreakTimeout, static_cast<DOUBLE>(g_BreakTimeout) },
+    { L"BreakTimeout", SETTING_TYPE_DWORD, 0, &g_BreakTimeout, static_cast<DOUBLE>(g_BreakTimeout) },
 	{ L"BreakOpacity", SETTING_TYPE_DWORD, 0, &g_BreakOpacity, static_cast<DOUBLE>(g_BreakOpacity) },
 	{ L"BreakPlaySoundFile", SETTING_TYPE_BOOLEAN, 0, &g_BreakPlaySoundFile, static_cast<DOUBLE>(0) },
 	{ L"BreakSoundFile", SETTING_TYPE_STRING, sizeof(g_BreakSoundFile), g_BreakSoundFile, static_cast<DOUBLE>(0) },

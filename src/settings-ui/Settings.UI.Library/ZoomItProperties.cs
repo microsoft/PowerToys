@@ -63,7 +63,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public BoolProperty DemoTypeUserDrivenMode { get; set; }
 
-        public BoolProperty BreakTimeout { get; set; }
+        public IntProperty BreakTimeout { get; set; }
 
         public IntProperty BreakOpacity { get; set; }
 

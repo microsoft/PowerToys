@@ -90,6 +90,19 @@
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Break_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.BreakTimerKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="ZoomIt_Break_Timeout">
+                        <NumberBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            LargeChange="10"
+                            Minimum="1"
+                            Maximum="99"
+                            SmallChange="1"
+                            SpinButtonPlacementMode="Compact"
+                            Value="{x:Bind ViewModel.BreakTimeout, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="ZoomIt_Break_ShowExpiredTime">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.BreakShowExpiredTime, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_RecordGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Record_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">

@@ -301,6 +301,34 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int BreakTimeout
+        {
+            get => _zoomItSettings.Properties.BreakTimeout.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.BreakTimeout.Value != value)
+                {
+                    _zoomItSettings.Properties.BreakTimeout.Value = value;
+                    OnPropertyChanged(nameof(BreakTimeout));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool BreakShowExpiredTime
+        {
+            get => _zoomItSettings.Properties.ShowExpiredTime.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.ShowExpiredTime.Value != value)
+                {
+                    _zoomItSettings.Properties.ShowExpiredTime.Value = value;
+                    OnPropertyChanged(nameof(BreakShowExpiredTime));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         private void NotifySettingsChanged()
         {
             global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.SaveSettingsJson(
@@ -310,7 +338,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void SelectDemoTypeFileAction()
         {
-            // TODO: Localize
             try
             {
                 ResourceLoader resourceLoader = ResourceLoaderInstance.ResourceLoader;
