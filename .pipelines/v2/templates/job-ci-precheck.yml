@@ -7,9 +7,6 @@ jobs:
   - checkout: none
 
   - pwsh: |-
-      Write-Host '##vso[task.setvariable variable=skipBuild;isOutput=true]Yes'
-      Write-Host 'Skipping Build'
-      Exit 0
       try {
         # Try based on pull request first
         $pullRequestNumber = "$(system.pullRequest.pullRequestNumber)";
