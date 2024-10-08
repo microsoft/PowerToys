@@ -570,7 +570,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             try
             {
                 ResourceLoader resourceLoader = ResourceLoaderInstance.ResourceLoader;
-                string title = resourceLoader.GetString("ZoomIt_Break_SoundFile_Picker_Dialog_Title");
+                string title = resourceLoader.GetString("ZoomIt_Break_BackgroundFile_Picker_Dialog_Title");
                 string bitmapFilesFilter = resourceLoader.GetString("FilePicker_ZoomIt_BitmapFilesFilter");
                 string allPictureFilesFilter = resourceLoader.GetString("FilePicker_ZoomIt_AllPicturesFilter");
                 string allFilesFilter = resourceLoader.GetString("FilePicker_AllFilesFilter");

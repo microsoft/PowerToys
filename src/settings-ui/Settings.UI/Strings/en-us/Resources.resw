@@ -4486,6 +4486,9 @@ Change the break timer color using the same keys that the drawing color. The bre
   <data name="ZoomIt_Break_BackgroundFile_BrowseButton.Content" xml:space="preserve">
     <value>Browse</value>
   </data>
+  <data name="ZoomIt_Break_BackgroundFile_Picker_Dialog_Title" xml:space="preserve">
+    <value>Specify background file...</value>
+  </data>
   <data name="FilePicker_ZoomIt_BitmapFilesFilter" xml:space="preserve">
     <value>Bitmap Files</value>
   </data>
