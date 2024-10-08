@@ -150,7 +150,14 @@ namespace WorkspacesData
 
                     result.isMaximized = json.GetNamedBoolean(NonLocalizable::MaximizedID);
                     result.isMinimized = json.GetNamedBoolean(NonLocalizable::MinimizedID);
-                    result.moveIfExists = json.GetNamedBoolean(NonLocalizable::MoveIfExistsID);
+                    try
+                    {
+                        result.moveIfExists = json.GetNamedBoolean(NonLocalizable::MoveIfExistsID);
+                    }
+                    catch (const winrt::hresult_error&)
+                    {
+                        result.moveIfExists = NULL;
+                    }
 
                     result.monitor = static_cast<int>(json.GetNamedNumber(NonLocalizable::MonitorID));
                     if (json.HasKey(NonLocalizable::PositionID))
