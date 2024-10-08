@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private const int MaxPath = 260; // ZoomIt doesn't support LONG_PATHS. We need to change it here once it does.
 
-        private static string PickFileDialog(string filter, string title)
+        private static string PickFileDialog(string filter, string title, string initialDir = null, int initialFilter = 0)
         {
             // this code was changed to solve the problem with WinUI3 that prevents to select a file
             // while running elevated, when the issue is solved in WinUI3 it should be changed back
@@ -30,8 +30,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             openFileName.MaxFile = openFileName.File.Length;
             openFileName.FileTitle = new string(new char[MaxPath * 2]);
             openFileName.MaxFileTitle = openFileName.FileTitle.Length;
-            openFileName.InitialDir = null;
+            openFileName.InitialDir = initialDir;
             openFileName.Title = title;
+            openFileName.FilterIndex = initialFilter;
             openFileName.DefExt = null;
             IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
             openFileName.Hwnd = windowHandle;

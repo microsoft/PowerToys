@@ -103,6 +103,59 @@
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Break_ShowExpiredTime">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.BreakShowExpiredTime, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsExpander x:Uid="ZoomIt_Break_PlaySoundsFile" IsExpanded="True">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.BreakPlaySoundFile, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="ZoomIt_Break_SoundFile" Description="{x:Bind ViewModel.BreakSoundFile, Mode=OneWay}" IsEnabled="{x:Bind ViewModel.BreakPlaySoundFile, Mode=OneWay}">
+                                <Button x:Uid="ZoomIt_Break_SoundFile_BrowseButton" Command="{x:Bind ViewModel.SelectBreakSoundFileCommand, Mode=OneWay}"/>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                    <tkcontrols:SettingsCard x:Uid="ZoomIt_Break_TimerOpacity">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.BreakTimerOpacityIndex, Mode=TwoWay}">
+                            <ComboBoxItem>10%</ComboBoxItem>
+                            <ComboBoxItem>20%</ComboBoxItem>
+                            <ComboBoxItem>30%</ComboBoxItem>
+                            <ComboBoxItem>40%</ComboBoxItem>
+                            <ComboBoxItem>50%</ComboBoxItem>
+                            <ComboBoxItem>60%</ComboBoxItem>
+                            <ComboBoxItem>70%</ComboBoxItem>
+                            <ComboBoxItem>80%</ComboBoxItem>
+                            <ComboBoxItem>90%</ComboBoxItem>
+                            <ComboBoxItem>100%</ComboBoxItem>
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="ZoomIt_Break_TimerPosition">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.BreakTimerPosition, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerPosition_TopLeftCorner" />
+                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerPosition_TopCenter" />
+                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerPosition_TopRightCorner" />
+                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerPosition_Left" />
+                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerPosition_Center" />
+                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerPosition_Right" />
+                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerPosition_BottomLeftCorner" />
+                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerPosition_BottomCenter" />
+                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerPosition_BottomRightCorner" />
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsExpander x:Uid="ZoomIt_Break_ShowBackgroundBitmap" IsExpanded="True">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.BreakShowBackgroundFile, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="ZoomIt_Break_ShowDesktopOrImageFile" IsEnabled="{x:Bind ViewModel.BreakShowBackgroundFile, Mode=OneWay}">
+                                <RadioButtons SelectedIndex="{x:Bind ViewModel.BreakShowDesktopOrImageFileIndex, Mode=TwoWay}">
+                                    <RadioButton x:Uid="ZoomIt_Break_ShowFadedDesktop"/>
+                                    <RadioButton x:Uid="ZoomIt_Break_ShowImageFile"/>
+                                </RadioButtons>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="ZoomIt_Break_BackgroundFile" Description="{x:Bind ViewModel.BreakBackgroundFile, Mode=OneWay}" IsEnabled="{x:Bind ViewModel.BreakShowBackgroundFile, Mode=OneWay}">
+                                <Button x:Uid="ZoomIt_Break_BackgroundFile_BrowseButton" Command="{x:Bind ViewModel.SelectBreakBackgroundFileCommand, Mode=OneWay}"/>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="ZoomIt_Break_BackgroundStretch">
+                                <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.BreakBackgroundStretch, Mode=TwoWay}" IsEnabled="{x:Bind ViewModel.BreakShowBackgroundFile, Mode=OneWay}"/>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_RecordGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Record_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">

@@ -28,9 +28,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        private Func<string, string, string> PickFileDialog { get; }
+        private Func<string, string, string, int, string> PickFileDialog { get; }
 
         public ButtonClickCommand SelectDemoTypeFileCommand { get; set; }
+
+        public ButtonClickCommand SelectBreakSoundFileCommand { get; set; }
+
+        public ButtonClickCommand SelectBreakBackgroundFileCommand { get; set; }
 
         // These values should track what's in DemoType.h
         public int DemoTypeMaxTypingSpeed { get; } = 10;
@@ -43,7 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             IncludeFields = true,
         };
 
-        public ZoomItViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, string, string> pickFileDialog)
+        public ZoomItViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, string, string, int, string> pickFileDialog)
         {
             ArgumentNullException.ThrowIfNull(settingsUtils);
 
@@ -66,6 +70,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             PickFileDialog = pickFileDialog;
 
             SelectDemoTypeFileCommand = new ButtonClickCommand(SelectDemoTypeFileAction);
+            SelectBreakSoundFileCommand = new ButtonClickCommand(SelectBreakSoundFileAction);
+            SelectBreakBackgroundFileCommand = new ButtonClickCommand(SelectBreakBackgroundFileAction);
         }
 
         private void InitializeEnabledValue()
@@ -329,6 +335,124 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool BreakPlaySoundFile
+        {
+            get => _zoomItSettings.Properties.BreakPlaySoundFile.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.BreakPlaySoundFile.Value != value)
+                {
+                    _zoomItSettings.Properties.BreakPlaySoundFile.Value = value;
+                    OnPropertyChanged(nameof(BreakPlaySoundFile));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public string BreakSoundFile
+        {
+            get => _zoomItSettings.Properties.BreakSoundFile.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.BreakSoundFile.Value != value)
+                {
+                    _zoomItSettings.Properties.BreakSoundFile.Value = value;
+                    OnPropertyChanged(nameof(BreakSoundFile));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public int BreakTimerOpacityIndex
+        {
+            get
+            {
+                return Math.Clamp((_zoomItSettings.Properties.BreakOpacity.Value / 10) - 1, 0, 9);
+            }
+
+            set
+            {
+                int newValue = (value + 1) * 10;
+                if (_zoomItSettings.Properties.BreakOpacity.Value != newValue)
+                {
+                    _zoomItSettings.Properties.BreakOpacity.Value = newValue;
+                    OnPropertyChanged(nameof(BreakTimerOpacityIndex));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public int BreakTimerPosition
+        {
+            get => _zoomItSettings.Properties.BreakTimerPosition.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.BreakTimerPosition.Value != value)
+                {
+                    _zoomItSettings.Properties.BreakTimerPosition.Value = value;
+                    OnPropertyChanged(nameof(BreakTimerPosition));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool BreakShowBackgroundFile
+        {
+            get => _zoomItSettings.Properties.BreakShowBackgroundFile.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.BreakShowBackgroundFile.Value != value)
+                {
+                    _zoomItSettings.Properties.BreakShowBackgroundFile.Value = value;
+                    OnPropertyChanged(nameof(BreakShowBackgroundFile));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public int BreakShowDesktopOrImageFileIndex
+        {
+            get => _zoomItSettings.Properties.BreakShowDesktop.Value ? 0 : 1;
+            set
+            {
+                bool newValue = value == 0;
+                if (_zoomItSettings.Properties.BreakShowDesktop.Value != newValue)
+                {
+                    _zoomItSettings.Properties.BreakShowDesktop.Value = newValue;
+                    OnPropertyChanged(nameof(BreakShowDesktopOrImageFileIndex));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public string BreakBackgroundFile
+        {
+            get => _zoomItSettings.Properties.BreakBackgroundFile.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.BreakBackgroundFile.Value != value)
+                {
+                    _zoomItSettings.Properties.BreakBackgroundFile.Value = value;
+                    OnPropertyChanged(nameof(BreakBackgroundFile));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool BreakBackgroundStretch
+        {
+            get => _zoomItSettings.Properties.BreakBackgroundStretch.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.BreakBackgroundStretch.Value != value)
+                {
+                    _zoomItSettings.Properties.BreakBackgroundStretch.Value = value;
+                    OnPropertyChanged(nameof(BreakBackgroundStretch));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         private void NotifySettingsChanged()
         {
             global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.SaveSettingsJson(
@@ -343,7 +467,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ResourceLoader resourceLoader = ResourceLoaderInstance.ResourceLoader;
                 string title = resourceLoader.GetString("ZoomIt_DemoType_File_Picker_Dialog_Title");
                 string allFilesFilter = resourceLoader.GetString("FilePicker_AllFilesFilter");
-                string pickedFile = PickFileDialog($"{allFilesFilter}\0*.*\0\0", title);
+                string pickedFile = PickFileDialog($"{allFilesFilter}\0*.*\0\0", title, null, 0);
                 if (pickedFile != null)
                 {
                     DemoTypeFile = pickedFile;
@@ -352,6 +476,49 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError("Error picking Demo Type file.", ex);
+            }
+        }
+
+        private void SelectBreakSoundFileAction()
+        {
+            try
+            {
+                ResourceLoader resourceLoader = ResourceLoaderInstance.ResourceLoader;
+                string title = resourceLoader.GetString("ZoomIt_Break_SoundFile_Picker_Dialog_Title");
+                string soundFilesFilter = resourceLoader.GetString("FilePicker_ZoomIt_SoundsFilter");
+                string allFilesFilter = resourceLoader.GetString("FilePicker_AllFilesFilter");
+                string initialDirectory = Environment.ExpandEnvironmentVariables("%WINDIR%\\Media");
+                string pickedFile = PickFileDialog($"{soundFilesFilter}\0*.wav\0{allFilesFilter}\0*.*\0\0", title, initialDirectory, 0);
+                if (pickedFile != null)
+                {
+                    BreakSoundFile = pickedFile;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error picking Break Sound file.", ex);
+            }
+        }
+
+        private void SelectBreakBackgroundFileAction()
+        {
+            try
+            {
+                ResourceLoader resourceLoader = ResourceLoaderInstance.ResourceLoader;
+                string title = resourceLoader.GetString("ZoomIt_Break_SoundFile_Picker_Dialog_Title");
+                string bitmapFilesFilter = resourceLoader.GetString("FilePicker_ZoomIt_BitmapFilesFilter");
+                string allPictureFilesFilter = resourceLoader.GetString("FilePicker_ZoomIt_AllPicturesFilter");
+                string allFilesFilter = resourceLoader.GetString("FilePicker_AllFilesFilter");
+                string initialDirectory = Environment.ExpandEnvironmentVariables("%USERPROFILE%\\Pictures");
+                string pickedFile = PickFileDialog($"{bitmapFilesFilter} (*.bmp;*.dib)\0*.bmp;*.dib\0PNG (*.png)\0*.png\0JPEG (*.jpg;*.jpeg;*.jpe;*.jfif)\0*.jpg;*.jpeg;*.jpe;*.jfif\0GIF (*.gif)\0*.gif\0{allPictureFilesFilter}\0*.bmp;*.dib;*.png;*.jpg;*.jpeg;*.jpe;*.jfif;*.gif\0{allFilesFilter}\0*.*\0\0", title, initialDirectory, 5);
+                if (pickedFile != null)
+                {
+                    BreakBackgroundFile = pickedFile;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error picking Break Background file.", ex);
             }
         }
 

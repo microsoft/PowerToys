@@ -4423,6 +4423,78 @@ Change the break timer color using the same keys that the drawing color. The bre
   <data name="ZoomIt_Break_ShowExpiredTime.Header" xml:space="preserve">
     <value>Show Time Elapsed After Expiration</value>
   </data>
+  <data name="ZoomIt_Break_PlaySoundsFile.Header" xml:space="preserve">
+    <value>Play Sound on Expiration</value>
+  </data>
+  <data name="ZoomIt_Break_SoundFile.Header" xml:space="preserve">
+    <value>Alarm Sound File</value>
+  </data>
+  <data name="ZoomIt_Break_SoundFile_BrowseButton.Content" xml:space="preserve">
+    <value>Browse</value>
+  </data>
+  <data name="ZoomIt_Break_SoundFile_Picker_Dialog_Title" xml:space="preserve">
+    <value>Specify sound file...</value>
+  </data>
+  <data name="FilePicker_ZoomIt_SoundsFilter" xml:space="preserve">
+    <value>Sounds</value>
+  </data>
+  <data name="ZoomIt_Break_TimerOpacity.Header" xml:space="preserve">
+    <value>Timer Opacity</value>
+  </data>
+  <data name="ZoomIt_Break_TimerPosition.Header" xml:space="preserve">
+    <value>Timer Position</value>
+  </data>
+  <data name="ZoomIt_Break_TimerPosition_TopLeftCorner.Content" xml:space="preserve">
+    <value>Top left corner</value>
+  </data>
+  <data name="ZoomIt_Break_TimerPosition_TopCenter.Content" xml:space="preserve">
+    <value>Top center</value>
+  </data>
+  <data name="ZoomIt_Break_TimerPosition_TopRightCorner.Content" xml:space="preserve">
+    <value>Top right corner</value>
+  </data>
+  <data name="ZoomIt_Break_TimerPosition_Left.Content" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="ZoomIt_Break_TimerPosition_Center.Content" xml:space="preserve">
+    <value>Center</value>
+  </data>
+  <data name="ZoomIt_Break_TimerPosition_Right.Content" xml:space="preserve">
+    <value>Right</value>
+  </data>
+  <data name="ZoomIt_Break_TimerPosition_BottomLeftCorner.Content" xml:space="preserve">
+    <value>Bottom left corner</value>
+  </data>
+  <data name="ZoomIt_Break_TimerPosition_BottomCenter.Content" xml:space="preserve">
+    <value>Bottom center</value>
+  </data>
+  <data name="ZoomIt_Break_TimerPosition_BottomRightCorner.Content" xml:space="preserve">
+    <value>Bottom right corner</value>
+  </data>
+  <data name="ZoomIt_Break_ShowBackgroundBitmap.Header" xml:space="preserve">
+    <value>Show Background Bitmap</value>
+  </data>
+  <data name="ZoomIt_Break_ShowFadedDesktop.Content" xml:space="preserve">
+    <value>Use faded desktop as background</value>
+  </data>
+  <data name="ZoomIt_Break_ShowImageFile.Content" xml:space="preserve">
+    <value>Use image file as background</value>
+  </data>
+  <data name="ZoomIt_Break_BackgroundFile.Header" xml:space="preserve">
+    <value>Background Image File</value>
+  </data>
+  <data name="ZoomIt_Break_BackgroundFile_BrowseButton.Content" xml:space="preserve">
+    <value>Browse</value>
+  </data>
+  <data name="FilePicker_ZoomIt_BitmapFilesFilter" xml:space="preserve">
+    <value>Bitmap Files</value>
+  </data>
+  <data name="FilePicker_ZoomIt_AllPicturesFilter" xml:space="preserve">
+    <value>All Picture Files</value>
+  </data>
+  <data name="ZoomIt_Break_BackgroundStretch.Header" xml:space="preserve">
+    <value>Scale to screen</value>
+  </data>
   <data name="ZoomIt_RecordGroup.Header" xml:space="preserve">
     <value>Record</value>
   </data>
