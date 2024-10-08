@@ -32,9 +32,9 @@ stages:
       displayName: Build ${{ platform }}
       ${{ if ne(variables['Build.Reason'], 'Manual') }}:
         dependsOn: [Precheck]
+        condition: ne(stageDependencies.Precheck.Precheck.outputs['verifyBuildRequest.skipBuild'], 'Yes')
       ${{ else }}:
         dependsOn: []
-      condition: and(succeeded(), or(eq(variables['Build.Reason'], 'Manual'), ne(stageDependencies.Precheck.Precheck.outputs['verifyBuildRequest.skipBuild'], 'Yes')))
       jobs:
         - template: job-build-project.yml
           parameters:
