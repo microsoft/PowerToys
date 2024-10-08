@@ -161,6 +161,23 @@
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Record_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.RecordToggleKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="ZoomIt_Record_Scaling">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.RecordScalingIndex, Mode=TwoWay}">
+                            <ComboBoxItem>0.1</ComboBoxItem>
+                            <ComboBoxItem>0.2</ComboBoxItem>
+                            <ComboBoxItem>0.3</ComboBoxItem>
+                            <ComboBoxItem>0.4</ComboBoxItem>
+                            <ComboBoxItem>0.5</ComboBoxItem>
+                            <ComboBoxItem>0.6</ComboBoxItem>
+                            <ComboBoxItem>0.7</ComboBoxItem>
+                            <ComboBoxItem>0.8</ComboBoxItem>
+                            <ComboBoxItem>0.9</ComboBoxItem>
+                            <ComboBoxItem>1.0</ComboBoxItem>
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="ZoomIt_Record_CaptureAudio">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.RecordCaptureAudio, Mode=TwoWay}"/>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_SnipGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Snip_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">

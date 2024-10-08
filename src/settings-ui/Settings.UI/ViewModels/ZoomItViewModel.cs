@@ -453,6 +453,39 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int RecordScalingIndex
+        {
+            get
+            {
+                return Math.Clamp((_zoomItSettings.Properties.RecordScaling.Value / 10) - 1, 0, 9);
+            }
+
+            set
+            {
+                int newValue = (value + 1) * 10;
+                if (_zoomItSettings.Properties.RecordScaling.Value != newValue)
+                {
+                    _zoomItSettings.Properties.RecordScaling.Value = newValue;
+                    OnPropertyChanged(nameof(RecordScalingIndex));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool RecordCaptureAudio
+        {
+            get => _zoomItSettings.Properties.CaptureAudio.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.CaptureAudio.Value != value)
+                {
+                    _zoomItSettings.Properties.CaptureAudio.Value = value;
+                    OnPropertyChanged(nameof(RecordCaptureAudio));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         private void NotifySettingsChanged()
         {
             global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.SaveSettingsJson(
