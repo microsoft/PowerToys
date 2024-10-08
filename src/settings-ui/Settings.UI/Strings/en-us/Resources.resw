@@ -4514,6 +4514,12 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="ZoomIt_Record_CaptureAudio.Header" xml:space="preserve">
     <value>Capture audio input</value>
   </data>
+  <data name="ZoomIt_Record_Microphone.Header" xml:space="preserve">
+    <value>Microphone</value>
+  </data>
+  <data name="ZoomIt_Record_Microphones_Default_Name" xml:space="preserve">
+    <value>Default</value>
+  </data>
   <data name="ZoomIt_SnipGroup.Header" xml:space="preserve">
     <value>Snip</value>
   </data>

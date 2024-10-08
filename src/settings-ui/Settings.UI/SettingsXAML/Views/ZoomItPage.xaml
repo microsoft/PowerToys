@@ -178,6 +178,9 @@
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Record_CaptureAudio">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.RecordCaptureAudio, Mode=TwoWay}"/>
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="ZoomIt_Record_Microphone">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" ItemsSource="{x:Bind ViewModel.MicrophoneList}" DisplayMemberPath="Item2" SelectedValuePath="Item1" SelectedValue="{x:Bind Path=ViewModel.RecordMicrophoneDeviceId, Mode=TwoWay}"/>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_SnipGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Snip_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">

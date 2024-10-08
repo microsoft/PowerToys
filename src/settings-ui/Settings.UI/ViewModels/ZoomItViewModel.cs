@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -15,6 +16,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.Windows.ApplicationModel.Resources;
+using Windows.Devices.Enumeration;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -40,6 +42,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public int DemoTypeMaxTypingSpeed { get; } = 10;
 
         public int DemoTypeMinTypingSpeed { get; } = 100;
+
+        public ObservableCollection<Tuple<string, string>> MicrophoneList { get; set; } = new ObservableCollection<Tuple<string, string>>();
+
+        private async void LoadMicrophoneList()
+        {
+            ResourceLoader resourceLoader = ResourceLoaderInstance.ResourceLoader;
+            string recordDefaultMicrophone = resourceLoader.GetString("ZoomIt_Record_Microphones_Default_Name");
+            MicrophoneList.Add(new Tuple<string, string>(string.Empty, recordDefaultMicrophone));
+            var microphones = await DeviceInformation.FindAllAsync(DeviceClass.AudioCapture);
+            foreach (var microphone in microphones)
+            {
+                MicrophoneList.Add(new Tuple<string, string>(microphone.Id, microphone.Name));
+            }
+        }
 
         private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
         {
@@ -72,6 +88,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SelectDemoTypeFileCommand = new ButtonClickCommand(SelectDemoTypeFileAction);
             SelectBreakSoundFileCommand = new ButtonClickCommand(SelectBreakSoundFileAction);
             SelectBreakBackgroundFileCommand = new ButtonClickCommand(SelectBreakBackgroundFileAction);
+
+            LoadMicrophoneList();
         }
 
         private void InitializeEnabledValue()
@@ -481,6 +499,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _zoomItSettings.Properties.CaptureAudio.Value = value;
                     OnPropertyChanged(nameof(RecordCaptureAudio));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public string RecordMicrophoneDeviceId
+        {
+            get => _zoomItSettings.Properties.MicrophoneDeviceId.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.MicrophoneDeviceId.Value != value)
+                {
+                    _zoomItSettings.Properties.MicrophoneDeviceId.Value = value ?? string.Empty; // If we're trying to save a null, just default to empty string, which means default microphone.
+                    OnPropertyChanged(nameof(RecordMicrophoneDeviceId));
                     NotifySettingsChanged();
                 }
             }
