@@ -105,30 +105,36 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
 {
     m_ipcHelper.send(L"ready");
 
-    for (int attempt = 0; attempt < 50 && !m_launchingStatus.AllLaunchedAndMoved(); attempt++)
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    const long maxLaunchingWaitingTime = 10000, maxRepositionWaitingTime = 3000, ms = 300;
+    long waitingTime{ 0 };
 
-        std::vector<HWND> windowsAfter = WindowEnumerator::Enumerate(WindowFilter::Filter);
-        std::vector<HWND> windowsDiff{};
-        std::copy_if(windowsAfter.begin(), windowsAfter.end(), std::back_inserter(windowsDiff), [&](HWND window) { return std::find(m_windowsBefore.begin(), m_windowsBefore.end(), window) == m_windowsBefore.end(); });
-        
-        for (HWND window : windowsDiff)
-        {
-            processWindow(window);
-        }
+    // process launching windows
+    while (!m_launchingStatus.AllLaunched() && waitingTime < maxLaunchingWaitingTime)
+    {
+        processWindows(false);
+        std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+        waitingTime += ms;
     }
 
-    bool allFound = m_launchingStatus.AllLaunchedAndMoved();
-    Logger::info(L"Finished moving new windows, all windows found: {}", allFound);
-
-    if (!allFound)
+    if (waitingTime >= maxLaunchingWaitingTime)
     {
-        std::vector<HWND> allWindows = WindowEnumerator::Enumerate(WindowFilter::Filter);
-        for (HWND window : allWindows)
-        {
-            processWindow(window);
-        }
+        Logger::info(L"Launching timeout expired");
+    }
+
+    Logger::info(L"Finished moving new windows");
+
+    // wait for 3 seconds after all apps launched
+    waitingTime = 0;
+    while (!m_launchingStatus.AllLaunchedAndMoved() && waitingTime < maxRepositionWaitingTime)
+    {
+        processWindows(true);
+        std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+        waitingTime += ms;
+    }
+
+    if (waitingTime >= maxRepositionWaitingTime)
+    {
+        Logger::info(L"Repositioning timeout expired");
     }
 }
 
@@ -141,6 +147,23 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
 //
 //    processWindow(window);
 //}
+
+void WindowArranger::processWindows(bool processAll)
+{
+    std::vector<HWND> windows = WindowEnumerator::Enumerate(WindowFilter::Filter);
+    
+    if (!processAll)
+    {
+        std::vector<HWND> windowsDiff{};
+        std::copy_if(windows.begin(), windows.end(), std::back_inserter(windowsDiff), [&](HWND window) { return std::find(m_windowsBefore.begin(), m_windowsBefore.end(), window) == m_windowsBefore.end(); });
+        windows = windowsDiff;
+    }
+    
+    for (HWND window : windows)
+    {
+        processWindow(window);
+    }
+}
 
 void WindowArranger::processWindow(HWND window)
 {

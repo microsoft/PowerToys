@@ -23,6 +23,7 @@ private:
     LaunchingStatus m_launchingStatus;
     
     //void onWindowCreated(HWND window);
+    void processWindows(bool processAll);
     void processWindow(HWND window);
     bool moveWindow(HWND window, const WorkspacesData::WorkspacesProject::Application& app);
 
