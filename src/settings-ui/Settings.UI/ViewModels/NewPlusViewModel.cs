@@ -250,12 +250,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void OpenNewTemplateFolder()
         {
-            var process = new ProcessStartInfo()
+            try
             {
-                FileName = _templateLocation,
-                UseShellExecute = true,
-            };
-            Process.Start(process);
+                CopyTemplateExamples(_templateLocation);
+
+                var process = new ProcessStartInfo()
+                {
+                    FileName = _templateLocation,
+                    UseShellExecute = true,
+                };
+                Process.Start(process);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to show NewPlus template folder.", ex);
+            }
         }
 
         private async void PickNewTemplateFolder()
