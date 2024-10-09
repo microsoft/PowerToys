@@ -336,7 +336,7 @@ namespace AdvancedPaste.ViewModels
         {
             if (Busy)
             {
-                Logger.LogWarning($"Execution of {pasteFormat.Name} from {source} suppressed as busy");
+                Logger.LogWarning($"Execution of {pasteFormat.Format} from {source} suppressed as busy");
                 return;
             }
 
