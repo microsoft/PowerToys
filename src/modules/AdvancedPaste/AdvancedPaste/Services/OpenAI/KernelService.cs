@@ -119,8 +119,8 @@ public sealed class KernelService(IAICredentialsProvider aiCredentialsProvider, 
            async dataPackageView =>
            {
                var inputString = await dataPackageView.GetTextAsync();
-               var aICompletionsResponse = await _customTextTransformService.TransformStringAsync(inputInstructions, inputString);
-               return ClipboardHelper.CreateDataPackageFromText(aICompletionsResponse);
+               var aiCompletionsResponse = await _customTextTransformService.TransformStringAsync(inputInstructions, inputString);
+               return ClipboardHelper.CreateDataPackageFromText(aiCompletionsResponse);
            });
 
     private Task<string> ExecuteStandardTransformAsync(Kernel kernel, PasteFormats format) =>

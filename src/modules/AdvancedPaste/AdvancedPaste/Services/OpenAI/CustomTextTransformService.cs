@@ -72,9 +72,9 @@ Output:
 
         try
         {
-            var reponse = await GetAICompletionAsync(systemInstructions, userMessage);
-            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteGenerateCustomFormatEvent(reponse.Usage.PromptTokens, reponse.Usage.CompletionTokens, ModelName));
-            return reponse.Choices[0].Text;
+            var response = await GetAICompletionAsync(systemInstructions, userMessage);
+            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteGenerateCustomFormatEvent(response.Usage.PromptTokens, response.Usage.CompletionTokens, ModelName));
+            return response.Choices[0].Text;
         }
         catch (Exception ex)
         {
