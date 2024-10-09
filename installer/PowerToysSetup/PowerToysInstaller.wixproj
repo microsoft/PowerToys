@@ -54,6 +54,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\VideoConference.wxs.bk ..\..\..\VideoConference.wxs
       call move /Y ..\..\..\WinAppSDK.wxs.bk ..\..\..\WinAppSDK.wxs
       call move /Y ..\..\..\WinUI3Applications.wxs.bk ..\..\..\WinUI3Applications.wxs
+      call move /Y ..\..\..\Workspaces.wxs.bk ..\..\..\Workspaces.wxs
       </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
@@ -125,6 +126,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="Core.wxs" />
     <Compile Include="Resources.wxs" />
     <Compile Include="WinAppSDK.wxs" />
+    <Compile Include="Workspaces.wxs" />
   </ItemGroup>
   <ItemGroup>
     <WixExtension Include="WixFirewallExtension">
