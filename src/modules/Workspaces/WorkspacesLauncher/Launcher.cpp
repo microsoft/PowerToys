@@ -98,7 +98,7 @@ Launcher::~Launcher()
 void Launcher::Launch() // Launching thread
 {
     const long maxWaitTimeMs = 3000;
-    const long ms = 300;
+    const long ms = 100;
 
     // Launch apps
     for (auto appState = m_launchingStatus.GetNext(LaunchingState::Waiting); appState.has_value(); appState = m_launchingStatus.GetNext(LaunchingState::Waiting))
@@ -106,10 +106,21 @@ void Launcher::Launch() // Launching thread
         auto app = appState.value().application;
         
         long waitingTime = 0;
+        bool additionalWait = false;
         while (!m_launchingStatus.AllInstancesOfTheAppLaunchedAndMoved(app) && waitingTime < maxWaitTimeMs)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(ms));
             waitingTime += ms;
+            additionalWait = true;
+        }
+
+        if (additionalWait)
+        {
+            // Resolves an issue when Outlook does not launch when launching one after another.
+            // Launching Outlook instances right one after another causes error message.
+            // Launching Outlook instances with less than 1-second delay causes the second window not to appear
+            // even though there wasn't a launch error.
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         }
 
         if (waitingTime >= maxWaitTimeMs)
