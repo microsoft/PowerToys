@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using AdvancedPaste.Models;
@@ -41,11 +42,53 @@ namespace AdvancedPaste.Helpers
 
                 if (storageItems.Count == 1 && storageItems.Single() is StorageFile file && ImageFileTypes.Contains(file.FileType))
                 {
-                    availableClipboardFormats |= ClipboardFormat.ImageFile;
+                    availableClipboardFormats |= ClipboardFormat.Image;
+                }
+
+                if (availableClipboardFormats == ClipboardFormat.None)
+                {
+                    // Advertise the "generic" File format only if there is no other specific format available; confusing for AI otherwise.
+                    availableClipboardFormats |= ClipboardFormat.File;
                 }
             }
 
             return availableClipboardFormats;
+        }
+
+        internal static async Task<bool> HasDataAsync(DataPackageView clipboardData)
+        {
+            var availableFormats = await GetAvailableClipboardFormatsAsync(clipboardData);
+
+            return availableFormats == ClipboardFormat.Text ? !string.IsNullOrEmpty(await clipboardData.GetTextAsync()) : availableFormats != ClipboardFormat.None;
+        }
+
+        internal static async Task TryCopyPasteDataPackageAsync(DataPackage dataPackage, Action onCopied)
+        {
+            Logger.LogTrace();
+
+            if (await HasDataAsync(dataPackage.GetView()))
+            {
+                Clipboard.SetContent(dataPackage);
+                await FlushAsync();
+                onCopied();
+                SendPasteKeyCombination();
+            }
+        }
+
+        internal static DataPackage CreateDataPackageFromText(string text)
+        {
+            DataPackage dataPackage = new();
+            dataPackage.SetText(text);
+            return dataPackage;
+        }
+
+        internal static async Task<DataPackage> CreateDataPackageFromFileContentAsync(string fileName)
+        {
+            var storageFile = await StorageFile.GetFileFromPathAsync(fileName);
+
+            DataPackage dataPackage = new();
+            dataPackage.SetStorageItems([storageFile]);
+            return dataPackage;
         }
 
         internal static void SetClipboardTextContent(string text)
@@ -71,7 +114,7 @@ namespace AdvancedPaste.Helpers
             {
                 try
                 {
-                    Task.Run(Clipboard.Flush).Wait();
+                    Clipboard.Flush();
                     return true;
                 }
                 catch (Exception ex)
@@ -86,17 +129,10 @@ namespace AdvancedPaste.Helpers
             return false;
         }
 
-        private static async Task<bool> FlushAsync() => await Task.Run(Flush);
-
-        internal static async Task SetClipboardFileContentAsync(string fileName)
+        private static async Task<bool> FlushAsync()
         {
-            var storageFile = await StorageFile.GetFileFromPathAsync(fileName);
-
-            DataPackage output = new();
-            output.SetStorageItems([storageFile]);
-            Clipboard.SetContent(output);
-
-            await FlushAsync();
+            // This should run on the UI thread to avoid the "calling application is not the owner of the data on the clipboard" error.
+            return await Task.Factory.StartNew(Flush, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         internal static void SetClipboardImageContent(RandomAccessStreamReference image)

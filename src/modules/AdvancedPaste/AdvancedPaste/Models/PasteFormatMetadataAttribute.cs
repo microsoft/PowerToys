@@ -20,4 +20,6 @@ public sealed class PasteFormatMetadataAttribute : Attribute
     public ClipboardFormat SupportedClipboardFormats { get; init; }
 
     public string IPCKey { get; init; }
+
+    public string KernelFunctionDescription { get; init; }
 }

@@ -3,32 +3,82 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.PowerToys.Settings.UI.Library;
+using Windows.Devices.Radios;
 
 namespace AdvancedPaste.Models;
 
 public enum PasteFormats
 {
-    [PasteFormatMetadata(IsCoreAction = true, ResourceId = "PasteAsPlainText", IconGlyph = "\uE8E9", RequiresAIService = false, SupportedClipboardFormats = ClipboardFormat.Text)]
+    [PasteFormatMetadata(
+        IsCoreAction = true,
+        ResourceId = "PasteAsPlainText",
+        IconGlyph = "\uE8E9",
+        RequiresAIService = false,
+        SupportedClipboardFormats = ClipboardFormat.Text)]
     PlainText,
 
-    [PasteFormatMetadata(IsCoreAction = true, ResourceId = "PasteAsMarkdown", IconGlyph = "\ue8a5", RequiresAIService = false, SupportedClipboardFormats = ClipboardFormat.Text)]
+    [PasteFormatMetadata(
+        IsCoreAction = true,
+        ResourceId = "PasteAsMarkdown",
+        IconGlyph = "\ue8a5",
+        RequiresAIService = false,
+        SupportedClipboardFormats = ClipboardFormat.Text,
+        KernelFunctionDescription = "Takes clipboard text and formats it as markdown text.")]
     Markdown,
 
-    [PasteFormatMetadata(IsCoreAction = true, ResourceId = "PasteAsJson", IconGlyph = "\uE943", RequiresAIService = false, SupportedClipboardFormats = ClipboardFormat.Text)]
+    [PasteFormatMetadata(
+        IsCoreAction = true,
+        ResourceId = "PasteAsJson",
+        IconGlyph = "\uE943",
+        RequiresAIService = false,
+        SupportedClipboardFormats = ClipboardFormat.Text,
+        KernelFunctionDescription = "Takes clipboard text and formats it as JSON text.")]
     Json,
 
-    [PasteFormatMetadata(IsCoreAction = false, ResourceId = "ImageToText", IconGlyph = "\uE91B", RequiresAIService = false, SupportedClipboardFormats = ClipboardFormat.Image | ClipboardFormat.ImageFile, IPCKey = AdvancedPasteAdditionalActions.PropertyNames.ImageToText)]
+    [PasteFormatMetadata(
+        IsCoreAction = false,
+        ResourceId = "ImageToText",
+        IconGlyph = "\uE91B",
+        RequiresAIService = false,
+        SupportedClipboardFormats = ClipboardFormat.Image,
+        IPCKey = AdvancedPasteAdditionalActions.PropertyNames.ImageToText,
+        KernelFunctionDescription = "Takes an image in the clipboard and extracts all text from it using OCR.")]
     ImageToText,
 
-    [PasteFormatMetadata(IsCoreAction = false, ResourceId = "PasteAsTxtFile", IconGlyph = "\uE8D2", RequiresAIService = false, SupportedClipboardFormats = ClipboardFormat.Text | ClipboardFormat.Html, IPCKey = AdvancedPastePasteAsFileAction.PropertyNames.PasteAsTxtFile)]
+    [PasteFormatMetadata(
+        IsCoreAction = false,
+        ResourceId = "PasteAsTxtFile",
+        IconGlyph = "\uE8D2",
+        RequiresAIService = false,
+        SupportedClipboardFormats = ClipboardFormat.Text | ClipboardFormat.Html,
+        IPCKey = AdvancedPastePasteAsFileAction.PropertyNames.PasteAsTxtFile,
+        KernelFunctionDescription = "Takes text or HTML data in the clipboard and transforms it to a TXT file.")]
     PasteAsTxtFile,
 
-    [PasteFormatMetadata(IsCoreAction = false, ResourceId = "PasteAsPngFile", IconGlyph = "\uE8B9", RequiresAIService = false, SupportedClipboardFormats = ClipboardFormat.Image | ClipboardFormat.ImageFile, IPCKey = AdvancedPastePasteAsFileAction.PropertyNames.PasteAsPngFile)]
+    [PasteFormatMetadata(
+        IsCoreAction = false,
+        ResourceId = "PasteAsPngFile",
+        IconGlyph = "\uE8B9",
+        RequiresAIService = false,
+        SupportedClipboardFormats = ClipboardFormat.Image,
+        IPCKey = AdvancedPastePasteAsFileAction.PropertyNames.PasteAsPngFile,
+        KernelFunctionDescription = "Takes an image in the clipboard and transforms it to a PNG file.")]
     PasteAsPngFile,
 
-    [PasteFormatMetadata(IsCoreAction = false, ResourceId = "PasteAsHtmlFile", IconGlyph = "\uF6FA", RequiresAIService = false, SupportedClipboardFormats = ClipboardFormat.Html, IPCKey = AdvancedPastePasteAsFileAction.PropertyNames.PasteAsHtmlFile)]
+    [PasteFormatMetadata(
+        IsCoreAction = false,
+        ResourceId = "PasteAsHtmlFile",
+        IconGlyph = "\uF6FA",
+        RequiresAIService = false,
+        SupportedClipboardFormats = ClipboardFormat.Html,
+        IPCKey = AdvancedPastePasteAsFileAction.PropertyNames.PasteAsHtmlFile,
+        KernelFunctionDescription = "Takes HTML data in the clipboard and transforms it to an HTML file.")]
     PasteAsHtmlFile,
 
-    [PasteFormatMetadata(IsCoreAction = false, IconGlyph = "\uE945", RequiresAIService = true, SupportedClipboardFormats = ClipboardFormat.Text)]
-    Custom,
+    [PasteFormatMetadata(
+        IsCoreAction = false,
+        IconGlyph = "\uE945",
+        RequiresAIService = true,
+        SupportedClipboardFormats = ClipboardFormat.Text | ClipboardFormat.Html | ClipboardFormat.Audio | ClipboardFormat.Image)]
+    KernelQuery,
 }

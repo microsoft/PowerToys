@@ -35,8 +35,6 @@ namespace AdvancedPaste.Settings
 
         public bool ShowCustomPreview { get; private set; }
 
-        public bool SendPasteKeyCombination { get; private set; }
-
         public bool CloseAfterLosingFocus { get; private set; }
 
         public IReadOnlyList<PasteFormats> AdditionalActions => _additionalActions;
@@ -48,7 +46,6 @@ namespace AdvancedPaste.Settings
             _settingsUtils = new SettingsUtils();
 
             ShowCustomPreview = true;
-            SendPasteKeyCombination = true;
             CloseAfterLosingFocus = false;
             _additionalActions = [];
             _customActions = [];
@@ -99,7 +96,6 @@ namespace AdvancedPaste.Settings
                                 var properties = settings.Properties;
 
                                 ShowCustomPreview = properties.ShowCustomPreview;
-                                SendPasteKeyCombination = properties.SendPasteKeyCombination;
                                 CloseAfterLosingFocus = properties.CloseAfterLosingFocus;
 
                                 var sourceAdditionalActions = properties.AdditionalActions;

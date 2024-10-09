@@ -6,6 +6,6 @@ using System;
 
 namespace AdvancedPaste.Models;
 
-public sealed class PasteActionException(string message) : Exception(message)
+public sealed class PasteActionException(string message, Exception innerException) : Exception(message, innerException)
 {
 }

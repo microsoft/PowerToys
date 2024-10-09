@@ -33,7 +33,7 @@ public sealed class PasteFormat
     }
 
     public PasteFormat(AdvancedPasteCustomAction customAction, ClipboardFormat clipboardFormats, bool isAIServiceEnabled)
-        : this(PasteFormats.Custom, clipboardFormats, isAIServiceEnabled)
+        : this(PasteFormats.KernelQuery, clipboardFormats, isAIServiceEnabled)
     {
         Name = customAction.Name;
         Prompt = customAction.Prompt;

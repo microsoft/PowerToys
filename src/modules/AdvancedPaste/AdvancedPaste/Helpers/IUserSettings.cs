@@ -14,8 +14,6 @@ namespace AdvancedPaste.Settings
     {
         public bool ShowCustomPreview { get; }
 
-        public bool SendPasteKeyCombination { get; }
-
         public bool CloseAfterLosingFocus { get; }
 
         public IReadOnlyList<AdvancedPasteCustomAction> CustomActions { get; }

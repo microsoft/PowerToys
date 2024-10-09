@@ -4,7 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Appium.WebDriver" Version="4.4.5" />
-    <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.12" />
+    <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.17" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageVersion Include="CommunityToolkit.WinUI.Animations" Version="8.0.240109" />
     <PackageVersion Include="CommunityToolkit.WinUI.Collections" Version="8.0.240109" />
@@ -31,6 +31,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.15.0" />
     <PackageVersion Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
     <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2739.15" />
     <!-- Package Microsoft.Win32.SystemEvents added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Drawing.Common but the 8.0.1 version wasn't published to nuget. -->

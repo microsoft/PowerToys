@@ -24,16 +24,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             CustomActions = new();
             AdditionalActions = new();
             ShowCustomPreview = true;
-            SendPasteKeyCombination = true;
             CloseAfterLosingFocus = false;
         }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool ShowCustomPreview { get; set; }
-
-        [JsonConverter(typeof(BoolPropertyJsonConverter))]
-        [CmdConfigureIgnore]
-        public bool SendPasteKeyCombination { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool CloseAfterLosingFocus { get; set; }

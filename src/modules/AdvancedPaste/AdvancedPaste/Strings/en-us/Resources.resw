@@ -123,9 +123,6 @@
   <data name="ClipboardEmptyWarning" xml:space="preserve">
     <value>Clipboard does not contain any usable formats</value>
   </data>
-  <data name="ClipboardDataNotTextWarning" xml:space="preserve">
-    <value>Clipboard data is not text</value>
-  </data>  
   <data name="OpenAINotConfigured" xml:space="preserve">
     <value>To custom with AI is not enabled</value>
   </data>

@@ -105,9 +105,9 @@ namespace AdvancedPaste.Controls
             }
         }
 
-        private void PreviewPasteBtn_Click(object sender, RoutedEventArgs e)
+        private async void PreviewPasteBtn_Click(object sender, RoutedEventArgs e)
         {
-            ViewModel.PasteCustom();
+            await ViewModel.PasteCustomAsync();
         }
 
         private void ThumbUpDown_Click(object sender, RoutedEventArgs e)
