@@ -1357,11 +1357,11 @@ EXHIBIT A -Mozilla Public License.
 - System.IO.Abstractions.TestingHelpers 17.2.3
 - System.Management 8.0.0
 - System.Reactive 6.0.1
-- System.Runtime.Caching 8.0.0
+- System.Runtime.Caching 8.0.1
 - System.Security.Cryptography.ProtectedData 8.0.0
 - System.ServiceProcess.ServiceController 8.0.0
 - System.Text.Encoding.CodePages 8.0.0
-- System.Text.Json 8.0.4
+- System.Text.Json 8.0.5
 - UnicodeInformation 2.6.0
 - UnitsNet 5.56.0
 - UTF.Unknown 2.5.1
