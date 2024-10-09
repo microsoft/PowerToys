@@ -118,10 +118,6 @@ namespace WorkspacesData
                     {
                         result.id = json.GetNamedString(NonLocalizable::AppIdID);
                     }
-                    else
-                    {
-                        result.id = CreateGuidString();
-                    }
 
                     if (json.HasKey(NonLocalizable::AppNameID))
                     {

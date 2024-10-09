@@ -164,9 +164,22 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 
     // prepare project in advance
     auto installedApps = Utils::Apps::GetAppsList();
-    if (Utils::Apps::UpdateWorkspacesApps(projectToLaunch, installedApps))
+    bool updatedApps = Utils::Apps::UpdateWorkspacesApps(projectToLaunch, installedApps);
+    bool updatedIds = false;
+
+    // verify apps have ids
+    for (auto& app : projectToLaunch.apps)
     {
-        // update the file before launching, so WorkspacesWindowArranger and WorkspacesLauncherUI could get updated app paths
+        if (app.id.empty())
+        {
+            app.id = CreateGuidString();
+            updatedIds = true;
+        }
+    }
+
+    // update the file before launching, so WorkspacesWindowArranger and WorkspacesLauncherUI could get updated app paths   
+    if (updatedApps || updatedIds)
+    {
         for (int i = 0; i < workspaces.size(); i++)
         {
             if (workspaces[i].id == projectToLaunch.id)
