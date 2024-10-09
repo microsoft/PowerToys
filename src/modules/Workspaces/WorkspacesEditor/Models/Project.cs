@@ -251,6 +251,7 @@ namespace WorkspacesEditor.Models
             {
                 Models.Application newApp = new Models.Application()
                 {
+                    Id = app.Id,
                     AppName = app.Application,
                     AppPath = app.ApplicationPath,
                     AppTitle = app.Title,
