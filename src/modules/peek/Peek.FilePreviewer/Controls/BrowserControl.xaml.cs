@@ -60,6 +60,8 @@ namespace Peek.FilePreviewer.Controls
             typeof(BrowserControl),
             new PropertyMetadata(null, new PropertyChangedCallback((d, e) => ((BrowserControl)d).OnIsDevFilePreviewChanged())));
 
+        public Queue<string> JavascriptCommandQueue { get; set; } = [];
+
         // Will actually be true for Markdown files as well.
         public bool IsDevFilePreview
         {
@@ -97,6 +99,16 @@ namespace Peek.FilePreviewer.Controls
         {
             this.InitializeComponent();
             Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", TempFolderPath.Path, EnvironmentVariableTarget.Process);
+
+            PreviewBrowser.NavigationCompleted += async (sender, _) =>
+            {
+                foreach (string command in JavascriptCommandQueue)
+                {
+                    await sender.ExecuteScriptAsync(command);
+                }
+
+                JavascriptCommandQueue.Clear();
+            };
         }
 
         public void Dispose()

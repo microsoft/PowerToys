@@ -47,7 +47,7 @@ namespace Peek.FilePreviewer.Previewers
         /// <summary>
         /// Prepares temp html for the previewing
         /// </summary>
-        public static string PreviewTempFile(string fileText, string extension, string tempFolder, bool tryFormat, bool wrapText, bool stickyScroll, int fontSize)
+        public static (Uri Uri, string VsCodeLangSet, string FileContent) PreviewTempFile(string fileText, string extension, bool tryFormat)
         {
             // TODO: check if file is too big, add MaxFileSize to settings
             return InitializeIndexFileAndSelectedFile(fileText, extension, tempFolder, tryFormat, wrapText, stickyScroll, fontSize);
@@ -73,24 +73,7 @@ namespace Peek.FilePreviewer.Previewers
                 }
             }
 
-            string base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
-            string theme = ThemeManager.GetWindowsBaseColor().ToLowerInvariant();
-
-            // prepping index html to load in
-            string html = Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.ReadIndexHtml();
-
-            html = html.Replace("[[PT_LANG]]", vsCodeLangSet, StringComparison.InvariantCulture);
-            html = html.Replace("[[PT_WRAP]]", wrapText ? "1" : "0", StringComparison.InvariantCulture);
-            html = html.Replace("[[PT_CONTEXTMENU]]", "0", StringComparison.InvariantCulture);
-            html = html.Replace("[[PT_STICKY_SCROLL]]", stickyScroll ? "1" : "0", StringComparison.InvariantCulture);
-            html = html.Replace("[[PT_THEME]]", theme, StringComparison.InvariantCulture);
-            html = html.Replace("[[PT_FONT_SIZE]]", fontSize.ToString(CultureInfo.InvariantCulture), StringComparison.InvariantCulture);
-            html = html.Replace("[[PT_CODE]]", base64FileCode, StringComparison.InvariantCulture);
-            html = html.Replace("[[PT_URL]]", Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName, StringComparison.InvariantCulture);
-
-            string filename = tempFolder + "\\" + Guid.NewGuid().ToString() + ".html";
-            File.WriteAllText(filename, html);
-            return filename;
+            return (new Uri("http://" + Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName + "/index.html"), vsCodeLangSet, fileContent);
         }
     }
 }

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Threading;
@@ -112,6 +113,8 @@ namespace Peek.FilePreviewer
 
         public IUnsupportedFilePreviewer? UnsupportedFilePreviewer => Previewer as IUnsupportedFilePreviewer;
 
+        public Queue<string> JavascriptCommandQueue { get; set; } = [];
+
         public IFileSystemItem Item
         {
             get => (IFileSystemItem)GetValue(ItemProperty);
@@ -179,6 +182,9 @@ namespace Peek.FilePreviewer
                 imagePreviewer.ScalingFactor = ScalingFactor;
             }
 
+            BrowserPreview.JavascriptCommandQueue.Clear();
+            JavascriptCommandQueue.Clear();
+
             await UpdatePreviewAsync(_cancellationTokenSource.Token);
         }
 
@@ -207,6 +213,12 @@ namespace Peek.FilePreviewer
 
                     cancellationToken.ThrowIfCancellationRequested();
                     await Previewer.LoadPreviewAsync(cancellationToken);
+
+                    if (Previewer is IBrowserPreviewer browserPreviewer)
+                    {
+                        BrowserPreview.JavascriptCommandQueue = browserPreviewer.JavascriptCommandQueue;
+                        JavascriptCommandQueue = browserPreviewer.JavascriptCommandQueue;
+                    }
 
                     cancellationToken.ThrowIfCancellationRequested();
                     await UpdateTooltipAsync(cancellationToken);
@@ -248,6 +260,8 @@ namespace Peek.FilePreviewer
             {
                 value.PropertyChanged += Previewer_PropertyChanged;
             }
+
+            JavascriptCommandQueue.Clear();
         }
 
         private void BrowserPreview_DOMContentLoaded(Microsoft.Web.WebView2.Core.CoreWebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2DOMContentLoadedEventArgs args)
@@ -345,7 +359,7 @@ namespace Peek.FilePreviewer
             var sb = new StringBuilder(fileNameFormatted, 256);
 
             cancellationToken.ThrowIfCancellationRequested();
-            string fileType = await Task.Run(Item.GetContentTypeAsync);
+            string fileType = await Item.GetContentTypeAsync().ConfigureAwait(true);
             string fileTypeFormatted = string.IsNullOrEmpty(fileType) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_FileType", fileType);
             sb.Append(fileTypeFormatted);
 
