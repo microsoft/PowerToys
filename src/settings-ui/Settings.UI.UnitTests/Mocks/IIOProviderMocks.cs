@@ -5,6 +5,7 @@
 using System;
 using System.IO.Abstractions;
 using System.Linq.Expressions;
+
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Moq;
 

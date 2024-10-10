@@ -4,6 +4,7 @@
 
 using System;
 using System.Globalization;
+
 using Microsoft.UI.Xaml.Data;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters

@@ -9,6 +9,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Services;

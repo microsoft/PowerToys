@@ -6,6 +6,7 @@ using System;
 using System.IO.Abstractions;
 using System.Threading.Tasks;
 using System.Windows.Input;
+
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -15,6 +16,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
 using WinRT;
+
 using static Microsoft.PowerToys.Settings.UI.ViewModels.MouseWithoutBordersViewModel;
 
 namespace Microsoft.PowerToys.Settings.UI.Views

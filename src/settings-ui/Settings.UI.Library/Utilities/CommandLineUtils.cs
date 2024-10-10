@@ -5,6 +5,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.Library;

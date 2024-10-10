@@ -5,6 +5,7 @@
 using System.ComponentModel;
 using System.IO;
 using System.Text;
+
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
