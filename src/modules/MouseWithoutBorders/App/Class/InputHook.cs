@@ -19,6 +19,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 using Microsoft.PowerToys.Settings.UI.Library;
+using MouseWithoutBorders.Core;
 
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.InputHook.#MouseHookProc(System.Int32,System.Int32,System.IntPtr)", Justification = "Dotnet port with style preservation")]
 [module: SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Scope = "member", Target = "MouseWithoutBorders.InputHook.#ProcessKeyEx(System.Int32,System.Int32)", Justification = "Dotnet port with style preservation")]
@@ -117,7 +118,7 @@ namespace MouseWithoutBorders.Class
             if (hMouseHook == 0)
             {
                 le = Marshal.GetLastWin32Error();
-                Common.Log("Error installing Mouse hook: " + le.ToString(CultureInfo.CurrentCulture));
+                Logger.Log("Error installing Mouse hook: " + le.ToString(CultureInfo.CurrentCulture));
                 er = true;
                 Stop();
             }
@@ -133,7 +134,7 @@ namespace MouseWithoutBorders.Class
             if (hKeyboardHook == 0)
             {
                 le = Marshal.GetLastWin32Error();
-                Common.Log("Error installing keyboard hook: " + le.ToString(CultureInfo.CurrentCulture));
+                Logger.Log("Error installing keyboard hook: " + le.ToString(CultureInfo.CurrentCulture));
                 er = true;
                 Stop();
             }
@@ -166,7 +167,7 @@ namespace MouseWithoutBorders.Class
                     int errorCode = Marshal.GetLastWin32Error();
 
                     // throw new Win32Exception(errorCode);
-                    Common.Log("Exception uninstalling Mouse hook, error code: " + errorCode.ToString(CultureInfo.CurrentCulture));
+                    Logger.Log("Exception uninstalling Mouse hook, error code: " + errorCode.ToString(CultureInfo.CurrentCulture));
                 }
             }
 
@@ -179,7 +180,7 @@ namespace MouseWithoutBorders.Class
                     int errorCode = Marshal.GetLastWin32Error();
 
                     // throw new Win32Exception(errorCode);
-                    Common.Log("Exception uninstalling keyboard hook, error code: " + errorCode.ToString(CultureInfo.CurrentCulture));
+                    Logger.Log("Exception uninstalling keyboard hook, error code: " + errorCode.ToString(CultureInfo.CurrentCulture));
                 }
             }
         }
@@ -234,7 +235,7 @@ namespace MouseWithoutBorders.Class
                     {
                         if (wParam == Common.WM_LBUTTONUP && SkipMouseUpCount > 0)
                         {
-                            Common.LogDebug($"{nameof(SkipMouseUpCount)}: {SkipMouseUpCount}.");
+                            Logger.LogDebug($"{nameof(SkipMouseUpCount)}: {SkipMouseUpCount}.");
                             SkipMouseUpCount--;
                             rv = NativeMethods.CallNextHookEx(hMouseHook, nCode, wParam, lParam);
                             return rv;
@@ -326,7 +327,7 @@ namespace MouseWithoutBorders.Class
             }
             catch (Exception e)
             {
-                Common.Log(e);
+                Logger.Log(e);
                 rv = NativeMethods.CallNextHookEx(hMouseHook, nCode, wParam, lParam);
             }
 
@@ -455,7 +456,7 @@ namespace MouseWithoutBorders.Class
                         break;
 
                     default:
-                        Common.LogDebug("X");
+                        Logger.LogDebug("X");
                         return ProcessHotKeys(vkCode, hookCallbackKeybdData);
                 }
             }

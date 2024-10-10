@@ -622,6 +622,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WorkspacesLauncher", "src\m
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WorkspacesWindowArranger", "src\modules\Workspaces\WorkspacesWindowArranger\WorkspacesWindowArranger.vcxproj", "{37D07516-4185-43A4-924F-3C7A5D95ECF6}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MouseWithoutBorders.UnitTests", "src\modules\MouseWithoutBorders\MouseWithoutBorders.UnitTests\MouseWithoutBorders.UnitTests.csproj", "{66614C26-314C-4B91-9071-76133422CFEF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -2734,6 +2736,18 @@ Global
 		{37D07516-4185-43A4-924F-3C7A5D95ECF6}.Release|x64.Build.0 = Release|x64
 		{37D07516-4185-43A4-924F-3C7A5D95ECF6}.Release|x86.ActiveCfg = Release|x64
 		{37D07516-4185-43A4-924F-3C7A5D95ECF6}.Release|x86.Build.0 = Release|x64
+		{66614C26-314C-4B91-9071-76133422CFEF}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{66614C26-314C-4B91-9071-76133422CFEF}.Debug|ARM64.Build.0 = Debug|ARM64
+		{66614C26-314C-4B91-9071-76133422CFEF}.Debug|x64.ActiveCfg = Debug|x64
+		{66614C26-314C-4B91-9071-76133422CFEF}.Debug|x64.Build.0 = Debug|x64
+		{66614C26-314C-4B91-9071-76133422CFEF}.Debug|x86.ActiveCfg = Debug|x64
+		{66614C26-314C-4B91-9071-76133422CFEF}.Debug|x86.Build.0 = Debug|x64
+		{66614C26-314C-4B91-9071-76133422CFEF}.Release|ARM64.ActiveCfg = Release|ARM64
+		{66614C26-314C-4B91-9071-76133422CFEF}.Release|ARM64.Build.0 = Release|ARM64
+		{66614C26-314C-4B91-9071-76133422CFEF}.Release|x64.ActiveCfg = Release|x64
+		{66614C26-314C-4B91-9071-76133422CFEF}.Release|x64.Build.0 = Release|x64
+		{66614C26-314C-4B91-9071-76133422CFEF}.Release|x86.ActiveCfg = Release|x64
+		{66614C26-314C-4B91-9071-76133422CFEF}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2962,6 +2976,7 @@ Global
 		{367D7543-7DBA-4381-99F1-BF6142A996C4} = {A2221D7E-55E7-4BEA-90D1-4F162D670BBF}
 		{2CAC093E-5FCF-4102-9C2C-AC7DD5D9EB96} = {A2221D7E-55E7-4BEA-90D1-4F162D670BBF}
 		{37D07516-4185-43A4-924F-3C7A5D95ECF6} = {A2221D7E-55E7-4BEA-90D1-4F162D670BBF}
+		{66614C26-314C-4B91-9071-76133422CFEF} = {B6C42F16-73EB-477E-8B0D-4E6CF6C20AAC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

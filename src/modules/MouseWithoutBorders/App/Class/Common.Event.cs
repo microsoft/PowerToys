@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 //     2023- Included in PowerToys.
 // </history>
 using MouseWithoutBorders.Class;
+using MouseWithoutBorders.Core;
 using MouseWithoutBorders.Form;
 
 namespace MouseWithoutBorders
@@ -26,8 +27,10 @@ namespace MouseWithoutBorders
     {
         private static readonly DATA KeybdPackage = new();
         private static readonly DATA MousePackage = new();
-        private static ulong inputEventCount;
-        private static ulong invalidPackageCount;
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case names
+        internal static ulong inputEventCount;
+        internal static ulong invalidPackageCount;
+#pragma warning restore SA1307
         internal static int MOVE_MOUSE_RELATIVE = 100000;
         internal static int XY_BY_PIXEL = 300000;
 
@@ -73,7 +76,7 @@ namespace MouseWithoutBorders
                     {
                         HasSwitchedMachineSinceLastCopy = true;
 
-                        Common.LogDebug(string.Format(
+                        Logger.LogDebug(string.Format(
                             CultureInfo.CurrentCulture,
                             "***** Host Machine: newDesMachineIdEx set = [{0}]. Mouse is now at ({1},{2})",
                             newDesMachineIdEx,
@@ -117,7 +120,7 @@ namespace MouseWithoutBorders
 
                     if (actualLastPos != Common.LastPos)
                     {
-                        Common.LogDebug($"Mouse cursor has moved unexpectedly: Expected: {Common.LastPos}, actual: {actualLastPos}.");
+                        Logger.LogDebug($"Mouse cursor has moved unexpectedly: Expected: {Common.LastPos}, actual: {actualLastPos}.");
                         Common.LastPos = actualLastPos;
                     }
                 }
@@ -138,7 +141,7 @@ namespace MouseWithoutBorders
             }
             catch (Exception ex)
             {
-                Log(ex);
+                Logger.Log(ex);
             }
         }
 
@@ -149,11 +152,11 @@ namespace MouseWithoutBorders
 
         internal static void PrepareToSwitchToMachine(ID newDesMachineID, Point desMachineXY)
         {
-            LogDebug($"PrepareToSwitchToMachine: newDesMachineID = {newDesMachineID}, desMachineXY = {desMachineXY}");
+            Logger.LogDebug($"PrepareToSwitchToMachine: newDesMachineID = {newDesMachineID}, desMachineXY = {desMachineXY}");
 
             if (((GetTick() - lastJump < 100) && (GetTick() - lastJump > 0)) || desMachineID == ID.ALL)
             {
-                LogDebug("PrepareToSwitchToMachine: lastJump");
+                Logger.LogDebug("PrepareToSwitchToMachine: lastJump");
                 return;
             }
 
@@ -163,7 +166,7 @@ namespace MouseWithoutBorders
 
             if (!IsConnectedTo(newDesMachineID))
             {// Connection lost, cancel switching
-                LogDebug("No active connection found for " + newDesMachineName);
+                Logger.LogDebug("No active connection found for " + newDesMachineName);
 
                 // ShowToolTip("No active connection found for [" + newDesMachineName + "]!", 500);
             }
@@ -198,7 +201,7 @@ namespace MouseWithoutBorders
                 // Change des machine
                 if (desMachineID != newDesMachineID)
                 {
-                    LogDebug("MouseEvent: Switching to new machine:" + newDesMachineName);
+                    Logger.LogDebug("MouseEvent: Switching to new machine:" + newDesMachineName);
 
                     // Ask current machine to hide the Mouse cursor
                     if (newDesMachineID != ID.ALL && desMachineID != MachineID)
@@ -246,7 +249,7 @@ namespace MouseWithoutBorders
                 PaintCount = 0;
                 if (desMachineID != newDesMachineID)
                 {
-                    LogDebug("KeybdEvent: Switching to new machine...");
+                    Logger.LogDebug("KeybdEvent: Switching to new machine...");
                     DesMachineID = newDesMachineID;
                 }
 
@@ -265,7 +268,7 @@ namespace MouseWithoutBorders
             }
             catch (Exception ex)
             {
-                Log(ex);
+                Logger.Log(ex);
             }
         }
     }
