@@ -16,13 +16,17 @@
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/QuickAccent.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <tkcontrols:SettingsCard
-                    x:Uid="QuickAccent_EnableQuickAccent"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}"
-                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
-
+                <controls:SettingsGroup x:Uid="QuickAccent_Enable_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                    <tkcontrols:SettingsCard
+                        x:Uid="QuickAccent_EnableQuickAccent"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_Enable_Hotkey" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.Hotkey, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
+ 
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"
                     IsClosable="False"
@@ -35,7 +39,7 @@
                         x:Uid="QuickAccent_Activation_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsExpanded="True">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ActivationKey, Mode=TwoWay}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.ActivationKey, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Arrows" />
                             <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Space" />
                             <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Either" />
@@ -50,7 +54,7 @@
 
                 <controls:SettingsGroup x:Uid="QuickAccent_Language" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="QuickAccent_SelectedLanguage" HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.SelectedLangIndex, Mode=TwoWay}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.SelectedLangIndex, Mode=TwoWay}">
                             <!--  These should be in the same order as the array items in PowerAccentViewModel.cs  -->
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_All" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Bulgarian" />
@@ -97,7 +101,7 @@
 
                 <controls:SettingsGroup x:Uid="QuickAccent_Toolbar" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="QuickAccent_ToolbarPosition" HeaderIcon="{ui:FontIcon Glyph=&#xEC12;}">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.ToolbarPositionIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_TopCenter" />
                             <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_BottomCenter" />
                             <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_Left" />

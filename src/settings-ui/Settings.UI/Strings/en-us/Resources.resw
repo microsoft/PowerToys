@@ -4232,6 +4232,11 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="GPO_SomeThumbnailProvidersAreManaged.Title" xml:space="preserve">
     <value>The enabled state of some thumbnail handlers is managed by your organization.</value>
   </data>
+  <data name="QuickAccent_Enable_Hotkey.Description" xml:space="preserve">
+    <value>Customize the shortcut to enable / disable this module</value>
+  </data>
+  <data name="QuickAccent_Enable_Hotkey.Header" xml:space="preserve">
+    <value>Enable / Disable Shortcut</value>
   <data name="FileExplorerPreview_ToggleSwitch_Monaco_Sticky_Scroll.Content" xml:space="preserve">
     <value>Enable sticky scroll</value>
   </data>

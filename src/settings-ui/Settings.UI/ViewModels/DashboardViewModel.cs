@@ -428,10 +428,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsPowerAccent()
         {
+            ISettingsRepository<PowerAccentSettings> moduleSettingsRepository = SettingsRepository<PowerAccentSettings>.GetInstance(new SettingsUtils());
             string shortDescription = resourceLoader.GetString("PowerAccent_ShortDescription");
             var settingsUtils = new SettingsUtils();
             PowerAccentSettings moduleSettings = settingsUtils.GetSettingsOrDefault<PowerAccentSettings>(PowerAccentSettings.ModuleName);
             var activationMethod = moduleSettings.Properties.ActivationKey;
+            var toggleStateHotkey = moduleSettings.Properties.Hotkey.Value.GetKeysList();
             switch (activationMethod)
             {
                 case Library.Enumerations.PowerAccentActivationKey.LeftRightArrow: shortDescription += $". {resourceLoader.GetString("Dashboard_Activation")}: {resourceLoader.GetString("QuickAccent_Activation_Key_Arrows/Content")}"; break;
@@ -441,7 +443,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleTextItem() { Label = shortDescription },
+                new DashboardModuleShortcutItem() { Label = shortDescription, Shortcut = toggleStateHotkey },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }

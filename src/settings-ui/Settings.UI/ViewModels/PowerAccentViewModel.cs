@@ -3,7 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Text.Json;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
@@ -98,6 +101,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _powerAccentSettings = new PowerAccentSettings();
             }
 
+            _toggleHotkey = _powerAccentSettings.Properties.Hotkey.Value;
+
             _inputTimeMs = _powerAccentSettings.Properties.InputTime.Value;
 
             _excludedApps = _powerAccentSettings.Properties.ExcludedApps.Value;
@@ -151,6 +156,58 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsEnabledGpoConfigured
         {
             get => _enabledStateIsGPOConfigured;
+        }
+
+        private HotkeySettings _toggleHotkey;
+
+        public HotkeySettings Hotkey
+        {
+            get => _toggleHotkey;
+
+            set
+            {
+                if (_toggleHotkey != value)
+                {
+                    if (value == null || value.IsEmpty())
+                    {
+                        _toggleHotkey = PowerAccentProperties.DefaultHotkeyValue;
+                    }
+                    else
+                    {
+                        _toggleHotkey = value;
+                    }
+
+                    _powerAccentSettings.Properties.Hotkey.Value = _toggleHotkey;
+                    OnPropertyChanged(nameof(Hotkey));
+                    _settingsUtils.SaveSettings(_powerAccentSettings.ToJsonString(), PowerAccentSettings.ModuleName);
+                    RaisePropertyChanged();
+
+                    SendConfigMSG(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                            PowerAccentSettings.ModuleName,
+                            JsonSerializer.Serialize(_powerAccentSettings)));
+                }
+            }
+        }
+
+        public bool SoundEnable
+        {
+            get
+            {
+                return (bool)_powerAccentSettings.Properties.HotkeySound;
+            }
+
+            set
+            {
+                if (value != (bool)_powerAccentSettings.Properties.HotkeySound)
+                {
+                    _powerAccentSettings.Properties.HotkeySound = (bool)value;
+                    OnPropertyChanged(nameof(SoundEnable));
+                    RaisePropertyChanged();
+                }
+            }
         }
 
         public int ActivationKey
