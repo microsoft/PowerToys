@@ -104,5 +104,23 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.Properties {
                 return ResourceManager.GetString("plugin_name", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to e.g. 10 ft to m.
+        /// </summary>
+        public static string usage_prompt_subtitle {
+            get {
+                return ResourceManager.GetString("usage_prompt_subtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Usage: {0} [value] [fromUnit] to [toUnit].
+        /// </summary>
+        public static string usage_prompt_title {
+            get {
+                return ResourceManager.GetString("usage_prompt_title", resourceCulture);
+            }
+        }
     }
 }
