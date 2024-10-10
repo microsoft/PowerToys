@@ -190,7 +190,7 @@
     <value>Edit zones</value>
   </data>
   <data name="Setting_Launch_Editor_Description" xml:space="preserve">
-    <value>To launch the zone editor, select the Edit zones button below or press the zone editor hotkey anytime</value>
+    <value>To open the zone editor, select the Edit zones button below or press the zone editor hotkey anytime</value>
     <comment>"Edit zones" must match value from Setting_Launch_Editor_Button value</comment>
   </data>
   <data name="Setting_Launch_Editor_Hotkey_Label" xml:space="preserve">
