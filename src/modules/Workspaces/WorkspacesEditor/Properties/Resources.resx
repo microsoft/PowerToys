@@ -124,7 +124,7 @@
     <value>Admin</value>
   </data>
   <data name="AlwaysLaunch" xml:space="preserve">
-    <value>Launch new app instances</value>
+    <value>Launch app</value>
   </data>
   <data name="App" xml:space="preserve">
     <value>app</value>
@@ -204,6 +204,9 @@
   </data>
   <data name="LaunchAsAdmin" xml:space="preserve">
     <value>Launch as Admin</value>
+  </data>
+  <data name="MoveOrCreate" xml:space="preserve">
+    <value>Move or launch?</value>
   </data>
   <data name="LaunchEdit" xml:space="preserve">
     <value>Launch &amp; edit</value>

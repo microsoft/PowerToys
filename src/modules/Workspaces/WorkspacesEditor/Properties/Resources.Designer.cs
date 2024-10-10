@@ -79,7 +79,7 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Launch new app instances.
+        ///   Looks up a localized string similar to Launch app.
         /// </summary>
         public static string AlwaysLaunch {
             get {
@@ -417,6 +417,15 @@ namespace WorkspacesEditor.Properties {
         public static string MoveIfExist {
             get {
                 return ResourceManager.GetString("MoveIfExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Move or launch?.
+        /// </summary>
+        public static string MoveOrCreate {
+            get {
+                return ResourceManager.GetString("MoveOrCreate", resourceCulture);
             }
         }
         

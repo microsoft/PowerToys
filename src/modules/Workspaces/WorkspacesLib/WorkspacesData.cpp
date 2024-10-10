@@ -103,10 +103,6 @@ namespace WorkspacesData
                 {
                     json.SetNamedValue(NonLocalizable::MoveIfExistsID, json::value(data.moveIfExists.value()));
                 }
-                else
-                {
-                    json.SetNamedValue(NonLocalizable::MoveIfExistsID, json::JsonValue::CreateNullValue());
-                }
 
                 json.SetNamedValue(NonLocalizable::PositionID, PositionJSON::ToJson(data.position));
                 json.SetNamedValue(NonLocalizable::MonitorID, json::value(data.monitor));
@@ -150,11 +146,11 @@ namespace WorkspacesData
 
                     result.isMaximized = json.GetNamedBoolean(NonLocalizable::MaximizedID);
                     result.isMinimized = json.GetNamedBoolean(NonLocalizable::MinimizedID);
-                    try
+                    if (json.HasKey(NonLocalizable::MoveIfExistsID))
                     {
                         result.moveIfExists = json.GetNamedBoolean(NonLocalizable::MoveIfExistsID);
                     }
-                    catch (const winrt::hresult_error&)
+                    else
                     {
                         result.moveIfExists = NULL;
                     }
