@@ -60,14 +60,29 @@ namespace ManagedCommon
 
         public static void LogError(string message, Exception ex)
         {
-            Log(
-                message + Environment.NewLine +
-                ex?.Message + Environment.NewLine +
-                "Inner exception: " + Environment.NewLine +
-                ex?.InnerException?.Message + Environment.NewLine +
-                "Stack trace: " + Environment.NewLine +
-                ex?.StackTrace,
-                Error);
+            if (ex == null)
+            {
+                LogError(message);
+            }
+            else
+            {
+                var exMessage =
+                    message + Environment.NewLine +
+                    ex.GetType() + ": " + ex.Message + Environment.NewLine;
+
+                if (ex.InnerException != null)
+                {
+                    exMessage +=
+                        "Inner exception: " + Environment.NewLine +
+                        ex.InnerException.GetType() + ": " + ex.InnerException.Message + Environment.NewLine;
+                }
+
+                exMessage +=
+                    "Stack trace: " + Environment.NewLine +
+                    ex.StackTrace;
+
+                Log(exMessage, Error);
+            }
         }
 
         public static void LogWarning(string message)
