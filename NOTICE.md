@@ -1366,4 +1366,4 @@ EXHIBIT A -Mozilla Public License.
 - UnitsNet 5.56.0
 - UTF.Unknown 2.5.1
 - WinUIEx 2.2.0
-- WPF-UI 3.0.0
+- WPF-UI 3.0.5

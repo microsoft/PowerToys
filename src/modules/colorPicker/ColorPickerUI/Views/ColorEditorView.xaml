@@ -46,11 +46,13 @@
                 VerticalAlignment="Top"
                 VerticalContentAlignment="Top"
                 AutomationProperties.Name="{x:Static p:Resources.Color_History}"
+                Background="Transparent"
+                BorderBrush="Transparent"
                 ItemsSource="{Binding ColorsHistory}"
                 KeyboardNavigation.DirectionalNavigation="Contained"
                 MouseWheel="HistoryColors_OnMouseWheelScroll"
                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                SelectedIndex="{Binding SelectedColorIndex}"
+                SelectedIndex="{Binding SelectedColorIndex}"                
                 SelectionMode="Extended"
                 TabIndex="2">
                 <ListView.ItemsPanel>
