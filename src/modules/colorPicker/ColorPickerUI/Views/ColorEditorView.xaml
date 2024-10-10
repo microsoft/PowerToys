@@ -46,6 +46,8 @@
                 VerticalAlignment="Top"
                 VerticalContentAlignment="Top"
                 AutomationProperties.Name="{x:Static p:Resources.Color_History}"
+                Background="Transparent"
+                BorderBrush="Transparent"
                 ItemsSource="{Binding ColorsHistory}"
                 KeyboardNavigation.DirectionalNavigation="Contained"
                 MouseWheel="HistoryColors_OnMouseWheelScroll"
