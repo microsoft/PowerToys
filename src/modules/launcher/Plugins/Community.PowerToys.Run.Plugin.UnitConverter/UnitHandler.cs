@@ -11,8 +11,6 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 {
     public static class UnitHandler
     {
-        private static readonly int _roundingSignificantDigits = 4;
-
         private static readonly QuantityInfo[] _included = new QuantityInfo[]
         {
             Acceleration.Info,
@@ -60,23 +58,6 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         }
 
         /// <summary>
-        /// Rounds the value to the predefined number of significant digits.
-        /// </summary>
-        /// <param name="value">Value to be rounded</param>
-        public static double Round(double value)
-        {
-            if (value == 0.0D)
-            {
-                return 0;
-            }
-
-            var power = Math.Floor(Math.Log10(Math.Abs(value)));
-            var exponent = Math.Pow(10, power);
-            var rounded = Math.Round(value / exponent, _roundingSignificantDigits) * exponent;
-            return rounded;
-        }
-
-        /// <summary>
         /// Given parsed ConvertModel, computes result. (E.g "1 foot in cm").
         /// </summary>
         /// <returns>The converted value as a double.</returns>
@@ -106,7 +87,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
                 if (!double.IsNaN(convertedValue))
                 {
-                    UnitConversionResult result = new UnitConversionResult(Round(convertedValue), convertModel.ToUnit, quantityInfo);
+                    UnitConversionResult result = new UnitConversionResult(convertedValue, convertModel.ToUnit, quantityInfo);
                     results.Add(result);
                 }
             }
