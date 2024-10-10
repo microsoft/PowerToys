@@ -52,7 +52,7 @@
                 KeyboardNavigation.DirectionalNavigation="Contained"
                 MouseWheel="HistoryColors_OnMouseWheelScroll"
                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                SelectedIndex="{Binding SelectedColorIndex}"                
+                SelectedIndex="{Binding SelectedColorIndex}"
                 SelectionMode="Extended"
                 TabIndex="2">
                 <ListView.ItemsPanel>
