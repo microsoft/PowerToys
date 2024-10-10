@@ -34,7 +34,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [CmdConfigureIgnore]
         public static HotkeySettings DefaultDemoTypeToggleKey => new HotkeySettings(false, true, false, false, '7'); // Ctrl+7
 
-        // TODO: Font
         public KeyboardKeysProperty ToggleKey { get; set; }
 
         public KeyboardKeysProperty LiveZoomToggleKey { get; set; }
@@ -54,6 +53,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public StringProperty BreakPenColor { get; set; }
 
         public KeyboardKeysProperty BreakTimerKey { get; set; }
+
+        public StringProperty Font { get; set; }
 
         public KeyboardKeysProperty DemoTypeToggleKey { get; set; }
 

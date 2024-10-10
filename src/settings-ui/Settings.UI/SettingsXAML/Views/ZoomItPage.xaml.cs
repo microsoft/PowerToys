@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -46,10 +47,64 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             return null;
         }
 
+        private static LOGFONT PickFontDialog(LOGFONT font)
+        {
+            IntPtr pLogfont = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(LOGFONT)));
+            if (font != null)
+            {
+                font.lfHeight = -21;
+                Marshal.StructureToPtr(font, pLogfont, false);
+            }
+            else
+            {
+                LOGFONT logfont = new LOGFONT();
+                logfont.lfHeight = -21;
+                Marshal.StructureToPtr(logfont, pLogfont, false);
+            }
+
+            CHOOSEFONT chf = new CHOOSEFONT();
+            IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
+            chf.hwndOwner = windowHandle;
+            chf.Flags = (int)(CHOOSEFONTFLAGS.CF_SCREENFONTS | CHOOSEFONTFLAGS.CF_INITTOLOGFONTSTRUCT | CHOOSEFONTFLAGS.CF_LIMITSIZE);
+            chf.rgbColors = 0;
+            chf.lCustData = 0;
+            chf.nSizeMin = 16;
+            chf.nSizeMax = 16;
+            chf.nFontType = 0x2000; // SCREEN_FONTTYPE as in the original ZoomIt source.
+            chf.hInstance = Marshal.GetHINSTANCE(typeof(ZoomItPage).Module);
+
+            // TODO: chf.lpTemplateName = FORMATDLGORD31; and CHOOSEFONTFLAGS.CF_ENABLETEMPLATE
+            chf.lpLogFont = pLogfont;
+
+            IntPtr pChoosefont = Marshal.AllocHGlobal(Marshal.SizeOf(chf));
+            Marshal.StructureToPtr(chf, pChoosefont, false);
+
+            bool callResult = NativeMethods.ChooseFont(pChoosefont);
+            if (!callResult)
+            {
+                int error = NativeMethods.CommDlgExtendedError();
+                if (error > 0)
+                {
+                    Logger.LogError($"ChooseFont failed with extended error code {error}");
+                }
+
+                Marshal.FreeHGlobal(pLogfont);
+                Marshal.FreeHGlobal(pChoosefont);
+                return null;
+            }
+
+            CHOOSEFONT dialogResult = Marshal.PtrToStructure<CHOOSEFONT>(pChoosefont);
+            LOGFONT result = Marshal.PtrToStructure<LOGFONT>(dialogResult.lpLogFont);
+
+            Marshal.FreeHGlobal(pLogfont);
+            Marshal.FreeHGlobal(pChoosefont);
+            return result;
+        }
+
         public ZoomItPage()
         {
             var settingsUtils = new SettingsUtils();
-            ViewModel = new ZoomItViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, PickFileDialog);
+            ViewModel = new ZoomItViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, PickFileDialog, PickFontDialog);
             DataContext = ViewModel;
             InitializeComponent();
         }

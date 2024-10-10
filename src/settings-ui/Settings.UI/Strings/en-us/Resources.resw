@@ -4368,6 +4368,13 @@ Screen - Clear the screen for a sketch pad by pressing W (white) or K (black). C
 
 The text color is the current drawing color.</value>
   </data>
+  <data name="ZoomIt_Type_TextFont.Header" xml:space="preserve">
+    <value>Text font</value>
+  </data>
+  <data name="ZoomIt_Type_Font_Button.Content" xml:space="preserve">
+    <value>Choose Font</value>
+    <comment>Font refers to text font</comment>
+  </data>
   <data name="ZoomIt_DemoTypeGroup.Header" xml:space="preserve">
     <value>Demo Type</value>
   </data>

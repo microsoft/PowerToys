@@ -6,6 +6,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using AllExperiments;
 using global::PowerToys.GPOWrapper;
@@ -15,6 +16,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.Devices.Enumeration;
 
@@ -32,11 +34,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, string, string, int, string> PickFileDialog { get; }
 
+        private Func<LOGFONT, LOGFONT> PickFontDialog { get; }
+
         public ButtonClickCommand SelectDemoTypeFileCommand { get; set; }
 
         public ButtonClickCommand SelectBreakSoundFileCommand { get; set; }
 
         public ButtonClickCommand SelectBreakBackgroundFileCommand { get; set; }
+
+        public ButtonClickCommand SelectTypeFontCommand { get; set; }
 
         // These values should track what's in DemoType.h
         public int DemoTypeMaxTypingSpeed { get; } = 10;
@@ -63,7 +69,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             IncludeFields = true,
         };
 
-        public ZoomItViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, string, string, int, string> pickFileDialog)
+        public ZoomItViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, string, string, int, string> pickFileDialog, Func<LOGFONT, LOGFONT> pickFontDialog)
         {
             ArgumentNullException.ThrowIfNull(settingsUtils);
 
@@ -85,9 +91,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // set the callback for when we need the user to pick a file.
             PickFileDialog = pickFileDialog;
 
+            // set the callback for when we need the user to pick a font.
+            PickFontDialog = pickFontDialog;
+
+            _typeFont = TypeFont;
+
             SelectDemoTypeFileCommand = new ButtonClickCommand(SelectDemoTypeFileAction);
             SelectBreakSoundFileCommand = new ButtonClickCommand(SelectBreakSoundFileAction);
             SelectBreakBackgroundFileCommand = new ButtonClickCommand(SelectBreakBackgroundFileAction);
+            SelectTypeFontCommand = new ButtonClickCommand(SelectTypeFontAction);
 
             LoadMicrophoneList();
         }
@@ -281,6 +293,139 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NotifySettingsChanged();
                 }
             }
+        }
+
+        private LOGFONT _typeFont;
+
+        public LOGFONT TypeFont
+        {
+            get
+            {
+                var encodedFont = _zoomItSettings.Properties.Font.Value;
+                byte[] decodedFont = Convert.FromBase64String(encodedFont);
+                int size = Marshal.SizeOf(typeof(LOGFONT));
+                if (size != decodedFont.Length)
+                {
+                    throw new InvalidOperationException("Expected byte array from saved Settings doesn't match the LOGFONT structure size");
+                }
+
+                // Allocate unmanaged memory to hold the byte array
+                IntPtr ptr = Marshal.AllocHGlobal(size);
+                try
+                {
+                    // Copy the byte array into unmanaged memory
+                    Marshal.Copy(decodedFont, 0, ptr, size);
+
+                    // Marshal the unmanaged memory back to a LOGFONT structure
+                    return (LOGFONT)Marshal.PtrToStructure(ptr, typeof(LOGFONT));
+                }
+                finally
+                {
+                    // Free the unmanaged memory
+                    Marshal.FreeHGlobal(ptr);
+                }
+            }
+
+            set
+            {
+                _typeFont = value;
+                int size = Marshal.SizeOf(typeof(LOGFONT));
+                byte[] bytes = new byte[size];
+
+                // Allocate unmanaged memory for the LOGFONT structure
+                IntPtr ptr = Marshal.AllocHGlobal(size);
+                try
+                {
+                    // Marshal the LOGFONT structure to the unmanaged memory
+                    Marshal.StructureToPtr(value, ptr, false);
+
+                    // Copy the unmanaged memory into the managed byte array
+                    Marshal.Copy(ptr, bytes, 0, size);
+                }
+                finally
+                {
+                    // Free the unmanaged memory
+                    Marshal.FreeHGlobal(ptr);
+                }
+
+                _zoomItSettings.Properties.Font.Value = Convert.ToBase64String(bytes);
+                OnPropertyChanged(nameof(DemoSampleFontFamily));
+                OnPropertyChanged(nameof(DemoSampleFontSize));
+                OnPropertyChanged(nameof(DemoSampleFontWeight));
+                OnPropertyChanged(nameof(DemoSampleFontStyle));
+                OnPropertyChanged(nameof(DemoSampleTextDecoration));
+                NotifySettingsChanged();
+            }
+        }
+
+        public FontFamily DemoSampleFontFamily
+        {
+            get => new FontFamily(_typeFont.lfFaceName);
+        }
+
+        public double DemoSampleFontSize
+        {
+            get
+            {
+                return _typeFont.lfHeight < 0 ? 16 : _typeFont.lfHeight; // 16 is always the height we expect?
+            }
+        }
+
+        public global::Windows.UI.Text.FontWeight DemoSampleFontWeight
+        {
+            get
+            {
+                if (_typeFont.lfWeight <= (int)FontWeight.FW_DONTCARE)
+                {
+                    return Microsoft.UI.Text.FontWeights.Normal;
+                }
+                else if (_typeFont.lfWeight <= (int)FontWeight.FW_THIN)
+                {
+                    return Microsoft.UI.Text.FontWeights.Thin;
+                }
+                else if (_typeFont.lfWeight <= (int)FontWeight.FW_EXTRALIGHT)
+                {
+                    return Microsoft.UI.Text.FontWeights.ExtraLight;
+                }
+                else if (_typeFont.lfWeight <= (int)FontWeight.FW_LIGHT)
+                {
+                    return Microsoft.UI.Text.FontWeights.Light;
+                }
+                else if (_typeFont.lfWeight <= (int)FontWeight.FW_NORMAL)
+                {
+                    return Microsoft.UI.Text.FontWeights.Normal;
+                }
+                else if (_typeFont.lfWeight <= (int)FontWeight.FW_MEDIUM)
+                {
+                    return Microsoft.UI.Text.FontWeights.Medium;
+                }
+                else if (_typeFont.lfWeight <= (int)FontWeight.FW_SEMIBOLD)
+                {
+                    return Microsoft.UI.Text.FontWeights.SemiBold;
+                }
+                else if (_typeFont.lfWeight <= (int)FontWeight.FW_BOLD)
+                {
+                    return Microsoft.UI.Text.FontWeights.Bold;
+                }
+                else if (_typeFont.lfWeight <= (int)FontWeight.FW_EXTRABOLD)
+                {
+                    return Microsoft.UI.Text.FontWeights.ExtraBold;
+                }
+                else
+                {
+                    return Microsoft.UI.Text.FontWeights.Black; // FW_HEAVY
+                }
+            }
+        }
+
+        public global::Windows.UI.Text.FontStyle DemoSampleFontStyle
+        {
+            get => _typeFont.lfItalic != 0 ? global::Windows.UI.Text.FontStyle.Italic : global::Windows.UI.Text.FontStyle.Normal;
+        }
+
+        public global::Windows.UI.Text.TextDecorations DemoSampleTextDecoration
+        {
+            get => _typeFont.lfUnderline != 0 ? global::Windows.UI.Text.TextDecorations.Underline : global::Windows.UI.Text.TextDecorations.None;
         }
 
         public string DemoTypeFile
@@ -584,6 +729,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError("Error picking Break Background file.", ex);
+            }
+        }
+
+        private void SelectTypeFontAction()
+        {
+            try
+            {
+                LOGFONT result = PickFontDialog(_typeFont);
+                if (result != null)
+                {
+                    TypeFont = result;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error picking Type font.", ex);
             }
         }
 

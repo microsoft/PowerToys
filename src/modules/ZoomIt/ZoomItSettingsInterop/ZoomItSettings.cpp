@@ -5,6 +5,7 @@
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/utils/color.h>
 #include <map>
+#pragma comment(lib, "Crypt32.lib") // For the CryptStringToBinaryW and CryptBinaryToStringW functions
 
 namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
 {
@@ -12,6 +13,52 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
 
     const unsigned int SPECIAL_SEMANTICS_SHORTCUT = 1;
     const unsigned int SPECIAL_SEMANTICS_COLOR = 2;
+
+    std::vector<unsigned char> base64_decode(const std::wstring& base64_string)
+    {
+        DWORD binary_len = 0;
+        // Get the required buffer size for the binary data
+        if (!CryptStringToBinaryW(base64_string.c_str(), 0, CRYPT_STRING_BASE64, nullptr, &binary_len, nullptr, nullptr))
+        {
+            throw std::runtime_error("Error in CryptStringToBinaryW (getting size)");
+        }
+
+        std::vector<unsigned char> binary_data(binary_len);
+
+        // Decode the Base64 string into binary data
+        if (!CryptStringToBinaryW(base64_string.c_str(), 0, CRYPT_STRING_BASE64, binary_data.data(), &binary_len, nullptr, nullptr))
+        {
+            throw std::runtime_error("Error in CryptStringToBinaryW (decoding)");
+        }
+
+        return binary_data;
+    }
+
+    std::wstring base64_encode(const unsigned char* data, size_t length)
+    {
+        DWORD base64_len = 0;
+        // Get the required buffer size for Base64 string
+        if (!CryptBinaryToStringW(data, static_cast<DWORD>(length), CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF, nullptr, &base64_len))
+        {
+            throw std::runtime_error("Error in CryptBinaryToStringW (getting size)");
+        }
+
+        std::wstring base64_string(base64_len, '\0');
+
+        // Encode the binary data to Base64
+        if (!CryptBinaryToStringW(data, static_cast<DWORD>(length), CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF, &base64_string[0], &base64_len))
+        {
+            throw std::runtime_error("Error in CryptBinaryToStringW (encoding)");
+        }
+
+        // Resize the wstring to remove any trailing null character.
+        if (!base64_string.empty() && base64_string.back() == L'\0')
+        {
+            base64_string.pop_back();
+        }
+
+        return base64_string;
+    }
 
     std::map<std::wstring, unsigned int> settings_with_special_semantics = {
         { L"ToggleKey", SPECIAL_SEMANTICS_SHORTCUT },
@@ -82,7 +129,9 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
                 assert(false); // ZoomIt doesn't use this type of setting.
                 break;
             case SETTING_TYPE_BINARY:
-                // TODO: How to support this type.
+                // Base64 encoding is likely the best way to serialize a byte array into JSON.
+                auto encodedFont = base64_encode(static_cast<PBYTE>(curSetting->Setting), curSetting->Size);
+                _settings.add_property<std::wstring>(curSetting->Valuename, encodedFont);
                 break;
             }
             curSetting++;
@@ -192,7 +241,14 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
                 assert(false); // ZoomIt doesn't use this type of setting.
                 break;
             case SETTING_TYPE_BINARY:
-                // TODO: How to support this type.
+                auto possibleValue = valuesFromSettings.get_string_value(curSetting->Valuename);
+                if (possibleValue.has_value())
+                {
+                    // Base64 encoding is likely the best way to serialize a byte array into JSON.
+                    auto decodedValue = base64_decode(possibleValue.value());
+                    assert(curSetting->Size == decodedValue.size()); // Should right now only be used for LOGFONT, so let's hard check it to avoid any insecure overflows.
+                    memcpy(static_cast<PBYTE>(curSetting->Setting), decodedValue.data(), decodedValue.size());
+                }
                 break;
             }
             curSetting++;

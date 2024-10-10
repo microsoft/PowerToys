@@ -67,6 +67,19 @@
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_TypeGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="ZoomIt_Type_TextFont">
+                        <tkcontrols:SettingsCard.Description>
+                            <TextBlock
+                                Text="Sample"
+                                FontFamily="{x:Bind ViewModel.DemoSampleFontFamily, Mode=OneWay}"
+                                FontSize="{x:Bind ViewModel.DemoSampleFontSize, Mode=OneWay}"
+                                FontWeight="{x:Bind ViewModel.DemoSampleFontWeight, Mode=OneWay}"
+                                FontStyle="{x:Bind ViewModel.DemoSampleFontStyle, Mode=OneWay}"
+                                TextDecorations="{x:Bind ViewModel.DemoSampleTextDecoration, Mode=OneWay}"
+                                />
+                        </tkcontrols:SettingsCard.Description>
+                        <Button x:Uid="ZoomIt_Type_Font_Button" Command="{x:Bind ViewModel.SelectTypeFontCommand, Mode=OneWay}"/>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_DemoTypeGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_DemoType_File" Description="{x:Bind ViewModel.DemoTypeFile, Mode=OneWay}">
