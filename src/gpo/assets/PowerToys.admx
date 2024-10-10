@@ -5,7 +5,7 @@
   <policyNamespaces>
     <target prefix="powertoys" namespace="Microsoft.Policies.PowerToys" />
   </policyNamespaces>
-  <resources minRequiredRevision="1.13"/><!-- Last changed with PowerToys v0.85.0 -->
+  <resources minRequiredRevision="1.14"/><!-- Last changed with PowerToys v0.86.0 -->
   <supportedOn>
     <definitions>
       <definition name="SUPPORTED_POWERTOYS_0_64_0" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0)"/>
@@ -22,6 +22,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_83_0" displayName="$(string.SUPPORTED_POWERTOYS_0_83_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_84_0" displayName="$(string.SUPPORTED_POWERTOYS_0_84_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_85_0" displayName="$(string.SUPPORTED_POWERTOYS_0_85_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_86_0" displayName="$(string.SUPPORTED_POWERTOYS_0_86_0)"/>
     </definitions>
   </supportedOn>
   <categories>
@@ -502,6 +503,16 @@
     <policy name="AllowExperimentation" class="Both" displayName="$(string.AllowExperimentation)" explainText="$(string.AllowExperimentationDescription)" key="Software\Policies\PowerToys" valueName="AllowExperimentation">
       <parentCategory ref="GeneralSettings" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_68_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="AllowDiagnosticData" class="Both" displayName="$(string.AllowDiagnosticData)" explainText="$(string.AllowDiagnosticDataDescription)" key="Software\Policies\PowerToys" valueName="AllowDataDiagnostics">
+      <parentCategory ref="GeneralSettings" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_86_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>

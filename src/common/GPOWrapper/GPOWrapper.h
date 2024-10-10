@@ -61,6 +61,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredMwbDisableUserDefinedIpMappingRulesValue();
         static winrt::hstring GPOWrapper::GetConfiguredMwbPolicyDefinedIpMappingRules();
         static GpoRuleConfigured GetConfiguredNewPlusHideTemplateFilenameExtensionValue();
+        static GpoRuleConfigured GetAllowDataDiagnosticsValue();
     };
 }
 

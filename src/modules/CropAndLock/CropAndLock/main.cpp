@@ -4,14 +4,18 @@
 #include "CropAndLockWindow.h"
 #include "ThumbnailCropAndLockWindow.h"
 #include "ReparentCropAndLockWindow.h"
-#include <common/interop/shared_constants.h>
-#include <common/utils/winapi_error.h>
-#include <common/utils/logger_helper.h>
-#include <common/utils/UnhandledExceptionHandler.h>
-#include <common/utils/gpo.h>
 #include "ModuleConstants.h"
-#include <common/utils/ProcessWaiter.h>
 #include "trace.h"
+
+#include <common/interop/shared_constants.h>
+
+#include <common/utils/gpo.h>
+#include <common/utils/logger_helper.h>
+#include <common/utils/ProcessWaiter.h>
+#include <common/utils/UnhandledExceptionHandler.h>
+#include <common/utils/winapi_error.h>
+
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
 
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
@@ -35,6 +39,9 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
 {
     // Initialize COM
     winrt::init_apartment(winrt::apartment_type::single_threaded);
+
+    Shared::Trace::ETWTrace trace;
+    trace.UpdateState(true);
 
     // Initialize logger automatic logging of exceptions.
     LoggerHelpers::init_logger(NonLocalizable::ModuleKey, L"", LogSettings::cropAndLockLoggerName);
@@ -153,6 +160,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
                 croppedWindow = std::make_shared<ThumbnailCropAndLockWindow>(title, 800, 600);
                 Logger::trace(L"Creating a thumbnail window");
                 Trace::CropAndLock::CreateThumbnailWindow();
+                Trace::CropAndLock::ActivateThumbnail();
                 break;
             default:
                 return;
@@ -195,6 +203,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
     }
 
     m_event_triggers_thread = std::thread([&]() {
+
         MSG msg;
         HANDLE event_handles[3] = {m_reparent_event_handle, m_thumbnail_event_handle, m_exit_event_handle};
         while (m_running)
@@ -257,6 +266,8 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
     }
+
+    trace.Flush();
 
     m_running = false;
     // Needed to unblock MsgWaitForMultipleObjects one last time

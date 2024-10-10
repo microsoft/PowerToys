@@ -7,6 +7,8 @@
 #include <common/utils/UnhandledExceptionHandler.h>
 #include <common/utils/resources.h>
 
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
+
 #include <WorkspacesLib/JsonUtils.h>
 #include <WorkspacesLib/utils.h>
 
@@ -22,6 +24,9 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 {
     LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::workspacesLauncherLoggerName);
     InitUnhandledExceptionHandler();  
+
+    Shared::Trace::ETWTrace trace{};
+    trace.UpdateState(true);
 
     if (powertoys_gpo::getConfiguredWorkspacesEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
     {
@@ -161,8 +166,12 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         return 1;
     }
 
-    Launcher launcher(projectToLaunch, workspaces, cmdArgs.invokePoint);
+    {
+        Launcher launcher(projectToLaunch, workspaces, cmdArgs.invokePoint);
+    }
 
+    trace.Flush();
+    trace.UpdateState(false);
     Logger::trace("Finished");
     CoUninitialize();
     return 0;

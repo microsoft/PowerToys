@@ -2125,6 +2125,48 @@ Take a moment to preview the various utilities listed or view our comprehensive 
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
     <value>Documentation on Microsoft Learn</value>
   </data>
+  <data name="Oobe_Overview_Telemetry_Title.Text" xml:space="preserve">
+    <value>Help us make PowerToys better</value>
+  </data>
+  <data name="Oobe_Overview_Telemetry_Desc.Text" xml:space="preserve">
+    <value>Diagnostics &amp; feedback helps us to improve PowerToys and keep it secure, up to date, and working as expected</value>
+  </data>
+  <data name="Oobe_Overview_DiagnosticsAndFeedback_Link.Content" xml:space="preserve">
+    <value>Learn more about the information PowerToys logs &amp; how it gets used</value>
+  </data>
+  <data name="Oobe_Overview_EnableDataDiagnostics.Header" xml:space="preserve">
+    <value>Diagnostic data</value>
+  </data>
+  <data name="Oobe_Overview_EnableDataDiagnostics.Description" xml:space="preserve">
+    <value>Helps inform bug fixes, performance, and product decisions</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_InfoBar.Header" xml:space="preserve">
+    <value>Turn on diagnostic data to help us improve PowerToys?</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_InfoBar_Desc.Text" xml:space="preserve">
+    <value>PowerToys diagnostic data is completely optional.</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_InfoBar_Button_Enable.Content" xml:space="preserve">
+    <value>Enable</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_Yes_Click_InfoBar_Title" xml:space="preserve">
+    <value>Thank you for helping to make PowerToys better!</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_No_Click_InfoBar_Title" xml:space="preserve">
+    <value>Preference updated.</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_Yes_Click_InfoBar_Desc.Text" xml:space="preserve">
+    <value>You can change this at any time from </value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_Yes_Click_OpenSettings_Text.Text" xml:space="preserve">
+    <value>settings.</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_Button_Yes.Content" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_Button_No.Content" xml:space="preserve">
+    <value>No</value>
+  </data>
   <data name="ReleaseNotes.Content" xml:space="preserve">
     <value>Release notes</value>
   </data>
@@ -3830,6 +3872,33 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
     <value>Allow experimentation with new features</value>
+  </data>
+  <data name="General_DiagnosticsAndFeedback.Header" xml:space="preserve">
+    <value>Diagnostics &amp; feedback</value>
+  </data>
+  <data name="GeneralPage_DiagnosticsAndFeedback_Link.Content" xml:space="preserve">
+    <value>Learn more about the information we log &amp; how it gets used</value>
+  </data>
+  <data name="GeneralPage_EnableDataDiagnostics.Header" xml:space="preserve">
+    <value>Diagnostic data</value>
+  </data>
+  <data name="GeneralPage_EnableDataDiagnostics.Description" xml:space="preserve">
+    <value>Helps inform bug fixes, performance, and improvements</value>
+  </data>
+  <data name="GeneralPage_ViewDiagnosticData.Header" xml:space="preserve">
+    <value>View diagnostic data</value>
+  </data>
+  <data name="GeneralPage_EnableViewDiagnosticData.Header" xml:space="preserve">
+    <value>Enable viewing</value>
+  </data>
+  <data name="GeneralPage_EnableViewDiagnosticData.Description" xml:space="preserve">
+    <value>Uses up to 1GB (or more) of hard drive space on your PC</value>
+  </data>
+  <data name="GeneralPage_ViewDiagnosticDataViewer.Header" xml:space="preserve">
+    <value>Diagnostic data viewer</value>
+  </data>
+  <data name="GeneralPage_ViewDiagnosticDataViewer.Description" xml:space="preserve">
+    <value>This folder may include .anr, .log, .tomb and .etl files</value>
   </data>
   <data name="Shell_AdvancedPaste.Content" xml:space="preserve">
     <value>Advanced Paste</value>

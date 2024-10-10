@@ -28,6 +28,7 @@ namespace RegistryPreview
         {
             // Save window placement
             SaveWindowPlacementFile(settingsFolder, windowPlacementFile);
+            (Application.Current as App).EtwTrace?.Dispose();
         }
     }
 }

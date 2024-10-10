@@ -10,6 +10,7 @@ using System.Windows;
 
 using ColorPicker.Mouse;
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 
 namespace ColorPickerUI
 {
@@ -18,6 +19,13 @@ namespace ColorPickerUI
     /// </summary>
     public partial class App : Application, IDisposable
     {
+#pragma warning disable CA1051 // Do not declare visible instance fields
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
+#pragma warning disable SA1401 // Accessible fields should begin with upper-case letter
+        public ETWTrace etwTrace = new ETWTrace();
+#pragma warning restore SA1401 // Accessible fields should begin with upper-case letter
+#pragma warning restore SA1307 // Accessible fields should begin with upper-case letter
+#pragma warning restore CA1051 // Do not declare visible instance fields
         private Mutex _instanceMutex;
         private static string[] _args;
         private int _powerToysRunnerPid;
@@ -43,6 +51,7 @@ namespace ColorPickerUI
                 Logger.LogError("CultureNotFoundException: " + ex.Message);
             }
 
+            etwTrace.Start();
             NativeThreadCTS = new CancellationTokenSource();
             ExitToken = NativeThreadCTS.Token;
 
@@ -96,6 +105,7 @@ namespace ColorPickerUI
                 if (disposing)
                 {
                     _instanceMutex?.Dispose();
+                    etwTrace?.Dispose();
                 }
 
                 disposedValue = true;

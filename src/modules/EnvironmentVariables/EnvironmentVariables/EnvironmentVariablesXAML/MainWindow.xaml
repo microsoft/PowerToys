@@ -10,7 +10,8 @@
     x:Uid="Window"
     MinWidth="700"
     MinHeight="480"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    Closed="Window_Closed">
     <Window.SystemBackdrop>
         <MicaBackdrop />
     </Window.SystemBackdrop>

@@ -8,46 +8,39 @@ TRACELOGGING_DEFINE_PROVIDER(
     (0x38e8889b, 0x9731, 0x53f5, 0xe9, 0x01, 0xe8, 0xa7, 0xc1, 0x75, 0x30, 0x74),
     TraceLoggingOptionProjectTelemetry());
 
-void Trace::RegisterProvider()
-{
-    TraceLoggingRegister(g_hProvider);
-}
-
-void Trace::UnregisterProvider()
-{
-    TraceLoggingUnregister(g_hProvider);
-}
-
 // Log if the user has AdvancedPaste enabled or disabled
 void Trace::AdvancedPaste_Enable(const bool enabled) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "AdvancedPaste_EnableAdvancedPaste",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(enabled, "Enabled"));
 }
 
 // Log if the user has invoked AdvancedPaste
 void Trace::AdvancedPaste_Invoked(std::wstring mode) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "AdvancedPaste_InvokeAdvancedPaste",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingValue(mode.c_str(), "Mode"));
 }
 
 // Log if an error occurs in AdvancedPaste
 void Trace::AdvancedPaste_Error(const DWORD errorCode, std::wstring errorMessage, std::wstring methodName) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "AdvancedPaste_Error",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingValue(methodName.c_str(), "MethodName"),
         TraceLoggingValue(errorCode, "ErrorCode"),
         TraceLoggingValue(errorMessage.c_str(), "ErrorMessage"));
@@ -88,15 +81,15 @@ void Trace::AdvancedPaste_SettingsTelemetry(const PowertoyModuleIface::Hotkey& p
         std::wstring(pasteJsonHotkey.alt ? L"Alt + " : L"") +
         std::wstring(L"VK ") + std::to_wstring(pasteJsonHotkey.key);
 
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "AdvancedPaste_Settings",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingWideString(pastePlainHotkeyStr.c_str(), "PastePlainHotkey"),
         TraceLoggingWideString(advancedPasteUIHotkeyStr.c_str(), "AdvancedPasteUIHotkey"),
         TraceLoggingWideString(pasteMarkdownHotkeyStr.c_str(), "PasteMarkdownHotkey"),
         TraceLoggingWideString(pasteJsonHotkeyStr.c_str(), "PasteJsonHotkey"),
-        TraceLoggingBoolean(preview_custom_format_output, "ShowCustomPreview")
-    );
+        TraceLoggingBoolean(preview_custom_format_output, "ShowCustomPreview"));
 }

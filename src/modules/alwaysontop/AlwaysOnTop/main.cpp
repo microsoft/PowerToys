@@ -1,11 +1,12 @@
 ﻿#include "pch.h"
 
+#include <common/utils/logger_helper.h>
 #include <common/utils/ProcessWaiter.h>
 #include <common/utils/window.h>
 #include <common/utils/UnhandledExceptionHandler.h>
 #include <common/utils/gpo.h>
 
-#include <common/utils/logger_helper.h>
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
 
 #include <AlwaysOnTop.h>
 #include <trace.h>
@@ -17,6 +18,9 @@ const std::wstring instanceMutexName = L"Local\\PowerToys_AlwaysOnTop_InstanceMu
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR lpCmdLine, _In_ int nCmdShow)
 {
+    Shared::Trace::ETWTrace trace;
+    trace.UpdateState(true);
+
     winrt::init_apartment();
     LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::alwaysOnTopLoggerName);
 
@@ -39,10 +43,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
         return 0;
     }
 
+    auto mainThreadId = GetCurrentThreadId();
+
     std::wstring pid = std::wstring(lpCmdLine);
     if (!pid.empty())
     {
-        auto mainThreadId = GetCurrentThreadId();
         ProcessWaiter::OnProcessTerminate(pid, [mainThreadId](int err) {
             if (err != ERROR_SUCCESS)
             {
@@ -58,13 +63,15 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
         });
     }
 
-    Trace::RegisterProvider();
+    Trace::AlwaysOnTop::RegisterProvider();
 
-    AlwaysOnTop app(!pid.empty());
+    AlwaysOnTop app(!pid.empty(), mainThreadId);
 
     run_message_loop();
 
-    Trace::UnregisterProvider();
-    
+    Trace::AlwaysOnTop::UnregisterProvider();
+
+    trace.Flush();
+
     return 0;
 }

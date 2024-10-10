@@ -14,9 +14,13 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CommunityToolkit.WinUI.UI.Controls;
+using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
+using Microsoft.PowerToys.Settings.UI.Views;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 
@@ -42,6 +46,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public OobePowerToysModule ViewModel { get; set; }
 
+        public bool ShowDataDiagnosticsInfoBar => GetShowDataDiagnosticsInfoBar();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="OobeWhatsNew"/> class.
         /// </summary>
@@ -50,6 +56,33 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             this.InitializeComponent();
             ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.WhatsNew]);
             DataContext = ViewModel;
+        }
+
+        private bool GetShowDataDiagnosticsInfoBar()
+        {
+            var isDataDiagnosticsGpoDisallowed = GPOWrapper.GetAllowDataDiagnosticsValue() == GpoRuleConfigured.Disabled;
+
+            if (isDataDiagnosticsGpoDisallowed)
+            {
+                return false;
+            }
+
+            bool userActed = DataDiagnosticsSettings.GetUserActionValue();
+
+            if (userActed)
+            {
+                return false;
+            }
+
+            bool registryValue = DataDiagnosticsSettings.GetEnabledValue();
+
+            bool isFirstRunAfterUpdate = (App.Current as Microsoft.PowerToys.Settings.UI.App).ShowScoobe;
+            if (isFirstRunAfterUpdate && registryValue == false)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -164,6 +197,66 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     Process.Start(new ProcessStartInfo(link.ToString()) { UseShellExecute = true });
                 });
             }
+        }
+
+        private void DataDiagnostics_InfoBar_YesNo_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            string commandArg = string.Empty;
+            if (sender is Button senderBtn)
+            {
+                commandArg = senderBtn.CommandParameter.ToString();
+            }
+            else if (sender is HyperlinkButton senderLink)
+            {
+                commandArg = senderLink.CommandParameter.ToString();
+            }
+
+            if (string.IsNullOrEmpty(commandArg))
+            {
+                return;
+            }
+
+            // Update UI
+            if (commandArg == "Yes")
+            {
+                WhatsNewDataDiagnosticsInfoBar.Header = ResourceLoaderInstance.ResourceLoader.GetString("Oobe_WhatsNew_DataDiagnostics_Yes_Click_InfoBar_Title");
+            }
+            else
+            {
+                WhatsNewDataDiagnosticsInfoBar.Header = ResourceLoaderInstance.ResourceLoader.GetString("Oobe_WhatsNew_DataDiagnostics_No_Click_InfoBar_Title");
+            }
+
+            WhatsNewDataDiagnosticsInfoBarDescText.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+            WhatsNewDataDiagnosticsInfoBarDescTextYesClicked.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+            DataDiagnosticsButtonYes.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+            DataDiagnosticsButtonNo.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+
+            // Set Data Diagnostics registry values
+            if (commandArg == "Yes")
+            {
+                DataDiagnosticsSettings.SetEnabledValue(true);
+            }
+            else
+            {
+                DataDiagnosticsSettings.SetEnabledValue(false);
+            }
+
+            DataDiagnosticsSettings.SetUserActionValue(true);
+
+            this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+            {
+                ShellPage.ShellHandler?.SignalGeneralDataUpdate();
+            });
+        }
+
+        private void DataDiagnostics_InfoBar_Close_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            WhatsNewDataDiagnosticsInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+        }
+
+        private void DataDiagnostics_OpenSettings_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        {
+            Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Overview, true);
         }
     }
 }

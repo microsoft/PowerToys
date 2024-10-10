@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// <summary>
     /// General Settings Page.
     /// </summary>
-    public sealed partial class GeneralPage : Page
+    public sealed partial class GeneralPage : Page, IRefreshablePage
     {
         private static DateTime OkToHideBackupAndRestoreMessageTime { get; set; }
 
@@ -98,6 +98,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
+        private void OpenDiagnosticsAndFeedbackSettings_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.DiagnosticsAndFeedback);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error while trying to open the system Diagnostics & Feedback settings", ex);
+            }
+        }
+
         private void RefreshBackupRestoreStatus(int delayMs = 0)
         {
             Task.Run(() =>
@@ -134,6 +146,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void Click_LanguageRestart(object sender, RoutedEventArgs e)
         {
             ViewModel.Restart();
+        }
+
+        public void RefreshEnabledState()
+        {
+            ViewModel.RefreshSettingsOnExternalChange();
+        }
+
+        private void ViewDiagnosticData_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.ViewDiagnosticData();
         }
     }
 }
