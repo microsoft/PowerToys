@@ -2,11 +2,11 @@
 (?:^|/)(?i)COPYRIGHT
 (?:^|/)(?i)LICEN[CS]E
 (?:^|/)3rdparty/
-(?:^|/)FilePreviewCommon/Assets/Monaco/customLanguages/
-(?:^|/)FilePreviewCommon/Assets/Monaco/generateLanguagesJson.html
-(?:^|/)FilePreviewCommon/Assets/Monaco/index.html
-(?:^|/)FilePreviewCommon/Assets/Monaco/monaco_languages.json
-(?:^|/)FilePreviewCommon/Assets/Monaco/monacoSpecialLanguages.js
+(?:^|/)src/Monaco/customLanguages/
+(?:^|/)src/Monaco/generateLanguagesJson.html
+(?:^|/)src/Monaco/index.html
+(?:^|/)src/Monaco/monaco_languages.json
+(?:^|/)src/Monaco/monacoSpecialLanguages.js
 (?:^|/)go\.sum$
 (?:^|/)monacoSRC/
 (?:^|/)package(?:-lock|)\.json$
@@ -99,7 +99,7 @@
 ^\Q.pipelines/ESRPSigning_core.json\E$
 ^\Q.pipelines/sdl.gdnbaselines\E$
 ^\Qinstaller/PowerToysSetup/Settings.wxs\E$
-^\Qsrc/common/FilePreviewCommon/Assets/Monaco/monaco_languages.json\E$
+^\Qsrc/Monaco/monaco_languages.json\E$
 ^\Qsrc/common/ManagedCommon/ColorFormatHelper.cs\E$
 ^\Qsrc/common/notifications/BackgroundActivatorDLL/cpp.hint\E$
 ^\Qsrc/modules/colorPicker/ColorPickerUI/Assets/ColorPicker/colorPicker.cur\E$
