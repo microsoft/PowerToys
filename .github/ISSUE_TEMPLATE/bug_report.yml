@@ -8,7 +8,8 @@ body:
 - type: markdown
   attributes:
     value: Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
-- type: input
+- id: version
+  type: input
   attributes:
     label: Microsoft PowerToys version
     placeholder: 0.70.0
@@ -32,14 +33,6 @@ body:
       - Other (please specify in "Steps to Reproduce")
   validations:
     required: true
-
-- type: dropdown
-  attributes:
-    label: Running as admin
-    description: Are you running PowerToys as Admin?
-    options:
-      - "Yes"
-      - "No"
 
 - type: dropdown
   attributes:
@@ -83,7 +76,8 @@ body:
   validations:
     required: true
 
-- type: textarea
+- id: repro
+  type: textarea
   attributes:
     label: Steps to reproduce
     description: We highly suggest including screenshots and a bug report log (System tray > Report bug).
@@ -104,8 +98,22 @@ body:
     placeholder: What happened instead?
   validations:
     required: false
+    
+- id: additionalInfo
+  type: textarea
+  attributes:
+    label: Additional Information
+    placeholder: |
+      OS version
+      .Net version
+      System Language
+      User or System Installation
+      Running as admin
+  validations:
+    required: false
 
-- type: textarea
+- id: otherSoftware
+  type: textarea
   attributes:
     label: Other Software
     description: If you're reporting a bug about our interaction with other software, what software? What versions?
