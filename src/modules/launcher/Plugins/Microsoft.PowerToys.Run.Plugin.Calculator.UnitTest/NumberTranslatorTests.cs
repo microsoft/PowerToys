@@ -180,5 +180,23 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.IsNotNull(result);
             Assert.AreEqual(expectedResult, result);
         }
+
+        [DataTestMethod]
+        [DataRow("2,5", "2.5", true)]
+        [DataRow("2,5*10", "2.5*10", true)]
+        [DataRow("2,5", "25", false)]
+        [DataRow("2,5*10", "25*10", false)]
+        public void Translate_Ignoring_Regional_Formatting(string input, string expectedResult, bool ignoreRegionalFormatting)
+        {
+            // Arrange
+            var translator = NumberTranslator.Create(new CultureInfo("en-US", false), new CultureInfo("en-US", false));
+
+            // Act
+            var result = translator.Translate(input, ignoreRegionalFormatting);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(expectedResult, result);
+        }
     }
 }
