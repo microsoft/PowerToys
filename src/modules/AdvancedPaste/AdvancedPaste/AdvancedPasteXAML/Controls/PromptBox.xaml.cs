@@ -2,17 +2,15 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Net;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 using AdvancedPaste.Helpers;
-using AdvancedPaste.Settings;
+using AdvancedPaste.Models;
 using AdvancedPaste.ViewModels;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
-using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -20,12 +18,6 @@ namespace AdvancedPaste.Controls
 {
     public sealed partial class PromptBox : Microsoft.UI.Xaml.Controls.UserControl
     {
-        // Minimum time to show spinner when generating custom format using forcePasteCustom
-        private static readonly TimeSpan MinTaskTime = TimeSpan.FromSeconds(2);
-
-        private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-        private readonly IUserSettings _userSettings;
-
         public OptionsViewModel ViewModel { get; private set; }
 
         public static readonly DependencyProperty PlaceholderTextProperty = DependencyProperty.Register(
@@ -54,12 +46,31 @@ namespace AdvancedPaste.Controls
 
         public PromptBox()
         {
-            this.InitializeComponent();
-
-            _userSettings = App.GetService<IUserSettings>();
+            InitializeComponent();
 
             ViewModel = App.GetService<OptionsViewModel>();
-            ViewModel.CustomActionActivated += (_, e) => GenerateCustom(e.ForcePasteCustom);
+            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            ViewModel.CustomActionActivated += ViewModel_CustomActionActivated;
+        }
+
+        private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ViewModel.Busy) || e.PropertyName == nameof(ViewModel.PasteOperationErrorText))
+            {
+                var state = ViewModel.Busy ? "LoadingState" : string.IsNullOrEmpty(ViewModel.PasteOperationErrorText) ? "DefaultState" : "ErrorState";
+                VisualStateManager.GoToState(this, state, true);
+            }
+        }
+
+        private void ViewModel_CustomActionActivated(object sender, CustomActionActivatedEventArgs e)
+        {
+            Logger.LogTrace();
+
+            if (!e.PasteResult)
+            {
+                PreviewGrid.Width = InputTxtBox.ActualWidth;
+                PreviewFlyout.ShowAt(InputTxtBox);
+            }
         }
 
         private void Grid_Loaded(object sender, RoutedEventArgs e)
@@ -68,48 +79,7 @@ namespace AdvancedPaste.Controls
         }
 
         [RelayCommand]
-        private void GenerateCustom() => GenerateCustom(false);
-
-        private void GenerateCustom(bool forcePasteCustom)
-        {
-            Logger.LogTrace();
-
-            VisualStateManager.GoToState(this, "LoadingState", true);
-            string inputInstructions = ViewModel.Query;
-            ViewModel.SaveQuery(inputInstructions);
-
-            var customFormatTask = ViewModel.GenerateCustomFunction(inputInstructions);
-            var delayTask = forcePasteCustom ? Task.Delay(MinTaskTime) : Task.CompletedTask;
-            Task.WhenAll(customFormatTask, delayTask)
-                .ContinueWith(
-                _ =>
-                {
-                    _dispatcherQueue.TryEnqueue(() =>
-                    {
-                        ViewModel.CustomFormatResult = customFormatTask.Result;
-
-                        if (ViewModel.ApiRequestStatus == (int)HttpStatusCode.OK)
-                        {
-                            VisualStateManager.GoToState(this, "DefaultState", true);
-                            if (_userSettings.ShowCustomPreview && !forcePasteCustom)
-                            {
-                                PreviewGrid.Width = InputTxtBox.ActualWidth;
-                                PreviewFlyout.ShowAt(InputTxtBox);
-                            }
-                            else
-                            {
-                                ViewModel.PasteCustom();
-                                InputTxtBox.Text = string.Empty;
-                            }
-                        }
-                        else
-                        {
-                            VisualStateManager.GoToState(this, "ErrorState", true);
-                        }
-                    });
-                },
-                TaskScheduler.Default);
-        }
+        private async Task GenerateCustomAsync() => await ViewModel.GenerateCustomFunctionAsync(PasteActionSource.PromptBox);
 
         [RelayCommand]
         private void Recall()
@@ -127,29 +97,24 @@ namespace AdvancedPaste.Controls
             ClipboardHelper.SetClipboardTextContent(lastQuery.ClipboardData);
         }
 
-        private void InputTxtBox_KeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
+        private async void InputTxtBox_KeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
         {
             if (e.Key == Windows.System.VirtualKey.Enter && InputTxtBox.Text.Length > 0 && ViewModel.IsCustomAIEnabled)
             {
-                GenerateCustom();
+                await GenerateCustomAsync();
             }
         }
 
         private void PreviewPasteBtn_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.PasteCustom();
-            InputTxtBox.Text = string.Empty;
         }
 
         private void ThumbUpDown_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn)
+            if (sender is Button btn && bool.TryParse(btn.CommandParameter as string, out bool result))
             {
-                bool result;
-                if (bool.TryParse(btn.CommandParameter as string, out result))
-                {
-                    PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteCustomFormatOutputThumbUpDownEvent(result));
-                }
+                PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteCustomFormatOutputThumbUpDownEvent(result));
             }
         }
 

@@ -346,7 +346,7 @@
                     x:Name="InputTxtBox"
                     HorizontalAlignment="Stretch"
                     x:FieldModifier="public"
-                    IsEnabled="{x:Bind ViewModel.IsClipboardDataText, Mode=OneWay}"
+                    IsEnabled="{x:Bind ViewModel.ClipboardHasData, Mode=OneWay}"
                     KeyDown="InputTxtBox_KeyDown"
                     PlaceholderText="{x:Bind ViewModel.InputTxtBoxPlaceholderText, Mode=OneWay}"
                     Style="{StaticResource CustomTextBoxStyle}"
@@ -589,7 +589,7 @@
                         Background="Transparent"
                         Visibility="{x:Bind ViewModel.IsCustomAIEnabled, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                         <ToolTipService.ToolTip>
-                            <ToolTip Content="{x:Bind ViewModel.GeneralErrorText}" />
+                            <ToolTip Content="{x:Bind ViewModel.AIDisabledErrorText}" />
                         </ToolTipService.ToolTip>
                     </Grid>
                 </Grid>
@@ -638,7 +638,7 @@
                 FontWeight="SemiBold"
                 Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                 Style="{StaticResource CaptionTextBlockStyle}"
-                Text="{x:Bind ViewModel.ApiErrorText, Mode=OneWay}" />
+                Text="{x:Bind ViewModel.PasteOperationErrorText, Mode=OneWay}" />
             <HyperlinkButton
                 x:Uid="SettingsBtn"
                 Grid.Column="1"

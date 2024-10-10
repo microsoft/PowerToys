@@ -11,17 +11,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected void Set<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
+        protected bool Set<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
         {
             if (Equals(storage, value))
             {
-                return;
+                return false;
             }
 
             storage = value;
             OnPropertyChanged(propertyName);
+
+            return true;
         }
 
-        protected void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
