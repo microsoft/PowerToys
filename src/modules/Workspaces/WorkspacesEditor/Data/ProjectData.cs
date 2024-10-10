@@ -25,6 +25,8 @@ namespace WorkspacesEditor.Data
                 public int Height { get; set; }
             }
 
+            public string Id { get; set; }
+
             public string Application { get; set; }
 
             public string ApplicationPath { get; set; }

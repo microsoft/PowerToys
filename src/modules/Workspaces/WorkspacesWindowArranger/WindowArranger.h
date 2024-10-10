@@ -10,7 +10,7 @@
 class WindowArranger
 {
 public:
-    WindowArranger(WorkspacesData::WorkspacesProject project, const IPCHelper& ipcHelper);
+    WindowArranger(WorkspacesData::WorkspacesProject project);
     ~WindowArranger() = default;
 
 private:
@@ -19,12 +19,14 @@ private:
     const std::vector<WorkspacesData::WorkspacesProject::Monitor> m_monitors;
     const Utils::Apps::AppList m_installedApps;
     //const WindowCreationHandler m_windowCreationHandler;
-    const IPCHelper& m_ipcHelper;
-    WorkspacesData::LaunchingAppStateMap m_launchingApps{};
+    IPCHelper m_ipcHelper;
+    LaunchingStatus m_launchingStatus;
     
     //void onWindowCreated(HWND window);
+    void processWindows(bool processAll);
     void processWindow(HWND window);
     bool moveWindow(HWND window, const WorkspacesData::WorkspacesProject::Application& app);
 
-    bool allWindowsFound() const;
+    void receiveIpcMessage(const std::wstring& message);
+    void sendUpdatedState(const WorkspacesData::LaunchingAppState& data) const;
 };

@@ -37,6 +37,14 @@ namespace WorkspacesLauncherUI
         {
         }
 
+        public static void SendIPCMessage(string message)
+        {
+            if (ipcmanager != null)
+            {
+                ipcmanager.Send(message);
+            }
+        }
+
         private void OnStartup(object sender, StartupEventArgs e)
         {
             Logger.InitializeLogger("\\Workspaces\\WorkspacesLauncherUI");

@@ -251,6 +251,7 @@ namespace WorkspacesEditor.Models
             {
                 Models.Application newApp = new Models.Application()
                 {
+                    Id = app.Id != null ? app.Id : $"{{{Guid.NewGuid().ToString()}}}",
                     AppName = app.Application,
                     AppPath = app.ApplicationPath,
                     AppTitle = app.Title,

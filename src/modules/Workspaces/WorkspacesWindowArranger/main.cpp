@@ -90,12 +90,9 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         return 1;
     }
     
-    // IPC
-    IPCHelper ipc(IPCHelperStrings::WindowArrangerPipeName, IPCHelperStrings::LauncherArrangerPipeName, nullptr);
-    
     // arrange windows
     Logger::info(L"Arrange windows from Workspace {} : {}", projectToLaunch.name, projectToLaunch.id);
-    WindowArranger windowArranger(projectToLaunch, ipc);
+    WindowArranger windowArranger(projectToLaunch);
     //run_message_loop();
     
     Logger::debug(L"Arranger finished");
