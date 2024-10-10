@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <FileActionsMenuPluginName>ExecutableActions</FileActionsMenuPluginName>
+  </PropertyGroup>
+
+  <Import Project="..\FileActionsMenuPlugin.Props"/>
+
+  <ItemGroup>
+    <PackageReference Include="System.IO.Hashing" />
+    <ProjectReference Include="..\..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+  </ItemGroup>
+</Project>

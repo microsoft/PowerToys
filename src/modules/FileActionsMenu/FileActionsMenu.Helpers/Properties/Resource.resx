@@ -1,0 +1,427 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Close" xml:space="preserve">
+    <value>Close menu</value>
+  </data>
+  <data name="Executable_Actions.Description" xml:space="preserve">
+    <value>Adds actions for .exe and .dll files.</value>
+    <comment>{Locked=".exe",".dll"}</comment>
+  </data>
+  <data name="Executable_Actions.Name" xml:space="preserve">
+    <value>Executable actions</value>
+  </data>
+  <data name="Executable_Actions.Uninstall.Title" xml:space="preserve">
+    <value>Uninstall application</value>
+  </data>
+  <data name="File_Content_Actions.CollapseFolder.Title" xml:space="preserve">
+    <value>Collapse folder structure</value>
+  </data>
+  <data name="File_Content_Actions.CopyContent.Title" xml:space="preserve">
+    <value>Copy file content</value>
+  </data>
+  <data name="File_Content_Actions.CopyContentAsCString.Title" xml:space="preserve">
+    <value>As C escaped string</value>
+    <comment>Subitem of "Copy file content" {Locked="C"}</comment>
+  </data>
+  <data name="File_Content_Actions.CopyContentAsDataUrl.Title" xml:space="preserve">
+    <value>As base64 encoded data url</value>
+    <comment>Subitem of "Copy file content" {Locked="base64"}</comment>
+  </data>
+  <data name="File_Content_Actions.CopyContentAsPlaintext.Title" xml:space="preserve">
+    <value>As plain text</value>
+    <comment>Subitem of "Copy file content"</comment>
+  </data>
+  <data name="File_Content_Actions.CopyContentAsUriEncoded.Title" xml:space="preserve">
+    <value>As URI encoded string</value>
+    <comment>Subitem of "Copy file content" {Locked="URI"}</comment>
+  </data>
+  <data name="File_Content_Actions.CopyContentAsXmlEncoded.Title" xml:space="preserve">
+    <value>As XML encoded string</value>
+    <comment>Subitem of "Copy file content" {Locked="XML"}</comment>
+  </data>
+  <data name="File_Content_Actions.CopyDirectoryTree.Title" xml:space="preserve">
+    <value>Copy folder tree</value>
+    <comment>Tree meaning the tree structure of a folder</comment>
+  </data>
+  <data name="File_Content_Actions.Description" xml:space="preserve">
+    <value>Enables diverse actions for working with the contents of a file</value>
+  </data>
+  <data name="File_Content_Actions.MergeFiles.Dialog.Filter" xml:space="preserve">
+    <value>All files</value>
+  </data>
+  <data name="File_Content_Actions.MergeFiles.Dialog.Title" xml:space="preserve">
+    <value>Save merged file</value>
+  </data>
+  <data name="File_Content_Actions.MergeFiles.Title" xml:space="preserve">
+    <value>Merge files</value>
+  </data>
+  <data name="File_Content_Actions.Title" xml:space="preserve">
+    <value>File content actions</value>
+  </data>
+  <data name="File_Properties.Description" xml:space="preserve">
+    <value>Enables actions related to the file properties</value>
+  </data>
+  <data name="File_Properties.Title" xml:space="preserve">
+    <value>File properties</value>
+  </data>
+  <data name="File_Properties.Unblock.Title" xml:space="preserve">
+    <value>Unblock files</value>
+    <comment>For reference see the Windows built-in File properties view for a file downloaded from the internet</comment>
+  </data>
+  <data name="Hashes.CRC.Decimal" xml:space="preserve">
+    <value>Decimal</value>
+  </data>
+  <data name="Hashes.CRC.Hex" xml:space="preserve">
+    <value>Hex</value>
+    <comment>Acronym for Hexadecimal</comment>
+  </data>
+  <data name="Hashes.Description" xml:space="preserve">
+    <value>Adds actions for generating and verifying checksums of files.</value>
+  </data>
+  <data name="Hashes.Generate.Dialog.Title" xml:space="preserve">
+    <value>Generating checksum</value>
+  </data>
+  <data name="Hashes.Generate.Filename" xml:space="preserve">
+    <value>Checksums</value>
+    <comment>This string must be filename compliant</comment>
+  </data>
+  <data name="Hashes.Generate.Title_P" xml:space="preserve">
+    <value>Generate checksums</value>
+  </data>
+  <data name="Hashes.Generate.Title_S" xml:space="preserve">
+    <value>Generate checksum</value>
+  </data>
+  <data name="Hashes.InClipboard.Generate.Title" xml:space="preserve">
+    <value>Copy checksum to clipboard</value>
+  </data>
+  <data name="Hashes.InClipboard.Verify.Title" xml:space="preserve">
+    <value>Compare with checksum in clipboard</value>
+  </data>
+  <data name="Hashes.InFilename.Generate.Title" xml:space="preserve">
+    <value>Replace filename with the checksum</value>
+  </data>
+  <data name="Hashes.InFilename.Verify.Title" xml:space="preserve">
+    <value>Compare checksum with filename</value>
+  </data>
+  <data name="Hashes.MultipleFiles.Generate.Title" xml:space="preserve">
+    <value>Save in multiple files</value>
+  </data>
+  <data name="Hashes.MultipleFiles.Verify.Title" xml:space="preserve">
+    <value>Compare checksum with content of same named files</value>
+  </data>
+  <data name="Hashes.SingleFile.Generate.Title" xml:space="preserve">
+    <value>Save checksums in one single file</value>
+  </data>
+  <data name="Hashes.SingleFile.Verify.Title" xml:space="preserve">
+    <value>Compare with checksums in file called "{0}"</value>
+    <comment>{0} is a filename</comment>
+  </data>
+  <data name="Hashes.Title" xml:space="preserve">
+    <value>Checksum generator/checker</value>
+  </data>
+  <data name="Hashes.Verify.Dialog.Fail" xml:space="preserve">
+    <value>One or more checksums are invalid</value>
+  </data>
+  <data name="Hashes.Verify.Dialog.MissingFile" xml:space="preserve">
+    <value>The file {0} was not found, so the hash couldn't be verified.</value>
+  </data>
+  <data name="Hashes.Verify.Dialog.Success" xml:space="preserve">
+    <value>All checksums are valid</value>
+  </data>
+  <data name="Hashes.Verify.Dialog.Title" xml:space="preserve">
+    <value>Checksum validation</value>
+  </data>
+  <data name="Hashes.Verify.Title_P" xml:space="preserve">
+    <value>Verify checksums</value>
+  </data>
+  <data name="Hashes.Verify.Title_S" xml:space="preserve">
+    <value>Verify checksum</value>
+  </data>
+  <data name="Image_Clipboard_Actions.CopyFromClipboard.FileName" xml:space="preserve">
+    <value>clipboard_image</value>
+    <comment>A filename</comment>
+  </data>
+  <data name="Image_Clipboard_Actions.CopyFromClipboard.Title" xml:space="preserve">
+    <value>Copy image from clipboard into folder</value>
+  </data>
+  <data name="Image_Clipboard_Actions.CopyToClipboard.Title" xml:space="preserve">
+    <value>Copy image to clipboard</value>
+  </data>
+  <data name="Image_Clipboard_Actions.Description" xml:space="preserve">
+    <value>Adds actions for copying/pasting images to/from the clipboard.</value>
+  </data>
+  <data name="Image_Clipboard_Actions.Title" xml:space="preserve">
+    <value>Image clipboard actions</value>
+  </data>
+  <data name="ModuleName" xml:space="preserve">
+    <value>PowerToys File Actions menu</value>
+  </data>
+  <data name="Move_Copy_Actions.CopyTo.Progress" xml:space="preserve">
+    <value>Copying files</value>
+  </data>
+  <data name="Move_Copy_Actions.CopyTo.Title" xml:space="preserve">
+    <value>Copy to</value>
+  </data>
+  <data name="Move_Copy_Actions.Description" xml:space="preserve">
+    <value>Actions related to copying and moving files</value>
+  </data>
+  <data name="Move_Copy_Actions.MoveTo.Progress" xml:space="preserve">
+    <value>Moving files</value>
+  </data>
+  <data name="Move_Copy_Actions.MoveTo.Title" xml:space="preserve">
+    <value>Move to</value>
+  </data>
+  <data name="Move_Copy_Actions.NewFolder.FolderName" xml:space="preserve">
+    <value>New Folder</value>
+  </data>
+  <data name="Move_Copy_Actions.NewFolder.Title" xml:space="preserve">
+    <value>New folder with selection</value>
+  </data>
+  <data name="Move_Copy_Actions.SaveAs.Title" xml:space="preserve">
+    <value>Save file as</value>
+  </data>
+  <data name="Move_Copy_Actions.Title" xml:space="preserve">
+    <value>Move &amp; Copy actions</value>
+  </data>
+  <data name="Path_Copy.CopyPath.Title" xml:space="preserve">
+    <value>Copy part of path</value>
+  </data>
+  <data name="Path_Copy.CopyPathSeparatedBy.Comma.Title" xml:space="preserve">
+    <value>Comma (",")</value>
+  </data>
+  <data name="Path_Copy.CopyPathSeparatedBy.Custom.Dialog.Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Path_Copy.CopyPathSeparatedBy.Custom.Dialog.Ok" xml:space="preserve">
+    <value>Ok</value>
+  </data>
+  <data name="Path_Copy.CopyPathSeparatedBy.Custom.Dialog.Title" xml:space="preserve">
+    <value>Choose a custom delimiter</value>
+  </data>
+  <data name="Path_Copy.CopyPathSeparatedBy.Custom.Title" xml:space="preserve">
+    <value>Custom delimiter</value>
+  </data>
+  <data name="Path_Copy.CopyPathSeparatedBy.Newline.Title" xml:space="preserve">
+    <value>Newline</value>
+  </data>
+  <data name="Path_Copy.CopyPathSeparatedBy.Semicolon.Title" xml:space="preserve">
+    <value>Semicolon (";")</value>
+  </data>
+  <data name="Path_Copy.CopyPathSeparatedBy.Space.Title" xml:space="preserve">
+    <value>Space (" ")</value>
+  </data>
+  <data name="Path_Copy.CopyPathSeparatedBy.Title" xml:space="preserve">
+    <value>Copy path of files separated by ...</value>
+  </data>
+  <data name="Path_Copy.Description" xml:space="preserve">
+    <value>Adds the option to copy multiple files delimited by a delimiter or to copy certain parts of a path.</value>
+  </data>
+  <data name="Path_Copy.DirectoryPath.Title" xml:space="preserve">
+    <value>Copy path of the containing folder</value>
+  </data>
+  <data name="Path_Copy.DirectoryPathWSL.Title" xml:space="preserve">
+    <value>Copy WSL path of the containing folder</value>
+    <comment>WSL = Windows Subsystem for Linux</comment>
+  </data>
+  <data name="Path_Copy.FileName.File.Title" xml:space="preserve">
+    <value>Copy file name</value>
+  </data>
+  <data name="Path_Copy.FileName.Folder.Title" xml:space="preserve">
+    <value>Copy folder name</value>
+  </data>
+  <data name="Path_Copy.FullPath.Title" xml:space="preserve">
+    <value>Copy full path ({0})</value>
+    <comment>{0} is a delimiter. Either "\", "/" or "\\"</comment>
+  </data>
+  <data name="Path_Copy.FullPathWSL.Title" xml:space="preserve">
+    <value>Copy full WSL path</value>
+  </data>
+  <data name="Path_Copy.HandleShortcut.Title" xml:space="preserve">
+    <value>Perform on shortcut file (.lnk)</value>
+    <comment>{Locked=".lnk"}</comment>
+  </data>
+  <data name="Path_Copy.Name" xml:space="preserve">
+    <value>Copy path</value>
+  </data>
+  <data name="Path_Copy.ResolveShortcut.Title" xml:space="preserve">
+    <value>Resolve shortcut to destination file</value>
+  </data>
+  <data name="PluginPublisher" xml:space="preserve">
+    <value>Microsoft Corporation</value>
+  </data>
+  <data name="PowerToys.Description" xml:space="preserve">
+    <value>Adds entries for launching PowerToys modules.</value>
+    <comment>{Locked="PowerToys"}</comment>
+  </data>
+  <data name="PowerToys.FileLocksmith.Title_P" xml:space="preserve">
+    <value>Unlock with File Locksmith</value>
+  </data>
+  <data name="PowerToys.FileLocksmith.Title_S" xml:space="preserve">
+    <value>Unlock with File Locksmith</value>
+  </data>
+  <data name="PowerToys.ImageResizer.Title_P" xml:space="preserve">
+    <value>Resize with Image Resizer</value>
+    <comment>Images meaning pictures, Resizer refers to resizing the scale of an image</comment>
+  </data>
+  <data name="PowerToys.ImageResizer.Title_S" xml:space="preserve">
+    <value>Resize with Image Resizer</value>
+    <comment>Image meaning a picture, Resizer refers to resizing the scale of an image</comment>
+  </data>
+  <data name="PowerToys.Name" xml:space="preserve">
+    <value>PowerToys modules</value>
+    <comment>{Locked="PowerToys"}</comment>
+  </data>
+  <data name="PowerToys.PowerRename.Title" xml:space="preserve">
+    <value>Rename with PowerRename</value>
+    <comment>Renaming files. {Locked="PowerRename"}</comment>
+  </data>
+  <data name="Progress.Cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>To stop an action</comment>
+  </data>
+  <data name="Progress.Conflict.Content" xml:space="preserve">
+    <value>Conflict: {0} already exists.</value>
+    <comment>{Locked="{0}"} {0} is a file path</comment>
+  </data>
+  <data name="Progress.Conflict.Ignore" xml:space="preserve">
+    <value>Ignore</value>
+    <comment>Ignore a duplicate file</comment>
+  </data>
+  <data name="Progress.Conflict.Replace" xml:space="preserve">
+    <value>Replace</value>
+    <comment>Replace a file</comment>
+  </data>
+  <data name="Progress.Conflict.Title" xml:space="preserve">
+    <value>Conflict</value>
+  </data>
+  <data name="Move_Copy_Actions.SaveAs.Progress" xml:space="preserve">
+    <value>Saving file</value>
+  </data>
+  <data name="InvalidPlugin" xml:space="preserve">
+    <value>Error loading plugin located at: </value>
+    <comment>Space at the end required. After this message comes a file path</comment>
+  </data>
+  <data name="InvalidExplorerItem" xml:space="preserve">
+    <value>File Actions menu can't be opened with the selected items.</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+</root>
