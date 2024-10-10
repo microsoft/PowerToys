@@ -35,10 +35,4 @@
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
   </ItemGroup>
 
-  <!-- this may need to be removed on future CsWinRT upgrades-->
-  <Target Name="RemoveCsWinRTPackageAnalyzer" BeforeTargets="CoreCompile">
-    <ItemGroup>
-      <Analyzer Remove="@(Analyzer)" Condition="%(Analyzer.NuGetPackageId) == 'Microsoft.Windows.CsWinRT'" />	  
-    </ItemGroup>
-  </Target>
 </Project>
