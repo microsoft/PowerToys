@@ -12,6 +12,7 @@
       <string id="AdvancedPaste">Advanced Paste</string>
       <string id="MouseWithoutBorders">Mouse Without Borders</string>
       <string id="GeneralSettings">General settings</string>
+      <string id="NewPlus">New+</string>
 
       <string id="SUPPORTED_POWERTOYS_0_64_0">PowerToys version 0.64.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_68_0">PowerToys version 0.68.0 or later</string>
@@ -190,6 +191,14 @@ Please enter one mapping per line in the format: "hostname IP"
 
 If you disable or don't configure this policy, no predefined rules are applied.
 </string>
+      <string id="NewPlusHideTemplateFilenameExtensionDescription">This policy configures if the template filenames are shown with extension or not.
+
+If you enable this policy, the setting is enabled and the extension is hidden.
+
+If you disable this policy, the setting is disabled and the extension is shown.
+
+If you don't configure this policy, the user takes control over the setting and can enable or disable it.
+</string>
 
       <string id="ConfigureAllUtilityGlobalEnabledState">Configure global utility enabled state</string>
       <string id="ConfigureEnabledUtilityAdvancedPaste">Advanced Paste: Configure enabled state</string>
@@ -248,6 +257,7 @@ If you disable or don't configure this policy, no predefined rules are applied.
       <string id="MwbValidateRemoteIp">Validate remote machine IP Address</string>
       <string id="MwbDisableUserDefinedIpMappingRules">Disable user defined IP Address mapping rules</string>
       <string id="MwbPolicyDefinedIpMappingRules">Predefined IP Address mapping rules</string>
+      <string id="NewPlusHideTemplateFilenameExtension">Hide template filename extension</string>
     </stringTable>
 
     <presentationTable>

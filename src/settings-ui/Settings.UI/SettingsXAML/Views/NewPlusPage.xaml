@@ -68,9 +68,19 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="NewPlus_Display_Options" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_File_Extension_Toggle">
+                    <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_File_Extension_Toggle" IsEnabled="{x:Bind ViewModel.IsHideFileExtSettingsCardEnabled, Mode=OneWay}">
                         <ToggleSwitch x:Uid="HideFileExtensionToggle" IsOn="{x:Bind ViewModel.HideFileExtension, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_SettingIsManaged"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.IsHideFileExtSettingGPOConfigured, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsHideFileExtSettingGPOConfigured, Mode=OneWay}"
+                        Severity="Informational">
+                        <!-- InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource-->
+                    </InfoBar>
                     <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_Starting_Digits_Toggle">
                         <ToggleSwitch x:Uid="HideStartingDigitsToggle" IsOn="{x:Bind ViewModel.HideStartingDigits, Mode=TwoWay}" />
                         <tkcontrols:SettingsCard.Description>
