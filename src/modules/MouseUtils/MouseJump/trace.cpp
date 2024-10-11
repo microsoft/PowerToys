@@ -17,7 +17,6 @@ void Trace::EnableJumpTool(const bool enabled) noexcept
         "MouseJump_EnableJumpTool",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(enabled, "Enabled"));
 }
 
@@ -27,6 +26,5 @@ void Trace::InvokeJumpTool() noexcept
         g_hProvider,
         "MouseJump_InvokeJumpTool",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }

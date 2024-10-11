@@ -17,8 +17,7 @@ void Trace::Invoked() noexcept
         g_hProvider,
         "PowerRename_Invoked",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
 void Trace::InvokedRet(_In_ HRESULT hr) noexcept
@@ -28,8 +27,7 @@ void Trace::InvokedRet(_In_ HRESULT hr) noexcept
         "PowerRename_InvokedRet",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingHResult(hr),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
 void Trace::EnablePowerRename(_In_ bool enabled) noexcept
@@ -39,7 +37,6 @@ void Trace::EnablePowerRename(_In_ bool enabled) noexcept
         "PowerRename_EnablePowerRename",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(enabled, "Enabled"));
 }
 
@@ -50,8 +47,7 @@ void Trace::UIShownRet(_In_ HRESULT hr) noexcept
         "PowerRename_UIShownRet",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingHResult(hr),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
 void Trace::RenameOperation(_In_ UINT totalItemCount, _In_ UINT selectedItemCount, _In_ UINT renameItemCount, _In_ DWORD flags, _In_ PCWSTR extensionList) noexcept
@@ -61,7 +57,6 @@ void Trace::RenameOperation(_In_ UINT totalItemCount, _In_ UINT selectedItemCoun
         "PowerRename_RenameOperation",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingUInt32(totalItemCount, "TotalItemCount"),
         TraceLoggingUInt32(selectedItemCount, "SelectedItemCount"),
         TraceLoggingUInt32(renameItemCount, "RenameItemCount"),
@@ -76,7 +71,6 @@ void Trace::SettingsChanged() noexcept
         "PowerRename_SettingsChanged",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(CSettingsInstance().GetEnabled(), "IsEnabled"),
         TraceLoggingBoolean(CSettingsInstance().GetShowIconOnMenu(), "ShowIconOnMenu"),
         TraceLoggingBoolean(CSettingsInstance().GetExtendedContextMenuOnly(), "ExtendedContextMenuOnly"),

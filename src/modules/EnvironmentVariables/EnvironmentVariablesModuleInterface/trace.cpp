@@ -18,7 +18,6 @@ void Trace::EnableEnvironmentVariables(const bool enabled) noexcept
         "EnvironmentVariables_EnableEnvironmentVariables",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(enabled, "Enabled"));
 }
 
@@ -29,6 +28,5 @@ void Trace::ActivateEnvironmentVariables() noexcept
         g_hProvider,
         "EnvironmentVariables_Activate",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }

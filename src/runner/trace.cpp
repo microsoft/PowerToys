@@ -21,8 +21,7 @@ void Trace::EventLaunch(const std::wstring& versionNumber, bool isProcessElevate
         TraceLoggingBoolean(isProcessElevated, "Elevated"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
 void Trace::SettingsChanged(const GeneralSettings& settings)
@@ -54,6 +53,5 @@ void Trace::SettingsChanged(const GeneralSettings& settings)
         TraceLoggingWideString(settings.theme.c_str(), "Theme"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }

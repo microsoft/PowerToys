@@ -18,7 +18,6 @@ void Trace::EnableMouseHighlighter(const bool enabled) noexcept
         "MouseHighlighter_EnableMouseHighlighter",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(enabled, "Enabled"));
 }
 
@@ -29,6 +28,5 @@ void Trace::StartHighlightingSession() noexcept
         g_hProvider,
         "MouseHighlighter_StartHighlightingSession",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }

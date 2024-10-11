@@ -18,8 +18,7 @@ void Trace::DailyKeyToKeyRemapInvoked() noexcept
         g_hProvider,
         "KeyboardManager_DailyKeyToKeyRemapInvoked",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
 // Log if a key to shortcut remap has been invoked today.
@@ -29,8 +28,7 @@ void Trace::DailyKeyToShortcutRemapInvoked() noexcept
         g_hProvider,
         "KeyboardManager_DailyKeyToShortcutRemapInvoked",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
 // Log if a shortcut to key remap has been invoked today.
@@ -40,8 +38,7 @@ void Trace::DailyShortcutToKeyRemapInvoked() noexcept
         g_hProvider,
         "KeyboardManager_DailyShortcutToKeyRemapInvoked",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
 // Log if a shortcut to shortcut remap has been invoked today.
@@ -51,8 +48,7 @@ void Trace::DailyShortcutToShortcutRemapInvoked() noexcept
         g_hProvider,
         "KeyboardManager_DailyShortcutToShortcutRemapInvoked",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
 // Log if an app specific shortcut to key remap has been invoked today.
@@ -62,8 +58,7 @@ void Trace::DailyAppSpecificShortcutToKeyRemapInvoked() noexcept
         g_hProvider,
         "KeyboardManager_DailyAppSpecificShortcutToKeyRemapInvoked",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
 // Log if an app specific shortcut to shortcut remap has been invoked today.
@@ -73,8 +68,7 @@ void Trace::DailyAppSpecificShortcutToShortcutRemapInvoked() noexcept
         g_hProvider,
         "KeyboardManager_DailyAppSpecificShortcutToShortcutRemapInvoked",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
 // Log if a key remap has been invoked (not being used currently, due to being garrulous)
@@ -86,8 +80,7 @@ void Trace::KeyRemapInvoked(bool isKeyToKey) noexcept
             g_hProvider,
             "KeyboardManager_KeyToKeyRemapInvoked",
             ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-            TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-            TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+            TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
     }
     else
     {
@@ -95,8 +88,7 @@ void Trace::KeyRemapInvoked(bool isKeyToKey) noexcept
             g_hProvider,
             "KeyboardManager_KeyToShortcutRemapInvoked",
             ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-            TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-            TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+            TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
     }
 }
 
@@ -111,8 +103,7 @@ void Trace::ShortcutRemapInvoked(bool isShortcutToShortcut, bool isAppSpecific) 
                 g_hProvider,
                 "KeyboardManager_AppSpecificShortcutToShortcutRemapInvoked",
                 ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-                TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-                TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+                TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
         }
         else
         {
@@ -120,8 +111,7 @@ void Trace::ShortcutRemapInvoked(bool isShortcutToShortcut, bool isAppSpecific) 
                 g_hProvider,
                 "KeyboardManager_AppSpecificShortcutToKeyRemapInvoked",
                 ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-                TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-                TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+                TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
         }
     }
     else
@@ -132,8 +122,7 @@ void Trace::ShortcutRemapInvoked(bool isShortcutToShortcut, bool isAppSpecific) 
                 g_hProvider,
                 "KeyboardManager_OSLevelShortcutToShortcutRemapInvoked",
                 ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-                TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-                TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+                TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
         }
         else
         {
@@ -141,8 +130,7 @@ void Trace::ShortcutRemapInvoked(bool isShortcutToShortcut, bool isAppSpecific) 
                 g_hProvider,
                 "KeyboardManager_OSLevelShortcutToKeyRemapInvoked",
                 ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-                TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-                TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+                TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
         }
     }
 }
@@ -193,7 +181,6 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
                 "KeyboardManager_KeyRemapConfigurationLoaded",
                 ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
                 TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-                TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
                 TraceLoggingInt64(keyRemap.first, "KeyRemapFrom"),
                 TraceLoggingInt64(keyRemappedTo, "KeyRemapTo"),
                 TraceLoggingWideString(keyboardMap.GetKeyName(keyRemap.first).c_str(), "HumanRemapFrom"),
@@ -207,7 +194,6 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
                 "KeyboardManager_KeyRemapConfigurationLoaded",
                 ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
                 TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-                TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
                 TraceLoggingInt64(keyRemap.first, "KeyRemapFrom"),
                 TraceLoggingInt64(shortcutRemappedTo.actionKey, "KeyRemapTo"),
                 TraceLoggingInt8(static_cast<INT8>(shortcutRemappedTo.winKey), "ModifierRemapToWin"),
@@ -230,7 +216,6 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
                 "KeyboardManager_ShortcutRemapConfigurationLoaded",
                 ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
                 TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-                TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
                 TraceLoggingInt64(shortcutRemappedFrom.actionKey, "KeyRemapFrom"),
                 TraceLoggingInt8(static_cast<INT8>(shortcutRemappedFrom.winKey), "ModifierRemapFromWin"),
                 TraceLoggingInt8(static_cast<INT8>(shortcutRemappedFrom.ctrlKey), "ModifierRemapFromCtrl"),
@@ -255,7 +240,6 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
                 "KeyboardManager_ShortcutRemapConfigurationLoaded",
                 ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
                 TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-                TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
                 TraceLoggingInt64(shortcutRemappedFrom.actionKey, "KeyRemapFrom"),
                 TraceLoggingInt8(static_cast<INT8>(shortcutRemappedFrom.winKey), "ModifierRemapFromWin"),
                 TraceLoggingInt8(static_cast<INT8>(shortcutRemappedFrom.ctrlKey), "ModifierRemapFromCtrl"),
@@ -287,7 +271,6 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
                     "KeyboardManager_AppSpecificShortcutRemapConfigurationLoaded",
                     ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
                     TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-                    TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
                     TraceLoggingInt64(shortcutRemappedFrom.actionKey, "KeyRemapFrom"),
                     TraceLoggingInt8(static_cast<INT8>(shortcutRemappedFrom.winKey), "ModifierRemapFromWin"),
                     TraceLoggingInt8(static_cast<INT8>(shortcutRemappedFrom.ctrlKey), "ModifierRemapFromCtrl"),
@@ -313,7 +296,6 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
                     "KeyboardManager_AppSpecificShortcutRemapConfigurationLoaded",
                     ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
                     TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-                    TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
                     TraceLoggingInt64(shortcutRemappedFrom.actionKey, "KeyRemapFrom"),
                     TraceLoggingInt8(static_cast<INT8>(shortcutRemappedFrom.winKey), "ModifierRemapFromWin"),
                     TraceLoggingInt8(static_cast<INT8>(shortcutRemappedFrom.ctrlKey), "ModifierRemapFromCtrl"),
@@ -341,8 +323,7 @@ void Trace::ErrorSendingKeyAndShortcutRemapLoadedConfiguration() noexcept
         g_hProvider,
         "KeyboardManager_ErrorSendingKeyAndShortcutRemapLoadedConfiguration",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
 // Log if an error occurs in KBM
@@ -353,7 +334,6 @@ void Trace::Error(const DWORD errorCode, std::wstring errorMessage, std::wstring
         "KeyboardManager_Error",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingValue(methodName.c_str(), "MethodName"),
         TraceLoggingValue(errorCode, "ErrorCode"),
         TraceLoggingValue(errorMessage.c_str(), "ErrorMessage"));

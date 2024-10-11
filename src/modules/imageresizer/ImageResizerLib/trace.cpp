@@ -17,7 +17,6 @@ void Trace::EnableImageResizer(_In_ bool enabled) noexcept
         "ImageResizer_EnableImageResizer",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII),
         TraceLoggingBoolean(enabled, "Enabled"));
 }
 
@@ -27,8 +26,7 @@ void Trace::Invoked() noexcept
         g_hProvider,
         "ImageResizer_Invoked",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
 void Trace::InvokedRet(_In_ HRESULT hr) noexcept
@@ -38,8 +36,7 @@ void Trace::InvokedRet(_In_ HRESULT hr) noexcept
         "ImageResizer_InvokedRet",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingHResult(hr),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
 void Trace::QueryContextMenuError(_In_ HRESULT hr) noexcept
@@ -49,6 +46,5 @@ void Trace::QueryContextMenuError(_In_ HRESULT hr) noexcept
         "ImageResizer_QueryContextMenuError",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingHResult(hr),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingEventTag(MICROSOFT_EVENTTAG_DROP_PII));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
