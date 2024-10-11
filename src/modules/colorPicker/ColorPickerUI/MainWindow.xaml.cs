@@ -7,8 +7,6 @@ using System.Windows;
 using System.Windows.Interop;
 
 using ColorPicker.ViewModelContracts;
-using ColorPickerUI;
-using Microsoft.PowerToys.Telemetry;
 using Wpf.Ui.Controls;
 
 namespace ColorPicker

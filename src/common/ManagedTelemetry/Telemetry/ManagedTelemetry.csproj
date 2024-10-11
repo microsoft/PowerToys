@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" />
-    <PackageReference Include="System.Diagnostics.Tracing" />
   </ItemGroup>
 
 </Project>

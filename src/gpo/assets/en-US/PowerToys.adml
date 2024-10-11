@@ -265,7 +265,6 @@ If you don't configure this policy, the user takes control over the setting and 
       <string id="MwbDisableUserDefinedIpMappingRules">Disable user defined IP Address mapping rules</string>
       <string id="MwbPolicyDefinedIpMappingRules">Predefined IP Address mapping rules</string>
       <string id="NewPlusHideTemplateFilenameExtension">Hide template filename extension</string>
-      <string id="AllowPowerToysAdvancedPasteOnlineAIModels">Advanced Paste: Allow using online AI models</string>
       <string id="AllowDiagnosticData">Allow sending diagnostic data</string>
     </stringTable>
 

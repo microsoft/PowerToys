@@ -22,7 +22,7 @@ using namespace PowerRenameUI::implementation;
 
 namespace fs = std::filesystem;
 
-#define DEBUG_BENCHMARK_100K_ENTRIES
+//#define DEBUG_BENCHMARK_100K_ENTRIES
 
 std::vector<std::wstring> g_files;
 
@@ -121,7 +121,7 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
     }
 
 #ifdef DEBUG_BENCHMARK_100K_ENTRIES
-    const std::wstring_view ROOT_PATH = L"C:\\PowerRenameBenchmark";
+    const std::wstring_view ROOT_PATH = L"R:\\PowerRenameBenchmark";
 
     std::wstring subdirectory_name = L"0";
     std::error_code _;
@@ -136,7 +136,7 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
 
     g_files.push_back(fs::path{ ROOT_PATH });
     constexpr int pow2_threshold = 10;
-    constexpr int num_files = 10;
+    constexpr int num_files = 100'000;
     for (int i = 0; i < num_files; ++i)
     {
         fs::path file_path{ ROOT_PATH };
