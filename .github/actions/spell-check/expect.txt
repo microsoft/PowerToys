@@ -1,6 +1,9 @@
 # FALSE POSITIVES
 ## "PackagemanagerWrapper.cs" should be "PackageManagerWrapper.cs"
 ## NOTICE.MD > MOZILLA PUBLIC LICENSE v1.1
+
+# user name but user folder causes a flag
+8LWXpg 
 aaaa
 abcdefghjkmnpqrstuvxyz
 abgr
@@ -29,7 +32,7 @@ AFFINETRANSFORM
 AFX
 AGGREGATABLE
 AHybrid
-AKV
+akv
 ALarger
 ALLAPPS
 ALLINPUT
@@ -366,6 +369,7 @@ dllmain
 DNLEN
 DONOTROUND
 DONTVALIDATEPATH
+DOPUS
 dotnet
 DPICHANGED
 DPIs
@@ -728,6 +732,7 @@ ISettings
 IShell
 isocpp
 iss
+issecret
 ISSEPARATOR
 ITask
 ith
@@ -946,6 +951,7 @@ mrw
 msc
 mscorlib
 msdata
+MSDL
 msedge
 MSGFLT
 msiexec
@@ -1138,6 +1144,7 @@ pch
 pchast
 PCIDLIST
 PCWSTR
+pdbs
 pdisp
 pdo
 pdto
@@ -1203,6 +1210,7 @@ ppv
 prc
 Prefixer
 Preinstalled
+prependpath
 prevhost
 previewer
 PREVIEWHANDLERFRAMEINFO
@@ -1260,6 +1268,7 @@ PWSTR
 pwsz
 pwtd
 QDC
+QDir
 qianlifeng
 qit
 QITAB
@@ -1552,7 +1561,7 @@ Stubless
 STYLECHANGED
 STYLECHANGING
 subkeys
-SUBLANG
+sublang
 subquery
 Superbar
 sut
@@ -1565,6 +1574,7 @@ SWC
 SWFO
 SWP
 SWRESTORE
+symbolrequestprod
 SYMCACHE
 SYMED
 SYMOPT
@@ -1582,7 +1592,7 @@ SYSKEYUP
 SYSLIB
 SYSMENU
 SYSTEMAPPS
-systemsettings
+SYSTEMSETTINGS
 SYSTEMTIME
 SYSTEMWOW
 tapp
@@ -1636,10 +1646,12 @@ toolkitconverters
 Toolset
 toolwindow
 TOPDOWNDIB
+TOTALCMD
 TOUCHEVENTF
 TOUCHINPUT
 touchpad
 tracelogging
+trafficmanager
 traies
 transicc
 TRAYMOUSEMESSAGE
@@ -1861,6 +1873,7 @@ workarounds
 WORKSPACESEDITOR
 WORKSPACESLAUNCHER
 WORKSPACESSNAPSHOTTOOL
+WORKSPACESWINDOWARRANGER
 wox
 wparam
 wpf
@@ -1900,6 +1913,7 @@ XLoc
 XNamespace
 XPels
 XPixel
+xplorer
 XResource
 xsi
 XStr
