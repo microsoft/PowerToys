@@ -56,6 +56,14 @@ namespace Peek.UI
             AppWindow.Closing += AppWindow_Closing;
         }
 
+        private void Content_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.Delete)
+            {
+                this.ViewModel.DeleteItem();
+            }
+        }
+
         /// <summary>
         /// Toggling the window visibility and querying files when necessary.
         /// </summary>
@@ -127,6 +135,7 @@ namespace Peek.UI
 
             ViewModel.Initialize(foregroundWindowHandle);
             ViewModel.ScalingFactor = this.GetMonitorScale();
+            this.Content.KeyUp += Content_KeyUp;
 
             bootTime.Stop();
 
@@ -140,6 +149,8 @@ namespace Peek.UI
 
             ViewModel.Uninitialize();
             ViewModel.ScalingFactor = 1;
+
+            this.Content.KeyUp -= Content_KeyUp;
         }
 
         /// <summary>

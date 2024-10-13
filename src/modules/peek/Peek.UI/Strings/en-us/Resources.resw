@@ -329,4 +329,8 @@
   <data name="ContextMenu_ToggleMinimap" xml:space="preserve">
     <value>Toggle minimap</value>
   </data>
+  <data name="NoMoreFiles" xml:space="preserve">
+    <value>No more files to preview.</value>
+    <comment>The message to show when there are no files remaining to preview.</comment>
+  </data>
 </root>
