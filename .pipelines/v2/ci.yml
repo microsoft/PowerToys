@@ -4,22 +4,22 @@ trigger:
     include:
       - main
       - stable
-  paths:
-    exclude:
-      - doc/*
-      - temp/*
-      - tools/*
-      - '**.md'
+#  paths:
+#    exclude:
+#      - doc/*
+#      - temp/*
+#      - tools/*
+#      - '**.md'
 
 pr:
   branches:
     include:
       - main
       - stable
-  paths:
-    exclude:
-      - '**.md'
-      - doc
+#  paths:
+#    exclude:
+#      - '**.md'
+#      - doc
 
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
