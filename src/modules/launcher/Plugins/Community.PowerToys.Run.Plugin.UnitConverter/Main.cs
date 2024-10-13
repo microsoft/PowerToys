@@ -75,9 +75,9 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                             Clipboard.SetText(result.ConvertedValue.ToString(UnitConversionResult.Format, CultureInfo.CurrentCulture));
                             ret = true;
                         }
-                        catch (ExternalException)
+                        catch (ExternalException e)
                         {
-                            MessageBox.Show(Properties.Resources.copy_failed);
+                            MessageBox.Show(e.Message, Properties.Resources.copy_failed);
                         }
                     });
                     thread.SetApartmentState(ApartmentState.STA);
@@ -107,9 +107,9 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                             Clipboard.SetText(result.ConvertedValue.ToString(UnitConversionResult.Format, CultureInfo.CurrentCulture));
                             ret = true;
                         }
-                        catch (ExternalException)
+                        catch (ExternalException e)
                         {
-                            MessageBox.Show(Properties.Resources.copy_failed);
+                            MessageBox.Show(e.Message, Properties.Resources.copy_failed);
                         }
                     });
                     thread.SetApartmentState(ApartmentState.STA);

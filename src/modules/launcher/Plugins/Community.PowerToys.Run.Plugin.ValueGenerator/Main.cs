@@ -184,9 +184,9 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                             Clipboard.SetText(request.ResultToString());
                             ret = true;
                         }
-                        catch (ExternalException)
+                        catch (ExternalException e)
                         {
-                            MessageBox.Show(Properties.Resources.copy_failed);
+                            MessageBox.Show(e.Message, Properties.Resources.copy_failed);
                         }
                     });
                     thread.SetApartmentState(ApartmentState.STA);

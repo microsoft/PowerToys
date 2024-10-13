@@ -51,9 +51,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                         Clipboard.SetText(roundedResult?.ToString(culture));
                         ret = true;
                     }
-                    catch (ExternalException)
+                    catch (ExternalException e)
                     {
-                        MessageBox.Show(Properties.Resources.wox_plugin_calculator_copy_failed);
+                        MessageBox.Show(e.Message, Properties.Resources.wox_plugin_calculator_copy_failed);
                     }
                 });
 
