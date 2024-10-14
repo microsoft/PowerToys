@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Windows.Forms;
 
 using MouseWithoutBorders.Class;
+using MouseWithoutBorders.Core;
 using MouseWithoutBorders.Properties;
 
 namespace MouseWithoutBorders
@@ -42,7 +43,7 @@ namespace MouseWithoutBorders
         private void ShowStatus(string status)
         {
             labelStatus.Text = status;
-            Common.Log(status);
+            Logger.Log(status);
         }
 
         public override void OnPageClosing()

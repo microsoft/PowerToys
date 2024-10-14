@@ -21,7 +21,7 @@ using Microsoft.PowerToys.Telemetry;
 //     2023- Included in PowerToys.
 // </history>
 using MouseWithoutBorders.Class;
-
+using MouseWithoutBorders.Core;
 using Timer = System.Windows.Forms.Timer;
 
 [module: SuppressMessage("Microsoft.Globalization", "CA1300:SpecifyMessageBoxOptions", Scope = "member", Target = "MouseWithoutBorders.frmMatrix.#buttonOK_Click(System.Object,System.EventArgs)", Justification = "Dotnet port with style preservation")]
@@ -151,7 +151,7 @@ namespace MouseWithoutBorders
 
             if (Common.MachineMatrix != null && Common.MachineMatrix.Length == Common.MAX_MACHINE)
             {
-                Common.LogDebug("LoadMachines: Machine Matrix: " + Setting.Values.MachineMatrixString);
+                Logger.LogDebug("LoadMachines: Machine Matrix: " + Setting.Values.MachineMatrixString);
 
                 for (int i = 0; i < Common.MAX_MACHINE; i++)
                 {
@@ -329,8 +329,8 @@ namespace MouseWithoutBorders
             }
             catch (Exception ee)
             {
-                Common.Log(ee);
-                Common.Log(rv.ToString(CultureInfo.CurrentCulture));
+                Logger.Log(ee);
+                Logger.Log(rv.ToString(CultureInfo.CurrentCulture));
             }
         }
 

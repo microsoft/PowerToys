@@ -22,6 +22,7 @@ using Microsoft.PowerToys.Telemetry;
 //     2023- Included in PowerToys.
 // </history>
 using MouseWithoutBorders.Class;
+using MouseWithoutBorders.Core;
 
 namespace MouseWithoutBorders
 {
@@ -390,7 +391,7 @@ namespace MouseWithoutBorders
             // THIS LOGIC IS THE SAME FOR Move*(int x, int y) METHODS.
             if (newDesMachineIdEx != desMachineID)
             {
-                LogDebug("Move Right");
+                Logger.LogDebug("Move Right");
 
                 if (!Setting.Values.MoveMouseRelatively)
                 {
@@ -529,7 +530,7 @@ namespace MouseWithoutBorders
 
             if (newDesMachineIdEx != desMachineID)
             {
-                LogDebug("Move Left");
+                Logger.LogDebug("Move Left");
 
                 return !Setting.Values.MoveMouseRelatively
                     ? newDesMachineIdEx == MachineID
@@ -598,7 +599,7 @@ namespace MouseWithoutBorders
 
             if (newDesMachineIdEx != desMachineID)
             {
-                LogDebug("Move Up");
+                Logger.LogDebug("Move Up");
 
                 return !Setting.Values.MoveMouseRelatively
                     ? newDesMachineIdEx == MachineID
@@ -668,7 +669,7 @@ namespace MouseWithoutBorders
 
             if (newDesMachineIdEx != desMachineID)
             {
-                LogDebug("Move Down");
+                Logger.LogDebug("Move Down");
 
                 return !Setting.Values.MoveMouseRelatively
                     ? newDesMachineIdEx == MachineID
@@ -696,7 +697,7 @@ namespace MouseWithoutBorders
                         rv = true;
                     }
 
-                    LogDebug("<><><><><>>><><><<><><><><><><><><><><>><><><><><><><><><><><" + inf.Name);
+                    Logger.LogDebug("<><><><><>>><><><<><><><><><><><><><><>><><><><><><><><><><><" + inf.Name);
                 }
             }
 
@@ -740,7 +741,7 @@ namespace MouseWithoutBorders
 
                 if (machineInfo.Name.Equals(DesMachineName, StringComparison.OrdinalIgnoreCase))
                 {
-                    LogDebug("AddToMachinePool: Des ID updated: " + DesMachineID.ToString() + "/" + package.Src.ToString());
+                    Logger.LogDebug("AddToMachinePool: Des ID updated: " + DesMachineID.ToString() + "/" + package.Src.ToString());
                     newDesMachineID = desMachineID = package.Src;
                 }
 
@@ -754,7 +755,7 @@ namespace MouseWithoutBorders
                 }
                 else
                 {
-                    LogDebug("AddToMachinePool: could not add a new machine: " + name);
+                    Logger.LogDebug("AddToMachinePool: could not add a new machine: " + name);
                     return "The 5th machine";
                 }
             }
@@ -781,14 +782,14 @@ namespace MouseWithoutBorders
             Common.ReopenSockets(true);
             Common.SendMachineMatrix();
 
-            LogDebug("Machine added: " + name + "/" + package.Src.ToString());
+            Logger.LogDebug("Machine added: " + name + "/" + package.Src.ToString());
             UpdateClientSockets("AddToMachinePool");
             return name;
         }
 
         internal static void UpdateClientSockets(string logHeader)
         {
-            LogDebug("UpdateClientSockets: " + logHeader);
+            Logger.LogDebug("UpdateClientSockets: " + logHeader);
             Sk?.UpdateTCPClients();
         }
 
@@ -802,13 +803,13 @@ namespace MouseWithoutBorders
 
         internal static void ShowSetupForm(bool reopenSockets = false)
         {
-            Common.LogDebug("========== BEGIN THE SETUP EXPERIENCE ==========", true);
+            Logger.LogDebug("========== BEGIN THE SETUP EXPERIENCE ==========", true);
             Setting.Values.MyKey = Common.MyKey = Common.CreateRandomKey();
             Common.GeneratedKey = true;
 
             if (Process.GetCurrentProcess().SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
             {
-                Common.Log("Not physical console session.");
+                Logger.Log("Not physical console session.");
                 _ = MessageBox.Show(
                     "Please run the program in the physical console session.\r\nThe program does not work in a remote desktop or virtual machine session.",
                     Application.ProductName,
@@ -948,7 +949,7 @@ namespace MouseWithoutBorders
             {
                 bool twoRow = !Setting.Values.MatrixOneRow;
                 string[] connectedMachines = twoRow ? MachineMatrix : MachineMatrix.Select(m => IsConnectedTo(IdFromName(m)) ? m : string.Empty).ToArray();
-                LogDebug($"Matrix: {string.Join(",", MachineMatrix)}, Connected: {string.Join(",", connectedMachines)}");
+                Logger.LogDebug($"Matrix: {string.Join(",", MachineMatrix)}, Connected: {string.Join(",", connectedMachines)}");
 
                 return connectedMachines;
             }
@@ -981,7 +982,7 @@ namespace MouseWithoutBorders
 
                 SkSend(package, null, false);
 
-                LogDebug($"matrixIncludedMachine sent: [{i + 1}]:[{MachineMatrix[i]}]");
+                Logger.LogDebug($"matrixIncludedMachine sent: [{i + 1}]:[{MachineMatrix[i]}]");
             }
         }
 
@@ -992,7 +993,7 @@ namespace MouseWithoutBorders
 
             if (i is > 0 and <= MAX_MACHINE)
             {
-                LogDebug($"matrixIncludedMachine: [{i}]:[{matrixIncludedMachine}]");
+                Logger.LogDebug($"matrixIncludedMachine: [{i}]:[{matrixIncludedMachine}]");
 
                 MachineMatrix[i - 1] = matrixIncludedMachine;
 
@@ -1011,7 +1012,7 @@ namespace MouseWithoutBorders
             }
             else
             {
-                LogDebug("Invalid machine Matrix package!");
+                Logger.LogDebug("Invalid machine Matrix package!");
             }
         }
 
@@ -1080,7 +1081,7 @@ namespace MouseWithoutBorders
 
             if (!created)
             {
-                TelemetryLogTrace($"Second instance found: {eventName}.", SeverityLevel.Warning, true);
+                Logger.TelemetryLogTrace($"Second instance found: {eventName}.", SeverityLevel.Warning, true);
                 CurrentProcess.KillProcess(true);
             }
         }
