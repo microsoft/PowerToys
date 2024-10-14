@@ -11,21 +11,21 @@
     <Page.Resources>
         <local:StringToVisibilityConverter x:Key="StringToVisibility"/>
         <DataTemplate x:Key="ShortcutTemplate" x:DataType="local:ShortcutTemplateDataObject">
-                <Grid MinWidth="300">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Padding="6,6,6,6" Margin="6,6,6,6" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="0" Text="{x:Bind Name}" />
-                    <Border CornerRadius="{StaticResource ControlCornerRadius}" BorderThickness="{StaticResource ButtonBorderThemeThickness}" Grid.Row="0" Grid.Column="1" Margin="20,6,6,6" HorizontalAlignment="Right" Background="White" >
-                        <ContentPresenter Content="{x:Bind Shortcut}" Padding="6,6,6,6" HorizontalAlignment="Right" />
-                    </Border>
-                    <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="6,0,6,0" Padding="6" Text="{x:Bind Description}" Visibility="{x:Bind DescriptionVisible}" />
-                </Grid>
+            <Grid MinWidth="300">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Padding="6,0,6,0" Margin="6,6,6,6" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="0" Text="{x:Bind Name}" />
+                <Border CornerRadius="{StaticResource ControlCornerRadius}" BorderThickness="{StaticResource ButtonBorderThemeThickness}" Grid.Row="0" Grid.Column="1" Margin="20,6,6,6" HorizontalAlignment="Right" Background="White" >
+                    <ContentPresenter Content="{x:Bind Shortcut}" Padding="6,6,6,6" HorizontalAlignment="Right" />
+                </Border>
+                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="6,0,6,0" Padding="6,0,6,0" Text="{x:Bind Description}" />
+            </Grid>
         </DataTemplate>
     </Page.Resources>
     <Grid>
@@ -39,8 +39,7 @@
             <GridView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <ItemsWrapGrid x:Name="MaxItemsWrapGrid"
-                           MaximumRowsOrColumns="7"
-                           Orientation="Vertical"/>
+                           Orientation="Horizontal"/>
                 </ItemsPanelTemplate>
             </GridView.ItemsPanel>
         </GridView>
