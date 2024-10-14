@@ -40,12 +40,6 @@ Write-Output "Use 'Help .\applyXamlStyling.ps1' for more info or '-Main' to run 
 Write-Output ""
 Write-Output "Restoring dotnet tools..."
 dotnet tool restore --disable-parallel --no-cache
-if ($lastExitCode -ne 0)
-{
-    $result = $lastExitCode
-    Write-Error 'Error running dotnet tool. Please verify the environment the script is running on.'
-    exit $result
-}
 
 if (-not $Passive)
 {
@@ -124,6 +118,7 @@ else
             Write-Error 'XAML Styling is incorrect, please run `.\.pipelines\applyXamlStyling.ps1 -Main` locally.'
         }
 
+        Write-Output "Last exit code was $lastExitCode"
         # Return XAML Styler Status
         exit $lastExitCode
     }
