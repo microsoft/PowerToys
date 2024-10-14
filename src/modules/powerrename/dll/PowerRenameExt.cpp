@@ -21,12 +21,15 @@ struct InvokeStruct
 
 CPowerRenameMenu::CPowerRenameMenu()
 {
+    m_etwTrace.UpdateState(true);
     ModuleAddRef();
     context_menu_caption = GET_RESOURCE_STRING_FALLBACK(IDS_POWERRENAME_CONTEXT_MENU_ENTRY, L"Rename with PowerRename");
 }
 
 CPowerRenameMenu::~CPowerRenameMenu()
 {
+    m_etwTrace.Flush();
+    m_etwTrace.UpdateState(false);
     m_spdo = nullptr;
     DeleteObject(m_hbmpIcon);
     ModuleRelease();

@@ -240,12 +240,15 @@ HRESULT ExplorerCommand::s_CreateInstance(IUnknown* pUnkOuter, REFIID riid, void
 
 ExplorerCommand::ExplorerCommand()
 {
+    m_etwTrace.UpdateState(true);
     ++globals::ref_count;
     context_menu_caption = GET_RESOURCE_STRING_FALLBACK(IDS_FILELOCKSMITH_CONTEXT_MENU_ENTRY, L"Unlock with File Locksmith");
 }
 
 ExplorerCommand::~ExplorerCommand()
 {
+    m_etwTrace.Flush();
+    m_etwTrace.UpdateState(false);
     --globals::ref_count;
 }
 

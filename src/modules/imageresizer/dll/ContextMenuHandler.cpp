@@ -16,6 +16,7 @@ extern HINSTANCE g_hInst_imageResizer;
 
 CContextMenuHandler::CContextMenuHandler()
 {
+    m_etwTrace.UpdateState(true);
     m_pidlFolder = NULL;
     m_pdtobj = NULL;
     context_menu_caption = GET_RESOURCE_STRING_FALLBACK(IDS_IMAGERESIZER_CONTEXT_MENU_ENTRY, L"Resize with Image Resizer");
@@ -24,6 +25,8 @@ CContextMenuHandler::CContextMenuHandler()
 
 CContextMenuHandler::~CContextMenuHandler()
 {
+    m_etwTrace.Flush();
+    m_etwTrace.UpdateState(false);
     Uninitialize();
 }
 
