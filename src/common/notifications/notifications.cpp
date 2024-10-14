@@ -316,7 +316,7 @@ void notifications::show_toast_with_activations(std::wstring message,
     notification.Data(std::move(data));
 
     const auto notifier =
-        ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(APPLICATION_ID);    
+        ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(APPLICATION_ID);
 
     // Set a tag-related params if it has a valid length
     if (params.tag.has_value() && params.tag->length() < 64)
