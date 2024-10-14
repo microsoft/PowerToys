@@ -1,0 +1,113 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Globalization;
+using System.Runtime.InteropServices;
+using Microsoft.UI;
+using Microsoft.UI.Input;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using ShortcutGuide.Models;
+using ShortcutGuide.Properties;
+using Windows.ApplicationModel.Chat;
+using Windows.Devices.Display;
+using Windows.Foundation;
+using Windows.Graphics;
+using Windows.System.UserProfile;
+using WinUIEx;
+
+using static NativeMethods;
+
+namespace ShortcutGuide
+{
+    /// <summary>
+    /// An empty window that can be used on its own or navigated to within a Frame.
+    /// </summary>
+    public sealed partial class MainWindow : WindowEx
+    {
+        private AppWindow _appWindow;
+
+        public MainWindow()
+        {
+            InitializeComponent();
+            Title = Resource.ResourceManager.GetString("Title", CultureInfo.InvariantCulture)!;
+
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
+            _appWindow = AppWindow.GetFromWindowId(windowId);
+#if DEBUG
+#else
+            this.SetIsAlwaysOnTop(true);
+            this.SetIsShownInSwitchers(false);
+#endif
+            this.SetIsResizable(false);
+            this.SetIsMinimizable(false);
+            this.SetIsMaximizable(false);
+            IsTitleBarVisible = false;
+
+            // Remove the caption style from the window style. Windows App SDK 1.6 added it, which made the title bar and borders appear for Measure Tool. This code removes it.
+            var windowStyle = GetWindowLong(hwnd, GWL_STYLE);
+            windowStyle = windowStyle & (~WS_CAPTION);
+            _ = SetWindowLong(hwnd, GWL_STYLE, windowStyle);
+#if DEBUG
+#else
+            SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+#endif
+
+            this.Activated += OnLauched;
+        }
+
+        private void OnLauched(object sender, WindowActivatedEventArgs e)
+        {
+            if (!_setPosition)
+            {
+                var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+                WindowId windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
+
+                _appWindow = AppWindow.GetFromWindowId(windowId);
+
+                GetCursorPos(out POINT lpPoint);
+                _appWindow.Move(lpPoint);
+
+                float dpiScale = DpiHelper.GetDPIScaleForWindow((int)hwnd);
+
+                Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
+                this.SetWindowSize(monitorRect.Width / dpiScale, monitorRect.Height / dpiScale / 2);
+
+                // Move top of the window to the center of the monitor
+                _appWindow.Move(new PointInt32((int)monitorRect.X, (int)(monitorRect.Y + (int)(monitorRect.Height / 2))));
+                _setPosition = true;
+            }
+        }
+
+        public void WindowSelectionChanged(object sender, SelectorBarSelectionChangedEventArgs e)
+        {
+            ContentFrame.Navigate(typeof(ShortcutView));
+        }
+
+        private bool _setPosition;
+
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool GetCursorPos(out POINT lpPoint);
+
+        public struct POINT
+        {
+            public int X;
+            public int Y;
+
+            public static implicit operator PointInt32(POINT point)
+            {
+                return new PointInt32(point.X, point.Y);
+            }
+        }
+
+        public void CloseButton_Clicked(object sender, RoutedEventArgs e)
+        {
+            Environment.Exit(0);
+        }
+    }
+}

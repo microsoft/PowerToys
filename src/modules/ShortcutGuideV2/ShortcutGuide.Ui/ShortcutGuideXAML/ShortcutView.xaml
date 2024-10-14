@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="ShortcutGuide.ShortcutView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ShortcutGuide"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Page.Resources>
+        <local:StringToVisibilityConverter x:Key="StringToVisibility"/>
+        <DataTemplate x:Key="ShortcutTemplate" x:DataType="local:ShortcutTemplateDataObject">
+                <Grid MinWidth="300">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Padding="6,6,6,6" Margin="6,6,6,6" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="0" Text="{x:Bind Name}" />
+                    <Border CornerRadius="{StaticResource ControlCornerRadius}" BorderThickness="{StaticResource ButtonBorderThemeThickness}" Grid.Row="0" Grid.Column="1" Margin="20,6,6,6" HorizontalAlignment="Right" Background="White" >
+                        <ContentPresenter Content="{x:Bind Shortcut}" Padding="6,6,6,6" HorizontalAlignment="Right" />
+                    </Border>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="6,0,6,0" Padding="6" Text="{x:Bind Description}" Visibility="{x:Bind DescriptionVisible}" />
+                </Grid>
+        </DataTemplate>
+    </Page.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <SelectorBar Grid.Row="0" x:Name="CategorySelector" />
+        <GridView SelectionMode="None" x:Name="ShortcutListElement" Grid.Row="1" ItemTemplate="{StaticResource ShortcutTemplate}">
+
+            <GridView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <ItemsWrapGrid x:Name="MaxItemsWrapGrid"
+                           MaximumRowsOrColumns="7"
+                           Orientation="Vertical"/>
+                </ItemsPanelTemplate>
+            </GridView.ItemsPanel>
+        </GridView>
+    </Grid>
+</Page>
