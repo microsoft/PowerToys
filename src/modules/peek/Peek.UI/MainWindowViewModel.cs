@@ -215,7 +215,7 @@ namespace Peek.UI
             {
                 wFunc = FO_DELETE,
                 pFrom = path + "\0\0",
-                fFlags = (ushort)(FOF_NOCONFIRMATION | (permanent ? 0 : FOF_ALLOWUNDO)),
+                fFlags = (ushort)(FOF_NO_CONFIRMATION | (permanent ? 0 : FOF_ALLOWUNDO)),
             };
 
             int result = SHFileOperation(ref fileOp);

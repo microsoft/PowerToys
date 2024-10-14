@@ -84,7 +84,7 @@ namespace Peek.UI.Native
         /// <summary>
         /// Do not request user confirmation for file delete flag.
         /// </summary>
-        internal const int FOF_NOCONFIRMATION = 0x0010;
+        internal const int FOF_NO_CONFIRMATION = 0x0010;
 
         /// <summary>
         /// Common error codes when calling SHFileOperation to delete a file.
