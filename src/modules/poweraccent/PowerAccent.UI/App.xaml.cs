@@ -31,7 +31,6 @@ namespace PowerAccent.UI
             }
 
             base.OnStartup(e);
-            _etwTrace.Start();
         }
 
         protected override void OnExit(ExitEventArgs e)

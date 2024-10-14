@@ -96,7 +96,6 @@ namespace PowerLauncher
             using (var application = new App())
             {
                 application.InitializeComponent();
-                application.etwTrace.Start();
 
                 Common.UI.NativeEventWaiter.WaitForEventLoop(
                     Constants.RunExitEvent(),

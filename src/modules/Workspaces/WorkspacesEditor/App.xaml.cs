@@ -36,7 +36,6 @@ namespace WorkspacesEditor
 
         public App()
         {
-            etwTrace.Start();
             WorkspacesEditorIO = new WorkspacesEditorIO();
         }
 

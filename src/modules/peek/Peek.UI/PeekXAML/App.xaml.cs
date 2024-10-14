@@ -51,8 +51,6 @@ namespace Peek.UI
             InitializeComponent();
             Logger.InitializeLogger("\\Peek\\Logs");
 
-            EtwTrace.Start();
-
             Host = Microsoft.Extensions.Hosting.Host.
             CreateDefaultBuilder().
             UseContentRoot(AppContext.BaseDirectory).

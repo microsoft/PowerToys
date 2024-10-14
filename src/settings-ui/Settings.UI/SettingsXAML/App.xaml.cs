@@ -81,7 +81,6 @@ namespace Microsoft.PowerToys.Settings.UI
             Logger.InitializeLogger(@"\Settings\Logs");
 
             EtwTrace = new ETWTrace();
-            EtwTrace.Start();
 
             string appLanguage = LanguageHelper.LoadLanguage();
             if (!string.IsNullOrEmpty(appLanguage))

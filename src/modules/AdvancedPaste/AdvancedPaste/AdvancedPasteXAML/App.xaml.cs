@@ -61,8 +61,6 @@ namespace AdvancedPaste
 
             this.InitializeComponent();
 
-            EtwTrace.Start();
-
             Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory).ConfigureServices((context, services) =>
             {
                 services.AddSingleton<OptionsViewModel>();

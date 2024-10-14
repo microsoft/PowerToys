@@ -40,7 +40,6 @@ namespace MouseWithoutBorders
             }
 
             ETWTrace etwTrace = new ETWTrace();
-            etwTrace.Start();
 
             RunnerHelper.WaitForPowerToysRunnerExitFallback(() =>
             {

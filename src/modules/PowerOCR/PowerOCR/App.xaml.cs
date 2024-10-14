@@ -47,8 +47,6 @@ public partial class App : Application, IDisposable
 
         NativeThreadCTS = new CancellationTokenSource();
 
-        etwTrace.Start();
-
         NativeEventWaiter.WaitForEventLoop(
             Constants.TerminatePowerOCRSharedEvent(),
             this.Shutdown,

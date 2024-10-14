@@ -57,8 +57,6 @@ namespace MouseWithoutBorders.Class
 
             ETWTrace etwTrace = new ETWTrace();
 
-            etwTrace.Start();
-
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMouseWithoutBordersEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
                 Common.Log("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");

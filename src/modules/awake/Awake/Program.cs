@@ -52,7 +52,6 @@ namespace Awake
 
         private static int Main(string[] args)
         {
-            _etwTrace.Start();
             _settingsUtils = new SettingsUtils();
             LockMutex = new Mutex(true, Core.Constants.AppName, out bool instantiated);
             Logger.InitializeLogger(Path.Combine("\\", Core.Constants.AppName, "Logs"));

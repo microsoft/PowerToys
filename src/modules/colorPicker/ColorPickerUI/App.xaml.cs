@@ -46,7 +46,6 @@ namespace ColorPickerUI
                 Logger.LogError("CultureNotFoundException: " + ex.Message);
             }
 
-            EtwTrace.Start();
             NativeThreadCTS = new CancellationTokenSource();
             ExitToken = NativeThreadCTS.Token;
 

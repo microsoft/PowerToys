@@ -47,7 +47,6 @@ namespace RegistryPreview
             // #if DEBUG
             // System.Diagnostics.Debugger.Launch();
             // #endif
-            EtwTrace.Start();
 
             // Open With... handler - gets activation arguments if they are available.
             AppActivationArguments activatedArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
