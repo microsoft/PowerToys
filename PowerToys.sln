@@ -328,11 +328,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plugin.UnitConverter.UnitTest", "src\modules\launcher\Plugins\Community.PowerToys.Run.Plugin.UnitConverter.UnitTest\Community.PowerToys.Run.Plugin.UnitConverter.UnitTest.csproj", "{3E424AD2-19E5-4AE6-B833-F53963EB5FC1}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shortcutguide", "shortcutguide", "{106CBECA-0701-4FC3-838C-9DF816A19AE2}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ShortcutGuide", "ShortcutGuide", "{106CBECA-0701-4FC3-838C-9DF816A19AE2}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShortcutGuideModuleInterface", "src\modules\ShortcutGuide\ShortcutGuideModuleInterface\ShortcutGuideModuleInterface.vcxproj", "{2D604C07-51FC-46BB-9EB7-75AECC7F5E81}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShortcutGuide", "src\modules\ShortcutGuide\ShortcutGuide\ShortcutGuide.vcxproj", "{2EDB3EB4-FA92-4BFF-B2D8-566584837231}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FancyZonesModuleInterface", "src\modules\fancyzones\FancyZonesModuleInterface\FancyZonesModuleInterface.vcxproj", "{48804216-2A0E-4168-A6D8-9CD068D14227}"
 EndProject
@@ -787,6 +785,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.WindowWalker.UnitTests", "src\modules\cmdpal\Tests\Microsoft.CmdPal.Ext.WindowWalker.UnitTests\Microsoft.CmdPal.Ext.WindowWalker.UnitTests.csproj", "{E816D7B0-4688-4ECB-97CC-3D8E798F3829}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.UnitTestBase", "src\modules\cmdpal\Tests\Microsoft.CmdPal.Ext.UnitTestsBase\Microsoft.CmdPal.Ext.UnitTestBase.csproj", "{00D8659C-2068-40B6-8B86-759CD6284BBB}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShortcutGuide.CPPProject", "src\modules\ShortcutGuide\ShortcutGuide.CPPProject\ShortcutGuide.CPPProject.vcxproj", "{C992FD2C-83B8-4941-9FC1-09730068D8EC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShortcutGuide.IndexYmlGenerator", "src\modules\ShortcutGuide\ShortcutGuide.IndexYmlGenerator\ShortcutGuide.IndexYmlGenerator.csproj", "{30F57201-9B54-5253-8033-8A28ECD3F1CE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShortcutGuide.Ui", "src\modules\ShortcutGuide\ShortcutGuide.Ui\ShortcutGuide.Ui.csproj", "{D5BD72DD-B461-FDD4-FD7D-AF0B620AE75D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1428,14 +1432,6 @@ Global
 		{2D604C07-51FC-46BB-9EB7-75AECC7F5E81}.Release|ARM64.Build.0 = Release|ARM64
 		{2D604C07-51FC-46BB-9EB7-75AECC7F5E81}.Release|x64.ActiveCfg = Release|x64
 		{2D604C07-51FC-46BB-9EB7-75AECC7F5E81}.Release|x64.Build.0 = Release|x64
-		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Debug|ARM64.ActiveCfg = Debug|ARM64
-		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Debug|ARM64.Build.0 = Debug|ARM64
-		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Debug|x64.ActiveCfg = Debug|x64
-		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Debug|x64.Build.0 = Debug|x64
-		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Release|ARM64.ActiveCfg = Release|ARM64
-		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Release|ARM64.Build.0 = Release|ARM64
-		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Release|x64.ActiveCfg = Release|x64
-		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Release|x64.Build.0 = Release|x64
 		{48804216-2A0E-4168-A6D8-9CD068D14227}.Debug|ARM64.ActiveCfg = Debug|ARM64
 		{48804216-2A0E-4168-A6D8-9CD068D14227}.Debug|ARM64.Build.0 = Debug|ARM64
 		{48804216-2A0E-4168-A6D8-9CD068D14227}.Debug|x64.ActiveCfg = Debug|x64
@@ -2850,6 +2846,30 @@ Global
 		{00D8659C-2068-40B6-8B86-759CD6284BBB}.Release|ARM64.Build.0 = Release|ARM64
 		{00D8659C-2068-40B6-8B86-759CD6284BBB}.Release|x64.ActiveCfg = Release|x64
 		{00D8659C-2068-40B6-8B86-759CD6284BBB}.Release|x64.Build.0 = Release|x64
+		{C992FD2C-83B8-4941-9FC1-09730068D8EC}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{C992FD2C-83B8-4941-9FC1-09730068D8EC}.Debug|ARM64.Build.0 = Debug|ARM64
+		{C992FD2C-83B8-4941-9FC1-09730068D8EC}.Debug|x64.ActiveCfg = Debug|x64
+		{C992FD2C-83B8-4941-9FC1-09730068D8EC}.Debug|x64.Build.0 = Debug|x64
+		{C992FD2C-83B8-4941-9FC1-09730068D8EC}.Release|ARM64.ActiveCfg = Release|ARM64
+		{C992FD2C-83B8-4941-9FC1-09730068D8EC}.Release|ARM64.Build.0 = Release|ARM64
+		{C992FD2C-83B8-4941-9FC1-09730068D8EC}.Release|x64.ActiveCfg = Release|x64
+		{C992FD2C-83B8-4941-9FC1-09730068D8EC}.Release|x64.Build.0 = Release|x64
+		{30F57201-9B54-5253-8033-8A28ECD3F1CE}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{30F57201-9B54-5253-8033-8A28ECD3F1CE}.Debug|ARM64.Build.0 = Debug|ARM64
+		{30F57201-9B54-5253-8033-8A28ECD3F1CE}.Debug|x64.ActiveCfg = Debug|x64
+		{30F57201-9B54-5253-8033-8A28ECD3F1CE}.Debug|x64.Build.0 = Debug|x64
+		{30F57201-9B54-5253-8033-8A28ECD3F1CE}.Release|ARM64.ActiveCfg = Release|ARM64
+		{30F57201-9B54-5253-8033-8A28ECD3F1CE}.Release|ARM64.Build.0 = Release|ARM64
+		{30F57201-9B54-5253-8033-8A28ECD3F1CE}.Release|x64.ActiveCfg = Release|x64
+		{30F57201-9B54-5253-8033-8A28ECD3F1CE}.Release|x64.Build.0 = Release|x64
+		{D5BD72DD-B461-FDD4-FD7D-AF0B620AE75D}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{D5BD72DD-B461-FDD4-FD7D-AF0B620AE75D}.Debug|ARM64.Build.0 = Debug|ARM64
+		{D5BD72DD-B461-FDD4-FD7D-AF0B620AE75D}.Debug|x64.ActiveCfg = Debug|x64
+		{D5BD72DD-B461-FDD4-FD7D-AF0B620AE75D}.Debug|x64.Build.0 = Debug|x64
+		{D5BD72DD-B461-FDD4-FD7D-AF0B620AE75D}.Release|ARM64.ActiveCfg = Release|ARM64
+		{D5BD72DD-B461-FDD4-FD7D-AF0B620AE75D}.Release|ARM64.Build.0 = Release|ARM64
+		{D5BD72DD-B461-FDD4-FD7D-AF0B620AE75D}.Release|x64.ActiveCfg = Release|x64
+		{D5BD72DD-B461-FDD4-FD7D-AF0B620AE75D}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -3161,6 +3181,9 @@ Global
 		{E816D7AF-4688-4ECB-97CC-3D8E798F3828} = {8EF25507-2575-4ADE-BF7E-D23376903AB8}
 		{E816D7B0-4688-4ECB-97CC-3D8E798F3829} = {8EF25507-2575-4ADE-BF7E-D23376903AB8}
 		{00D8659C-2068-40B6-8B86-759CD6284BBB} = {8EF25507-2575-4ADE-BF7E-D23376903AB8}
+		{C992FD2C-83B8-4941-9FC1-09730068D8EC} = {106CBECA-0701-4FC3-838C-9DF816A19AE2}
+		{30F57201-9B54-5253-8033-8A28ECD3F1CE} = {106CBECA-0701-4FC3-838C-9DF816A19AE2}
+		{D5BD72DD-B461-FDD4-FD7D-AF0B620AE75D} = {106CBECA-0701-4FC3-838C-9DF816A19AE2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
