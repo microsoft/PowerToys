@@ -17,9 +17,19 @@ public sealed class PasteFormatMetadataAttribute : Attribute
 
     public bool RequiresAIService { get; init; }
 
+    public bool IsPreviewable { get; init; }
+
     public ClipboardFormat SupportedClipboardFormats { get; init; }
 
     public string IPCKey { get; init; }
 
+    /// <summary>
+    /// Gets a description of the action that should be exposed to Semantic Kernel, or <see langword="null"/> if it should not be exposed.
+    /// </summary>
     public string KernelFunctionDescription { get; init; }
+
+    /// <summary>
+    /// Gets a value indicating whether the action is internal to the system and should not be exposed to the user.
+    /// </summary>
+    public bool IsInternalAction { get; init; }
 }

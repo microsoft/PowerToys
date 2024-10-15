@@ -5,10 +5,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
+using AdvancedPaste.Telemetry;
+using Azure.AI.OpenAI;
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -22,7 +26,7 @@ public sealed class KernelService(IAICredentialsProvider aiCredentialsProvider, 
     private readonly IAICredentialsProvider _aiCredentialsProvider = aiCredentialsProvider;
     private readonly ICustomTextTransformService _customTextTransformService = customTextTransformService;
 
-    public async Task<DataPackage> GetCompletionAsync(string inputInstructions, DataPackageView clipboardData)
+    public async Task<DataPackage> TransformClipboardAsync(string inputInstructions, DataPackageView clipboardData)
     {
         Logger.LogTrace();
 
@@ -50,6 +54,14 @@ public sealed class KernelService(IAICredentialsProvider aiCredentialsProvider, 
         {
             var result = await kernel.GetRequiredService<IChatCompletionService>().GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
             chatHistory.AddAssistantMessage(result.Content);
+
+            var usage = result.Metadata.GetValueOrDefault("Usage") as CompletionsUsage;
+
+            AdvancedPasteSemanticKernelFormatEvent telemetryEvent = new(usage?.PromptTokens ?? 0, usage?.CompletionTokens ?? 0, ModelName, kernel.GetActionChain().ConvertAll(format => format.ToString()));
+            PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
+
+            var logEvent = new { telemetryEvent.PromptTokens, telemetryEvent.CompletionTokens, telemetryEvent.ModelName, telemetryEvent.UsedActionChain };
+            Logger.LogDebug($"{nameof(TransformClipboardAsync)} complete; {JsonSerializer.Serialize(logEvent)}");
 
             if (kernel.GetLastError() is Exception ex)
             {
@@ -93,43 +105,47 @@ public sealed class KernelService(IAICredentialsProvider aiCredentialsProvider, 
     {
         KernelReturnParameterMetadata returnParameter = new() { Description = "Array of available clipboard formats after operation" };
 
-        var customTransformFunction = KernelFunctionFactory.CreateFromMethod(
-            method: ExecuteCustomTransformAsync,
-            functionName: "CustomTransform",
-            description: "Takes input instructions and transforms clipboard text (not TXT files) with these input instructions, putting the result back on the clipboard. This uses AI to accomplish the task.",
+        var customTextTransformFunction = KernelFunctionFactory.CreateFromMethod(
+            method: ExecuteCustomTextTransformAsync,
+            functionName: nameof(PasteFormats.CustomTextTransformation),
+            description: PasteFormat.MetadataDict[PasteFormats.CustomTextTransformation].KernelFunctionDescription,
             parameters: [new("inputInstructions") { Description = "Input instructions to AI", ParameterType = typeof(string) }],
             returnParameter);
 
         var standardTransformFunctions = from format in Enum.GetValues<PasteFormats>()
-                                         let description = PasteFormat.MetadataDict[format].KernelFunctionDescription
-                                         where !string.IsNullOrEmpty(description)
+                                         let metadata = PasteFormat.MetadataDict[format]
+                                         let coreDescription = metadata.KernelFunctionDescription
+                                         where !string.IsNullOrEmpty(coreDescription) && !metadata.IsInternalAction
                                          select KernelFunctionFactory.CreateFromMethod(
                                              method: async (Kernel kernel) => await ExecuteStandardTransformAsync(kernel, format),
                                              functionName: format.ToString(),
-                                             description: $"{description} Puts the result back on the clipboard.",
+                                             description: $"{coreDescription} Puts the result back on the clipboard.",
                                              parameters: null,
                                              returnParameter);
 
-        return standardTransformFunctions.Prepend(customTransformFunction);
+        return standardTransformFunctions.Prepend(customTextTransformFunction);
     }
 
-    private Task<string> ExecuteCustomTransformAsync(Kernel kernel, string inputInstructions) =>
+    private Task<string> ExecuteCustomTextTransformAsync(Kernel kernel, string inputInstructions) =>
        ExecuteTransformAsync(
            kernel,
+           PasteFormats.CustomTextTransformation,
            async dataPackageView =>
            {
-               var inputString = await dataPackageView.GetTextAsync();
-               var aiCompletionsResponse = await _customTextTransformService.TransformStringAsync(inputInstructions, inputString);
-               return ClipboardHelper.CreateDataPackageFromText(aiCompletionsResponse);
+               var input = await dataPackageView.GetTextAsync();
+               var output = await _customTextTransformService.TransformTextAsync(inputInstructions, input);
+               return ClipboardHelper.CreateDataPackageFromText(output);
            });
 
     private Task<string> ExecuteStandardTransformAsync(Kernel kernel, PasteFormats format) =>
         ExecuteTransformAsync(
            kernel,
+           format,
            async dataPackageView => await TransformHelpers.TransformAsync(format, dataPackageView));
 
-    private static async Task<string> ExecuteTransformAsync(Kernel kernel, Func<DataPackageView, Task<DataPackage>> transformFunc)
+    private static async Task<string> ExecuteTransformAsync(Kernel kernel, PasteFormats format, Func<DataPackageView, Task<DataPackage>> transformFunc)
     {
+        kernel.GetActionChain().Add(format);
         kernel.SetLastError(null);
 
         try

@@ -3,9 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
+using AdvancedPaste.Telemetry;
 using Azure;
 using Azure.AI.OpenAI;
 using ManagedCommon;
@@ -43,14 +45,14 @@ public sealed class CustomTextTransformService(IAICredentialsProvider aiCredenti
         return response;
     }
 
-    public async Task<string> TransformStringAsync(string inputInstructions, string inputString)
+    public async Task<string> TransformTextAsync(string inputInstructions, string inputText)
     {
         if (string.IsNullOrWhiteSpace(inputInstructions))
         {
             return string.Empty;
         }
 
-        if (string.IsNullOrWhiteSpace(inputString))
+        if (string.IsNullOrWhiteSpace(inputText))
         {
             Logger.LogWarning("Clipboard has no usable text data");
             return string.Empty;
@@ -65,7 +67,7 @@ $@"User instructions:
 {inputInstructions}
 
 Clipboard Content:
-{inputString}
+{inputText}
 
 Output:
 ";
@@ -73,13 +75,20 @@ Output:
         try
         {
             var response = await GetAICompletionAsync(systemInstructions, userMessage);
-            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteGenerateCustomFormatEvent(response.Usage.PromptTokens, response.Usage.CompletionTokens, ModelName));
+
+            var usage = response.Usage;
+            AdvancedPasteGenerateCustomFormatEvent telemetryEvent = new(usage.PromptTokens, usage.CompletionTokens, ModelName);
+            PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
+
+            var logEvent = new { telemetryEvent.PromptTokens, telemetryEvent.CompletionTokens, telemetryEvent.ModelName };
+            Logger.LogDebug($"{nameof(TransformTextAsync)} complete; {JsonSerializer.Serialize(logEvent)}");
+
             return response.Choices[0].Text;
         }
         catch (Exception ex)
         {
-            Logger.LogError($"{nameof(GetAICompletionAsync)} failed", ex);
-            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteGenerateCustomErrorEvent(ex.Message));
+            Logger.LogError($"{nameof(TransformTextAsync)} failed", ex);
+            PowerToysTelemetry.Log.WriteEvent(new AdvancedPasteGenerateCustomErrorEvent(ex.Message));
 
             throw new PasteActionException(ErrorHelpers.TranslateErrorText((ex as RequestFailedException)?.Status ?? -1), ex);
         }

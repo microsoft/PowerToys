@@ -9,5 +9,5 @@ namespace AdvancedPaste.Services;
 
 public interface IKernelService
 {
-    Task<DataPackage> GetCompletionAsync(string inputInstructions, DataPackageView clipboardData);
+    Task<DataPackage> TransformClipboardAsync(string inputInstructions, DataPackageView clipboardData);
 }

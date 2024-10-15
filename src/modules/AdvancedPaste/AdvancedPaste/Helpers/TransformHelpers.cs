@@ -29,6 +29,7 @@ public static class TransformHelpers
             PasteFormats.PasteAsPngFile => await ToPngFileAsync(clipboardData),
             PasteFormats.PasteAsHtmlFile => await ToHtmlFileAsync(clipboardData),
             PasteFormats.KernelQuery => throw new ArgumentException($"Unsupported format {format}", nameof(format)),
+            PasteFormats.CustomTextTransformation => throw new ArgumentException($"Unsupported format {format}", nameof(format)),
             _ => throw new ArgumentException($"Unknown value {format}", nameof(format)),
         };
     }

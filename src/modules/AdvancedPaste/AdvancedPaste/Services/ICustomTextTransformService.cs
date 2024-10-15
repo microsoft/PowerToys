@@ -8,5 +8,5 @@ namespace AdvancedPaste.Services;
 
 public interface ICustomTextTransformService
 {
-    Task<string> TransformStringAsync(string inputInstructions, string inputString);
+    Task<string> TransformTextAsync(string inputInstructions, string inputText);
 }

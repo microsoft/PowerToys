@@ -62,6 +62,8 @@ namespace AdvancedPaste.Helpers
             return availableFormats == ClipboardFormat.Text ? !string.IsNullOrEmpty(await clipboardData.GetTextAsync()) : availableFormats != ClipboardFormat.None;
         }
 
+        internal static async Task<string> GetTextOrNullAsync(DataPackageView clipboardData) => clipboardData.Contains(StandardDataFormats.Text) ? await clipboardData.GetTextAsync() : null;
+
         internal static async Task TryCopyPasteDataPackageAsync(DataPackage dataPackage, Action onCopied)
         {
             Logger.LogTrace();

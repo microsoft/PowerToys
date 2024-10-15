@@ -53,7 +53,7 @@ public sealed class PasteFormatExecutor(IKernelService kernelService) : IPasteFo
     {
         return format switch
         {
-            PasteFormats.KernelQuery => await _kernelService.GetCompletionAsync(prompt, clipboardData),
+            PasteFormats.KernelQuery => await _kernelService.TransformClipboardAsync(prompt, clipboardData),
             _ => await TransformHelpers.TransformAsync(format, clipboardData),
         };
     }

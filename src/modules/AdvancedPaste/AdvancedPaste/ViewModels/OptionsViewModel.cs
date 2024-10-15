@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -77,7 +78,7 @@ namespace AdvancedPaste.ViewModels
 
         private bool Visible => GetMainWindow()?.Visible is true;
 
-        public event EventHandler<CustomActionActivatedEventArgs> CustomActionActivated;
+        public event EventHandler PreviewRequested;
 
         public OptionsViewModel(IAICredentialsProvider aiCredentialsProvider, IUserSettings userSettings, IPasteFormatExecutor pasteFormatExecutor)
         {
@@ -109,6 +110,15 @@ namespace AdvancedPaste.ViewModels
                     EnqueueRefreshPasteFormats();
                 }
             };
+
+            try
+            {
+                // Delete file that is no longer needed but might have been written by previous version and contain sensitive information.
+                File.Delete(new SettingsUtils().GetSettingsFilePath(Constants.AdvancedPasteModuleName, "lastQuery.json"));
+            }
+            catch
+            {
+            }
         }
 
         private static MainWindow GetMainWindow() => (App.Current as App)?.GetMainWindow();
@@ -263,6 +273,11 @@ namespace AdvancedPaste.ViewModels
                 {
                     return ResourceLoaderInstance.ResourceLoader.GetString("OpenAINotConfigured");
                 }
+
+                if (!ClipboardHasData)
+                {
+                    return ResourceLoaderInstance.ResourceLoader.GetString("ClipboardEmptyWarning");
+                }
                 else
                 {
                     return string.Empty;
@@ -346,11 +361,6 @@ namespace AdvancedPaste.ViewModels
             PasteOperationErrorText = string.Empty;
             Query = pasteFormat.Query;
 
-            if (pasteFormat.Format == PasteFormats.KernelQuery)
-            {
-                SaveQuery(Query);
-            }
-
             try
             {
                 // Minimum time to show busy spinner for AI actions when triggered by global keyboard shortcut.
@@ -360,29 +370,18 @@ namespace AdvancedPaste.ViewModels
 
                 await delayTask;
 
-                if (pasteFormat.Format != PasteFormats.KernelQuery)
+                var text = await ClipboardHelper.GetTextOrNullAsync(dataPackage.GetView());
+                bool shouldPreview = pasteFormat.Metadata.IsPreviewable && _userSettings.ShowCustomPreview && !string.IsNullOrEmpty(text) && source != PasteActionSource.GlobalKeyboardShortcut;
+
+                if (shouldPreview)
                 {
-                    await CopyPasteAndHideAsync(dataPackage);
+                    GeneratedResponses.Add(text);
+                    CurrentResponseIndex = GeneratedResponses.Count - 1;
+                    PreviewRequested?.Invoke(this, EventArgs.Empty);
                 }
                 else
                 {
-                    var dataPackageView = dataPackage.GetView();
-                    var text = (await ClipboardHelper.GetAvailableClipboardFormatsAsync(dataPackageView)).HasFlag(ClipboardFormat.Text) ? await dataPackageView.GetTextAsync() : string.Empty;
-                    bool hasText = !string.IsNullOrEmpty(text);
-
-                    if (hasText)
-                    {
-                        GeneratedResponses.Add(text);
-                        CurrentResponseIndex = GeneratedResponses.Count - 1;
-                    }
-
-                    bool pasteResult = source == PasteActionSource.GlobalKeyboardShortcut || !_userSettings.ShowCustomPreview || !hasText;
-                    CustomActionActivated?.Invoke(this, new CustomActionActivatedEventArgs(pasteFormat.Prompt, pasteResult));
-
-                    if (pasteResult)
-                    {
-                        await CopyPasteAndHideAsync(dataPackage);
-                    }
+                    await CopyPasteAndHideAsync(dataPackage);
                 }
             }
             catch (Exception ex)
@@ -437,42 +436,6 @@ namespace AdvancedPaste.ViewModels
                 Windows.Win32.Foundation.HWND hwnd = (Windows.Win32.Foundation.HWND)mainWindow.GetWindowHandle();
                 Windows.Win32.PInvoke.ShowWindow(hwnd, Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_HIDE);
             }
-        }
-
-        internal CustomQuery RecallPreviousCustomQuery()
-        {
-            return LoadPreviousQuery();
-        }
-
-        internal void SaveQuery(string inputQuery)
-        {
-            Logger.LogTrace();
-
-            DataPackageView clipboardData = Clipboard.GetContent();
-
-            if (clipboardData == null || !clipboardData.Contains(StandardDataFormats.Text))
-            {
-                Logger.LogDebug("Clipboard does not contain text data; not saving query");
-                return;
-            }
-
-            var currentClipboardText = Task.Run(async () => await clipboardData.GetTextAsync()).Result;
-
-            var queryData = new CustomQuery
-            {
-                Query = inputQuery,
-                ClipboardData = currentClipboardText,
-            };
-
-            SettingsUtils utils = new();
-            utils.SaveSettings(queryData.ToString(), Constants.AdvancedPasteModuleName, Constants.LastQueryJsonFileName);
-        }
-
-        internal CustomQuery LoadPreviousQuery()
-        {
-            SettingsUtils utils = new();
-            var query = utils.GetSettings<CustomQuery>(Constants.AdvancedPasteModuleName, Constants.LastQueryJsonFileName);
-            return query;
         }
 
         private bool IsClipboardHistoryEnabled()

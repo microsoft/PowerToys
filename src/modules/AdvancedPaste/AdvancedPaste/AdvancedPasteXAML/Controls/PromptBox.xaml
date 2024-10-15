@@ -508,34 +508,6 @@
                         </Flyout>
                     </FlyoutBase.AttachedFlyout>
                 </TextBox>
-
-                <!--<StackPanel
-                    Margin="0,0,4,0"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Stretch"
-                    Orientation="Horizontal">-->
-                <!--<Button
-                        x:Name="RecallBtn"
-                        x:Uid="RecallButtonAutomation"
-                        Width="32"
-                        Height="32"
-                        Padding="0"
-                        Command="{x:Bind RecallCommand}"
-                        Content="{ui:FontIcon Glyph=&#xE81C;,
-                                              FontSize=12}"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Style="{StaticResource SubtleButtonStyle}"
-                        TabIndex="2"
-                        Visibility="Collapsed">
-                        <ToolTipService.ToolTip>
-                            <TextBlock x:Uid="RecallBtnToolTip" TextWrapping="WrapWholeWords" />
-                        </ToolTipService.ToolTip>
-                        <animations:Implicit.Animations>
-                            <animations:TranslationAnimation Duration="0:0:1" />
-                            <animations:ScaleAnimation Duration="0:0:1" />
-                            <animations:OffsetAnimation Duration="0:0:1" />
-                        </animations:Implicit.Animations>
-                    </Button>-->
                 <Grid
                     Width="32"
                     Height="32"
@@ -662,7 +634,6 @@
                     <VisualState.Setters>
                         <Setter Target="Loader.IsLoading" Value="True" />
                         <Setter Target="InputTxtBox.IsEnabled" Value="False" />
-                        <!--<Setter Target="RecallBtn.IsEnabled" Value="False" />-->
                         <Setter Target="SendBtn.IsEnabled" Value="False" />
                         <Setter Target="DisclaimerPresenter.Visibility" Value="Collapsed" />
                         <Setter Target="LoadingText.Visibility" Value="Visible" />

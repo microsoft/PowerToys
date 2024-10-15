@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.PowerToys.Settings.UI.Library;
-using Windows.Devices.Radios;
 
 namespace AdvancedPaste.Models;
 
@@ -14,6 +13,7 @@ public enum PasteFormats
         ResourceId = "PasteAsPlainText",
         IconGlyph = "\uE8E9",
         RequiresAIService = false,
+        IsPreviewable = false,
         SupportedClipboardFormats = ClipboardFormat.Text)]
     PlainText,
 
@@ -22,6 +22,7 @@ public enum PasteFormats
         ResourceId = "PasteAsMarkdown",
         IconGlyph = "\ue8a5",
         RequiresAIService = false,
+        IsPreviewable = false,
         SupportedClipboardFormats = ClipboardFormat.Text,
         KernelFunctionDescription = "Takes clipboard text and formats it as markdown text.")]
     Markdown,
@@ -31,6 +32,7 @@ public enum PasteFormats
         ResourceId = "PasteAsJson",
         IconGlyph = "\uE943",
         RequiresAIService = false,
+        IsPreviewable = false,
         SupportedClipboardFormats = ClipboardFormat.Text,
         KernelFunctionDescription = "Takes clipboard text and formats it as JSON text.")]
     Json,
@@ -40,6 +42,7 @@ public enum PasteFormats
         ResourceId = "ImageToText",
         IconGlyph = "\uE91B",
         RequiresAIService = false,
+        IsPreviewable = true,
         SupportedClipboardFormats = ClipboardFormat.Image,
         IPCKey = AdvancedPasteAdditionalActions.PropertyNames.ImageToText,
         KernelFunctionDescription = "Takes an image in the clipboard and extracts all text from it using OCR.")]
@@ -50,6 +53,7 @@ public enum PasteFormats
         ResourceId = "PasteAsTxtFile",
         IconGlyph = "\uE8D2",
         RequiresAIService = false,
+        IsPreviewable = false,
         SupportedClipboardFormats = ClipboardFormat.Text | ClipboardFormat.Html,
         IPCKey = AdvancedPastePasteAsFileAction.PropertyNames.PasteAsTxtFile,
         KernelFunctionDescription = "Takes text or HTML data in the clipboard and transforms it to a TXT file.")]
@@ -60,6 +64,7 @@ public enum PasteFormats
         ResourceId = "PasteAsPngFile",
         IconGlyph = "\uE8B9",
         RequiresAIService = false,
+        IsPreviewable = false,
         SupportedClipboardFormats = ClipboardFormat.Image,
         IPCKey = AdvancedPastePasteAsFileAction.PropertyNames.PasteAsPngFile,
         KernelFunctionDescription = "Takes an image in the clipboard and transforms it to a PNG file.")]
@@ -70,6 +75,7 @@ public enum PasteFormats
         ResourceId = "PasteAsHtmlFile",
         IconGlyph = "\uF6FA",
         RequiresAIService = false,
+        IsPreviewable = false,
         SupportedClipboardFormats = ClipboardFormat.Html,
         IPCKey = AdvancedPastePasteAsFileAction.PropertyNames.PasteAsHtmlFile,
         KernelFunctionDescription = "Takes HTML data in the clipboard and transforms it to an HTML file.")]
@@ -79,6 +85,16 @@ public enum PasteFormats
         IsCoreAction = false,
         IconGlyph = "\uE945",
         RequiresAIService = true,
+        IsPreviewable = true,
         SupportedClipboardFormats = ClipboardFormat.Text | ClipboardFormat.Html | ClipboardFormat.Audio | ClipboardFormat.Image)]
     KernelQuery,
+
+    [PasteFormatMetadata(
+        IsCoreAction = false,
+        RequiresAIService = true,
+        IsPreviewable = true,
+        SupportedClipboardFormats = ClipboardFormat.Text,
+        KernelFunctionDescription = "Takes input instructions and transforms clipboard text (not TXT files) with these input instructions, putting the result back on the clipboard. This uses AI to accomplish the task.",
+        IsInternalAction = true)]
+    CustomTextTransformation,
 }
