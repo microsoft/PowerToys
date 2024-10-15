@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -16,6 +17,8 @@ using System.Windows.Media.Imaging;
 
 using ManagedCommon;
 using Windows.Management.Deployment;
+using Windows.UI.Xaml;
+using WorkspacesEditor.ViewModels;
 
 namespace WorkspacesEditor.Models
 {
@@ -109,6 +112,16 @@ namespace WorkspacesEditor.Models
         public string AppUserModelId { get; set; }
 
         public string CommandLineArguments { get; set; }
+
+        public Visibility PwaVisibility
+        {
+            get => MainViewModel.GetPwaVisibility(this);
+        }
+
+        public List<string> PwaItems
+        {
+            get => MainViewModel.GetPwaItems(this);
+        }
 
         private bool _isElevated;
 
@@ -504,6 +517,20 @@ namespace WorkspacesEditor.Models
         internal void MinimizedChecked()
         {
             Maximized = false;
+        }
+
+        internal void PwaSelectionChanged(int selectedIndex)
+        {
+        }
+
+        internal bool IsEdge()
+        {
+            return AppPath.EndsWith("edge.exe", StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        internal bool IsChrome()
+        {
+            return AppPath.EndsWith("chrome.exe", StringComparison.InvariantCultureIgnoreCase);
         }
     }
 }

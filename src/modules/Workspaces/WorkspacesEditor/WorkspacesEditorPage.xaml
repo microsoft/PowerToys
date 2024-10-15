@@ -126,8 +126,17 @@
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-                        <DockPanel Margin="100,5,0,0">
+                        <ComboBox
+                            Margin="100,5,0,0"
+                            Visibility="{Binding PwaVisibility}"
+                            ItemsSource="{Binding PwaItems}"
+                            SelectionChanged="PwaSelectionChanged"
+                            />
+                        <DockPanel 
+                            Margin="100,5,0,0"
+                            Grid.Row="1">
                             <TextBlock
                                 VerticalAlignment="Center"
                                 FontSize="14"
@@ -148,7 +157,7 @@
                                 TextChanged="CommandLineTextBox_TextChanged" />
                         </DockPanel>
                         <StackPanel
-                            Grid.Row="1"
+                            Grid.Row="2"
                             Margin="100,5,0,0"
                             Orientation="Horizontal">
                             <CheckBox
@@ -170,7 +179,7 @@
                                 IsChecked="{Binding Minimized, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
                         <StackPanel
-                            Grid.Row="2"
+                            Grid.Row="3"
                             Margin="100,5,0,0"
                             Orientation="Horizontal">
                             <TextBlock
