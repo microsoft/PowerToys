@@ -12,6 +12,7 @@ public:
     ~WindowArrangerHelper();
 
     void Launch(const std::wstring& projectId, bool elevated, std::function<bool()> keepWaitingCallback);
+    void UpdateLaunchStatus(const WorkspacesData::LaunchingAppState& appState) const;
 
 private:
     DWORD m_processId;

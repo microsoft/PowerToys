@@ -25,6 +25,7 @@ namespace WorkspacesData
                 auto operator<=>(const Position&) const = default;
             };
 
+            std::wstring id;
             std::wstring name;
             std::wstring title;
             std::wstring path;
