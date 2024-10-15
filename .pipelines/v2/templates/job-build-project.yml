@@ -127,12 +127,10 @@ jobs:
         Write-Host "##vso[task.setvariable variable=MSBuildCacheParameters]$MSBuildCacheParameters"
       displayName: Prepare MSBuildCache variables
 
-  - ${{ if eq(parameters.codeSign, true) }}:
-    # Only required if we're using ESRP
-    - template: steps-ensure-dotnet-version.yml
-      parameters:
-        sdk: true
-        version: '6.0'
+  - template: steps-ensure-dotnet-version.yml
+    parameters:
+      sdk: true
+      version: '6.0'
 
   - template: steps-ensure-dotnet-version.yml
     parameters:

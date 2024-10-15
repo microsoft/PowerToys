@@ -3,6 +3,8 @@
 
 #include <common/SettingsAPI/settings_helpers.h>
 
+#include <workspaces-common/GuidUtils.h>
+
 namespace NonLocalizable
 {
     const inline wchar_t ModuleKey[] = L"Workspaces";
@@ -72,6 +74,7 @@ namespace WorkspacesData
 
             namespace NonLocalizable
             {
+                const static wchar_t* AppIdID = L"id";
                 const static wchar_t* AppNameID = L"application";
                 const static wchar_t* AppPathID = L"application-path";
                 const static wchar_t* AppPackageFullNameID = L"package-full-name";
@@ -89,6 +92,7 @@ namespace WorkspacesData
             json::JsonObject ToJson(const WorkspacesProject::Application& data)
             {
                 json::JsonObject json{};
+                json.SetNamedValue(NonLocalizable::AppIdID, json::value(data.id));
                 json.SetNamedValue(NonLocalizable::AppNameID, json::value(data.name));
                 json.SetNamedValue(NonLocalizable::AppPathID, json::value(data.path));
                 json.SetNamedValue(NonLocalizable::AppTitleID, json::value(data.title));
@@ -110,6 +114,11 @@ namespace WorkspacesData
                 WorkspacesProject::Application result;
                 try
                 {
+                    if (json.HasKey(NonLocalizable::AppIdID))
+                    {
+                        result.id = json.GetNamedString(NonLocalizable::AppIdID);
+                    }
+
                     if (json.HasKey(NonLocalizable::AppNameID))
                     {
                         result.name = json.GetNamedString(NonLocalizable::AppNameID);

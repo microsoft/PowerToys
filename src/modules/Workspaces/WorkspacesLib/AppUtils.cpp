@@ -341,5 +341,42 @@ namespace Utils
 
             return Utils::Apps::GetApp(processPath, pid, apps);
         }
+
+        bool UpdateAppVersion(WorkspacesData::WorkspacesProject::Application& app, const AppList& installedApps)
+        {
+            auto installedApp = std::find_if(installedApps.begin(), installedApps.end(), [&](const AppData& val) { return val.name == app.name; });
+            if (installedApp == installedApps.end())
+            {
+                return false;
+            }
+
+            // Packaged apps have version in the path, it will be outdated after update.
+            // We need make sure the current package is up to date.
+            if (!app.packageFullName.empty())
+            {
+                if (app.packageFullName != installedApp->packageFullName)
+                {
+                    std::wstring exeFileName = app.path.substr(app.path.find_last_of(L"\\") + 1);
+                    app.packageFullName = installedApp->packageFullName;
+                    app.path = installedApp->installPath + L"\\" + exeFileName;
+                    Logger::trace(L"Updated package full name for {}: {}", app.name, app.packageFullName);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        bool UpdateWorkspacesApps(WorkspacesData::WorkspacesProject& workspace, const AppList& installedApps)
+        {
+            bool updated = false;
+            for (auto& app : workspace.apps)
+            {
+                updated |= UpdateAppVersion(app, installedApps);
+            }
+
+            return updated;
+        }
+
     }
 }
