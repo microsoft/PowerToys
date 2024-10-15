@@ -221,9 +221,9 @@ namespace WorkspacesEditor
 
         private void PwaSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ComboBox combokBox = sender as ComboBox;
-            Models.Application application = combokBox.DataContext as Models.Application;
-            application.PwaSelectionChanged(combokBox.SelectedIndex);
+            ComboBox comboBox = sender as ComboBox;
+            Models.Application application = comboBox.DataContext as Models.Application;
+            application.PwaSelectionChanged(comboBox.SelectedIndex);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace WorkspacesEditor.Utils
         private const string EdgeHostId = "HostId";
         private const string EdgeParameters = "Parameters";
         private const string ChromeBase = "Google\\Chrome\\User Data\\Default\\Web Applications";
-        private const string ChromeIdentifier = "_crx_";
+        private const string ChromeIdentifier = "_CRX_";
 
         private static List<PwaApp> edgePwaApps = new List<PwaApp>();
         private static List<PwaApp> chromePwaApps = new List<PwaApp>();
@@ -115,7 +115,7 @@ namespace WorkspacesEditor.Utils
                 foreach (string subDir in Directory.GetDirectories(baseFolderName))
                 {
                     string dirName = Path.GetFileName(subDir);
-                    if (!dirName.StartsWith(ChromeIdentifier, StringComparison.InvariantCulture))
+                    if (!dirName.StartsWith(ChromeIdentifier, StringComparison.InvariantCultureIgnoreCase))
                     {
                         continue;
                     }
