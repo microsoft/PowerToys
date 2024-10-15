@@ -44,18 +44,18 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// Copy the given text to the clipboard
         /// </summary>
         /// <param name="text">The text to copy to the clipboard</param>
-        /// <returns><see langword="true"/>The text successful copy to the clipboard, otherwise <see langword="false"/></returns>
+        /// <returns><see langword="true"/> The text successful copy to the clipboard, otherwise <see langword="false"/></returns>
         /// <remarks>Code copied from TimeZone plugin</remarks>
         internal static bool CopyToClipBoard(in string text)
         {
             try
             {
-                Clipboard.Clear();
                 Clipboard.SetText(text);
                 return true;
             }
             catch (Exception exception)
             {
+                MessageBox.Show(exception.Message, Resources.Microsoft_plugin_timedate_copy_failed);
                 Log.Exception("Can't copy to clipboard", exception, typeof(ResultHelper));
                 return false;
             }
