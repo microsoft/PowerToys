@@ -113,7 +113,7 @@ HWND WindowArranger::TryMoveWindow(const WorkspacesData::WorkspacesProject::Appl
         {
             continue;
         }
-          
+
         std::wstring processPath = get_process_path(window);
         if (processPath.empty())
         {
@@ -240,14 +240,14 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
 void WindowArranger::processWindows(bool processAll)
 {
     std::vector<HWND> windows = WindowEnumerator::Enumerate(WindowFilter::Filter);
-    
+
     if (!processAll)
     {
         std::vector<HWND> windowsDiff{};
         std::copy_if(windows.begin(), windows.end(), std::back_inserter(windowsDiff), [&](HWND window) { return std::find(m_windowsBefore.begin(), m_windowsBefore.end(), window) == m_windowsBefore.end(); });
         windows = windowsDiff;
     }
-    
+
     for (HWND window : windows)
     {
         processWindow(window);
@@ -283,12 +283,11 @@ void WindowArranger::processWindow(HWND window)
     }
 
     const auto& apps = m_launchingStatus.Get();
-    auto iter = std::find_if(apps.begin(), apps.end(), [&](const auto& val) 
-        { 
-            return val.second.state == LaunchingState::Launched && 
-                !val.second.window && 
-                (val.first.name == data.value().name || val.first.path == data.value().installPath); 
-        });
+    auto iter = std::find_if(apps.begin(), apps.end(), [&](const auto& val) {
+        return val.second.state == LaunchingState::Launched &&
+               !val.second.window &&
+               (val.first.name == data.value().name || val.first.path == data.value().installPath);
+    });
 
     if (iter == apps.end())
     {
