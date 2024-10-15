@@ -105,8 +105,18 @@ bool ShouldMoveApp(const WorkspacesData::WorkspacesProject::Application& app, Wo
     }
 }
 
+int CalculateDistance(const WorkspacesData::WorkspacesProject::Application& app, HWND window)
+{
+    RECT windowPosition;
+    GetWindowRect(window, &windowPosition);
+    return abs(app.position.x - windowPosition.left) + abs(app.position.y - windowPosition.top) + abs(app.position.x + app.position.width - windowPosition.right) + abs(app.position.y + app.position.height - windowPosition.bottom);
+}
+
 HWND WindowArranger::TryMoveWindow(const WorkspacesData::WorkspacesProject::Application& app, std::vector<HWND> movedWindows)
 {
+    std::optional<Utils::Apps::AppData> appDataNearest = std::nullopt;
+    int nearestWindowDistance = 0;
+    HWND nearestWindow = NULL;
     for (HWND window : m_windowsBefore)
     {
         if (std::find(movedWindows.begin(), movedWindows.end(), window) != movedWindows.end())
@@ -131,37 +141,56 @@ HWND WindowArranger::TryMoveWindow(const WorkspacesData::WorkspacesProject::Appl
 
         if (app.name == data.value().name || app.path == data.value().installPath)
         {
-            Logger::info(L"The app {} is found at launch, moving it", app.name);
-            bool success = moveWindow(window, app);
-            const auto& apps = m_launchingStatus.Get();
-            auto iter = apps.find(app);
-            if (success)
+            if (!appDataNearest.has_value())
             {
-                if (iter == apps.end())
-                {
-                    Logger::info(L"The app {} is not found in the map of apps (unrealistic)", app.name);
-                }
-                else
-                {
-                    m_launchingStatus.Update(iter->first, LaunchingState::LaunchedAndMoved);
-                    m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({ app, nullptr, iter->second.state }).ToString().c_str());
-                }
-                return window;
+                appDataNearest = data;
+                nearestWindowDistance = CalculateDistance(app, window);
+                nearestWindow = window;
             }
             else
             {
-                if (iter == apps.end())
+                int currentDistance = CalculateDistance(app, window);
+                if (currentDistance < nearestWindowDistance)
                 {
-                    Logger::info(L"The app {} is not found in the map of apps (unrealistic)", app.name);
+                    appDataNearest = data;
+                    nearestWindowDistance = currentDistance;
+                    nearestWindow = window;
                 }
-                else
-                {
-                    Logger::info(L"Failed to move the existing app {} ", app.name);
-                    m_launchingStatus.Update(iter->first, LaunchingState::Failed);
-                    m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({ app, nullptr, iter->second.state }).ToString().c_str());
-                }
-                return NULL;
             }
+        }
+    }
+    if (appDataNearest.has_value())
+    {
+        Logger::info(L"The app {} is found at launch, moving it", app.name);
+        bool success = moveWindow(nearestWindow, app);
+        const auto& apps = m_launchingStatus.Get();
+        auto iter = apps.find(app);
+        if (success)
+        {
+            if (iter == apps.end())
+            {
+                Logger::info(L"The app {} is not found in the map of apps (unrealistic)", app.name);
+            }
+            else
+            {
+                m_launchingStatus.Update(iter->first, LaunchingState::LaunchedAndMoved);
+                m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({ app, nullptr, iter->second.state }).ToString().c_str());
+            }
+            return nearestWindow;
+        }
+        else
+        {
+            if (iter == apps.end())
+            {
+                Logger::info(L"The app {} is not found in the map of apps (unrealistic)", app.name);
+            }
+            else
+            {
+                Logger::info(L"Failed to move the existing app {} ", app.name);
+                m_launchingStatus.Update(iter->first, LaunchingState::Failed);
+                m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({ app, nullptr, iter->second.state }).ToString().c_str());
+            }
+            return NULL;
         }
     }
     Logger::info(L"The app {} is not found at launch, cannot be moved, has to be started", app.name);
