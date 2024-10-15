@@ -17,7 +17,7 @@ public sealed class PasteFormatMetadataAttribute : Attribute
 
     public bool RequiresAIService { get; init; }
 
-    public bool IsPreviewable { get; init; }
+    public bool CanPreview { get; init; }
 
     public ClipboardFormat SupportedClipboardFormats { get; init; }
 

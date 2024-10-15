@@ -371,7 +371,7 @@ namespace AdvancedPaste.ViewModels
                 await delayTask;
 
                 var text = await ClipboardHelper.GetTextOrNullAsync(dataPackage.GetView());
-                bool shouldPreview = pasteFormat.Metadata.IsPreviewable && _userSettings.ShowCustomPreview && !string.IsNullOrEmpty(text) && source != PasteActionSource.GlobalKeyboardShortcut;
+                bool shouldPreview = pasteFormat.Metadata.CanPreview && _userSettings.ShowCustomPreview && !string.IsNullOrEmpty(text) && source != PasteActionSource.GlobalKeyboardShortcut;
 
                 if (shouldPreview)
                 {
