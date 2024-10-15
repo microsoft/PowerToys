@@ -56,7 +56,7 @@ public static class TransformHelpers
     {
         Logger.LogTrace();
 
-        var bitmap = await ClipboardHelper.GetClipboardImageContentAsync(clipboardData) ?? throw new ArgumentException("No image content found in clipboard", nameof(clipboardData));
+        var bitmap = await clipboardData.GetImageContentAsync() ?? throw new ArgumentException("No image content found in clipboard", nameof(clipboardData));
         var text = await OcrHelpers.ExtractTextAsync(bitmap);
         return CreateDataPackageFromText(text);
     }
@@ -65,7 +65,7 @@ public static class TransformHelpers
     {
         Logger.LogTrace();
 
-        var clipboardBitmap = await ClipboardHelper.GetClipboardImageContentAsync(clipboardData);
+        var clipboardBitmap = await clipboardData.GetImageContentAsync();
 
         using var pngStream = new InMemoryRandomAccessStream();
         var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, pngStream);
@@ -79,7 +79,7 @@ public static class TransformHelpers
     {
         Logger.LogTrace();
 
-        var text = await ClipboardHelper.GetClipboardTextOrHtmlTextAsync(clipboardData);
+        var text = await clipboardData.GetTextOrHtmlTextAsync();
         return await CreateDataPackageFromFileContentAsync(text, "txt");
     }
 
@@ -87,7 +87,7 @@ public static class TransformHelpers
     {
         Logger.LogTrace();
 
-        var cfHtml = await ClipboardHelper.GetClipboardHtmlContentAsync(clipboardData);
+        var cfHtml = await clipboardData.GetHtmlContentAsync();
         var html = RemoveHtmlMetadata(cfHtml);
 
         return await CreateDataPackageFromFileContentAsync(html, "html");
@@ -124,7 +124,7 @@ public static class TransformHelpers
         var path = GetPasteAsFileTempFilePath(fileExtension);
 
         await File.WriteAllTextAsync(path, data);
-        return await ClipboardHelper.CreateDataPackageFromFileContentAsync(path);
+        return await DataPackageHelpers.CreateFromFileAsync(path);
     }
 
     private static async Task<DataPackage> CreateDataPackageFromFileContentAsync(Stream stream, string fileExtension)
@@ -134,7 +134,7 @@ public static class TransformHelpers
         using var fileStream = File.Create(path);
         await stream.CopyToAsync(fileStream);
 
-        return await ClipboardHelper.CreateDataPackageFromFileContentAsync(path);
+        return await DataPackageHelpers.CreateFromFileAsync(path);
     }
 
     private static string GetPasteAsFileTempFilePath(string fileExtension)
@@ -145,5 +145,5 @@ public static class TransformHelpers
         return Path.Combine(Path.GetTempPath(), $"{prefix}{timestamp}.{fileExtension}");
     }
 
-    private static DataPackage CreateDataPackageFromText(string content) => ClipboardHelper.CreateDataPackageFromText(content);
+    private static DataPackage CreateDataPackageFromText(string content) => DataPackageHelpers.CreateFromText(content);
 }

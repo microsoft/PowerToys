@@ -32,7 +32,7 @@ internal static class KernelExtensions
 
     internal static async Task<string> GetDataFormatsAsync(this Kernel kernel)
     {
-        var clipboardFormats = await ClipboardHelper.GetAvailableClipboardFormatsAsync(kernel.GetDataPackageView());
+        var clipboardFormats = await kernel.GetDataPackageView().GetAvailableFormatsAsync();
         return clipboardFormats.ToString();
     }
 

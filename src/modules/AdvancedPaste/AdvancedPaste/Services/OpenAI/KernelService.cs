@@ -70,7 +70,7 @@ public sealed class KernelService(IAICredentialsProvider aiCredentialsProvider, 
 
             var outputPackage = kernel.GetDataPackage();
 
-            if (result == null || !(await ClipboardHelper.HasDataAsync(outputPackage.GetView())))
+            if (result == null || !(await outputPackage.GetView().HasUsableDataAsync()))
             {
                 throw new InvalidOperationException("No data was returned from the completion operation");
             }
@@ -134,7 +134,7 @@ public sealed class KernelService(IAICredentialsProvider aiCredentialsProvider, 
            {
                var input = await dataPackageView.GetTextAsync();
                var output = await _customTextTransformService.TransformTextAsync(inputInstructions, input);
-               return ClipboardHelper.CreateDataPackageFromText(output);
+               return DataPackageHelpers.CreateFromText(output);
            });
 
     private Task<string> ExecuteStandardTransformAsync(Kernel kernel, PasteFormats format) =>

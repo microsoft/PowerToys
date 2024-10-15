@@ -205,7 +205,7 @@ namespace AdvancedPaste.ViewModels
             }
 
             ClipboardData = Clipboard.GetContent();
-            AvailableClipboardFormats = await ClipboardHelper.GetAvailableClipboardFormatsAsync(ClipboardData);
+            AvailableClipboardFormats = await ClipboardData.GetAvailableFormatsAsync();
         }
 
         public async Task OnShowAsync()
@@ -295,13 +295,13 @@ namespace AdvancedPaste.ViewModels
 
             if (!string.IsNullOrEmpty(text))
             {
-                await CopyPasteAndHideAsync(ClipboardHelper.CreateDataPackageFromText(text));
+                await CopyPasteAndHideAsync(DataPackageHelpers.CreateFromText(text));
             }
         }
 
         private async Task CopyPasteAndHideAsync(DataPackage package)
         {
-            await ClipboardHelper.TryCopyPasteDataPackageAsync(package, HideWindow);
+            await ClipboardHelper.TryCopyPasteAsync(package, HideWindow);
             Query = string.Empty;
         }
 
@@ -370,7 +370,7 @@ namespace AdvancedPaste.ViewModels
 
                 await delayTask;
 
-                var text = await ClipboardHelper.GetTextOrNullAsync(dataPackage.GetView());
+                var text = await dataPackage.GetView().GetTextOrEmptyAsync();
                 bool shouldPreview = pasteFormat.Metadata.CanPreview && _userSettings.ShowCustomPreview && !string.IsNullOrEmpty(text) && source != PasteActionSource.GlobalKeyboardShortcut;
 
                 if (shouldPreview)
