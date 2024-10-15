@@ -97,6 +97,7 @@ namespace WorkspacesEditor.Utils
                 {
                     wrapper.Applications.Add(new ProjectData.ApplicationWrapper
                     {
+                        Id = app.Id,
                         Application = app.AppName,
                         ApplicationPath = app.AppPath,
                         Title = app.AppTitle,
