@@ -6,7 +6,7 @@
 class LauncherUIHelper
 {
 public:
-    LauncherUIHelper();
+    LauncherUIHelper(std::function<void(const std::wstring&)> ipcCallback);
     ~LauncherUIHelper();
 
     void LaunchUI();

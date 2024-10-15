@@ -345,3 +345,7 @@ Generate-FileComponents -fileListName "SettingsV2AssetsFiles" -wxsFilePath $PSSc
 Generate-FileComponents -fileListName "SettingsV2AssetsModulesFiles" -wxsFilePath $PSScriptRoot\Settings.wxs -regroot $registryroot
 Generate-FileComponents -fileListName "SettingsV2OOBEAssetsModulesFiles" -wxsFilePath $PSScriptRoot\Settings.wxs -regroot $registryroot
 Generate-FileComponents -fileListName "SettingsV2OOBEAssetsFluentIconsFiles" -wxsFilePath $PSScriptRoot\Settings.wxs -regroot $registryroot
+
+#Workspaces
+Generate-FileList -fileDepsJson "" -fileListName WorkspacesImagesComponentFiles -wxsFilePath $PSScriptRoot\Workspaces.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Workspaces\"
+Generate-FileComponents -fileListName "WorkspacesImagesComponentFiles" -wxsFilePath $PSScriptRoot\Workspaces.wxs -regroot $registryroot

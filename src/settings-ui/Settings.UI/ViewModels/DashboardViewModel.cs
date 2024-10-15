@@ -130,7 +130,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 var settingsUtils = new SettingsUtils();
                 var settings = NewPlusViewModel.LoadSettings(settingsUtils);
-                NewPlusViewModel.CopyTemplateExamples(settings.TemplateLocation);
+                NewPlusViewModel.CopyTemplateExamples(settings.Properties.TemplateLocation.Value);
             }
         }
 

@@ -3,6 +3,7 @@
 #include <common/utils/gpo.h>
 #include <common/utils/json.h>
 #include <common/SettingsAPI/settings_helpers.h>
+#include <common/SettingsAPI/settings_objects.h>
 
 #include "settings.h"
 #include "constants.h"
@@ -38,18 +39,13 @@ NewSettings::NewSettings()
 
 void NewSettings::Save()
 {
-    json::JsonObject new_settings_json_data;
+    PowerToysSettings::PowerToyValues values(newplus::constants::non_localizable::powertoy_key, newplus::constants::non_localizable::powertoy_key);
 
-    new_settings_json_data.SetNamedValue(newplus::constants::non_localizable::settings_json_key_hide_file_extension,
-                                         json::value(new_settings.hide_file_extension));
+    values.add_property(newplus::constants::non_localizable::settings_json_key_hide_file_extension, new_settings.hide_file_extension);
+    values.add_property(newplus::constants::non_localizable::settings_json_key_hide_starting_digits, new_settings.hide_starting_digits);
+    values.add_property(newplus::constants::non_localizable::settings_json_key_template_location, new_settings.template_location);
 
-    new_settings_json_data.SetNamedValue(newplus::constants::non_localizable::settings_json_key_hide_starting_digits,
-                                         json::value(new_settings.hide_starting_digits));
-
-    new_settings_json_data.SetNamedValue(newplus::constants::non_localizable::settings_json_key_template_location,
-                                         json::value(new_settings.template_location));
-
-    json::to_file(new_settings_json_file_path, new_settings_json_data);
+    values.save_to_settings_file();
 
     GetSystemTimeAsFileTime(&new_settings_last_loaded_timestamp);
 }
@@ -122,35 +118,27 @@ void NewSettings::Reload()
 
 void NewSettings::ParseJson()
 {
-    auto json = json::from_file(new_settings_json_file_path);
-    if (json)
+    PowerToysSettings::PowerToyValues settings =
+        PowerToysSettings::PowerToyValues::load_from_settings_file(newplus::constants::non_localizable::powertoy_key);
+
+    auto templateValue = settings.get_string_value(newplus::constants::non_localizable::settings_json_key_template_location);
+    if (templateValue.has_value())
     {
-        try
-        {
-            const json::JsonObject& new_settings_json = json.value();
-
-            if (json::has(new_settings_json, newplus::constants::non_localizable::settings_json_key_hide_file_extension, json::JsonValueType::Boolean))
-            {
-                new_settings.hide_file_extension = new_settings_json.GetNamedBoolean(
-                    newplus::constants::non_localizable::settings_json_key_hide_file_extension);
-            }
-
-            if (json::has(new_settings_json, newplus::constants::non_localizable::settings_json_key_hide_starting_digits, json::JsonValueType::Boolean))
-            {
-                new_settings.hide_starting_digits = new_settings_json.GetNamedBoolean(
-                    newplus::constants::non_localizable::settings_json_key_hide_starting_digits);
-            }
-
-            if (json::has(new_settings_json, newplus::constants::non_localizable::settings_json_key_template_location, json::JsonValueType::String))
-            {
-                new_settings.template_location = new_settings_json.GetNamedString(
-                    newplus::constants::non_localizable::settings_json_key_template_location);
-            }
-        }
-        catch (const winrt::hresult_error&)
-        {
-        }
+        new_settings.template_location = templateValue.value();
     }
+
+    auto hideFileExtensionValue = settings.get_bool_value(newplus::constants::non_localizable::settings_json_key_hide_file_extension);
+    if (hideFileExtensionValue.has_value())
+    {
+        new_settings.hide_file_extension = hideFileExtensionValue.value();
+    }
+
+    auto hideStartingDigitsValue = settings.get_bool_value(newplus::constants::non_localizable::settings_json_key_hide_starting_digits);
+    if (hideStartingDigitsValue.has_value())
+    {
+        new_settings.hide_starting_digits = hideStartingDigitsValue.value();
+    }
+
     GetSystemTimeAsFileTime(&new_settings_last_loaded_timestamp);
 }
 
