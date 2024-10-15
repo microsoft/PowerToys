@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <winuiex:WindowEx
     x:Class="EnvironmentVariables.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -10,8 +10,8 @@
     x:Uid="Window"
     MinWidth="700"
     MinHeight="480"
-    mc:Ignorable="d"
-    Closed="Window_Closed">
+    Closed="Window_Closed"
+    mc:Ignorable="d">
     <Window.SystemBackdrop>
         <MicaBackdrop />
     </Window.SystemBackdrop>

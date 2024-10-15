@@ -411,11 +411,11 @@
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
                         <InfoBar
-                                x:Uid="GPO_SettingIsManaged"
-                                IsClosable="False"
-                                IsOpen="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}"
-                                IsTabStop="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}"
-                                Severity="Informational" />
+                            x:Uid="GPO_SettingIsManaged"
+                            IsClosable="False"
+                            IsOpen="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}"
+                            IsTabStop="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}"
+                            Severity="Informational" />
 
                     </StackPanel>
                 </controls:SettingsGroup>
