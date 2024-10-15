@@ -2,8 +2,6 @@
 ## "PackagemanagerWrapper.cs" should be "PackageManagerWrapper.cs"
 ## NOTICE.MD > MOZILLA PUBLIC LICENSE v1.1
 
-# user name but user folder causes a flag
-8LWXpg 
 aaaa
 abcdefghjkmnpqrstuvxyz
 abgr
