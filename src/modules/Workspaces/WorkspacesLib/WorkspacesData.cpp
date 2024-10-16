@@ -103,11 +103,7 @@ namespace WorkspacesData
                 json.SetNamedValue(NonLocalizable::CanLaunchElevatedID, json::value(data.canLaunchElevated));
                 json.SetNamedValue(NonLocalizable::MinimizedID, json::value(data.isMinimized));
                 json.SetNamedValue(NonLocalizable::MaximizedID, json::value(data.isMaximized));
-                if (data.moveIfExists.has_value())
-                {
-                    json.SetNamedValue(NonLocalizable::MoveIfExistsID, json::value(data.moveIfExists.value()));
-                }
-
+                json.SetNamedValue(NonLocalizable::MoveIfExistsID, json::value(static_cast<int>(data.moveIfExists)));
                 json.SetNamedValue(NonLocalizable::PositionID, PositionJSON::ToJson(data.position));
                 json.SetNamedValue(NonLocalizable::MonitorID, json::value(data.monitor));
 
@@ -155,14 +151,7 @@ namespace WorkspacesData
 
                     result.isMaximized = json.GetNamedBoolean(NonLocalizable::MaximizedID);
                     result.isMinimized = json.GetNamedBoolean(NonLocalizable::MinimizedID);
-                    if (json.HasKey(NonLocalizable::MoveIfExistsID))
-                    {
-                        result.moveIfExists = json.GetNamedBoolean(NonLocalizable::MoveIfExistsID);
-                    }
-                    else
-                    {
-                        result.moveIfExists = NULL;
-                    }
+                    result.moveIfExists = static_cast<AppLaunchMode>(json.GetNamedNumber(NonLocalizable::MoveIfExistsID));
 
                     result.monitor = static_cast<int>(json.GetNamedNumber(NonLocalizable::MonitorID));
                     if (json.HasKey(NonLocalizable::PositionID))

@@ -95,13 +95,13 @@ namespace FancyZones
 
 bool ShouldMoveApp(const WorkspacesData::WorkspacesProject::Application& app, WorkspacesData::WorkspacesProject& project)
 {
-    if (!app.moveIfExists.has_value())
+    if (app.moveIfExists == WorkspacesData::AppLaunchMode::AsInWorkspace)
     {
         return project.moveExistingWindows;
     }
     else
     {
-        return app.moveIfExists.value();
+        return app.moveIfExists == WorkspacesData::AppLaunchMode::MoveIfExists;
     }
 }
 

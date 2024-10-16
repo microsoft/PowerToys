@@ -232,7 +232,7 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Do as in Workspace defined.
+        ///   Looks up a localized string similar to Launch or Move App as in Workspace defined.
         /// </summary>
         public static string DoAsInWorkspace {
             get {

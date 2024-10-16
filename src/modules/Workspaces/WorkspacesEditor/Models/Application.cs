@@ -16,6 +16,7 @@ using System.Windows.Media.Imaging;
 
 using ManagedCommon;
 using Windows.Management.Deployment;
+using static WorkspacesEditor.Data.WorkspacesData;
 
 namespace WorkspacesEditor.Models
 {
@@ -167,27 +168,24 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        private bool? _moveIfExists;
+        private AppLaunchMode _moveIfExists;
 
-        public bool? MoveIfExists
+        public AppLaunchMode MoveIfExists
         {
             get => _moveIfExists;
             set
             {
                 _moveIfExists = value;
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(MoveIfExists)));
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(MoveIfExistsString)));
             }
         }
 
-        public string MoveIfExistsString
+        public int MoveIfExistsIndex
         {
-            get => _moveIfExists switch
+            get => (int)_moveIfExists;
+            set
             {
-                true => Properties.Resources.MoveAppIfExist,
-                false => Properties.Resources.AlwaysLaunch,
-                _ => Properties.Resources.DoAsInWorkspace,
-            };
+                MoveIfExists = (AppLaunchMode)value;
+            }
         }
 
         public bool EditPositionEnabled { get => !Minimized && !Maximized; }

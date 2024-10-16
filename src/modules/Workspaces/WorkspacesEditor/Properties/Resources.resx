@@ -176,7 +176,7 @@
     <value>Delete Workspace dialog.</value>
   </data>
   <data name="DoAsInWorkspace" xml:space="preserve">
-    <value>Do as in Workspace defined</value>
+    <value>Launch or Move App as in Workspace defined</value>
   </data>
   <data name="Edit" xml:space="preserve">
     <value>Edit</value>

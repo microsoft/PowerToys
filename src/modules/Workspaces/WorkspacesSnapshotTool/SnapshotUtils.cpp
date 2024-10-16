@@ -260,7 +260,7 @@ namespace SnapshotUtils
                 .canLaunchElevated = data.value().canLaunchElevated,
                 .isMinimized = WindowUtils::IsMinimized(window),
                 .isMaximized = WindowUtils::IsMaximized(window),
-                .moveIfExists = std::nullopt,
+                .moveIfExists = WorkspacesData::AppLaunchMode::AsInWorkspace,
                 .position = WorkspacesData::WorkspacesProject::Application::Position{
                     .x = rect.left,
                     .y = rect.top,
