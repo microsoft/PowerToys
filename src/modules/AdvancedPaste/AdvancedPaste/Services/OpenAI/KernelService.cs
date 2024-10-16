@@ -57,7 +57,7 @@ public sealed class KernelService(IAICredentialsProvider aiCredentialsProvider, 
 
             var usage = result.Metadata.GetValueOrDefault("Usage") as CompletionsUsage;
 
-            AdvancedPasteSemanticKernelFormatEvent telemetryEvent = new(usage?.PromptTokens ?? 0, usage?.CompletionTokens ?? 0, ModelName, kernel.GetActionChain().ConvertAll(format => format.ToString()));
+            AdvancedPasteSemanticKernelFormatEvent telemetryEvent = new(usage?.PromptTokens ?? 0, usage?.CompletionTokens ?? 0, ModelName, AdvancedPasteSemanticKernelFormatEvent.FormatActionChain(kernel.GetActionChain()));
             PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
 
             var logEvent = new { telemetryEvent.PromptTokens, telemetryEvent.CompletionTokens, telemetryEvent.ModelName, telemetryEvent.UsedActionChain };

@@ -7,9 +7,9 @@ using Windows.Security.Credentials;
 
 namespace AdvancedPaste.Services.OpenAI;
 
-public sealed class CredentialsProvider : IAICredentialsProvider
+public sealed class VaultCredentialsProvider : IAICredentialsProvider
 {
-    public CredentialsProvider() => Refresh();
+    public VaultCredentialsProvider() => Refresh();
 
     public string Key { get; private set; }
 
@@ -26,8 +26,7 @@ public sealed class CredentialsProvider : IAICredentialsProvider
     {
         try
         {
-            var cred = new PasswordVault().Retrieve("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey");
-            return cred?.Password ?? string.Empty;
+            return new PasswordVault().Retrieve("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey")?.Password ?? string.Empty;
         }
         catch (Exception)
         {

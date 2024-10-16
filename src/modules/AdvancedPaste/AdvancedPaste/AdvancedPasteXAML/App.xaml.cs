@@ -72,7 +72,7 @@ namespace AdvancedPaste
             Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory).ConfigureServices((context, services) =>
             {
                 services.AddSingleton<IUserSettings, UserSettings>();
-                services.AddSingleton<IAICredentialsProvider, Services.OpenAI.CredentialsProvider>();
+                services.AddSingleton<IAICredentialsProvider, Services.OpenAI.VaultCredentialsProvider>();
                 services.AddSingleton<ICustomTextTransformService, Services.OpenAI.CustomTextTransformService>();
                 services.AddSingleton<IKernelService, Services.OpenAI.KernelService>();
                 services.AddSingleton<IPasteFormatExecutor, PasteFormatExecutor>();

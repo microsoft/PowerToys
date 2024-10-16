@@ -11,15 +11,21 @@ using Microsoft.PowerToys.Telemetry.Events;
 namespace AdvancedPaste.Telemetry;
 
 [EventData]
-public class AdvancedPasteSemanticKernelFormatEvent(int promptTokens, int completionTokens, string modelName, List<string> usedActionChain) : EventBase, IEvent
+public class AdvancedPasteSemanticKernelFormatEvent(int promptTokens, int completionTokens, string modelName, string usedActionChain) : EventBase, IEvent
 {
+    public static string FormatActionChain(IEnumerable<PasteFormats> usedActionChain) => string.Join(", ", usedActionChain);
+
     public int PromptTokens { get; set; } = promptTokens;
 
     public int CompletionTokens { get; set; } = completionTokens;
 
     public string ModelName { get; set; } = modelName;
 
-    public List<string> UsedActionChain { get; set; } = usedActionChain;
+    /// <summary>
+    /// Gets or sets a comma-separated list of paste formats used - in the same order they were executed.
+    /// Conceptually an array of strings but formatted this way to work around https://github.com/dotnet/runtime/issues/10428
+    /// </summary>
+    public string UsedActionChain { get; set; } = usedActionChain;
 
     public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
 }
