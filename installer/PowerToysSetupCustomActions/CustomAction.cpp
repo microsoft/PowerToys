@@ -76,7 +76,7 @@ inline bool isDataDiagnosticEnabled()
     }
     RegCloseKey(key);
 
-    return isDataDiagnosticsEnabled;
+    return isDataDiagnosticsEnabled == 1;
 }
 
 

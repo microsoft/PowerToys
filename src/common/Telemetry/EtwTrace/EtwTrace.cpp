@@ -62,7 +62,7 @@ namespace
         }
         RegCloseKey(key);
 
-        return isDataDiagnosticsEnabled;
+        return isDataDiagnosticsEnabled == 1;
     }
 
 }
@@ -74,13 +74,12 @@ namespace Shared
         ETWTrace::ETWTrace() :
             ETWTrace(PowerToysProviderGUID)
         {
-
         }
 
-        ETWTrace::ETWTrace(const std::wstring& providerGUIDstr)
+        ETWTrace::ETWTrace(const std::wstring& providerGUID)
         {
             GUID id;
-            if (SUCCEEDED(CLSIDFromString(providerGUIDstr.c_str(), &id)))
+            if (SUCCEEDED(CLSIDFromString(providerGUID.c_str(), &id)))
             {
                 m_providerGUID = id;
             }
@@ -179,7 +178,7 @@ namespace Shared
 
             eventTraceProperties->Wnode.BufferSize = bufferSizeInBytes;
             eventTraceProperties->Wnode.Flags = WNODE_FLAG_TRACED_GUID;
-            eventTraceProperties->Wnode.ClientContext = 1; // QPC clock resolution
+            eventTraceProperties->Wnode.ClientContext = 1;
             eventTraceProperties->Wnode.Guid = m_providerGUID;
             eventTraceProperties->BufferSize = 4; // 4KB, the minimum size
             eventTraceProperties->LogFileMode = EVENT_TRACE_PRIVATE_LOGGER_MODE | EVENT_TRACE_PRIVATE_IN_PROC | EVENT_TRACE_FILE_MODE_NEWFILE;

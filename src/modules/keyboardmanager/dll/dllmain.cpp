@@ -173,7 +173,7 @@ public:
         if (m_hProcess)
         {
             SetEvent(m_hTerminateEngineEvent);
-            WaitForSingleObject(m_hProcess, 1000);
+            WaitForSingleObject(m_hProcess, 1500);
 
             TerminateProcess(m_hProcess, 0);
             m_hProcess = nullptr;

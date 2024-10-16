@@ -158,8 +158,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 OnPropertyChanged(nameof(ActiveModules));
                 OnPropertyChanged(nameof(DisabledModules));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.LogError($"Updating active/disabled modules list failed: {ex.Message}");
             }
         }
 

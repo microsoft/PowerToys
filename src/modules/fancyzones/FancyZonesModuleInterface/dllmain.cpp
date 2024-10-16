@@ -206,7 +206,7 @@ private:
         if (m_hProcess)
         {
             SendFZECloseEvent();
-            WaitForSingleObject(m_hProcess, 1000);
+            WaitForSingleObject(m_hProcess, 1500);
             TerminateProcess(m_hProcess, 0);
             m_hProcess = nullptr;
         }

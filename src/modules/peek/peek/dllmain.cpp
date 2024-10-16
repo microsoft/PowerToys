@@ -13,8 +13,8 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-BOOL APIENTRY DllMain(HMODULE /*hModule*/, 
-                      DWORD ul_reason_for_call, 
+BOOL APIENTRY DllMain(HMODULE /*hModule*/,
+                      DWORD ul_reason_for_call,
                       LPVOID /*lpReserved*/)
 {
     switch (ul_reason_for_call)
@@ -164,7 +164,7 @@ private:
         {
             return false;
         }
-        if (wcsncmp(className, L"Progman", MAX_PATH) !=0 && wcsncmp(className, L"WorkerW", MAX_PATH) != 0)
+        if (wcsncmp(className, L"Progman", MAX_PATH) != 0 && wcsncmp(className, L"WorkerW", MAX_PATH) != 0)
         {
             return false;
         }
@@ -240,7 +240,7 @@ private:
         }
 
         DWORD pid{};
-        if (GetWindowThreadProcessId(foregroundWindowHandle, &pid)!=0)
+        if (GetWindowThreadProcessId(foregroundWindowHandle, &pid) != 0)
         {
             // If the foreground window is the Peek window, send activation signal.
             if (m_processPid != 0 && pid == m_processPid)
@@ -405,7 +405,7 @@ public:
         {
             ResetEvent(m_hInvokeEvent);
             SetEvent(m_hTerminateEvent);
-            WaitForSingleObject(m_hProcess, 1000);
+            WaitForSingleObject(m_hProcess, 1500);
             auto result = TerminateProcess(m_hProcess, 1);
             if (result == 0)
             {

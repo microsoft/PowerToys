@@ -380,7 +380,6 @@ drf
 drivedetectionwarning
 dshow
 DSTINVERT
-Dstr
 DUMMYUNIONNAME
 dutil
 DVASPECT
@@ -452,7 +451,6 @@ etw
 EUQ
 eurochange
 eventlog
-EVENTTAG
 eventvwr
 everytime
 evntrace
@@ -1166,7 +1164,6 @@ phwnd
 pici
 pidl
 PIDLIST
-PII
 PINDIR
 pinfo
 pinvoke
@@ -1271,7 +1268,6 @@ qit
 QITAB
 QITABENT
 qoi
-QPC
 Quarternary
 QUERYENDSESSION
 QUERYOPEN
@@ -1734,7 +1730,6 @@ VERBW
 VERIFYCONTEXT
 verrsrc
 VERSIONINFO
-vewng
 VFT
 vget
 vgetq
@@ -1924,7 +1919,6 @@ YPels
 YResolution
 YStr
 YVIRTUALSCREEN
-yyy
 ZEROINIT
 zonable
 zoneset

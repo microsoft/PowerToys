@@ -24,7 +24,7 @@ namespace Microsoft.PowerToys.Telemetry
         internal const EventKeywords CriticalDataKeyword = (EventKeywords)0x0000800000000000;
 
         private readonly bool telemetryEnabled = DataDiagnosticsSettings.GetEnabledValue(); // This is the global telemetry setting on whether to log events
-        private readonly bool telemetryRecordingEnabled = DataDiagnosticsSettings.GetViewEnabledValue(); // This is the setting for recording telemetry events to disk for vewng
+        private readonly bool telemetryRecordingEnabled = DataDiagnosticsSettings.GetViewEnabledValue(); // This is the setting for recording telemetry events to disk for viewing
         private readonly string etwFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\PowerToys\", "etw");
         private bool disposedValue;
         private string sessionName;
@@ -89,7 +89,7 @@ namespace Microsoft.PowerToys.Telemetry
                 }
 
                 string executable = Process.GetCurrentProcess().ProcessName;
-                string dateTimeNow = DateTime.Now.ToString("MM-d-yyy__H_mm_ss", CultureInfo.InvariantCulture);
+                string dateTimeNow = DateTime.Now.ToString("MM-d-yyyy__H_mm_ss", CultureInfo.InvariantCulture);
                 this.sessionName = string.Format(CultureInfo.InvariantCulture, "{0}-{1}-{2}", executable, Environment.ProcessId, dateTimeNow);
                 this.etwFilePath = Path.Combine(etwFolderPath, $"{this.sessionName}.etl");
 

@@ -628,7 +628,7 @@ void close_settings_window()
         wil::unique_handle proc{ OpenProcess(PROCESS_TERMINATE, false, g_settings_process_id) };
         if (proc)
         {
-            WaitForSingleObject(proc.get(), 1000);
+            WaitForSingleObject(proc.get(), 1500);
             TerminateProcess(proc.get(), 0);
         }
     }

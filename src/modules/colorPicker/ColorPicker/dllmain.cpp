@@ -254,7 +254,7 @@ public:
             ResetEvent(m_hInvokeEvent);
 
             SetEvent(m_hAppTerminateEvent);
-            WaitForSingleObject(m_hProcess, 1000);
+            WaitForSingleObject(m_hProcess, 1500);
 
             TerminateProcess(m_hProcess, 1);
         }
