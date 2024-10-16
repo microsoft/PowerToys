@@ -184,9 +184,10 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                             Clipboard.SetText(request.ResultToString());
                             ret = true;
                         }
-                        catch (ExternalException e)
+                        catch (ExternalException ex)
                         {
-                            MessageBox.Show(e.Message, Properties.Resources.copy_failed);
+                            Log.Exception("Copy failed", ex, GetType());
+                            MessageBox.Show(ex.Message, Properties.Resources.copy_failed);
                         }
                     });
                     thread.SetApartmentState(ApartmentState.STA);

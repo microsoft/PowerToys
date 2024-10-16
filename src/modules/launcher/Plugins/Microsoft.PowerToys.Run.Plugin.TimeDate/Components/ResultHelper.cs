@@ -55,8 +55,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, Resources.Microsoft_plugin_timedate_copy_failed);
                 Log.Exception("Can't copy to clipboard", exception, typeof(ResultHelper));
+                MessageBox.Show(exception.Message, Resources.Microsoft_plugin_timedate_copy_failed);
                 return false;
             }
         }
