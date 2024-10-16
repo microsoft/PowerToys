@@ -20,7 +20,6 @@ namespace WorkspacesLauncherUI.ViewModels
 
         private StatusWindow _snapshotWindow;
         private int launcherProcessID;
-        private bool _exiting;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -31,8 +30,6 @@ namespace WorkspacesLauncherUI.ViewModels
 
         public MainViewModel()
         {
-            _exiting = false;
-
             // receive IPC Message
             App.IPCMessageReceivedCallback = (string msg) =>
             {
@@ -51,11 +48,6 @@ namespace WorkspacesLauncherUI.ViewModels
 
         private void HandleAppLaunchingState(AppLaunchData.AppLaunchDataWrapper appLaunchData)
         {
-            if (_exiting)
-            {
-                return;
-            }
-
             launcherProcessID = appLaunchData.LauncherProcessID;
             List<AppLaunching> appLaunchingList = new List<AppLaunching>();
             foreach (var app in appLaunchData.AppLaunchInfos.AppLaunchInfoList)
@@ -91,9 +83,7 @@ namespace WorkspacesLauncherUI.ViewModels
 
         internal void CancelLaunch()
         {
-            _exiting = true;
-            Process proc = Process.GetProcessById(launcherProcessID);
-            proc.Kill();
+            App.SendIPCMessage("cancel");
         }
     }
 }

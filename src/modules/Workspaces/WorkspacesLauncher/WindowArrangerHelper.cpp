@@ -69,3 +69,8 @@ void WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated, 
         Logger::error(L"Failed to launch PowerToys.WorkspacesWindowArranger: {}", res.error());
     }
 }
+
+void WindowArrangerHelper::UpdateLaunchStatus(const WorkspacesData::LaunchingAppState& appState) const
+{
+    m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({ appState.application, nullptr, appState.state }).ToString().c_str());
+}
