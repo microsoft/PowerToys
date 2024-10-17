@@ -39,55 +39,62 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
         {
             var results = new List<Result>();
 
+            var alreadyAddedPaths = new List<string>();
+
             if (query != null)
             {
                 // Search opened workspaces
                 _workspacesApi.Workspaces.ForEach(a =>
                 {
-                    var title = a.WorkspaceType == WorkspaceType.ProjectFolder ? a.FolderName : a.FolderName.Replace(".code-workspace", $" ({Resources.Workspace})");
-
-                    var typeWorkspace = a.WorkspaceEnvironmentToString();
-                    if (a.WorkspaceEnvironment != WorkspaceEnvironment.Local)
+                    if (!alreadyAddedPaths.Contains(a.Path))
                     {
-                        title = $"{title}{(a.ExtraInfo != null ? $" - {a.ExtraInfo}" : string.Empty)} ({typeWorkspace})";
-                    }
+                        alreadyAddedPaths.Add(a.Path);
 
-                    var tooltip = new ToolTipData(title, $"{(a.WorkspaceType == WorkspaceType.WorkspaceFile ? Resources.Workspace : Resources.ProjectFolder)}{(a.WorkspaceEnvironment != WorkspaceEnvironment.Local ? $" {Resources.In} {typeWorkspace}" : string.Empty)}: {SystemPath.RealPath(a.RelativePath)}");
+                        var title = a.WorkspaceType == WorkspaceType.ProjectFolder ? a.FolderName : a.FolderName.Replace(".code-workspace", $" ({Resources.Workspace})");
 
-                    results.Add(new Result
-                    {
-                        Title = title,
-                        SubTitle = $"{(a.WorkspaceType == WorkspaceType.WorkspaceFile ? Resources.Workspace : Resources.ProjectFolder)}{(a.WorkspaceEnvironment != WorkspaceEnvironment.Local ? $" {Resources.In} {typeWorkspace}" : string.Empty)}: {SystemPath.RealPath(a.RelativePath)}",
-                        Icon = a.VSCodeInstance.WorkspaceIcon,
-                        ToolTipData = tooltip,
-                        Action = c =>
+                        var typeWorkspace = a.WorkspaceEnvironmentToString();
+                        if (a.WorkspaceEnvironment != WorkspaceEnvironment.Local)
                         {
-                            bool hide;
-                            try
+                            title = $"{title}{(a.ExtraInfo != null ? $" - {a.ExtraInfo}" : string.Empty)} ({typeWorkspace})";
+                        }
+
+                        var tooltip = new ToolTipData(title, $"{(a.WorkspaceType == WorkspaceType.WorkspaceFile ? Resources.Workspace : Resources.ProjectFolder)}{(a.WorkspaceEnvironment != WorkspaceEnvironment.Local ? $" {Resources.In} {typeWorkspace}" : string.Empty)}: {SystemPath.RealPath(a.RelativePath)}");
+
+                        results.Add(new Result
+                        {
+                            Title = title,
+                            SubTitle = $"{(a.WorkspaceType == WorkspaceType.WorkspaceFile ? Resources.Workspace : Resources.ProjectFolder)}{(a.WorkspaceEnvironment != WorkspaceEnvironment.Local ? $" {Resources.In} {typeWorkspace}" : string.Empty)}: {SystemPath.RealPath(a.RelativePath)}",
+                            Icon = a.VSCodeInstance.WorkspaceIcon,
+                            ToolTipData = tooltip,
+                            Action = c =>
                             {
-                                var process = new ProcessStartInfo
+                                bool hide;
+                                try
                                 {
-                                    FileName = a.VSCodeInstance.ExecutablePath,
-                                    UseShellExecute = true,
-                                    Arguments = a.WorkspaceType == WorkspaceType.ProjectFolder ? $"--folder-uri {a.Path}" : $"--file-uri {a.Path}",
-                                    WindowStyle = ProcessWindowStyle.Hidden,
-                                };
-                                Process.Start(process);
+                                    var process = new ProcessStartInfo
+                                    {
+                                        FileName = a.VSCodeInstance.ExecutablePath,
+                                        UseShellExecute = true,
+                                        Arguments = a.WorkspaceType == WorkspaceType.ProjectFolder ? $"--folder-uri {a.Path}" : $"--file-uri {a.Path}",
+                                        WindowStyle = ProcessWindowStyle.Hidden,
+                                    };
+                                    Process.Start(process);
 
-                                hide = true;
-                            }
-                            catch (Win32Exception)
-                            {
-                                var name = $"Plugin: {_context.CurrentPluginMetadata.Name}";
-                                var msg = "Can't Open this file";
-                                _context.API.ShowMsg(name, msg, string.Empty);
-                                hide = false;
-                            }
+                                    hide = true;
+                                }
+                                catch (Win32Exception)
+                                {
+                                    var name = $"Plugin: {_context.CurrentPluginMetadata.Name}";
+                                    var msg = "Can't Open this file";
+                                    _context.API.ShowMsg(name, msg, string.Empty);
+                                    hide = false;
+                                }
 
-                            return hide;
-                        },
-                        ContextData = a,
-                    });
+                                return hide;
+                            },
+                            ContextData = a,
+                        });
+                    }
                 });
 
                 // Search opened remote machines
