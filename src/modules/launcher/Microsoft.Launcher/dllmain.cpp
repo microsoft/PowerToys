@@ -2,7 +2,6 @@
 #include <interface/powertoy_module_interface.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/interop/shared_constants.h>
-#include "trace.h"
 #include "Generated Files/resource.h"
 #include <launcher\Microsoft.Launcher\LauncherConstants.h>
 #include <common/logger/logger.h>
@@ -34,13 +33,11 @@ BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lp
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
-        Trace::RegisterProvider();
         break;
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
         break;
     case DLL_PROCESS_DETACH:
-        Trace::UnregisterProvider();
         break;
     }
 

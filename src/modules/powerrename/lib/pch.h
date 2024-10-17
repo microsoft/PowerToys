@@ -29,6 +29,4 @@
 #include <string>
 #include <random>
 
-#include <ProjectTelemetry.h>
-
 #include <winrt/base.h>

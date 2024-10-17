@@ -1,7 +1,8 @@
 #include "pch.h"
 
 #include "Trace.h"
-#include "../common/Telemetry/ProjectTelemetry.h"
+
+#include <common/Telemetry/TraceBase.h>
 
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,
@@ -10,19 +11,9 @@ TRACELOGGING_DEFINE_PROVIDER(
     (0x38e8889b, 0x9731, 0x53f5, 0xe9, 0x01, 0xe8, 0xa7, 0xc1, 0x75, 0x30, 0x74),
     TraceLoggingOptionProjectTelemetry());
 
-void Trace::RegisterProvider() noexcept
-{
-    TraceLoggingRegister(g_hProvider);
-}
-
-void Trace::UnregisterProvider() noexcept
-{
-    TraceLoggingUnregister(g_hProvider);
-}
-
 void Trace::EnableFileLocksmith(_In_ bool enabled) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "FileLocksmith_EnableFileLocksmith",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -32,7 +23,7 @@ void Trace::EnableFileLocksmith(_In_ bool enabled) noexcept
 
 void Trace::Invoked() noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "FileLocksmith_Invoked",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -41,7 +32,7 @@ void Trace::Invoked() noexcept
 
 void Trace::InvokedRet(_In_ HRESULT hr) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "FileLocksmith_InvokedRet",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -51,7 +42,7 @@ void Trace::InvokedRet(_In_ HRESULT hr) noexcept
 
 void Trace::QueryContextMenuError(_In_ HRESULT hr) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "FileLocksmith_QueryContextMenuError",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),

@@ -7,6 +7,8 @@
 #include <common/utils/UnhandledExceptionHandler.h>
 #include <common/utils/resources.h>
 
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
+
 #include <WorkspacesLib/JsonUtils.h>
 #include <WorkspacesLib/utils.h>
 
@@ -14,6 +16,7 @@
 
 #include <Generated Files/resource.h>
 #include <WorkspacesLib/AppUtils.h>
+#include <WorkspacesLib/trace.h>
 
 const std::wstring moduleName = L"Workspaces\\WorkspacesLauncher";
 const std::wstring internalPath = L"";
@@ -22,7 +25,12 @@ const std::wstring instanceMutexName = L"Local\\PowerToys_WorkspacesLauncher_Ins
 int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cmdShow)
 {
     LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::workspacesLauncherLoggerName);
-    InitUnhandledExceptionHandler();  
+    InitUnhandledExceptionHandler();
+
+    Trace::Workspaces::RegisterProvider();
+
+    Shared::Trace::ETWTrace trace{};
+    trace.UpdateState(true);
 
     if (powertoys_gpo::getConfiguredWorkspacesEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
     {
@@ -60,7 +68,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         GetModuleFileNameW(nullptr, exe_path.get(), exe_path_size);
 
         const auto modulePath = get_module_folderpath();
-        
+
         std::string cmdLineStr(cmdline);
         std::wstring cmdLineWStr(cmdLineStr.begin(), cmdLineStr.end());
 
@@ -78,7 +86,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     }
 
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-    
+
     Logger::trace(L"Invoke point: {}", cmdArgs.invokePoint);
 
     // read workspaces
@@ -105,12 +113,12 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
                 formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), file);
                 break;
             }
-             
+
             MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
             return 1;
         }
     }
-    
+
     if (projectToLaunch.id.empty())
     {
         auto file = WorkspacesData::WorkspacesFile();
@@ -177,7 +185,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         }
     }
 
-    // update the file before launching, so WorkspacesWindowArranger and WorkspacesLauncherUI could get updated app paths   
+    // update the file before launching, so WorkspacesWindowArranger and WorkspacesLauncherUI could get updated app paths
     if (updatedApps || updatedIds)
     {
         for (int i = 0; i < workspaces.size(); i++)
@@ -193,7 +201,14 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     }
 
     // launch
-    Launcher launcher(projectToLaunch, workspaces, cmdArgs.invokePoint);
+    {
+        Launcher launcher(projectToLaunch, workspaces, cmdArgs.invokePoint);
+    }
+
+    trace.Flush();
+    trace.UpdateState(false);
+
+    Trace::Workspaces::UnregisterProvider();
 
     Logger::trace("Finished");
     CoUninitialize();

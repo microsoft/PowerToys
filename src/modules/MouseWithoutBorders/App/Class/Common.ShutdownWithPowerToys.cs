@@ -3,20 +3,22 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
+using MouseWithoutBorders.Class;
 
 namespace MouseWithoutBorders
 {
     internal class ShutdownWithPowerToys
     {
-        public static void WaitForPowerToysRunner()
+        public static void WaitForPowerToysRunner(ETWTrace etwTrace)
         {
             try
             {
                 RunnerHelper.WaitForPowerToysRunnerExitFallback(() =>
                     {
+                        etwTrace?.Dispose();
                         Common.MainForm.Quit(true, false);
                     });
             }

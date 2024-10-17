@@ -65,7 +65,4 @@
   <ItemGroup>
     <ResourceCompile Include="PowerRenameUI.rc" />
   </ItemGroup>
-  <ItemGroup>
-    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
-  </ItemGroup>
 </Project>

@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "trace.h"
 
+#include <common/Telemetry/TraceBase.h>
+
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,
     "Microsoft.PowerToys",
@@ -8,20 +10,10 @@ TRACELOGGING_DEFINE_PROVIDER(
     (0x38e8889b, 0x9731, 0x53f5, 0xe9, 0x01, 0xe8, 0xa7, 0xc1, 0x75, 0x30, 0x74),
     TraceLoggingOptionProjectTelemetry());
 
-void Trace::RegisterProvider() noexcept
-{
-    TraceLoggingRegister(g_hProvider);
-}
-
-void Trace::UnregisterProvider() noexcept
-{
-    TraceLoggingUnregister(g_hProvider);
-}
-
 // Log if the user has Environment Variables enabled or disabled
 void Trace::EnableEnvironmentVariables(const bool enabled) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "EnvironmentVariables_EnableEnvironmentVariables",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -32,7 +24,7 @@ void Trace::EnableEnvironmentVariables(const bool enabled) noexcept
 // Log that the user tried to activate the editor
 void Trace::ActivateEnvironmentVariables() noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "EnvironmentVariables_Activate",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),

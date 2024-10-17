@@ -5,6 +5,8 @@
 #include "winrt/Windows.UI.Xaml.Interop.h"
 #include "winrt/Windows.UI.Xaml.Controls.Primitives.h"
 
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
+
 #include "MainWindow.g.h"
 #include "PatternSnippet.h"
 #include "ExplorerItem.h"
@@ -142,6 +144,8 @@ namespace winrt::PowerRenameUI::implementation
         HRESULT OpenSettingsApp();
         void SetCheckboxesFromFlags(DWORD flags);
         void UpdateCounts();
+
+        Shared::Trace::ETWTrace m_etwTrace{};
 
         HWND m_window{};
 
