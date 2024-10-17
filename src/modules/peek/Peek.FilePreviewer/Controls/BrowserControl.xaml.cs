@@ -234,6 +234,7 @@ namespace Peek.FilePreviewer.Controls
                            CreateCommandMenuItem("ContextMenu_Copy", "runCopyCommand"),
                            new Separator(),
                            CreateCommandMenuItem("ContextMenu_ToggleTextWrapping", "runToggleTextWrapCommand"),
+                           CreateCommandMenuItem("ContextMenu_ToggleMinimap", "runToggleMinimap")
                        ];
             }
             else

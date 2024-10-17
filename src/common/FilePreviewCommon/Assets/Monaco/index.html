@@ -9,17 +9,17 @@
         // `theme` can be "vs" for light theme or "vs-dark" for dark theme
         // `lang` is the language of the file
         // `wrap` if the editor is wrapping or not
+        // `minimap` if the minimap is shown
 
         var theme = ("[[PT_THEME]]" == "dark") ? "vs-dark" : "vs";
-        var lang = "[[PT_LANG]]";
-        var wrap = ([[PT_WRAP]] == 1) ? true : false;
-
-        var base64code = "[[PT_CODE]]";
-
-        var stickyScroll = ([[PT_STICKY_SCROLL]] == 1) ? true : false;
-
+        var wrap = [[PT_WRAP]];
+        var minimap = [[PT_MINIMAP]];
+        var stickyScroll = [[PT_STICKY_SCROLL]];
         var fontSize = [[PT_FONT_SIZE]];
-        var contextMenu = ([[PT_CONTEXTMENU]] == 1) ? true : false;
+        var contextMenu = [[PT_CONTEXTMENU]];
+        
+        var lang = "[[PT_LANG]]";
+        var base64code = "[[PT_CODE]]";
 
         var editor;
 
@@ -29,12 +29,13 @@
         }).join(''));
 
         function runToggleTextWrapCommand() {
-            if (wrap) {
-                editor.updateOptions({ wordWrap: 'off' })
-            } else {
-                editor.updateOptions({ wordWrap: 'on' })
-            }
             wrap = !wrap;
+            editor.updateOptions({ wordWrap: wrap ? 'on' : 'off' });
+        }
+
+        function runToggleMinimap() {
+            minimap = !minimap;
+            editor.updateOptions({minimap: {enabled: minimap}});
         }
 
         function runCopyCommand() {
@@ -99,7 +100,7 @@
                 language: lang, // Sets language of the code
                 readOnly: true, // Sets to readonly
                 theme: 'theme', // Sets editor theme
-                minimap: { enabled: false }, // Disables minimap
+                minimap: { enabled: minimap }, // Controls if minimap is shown
                 lineNumbersMinChars: '3', // Width of the line numbers
                 contextmenu: contextMenu,
                 scrollbar: {
@@ -135,10 +136,20 @@
                 contextMenuOrder: 100,
 
                 // Method that will be executed when the action is triggered.
-                // @param editor The editor instance is passed in as a convenience
-                run: function (ed) {
-                    runToggleTextWrapCommand();
-                }
+                run: runToggleTextWrapCommand
+            });
+
+            editor.addAction({
+                id: 'toggle-minimap',
+
+                label: 'Toggle minimap',
+
+                contextMenuGroupId: 'cutcopypaste',
+
+                contextMenuOrder: 100,
+
+                // Method that will be executed when the action is triggered.
+                run: runToggleMinimap
             });
 
             onContextMenu();
