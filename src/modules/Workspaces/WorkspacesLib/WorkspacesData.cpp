@@ -151,7 +151,14 @@ namespace WorkspacesData
 
                     result.isMaximized = json.GetNamedBoolean(NonLocalizable::MaximizedID);
                     result.isMinimized = json.GetNamedBoolean(NonLocalizable::MinimizedID);
-                    result.moveIfExists = static_cast<AppLaunchMode>(json.GetNamedNumber(NonLocalizable::MoveIfExistsID));
+                    if (json.HasKey(NonLocalizable::MoveIfExistsID))
+                    {
+                        result.moveIfExists = static_cast<AppLaunchMode>(json.GetNamedNumber(NonLocalizable::MoveIfExistsID));
+                    }
+                    else
+                    {
+                        result.moveIfExists = WorkspacesData::AppLaunchMode::AsInWorkspace;
+                    }
 
                     result.monitor = static_cast<int>(json.GetNamedNumber(NonLocalizable::MonitorID));
                     if (json.HasKey(NonLocalizable::PositionID))
