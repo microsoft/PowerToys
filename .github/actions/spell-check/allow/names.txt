@@ -28,6 +28,8 @@ videoconference
 
 # USERS
 
+# 8LWXpg is user name but user folder causes a flag
+LWXpg
 Adoumie
 Advaith
 alekhyareddy
