@@ -38,6 +38,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\FileExplorerPreview.wxs.bk ..\..\..\FileExplorerPreview.wxs
       call move /Y ..\..\..\FileLocksmith.wxs.bk ..\..\..\FileLocksmith.wxs
       call move /Y ..\..\..\Hosts.wxs.bk ..\..\..\Hosts.wxs
+      call move /Y ..\..\..\FileActionsMenu.wxs.bk ..\..\..\FileActionsMenu.wxs
       call move /Y ..\..\..\ImageResizer.wxs.bk ..\..\..\ImageResizer.wxs
       call move /Y ..\..\..\KeyboardManager.wxs.bk ..\..\..\KeyboardManager.wxs
       call move /Y ..\..\..\MouseWithoutBorders.wxs.bk ..\..\..\MouseWithoutBorders.wxs
@@ -100,6 +101,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="CustomDialogs\PTInstallDirDlg.wxs" />
     <Compile Include="CustomDialogs\PTLicenseDlg.wxs" />
     <Compile Include="CustomDialogs\WixUI_PTInstallDir.wxs" />
+    <Compile Include="FileActionsMenu.wxs" />
     <Compile Include="NewPlus.wxs" />
     <Compile Include="Product.wxs" />
     <Compile Include="AdvancedPaste.wxs" />

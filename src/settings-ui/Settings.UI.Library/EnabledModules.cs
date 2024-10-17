@@ -39,6 +39,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool fileActionsMenu = true;
+
+        [JsonPropertyName("File Actions Menu")]
+        public bool FileActionsMenu
+        {
+            get => fileActionsMenu;
+            set
+            {
+                if (fileActionsMenu != value)
+                {
+                    LogTelemetryEvent(value);
+                    fileActionsMenu = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private bool imageResizer = true;
 
         [JsonPropertyName("Image Resizer")]

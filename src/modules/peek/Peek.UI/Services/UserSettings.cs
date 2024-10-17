@@ -31,7 +31,7 @@ namespace Peek.UI
 
             LoadSettingsFromJson();
 
-            _watcher = Helper.GetFileWatcher(PeekModuleName, "settings.json", () => LoadSettingsFromJson());
+            _watcher = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper.GetFileWatcher(PeekModuleName, "settings.json", () => LoadSettingsFromJson());
         }
 
         private void LoadSettingsFromJson()
