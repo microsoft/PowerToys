@@ -24,6 +24,18 @@
                     <ImageSource x:Key="DialogHeaderImage">ms-appx:///Assets/Settings/Modules/APDialog.light.png</ImageSource>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
+            <DataTemplate x:Key="AdditionalActionTemplate" x:DataType="models:AdvancedPasteAdditionalAction">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <controls:ShortcutControl
+                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                        AllowDisable="True"
+                        HotkeySettings="{x:Bind Shortcut, Mode=TwoWay}" />
+                    <ToggleSwitch
+                        IsOn="{x:Bind IsShown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        OffContent=""
+                        OnContent="" />
+                </StackPanel>
+            </DataTemplate>
         </ResourceDictionary>
     </Page.Resources>
     <Grid>
@@ -129,6 +141,7 @@
                                 AllowDisable="True"
                                 HotkeySettings="{x:Bind Path=ViewModel.PasteAsJsonShortcut, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
+
                         <ItemsControl
                             x:Name="CustomActions"
                             x:Uid="CustomActions"
@@ -155,7 +168,7 @@
                                                 HotkeySettings="{x:Bind Path=Shortcut, Mode=TwoWay}" />
                                             <ToggleSwitch
                                                 x:Uid="Enable_CustomAction"
-                                                AutomationProperties.HelpText="{x:Bind Name}"
+                                                AutomationProperties.HelpText="{x:Bind Name, Mode=OneWay}"
                                                 IsOn="{x:Bind IsShown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 OffContent=""
                                                 OnContent="" />
@@ -200,6 +213,56 @@
                             IsClosable="False"
                             IsOpen="{x:Bind ViewModel.IsConflictingCopyShortcut, Mode=OneWay}"
                             IsTabStop="{x:Bind ViewModel.IsConflictingCopyShortcut, Mode=OneWay}"
+                            Severity="Warning" />
+                    </controls:SettingsGroup>
+
+                    <controls:SettingsGroup x:Uid="AdvancedPaste_Additional_Actions_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsCard x:Uid="ImageToText" DataContext="{x:Bind ViewModel.AdditionalActions.ImageToText, Mode=OneWay}">
+                            <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
+                        </tkcontrols:SettingsCard>
+
+                        <tkcontrols:SettingsExpander
+                            x:Uid="PasteAsFile"
+                            DataContext="{x:Bind ViewModel.AdditionalActions.PasteAsFile, Mode=OneWay}"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xEC50;}"
+                            IsExpanded="{Binding IsShown, Mode=OneWay}">
+                            <tkcontrols:SettingsExpander.Content>
+                                <ToggleSwitch
+                                    IsOn="{Binding IsShown, Mode=TwoWay}"
+                                    OffContent=""
+                                    OnContent="" />
+                            </tkcontrols:SettingsExpander.Content>
+                            <tkcontrols:SettingsExpander.Items>
+                                <!--  HACK: For some weird reason, a ShortcutControl does not work correctly if it's the first or last item in the expander, so we add an invisible card.  -->
+                                <tkcontrols:SettingsCard Visibility="Collapsed" />
+                                <tkcontrols:SettingsCard
+                                    x:Uid="PasteAsTxtFile"
+                                    DataContext="{Binding PasteAsTxtFile, Mode=TwoWay}"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.PasteAsFile.IsShown, Mode=OneWay}">
+                                    <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard
+                                    x:Uid="PasteAsPngFile"
+                                    DataContext="{Binding PasteAsPngFile, Mode=TwoWay}"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.PasteAsFile.IsShown, Mode=OneWay}">
+                                    <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard
+                                    x:Uid="PasteAsHtmlFile"
+                                    DataContext="{Binding PasteAsHtmlFile, Mode=TwoWay}"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.PasteAsFile.IsShown, Mode=OneWay}">
+                                    <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
+                                </tkcontrols:SettingsCard>
+                                <!--  HACK: For some weird reason, a ShortcutControl does not work correctly if it's the first or last item in the expander, so we add an invisible card.  -->
+                                <tkcontrols:SettingsCard Visibility="Collapsed" />
+                            </tkcontrols:SettingsExpander.Items>
+                        </tkcontrols:SettingsExpander>
+
+                        <InfoBar
+                            x:Uid="AdvancedPaste_ShortcutWarning"
+                            IsClosable="False"
+                            IsOpen="{x:Bind ViewModel.IsAdditionalActionConflictingCopyShortcut, Mode=OneWay}"
+                            IsTabStop="{x:Bind ViewModel.IsAdditionalActionConflictingCopyShortcut, Mode=OneWay}"
                             Severity="Warning" />
                     </controls:SettingsGroup>
                 </StackPanel>

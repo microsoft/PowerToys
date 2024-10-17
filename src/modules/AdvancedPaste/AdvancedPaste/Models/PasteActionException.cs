@@ -6,9 +6,6 @@ using System;
 
 namespace AdvancedPaste.Models;
 
-public sealed class CustomActionActivatedEventArgs(string text, bool pasteResult) : EventArgs
+public sealed class PasteActionException(string message) : Exception(message)
 {
-    public string Text { get; private init; } = text;
-
-    public bool PasteResult { get; private init; } = pasteResult;
 }

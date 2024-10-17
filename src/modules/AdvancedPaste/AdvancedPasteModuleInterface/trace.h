@@ -1,5 +1,6 @@
 #pragma once
 #include <interface/powertoy_module_interface.h>
+#include <unordered_map> 
 
 class Trace
 {
@@ -21,5 +22,6 @@ public:
                                          const PowertoyModuleIface::Hotkey& advancedPasteUIHotkey,
                                          const PowertoyModuleIface::Hotkey& pasteMarkdownHotkey,
                                          const PowertoyModuleIface::Hotkey& pasteJsonHotkey,
-                                         const bool preview_custom_format_output) noexcept;
+                                         const bool preview_custom_format_output,
+                                         const std::unordered_map<std::wstring, PowertoyModuleIface::Hotkey>& additionalActionsHotkeys) noexcept;
 };

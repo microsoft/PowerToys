@@ -32,6 +32,8 @@ namespace CommonSharedConstants
 
     const wchar_t ADVANCED_PASTE_JSON_MESSAGE[] = L"PasteJson";
 
+    const wchar_t ADVANCED_PASTE_ADDITIONAL_ACTION_MESSAGE[] = L"AdditionalAction";
+    
     const wchar_t ADVANCED_PASTE_CUSTOM_ACTION_MESSAGE[] = L"CustomAction";
 
     // Path to the event used to show Color Picker

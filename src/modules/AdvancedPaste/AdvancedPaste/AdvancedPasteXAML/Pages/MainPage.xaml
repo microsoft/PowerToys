@@ -16,8 +16,9 @@
     <Page.Resources>
         <tkconverters:BoolToVisibilityConverter x:Name="BoolToVisibilityConverter" />
         <converters:CountToVisibilityConverter x:Name="countToVisibilityConverter" />
+        <converters:PasteFormatsToHeightConverter x:Name="standardPasteFormatsToHeightConverter" />
         <converters:CountToDoubleConverter
-            x:Name="customActionsCountToMinHeightConverter"
+            x:Name="customActionsToMinHeightConverter"
             ValueIfNonZero="40"
             ValueIfZero="0" />
         <Style
@@ -28,37 +29,56 @@
                 <Setter Property="Padding" Value="0" />
             </Style.Setters>
         </Style>
+        <Style x:Key="PasteFormatListViewItemStyle" TargetType="ListViewItem">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        </Style>
         <DataTemplate x:Key="PasteFormatTemplate" x:DataType="local:PasteFormat">
-            <Grid>
-                <ToolTipService.ToolTip>
-                    <TextBlock Text="{x:Bind ToolTip}" />
-                </ToolTipService.ToolTip>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="26" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <FontIcon
-                    Margin="0,0,0,0"
-                    VerticalAlignment="Center"
-                    AutomationProperties.AccessibilityView="Raw"
-                    FontSize="16"
-                    Glyph="{x:Bind IconGlyph}" />
-                <TextBlock
-                    Grid.Column="1"
-                    VerticalAlignment="Center"
-                    x:Phase="1"
-                    Text="{x:Bind Name}" />
-                <TextBlock
-                    Grid.Column="2"
-                    Margin="0,0,8,0"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Center"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="{x:Bind ShortcutText, Mode=OneWay}"
-                    Visibility="{x:Bind ShortcutText.Length, Mode=OneWay, Converter={StaticResource countToVisibilityConverter}}" />
-            </Grid>
+            <Button
+                Margin="0"
+                Padding="5,0,5,0"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch"
+                AllowFocusOnInteraction="False"
+                BorderThickness="0"
+                Click="ListView_Button_Click"
+                IsEnabled="{x:Bind IsEnabled, Mode=OneWay}">
+                <Grid Opacity="{x:Bind Opacity, Mode=OneWay}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="26" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <ToolTipService.ToolTip>
+                        <TextBlock Text="{x:Bind ToolTip, Mode=OneWay}" />
+                    </ToolTipService.ToolTip>
+                    <FontIcon
+                        Margin="0,0,0,0"
+                        VerticalAlignment="Center"
+                        AutomationProperties.AccessibilityView="Raw"
+                        FontSize="16"
+                        Glyph="{x:Bind IconGlyph, Mode=OneWay}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        x:Phase="1"
+                        Text="{x:Bind Name, Mode=OneWay}" />
+                    <TextBlock
+                        Grid.Column="2"
+                        Margin="0,0,8,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind ShortcutText, Mode=OneWay}"
+                        Visibility="{x:Bind ShortcutText.Length, Mode=OneWay, Converter={StaticResource countToVisibilityConverter}}" />
+                </Grid>
+            </Button>
         </DataTemplate>
     </Page.Resources>
     <Page.KeyboardAccelerators>
@@ -166,9 +186,9 @@
             BorderThickness="0,1,0,0"
             RowSpacing="4">
             <Grid.RowDefinitions>
+                <RowDefinition Height="{x:Bind ViewModel.StandardPasteFormats.Count, Mode=OneWay, Converter={StaticResource standardPasteFormatsToHeightConverter}}" />
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" MinHeight="{x:Bind ViewModel.CustomActionPasteFormats.Count, Mode=OneWay, Converter={StaticResource customActionsCountToMinHeightConverter}}" />
+                <RowDefinition Height="*" MinHeight="{x:Bind ViewModel.CustomActionPasteFormats.Count, Mode=OneWay, Converter={StaticResource customActionsToMinHeightConverter}}" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
@@ -176,12 +196,13 @@
                 x:Name="PasteOptionsListView"
                 Grid.Row="0"
                 VerticalAlignment="Bottom"
-                IsEnabled="{x:Bind ViewModel.IsClipboardDataText, Mode=OneWay}"
-                IsItemClickEnabled="True"
-                ItemClick="ListView_Click"
+                IsItemClickEnabled="False"
+                ItemContainerStyle="{StaticResource PasteFormatListViewItemStyle}"
                 ItemContainerTransitions="{x:Null}"
                 ItemTemplate="{StaticResource PasteFormatTemplate}"
                 ItemsSource="{x:Bind ViewModel.StandardPasteFormats, Mode=OneWay}"
+                ScrollViewer.VerticalScrollBarVisibility="Visible"
+                ScrollViewer.VerticalScrollMode="Auto"
                 SelectionMode="None"
                 TabIndex="1" />
 
@@ -196,9 +217,8 @@
                 x:Name="CustomActionsListView"
                 Grid.Row="2"
                 VerticalAlignment="Top"
-                IsEnabled="{x:Bind ViewModel.IsCustomAIEnabled, Mode=OneWay}"
-                IsItemClickEnabled="True"
-                ItemClick="ListView_Click"
+                IsItemClickEnabled="False"
+                ItemContainerStyle="{StaticResource PasteFormatListViewItemStyle}"
                 ItemContainerTransitions="{x:Null}"
                 ItemTemplate="{StaticResource PasteFormatTemplate}"
                 ItemsSource="{x:Bind ViewModel.CustomActionPasteFormats, Mode=OneWay}"

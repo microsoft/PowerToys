@@ -3,14 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Text.Json.Serialization;
+
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 
 namespace Microsoft.PowerToys.Settings.UI.Library;
 
-public sealed class AdvancedPasteCustomAction : INotifyPropertyChanged, ICloneable
+public sealed class AdvancedPasteCustomAction : Observable, IAdvancedPasteAction, ICloneable
 {
     private int _id;
     private string _name = string.Empty;
@@ -25,14 +24,7 @@ public sealed class AdvancedPasteCustomAction : INotifyPropertyChanged, ICloneab
     public int Id
     {
         get => _id;
-        set
-        {
-            if (_id != value)
-            {
-                _id = value;
-                OnPropertyChanged();
-            }
-        }
+        set => Set(ref _id, value);
     }
 
     [JsonPropertyName("name")]
@@ -41,10 +33,8 @@ public sealed class AdvancedPasteCustomAction : INotifyPropertyChanged, ICloneab
         get => _name;
         set
         {
-            if (_name != value)
+            if (Set(ref _name, value))
             {
-                _name = value;
-                OnPropertyChanged();
                 UpdateIsValid();
             }
         }
@@ -56,10 +46,8 @@ public sealed class AdvancedPasteCustomAction : INotifyPropertyChanged, ICloneab
         get => _prompt;
         set
         {
-            if (_prompt != value)
+            if (Set(ref _prompt, value))
             {
-                _prompt = value;
-                OnPropertyChanged();
                 UpdateIsValid();
             }
         }
@@ -86,61 +74,29 @@ public sealed class AdvancedPasteCustomAction : INotifyPropertyChanged, ICloneab
     public bool IsShown
     {
         get => _isShown;
-        set
-        {
-            if (_isShown != value)
-            {
-                _isShown = value;
-                OnPropertyChanged();
-            }
-        }
+        set => Set(ref _isShown, value);
     }
 
     [JsonIgnore]
     public bool CanMoveUp
     {
         get => _canMoveUp;
-        set
-        {
-            if (_canMoveUp != value)
-            {
-                _canMoveUp = value;
-                OnPropertyChanged();
-            }
-        }
+        set => Set(ref _canMoveUp, value);
     }
 
     [JsonIgnore]
     public bool CanMoveDown
     {
         get => _canMoveDown;
-        set
-        {
-            if (_canMoveDown != value)
-            {
-                _canMoveDown = value;
-                OnPropertyChanged();
-            }
-        }
+        set => Set(ref _canMoveDown, value);
     }
 
     [JsonIgnore]
     public bool IsValid
     {
         get => _isValid;
-        private set
-        {
-            if (_isValid != value)
-            {
-                _isValid = value;
-                OnPropertyChanged();
-            }
-        }
+        private set => Set(ref _isValid, value);
     }
-
-    public event PropertyChangedEventHandler PropertyChanged;
-
-    public string ToJsonString() => JsonSerializer.Serialize(this);
 
     public object Clone()
     {
@@ -158,11 +114,6 @@ public sealed class AdvancedPasteCustomAction : INotifyPropertyChanged, ICloneab
         IsShown = other.IsShown;
         CanMoveUp = other.CanMoveUp;
         CanMoveDown = other.CanMoveDown;
-    }
-
-    private void OnPropertyChanged([CallerMemberName] string propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     private HotkeySettings GetShortcutClone()
