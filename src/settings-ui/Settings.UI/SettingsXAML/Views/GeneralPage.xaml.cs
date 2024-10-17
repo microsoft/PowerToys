@@ -148,6 +148,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.Restart();
         }
 
+        private void Click_ViewDiagnosticDataViewerRestart(object sender, RoutedEventArgs e)
+        {
+            ViewModel.Restart();
+        }
+
         public void RefreshEnabledState()
         {
             ViewModel.RefreshSettingsOnExternalChange();

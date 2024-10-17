@@ -217,6 +217,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enableDataDiagnostics;
         private bool _enableDataDiagnosticsIsGpoDisallowed;
         private bool _enableViewDataDiagnostics;
+        private bool _viewDiagnosticDataViewerChanged;
 
         private UpdatingSettings.UpdatingState _updatingState = UpdatingSettings.UpdatingState.UpToDate;
         private string _newAvailableVersion = string.Empty;
@@ -468,6 +469,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool ViewDiagnosticDataViewerChanged
+        {
+            get => _viewDiagnosticDataViewerChanged;
+        }
+
         public bool EnableViewDataDiagnostics
         {
             get
@@ -481,8 +487,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _enableViewDataDiagnostics = value;
 
+                    _viewDiagnosticDataViewerChanged = _enableViewDataDiagnostics;
+
                     DataDiagnosticsSettings.SetViewEnabledValue(_enableViewDataDiagnostics);
                     OnPropertyChanged(nameof(EnableViewDataDiagnostics));
+                    OnPropertyChanged(nameof(ViewDiagnosticDataViewerChanged));
                 }
             }
         }

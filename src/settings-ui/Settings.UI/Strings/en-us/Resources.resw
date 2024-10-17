@@ -4533,4 +4533,10 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Chinese_Traditional_Language" xml:space="preserve">
     <value>Chinese (Traditional)</value>
   </data>
+  <data name="GeneralPage_ViewDiagnosticDataViewerInfo.Title" xml:space="preserve">
+    <value>Restart PowerToys for enable viewing change to take effect.</value>
+  </data>
+  <data name="GeneralPage_ViewDiagnosticDataViewerInfoButton.Content" xml:space="preserve">
+    <value>Restart</value>
+  </data>
 </root>
