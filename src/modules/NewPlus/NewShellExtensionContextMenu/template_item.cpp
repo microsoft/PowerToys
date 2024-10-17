@@ -67,12 +67,12 @@ std::filesystem::path template_item::copy_object_to(const HWND window_handle, co
 {
     // SHFILEOPSTRUCT wants the from and to paths to be terminated with two NULLs,
     wchar_t double_terminated_path_from[MAX_PATH + 1] = { 0 };
-    wcsncpy_s(double_terminated_path_from, this->path.c_str(), this->path.string().length());
-    double_terminated_path_from[this->path.string().length() + 1] = 0;
+    wcsncpy_s(double_terminated_path_from, this->path.c_str(), this->path.wstring().length());
+    double_terminated_path_from[this->path.wstring().length() + 1] = 0;
 
     wchar_t double_terminated_path_to[MAX_PATH + 1] = { 0 };
-    wcsncpy_s(double_terminated_path_to, destination.c_str(), destination.string().length());
-    double_terminated_path_to[destination.string().length() + 1] = 0;
+    wcsncpy_s(double_terminated_path_to, destination.c_str(), destination.wstring().length());
+    double_terminated_path_to[destination.wstring().length() + 1] = 0;
 
     SHFILEOPSTRUCT file_operation_params = { 0 };
     file_operation_params.wFunc = FO_COPY;
