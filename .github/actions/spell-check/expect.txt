@@ -562,6 +562,7 @@ guidgenerator
 GUITHREADINFO
 GValue
 gwl
+GWL
 GWLP
 handlekeyboardhookevent
 hangeul
