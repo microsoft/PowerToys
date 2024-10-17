@@ -152,8 +152,13 @@ IFACEMETHODIMP ExplorerCommand::QueryContextMenu(HMENU hmenu, UINT indexMenu, UI
 
         if (!InsertMenuItem(hmenu, indexMenu, TRUE, &mii))
         {
+            m_etwTrace.UpdateState(true);
+
             hr = HRESULT_FROM_WIN32(GetLastError());
             Trace::QueryContextMenuError(hr);
+
+            m_etwTrace.Flush();
+            m_etwTrace.UpdateState(false);
         }
         else
         {
@@ -166,6 +171,8 @@ IFACEMETHODIMP ExplorerCommand::QueryContextMenu(HMENU hmenu, UINT indexMenu, UI
 
 IFACEMETHODIMP ExplorerCommand::InvokeCommand(CMINVOKECOMMANDINFO* pici)
 {
+    m_etwTrace.UpdateState(true);
+
     HRESULT hr = E_FAIL;
 
     if (FileLocksmithSettingsInstance().GetEnabled() &&
@@ -178,12 +185,16 @@ IFACEMETHODIMP ExplorerCommand::InvokeCommand(CMINVOKECOMMANDINFO* pici)
         if (HRESULT result = writer.start(); FAILED(result))
         {
             Trace::InvokedRet(result);
+            m_etwTrace.Flush();
+            m_etwTrace.UpdateState(false);
             return result;
         }
 
         if (HRESULT result = LaunchUI(pici, &writer); FAILED(result))
         {
             Trace::InvokedRet(result);
+            m_etwTrace.Flush();
+            m_etwTrace.UpdateState(false);
             return result;
         }
 
@@ -217,6 +228,9 @@ IFACEMETHODIMP ExplorerCommand::InvokeCommand(CMINVOKECOMMANDINFO* pici)
     }
 
     Trace::InvokedRet(hr);
+
+    m_etwTrace.Flush();
+    m_etwTrace.UpdateState(false);
     return hr;
 }
 
@@ -240,15 +254,12 @@ HRESULT ExplorerCommand::s_CreateInstance(IUnknown* pUnkOuter, REFIID riid, void
 
 ExplorerCommand::ExplorerCommand()
 {
-    m_etwTrace.UpdateState(true);
     ++globals::ref_count;
     context_menu_caption = GET_RESOURCE_STRING_FALLBACK(IDS_FILELOCKSMITH_CONTEXT_MENU_ENTRY, L"Unlock with File Locksmith");
 }
 
 ExplorerCommand::~ExplorerCommand()
 {
-    m_etwTrace.Flush();
-    m_etwTrace.UpdateState(false);
     --globals::ref_count;
 }
 

@@ -71,32 +71,28 @@ namespace Shared
 {
     namespace Trace
     {
-        ETWTrace::ETWTrace() :
-            ETWTrace(PowerToysProviderGUID)
-        {
-        }
-
-        ETWTrace::ETWTrace(const std::wstring& providerGUID)
+        ETWTrace::ETWTrace()
         {
             GUID id;
-            if (SUCCEEDED(CLSIDFromString(providerGUID.c_str(), &id)))
+            if (SUCCEEDED(CLSIDFromString(PowerToysProviderGUID, &id)))
             {
                 m_providerGUID = id;
             }
 
             fs::path outputFolder = get_root_save_folder_location();
             m_etwFolder = (outputFolder / c_etwFolderName);
+
         }
 
-        ETWTrace::ETWTrace(const GUID& providerGUID) :
-            m_providerGUID(providerGUID)
+        ETWTrace::ETWTrace(const std::wstring& etlFileNameOverride) :
+            ETWTrace()
         {
-            fs::path outputFolder = get_root_save_folder_location();
-            m_etwFolder = (outputFolder / c_etwFolderName);
+            m_etlFileNameOverride = etlFileNameOverride;
         }
 
         ETWTrace::~ETWTrace()
         {
+            Flush();
             Stop();
             m_etwFolder.clear();
             m_providerGUID = {};
@@ -155,7 +151,15 @@ namespace Shared
                 dateTime << std::put_time(&timeInfo, L"-%m-%d-%Y__%H_%M_%S");
             }
 
-            m_sessionName = wil::str_printf<std::wstring>(L"%ws-%d%ws", exeName.c_str(), GetCurrentProcessId(), dateTime.str().c_str());
+            if (m_etlFileNameOverride.empty())
+            {
+                m_sessionName = wil::str_printf<std::wstring>(L"%ws-%d%ws", exeName.c_str(), GetCurrentProcessId(), dateTime.str().c_str());
+            }
+            else
+            {
+                m_sessionName = wil::str_printf<std::wstring>(L"%ws-%d%ws", m_etlFileNameOverride.c_str(), GetCurrentProcessId(), dateTime.str().c_str());
+            }
+
             std::replace(m_sessionName.begin(), m_sessionName.end(), '.', '_');
 
             const ULONG etwSessionNameCharCount = static_cast<ULONG>(m_sessionName.size() + 1);

@@ -304,7 +304,7 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
 
 int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR lpCmdLine, int /*nCmdShow*/)
 {
-    Shared::Trace::ETWTrace trace{ L"{38e8889b-9731-53f5-e901-e8a7c1753074}" };
+    Shared::Trace::ETWTrace trace{};
     trace.UpdateState(true);
 
     Gdiplus::GdiplusStartupInput gpStartupInput;

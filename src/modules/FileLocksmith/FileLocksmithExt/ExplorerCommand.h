@@ -53,5 +53,5 @@ private:
     IDataObject* m_data_obj = NULL;
     std::wstring context_menu_caption;
 
-    Shared::Trace::ETWTrace m_etwTrace{};
+    Shared::Trace::ETWTrace m_etwTrace{ L"FileExplorerExt" };
 };

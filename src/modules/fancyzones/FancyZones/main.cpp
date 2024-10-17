@@ -27,7 +27,7 @@ const std::wstring instanceMutexName = L"Local\\PowerToys_FancyZones_InstanceMut
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR lpCmdLine, _In_ int nCmdShow)
 {
-    Shared::Trace::ETWTrace trace{ L"{38e8889b-9731-53f5-e901-e8a7c1753074}" };
+    Shared::Trace::ETWTrace trace{};
     trace.UpdateState(true);
 
     winrt::init_apartment();

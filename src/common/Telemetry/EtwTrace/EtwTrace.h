@@ -18,8 +18,7 @@ namespace Shared
             static inline const wchar_t* PowerToysProviderGUID = L"{38e8889b-9731-53f5-e901-e8a7c1753074}";
 
             ETWTrace();
-            ETWTrace(const std::wstring& providerGUID);
-            ETWTrace(const GUID& providerGUID);
+            ETWTrace(const std::wstring& etlFileNameOverride);
             ~ETWTrace();
 
             void UpdateState(bool tracing);
@@ -39,6 +38,7 @@ namespace Shared
             TRACEHANDLE m_traceHandle{ INVALID_PROCESSTRACE_HANDLE };
             std::unique_ptr<unsigned char[]> m_eventTracePropertiesBuffer;
             bool m_tracing{ false };
+            std::wstring m_etlFileNameOverride{};
 
             static constexpr PCWSTR c_etwFolderName = L"etw";
             static constexpr PCWSTR c_etwNewFileFormattedCounter = L"-%d";

@@ -54,7 +54,7 @@ private:
     HBITMAP m_hbmpIcon = nullptr;
     std::wstring context_menu_caption;
     std::wstring context_menu_caption_here;
-    Shared::Trace::ETWTrace m_etwTrace{};
+    Shared::Trace::ETWTrace m_etwTrace{ L"ImageResizerExt" };
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(ContextMenuHandler), CContextMenuHandler)

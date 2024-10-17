@@ -73,5 +73,5 @@ private:
     CComPtr<IDataObject> m_spdo;
     std::wstring context_menu_caption;
 
-    Shared::Trace::ETWTrace m_etwTrace{};
+    Shared::Trace::ETWTrace m_etwTrace{ L"PowerRenameExt" };
 };
