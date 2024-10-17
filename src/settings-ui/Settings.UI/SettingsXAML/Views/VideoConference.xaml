@@ -26,6 +26,7 @@
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <InfoBar
                     x:Uid="VideoConference_DeprecationWarning"
+                    Margin="0,0,0,25"
                     IsClosable="False"
                     IsOpen="True"
                     IsTabStop="True"
@@ -46,16 +47,20 @@
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
                 <InfoBar
-                    x:Uid="VideoConference_RunAsAdminRequired"
-                    IsClosable="False"
-                    IsOpen="{x:Bind ViewModel.IsElevated, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}"
-                    IsTabStop="True"
-                    Severity="Informational" />
-                <InfoBar
                     x:Uid="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                    Severity="Informational">
+                    <InfoBar.IconSource>
+                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                    </InfoBar.IconSource>
+                </InfoBar>
+                <InfoBar
+                    x:Uid="VideoConference_RunAsAdminRequired"
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.IsElevated, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}"
+                    IsTabStop="True"
                     Severity="Informational" />
                 <controls:SettingsGroup x:Uid="VideoConference_Shortcuts" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header">

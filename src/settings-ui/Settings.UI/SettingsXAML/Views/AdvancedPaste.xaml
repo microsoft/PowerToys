@@ -44,7 +44,11 @@
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                        Severity="Informational" />
+                        Severity="Informational">
+                        <InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource>
+                    </InfoBar>
 
                     <controls:SettingsGroup x:Uid="AdvancedPaste_EnableAISettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsCard x:Uid="AdvancedPaste_EnableAISettingsCard" IsEnabled="{x:Bind ViewModel.IsOnlineAIModelsDisallowedByGPO, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
@@ -80,7 +84,11 @@
                             IsClosable="False"
                             IsOpen="{x:Bind ViewModel.ShowOnlineAIModelsGpoConfiguredInfoBar, Mode=OneWay}"
                             IsTabStop="{x:Bind ViewModel.ShowOnlineAIModelsGpoConfiguredInfoBar, Mode=OneWay}"
-                            Severity="Informational" />
+                            Severity="Informational">
+                            <InfoBar.IconSource>
+                                <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                            </InfoBar.IconSource>
+                        </InfoBar>
                     </controls:SettingsGroup>
 
                     <controls:SettingsGroup x:Uid="AdvancedPaste_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
@@ -95,7 +103,11 @@
                             IsClosable="False"
                             IsOpen="{x:Bind ViewModel.ShowClipboardHistoryIsGpoConfiguredInfoBar, Mode=OneWay}"
                             IsTabStop="{x:Bind ViewModel.ShowClipboardHistoryIsGpoConfiguredInfoBar, Mode=OneWay}"
-                            Severity="Informational" />
+                            Severity="Informational">
+                            <InfoBar.IconSource>
+                                <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                            </InfoBar.IconSource>
+                        </InfoBar>
                         <tkcontrols:SettingsCard x:Uid="AdvancedPaste_CloseAfterLosingFocus" HeaderIcon="{ui:FontIcon Glyph=&#xED1A;}">
                             <ToggleSwitch IsOn="{x:Bind ViewModel.CloseAfterLosingFocus, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>

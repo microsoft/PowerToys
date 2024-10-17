@@ -4283,6 +4283,14 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Automatically close the AdvancedPaste window after it loses focus</value>
     <comment>AdvancedPaste is a product name, do not loc</comment>
   </data>
+  <data name="GPO_CommandNotFound_ForceDisabled.Title" xml:space="preserve">
+    <value>The Command Not Found module is force disabled by your organization.</value>>
+    <comment>"Command Not Found" is a product name</comment>
+  </data>
+  <data name="GPO_CommandNotFound_ForceEnabled.Title" xml:space="preserve">
+    <value>The Command Not Found module is force enabled by your organization.</value>>
+    <comment>"Command Not Found" is a product name</comment>
+  </data>
   <data name="NewPlus.ModuleTitle" xml:space="preserve">
     <value>New+</value>
     <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
@@ -4364,7 +4372,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Oobe_NewPlus_TipsAndTricks.Text" xml:space="preserve">
     <value>You can have multiple templates of the same file type, and you can even template folders!</value>
-  </data>  
+  </data>
   <data name="Workspaces.ModuleDescription" xml:space="preserve">
     <value>Workspaces is a quick and easy way to launch a set of applications to custom positions and configurations with one-click.</value>
   </data>
