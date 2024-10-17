@@ -101,8 +101,11 @@ namespace AdvancedPaste
                 {
                     RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
                     {
-                        Dispose();
-                        Environment.Exit(0);
+                        _dispatcherQueue.TryEnqueue(() =>
+                        {
+                            Dispose();
+                            Environment.Exit(0);
+                        });
                     });
                 }
             }
