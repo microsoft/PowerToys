@@ -29,6 +29,9 @@ namespace Microsoft.PowerToys.FilePreviewCommon
             new XmlFormatter(),
         }.AsReadOnly();
 
+        public const string DefaultLightTheme = "vs";
+        public const string DefaultDarkTheme = "vs-dark";
+
         private static string? _monacoDirectory;
 
         public static string GetRuntimeMonacoDirectory()
@@ -105,17 +108,25 @@ namespace Microsoft.PowerToys.FilePreviewCommon
             }
         }
 
-        public static string ReadIndexHtml()
+        public static string GetSetThemeCommand(string theme)
         {
-            string html;
+            return $"editor.updateOptions({{\"theme\": \"{theme}\"}});";
+        }
 
-            using (StreamReader htmlFileReader = new StreamReader(new FileStream(MonacoDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
-            {
-                html = htmlFileReader.ReadToEnd();
-                htmlFileReader.Close();
-            }
+        public static string GetSetLanguageCommand(string language)
+        {
+            return $"monaco.editor.setModelLanguage(editor.getModel(), \"{language}\");";
+        }
 
-            return html;
+        public static string GetSetContentCommand(string rawContent)
+        {
+            string content = rawContent.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "\\r");
+            return $"editor.getModel().setValue(`{content}`);";
+        }
+
+        public static string GetSetWordWrapCommand(bool wordWrap)
+        {
+            return $"editor.updateOptions({{\"wordWrap\": \"{(wordWrap ? "on" : "off")}\"}});";
         }
     }
 }

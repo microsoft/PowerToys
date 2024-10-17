@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Common.UI;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Dispatching;
 using Peek.Common.Constants;
@@ -15,6 +15,7 @@ using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Interfaces;
+using MonacoHelperCommon = Microsoft.PowerToys.FilePreviewCommon.MonacoHelper;
 
 namespace Peek.FilePreviewer.Previewers
 {
@@ -84,6 +85,21 @@ namespace Peek.FilePreviewer.Previewers
 
         private Task<bool>? DisplayInfoTask { get; set; }
 
+        private Queue<string> _javascriptCommandQueue = [];
+
+        Queue<string> IBrowserPreviewer.JavascriptCommandQueue
+        {
+            get
+            {
+                return _javascriptCommandQueue;
+            }
+
+            set
+            {
+                _javascriptCommandQueue = value;
+            }
+        }
+
         public Task<PreviewSize> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(new PreviewSize { MonitorSize = null });
@@ -120,8 +136,12 @@ namespace Peek.FilePreviewer.Previewers
 
                     if (useMonaco)
                     {
-                        var raw = await ReadHelper.Read(File.Path.ToString());
-                        Preview = new Uri(MonacoHelper.PreviewTempFile(raw, File.Extension, TempFolderPath.Path, _previewSettings.SourceCodeTryFormat, _previewSettings.SourceCodeWrapText, _previewSettings.SourceCodeStickyScroll, _previewSettings.SourceCodeFontSize));
+                        string raw = await Task.Run(() => ReadHelper.Read(File.Path.ToString()));
+                        (Preview, string vsCodeLangSet, string fileContent) = MonacoHelper.PreviewTempFile(raw, File.Extension, _previewSettings.SourceCodeTryFormat);
+                        _javascriptCommandQueue.Enqueue(MonacoHelperCommon.GetSetContentCommand(fileContent));
+                        _javascriptCommandQueue.Enqueue(MonacoHelperCommon.GetSetLanguageCommand(vsCodeLangSet));
+                        _javascriptCommandQueue.Enqueue(MonacoHelperCommon.GetSetWordWrapCommand(_previewSettings.SourceCodeWrapText));
+                        _javascriptCommandQueue.Enqueue(MonacoHelperCommon.GetSetThemeCommand(ThemeManager.GetWindowsBaseColor().Equals("dark", StringComparison.OrdinalIgnoreCase) ? MonacoHelperCommon.DefaultDarkTheme : MonacoHelperCommon.DefaultLightTheme));
                     }
                     else if (isMarkdown)
                     {

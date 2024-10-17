@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 {
     internal static class Program
     {
-        private static CancellationTokenSource _tokenSource = new CancellationTokenSource();
+        private static readonly CancellationTokenSource _tokenSource = new();
 
         private static MonacoPreviewHandlerControl _previewHandlerControl;
 
@@ -26,6 +26,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             Logger.InitializeLogger("\\FileExplorer_localLow\\Monaco\\logs", true);
 
             ApplicationConfiguration.Initialize();
+            _previewHandlerControl = new MonacoPreviewHandlerControl();
             if (args != null)
             {
                 if (args.Length == 6)
@@ -37,7 +38,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                     int right = Convert.ToInt32(args[3], 10);
                     int top = Convert.ToInt32(args[4], 10);
                     int bottom = Convert.ToInt32(args[5], 10);
-                    Rectangle s = new Rectangle(left, top, right - left, bottom - top);
+                    Rectangle s = new(left, top, right - left, bottom - top);
 
                     _previewHandlerControl = new MonacoPreviewHandlerControl();
 
@@ -47,6 +48,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                     }
 
                     _previewHandlerControl.DoPreview(filePath);
+                    _previewHandlerControl.SetWindow(hwnd, s);
 
                     NativeEventWaiter.WaitForEventLoop(
                         Constants.DevFilesPreviewResizeEvent(),
