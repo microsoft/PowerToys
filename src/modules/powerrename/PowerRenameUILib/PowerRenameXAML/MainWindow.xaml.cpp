@@ -106,6 +106,8 @@ namespace winrt::PowerRenameUI::implementation
     MainWindow::MainWindow() :
         m_allSelected{ true }, m_managerEvents{ this }
     {
+        Trace::RegisterProvider();
+
         auto windowNative{ this->try_as<::IWindowNative>() };
         winrt::check_bool(windowNative);
         windowNative->get_WindowHandle(&m_window);
@@ -320,6 +322,8 @@ namespace winrt::PowerRenameUI::implementation
 
         m_etwTrace.Flush();
         m_etwTrace.UpdateState(false);
+
+        Trace::UnregisterProvider();
     }
 
     void MainWindow::InvalidateItemListViewState()

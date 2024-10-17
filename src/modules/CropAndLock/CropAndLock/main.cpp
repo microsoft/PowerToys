@@ -40,6 +40,8 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
     // Initialize COM
     winrt::init_apartment(winrt::apartment_type::single_threaded);
 
+    Trace::CropAndLock::RegisterProvider();
+
     Shared::Trace::ETWTrace trace;
     trace.UpdateState(true);
 
@@ -264,6 +266,8 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
     }
 
     trace.Flush();
+
+    Trace::CropAndLock::UnregisterProvider();
 
     m_running = false;
     // Needed to unblock MsgWaitForMultipleObjects one last time

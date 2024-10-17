@@ -16,6 +16,7 @@
 
 #include <Generated Files/resource.h>
 #include <WorkspacesLib/AppUtils.h>
+#include <WorkspacesLib/trace.h>
 
 const std::wstring moduleName = L"Workspaces\\WorkspacesLauncher";
 const std::wstring internalPath = L"";
@@ -25,6 +26,8 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 {
     LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::workspacesLauncherLoggerName);
     InitUnhandledExceptionHandler();
+
+    Trace::Workspaces::RegisterProvider();
 
     Shared::Trace::ETWTrace trace{};
     trace.UpdateState(true);
@@ -204,6 +207,9 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 
     trace.Flush();
     trace.UpdateState(false);
+
+    Trace::Workspaces::UnregisterProvider();
+
     Logger::trace("Finished");
     CoUninitialize();
     return 0;
