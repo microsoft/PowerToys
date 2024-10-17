@@ -121,6 +121,9 @@
     <value>Copy value (Ctrl+C)</value>
     <comment>'Ctrl+C' is a shortcut</comment>
   </data>
+  <data name="Microsoft_plugin_timedate_copy_failed" xml:space="preserve">
+    <value>Copy failed</value>
+  </data>
   <data name="Microsoft_plugin_timedate_Date" xml:space="preserve">
     <value>Date</value>
   </data>
