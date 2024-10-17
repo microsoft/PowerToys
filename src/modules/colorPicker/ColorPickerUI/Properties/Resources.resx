@@ -158,7 +158,7 @@
     <comment>Select button content</comment>
   </data>
   <data name="Open_settings" xml:space="preserve">
-    <value>Open settings</value>
+    <value>Go to settings</value>
     <comment>Tooltip that shows that the user can click this button to open PowerToys settings</comment>
   </data>
   <data name="Pick_color" xml:space="preserve">
