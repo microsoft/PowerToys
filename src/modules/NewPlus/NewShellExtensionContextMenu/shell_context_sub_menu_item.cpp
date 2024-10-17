@@ -81,11 +81,6 @@ IFACEMETHODIMP shell_context_sub_menu_item::Invoke(_In_opt_ IShellItemArray*, _I
         // Copy file and determine final filename
         std::filesystem::path target_final_fullpath = this->template_entry->copy_object_to(GetActiveWindow(), target_fullpath);
 
-        // Set Last Modified Date to current on all files
-        target_final_fullpath.
-
-
-
         Trace::EventCopyTemplate(target_final_fullpath.extension().c_str());
 
         // Refresh folder items
