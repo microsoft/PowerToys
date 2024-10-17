@@ -57,3 +57,4 @@ Below are community created plugins that target a website or software.  They are
 | [Spotify](https://github.com/waaverecords/PowerToys-Run-Spotify) | [waaverecords](https://github.com/waaverecords) | Search Spotify and control its player |
 | [PowerSearch for 1Password](https://github.com/KairuDeibisu/PowerToysRunPlugin1Password) | [KairuDeibisu](https://github.com/KairuDeibisu) | An unofficial plugin for searching 1Password for usernames and passwords |
 | [HackMD](https://github.com/8LWXpg/PowerToysRun-HackMD) | [8LWXpg](https://github.com/8LWXpg) | Open HackMD notes |
+| [SSH](https://github.com/8LWXpg/PowerToysRun-SSH) | [8LWXpg](https://github.com/8LWXpg) | Connect to ssh clients |
