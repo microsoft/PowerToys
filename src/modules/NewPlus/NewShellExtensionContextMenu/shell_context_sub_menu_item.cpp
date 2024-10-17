@@ -70,9 +70,13 @@ IFACEMETHODIMP shell_context_sub_menu_item::Invoke(_In_opt_ IShellItemArray*, _I
 
         // Determine initial filename
         std::filesystem::path source_fullpath = template_entry->path;
-        std::filesystem::path target_fullpath = std::wstring(target_path_name) 
-            + L"\\" 
-            + this->template_entry->get_target_filename(!utilities::get_newplus_setting_hide_starting_digits());
+        std::filesystem::path target_fullpath = std::wstring(target_path_name);
+
+        // Only append name to target if source is not a directory
+        if (!utilities::is_directory(target_fullpath))
+        {
+            target_fullpath.append(this->template_entry->get_target_filename(!utilities::get_newplus_setting_hide_starting_digits()));
+        }
 
         // Copy file and determine final filename
         std::filesystem::path target_final_fullpath = this->template_entry->copy_object_to(GetActiveWindow(), target_fullpath);
