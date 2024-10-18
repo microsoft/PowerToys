@@ -6,7 +6,6 @@ using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Views;
-using Windows.UI;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
@@ -23,6 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MouseHighlighter:
                 case ModuleType.MouseJump:
                 case ModuleType.MousePointerCrosshairs: return $"MouseUtils_{moduleType}/Header";
+                case ModuleType.PowerPreview: return "FileExplorerPreview_DashboardTitle";
                 default: return $"{moduleType}/ModuleTitle";
             }
         }
@@ -38,6 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MousePointerCrosshairs: return "ms-appx:///Assets/Settings/Icons/MouseCrosshairs.png";
                 case ModuleType.MeasureTool: return "ms-appx:///Assets/Settings/Icons/ScreenRuler.png";
                 case ModuleType.PowerLauncher: return $"ms-appx:///Assets/Settings/Icons/PowerToysRun.png";
+                case ModuleType.PowerPreview: return $"ms-appx:///Assets/Settings/Icons/FileExplorerPreview.png";
                 default: return $"ms-appx:///Assets/Settings/Icons/{moduleType}.png";
             }
         }
@@ -53,6 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.CropAndLock: return generalSettingsConfig.Enabled.CropAndLock;
                 case ModuleType.EnvironmentVariables: return generalSettingsConfig.Enabled.EnvironmentVariables;
                 case ModuleType.FancyZones: return generalSettingsConfig.Enabled.FancyZones;
+                case ModuleType.PowerPreview: return generalSettingsConfig.Enabled.PowerPreview;
                 case ModuleType.FileLocksmith: return generalSettingsConfig.Enabled.FileLocksmith;
                 case ModuleType.FindMyMouse: return generalSettingsConfig.Enabled.FindMyMouse;
                 case ModuleType.Hosts: return generalSettingsConfig.Enabled.Hosts;
@@ -87,6 +89,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.CropAndLock: generalSettingsConfig.Enabled.CropAndLock = isEnabled; break;
                 case ModuleType.EnvironmentVariables: generalSettingsConfig.Enabled.EnvironmentVariables = isEnabled; break;
                 case ModuleType.FancyZones: generalSettingsConfig.Enabled.FancyZones = isEnabled; break;
+                case ModuleType.PowerPreview: generalSettingsConfig.Enabled.PowerPreview = isEnabled; break;
                 case ModuleType.FileLocksmith: generalSettingsConfig.Enabled.FileLocksmith = isEnabled; break;
                 case ModuleType.FindMyMouse: generalSettingsConfig.Enabled.FindMyMouse = isEnabled; break;
                 case ModuleType.Hosts: generalSettingsConfig.Enabled.Hosts = isEnabled; break;
@@ -120,6 +123,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.CropAndLock: return GPOWrapper.GetConfiguredCropAndLockEnabledValue();
                 case ModuleType.EnvironmentVariables: return GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue();
                 case ModuleType.FancyZones: return GPOWrapper.GetConfiguredFancyZonesEnabledValue();
+                case ModuleType.PowerPreview: return GPOWrapper.GetConfiguredFileExplorerPreviewEnabledValue();
                 case ModuleType.FileLocksmith: return GPOWrapper.GetConfiguredFileLocksmithEnabledValue();
                 case ModuleType.FindMyMouse: return GPOWrapper.GetConfiguredFindMyMouseEnabledValue();
                 case ModuleType.Hosts: return GPOWrapper.GetConfiguredHostsFileEditorEnabledValue();
@@ -154,6 +158,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.CropAndLock => typeof(CropAndLockPage),
                 ModuleType.EnvironmentVariables => typeof(EnvironmentVariablesPage),
                 ModuleType.FancyZones => typeof(FancyZonesPage),
+                ModuleType.PowerPreview => typeof(PowerPreviewPage),
                 ModuleType.FileLocksmith => typeof(FileLocksmithPage),
                 ModuleType.FindMyMouse => typeof(MouseUtilsPage),
                 ModuleType.Hosts => typeof(HostsPage),
