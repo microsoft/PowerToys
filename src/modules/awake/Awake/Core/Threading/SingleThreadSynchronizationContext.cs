@@ -6,17 +6,18 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Awake.Core.Models
+using ManagedCommon;
+
+namespace Awake.Core.Threading
 {
     internal sealed class SingleThreadSynchronizationContext : SynchronizationContext
     {
-        private readonly Queue<Tuple<SendOrPostCallback, object>> queue =
-            new();
+        private readonly Queue<Tuple<SendOrPostCallback, object?>?> queue = new();
 
-#pragma warning disable CS8765 // Nullability of type of parameter doesn't match overridden member (possibly because of nullability attributes).
-        public override void Post(SendOrPostCallback d, object state)
-#pragma warning restore CS8765 // Nullability of type of parameter doesn't match overridden member (possibly because of nullability attributes).
+        public override void Post(SendOrPostCallback d, object? state)
         {
+            ArgumentNullException.ThrowIfNull(d);
+
             lock (queue)
             {
                 queue.Enqueue(Tuple.Create(d, state));
@@ -28,7 +29,7 @@ namespace Awake.Core.Models
         {
             while (true)
             {
-                Tuple<SendOrPostCallback, object> work;
+                Tuple<SendOrPostCallback, object?>? work;
                 lock (queue)
                 {
                     while (queue.Count == 0)
@@ -44,7 +45,14 @@ namespace Awake.Core.Models
                     break;
                 }
 
-                work.Item1(work.Item2);
+                try
+                {
+                    work.Item1(work.Item2);
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError("Error during execution of the STS context message loop: " + e.Message);
+                }
             }
         }
 
@@ -52,9 +60,8 @@ namespace Awake.Core.Models
         {
             lock (queue)
             {
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                queue.Enqueue(null);  // Signal the end of the message loop
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+                // Signal the end of the message loop
+                queue.Enqueue(null);
                 Monitor.Pulse(queue);
             }
         }

@@ -31,6 +31,7 @@ namespace WorkspacesEditor.Models
 
         public Application(Application other)
         {
+            Id = other.Id;
             AppName = other.AppName;
             AppPath = other.AppPath;
             AppTitle = other.AppTitle;
@@ -94,6 +95,8 @@ namespace WorkspacesEditor.Models
                 return base.GetHashCode();
             }
         }
+
+        public string Id { get; set; }
 
         public string AppName { get; set; }
 
@@ -247,7 +250,7 @@ namespace WorkspacesEditor.Models
                     {
                         Logger.LogWarning($"Icon not found on app path: {AppPath}. Using default icon");
                         IsNotFound = true;
-                        _icon = new Icon(@"images\DefaultIcon.ico");
+                        _icon = new Icon(@"Assets\Workspaces\DefaultIcon.ico");
                     }
                 }
 

@@ -1,5 +1,6 @@
 name: "🌐 Localization/Translation issue"
 description: Report incorrect translations.
+type: Bug
 labels:
 - Issue-Bug
 - Area-Localization
@@ -39,6 +40,7 @@ body:
     - Keyboard Manager
     - Mouse Utilities
     - Mouse Without Borders
+    - New+
     - Peek
     - PowerRename
     - PowerToys Run

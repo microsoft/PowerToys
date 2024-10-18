@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Windows.Threading;
+
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -130,7 +131,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 var settingsUtils = new SettingsUtils();
                 var settings = NewPlusViewModel.LoadSettings(settingsUtils);
-                NewPlusViewModel.CopyTemplateExamples(settings.TemplateLocation);
+                NewPlusViewModel.CopyTemplateExamples(settings.Properties.TemplateLocation.Value);
             }
         }
 
