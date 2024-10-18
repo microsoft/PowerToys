@@ -316,7 +316,11 @@
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    Severity="Informational" />
+                    Severity="Informational">
+                    <InfoBar.IconSource>
+                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                    </InfoBar.IconSource>
+                </InfoBar>
 
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
@@ -565,7 +569,11 @@
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.ShowPluginsAreGpoManagedInfo, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.ShowPluginsAreGpoManagedInfo, Mode=OneWay}"
-                        Severity="Informational" />
+                        Severity="Informational">
+                        <InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource>
+                    </InfoBar>
                     <InfoBar
                         x:Uid="Run_AllPluginsDisabled"
                         IsClosable="False"

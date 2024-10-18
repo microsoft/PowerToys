@@ -16,26 +16,30 @@
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
                 Orientation="Vertical"
                 Spacing="2">
+                <InfoBar
+                    x:Uid="NewPlus_NoWindows10SupportWarning"
+                    Margin="0,0,0,25"
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.IsWin10OrLower, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.IsWin10OrLower, Mode=OneWay}"
+                    Severity="Warning" />
+
                 <tkcontrols:SettingsCard
                     x:Uid="NewPlus_Enable_Toggle"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
-
-                <InfoBar
-                    x:Uid="NewPlus_NoWindows10SupportWarning"
-                    IsClosable="False"
-                    IsOpen="{x:Bind ViewModel.IsWin10OrLower, Mode=OneWay}"
-                    IsTabStop="{x:Bind ViewModel.IsWin10OrLower, Mode=OneWay}"
-                    Severity="Warning" />
-
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    Severity="Informational" />
+                    Severity="Informational">
+                    <InfoBar.IconSource>
+                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                    </InfoBar.IconSource>
+                </InfoBar>
 
                 <controls:SettingsGroup x:Uid="NewPlus_Templates" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
@@ -77,9 +81,9 @@
                         IsOpen="{x:Bind ViewModel.IsHideFileExtSettingGPOConfigured, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsHideFileExtSettingGPOConfigured, Mode=OneWay}"
                         Severity="Informational">
-                        <!-- InfoBar.IconSource>
+                        <InfoBar.IconSource>
                             <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                        </InfoBar.IconSource-->
+                        </InfoBar.IconSource>
                     </InfoBar>
                     <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_Starting_Digits_Toggle">
                         <ToggleSwitch x:Uid="HideStartingDigitsToggle" IsOn="{x:Bind ViewModel.HideStartingDigits, Mode=TwoWay}" />
