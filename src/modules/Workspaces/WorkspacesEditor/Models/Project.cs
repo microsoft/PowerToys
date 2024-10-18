@@ -263,6 +263,7 @@ namespace WorkspacesEditor.Models
                     CanLaunchElevated = app.CanLaunchElevated,
                     Maximized = app.Maximized,
                     Minimized = app.Minimized,
+                    MoveIfExists = app.MoveIfExists,
                     IsNotFound = false,
                     Position = new Models.Application.WindowPosition()
                     {

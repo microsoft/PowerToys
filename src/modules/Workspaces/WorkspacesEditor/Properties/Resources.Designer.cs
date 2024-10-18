@@ -61,7 +61,7 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Add Back.
+        ///   Looks up a localized string similar to Add back.
         /// </summary>
         public static string AddBack {
             get {
@@ -79,7 +79,7 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Launch new app instances.
+        ///   Looks up a localized string similar to Launch app.
         /// </summary>
         public static string AlwaysLaunch {
             get {
@@ -169,7 +169,7 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Create Desktop Shortcut.
+        ///   Looks up a localized string similar to Create desktop shortcut.
         /// </summary>
         public static string CreateShortcut {
             get {
@@ -223,11 +223,20 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Remove Selected Apps.
+        ///   Looks up a localized string similar to Remove selected apps.
         /// </summary>
         public static string DeleteSelected {
             get {
                 return ResourceManager.GetString("DeleteSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Launch or Move App as in Workspace defined.
+        /// </summary>
+        public static string DoAsInWorkspace {
+            get {
+                return ResourceManager.GetString("DoAsInWorkspace", resourceCulture);
             }
         }
         
@@ -322,7 +331,7 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Launch &amp; Edit.
+        ///   Looks up a localized string similar to Launch &amp; edit.
         /// </summary>
         public static string LaunchEdit {
             get {
@@ -367,7 +376,7 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Minimized Apps.
+        ///   Looks up a localized string similar to Minimized apps.
         /// </summary>
         public static string Minimized_Apps {
             get {
@@ -394,11 +403,29 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Move app if present.
+        /// </summary>
+        public static string MoveAppIfExist {
+            get {
+                return ResourceManager.GetString("MoveAppIfExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Move apps if present.
         /// </summary>
         public static string MoveIfExist {
             get {
                 return ResourceManager.GetString("MoveIfExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Move or launch?.
+        /// </summary>
+        public static string MoveOrCreate {
+            get {
+                return ResourceManager.GetString("MoveOrCreate", resourceCulture);
             }
         }
         
@@ -502,7 +529,7 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Pin Workspaces to Taskbar.
+        ///   Looks up a localized string similar to Pin Workspaces to taskbar.
         /// </summary>
         public static string PinToTaskbar {
             get {
@@ -565,7 +592,7 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Select All Apps on.
+        ///   Looks up a localized string similar to Select all apps on.
         /// </summary>
         public static string SelectAllAppsOnMonitor {
             get {
@@ -574,7 +601,7 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Select All Minimized Apps.
+        ///   Looks up a localized string similar to Select all minimized apps.
         /// </summary>
         public static string SelectAllMinimizedApps {
             get {
@@ -583,7 +610,7 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Select All Apps in Workspace.
+        ///   Looks up a localized string similar to Select all apps in Workspace.
         /// </summary>
         public static string SelectedAllInWorkspace {
             get {
