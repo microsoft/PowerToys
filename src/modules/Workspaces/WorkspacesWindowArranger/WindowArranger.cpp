@@ -52,13 +52,12 @@ namespace FancyZones
         }
         else
         {
+            placement.showCmd = SW_RESTORE;
             if ((placement.showCmd != SW_SHOWMINIMIZED) &&
                 (placement.showCmd != SW_MINIMIZE))
             {
                 if (placement.showCmd == SW_SHOWMAXIMIZED)
                     placement.flags &= ~WPF_RESTORETOMAXIMIZED;
-
-                placement.showCmd = SW_RESTORE;
             }
 
             ScreenToWorkAreaCoords(window, monitor, rect);
@@ -109,14 +108,64 @@ int CalculateDistance(const WorkspacesData::WorkspacesProject::Application& app,
 {
     RECT windowPosition;
     GetWindowRect(window, &windowPosition);
-    return abs(app.position.x - windowPosition.left) + abs(app.position.y - windowPosition.top) + abs(app.position.x + app.position.width - windowPosition.right) + abs(app.position.y + app.position.height - windowPosition.bottom);
+    WINDOWPLACEMENT placement{};
+    ::GetWindowPlacement(window, &placement);
+
+    if (app.isMinimized && (placement.showCmd == SW_SHOWMINIMIZED))
+    {
+        return 0;
+    }
+
+    int placementDiffPenalty = 1;
+    if (app.isMinimized || (placement.showCmd == SW_SHOWMINIMIZED))
+    {
+        // we prefer to move minimalized window for minimalized app and non-minimalized window for non-minimalized app
+        placementDiffPenalty = 10000;
+    }
+
+    return placementDiffPenalty + abs(app.position.x - windowPosition.left) + abs(app.position.y - windowPosition.top) + abs(app.position.x + app.position.width - windowPosition.right) + abs(app.position.y + app.position.height - windowPosition.bottom);
 }
 
-HWND WindowArranger::TryMoveWindow(const WorkspacesData::WorkspacesProject::Application& app, std::vector<HWND> movedWindows)
+bool WindowArranger::TryMoveWindow(const WorkspacesData::WorkspacesProject::Application& app, HWND windowToMove)
+{
+    Logger::info(L"The app {} is found at launch, moving it", app.name);
+    bool success = moveWindow(windowToMove, app);
+    const auto& apps = m_launchingStatus.Get();
+    auto iter = apps.find(app);
+    if (success)
+    {
+        if (iter == apps.end())
+        {
+            Logger::info(L"The app {} is not found in the map of apps (unrealistic)", app.name);
+        }
+        else
+        {
+            m_launchingStatus.Update(iter->first, LaunchingState::LaunchedAndMoved);
+            m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({ app, nullptr, iter->second.state }).ToString().c_str());
+        }
+        return true;
+    }
+    else
+    {
+        if (iter == apps.end())
+        {
+            Logger::info(L"The app {} is not found in the map of apps (unrealistic)", app.name);
+        }
+        else
+        {
+            Logger::info(L"Failed to move the existing app {} ", app.name);
+            m_launchingStatus.Update(iter->first, LaunchingState::Failed);
+            m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({ app, nullptr, iter->second.state }).ToString().c_str());
+        }
+        return false;
+    }
+}
+
+bool WindowArranger::GetNearestWindow(WorkspacesData::WorkspacesProject::Application app, std::vector<HWND> movedWindows, int* nearestDistance, HWND* nearestWindow)
 {
     std::optional<Utils::Apps::AppData> appDataNearest = std::nullopt;
-    int nearestWindowDistance = 0;
-    HWND nearestWindow = NULL;
+    *nearestDistance = 0;
+    *nearestWindow = NULL;
     for (HWND window : m_windowsBefore)
     {
         if (std::find(movedWindows.begin(), movedWindows.end(), window) != movedWindows.end())
@@ -144,57 +193,22 @@ HWND WindowArranger::TryMoveWindow(const WorkspacesData::WorkspacesProject::Appl
             if (!appDataNearest.has_value())
             {
                 appDataNearest = data;
-                nearestWindowDistance = CalculateDistance(app, window);
-                nearestWindow = window;
+                *nearestDistance = CalculateDistance(app, window);
+                *nearestWindow = window;
             }
             else
             {
                 int currentDistance = CalculateDistance(app, window);
-                if (currentDistance < nearestWindowDistance)
+                if (currentDistance < *nearestDistance)
                 {
                     appDataNearest = data;
-                    nearestWindowDistance = currentDistance;
-                    nearestWindow = window;
+                    *nearestDistance = currentDistance;
+                    *nearestWindow = window;
                 }
             }
         }
     }
-    if (appDataNearest.has_value())
-    {
-        Logger::info(L"The app {} is found at launch, moving it", app.name);
-        bool success = moveWindow(nearestWindow, app);
-        const auto& apps = m_launchingStatus.Get();
-        auto iter = apps.find(app);
-        if (success)
-        {
-            if (iter == apps.end())
-            {
-                Logger::info(L"The app {} is not found in the map of apps (unrealistic)", app.name);
-            }
-            else
-            {
-                m_launchingStatus.Update(iter->first, LaunchingState::LaunchedAndMoved);
-                m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({ app, nullptr, iter->second.state }).ToString().c_str());
-            }
-            return nearestWindow;
-        }
-        else
-        {
-            if (iter == apps.end())
-            {
-                Logger::info(L"The app {} is not found in the map of apps (unrealistic)", app.name);
-            }
-            else
-            {
-                Logger::info(L"Failed to move the existing app {} ", app.name);
-                m_launchingStatus.Update(iter->first, LaunchingState::Failed);
-                m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({ app, nullptr, iter->second.state }).ToString().c_str());
-            }
-            return NULL;
-        }
-    }
-    Logger::info(L"The app {} is not found at launch, cannot be moved, has to be started", app.name);
-    return NULL;
+    return appDataNearest.has_value();
 }
 
 WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
@@ -207,16 +221,53 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
     m_launchingStatus(m_project)
 {
     std::vector<HWND> movedWindows;
+    std::vector<WorkspacesData::WorkspacesProject::Application> movedApps;
 
-    for (auto& app : project.apps)
+    bool isMovePhase = true;
+
+    while (isMovePhase)
     {
-        // move the apps which are set to "Move-If-Exists" and are already present
-        if (ShouldMoveApp(app, project))
+        isMovePhase = false;
+        int minDistance = INT_MAX;
+        WorkspacesData::WorkspacesProject::Application appToMove;
+        HWND windowToMove = NULL;
+        for (auto& app : project.apps)
         {
-            HWND movedWindow = TryMoveWindow(app, movedWindows);
-            if (movedWindow != NULL)
+            // move the apps which are set to "Move-If-Exists" and are already present (launched, running)
+            if (std::find(movedApps.begin(), movedApps.end(), app) != movedApps.end())
             {
-                movedWindows.push_back(movedWindow);
+                continue;
+            }
+
+            if (ShouldMoveApp(app, project))
+            {
+                int nearestWindowDistance = 0;
+                HWND nearestWindow = NULL;
+                bool isThereWindow = GetNearestWindow(app, movedWindows, &nearestWindowDistance, &nearestWindow);
+                if (isThereWindow)
+                {
+                    if (nearestWindowDistance < minDistance)
+                    {
+                        minDistance = nearestWindowDistance;
+                        appToMove = app;
+                        windowToMove = nearestWindow;
+                    }
+                }
+                else
+                {
+                    Logger::info(L"The app {} is not found at launch, cannot be moved, has to be started", app.name);
+                    movedApps.push_back(app);
+                }
+            }
+        }
+        if (minDistance < INT_MAX)
+        {
+            isMovePhase = true;
+            bool success = TryMoveWindow(appToMove, windowToMove);
+            movedApps.push_back(appToMove);
+            if (success)
+            {
+                movedWindows.push_back(windowToMove);
             }
         }
     }

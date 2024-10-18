@@ -21,7 +21,8 @@ private:
     //const WindowCreationHandler m_windowCreationHandler;
     IPCHelper m_ipcHelper;
     LaunchingStatus m_launchingStatus;
-    HWND TryMoveWindow(const WorkspacesData::WorkspacesProject::Application& app, std::vector<HWND> movedWindows);
+    bool GetNearestWindow(WorkspacesData::WorkspacesProject::Application app, std::vector<HWND> movedWindows, int* nearestDistance, HWND* nearestWindow);
+    bool TryMoveWindow(const WorkspacesData::WorkspacesProject::Application& app, HWND windowToMove);
     
     //void onWindowCreated(HWND window);
     void processWindows(bool processAll);
