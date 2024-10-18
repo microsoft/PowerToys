@@ -61,6 +61,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copy failed.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_copy_failed {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_copy_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copy value (Ctrl+C).
         /// </summary>
         internal static string Microsoft_plugin_timedate_CopyToClipboard {
