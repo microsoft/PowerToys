@@ -10,6 +10,8 @@
     <AssemblyDescription>PowerToys MouseJump.Common.UnitTests</AssemblyDescription>
     <OutputType>Library</OutputType>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\MouseJump.Common.UnitTests\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
