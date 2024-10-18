@@ -59,6 +59,30 @@ jobs:
       inputs:
         displaySettings: 'optimal'
 
+  # The arm64 builder cannot run arm64 tests, so we have to run them here
+  - ${{ if eq(parameters.platform, 'arm64') }}:
+    - task: VSTest@3
+      displayName: Run Tests
+      inputs:
+        platform: '$(BuildPlatform)'
+        configuration: '$(BuildConfiguration)'
+        testSelector: 'testAssemblies'
+        searchFolder: '$(Pipeline.Workspace)\build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}'
+        vsTestVersion: 'toolsInstaller'
+        rerunFailedTests: true
+        # Look at all those naming schemes!
+        testAssemblyVer2: |
+          **\UnitTests-*.dll
+          **\UnitTest-*.dll
+          **\*UnitTests.dll
+          **\*.UnitTest.dll
+          **\*.Tests.dll
+          **\*.Test.dll
+          **\KeyboardManager*Test.dll
+          !**\UITests-*.dll
+          !**\obj\**
+          !**\ref\**
+
   - task: VSTest@3
     displayName: Run UI Tests
     inputs:
