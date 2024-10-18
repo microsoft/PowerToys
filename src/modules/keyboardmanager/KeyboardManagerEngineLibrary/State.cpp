@@ -73,3 +73,45 @@ std::wstring State::GetActivatedApp()
 {
     return activatedAppSpecificShortcutTarget;
 }
+
+// Sets the previous action key to use in another shortcut
+void State::SetPreviousActionKey(const DWORD prevKey)
+{
+    previousActionKey = prevKey;
+}
+
+// Gets the previous action key
+DWORD State::GetPreviousActionKey()
+{
+    return previousActionKey;
+}
+
+// Sets the previous modifier key to check in another shortcut
+void State::SetPreviousModifierKey(const DWORD prevKey)
+{
+    previousModifierKey.emplace_back(prevKey);
+}
+
+// Gets the previous modifier key
+std::vector<DWORD> State::GetPreviousModifierKey()
+{
+    return previousModifierKey;
+}
+
+// Check if a key exists in the previousModifierKey vector
+bool State::FindPreviousModifierKey(const DWORD prevKey)
+{
+    return std::find(previousModifierKey.begin(), previousModifierKey.end(), prevKey) != previousModifierKey.end();
+}
+
+// Resets the previous modifier key
+void State::ResetPreviousModifierKey(const DWORD prevKey)
+{
+    previousModifierKey.erase(std::remove(previousModifierKey.begin(), previousModifierKey.end(), prevKey), previousModifierKey.end());
+}
+
+// Clear all previous modifier key
+void State::ClearPreviousModifierKey()
+{
+    previousModifierKey.clear();
+}
