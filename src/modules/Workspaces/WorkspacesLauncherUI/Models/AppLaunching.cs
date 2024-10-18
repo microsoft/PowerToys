@@ -13,6 +13,7 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+
 using ManagedCommon;
 using Windows.Management.Deployment;
 using WorkspacesLauncherUI.Data;
@@ -58,7 +59,7 @@ namespace WorkspacesLauncherUI.Models
                     {
                         Logger.LogWarning($"Icon not found on app path: {Application.ApplicationPath}. Using default icon");
                         IsNotFound = true;
-                        _icon = new Icon(@"images\DefaultIcon.ico");
+                        _icon = new Icon(@"Assets\Workspaces\DefaultIcon.ico");
                     }
                 }
 
