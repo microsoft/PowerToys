@@ -1911,6 +1911,7 @@ XFile
 XIncrement
 XLoc
 XNamespace
+Xoshiro
 XPels
 XPixel
 xplorer
