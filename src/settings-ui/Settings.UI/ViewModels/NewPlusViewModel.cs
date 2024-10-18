@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+
 using Common.UI;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
@@ -21,6 +22,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Windows.ApplicationModel.VoiceCommands;
 using Windows.System;
+
 using static Microsoft.PowerToys.Settings.UI.Helpers.ShellGetFolder;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -250,12 +252,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void OpenNewTemplateFolder()
         {
-            var process = new ProcessStartInfo()
+            try
             {
-                FileName = _templateLocation,
-                UseShellExecute = true,
-            };
-            Process.Start(process);
+                CopyTemplateExamples(_templateLocation);
+
+                var process = new ProcessStartInfo()
+                {
+                    FileName = _templateLocation,
+                    UseShellExecute = true,
+                };
+                Process.Start(process);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to show NewPlus template folder.", ex);
+            }
         }
 
         private async void PickNewTemplateFolder()

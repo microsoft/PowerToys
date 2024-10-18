@@ -91,6 +91,9 @@ public:
     {
         Logger::info("New+ enabled via Settings UI");
 
+        // Log telemetry
+        Trace::EventToggleOnOff(true);
+
         newplus::utilities::register_msix_package();
 
         powertoy_new_enabled = true;
@@ -99,8 +102,7 @@ public:
     virtual void disable() override
     {
         Logger::info("New+ disabled via Settings UI");
-
-        powertoy_new_enabled = false;
+        Disable(true);
     }
 
     virtual bool is_enabled() override
@@ -125,11 +127,22 @@ public:
 
     virtual void destroy() override
     {
+        Disable(false);
         delete this;
     }
 
 private:
     bool powertoy_new_enabled = false;
+
+    void Disable(bool const traceEvent)
+    {
+        // Log telemetry
+        if (traceEvent)
+        {
+            Trace::EventToggleOnOff(false);
+        }
+        powertoy_new_enabled = false;
+    }
 
     void init_settings()
     {
