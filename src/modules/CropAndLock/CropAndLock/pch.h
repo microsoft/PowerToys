@@ -74,7 +74,6 @@
 #include "WindowRectUtil.h"
 
 // PowerToys
-#include <ProjectTelemetry.h>
 #include <common/logger/logger.h>
 
 // Application resources

@@ -3,11 +3,9 @@
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="trace.h" />
     <ClInclude Include="Generated Files\resource.h">
       <Filter>Generated Files</Filter>
     </ClInclude>

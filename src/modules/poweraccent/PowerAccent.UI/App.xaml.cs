@@ -7,6 +7,7 @@ using System.Threading;
 using System.Windows;
 
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 
 namespace PowerAccent.UI
 {
@@ -17,6 +18,7 @@ namespace PowerAccent.UI
     {
         private static Mutex _mutex;
         private bool _disposed;
+        private ETWTrace _etwTrace = new ETWTrace();
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -47,6 +49,7 @@ namespace PowerAccent.UI
             if (disposing)
             {
                 _mutex?.Dispose();
+                _etwTrace?.Dispose();
             }
 
             _disposed = true;

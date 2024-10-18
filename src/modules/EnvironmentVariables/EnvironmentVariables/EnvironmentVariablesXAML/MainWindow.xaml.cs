@@ -88,5 +88,10 @@ namespace EnvironmentVariables
 
             return NativeMethods.CallWindowProc(oldWndProc, hWnd, msg, wParam, lParam);
         }
+
+        private void Window_Closed(object sender, WindowEventArgs args)
+        {
+            (App.Current as EnvironmentVariables.App).EtwTrace?.Dispose();
+        }
     }
 }

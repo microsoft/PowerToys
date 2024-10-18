@@ -1,11 +1,10 @@
 #pragma once
 
-class Trace
+#include <common/Telemetry/TraceBase.h>
+
+class Trace : public telemetry::TraceBase
 {
 public:
-    static void RegisterProvider() noexcept;
-    static void UnregisterProvider() noexcept;
-
     // Log if the user has EnvironmentVariables enabled or disabled
     static void EnableEnvironmentVariables(const bool enabled) noexcept;
 

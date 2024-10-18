@@ -4,8 +4,6 @@
 
 using Common;
 using Microsoft.PowerToys.FilePreviewCommon;
-using Microsoft.PowerToys.PreviewHandler.Qoi.Telemetry.Events;
-using Microsoft.PowerToys.Telemetry;
 
 namespace Microsoft.PowerToys.PreviewHandler.Qoi
 {
@@ -73,13 +71,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Qoi
 
                 Resize += FormResized;
                 base.DoPreview(fs);
-                try
-                {
-                    PowerToysTelemetry.Log.WriteEvent(new QoiFilePreviewed());
-                }
-                catch
-                { // Should not crash if sending telemetry is failing. Ignore the exception.
-                }
             }
             catch (Exception ex)
             {
@@ -149,14 +140,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Qoi
         /// <param name="dataSource">Stream reference to access source file.</param>
         private void PreviewError<T>(Exception exception, T dataSource)
         {
-            try
-            {
-                PowerToysTelemetry.Log.WriteEvent(new QoiFilePreviewError { Message = exception.Message });
-            }
-            catch
-            { // Should not crash if sending telemetry is failing. Ignore the exception.
-            }
-
             Controls.Clear();
             _infoBarAdded = true;
             AddTextBoxControl(Properties.Resource.QoiNotPreviewedError);

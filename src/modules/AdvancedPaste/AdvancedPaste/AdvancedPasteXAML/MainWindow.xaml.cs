@@ -8,6 +8,7 @@ using AdvancedPaste.Helpers;
 using AdvancedPaste.Settings;
 using AdvancedPaste.ViewModels;
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using WinUIEx;
@@ -85,6 +86,7 @@ namespace AdvancedPaste
             if (!_disposedValue)
             {
                 _msgMonitor?.Dispose();
+                (Application.Current as App).EtwTrace?.Dispose();
 
                 _disposedValue = true;
             }

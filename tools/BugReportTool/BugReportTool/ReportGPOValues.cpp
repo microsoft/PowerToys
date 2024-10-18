@@ -7,7 +7,8 @@
 
 std::wstring gpo_rule_configured_to_string(powertoys_gpo::gpo_rule_configured_t gpo_rule)
 {
-    switch (gpo_rule) {
+    switch (gpo_rule)
+    {
     case powertoys_gpo::gpo_rule_configured_wrong_value:
         return L"wrong_value";
     case powertoys_gpo::gpo_rule_configured_unavailable:
@@ -35,7 +36,7 @@ std::wstring gpo_string_to_string(const std::wstring &gpo_value)
     }
 }
 
-void ReportGPOValues(const std::filesystem::path& tmpDir)
+void ReportGPOValues(const std::filesystem::path &tmpDir)
 {
     auto reportPath = tmpDir;
     reportPath.append(L"gpo-configuration-info.txt");
@@ -92,4 +93,5 @@ void ReportGPOValues(const std::filesystem::path& tmpDir)
     report << "getConfiguredMwbPolicyDefinedIpMappingRules: " << gpo_string_to_string(powertoys_gpo::getConfiguredMwbPolicyDefinedIpMappingRules()) << std::endl;
     report << "getConfiguredNewPlusEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredNewPlusEnabledValue()) << std::endl;
     report << "getConfiguredNewPlusHideTemplateFilenameExtensionValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredNewPlusHideTemplateFilenameExtensionValue()) << std::endl;
+    report << "getAllowDataDiagnosticsValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowDataDiagnosticsValue()) << std::endl;
 }

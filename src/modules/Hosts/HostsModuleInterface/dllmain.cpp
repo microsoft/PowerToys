@@ -55,6 +55,8 @@ private:
 
     HANDLE m_hShowAdminEvent{};
 
+    HANDLE m_hTerminateEvent{};
+
     bool is_process_running()
     {
         return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
@@ -135,6 +137,17 @@ public:
         if (!m_hShowAdminEvent)
         {
             Logger::error(L"Failed to create show hosts admin event");
+            auto message = get_last_error_message(GetLastError());
+            if (message.has_value())
+            {
+                Logger::error(message.value());
+            }
+        }
+
+        m_hTerminateEvent = CreateDefaultEvent(CommonSharedConstants::TERMINATE_HOSTS_EVENT);
+        if (!m_hTerminateEvent)
+        {
+            Logger::error(L"Failed to create terminate hosts event");
             auto message = get_last_error_message(GetLastError());
             if (message.has_value())
             {
@@ -264,6 +277,8 @@ public:
                 ResetEvent(m_hShowAdminEvent);
             }
 
+            SetEvent(m_hTerminateEvent);
+            WaitForSingleObject(m_hProcess, 1500);
             TerminateProcess(m_hProcess, 1);
         }
 

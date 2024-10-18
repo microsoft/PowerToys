@@ -27,6 +27,7 @@
     <ClInclude Include="ChildWindow.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="ModuleConstants.h" />
+    <ClInclude Include="DispatcherQueue.desktop.interop.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CropAndLock.rc" />
