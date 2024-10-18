@@ -52,7 +52,7 @@ namespace ImageResizer.Models
                 var decoder = BitmapDecoder.Create(
                     inputStream,
                     BitmapCreateOptions.PreservePixelFormat,
-                    BitmapCacheOption.None);
+                    BitmapCacheOption.OnLoad);
 
                 var containerFormat = decoder.CodecInfo.ContainerFormat;
 
