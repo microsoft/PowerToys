@@ -127,12 +127,10 @@ jobs:
         Write-Host "##vso[task.setvariable variable=MSBuildCacheParameters]$MSBuildCacheParameters"
       displayName: Prepare MSBuildCache variables
 
-  - ${{ if eq(parameters.codeSign, true) }}:
-    # Only required if we're using ESRP
-    - template: steps-ensure-dotnet-version.yml
-      parameters:
-        sdk: true
-        version: '6.0'
+  - template: steps-ensure-dotnet-version.yml
+    parameters:
+      sdk: true
+      version: '6.0'
 
   - template: steps-ensure-dotnet-version.yml
     parameters:
@@ -224,7 +222,7 @@ jobs:
     inputs:
       solution: '**\HostsUILib.csproj'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true -t:pack /bl:$(LogOutputDirectory)\build-hosts.binlog
+      msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-hosts.binlog
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
@@ -237,7 +235,7 @@ jobs:
     inputs:
       solution: '**\EnvironmentVariablesUILib.csproj'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true -t:pack /bl:$(LogOutputDirectory)\build-env-var-editor.binlog
+      msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-env-var-editor.binlog
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
@@ -250,7 +248,7 @@ jobs:
     inputs:
       solution: '**\RegistryPreviewUILib.csproj'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true -t:pack /bl:$(LogOutputDirectory)\build-registry-preview.binlog
+      msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-registry-preview.binlog
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true

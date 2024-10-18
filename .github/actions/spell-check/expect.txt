@@ -1,6 +1,9 @@
 # FALSE POSITIVES
 ## "PackagemanagerWrapper.cs" should be "PackageManagerWrapper.cs"
 ## NOTICE.MD > MOZILLA PUBLIC LICENSE v1.1
+
+# user name but user folder causes a flag
+8LWXpg 
 aaaa
 abcdefghjkmnpqrstuvxyz
 abgr
@@ -29,7 +32,6 @@ AFFINETRANSFORM
 AFX
 AGGREGATABLE
 AHybrid
-AKV
 akv
 ALarger
 ALLAPPS
@@ -367,6 +369,7 @@ dllmain
 DNLEN
 DONOTROUND
 DONTVALIDATEPATH
+DOPUS
 dotnet
 DPICHANGED
 DPIs
@@ -1265,6 +1268,7 @@ PWSTR
 pwsz
 pwtd
 QDC
+QDir
 qianlifeng
 qit
 QITAB
@@ -1588,7 +1592,7 @@ SYSKEYUP
 SYSLIB
 SYSMENU
 SYSTEMAPPS
-systemsettings
+SYSTEMSETTINGS
 SYSTEMTIME
 SYSTEMWOW
 tapp
@@ -1642,6 +1646,7 @@ toolkitconverters
 Toolset
 toolwindow
 TOPDOWNDIB
+TOTALCMD
 TOUCHEVENTF
 TOUCHINPUT
 touchpad
@@ -1909,6 +1914,7 @@ XNamespace
 Xoshiro
 XPels
 XPixel
+xplorer
 XResource
 xsi
 XStr

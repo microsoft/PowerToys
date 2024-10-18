@@ -8,7 +8,10 @@ using System.IO;
 
 using MouseWithoutBorders.Core;
 
+// Disable the warning to preserve original code
+#pragma warning disable CA1716
 namespace MouseWithoutBorders.Class
+#pragma warning restore CA1716
 {
     internal static class Extensions
     {

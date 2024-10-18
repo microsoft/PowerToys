@@ -9,9 +9,9 @@
 
 #include <AppLauncher.h>
 
-LauncherUIHelper::LauncherUIHelper() :
+LauncherUIHelper::LauncherUIHelper(std::function<void(const std::wstring&)> ipcCallback) :
     m_processId{},
-    m_ipcHelper(IPCHelperStrings::LauncherUIPipeName, IPCHelperStrings::UIPipeName, nullptr)
+    m_ipcHelper(IPCHelperStrings::LauncherUIPipeName, IPCHelperStrings::UIPipeName, ipcCallback)
 {
 }
 

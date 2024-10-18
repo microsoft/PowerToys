@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
+using ManagedCommon;
+
 namespace Awake.Core.Threading
 {
     internal sealed class SingleThreadSynchronizationContext : SynchronizationContext
@@ -49,7 +51,7 @@ namespace Awake.Core.Threading
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("Error during execution: " + e.Message);
+                    Logger.LogError("Error during execution of the STS context message loop: " + e.Message);
                 }
             }
         }
@@ -58,7 +60,8 @@ namespace Awake.Core.Threading
         {
             lock (queue)
             {
-                queue.Enqueue(null);  // Signal the end of the message loop
+                // Signal the end of the message loop
+                queue.Enqueue(null);
                 Monitor.Pulse(queue);
             }
         }
