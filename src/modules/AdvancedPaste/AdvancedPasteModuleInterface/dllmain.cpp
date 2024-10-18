@@ -176,6 +176,34 @@ private:
                open_ai_key_exists();
     }
 
+    static std::wstring kebab_to_pascal_case(const std::wstring& kebab_str)
+    {
+        std::wstring result;
+        bool capitalize_next = true;
+
+        for (const auto ch : kebab_str)
+        {
+            if (ch == L'-')
+            {
+                capitalize_next = true;
+            }
+            else
+            {
+                if (capitalize_next)
+                {
+                    result += std::towupper(ch);
+                    capitalize_next = false;
+                }
+                else
+                {
+                    result += ch;
+                }
+            }
+        }
+
+        return result;
+    }
+
     bool migrate_data_and_remove_data_file(Hotkey& old_paste_as_plain_hotkey)
     {
         const wchar_t OLD_JSON_KEY_ACTIVATION_SHORTCUT[] = L"ActivationShortcut";
@@ -788,12 +816,19 @@ public:
                 m_preview_custom_format_output = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SHOW_CUSTOM_PREVIEW).GetNamedBoolean(JSON_KEY_VALUE);
             }
 
+            std::unordered_map<std::wstring, Hotkey> additionalActionMap;
+            for (const auto& action : m_additional_actions)
+            {
+                additionalActionMap[kebab_to_pascal_case(action.id)] = action.hotkey;
+            }
+
             // order of args matter
             Trace::AdvancedPaste_SettingsTelemetry(m_paste_as_plain_hotkey,
                                                    m_advanced_paste_ui_hotkey,
                                                    m_paste_as_markdown_hotkey,
                                                    m_paste_as_json_hotkey,
-                                                   m_preview_custom_format_output);
+                                                   m_preview_custom_format_output,
+                                                   additionalActionMap);
 
             // If you don't need to do any custom processing of the settings, proceed
             // to persists the values calling:
@@ -890,6 +925,8 @@ public:
                 const auto& id = m_additional_actions.at(additional_action_index).id;
 
                 Logger::trace(L"Starting additional action id={}", id);
+
+                Trace::AdvancedPaste_Invoked(std::format(L"{}Direct", kebab_to_pascal_case(id)));
 
                 send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_ADDITIONAL_ACTION_MESSAGE, id);
                 return true;
