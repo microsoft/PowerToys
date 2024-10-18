@@ -119,7 +119,7 @@ int CalculateDistance(const WorkspacesData::WorkspacesProject::Application& app,
     int placementDiffPenalty = 1;
     if (app.isMinimized || (placement.showCmd == SW_SHOWMINIMIZED))
     {
-        // we prefer to move minimalized window for minimalized app and non-minimalized window for non-minimalized app
+        // we prefer to move minimized window for minimized app and non-minimized window for non-minimized app
         placementDiffPenalty = 10000;
     }
 
