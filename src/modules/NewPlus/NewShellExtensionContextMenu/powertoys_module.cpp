@@ -51,21 +51,30 @@ public:
         return true;
     }
 
-    virtual void set_config(PCWSTR config) override
+    virtual void set_config(const wchar_t* config) override
     {
         // The following just checks to see if the Template Location was changed for metrics purposes
         // Note: We are not saving the settings here and instead relying on read/write of json in Settings App .cs code paths
         try
         {
-            json::JsonObject config_as_json = json::JsonValue::Parse(winrt::to_hstring(config)).GetObjectW();
+            // Parse the input JSON string.
+            PowerToysSettings::PowerToyValues values =
+                PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
-            const auto latest_location_value = config_as_json.GetNamedString(newplus::constants::non_localizable::settings_json_key_template_location).data();
-            const auto existing_location_value = NewSettingsInstance().GetTemplateLocation();
+            values.save_to_settings_file();
+            NewSettingsInstance().Load();
 
-            if (!newplus::utilities::wstring_same_when_comparing_ignore_case(latest_location_value, existing_location_value))
+            auto templateValue = values.get_string_value(newplus::constants::non_localizable::settings_json_key_template_location);
+            if (templateValue.has_value())
             {
-                Trace::EventChangedTemplateLocation();
+                const auto latest_location_value = templateValue.value();
+                const auto existing_location_value = NewSettingsInstance().GetTemplateLocation();
+                if (!newplus::utilities::wstring_same_when_comparing_ignore_case(latest_location_value, existing_location_value))
+                {
+                    Trace::EventChangedTemplateLocation();
+                }
             }
+
         }
         catch (std::exception& e)
         {
@@ -82,6 +91,9 @@ public:
     {
         Logger::info("New+ enabled via Settings UI");
 
+        // Log telemetry
+        Trace::EventToggleOnOff(true);
+
         newplus::utilities::register_msix_package();
 
         powertoy_new_enabled = true;
@@ -90,8 +102,7 @@ public:
     virtual void disable() override
     {
         Logger::info("New+ disabled via Settings UI");
-
-        powertoy_new_enabled = false;
+        Disable(true);
     }
 
     virtual bool is_enabled() override
@@ -116,11 +127,22 @@ public:
 
     virtual void destroy() override
     {
+        Disable(false);
         delete this;
     }
 
 private:
     bool powertoy_new_enabled = false;
+
+    void Disable(bool const traceEvent)
+    {
+        // Log telemetry
+        if (traceEvent)
+        {
+            Trace::EventToggleOnOff(false);
+        }
+        powertoy_new_enabled = false;
+    }
 
     void init_settings()
     {
