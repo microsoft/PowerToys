@@ -101,6 +101,7 @@
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\Peek.Common\Peek.Common.csproj" />
     <ProjectReference Include="..\Peek.FilePreviewer\Peek.FilePreviewer.csproj" />
+    <ProjectReference Include="..\Peek.Helpers\Peek.Helpers.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\Peek\Icon.ico" />

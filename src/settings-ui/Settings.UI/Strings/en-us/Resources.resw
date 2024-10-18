@@ -4219,6 +4219,15 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="ShowPluginsOverview_NonGlobal.Content" xml:space="preserve">
     <value>Not included in global results</value>
   </data>
+  <data name="FileActionsMenu_FileActionsMenu.Description" xml:space="preserve">
+    <value>File Actions Menu adds a menu to the Windows File Explorer, that enables you to execute certain actions. The menu can be opened via a shortcut.</value>
+  </data>
+  <data name="FileActionsMenu_FileActionsMenu.Header" xml:space="preserve">
+    <value>File Actions Menu</value>
+  </data>
+  <data name="FileActionsMenu_ToggleSwitch_FileActionsMenu.Header" xml:space="preserve">
+    <value>Enable File Actions Menu</value>
+  </data>
   <data name="PowerLauncher_TitleFontSize.Description" xml:space="preserve">
     <value>The size of result titles and the search query</value>
   </data>
@@ -4249,6 +4258,33 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GPO_SomeThumbnailProvidersAreManaged.Title" xml:space="preserve">
     <value>The enabled state of some thumbnail handlers is managed by your organization.</value>
+  </data>
+  <data name="FileActionsMenu.ModuleDescription" xml:space="preserve">
+    <value>File Actions Menu allows you to perform several actions on selected files and folders, such as generating checksums, copying paths separated by a delimiter or create a new folder with the selection.</value>
+  </data>
+  <data name="FileActionsMenu.ModuleTitle" xml:space="preserve">
+    <value>File Actions Menu</value>
+  </data>
+  <data name="FileActionsMenu.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+  </data>
+  <data name="LearnMore_FileActionsMenu.Text" xml:space="preserve">
+    <value>Learn more about File Actions Menu</value>
+  </data>
+  <data name="Shell_FileActionsMenu.Content" xml:space="preserve">
+    <value>File Actions Menu</value>
+  </data>
+  <data name="FileActionsMenu_ShortDescription" xml:space="preserve">
+    <value>Press shortcut to open a menu and perform actions on selected Files/Folders</value>
+  </data>
+  <data name="Oobe_FileActionsMenu.Description" xml:space="preserve">
+    <value>File Actions Menu is a menu that allows you to perform several different actions on Files and Folders selected in Windows Explorer. These actions include generating hashes, copying the file paths of the selected objects delimited by a custom delimiter or copying the file content in different formats.</value>
+  </data>
+  <data name="Oobe_FileActionsMenu.Title" xml:space="preserve">
+    <value>File Actions Menu</value>
+  </data>
+  <data name="Oobe_FileActionsMenu_HowToUse.Text" xml:space="preserve">
+    <value>to open File Actions Menu</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Monaco_Sticky_Scroll.Content" xml:space="preserve">
     <value>Enable sticky scroll</value>

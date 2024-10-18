@@ -112,6 +112,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "FancyZones",
                 IsNew = false,
             });
+            Modules.Insert((int)PowerToysModules.FileActionsMenu, new OobePowerToysModule()
+            {
+                ModuleName = "FileActionsMenu",
+                IsNew = true,
+            });
             Modules.Insert((int)PowerToysModules.FileLocksmith, new OobePowerToysModule()
             {
                 ModuleName = "FileLocksmith",
@@ -282,6 +287,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "KBM": NavigationFrame.Navigate(typeof(OobeKBM)); break;
                     case "PowerRename": NavigationFrame.Navigate(typeof(OobePowerRename)); break;
                     case "QuickAccent": NavigationFrame.Navigate(typeof(OobePowerAccent)); break;
+                    case "FileActionsMenu": NavigationFrame.Navigate(typeof(OobeFileActionsMenu)); break;
                     case "FileExplorer": NavigationFrame.Navigate(typeof(OobeFileExplorer)); break;
                     case "ShortcutGuide": NavigationFrame.Navigate(typeof(OobeShortcutGuide)); break;
                     case "TextExtractor": NavigationFrame.Navigate(typeof(OobePowerOCR)); break;
