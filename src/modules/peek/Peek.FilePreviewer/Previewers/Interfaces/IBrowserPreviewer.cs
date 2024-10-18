@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 
 namespace Peek.FilePreviewer.Previewers.Interfaces
 {
@@ -11,6 +12,8 @@ namespace Peek.FilePreviewer.Previewers.Interfaces
         public Uri? Preview { get; }
 
         public bool IsDevFilePreview { get; }
+
+        public Queue<string> JavascriptCommandQueue { get; set; }
 
         public bool CustomContextMenu { get; }
     }

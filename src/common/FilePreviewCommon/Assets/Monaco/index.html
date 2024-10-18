@@ -2,46 +2,7 @@
 <html>
 <head>
     <script>
-        // Set variables
-
-        // Get URL parameters:
-        // `code` contains the code of the file in base64 encoded
-        // `theme` can be "vs" for light theme or "vs-dark" for dark theme
-        // `lang` is the language of the file
-        // `wrap` if the editor is wrapping or not
-
-        var theme = ("[[PT_THEME]]" == "dark") ? "vs-dark" : "vs";
-        var lang = "[[PT_LANG]]";
-        var wrap = ([[PT_WRAP]] == 1) ? true : false;
-
-        var base64code = "[[PT_CODE]]";
-
-        var stickyScroll = ([[PT_STICKY_SCROLL]] == 1) ? true : false;
-
-        var fontSize = [[PT_FONT_SIZE]];
-        var contextMenu = ([[PT_CONTEXTMENU]] == 1) ? true : false;
-
         var editor;
-
-        // Code taken from https://stackoverflow.com/a/30106551/14774889
-        var code = decodeURIComponent(atob(base64code).split('').map(function (c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-
-        function runToggleTextWrapCommand() {
-            if (wrap) {
-                editor.updateOptions({ wordWrap: 'off' })
-            } else {
-                editor.updateOptions({ wordWrap: 'on' })
-            }
-            wrap = !wrap;
-        }
-
-        function runCopyCommand() {
-            editor.focus();
-            document.execCommand('copy');
-        }
-
     </script>
     <!-- Set browser to Edge-->
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -73,75 +34,66 @@
 
 <body>
     <!-- Container for the editor -->
-    <div id="container"></div>
+    <div style="font-size:xx-large;position: absolute;top: 50%; right: 50%;background-color: transparent;transform: translate(50%,-50%);">...</div>
+    <div id="container" style="z-index: 100;"></div>
     <!-- Script -->
-    <script src="http://[[PT_URL]]/monacoSRC/min/vs/loader.js"></script>
-    <script src="http://[[PT_URL]]/monacoSpecialLanguages.js" type="module"></script>
+    <script src="/monacoSRC/min/vs/loader.js"></script>
+    <script src="/monacoSpecialLanguages.js" type="module"></script>
     <script type="module">
-        import { registerAdditionalLanguages } from 'http://[[PT_URL]]/monacoSpecialLanguages.js';
-        import { customTokenColors } from 'http://[[PT_URL]]/customTokenColors.js';
-        require.config({ paths: { vs: 'http://[[PT_URL]]/monacoSRC/min/vs' } });
-        require(['vs/editor/editor.main'], async function () {
-            await registerAdditionalLanguages(monaco)
+        import { registerAdditionalLanguages } from "/monacoSpecialLanguages.js";
+        window.addEventListener("DOMContentLoaded", function () {
+            require.config({ paths: { vs: '/monacoSRC/min/vs' } });
+            require(['vs/editor/editor.main'], async function () {
+                await registerAdditionalLanguages(monaco)
+                // Creates the editor
+                // For all parameters: https://microsoft.github.io/monaco-editor/api/interfaces/monaco.editor.istandaloneeditorconstructionoptions.html
+                editor = monaco.editor.create(document.getElementById('container'), {
+                    readOnly: true, // Sets to readonly
+                    minimap: {enabled: false}, // Disables minimap
+                    lineNumbersMinChars: "3", //Width of the line numbers
+                    scrollbar: {
+                        // Deactivate shadows
+                        shadows: false,
 
-            // Creates a theme to handle custom tokens
-            monaco.editor.defineTheme('theme', {
-                base: theme, // Sets the base theme to "vs" or "vs-dark" depending on the user's preference
-                inherit: true,
-                rules: customTokenColors,
-                colors: {} // `colors` is a required attribute
+                        // Render scrollbar automatically
+                        vertical: 'auto',
+                        horizontal: 'auto',
+                    },
+                });
+                window.onresize = function (){
+                    editor.layout();
+                };
+
+                // Code taken from stackoverflow.com/a/30106551/14774889
+                onContextMenu();
+                // Add switch wrap button to context menu
+                editor.addAction({
+                    id: 'text-wrap',
+    
+                    label: 'Toggle text wrapping',
+    
+                    // A precondition for this action.
+                    precondition: null,
+    
+                    // A rule to evaluate on top of the precondition in order to dispatch the keybindings.
+                    keybindingContext: null,
+    
+                    contextMenuGroupId: 'cutcopypaste',
+    
+                    contextMenuOrder: 100,
+    
+                    // Method that will be executed when the action is triggered.
+                    // @param editor The editor instance is passed in as a convenience
+                    run: function (ed) {
+                        if(wrap){
+                            editor.updateOptions({ wordWrap: "off" })
+                        }else{
+                            editor.updateOptions({ wordWrap: "on" })
+                        }
+                        wrap = !wrap;
+                    }
+                });
             });
-
-            // Creates the editor
-            // For all parameters: https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IStandaloneEditorConstructionOptions.html
-            editor = monaco.editor.create(document.getElementById('container'), {
-                value: code, // Sets content of the editor
-                language: lang, // Sets language of the code
-                readOnly: true, // Sets to readonly
-                theme: 'theme', // Sets editor theme
-                minimap: { enabled: false }, // Disables minimap
-                lineNumbersMinChars: '3', // Width of the line numbers
-                contextmenu: contextMenu,
-                scrollbar: {
-                    // Deactivate shadows
-                    shadows: false,
-
-                    // Render scrollbar automatically
-                    vertical: 'auto',
-                    horizontal: 'auto',
-                },
-                stickyScroll: { enabled: stickyScroll },
-                fontSize: fontSize,
-                wordWrap: (wrap ? 'on' : 'off') // Word wraps
-            });
-            window.onresize = () => {
-                editor.layout();
-            };
-
-            // Add toggle wrap button to context menu
-            editor.addAction({
-                id: 'text-wrap',
-
-                label: 'Toggle text wrapping',
-
-                // A precondition for this action.
-                precondition: null,
-
-                // A rule to evaluate on top of the precondition in order to dispatch the keybindings.
-                keybindingContext: null,
-
-                contextMenuGroupId: 'cutcopypaste',
-
-                contextMenuOrder: 100,
-
-                // Method that will be executed when the action is triggered.
-                // @param editor The editor instance is passed in as a convenience
-                run: function (ed) {
-                    runToggleTextWrapCommand();
-                }
-            });
-
-            onContextMenu();
         });
 
         function onContextMenu() {

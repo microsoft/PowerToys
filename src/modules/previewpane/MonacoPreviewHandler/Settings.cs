@@ -2,9 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Drawing;
-using System.IO;
 using System.Reflection;
 
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -14,20 +11,20 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
     /// <summary>
     /// This class defines all the variables used for Monaco
     /// </summary>
-    public class Settings
+    public static class Settings
     {
-        private static SettingsUtils moduleSettings = new SettingsUtils();
+        private static PowerPreviewProperties _powerPreviewProperties = new SettingsUtils().GetSettings<PowerPreviewSettings>(PowerPreviewSettings.ModuleName).Properties;
 
         /// <summary>
         /// Gets a value indicating whether word wrapping should be applied. Set by PT settings.
         /// </summary>
-        public bool Wrap
+        public static bool Wrap
         {
             get
             {
                 try
                 {
-                    return moduleSettings.GetSettings<PowerPreviewSettings>(PowerPreviewSettings.ModuleName).Properties.EnableMonacoPreviewWordWrap;
+                    return _powerPreviewProperties.EnableMonacoPreviewWordWrap;
                 }
                 catch (FileNotFoundException)
                 {
@@ -41,13 +38,13 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// <summary>
         /// Gets a value indicating whether to try formatting the file. Set by PT settings.
         /// </summary>
-        public bool TryFormat
+        public static bool TryFormat
         {
             get
             {
                 try
                 {
-                    return moduleSettings.GetSettings<PowerPreviewSettings>(PowerPreviewSettings.ModuleName).Properties.MonacoPreviewTryFormat;
+                    return _powerPreviewProperties.MonacoPreviewTryFormat;
                 }
                 catch (FileNotFoundException)
                 {
@@ -61,13 +58,13 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// <summary>
         /// Gets Max file size for displaying (in bytes).
         /// </summary>
-        public double MaxFileSize
+        public static double MaxFileSize
         {
             get
             {
                 try
                 {
-                    return moduleSettings.GetSettings<PowerPreviewSettings>(PowerPreviewSettings.ModuleName).Properties.MonacoPreviewMaxFileSize.Value * 1000;
+                    return _powerPreviewProperties.MonacoPreviewMaxFileSize.Value * 1000;
                 }
                 catch (FileNotFoundException)
                 {
@@ -171,13 +168,15 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             }
         }
 
+        private static readonly string _theme = Common.UI.ThemeManager.GetWindowsBaseColor().ToLowerInvariant();
+
         /// <summary>
         /// Returns the theme.
         /// </summary>
         /// <returns>Theme that should be used.</returns>
         public static string GetTheme()
         {
-            return Common.UI.ThemeManager.GetWindowsBaseColor().ToLowerInvariant();
+            return _theme;
         }
     }
 }
