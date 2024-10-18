@@ -33,6 +33,8 @@
         x:Name="SuggestionsList"
         x:FieldModifier="public"
         AutomationProperties.Name="{x:Static p:Resources.Results}"
+        Background="Transparent"
+        BorderBrush="Transparent"
         ItemsSource="{Binding Results.Results, Mode=OneWay}"
         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
         ScrollViewer.VerticalScrollBarVisibility="Auto"

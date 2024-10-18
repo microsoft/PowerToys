@@ -35,16 +35,16 @@
     <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2739.15" />
     <!-- Package Microsoft.Win32.SystemEvents added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Drawing.Common but the 8.0.1 version wasn't published to nuget. -->
     <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Windows.Compatibility" Version="8.0.7" />
+    <PackageVersion Include="Microsoft.Windows.Compatibility" Version="8.0.10" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.2.46-beta" />
     <!-- CsWinRT version needs to be set to have a WinRT.Runtime.dll at the same version contained inside the NET SDK we're currently building on CI. -->
     <!-- 
       TODO: in Common.Dotnet.CsWinRT.props, on upgrade, verify RemoveCsWinRTPackageAnalyzer is no longer needed.  
       This is present due to a bug in CsWinRT where WPF projects cause the analyzer to fail.
 	-->
-    <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.1.1" />
+    <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.1.5" />
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.2428" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.6.240829007" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.6.240923002" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
     <PackageVersion Include="ModernWpfUI" Version="0.9.4" />
@@ -63,30 +63,26 @@
     <PackageVersion Include="System.CodeDom" Version="8.0.0" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <PackageVersion Include="System.ComponentModel.Composition" Version="8.0.0" />
-    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
-    <PackageVersion Include="System.Data.OleDb" Version="8.0.0" />
+    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="8.0.1" />
+    <PackageVersion Include="System.Data.OleDb" Version="8.0.1" />
     <!-- Package System.Data.SqlClient added to force it as a dependency of Microsoft.Windows.Compatibility to the latest version available at this time. -->
     <PackageVersion Include="System.Data.SqlClient" Version="4.8.6" />
     <!-- Package System.Diagnostics.EventLog added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Data.OleDb but the 8.0.1 version wasn't published to nuget. -->
-    <PackageVersion Include="System.Diagnostics.EventLog" Version="8.0.0" />
-    <!-- Package System.Diagnostics.PerformanceCounter added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Data.OleDb but the 8.0.1 version wasn't published to nuget. -->
-    <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="8.0.0" />
+    <PackageVersion Include="System.Diagnostics.EventLog" Version="8.0.1" />
     <PackageVersion Include="System.Drawing.Common" Version="8.0.6" />
     <PackageVersion Include="System.IO.Abstractions" Version="17.2.3" />
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="17.2.3" />
     <PackageVersion Include="System.Management" Version="8.0.0" />
     <PackageVersion Include="System.Reactive" Version="6.0.1" />
-    <PackageVersion Include="System.Runtime.Caching" Version="8.0.0" />
-    <!-- Package System.Security.Cryptography.ProtectedData added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Data.OleDb but the 8.0.1 version wasn't published to nuget. -->
-    <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
-    <PackageVersion Include="System.ServiceProcess.ServiceController" Version="8.0.0" />
+    <PackageVersion Include="System.Runtime.Caching" Version="8.0.1" />
+    <PackageVersion Include="System.ServiceProcess.ServiceController" Version="8.0.1" />
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="8.0.0" />
-    <PackageVersion Include="System.Text.Json" Version="8.0.4" />
+    <PackageVersion Include="System.Text.Json" Version="8.0.5" />
     <PackageVersion Include="UnicodeInformation" Version="2.6.0" />
     <PackageVersion Include="UnitsNet" Version="5.56.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
     <PackageVersion Include="WinUIEx" Version="2.2.0" />
-    <PackageVersion Include="WPF-UI" Version="3.0.0" />
+    <PackageVersion Include="WPF-UI" Version="3.0.5" />
   </ItemGroup>
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
     <!-- Additional dependencies used by experimentation -->
