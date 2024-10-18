@@ -13,6 +13,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+
 using CommunityToolkit.WinUI.UI.Controls;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
