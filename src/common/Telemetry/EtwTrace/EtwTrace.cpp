@@ -7,6 +7,8 @@
 
 #include "ETWTrace.h"
 
+#include <thread>
+
 #include <wil\stl.h>
 #include <wil\win32_helpers.h>
 
@@ -81,7 +83,6 @@ namespace Shared
 
             fs::path outputFolder = get_root_save_folder_location();
             m_etwFolder = (outputFolder / c_etwFolderName);
-
         }
 
         ETWTrace::ETWTrace(const std::wstring& etlFileNameOverride) :
@@ -115,7 +116,7 @@ namespace Shared
             if (m_tracing)
             {
                 Control(EVENT_TRACE_CONTROL_FLUSH);
-                Control(EVENT_TRACE_CONTROL_INCREMENT_FILE);
+                // Control(EVENT_TRACE_CONTROL_INCREMENT_FILE);
             }
         }
 
@@ -219,6 +220,8 @@ namespace Shared
             Enable(EVENT_CONTROL_CODE_ENABLE_PROVIDER);
 
             m_tracing = true;
+
+            m_flushing_thread = std::thread([this] { FlushWorker(); });
         }
 
         void ETWTrace::Stop()
@@ -237,6 +240,8 @@ namespace Shared
             m_traceHandle = INVALID_PROCESSTRACE_HANDLE;
             m_eventTracePropertiesBuffer.reset();
             m_tracing = false;
+            m_terminate_flushing_thread.notify_one();
+            m_flushing_thread.join();
         }
 
         void ETWTrace::Control(ULONG traceControlCode)
@@ -250,6 +255,18 @@ namespace Shared
         {
             // Control the main provider
             THROW_IF_WIN32_ERROR(EnableTraceEx2(m_traceHandle, &m_providerGUID, eventControlCode, TRACE_LEVEL_VERBOSE, 0, 0, 0, nullptr));
+        }
+
+        void ETWTrace::FlushWorker()
+        {
+            std::unique_lock<std::mutex> lock(m_mutex);
+            while (m_tracing)
+            {
+                m_terminate_flushing_thread.wait_for(lock,
+                                std::chrono::seconds(30),
+                                [this]() { return !m_tracing.load(); });
+                Flush();
+            }
         }
     }
 }

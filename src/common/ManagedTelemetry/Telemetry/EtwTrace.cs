@@ -7,8 +7,9 @@ using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Diagnostics.Tracing.Session;
-using Microsoft.PowerToys.Telemetry;
 
 namespace Microsoft.PowerToys.Telemetry
 {
@@ -87,6 +88,16 @@ namespace Microsoft.PowerToys.Telemetry
                 {
                     return;
                 }
+
+                new Task(() =>
+                {
+                    while (true)
+                    {
+                        Thread.Sleep(30 * 1000);
+
+                        this.traceSession.Flush();
+                    }
+                }).Start();
 
                 string executable = Process.GetCurrentProcess().ProcessName;
                 string dateTimeNow = DateTime.Now.ToString("MM-d-yyyy__H_mm_ss", CultureInfo.InvariantCulture);

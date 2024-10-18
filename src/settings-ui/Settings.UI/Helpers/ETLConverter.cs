@@ -59,6 +59,11 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         {
             var outputFilePath = Path.ChangeExtension(etlFilePathToConvert, $".{ETLConversionOutputFormat}");
 
+            if (File.Exists(outputFilePath))
+            {
+                File.Delete(outputFilePath);
+            }
+
             var tracerPtArguments = $"\"{etlFilePathToConvert}\" -o \"{outputFilePath}\" -lr -y -of {ETLConversionOutputFormat}";
 
             var startInfo = new ProcessStartInfo

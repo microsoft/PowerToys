@@ -7,6 +7,8 @@
 
 #include <evntrace.h>
 #include <filesystem>
+#include <thread>
+#include <condition_variable>
 
 namespace Shared
 {
@@ -31,14 +33,18 @@ namespace Shared
             void Stop();
             void Control(const ULONG traceControlCode);
             void Enable(const ULONG eventControlCode);
+            void FlushWorker();
 
             GUID m_providerGUID{};
             std::filesystem::path m_etwFolder;
             std::wstring m_sessionName;
             TRACEHANDLE m_traceHandle{ INVALID_PROCESSTRACE_HANDLE };
             std::unique_ptr<unsigned char[]> m_eventTracePropertiesBuffer;
-            bool m_tracing{ false };
+            std::atomic_bool m_tracing{ false };
             std::wstring m_etlFileNameOverride{};
+            std::thread m_flushing_thread;
+            std::condition_variable m_terminate_flushing_thread;
+            std::mutex m_mutex;
 
             static constexpr PCWSTR c_etwFolderName = L"etw";
             static constexpr PCWSTR c_etwNewFileFormattedCounter = L"-%d";
