@@ -102,6 +102,16 @@
             LoadingState="{x:Bind UnsupportedFilePreviewer.State, Mode=OneWay}"
             Source="{x:Bind UnsupportedFilePreviewer.Preview, Mode=OneWay}"
             Visibility="{x:Bind IsUnsupportedPreviewVisible(UnsupportedFilePreviewer, Previewer.State), Mode=OneWay}" />
+
+        <TextBlock
+            x:Uid="NoMoreFiles"
+            x:Name="NoMoreFiles"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Foreground="{StaticResource TextFillColorSecondaryBrush}"
+            Visibility="Collapsed"
+            TextWrapping="Wrap"
+            AutomationProperties.HeadingLevel="1" />
     </Grid>
     <UserControl.KeyboardAccelerators>
         <KeyboardAccelerator
