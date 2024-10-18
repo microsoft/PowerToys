@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "GPOWrapper.h"
 #include "GPOWrapper.g.cpp"
 
@@ -175,5 +175,53 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     GpoRuleConfigured GPOWrapper::GetAllowedAdvancedPasteOnlineAIModelsValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPasteOnlineAIModelsValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetConfiguredNewPlusEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredNewPlusEnabledValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetConfiguredWorkspacesEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredWorkspacesEnabledValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetConfiguredMwbClipboardSharingEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMwbClipboardSharingEnabledValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetConfiguredMwbFileTransferEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMwbFileTransferEnabledValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetConfiguredMwbUseOriginalUserInterfaceValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMwbUseOriginalUserInterfaceValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetConfiguredMwbDisallowBlockingScreensaverValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMwbDisallowBlockingScreensaverValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetConfiguredMwbSameSubnetOnlyValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMwbSameSubnetOnlyValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetConfiguredMwbValidateRemoteIpValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMwbValidateRemoteIpValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetConfiguredMwbDisableUserDefinedIpMappingRulesValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMwbDisableUserDefinedIpMappingRulesValue());
+    }
+    winrt::hstring GPOWrapper::GetConfiguredMwbPolicyDefinedIpMappingRules()
+    {
+        // Assuming powertoys_gpo::getConfiguredMwbPolicyDefinedIpMappingRules() returns a std::wstring
+        std::wstring rules = powertoys_gpo::getConfiguredMwbPolicyDefinedIpMappingRules();
+
+        // Convert std::wstring to winrt::hstring
+        return to_hstring(rules.c_str());
+    }
+    GpoRuleConfigured GPOWrapper::GetConfiguredNewPlusHideTemplateFilenameExtensionValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredNewPlusHideTemplateFilenameExtensionValue());
     }
 }

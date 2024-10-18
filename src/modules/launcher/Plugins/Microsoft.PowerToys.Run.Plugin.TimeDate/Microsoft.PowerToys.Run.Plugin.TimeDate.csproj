@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\..\Version.props" />
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />	
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.TimeDate</RootNamespace>
     <AssemblyName>Microsoft.PowerToys.Run.Plugin.TimeDate</AssemblyName>
-    <Version>$(Version).0</Version>
+    
     <useWPF>true</useWPF>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
@@ -15,33 +15,9 @@
     <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\RunPlugins\TimeDate\</OutputPath>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DebugSymbols>true</DebugSymbols>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-  </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="System.Diagnostics.EventLog">
-      <!-- This package is a dependency of Microsoft.Extensions.Logging.EventLog, but we need to set it here so we can exclude the assets, so it doesn't conflict with the 8.0.1 dll coming from .NET SDK. -->
-      <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
-    </PackageReference>
-    <PackageReference Include="System.CodeDom">
-      <!-- This package is a dependency of System.Management, but we need to set it here so we can exclude the assets, so it doesn't conflict with the 8.0.1 dll coming from .NET SDK. -->
-      <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

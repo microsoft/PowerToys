@@ -5,10 +5,12 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading.Tasks;
+
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -58,8 +60,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             Settings = videoConferenceSettingsRepository.SettingsConfig;
 
-            CameraNames = interop.CommonManaged.GetAllVideoCaptureDeviceNames();
-            MicrophoneNames = interop.CommonManaged.GetAllActiveMicrophoneDeviceNames();
+            CameraNames = global::PowerToys.Interop.CommonManaged.GetAllVideoCaptureDeviceNames().ToList();
+            MicrophoneNames = global::PowerToys.Interop.CommonManaged.GetAllActiveMicrophoneDeviceNames().ToList();
             MicrophoneNames.Insert(0, "[All]");
 
             var shouldSaveSettings = false;

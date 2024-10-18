@@ -3,7 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using interop;
+
+using PowerToys.Interop;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {

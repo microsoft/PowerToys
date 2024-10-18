@@ -1,28 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\..\Version.props" />
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />	
+
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.Registry</RootNamespace>
     <AssemblyName>Microsoft.PowerToys.Run.Plugin.Registry</AssemblyName>
-    <Version>$(Version).0</Version>
+    
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <Nullable>enable</Nullable>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\RunPlugins\Registry\</OutputPath>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DebugSymbols>true</DebugSymbols>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,17 +20,6 @@
     <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj">
       <Private>false</Private>
     </ProjectReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="System.Diagnostics.EventLog">
-      <!-- This package is a dependency of Microsoft.Extensions.Logging.EventLog, but we need to set it here so we can exclude the assets, so it doesn't conflict with the 8.0.1 dll coming from .NET SDK. -->
-      <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
-    </PackageReference>
-    <PackageReference Include="System.CodeDom">
-      <!-- This package is a dependency of System.Management, but we need to set it here so we can exclude the assets, so it doesn't conflict with the 8.0.1 dll coming from .NET SDK. -->
-      <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

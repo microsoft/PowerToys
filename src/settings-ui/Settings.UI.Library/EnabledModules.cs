@@ -6,6 +6,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
 using Microsoft.PowerToys.Settings.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 
@@ -458,6 +459,39 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     environmentVariables = value;
+                }
+            }
+        }
+
+        private bool newPlus;
+
+        [JsonPropertyName("NewPlus")] // This key must match newplus::constants::non_localizable
+        public bool NewPlus
+        {
+            get => newPlus;
+            set
+            {
+                if (newPlus != value)
+                {
+                    LogTelemetryEvent(value);
+                    newPlus = value;
+                }
+            }
+        }
+
+        private bool workspaces = true;
+
+        [JsonPropertyName("Workspaces")]
+        public bool Workspaces
+        {
+            get => workspaces;
+            set
+            {
+                if (workspaces != value)
+                {
+                    LogTelemetryEvent(value);
+                    workspaces = value;
+                    NotifyChange();
                 }
             }
         }

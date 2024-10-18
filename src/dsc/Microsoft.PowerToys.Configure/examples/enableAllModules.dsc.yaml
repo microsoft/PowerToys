@@ -35,6 +35,8 @@ properties:
           Enabled: true
         MouseWithoutBorders:
           Enabled: true
+        NewPlus:
+          Enabled: true
         Peek:
           Enabled: true
         PowerRename:
@@ -56,6 +58,8 @@ properties:
           EnableQoiPreview: true
           EnableQoiThumbnail: true
         PowerOcr:
+          Enabled: true
+        Workspaces:
           Enabled: true
         ShortcutGuide:
           Enabled: true

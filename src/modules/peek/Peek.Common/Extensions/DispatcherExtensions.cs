@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading.Tasks;
+
 using Microsoft.UI.Dispatching;
 
 namespace Peek.Common.Extensions

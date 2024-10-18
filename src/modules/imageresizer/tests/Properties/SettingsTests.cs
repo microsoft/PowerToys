@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+
 using ImageResizer.Models;
 using ImageResizer.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

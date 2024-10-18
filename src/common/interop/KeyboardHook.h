@@ -1,48 +1,35 @@
 #pragma once
+#include "KeyboardHook.g.h"
+#include <mutex>
+#include <unordered_set>
 
-#include <cinttypes>
-
-using namespace System::Threading;
-using namespace System::Collections::Generic;
-
-namespace interop
+namespace winrt::PowerToys::Interop::implementation
 {
-public
-    ref struct KeyboardEvent
+    struct KeyboardHook : KeyboardHookT<KeyboardHook>
     {
-        WPARAM message;
-        int key;
-        uint64_t dwExtraInfo;
-    };
+        // KeyboardHook() = default;
 
-public
-    delegate void KeyboardEventCallback(KeyboardEvent ^ ev);
-public
-    delegate bool IsActiveCallback();
-public
-    delegate bool FilterKeyboardEvent(KeyboardEvent ^ ev);
-
-public
-    ref class KeyboardHook
-    {
-    public:
-        KeyboardHook(
-            KeyboardEventCallback ^ keyboardEventCallback,
-            IsActiveCallback ^ isActiveCallback,
-            FilterKeyboardEvent ^ filterKeyboardEvent);
-        ~KeyboardHook();
-
+        KeyboardHook(winrt::PowerToys::Interop::KeyboardEventCallback const& keyboardEventCallback, winrt::PowerToys::Interop::IsActiveCallback const& isActiveCallback, winrt::PowerToys::Interop::FilterKeyboardEvent const& filterKeyboardEvent);
         void Start();
+        void Close();
 
     private:
-        delegate LRESULT HookProcDelegate(int nCode, WPARAM wParam, LPARAM lParam);
-        KeyboardEventCallback ^ keyboardEventCallback;
-        IsActiveCallback ^ isActiveCallback;
-        FilterKeyboardEvent ^ filterKeyboardEvent;
-        HHOOK hookHandle;
-        HookProcDelegate ^ hookProc;
+        winrt::PowerToys::Interop::KeyboardEventCallback keyboardEventCallback;
+        winrt::PowerToys::Interop::IsActiveCallback isActiveCallback;
+        winrt::PowerToys::Interop::FilterKeyboardEvent filterKeyboardEvent;
 
-        LRESULT __clrcall HookProc(int nCode, WPARAM wParam, LPARAM lParam);
+        // This class used to be C++/CX, which meant it ran on .NET runtime and was able to send function pointer for delegates as hook procedures for SetWindowsHookEx which kept an object reference.
+        // There doesn't seem to be a way to do this outside of the .NET runtime that allows us to get a proper C-style function.
+        // The alternative when porting to C++/winrt is to keep track of every instance and use a single proc instead of one per object. This should also make it lighter.
+        static std::mutex instancesMutex;
+        static std::unordered_set<KeyboardHook*> instances;
+        static inline HHOOK hookHandle = nullptr;
+        static LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);
     };
-
+}
+namespace winrt::PowerToys::Interop::factory_implementation
+{
+    struct KeyboardHook : KeyboardHookT<KeyboardHook, implementation::KeyboardHook>
+    {
+    };
 }

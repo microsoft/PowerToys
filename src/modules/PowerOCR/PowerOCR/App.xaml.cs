@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Windows;
+
 using ManagedCommon;
 using PowerOCR.Keyboard;
 using PowerOCR.Settings;
@@ -26,6 +28,19 @@ public partial class App : Application, IDisposable
     public App()
     {
         Logger.InitializeLogger("\\TextExtractor\\Logs");
+
+        try
+        {
+            string appLanguage = LanguageHelper.LoadLanguage();
+            if (!string.IsNullOrEmpty(appLanguage))
+            {
+                System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(appLanguage);
+            }
+        }
+        catch (CultureNotFoundException ex)
+        {
+            Logger.LogError("CultureNotFoundException: " + ex.Message);
+        }
 
         NativeThreadCTS = new CancellationTokenSource();
     }

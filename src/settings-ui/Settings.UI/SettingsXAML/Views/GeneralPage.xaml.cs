@@ -5,6 +5,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -129,6 +130,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
             string r = await Task.FromResult<string>(ShellGetFolder.GetFolderDialog(hwnd));
             return r;
+        }
+
+        private void Click_LanguageRestart(object sender, RoutedEventArgs e)
+        {
+            ViewModel.Restart();
         }
     }
 }

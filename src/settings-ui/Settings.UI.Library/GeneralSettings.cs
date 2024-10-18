@@ -5,6 +5,7 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -104,7 +105,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         private static string DefaultPowertoysVersion()
         {
-            return interop.CommonManaged.GetProductVersion();
+            return global::PowerToys.Interop.CommonManaged.GetProductVersion();
         }
 
         // This function is to implement the ISettingsConfig interface.

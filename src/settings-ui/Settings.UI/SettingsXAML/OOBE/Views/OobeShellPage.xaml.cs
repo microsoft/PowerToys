@@ -5,6 +5,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
+
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
@@ -190,6 +191,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 IsNew = true,
             });
 
+            Modules.Insert((int)PowerToysModules.Workspaces, new OobePowerToysModule()
+            {
+                ModuleName = "Workspaces",
+                IsNew = false,
+            });
+
             Modules.Insert((int)PowerToysModules.WhatsNew, new OobePowerToysModule()
             {
                 ModuleName = "WhatsNew",
@@ -199,6 +206,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             Modules.Insert((int)PowerToysModules.RegistryPreview, new OobePowerToysModule()
             {
                 ModuleName = "RegistryPreview",
+                IsNew = true,
+            });
+
+            Modules.Insert((int)PowerToysModules.NewPlus, new OobePowerToysModule()
+            {
+                ModuleName = "NewPlus",
                 IsNew = true,
             });
         }
@@ -279,6 +292,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "Hosts": NavigationFrame.Navigate(typeof(OobeHosts)); break;
                     case "RegistryPreview": NavigationFrame.Navigate(typeof(OobeRegistryPreview)); break;
                     case "Peek": NavigationFrame.Navigate(typeof(OobePeek)); break;
+                    case "NewPlus": NavigationFrame.Navigate(typeof(OobeNewPlus)); break;
+                    case "Workspaces": NavigationFrame.Navigate(typeof(OobeWorkspaces)); break;
                 }
             }
         }

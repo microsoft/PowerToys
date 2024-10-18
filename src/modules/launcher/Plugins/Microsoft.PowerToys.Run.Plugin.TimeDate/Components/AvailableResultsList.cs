@@ -6,29 +6,35 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 {
-    internal class AvailableResultsList
+    internal static class AvailableResultsList
     {
         /// <summary>
         /// Returns a list with all available date time formats
         /// </summary>
         /// <param name="isKeywordSearch">Is this a search with plugin activation keyword or not</param>
-        /// <param name="timeLong">Required for UnitTest: Show time in long format</param>
-        /// <param name="dateLong">Required for UnitTest: Show date in long format</param>
-        /// <param name="timestamp">Required for UnitTest: Use custom <see cref="DateTime"/> object to calculate results</param>
+        /// <param name="timeLongFormat">Required for UnitTest: Show time in long format</param>
+        /// <param name="dateLongFormat">Required for UnitTest: Show date in long format</param>
+        /// <param name="timestamp">Use custom <see cref="DateTime"/> object to calculate results instead of the system date/time</param>
+        /// <param name="firstWeekOfYear">Required for UnitTest: Use custom first week of the year instead of the plugin setting.</param>
+        /// <param name="firstDayOfWeek">Required for UnitTest: Use custom first day of the week instead the plugin setting.</param>
         /// <returns>List of results</returns>
-        internal static List<AvailableResult> GetList(bool isKeywordSearch, bool? timeLong = null, bool? dateLong = null, DateTime? timestamp = null)
+        internal static List<AvailableResult> GetList(bool isKeywordSearch, bool? timeLongFormat = null, bool? dateLongFormat = null, DateTime? timestamp = null, CalendarWeekRule? firstWeekOfYear = null, DayOfWeek? firstDayOfWeek = null)
         {
             List<AvailableResult> results = new List<AvailableResult>();
-            bool timeExtended = timeLong ?? TimeDateSettings.Instance.TimeWithSeconds;
-            bool dateExtended = dateLong ?? TimeDateSettings.Instance.DateWithWeekday;
-            bool isSystemDateTime = timestamp == null;
             Calendar calendar = CultureInfo.CurrentCulture.Calendar;
+
+            bool timeExtended = timeLongFormat ?? TimeDateSettings.Instance.TimeWithSeconds;
+            bool dateExtended = dateLongFormat ?? TimeDateSettings.Instance.DateWithWeekday;
+            bool isSystemDateTime = timestamp == null;
             DateTime dateTimeNow = timestamp ?? DateTime.Now;
             DateTime dateTimeNowUtc = dateTimeNow.ToUniversalTime();
+            CalendarWeekRule firstWeekRule = firstWeekOfYear ?? TimeAndDateHelper.GetCalendarWeekRule(TimeDateSettings.Instance.CalendarFirstWeekRule);
+            DayOfWeek firstDayOfTheWeek = firstDayOfWeek ?? TimeAndDateHelper.GetFirstDayOfWeek(TimeDateSettings.Instance.FirstDayOfWeek);
 
             results.AddRange(new[]
             {
@@ -62,7 +68,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 // We use long instead of int for unix time stamp because int is too small after 03:14:07 UTC 2038-01-19
                 long unixTimestamp = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeSeconds();
                 long unixTimestampMilliseconds = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeMilliseconds();
-                int weekOfYear = calendar.GetWeekOfYear(dateTimeNow, DateTimeFormatInfo.CurrentInfo.CalendarWeekRule, DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek);
+                int weekOfYear = calendar.GetWeekOfYear(dateTimeNow, firstWeekRule, firstDayOfTheWeek);
                 string era = DateTimeFormatInfo.CurrentInfo.GetEraName(calendar.GetEra(dateTimeNow));
                 string eraShort = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(calendar.GetEra(dateTimeNow));
 
@@ -133,7 +139,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     },
                     new AvailableResult()
                     {
-                        Value = TimeAndDateHelper.GetNumberOfDayInWeek(dateTimeNow).ToString(CultureInfo.CurrentCulture),
+                        Value = TimeAndDateHelper.GetNumberOfDayInWeek(dateTimeNow, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_DayOfWeek,
                         AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
                         IconType = ResultIconType.Date,
@@ -154,7 +160,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     },
                     new AvailableResult()
                     {
-                        Value = TimeAndDateHelper.GetWeekOfMonth(dateTimeNow).ToString(CultureInfo.CurrentCulture),
+                        Value = TimeAndDateHelper.GetWeekOfMonth(dateTimeNow, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_WeekOfMonth,
                         AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
                         IconType = ResultIconType.Date,

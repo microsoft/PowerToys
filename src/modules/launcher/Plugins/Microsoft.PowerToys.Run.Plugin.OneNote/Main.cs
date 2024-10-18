@@ -5,6 +5,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+
 using LazyCache;
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.OneNote.Properties;

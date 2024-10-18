@@ -4,11 +4,17 @@
 
 using System.Diagnostics;
 
+using Common.UI;
+
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
     public static class StartProcessHelper
     {
         public const string ColorsSettings = "ms-settings:colors";
+
+        public static string AnimationsSettings => OSVersionHelper.IsWindows11()
+            ? "ms-settings:easeofaccess-visualeffects"
+            : "ms-settings:easeofaccess-display";
 
         public static void Start(string process)
         {

@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+
 using EnvironmentVariables.Win32;
 using EnvironmentVariablesUILib;
 using EnvironmentVariablesUILib.Helpers;

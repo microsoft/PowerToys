@@ -9,7 +9,7 @@
         // `theme` can be "vs" for light theme or "vs-dark" for dark theme
         // `lang` is the language of the file
         // `wrap` if the editor is wrapping or not
-        
+
         var theme = ("[[PT_THEME]]" == "dark") ? "vs-dark" : "vs";
         var lang = "[[PT_LANG]]";
         var wrap = ([[PT_WRAP]] == 1) ? true : false;
@@ -19,11 +19,29 @@
         var stickyScroll = ([[PT_STICKY_SCROLL]] == 1) ? true : false;
 
         var fontSize = [[PT_FONT_SIZE]];
-        
+        var contextMenu = ([[PT_CONTEXTMENU]] == 1) ? true : false;
+
+        var editor;
+
         // Code taken from https://stackoverflow.com/a/30106551/14774889
-        var code = decodeURIComponent(atob(base64code).split('').map(function(c) {
+        var code = decodeURIComponent(atob(base64code).split('').map(function (c) {
             return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
         }).join(''));
+
+        function runToggleTextWrapCommand() {
+            if (wrap) {
+                editor.updateOptions({ wordWrap: 'off' })
+            } else {
+                editor.updateOptions({ wordWrap: 'on' })
+            }
+            wrap = !wrap;
+        }
+
+        function runCopyCommand() {
+            editor.focus();
+            document.execCommand('copy');
+        }
+
     </script>
     <!-- Set browser to Edge-->
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -33,32 +51,33 @@
     <title>Previewer for developer Files</title>
     <style>
         /* Fits content to window size */
-        html, body{
-            padding:0;
+        html, body {
+            padding: 0;
         }
-        #container,.monaco-editor {
-            position:fixed;
-            height:100%;
-            left:0;
-            top:0;
-            right:0;
-            bottom:0;
+
+        #container, .monaco-editor {
+            position: fixed;
+            height: 100%;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
         }
-        .overflowingContentWidgets{
+
+        .overflowingContentWidgets {
             /*Hides alert box */
-            display:none!important
-        } 
+            display: none !important
+        }
     </style>
 </head>
 
-<body oncontextmenu="onContextMenu()">
+<body>
     <!-- Container for the editor -->
     <div id="container"></div>
     <!-- Script -->
     <script src="http://[[PT_URL]]/monacoSRC/min/vs/loader.js"></script>
     <script src="http://[[PT_URL]]/monacoSpecialLanguages.js" type="module"></script>
-<script type="module">
-        var editor;
+    <script type="module">
         import { registerAdditionalLanguages } from 'http://[[PT_URL]]/monacoSpecialLanguages.js';
         import { customTokenColors } from 'http://[[PT_URL]]/customTokenColors.js';
         require.config({ paths: { vs: 'http://[[PT_URL]]/monacoSRC/min/vs' } });
@@ -80,8 +99,9 @@
                 language: lang, // Sets language of the code
                 readOnly: true, // Sets to readonly
                 theme: 'theme', // Sets editor theme
-                minimap: {enabled: false}, // Disables minimap
+                minimap: { enabled: false }, // Disables minimap
                 lineNumbersMinChars: '3', // Width of the line numbers
+                contextmenu: contextMenu,
                 scrollbar: {
                     // Deactivate shadows
                     shadows: false,
@@ -90,7 +110,7 @@
                     vertical: 'auto',
                     horizontal: 'auto',
                 },
-                stickyScroll: {enabled: stickyScroll},
+                stickyScroll: { enabled: stickyScroll },
                 fontSize: fontSize,
                 wordWrap: (wrap ? 'on' : 'off') // Word wraps
             });
@@ -117,12 +137,7 @@
                 // Method that will be executed when the action is triggered.
                 // @param editor The editor instance is passed in as a convenience
                 run: function (ed) {
-                    if (wrap) {
-                        editor.updateOptions({ wordWrap: 'off' })
-                    } else {
-                        editor.updateOptions({ wordWrap: 'on' })
-                    }
-                    wrap = !wrap;
+                    runToggleTextWrapCommand();
                 }
             });
 

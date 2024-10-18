@@ -4,6 +4,7 @@
 
 using System;
 using System.Reflection;
+
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -22,10 +23,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             var result = settings?.Length;
 
             // Assert
-            Assert.AreEqual(4, result);
+            Assert.AreEqual(6, result);
         }
 
         [DataTestMethod]
+        [DataRow("CalendarFirstWeekRule")]
+        [DataRow("FirstDayOfWeek")]
         [DataRow("OnlyDateTimeNowGlobal")]
         [DataRow("TimeWithSeconds")]
         [DataRow("DateWithWeekday")]
@@ -48,6 +51,22 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("DateWithWeekday", false)]
         [DataRow("HideNumberMessageOnGlobalQuery", false)]
         public void DefaultValues(string name, bool valueExpected)
+        {
+            // Setup
+            TimeDateSettings setting = TimeDateSettings.Instance;
+
+            // Act
+            PropertyInfo propertyInfo = setting?.GetType()?.GetProperty(name, BindingFlags.NonPublic | BindingFlags.Instance);
+            var result = propertyInfo?.GetValue(setting);
+
+            // Assert
+            Assert.AreEqual(valueExpected, result);
+        }
+
+        [DataTestMethod]
+        [DataRow("CalendarFirstWeekRule", -1)]
+        [DataRow("FirstDayOfWeek", -1)]
+        public void DefaultEnumValues(string name, int valueExpected)
         {
             // Setup
             TimeDateSettings setting = TimeDateSettings.Instance;

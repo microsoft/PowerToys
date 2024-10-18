@@ -73,10 +73,13 @@
       <ComponentGroupRef Id="MouseWithoutBordersComponentGroup" />
       <ComponentGroupRef Id="EnvironmentVariablesComponentGroup" />
       <ComponentGroupRef Id="AdvancedPasteComponentGroup" />
+      <ComponentGroupRef Id="NewPlusComponentGroup" />
+      <ComponentGroupRef Id="NewPlusTemplatesComponentGroup" />
       <ComponentGroupRef Id="ResourcesComponentGroup" />
       <ComponentGroupRef Id="WindowsAppSDKComponentGroup" />
       <ComponentGroupRef Id="ToolComponentGroup" />
       <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
+      <ComponentGroupRef Id="WorkspacesComponentGroup" />
     </Feature>
 
     <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" />

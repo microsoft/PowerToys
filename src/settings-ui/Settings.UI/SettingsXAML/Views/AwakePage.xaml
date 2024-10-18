@@ -27,7 +27,7 @@
                     x:Uid="Awake_EnableSettingsCard"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Awake.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"

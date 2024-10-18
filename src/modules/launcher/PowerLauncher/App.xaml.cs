@@ -9,19 +9,22 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows;
-using interop;
+
 using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using PowerLauncher.ViewModel;
+using PowerToys.Interop;
+using Windows.Globalization;
 using Wox;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
+
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace PowerLauncher
@@ -51,6 +54,19 @@ namespace PowerLauncher
         public static void Main()
         {
             NativeThreadCTS = new CancellationTokenSource();
+
+            try
+            {
+                string appLanguage = LanguageHelper.LoadLanguage();
+                if (!string.IsNullOrEmpty(appLanguage))
+                {
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(appLanguage);
+                }
+            }
+            catch (CultureNotFoundException ex)
+            {
+                Logger.LogError("CultureNotFoundException: " + ex.Message);
+            }
 
             Log.Info($"Starting PowerToys Run with PID={Environment.ProcessId}", typeof(App));
             if (PowerToys.GPOWrapperProjection.GPOWrapper.GetConfiguredPowerLauncherEnabledValue() == PowerToys.GPOWrapperProjection.GpoRuleConfigured.Disabled)

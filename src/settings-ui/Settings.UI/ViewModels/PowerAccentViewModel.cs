@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
@@ -24,6 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly string[] _languageOptions =
         {
             "ALL",
+            "BG",
             "CA",
             "CRH",
             "CUR",
@@ -53,6 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "PL",
             "PT",
             "RO",
+            "ROM",
             "SK",
             "SL",
             "SP",
