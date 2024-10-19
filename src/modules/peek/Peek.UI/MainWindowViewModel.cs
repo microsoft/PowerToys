@@ -12,6 +12,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
+using Peek.UI.Helpers;
 using Peek.UI.Models;
 using Windows.Win32.Foundation;
 using static Peek.UI.Native.NativeMethods;
@@ -93,6 +94,12 @@ namespace Peek.UI
         [ObservableProperty]
         private double _scalingFactor = 1.0;
 
+        [ObservableProperty]
+        private string _errorMessage = string.Empty;
+
+        [ObservableProperty]
+        private bool _isErrorVisible = false;
+
         private enum NavigationDirection
         {
             Forwards,
@@ -141,6 +148,7 @@ namespace Peek.UI
             _deletedItemIndexes.Clear();
             Items = null;
             _navigationDirection = NavigationDirection.Forwards;
+            IsErrorVisible = false;
         }
 
         public void AttemptPreviousNavigation() => Navigate(NavigationDirection.Backwards);
@@ -190,42 +198,58 @@ namespace Peek.UI
         /// </summary>
         public void DeleteItem()
         {
-            if (CurrentItem == null || !IsFilePath(CurrentItem.Path))
+            if (CurrentItem == null)
             {
                 return;
             }
 
-            _deletedItemIndexes.Add(_currentIndex);
+            var item = CurrentItem;
+
+            if (File.Exists(item.Path) && !IsFilePath(item.Path))
+            {
+                // The path is to a folder, not a file, or its attributes could not be retrieved.
+                return;
+            }
+
+            // Update the file count and total files.
+            int index = _currentIndex;
+            _deletedItemIndexes.Add(index);
             OnPropertyChanged(nameof(DisplayItemCount));
 
-            string path = CurrentItem.Path;
-
+            // Attempt the deletion then navigate to the next file.
             DispatcherQueue.GetForCurrentThread().TryEnqueue(() =>
             {
                 Task.Delay(DeleteDelayMs);
-                DeleteFile(path);
+                int result = DeleteFile(item);
+
+                if (result != 0)
+                {
+                    // On failure, log the error, show a message in the UI, and reinstate the
+                    // deleted file if it still exists.
+                    DeleteErrorMessageHelper.LogError(result);
+                    ShowDeleteError(item.Name, result);
+
+                    if (File.Exists(item.Path))
+                    {
+                        _deletedItemIndexes.Remove(index);
+                        OnPropertyChanged(nameof(DisplayItemCount));
+                    }
+                }
             });
 
             Navigate(_navigationDirection, isAfterDelete: true);
         }
 
-        private void DeleteFile(string path, bool permanent = false)
+        private int DeleteFile(IFileSystemItem item, bool permanent = false)
         {
             SHFILEOPSTRUCT fileOp = new()
             {
                 wFunc = FO_DELETE,
-                pFrom = path + "\0\0",
+                pFrom = item.Path + "\0\0",
                 fFlags = (ushort)(FOF_NO_CONFIRMATION | (permanent ? 0 : FOF_ALLOWUNDO)),
             };
 
-            int result = SHFileOperation(ref fileOp);
-
-            if (result != 0)
-            {
-                string warning = "Could not delete file. " +
-                    (DeleteFileErrors.TryGetValue(result, out string? errorMessage) ? errorMessage : $"Error code {result}.");
-                Logger.LogWarning(warning);
-            }
+            return SHFileOperation(ref fileOp);
         }
 
         private static bool IsFilePath(string path)
@@ -244,6 +268,13 @@ namespace Peek.UI
             {
                 return false;
             }
+        }
+
+        private void ShowDeleteError(string filename, int errorCode)
+        {
+            IsErrorVisible = false;
+            ErrorMessage = DeleteErrorMessageHelper.GetUserErrorMessage(filename, errorCode);
+            IsErrorVisible = true;
         }
 
         private void NavigationThrottleTimer_Tick(object? sender, object e)

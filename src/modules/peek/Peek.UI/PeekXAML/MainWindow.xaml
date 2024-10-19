@@ -34,6 +34,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <views:TitleBar
@@ -50,5 +51,16 @@
             NumberOfFiles="{x:Bind ViewModel.DisplayItemCount, Mode=OneWay}"
             PreviewSizeChanged="FilePreviewer_PreviewSizeChanged"
             ScalingFactor="{x:Bind ViewModel.ScalingFactor, Mode=OneWay}" />
+
+        <InfoBar
+            x:Name="ErrorInfoBar"
+            Grid.Row="1"
+            Grid.RowSpan="2"
+            VerticalAlignment="Bottom"
+            Margin="4,0,4,6"
+            Title="Error"
+            Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+            IsOpen="{x:Bind ViewModel.IsErrorVisible, Mode=TwoWay}"
+            Severity="Error" />
     </Grid>
 </winuiex:WindowEx>
