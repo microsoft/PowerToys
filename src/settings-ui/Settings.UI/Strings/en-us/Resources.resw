@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -3647,6 +3647,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_SelectedLanguage_Serbian.Content" xml:space="preserve">
     <value>Serbian</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Serbian_Cyrillic.Content" xml:space="preserve">
+    <value>Serbian Cyrillic</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Hungarian.Content" xml:space="preserve">
     <value>Hungarian</value>
