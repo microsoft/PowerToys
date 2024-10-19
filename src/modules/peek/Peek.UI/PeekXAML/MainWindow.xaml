@@ -1,4 +1,4 @@
-<!--  Copyright (c) Microsoft Corporation and Contributors.  -->
+﻿<!--  Copyright (c) Microsoft Corporation and Contributors.  -->
 <!--  Licensed under the MIT License.  -->
 
 <winuiex:WindowEx
@@ -54,13 +54,13 @@
 
         <InfoBar
             x:Name="ErrorInfoBar"
+            Title="Error"
             Grid.Row="1"
             Grid.RowSpan="2"
-            VerticalAlignment="Bottom"
             Margin="4,0,4,6"
-            Title="Error"
-            Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+            VerticalAlignment="Bottom"
             IsOpen="{x:Bind ViewModel.IsErrorVisible, Mode=TwoWay}"
+            Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
             Severity="Error" />
     </Grid>
 </winuiex:WindowEx>
