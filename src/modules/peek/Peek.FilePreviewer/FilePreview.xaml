@@ -104,14 +104,14 @@
             Visibility="{x:Bind IsUnsupportedPreviewVisible(UnsupportedFilePreviewer, Previewer.State), Mode=OneWay}" />
 
         <TextBlock
-            x:Uid="NoMoreFiles"
             x:Name="NoMoreFiles"
+            x:Uid="NoMoreFiles"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
+            AutomationProperties.HeadingLevel="1"
             Foreground="{StaticResource TextFillColorSecondaryBrush}"
-            Visibility="Collapsed"
             TextWrapping="Wrap"
-            AutomationProperties.HeadingLevel="1" />
+            Visibility="Collapsed" />
     </Grid>
     <UserControl.KeyboardAccelerators>
         <KeyboardAccelerator
