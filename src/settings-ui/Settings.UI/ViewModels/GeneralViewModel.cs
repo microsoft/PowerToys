@@ -9,7 +9,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -1083,25 +1082,50 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private void InitializeLanguages()
         {
             var lang = LanguageModel.LoadSetting();
-            int i = 0;
+            var selectedLanguageIndex = 0;
 
             foreach (var item in langTagsAndIds)
             {
-                Languages.Add(new LanguageModel { Tag = item.Key, ResourceID = item.Value, Language = GetResourceString(item.Value) });
+                var language = new LanguageModel { Tag = item.Key, ResourceID = item.Value, Language = GetResourceString(item.Value) };
+                var index = GetLanguageIndex(language.Language, item.Key == string.Empty);
+                Languages.Insert(index, language);
 
                 if (item.Key.Equals(lang, StringComparison.Ordinal))
                 {
-                    _initLanguagesIndex = i;
-                    LanguagesIndex = i;
+                    selectedLanguageIndex = index;
                 }
-
-                i++;
+                else if (index <= selectedLanguageIndex)
+                {
+                    selectedLanguageIndex++;
+                }
             }
+
+            _initLanguagesIndex = selectedLanguageIndex;
+            LanguagesIndex = selectedLanguageIndex;
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1309:Use ordinal string comparison", Justification = "Building a user facing list")]
+        private int GetLanguageIndex(string language, bool isDefault)
+        {
+            if (Languages.Count == 0 || isDefault)
+            {
+                return 0;
+            }
+
+            for (var i = 1; i < Languages.Count; i++)
+            {
+                if (string.Compare(Languages[i].Language, language, StringComparison.CurrentCultureIgnoreCase) > 0)
+                {
+                    return i;
+                }
+            }
+
+            return Languages.Count;
         }
 
         private void NotifyLanguageChanged()
         {
-            OutGoingLanguageSettings outsettings = new OutGoingLanguageSettings(langTagsAndIds.ElementAt(LanguagesIndex).Key);
+            OutGoingLanguageSettings outsettings = new OutGoingLanguageSettings(Languages[_languagesIndex].Tag);
 
             SendConfigMSG(outsettings.ToString());
         }
