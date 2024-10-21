@@ -249,5 +249,4 @@
             </tkcontrols:SettingsExpander.Items>
         </tkcontrols:SettingsExpander>
     </controls:SettingsGroup>
-
 </UserControl>
