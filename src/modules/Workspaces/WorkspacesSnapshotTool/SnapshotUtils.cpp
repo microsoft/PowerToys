@@ -18,6 +18,7 @@ namespace SnapshotUtils
     namespace NonLocalizable
     {
         const std::wstring ApplicationFrameHost = L"ApplicationFrameHost.exe";
+        const std::wstring EdgeFilename = L"msedge.exe";
     }
 
     class WbemHelper
@@ -168,6 +169,11 @@ namespace SnapshotUtils
         return false;
     }
 
+    bool IsEdge(Utils::Apps::AppData appData)
+    {
+        return appData.installPath.ends_with(NonLocalizable::EdgeFilename);
+    }
+
     std::vector<WorkspacesData::WorkspacesProject::Application> GetApps(const std::function<unsigned int(HWND)> getMonitorNumberFromWindowHandle)
     {
         std::vector<WorkspacesData::WorkspacesProject::Application> apps{};
@@ -176,8 +182,8 @@ namespace SnapshotUtils
         auto windows = WindowEnumerator::Enumerate(WindowFilter::Filter);
         
         // for command line args detection
-        // WbemHelper wbemHelper;
-        // wbemHelper.Initialize();
+         WbemHelper wbemHelper;
+         wbemHelper.Initialize();
 
         for (const auto window : windows)
         {
@@ -249,13 +255,19 @@ namespace SnapshotUtils
                 continue;
             }
 
+            std::wstring commandLineArgs = L"";
+            if (IsEdge(data.value()))
+            {
+                commandLineArgs = GetCommandLineArgs(pid, wbemHelper);
+            }
+
             WorkspacesData::WorkspacesProject::Application app{
                 .name = data.value().name,
                 .title = title,
                 .path = data.value().installPath,
                 .packageFullName = data.value().packageFullName,
                 .appUserModelId = data.value().appUserModelId,
-                .commandLineArgs = L"", // GetCommandLineArgs(pid, wbemHelper),
+                .commandLineArgs = commandLineArgs,
                 .isElevated = IsProcessElevated(pid),
                 .canLaunchElevated = data.value().canLaunchElevated,
                 .isMinimized = WindowUtils::IsMinimized(window),
