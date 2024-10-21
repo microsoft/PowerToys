@@ -107,6 +107,7 @@ backtracer
 bbwe
 bck
 BESTEFFORT
+bezelled
 bhid
 BIF
 bigbar
