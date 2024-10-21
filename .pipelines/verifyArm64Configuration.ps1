@@ -27,7 +27,7 @@ $arm64SlnConfigs = $solutionFile.SolutionConfigurations | Where-Object {
 
 # Should have two configurations. Debug and Release.
 if($arm64SlnConfigs.Length -lt 2) {
-    Write-Error -ForegroundColor Red "Missing Solution-level Arm64 platforms"
+    Write-Error "Missing Solution-level Arm64 platforms"
     exit 1;
 }
 
