@@ -158,6 +158,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             _enableViewDataDiagnostics = DataDiagnosticsSettings.GetViewEnabledValue();
+            _enableViewDataDiagnosticsOnLoad = _enableViewDataDiagnostics;
 
             if (dispatcherAction != null)
             {
@@ -218,6 +219,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enableDataDiagnostics;
         private bool _enableDataDiagnosticsIsGpoDisallowed;
         private bool _enableViewDataDiagnostics;
+        private bool _enableViewDataDiagnosticsOnLoad;
         private bool _viewDiagnosticDataViewerChanged;
 
         private UpdatingSettings.UpdatingState _updatingState = UpdatingSettings.UpdatingState.UpToDate;
@@ -488,7 +490,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _enableViewDataDiagnostics = value;
 
-                    _viewDiagnosticDataViewerChanged = _enableViewDataDiagnostics;
+                    if (_enableViewDataDiagnostics != _enableViewDataDiagnosticsOnLoad)
+                    {
+                        _viewDiagnosticDataViewerChanged = true;
+                    }
+                    else
+                    {
+                        _viewDiagnosticDataViewerChanged = false;
+                    }
 
                     DataDiagnosticsSettings.SetViewEnabledValue(_enableViewDataDiagnostics);
                     OnPropertyChanged(nameof(EnableViewDataDiagnostics));
