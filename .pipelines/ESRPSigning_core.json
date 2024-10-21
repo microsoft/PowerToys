@@ -171,6 +171,7 @@
                 "PowerToys.MouseJumpUI.exe",
 
                 "PowerToys.MouseWithoutBorders.dll",
+                "PowerToys.MouseWithoutBorders.exe",
                 "PowerToys.MouseWithoutBordersModuleInterface.dll",
                 "PowerToys.MouseWithoutBordersService.dll",
                 "PowerToys.MouseWithoutBordersService.exe",
