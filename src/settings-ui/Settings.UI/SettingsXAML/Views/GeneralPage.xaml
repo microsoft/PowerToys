@@ -414,7 +414,7 @@
                             x:Uid="GeneralPage_ViewDiagnosticDataViewerInfo"
                             IsClosable="False"
                             IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.ViewDiagnosticDataViewerChanged}"
-                            IsTabStop="True"
+                            IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.ViewDiagnosticDataViewerChanged}"
                             Severity="Informational">
                             <InfoBar.ActionButton>
                                 <Button x:Uid="GeneralPage_ViewDiagnosticDataViewerInfoButton" Click="Click_ViewDiagnosticDataViewerRestart" />
