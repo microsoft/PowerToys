@@ -38,9 +38,6 @@ shell_context_sub_menu::shell_context_sub_menu(const ComPtr<IUnknown> site_of_fo
 
     // Log that context menu was shown and with how many items
     Trace::EventShowTemplateItems(number_of_templates);
-
-    trace.Flush();
-    trace.UpdateState(false);
 }
 
 // IEnumExplorerCommand
