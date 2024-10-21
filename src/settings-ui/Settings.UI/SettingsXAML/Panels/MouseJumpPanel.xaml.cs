@@ -100,8 +100,8 @@ namespace Microsoft.PowerToys.Settings.UI.Panels
             messageBox.PrimaryButtonText = resourceLoader.GetString("MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_PrimaryButtonText");
             messageBox.PrimaryButtonCommand = new RelayCommand(this.MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_PrimaryButtonCommand);
             // await messageBox.ShowAsync();
-            this.MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_PrimaryButtonCommand();
             */
+            this.MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_PrimaryButtonCommand();
         }
 
         private void MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_PrimaryButtonCommand()
