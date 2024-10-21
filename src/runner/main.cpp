@@ -495,6 +495,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
 
     if (is_restart_scheduled())
     {
+        modules().clear();
         if (!restart_if_scheduled())
         {
             // If it's not possible to restart non-elevated due to some condition in the user's configuration, user should start PowerToys manually.
