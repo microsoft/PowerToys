@@ -27,7 +27,7 @@ $arm64SlnConfigs = $solutionFile.SolutionConfigurations | Where-Object {
 
 # Should have two configurations. Debug and Release.
 if($arm64SlnConfigs.Length -lt 2) {
-    Write-Error "Missing Solution-level Arm64 platforms"
+    Write-Host -ForegroundColor Red "Missing Solution-level Arm64 platforms"
     exit 1;
 }
 
@@ -51,14 +51,15 @@ foreach ($project in $projects) {
 }
 
 if ($errorTable.Count -gt 0) {
-    Write-Error "Verification failed for the following projects:`n"
+    Write-Host -ForegroundColor Red "Verification failed for the following projects:`n"
     $errorTable.Keys | ForEach-Object {
-        Write-Error $_`:;
+        Write-Host -ForegroundColor Red $_`:;
         $errorTable[$_] | ForEach-Object {
-            Write-Error "$($_.ExpectedConfiguration)=$($_.Configuration)";
+            Write-Host -ForegroundColor Red "$($_.ExpectedConfiguration)=$($_.Configuration)";
         };
-        Write-Error `r
+        Write-Host -ForegroundColor Red `r
     }
+    Write-Error "Found arm64 verification errors."
     exit 1;
 }
 
