@@ -51,13 +51,13 @@ foreach ($project in $projects) {
 }
 
 if ($errorTable.Count -gt 0) {
-    Write-Error -ForegroundColor Red "Verification failed for the following projects:`n"
+    Write-Error "Verification failed for the following projects:`n"
     $errorTable.Keys | ForEach-Object {
-        Write-Error -ForegroundColor Red $_`:;
+        Write-Error $_`:;
         $errorTable[$_] | ForEach-Object {
-            Write-Error -ForegroundColor Red "$($_.ExpectedConfiguration)=$($_.Configuration)";
+            Write-Error "$($_.ExpectedConfiguration)=$($_.Configuration)";
         };
-        Write-Error -ForegroundColor Red `r
+        Write-Error `r
     }
     exit 1;
 }
