@@ -48,7 +48,7 @@ $totalFailure = 0;
 Write-Host $DirPath;
 
 if (-not (Test-Path $DirPath)) {  
-    Write-Host "Folder does not exist!"
+    Write-Error "Folder does not exist!"
 }
 
 Write-Host "Total items: " $items.Count
@@ -61,24 +61,25 @@ if ($items.Count -eq 0) {
 $items | ForEach-Object {
     if ($_.VersionInfo.FileVersion -eq "1.0.0.0" -and $_.Name -notmatch $versionExceptions) {
         # These items are exceptions that actually have the 1.0.0.0 version.
-        Write-Host "Version set to 1.0.0.0: " + $_.FullName
+        Write-Error "Version set to 1.0.0.0: " + $_.FullName
         $totalFailure++;
     }
     elseif ($_.VersionInfo.FileVersion -eq $null -and $_.Name -notmatch $nullVersionExceptions) { 
         # These items are exceptions that actually a version not set.
-        Write-Host "Version not set: " + $_.FullName
+        Write-Error "Version not set: " + $_.FullName
         $totalFailure++;
     }
     else {
         $auth = Get-AuthenticodeSignature $_.FullName
         if ($auth.SignerCertificate -eq $null) {
-            Write-Host "Not Signed: " + $_.FullName
+            Write-Error "Not Signed: " + $_.FullName
             $totalFailure++;
         }
     }
 }
 
 if ($totalFailure -gt 0) {
+    Write-Error "Some items had issues."
     exit 1
 }
 
