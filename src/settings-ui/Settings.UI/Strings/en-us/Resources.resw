@@ -3898,7 +3898,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Diagnostic data viewer</value>
   </data>
   <data name="GeneralPage_ViewDiagnosticDataViewer.Description" xml:space="preserve">
-    <value>This folder may include .xml and .etl files</value>
+    <value>Generate .xml files containing readable diagnostic data. Folder may include .xml and .etl files</value>
   </data>
   <data name="Shell_AdvancedPaste.Content" xml:space="preserve">
     <value>Advanced Paste</value>
