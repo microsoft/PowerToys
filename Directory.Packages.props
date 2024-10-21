@@ -69,7 +69,7 @@
     <PackageVersion Include="System.Data.SqlClient" Version="4.8.6" />
     <!-- Package System.Diagnostics.EventLog added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Data.OleDb but the 8.0.1 version wasn't published to nuget. -->
     <PackageVersion Include="System.Diagnostics.EventLog" Version="8.0.1" />
-    <PackageVersion Include="System.Drawing.Common" Version="8.0.6" />
+    <PackageVersion Include="System.Drawing.Common" Version="8.0.7" />
     <PackageVersion Include="System.IO.Abstractions" Version="17.2.3" />
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="17.2.3" />
     <PackageVersion Include="System.Management" Version="8.0.0" />
