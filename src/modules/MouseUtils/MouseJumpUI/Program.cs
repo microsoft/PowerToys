@@ -82,29 +82,4 @@ internal static class Program
 
         Application.Run();
     }
-
-    private static MouseJumpSettings ReadSettings()
-    {
-        var settingsUtils = new SettingsUtils();
-        var settingsPath = settingsUtils.GetSettingsFilePath(MouseJumpSettings.ModuleName);
-        if (!File.Exists(settingsPath))
-        {
-            var scaffoldSettings = new MouseJumpSettings();
-            settingsUtils.SaveSettings(JsonSerializer.Serialize(scaffoldSettings), MouseJumpSettings.ModuleName);
-        }
-
-        var settings = new MouseJumpSettings();
-        try
-        {
-            settings = settingsUtils.GetSettings<MouseJumpSettings>(MouseJumpSettings.ModuleName);
-        }
-        catch (Exception ex)
-        {
-            var errorMessage = $"There was a problem reading the configuration file. Error: {ex.GetType()} {ex.Message}";
-            Logger.LogInfo(errorMessage);
-            Logger.LogDebug(errorMessage);
-        }
-
-        return settings;
-    }
 }

@@ -183,7 +183,7 @@ internal sealed partial class MainForm : Form
         var screens = ScreenHelper.GetAllScreens().Select(screen => screen.DisplayArea).ToList();
         var activatedLocation = MouseHelper.GetCursorPosition();
         this.PreviewLayout = LayoutHelper.GetPreviewLayout(
-            previewStyle: StyleHelper.LegacyPreviewStyle.WithCanvasSize(
+            previewStyle: StyleHelper.CompactPreviewStyle.WithCanvasSize(
                 new(
                     appSettings.Properties.ThumbnailSize.Width,
                     appSettings.Properties.ThumbnailSize.Height

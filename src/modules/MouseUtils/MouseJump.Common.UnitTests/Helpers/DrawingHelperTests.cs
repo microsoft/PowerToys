@@ -46,7 +46,7 @@ public static class DrawingHelperTests
             yield return new object[]
             {
                 new TestCase(
-                    previewStyle: StyleHelper.DefaultPreviewStyle,
+                    previewStyle: StyleHelper.BezelledPreviewStyle,
                     screens: new List<RectangleInfo>()
                     {
                         new(0, 0, 500, 500),
@@ -62,7 +62,7 @@ public static class DrawingHelperTests
             yield return new object[]
             {
                 new TestCase(
-                    previewStyle: StyleHelper.DefaultPreviewStyle,
+                    previewStyle: StyleHelper.BezelledPreviewStyle,
                     screens: new List<RectangleInfo>()
                     {
                         new(5120, 349, 1920, 1080),
@@ -93,25 +93,18 @@ public static class DrawingHelperTests
             var expected = GetPreviewLayoutTests.LoadImageResource(data.ExpectedImageFilename);
 
             // compare the images
-            var screens = System.Windows.Forms.Screen.AllScreens;
             AssertImagesEqual(expected, actual);
         }
 
         private static Bitmap LoadImageResource(string filename)
         {
-            // assume embedded resources are in the same source folder as this
-            // class, and the namespace hierarchy matches the folder structure.
-            // that way we can build resource names from the current namespace
-            var resourcePrefix = typeof(DrawingHelperTests).Namespace;
-            var resourceName = $"{resourcePrefix}.{filename}";
-
             var assembly = Assembly.GetExecutingAssembly();
+            var assemblyName = new AssemblyName(assembly.FullName ?? throw new InvalidOperationException());
+            var resourceName = $"Microsoft.{assemblyName.Name}.{filename.Replace("/", ".")}";
             var resourceNames = assembly.GetManifestResourceNames();
             if (!resourceNames.Contains(resourceName))
             {
-                var message = $"Embedded resource '{resourceName}' does not exist. " +
-                    "Valid resource names are: \r\n" + string.Join("\r\n", resourceNames);
-                throw new InvalidOperationException(message);
+                throw new InvalidOperationException($"Embedded resource '{resourceName}' does not exist.");
             }
 
             var stream = assembly.GetManifestResourceStream(resourceName)
@@ -121,7 +114,7 @@ public static class DrawingHelperTests
         }
 
         /// <summary>
-        /// Naive / brute force image comparison - we can optimise this later :-)
+        /// Naive / brute force image comparison - we can optimize this later :-)
         /// </summary>
         private static void AssertImagesEqual(Bitmap expected, Bitmap actual)
         {
