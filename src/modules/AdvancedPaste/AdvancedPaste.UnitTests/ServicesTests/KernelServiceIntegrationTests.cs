@@ -44,7 +44,7 @@ public sealed class KernelServiceIntegrationTests : IDisposable
 
     [TestMethod]
     [DataRow("Translate to German", "What is that?", "Was ist das?", 600, new[] { PasteFormats.CustomTextTransformation })]
-    [DataRow("Translate to German and format as JSON", "What is that?", @"[\s*Was ist das\?\s+]", 600, new[] { PasteFormats.CustomTextTransformation, PasteFormats.Json })]
+    [DataRow("Translate to German and format as JSON", "What is that?", @"[\s*Was ist das\?\s*]", 600, new[] { PasteFormats.CustomTextTransformation, PasteFormats.Json })]
     public async Task TestTextToTextTransform(string inputInstructions, string clipboardText, string expectedOutputPattern, int? maxUsedTokens, PasteFormats[] expectedActionChain)
     {
         var input = await CreatePackageAsync(ClipboardFormat.Text, clipboardText);
@@ -118,10 +118,9 @@ public sealed class KernelServiceIntegrationTests : IDisposable
 
     private async Task<DataPackageView> GetKernelOutputAsync(string inputInstructions, DataPackage input)
     {
-        var output = await _kernelService.TransformClipboardAsync(inputInstructions, input.GetView());
+        var output = await _kernelService.TransformClipboardAsync(inputInstructions, input.GetView(), isSavedQuery: false);
 
         Assert.AreEqual(1, _eventListener.SemanticKernelEvents.Count);
-
         return output.GetView();
     }
 

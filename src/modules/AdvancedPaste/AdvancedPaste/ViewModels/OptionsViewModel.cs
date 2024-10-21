@@ -147,9 +147,11 @@ namespace AdvancedPaste.ViewModels
             });
         }
 
-        private PasteFormat CreatePasteFormat(PasteFormats format) => new(format, AvailableClipboardFormats, IsAIServiceEnabled, ResourceLoaderInstance.ResourceLoader.GetString);
+        private PasteFormat CreateStandardPasteFormat(PasteFormats format) =>
+            PasteFormat.CreateStandardFormat(format, AvailableClipboardFormats, IsAIServiceEnabled, ResourceLoaderInstance.ResourceLoader.GetString);
 
-        private PasteFormat CreatePasteFormat(AdvancedPasteCustomAction customAction) => new(customAction, AvailableClipboardFormats, IsAIServiceEnabled);
+        private PasteFormat CreateKernelQuery(string name, string prompt, bool isSavedQuery) =>
+            PasteFormat.CreateKernelQuery(name, prompt, isSavedQuery, AvailableClipboardFormats, IsAIServiceEnabled);
 
         private void RefreshPasteFormats()
         {
@@ -186,9 +188,11 @@ namespace AdvancedPaste.ViewModels
 
             UpdateFormats(StandardPasteFormats, Enum.GetValues<PasteFormats>()
                                                     .Where(format => PasteFormat.MetadataDict[format].IsCoreAction || _userSettings.AdditionalActions.Contains(format))
-                                                    .Select(CreatePasteFormat));
+                                                    .Select(CreateStandardPasteFormat));
 
-            UpdateFormats(CustomActionPasteFormats, IsAIServiceEnabled ? _userSettings.CustomActions.Select(CreatePasteFormat) : []);
+            UpdateFormats(
+                CustomActionPasteFormats,
+                IsAIServiceEnabled ? _userSettings.CustomActions.Select(customAction => CreateKernelQuery(customAction.Name, customAction.Prompt, isSavedQuery: true)) : []);
         }
 
         public void Dispose()
@@ -336,7 +340,7 @@ namespace AdvancedPaste.ViewModels
         internal async Task ExecutePasteFormatAsync(PasteFormats format, PasteActionSource source)
         {
             await ReadClipboardAsync();
-            await ExecutePasteFormatAsync(CreatePasteFormat(format), source);
+            await ExecutePasteFormatAsync(CreateStandardPasteFormat(format), source);
         }
 
         internal async Task ExecutePasteFormatAsync(PasteFormat pasteFormat, PasteActionSource source)
@@ -417,14 +421,18 @@ namespace AdvancedPaste.ViewModels
 
             if (customAction != null)
             {
-                await ExecutePasteFormatAsync(CreatePasteFormat(customAction), source);
+                await ExecutePasteFormatAsync(CreateKernelQuery(customAction.Name, customAction.Prompt, isSavedQuery: true), source);
             }
         }
 
-        internal async Task GenerateCustomFunctionAsync(PasteActionSource triggerSource)
+        internal async Task ExecuutKernelQueryFromCurrentQueryAsync(PasteActionSource triggerSource)
         {
-            AdvancedPasteCustomAction customAction = new() { Name = "Default", Prompt = Query };
-            await ExecutePasteFormatAsync(CreatePasteFormat(customAction), triggerSource);
+            var customAction = _userSettings.CustomActions
+                                            .FirstOrDefault(customAction => StringComparer.CurrentCultureIgnoreCase.Equals(customAction.Prompt, Query));
+
+            var pasteFormat = CreateKernelQuery(customAction?.Name ?? "Default", Query, isSavedQuery: customAction != null);
+
+            await ExecutePasteFormatAsync(pasteFormat, triggerSource);
         }
 
         private void HideWindow()

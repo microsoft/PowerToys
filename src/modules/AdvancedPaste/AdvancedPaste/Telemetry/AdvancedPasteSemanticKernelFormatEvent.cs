@@ -11,9 +11,11 @@ using Microsoft.PowerToys.Telemetry.Events;
 namespace AdvancedPaste.Telemetry;
 
 [EventData]
-public class AdvancedPasteSemanticKernelFormatEvent(int promptTokens, int completionTokens, string modelName, string usedActionChain) : EventBase, IEvent
+public class AdvancedPasteSemanticKernelFormatEvent(bool isSavedQuery, int promptTokens, int completionTokens, string modelName, string usedActionChain) : EventBase, IEvent
 {
     public static string FormatActionChain(IEnumerable<PasteFormats> usedActionChain) => string.Join(", ", usedActionChain);
+
+    public bool IsSavedQuery { get; set; } = isSavedQuery;
 
     public int PromptTokens { get; set; } = promptTokens;
 

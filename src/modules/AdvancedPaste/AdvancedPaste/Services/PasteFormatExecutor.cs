@@ -6,7 +6,6 @@ using System;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
-using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Windows.ApplicationModel.DataTransfer;
 
@@ -23,9 +22,17 @@ public sealed class PasteFormatExecutor(IKernelService kernelService) : IPasteFo
             return null;
         }
 
-        WriteTelemetry(pasteFormat.Format, source);
+        var format = pasteFormat.Format;
 
-        return await ExecutePasteFormatCoreAsync(pasteFormat.Format, pasteFormat.Prompt, Clipboard.GetContent());
+        WriteTelemetry(format, source);
+
+        var clipboardData = Clipboard.GetContent();
+
+        return pasteFormat.Format switch
+        {
+            PasteFormats.KernelQuery => await _kernelService.TransformClipboardAsync(pasteFormat.Prompt, clipboardData, pasteFormat.IsSavedQuery),
+            _ => await TransformHelpers.TransformAsync(format, clipboardData),
+        };
     }
 
     private static void WriteTelemetry(PasteFormats format, PasteActionSource source)
@@ -47,14 +54,5 @@ public sealed class PasteFormatExecutor(IKernelService kernelService) : IPasteFo
             default:
                 throw new ArgumentOutOfRangeException(nameof(format));
         }
-    }
-
-    private async Task<DataPackage> ExecutePasteFormatCoreAsync(PasteFormats format, string prompt, DataPackageView clipboardData)
-    {
-        return format switch
-        {
-            PasteFormats.KernelQuery => await _kernelService.TransformClipboardAsync(prompt, clipboardData),
-            _ => await TransformHelpers.TransformAsync(format, clipboardData),
-        };
     }
 }

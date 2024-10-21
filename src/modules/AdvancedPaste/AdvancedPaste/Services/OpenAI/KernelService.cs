@@ -26,7 +26,7 @@ public sealed class KernelService(IAICredentialsProvider aiCredentialsProvider, 
     private readonly IAICredentialsProvider _aiCredentialsProvider = aiCredentialsProvider;
     private readonly ICustomTextTransformService _customTextTransformService = customTextTransformService;
 
-    public async Task<DataPackage> TransformClipboardAsync(string inputInstructions, DataPackageView clipboardData)
+    public async Task<DataPackage> TransformClipboardAsync(string inputInstructions, DataPackageView clipboardData, bool isSavedQuery)
     {
         Logger.LogTrace();
 
@@ -57,10 +57,10 @@ public sealed class KernelService(IAICredentialsProvider aiCredentialsProvider, 
 
             var usage = result.Metadata.GetValueOrDefault("Usage") as CompletionsUsage;
 
-            AdvancedPasteSemanticKernelFormatEvent telemetryEvent = new(usage?.PromptTokens ?? 0, usage?.CompletionTokens ?? 0, ModelName, AdvancedPasteSemanticKernelFormatEvent.FormatActionChain(kernel.GetActionChain()));
+            AdvancedPasteSemanticKernelFormatEvent telemetryEvent = new(isSavedQuery, usage?.PromptTokens ?? 0, usage?.CompletionTokens ?? 0, ModelName, AdvancedPasteSemanticKernelFormatEvent.FormatActionChain(kernel.GetActionChain()));
             PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
 
-            var logEvent = new { telemetryEvent.PromptTokens, telemetryEvent.CompletionTokens, telemetryEvent.ModelName, telemetryEvent.UsedActionChain };
+            var logEvent = new { IsSavedQuery = isSavedQuery, telemetryEvent.PromptTokens, telemetryEvent.CompletionTokens, telemetryEvent.ModelName, telemetryEvent.UsedActionChain };
             Logger.LogDebug($"{nameof(TransformClipboardAsync)} complete; {JsonSerializer.Serialize(logEvent)}");
 
             if (kernel.GetLastError() is Exception ex)
