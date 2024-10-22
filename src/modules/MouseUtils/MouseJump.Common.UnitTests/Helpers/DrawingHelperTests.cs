@@ -101,7 +101,7 @@ public static class DrawingHelperTests
         {
             var assembly = Assembly.GetExecutingAssembly();
             var assemblyName = new AssemblyName(assembly.FullName ?? throw new InvalidOperationException());
-            var resourceName = $"Microsoft.{assemblyName.Name}.{filename.Replace("/", ".")}";
+            var resourceName = $"{typeof(DrawingHelperTests).Namespace}.{filename.Replace("/", ".")}";
             var resourceNames = assembly.GetManifestResourceNames();
             if (!resourceNames.Contains(resourceName))
             {
