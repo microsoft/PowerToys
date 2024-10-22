@@ -47,6 +47,7 @@ namespace PowerAccent.Core
         SL,
         SP,
         SR,
+        SR_CYRL,
         SV,
         TK,
     }
@@ -94,6 +95,7 @@ namespace PowerAccent.Core
                 Language.SL => GetDefaultLetterKeySL(letter), // Slovenian
                 Language.SP => GetDefaultLetterKeySP(letter), // Spain
                 Language.SR => GetDefaultLetterKeySR(letter), // Serbian
+                Language.SR_CYRL => GetDefaultLetterKeySRCyrillic(letter), // Serbian Cyrillic
                 Language.SV => GetDefaultLetterKeySV(letter), // Swedish
                 Language.TK => GetDefaultLetterKeyTK(letter), // Turkish
                 _ => throw new ArgumentException("The language {0} is not known in this context", lang.ToString()),
@@ -144,6 +146,7 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeySL(letter))
                 .Union(GetDefaultLetterKeySP(letter))
                 .Union(GetDefaultLetterKeySR(letter))
+                .Union(GetDefaultLetterKeySRCyrillic(letter))
                 .Union(GetDefaultLetterKeySV(letter))
                 .Union(GetDefaultLetterKeyTK(letter))
                 .Union(GetDefaultLetterKeyAllLanguagesOnly(letter))
@@ -767,6 +770,19 @@ namespace PowerAccent.Core
                 LetterKey.VK_D => new[] { "đ" },
                 LetterKey.VK_S => new[] { "š" },
                 LetterKey.VK_Z => new[] { "ž" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
+        // Serbian Cyrillic
+        private static string[] GetDefaultLetterKeySRCyrillic(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_D => new[] { "ђ", "џ" },
+                LetterKey.VK_L => new[] { "љ" },
+                LetterKey.VK_N => new[] { "њ" },
+                LetterKey.VK_C => new[] { "ћ" },
                 _ => Array.Empty<string>(),
             };
         }
