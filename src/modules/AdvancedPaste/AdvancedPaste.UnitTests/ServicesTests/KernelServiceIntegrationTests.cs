@@ -7,11 +7,12 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.Services.OpenAI;
 using AdvancedPaste.Telemetry;
-using AdvancedPaste.UnitTests.Helpers;
+using AdvancedPaste.UnitTests.Mocks;
 using AdvancedPaste.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.ApplicationModel.DataTransfer;
@@ -32,7 +33,8 @@ public sealed class KernelServiceIntegrationTests : IDisposable
     public void TestInitialize()
     {
         VaultCredentialsProvider credentialsProvider = new();
-        _kernelService = new KernelService(credentialsProvider, new CustomTextTransformService(credentialsProvider));
+
+        _kernelService = new KernelService(new NoOpKernelQueryCacheService(), credentialsProvider, new CustomTextTransformService(credentialsProvider));
         _eventListener = new();
     }
 
@@ -45,10 +47,10 @@ public sealed class KernelServiceIntegrationTests : IDisposable
     [TestMethod]
     [DataRow("Translate to German", "What is that?", "Was ist das?", 600, new[] { PasteFormats.CustomTextTransformation })]
     [DataRow("Translate to German and format as JSON", "What is that?", @"[\s*Was ist das\?\s*]", 600, new[] { PasteFormats.CustomTextTransformation, PasteFormats.Json })]
-    public async Task TestTextToTextTransform(string inputInstructions, string clipboardText, string expectedOutputPattern, int? maxUsedTokens, PasteFormats[] expectedActionChain)
+    public async Task TestTextToTextTransform(string prompt, string clipboardText, string expectedOutputPattern, int? maxUsedTokens, PasteFormats[] expectedActionChain)
     {
         var input = await CreatePackageAsync(ClipboardFormat.Text, clipboardText);
-        var output = await GetKernelOutputAsync(inputInstructions, input);
+        var output = await GetKernelOutputAsync(prompt, input);
 
         var outputText = await output.GetTextOrEmptyAsync();
 
@@ -60,10 +62,10 @@ public sealed class KernelServiceIntegrationTests : IDisposable
     [TestMethod]
     [DataRow("Convert to text", StandardImageFile, "This is an image with text", new[] { PasteFormats.ImageToText })]
     [DataRow("How many words are here?", StandardImageFile, "6", new[] { PasteFormats.ImageToText, PasteFormats.CustomTextTransformation })]
-    public async Task TestImageToTextTransform(string inputInstructions, string imagePath, string expectedOutputPattern, PasteFormats[] expectedActionChain)
+    public async Task TestImageToTextTransform(string prompt, string imagePath, string expectedOutputPattern, PasteFormats[] expectedActionChain)
     {
         var input = await CreatePackageAsync(ClipboardFormat.Image, imagePath);
-        var output = await GetKernelOutputAsync(inputInstructions, input);
+        var output = await GetKernelOutputAsync(prompt, input);
 
         var outputText = await output.GetTextOrEmptyAsync();
 
@@ -73,10 +75,10 @@ public sealed class KernelServiceIntegrationTests : IDisposable
 
     [TestMethod]
     [DataRow("Get me a TXT file", ClipboardFormat.Image, StandardImageFile, "This is an image with text", new[] { PasteFormats.ImageToText, PasteFormats.PasteAsTxtFile })]
-    public async Task TestFileOutputTransform(string inputInstructions, ClipboardFormat inputFormat, string inputData, string expectedOutputPattern, PasteFormats[] expectedActionChain)
+    public async Task TestFileOutputTransform(string prompt, ClipboardFormat inputFormat, string inputData, string expectedOutputPattern, PasteFormats[] expectedActionChain)
     {
         var input = await CreatePackageAsync(inputFormat, inputData);
-        var output = await GetKernelOutputAsync(inputInstructions, input);
+        var output = await GetKernelOutputAsync(prompt, input);
 
         var outputText = await ReadFileTextAsync(output);
 
@@ -87,12 +89,12 @@ public sealed class KernelServiceIntegrationTests : IDisposable
     [TestMethod]
     [DataRow("Make this image bigger", ClipboardFormat.Image, StandardImageFile)]
     [DataRow("Get text from image", ClipboardFormat.Text, "What's up?")]
-    public async Task TestTransformFailure(string inputInstructions, ClipboardFormat inputFormat, string inputData)
+    public async Task TestTransformFailure(string prompt, ClipboardFormat inputFormat, string inputData)
     {
         var input = await CreatePackageAsync(inputFormat, inputData);
         try
         {
-            await GetKernelOutputAsync(inputInstructions, input);
+            await GetKernelOutputAsync(prompt, input);
             Assert.Fail("Kernel should have thrown an exception");
         }
         catch (Exception)
@@ -116,9 +118,9 @@ public sealed class KernelServiceIntegrationTests : IDisposable
         };
     }
 
-    private async Task<DataPackageView> GetKernelOutputAsync(string inputInstructions, DataPackage input)
+    private async Task<DataPackageView> GetKernelOutputAsync(string prompt, DataPackage input)
     {
-        var output = await _kernelService.TransformClipboardAsync(inputInstructions, input.GetView(), isSavedQuery: false);
+        var output = await _kernelService.TransformClipboardAsync(prompt, input.GetView(), isSavedQuery: false);
 
         Assert.AreEqual(1, _eventListener.SemanticKernelEvents.Count);
         return output.GetView();
@@ -133,5 +135,5 @@ public sealed class KernelServiceIntegrationTests : IDisposable
         return await File.ReadAllTextAsync(storageItems.Single().Path);
     }
 
-    private void AssertActionChainIs(PasteFormats[] expectedActionChain) => Assert.AreEqual(AdvancedPasteSemanticKernelFormatEvent.FormatActionChain(expectedActionChain), _eventListener.SemanticKernelEvents.Single().UsedActionChain);
+    private void AssertActionChainIs(PasteFormats[] expectedActionChain) => Assert.AreEqual(AdvancedPasteSemanticKernelFormatEvent.FormatActionChain(expectedActionChain), _eventListener.SemanticKernelEvents.Single().ActionChain);
 }

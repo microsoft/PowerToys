@@ -3,11 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Threading.Tasks;
-using Windows.ApplicationModel.DataTransfer;
+using AdvancedPaste.Models.KernelQueryCache;
 
 namespace AdvancedPaste.Services;
 
-public interface IKernelService
+public interface IKernelQueryCacheService
 {
-    Task<DataPackage> TransformClipboardAsync(string prompt, DataPackageView clipboardData, bool isSavedQuery);
+    Task WriteAsync(CacheKey key, CacheValue value);
+
+    CacheValue ReadOrNull(CacheKey key);
 }

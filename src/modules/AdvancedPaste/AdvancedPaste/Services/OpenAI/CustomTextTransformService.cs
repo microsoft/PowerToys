@@ -45,9 +45,9 @@ public sealed class CustomTextTransformService(IAICredentialsProvider aiCredenti
         return response;
     }
 
-    public async Task<string> TransformTextAsync(string inputInstructions, string inputText)
+    public async Task<string> TransformTextAsync(string prompt, string inputText)
     {
-        if (string.IsNullOrWhiteSpace(inputInstructions))
+        if (string.IsNullOrWhiteSpace(prompt))
         {
             return string.Empty;
         }
@@ -64,7 +64,7 @@ Do not output anything else besides the reformatted clipboard content.";
 
         string userMessage =
 $@"User instructions:
-{inputInstructions}
+{prompt}
 
 Clipboard Content:
 {inputText}

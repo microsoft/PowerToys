@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
+using AdvancedPaste.Models.KernelQueryCache;
 using AdvancedPaste.Telemetry;
 using Azure.AI.OpenAI;
 using ManagedCommon;
@@ -20,48 +21,33 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace AdvancedPaste.Services.OpenAI;
 
-public sealed class KernelService(IAICredentialsProvider aiCredentialsProvider, ICustomTextTransformService customTextTransformService) : IKernelService
+public sealed class KernelService(IKernelQueryCacheService queryCacheService, IAICredentialsProvider aiCredentialsProvider, ICustomTextTransformService customTextTransformService) : IKernelService
 {
     private const string ModelName = "gpt-4o";
+    private const string PromptParameterName = "prompt";
+
+    private readonly IKernelQueryCacheService _queryCacheService = queryCacheService;
     private readonly IAICredentialsProvider _aiCredentialsProvider = aiCredentialsProvider;
     private readonly ICustomTextTransformService _customTextTransformService = customTextTransformService;
 
-    public async Task<DataPackage> TransformClipboardAsync(string inputInstructions, DataPackageView clipboardData, bool isSavedQuery)
+    public async Task<DataPackage> TransformClipboardAsync(string prompt, DataPackageView clipboardData, bool isSavedQuery)
     {
         Logger.LogTrace();
 
         var kernel = CreateKernel();
         kernel.SetDataPackageView(clipboardData);
 
-        OpenAIPromptExecutionSettings executionSettings = new()
-        {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
-            Temperature = 0.01,
-        };
+        CacheKey cacheKey = new() { Prompt = prompt, AvailableFormats = await clipboardData.GetAvailableFormatsAsync() };
+        var cacheValue = _queryCacheService.ReadOrNull(cacheKey);
+        bool cacheUsed = cacheValue != null;
 
         ChatHistory chatHistory = [];
 
-        chatHistory.AddSystemMessage("""
-                You are an agent who is tasked with helping users paste their clipboard data. You have functions available to help you with this task.
-                You never need to ask permission, always try to do as the user asks. The user will only input one message and will not be available for further questions, so try your best.
-                The user will put in a request to format their clipboard data and you will fulfill it.
-                You will not directly see the output clipboard content, and do not need to provide it in the chat. You just need to do the transform operations as needed.
-                """);
-        chatHistory.AddSystemMessage($"Available clipboard formats: {await kernel.GetDataFormatsAsync()}");
-        chatHistory.AddUserMessage(inputInstructions);
-
         try
         {
-            var result = await kernel.GetRequiredService<IChatCompletionService>().GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
-            chatHistory.AddAssistantMessage(result.Content);
+            (chatHistory, var usage) = cacheUsed ? await ExecuteCachedActionChain(kernel, cacheValue.ActionChain) : await ExecuteAICompletion(kernel, prompt);
 
-            var usage = result.Metadata.GetValueOrDefault("Usage") as CompletionsUsage;
-
-            AdvancedPasteSemanticKernelFormatEvent telemetryEvent = new(isSavedQuery, usage?.PromptTokens ?? 0, usage?.CompletionTokens ?? 0, ModelName, AdvancedPasteSemanticKernelFormatEvent.FormatActionChain(kernel.GetActionChain()));
-            PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
-
-            var logEvent = new { IsSavedQuery = isSavedQuery, telemetryEvent.PromptTokens, telemetryEvent.CompletionTokens, telemetryEvent.ModelName, telemetryEvent.UsedActionChain };
-            Logger.LogDebug($"{nameof(TransformClipboardAsync)} complete; {JsonSerializer.Serialize(logEvent)}");
+            LogResult(cacheUsed, isSavedQuery, kernel.GetActionChain(), usage);
 
             if (kernel.GetLastError() is Exception ex)
             {
@@ -70,18 +56,23 @@ public sealed class KernelService(IAICredentialsProvider aiCredentialsProvider, 
 
             var outputPackage = kernel.GetDataPackage();
 
-            if (result == null || !(await outputPackage.GetView().HasUsableDataAsync()))
+            if (!(await outputPackage.GetView().HasUsableDataAsync()))
             {
-                throw new InvalidOperationException("No data was returned from the completion operation");
+                throw new InvalidOperationException("No data was returned from the kernel operation");
             }
 
-            Logger.LogDebug($"Completion done: \n{FormatChatHistory(chatHistory)}");
+            if (!cacheUsed)
+            {
+                await _queryCacheService.WriteAsync(cacheKey, new CacheValue(kernel.GetActionChain()));
+            }
+
+            Logger.LogDebug($"Kernel operation done: \n{FormatChatHistory(chatHistory)}");
             return outputPackage;
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Error executing completion", ex);
-            Logger.LogError($"Completion Error: \n{FormatChatHistory(chatHistory)}");
+            Logger.LogError($"Error executing kernel operation", ex);
+            Logger.LogError($"Kernel operation Error: \n{FormatChatHistory(chatHistory)}");
 
             if (ex is HttpOperationException error)
             {
@@ -92,6 +83,59 @@ public sealed class KernelService(IAICredentialsProvider aiCredentialsProvider, 
                 throw;
             }
         }
+    }
+
+    private async Task<(ChatHistory ChatHistory, CompletionsUsage Usage)> ExecuteAICompletion(Kernel kernel, string prompt)
+    {
+        ChatHistory chatHistory = [];
+
+        OpenAIPromptExecutionSettings executionSettings = new()
+        {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
+            Temperature = 0.01,
+        };
+
+        chatHistory.AddSystemMessage("""
+                You are an agent who is tasked with helping users paste their clipboard data. You have functions available to help you with this task.
+                You never need to ask permission, always try to do as the user asks. The user will only input one message and will not be available for further questions, so try your best.
+                The user will put in a request to format their clipboard data and you will fulfill it.
+                You will not directly see the output clipboard content, and do not need to provide it in the chat. You just need to do the transform operations as needed.
+                """);
+        chatHistory.AddSystemMessage($"Available clipboard formats: {await kernel.GetDataFormatsAsync()}");
+        chatHistory.AddUserMessage(prompt);
+
+        var chatResult = await kernel.GetRequiredService<IChatCompletionService>().GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
+        chatHistory.AddAssistantMessage(chatResult.Content);
+
+        return (chatHistory, chatResult.Metadata.GetValueOrDefault("Usage") as CompletionsUsage);
+    }
+
+    private async Task<(ChatHistory ChatHistory, CompletionsUsage Usage)> ExecuteCachedActionChain(Kernel kernel, List<ActionChainItem> actionChain)
+    {
+        foreach (var item in actionChain)
+        {
+            switch (item.Format)
+            {
+                case PasteFormats.CustomTextTransformation:
+                    await ExecuteCustomTextTransformAsync(kernel, (string)item.Arguments[PromptParameterName]);
+                    break;
+
+                default:
+                    await ExecuteStandardTransformAsync(kernel, item.Format);
+                    break;
+            }
+        }
+
+        return ([], null);
+    }
+
+    private static void LogResult(bool cacheUsed, bool isSavedQuery, List<ActionChainItem> actionChain, CompletionsUsage usage)
+    {
+        AdvancedPasteSemanticKernelFormatEvent telemetryEvent = new(cacheUsed, isSavedQuery, usage?.PromptTokens ?? 0, usage?.CompletionTokens ?? 0, ModelName, AdvancedPasteSemanticKernelFormatEvent.FormatActionChain(actionChain));
+        PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
+
+        var logEvent = new { telemetryEvent.CacheUsed, telemetryEvent.IsSavedQuery, telemetryEvent.PromptTokens, telemetryEvent.CompletionTokens, telemetryEvent.ModelName, telemetryEvent.ActionChain };
+        Logger.LogDebug($"{nameof(TransformClipboardAsync)} complete; {JsonSerializer.Serialize(logEvent)}");
     }
 
     private Kernel CreateKernel()
@@ -109,7 +153,7 @@ public sealed class KernelService(IAICredentialsProvider aiCredentialsProvider, 
             method: ExecuteCustomTextTransformAsync,
             functionName: nameof(PasteFormats.CustomTextTransformation),
             description: PasteFormat.MetadataDict[PasteFormats.CustomTextTransformation].KernelFunctionDescription,
-            parameters: [new("inputInstructions") { Description = "Input instructions to AI", ParameterType = typeof(string) }],
+            parameters: [new(PromptParameterName) { Description = "Input instructions to AI", ParameterType = typeof(string) }],
             returnParameter);
 
         var standardTransformFunctions = from format in Enum.GetValues<PasteFormats>()
@@ -126,26 +170,26 @@ public sealed class KernelService(IAICredentialsProvider aiCredentialsProvider, 
         return standardTransformFunctions.Prepend(customTextTransformFunction);
     }
 
-    private Task<string> ExecuteCustomTextTransformAsync(Kernel kernel, string inputInstructions) =>
+    private Task<string> ExecuteCustomTextTransformAsync(Kernel kernel, string prompt) =>
        ExecuteTransformAsync(
            kernel,
-           PasteFormats.CustomTextTransformation,
+           new ActionChainItem(PasteFormats.CustomTextTransformation, new Dictionary<string, object> { { nameof(prompt), prompt } }),
            async dataPackageView =>
            {
                var input = await dataPackageView.GetTextAsync();
-               var output = await _customTextTransformService.TransformTextAsync(inputInstructions, input);
+               var output = await _customTextTransformService.TransformTextAsync(prompt, input);
                return DataPackageHelpers.CreateFromText(output);
            });
 
     private Task<string> ExecuteStandardTransformAsync(Kernel kernel, PasteFormats format) =>
         ExecuteTransformAsync(
            kernel,
-           format,
+           new ActionChainItem(format, []),
            async dataPackageView => await TransformHelpers.TransformAsync(format, dataPackageView));
 
-    private static async Task<string> ExecuteTransformAsync(Kernel kernel, PasteFormats format, Func<DataPackageView, Task<DataPackage>> transformFunc)
+    private static async Task<string> ExecuteTransformAsync(Kernel kernel, ActionChainItem actionChainItem,  Func<DataPackageView, Task<DataPackage>> transformFunc)
     {
-        kernel.GetActionChain().Add(format);
+        kernel.GetActionChain().Add(actionChainItem);
         kernel.SetLastError(null);
 
         try
@@ -162,7 +206,8 @@ public sealed class KernelService(IAICredentialsProvider aiCredentialsProvider, 
         }
     }
 
-    private static string FormatChatHistory(ChatHistory chatHistory) => string.Join(Environment.NewLine, chatHistory.Select(FormatChatMessage));
+    private static string FormatChatHistory(ChatHistory chatHistory) =>
+        chatHistory.Count == 0 ? "[No chat history]" : string.Join(Environment.NewLine, chatHistory.Select(FormatChatMessage));
 
     private static string FormatChatMessage(ChatMessageContent chatMessage)
     {

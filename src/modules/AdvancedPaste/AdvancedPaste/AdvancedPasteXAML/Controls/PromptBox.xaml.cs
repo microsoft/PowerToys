@@ -76,7 +76,7 @@ namespace AdvancedPaste.Controls
         }
 
         [RelayCommand]
-        private async Task GenerateCustomAsync() => await ViewModel.ExecuutKernelQueryFromCurrentQueryAsync(PasteActionSource.PromptBox);
+        private async Task GenerateCustomAsync() => await ViewModel.ExecuteKernelQueryFromCurrentQueryAsync(PasteActionSource.PromptBox);
 
         private async void InputTxtBox_KeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
         {

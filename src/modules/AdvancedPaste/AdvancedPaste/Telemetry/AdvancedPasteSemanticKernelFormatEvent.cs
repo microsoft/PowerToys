@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
+using System.Linq;
 using AdvancedPaste.Models;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.PowerToys.Telemetry.Events;
@@ -11,11 +12,15 @@ using Microsoft.PowerToys.Telemetry.Events;
 namespace AdvancedPaste.Telemetry;
 
 [EventData]
-public class AdvancedPasteSemanticKernelFormatEvent(bool isSavedQuery, int promptTokens, int completionTokens, string modelName, string usedActionChain) : EventBase, IEvent
+public class AdvancedPasteSemanticKernelFormatEvent(bool cacheUsed, bool isSavedQuery, int promptTokens, int completionTokens, string modelName, string actionChain) : EventBase, IEvent
 {
-    public static string FormatActionChain(IEnumerable<PasteFormats> usedActionChain) => string.Join(", ", usedActionChain);
+    public static string FormatActionChain(IEnumerable<ActionChainItem> actionChain) => FormatActionChain(actionChain.Select(item => item.Format));
+
+    public static string FormatActionChain(IEnumerable<PasteFormats> actionChain) => string.Join(", ", actionChain);
 
     public bool IsSavedQuery { get; set; } = isSavedQuery;
+
+    public bool CacheUsed { get; set; } = cacheUsed;
 
     public int PromptTokens { get; set; } = promptTokens;
 
@@ -25,9 +30,9 @@ public class AdvancedPasteSemanticKernelFormatEvent(bool isSavedQuery, int promp
 
     /// <summary>
     /// Gets or sets a comma-separated list of paste formats used - in the same order they were executed.
-    /// Conceptually an array of strings but formatted this way to work around https://github.com/dotnet/runtime/issues/10428
+    /// Conceptually an array but formatted this way to work around https://github.com/dotnet/runtime/issues/10428
     /// </summary>
-    public string UsedActionChain { get; set; } = usedActionChain;
+    public string ActionChain { get; set; } = actionChain;
 
     public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
 }

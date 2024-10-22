@@ -425,10 +425,10 @@ namespace AdvancedPaste.ViewModels
             }
         }
 
-        internal async Task ExecuutKernelQueryFromCurrentQueryAsync(PasteActionSource triggerSource)
+        internal async Task ExecuteKernelQueryFromCurrentQueryAsync(PasteActionSource triggerSource)
         {
             var customAction = _userSettings.CustomActions
-                                            .FirstOrDefault(customAction => StringComparer.CurrentCultureIgnoreCase.Equals(customAction.Prompt, Query));
+                                            .FirstOrDefault(customAction => Models.KernelQueryCache.CacheKey.PromptComparer.Equals(customAction.Prompt, Query));
 
             var pasteFormat = CreateKernelQuery(customAction?.Name ?? "Default", Query, isSavedQuery: customAction != null);
 

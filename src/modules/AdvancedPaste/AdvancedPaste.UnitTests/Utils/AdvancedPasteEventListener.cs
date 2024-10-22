@@ -9,7 +9,7 @@ using System.Text.Json;
 using AdvancedPaste.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 
-namespace AdvancedPaste.UnitTests.Helpers;
+namespace AdvancedPaste.UnitTests.Utils;
 
 internal sealed class AdvancedPasteEventListener : EventListener
 {
@@ -50,7 +50,7 @@ internal sealed class AdvancedPasteEventListener : EventListener
             return false;
         }
 
-        if (!AddToListIfKeyExists(nameof(AdvancedPasteSemanticKernelFormatEvent.UsedActionChain), _semanticKernelEvents))
+        if (!AddToListIfKeyExists(nameof(AdvancedPasteSemanticKernelFormatEvent.ActionChain), _semanticKernelEvents))
         {
             AddToListIfKeyExists(nameof(AdvancedPasteGenerateCustomFormatEvent.PromptTokens), _customFormatEvents);
         }

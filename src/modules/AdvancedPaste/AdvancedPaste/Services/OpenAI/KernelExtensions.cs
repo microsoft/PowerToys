@@ -44,15 +44,15 @@ internal static class KernelExtensions
 
     internal static void SetLastError(this Kernel kernel, Exception error) => kernel.Data[LastErrorKey] = error;
 
-    internal static List<PasteFormats> GetActionChain(this Kernel kernel)
+    internal static List<ActionChainItem> GetActionChain(this Kernel kernel)
     {
         if (kernel.Data.TryGetValue(ActionChainKey, out var actionChainObj))
         {
-            return (List<PasteFormats>)actionChainObj;
+            return (List<ActionChainItem>)actionChainObj;
         }
         else
         {
-            List<PasteFormats> actionChain = [];
+            List<ActionChainItem> actionChain = [];
             kernel.Data[ActionChainKey] = actionChain;
             return actionChain;
         }

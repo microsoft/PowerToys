@@ -67,13 +67,14 @@ namespace AdvancedPaste
                 Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
             }
 
-            this.InitializeComponent();
+            InitializeComponent();
 
             Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory).ConfigureServices((context, services) =>
             {
                 services.AddSingleton<IUserSettings, UserSettings>();
                 services.AddSingleton<IAICredentialsProvider, Services.OpenAI.VaultCredentialsProvider>();
                 services.AddSingleton<ICustomTextTransformService, Services.OpenAI.CustomTextTransformService>();
+                services.AddSingleton<IKernelQueryCacheService, CustomActionKernelQueryCacheService>();
                 services.AddSingleton<IKernelService, Services.OpenAI.KernelService>();
                 services.AddSingleton<IPasteFormatExecutor, PasteFormatExecutor>();
                 services.AddSingleton<OptionsViewModel>();
