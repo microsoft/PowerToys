@@ -4,9 +4,13 @@
 
 using System;
 
+using System.Linq;
+using AdvancedPaste.Converters;
 using AdvancedPaste.Helpers;
+using AdvancedPaste.Models;
 using AdvancedPaste.Settings;
 using AdvancedPaste.ViewModels;
+
 using ManagedCommon;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -24,25 +28,32 @@ namespace AdvancedPaste
 
         public MainWindow()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
             _userSettings = App.GetService<IUserSettings>();
+
             var optionsViewModel = App.GetService<OptionsViewModel>();
 
             var baseHeight = MinHeight;
+            var coreActionCount = PasteFormat.MetadataDict.Values.Count(metadata => metadata.IsCoreAction);
 
             void UpdateHeight()
             {
-                var trimmedCustomActionCount = optionsViewModel.IsPasteWithAIEnabled ? Math.Min(_userSettings.CustomActions.Count, 5) : 0;
-                Height = MinHeight = baseHeight + (trimmedCustomActionCount * 40);
+                double GetHeight(int maxCustomActionCount) =>
+                    baseHeight +
+                    new PasteFormatsToHeightConverter().GetHeight(coreActionCount + _userSettings.AdditionalActions.Count) +
+                    new PasteFormatsToHeightConverter() { MaxItems = maxCustomActionCount }.GetHeight(optionsViewModel.IsAIServiceEnabled ? _userSettings.CustomActions.Count : 0);
+
+                MinHeight = GetHeight(1);
+                Height = GetHeight(5);
             }
 
             UpdateHeight();
 
-            _userSettings.CustomActions.CollectionChanged += (_, _) => UpdateHeight();
+            _userSettings.Changed += (_, _) => UpdateHeight();
             optionsViewModel.PropertyChanged += (_, e) =>
             {
-                if (e.PropertyName == nameof(optionsViewModel.IsPasteWithAIEnabled))
+                if (e.PropertyName == nameof(optionsViewModel.IsAIServiceEnabled))
                 {
                     UpdateHeight();
                 }

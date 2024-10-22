@@ -6,7 +6,12 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 
+using MouseWithoutBorders.Core;
+
+// Disable the warning to preserve original code
+#pragma warning disable CA1716
 namespace MouseWithoutBorders.Class
+#pragma warning restore CA1716
 {
     internal static class Extensions
     {
@@ -39,7 +44,7 @@ namespace MouseWithoutBorders.Class
                 catch (Win32Exception e)
                 {
                     string log = $"The process {processName} (PID={processId}) could not be terminated, error: {e.Message}";
-                    Common.TelemetryLogTrace(log, SeverityLevel.Error);
+                    Logger.TelemetryLogTrace(log, SeverityLevel.Error);
                     Common.ShowToolTip(log, 5000);
 
                     if (!keepTrying)
