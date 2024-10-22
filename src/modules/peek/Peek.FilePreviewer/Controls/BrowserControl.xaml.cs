@@ -164,7 +164,7 @@ namespace Peek.FilePreviewer.Controls
                 if (!_originalBackgroundColor.HasValue)
                 {
                     // HACK: We used to store PreviewBrowser.DefaultBackgroundColor here, but WebView started returning transparent when running without a debugger attached. We want html files to be seen as in the browser, which has white as a default background color.
-                    _originalBackgroundColor = Colors.White;
+                    _originalBackgroundColor = Microsoft.UI.Colors.White;
                 }
 
                 // Setting the background color to transparent when initially loading the WebView2 component.

@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Settings.UI.Library.Resources;
 
