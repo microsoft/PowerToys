@@ -1343,7 +1343,7 @@ EXHIBIT A -Mozilla Public License.
 - ReverseMarkdown 4.1.0
 - ScipBe.Common.Office.OneNote 3.0.1
 - SharpCompress 0.37.2
-- StreamJsonRpc 2.14.24
+- StreamJsonRpc 2.19.27
 - StyleCop.Analyzers 1.2.0-beta.556
 - System.CodeDom 8.0.0
 - System.CommandLine 2.0.0-beta4.22272.1
