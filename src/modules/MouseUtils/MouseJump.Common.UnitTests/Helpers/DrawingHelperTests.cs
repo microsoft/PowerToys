@@ -17,7 +17,7 @@ namespace MouseJump.Common.UnitTests.Helpers;
 public static class DrawingHelperTests
 {
     [TestClass]
-    public sealed class GetPreviewLayoutTests
+    public sealed class RenderPreviewTests
     {
         public sealed class TestCase
         {
@@ -80,7 +80,7 @@ public static class DrawingHelperTests
         public void RunTestCases(TestCase data)
         {
             // load the fake desktop image
-            using var desktopImage = GetPreviewLayoutTests.LoadImageResource(data.DesktopImageFilename);
+            using var desktopImage = RenderPreviewTests.LoadImageResource(data.DesktopImageFilename);
 
             // draw the preview image
             var previewLayout = LayoutHelper.GetPreviewLayout(
@@ -91,7 +91,7 @@ public static class DrawingHelperTests
             using var actual = DrawingHelper.RenderPreview(previewLayout, imageCopyService);
 
             // load the expected image
-            var expected = GetPreviewLayoutTests.LoadImageResource(data.ExpectedImageFilename);
+            var expected = RenderPreviewTests.LoadImageResource(data.ExpectedImageFilename);
 
             // compare the images
             AssertImagesEqual(expected, actual);
