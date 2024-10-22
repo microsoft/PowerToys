@@ -1,0 +1,5 @@
+﻿CoImpersonateClient
+GetCurrentThread
+OpenThreadToken
+GetPackageFamilyNameFromToken
+CoRevertToSelf

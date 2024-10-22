@@ -1,0 +1,16 @@
+{
+    "$version": "1.0.0",
+    "snippets":
+    [
+        {
+            "input": "pwsh -c .\\doc\\initial-sdk-spec\\generate-interface.ps1 > .\\extensionsdk\\Microsoft.CmdPal.Extensions\\Microsoft.CmdPal.Extensions.idl",
+            "name": "Generate interface",
+            "description": "Generate the interface from the SDK spec\nThis drops it into Microsoft.CmdPal.Extensions"
+        },
+        {
+            "input": "tasklist | findstr Extension",
+            "name": "List running extensions",
+            "description": "This will list all running extensions, as long as they have 'Extension' in the name (they should)"
+        }
+    ]
+}

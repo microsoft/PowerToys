@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SamplePagesExtension (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "SamplePagesExtension (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

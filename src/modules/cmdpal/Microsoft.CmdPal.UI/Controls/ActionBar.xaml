@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.ActionBar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    Background="Transparent"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <converters:StringVisibilityConverter x:Key="StringNotEmptyToVisibilityConverter" EmptyValue="Collapsed" NotEmptyValue="Visible" />
+
+            <!--  Template for actions in the mode actions dropdown button  -->
+            <DataTemplate x:Key="ContextMenuViewModelTemplate" x:DataType="viewmodels:ActionBarContextItemViewModel">
+                <ListViewItem KeyDown="ActionListViewItem_KeyDown" Tapped="ActionListViewItem_Tapped">
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="24" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <Viewbox Width="16" Height="16">
+                            <!--  TODO bind to icon  -->
+                            <ContentControl
+                                Grid.Column="0"
+                                Width="24"
+                                Height="24">
+                                <SymbolIcon Symbol="Emoji" />
+                            </ContentControl>
+                        </Viewbox>
+                        <TextBlock Grid.Column="1" Text="{x:Bind Name}" />
+                    </Grid>
+                </ListViewItem>
+            </DataTemplate>
+
+            <!--  Remove all item animations from lists. They're entirely too slow to let that UI be usable.  -->
+            <Style x:Key="NoAnimationsPlease" TargetType="ListView">
+                <Setter Property="ItemContainerTransitions">
+                    <Setter.Value>
+                        <TransitionCollection>
+                            <!--  (deleted transitions are left for reference for what we removed)  -->
+                            <ContentThemeTransition />
+                            <!--<AddDeleteThemeTransition/>-->
+                            <!--<ReorderThemeTransition/>-->
+                            <!--<EntranceThemeTransition IsStaggeringEnabled="False"/>-->
+                        </TransitionCollection>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Padding="8">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <!--  Return label  -->
+        <StackPanel
+            Margin="12,0,0,0"
+            Padding="6,2,4,3"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            BorderBrush="{ThemeResource ControlStrokeColorSecondaryBrush}"
+            BorderThickness="1"
+            CornerRadius="4"
+            Orientation="Horizontal"
+            Visibility="{x:Bind ViewModel.ActionName, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}">
+            <TextBlock
+                FontSize="11"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                Text="{x:Bind ViewModel.ActionName, Mode=OneWay}" />
+            <FontIcon
+                Margin="4,0,0,0"
+                VerticalAlignment="Center"
+                FontSize="11"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Glyph="&#xE751;" />
+        </StackPanel>
+
+        <SplitButton
+            x:Name="MoreCommandsButton"
+            Grid.Column="2"
+            Margin="0,-2,0,0"
+            VerticalAlignment="Center"
+            Content="Actions"
+            FontSize="12"
+            Visibility="{x:Bind ViewModel.MoreCommandsAvailable, Mode=OneWay}">
+            <SplitButton.Flyout>
+                <Flyout Placement="TopEdgeAlignedRight">
+                    <ListView
+                        x:Name="ActionsDropdown"
+                        Margin="-12"
+                        ItemTemplate="{StaticResource ContextMenuViewModelTemplate}"
+                        ItemsSource="{x:Bind ViewModel.ContextActions, Mode=OneWay}"
+                        Style="{StaticResource NoAnimationsPlease}" />
+                </Flyout>
+            </SplitButton.Flyout>
+        </SplitButton>
+    </Grid>
+</UserControl>
