@@ -2,8 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using System.Reflection;
-
+using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MouseJump.Common.Helpers;
 using MouseJump.Common.Imaging;
@@ -104,7 +105,15 @@ public static class DrawingHelperTests
             var resourceNames = assembly.GetManifestResourceNames();
             if (!resourceNames.Contains(resourceName))
             {
-                throw new InvalidOperationException($"Embedded resource '{resourceName}' does not exist.");
+                var message = new StringBuilder();
+                message.AppendLine(CultureInfo.InvariantCulture, $"Embedded resource '{resourceName}' does not exist.");
+                message.AppendLine($"Known resources:");
+                foreach (var name in resourceNames)
+                {
+                    message.AppendLine(name);
+                }
+
+                throw new InvalidOperationException();
             }
 
             var stream = assembly.GetManifestResourceStream(resourceName)
