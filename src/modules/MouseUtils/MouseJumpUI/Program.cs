@@ -3,16 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
 using System.Reflection;
-using System.Text.Json;
 using System.Threading;
 using System.Windows.Forms;
 using System.Windows.Threading;
 
 using Common.UI;
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Library;
 using MouseJumpUI.Helpers;
 using PowerToys.Interop;
 
