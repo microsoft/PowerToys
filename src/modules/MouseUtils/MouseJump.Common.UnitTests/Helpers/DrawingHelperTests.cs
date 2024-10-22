@@ -113,7 +113,7 @@ public static class DrawingHelperTests
                     message.AppendLine(name);
                 }
 
-                throw new InvalidOperationException();
+                throw new InvalidOperationException(message.ToString());
             }
 
             var stream = assembly.GetManifestResourceStream(resourceName)
