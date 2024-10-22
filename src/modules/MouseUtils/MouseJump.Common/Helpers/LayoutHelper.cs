@@ -104,7 +104,7 @@ public static class LayoutHelper
     /// <returns>A <see cref="BoxBounds"/> object that represents the bounds of the different areas of the box.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="contentBounds"/> or <paramref name="boxStyle"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when any of the styles in <paramref name="boxStyle"/> is null.</exception>
-    internal static BoxBounds GetBoxBoundsFromContentBounds(
+    public static BoxBounds GetBoxBoundsFromContentBounds(
         RectangleInfo contentBounds,
         BoxStyle boxStyle)
     {
@@ -132,7 +132,7 @@ public static class LayoutHelper
     /// <returns>A <see cref="BoxBounds"/> object that represents the bounds of the different areas of the box.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="outerBounds"/> or <paramref name="boxStyle"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when any of the styles in <paramref name="boxStyle"/> is null.</exception>
-    internal static BoxBounds GetBoxBoundsFromOuterBounds(
+    public static BoxBounds GetBoxBoundsFromOuterBounds(
         RectangleInfo outerBounds,
         BoxStyle boxStyle)
     {

@@ -26,7 +26,7 @@ public sealed class BoxBounds
 
     */
 
-    internal BoxBounds(
+    public BoxBounds(
         RectangleInfo outerBounds,
         RectangleInfo marginBounds,
         RectangleInfo borderBounds,
