@@ -25,6 +25,10 @@ public sealed class ListPageViewModel : PageViewModel
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     private string _query = string.Empty;
 
+    private bool _forceShowDetails;
+
+    public bool ShowDetails => _forceShowDetails || Page.ShowDetails;
+
     public ListPageViewModel(IListPage page)
         : base(page)
     {
@@ -49,6 +53,7 @@ public sealed class ListPageViewModel : PageViewModel
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex);
+                _forceShowDetails = true;
                 return [new ListSection()
                 {
                     Title = "Error",
@@ -132,6 +137,7 @@ public sealed class ListPageViewModel : PageViewModel
             }
             catch (COMException ex)
             {
+                _forceShowDetails = true;
                 return [new SectionInfoList(null, [new ListItemViewModel(new ErrorListItem(ex))])];
             }
         }

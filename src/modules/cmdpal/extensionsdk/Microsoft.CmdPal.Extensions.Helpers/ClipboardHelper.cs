@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-/*
+
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -13,11 +13,11 @@ namespace Microsoft.CmdPal.Extensions.Helpers;
 
 public static partial class ClipboardHelper
 {
-    private static bool? _clipboardSupported;
+    private static readonly bool? _clipboardSupported = true;
 
     // Used if an external clipboard is not available, e.g. if xclip is missing.
     // This is useful for testing in CI as well.
-    private static string _internalClipboard;
+    private static string? _internalClipboard;
 
     public static string GetText()
     {
@@ -294,4 +294,3 @@ public static partial class ClipboardHelper
         }
     }
 }
-*/

@@ -11,7 +11,23 @@ public sealed partial class ErrorListItem : ListItem
     public ErrorListItem(Exception ex)
         : base(new NoOpAction())
     {
-        Title = "Error in extension:";
+        Title = "Unknown error in extension";
         Subtitle = ex.Message;
+        if (ex.StackTrace != null)
+        {
+            Details = new Details() { Body = FormatStackTrace(ex) };
+        }
+    }
+
+    private string FormatStackTrace(Exception ex)
+    {
+        return $"""
+Local stack trace:
+
+```
+{ex.StackTrace}
+```
+
+""";
     }
 }

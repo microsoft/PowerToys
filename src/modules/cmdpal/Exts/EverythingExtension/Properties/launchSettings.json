@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "EverythingExtension (Package)": {
+        "commandName": "MsixPackage",
+        "commandLineArgs": "-RegisterProcessAsComServer"
+    },
+    "EverythingExtension (Unpackaged)": {
+        "commandName": "Project"
+    }
+  }
+}

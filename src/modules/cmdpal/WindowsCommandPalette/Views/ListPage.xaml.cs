@@ -35,7 +35,7 @@ public sealed partial class ListPage : Microsoft.UI.Xaml.Controls.Page, INotifyP
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedItem)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MoreCommandsAvailable)));
 
-            if (ViewModel != null && _selectedItem?.Details != null && ViewModel.Page.ShowDetails)
+            if (ViewModel != null && _selectedItem?.Details != null && ViewModel.ShowDetails)
             {
                 this.DetailsContent.Child = new DetailsControl(_selectedItem.Details);
                 this.DetailsContent.Visibility = Visibility.Visible;
