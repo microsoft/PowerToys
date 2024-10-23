@@ -13,12 +13,25 @@
     <controls:SettingsPageControl x:Uid="FileExplorerPreview" ModuleImageSource="ms-appx:///Assets/Settings/Modules/FileExplorerPreview.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <controls:SettingsGroup x:Uid="FileExplorerPreview_PreviewPane">
+                <tkcontrols:SettingsCard
+                    x:Uid="FileExplorerPreview_EnableToggleControl_HeaderText"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileExplorerPreview.png}"
+                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                </tkcontrols:SettingsCard>
+                <InfoBar
+                    x:Uid="GPO_SettingIsManaged"
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                    Severity="Informational" />
+
+                <controls:SettingsGroup x:Uid="FileExplorerPreview_PreviewPane" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <InfoBar
                         x:Uid="FileExplorerPreview_PreviewHandlerOutlookIncompatibility"
                         IsClosable="False"
-                        IsOpen="True"
-                        IsTabStop="True"
+                        IsOpen="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
                         Severity="Warning" />
 
                     <InfoBar
@@ -147,18 +160,18 @@
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings">
+                <controls:SettingsGroup x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <InfoBar
                         x:Uid="FileExplorerPreview_RebootRequired"
                         IsClosable="False"
-                        IsOpen="True"
-                        IsTabStop="True"
+                        IsOpen="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
                         Severity="Informational" />
                     <InfoBar
                         x:Uid="FileExplorerPreview_ThumbnailsMightNotAppearOnRemoteFolders"
                         IsClosable="False"
-                        IsOpen="True"
-                        IsTabStop="True"
+                        IsOpen="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
                         Severity="Warning" />
                     <InfoBar
                         x:Uid="GPO_SomeThumbnailProvidersAreManaged"
