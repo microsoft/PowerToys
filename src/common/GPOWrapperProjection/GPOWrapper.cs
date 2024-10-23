@@ -57,6 +57,21 @@ namespace PowerToys.GPOWrapperProjection
             return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetConfiguredPeekEnabledValue();
         }
 
+        public static GpoRuleConfigured GetConfiguredFileActionsMenuEnabledValue()
+        {
+            return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetConfiguredFileActionsMenuEnabledValue();
+        }
+
+        public static GpoRuleConfigured GetConfiguredPowerRenameEnabledValue()
+        {
+            return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetConfiguredPowerRenameEnabledValue();
+        }
+
+        public static GpoRuleConfigured GetConfiguredFileLocksmithEnabledValue()
+        {
+            return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetConfiguredFileLocksmithEnabledValue();
+        }
+
         public static GpoRuleConfigured GetRunPluginEnabledValue(string pluginID)
         {
             return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetRunPluginEnabledValue(pluginID);

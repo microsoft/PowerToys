@@ -26,7 +26,9 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             {
                 if (frame == null)
                 {
+#pragma warning disable WinUIEx1001 // The member will always be null.
                     frame = Window.Current.Content as Frame;
+#pragma warning restore WinUIEx1001 // The member will always be null.
                     RegisterFrameEvents();
                 }
 

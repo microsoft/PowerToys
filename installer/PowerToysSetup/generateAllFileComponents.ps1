@@ -164,6 +164,34 @@ Generate-FileComponents -fileListName "ColorPickerAssetsFiles" -wxsFilePath $PSS
 Generate-FileList -fileDepsJson "" -fileListName EnvironmentVariablesAssetsFiles -wxsFilePath $PSScriptRoot\EnvironmentVariables.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\EnvironmentVariables"
 Generate-FileComponents -fileListName "EnvironmentVariablesAssetsFiles" -wxsFilePath $PSScriptRoot\EnvironmentVariables.wxs -regroot $registryroot
 
+#File Actions Menu
+## Plugins
+###Executable actions
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\FileActionsMenuPlugins\ExecutableActions\PowerToys.FileActionsMenu.Plugins.ExecutableActions.deps.json"" -fileListName executableActionsComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs"
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""executableActionsComponentFiles"" -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs -regroot $registryroot"
+###File Content actions
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\FileActionsMenuPlugins\FileContentActions\PowerToys.FileActionsMenu.Plugins.FileContentActions.deps.json"" -fileListName fileContentActionsComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs"
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""fileContentActionsComponentFiles"" -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs -regroot $registryroot"
+###File properties
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\FileActionsMenuPlugins\FileProperties\PowerToys.FileActionsMenu.Plugins.FileProperties.deps.json"" -fileListName filePropertiesComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs"
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""filePropertiesComponentFiles"" -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs -regroot $registryroot"
+###Hashes
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\FileActionsMenuPlugins\Hashes\PowerToys.FileActionsMenu.Plugins.Hashes.deps.json"" -fileListName hashesComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs"
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""hashesComponentFiles"" -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs -regroot $registryroot"
+###Image Clipboard Actions
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\FileActionsMenuPlugins\ImageClipboardActions\PowerToys.FileActionsMenu.Plugins.ImageClipboardActions.deps.json"" -fileListName imageClipboardActionsComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs"
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""imageClipboardActionsComponentFiles"" -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs -regroot $registryroot"
+###Move Copy actions
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\FileActionsMenuPlugins\MoveCopyActions\PowerToys.FileActionsMenu.Plugins.MoveCopyActions.deps.json"" -fileListName moveCopyActionsComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs"
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""moveCopyActionsComponentFiles"" -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs -regroot $registryroot"
+###Path copy
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\FileActionsMenuPlugins\PathCopy\PowerToys.FileActionsMenu.Plugins.PathCopy.deps.json"" -fileListName pathCopyComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs"
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""pathCopyComponentFiles"" -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs -regroot $registryroot"
+###PowerToys
+Invoke-Expression -Command "$PSScriptRoot\generateFileList.ps1 -fileDepsJson ""$PSScriptRoot..\..\..\$platform\Release\FileActionsMenuPlugins\PowerToys\PowerToys.FileActionsMenu.Plugins.PowerToys.deps.json"" -fileListName powerToysComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs"
+Invoke-Expression -Command "$PSScriptRoot\generateFileComponents.ps1 -fileListName ""powerToysComponentFiles"" -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs -regroot $registryroot"
+## Plugins
+
 #FileExplorerAdd-ons
 Generate-FileList -fileDepsJson "" -fileListName MonacoPreviewHandlerMonacoAssetsFiles -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Monaco"
 Generate-FileList -fileDepsJson "" -fileListName MonacoPreviewHandlerCustomLanguagesFiles -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Monaco\customLanguages"

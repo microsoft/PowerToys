@@ -1,0 +1,27 @@
+<Project>
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\FileActionsMenuPlugins\$(FileActionsMenuPluginName)</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+    <RootNamespace>PowerToys.FileActionsMenu.Plugins.$(FileActionsMenuPluginName)</RootNamespace>
+    <AssemblyName>PowerToys.FileActionsMenu.Plugins.$(FileActionsMenuPluginName)</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <ProjectReference Include="..\..\FileActionsMenu.Helpers\FileActionsMenu.Helpers.csproj" />
+    <ProjectReference Include="..\..\FileActionsMenu.Interfaces\FileActionsMenu.Interfaces.csproj"></ProjectReference>
+  </ItemGroup>
+
+  <!-- No idea why this is needed, but it makes it work -->
+  <Target Name="FixWebView2" BeforeTargets="_CopyOutOfDateSourceItemsToOutputDirectory">
+    <Copy SourceFiles="..\..\..\..\..\$(Platform)\$(Configuration)\FileActionsMenu.Interfaces\runtimes\win-x64\native\WebView2Loader.dll"
+          DestinationFolder="..\..\..\..\..\$(Platform)\$(Configuration)\FileActionsMenu.Helpers\runtimes\win-x64\native" />
+  </Target>
+</Project>
