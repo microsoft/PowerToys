@@ -736,6 +736,7 @@ ISSEPARATOR
 ITask
 ith
 ITHUMBNAIL
+ITwoWayPipeMessageIPCManaged
 IUI
 IUnknown
 IWbem
