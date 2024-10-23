@@ -8,6 +8,8 @@ using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using MouseWithoutBorders.Class;
 
+using Logger = MouseWithoutBorders.Core.Logger;
+
 namespace MouseWithoutBorders
 {
     internal class ShutdownWithPowerToys
@@ -24,7 +26,7 @@ namespace MouseWithoutBorders
             }
             catch (Exception e)
             {
-                Common.Log(e);
+                Logger.Log(e);
             }
         }
     }

@@ -35,6 +35,8 @@ namespace CommonSharedConstants
 
     const wchar_t ADVANCED_PASTE_JSON_MESSAGE[] = L"PasteJson";
 
+    const wchar_t ADVANCED_PASTE_ADDITIONAL_ACTION_MESSAGE[] = L"AdditionalAction";
+    
     const wchar_t ADVANCED_PASTE_CUSTOM_ACTION_MESSAGE[] = L"CustomAction";
 
     const wchar_t ADVANCED_PASTE_TERMINATE_APP_MESSAGE[] = L"TerminateApp";

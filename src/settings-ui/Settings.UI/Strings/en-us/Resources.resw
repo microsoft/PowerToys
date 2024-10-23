@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -724,6 +724,9 @@
   </data>
   <data name="AdvancedPaste_Direct_Access_Hotkeys_GroupSettings.Header" xml:space="preserve">
     <value>Actions</value>
+  </data>
+  <data name="AdvancedPaste_Additional_Actions_GroupSettings.Header" xml:space="preserve">
+    <value>Additional actions</value>
   </data>
   <data name="RemapKeysList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Current Key Remappings</value>
@@ -2045,6 +2048,21 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="PasteAsCustom_Shortcut.Header" xml:space="preserve">
     <value>Paste as Custom with AI directly</value>
+  </data>
+  <data name="ImageToText.Header" xml:space="preserve">
+    <value>Image to text</value>
+  </data>
+  <data name="PasteAsFile.Header" xml:space="preserve">
+    <value>Paste as file</value>
+  </data>
+  <data name="PasteAsTxtFile.Header" xml:space="preserve">
+    <value>Paste as .txt file</value>
+  </data>
+  <data name="PasteAsPngFile.Header" xml:space="preserve">
+    <value>Paste as .png file</value>
+  </data>
+  <data name="PasteAsHtmlFile.Header" xml:space="preserve">
+    <value>Paste as .html file</value>
   </data>
   <data name="AdvancedPaste_EnableAIDialogOpenAIApiKey.Text" xml:space="preserve">
     <value>OpenAI API key:</value>
@@ -3671,6 +3689,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_SelectedLanguage_Serbian.Content" xml:space="preserve">
     <value>Serbian</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Serbian_Cyrillic.Content" xml:space="preserve">
+    <value>Serbian Cyrillic</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Hungarian.Content" xml:space="preserve">
     <value>Hungarian</value>
