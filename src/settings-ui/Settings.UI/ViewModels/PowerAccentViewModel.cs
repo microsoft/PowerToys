@@ -60,6 +60,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "SL",
             "SP",
             "SR",
+            "SR_CYRL",
             "SV",
             "TK",
             "CY",
