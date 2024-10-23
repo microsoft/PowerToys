@@ -38,9 +38,15 @@
                     </tkcontrols:SettingsCard>
 
                     <HyperlinkButton
+                        x:Uid="Oobe_Overview_DiagnosticsAndFeedback_Settings_Link"
+                        Margin="-8,0,0,0"
+                        Click="GeneralSettingsLaunchButton_Click" />
+
+                    <HyperlinkButton
                         x:Uid="Oobe_Overview_DiagnosticsAndFeedback_Link"
                         Margin="-8,0,0,0"
                         NavigateUri="https://aka.ms/powertoys-data-and-privacy-documentation" />
+
                 </StackPanel>
             </StackPanel>
         </controls:OOBEPageControl.PageContent>

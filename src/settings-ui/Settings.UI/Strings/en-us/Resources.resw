@@ -2149,6 +2149,9 @@ Take a moment to preview the various utilities listed or view our comprehensive 
   <data name="Oobe_Overview_Telemetry_Desc.Text" xml:space="preserve">
     <value>Diagnostics &amp; feedback helps us to improve PowerToys and keep it secure, up to date, and working as expected</value>
   </data>
+  <data name="Oobe_Overview_DiagnosticsAndFeedback_Settings_Link.Content" xml:space="preserve">
+    <value>View more diagnostic data settings</value>
+  </data>
   <data name="Oobe_Overview_DiagnosticsAndFeedback_Link.Content" xml:space="preserve">
     <value>Learn more about the information PowerToys logs &amp; how it gets used</value>
   </data>

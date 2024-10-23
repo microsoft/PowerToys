@@ -70,6 +70,16 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             ViewModel.LogOpeningSettingsEvent();
         }
 
+        private void GeneralSettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            if (OobeShellPage.OpenMainWindowCallback != null)
+            {
+                OobeShellPage.OpenMainWindowCallback(typeof(GeneralPage));
+            }
+
+            ViewModel.LogOpeningSettingsEvent();
+        }
+
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             ViewModel.LogOpeningModuleEvent();
