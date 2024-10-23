@@ -23,7 +23,7 @@ internal sealed partial class LaunchProfileCommand : InvokableCommand
     private readonly bool _openNewTab;
     private readonly bool _openQuake;
 
-    internal LaunchProfileCommand(string id, string profile, bool openNewTab, bool openQuake)
+    internal LaunchProfileCommand(string id, string profile, string iconPath, bool openNewTab, bool openQuake)
     {
         this._id = id;
         this._profile = profile;
@@ -31,6 +31,7 @@ internal sealed partial class LaunchProfileCommand : InvokableCommand
         this._openQuake = openQuake;
 
         this.Name = "Launch Profile";
+        this.Icon = new(iconPath);
     }
 
     private void Launch(string id, string profile)

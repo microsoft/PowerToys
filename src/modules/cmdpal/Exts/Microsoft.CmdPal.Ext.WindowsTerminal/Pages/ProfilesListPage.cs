@@ -48,11 +48,10 @@ internal sealed partial class ProfilesListPage : ListPage
                 continue;
             }
 
-            result.Add(new ListItem(new LaunchProfileCommand(profile.Terminal.AppUserModelId, profile.Name, true, false))
+            result.Add(new ListItem(new LaunchProfileCommand(profile.Terminal.AppUserModelId, profile.Name, profile.Terminal.LogoPath, true, false))
             {
                 Title = profile.Name,
                 Subtitle = profile.Terminal.DisplayName,
-                Icon = new(profile.Icon),
 
                 // Icon = () => GetLogo(profile.Terminal),
                 // Action = _ =>
