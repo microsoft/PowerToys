@@ -1,0 +1,77 @@
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
+using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.UI.Windowing;
+using static System.Formats.Asn1.AsnWriter;
+
+namespace Microsoft.CmdPal.Ext.WindowsTerminal;
+
+internal sealed partial class ProfilesListPage : ListPage
+{
+    private readonly TerminalQuery _terminalQuery = new();
+
+    public ProfilesListPage()
+    {
+        Icon = new(string.Empty);
+        Name = "Find and launch your Windows Terminal profiles";
+    }
+
+#pragma warning disable SA1108
+    public List<ListItem> Query()
+    {
+        var profiles = _terminalQuery.GetProfiles();
+
+        var result = new List<ListItem>();
+
+        foreach (var profile in profiles)
+        {
+            if (profile.Hidden) // TODO: hmmm, probably need settings to do this --> && !_showHiddenProfiles)
+            {
+                continue;
+            }
+
+            result.Add(new ListItem(new NoOpCommand())
+            {
+                Title = profile.Name,
+                Subtitle = profile.Terminal.DisplayName,
+
+                // Icon = () => GetLogo(profile.Terminal),
+                // Action = _ =>
+                // {
+                //    Launch(profile.Terminal.AppUserModelId, profile.Name);
+                //    return true;
+                // },
+                // ContextData = profile,
+#pragma warning restore SA1108
+            });
+        }
+
+        return result;
+    }
+
+    public override ISection[] GetItems()
+    {
+        return [
+            new ListSection()
+            {
+                Title = "Profiles",
+                Items = Query().ToArray(),
+            }
+            ];
+    }
+}

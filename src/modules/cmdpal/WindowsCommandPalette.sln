@@ -43,13 +43,16 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SamplePagesExtension", "exts\SamplePagesExtension\SamplePagesExtension.csproj", "{399B53F1-5AA6-4FE0-8C3C-66E07B84E6F1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YouTubeExtension", "Exts\YouTubeExtension\YouTubeExtension.csproj", "{276243F6-4B25-411C-B110-1E7DB575F13D}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.UI", "Microsoft.CmdPal.UI\Microsoft.CmdPal.UI.csproj", "{1DF70F56-ABB2-4798-BBA5-0B9568715BA1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.UI.ViewModels", "Microsoft.CmdPal.UI.ViewModels\Microsoft.CmdPal.UI.ViewModels.csproj", "{D2FC419D-0ABC-425F-9D43-A7782AC4A0AE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UI", "UI", "{865E9369-C53A-40B8-829C-F7843F66D3A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Apps", "Exts\Microsoft.CmdPal.Ext.Apps\Microsoft.CmdPal.Ext.Apps.csproj", "{2012F5FE-BF53-4E51-868D-0E5A74C11878}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.Ext.Apps", "Exts\Microsoft.CmdPal.Ext.Apps\Microsoft.CmdPal.Ext.Apps.csproj", "{2012F5FE-BF53-4E51-868D-0E5A74C11878}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.Ext.WindowsTerminal", "Exts\Microsoft.CmdPal.Ext.WindowsTerminal\Microsoft.CmdPal.Ext.WindowsTerminal.csproj", "{2A14C3D5-4680-4A9D-A860-B0BBAF28275D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -247,6 +250,14 @@ Global
 		{2012F5FE-BF53-4E51-868D-0E5A74C11878}.Release|ARM64.Build.0 = Release|ARM64
 		{2012F5FE-BF53-4E51-868D-0E5A74C11878}.Release|x64.ActiveCfg = Release|x64
 		{2012F5FE-BF53-4E51-868D-0E5A74C11878}.Release|x64.Build.0 = Release|x64
+		{2A14C3D5-4680-4A9D-A860-B0BBAF28275D}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{2A14C3D5-4680-4A9D-A860-B0BBAF28275D}.Debug|ARM64.Build.0 = Debug|ARM64
+		{2A14C3D5-4680-4A9D-A860-B0BBAF28275D}.Debug|x64.ActiveCfg = Debug|x64
+		{2A14C3D5-4680-4A9D-A860-B0BBAF28275D}.Debug|x64.Build.0 = Debug|x64
+		{2A14C3D5-4680-4A9D-A860-B0BBAF28275D}.Release|ARM64.ActiveCfg = Release|ARM64
+		{2A14C3D5-4680-4A9D-A860-B0BBAF28275D}.Release|ARM64.Build.0 = Release|ARM64
+		{2A14C3D5-4680-4A9D-A860-B0BBAF28275D}.Release|x64.ActiveCfg = Release|x64
+		{2A14C3D5-4680-4A9D-A860-B0BBAF28275D}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -272,6 +283,7 @@ Global
 		{1DF70F56-ABB2-4798-BBA5-0B9568715BA1} = {865E9369-C53A-40B8-829C-F7843F66D3A1}
 		{D2FC419D-0ABC-425F-9D43-A7782AC4A0AE} = {865E9369-C53A-40B8-829C-F7843F66D3A1}
 		{2012F5FE-BF53-4E51-868D-0E5A74C11878} = {272D0E9A-8FC3-49F5-8FAD-79ABAE8AB1E4}
+		{2A14C3D5-4680-4A9D-A860-B0BBAF28275D} = {272D0E9A-8FC3-49F5-8FAD-79ABAE8AB1E4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BC94BFC2-A741-4978-B6A4-9E01B7660E6B}
