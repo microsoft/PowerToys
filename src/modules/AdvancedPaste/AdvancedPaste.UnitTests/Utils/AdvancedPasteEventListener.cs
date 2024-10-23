@@ -20,7 +20,11 @@ internal sealed class AdvancedPasteEventListener : EventListener
 
     public IReadOnlyList<AdvancedPasteSemanticKernelFormatEvent> SemanticKernelEvents => _semanticKernelEvents;
 
-    public int TotalTokens => _customFormatEvents.Sum(e => e.PromptTokens + e.CompletionTokens) + _semanticKernelEvents.Sum(e => e.PromptTokens + e.CompletionTokens);
+    public int CustomFormatTokens => _customFormatEvents.Sum(e => e.PromptTokens + e.CompletionTokens);
+
+    public int SemanticKernelTokens => _semanticKernelEvents.Sum(e => e.PromptTokens + e.CompletionTokens);
+
+    public int TotalTokens => CustomFormatTokens + SemanticKernelTokens;
 
     internal AdvancedPasteEventListener()
     {

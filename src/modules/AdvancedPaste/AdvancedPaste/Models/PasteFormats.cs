@@ -86,15 +86,17 @@ public enum PasteFormats
         IconGlyph = "\uE945",
         RequiresAIService = true,
         CanPreview = true,
-        SupportedClipboardFormats = ClipboardFormat.Text | ClipboardFormat.Html | ClipboardFormat.Audio | ClipboardFormat.Image)]
+        SupportedClipboardFormats = ClipboardFormat.Text | ClipboardFormat.Html | ClipboardFormat.Audio | ClipboardFormat.Image,
+        RequiresPrompt = true)]
     KernelQuery,
 
     [PasteFormatMetadata(
         IsCoreAction = false,
+        IconGlyph = "\uE945",
         RequiresAIService = true,
         CanPreview = true,
         SupportedClipboardFormats = ClipboardFormat.Text,
         KernelFunctionDescription = "Takes input instructions and transforms clipboard text (not TXT files) with these input instructions, putting the result back on the clipboard. This uses AI to accomplish the task.",
-        IsInternalAction = true)]
+        RequiresPrompt = true)]
     CustomTextTransformation,
 }

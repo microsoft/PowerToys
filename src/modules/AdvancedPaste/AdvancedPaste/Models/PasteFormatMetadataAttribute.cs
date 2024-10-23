@@ -28,8 +28,5 @@ public sealed class PasteFormatMetadataAttribute : Attribute
     /// </summary>
     public string KernelFunctionDescription { get; init; }
 
-    /// <summary>
-    /// Gets a value indicating whether the action is internal to the system and should not be exposed to the user.
-    /// </summary>
-    public bool IsInternalAction { get; init; }
+    public bool RequiresPrompt { get; init; }
 }

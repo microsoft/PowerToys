@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Linq;
+
 using AdvancedPaste.Models;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.PowerToys.Telemetry.Events;

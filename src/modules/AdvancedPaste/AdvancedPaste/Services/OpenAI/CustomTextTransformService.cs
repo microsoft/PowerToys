@@ -5,6 +5,7 @@
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
+
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.Telemetry;

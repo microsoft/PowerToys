@@ -5,12 +5,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using AdvancedPaste.Helpers;
+
 using AdvancedPaste.Models;
 using Microsoft.SemanticKernel;
 using Windows.ApplicationModel.DataTransfer;
 
-namespace AdvancedPaste.Services.OpenAI;
+namespace AdvancedPaste.Helpers;
 
 internal static class KernelExtensions
 {
@@ -44,7 +44,7 @@ internal static class KernelExtensions
 
     internal static void SetLastError(this Kernel kernel, Exception error) => kernel.Data[LastErrorKey] = error;
 
-    internal static List<ActionChainItem> GetActionChain(this Kernel kernel)
+    internal static List<ActionChainItem> GetOrAddActionChain(this Kernel kernel)
     {
         if (kernel.Data.TryGetValue(ActionChainKey, out var actionChainObj))
         {
