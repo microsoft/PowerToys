@@ -17,6 +17,7 @@ namespace fs = std::filesystem;
 namespace
 {
     constexpr inline const wchar_t* DataDiagnosticsRegKey = L"Software\\Classes\\PowerToys";
+    constexpr inline const wchar_t* DataDiagnosticsRegValueName = L"AllowDataDiagnostics";
     constexpr inline const wchar_t* ViewDataDiagnosticsRegValueName = L"DataDiagnosticsViewEnabled";
 
     inline std::wstring get_root_save_folder_location()
@@ -33,6 +34,38 @@ namespace
             std::filesystem::create_directories(save_path);
         }
         return result;
+    }
+
+    bool IsDataDiagnosticsEnabled()
+    {
+        HKEY key{};
+        if (RegOpenKeyExW(HKEY_CURRENT_USER,
+                          DataDiagnosticsRegKey,
+                          0,
+                          KEY_READ,
+                          &key) != ERROR_SUCCESS)
+        {
+            return false;
+        }
+
+        DWORD isDataDiagnosticsEnabled = 0;
+        DWORD size = sizeof(isDataDiagnosticsEnabled);
+
+        if (RegGetValueW(
+                HKEY_CURRENT_USER,
+                DataDiagnosticsRegKey,
+                DataDiagnosticsRegValueName,
+                RRF_RT_REG_DWORD,
+                nullptr,
+                &isDataDiagnosticsEnabled,
+                &size) != ERROR_SUCCESS)
+        {
+            RegCloseKey(key);
+            return false;
+        }
+        RegCloseKey(key);
+
+        return isDataDiagnosticsEnabled;
     }
 
     bool isViewDataDiagnosticEnabled()
@@ -203,6 +236,11 @@ namespace Shared
         void ETWTrace::Start()
         {
             if (m_tracing)
+            {
+                return;
+            }
+
+            if (!IsDataDiagnosticsEnabled())
             {
                 return;
             }
