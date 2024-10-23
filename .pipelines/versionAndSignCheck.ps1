@@ -48,7 +48,7 @@ $totalFailure = 0;
 Write-Host $DirPath;
 
 if (-not (Test-Path $DirPath)) {  
-    Write-Host "Folder does not exist!"
+    Write-Error "Folder does not exist!"
 }
 
 Write-Host "Total items: " $items.Count
@@ -79,6 +79,7 @@ $items | ForEach-Object {
 }
 
 if ($totalFailure -gt 0) {
+    Write-Error "Some items had issues."
     exit 1
 }
 
