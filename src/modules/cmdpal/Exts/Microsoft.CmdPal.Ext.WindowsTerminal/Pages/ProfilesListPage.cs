@@ -13,10 +13,12 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Microsoft.CmdPal.Ext.WindowsTerminal.Commands;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml.Media.Imaging;
 using static System.Formats.Asn1.AsnWriter;
 
 namespace Microsoft.CmdPal.Ext.WindowsTerminal;
@@ -24,11 +26,12 @@ namespace Microsoft.CmdPal.Ext.WindowsTerminal;
 internal sealed partial class ProfilesListPage : ListPage
 {
     private readonly TerminalQuery _terminalQuery = new();
+    private readonly Dictionary<string, BitmapImage> _logoCache = new();
 
     public ProfilesListPage()
     {
         Icon = new(string.Empty);
-        Name = "Find and launch your Windows Terminal profiles";
+        Name = "Windows Terminal Profiles";
     }
 
 #pragma warning disable SA1108
@@ -45,10 +48,11 @@ internal sealed partial class ProfilesListPage : ListPage
                 continue;
             }
 
-            result.Add(new ListItem(new NoOpCommand())
+            result.Add(new ListItem(new LaunchProfileCommand(profile.Terminal.AppUserModelId, profile.Name, true, false))
             {
                 Title = profile.Name,
                 Subtitle = profile.Terminal.DisplayName,
+                Icon = new(profile.Icon),
 
                 // Icon = () => GetLogo(profile.Terminal),
                 // Action = _ =>
@@ -73,5 +77,18 @@ internal sealed partial class ProfilesListPage : ListPage
                 Items = Query().ToArray(),
             }
             ];
+    }
+
+    private BitmapImage GetLogo(TerminalPackage terminal)
+    {
+        var aumid = terminal.AppUserModelId;
+
+        if (!_logoCache.TryGetValue(aumid, out BitmapImage value))
+        {
+            value = terminal.GetLogo();
+            _logoCache.Add(aumid, value);
+        }
+
+        return value;
     }
 }

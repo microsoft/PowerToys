@@ -16,11 +16,14 @@ public class TerminalProfile
 
     public bool Hidden { get; }
 
-    public TerminalProfile(TerminalPackage terminal, string name, Guid? identifier, bool hidden)
+    public string Icon { get; }
+
+    public TerminalProfile(TerminalPackage terminal, string name, Guid? identifier, bool hidden, string icon)
     {
         Terminal = terminal;
         Name = name;
         Identifier = identifier;
         Hidden = hidden;
+        Icon = icon;
     }
 }

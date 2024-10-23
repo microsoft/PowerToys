@@ -94,6 +94,9 @@ public static class TerminalHelper
         profileElement.TryGetProperty("guid", out JsonElement guidElement);
         var guid = guidElement.ValueKind == JsonValueKind.String ? Guid.Parse(guidElement.GetString()) : null as Guid?;
 
-        return new TerminalProfile(terminal, name, guid, hidden);
+        profileElement.TryGetProperty("icon", out JsonElement iconElement);
+        var icon = iconElement.ValueKind == JsonValueKind.String ? iconElement.GetString() : null;
+
+        return new TerminalProfile(terminal, name, guid, hidden, icon);
     }
 }
