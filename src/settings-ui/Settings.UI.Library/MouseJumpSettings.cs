@@ -82,27 +82,38 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 */
                 this.Version = "1.1";
 
-                // set default values for custom preview style
-                var previewStyle = StyleHelper.BezelledPreviewStyle;
-                this.Properties.PreviewType = PreviewType.Bezelled.ToString();
-                this.Properties.BackgroundColor1 = ConfigHelper.SerializeToConfigColorString(
-                   ConfigHelper.ToUnnamedColor(previewStyle.CanvasStyle.BackgroundStyle.Color1));
-                this.Properties.BackgroundColor2 = ConfigHelper.SerializeToConfigColorString(
-                    ConfigHelper.ToUnnamedColor(previewStyle.CanvasStyle.BackgroundStyle.Color2));
-                this.Properties.BorderThickness = (int)previewStyle.CanvasStyle.BorderStyle.Top;
-                this.Properties.BorderColor = ConfigHelper.SerializeToConfigColorString(
-                    ConfigHelper.ToUnnamedColor(previewStyle.CanvasStyle.BorderStyle.Color));
-                this.Properties.Border3dDepth = (int)previewStyle.CanvasStyle.BorderStyle.Depth;
-                this.Properties.BorderPadding = (int)previewStyle.CanvasStyle.PaddingStyle.Top;
-                this.Properties.BezelThickness = (int)previewStyle.ScreenStyle.BorderStyle.Top;
-                this.Properties.BezelColor = ConfigHelper.SerializeToConfigColorString(
-                    ConfigHelper.ToUnnamedColor(previewStyle.ScreenStyle.BorderStyle.Color));
-                this.Properties.Bezel3dDepth = (int)previewStyle.ScreenStyle.BorderStyle.Depth;
-                this.Properties.ScreenMargin = (int)previewStyle.ScreenStyle.MarginStyle.Top;
-                this.Properties.ScreenColor1 = ConfigHelper.SerializeToConfigColorString(
-                    ConfigHelper.ToUnnamedColor(previewStyle.ScreenStyle.BackgroundStyle.Color1));
-                this.Properties.ScreenColor2 = ConfigHelper.SerializeToConfigColorString(
-                    ConfigHelper.ToUnnamedColor(previewStyle.ScreenStyle.BackgroundStyle.Color2));
+                // note - there's an issue where ITwoWayPipeMessageIPCManagedMethods.Send overwrites
+                // the settings file version as "1.0" regardless of the actual version. as a result,
+                // the UpgradeSettingsConfiguration can get triggered even if the config has already
+                // been upgraded, so we need to do an additional check to make sure values haven't
+                // already been upgraded before we overwrite them with default values.
+                if (string.IsNullOrEmpty(this.Properties.PreviewType))
+                {
+                    // set default values for custom preview style
+                    var previewStyle = StyleHelper.BezelledPreviewStyle;
+                    this.Properties.PreviewType = PreviewType.Bezelled.ToString();
+                    this.Properties.BackgroundColor1 = ConfigHelper.SerializeToConfigColorString(
+                       ConfigHelper.ToUnnamedColor(previewStyle.CanvasStyle.BackgroundStyle.Color1));
+                    this.Properties.BackgroundColor2 = ConfigHelper.SerializeToConfigColorString(
+                        ConfigHelper.ToUnnamedColor(previewStyle.CanvasStyle.BackgroundStyle.Color2));
+                    this.Properties.BorderThickness = (int)previewStyle.CanvasStyle.BorderStyle.Top;
+                    this.Properties.BorderColor = ConfigHelper.SerializeToConfigColorString(
+                        ConfigHelper.ToUnnamedColor(previewStyle.CanvasStyle.BorderStyle.Color));
+                    this.Properties.Border3dDepth = (int)previewStyle.CanvasStyle.BorderStyle.Depth;
+                    this.Properties.BorderPadding = (int)previewStyle.CanvasStyle.PaddingStyle.Top;
+                    this.Properties.BezelThickness = (int)previewStyle.ScreenStyle.BorderStyle.Top;
+                    this.Properties.BezelColor = ConfigHelper.SerializeToConfigColorString(
+                        ConfigHelper.ToUnnamedColor(previewStyle.ScreenStyle.BorderStyle.Color));
+                    this.Properties.Bezel3dDepth = (int)previewStyle.ScreenStyle.BorderStyle.Depth;
+                    this.Properties.ScreenMargin = (int)previewStyle.ScreenStyle.MarginStyle.Top;
+                    this.Properties.ScreenColor1 = ConfigHelper.SerializeToConfigColorString(
+                        ConfigHelper.ToUnnamedColor(previewStyle.ScreenStyle.BackgroundStyle.Color1));
+                    this.Properties.ScreenColor2 = ConfigHelper.SerializeToConfigColorString(
+                        ConfigHelper.ToUnnamedColor(previewStyle.ScreenStyle.BackgroundStyle.Color2));
+                }
+
+                // we still need to flag the settings as "upgraded" so that the new version gets written
+                // back to the config file, even if we didn't actually change and setting values
                 upgraded = true;
             }
 
