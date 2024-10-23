@@ -397,10 +397,13 @@
                             x:Uid="GeneralPage_ViewDiagnosticData"
                             HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}"
                             IsEnabled="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
-                            IsExpanded="False">
+                            IsExpanded="True">
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard x:Uid="GeneralPage_EnableViewDiagnosticData">
-                                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableViewDataDiagnostics, Mode=TwoWay}" />
+                                    <ToggleSwitch
+                                        x:Uid="ToggleSwitch"
+                                        IsEnabled="{x:Bind ViewModel.EnableDataDiagnostics, Mode=TwoWay}"
+                                        IsOn="{x:Bind ViewModel.EnableViewDataDiagnostics, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard
                                     x:Uid="GeneralPage_ViewDiagnosticDataViewer"

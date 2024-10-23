@@ -466,7 +466,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _enableDataDiagnostics = value;
 
+                    if (_enableDataDiagnostics == false)
+                    {
+                        _enableViewDataDiagnostics = false;
+                        NotifyPropertyChanged(nameof(EnableViewDataDiagnostics));
+                    }
+
                     DataDiagnosticsSettings.SetEnabledValue(_enableDataDiagnostics);
+                    NotifyPropertyChanged();
                 }
             }
         }
