@@ -52,6 +52,9 @@ internal sealed partial class ProfilesListPage : ListPage
             {
                 Title = profile.Name,
                 Subtitle = profile.Terminal.DisplayName,
+                MoreCommands = [
+                    new CommandContextItem(new LaunchProfileAsAdminCommand(profile.Terminal.AppUserModelId, profile.Name, true, false)),
+                ],
 
                 // Icon = () => GetLogo(profile.Terminal),
                 // Action = _ =>
