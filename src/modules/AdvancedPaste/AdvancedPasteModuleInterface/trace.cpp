@@ -78,13 +78,6 @@ void Trace::AdvancedPaste_SettingsTelemetry(const PowertoyModuleIface::Hotkey& p
         "AdvancedPaste_Settings",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-<<<<<<< HEAD
-        TraceLoggingWideString(pastePlainHotkeyStr.c_str(), "PastePlainHotkey"),
-        TraceLoggingWideString(advancedPasteUIHotkeyStr.c_str(), "AdvancedPasteUIHotkey"),
-        TraceLoggingWideString(pasteMarkdownHotkeyStr.c_str(), "PasteMarkdownHotkey"),
-        TraceLoggingWideString(pasteJsonHotkeyStr.c_str(), "PasteJsonHotkey"),
-        TraceLoggingBoolean(preview_custom_format_output, "ShowCustomPreview"));
-=======
         TraceLoggingWideString(getHotkeyCStr(pastePlainHotkey), "PastePlainHotkey"),
         TraceLoggingWideString(getHotkeyCStr(advancedPasteUIHotkey), "AdvancedPasteUIHotkey"),
         TraceLoggingWideString(getHotkeyCStr(pasteMarkdownHotkey), "PasteMarkdownHotkey"),
@@ -95,5 +88,4 @@ void Trace::AdvancedPaste_SettingsTelemetry(const PowertoyModuleIface::Hotkey& p
         TraceLoggingWideString(getAdditionalActionHotkeyCStr(L"PasteAsPngFile"), "PasteAsPngFileHotkey"),
         TraceLoggingWideString(getAdditionalActionHotkeyCStr(L"PasteAsHtmlFile"), "PasteAsHtmlFileHotkey")
     );
->>>>>>> origin/main
 }
