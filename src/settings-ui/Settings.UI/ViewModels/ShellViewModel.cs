@@ -111,7 +111,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             .OfType<NavigationViewItem>()
                             .First(menuItem => (string)menuItem.Content == (string)args.InvokedItem);
             var pageType = item.GetValue(NavHelper.NavigateToProperty) as Type;
-            NavigationService.Navigate(pageType);
+
+            if (pageType != null)
+            {
+                NavigationService.Navigate(pageType);
+            }
         }
 
         private void OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
