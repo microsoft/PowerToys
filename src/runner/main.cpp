@@ -14,6 +14,7 @@
 
 #include <common/comUtils/comUtils.h>
 #include <common/display/dpi_aware.h>
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
 #include <common/notifications/notifications.h>
 #include <common/notifications/dont_show_again.h>
 #include <common/updating/installer.h>
@@ -303,6 +304,9 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
 
 int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR lpCmdLine, int /*nCmdShow*/)
 {
+    Shared::Trace::ETWTrace trace{};
+    trace.UpdateState(true);
+
     Gdiplus::GdiplusStartupInput gpStartupInput;
     ULONG_PTR gpToken;
     GdiplusStartup(&gpToken, &gpStartupInput, NULL);
@@ -437,6 +441,13 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
             openScoobe = false;
         }
 
+        bool dataDiagnosticsDisabledByGpo = powertoys_gpo::getAllowDataDiagnosticsValue() == powertoys_gpo::gpo_rule_configured_disabled;
+        if (dataDiagnosticsDisabledByGpo)
+        {
+            Logger::info(L"Data diagnostics: Data diagnostics is disabled by GPO.");
+            PTSettingsHelper::save_data_diagnostics(false);
+        }
+
         if (elevated && with_dont_elevate_arg && !run_elevated_setting)
         {
             Logger::info("Scheduling restart as non elevated");
@@ -473,6 +484,9 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         result = -1;
     }
 
+    trace.Flush();
+    trace.UpdateState(false);
+
     // We need to release the mutexes to be able to restart the application
     if (msi_mutex)
     {
@@ -481,6 +495,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
 
     if (is_restart_scheduled())
     {
+        modules().clear();
         if (!restart_if_scheduled())
         {
             // If it's not possible to restart non-elevated due to some condition in the user's configuration, user should start PowerToys manually.

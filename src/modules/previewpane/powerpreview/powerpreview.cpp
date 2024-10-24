@@ -6,7 +6,6 @@
 #include <common/notifications/dont_show_again.h>
 #include <common/notifications/notifications.h>
 
-#include <common/utils/elevation.h>
 #include <common/utils/resources.h>
 #include <common/utils/os-detect.h>
 #include <common/utils/process_path.h>
