@@ -224,6 +224,7 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
     std::vector<WorkspacesData::WorkspacesProject::Application> movedApps;
 
     bool isMovePhase = true;
+    bool movedAny = false;
 
     while (isMovePhase)
     {
@@ -263,6 +264,7 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
         if (minDistance < INT_MAX)
         {
             isMovePhase = true;
+            movedAny = true;
             bool success = TryMoveWindow(appToMove, windowToMove);
             movedApps.push_back(appToMove);
             if (success)
@@ -270,6 +272,12 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
                 movedWindows.push_back(windowToMove);
             }
         }
+    }
+
+    if (movedAny)
+    {
+        // Wait if there were moved winows. This message might not aarive if sending immediately after the last moved message
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     m_ipcHelper.send(L"ready");
