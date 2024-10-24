@@ -132,7 +132,7 @@
     <comment>Keep the system awake forever</comment>
   </data>
   <data name="AWAKE_KEEP_ON_INTERVAL" xml:space="preserve">
-    <value>Keep awake on interval</value>
+    <value>Keep awake for duration</value>
     <comment>Keep the system awake for a given time</comment>
   </data>
   <data name="AWAKE_KEEP_SCREEN_ON" xml:space="preserve">
