@@ -107,9 +107,7 @@
 
                 <!-- System Tools -->
                 <NavigationViewItem 
-                    x:Uid="Shell_SystemToolTopLevel"
-                    Content="System Tools" 
-                    ToolTipService.ToolTip="System Tools" 
+                    x:Uid="Shell_TopLevelSystemTools"
                     Icon="Page2" 
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
@@ -146,9 +144,7 @@
 
                 <!-- Windowing & Layouts -->
                 <NavigationViewItem 
-                    x:Uid="Shell_WindowsAndLayoutsTopLevel"
-                    Content="Windowing &amp; Layouts" 
-                    ToolTipService.ToolTip="Windowing &amp; Layouts" 
+                    x:Uid="Shell_TopLevelWindowsAndLayouts "
                     Icon="Page2" 
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
@@ -173,9 +169,7 @@
             
                 <!-- Input / Output -->
                 <NavigationViewItem 
-                    x:Uid="Shell_InputOutputTopLevel"
-                    Content="Input / Output" 
-                    ToolTipService.ToolTip="Input / Output" 
+                    x:Uid="Shell_TopLevelInputOutput"
                     Icon="Page2" 
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
@@ -208,9 +202,7 @@
 
                 <!-- File Management -->
                 <NavigationViewItem 
-                    x:Uid="Shell_FileManagementTopLevel"
-                    Content="File Management" 
-                    ToolTipService.ToolTip="File Management" 
+                    x:Uid="Shell_TopLevelFileManagement"
                     Icon="Page2" 
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
@@ -243,9 +235,7 @@
                 </NavigationViewItem>
                 <!-- Advanced -->
                 <NavigationViewItem 
-                    x:Uid="Shell_AdvancedTopLevel"
-                    Content="Advanced" 
-                    ToolTipService.ToolTip="Advanced" 
+                    x:Uid="Shell_TopLevelAdvanced"
                     Icon="Page2" 
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>

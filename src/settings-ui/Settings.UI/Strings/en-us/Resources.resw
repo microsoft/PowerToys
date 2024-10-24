@@ -59,10 +59,7 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root"
-    xmlns=""
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
@@ -4385,7 +4382,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Oobe_NewPlus_TipsAndTricks.Text" xml:space="preserve">
     <value>You can have multiple templates of the same file type, and you can even template folders!</value>
-  </data>  
+  </data>
   <data name="Workspaces.ModuleDescription" xml:space="preserve">
     <value>Workspaces is a quick and easy way to launch a set of applications to custom positions and configurations with one-click.</value>
   </data>
@@ -4484,5 +4481,20 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Chinese_Traditional_Language" xml:space="preserve">
     <value>Chinese (Traditional)</value>
+  </data>
+  <data name="Shell_TopLevelAdvanced.Content" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="Shell_TopLevelFileManagement.Content" xml:space="preserve">
+    <value>File Management</value>
+  </data>
+  <data name="Shell_TopLevelInputOutput.Content" xml:space="preserve">
+    <value>Input / Output</value>
+  </data>
+  <data name="Shell_TopLevelWindowsAndLayouts.Content" xml:space="preserve">
+    <value>Windowing &amp; Layouts</value>
+  </data>
+  <data name="Shell_TopLevelSystemTools.Content" xml:space="preserve">
+    <value>System Tools</value>
   </data>
 </root>
