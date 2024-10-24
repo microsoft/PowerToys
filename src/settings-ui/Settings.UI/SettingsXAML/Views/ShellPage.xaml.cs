@@ -277,7 +277,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private bool navigationViewInitialStateProcessed; // avoid announcing initial state of the navigation pane.
 
-        private void NavigationView_PaneOpened(Microsoft.UI.Xaml.Controls.NavigationView sender, object args)
+        private void NavigationView_PaneOpened(NavigationView sender, object args)
         {
             if (!navigationViewInitialStateProcessed)
             {
@@ -293,7 +293,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (AutomationPeer.ListenerExists(AutomationEvents.MenuOpened))
             {
-                var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
+                var loader = ResourceLoaderInstance.ResourceLoader;
                 peer.RaiseNotificationEvent(
                     AutomationNotificationKind.ActionCompleted,
                     AutomationNotificationProcessing.ImportantMostRecent,
@@ -302,7 +302,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void NavigationView_PaneClosed(Microsoft.UI.Xaml.Controls.NavigationView sender, object args)
+        private void NavigationView_PaneClosed(NavigationView sender, object args)
         {
             if (!navigationViewInitialStateProcessed)
             {
@@ -318,7 +318,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (AutomationPeer.ListenerExists(AutomationEvents.MenuClosed))
             {
-                var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
+                var loader = ResourceLoaderInstance.ResourceLoader;
                 peer.RaiseNotificationEvent(
                     AutomationNotificationKind.ActionCompleted,
                     AutomationNotificationProcessing.ImportantMostRecent,
