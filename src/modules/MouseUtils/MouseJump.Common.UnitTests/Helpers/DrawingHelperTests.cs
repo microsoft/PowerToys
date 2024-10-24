@@ -2,8 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using System.Reflection;
-
+using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MouseJump.Common.Helpers;
 using MouseJump.Common.Imaging;
@@ -16,7 +17,7 @@ namespace MouseJump.Common.UnitTests.Helpers;
 public static class DrawingHelperTests
 {
     [TestClass]
-    public sealed class GetPreviewLayoutTests
+    public sealed class RenderPreviewTests
     {
         public sealed class TestCase
         {
@@ -46,7 +47,7 @@ public static class DrawingHelperTests
             yield return new object[]
             {
                 new TestCase(
-                    previewStyle: StyleHelper.DefaultPreviewStyle,
+                    previewStyle: StyleHelper.BezelledPreviewStyle,
                     screens: new List<RectangleInfo>()
                     {
                         new(0, 0, 500, 500),
@@ -62,7 +63,7 @@ public static class DrawingHelperTests
             yield return new object[]
             {
                 new TestCase(
-                    previewStyle: StyleHelper.DefaultPreviewStyle,
+                    previewStyle: StyleHelper.BezelledPreviewStyle,
                     screens: new List<RectangleInfo>()
                     {
                         new(5120, 349, 1920, 1080),
@@ -79,7 +80,7 @@ public static class DrawingHelperTests
         public void RunTestCases(TestCase data)
         {
             // load the fake desktop image
-            using var desktopImage = GetPreviewLayoutTests.LoadImageResource(data.DesktopImageFilename);
+            using var desktopImage = RenderPreviewTests.LoadImageResource(data.DesktopImageFilename);
 
             // draw the preview image
             var previewLayout = LayoutHelper.GetPreviewLayout(
@@ -90,28 +91,29 @@ public static class DrawingHelperTests
             using var actual = DrawingHelper.RenderPreview(previewLayout, imageCopyService);
 
             // load the expected image
-            var expected = GetPreviewLayoutTests.LoadImageResource(data.ExpectedImageFilename);
+            var expected = RenderPreviewTests.LoadImageResource(data.ExpectedImageFilename);
 
             // compare the images
-            var screens = System.Windows.Forms.Screen.AllScreens;
             AssertImagesEqual(expected, actual);
         }
 
         private static Bitmap LoadImageResource(string filename)
         {
-            // assume embedded resources are in the same source folder as this
-            // class, and the namespace hierarchy matches the folder structure.
-            // that way we can build resource names from the current namespace
-            var resourcePrefix = typeof(DrawingHelperTests).Namespace;
-            var resourceName = $"{resourcePrefix}.{filename}";
-
             var assembly = Assembly.GetExecutingAssembly();
+            var assemblyName = new AssemblyName(assembly.FullName ?? throw new InvalidOperationException());
+            var resourceName = $"{typeof(DrawingHelperTests).Namespace}.{filename.Replace("/", ".")}";
             var resourceNames = assembly.GetManifestResourceNames();
             if (!resourceNames.Contains(resourceName))
             {
-                var message = $"Embedded resource '{resourceName}' does not exist. " +
-                    "Valid resource names are: \r\n" + string.Join("\r\n", resourceNames);
-                throw new InvalidOperationException(message);
+                var message = new StringBuilder();
+                message.AppendLine(CultureInfo.InvariantCulture, $"Embedded resource '{resourceName}' does not exist.");
+                message.AppendLine($"Known resources:");
+                foreach (var name in resourceNames)
+                {
+                    message.AppendLine(name);
+                }
+
+                throw new InvalidOperationException(message.ToString());
             }
 
             var stream = assembly.GetManifestResourceStream(resourceName)
@@ -121,7 +123,7 @@ public static class DrawingHelperTests
         }
 
         /// <summary>
-        /// Naive / brute force image comparison - we can optimise this later :-)
+        /// Naive / brute force image comparison - we can optimize this later :-)
         /// </summary>
         private static void AssertImagesEqual(Bitmap expected, Bitmap actual)
         {

@@ -46,6 +46,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             DataContext = ViewModel;
             InitializeComponent();
+
+            this.MouseUtils_MouseJump_Panel.ViewModel = ViewModel;
         }
 
         public void RefreshEnabledState()

@@ -3,16 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
 using System.Reflection;
-using System.Text.Json;
 using System.Threading;
 using System.Windows.Forms;
 using System.Windows.Threading;
 
 using Common.UI;
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Library;
 using MouseJumpUI.Helpers;
 using PowerToys.Interop;
 
@@ -81,30 +78,5 @@ internal static class Program
             cancellationTokenSource.Token);
 
         Application.Run();
-    }
-
-    private static MouseJumpSettings ReadSettings()
-    {
-        var settingsUtils = new SettingsUtils();
-        var settingsPath = settingsUtils.GetSettingsFilePath(MouseJumpSettings.ModuleName);
-        if (!File.Exists(settingsPath))
-        {
-            var scaffoldSettings = new MouseJumpSettings();
-            settingsUtils.SaveSettings(JsonSerializer.Serialize(scaffoldSettings), MouseJumpSettings.ModuleName);
-        }
-
-        var settings = new MouseJumpSettings();
-        try
-        {
-            settings = settingsUtils.GetSettings<MouseJumpSettings>(MouseJumpSettings.ModuleName);
-        }
-        catch (Exception ex)
-        {
-            var errorMessage = $"There was a problem reading the configuration file. Error: {ex.GetType()} {ex.Message}";
-            Logger.LogInfo(errorMessage);
-            Logger.LogDebug(errorMessage);
-        }
-
-        return settings;
     }
 }

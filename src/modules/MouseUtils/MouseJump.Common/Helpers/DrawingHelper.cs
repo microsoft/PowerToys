@@ -102,8 +102,13 @@ public static class DrawingHelper
             return;
         }
 
+        if (borderStyle.Color is null)
+        {
+            return;
+        }
+
         // draw the main box border
-        using var borderBrush = new SolidBrush(borderStyle.Color);
+        using var borderBrush = new SolidBrush(borderStyle.Color.Value);
         var borderRegion = new Region(boxBounds.BorderBounds.ToRectangle());
         borderRegion.Exclude(boxBounds.PaddingBounds.ToRectangle());
         graphics.FillRegion(borderBrush, borderRegion);
