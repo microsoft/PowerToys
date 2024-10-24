@@ -258,14 +258,20 @@ private:
             for (DWORD i = 0; i < fileCount; i++)
             {
                 IShellItem* shellItem;
-                psiItemArray->GetItemAt(i, &shellItem);
-                LPWSTR itemName;
-                // Retrieves the entire file system path of the file from its shell item
-                shellItem->GetDisplayName(SIGDN_FILESYSPATH, &itemName);
-                CString fileName(itemName);
-                fileName.Append(_T("\r\n"));
-                // Write the file path into the input stream for image resizer
-                writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
+                HRESULT getItemAtResult = psiItemArray->GetItemAt(i, &shellItem);
+                if (SUCCEEDED(getItemAtResult))
+                {
+                    LPWSTR itemName;
+                    // Retrieves the entire file system path of the file from its shell item
+                    HRESULT getDisplayResult = shellItem->GetDisplayName(SIGDN_FILESYSPATH, &itemName);
+                    if (SUCCEEDED(getDisplayResult))
+                    {
+                        CString fileName(itemName);
+                        fileName.Append(_T("\r\n"));
+                        // Write the file path into the input stream for image resizer
+                        writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
+                    }
+                }
             }
             writePipe.Close();
         }
