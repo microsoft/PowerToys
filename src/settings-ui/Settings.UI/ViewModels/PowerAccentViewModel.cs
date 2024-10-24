@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 using global::PowerToys.GPOWrapper;
@@ -24,7 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         // These should be in the same order as the ComboBoxItems in PowerAccentPage.xaml
         private readonly string[] _languageOptions =
         {
-            "ALL",
+            "SPECIAL",
             "BG",
             "CA",
             "CRH",
@@ -104,7 +105,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _excludedApps = _powerAccentSettings.Properties.ExcludedApps.Value;
 
-            _selectedLangIndex = Array.IndexOf(_languageOptions, _powerAccentSettings.Properties.SelectedLang.Value);
+            if (!string.IsNullOrWhiteSpace(_powerAccentSettings.Properties.SelectedLang.Value) && !_powerAccentSettings.Properties.SelectedLang.Value.Contains("ALL"))
+            {
+                SelectedLangIndexes = _powerAccentSettings.Properties.SelectedLang.Value.Split(',').Select(l => Array.IndexOf(_languageOptions, l)).ToArray();
+            }
+            else
+            {
+                SelectedLangIndexes = Enumerable.Range(0, _languageOptions.Length).ToArray();
+            }
 
             _toolbarPositionIndex = Array.IndexOf(_toolbarOptions, _powerAccentSettings.Properties.ToolbarPosition.Value);
 
@@ -253,23 +261,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private int _selectedLangIndex;
+        public bool AllSelected => _selectedLanguages.Length == _languageOptions.Length;
 
-        public int SelectedLangIndex
+        private string[] _selectedLanguages;
+
+        private int[] _selectedLangIndexes;
+
+        public int[] SelectedLangIndexes
         {
-            get
-            {
-                return _selectedLangIndex;
-            }
-
+            get => _selectedLangIndexes;
             set
             {
-                if (_selectedLangIndex != value)
+                if (_selectedLangIndexes == value)
                 {
-                    _selectedLangIndex = value;
-                    _powerAccentSettings.Properties.SelectedLang.Value = _languageOptions[value];
-                    RaisePropertyChanged(nameof(SelectedLangIndex));
+                    return;
                 }
+
+                _selectedLangIndexes = value;
+                _selectedLanguages = _selectedLangIndexes.Select(s => _languageOptions[s]).ToArray();
+
+                _powerAccentSettings.Properties.SelectedLang.Value = string.Join(',', _selectedLanguages);
+                RaisePropertyChanged(nameof(SelectedLangIndexes));
             }
         }
 
