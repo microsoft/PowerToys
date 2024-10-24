@@ -105,10 +105,10 @@
                 </NavigationViewItem>
                 <NavigationViewItemSeparator />
 
-                <!-- System Tools -->
-                <NavigationViewItem 
+                <!--  System Tools  -->
+                <NavigationViewItem
                     x:Uid="Shell_TopLevelSystemTools"
-                    Icon="Page2" 
+                    Icon="Page2"
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
@@ -142,10 +142,10 @@
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
 
-                <!-- Windowing & Layouts -->
-                <NavigationViewItem 
+                <!--  Windowing & Layouts  -->
+                <NavigationViewItem
                     x:Uid="Shell_TopLevelWindowsAndLayouts "
-                    Icon="Page2" 
+                    Icon="Page2"
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
@@ -166,19 +166,19 @@
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}" />
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
-            
-                <!-- Input / Output -->
-                <NavigationViewItem 
+
+                <!--  Input / Output  -->
+                <NavigationViewItem
                     x:Uid="Shell_TopLevelInputOutput"
-                    Icon="Page2" 
+                    Icon="Page2"
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
                             x:Uid="Shell_KeyboardManager"
                             helpers:NavHelper.NavigateTo="views:KeyboardManagerPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/KeyboardManager.png}" />
-                        <!-- Find my mouse -->
-                        <!-- Mouse Highlighter -->
+                        <!--  Find my mouse  -->
+                        <!--  Mouse Highlighter  -->
                         <NavigationViewItem
                             x:Uid="Shell_MouseUtilities"
                             helpers:NavHelper.NavigateTo="views:MouseUtilsPage"
@@ -191,7 +191,7 @@
                             x:Uid="Shell_QuickAccent"
                             helpers:NavHelper.NavigateTo="views:PowerAccentPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}" />
-                        <!-- Mouse pointer cross hair  -->
+                        <!--  Mouse pointer cross hair  -->
                         <NavigationViewItem
                             x:Uid="Shell_VideoConference"
                             helpers:NavHelper.NavigateTo="views:VideoConferencePage"
@@ -200,17 +200,17 @@
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
 
-                <!-- File Management -->
-                <NavigationViewItem 
+                <!--  File Management  -->
+                <NavigationViewItem
                     x:Uid="Shell_TopLevelFileManagement"
-                    Icon="Page2" 
+                    Icon="Page2"
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
                             x:Uid="Shell_PowerPreview"
                             helpers:NavHelper.NavigateTo="views:PowerPreviewPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileExplorerPreview.png}" />
-                        <!-- File Explorer Thumbnails -->
+                        <!--  File Explorer Thumbnails  -->
                         <NavigationViewItem
                             x:Uid="Shell_FileLocksmith"
                             helpers:NavHelper.NavigateTo="views:FileLocksmithPage"
@@ -233,10 +233,10 @@
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerRename.png}" />
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
-                <!-- Advanced -->
-                <NavigationViewItem 
+                <!--  Advanced  -->
+                <NavigationViewItem
                     x:Uid="Shell_TopLevelAdvanced"
-                    Icon="Page2" 
+                    Icon="Page2"
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
