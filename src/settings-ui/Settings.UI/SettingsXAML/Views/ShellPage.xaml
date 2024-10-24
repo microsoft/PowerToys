@@ -178,7 +178,7 @@
                             helpers:NavHelper.NavigateTo="views:KeyboardManagerPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/KeyboardManager.png}" />
                         <!-- Find my mouse -->
-                        <!-- Mouse Hightlighter -->
+                        <!-- Mouse Highlighter -->
                         <NavigationViewItem
                             x:Uid="Shell_MouseUtilities"
                             helpers:NavHelper.NavigateTo="views:MouseUtilsPage"
