@@ -276,7 +276,7 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
 
     if (movedAny)
     {
-        // Wait if there were moved winows. This message might not aarive if sending immediately after the last moved message
+        // Wait if there were moved windows. This message might not arrive if sending immediately after the last "moved" message (status update)
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
