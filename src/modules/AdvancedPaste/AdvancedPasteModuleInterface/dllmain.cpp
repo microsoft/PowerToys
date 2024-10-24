@@ -705,16 +705,16 @@ private:
         const auto full_pipe_name = std::format(L"\\\\.\\pipe\\{}", pipe_name);
 
         const auto hPipe = CreateNamedPipe(
-            full_pipe_name.c_str(), // pipe name
-            PIPE_ACCESS_OUTBOUND, // write access
-            PIPE_TYPE_MESSAGE | // message type pipe
-                PIPE_READMODE_MESSAGE | // message-read mode
-                PIPE_WAIT, // blocking mode
-            1, // max. instances
-            BUFSIZE, // output buffer size
-            0, // input buffer size
-            0, // client time-out
-            NULL); // default security attribute
+                full_pipe_name.c_str(),     // pipe name
+                PIPE_ACCESS_OUTBOUND,       // write access
+                PIPE_TYPE_MESSAGE |         // message type pipe
+                    PIPE_READMODE_MESSAGE | // message-read mode
+                    PIPE_WAIT,              // blocking mode
+                1,                          // max. instances
+                BUFSIZE,                    // output buffer size
+                0,                          // input buffer size
+                0,                          // client time-out
+                NULL);                      // default security attribute
 
         if (hPipe == NULL || hPipe == INVALID_HANDLE_VALUE)
         {
