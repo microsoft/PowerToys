@@ -57,6 +57,8 @@ namespace MouseWithoutBorders.Class
             ManagedCommon.Logger.InitializeLogger("\\MouseWithoutBorders\\Logs");
             Logger.Log(Application.ProductName + " Started!");
 
+            ETWTrace etwTrace = new ETWTrace();
+
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMouseWithoutBordersEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
                 Logger.Log("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
@@ -117,7 +119,7 @@ namespace MouseWithoutBorders.Class
                     }
                 }
 
-                ShutdownWithPowerToys.WaitForPowerToysRunner();
+                ShutdownWithPowerToys.WaitForPowerToysRunner(etwTrace);
 
                 if (firstArg != string.Empty)
                 {
@@ -225,6 +227,8 @@ namespace MouseWithoutBorders.Class
                 var formScreen = new FrmScreen();
 
                 Application.Run(formScreen);
+
+                etwTrace?.Dispose();
             }
             catch (Exception e)
             {

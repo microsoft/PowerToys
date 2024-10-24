@@ -63,8 +63,11 @@ IFACEMETHODIMP shell_context_sub_menu_item::GetState(_In_opt_ IShellItemArray* s
 
 IFACEMETHODIMP shell_context_sub_menu_item::Invoke(_In_opt_ IShellItemArray*, _In_opt_ IBindCtx*) noexcept
 {
+    HRESULT hr = S_OK;
     try
     {
+        trace.UpdateState(true);
+
         // Determine target path of where context menu was displayed
         const auto target_path_name = utilities::get_path_from_unknown_site(site_of_folder);
 
@@ -90,16 +93,19 @@ IFACEMETHODIMP shell_context_sub_menu_item::Invoke(_In_opt_ IShellItemArray*, _I
         this->template_entry->enter_rename_mode(site_of_folder, target_final_fullpath);
 
         Trace::EventCopyTemplateResult(S_OK);
-
-        return S_OK;
     }
     catch (const std::exception& ex)
     {
         Trace::EventCopyTemplateResult(S_FALSE);
         Logger::error(ex.what());
+
+        hr = S_FALSE;
     }
 
-    return S_FALSE;
+    trace.Flush();
+    trace.UpdateState(false);
+
+    return hr;
 }
 
 IFACEMETHODIMP shell_context_sub_menu_item::GetFlags(_Out_ EXPCMDFLAGS* returned_flags)
