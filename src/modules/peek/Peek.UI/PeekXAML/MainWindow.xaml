@@ -1,4 +1,4 @@
-<!--  Copyright (c) Microsoft Corporation and Contributors.  -->
+﻿<!--  Copyright (c) Microsoft Corporation and Contributors.  -->
 <!--  Licensed under the MIT License.  -->
 
 <winuiex:WindowEx
@@ -34,20 +34,33 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <views:TitleBar
             x:Name="TitleBarControl"
             Grid.Row="0"
-            FileIndex="{x:Bind ViewModel.CurrentIndex, Mode=OneWay}"
+            FileIndex="{x:Bind ViewModel.DisplayIndex, Mode=OneWay}"
             IsMultiSelection="{x:Bind ViewModel.NeighboringItemsQuery.IsMultipleFilesActivation, Mode=OneWay}"
             Item="{x:Bind ViewModel.CurrentItem, Mode=OneWay}"
-            NumberOfFiles="{x:Bind ViewModel.Items.Count, Mode=OneWay}" />
+            NumberOfFiles="{x:Bind ViewModel.DisplayItemCount, Mode=OneWay}" />
 
         <fp:FilePreview
             Grid.Row="1"
             Item="{x:Bind ViewModel.CurrentItem, Mode=OneWay}"
+            NumberOfFiles="{x:Bind ViewModel.DisplayItemCount, Mode=OneWay}"
             PreviewSizeChanged="FilePreviewer_PreviewSizeChanged"
             ScalingFactor="{x:Bind ViewModel.ScalingFactor, Mode=OneWay}" />
+
+        <InfoBar
+            x:Name="ErrorInfoBar"
+            Title="Error"
+            Grid.Row="1"
+            Grid.RowSpan="2"
+            Margin="4,0,4,6"
+            VerticalAlignment="Bottom"
+            IsOpen="{x:Bind ViewModel.IsErrorVisible, Mode=TwoWay}"
+            Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+            Severity="Error" />
     </Grid>
 </winuiex:WindowEx>
