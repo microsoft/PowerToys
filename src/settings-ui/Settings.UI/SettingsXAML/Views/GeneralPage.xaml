@@ -63,7 +63,11 @@
                                 IsClosable="False"
                                 IsOpen="{x:Bind ViewModel.SomeUpdateSettingsAreGpoManaged, Mode=OneWay}"
                                 IsTabStop="{x:Bind ViewModel.SomeUpdateSettingsAreGpoManaged, Mode=OneWay}"
-                                Severity="Informational" />
+                                Severity="Informational">
+                                <InfoBar.IconSource>
+                                    <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                                </InfoBar.IconSource>
+                            </InfoBar>
                         </tkcontrols:SettingsExpander.ItemsHeader>
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard
@@ -379,7 +383,11 @@
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay}"
-                        Severity="Informational" />
+                        Severity="Informational">
+                        <InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource>
+                    </InfoBar>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="General_DiagnosticsAndFeedback" Visibility="Visible">
                     <StackPanel>
