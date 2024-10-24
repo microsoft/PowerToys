@@ -34,5 +34,12 @@ namespace WorkspacesEditor.Data
             Name = 2,
             Unknown = 3,
         }
+
+        public enum AppLaunchMode
+        {
+            AsInWorkspace = 0,
+            MoveIfExists = 1,
+            LaunchAlways = 2,
+        }
     }
 }

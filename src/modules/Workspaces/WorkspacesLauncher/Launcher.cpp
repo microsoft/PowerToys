@@ -101,7 +101,8 @@ void Launcher::Launch() // Launching thread
     const long ms = 100;
 
     // Launch apps
-    for (auto appState = m_launchingStatus.GetNext(LaunchingState::Waiting); appState.has_value(); appState = m_launchingStatus.GetNext(LaunchingState::Waiting))
+    auto appState = m_launchingStatus.GetNext(LaunchingState::Waiting);
+    while (appState.has_value())
     {
         auto app = appState.value().application;
         
@@ -157,7 +158,9 @@ void Launcher::Launch() // Launching thread
         {
             std::lock_guard lock(m_uiHelperMutex);
             m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
-        }
+        };
+
+        appState = m_launchingStatus.GetNext(LaunchingState::Waiting);
     }
 }
 

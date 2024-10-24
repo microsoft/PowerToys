@@ -16,6 +16,7 @@ using System.Windows.Media.Imaging;
 
 using ManagedCommon;
 using Windows.Management.Deployment;
+using static WorkspacesEditor.Data.WorkspacesData;
 
 namespace WorkspacesEditor.Models
 {
@@ -44,6 +45,7 @@ namespace WorkspacesEditor.Models
             Maximized = other.Maximized;
             Position = other.Position;
             MonitorNumber = other.MonitorNumber;
+            MoveIfExists = other.MoveIfExists;
 
             Parent = other.Parent;
             IsNotFound = other.IsNotFound;
@@ -163,6 +165,26 @@ namespace WorkspacesEditor.Models
                 OnPropertyChanged(new PropertyChangedEventArgs(nameof(Maximized)));
                 OnPropertyChanged(new PropertyChangedEventArgs(nameof(EditPositionEnabled)));
                 RedrawPreviewImage();
+            }
+        }
+
+        private AppLaunchMode _moveIfExists;
+
+        public AppLaunchMode MoveIfExists
+        {
+            get => _moveIfExists;
+            set
+            {
+                _moveIfExists = value;
+            }
+        }
+
+        public int MoveIfExistsIndex
+        {
+            get => (int)_moveIfExists;
+            set
+            {
+                MoveIfExists = (AppLaunchMode)value;
             }
         }
 
