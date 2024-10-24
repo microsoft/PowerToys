@@ -31,6 +31,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         private bool _disposed;
 
         private static readonly CompositeFormat CopyToClipboard = System.Text.CompositeFormat.Parse(Properties.Resources.copy_to_clipboard);
+        private static readonly CompositeFormat UsagePromptTitle = System.Text.CompositeFormat.Parse(Properties.Resources.usage_prompt_title);
+        private static readonly CompositeFormat UsagePromptSubtitle = System.Text.CompositeFormat.Parse(Properties.Resources.usage_prompt_subtitle);
 
         public void Init(PluginInitContext context)
         {
@@ -45,6 +47,14 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         {
             ArgumentNullException.ThrowIfNull(query);
 
+            bool isKeywordSearch = !string.IsNullOrEmpty(query.ActionKeyword);
+            bool isEmptySearch = string.IsNullOrEmpty(query.Search);
+
+            if (isEmptySearch && isKeywordSearch)
+            {
+                return GetSuggestionResults(query);
+            }
+
             // Parse
             ConvertModel convertModel = InputInterpreter.Parse(query);
             if (convertModel == null)
@@ -55,6 +65,24 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             return UnitHandler.Convert(convertModel)
                 .Select(x => GetResult(x))
                 .ToList();
+        }
+
+        private List<Result> GetSuggestionResults(Query query)
+        {
+            var title = string.Format(CultureInfo.CurrentCulture, UsagePromptTitle, query.ActionKeyword);
+            var subTitle = string.Format(CultureInfo.CurrentCulture, UsagePromptSubtitle);
+            List<Result> ret =
+            [
+                new Result
+                {
+                    Title = title,
+                    SubTitle = subTitle,
+                    IcoPath = _icon_path,
+                    Action = c => true,
+                }
+            ];
+
+            return ret;
         }
 
         private Result GetResult(UnitConversionResult result)
