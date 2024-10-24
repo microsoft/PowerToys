@@ -203,7 +203,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_PERIOD => new[] { "…", "⁝", "\u0300", "\u0301", "\u0302", "\u0303", "\u0304", "\u0308", "\u030B", "\u030C" },
                 LetterKey.VK_MINUS => new[] { "~", "‐", "‑", "‒", "—", "―", "⁓", "−", "⸺", "⸻", "∓" },
                 LetterKey.VK_SLASH_ => new[] { "÷", "√" },
-                LetterKey.VK_DIVIDE_ => new[] { "÷", "√" },
+                LetterKey.VK_DIVIDE_ => new[] { "÷", "√", "‽" },
                 LetterKey.VK_MULTIPLY_ => new[] { "×", "⋅" },
                 LetterKey.VK_PLUS => new[] { "≤", "≥", "≠", "≈", "≙", "⊕", "⊗", "∓", "≅", "≡" },
                 _ => Array.Empty<string>(),
