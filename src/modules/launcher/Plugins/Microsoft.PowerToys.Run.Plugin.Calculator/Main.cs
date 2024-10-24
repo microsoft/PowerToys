@@ -21,6 +21,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         private const string InputUseEnglishFormat = nameof(InputUseEnglishFormat);
         private const string OutputUseEnglishFormat = nameof(OutputUseEnglishFormat);
         private const string ReplaceInput = nameof(ReplaceInput);
+        private const string IgnoreRegionalFormatting = nameof(IgnoreRegionalFormatting);
 
         private static readonly CalculateEngine CalculateEngine = new CalculateEngine();
 
@@ -31,6 +32,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         private bool _inputUseEnglishFormat;
         private bool _outputUseEnglishFormat;
         private bool _replaceInput;
+        private bool _ignoreRegionalFormatting;
 
         public string Name => Resources.wox_plugin_calculator_plugin_name;
 
@@ -42,6 +44,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         private static readonly CompositeFormat WoxPluginCalculatorInEnFormatDescription = System.Text.CompositeFormat.Parse(Properties.Resources.wox_plugin_calculator_in_en_format_description);
         private static readonly CompositeFormat WoxPluginCalculatorOutEnFormatDescription = System.Text.CompositeFormat.Parse(Properties.Resources.wox_plugin_calculator_out_en_format_description);
+        private static readonly CompositeFormat WoxPluginCalculatorIgnoreRegionalDescription = System.Text.CompositeFormat.Parse(Properties.Resources.wox_plugin_calculator_ignore_regional_formatting_description);
 
         public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
         {
@@ -67,6 +70,17 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 DisplayDescription = Resources.wox_plugin_calculator_replace_input_description,
                 Value = true,
             },
+            new PluginAdditionalOption
+            {
+                Key = IgnoreRegionalFormatting,
+                DisplayLabel = Resources.wox_plugin_calculator_ignore_regional_formatting,
+                DisplayDescription = string.Format(
+                    CultureInfo.CurrentCulture,
+                    WoxPluginCalculatorIgnoreRegionalDescription,
+                    CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator,
+                    CultureInfo.CurrentCulture.NumberFormat.NumberGroupSeparator),
+                Value = false,
+            },
         };
 
         public List<Result> Query(Query query)
@@ -85,7 +99,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             }
 
             NumberTranslator translator = NumberTranslator.Create(inputCulture, new CultureInfo("en-US"));
-            var input = translator.Translate(query.Search.Normalize(NormalizationForm.FormKC));
+            var input = translator.Translate(query.Search.Normalize(NormalizationForm.FormKC), _ignoreRegionalFormatting);
 
             if (replaceInput)
             {
@@ -183,6 +197,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             var inputUseEnglishFormat = false;
             var outputUseEnglishFormat = false;
             var replaceInput = true;
+            var ignoreRegionalFormatting = false;
 
             if (settings != null && settings.AdditionalOptions != null)
             {
@@ -194,11 +209,15 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
                 var optionReplaceInput = settings.AdditionalOptions.FirstOrDefault(x => x.Key == ReplaceInput);
                 replaceInput = optionReplaceInput?.Value ?? replaceInput;
+
+                var optionIgnoreRegionalInput = settings.AdditionalOptions.FirstOrDefault(x => x.Key == IgnoreRegionalFormatting);
+                ignoreRegionalFormatting = optionIgnoreRegionalInput?.Value ?? ignoreRegionalFormatting;
             }
 
             _inputUseEnglishFormat = inputUseEnglishFormat;
             _outputUseEnglishFormat = outputUseEnglishFormat;
             _replaceInput = replaceInput;
+            _ignoreRegionalFormatting = ignoreRegionalFormatting;
         }
 
         public void Dispose()
