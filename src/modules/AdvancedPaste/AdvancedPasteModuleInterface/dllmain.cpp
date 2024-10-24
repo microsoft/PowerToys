@@ -55,6 +55,7 @@ namespace
     const wchar_t JSON_KEY_ADVANCED_PASTE_UI_HOTKEY[] = L"advanced-paste-ui-hotkey";
     const wchar_t JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY[] = L"paste-as-markdown-hotkey";
     const wchar_t JSON_KEY_PASTE_AS_JSON_HOTKEY[] = L"paste-as-json-hotkey";
+    const wchar_t JSON_KEY_IS_ADVANCED_AI_ENABLED[] = L"IsAdvancedAIEnabled";
     const wchar_t JSON_KEY_SHOW_CUSTOM_PREVIEW[] = L"ShowCustomPreview";
     const wchar_t JSON_KEY_VALUE[] = L"value";
 
@@ -99,6 +100,7 @@ private:
     using CustomAction = ActionData<int>;
     std::vector<CustomAction> m_custom_actions;
 
+    bool m_is_advanced_ai_enabled = false;
     bool m_preview_custom_format_output = true;
 
     Hotkey parse_single_hotkey(const wchar_t* keyName, const winrt::Windows::Data::Json::JsonObject& settingsObject)
@@ -444,10 +446,20 @@ private:
 
             parse_hotkeys(settings);
 
-            auto settingsObject = settings.get_raw_json();
-            if (settingsObject.GetView().Size() && settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).HasKey(JSON_KEY_SHOW_CUSTOM_PREVIEW))
+            const auto settingsObject = settings.get_raw_json();
+            if (settingsObject.GetView().Size())
             {
-                m_preview_custom_format_output = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SHOW_CUSTOM_PREVIEW).GetNamedBoolean(JSON_KEY_VALUE);
+                const auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+
+                if (propertiesObject.HasKey(JSON_KEY_IS_ADVANCED_AI_ENABLED))
+                {
+                    m_is_advanced_ai_enabled = propertiesObject.GetNamedObject(JSON_KEY_IS_ADVANCED_AI_ENABLED).GetNamedBoolean(JSON_KEY_VALUE);
+                }
+
+                if (propertiesObject.HasKey(JSON_KEY_SHOW_CUSTOM_PREVIEW))
+                {
+                    m_preview_custom_format_output = propertiesObject.GetNamedObject(JSON_KEY_SHOW_CUSTOM_PREVIEW).GetNamedBoolean(JSON_KEY_VALUE);
+                }
             }
         }
         catch (std::exception&)
@@ -811,9 +823,19 @@ public:
             parse_hotkeys(values);
 
             const auto settingsObject = values.get_raw_json();
-            if (settingsObject.GetView().Size() && settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).HasKey(JSON_KEY_SHOW_CUSTOM_PREVIEW))
+            if (settingsObject.GetView().Size())
             {
-                m_preview_custom_format_output = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SHOW_CUSTOM_PREVIEW).GetNamedBoolean(JSON_KEY_VALUE);
+                const auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+
+                if (propertiesObject.HasKey(JSON_KEY_IS_ADVANCED_AI_ENABLED))
+                {
+                    m_is_advanced_ai_enabled = propertiesObject.GetNamedObject(JSON_KEY_IS_ADVANCED_AI_ENABLED).GetNamedBoolean(JSON_KEY_VALUE);
+                }
+
+                if (propertiesObject.HasKey(JSON_KEY_SHOW_CUSTOM_PREVIEW))
+                {
+                    m_preview_custom_format_output = propertiesObject.GetNamedObject(JSON_KEY_SHOW_CUSTOM_PREVIEW).GetNamedBoolean(JSON_KEY_VALUE);
+                }
             }
 
             std::unordered_map<std::wstring, Hotkey> additionalActionMap;
@@ -827,6 +849,7 @@ public:
                                                    m_advanced_paste_ui_hotkey,
                                                    m_paste_as_markdown_hotkey,
                                                    m_paste_as_json_hotkey,
+                                                   m_is_advanced_ai_enabled,
                                                    m_preview_custom_format_output,
                                                    additionalActionMap);
 

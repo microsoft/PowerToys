@@ -32,8 +32,8 @@ public sealed class PasteFormat
             IsSavedQuery = false,
         };
 
-    public static PasteFormat CreateKernelQuery(string name, string prompt, bool isSavedQuery, ClipboardFormat clipboardFormats, bool isAIServiceEnabled) =>
-        new(PasteFormats.KernelQuery, clipboardFormats, isAIServiceEnabled)
+    public static PasteFormat CreateCustomAIFormat(PasteFormats format, string name, string prompt, bool isSavedQuery, ClipboardFormat clipboardFormats, bool isAIServiceEnabled) =>
+        new(format, clipboardFormats, isAIServiceEnabled)
         {
             Name = name,
             Prompt = prompt,

@@ -123,6 +123,8 @@ public sealed class KernelServiceIntegrationTests : IDisposable
         var output = await _kernelService.TransformClipboardAsync(prompt, input.GetView(), isSavedQuery: false);
 
         Assert.AreEqual(1, _eventListener.SemanticKernelEvents.Count);
+        Assert.IsTrue(_eventListener.SemanticKernelTokens > 0);
+
         return output.GetView();
     }
 
@@ -135,5 +137,6 @@ public sealed class KernelServiceIntegrationTests : IDisposable
         return await File.ReadAllTextAsync(storageItems.Single().Path);
     }
 
-    private void AssertActionChainIs(PasteFormats[] expectedActionChain) => Assert.AreEqual(AdvancedPasteSemanticKernelFormatEvent.FormatActionChain(expectedActionChain), _eventListener.SemanticKernelEvents.Single().ActionChain);
+    private void AssertActionChainIs(PasteFormats[] expectedActionChain) =>
+        Assert.AreEqual(AdvancedPasteSemanticKernelFormatEvent.FormatActionChain(expectedActionChain), _eventListener.SemanticKernelEvents.Single().ActionChain);
 }

@@ -40,19 +40,20 @@ namespace AdvancedPaste.ViewModels
         public DataPackageView ClipboardData { get; set; }
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IsCustomAIEnabled))]
+        [NotifyPropertyChangedFor(nameof(IsCustomAIAvailable))]
         [NotifyPropertyChangedFor(nameof(ClipboardHasData))]
+        [NotifyPropertyChangedFor(nameof(ClipboardHasDataForCustomAI))]
         [NotifyPropertyChangedFor(nameof(InputTxtBoxPlaceholderText))]
-        [NotifyPropertyChangedFor(nameof(AIDisabledErrorText))]
+        [NotifyPropertyChangedFor(nameof(CustomAIUnavailableErrorText))]
         private ClipboardFormat _availableClipboardFormats;
 
         [ObservableProperty]
         private bool _clipboardHistoryEnabled;
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(AIDisabledErrorText))]
-        [NotifyPropertyChangedFor(nameof(IsAIServiceEnabled))]
-        [NotifyPropertyChangedFor(nameof(IsCustomAIEnabled))]
+        [NotifyPropertyChangedFor(nameof(CustomAIUnavailableErrorText))]
+        [NotifyPropertyChangedFor(nameof(IsCustomAIServiceEnabled))]
+        [NotifyPropertyChangedFor(nameof(IsCustomAIAvailable))]
         private bool _isAllowedByGPO;
 
         [ObservableProperty]
@@ -70,11 +71,15 @@ namespace AdvancedPaste.ViewModels
 
         public ObservableCollection<PasteFormat> CustomActionPasteFormats { get; } = [];
 
-        public bool IsAIServiceEnabled => IsAllowedByGPO && _aiCredentialsProvider.IsConfigured;
+        public bool IsCustomAIServiceEnabled => IsAllowedByGPO && _aiCredentialsProvider.IsConfigured;
 
-        public bool IsCustomAIEnabled => IsAIServiceEnabled && ClipboardHasData;
+        public bool IsCustomAIAvailable => IsCustomAIServiceEnabled && ClipboardHasDataForCustomAI;
 
         public bool ClipboardHasData => AvailableClipboardFormats != ClipboardFormat.None;
+
+        public bool ClipboardHasDataForCustomAI => (AvailableClipboardFormats & PasteFormat.MetadataDict[CustomAIFormat].SupportedClipboardFormats) != ClipboardFormat.None;
+
+        private PasteFormats CustomAIFormat => _userSettings.IsAdvancedAIEnabled ? PasteFormats.KernelQuery : PasteFormats.CustomTextTransformation;
 
         private bool Visible => GetMainWindow()?.Visible is true;
 
@@ -100,10 +105,10 @@ namespace AdvancedPaste.ViewModels
             _clipboardTimer.Start();
 
             RefreshPasteFormats();
-            _userSettings.Changed += (_, _) => EnqueueRefreshPasteFormats();
+            _userSettings.Changed += UserSettings_Changed;
             PropertyChanged += (_, e) =>
             {
-                string[] dirtyingProperties = [nameof(Query), nameof(IsAIServiceEnabled), nameof(IsCustomAIEnabled), nameof(AvailableClipboardFormats)];
+                string[] dirtyingProperties = [nameof(Query), nameof(IsCustomAIServiceEnabled), nameof(IsCustomAIAvailable), nameof(AvailableClipboardFormats)];
 
                 if (dirtyingProperties.Contains(e.PropertyName))
                 {
@@ -132,6 +137,14 @@ namespace AdvancedPaste.ViewModels
             }
         }
 
+        private void UserSettings_Changed(object sender, EventArgs e)
+        {
+            OnPropertyChanged(nameof(ClipboardHasDataForCustomAI));
+            OnPropertyChanged(nameof(IsCustomAIAvailable));
+
+            EnqueueRefreshPasteFormats();
+        }
+
         private void EnqueueRefreshPasteFormats()
         {
             if (_pasteFormatsDirty)
@@ -148,10 +161,10 @@ namespace AdvancedPaste.ViewModels
         }
 
         private PasteFormat CreateStandardPasteFormat(PasteFormats format) =>
-            PasteFormat.CreateStandardFormat(format, AvailableClipboardFormats, IsAIServiceEnabled, ResourceLoaderInstance.ResourceLoader.GetString);
+            PasteFormat.CreateStandardFormat(format, AvailableClipboardFormats, IsCustomAIServiceEnabled, ResourceLoaderInstance.ResourceLoader.GetString);
 
-        private PasteFormat CreateKernelQuery(string name, string prompt, bool isSavedQuery) =>
-            PasteFormat.CreateKernelQuery(name, prompt, isSavedQuery, AvailableClipboardFormats, IsAIServiceEnabled);
+        private PasteFormat CreateAIServiceFormat(string name, string prompt, bool isSavedQuery) =>
+            PasteFormat.CreateCustomAIFormat(CustomAIFormat, name, prompt, isSavedQuery, AvailableClipboardFormats, IsCustomAIServiceEnabled);
 
         private void RefreshPasteFormats()
         {
@@ -192,7 +205,7 @@ namespace AdvancedPaste.ViewModels
 
             UpdateFormats(
                 CustomActionPasteFormats,
-                IsAIServiceEnabled ? _userSettings.CustomActions.Select(customAction => CreateKernelQuery(customAction.Name, customAction.Prompt, isSavedQuery: true)) : []);
+                IsCustomAIServiceEnabled ? _userSettings.CustomActions.Select(customAction => CreateAIServiceFormat(customAction.Name, customAction.Prompt, isSavedQuery: true)) : []);
         }
 
         public void Dispose()
@@ -227,9 +240,9 @@ namespace AdvancedPaste.ViewModels
                 {
                     GetMainWindow()?.FinishLoading(_aiCredentialsProvider.IsConfigured);
                     OnPropertyChanged(nameof(InputTxtBoxPlaceholderText));
-                    OnPropertyChanged(nameof(AIDisabledErrorText));
-                    OnPropertyChanged(nameof(IsAIServiceEnabled));
-                    OnPropertyChanged(nameof(IsCustomAIEnabled));
+                    OnPropertyChanged(nameof(CustomAIUnavailableErrorText));
+                    OnPropertyChanged(nameof(IsCustomAIServiceEnabled));
+                    OnPropertyChanged(nameof(IsCustomAIAvailable));
                 });
             }
 
@@ -264,7 +277,7 @@ namespace AdvancedPaste.ViewModels
         public string InputTxtBoxPlaceholderText
             => ResourceLoaderInstance.ResourceLoader.GetString(ClipboardHasData ? "CustomFormatTextBox/PlaceholderText" : "ClipboardEmptyWarning");
 
-        public string AIDisabledErrorText
+        public string CustomAIUnavailableErrorText
         {
             get
             {
@@ -278,7 +291,7 @@ namespace AdvancedPaste.ViewModels
                     return ResourceLoaderInstance.ResourceLoader.GetString("OpenAINotConfigured");
                 }
 
-                if (!ClipboardHasData)
+                if (!ClipboardHasDataForCustomAI)
                 {
                     return ResourceLoaderInstance.ResourceLoader.GetString("ClipboardEmptyWarning");
                 }
@@ -374,12 +387,12 @@ namespace AdvancedPaste.ViewModels
 
                 await delayTask;
 
-                var text = await dataPackage.GetView().GetTextOrEmptyAsync();
-                bool shouldPreview = pasteFormat.Metadata.CanPreview && _userSettings.ShowCustomPreview && !string.IsNullOrEmpty(text) && source != PasteActionSource.GlobalKeyboardShortcut;
+                var outputText = await dataPackage.GetView().GetTextOrEmptyAsync();
+                bool shouldPreview = pasteFormat.Metadata.CanPreview && _userSettings.ShowCustomPreview && !string.IsNullOrEmpty(outputText) && source != PasteActionSource.GlobalKeyboardShortcut;
 
                 if (shouldPreview)
                 {
-                    GeneratedResponses.Add(text);
+                    GeneratedResponses.Add(outputText);
                     CurrentResponseIndex = GeneratedResponses.Count - 1;
                     PreviewRequested?.Invoke(this, EventArgs.Empty);
                 }
@@ -415,24 +428,21 @@ namespace AdvancedPaste.ViewModels
         {
             Logger.LogTrace();
 
-            await ReadClipboardAsync();
-
             var customAction = _userSettings.CustomActions.FirstOrDefault(customAction => customAction.Id == customActionId);
 
             if (customAction != null)
             {
-                await ExecutePasteFormatAsync(CreateKernelQuery(customAction.Name, customAction.Prompt, isSavedQuery: true), source);
+                await ReadClipboardAsync();
+                await ExecutePasteFormatAsync(CreateAIServiceFormat(customAction.Name, customAction.Prompt, isSavedQuery: true), source);
             }
         }
 
-        internal async Task ExecuteKernelQueryFromCurrentQueryAsync(PasteActionSource triggerSource)
+        internal async Task ExecuteCustomAIFormatFromCurrentQueryAsync(PasteActionSource triggerSource)
         {
             var customAction = _userSettings.CustomActions
                                             .FirstOrDefault(customAction => Models.KernelQueryCache.CacheKey.PromptComparer.Equals(customAction.Prompt, Query));
 
-            var pasteFormat = CreateKernelQuery(customAction?.Name ?? "Default", Query, isSavedQuery: customAction != null);
-
-            await ExecutePasteFormatAsync(pasteFormat, triggerSource);
+            await ExecutePasteFormatAsync(CreateAIServiceFormat(customAction?.Name ?? "Default", Query, isSavedQuery: customAction != null), triggerSource);
         }
 
         private void HideWindow()

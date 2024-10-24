@@ -23,9 +23,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             PasteAsJsonShortcut = new();
             CustomActions = new();
             AdditionalActions = new();
+            IsAdvancedAIEnabled = false;
             ShowCustomPreview = true;
             CloseAfterLosingFocus = false;
         }
+
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool IsAdvancedAIEnabled { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool ShowCustomPreview { get; set; }

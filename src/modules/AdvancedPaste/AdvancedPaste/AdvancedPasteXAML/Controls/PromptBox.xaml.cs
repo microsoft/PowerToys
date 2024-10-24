@@ -76,13 +76,13 @@ namespace AdvancedPaste.Controls
         }
 
         [RelayCommand]
-        private async Task GenerateCustomAsync() => await ViewModel.ExecuteKernelQueryFromCurrentQueryAsync(PasteActionSource.PromptBox);
+        private async Task GenerateCustomAIAsync() => await ViewModel.ExecuteCustomAIFormatFromCurrentQueryAsync(PasteActionSource.PromptBox);
 
         private async void InputTxtBox_KeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
         {
-            if (e.Key == Windows.System.VirtualKey.Enter && InputTxtBox.Text.Length > 0 && ViewModel.IsCustomAIEnabled)
+            if (e.Key == Windows.System.VirtualKey.Enter && InputTxtBox.Text.Length > 0 && ViewModel.IsCustomAIAvailable)
             {
-                await GenerateCustomAsync();
+                await GenerateCustomAIAsync();
             }
         }
 

@@ -82,6 +82,12 @@
                             </tkcontrols:SettingsCard.Description>
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard
+                            x:Uid="AdvancedPaste_EnableAdvancedAI"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xEC4A;}"
+                            IsEnabled="{x:Bind ViewModel.IsOpenAIEnabled, Mode=OneWay}">
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.IsAdvancedAIEnabled, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard
                             x:Uid="AdvancedPaste_ShowCustomPreviewSettingsCard"
                             HeaderIcon="{ui:FontIcon Glyph=&#xE71E;}"
                             IsEnabled="{x:Bind ViewModel.IsOpenAIEnabled, Mode=OneWay}">

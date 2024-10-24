@@ -483,7 +483,7 @@
                                         x:Uid="RegenerateBtnAutomation"
                                         Grid.Column="1"
                                         VerticalAlignment="Stretch"
-                                        Command="{x:Bind GenerateCustomCommand}"
+                                        Command="{x:Bind GenerateCustomAICommand}"
                                         Content="{ui:FontIcon Glyph=&#xE72C;,
                                                               FontSize=16}"
                                         Style="{StaticResource SubtleButtonStyle}">
@@ -521,11 +521,11 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
-                        Command="{x:Bind GenerateCustomCommand}"
+                        Command="{x:Bind GenerateCustomAICommand}"
                         Content="{ui:FontIcon Glyph=&#xE724;,
                                               FontSize=16}"
                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                        IsEnabled="{x:Bind ViewModel.IsCustomAIEnabled, Mode=OneWay}"
+                        IsEnabled="{x:Bind ViewModel.IsCustomAIAvailable, Mode=OneWay}"
                         Style="{StaticResource SubtleButtonStyle}"
                         TabIndex="1"
                         Visibility="{x:Bind ViewModel.Query.Length, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
@@ -559,9 +559,9 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         Background="Transparent"
-                        Visibility="{x:Bind ViewModel.IsCustomAIEnabled, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                        Visibility="{x:Bind ViewModel.IsCustomAIAvailable, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                         <ToolTipService.ToolTip>
-                            <ToolTip Content="{x:Bind ViewModel.AIDisabledErrorText}" />
+                            <ToolTip Content="{x:Bind ViewModel.CustomAIUnavailableErrorText, Mode=OneWay}" />
                         </ToolTipService.ToolTip>
                     </Grid>
                 </Grid>

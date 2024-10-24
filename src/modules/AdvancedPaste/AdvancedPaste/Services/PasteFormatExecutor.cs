@@ -11,9 +11,10 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace AdvancedPaste.Services;
 
-public sealed class PasteFormatExecutor(IKernelService kernelService) : IPasteFormatExecutor
+public sealed class PasteFormatExecutor(IKernelService kernelService, ICustomTextTransformService customTextTransformService) : IPasteFormatExecutor
 {
     private readonly IKernelService _kernelService = kernelService;
+    private readonly ICustomTextTransformService _customTextTransformService = customTextTransformService;
 
     public async Task<DataPackage> ExecutePasteFormatAsync(PasteFormat pasteFormat, PasteActionSource source)
     {
@@ -31,6 +32,7 @@ public sealed class PasteFormatExecutor(IKernelService kernelService) : IPasteFo
         return pasteFormat.Format switch
         {
             PasteFormats.KernelQuery => await _kernelService.TransformClipboardAsync(pasteFormat.Prompt, clipboardData, pasteFormat.IsSavedQuery),
+            PasteFormats.CustomTextTransformation => DataPackageHelpers.CreateFromText(await _customTextTransformService.TransformTextAsync(pasteFormat.Prompt, await clipboardData.GetTextAsync())),
             _ => await TransformHelpers.TransformAsync(format, clipboardData),
         };
     }

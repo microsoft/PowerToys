@@ -83,7 +83,7 @@ public enum PasteFormats
 
     [PasteFormatMetadata(
         IsCoreAction = false,
-        IconGlyph = "\uE945",
+        IconGlyph = "\uEC4A",
         RequiresAIService = true,
         CanPreview = true,
         SupportedClipboardFormats = ClipboardFormat.Text | ClipboardFormat.Html | ClipboardFormat.Audio | ClipboardFormat.Image,
