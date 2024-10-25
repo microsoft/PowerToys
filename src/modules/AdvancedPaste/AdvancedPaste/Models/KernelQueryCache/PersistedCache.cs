@@ -23,6 +23,8 @@ public sealed class PersistedCache : ISettingsConfig
         },
     };
 
+    public static PersistedCache FromJsonString(string json) => JsonSerializer.Deserialize<PersistedCache>(json, SerializerOptions);
+
     public string Version { get; init; }
 
     public List<CacheItem> Items { get; init; } = [];

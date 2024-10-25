@@ -23,6 +23,7 @@ public sealed class CustomActionKernelQueryCacheService : IKernelQueryCacheServi
     private readonly SettingsUtils _settingsUtil = new();
     private readonly Dictionary<CacheKey, CacheValue> _memoryCache = [];
     private readonly IUserSettings _userSettings;
+
     private HashSet<string> _savedUserPrompts = [];
 
     private static string Version => Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString() ?? string.Empty;
@@ -58,7 +59,13 @@ public sealed class CustomActionKernelQueryCacheService : IKernelQueryCacheServi
     {
         try
         {
-            var persistedCache = _settingsUtil.GetSettings<PersistedCache>(AdvancedPasteSettings.ModuleName, PersistedCacheFileName);
+            if (!_settingsUtil.SettingsExists(AdvancedPasteSettings.ModuleName, PersistedCacheFileName))
+            {
+                return [];
+            }
+
+            var jsonString = File.ReadAllText(_settingsUtil.GetSettingsFilePath(AdvancedPasteSettings.ModuleName, PersistedCacheFileName));
+            var persistedCache = PersistedCache.FromJsonString(jsonString);
 
             if (persistedCache.Version == Version)
             {
@@ -69,10 +76,6 @@ public sealed class CustomActionKernelQueryCacheService : IKernelQueryCacheServi
                 Logger.LogWarning($"Ignoring persisted kernel query cache; version mismatch - actual: {persistedCache.Version}, expected:{Version}");
                 return [];
             }
-        }
-        catch (FileNotFoundException)
-        {
-            return [];
         }
         catch (Exception ex)
         {
