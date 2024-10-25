@@ -108,7 +108,7 @@
                 <!--  System Tools  -->
                 <NavigationViewItem
                     x:Uid="Shell_TopLevelSystemTools"
-                    Icon="Page2"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/SystemTools.png}"
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
@@ -145,7 +145,7 @@
                 <!--  Windowing & Layouts  -->
                 <NavigationViewItem
                     x:Uid="Shell_TopLevelWindowsAndLayouts "
-                    Icon="Page2"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/WindowingAndLayouts.png}"
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
@@ -170,7 +170,7 @@
                 <!--  Input / Output  -->
                 <NavigationViewItem
                     x:Uid="Shell_TopLevelInputOutput"
-                    Icon="Page2"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/InputOutput.png}"
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
@@ -203,7 +203,7 @@
                 <!--  File Management  -->
                 <NavigationViewItem
                     x:Uid="Shell_TopLevelFileManagement"
-                    Icon="Page2"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileManagement.png}"
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
@@ -233,10 +233,11 @@
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerRename.png}" />
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
+    
                 <!--  Advanced  -->
                 <NavigationViewItem
                     x:Uid="Shell_TopLevelAdvanced"
-                    Icon="Page2"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Advanced.png}"
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
