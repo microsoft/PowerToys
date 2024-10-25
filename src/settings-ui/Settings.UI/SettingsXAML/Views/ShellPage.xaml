@@ -233,7 +233,7 @@
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerRename.png}" />
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
-    
+
                 <!--  Advanced  -->
                 <NavigationViewItem
                     x:Uid="Shell_TopLevelAdvanced"
