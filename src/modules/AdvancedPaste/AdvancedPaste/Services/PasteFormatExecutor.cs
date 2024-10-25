@@ -115,8 +115,18 @@ public sealed class PasteFormatExecutor(AICompletionsHelper aiHelper) : IPasteFo
     private async Task ImageToTextAsync(DataPackageView clipboardData)
     {
         Logger.LogTrace();
+        SoftwareBitmap bitmap = null;
+        try
+        {
+            bitmap = await ClipboardHelper.GetClipboardImageContentAsync(clipboardData);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error getting image content from clipboard.", ex);
+            SetClipboardTextContent(string.Empty);
+            return;
+        }
 
-        var bitmap = await ClipboardHelper.GetClipboardImageContentAsync(clipboardData);
         var text = await OcrHelpers.ExtractTextAsync(bitmap);
         SetClipboardTextContent(text);
     }

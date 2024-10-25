@@ -20,7 +20,7 @@ namespace AdvancedPaste.Helpers
 {
     internal static class ClipboardHelper
     {
-        private static readonly HashSet<string> ImageFileTypes = new(StringComparer.InvariantCultureIgnoreCase) { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".ico", ".svg" };
+        private static readonly HashSet<string> ImageFileTypes = new(GetImageFileTypes(), StringComparer.InvariantCultureIgnoreCase);
 
         private static readonly (string DataFormat, ClipboardFormat ClipboardFormat)[] DataFormats =
         [
@@ -28,6 +28,9 @@ namespace AdvancedPaste.Helpers
             (StandardDataFormats.Html, ClipboardFormat.Html),
             (StandardDataFormats.Bitmap, ClipboardFormat.Image),
         ];
+
+        private static IEnumerable<string> GetImageFileTypes() =>
+            BitmapDecoder.GetDecoderInformationEnumerator().SelectMany(di => di.FileExtensions);
 
         internal static async Task<ClipboardFormat> GetAvailableClipboardFormatsAsync(DataPackageView clipboardData)
         {
