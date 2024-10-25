@@ -67,7 +67,7 @@ public class SettingsService
                         _keyboardListener.UpdateExcludedApps(ExcludedApps);
 
                         SelectedLang = settings.Properties.SelectedLang.Value
-                            .Split(',')
+                            .Split(',', StringSplitOptions.RemoveEmptyEntries)
                             .Select(lang => Enum.TryParse(lang, out Language selectedLangValue) ? selectedLangValue : Language.SPECIAL)
                             .ToArray();
 

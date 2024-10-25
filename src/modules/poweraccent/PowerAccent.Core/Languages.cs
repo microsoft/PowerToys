@@ -61,6 +61,11 @@ namespace PowerAccent.Core
                 return GetDefaultLetterKeyALL(letter);
             }
 
+            if (langs.Length == 0)
+            {
+                return Array.Empty<string>();
+            }
+
             var characters = new List<string>();
             foreach (var lang in langs)
             {

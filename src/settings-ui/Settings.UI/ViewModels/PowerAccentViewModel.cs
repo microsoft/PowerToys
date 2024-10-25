@@ -3,10 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-
 using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -22,50 +23,53 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private readonly ISettingsUtils _settingsUtils;
 
-        // These should be in the same order as the ComboBoxItems in PowerAccentPage.xaml
-        private readonly string[] _languageOptions =
-        {
-            "SPECIAL",
-            "BG",
-            "CA",
-            "CRH",
-            "CUR",
-            "HR",
-            "CZ",
-            "DK",
-            "GA",
-            "GD",
-            "NL",
-            "EL",
-            "EST",
-            "EPO",
-            "FI",
-            "FR",
-            "DE",
-            "HE",
-            "HU",
-            "IS",
-            "IPA",
-            "IT",
-            "KU",
-            "LT",
-            "MK",
-            "MI",
-            "NO",
-            "PI",
-            "PL",
-            "PT",
-            "RO",
-            "ROM",
-            "SK",
-            "SL",
-            "SP",
-            "SR",
-            "SR_CYRL",
-            "SV",
-            "TK",
-            "CY",
-        };
+        private const string SpecialGroup = "QuickAccent_Group_Special";
+        private const string LanguageGroup = "QuickAccent_Group_Language";
+
+        public List<PowerAccentLanguageModel> Languages { get; } = [
+            new PowerAccentLanguageModel("SPECIAL", "QuickAccent_SelectedLanguage_Special", SpecialGroup),
+            new PowerAccentLanguageModel("BG", "QuickAccent_SelectedLanguage_Bulgarian", LanguageGroup),
+            new PowerAccentLanguageModel("CA", "QuickAccent_SelectedLanguage_Catalan", LanguageGroup),
+            new PowerAccentLanguageModel("CRH", "QuickAccent_SelectedLanguage_Crimean", LanguageGroup),
+            new PowerAccentLanguageModel("CUR", "QuickAccent_SelectedLanguage_Currency", SpecialGroup),
+            new PowerAccentLanguageModel("HR", "QuickAccent_SelectedLanguage_Croatian", LanguageGroup),
+            new PowerAccentLanguageModel("CZ", "QuickAccent_SelectedLanguage_Czech", LanguageGroup),
+            new PowerAccentLanguageModel("DK", "QuickAccent_SelectedLanguage_Danish", LanguageGroup),
+            new PowerAccentLanguageModel("GA", "QuickAccent_SelectedLanguage_Gaeilge", LanguageGroup),
+            new PowerAccentLanguageModel("GD", "QuickAccent_SelectedLanguage_Gaidhlig", LanguageGroup),
+            new PowerAccentLanguageModel("NL", "QuickAccent_SelectedLanguage_Dutch", LanguageGroup),
+            new PowerAccentLanguageModel("EL", "QuickAccent_SelectedLanguage_Greek", LanguageGroup),
+            new PowerAccentLanguageModel("EST", "QuickAccent_SelectedLanguage_Estonian", LanguageGroup),
+            new PowerAccentLanguageModel("EPO", "QuickAccent_SelectedLanguage_Esperanto", LanguageGroup),
+            new PowerAccentLanguageModel("FI", "QuickAccent_SelectedLanguage_Finnish", LanguageGroup),
+            new PowerAccentLanguageModel("FR", "QuickAccent_SelectedLanguage_French", LanguageGroup),
+            new PowerAccentLanguageModel("DE", "QuickAccent_SelectedLanguage_German", LanguageGroup),
+            new PowerAccentLanguageModel("HE", "QuickAccent_SelectedLanguage_Hebrew", LanguageGroup),
+            new PowerAccentLanguageModel("HU", "QuickAccent_SelectedLanguage_Hungarian", LanguageGroup),
+            new PowerAccentLanguageModel("IS", "QuickAccent_SelectedLanguage_Icelandic", LanguageGroup),
+            new PowerAccentLanguageModel("IPA", "QuickAccent_SelectedLanguage_IPA", SpecialGroup),
+            new PowerAccentLanguageModel("IT", "QuickAccent_SelectedLanguage_Italian", LanguageGroup),
+            new PowerAccentLanguageModel("KU", "QuickAccent_SelectedLanguage_Kurdish", LanguageGroup),
+            new PowerAccentLanguageModel("LT", "QuickAccent_SelectedLanguage_Lithuanian", LanguageGroup),
+            new PowerAccentLanguageModel("MK", "QuickAccent_SelectedLanguage_Macedonian", LanguageGroup),
+            new PowerAccentLanguageModel("MI", "QuickAccent_SelectedLanguage_Maori", LanguageGroup),
+            new PowerAccentLanguageModel("NO", "QuickAccent_SelectedLanguage_Norwegian", LanguageGroup),
+            new PowerAccentLanguageModel("PI", "QuickAccent_SelectedLanguage_Pinyin", LanguageGroup),
+            new PowerAccentLanguageModel("PL", "QuickAccent_SelectedLanguage_Polish", LanguageGroup),
+            new PowerAccentLanguageModel("PT", "QuickAccent_SelectedLanguage_Portuguese", LanguageGroup),
+            new PowerAccentLanguageModel("RO", "QuickAccent_SelectedLanguage_Romanian", LanguageGroup),
+            new PowerAccentLanguageModel("ROM", "QuickAccent_SelectedLanguage_Romanization", SpecialGroup),
+            new PowerAccentLanguageModel("SK", "QuickAccent_SelectedLanguage_Slovak", LanguageGroup),
+            new PowerAccentLanguageModel("SL", "QuickAccent_SelectedLanguage_Slovenian", LanguageGroup),
+            new PowerAccentLanguageModel("SP", "QuickAccent_SelectedLanguage_Spanish", LanguageGroup),
+            new PowerAccentLanguageModel("SR", "QuickAccent_SelectedLanguage_Serbian", LanguageGroup),
+            new PowerAccentLanguageModel("SR_CYRL", "QuickAccent_SelectedLanguage_Serbian_Cyrillic", LanguageGroup),
+            new PowerAccentLanguageModel("SV", "QuickAccent_SelectedLanguage_Swedish", LanguageGroup),
+            new PowerAccentLanguageModel("TK", "QuickAccent_SelectedLanguage_Turkish", LanguageGroup),
+            new PowerAccentLanguageModel("CY", "QuickAccent_SelectedLanguage_Welsh", LanguageGroup),
+        ];
+
+        public PowerAccentLanguageGroupModel[] LanguageGroups { get; private set; }
 
         private readonly string[] _toolbarOptions =
         {
@@ -91,6 +95,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             InitializeEnabledValue();
+            InitializeLanguages();
 
             if (_settingsUtils.SettingsExists(PowerAccentSettings.ModuleName))
             {
@@ -107,11 +112,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             if (!string.IsNullOrWhiteSpace(_powerAccentSettings.Properties.SelectedLang.Value) && !_powerAccentSettings.Properties.SelectedLang.Value.Contains("ALL"))
             {
-                SelectedLangIndexes = _powerAccentSettings.Properties.SelectedLang.Value.Split(',').Select(l => Array.IndexOf(_languageOptions, l)).ToArray();
+                SelectedLanguageOptions = _powerAccentSettings.Properties.SelectedLang.Value.Split(',')
+                   .Select(l => Languages.Find(lang => lang.LanguageCode == l))
+                   .ToArray();
+            }
+            else if (_powerAccentSettings.Properties.SelectedLang.Value.Contains("ALL"))
+            {
+                SelectedLanguageOptions = Languages.ToArray();
             }
             else
             {
-                SelectedLangIndexes = Enumerable.Range(0, _languageOptions.Length).ToArray();
+                SelectedLanguageOptions = Array.Empty<PowerAccentLanguageModel>();
             }
 
             _toolbarPositionIndex = Array.IndexOf(_toolbarOptions, _powerAccentSettings.Properties.ToolbarPosition.Value);
@@ -133,6 +144,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.PowerAccent;
             }
+        }
+
+        /// <summary>
+        /// Adds Localized Language Name, sorts by it and splits languages into two groups.
+        /// </summary>
+        private void InitializeLanguages()
+        {
+            foreach (var item in Languages)
+            {
+                item.Language = ResourceLoaderInstance.ResourceLoader.GetString(item.LanguageResourceID);
+            }
+
+            Languages.Sort((x, y) => string.Compare(x.Language, y.Language, StringComparison.Ordinal));
+            LanguageGroups = Languages
+                .GroupBy(language => language.GroupResourceID)
+                .Select(grp => new PowerAccentLanguageGroupModel(grp.ToList(), ResourceLoaderInstance.ResourceLoader.GetString(grp.Key)))
+                .ToArray();
         }
 
         public bool IsEnabled
@@ -261,27 +289,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool AllSelected => _selectedLanguages.Length == _languageOptions.Length;
+        public bool AllSelected => _selectedLanguageOptions.Length == Languages.Count;
 
-        private string[] _selectedLanguages;
+        private PowerAccentLanguageModel[] _selectedLanguageOptions;
 
-        private int[] _selectedLangIndexes;
-
-        public int[] SelectedLangIndexes
+        public PowerAccentLanguageModel[] SelectedLanguageOptions
         {
-            get => _selectedLangIndexes;
+            get => _selectedLanguageOptions;
             set
             {
-                if (_selectedLangIndexes == value)
-                {
-                    return;
-                }
-
-                _selectedLangIndexes = value;
-                _selectedLanguages = _selectedLangIndexes.Select(s => _languageOptions[s]).ToArray();
-
-                _powerAccentSettings.Properties.SelectedLang.Value = string.Join(',', _selectedLanguages);
-                RaisePropertyChanged(nameof(SelectedLangIndexes));
+                _selectedLanguageOptions = value;
+                _powerAccentSettings.Properties.SelectedLang.Value = string.Join(',', _selectedLanguageOptions.Select(l => l.LanguageCode));
+                RaisePropertyChanged(nameof(SelectedLanguageOptions));
             }
         }
 

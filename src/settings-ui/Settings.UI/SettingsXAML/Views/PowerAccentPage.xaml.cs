@@ -31,25 +31,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void InitializeControlsStates()
         {
-            SetListViewSelected();
             SetCheckBoxStatus();
-        }
-
-        private void SetListViewSelected()
-        {
-            foreach (var languageIndex in ViewModel.SelectedLangIndexes)
-            {
-                var item = this.QuickAccent_Language_Select.Items.ElementAtOrDefault(languageIndex);
-                if (item != null)
-                {
-                    this.QuickAccent_Language_Select.SelectedItems.Add(item);
-                }
-            }
         }
 
         private void SetCheckBoxStatus()
         {
-            if (ViewModel.SelectedLangIndexes.Length == 0)
+            if (ViewModel.SelectedLanguageOptions.Length == 0)
             {
                 this.QuickAccent_SelectedLanguage_All.IsChecked = false;
                 this.QuickAccent_SelectedLanguage_All.IsThreeState = false;
@@ -79,10 +66,20 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void QuickAccent_SelectedLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var listView = sender as ListView;
-            var indexes = listView.SelectedItems.Select(listView.Items.IndexOf).ToArray();
-            ViewModel.SelectedLangIndexes = indexes;
+
+            ViewModel.SelectedLanguageOptions = listView.SelectedItems
+                .Select(item => item as PowerAccentLanguageModel)
+                .ToArray();
 
             SetCheckBoxStatus();
+        }
+
+        private void QuickAccent_Language_Select_Loaded(object sender, RoutedEventArgs e)
+        {
+            foreach (var languageOption in ViewModel.SelectedLanguageOptions)
+            {
+                this.QuickAccent_Language_Select.SelectedItems.Add(languageOption);
+            }
         }
     }
 }
