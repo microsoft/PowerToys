@@ -1,6 +1,7 @@
 # FALSE POSITIVES
 ## "PackagemanagerWrapper.cs" should be "PackageManagerWrapper.cs"
 ## NOTICE.MD > MOZILLA PUBLIC LICENSE v1.1
+
 aaaa
 abcdefghjkmnpqrstuvxyz
 abgr
@@ -29,7 +30,6 @@ AFFINETRANSFORM
 AFX
 AGGREGATABLE
 AHybrid
-AKV
 akv
 ALarger
 ALLAPPS
@@ -43,6 +43,7 @@ AMPROPSETID
 amr
 ANDSCANS
 animatedvisuals
+anr
 ansicolor
 ANull
 AOC
@@ -57,14 +58,12 @@ APPBARDATA
 appdata
 APPEXECLINK
 Appium
-applayout
 Applicationcan
 APPLICATIONFRAMEHOST
 appmanifest
 APPNAME
 appref
 appsettings
-appsfolder
 appwindow
 appwiz
 APSTUDIO
@@ -145,7 +144,6 @@ BTNFACE
 bugreport
 BUILDARCH
 BUILDNUMBER
-buildtask
 buildtransitive
 BVal
 BValue
@@ -269,7 +267,6 @@ CSettings
 cso
 CSRW
 CStyle
-cswinrt
 CSY
 CTest
 currentculture
@@ -351,7 +348,6 @@ devpkey
 DEVSOURCE
 DIIRFLAG
 dimm
-directshow
 DISABLEASACTIONKEY
 diskmgmt
 DISPLAYCHANGE
@@ -450,12 +446,13 @@ erwrite
 ESettings
 esrp
 etl
-ETW
+etw
 EUQ
 eurochange
 eventlog
 eventvwr
 everytime
+evntrace
 evt
 EWXFORCE
 EWXFORCEIFHUNG
@@ -527,7 +524,6 @@ FZE
 gacutil
 Gaeilge
 Gaidhlig
-GBarm
 GCLP
 gdi
 gdiplus
@@ -999,7 +995,6 @@ NCRENDERING
 ndp
 NEEDDISPATCH
 needinfo
-netcore
 netcoreapp
 netcpl
 netframework
@@ -1008,6 +1003,7 @@ netsh
 newcolor
 newdev
 NEWDIALOGSTYLE
+NEWFILE
 newitem
 newpath
 newplus
@@ -1076,7 +1072,6 @@ NTAPI
 ntdll
 ntfs
 NTSTATUS
-nugets
 nullonfailure
 numberbox
 nwc
@@ -1227,6 +1222,7 @@ proactively
 PROCESSENTRY
 PROCESSKEY
 processthreadsapi
+PROCESSTRACE
 PRODEXT
 PRODUCTVERSION
 Progman
@@ -1591,9 +1587,7 @@ SYSKEYUP
 SYSLIB
 SYSMENU
 SYSTEMAPPS
-systemsettings
 SYSTEMTIME
-SYSTEMWOW
 tapp
 TApplication
 TApplied
@@ -1613,7 +1607,6 @@ TCustom
 tdbuild
 TDefault
 TDevice
-telem
 telephon
 templatenamespace
 testprocess
@@ -1648,7 +1641,9 @@ TOPDOWNDIB
 TOUCHEVENTF
 TOUCHINPUT
 touchpad
+TRACEHANDLE
 tracelogging
+tracerpt
 trafficmanager
 traies
 transicc
@@ -1706,11 +1701,9 @@ urlmon
 Usb
 USEDEFAULT
 USEFILEATTRIBUTES
-USEPOSITION
 USERDATA
 Userenv
 USESHOWWINDOW
-USESIZE
 USESTDHANDLES
 USRDLL
 UType
@@ -1803,7 +1796,6 @@ wgpocpl
 WIC
 wil
 winapi
-winappdriver
 wincodec
 Wincodecsdk
 wincolor
@@ -1867,6 +1859,7 @@ WNDCLASSEX
 WNDCLASSEXW
 WNDCLASSW
 WNDPROC
+wnode
 workarounds
 WORKSPACESEDITOR
 WORKSPACESLAUNCHER
@@ -1909,6 +1902,7 @@ XFile
 XIncrement
 XLoc
 XNamespace
+Xoshiro
 XPels
 XPixel
 XResource

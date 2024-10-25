@@ -5,14 +5,13 @@
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.ApplicationModel.DataTransfer;
 
-namespace AdvancedPaste.Models
+namespace AdvancedPaste.Models;
+
+public class ClipboardItem
 {
-    public class ClipboardItem
-    {
-        public string Content { get; set; }
+    public string Content { get; set; }
 
-        public ClipboardHistoryItem Item { get; set; }
+    public ClipboardHistoryItem Item { get; set; }
 
-        public BitmapImage Image { get; set; }
-    }
+    public BitmapImage Image { get; set; }
 }

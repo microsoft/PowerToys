@@ -31,6 +31,7 @@ namespace WorkspacesEditor.Models
 
         public Application(Application other)
         {
+            Id = other.Id;
             AppName = other.AppName;
             AppPath = other.AppPath;
             AppTitle = other.AppTitle;
@@ -94,6 +95,8 @@ namespace WorkspacesEditor.Models
                 return base.GetHashCode();
             }
         }
+
+        public string Id { get; set; }
 
         public string AppName { get; set; }
 
@@ -247,7 +250,7 @@ namespace WorkspacesEditor.Models
                     {
                         Logger.LogWarning($"Icon not found on app path: {AppPath}. Using default icon");
                         IsNotFound = true;
-                        _icon = new Icon(@"images\DefaultIcon.ico");
+                        _icon = new Icon(@"Assets\Workspaces\DefaultIcon.ico");
                     }
                 }
 
@@ -357,38 +360,7 @@ namespace WorkspacesEditor.Models
             {
                 if (_monitorSetup == null)
                 {
-                    _monitorSetup = Parent.Monitors.Where(x => x.MonitorNumber == MonitorNumber).FirstOrDefault();
-                    if (_monitorSetup == null)
-                    {
-                        // monitors changed: try to determine monitor id based on middle point
-                        int middleX = Position.X + (Position.Width / 2);
-                        int middleY = Position.Y + (Position.Height / 2);
-                        var monitorCandidate = Parent.Monitors.Where(x =>
-                            (x.MonitorDpiUnawareBounds.Left < middleX) &&
-                            (x.MonitorDpiUnawareBounds.Right > middleX) &&
-                            (x.MonitorDpiUnawareBounds.Top < middleY) &&
-                            (x.MonitorDpiUnawareBounds.Bottom > middleY)).FirstOrDefault();
-                        if (monitorCandidate != null)
-                        {
-                            _monitorSetup = monitorCandidate;
-                            MonitorNumber = monitorCandidate.MonitorNumber;
-                        }
-                        else
-                        {
-                            // monitors and even the app's area unknown, set the main monitor (which is closer to (0,0)) as the app's monitor
-                            monitorCandidate = Parent.Monitors.OrderBy(x => Math.Abs(x.MonitorDpiUnawareBounds.Left) + Math.Abs(x.MonitorDpiUnawareBounds.Top)).FirstOrDefault();
-                            if (monitorCandidate != null)
-                            {
-                                _monitorSetup = monitorCandidate;
-                                MonitorNumber = monitorCandidate.MonitorNumber;
-                            }
-                            else
-                            {
-                                // no monitors defined at all.
-                                Logger.LogError($"Wrong workspace setup. No monitors defined for the workspace: {Parent.Name}.");
-                            }
-                        }
-                    }
+                    _monitorSetup = Parent.GetMonitorForApp(this);
                 }
 
                 return _monitorSetup;

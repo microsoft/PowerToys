@@ -57,6 +57,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <!-- Including MessagePack to force version, since it's used by StreamJsonRpc but contains vulnerabilities. After StreamJsonRpc updates the version of MessagePack, we can upgrade StreamJsonRpc instead. -->
+    <PackageReference Include="MessagePack" />
     <PackageReference Include="Microsoft.Windows.Compatibility" />
     <PackageReference Include="StreamJsonRpc" />
     <PackageReference Include="System.Data.SqlClient" /> <!-- It's a dependency of Microsoft.Windows.Compatibility. We're adding it here to force it to the version specified in Directory.Packages.props -->

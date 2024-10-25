@@ -2,8 +2,9 @@
 #include "AppUtils.h"
 
 #include <atlbase.h>
-#include <ShlObj.h>
 #include <propvarutil.h>
+#include <ShlObj.h>
+#include <TlHelp32.h>
 
 #include <filesystem>
 
@@ -28,6 +29,8 @@ namespace Utils
             constexpr const wchar_t* PowerToys = L"PowerToys.exe";
             constexpr const wchar_t* PowerToysSettingsUpper = L"POWERTOYS.SETTINGS.EXE";
             constexpr const wchar_t* PowerToysSettings = L"PowerToys.Settings.exe";
+            constexpr const wchar_t* ApplicationFrameHost = L"APPLICATIONFRAMEHOST.EXE";
+            constexpr const wchar_t* Exe = L".EXE";
         }
 
         AppList IterateAppsFolder()
@@ -184,10 +187,38 @@ namespace Utils
             return IterateAppsFolder();
         }
 
-        std::optional<AppData> GetApp(const std::wstring& appPath, const AppList& apps)
+        DWORD GetParentPid(DWORD pid)
+        {
+            DWORD res = 0;
+            HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+            PROCESSENTRY32 pe = { 0 };
+            pe.dwSize = sizeof(PROCESSENTRY32);
+
+            if (Process32First(h, &pe))
+            {
+                do
+                {
+                    if (pe.th32ProcessID == pid)
+                    {
+                        res = pe.th32ParentProcessID;
+                    }
+                } while (Process32Next(h, &pe));
+            }
+
+            CloseHandle(h);
+            return res;
+        }
+
+        std::optional<AppData> GetApp(const std::wstring& appPath, DWORD pid, const AppList& apps)
         {
             std::wstring appPathUpper(appPath);
             std::transform(appPathUpper.begin(), appPathUpper.end(), appPathUpper.begin(), towupper);
+
+            // filter out ApplicationFrameHost.exe   
+            if (appPathUpper.ends_with(NonLocalizable::ApplicationFrameHost))
+            {
+                return std::nullopt;
+            }
 
             // edge case, "Windows Software Development Kit" has the same app path as "File Explorer"
             if (appPathUpper == NonLocalizable::FileExplorerPath)
@@ -217,6 +248,7 @@ namespace Utils
                 }
             }
 
+            // search in apps list
             for (const auto& appData : apps)
             {
                 if (!appData.installPath.empty())
@@ -226,6 +258,14 @@ namespace Utils
 
                     if (appPathUpper.contains(installPathUpper))
                     {
+                        // Update the install path to keep .exe in the path
+                        if (!installPathUpper.ends_with(NonLocalizable::Exe))
+                        {
+                            auto settingsAppData = appData;
+                            settingsAppData.installPath = appPath;
+                            return settingsAppData;
+                        }
+
                         return appData;
                     }
 
@@ -251,11 +291,43 @@ namespace Utils
 
                 if (appNameUpper == exeNameUpper)
                 {
-                    return appData;
+                    auto result = appData;
+                    result.installPath = appPath;
+                    return result;
                 }
             }
 
+            // try with parent process (fix for Steam)
+            auto parentPid = GetParentPid(pid);
+            auto parentProcessPath = get_process_path(parentPid);
+
+            if (!parentProcessPath.empty())
+            {
+                std::wstring parentDirUpper = std::filesystem::path(parentProcessPath).parent_path().c_str();
+                std::transform(parentDirUpper.begin(), parentDirUpper.end(), parentDirUpper.begin(), towupper);
+
+                if (appPathUpper.starts_with(parentDirUpper))
+                {
+                    Logger::info(L"original process is in the subfolder of the parent process");
+
+                    for (const auto& appData : apps)
+                    {
+                        if (!appData.installPath.empty())
+                        {
+                            std::wstring installDirUpper = std::filesystem::path(appData.installPath).parent_path().c_str();
+                            std::transform(installDirUpper.begin(), installDirUpper.end(), installDirUpper.begin(), towupper);
+
+                            if (installDirUpper == parentDirUpper)
+                            {
+                                return appData;
+                            }
+                        }
+                    }
+                }
+            }
+            
             return AppData{
+                .name = std::filesystem::path(appPath).stem(),
                 .installPath = appPath
             };
         }
@@ -263,7 +335,48 @@ namespace Utils
         std::optional<AppData> GetApp(HWND window, const AppList& apps)
         {
             std::wstring processPath = get_process_path(window);
-            return Utils::Apps::GetApp(processPath, apps);
+            
+            DWORD pid{};
+            GetWindowThreadProcessId(window, &pid);
+
+            return Utils::Apps::GetApp(processPath, pid, apps);
         }
+
+        bool UpdateAppVersion(WorkspacesData::WorkspacesProject::Application& app, const AppList& installedApps)
+        {
+            auto installedApp = std::find_if(installedApps.begin(), installedApps.end(), [&](const AppData& val) { return val.name == app.name; });
+            if (installedApp == installedApps.end())
+            {
+                return false;
+            }
+
+            // Packaged apps have version in the path, it will be outdated after update.
+            // We need make sure the current package is up to date.
+            if (!app.packageFullName.empty())
+            {
+                if (app.packageFullName != installedApp->packageFullName)
+                {
+                    std::wstring exeFileName = app.path.substr(app.path.find_last_of(L"\\") + 1);
+                    app.packageFullName = installedApp->packageFullName;
+                    app.path = installedApp->installPath + L"\\" + exeFileName;
+                    Logger::trace(L"Updated package full name for {}: {}", app.name, app.packageFullName);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        bool UpdateWorkspacesApps(WorkspacesData::WorkspacesProject& workspace, const AppList& installedApps)
+        {
+            bool updated = false;
+            for (auto& app : workspace.apps)
+            {
+                updated |= UpdateAppVersion(app, installedApps);
+            }
+
+            return updated;
+        }
+
     }
 }

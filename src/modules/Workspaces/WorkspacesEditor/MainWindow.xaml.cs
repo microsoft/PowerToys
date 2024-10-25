@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Interop;
 
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using WorkspacesEditor.Utils;
 using WorkspacesEditor.ViewModels;
 

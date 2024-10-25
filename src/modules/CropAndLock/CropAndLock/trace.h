@@ -1,13 +1,12 @@
 #pragma once
+
+#include <common/Telemetry/TraceBase.h>
 #include <modules/interface/powertoy_module_interface.h>
 
 class Trace
 {
 public:
-    static void RegisterProvider() noexcept;
-    static void UnregisterProvider() noexcept;
-
-    class CropAndLock
+    class CropAndLock : public telemetry::TraceBase
     {
     public:
         static void Enable(bool enabled) noexcept;

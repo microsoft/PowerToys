@@ -1197,9 +1197,17 @@ namespace PowerLauncher.ViewModel
 
         public static FlowDirection GetLanguageFlowDirection()
         {
-            bool isCurrentLanguageRightToLeft = System.Windows.Input.InputLanguageManager.Current.CurrentInputLanguage.TextInfo.IsRightToLeft;
+            try
+            {
+                bool isCurrentLanguageRightToLeft = System.Windows.Input.InputLanguageManager.Current.CurrentInputLanguage.TextInfo.IsRightToLeft;
 
-            return isCurrentLanguageRightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+                return isCurrentLanguageRightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+            }
+            catch (CultureNotFoundException ex)
+            {
+                Log.Exception($"CultureNotFoundException: {ex.Message}", ex, MethodBase.GetCurrentMethod().DeclaringType);
+                return FlowDirection.LeftToRight; // default FlowDirection.LeftToRight
+            }
         }
 
         protected virtual void Dispose(bool disposing)

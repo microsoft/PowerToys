@@ -12,7 +12,6 @@
 #include <workspaces-common/WindowFilter.h>
 
 #include <WorkspacesLib/AppUtils.h>
-#include <TlHelp32.h>
 
 namespace SnapshotUtils
 {
@@ -169,29 +168,7 @@ namespace SnapshotUtils
         return false;
     }
 
-    DWORD GetParentPid(DWORD pid)
-    {
-        DWORD res = 0;
-        HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-        PROCESSENTRY32 pe = { 0 };
-        pe.dwSize = sizeof(PROCESSENTRY32);
-
-        if (Process32First(h, &pe))
-        {
-            do
-            {
-                if (pe.th32ProcessID == pid)
-                {
-                    res = pe.th32ParentProcessID;
-                }
-            } while (Process32Next(h, &pe));
-        }
-
-        CloseHandle(h);
-        return res;
-    }
-
-    std::vector<WorkspacesData::WorkspacesProject::Application> GetApps(const std::function<unsigned int(HWND)> getMonitorNumberFromWindowHandle)
+    std::vector<WorkspacesData::WorkspacesProject::Application> GetApps(const std::function<unsigned int(HWND)> getMonitorNumberFromWindowHandle, const std::function<WorkspacesData::WorkspacesProject::Monitor::MonitorRect(unsigned int)> getMonitorRect)
     {
         std::vector<WorkspacesData::WorkspacesProject::Application> apps{};
 
@@ -265,42 +242,36 @@ namespace SnapshotUtils
                 continue;
             }
 
-            auto data = Utils::Apps::GetApp(processPath, installedApps);
+            auto data = Utils::Apps::GetApp(processPath, pid, installedApps);
             if (!data.has_value() || data->name.empty())
             {
-                Logger::info(L"Installed app not found: {}, try parent process", processPath);
-                
-                // try with parent process (fix for Steam)
-                auto parentPid = GetParentPid(pid);
-                auto parentProcessPath = get_process_path(parentPid);
-                if (!parentProcessPath.empty())
-                {
-                    data = Utils::Apps::GetApp(parentProcessPath, installedApps);
-                    if (!data.has_value() || data->name.empty())
-                    {
-                        Logger::info(L"Installed parent app not found: {}", processPath);
-                        continue;
-                    }
+                Logger::info(L"Installed app not found: {}", processPath);
+                continue;
+            }
 
-                    processPath = parentProcessPath;
-                }
-                else
-                {
-                    Logger::info(L"Parent process path not found");
-                    continue;
-                }
+            bool isMinimized = WindowUtils::IsMinimized(window);
+            unsigned int monitorNumber = getMonitorNumberFromWindowHandle(window);
+
+            if (isMinimized)
+            {
+                // set the screen area as position, the values we get for the minimized windows are out of the screens' area
+                WorkspacesData::WorkspacesProject::Monitor::MonitorRect monitorRect = getMonitorRect(monitorNumber);
+                rect.left = monitorRect.left;
+                rect.top = monitorRect.top;
+                rect.right = monitorRect.left + monitorRect.width;
+                rect.bottom = monitorRect.top + monitorRect.height;
             }
 
             WorkspacesData::WorkspacesProject::Application app{
                 .name = data.value().name,
                 .title = title,
-                .path = processPath,
+                .path = data.value().installPath,
                 .packageFullName = data.value().packageFullName,
                 .appUserModelId = data.value().appUserModelId,
                 .commandLineArgs = L"", // GetCommandLineArgs(pid, wbemHelper),
                 .isElevated = IsProcessElevated(pid),
                 .canLaunchElevated = data.value().canLaunchElevated,
-                .isMinimized = WindowUtils::IsMinimized(window),
+                .isMinimized = isMinimized,
                 .isMaximized = WindowUtils::IsMaximized(window),
                 .position = WorkspacesData::WorkspacesProject::Application::Position{
                     .x = rect.left,
@@ -308,7 +279,7 @@ namespace SnapshotUtils
                     .width = rect.right - rect.left,
                     .height = rect.bottom - rect.top,
                 },
-                .monitor = getMonitorNumberFromWindowHandle(window),
+                .monitor = monitorNumber,
             };
 
             apps.push_back(app);
