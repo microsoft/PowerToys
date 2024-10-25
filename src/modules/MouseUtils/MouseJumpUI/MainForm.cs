@@ -166,6 +166,7 @@ internal sealed partial class MainForm : Form
 
             // move mouse pointer
             Logger.LogInfo($"clicked location = {clickedLocation}");
+            Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Telemetry.MouseJumpTeleportCursorEvent());
             MouseHelper.SetCursorPosition(clickedLocation);
         }
 
@@ -201,6 +202,8 @@ internal sealed partial class MainForm : Form
             this.OnPreviewImageUpdated);
 
         stopwatch.Stop();
+
+        Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Telemetry.MouseJumpShowEvent());
 
         // we have to activate the form to make sure the deactivate event fires
         this.Activate();

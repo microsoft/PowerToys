@@ -1,13 +1,11 @@
 #pragma once
+#include <common/Telemetry/TraceBase.h>
 #include <interface/powertoy_module_interface.h>
 #include <unordered_map> 
 
-class Trace
+class Trace : public telemetry::TraceBase
 {
 public:
-    static void RegisterProvider();
-    static void UnregisterProvider();
-
     // Log if the user has AdvancedPaste enabled or disabled
     static void AdvancedPaste_Enable(const bool enabled) noexcept;
 
