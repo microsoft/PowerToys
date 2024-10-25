@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading.Tasks;
+
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using Microsoft.PowerToys.Telemetry;
@@ -29,12 +30,14 @@ public sealed class PasteFormatExecutor(IKernelService kernelService, ICustomTex
 
         var clipboardData = Clipboard.GetContent();
 
-        return pasteFormat.Format switch
-        {
-            PasteFormats.KernelQuery => await _kernelService.TransformClipboardAsync(pasteFormat.Prompt, clipboardData, pasteFormat.IsSavedQuery),
-            PasteFormats.CustomTextTransformation => DataPackageHelpers.CreateFromText(await _customTextTransformService.TransformTextAsync(pasteFormat.Prompt, await clipboardData.GetTextAsync())),
-            _ => await TransformHelpers.TransformAsync(format, clipboardData),
-        };
+        // Run on thread-pool; even though we use Async routines consistently, some actions still occasionally take a long time without yielding.
+        return await Task.Run(async () =>
+            pasteFormat.Format switch
+            {
+                PasteFormats.KernelQuery => await _kernelService.TransformClipboardAsync(pasteFormat.Prompt, clipboardData, pasteFormat.IsSavedQuery),
+                PasteFormats.CustomTextTransformation => DataPackageHelpers.CreateFromText(await _customTextTransformService.TransformTextAsync(pasteFormat.Prompt, await clipboardData.GetTextAsync())),
+                _ => await TransformHelpers.TransformAsync(format, clipboardData),
+            });
     }
 
     private static void WriteTelemetry(PasteFormats format, PasteActionSource source)

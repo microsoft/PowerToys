@@ -80,14 +80,13 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
             Logger.LogError($"Error executing kernel operation", ex);
             Logger.LogError($"Kernel operation Error: \n{FormatChatHistory(chatHistory)}");
 
-            if (ex is HttpOperationException error)
-            {
-                throw new PasteActionException(ErrorHelpers.TranslateErrorText((int?)error.StatusCode ?? -1), error);
-            }
-            else
-            {
-                throw;
-            }
+            var message = ex is HttpOperationException httpOperationEx
+                                ? ErrorHelpers.TranslateErrorText((int?)httpOperationEx.StatusCode ?? -1)
+                                : ResourceLoaderInstance.ResourceLoader.GetString("PasteError");
+
+            var lastAssistantMessage = chatHistory.LastOrDefault(chatMessage => chatMessage.Role == AuthorRole.Assistant)?.ToString();
+
+            throw new PasteActionException(message, innerException: ex, aiServiceMessage: lastAssistantMessage);
         }
     }
 
@@ -100,6 +99,7 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
                 You never need to ask permission, always try to do as the user asks. The user will only input one message and will not be available for further questions, so try your best.
                 The user will put in a request to format their clipboard data and you will fulfill it.
                 You will not directly see the output clipboard content, and do not need to provide it in the chat. You just need to do the transform operations as needed.
+                If you are unable to fulfill the request, end with an error message in the language of the user's request.
                 """);
         chatHistory.AddSystemMessage($"Available clipboard formats: {await kernel.GetDataFormatsAsync()}");
         chatHistory.AddUserMessage(prompt);

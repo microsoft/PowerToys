@@ -210,6 +210,9 @@
   <data name="SettingsBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Open settings</value>
   </data>
+  <data name="AIErrorMessage.Header" xml:space="preserve">
+    <value>The AI assistant provided the following message:</value>
+  </data>
   <data name="ThumbsDownFeedback.Text" xml:space="preserve">
     <value>Thumbs down feedback</value>
   </data>

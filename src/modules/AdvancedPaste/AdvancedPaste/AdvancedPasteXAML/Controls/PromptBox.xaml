@@ -606,11 +606,36 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <TextBlock
-                FontWeight="SemiBold"
-                Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                Style="{StaticResource CaptionTextBlockStyle}"
-                Text="{x:Bind ViewModel.PasteOperationErrorText, Mode=OneWay}" />
+            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                <ToolTipService.ToolTip>
+                    <ToolTip VerticalOffset="-105" Visibility="{x:Bind ViewModel.PasteActionError.HasDetails, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel
+                            MinWidth="300"
+                            HorizontalAlignment="Stretch"
+                            Orientation="Vertical">
+                            <TextBox
+                                x:Name="AIErrorMessage"
+                                x:Uid="AIErrorMessage"
+                                FontSize="12"
+                                IsReadOnly="True"
+                                Text="{x:Bind ViewModel.PasteActionError.Details, Mode=OneWay}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </ToolTip>
+                </ToolTipService.ToolTip>
+                <FontIcon
+                    Margin="0,3,3,0"
+                    VerticalAlignment="Top"
+                    FontSize="12"
+                    Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                    Glyph="&#xE946;"
+                    Visibility="{x:Bind ViewModel.PasteActionError.HasDetails, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <TextBlock
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind ViewModel.PasteActionError.Text, Mode=OneWay}" />
+            </StackPanel>
             <HyperlinkButton
                 x:Uid="SettingsBtn"
                 Grid.Column="1"
