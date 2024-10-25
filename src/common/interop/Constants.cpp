@@ -91,6 +91,10 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::MOUSE_JUMP_SHOW_PREVIEW_EVENT;
     }
+    hstring Constants::TerminateMouseJumpSharedEvent()
+    {
+        return CommonSharedConstants::TERMINATE_MOUSE_JUMP_SHARED_EVENT;
+    }
     hstring Constants::AwakeExitEvent()
     {
         return CommonSharedConstants::AWAKE_EXIT_EVENT;

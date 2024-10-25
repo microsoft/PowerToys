@@ -23,6 +23,7 @@ namespace PowerToys
             static String ShowPowerOCRSharedEvent();
             static String TerminatePowerOCRSharedEvent();
             static String MouseJumpShowPreviewEvent();
+            static String TerminateMouseJumpSharedEvent();
             static String AwakeExitEvent();
             static String ShowPeekEvent();
             static String TerminatePeekEvent();
