@@ -9,8 +9,6 @@ using System.Text.RegularExpressions;
 
 using Common;
 using Microsoft.PowerToys.PreviewHandler.Markdown.Properties;
-using Microsoft.PowerToys.PreviewHandler.Markdown.Telemetry.Events;
-using Microsoft.PowerToys.Telemetry;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 using Windows.System;
@@ -217,25 +215,9 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                     {
                     }
                 });
-
-                try
-                {
-                    PowerToysTelemetry.Log.WriteEvent(new MarkdownFilePreviewed());
-                }
-                catch
-                { // Should not crash if sending telemetry is failing. Ignore the exception.
-                }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                try
-                {
-                    PowerToysTelemetry.Log.WriteEvent(new MarkdownFilePreviewError { Message = ex.Message });
-                }
-                catch
-                { // Should not crash if sending telemetry is failing. Ignore the exception.
-                }
-
                 Controls.Clear();
                 _infoBarDisplayed = true;
                 _infoBar = GetTextBoxControl(Resources.MarkdownNotPreviewedError);

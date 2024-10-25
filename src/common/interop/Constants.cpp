@@ -51,6 +51,10 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::SHOW_COLOR_PICKER_SHARED_EVENT;
     }
+    hstring Constants::TerminateColorPickerSharedEvent()
+    {
+        return CommonSharedConstants::TERMINATE_COLOR_PICKER_SHARED_EVENT;
+    }
     hstring Constants::AdvancedPasteShowUIMessage()
     {
         return CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_MESSAGE;
@@ -63,13 +67,25 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::ADVANCED_PASTE_JSON_MESSAGE;
     }
+    hstring Constants::AdvancedPasteAdditionalActionMessage()
+    {
+        return CommonSharedConstants::ADVANCED_PASTE_ADDITIONAL_ACTION_MESSAGE;
+    }
     hstring Constants::AdvancedPasteCustomActionMessage()
     {
         return CommonSharedConstants::ADVANCED_PASTE_CUSTOM_ACTION_MESSAGE;
     }
+    hstring Constants::AdvancedPasteTerminateAppMessage()
+    {
+        return CommonSharedConstants::ADVANCED_PASTE_TERMINATE_APP_MESSAGE;
+    }
     hstring Constants::ShowPowerOCRSharedEvent()
     {
         return CommonSharedConstants::SHOW_POWEROCR_SHARED_EVENT;
+    }
+    hstring Constants::TerminatePowerOCRSharedEvent()
+    {
+        return CommonSharedConstants::TERMINATE_POWEROCR_SHARED_EVENT;
     }
     hstring Constants::MouseJumpShowPreviewEvent()
     {
@@ -82,6 +98,10 @@ namespace winrt::PowerToys::Interop::implementation
     hstring Constants::ShowPeekEvent()
     {
         return CommonSharedConstants::SHOW_PEEK_SHARED_EVENT;
+    }
+    hstring Constants::TerminatePeekEvent()
+    {
+        return CommonSharedConstants::TERMINATE_PEEK_SHARED_EVENT;
     }
     hstring Constants::PowerAccentExitEvent()
     {
@@ -131,6 +151,10 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::SHOW_HOSTS_ADMIN_EVENT;
     }
+    hstring Constants::TerminateHostsSharedEvent()
+    {
+        return CommonSharedConstants::TERMINATE_HOSTS_EVENT;
+    }
     hstring Constants::CropAndLockThumbnailEvent()
     {
         return CommonSharedConstants::CROP_AND_LOCK_THUMBNAIL_EVENT;
@@ -154,5 +178,9 @@ namespace winrt::PowerToys::Interop::implementation
     hstring Constants::WorkspacesHotkeyEvent()
     {
         return CommonSharedConstants::WORKSPACES_HOTKEY_EVENT;
+    }
+    hstring Constants::PowerToysRunnerTerminateSettingsEvent()
+    {
+        return CommonSharedConstants::TERMINATE_SETTINGS_SHARED_EVENT;
     }
 }

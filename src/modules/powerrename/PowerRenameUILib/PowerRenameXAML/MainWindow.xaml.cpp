@@ -12,6 +12,8 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/process_path.h>
 
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
+
 #include <atlstr.h>
 #include <exception>
 #include <string>
@@ -104,6 +106,8 @@ namespace winrt::PowerRenameUI::implementation
     MainWindow::MainWindow() :
         m_allSelected{ true }, m_managerEvents{ this }
     {
+        Trace::RegisterProvider();
+
         auto windowNative{ this->try_as<::IWindowNative>() };
         winrt::check_bool(windowNative);
         windowNative->get_WindowHandle(&m_window);
@@ -211,6 +215,8 @@ namespace winrt::PowerRenameUI::implementation
 
         InitializeComponent();
 
+        m_etwTrace.UpdateState(true);
+
         listView_ExplorerItems().ApplyTemplate();
 #ifdef ENABLE_RECYCLING_VIRTUALIZATION_MODE
         if (auto scrollViewer = FindScrollViewer(listView_ExplorerItems()); scrollViewer)
@@ -313,6 +319,11 @@ namespace winrt::PowerRenameUI::implementation
         {
             LastRunSettingsInstance().UpdateLastWindowSize(m_updatedWindowSize->first, m_updatedWindowSize->second);
         }
+
+        m_etwTrace.Flush();
+        m_etwTrace.UpdateState(false);
+
+        Trace::UnregisterProvider();
     }
 
     void MainWindow::InvalidateItemListViewState()

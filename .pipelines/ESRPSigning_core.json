@@ -166,6 +166,7 @@
                 "PowerToys.FindMyMouse.dll",
                 "PowerToys.MouseHighlighter.dll",
                 "PowerToys.MouseJump.dll",
+                "PowerToys.MouseJump.Common.dll",
                 "PowerToys.MousePointerCrosshairs.dll",
                 "PowerToys.MouseJumpUI.dll",
                 "PowerToys.MouseJumpUI.exe",
