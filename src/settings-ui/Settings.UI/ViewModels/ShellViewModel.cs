@@ -77,10 +77,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             NavigationService.NavigationFailed += Frame_NavigationFailed;
             NavigationService.Navigated += Frame_Navigated;
             this.navigationView.BackRequested += OnBackRequested;
-
-            var topLevelItems = navigationView.MenuItems.OfType<NavigationViewItem>().ToArray();
-
-            _fullListOfNavViewItems = topLevelItems.Union(topLevelItems.SelectMany(menuItem => menuItem.MenuItems.OfType<NavigationViewItem>())).ToArray();
+            if (_fullListOfNavViewItems == null)
+            {
+                 var topLevelItems = navigationView.MenuItems.OfType<NavigationViewItem>();
+                 _fullListOfNavViewItems = topLevelItems.Union(topLevelItems.SelectMany(menuItem => menuItem.MenuItems.OfType<NavigationViewItem>())).ToArray();
+            }
         }
 
         private static KeyboardAccelerator BuildKeyboardAccelerator(VirtualKey key, VirtualKeyModifiers? modifiers = null)
