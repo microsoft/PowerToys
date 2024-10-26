@@ -86,6 +86,68 @@ Most contributions require you to agree to a [Contributor License Agreement (CLA
 
 For guidance on developing for PowerToys, please read the [developer docs](/doc/devdocs) for a detailed breakdown. This includes how to setup your computer to compile.
 
+## Usage Guidelines
+
+### General Usage
+
+PowerToys provides a set of utilities to enhance your Windows experience. Each utility is designed to solve a specific problem or improve productivity. To use PowerToys, follow these steps:
+
+1. **Launch PowerToys**: After installation, launch PowerToys from the Start menu or system tray.
+2. **Configure Utilities**: Open the PowerToys settings to configure each utility according to your preferences.
+3. **Use Shortcuts**: Many utilities have keyboard shortcuts for quick access. Refer to the settings for each utility to learn the shortcuts.
+
+### Utility-Specific Usage
+
+- **FancyZones**: Create and manage window layouts to improve multitasking.
+- **PowerRename**: Batch rename files with advanced options.
+- **Image Resizer**: Quickly resize images by right-clicking them in File Explorer.
+- **Keyboard Manager**: Remap keys and create custom shortcuts.
+- **PowerToys Run**: Launch applications and search for files with a quick keyboard shortcut.
+
+Refer to the [PowerToys documentation][usingPowerToys-docs-link] for detailed usage instructions for each utility.
+
+## Installation Steps for Different Platforms
+
+### Windows
+
+1. **Download Installer**: Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and download the installer for your architecture (x64 or ARM64).
+2. **Run Installer**: Double-click the downloaded installer and follow the on-screen instructions to complete the installation.
+3. **Launch PowerToys**: After installation, launch PowerToys from the Start menu or system tray.
+
+### macOS (Coming Soon)
+
+We are working on bringing PowerToys to macOS. Stay tuned for updates!
+
+### Linux (Coming Soon)
+
+We are working on bringing PowerToys to Linux. Stay tuned for updates!
+
+## Contribution Guidelines
+
+We welcome contributions from the community. To contribute to PowerToys, follow these steps:
+
+1. **Fork the Repository**: Fork the PowerToys repository on GitHub to your account.
+2. **Clone the Repository**: Clone the forked repository to your local machine.
+   ```sh
+   git clone https://github.com/your-username/PowerToys.git
+   cd PowerToys
+   ```
+3. **Create a Branch**: Create a new branch for your contribution.
+   ```sh
+   git checkout -b my-feature-branch
+   ```
+4. **Make Changes**: Make your changes and commit them with a descriptive message.
+   ```sh
+   git commit -m "Add new feature"
+   ```
+5. **Push Changes**: Push your changes to your forked repository.
+   ```sh
+   git push origin my-feature-branch
+   ```
+6. **Create a Pull Request**: Open a pull request on the PowerToys GitHub repository to merge your changes.
+
+For more detailed guidelines, refer to the [Contributor's Guide](CONTRIBUTING.md).
+
 ## What's Happening
 
 ### PowerToys Roadmap

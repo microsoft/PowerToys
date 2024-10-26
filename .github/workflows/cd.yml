@@ -1,0 +1,39 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build project
+      run: npm run build
+
+    - name: Deploy to staging
+      run: npm run deploy:staging
+
+    - name: Deploy to production
+      if: github.ref == 'refs/heads/main'
+      run: npm run deploy:production
+
+    - name: Notify stakeholders
+      if: success()
+      run: echo "Deployment successful" | mail -s "Deployment Notification" stakeholder@example.com
