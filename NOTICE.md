@@ -1333,8 +1333,10 @@ EXHIBIT A -Mozilla Public License.
 - LazyCache 2.4.0
 - Mages 2.0.2
 - Markdig.Signed 0.34.0
+- MessagePack 2.5.187
 - Microsoft.CodeAnalysis.NetAnalyzers 8.0.0
 - Microsoft.Data.Sqlite 8.0.7
+- Microsoft.Diagnostics.Tracing.TraceEvent 3.1.16
 - Microsoft.Extensions.DependencyInjection 8.0.0
 - Microsoft.Extensions.Hosting 8.0.0
 - Microsoft.Extensions.Hosting.WindowsServices 8.0.0
@@ -1358,7 +1360,7 @@ EXHIBIT A -Mozilla Public License.
 - ReverseMarkdown 4.1.0
 - ScipBe.Common.Office.OneNote 3.0.1
 - SharpCompress 0.37.2
-- StreamJsonRpc 2.14.24
+- StreamJsonRpc 2.19.27
 - StyleCop.Analyzers 1.2.0-beta.556
 - System.CodeDom 8.0.0
 - System.CommandLine 2.0.0-beta4.22272.1
@@ -1367,7 +1369,7 @@ EXHIBIT A -Mozilla Public License.
 - System.Data.OleDb 8.0.1
 - System.Data.SqlClient 4.8.6
 - System.Diagnostics.EventLog 8.0.1
-- System.Drawing.Common 8.0.6
+- System.Drawing.Common 8.0.7
 - System.IO.Abstractions 17.2.3
 - System.IO.Abstractions.TestingHelpers 17.2.3
 - System.IO.Hashing 8.0.0

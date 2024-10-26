@@ -50,6 +50,12 @@ namespace newplus::utilities
         return false;
     }
 
+    inline bool is_directory(const std::filesystem::path path)
+    {
+        const auto entry = std::filesystem::directory_entry(path);
+        return entry.is_directory();
+    }
+
     inline bool wstring_same_when_comparing_ignore_case(std::wstring stringA, std::wstring stringB)
     {
         transform(stringA.begin(), stringA.end(), stringA.begin(), towupper);

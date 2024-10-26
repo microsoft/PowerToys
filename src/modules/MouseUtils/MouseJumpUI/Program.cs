@@ -13,6 +13,7 @@ using System.Windows.Threading;
 using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Telemetry;
 using MouseJumpUI.Helpers;
 using PowerToys.Interop;
 
@@ -20,6 +21,8 @@ namespace MouseJumpUI;
 
 internal static class Program
 {
+    private static CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
     /// <summary>
     /// The main entry point for the application.
     /// </summary>
@@ -27,6 +30,7 @@ internal static class Program
     private static void Main(string[] args)
     {
         Logger.InitializeLogger("\\MouseJump\\Logs");
+        ETWTrace etwTrace = new ETWTrace();
 
         // To customize application configuration such as set high DPI settings or default font,
         // see https://aka.ms/applicationconfiguration.
@@ -62,13 +66,10 @@ internal static class Program
 
         Logger.LogInfo($"Mouse Jump started from the PowerToys Runner. Runner pid={runnerPid}");
 
-        var cancellationTokenSource = new CancellationTokenSource();
-
         RunnerHelper.WaitForPowerToysRunner(runnerPid, () =>
         {
-            Logger.LogInfo("PowerToys Runner exited. Exiting Mouse Jump");
-            cancellationTokenSource.Cancel();
-            Application.Exit();
+            Logger.LogInfo("PowerToys Runner exited.");
+            TerminateApp();
         });
 
         var settingsHelper = new SettingsHelper();
@@ -80,7 +81,21 @@ internal static class Program
             Dispatcher.CurrentDispatcher,
             cancellationTokenSource.Token);
 
+        NativeEventWaiter.WaitForEventLoop(
+            Constants.TerminateMouseJumpSharedEvent(),
+            TerminateApp,
+            Dispatcher.CurrentDispatcher,
+            cancellationTokenSource.Token);
+
         Application.Run();
+        etwTrace?.Dispose();
+    }
+
+    private static void TerminateApp()
+    {
+        Logger.LogInfo("Exiting Mouse Jump.");
+        cancellationTokenSource.Cancel();
+        Application.Exit();
     }
 
     private static MouseJumpSettings ReadSettings()

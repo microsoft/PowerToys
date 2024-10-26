@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Timers;
+
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;

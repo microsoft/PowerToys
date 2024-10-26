@@ -18,6 +18,7 @@
 
 #include "Generated Files/resource.h"
 
+#include <common/telemetry/EtwTrace/EtwTrace.h>
 #include <common/utils/elevation.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
@@ -32,6 +33,7 @@
 using namespace Microsoft::WRL;
 
 HINSTANCE g_hInst = 0;
+Shared::Trace::ETWTrace trace(L"PowerRenameContextMenu");
 
 #define BUFSIZE 4096 * 4
 
@@ -160,6 +162,8 @@ public:
     {
         if (CSettingsInstance().GetEnabled())
         {
+            trace.UpdateState(true);
+
             Trace::Invoked();
             // Set the application path based on the location of the dll
             std::wstring path = get_module_folderpath(g_hInst);
@@ -214,6 +218,9 @@ public:
             }
         }
         Trace::InvokedRet(S_OK);
+
+        trace.Flush();
+        trace.UpdateState(false);
 
         return S_OK;
     }

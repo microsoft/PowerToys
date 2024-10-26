@@ -1,4 +1,6 @@
 ﻿#include "pch.h"
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
+#include <common/utils/EventWaiter.h>
 #include <common/utils/window.h>
 #include <common/utils/ProcessWaiter.h>
 #include <common/utils/winapi_error.h>
@@ -8,6 +10,7 @@
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/trace.h>
+#include <common/interop/shared_constants.h>
 
 const std::wstring instanceMutexName = L"Local\\PowerToys_KBMEngine_InstanceMutex";
 
@@ -18,6 +21,9 @@ int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/,
 {
     winrt::init_apartment();
     LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, L"Engine", LogSettings::keyboardManagerLoggerName);
+
+    Shared::Trace::ETWTrace trace;
+    trace.UpdateState(true);
 
     if (powertoys_gpo::getConfiguredKeyboardManagerEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
     {
@@ -42,9 +48,15 @@ int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/,
     Trace::RegisterProvider();
 
     std::wstring pid = std::wstring(lpCmdLine);
+
+    auto mainThreadId = GetCurrentThreadId();
+
+    EventWaiter ev = EventWaiter(CommonSharedConstants::TERMINATE_KBM_SHARED_EVENT, [&](int) {
+        PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
+    });
+
     if (!pid.empty())
     {
-        auto mainThreadId = GetCurrentThreadId();
         ProcessWaiter::OnProcessTerminate(pid, [mainThreadId](int err) {
             if (err != ERROR_SUCCESS)
             {
@@ -72,6 +84,8 @@ int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/,
 
     kbm.StopLowlevelKeyboardHook();
     Trace::UnregisterProvider();
+
+    trace.Flush();
 
     return 0;
 }
