@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.Media;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using FileActionsMenu.Helpers.Telemetry;
@@ -202,14 +203,15 @@ namespace FileActionsMenu.Helpers
             _conflictTaskDialog.Controls.Add(replaceButton);
             _conflictTaskDialog.Controls.Add(ignoreButton);
             _conflictTaskDialog.Controls.Add(cancelButton);
-            _ = Task.Run(async () =>
+            Thread t = new(new ThreadStart(async () =>
             {
                 await _firstDialogOpened.Task;
-                Task.Delay(1000).Wait();
                 SystemSounds.Exclamation.Play();
+                Thread.Sleep(100);
                 _conflictTaskDialog.Show();
-            });
+            }));
 
+            t.Start();
             await taskCompletionSource.Task;
         }
 
