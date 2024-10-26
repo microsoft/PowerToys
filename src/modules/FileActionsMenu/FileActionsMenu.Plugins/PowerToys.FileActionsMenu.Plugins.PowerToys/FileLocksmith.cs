@@ -30,7 +30,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PowerToys
 
         public IconElement? Icon => IconHelper.GetIconFromModuleName("FileLocksmith");
 
-        public bool IsVisible => GPOWrapperProjection.GPOWrapper.GetConfiguredFileLocksmithEnabledValue() != GPOWrapperProjection.GpoRuleConfigured.Disabled;
+        public bool IsVisible => GPOWrapperProjection.GPOWrapper.GetConfiguredFileLocksmithEnabledValue() != GPOWrapperProjection.GpoRuleConfigured.Disabled && SettingsRepository<GeneralSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Enabled.FileLocksmith;
 
         public Task Execute(object sender, RoutedEventArgs e)
         {

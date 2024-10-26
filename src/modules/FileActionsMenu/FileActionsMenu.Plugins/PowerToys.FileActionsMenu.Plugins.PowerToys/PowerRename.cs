@@ -7,6 +7,7 @@ using FileActionsMenu.Helpers;
 using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Peek.Common.Models;
@@ -29,7 +30,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PowerToys
 
         public IconElement? Icon => IconHelper.GetIconFromModuleName("PowerRename");
 
-        public bool IsVisible => GPOWrapperProjection.GPOWrapper.GetConfiguredPowerRenameEnabledValue() != GPOWrapperProjection.GpoRuleConfigured.Disabled;
+        public bool IsVisible => GPOWrapperProjection.GPOWrapper.GetConfiguredPowerRenameEnabledValue() != GPOWrapperProjection.GpoRuleConfigured.Disabled && SettingsRepository<GeneralSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Enabled.PowerRename;
 
         public Task Execute(object sender, RoutedEventArgs e)
         {

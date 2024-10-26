@@ -3,7 +3,7 @@
     <FileActionsMenuPluginName>PowerToys</FileActionsMenuPluginName>
   </PropertyGroup>
 
-  <Import Project="..\FileActionsMenuPlugin.Props"/>
+  <Import Project="..\FileActionsMenuPlugin.Props" />
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
