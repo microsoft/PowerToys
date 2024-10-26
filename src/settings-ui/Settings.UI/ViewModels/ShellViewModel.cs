@@ -107,10 +107,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void OnItemInvoked(NavigationViewItemInvokedEventArgs args)
         {
-            var item = navigationView.MenuItems
-                            .OfType<NavigationViewItem>()
-                            .First(menuItem => (string)menuItem.Content == (string)args.InvokedItem);
-            var pageType = item.GetValue(NavHelper.NavigateToProperty) as Type;
+            var pageType = args.InvokedItemContainer.GetValue(NavHelper.NavigateToProperty) as Type;
 
             if (pageType != null)
             {
