@@ -1380,6 +1380,6 @@ EXHIBIT A -Mozilla Public License.
 - UnicodeInformation 2.6.0
 - UnitsNet 5.56.0
 - UTF.Unknown 2.5.1
-- WindowsAPICodePack 7.0.4
+- WindowsAPICodePack 8.0.6
 - WinUIEx 2.3.4
 - WPF-UI 3.0.5
