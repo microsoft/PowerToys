@@ -366,7 +366,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 Type pageType = selectedItem.GetValue(NavHelper.NavigateToProperty) as Type;
 
-                if (_navViewParentLookup.TryGetValue(pageType, out var parentItem) && !parentItem.IsExpanded)
+                if (_navViewParentLookup.TryGetValue(pageType, out var parentItem))
                 {
                     parentItem.IsExpanded = true;
                 }
