@@ -4,8 +4,6 @@
 
 using Common;
 using Microsoft.PowerToys.FilePreviewCommon;
-using Microsoft.PowerToys.PreviewHandler.Gcode.Telemetry.Events;
-using Microsoft.PowerToys.Telemetry;
 
 namespace Microsoft.PowerToys.PreviewHandler.Gcode
 {
@@ -86,13 +84,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
 
                 Resize += FormResized;
                 base.DoPreview(fs);
-                try
-                {
-                    PowerToysTelemetry.Log.WriteEvent(new GcodeFilePreviewed());
-                }
-                catch
-                { // Should not crash if sending telemetry is failing. Ignore the exception.
-                }
             }
             catch (Exception ex)
             {
@@ -162,14 +153,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
         /// <param name="dataSource">Stream reference to access source file.</param>
         private void PreviewError<T>(Exception exception, T dataSource)
         {
-            try
-            {
-                PowerToysTelemetry.Log.WriteEvent(new GcodeFilePreviewError { Message = exception.Message });
-            }
-            catch
-            { // Should not crash if sending telemetry is failing. Ignore the exception.
-            }
-
             Controls.Clear();
             _infoBarAdded = true;
             AddTextBoxControl(Properties.Resource.GcodeNotPreviewedError);

@@ -384,7 +384,6 @@ private:
         m_hProcess = sei.hProcess;
     }
 
-
     std::optional<std::wstring> get_pipe_name(const std::wstring& prefix) const
     {
         UUID temp_uuid;
@@ -761,6 +760,8 @@ public:
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
+        Disable(false);
+
         Logger::trace("AdvancedPaste::destroy()");
         delete this;
     }
@@ -851,21 +852,33 @@ public:
         launch_process_and_named_pipe();
     };
 
-    virtual void disable()
+    void Disable(bool traceEvent)
     {
-        Logger::trace("AdvancedPaste::disable()");
         if (m_enabled)
         {
+            send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_TERMINATE_APP_MESSAGE);
+            WaitForSingleObject(m_hProcess, 1500);
+
             m_write_pipe = nullptr;
 
             TerminateProcess(m_hProcess, 1);
-            Trace::AdvancedPaste_Enable(false);
+
+            if (traceEvent)
+            {
+                Trace::AdvancedPaste_Enable(false);
+            }
 
             CloseHandle(m_hProcess);
             m_hProcess = 0;
         }
 
         m_enabled = false;
+    }
+
+    virtual void disable()
+    {
+        Logger::trace("AdvancedPaste::disable()");
+        Disable(true);
     }
 
     virtual bool on_hotkey(size_t hotkeyId) override

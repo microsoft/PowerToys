@@ -5,6 +5,7 @@
 #include "OverlayUI.h"
 #include "Settings.h"
 
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
 #include <common/utils/serialized.h>
 #include "ScreenCapturing.h"
 
@@ -50,6 +51,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         BoundsToolState _boundsToolState;
         CommonState _commonState;
         Settings _settings;
+        Shared::Trace::ETWTrace trace{};
     };
 }
 
