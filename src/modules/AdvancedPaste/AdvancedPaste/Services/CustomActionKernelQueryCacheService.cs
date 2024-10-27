@@ -9,6 +9,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
+using AdvancedPaste.Helpers;
+using AdvancedPaste.Models;
 using AdvancedPaste.Models.KernelQueryCache;
 using AdvancedPaste.Settings;
 using ManagedCommon;
@@ -24,7 +26,7 @@ public sealed class CustomActionKernelQueryCacheService : IKernelQueryCacheServi
     private readonly Dictionary<CacheKey, CacheValue> _memoryCache = [];
     private readonly IUserSettings _userSettings;
 
-    private HashSet<string> _savedUserPrompts = [];
+    private HashSet<string> _cacheablePrompts = [];
 
     private static string Version => Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString() ?? string.Empty;
 
@@ -33,7 +35,7 @@ public sealed class CustomActionKernelQueryCacheService : IKernelQueryCacheServi
         _userSettings = userSettings;
         _userSettings.Changed += OnUserSettingsChanged;
 
-        RefreshSavedUserPrompts();
+        RefreshCacheablePrompts();
 
         _memoryCache = LoadPersistedCacheItems().Where(pair => pair.CacheKey != null)
                                                 .GroupBy(pair => pair.CacheKey, pair => pair.CacheValue)
@@ -46,7 +48,7 @@ public sealed class CustomActionKernelQueryCacheService : IKernelQueryCacheServi
 
     public async Task WriteAsync(CacheKey key, CacheValue value)
     {
-        if (_savedUserPrompts.Contains(key.Prompt))
+        if (_cacheablePrompts.Contains(key.Prompt))
         {
             _memoryCache[key] = value;
             await SaveAsync();
@@ -86,7 +88,7 @@ public sealed class CustomActionKernelQueryCacheService : IKernelQueryCacheServi
 
     private async void OnUserSettingsChanged(object sender, EventArgs e)
     {
-        RefreshSavedUserPrompts();
+        RefreshCacheablePrompts();
 
         if (RemoveInapplicableCacheKeys())
         {
@@ -94,17 +96,24 @@ public sealed class CustomActionKernelQueryCacheService : IKernelQueryCacheServi
         }
     }
 
-    private void RefreshSavedUserPrompts()
+    private void RefreshCacheablePrompts()
     {
-        _savedUserPrompts = _userSettings.CustomActions
-                                         .Select(customAction => customAction.Prompt)
-                                         .ToHashSet(CacheKey.PromptComparer);
+        var localizedActionNames = from metadata in PasteFormat.MetadataDict.Values
+                                   where !string.IsNullOrEmpty(metadata.ResourceId)
+                                   select ResourceLoaderInstance.ResourceLoader.GetString(metadata.ResourceId);
+
+        var customActionPrompts = from customAction in _userSettings.CustomActions
+                                  select customAction.Prompt;
+
+        // Only cache queries with these prompts to prevent the cache from getting too large and to avoid potential privacy issues.
+        _cacheablePrompts = localizedActionNames.Concat(customActionPrompts)
+                                                .ToHashSet(CacheKey.PromptComparer);
     }
 
     private bool RemoveInapplicableCacheKeys()
     {
         var keysToRemove = _memoryCache.Keys
-                                       .Where(key => !_savedUserPrompts.Contains(key.Prompt))
+                                       .Where(key => !_cacheablePrompts.Contains(key.Prompt))
                                        .ToList();
 
         foreach (var key in keysToRemove)
