@@ -6,7 +6,7 @@
   <Import Project="..\FileActionsMenuPlugin.Props"/>
 
   <ItemGroup>
-    <Content Include="..\..\..\..\common\FilePreviewCommon\Assets\Monaco\monaco_languages.json">
+    <Content Include="..\..\..\..\Monaco\monaco_languages.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
