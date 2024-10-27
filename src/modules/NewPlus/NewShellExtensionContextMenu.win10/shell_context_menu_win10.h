@@ -4,16 +4,21 @@
 
 using namespace Microsoft::WRL;
 
-#define NEW_SHELL_EXTENSION_EXPLORER_COMMAND_UUID_STR "69824FC6-4660-4A09-9E7C-48DA63C6CC0F"
+#define NEW_SHELL_EXTENSION_EXPLORER_COMMAND_WIN10_UUID_STR "FF90D477-E32A-4BE8-8CC5-A502A97F5401"
 
-// File Explorer context menu "New+"
-class __declspec(uuid(NEW_SHELL_EXTENSION_EXPLORER_COMMAND_UUID_STR)) shell_context_menu final :
+// File Explorer context menu "New+" for Windows 10
+class __declspec(uuid(NEW_SHELL_EXTENSION_EXPLORER_COMMAND_WIN10_UUID_STR)) shell_context_menu_win10 final :
     public RuntimeClass<
         RuntimeClassFlags<ClassicCom>,
+        IShellExtInit,
         IExplorerCommand,
-        IObjectWithSite>
+        IContextMenu>
 {
 public:
+#pragma region IShellExtInit
+    IFACEMETHODIMP Initialize(_In_opt_ PCIDLIST_ABSOLUTE, _In_ IDataObject* site, HKEY);
+#pragma endregion
+
 #pragma region IExplorerCommand
     IFACEMETHODIMP GetTitle(_In_opt_ IShellItemArray*, _Outptr_result_nullonfailure_ PWSTR* returned_title);
     IFACEMETHODIMP GetIcon(_In_opt_ IShellItemArray*, _Outptr_result_nullonfailure_ PWSTR* returned_icon);
@@ -25,13 +30,15 @@ public:
     IFACEMETHODIMP EnumSubCommands(_COM_Outptr_ IEnumExplorerCommand** returned_enum_commands);
 #pragma endregion
 
-#pragma region IObjectWithSite
-    IFACEMETHODIMP SetSite(_In_ IUnknown* site) noexcept;
-
-    IFACEMETHODIMP GetSite(_In_ REFIID riid, _COM_Outptr_ void** site) noexcept;
+#pragma region IContextMenu
+    IFACEMETHODIMP QueryContextMenu(HMENU hmenu, UINT indexMenu, UINT idCmdFirst, UINT idCmdLast, UINT uFlags) override;
+    IFACEMETHODIMP InvokeCommand(CMINVOKECOMMANDINFO* pici) override;
+    IFACEMETHODIMP GetCommandString(UINT_PTR idCmd, UINT uType, UINT* pReserved, CHAR* pszName, UINT cchMax) override;
 #pragma endregion
 
 protected:
     HINSTANCE instance_handle = 0;
-    ComPtr<IUnknown> site_of_folder;
+    HBITMAP icon_handle = nullptr;
+
+    ComPtr<IDataObject> site_of_folder;
 };
