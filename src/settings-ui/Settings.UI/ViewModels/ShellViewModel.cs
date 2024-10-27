@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -32,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private NavigationViewItem selected;
         private ICommand loadedCommand;
         private ICommand itemInvokedCommand;
-        private static NavigationViewItem[] _fullListOfNavViewItems;
+        private NavigationViewItem[] _fullListOfNavViewItems;
 
         public bool IsBackEnabled
         {
@@ -77,11 +76,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             NavigationService.NavigationFailed += Frame_NavigationFailed;
             NavigationService.Navigated += Frame_Navigated;
             this.navigationView.BackRequested += OnBackRequested;
-            if (_fullListOfNavViewItems == null)
-            {
-                 var topLevelItems = navigationView.MenuItems.OfType<NavigationViewItem>();
-                 _fullListOfNavViewItems = topLevelItems.Union(topLevelItems.SelectMany(menuItem => menuItem.MenuItems.OfType<NavigationViewItem>())).ToArray();
-            }
+            var topLevelItems = navigationView.MenuItems.OfType<NavigationViewItem>();
+            _fullListOfNavViewItems = topLevelItems.Union(topLevelItems.SelectMany(menuItem => menuItem.MenuItems.OfType<NavigationViewItem>())).ToArray();
         }
 
         private static KeyboardAccelerator BuildKeyboardAccelerator(VirtualKey key, VirtualKeyModifiers? modifiers = null)

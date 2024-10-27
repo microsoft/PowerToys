@@ -122,7 +122,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public static bool IsUserAnAdmin { get; set; }
 
-        private static Dictionary<Type, NavigationViewItem> _navViewParentLookup;
+        private Dictionary<Type, NavigationViewItem> _navViewParentLookup = new Dictionary<Type, NavigationViewItem>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ShellPage"/> class.
@@ -141,18 +141,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             IPCResponseHandleList.Add(ReceiveMessage);
             SetTitleBar();
 
-            if (_navViewParentLookup == null)
+            if (_navViewParentLookup.Count > 0)
             {
-                _navViewParentLookup = new Dictionary<Type, NavigationViewItem>();
+                _navViewParentLookup.Clear();
+            }
 
-                var topLevelItems = navigationView.MenuItems.OfType<NavigationViewItem>().ToArray();
+            var topLevelItems = navigationView.MenuItems.OfType<NavigationViewItem>().ToArray();
 
-                foreach (var parent in topLevelItems)
+            foreach (var parent in topLevelItems)
+            {
+                foreach (var child in parent.MenuItems.OfType<NavigationViewItem>())
                 {
-                    foreach (var child in parent.MenuItems.OfType<NavigationViewItem>())
-                    {
-                        _navViewParentLookup.TryAdd(child.GetValue(NavHelper.NavigateToProperty) as Type, parent);
-                    }
+                    _navViewParentLookup.TryAdd(child.GetValue(NavHelper.NavigateToProperty) as Type, parent);
                 }
             }
         }
@@ -366,7 +366,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 Type pageType = selectedItem.GetValue(NavHelper.NavigateToProperty) as Type;
 
-                if (_navViewParentLookup.TryGetValue(pageType, out var parentItem))
+                if (_navViewParentLookup.TryGetValue(pageType, out var parentItem) && !parentItem.IsExpanded)
                 {
                     parentItem.IsExpanded = true;
                 }
