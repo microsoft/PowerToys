@@ -26,6 +26,7 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring ShowPowerOCRSharedEvent();
         static hstring TerminatePowerOCRSharedEvent();
         static hstring MouseJumpShowPreviewEvent();
+        static hstring TerminateMouseJumpSharedEvent();
         static hstring AwakeExitEvent();
         static hstring ShowPeekEvent();
         static hstring TerminatePeekEvent();
