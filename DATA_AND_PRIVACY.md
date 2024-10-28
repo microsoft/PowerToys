@@ -81,7 +81,7 @@ _If you want to find diagnostic data events in the source code, these two links 
   </tr>
   <tr>
     <td>Microsoft.PowerToys.OobeSettingsEvent</td>
-    <td>Logs changes or selections made to settings during OOBE.</td>
+    <td>Triggers when a Settings page is opened from an OOBE page.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.OobeStartedEvent</td>
