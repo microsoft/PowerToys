@@ -98,7 +98,6 @@ Group 3:
 Group 4:
 - Install
 - Functional
-- General
 - FZ Editor
 - FZ
 - File Explorer Add-ons
@@ -107,12 +106,14 @@ Group 4:
 - Crop And Lock
 - Command Not Found
 - DSC
+- Workspaces
 ```
 
 ```
 Group 5:
 - Install
 - Functional
+- General
 - Localization
 - Color Picker
 - FZ Editor
@@ -121,5 +122,4 @@ Group 5:
 - Quick Accent
 - Text Extractor
 - Registry Preview
-- Workspaces
 ```
