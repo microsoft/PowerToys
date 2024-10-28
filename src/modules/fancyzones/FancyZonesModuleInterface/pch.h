@@ -5,7 +5,5 @@
 #include <winrt/base.h>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
-#include <ProjectTelemetry.h>
-#include <TraceLoggingActivity.h>
 #include <wil\common.h>
 #include <wil\result.h>

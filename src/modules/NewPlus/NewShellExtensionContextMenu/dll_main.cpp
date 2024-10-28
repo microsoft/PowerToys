@@ -4,7 +4,10 @@
 #include "dll_main.h"
 #include "trace.h"
 
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
+
 HMODULE module_instance_handle = 0;
+Shared::Trace::ETWTrace trace(L"NewPlusShellExtension");
 
 BOOL APIENTRY DllMain(HMODULE module_handle, DWORD ul_reason_for_call, LPVOID reserved)
 {

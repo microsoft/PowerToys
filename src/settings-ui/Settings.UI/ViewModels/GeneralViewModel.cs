@@ -9,18 +9,20 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
+
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Microsoft.PowerToys.Telemetry;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -143,11 +145,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _autoDownloadUpdatesIsGpoDisabled = GPOWrapper.GetDisableAutomaticUpdateDownloadValue() == GpoRuleConfigured.Enabled;
             _experimentationIsGpoDisallowed = GPOWrapper.GetAllowExperimentationValue() == GpoRuleConfigured.Disabled;
             _showWhatsNewAfterUpdatesIsGpoDisabled = GPOWrapper.GetDisableShowWhatsNewAfterUpdatesValue() == GpoRuleConfigured.Enabled;
+            _enableDataDiagnosticsIsGpoDisallowed = GPOWrapper.GetAllowDataDiagnosticsValue() == GpoRuleConfigured.Disabled;
+
+            if (_enableDataDiagnosticsIsGpoDisallowed)
+            {
+                _enableDataDiagnostics = false;
+            }
+            else
+            {
+                _enableDataDiagnostics = DataDiagnosticsSettings.GetEnabledValue();
+            }
+
+            _enableViewDataDiagnostics = DataDiagnosticsSettings.GetViewEnabledValue();
+            _enableViewDataDiagnosticsOnLoad = _enableViewDataDiagnostics;
 
             if (dispatcherAction != null)
             {
                 _fileWatcher = Helper.GetFileWatcher(string.Empty, UpdatingSettings.SettingsFile, dispatcherAction);
             }
+
+            // Diagnostic data retention policy
+            string etwDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\etw");
+            DeleteDiagnosticDataOlderThan28Days(etwDirPath);
 
             InitializeLanguages();
         }
@@ -196,6 +215,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _showWhatsNewAfterUpdatesIsGpoDisabled;
         private bool _enableExperimentation;
         private bool _experimentationIsGpoDisallowed;
+        private bool _enableDataDiagnostics;
+        private bool _enableDataDiagnosticsIsGpoDisallowed;
+        private bool _enableViewDataDiagnostics;
+        private bool _enableViewDataDiagnosticsOnLoad;
+        private bool _viewDiagnosticDataViewerChanged;
 
         private UpdatingSettings.UpdatingState _updatingState = UpdatingSettings.UpdatingState.UpToDate;
         private string _newAvailableVersion = string.Empty;
@@ -429,9 +453,72 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool EnableDataDiagnostics
+        {
+            get
+            {
+                return _enableDataDiagnostics;
+            }
+
+            set
+            {
+                if (_enableDataDiagnostics != value)
+                {
+                    _enableDataDiagnostics = value;
+
+                    if (_enableDataDiagnostics == false)
+                    {
+                        EnableViewDataDiagnostics = false;
+                    }
+
+                    DataDiagnosticsSettings.SetEnabledValue(_enableDataDiagnostics);
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool ViewDiagnosticDataViewerChanged
+        {
+            get => _viewDiagnosticDataViewerChanged;
+        }
+
+        public bool EnableViewDataDiagnostics
+        {
+            get
+            {
+                return _enableViewDataDiagnostics;
+            }
+
+            set
+            {
+                if (_enableViewDataDiagnostics != value)
+                {
+                    _enableViewDataDiagnostics = value;
+
+                    if (_enableViewDataDiagnostics != _enableViewDataDiagnosticsOnLoad)
+                    {
+                        _viewDiagnosticDataViewerChanged = true;
+                    }
+                    else
+                    {
+                        _viewDiagnosticDataViewerChanged = false;
+                    }
+
+                    DataDiagnosticsSettings.SetViewEnabledValue(_enableViewDataDiagnostics);
+                    OnPropertyChanged(nameof(EnableViewDataDiagnostics));
+                    OnPropertyChanged(nameof(ViewDiagnosticDataViewerChanged));
+                }
+            }
+        }
+
         public bool IsExperimentationGpoDisallowed
         {
             get => _experimentationIsGpoDisallowed;
+        }
+
+        public bool IsDataDiagnosticsGPOManaged
+        {
+            get => _enableDataDiagnosticsIsGpoDisallowed;
         }
 
         public string SettingsBackupAndRestoreDir
@@ -1082,27 +1169,101 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private void InitializeLanguages()
         {
             var lang = LanguageModel.LoadSetting();
-            int i = 0;
+            var selectedLanguageIndex = 0;
 
             foreach (var item in langTagsAndIds)
             {
-                Languages.Add(new LanguageModel { Tag = item.Key, ResourceID = item.Value, Language = GetResourceString(item.Value) });
+                var language = new LanguageModel { Tag = item.Key, ResourceID = item.Value, Language = GetResourceString(item.Value) };
+                var index = GetLanguageIndex(language.Language, item.Key == string.Empty);
+                Languages.Insert(index, language);
 
                 if (item.Key.Equals(lang, StringComparison.Ordinal))
                 {
-                    _initLanguagesIndex = i;
-                    LanguagesIndex = i;
+                    selectedLanguageIndex = index;
                 }
-
-                i++;
+                else if (index <= selectedLanguageIndex)
+                {
+                    selectedLanguageIndex++;
+                }
             }
+
+            _initLanguagesIndex = selectedLanguageIndex;
+            LanguagesIndex = selectedLanguageIndex;
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1309:Use ordinal string comparison", Justification = "Building a user facing list")]
+        private int GetLanguageIndex(string language, bool isDefault)
+        {
+            if (Languages.Count == 0 || isDefault)
+            {
+                return 0;
+            }
+
+            for (var i = 1; i < Languages.Count; i++)
+            {
+                if (string.Compare(Languages[i].Language, language, StringComparison.CurrentCultureIgnoreCase) > 0)
+                {
+                    return i;
+                }
+            }
+
+            return Languages.Count;
         }
 
         private void NotifyLanguageChanged()
         {
-            OutGoingLanguageSettings outsettings = new OutGoingLanguageSettings(langTagsAndIds.ElementAt(LanguagesIndex).Key);
+            OutGoingLanguageSettings outsettings = new OutGoingLanguageSettings(Languages[_languagesIndex].Tag);
 
             SendConfigMSG(outsettings.ToString());
+        }
+
+        internal void RefreshSettingsOnExternalChange()
+        {
+            EnableDataDiagnostics = DataDiagnosticsSettings.GetEnabledValue();
+
+            NotifyPropertyChanged(nameof(EnableDataDiagnostics));
+        }
+
+        // Per retention policy
+        private void DeleteDiagnosticDataOlderThan28Days(string etwDirPath)
+        {
+            if (!Directory.Exists(etwDirPath))
+            {
+                return;
+            }
+
+            var directoryInfo = new DirectoryInfo(etwDirPath);
+            var cutoffDate = DateTime.Now.AddDays(-28);
+
+            foreach (var file in directoryInfo.GetFiles())
+            {
+                if (file.LastWriteTime < cutoffDate)
+                {
+                    try
+                    {
+                        file.Delete();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"Failed to delete file: {file.FullName}. Error: {ex.Message}");
+                    }
+                }
+            }
+        }
+
+        internal void ViewDiagnosticData()
+        {
+            string etwDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\etw");
+            string tracerptPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "system32");
+
+            ETLConverter converter = new ETLConverter(etwDirPath, tracerptPath);
+            Task.Run(() => converter.ConvertDiagnosticsETLsAsync()).Wait();
+
+            if (Directory.Exists(etwDirPath))
+            {
+                // Open etw dir in FileExplorer
+                Process.Start("explorer.exe", etwDirPath);
+            }
         }
     }
 }

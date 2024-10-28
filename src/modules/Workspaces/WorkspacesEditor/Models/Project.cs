@@ -251,6 +251,7 @@ namespace WorkspacesEditor.Models
             {
                 Models.Application newApp = new Models.Application()
                 {
+                    Id = app.Id != null ? app.Id : $"{{{Guid.NewGuid().ToString()}}}",
                     AppName = app.Application,
                     AppPath = app.ApplicationPath,
                     AppTitle = app.Title,
@@ -372,6 +373,45 @@ namespace WorkspacesEditor.Models
             {
                 app.IsExpanded = false;
             }
+        }
+
+        internal MonitorSetup GetMonitorForApp(Application app)
+        {
+            var monitorSetup = Monitors.Where(x => x.MonitorNumber == app.MonitorNumber).FirstOrDefault();
+            if (monitorSetup == null)
+            {
+                // monitors changed: try to determine monitor id based on middle point
+                int middleX = app.Position.X + (app.Position.Width / 2);
+                int middleY = app.Position.Y + (app.Position.Height / 2);
+                var monitorCandidate = Monitors.Where(x =>
+                    (x.MonitorDpiUnawareBounds.Left < middleX) &&
+                    (x.MonitorDpiUnawareBounds.Right > middleX) &&
+                    (x.MonitorDpiUnawareBounds.Top < middleY) &&
+                    (x.MonitorDpiUnawareBounds.Bottom > middleY)).FirstOrDefault();
+                if (monitorCandidate != null)
+                {
+                    app.MonitorNumber = monitorCandidate.MonitorNumber;
+                    return monitorCandidate;
+                }
+                else
+                {
+                    // monitors and even the app's area unknown, set the main monitor (which is closer to (0,0)) as the app's monitor
+                    monitorCandidate = Monitors.OrderBy(x => Math.Abs(x.MonitorDpiUnawareBounds.Left) + Math.Abs(x.MonitorDpiUnawareBounds.Top)).FirstOrDefault();
+                    if (monitorCandidate != null)
+                    {
+                        app.MonitorNumber = monitorCandidate.MonitorNumber;
+                        return monitorCandidate;
+                    }
+                    else
+                    {
+                        // no monitors defined at all.
+                        Logger.LogError($"Wrong workspace setup. No monitors defined for the workspace: {Name}.");
+                        return null;
+                    }
+                }
+            }
+
+            return monitorSetup;
         }
     }
 }
