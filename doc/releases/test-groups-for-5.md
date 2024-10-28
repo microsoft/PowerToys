@@ -32,6 +32,8 @@ All:
 - Command Not Found
 - DSC
 - Advanced Paste
+- Workspaces
+- New+
 ```
 
 ```
@@ -49,30 +51,13 @@ Group 1:
 - Hosts File Editor
 - GPO
 - Peek
-- MWB
 - Advanced Paste
+- Workspaces
+- New+
 ```
 
 ```
 Group 2:
-- Keyboard Manager
-- PowerRename
-- PowerToys Run
-- Shortcut Guide
-- OOBE
-- Mouse Utils
-- VCM
-- AlwaysOnTop
-- Hosts File Editor
-- File Locksmith
-- Registry Preview
-- Peek
-- Environment Variables
-- DSC
-```
-
-```
-Group 3:
 - Image Resizer
 - PowerRename
 - PowerToys Run
@@ -87,6 +72,26 @@ Group 3:
 - Environment Variables
 - Command Not Found
 - Advanced Paste
+- New+
+```
+
+```
+Group 3:
+- Keyboard Manager
+- PowerRename
+- PowerToys Run
+- Shortcut Guide
+- OOBE
+- Mouse Utils
+- VCM
+- AlwaysOnTop
+- Hosts File Editor
+- File Locksmith
+- Registry Preview
+- Peek
+- MWB
+- Environment Variables
+- DSC
 ```
 
 ```
@@ -116,4 +121,5 @@ Group 5:
 - Quick Accent
 - Text Extractor
 - Registry Preview
+- Workspaces
 ```
