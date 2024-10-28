@@ -965,7 +965,7 @@ _If you want to find diagnostic data events in the source code, these two links 
   </tr>
 </table>
 
-<!-- back up of table template
+<!-- back up of table
 
 <table style="width:100%">
   <tr>
