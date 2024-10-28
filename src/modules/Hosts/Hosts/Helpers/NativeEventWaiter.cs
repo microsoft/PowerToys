@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 using Microsoft.UI.Dispatching;
 
@@ -14,7 +15,7 @@ namespace Hosts.Helpers
         public static void WaitForEventLoop(string eventName, Action callback)
         {
             var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-            new Thread(() =>
+            new Task(() =>
             {
                 var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
                 while (true)
