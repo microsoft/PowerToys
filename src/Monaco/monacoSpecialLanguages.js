@@ -2,18 +2,20 @@
 
 import { regDefinition } from './customLanguages/reg.js';
 import { gitignoreDefinition } from './customLanguages/gitignore.js';
+import { srtDefinition } from './customLanguages/srt.js';
 
 export async function registerAdditionalLanguages(monaco){
     await languageDefinitions();
-    registerAdditionalLanguage("cppExt", [".ino", ".pde"], "cpp", monaco)
-    registerAdditionalLanguage("xmlExt", [".wsdl", ".csproj", ".vcxproj", ".vbproj", ".fsproj"], "xml", monaco)
-    registerAdditionalLanguage("txtExt", [".sln", ".log", ".vsconfig", ".env", ".srt"], "txt", monaco)
-    registerAdditionalLanguage("razorExt", [".razor"], "razor", monaco)
-    registerAdditionalLanguage("vbExt", [".vbs"], "vb", monaco)
-    registerAdditionalLanguage("iniExt", [".inf", ".gitconfig", ".gitattributes", ".editorconfig"], "ini", monaco)
-    registerAdditionalLanguage("shellExt", [".ksh", ".zsh", ".bsh"], "shell", monaco)
-    registerAdditionalNewLanguage("reg", [".reg"], regDefinition(), monaco)
-    registerAdditionalNewLanguage("gitignore", [".gitignore"], gitignoreDefinition(), monaco)
+    registerAdditionalLanguage("cppExt", [".ino", ".pde"], "cpp", monaco);
+    registerAdditionalLanguage("xmlExt", [".wsdl", ".csproj", ".vcxproj", ".vbproj", ".fsproj"], "xml", monaco);
+    registerAdditionalLanguage("txtExt", [".sln", ".log", ".vsconfig", ".env"], "txt", monaco);
+    registerAdditionalLanguage("razorExt", [".razor"], "razor", monaco);
+    registerAdditionalLanguage("vbExt", [".vbs"], "vb", monaco);
+    registerAdditionalLanguage("iniExt", [".inf", ".gitconfig", ".gitattributes", ".editorconfig"], "ini", monaco);
+    registerAdditionalLanguage("shellExt", [".ksh", ".zsh", ".bsh"], "shell", monaco);
+    registerAdditionalNewLanguage("reg", [".reg"], regDefinition(), monaco);
+    registerAdditionalNewLanguage("gitignore", [".gitignore"], gitignoreDefinition(), monaco);
+    registerAdditionalNewLanguage("srt", [".srt"], srtDefinition(), monaco);
 }
 
 // Language definitions taken from Monaco source code
