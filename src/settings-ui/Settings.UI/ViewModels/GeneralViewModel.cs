@@ -168,6 +168,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             string etwDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\etw");
             DeleteDiagnosticDataOlderThan28Days(etwDirPath);
 
+            string localLowEtwDirPath = Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), "AppData", "LocalLow", "Microsoft", "PowerToys", "etw");
+            DeleteDiagnosticDataOlderThan28Days(localLowEtwDirPath);
+
             InitializeLanguages();
         }
 
@@ -1253,7 +1256,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         internal void ViewDiagnosticData()
         {
+            string localLowEtwDirPath = Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), "AppData", "LocalLow", "Microsoft", "PowerToys", "etw");
             string etwDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\etw");
+
+            string[] localLowEtlFiles = Directory.GetFiles(localLowEtwDirPath, "*.etl");
+
+            foreach (string file in localLowEtlFiles)
+            {
+                string fileName = Path.GetFileName(file);
+                string destFile = Path.Combine(etwDirPath, fileName);
+
+                try
+                {
+                    File.Copy(file, destFile, overwrite: true);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to copy etl file: {fileName}. Error: {ex.Message}");
+                }
+            }
+
             string tracerptPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "system32");
 
             ETLConverter converter = new ETLConverter(etwDirPath, tracerptPath);
