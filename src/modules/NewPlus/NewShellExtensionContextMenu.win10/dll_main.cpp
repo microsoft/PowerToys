@@ -1,9 +1,13 @@
-// dllmain.cpp : Defines the entry point for the DLL application.
 #include "pch.h"
 
 #include "shell_context_menu_win10.h"
+#include "dll_main.h"
+#include "trace.h"
+
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
 
 HMODULE module_instance_handle = 0;
+Shared::Trace::ETWTrace trace(L"NewPlusShellExtensionWin10");
 
 BOOL APIENTRY DllMain(HMODULE module_handle, DWORD ul_reason_for_call, LPVOID reserved)
 {
@@ -11,12 +15,12 @@ BOOL APIENTRY DllMain(HMODULE module_handle, DWORD ul_reason_for_call, LPVOID re
     {
     case DLL_PROCESS_ATTACH:
         module_instance_handle = module_handle;
-        // Trace::RegisterProvider();
-        // newplus::utilities::init_logger();
+        Trace::RegisterProvider();
+        newplus::utilities::init_logger();
         break;
 
     case DLL_PROCESS_DETACH:
-        // Trace::UnregisterProvider();
+        Trace::UnregisterProvider();
         break;
     }
     return TRUE;
@@ -37,4 +41,4 @@ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Outptr_ LPVOID
     return Module<InProc>::GetModule().GetClassObject(rclsid, riid, ppv);
 }
 
-CoCreatableClass(shell_context_menu)
+CoCreatableClass(shell_context_menu_win10)

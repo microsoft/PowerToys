@@ -20,7 +20,9 @@
 #include <atlbase.h>
 #include <wrl.h>
 #include <wrl/module.h>
+#include <wrl/client.h>
 #include <unknwn.h>
+using namespace Microsoft::WRL;
 
 // PowerToys project common
 #include <ProjectTelemetry.h>
