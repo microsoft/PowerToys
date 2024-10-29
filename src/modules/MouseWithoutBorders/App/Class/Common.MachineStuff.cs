@@ -43,7 +43,7 @@ namespace MouseWithoutBorders
 
     internal partial class Common
     {
-        private static readonly object McMatrixLock = new();
+        private static readonly Lock McMatrixLock = new();
 
         internal const byte MAX_MACHINE = 4;
         internal const byte MAX_SOCKET = MAX_MACHINE * 2;
