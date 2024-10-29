@@ -4,7 +4,7 @@
 
 using System;
 using System.Threading;
-using System.Threading.Tasks;
+
 using Microsoft.UI.Dispatching;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
@@ -14,7 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         public static void WaitForEventLoop(string eventName, Action callback)
         {
             var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-            new Task(() =>
+            var t = new Thread(() =>
             {
                 var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
                 while (true)
@@ -24,7 +24,10 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                         dispatcherQueue.TryEnqueue(() => callback());
                     }
                 }
-            }).Start();
+            });
+
+            t.IsBackground = true;
+            t.Start();
         }
     }
 }
