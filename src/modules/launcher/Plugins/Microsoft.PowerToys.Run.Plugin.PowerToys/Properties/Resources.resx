@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Action_Open_Settings" xml:space="preserve">
-    <value>Open settings (Ctrl+Shift+S)</value>
+    <value>Go to settings (Ctrl+Shift+S)</value>
   </data>
   <data name="Action_Run_As_Administrator" xml:space="preserve">
     <value>Run as administrator (Ctrl+Shift+Enter)</value>

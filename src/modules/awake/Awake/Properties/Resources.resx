@@ -122,6 +122,7 @@
   </data>
   <data name="AWAKE_EXIT" xml:space="preserve">
     <value>Exit</value>
+    <comment>is a verb</comment>
   </data>
   <data name="AWAKE_HOURS" xml:space="preserve">
     <value>{0} hours</value>

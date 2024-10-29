@@ -166,7 +166,7 @@
     <value>Couldn't modify File Explorer modules</value>
   </data>
   <data name="FileExplorer_Admin_Restart_Warning_Open_Settings" xml:space="preserve">
-    <value>Open Settings</value>
+    <value>Go to settings</value>
   </data>
   <data name="FileExplorer_Admin_Restart_Warning_Dont_Show_Again" xml:space="preserve">
     <value>Don't show again</value>
