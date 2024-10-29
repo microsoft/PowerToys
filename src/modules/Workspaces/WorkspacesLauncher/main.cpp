@@ -59,23 +59,27 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         return 1;
     }
 
-    if (is_process_elevated())
+    if (!cmdArgs.isRestarted)
     {
-        Logger::warn("Workspaces Launcher is elevated, restart");
+        // check if restart is needed. Only check it if not yet restarted to avoid endless restarting. Restart is needed if the process is elevated.
+        if (is_process_elevated())
+        {
+            Logger::warn("Workspaces Launcher is elevated, restart");
 
-        constexpr DWORD exe_path_size = 0xFFFF;
-        auto exe_path = std::make_unique<wchar_t[]>(exe_path_size);
-        GetModuleFileNameW(nullptr, exe_path.get(), exe_path_size);
+            constexpr DWORD exe_path_size = 0xFFFF;
+            auto exe_path = std::make_unique<wchar_t[]>(exe_path_size);
+            GetModuleFileNameW(nullptr, exe_path.get(), exe_path_size);
 
-        const auto modulePath = get_module_folderpath();
+            const auto modulePath = get_module_folderpath();
 
-        std::string cmdLineStr(cmdline);
-        std::wstring cmdLineWStr(cmdLineStr.begin(), cmdLineStr.end());
+            std::string cmdLineStr(cmdline);
+            std::wstring cmdLineWStr(cmdLineStr.begin(), cmdLineStr.end());
 
-        std::wstring cmd = cmdArgs.workspaceId + L" " + std::to_wstring(cmdArgs.invokePoint);
+            std::wstring cmd = cmdArgs.workspaceId + L" " + std::to_wstring(cmdArgs.invokePoint) + L" " + NonLocalizable::restartedString;
 
-        RunNonElevatedEx(exe_path.get(), cmd, modulePath);
-        return 1;
+            RunNonElevatedEx(exe_path.get(), cmd, modulePath);
+            return 1;
+        }
     }
 
     // COM should be initialized before ShellExecuteEx is called.
