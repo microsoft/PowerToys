@@ -38,18 +38,6 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         return 0;
     }
 
-    auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
-    if (mutex == nullptr)
-    {
-        Logger::error(L"Failed to create mutex. {}", get_last_error_or_default(GetLastError()));
-    }
-
-    if (GetLastError() == ERROR_ALREADY_EXISTS)
-    {
-        Logger::warn(L"WorkspacesLauncher instance is already running");
-        return 0;
-    }
-
     std::wstring cmdLineStr{ GetCommandLineW() };
     auto cmdArgs = split(cmdLineStr, L" ");
     if (cmdArgs.workspaceId.empty())
@@ -80,6 +68,18 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
             RunNonElevatedEx(exe_path.get(), cmd, modulePath);
             return 1;
         }
+    }
+
+    auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
+    if (mutex == nullptr)
+    {
+        Logger::error(L"Failed to create mutex. {}", get_last_error_or_default(GetLastError()));
+    }
+
+    if (GetLastError() == ERROR_ALREADY_EXISTS)
+    {
+        Logger::warn(L"WorkspacesLauncher instance is already running");
+        return 0;
     }
 
     // COM should be initialized before ShellExecuteEx is called.
