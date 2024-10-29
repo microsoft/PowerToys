@@ -40,6 +40,7 @@
             </RegistryKey>
             <RemoveFolder Id="RemoveFolderNewPlusAssetsFolder" Directory="NewPlusAssetsInstallFolder" On="uninstall"/>
          </Component>
+         <ComponentRef Id="NewPlus_ShellExtension_win10" />
       </ComponentGroup>
 
       
