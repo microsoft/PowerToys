@@ -23,6 +23,8 @@ using MouseWithoutBorders.Core;
 // </history>
 using MouseWithoutBorders.Exceptions;
 
+using Thread = MouseWithoutBorders.Core.Thread;
+
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.TcpServer.#Close()", Justification = "Dotnet port with style preservation")]
 
 namespace MouseWithoutBorders.Class

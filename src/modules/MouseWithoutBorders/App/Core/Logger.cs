@@ -14,6 +14,9 @@ using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 
+using MouseWithoutBorders.Class;
+using MouseWithoutBorders.Exceptions;
+
 // <summary>
 //     Logging.
 // </summary>
@@ -22,9 +25,6 @@ using System.Windows.Forms;
 //     2009-... modified by Truong Do (TruongDo).
 //     2023- Included in PowerToys.
 // </history>
-using MouseWithoutBorders.Class;
-using MouseWithoutBorders.Exceptions;
-
 namespace MouseWithoutBorders.Core;
 
 internal static class Logger

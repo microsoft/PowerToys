@@ -22,6 +22,8 @@ using Microsoft.PowerToys.Telemetry;
 using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Core;
 
+using Thread = MouseWithoutBorders.Core.Thread;
+
 namespace MouseWithoutBorders
 {
     /* Common.DragDrop.cs

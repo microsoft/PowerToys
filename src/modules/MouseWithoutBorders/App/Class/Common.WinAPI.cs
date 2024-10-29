@@ -23,6 +23,8 @@ using System.Windows.Forms;
 using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Core;
 
+using Thread = MouseWithoutBorders.Core.Thread;
+
 namespace MouseWithoutBorders
 {
     // Desktops, and GetScreenConfig routines

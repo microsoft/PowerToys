@@ -21,6 +21,8 @@ using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Core;
 using MouseWithoutBorders.Form;
 
+using Thread = MouseWithoutBorders.Core.Thread;
+
 namespace MouseWithoutBorders
 {
     internal partial class Common

@@ -23,6 +23,8 @@ using MouseWithoutBorders.Core;
 using MouseWithoutBorders.Form;
 using Windows.UI.Input.Preview.Injection;
 
+using Thread = MouseWithoutBorders.Core.Thread;
+
 namespace MouseWithoutBorders
 {
     internal partial class Common

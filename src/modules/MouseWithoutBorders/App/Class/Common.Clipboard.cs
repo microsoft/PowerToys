@@ -32,6 +32,7 @@ using MouseWithoutBorders.Core;
 using MouseWithoutBorders.Exceptions;
 
 using SystemClipboard = System.Windows.Forms.Clipboard;
+using Thread = MouseWithoutBorders.Core.Thread;
 
 namespace MouseWithoutBorders
 {
