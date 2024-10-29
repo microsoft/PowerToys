@@ -275,6 +275,7 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     const std::wstring_view cant_drag_elevated_disable = L"cant_drag_elevated_disable/";
     const std::wstring_view couldnt_toggle_powerpreview_modules_disable = L"couldnt_toggle_powerpreview_modules_disable/";
     const std::wstring_view open_settings = L"open_settings/";
+    const std::wstring_view open_overview = L"open_overview/";
     const std::wstring_view update_now = L"update_now/";
 
     if (param == cant_drag_elevated_disable)
@@ -294,6 +295,11 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     else if (param == open_settings)
     {
         open_menu_from_another_instance(std::nullopt);
+        return toast_notification_handler_result::exit_success;
+    }
+    else if (param == open_overview)
+    {
+        open_menu_from_another_instance("Overview");
         return toast_notification_handler_result::exit_success;
     }
     else
