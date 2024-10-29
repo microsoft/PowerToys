@@ -275,12 +275,12 @@ Mouse Jump:
 
 ## Crop And Lock
  * Thumbnail mode
-   - [ ] Test with win32 app
-   - [ ] Test with packaged app
+   - [x] Test with win32 app
+   - [x] Test with packaged app
    
  * Reparent mode (there are known issues where reparent mode doesn't work for some apps)
-   - [ ] Test with win32 app
-   - [ ] Test with packaged app
+   - [x] Test with win32 app
+   - [x] Test with packaged app
 
 ## Environment Variables
  * NOTE: Make backup of USER and SYSTEM Path and TMP variables before testing so you can revert those is something goes wrong!
