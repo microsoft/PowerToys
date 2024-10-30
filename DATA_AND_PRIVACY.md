@@ -41,7 +41,7 @@ _If you want to find diagnostic data events in the source code, these two links 
   </tr>
   <tr>
     <td>Microsoft.PowerToys.GeneralSettingsChanged</td>
-    <td>Tracks changes made to general settings within PowerToys.</td>
+    <td>Logs changes made to general settings within PowerToys.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.Runner_Launch</td>
@@ -517,75 +517,75 @@ _If you want to find diagnostic data events in the source code, these two links 
   </tr>
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_AppSpecificShortcutRemapConfigurationLoaded</td>
-    <td>x</td>
+    <td>Indicates that the application-specific shortcut remap configuration has been successfully loaded.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_AppSpecificShortcutRemapCount</td>
-    <td>x</td>
+    <td>Logs the number of application-specific shortcut remaps configured by the user.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_AppSpecificShortcutToShortcutRemapInvoked</td>
-    <td>x</td>
+    <td>Logs each instance when an application-specific shortcut-to-shortcut remap is used.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_DailyAppSpecificShortcutToKeyRemapInvoked</td>
-    <td>x</td>
+    <td>Logs the daily count of application-specific shortcut-to-key remaps executed by the user.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_DailyAppSpecificShortcutToShortcutRemapInvoked</td>
-    <td>x</td>
+    <td>Logs the daily count of application-specific shortcut-to-shortcut remaps executed by the user.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_DailyKeyToKeyRemapInvoked</td>
-    <td>x</td>
+    <td>Logs the daily count of key-to-key remaps used by the user.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_DailyKeyToShortcutRemapInvoked</td>
-    <td>x</td>
+    <td>Logs the daily count of key-to-shortcut remaps used by the user.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_DailyShortcutToKeyRemapInvoked</td>
-    <td>x</td>
+    <td>Logs the daily count of shortcut-to-key remaps used by the user.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_DailyShortcutToShortcutRemapInvoked</td>
-    <td>x</td>
+    <td>Logs the daily count of shortcut-to-shortcut remaps used by the user.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_EnableKeyboardManager</td>
-    <td>x</td>
+    <td>Indicates that the Keyboard Manager has been enabled in PowerToys settings.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_KeyRemapConfigurationLoaded</td>
-    <td>x</td>
+    <td>Indicates that the key remap configuration has been successfully loaded.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_KeyRemapCount</td>
-    <td>x</td>
+    <td>Logs the number of individual key remaps configured by the user.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_KeyToKeyRemapInvoked</td>
-    <td>x</td>
+    <td>Logs each instance of a key-to-key remap being used.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_KeyToShortcutRemapInvoked</td>
-    <td>x</td>
+    <td>Logs each instance of a key-to-shortcut remap being used.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_OSLevelShortcutRemapCount</td>
-    <td>x</td>
+    <td>Logs the total number of OS-level shortcut remaps configured by the user.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_OSLevelShortcutToKeyRemapInvoked</td>
-    <td>x</td>
+    <td>Logs each instance of an OS-level shortcut-to-key remap being used.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_OSLevelShortcutToShortcutRemapInvoked</td>
-    <td>x</td>
+    <td>Logs each instance of an OS-level shortcut-to-shortcut remap being used.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_ShortcutRemapConfigurationLoaded</td>
-    <td>x</td>
+    <td>Indicates that the shortcut remap configuration has been successfully loaded.</td>
   </tr>
 </table>
 
@@ -694,6 +694,30 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.MouseWithoutBordersStartedEvent</td>
     <td>Triggered when Mouse Without Borders is started.</td>
+  </tr>
+</table>
+
+### New+
+<table style="width:100%">
+  <tr>
+    <th>Event Name</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.NewPlus_EventCopyTemplate</td>
+    <td>Triggered when an item from New+ is created (copied to the current directory).</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.NewPlus_EventCopyTemplateResult</td>
+    <td>Logs the success of item creation (copying).</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.NewPlus_EventShowTemplateItems</td>
+    <td>Triggered when the New+ context menu flyout is displayed.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.NewPlus_EventToggleOnOff</td>
+    <td>Triggered when New+ is enabled or disabled.</td>
   </tr>
 </table>
 
@@ -937,7 +961,7 @@ _If you want to find diagnostic data events in the source code, these two links 
   </tr>
   <tr>
     <td>Microsoft.PowerToys.Projects_CLIUsage</td>
-    <td>Tracks usage of command-line arguments for launching apps.</td>
+    <td>Logs usage of command-line arguments for launching apps.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.Workspaces_CreateEvent</td>
@@ -961,7 +985,7 @@ _If you want to find diagnostic data events in the source code, these two links 
   </tr>
   <tr>
     <td>Microsoft.PowerToys.Workspaces_Settings</td>
-    <td>Tracks changes to workspaces settings.</td>
+    <td>Logs changes to workspaces settings.</td>
   </tr>
 </table>
 
