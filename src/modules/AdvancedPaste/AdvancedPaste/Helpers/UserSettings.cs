@@ -43,9 +43,9 @@ namespace AdvancedPaste.Settings
 
         public IReadOnlyList<AdvancedPasteCustomAction> CustomActions => _customActions;
 
-        public UserSettings()
+        public UserSettings(IFileSystem fileSystem)
         {
-            _settingsUtils = new SettingsUtils();
+            _settingsUtils = new SettingsUtils(fileSystem);
 
             IsAdvancedAIEnabled = false;
             ShowCustomPreview = true;
@@ -56,7 +56,7 @@ namespace AdvancedPaste.Settings
 
             LoadSettingsFromJson();
 
-            _watcher = Helper.GetFileWatcher(AdvancedPasteModuleName, "settings.json", OnSettingsFileChanged);
+            _watcher = Helper.GetFileWatcher(AdvancedPasteModuleName, "settings.json", OnSettingsFileChanged, fileSystem);
         }
 
         private void OnSettingsFileChanged()

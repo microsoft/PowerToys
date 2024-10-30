@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -22,17 +22,21 @@ public sealed class CustomActionKernelQueryCacheService : IKernelQueryCacheServi
 {
     private const string PersistedCacheFileName = "kernelQueryCache.json";
 
-    private readonly SettingsUtils _settingsUtil = new();
+    private readonly HashSet<string> _cacheablePrompts = new(CacheKey.PromptComparer);
     private readonly Dictionary<CacheKey, CacheValue> _memoryCache = [];
-    private readonly IUserSettings _userSettings;
 
-    private HashSet<string> _cacheablePrompts = [];
+    private readonly IUserSettings _userSettings;
+    private readonly IFileSystem _fileSystem;
+    private readonly SettingsUtils _settingsUtil;
 
     private static string Version => Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString() ?? string.Empty;
 
-    public CustomActionKernelQueryCacheService(IUserSettings userSettings)
+    public CustomActionKernelQueryCacheService(IUserSettings userSettings, IFileSystem fileSystem)
     {
         _userSettings = userSettings;
+        _fileSystem = fileSystem;
+        _settingsUtil = new SettingsUtils(fileSystem);
+
         _userSettings.Changed += OnUserSettingsChanged;
 
         RefreshCacheablePrompts();
@@ -66,7 +70,7 @@ public sealed class CustomActionKernelQueryCacheService : IKernelQueryCacheServi
                 return [];
             }
 
-            var jsonString = File.ReadAllText(_settingsUtil.GetSettingsFilePath(AdvancedPasteSettings.ModuleName, PersistedCacheFileName));
+            var jsonString = _fileSystem.File.ReadAllText(_settingsUtil.GetSettingsFilePath(AdvancedPasteSettings.ModuleName, PersistedCacheFileName));
             var persistedCache = PersistedCache.FromJsonString(jsonString);
 
             if (persistedCache.Version == Version)
@@ -98,16 +102,19 @@ public sealed class CustomActionKernelQueryCacheService : IKernelQueryCacheServi
 
     private void RefreshCacheablePrompts()
     {
-        var localizedActionNames = from metadata in PasteFormat.MetadataDict.Values
+        var localizedActionNames = from pair in PasteFormat.MetadataDict
+                                   let format = pair.Key
+                                   let metadata = pair.Value
                                    where !string.IsNullOrEmpty(metadata.ResourceId)
+                                   where metadata.IsCoreAction || _userSettings.AdditionalActions.Contains(format)
                                    select ResourceLoaderInstance.ResourceLoader.GetString(metadata.ResourceId);
 
         var customActionPrompts = from customAction in _userSettings.CustomActions
                                   select customAction.Prompt;
 
         // Only cache queries with these prompts to prevent the cache from getting too large and to avoid potential privacy issues.
-        _cacheablePrompts = localizedActionNames.Concat(customActionPrompts)
-                                                .ToHashSet(CacheKey.PromptComparer);
+        _cacheablePrompts.Clear();
+        _cacheablePrompts.UnionWith(localizedActionNames.Concat(customActionPrompts));
     }
 
     private bool RemoveInapplicableCacheKeys()
@@ -134,7 +141,7 @@ public sealed class CustomActionKernelQueryCacheService : IKernelQueryCacheServi
 
         _settingsUtil.SaveSettings(cache.ToJsonString(), AdvancedPasteSettings.ModuleName, PersistedCacheFileName);
 
-        Logger.LogDebug($"Kernel query cache saved with {_memoryCache.Count} items");
+        Logger.LogDebug($"Kernel query cache saved with {_memoryCache.Count} item(s)");
 
         await Task.CompletedTask; // Async placeholder until _settingsUtil.SaveSettings has an async implementation
     }

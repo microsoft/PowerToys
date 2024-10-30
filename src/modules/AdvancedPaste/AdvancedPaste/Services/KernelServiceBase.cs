@@ -116,7 +116,7 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
         {
             if (item.Arguments.Count > 0)
             {
-                await ExecutePromptTransformAsync(kernel, item.Format, (string)item.Arguments[PromptParameterName]);
+                await ExecutePromptTransformAsync(kernel, item.Format, item.Arguments[PromptParameterName]);
             }
             else
             {

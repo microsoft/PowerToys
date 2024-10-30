@@ -6,4 +6,4 @@ using System.Collections.Generic;
 
 namespace AdvancedPaste.Models;
 
-public record class ActionChainItem(PasteFormats Format, Dictionary<string, object> Arguments);
+public record class ActionChainItem(PasteFormats Format, Dictionary<string, string> Arguments);

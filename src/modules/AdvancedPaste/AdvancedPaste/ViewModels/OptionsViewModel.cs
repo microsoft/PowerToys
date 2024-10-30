@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -85,7 +85,7 @@ namespace AdvancedPaste.ViewModels
 
         public event EventHandler PreviewRequested;
 
-        public OptionsViewModel(IAICredentialsProvider aiCredentialsProvider, IUserSettings userSettings, IPasteFormatExecutor pasteFormatExecutor)
+        public OptionsViewModel(IFileSystem fileSystem, IAICredentialsProvider aiCredentialsProvider, IUserSettings userSettings, IPasteFormatExecutor pasteFormatExecutor)
         {
             _aiCredentialsProvider = aiCredentialsProvider;
             _userSettings = userSettings;
@@ -119,7 +119,7 @@ namespace AdvancedPaste.ViewModels
             try
             {
                 // Delete file that is no longer needed but might have been written by previous version and contain sensitive information.
-                File.Delete(new SettingsUtils().GetSettingsFilePath(Constants.AdvancedPasteModuleName, "lastQuery.json"));
+                fileSystem.File.Delete(new SettingsUtils(fileSystem).GetSettingsFilePath(Constants.AdvancedPasteModuleName, "lastQuery.json"));
             }
             catch
             {
