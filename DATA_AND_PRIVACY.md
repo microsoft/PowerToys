@@ -1,6 +1,6 @@
 # PowerToys Data & Privacy
 ## Overview
-PowerToys diagnostic data is completely optional for users and is off by default in builds 0.86 and beyond. Our team believes in transparency and trust. As PowerToys is open source, all of our diagnostic data events are in the codebase.
+PowerToys diagnostic data is completely optional for users and is off by default in v0.86 and beyond. Our team believes in transparency and trust. As PowerToys is open source, all of our diagnostic data events are in the codebase.
 
 Additionally, this document aims to list each diagnostic data event individually and describe their purpose clearly.
 
