@@ -57,13 +57,11 @@ parameters:
   - name: csProjectsToPublish
     type: object
     default:
-      - 'src/settings-ui/Settings.UI/PowerToys.Settings.csproj'
       - 'src/modules/launcher/PowerLauncher/PowerLauncher.csproj'
       - 'src/modules/previewpane/MonacoPreviewHandler/MonacoPreviewHandler.csproj'
       - 'src/modules/previewpane/MarkdownPreviewHandler/MarkdownPreviewHandler.csproj'
       - 'src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj'
       - 'src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.csproj'
-      - 'src/modules/FileLocksmith/FileLocksmithUI/FileLocksmithUI.csproj'
 
 jobs:
 - job: ${{ parameters.jobName }}
