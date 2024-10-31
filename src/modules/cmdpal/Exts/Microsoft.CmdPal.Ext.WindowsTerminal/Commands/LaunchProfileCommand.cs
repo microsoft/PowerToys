@@ -46,7 +46,7 @@ internal sealed partial class LaunchProfileCommand : InvokableCommand
 #pragma warning disable IDE0059, CS0168
         catch (Exception ex)
         {
-            // TODO: We need to figure out some logging
+            // TODO GH #108 We need to figure out some logging
             // var name = "Plugin: " + Resources.plugin_name;
             // var message = Resources.run_terminal_failed;
             // Log.Exception("Failed to open Windows Terminal", ex, GetType());
@@ -63,7 +63,7 @@ internal sealed partial class LaunchProfileCommand : InvokableCommand
         }
         catch
         {
-            // TODO: We need to figure out some logging
+            // TODO GH #108 We need to figure out some logging
         }
 
         return CommandResult.KeepOpen();

@@ -31,7 +31,7 @@ internal sealed partial class LaunchProfileAsAdminCommand : InvokableCommand
         this._openQuake = openQuake;
 
         this.Name = "Launch Profile as Admin";
-        this.Icon = new("\xE7EF");
+        this.Icon = new("\xE7EF"); // Admin icon
     }
 
     private void LaunchElevated(string id, string profile)
@@ -54,7 +54,7 @@ internal sealed partial class LaunchProfileAsAdminCommand : InvokableCommand
 #pragma warning disable IDE0059, CS0168, SA1005
         catch (Exception ex)
         {
-            // TODO - We need to figure out some logging
+            // TODO GH #108 We need to figure out some logging
             //var name = "Plugin: " + Resources.plugin_name;
             //var message = Resources.run_terminal_failed;
             //Log.Exception("Failed to open Windows Terminal", ex, GetType());
@@ -75,7 +75,7 @@ internal sealed partial class LaunchProfileAsAdminCommand : InvokableCommand
 #pragma warning disable IDE0059, CS0168
         catch (Exception ex)
         {
-            // TODO: We need to figure out some logging
+            // TODO GH #108 We need to figure out some logging
             // var name = "Plugin: " + Resources.plugin_name;
             // var message = Resources.run_terminal_failed;
             // Log.Exception("Failed to open Windows Terminal", ex, GetType());
@@ -92,7 +92,7 @@ internal sealed partial class LaunchProfileAsAdminCommand : InvokableCommand
         }
         catch
         {
-            // TODO: We need to figure out some logging
+            // TODO GH #108 We need to figure out some logging
         }
 
         return CommandResult.KeepOpen();

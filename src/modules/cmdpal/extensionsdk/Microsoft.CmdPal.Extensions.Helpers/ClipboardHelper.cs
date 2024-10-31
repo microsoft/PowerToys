@@ -293,4 +293,5 @@ public static partial class ClipboardHelper
             throw exception;
         }
     }
+
 }
