@@ -206,7 +206,6 @@ jobs:
         /t:$(MSBuildMainBuildTargets)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
-      msbuildArchitecture: x64
       maximumCpuCount: true
     ${{ if eq(parameters.enableMsBuildCaching, true) }}:
       env:
@@ -230,7 +229,6 @@ jobs:
       vsVersion: 17.0
       msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-hosts.binlog
       configuration: $(BuildConfiguration)
-      msbuildArchitecture: x64
       maximumCpuCount: true
     ${{ if eq(parameters.enableMsBuildCaching, true) }}:
       env:
@@ -243,7 +241,6 @@ jobs:
       vsVersion: 17.0
       msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-env-var-editor.binlog
       configuration: $(BuildConfiguration)
-      msbuildArchitecture: x64
       maximumCpuCount: true
     ${{ if eq(parameters.enableMsBuildCaching, true) }}:
       env:
@@ -256,7 +253,6 @@ jobs:
       vsVersion: 17.0
       msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-registry-preview.binlog
       configuration: $(BuildConfiguration)
-      msbuildArchitecture: x64
       maximumCpuCount: true
     ${{ if eq(parameters.enableMsBuildCaching, true) }}:
       env:
@@ -311,7 +307,6 @@ jobs:
         $(MSBuildCacheParameters)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
-      msbuildArchitecture: x64
       maximumCpuCount: true
     ${{ if eq(parameters.enableMsBuildCaching, true) }}:
       env:
@@ -331,7 +326,6 @@ jobs:
         $(MSBuildCacheParameters)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
-      msbuildArchitecture: x64
       maximumCpuCount: true
     ${{ if eq(parameters.enableMsBuildCaching, true) }}:
       env:
@@ -351,7 +345,6 @@ jobs:
         $(MSBuildCacheParameters)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
-      msbuildArchitecture: x64
       maximumCpuCount: true
     ${{ if eq(parameters.enableMsBuildCaching, true) }}:
       env:
