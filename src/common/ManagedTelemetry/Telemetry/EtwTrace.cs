@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.Telemetry
 
         private readonly bool telemetryEnabled = DataDiagnosticsSettings.GetEnabledValue(); // This is the global telemetry setting on whether to log events
         private readonly bool telemetryRecordingEnabled = DataDiagnosticsSettings.GetViewEnabledValue(); // This is the setting for recording telemetry events to disk for viewing
-        private readonly string etwFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\PowerToys\", "etw");
+        private string etwFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\PowerToys\", "etw");
         private bool disposedValue;
         private string sessionName;
         private string etwFilePath;
@@ -49,6 +49,18 @@ namespace Microsoft.PowerToys.Telemetry
         /// Initializes a new instance of the <see cref="ETWTrace"/> class.
         /// </summary>
         public ETWTrace()
+        {
+            Init();
+        }
+
+        public ETWTrace(string etwPath)
+        {
+            this.etwFolderPath = etwPath;
+
+            Init();
+        }
+
+        private void Init()
         {
             if (File.Exists(etwFolderPath))
             {
