@@ -115,7 +115,7 @@ In this release, we focused on new features, stability, and improvements.
 ### Mouse Jump
 
  - Refactored the common classes into a separate project. Thanks [@mikeclayton](https://github.com/mikeclayton)!
- - Brought back the telemetry events that were deleted across refactorings.
+ - Brought back the telemetry events that were deleted across previous refactoring efforts.
 
 ### Mouse Without Borders
 
