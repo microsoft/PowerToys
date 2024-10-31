@@ -58,6 +58,8 @@
     <PackageReference Include="WinUIEx" />
     <!-- Including MessagePack to force version, since it's used by StreamJsonRpc but contains vulnerabilities. After StreamJsonRpc updates the version of MessagePack, we can upgrade StreamJsonRpc instead. -->
     <PackageReference Include="MessagePack" />
+    <!-- HACK: Building WinAppSDK apps in release CI is causing crashes in ARM64 due to depending on an older WebView2 version. This forces versions all around. -->
+    <PackageReference Include="Microsoft.Web.WebView2" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />

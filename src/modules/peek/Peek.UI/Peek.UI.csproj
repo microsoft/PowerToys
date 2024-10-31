@@ -79,6 +79,8 @@
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" />
+    <!-- HACK: Building WinAppSDK apps in release CI is causing crashes in ARM64 due to depending on an older WebView2 version. This forces versions all around. -->
+    <PackageReference Include="Microsoft.Web.WebView2" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="WinUIEx" />
