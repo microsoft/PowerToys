@@ -350,123 +350,24 @@ jobs:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
-  - task: VSBuild@1
-    displayName: Publish Settings for Packaging
-    inputs:
-      solution: 'src/settings-ui/Settings.UI/PowerToys.Settings.csproj'
-      vsVersion: 17.0
-      msbuildArgs: >-
-        /target:Publish
-        /graph
-        /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
-        /p:VCRTForwarders-IncludeDebugCRT=false
-        /p:PowerToysRoot=$(Build.SourcesDirectory)
-        /p:PublishProfile=InstallationPublishProfile.pubxml
-      platform: $(BuildPlatform)
-      configuration: $(BuildConfiguration)
-      maximumCpuCount: true
-
-  - task: VSBuild@1
-    displayName: Publish Launcher for Packaging
-    inputs:
-      solution: 'src/modules/launcher/PowerLauncher/PowerLauncher.csproj'
-      vsVersion: 17.0
-      # The arguments should be the same as the ones for Settings; make sure they are.
-      msbuildArgs: >-
-        /target:Publish
-        /graph
-        /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
-        /p:VCRTForwarders-IncludeDebugCRT=false
-        /p:PowerToysRoot=$(Build.SourcesDirectory)
-        /p:PublishProfile=InstallationPublishProfile.pubxml
-      platform: $(BuildPlatform)
-      configuration: $(BuildConfiguration)
-      maximumCpuCount: true
-
-  - task: VSBuild@1
-    displayName: Publish Monaco Preview Handler for Packaging
-    inputs:
-      solution: 'src/modules/previewpane/MonacoPreviewHandler/MonacoPreviewHandler.csproj'
-      vsVersion: 17.0
-      # The arguments should be the same as the ones for Settings; make sure they are.
-      msbuildArgs: >-
-        /target:Publish
-        /graph
-        /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
-        /p:VCRTForwarders-IncludeDebugCRT=false
-        /p:PowerToysRoot=$(Build.SourcesDirectory)
-        /p:PublishProfile=InstallationPublishProfile.pubxml
-      platform: $(BuildPlatform)
-      configuration: $(BuildConfiguration)
-      maximumCpuCount: true
-
-  - task: VSBuild@1
-    displayName: Publish Markdown Preview Handler for Packaging
-    inputs:
-      solution: 'src/modules/previewpane/MarkdownPreviewHandler/MarkdownPreviewHandler.csproj'
-      vsVersion: 17.0
-      # The arguments should be the same as the ones for Settings; make sure they are.
-      msbuildArgs: >-
-        /target:Publish
-        /graph
-        /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
-        /p:VCRTForwarders-IncludeDebugCRT=false
-        /p:PowerToysRoot=$(Build.SourcesDirectory)
-        /p:PublishProfile=InstallationPublishProfile.pubxml
-      platform: $(BuildPlatform)
-      configuration: $(BuildConfiguration)
-      maximumCpuCount: true
-
-  - task: VSBuild@1
-    displayName: Publish Svg Preview Handler for Packaging
-    inputs:
-      solution: 'src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj'
-      vsVersion: 17.0
-      # The arguments should be the same as the ones for Settings; make sure they are.
-      msbuildArgs: >-
-        /target:Publish
-        /graph
-        /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
-        /p:VCRTForwarders-IncludeDebugCRT=false
-        /p:PowerToysRoot=$(Build.SourcesDirectory)
-        /p:PublishProfile=InstallationPublishProfile.pubxml
-      platform: $(BuildPlatform)
-      configuration: $(BuildConfiguration)
-      maximumCpuCount: true
-
-  - task: VSBuild@1
-    displayName: Publish Svg Thumbnail Provider for Packaging
-    inputs:
-      solution: 'src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.csproj'
-      vsVersion: 17.0
-      # The arguments should be the same as the ones for Settings; make sure they are.
-      msbuildArgs: >-
-        /target:Publish
-        /graph
-        /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
-        /p:VCRTForwarders-IncludeDebugCRT=false
-        /p:PowerToysRoot=$(Build.SourcesDirectory)
-        /p:PublishProfile=InstallationPublishProfile.pubxml
-      platform: $(BuildPlatform)
-      configuration: $(BuildConfiguration)
-      maximumCpuCount: true
-
-  - task: VSBuild@1
-    displayName: Publish File Locksmith UI for Packaging
-    inputs:
-      solution: 'src/modules/FileLocksmith/FileLocksmithUI/FileLocksmithUI.csproj'
-      vsVersion: 17.0
-      # The arguments should be the same as the ones for Settings; make sure they are.
-      msbuildArgs: >-
-        /target:Publish
-        /graph
-        /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
-        /p:VCRTForwarders-IncludeDebugCRT=false
-        /p:PowerToysRoot=$(Build.SourcesDirectory)
-        /p:PublishProfile=InstallationPublishProfile.pubxml
-      platform: $(BuildPlatform)
-      configuration: $(BuildConfiguration)
-      maximumCpuCount: true
+  - ${{ each project in parameters.csProjectsToPublish }}:
+    - task: VSBuild@1
+      displayName: Publish ${{ project }} for Packaging
+      inputs:
+        solution: ${{ project }}
+        vsVersion: 17.0
+        msbuildArgs: >-
+          /target:Publish
+          /graph
+          /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
+          /p:VCRTForwarders-IncludeDebugCRT=false
+          /p:PowerToysRoot=$(Build.SourcesDirectory)
+          /p:PublishProfile=InstallationPublishProfile.pubxml
+          /bl:$(LogOutputDirectory)\publish-${{ join('_',split(project, '/')) }}.binlog
+        platform: $(BuildPlatform)
+        configuration: $(BuildConfiguration)
+        msbuildArchitecture: x64
+        maximumCpuCount: true
 
   # Check if deps.json files don't reference different dll versions.
   - pwsh: |-
