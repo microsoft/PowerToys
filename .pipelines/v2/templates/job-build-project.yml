@@ -213,12 +213,10 @@ jobs:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
   - task: VSBuild@1
-    ${{ if eq(parameters.runTests, true) }}:
-      displayName: Build and Test PowerToys main project
-    ${{ else }}:
-      displayName: Build PowerToys main project
+      displayName: Force rebuild PowerRename
     inputs:
       solution: 'src\modules\powerrename\PowerRenameUILib\PowerRenameUI.vcxproj'
+      clean: true
       vsVersion: 17.0
       msbuildArgs: >-
         /p:CIBuild=true
