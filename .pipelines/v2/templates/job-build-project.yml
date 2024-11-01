@@ -386,9 +386,6 @@ jobs:
       flattenFolders: True
       OverWrite: True
 
-  - script: |
-      COPY /Y "packages\Microsoft.Web.WebView2.1.0.2739.15\runtimes\win-ARM64\native_uap\Microsoft.Web.WebView2.Core.dll" "ARM64\Release\WinUI3Apps\Microsoft.Web.WebView2.Core.dll" || exit /b 1
-
   # Check if deps.json files don't reference different dll versions.
   - pwsh: |-
       & '.pipelines/verifyDepsJsonLibraryVersions.ps1' -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)'
