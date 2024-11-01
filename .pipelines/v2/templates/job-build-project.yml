@@ -376,6 +376,16 @@ jobs:
         msbuildArchitecture: x64
         maximumCpuCount: true
 
+  ### HACK: On ARM64 builds, building an app with Windows App SDK copies the x64 WebView2 dll instead of the ARM64 one. This task makes sure the right dll is used.
+  - task: CopyFiles@2
+    displayName: HACK Copy core WebView2 ARM64 dll to output directory
+    condition: eq(variables['BuildPlatform'],'arm64')
+    inputs:
+      contents: packages/Microsoft.Web.WebView2.1.0.2739.15/runtimes/win-ARM64/native_uap/Microsoft.Web.WebView2.Core.dll
+      targetFolder: $(Build.SourcesDirectory)/ARM64/Release/WinUI3Apps/
+      flattenFolders: True
+      OverWrite: True
+
   # Check if deps.json files don't reference different dll versions.
   - pwsh: |-
       & '.pipelines/verifyDepsJsonLibraryVersions.ps1' -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)'
