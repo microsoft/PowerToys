@@ -377,8 +377,8 @@ jobs:
         maximumCpuCount: true
 
   ### HACK: On ARM64 builds, building an app with Windows App SDK copies the x64 WebView2 dll instead of the ARM64 one. This command makes sure the right dll is used.
-  - pwsh: |
-      copy /Y "packages\Microsoft.Web.WebView2.1.0.2739.15\runtimes\win-ARM64\native_uap\Microsoft.Web.WebView2.Core.dll" "ARM64\Release\WinUI3Apps\Microsoft.Web.WebView2.Core.dll"
+  - script: |
+      COPY /Y "packages\Microsoft.Web.WebView2.1.0.2739.15\runtimes\win-ARM64\native_uap\Microsoft.Web.WebView2.Core.dll" "ARM64\Release\WinUI3Apps\Microsoft.Web.WebView2.Core.dll" || exit /b 1
     condition: eq(variables['BuildPlatform'],'arm64')
 
   # Check if deps.json files don't reference different dll versions.
