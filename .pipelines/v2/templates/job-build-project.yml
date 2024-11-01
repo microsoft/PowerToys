@@ -213,6 +213,9 @@ jobs:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
   - task: VSBuild@1
+    ${{ if eq(parameters.runTests, true) }}:
+      displayName: Force rebuild PowerRename
+    ${{ else }}:
       displayName: Force rebuild PowerRename
     inputs:
       solution: 'src\modules\powerrename\PowerRenameUILib\PowerRenameUI.vcxproj'
