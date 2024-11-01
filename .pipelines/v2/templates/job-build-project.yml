@@ -212,6 +212,28 @@ jobs:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
+  - task: VSBuild@1
+    ${{ if eq(parameters.runTests, true) }}:
+      displayName: Build and Test PowerToys main project
+    ${{ else }}:
+      displayName: Build PowerToys main project
+    inputs:
+      solution: 'src\modules\powerrename\PowerRenameUILib\PowerRenameUI.vcxproj'
+      vsVersion: 17.0
+      msbuildArgs: >-
+        /p:CIBuild=true
+        /bl:$(LogOutputDirectory)\build-0-main-powerrename.binlog
+        ${{ parameters.additionalBuildOptions }}
+        $(MSBuildCacheParameters)
+        /t:Rebuild
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
   - ${{ if eq(parameters.codeSign, true) }}:
     - template: steps-esrp-signing.yml
       parameters:
