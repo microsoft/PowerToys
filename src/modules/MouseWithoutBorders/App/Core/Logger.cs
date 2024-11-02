@@ -200,6 +200,8 @@ internal static class Logger
             _ = Logger.PrivateDump(sb, new Common(), "[Other Logs]\r\n===============\r\n", 0, level, false);
             sb.AppendLine("[Logger]\r\n===============");
             Logger.DumpType(sb, typeof(Logger), 0, level);
+            sb.AppendLine("[Receiver]\r\n===============");
+            Logger.DumpType(sb, typeof(Receiver), 0, level);
 
             log = string.Format(
                 CultureInfo.CurrentCulture,
