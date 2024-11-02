@@ -5,6 +5,8 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
+using Windows.Security.Cryptography.Certificates;
+using YamlDotNet.Core.Tokens;
 
 namespace ShortcutGuide.Models
 {
@@ -25,6 +27,11 @@ namespace ShortcutGuide.Models
             StackPanel shortcutStackPanel = new();
 
             shortcutStackPanel.Orientation = Orientation.Horizontal;
+
+            if (shortcut.Ctrl == false && shortcut.Alt == false && shortcut.Shift == false && shortcut.Win == false && shortcut.Keys.Length == 0)
+            {
+                return new ShortcutTemplateDataObject(shortcut.Name, shortcut.Description ?? string.Empty, shortcutStackPanel);
+            }
 
             void AddNewTextToStackPanel(string text)
             {
@@ -68,6 +75,21 @@ namespace ShortcutGuide.Models
                         break;
                     case "<Office>":
                         shortcutStackPanel.Children.Add(new BitmapIcon() { UriSource = new("ms-appx:///Assets/ShortcutGuide/OfficeKey.png"), Height = 20, Width = 20 });
+                        break;
+                    case "<Left>":
+                        AddNewTextToStackPanel("←");
+                        break;
+                    case "<Right>":
+                        AddNewTextToStackPanel("→");
+                        break;
+                    case "<Up>":
+                        AddNewTextToStackPanel("↑");
+                        break;
+                    case "<Down>":
+                        AddNewTextToStackPanel("↓");
+                        break;
+                    case string name when name.StartsWith('<'):
+                        AddNewTextToStackPanel(key.Replace("<", string.Empty).Replace(">", string.Empty));
                         break;
                     default:
                         AddNewTextToStackPanel(key);

@@ -6,19 +6,14 @@ using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using Microsoft.UI;
-using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using ShortcutGuide.Models;
 using ShortcutGuide.Properties;
-using Windows.ApplicationModel.Chat;
-using Windows.Devices.Display;
 using Windows.Foundation;
 using Windows.Graphics;
-using Windows.System.UserProfile;
 using WinUIEx;
-
 using static NativeMethods;
 
 namespace ShortcutGuide
@@ -33,6 +28,7 @@ namespace ShortcutGuide
         public MainWindow()
         {
             InitializeComponent();
+
             Title = Resource.ResourceManager.GetString("Title", CultureInfo.InvariantCulture)!;
 
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
@@ -108,6 +104,11 @@ namespace ShortcutGuide
         public void CloseButton_Clicked(object sender, RoutedEventArgs e)
         {
             Environment.Exit(0);
+        }
+
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ShortcutPageParameters.SearchFilter.OnFilterChanged(SearchBox.Text);
         }
     }
 }
