@@ -147,7 +147,7 @@ namespace MouseWithoutBorders
             }
         }
 
-        private static bool IsSwitchingByMouseEnabled()
+        internal static bool IsSwitchingByMouseEnabled()
         {
             return (EasyMouseOption)Setting.Values.EasyMouse == EasyMouseOption.Enable || InputHook.EasyMouseKeyDown;
         }

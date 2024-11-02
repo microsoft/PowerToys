@@ -38,7 +38,7 @@ namespace MouseWithoutBorders
 {
     internal partial class Common
     {
-        private const uint BIG_CLIPBOARD_DATA_TIMEOUT = 30000;
+        internal const uint BIG_CLIPBOARD_DATA_TIMEOUT = 30000;
         private const uint MAX_CLIPBOARD_DATA_SIZE_CAN_BE_SENT_INSTANTLY_TCP = 1024 * 1024; // 1MB
         private const uint MAX_CLIPBOARD_FILE_SIZE_CAN_BE_SENT = 100 * 1024 * 1024; // 100MB
         private const int TEXT_HEADER_SIZE = 12;
@@ -47,7 +47,9 @@ namespace MouseWithoutBorders
         private static long lastClipboardEventTime;
         private static string lastMachineWithClipboardData;
         private static string lastDragDropFile;
-        private static long clipboardCopiedTime;
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
+        internal static long clipboardCopiedTime;
+#pragma warning restore SA1307
 
         internal static readonly char[] Comma = new char[] { ',' };
         internal static readonly char[] Star = new char[] { '*' };
@@ -333,7 +335,7 @@ namespace MouseWithoutBorders
                             break;
 
                         default:
-                            ProcessPackage(data, tcp);
+                            Receiver.ProcessPackage(data, tcp);
                             if (++unexpectedCount > 100)
                             {
                                 Logger.Log("ReceiveClipboardDataUsingTCP: unexpectedCount > 100!");

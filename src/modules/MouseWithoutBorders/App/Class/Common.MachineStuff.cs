@@ -51,10 +51,14 @@ namespace MouseWithoutBorders
         private const int SKIP_PIXELS = 1;
         private const int JUMP_PIXELS = 2;
 
-        private static ID desMachineID;
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
+        internal static ID desMachineID;
+#pragma warning restore SA1307
         internal static string DesMachineName = string.Empty;
         private static ID newDesMachineID;
-        private static ID newDesMachineIdEx;
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
+        internal static ID newDesMachineIdEx;
+#pragma warning restore SA1307
         private static ID dropMachineID;
 
         private static long lastJump = Common.GetTick();
@@ -720,7 +724,7 @@ namespace MouseWithoutBorders
             }
         }
 
-        private static string AddToMachinePool(DATA package)
+        internal static string AddToMachinePool(DATA package)
         {
             // Log("********** AddToMachinePool called: " + package.src.ToString(CultureInfo.InvariantCulture));
 

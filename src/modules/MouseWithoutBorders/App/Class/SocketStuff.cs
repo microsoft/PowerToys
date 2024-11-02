@@ -1526,7 +1526,7 @@ namespace MouseWithoutBorders.Class
                             }
                             else
                             {
-                                Common.ProcessPackage(package, currentTcp);
+                                Receiver.ProcessPackage(package, currentTcp);
                             }
                         }
                     }

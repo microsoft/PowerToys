@@ -240,7 +240,7 @@ namespace MouseWithoutBorders
 
         internal static void DragDropStep08(DATA package)
         {
-            GetNameOfMachineWithClipboardData(package);
+            Receiver.GetNameOfMachineWithClipboardData(package);
             Logger.LogDebug("DragDropStep08: ClipboardDragDrop Received. machine with drag file was set");
         }
 

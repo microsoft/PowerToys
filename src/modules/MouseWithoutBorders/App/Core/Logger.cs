@@ -162,8 +162,8 @@ internal static class Logger
                 Common.PackageReceived.ExplorerDragDrop,
                 Common.invalidPackageCount,
                 Common.PackageReceived.Nil,
-                Common.processedPackageCount,
-                Common.skippedPackageCount);
+                Receiver.processedPackageCount,
+                Receiver.skippedPackageCount);
             Log(log);
             lastPackageReceived = Common.PackageReceived;
         }
