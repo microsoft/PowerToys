@@ -11,6 +11,10 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using MouseWithoutBorders.Class;
+
+[module: SuppressMessage("Microsoft.Reliability", "CA2002:DoNotLockOnObjectsWithWeakIdentity", Scope = "member", Target = "MouseWithoutBorders.Common.#PreProcess(MouseWithoutBorders.DATA)", Justification = "Dotnet port with style preservation")]
+
 // <summary>
 //     Back-end thread for the socket.
 // </summary>
@@ -19,11 +23,6 @@ using System.Windows.Forms;
 //     2009-... modified by Truong Do (TruongDo).
 //     2023- Included in PowerToys.
 // </history>
-using MouseWithoutBorders.Class;
-using MouseWithoutBorders.Core;
-
-[module: SuppressMessage("Microsoft.Reliability", "CA2002:DoNotLockOnObjectsWithWeakIdentity", Scope = "member", Target = "MouseWithoutBorders.Common.#PreProcess(MouseWithoutBorders.DATA)", Justification = "Dotnet port with style preservation")]
-
 namespace MouseWithoutBorders.Core;
 
 internal static class Receiver
@@ -36,7 +35,7 @@ internal static class Receiver
     internal static long skippedPackageCount;
 #pragma warning restore SA1307
 
-    internal static long JustGotAKey { get; set; }
+    private static long JustGotAKey { get; set; }
 
     private static bool PreProcess(DATA package)
     {

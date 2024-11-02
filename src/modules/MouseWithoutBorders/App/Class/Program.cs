@@ -31,7 +31,6 @@ using System.Xml.Linq;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Telemetry;
-using MouseWithoutBorders.Core;
 using Newtonsoft.Json;
 using StreamJsonRpc;
 
