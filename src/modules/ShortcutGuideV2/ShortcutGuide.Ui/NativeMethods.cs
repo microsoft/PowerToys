@@ -22,6 +22,12 @@ internal static class NativeMethods
     [DllImport("user32.dll")]
     internal static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    internal static extern int FindWindowA(in string lpClassName, in string? lpWindowName);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    internal static extern int FindWindowExA(int hwndParent, int hwndChildAfter, in string lpClassName, in string? lpWindowName);
+
     internal const int GWL_STYLE = -16;
     internal const int WS_CAPTION = 0x00C00000;
 }

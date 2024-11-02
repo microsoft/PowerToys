@@ -20,7 +20,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Padding="6,0,6,0" Margin="6,6,6,6" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="0" Text="{x:Bind Name}" />
+                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Padding="6,0,6,0" Margin="6,0,6,0" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="0" Text="{x:Bind Name}" />
                 <Border CornerRadius="{StaticResource ControlCornerRadius}" BorderThickness="{StaticResource ButtonBorderThemeThickness}" Grid.Row="0" Grid.Column="1" Margin="20,6,6,6" HorizontalAlignment="Right" Background="White" >
                     <ContentPresenter Content="{x:Bind Shortcut}" Padding="6,6,6,6" HorizontalAlignment="Right" />
                 </Border>
@@ -39,7 +39,7 @@
             <GridView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <ItemsWrapGrid x:Name="MaxItemsWrapGrid"
-                           Orientation="Horizontal"/>
+                           Orientation="Vertical"/>
                 </ItemsPanelTemplate>
             </GridView.ItemsPanel>
         </GridView>
