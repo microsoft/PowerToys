@@ -60,6 +60,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.Ext.Window
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.Ext.Registry", "Exts\Microsoft.CmdPal.Ext.Registry\Microsoft.CmdPal.Ext.Registry.csproj", "{D2C9B954-DCB8-42A1-957C-57436FEE7930}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.Ext.WindowsSettings", "Exts\Microsoft.CmdPal.Ext.WindowsSettings\Microsoft.CmdPal.Ext.WindowsSettings.csproj", "{296A0765-757B-410B-8E68-86993AF4EC98}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -292,6 +294,14 @@ Global
 		{D2C9B954-DCB8-42A1-957C-57436FEE7930}.Release|ARM64.Build.0 = Release|ARM64
 		{D2C9B954-DCB8-42A1-957C-57436FEE7930}.Release|x64.ActiveCfg = Release|x64
 		{D2C9B954-DCB8-42A1-957C-57436FEE7930}.Release|x64.Build.0 = Release|x64
+		{296A0765-757B-410B-8E68-86993AF4EC98}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{296A0765-757B-410B-8E68-86993AF4EC98}.Debug|ARM64.Build.0 = Debug|ARM64
+		{296A0765-757B-410B-8E68-86993AF4EC98}.Debug|x64.ActiveCfg = Debug|x64
+		{296A0765-757B-410B-8E68-86993AF4EC98}.Debug|x64.Build.0 = Debug|x64
+		{296A0765-757B-410B-8E68-86993AF4EC98}.Release|ARM64.ActiveCfg = Release|ARM64
+		{296A0765-757B-410B-8E68-86993AF4EC98}.Release|ARM64.Build.0 = Release|ARM64
+		{296A0765-757B-410B-8E68-86993AF4EC98}.Release|x64.ActiveCfg = Release|x64
+		{296A0765-757B-410B-8E68-86993AF4EC98}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -321,6 +331,7 @@ Global
 		{2A14C3D5-4680-4A9D-A860-B0BBAF28275D} = {272D0E9A-8FC3-49F5-8FAD-79ABAE8AB1E4}
 		{97E5A897-056A-4227-8BC4-81A0CA0D1AD5} = {272D0E9A-8FC3-49F5-8FAD-79ABAE8AB1E4}
 		{D2C9B954-DCB8-42A1-957C-57436FEE7930} = {272D0E9A-8FC3-49F5-8FAD-79ABAE8AB1E4}
+		{296A0765-757B-410B-8E68-86993AF4EC98} = {272D0E9A-8FC3-49F5-8FAD-79ABAE8AB1E4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BC94BFC2-A741-4978-B6A4-9E01B7660E6B}
