@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Windows.Graphics;
 
 internal static partial class NativeMethods
 {
@@ -28,6 +29,27 @@ internal static partial class NativeMethods
 
     [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16)]
     internal static partial int FindWindowExA(int hwndParent, int hwndChildAfter, in string lpClassName, in string? lpWindowName);
+
+    [LibraryImport("User32.dll")]
+    internal static partial IntPtr MonitorFromWindow(int hwnd, int dwFlags);
+
+    [LibraryImport("Shcore.dll")]
+    internal static partial long GetDpiForMonitor(int hmonitor, int dpiType, ref int dpiX, ref int dpiY);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool GetCursorPos(out POINT lpPoint);
+
+    public struct POINT
+    {
+        public int X;
+        public int Y;
+
+        public static implicit operator PointInt32(POINT point)
+        {
+            return new PointInt32(point.X, point.Y);
+        }
+    }
 
     internal const int GWL_STYLE = -16;
     internal const int WS_CAPTION = 0x00C00000;
