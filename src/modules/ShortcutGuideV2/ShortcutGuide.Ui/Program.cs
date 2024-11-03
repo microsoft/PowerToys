@@ -15,6 +15,8 @@ namespace ShortcutGuide
         [STAThread]
         public static void Main(string[] args)
         {
+            PowerToysShortcutsPopulator.Populate();
+
             Logger.InitializeLogger("\\ShortcutGuide\\Logs");
             WinRT.ComWrappersSupport.InitializeComWrappers();
 

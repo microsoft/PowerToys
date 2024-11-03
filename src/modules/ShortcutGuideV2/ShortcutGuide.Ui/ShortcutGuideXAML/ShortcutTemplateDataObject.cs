@@ -4,6 +4,7 @@
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using ShortcutGuide.Models;
 
 namespace ShortcutGuide
 {
@@ -15,12 +16,15 @@ namespace ShortcutGuide
 
         public StackPanel Shortcut { get; set; }
 
+        public Shortcut OriginalShortcutObject { get; set; }
+
         public Visibility DescriptionVisible { get; set; }
 
-        public ShortcutTemplateDataObject(string name, string description, StackPanel shortcut)
+        public ShortcutTemplateDataObject(string name, string description, StackPanel shortcut, Shortcut originalShortcutObject)
         {
             Name = name;
             Description = description;
+            OriginalShortcutObject = originalShortcutObject;
 
             if (string.IsNullOrWhiteSpace(description))
             {

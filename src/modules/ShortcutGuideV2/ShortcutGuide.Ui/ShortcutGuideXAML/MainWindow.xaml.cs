@@ -3,8 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Text.Json;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -53,7 +57,15 @@ namespace ShortcutGuide
             SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 #endif
 
-            this.Activated += OnLauched;
+            Activated += OnLauched;
+
+            SettingsUtils settingsUtils = new();
+
+            if (settingsUtils.SettingsExists(ShortcutGuideSettings.ModuleName, "Pinned.json"))
+            {
+                string pinnedPath = settingsUtils.GetSettingsFilePath(ShortcutGuideSettings.ModuleName, "Pinned.json");
+                ShortcutPageParameters.PinnedShortcuts = JsonSerializer.Deserialize<Dictionary<string, List<Shortcut>>>(File.ReadAllText(pinnedPath))!;
+            }
         }
 
         private void OnLauched(object sender, WindowActivatedEventArgs e)
@@ -77,10 +89,20 @@ namespace ShortcutGuide
                 _appWindow.Move(new PointInt32((int)monitorRect.X, (int)(monitorRect.Y + (int)(monitorRect.Height / 2))));
                 _setPosition = true;
             }
+
+            WindowSelector.SelectedItem = WindowsSelectorBarItem;
         }
 
         public void WindowSelectionChanged(object sender, SelectorBarSelectionChangedEventArgs e)
         {
+            ShortcutPageParameters.CurrentPageName = ((SelectorBar)sender).SelectedItem.Name switch {
+                "WindowsSelectorBarItem" => YmlInterpreter.GetIndexYamlFile().DefaultShellName,
+                "PowerToysSelectorBarItem" => "Microsoft.PowerToys",
+                _ => throw new NotImplementedException(),
+            };
+
+            ContentFrame.Loaded += (s, e) => ShortcutPageParameters.FrameHeight.OnFrameHeightChanged(ContentFrame.ActualHeight);
+
             ContentFrame.Navigate(typeof(ShortcutView));
         }
 
