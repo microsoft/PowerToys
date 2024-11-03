@@ -1606,6 +1606,7 @@ targetentrypoint
 TARGETHEADER
 targetver
 taskkill
+taskmgr
 taskschd
 tchar
 Tcollab
