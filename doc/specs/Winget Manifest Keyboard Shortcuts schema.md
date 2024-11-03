@@ -18,9 +18,9 @@ All manifests and one index file are saved locally under `%LocalAppData%/Microso
 
 ### 2.3 File names
 
-The file name of a keyboard shortcuts file is the WinGet package identifier, plus the locale of the strings of the file and at last the `.KBSC.yml` file extension.
+The file name of a keyboard shortcuts file is the WinGet package identifier, plus the locale of the strings of the file and at last the `.KBSC.yaml` file extension.
 
-For example the package "test.bar" saves its manifest with `en-US` strings in `test.bar.en-US.KBSC.yml"
+For example the package "test.bar" saves its manifest with `en-US` strings in `test.bar.en-US.KBSC.yaml"
 
 #### 2.3.1 No winget package available
 
@@ -225,9 +225,9 @@ Shortcuts:
 ```
 
 
-### 3.2 `index.yml` file
+### 3.2 `index.yaml` file
 
-The `index.yml` file is a file that contains all the information about the different manifest files that are saved in the same directory. This file is only available locally and is not saved in the WinGet repository as it is specific to the user.
+The `index.yaml` file is a file that contains all the information about the different manifest files that are saved in the same directory. This file is only available locally and is not saved in the WinGet repository as it is specific to the user.
 
 ```yaml
 DefaultShellName:           # The package identifier of the default shell used in Windows
