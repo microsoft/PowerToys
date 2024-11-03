@@ -50,7 +50,7 @@ Shortcuts:                  # List of sections with keyboard shortcuts
         Ctrl:               # Determines if the Ctrl Key is part of the shortcut
         Shift:              # Determines if the Shift Key is part of the shortcut
         Alt:                # Determines if the Alt Key is part of the shortcut
-        Description:        # Optionale description of the shortcut
+        Description:        # Optional description of the shortcut
         AdditionalInfo:     # Optional additional information about the shortcut
         Recommended:        # Optionally determines if the shortcut is displayed in a designated recommended area
         Keys:               # Array of keys that need to be pressed
@@ -134,7 +134,7 @@ Special sections start with an identifier enclosed between `<` and `>`. This dec
 </details>
 
 <details>
- <summary><b>Description</b> - Optionale description of the shortcut</summary>
+ <summary><b>Description</b> - Optional description of the shortcut</summary>
 
  Optional description of the shortcut. This is the description that will be displayed by the interpreter.
 </details>
@@ -200,7 +200,7 @@ Special keys are enclosed between `<` and `>` and correspond to a key that shoul
 
 ### 3.2 `index.yml` file
 
-The `index.yml` file is a file that contains all the information about the different manifest files that are saved in the same directory. This file is only availabele locally and is not saved in the WinGet repository as it is specific to the user.
+The `index.yml` file is a file that contains all the information about the different manifest files that are saved in the same directory. This file is only available locally and is not saved in the WinGet repository as it is specific to the user.
 
 ```yaml
 DefaultShellName:           # The package identifier of the default shell used in Windows
