@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI;
@@ -78,7 +77,7 @@ namespace ShortcutGuide
                 _appWindow = AppWindow.GetFromWindowId(windowId);
 
                 GetCursorPos(out POINT lpPoint);
-                _appWindow.Move(lpPoint);
+                _appWindow.Move(lpPoint with { Y = lpPoint.Y - ((int)Height / 2), X = lpPoint.X - ((int)Width / 2) });
 
                 float dpiScale = DpiHelper.GetDPIScaleForWindow((int)hwnd);
 
@@ -107,21 +106,6 @@ namespace ShortcutGuide
         }
 
         private bool _setPosition;
-
-        [LibraryImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static partial bool GetCursorPos(out POINT lpPoint);
-
-        public struct POINT
-        {
-            public int X;
-            public int Y;
-
-            public static implicit operator PointInt32(POINT point)
-            {
-                return new PointInt32(point.X, point.Y);
-            }
-        }
 
         public void CloseButton_Clicked(object sender, RoutedEventArgs e)
         {

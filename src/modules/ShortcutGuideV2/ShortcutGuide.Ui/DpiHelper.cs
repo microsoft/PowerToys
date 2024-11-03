@@ -2,9 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Runtime.InteropServices;
-
 namespace ShortcutGuide
 {
     // This class is rewritten from C++ to C# from the measure tool project
@@ -25,7 +22,7 @@ namespace ShortcutGuide
 
         public static long GetScreenDPIForWindow(int hwnd, ref int dpi)
         {
-            var targetMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+            var targetMonitor = NativeMethods.MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
             return GetScreenDPIForMonitor(targetMonitor.ToInt32(), ref dpi);
         }
 
@@ -34,7 +31,7 @@ namespace ShortcutGuide
             if (targetMonitor != 0)
             {
                 int dummy = 0;
-                return GetDpiForMonitor(targetMonitor, MDT_EFFECTIVE_DPI, ref dpi, ref dummy);
+                return NativeMethods.GetDpiForMonitor(targetMonitor, MDT_EFFECTIVE_DPI, ref dpi, ref dummy);
             }
             else
             {
@@ -42,11 +39,5 @@ namespace ShortcutGuide
                 return 0x80004005L;
             }
         }
-
-        [LibraryImport("User32.dll")]
-        private static partial IntPtr MonitorFromWindow(int hwnd, int dwFlags);
-
-        [LibraryImport("Shcore.dll")]
-        private static partial long GetDpiForMonitor(int hmonitor, int dpiType, ref int dpiX, ref int dpiY);
     }
 }
