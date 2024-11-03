@@ -154,8 +154,8 @@ In this release, we focused on new features, stability, and improvements.
  - Sorted the list of languages in the language selection combo box in the General tab. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Fixed the state of the info bar about templates not being backed up to not close and react to the module's enabled state in the New+ page. Thanks [@htcfreek](https://github.com/htcfreek)!
  - Fixed a crash caused by a dangling thread.
- - Clicking a notification about there being an updated available should now correctly open the Settings application in the General tab.
- - Fixed an UI freeze when trying to access the Diagnostic Data Viewer files. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Clicking a notification about there being an update available should now correctly open the Settings application in the General tab.
+ - Fixed a UI freeze when trying to access the Diagnostic Data Viewer files. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Workspaces
 
