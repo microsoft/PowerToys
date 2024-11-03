@@ -134,7 +134,7 @@ In this release, we focused on new features, stability, and improvements.
 
 ### PowerToys Run
 
- - Handled a culture not found error when checking for RtL languages.
+ - Handled a culture not found error when checking for right-to-left languages.
  - Fixed the WebSearch plugin results title being trimmed in the UI. Thanks [@octastylos-pseudodipteros](https://github.com/octastylos-pseudodipteros)!
  - The Unit Converter plugin will now show more significant digits. Thanks [@PesBandi](https://github.com/PesBandi)!
  - Improved error handling when copying to the clipboard results in an error. Thanks [@PesBandi](https://github.com/PesBandi)!
