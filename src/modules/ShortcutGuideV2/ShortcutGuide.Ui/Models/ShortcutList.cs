@@ -11,5 +11,7 @@ namespace ShortcutGuide.Models
         public ShortcutCategory[] Shortcuts { get; set; }
 
         public string WindowFilter { get; set; }
+
+        public bool BackgroundProcess { get; set; }
     }
 }

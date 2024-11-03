@@ -10,7 +10,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace ShortcutGuide
 {
-    internal sealed class PowerToysShortcutsPopulator
+    internal sealed partial class PowerToysShortcutsPopulator
     {
         public static void Populate()
         {
@@ -21,7 +21,7 @@ namespace ShortcutGuide
             const string populateStartString = "# <Populate start>";
             const string populateEndString = "# <Populate end>";
 
-            content = Regex.Replace(content, populateStartString + "[\\s\\S\\n\\r]*" + populateEndString, populateStartString + Environment.NewLine);
+            content = PoulateRegex().Replace(content, populateStartString + Environment.NewLine);
 
             content = HotkeySettingsToYaml(SettingsRepository<AdvancedPasteSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.AdvancedPasteUIShortcut, "Advanced Paste", content, "Open Advanced Paste window");
             content = HotkeySettingsToYaml(SettingsRepository<AdvancedPasteSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.PasteAsPlainTextShortcut, "Advanced Paste", content, "Paste as plain text directly");
@@ -74,5 +74,8 @@ namespace ShortcutGuide
         {
             return HotkeySettingsToYaml(keyboardKeys.Value, moduleName, content, description);
         }
+
+        [GeneratedRegex(@"# <Populate start>[\s\S\n\r]*# <Populate end>")]
+        private static partial Regex PoulateRegex();
     }
 }

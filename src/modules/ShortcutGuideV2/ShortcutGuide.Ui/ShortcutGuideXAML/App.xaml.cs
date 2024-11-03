@@ -13,7 +13,7 @@ namespace ShortcutGuide
             InitializeComponent();
         }
 
-        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             _window = new MainWindow();
             _window.Activate();

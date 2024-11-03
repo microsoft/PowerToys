@@ -5,10 +5,11 @@
 using System;
 using System.Runtime.InteropServices;
 
-internal static class NativeMethods
+internal static partial class NativeMethods
 {
-    [DllImport("user32.dll")]
-    internal static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
 
     internal static readonly IntPtr HWND_TOPMOST = new System.IntPtr(-1);
     internal const uint SWP_NOSIZE = 0x0001;
@@ -16,17 +17,17 @@ internal static class NativeMethods
     internal const uint SWP_NOACTIVATE = 0x0010;
     internal const uint SWP_SHOWWINDOW = 0x0040;
 
-    [DllImport("user32.dll", SetLastError = true)]
-    internal static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+    [LibraryImport("user32.dll", SetLastError = true)]
+    internal static partial int GetWindowLongW(IntPtr hWnd, int nIndex);
 
-    [DllImport("user32.dll")]
-    internal static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+    [LibraryImport("user32.dll")]
+    internal static partial int SetWindowLongW(IntPtr hWnd, int nIndex, int dwNewLong);
 
-    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-    internal static extern int FindWindowA(in string lpClassName, in string? lpWindowName);
+    [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16)]
+    internal static partial int FindWindowA(in string lpClassName, in string? lpWindowName);
 
-    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-    internal static extern int FindWindowExA(int hwndParent, int hwndChildAfter, in string lpClassName, in string? lpWindowName);
+    [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16)]
+    internal static partial int FindWindowExA(int hwndParent, int hwndChildAfter, in string lpClassName, in string? lpWindowName);
 
     internal const int GWL_STYLE = -16;
     internal const int WS_CAPTION = 0x00C00000;

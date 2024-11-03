@@ -4,7 +4,6 @@
 
 using System;
 using System.IO;
-using ShortcutGuide.Exceptions;
 using ShortcutGuide.Models;
 using YamlDotNet.Serialization;
 

@@ -3,16 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShortcutGuide
 {
     // This class is rewritten from C++ to C# from the measure tool project
-    internal static class DpiHelper
+    internal static partial class DpiHelper
     {
 #pragma warning disable SA1310 // Field names should not contain underscore
         private const int DEFAULT_DPI = 96;
@@ -47,10 +43,10 @@ namespace ShortcutGuide
             }
         }
 
-        [DllImport("User32.dll")]
-        private static extern IntPtr MonitorFromWindow(int hwnd, int dwFlags);
+        [LibraryImport("User32.dll")]
+        private static partial IntPtr MonitorFromWindow(int hwnd, int dwFlags);
 
-        [DllImport("Shcore.dll")]
-        private static extern long GetDpiForMonitor(int hmonitor, int dpiType, ref int dpiX, ref int dpiY);
+        [LibraryImport("Shcore.dll")]
+        private static partial long GetDpiForMonitor(int hmonitor, int dpiType, ref int dpiX, ref int dpiY);
     }
 }

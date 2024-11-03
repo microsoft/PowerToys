@@ -3,17 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.Foundation;
 using WinUIEx;
 
 namespace ShortcutGuide
 {
-    public static class DisplayHelper
+    public static partial class DisplayHelper
     {
         private enum MonitorFromWindowDwFlags : int
         {
@@ -56,30 +52,25 @@ namespace ShortcutGuide
 
         private delegate bool MonitorEnumDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData);
 
-        [DllImport("User32.dll")]
-        private static extern IntPtr MonitorFromWindow(nint hwnd, int dwFlags);
+        [LibraryImport("User32.dll")]
+        private static partial IntPtr MonitorFromWindow(nint hwnd, int dwFlags);
 
-        [DllImport("User32.dll")]
+        [LibraryImport("User32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, MonitorEnumDelegate lpfnEnum, IntPtr dwData);
+        private static partial bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, MonitorEnumDelegate lpfnEnum, IntPtr dwData);
 
-        public struct LPARAM
+        public struct LPARAM(IntPtr value)
         {
-            public IntPtr Value;
-
-            public LPARAM(IntPtr value)
-            {
-                Value = value;
-            }
+            public IntPtr Value = value;
 
             public static implicit operator IntPtr(LPARAM lParam)
             {
                 return lParam.Value;
             }
 
-            public static implicit operator LPARAM(IntPtr ptr)
+            public static implicit operator LPARAM(IntPtr value)
             {
-                return new LPARAM(ptr);
+                return new LPARAM(value);
             }
 
             public static implicit operator LPARAM(int value)

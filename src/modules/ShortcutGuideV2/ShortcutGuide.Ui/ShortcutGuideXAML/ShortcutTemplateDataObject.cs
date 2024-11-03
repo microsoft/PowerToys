@@ -26,14 +26,7 @@ namespace ShortcutGuide
             Description = description;
             OriginalShortcutObject = originalShortcutObject;
 
-            if (string.IsNullOrWhiteSpace(description))
-            {
-                DescriptionVisible = Visibility.Collapsed;
-            }
-            else
-            {
-                DescriptionVisible = Visibility.Visible;
-            }
+            DescriptionVisible = string.IsNullOrWhiteSpace(description) ? Visibility.Collapsed : Visibility.Visible;
 
             shortcut.Orientation = Orientation.Horizontal;
             Shortcut = shortcut;
