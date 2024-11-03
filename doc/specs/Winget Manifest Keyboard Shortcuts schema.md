@@ -197,6 +197,33 @@ Special keys are enclosed between `<` and `>` and correspond to a key that shoul
 
 </details>
 
+#### 3.2.2 Example
+
+```yaml
+PackageName: Microsoft.PowerToys
+WindowFilter: "*"
+BackgroundProcess: True
+Shortcuts:
+  - SectionName: General
+    Properties:
+      - Name: Advanced Paste
+        Win: True
+        Ctrl: False
+        Alt: False
+        Shift: True
+        Description: Open Advanced Paste window
+        Keys:
+          - 86
+      - Name: Advanced Paste
+        Win: True
+        Ctrl: True
+        Alt: True
+        Shift: False
+        Description: Paste as plain text directly
+        Keys:
+          - 86
+```
+
 
 ### 3.2 `index.yml` file
 
@@ -230,3 +257,18 @@ Index:                      # List of all manifest files
 <details>
  <summary><b>Apps</b> - List of all the package identifiers applying for the filter</summary>
 </details>
+
+#### 3.2.1 Example
+
+```yaml
+DefaultShellName: "+WindowsNT.Shell"
+Index:
+  - Filter: "*"
+    Apps: ["+WindowsNT.Shell", "Microsoft.PowerToys"]
+  - Filter: "explorer.exe"
+    Apps: ["+WindowsNT.WindowsExplorer"]
+  - Filter: "taskmgr.exe"
+    Apps: ["+WindowsNT.TaskManager"]
+  - Filter: "msedge.exe"
+    Apps: ["+WindowsNT.Edge"]
+```
