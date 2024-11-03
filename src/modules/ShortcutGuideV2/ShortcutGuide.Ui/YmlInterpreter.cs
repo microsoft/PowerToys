@@ -25,12 +25,12 @@ namespace ShortcutGuide
             return deserializer.Deserialize<ShortcutList>(content);
         }
 
-        private static string GetPathOfIntepretations()
+        public static string GetPathOfIntepretations()
         {
             return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "Windows", "KeyboardShortcuts");
         }
 
-        private static IndexFile GetIndexYamlFile()
+        public static IndexFile GetIndexYamlFile()
         {
             string path = GetPathOfIntepretations();
             string content = File.ReadAllText(Path.Combine(path, "index.yml"));

@@ -21,13 +21,13 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <SelectorBar Grid.Column="0" Grid.Row="0" x:Name="WindowSelector" SelectionChanged="WindowSelectionChanged">
-            <SelectorBarItem Text="Windows">
+            <SelectorBarItem x:Name="WindowsSelectorBarItem" Text="Windows">
                 <SelectorBarItem.Icon>
                     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE770;" />
                 </SelectorBarItem.Icon>
             </SelectorBarItem>
-            <SelectorBarItem Text="PowerToys" />
-            <SelectorBarItem Text="Current window">
+            <SelectorBarItem Text="PowerToys" x:Name="PowerToysSelectorBarItem" />
+            <SelectorBarItem Text="Current window" x:Name="CurrentWindowSelectorBarItem">
                 <SelectorBarItem.Icon>
                     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xe923;" />
                 </SelectorBarItem.Icon>

@@ -9,5 +9,7 @@ namespace ShortcutGuide.Models
         public string PackageName { get; set; }
 
         public ShortcutCategory[] Shortcuts { get; set; }
+
+        public string WindowFilter { get; set; }
     }
 }
