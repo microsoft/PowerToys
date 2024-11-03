@@ -13,7 +13,7 @@ namespace ShortcutGuide
     public sealed class Program
     {
         [STAThread]
-        public static void Main(string[] args)
+        public static void Main()
         {
             PowerToysShortcutsPopulator.Populate();
 

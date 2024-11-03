@@ -10,7 +10,6 @@
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
     <Page.Resources>
-        <local:StringToVisibilityConverter x:Key="StringToVisibility"/>
         <DataTemplate x:Key="ShortcutTemplate" x:DataType="local:ShortcutTemplateDataObject">
             <Grid MinWidth="300">
                 <Grid.ContextFlyout>

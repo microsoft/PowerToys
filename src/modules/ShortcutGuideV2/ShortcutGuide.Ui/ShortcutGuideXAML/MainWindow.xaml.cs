@@ -49,9 +49,9 @@ namespace ShortcutGuide
             IsTitleBarVisible = false;
 
             // Remove the caption style from the window style. Windows App SDK 1.6 added it, which made the title bar and borders appear for Measure Tool. This code removes it.
-            var windowStyle = GetWindowLong(hwnd, GWL_STYLE);
-            windowStyle = windowStyle & (~WS_CAPTION);
-            _ = SetWindowLong(hwnd, GWL_STYLE, windowStyle);
+            var windowStyle = GetWindowLongW(hwnd, GWL_STYLE);
+            windowStyle &= ~WS_CAPTION;
+            _ = SetWindowLongW(hwnd, GWL_STYLE, windowStyle);
 #if DEBUG
 #else
             SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);

@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -61,7 +60,7 @@ namespace ShortcutGuide
 
             if (!ShortcutPageParameters.PinnedShortcuts.TryGetValue(ShortcutPageParameters.CurrentPageName, out var _))
             {
-                ShortcutPageParameters.PinnedShortcuts.Add(ShortcutPageParameters.CurrentPageName, new List<Shortcut>());
+                ShortcutPageParameters.PinnedShortcuts.Add(ShortcutPageParameters.CurrentPageName, []);
             }
 
             OpenOverview();
