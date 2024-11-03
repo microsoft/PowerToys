@@ -37,45 +37,41 @@ internal sealed partial class YouTubeChannelVideosPage : DynamicListPage
         _channelName = channelName;
     }
 
-    public override ISection[] GetItems(string query)
+    public override IListItem[] GetItems(string query)
     {
         return DoGetItems(query).GetAwaiter().GetResult(); // Fetch and await the task synchronously
     }
 
-    private async Task<ISection[]> DoGetItems(string query)
+    private async Task<IListItem[]> DoGetItems(string query)
     {
         // Fetch YouTube videos scoped to the channel
         List<YouTubeVideo> items = await GetYouTubeChannelVideos(query, _channelId, _channelName);
 
         // Create a section and populate it with the video results
-        var section = new ListSection()
+        var section = items.Select(video => new ListItem(new OpenVideoLinkAction(video.Link))
         {
-            Title = $"Videos from {_channelName ?? _channelId}",
-            Items = items.Select(video => new ListItem(new OpenVideoLinkAction(video.Link))
+            Title = video.Title,
+            Subtitle = $"{video.Channel}",
+            Details = new Details()
             {
                 Title = video.Title,
-                Subtitle = $"{video.Channel}",
-                Details = new Details()
-                {
-                    Title = video.Title,
-                    HeroImage = new(video.ThumbnailUrl),
-                    Body = $"{video.Channel}",
-                },
-                Tags = [
+                HeroImage = new(video.ThumbnailUrl),
+                Body = $"{video.Channel}",
+            },
+            Tags = [
                     new Tag()
                     {
                         Text = video.PublishedAt.ToString("MMMM dd, yyyy", CultureInfo.InvariantCulture), // Show the date of the video post
                     }
                 ],
-                MoreCommands = [
+            MoreCommands = [
                     new CommandContextItem(new OpenChannelLinkAction(video.ChannelUrl)),
                     new CommandContextItem(new YouTubeVideoInfoMarkdownPage(video)),
                     new CommandContextItem(new YouTubeAPIPage()),
                 ],
-            }).ToArray(),
-        };
+        }).ToArray();
 
-        return new[] { section }; // Properly return an array of sections
+        return section;
     }
 
     // Method to fetch videos from a specific channel

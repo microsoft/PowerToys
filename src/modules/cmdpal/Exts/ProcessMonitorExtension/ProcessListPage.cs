@@ -19,19 +19,16 @@ internal sealed partial class ProcessListPage : ListPage
         this.Name = "Process Monitor";
     }
 
-    public override ISection[] GetItems()
+    public override IListItem[] GetItems()
     {
         return DoGetItems();
     }
 
-    private ISection[] DoGetItems()
+    private IListItem[] DoGetItems()
     {
         var items = GetRunningProcesses();
         this.Loading = false;
-        var s = new ListSection()
-        {
-            Title = "Processes",
-            Items = items
+        var s = items
             .OrderByDescending(p => p.Memory)
             .Select((process) => new ListItem(new SwitchToProcess(process))
             {
@@ -40,9 +37,8 @@ internal sealed partial class ProcessListPage : ListPage
                 MoreCommands = [
                     new CommandContextItem(new TerminateProcess(process))
                 ],
-            }).ToArray(),
-        };
-        return [s];
+            }).ToArray();
+        return s;
     }
 
     private static IEnumerable<ProcessItem> GetRunningProcesses()

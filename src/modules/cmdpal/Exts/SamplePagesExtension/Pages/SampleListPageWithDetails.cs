@@ -27,49 +27,43 @@ internal sealed partial class SampleListPageWithDetails : ListPage
         this.ShowDetails = true;
     }
 
-    public override ISection[] GetItems()
+    public override IListItem[] GetItems()
     {
         return [
-            new ListSection()
+            new ListItem(new NoOpCommand())
             {
-                Title = "Sample List Page",
-                Items = [
-                    new ListItem(new NoOpCommand())
-                    {
-                        Title = "TODO: Implement your extension here",
-                        Details = new Details()
-                        {
-                            Title = "List Item 1",
-                            Body = "### Example of markdown details",
-                        },
-                    },
-                    new ListItem(new NoOpCommand())
-                    {
-                        Title = "This one has a subtitle too",
-                        Subtitle = "Example Subtitle",
-                        Details = new Details()
-                        {
-                            Title = "List Item 2",
-                            Body = "### Example of markdown details",
-                        },
-                    },
-                    new ListItem(new NoOpCommand())
-                    {
-                        Title = "This one has a tag too",
-                        Subtitle = "the one with a tag",
-                        Tags = [new Tag()
-                        {
-                            Text = "Sample Tag",
-                        }
-                               ],
-                        Details = new Details()
-                        {
-                            Title = "List Item 3",
-                            Body = "### Example of markdown details",
-                        },
-                    }
-                ],
+                Title = "TODO: Implement your extension here",
+                Details = new Details()
+                {
+                    Title = "List Item 1",
+                    Body = "### Example of markdown details",
+                },
+            },
+            new ListItem(new NoOpCommand())
+            {
+                Title = "This one has a subtitle too",
+                Subtitle = "Example Subtitle",
+                Details = new Details()
+                {
+                    Title = "List Item 2",
+                    Body = "### Example of markdown details",
+                },
+            },
+            new ListItem(new NoOpCommand())
+            {
+                Title = "This one has a tag too",
+                Subtitle = "the one with a tag",
+                Tags = [new Tag()
+                {
+                    Text = "Sample Tag",
+                }
+                        ],
+                Details = new Details()
+                {
+                    Title = "List Item 3",
+                    Body = "### Example of markdown details",
+                },
             }
-            ];
+        ];
     }
 }

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
@@ -12,9 +13,9 @@ namespace WindowsCommandPalette.Views;
 
 public sealed class ListPageViewModel : PageViewModel
 {
-    private readonly ObservableCollection<SectionInfoList> _items = [];
+    private readonly ObservableCollection<ListItemViewModel> _items = [];
 
-    public ObservableCollection<SectionInfoList> FilteredItems { get; set; } = [];
+    public ObservableCollection<ListItemViewModel> FilteredItems { get; set; } = [];
 
     internal IListPage Page => (IListPage)this.PageAction;
 
@@ -32,6 +33,19 @@ public sealed class ListPageViewModel : PageViewModel
     public ListPageViewModel(IListPage page)
         : base(page)
     {
+        page.PropChanged += Page_PropChanged;
+    }
+
+    private void Page_PropChanged(object sender, PropChangedEventArgs args)
+    {
+        if (args.PropertyName == "Items")
+        {
+            Debug.WriteLine("Items changed");
+            _dispatcherQueue.TryEnqueue(async () =>
+            {
+                await this.UpdateListItems();
+            });
+        }
     }
 
     internal Task InitialRender()
@@ -42,7 +56,7 @@ public sealed class ListPageViewModel : PageViewModel
     internal async Task UpdateListItems()
     {
         // on main thread
-        var t = new Task<ISection[]>(() =>
+        var t = new Task<IListItem[]>(() =>
         {
             try
             {
@@ -54,16 +68,11 @@ public sealed class ListPageViewModel : PageViewModel
             {
                 System.Diagnostics.Debug.WriteLine(ex);
                 _forceShowDetails = true;
-                return [new ListSection()
-                {
-                    Title = "Error",
-                    Items = [new ErrorListItem(ex)],
-                }
-                ];
+                return [new ErrorListItem(ex)];
             }
         });
         t.Start();
-        var sections = await t;
+        var items = await t;
 
         // still on main thread
 
@@ -71,38 +80,21 @@ public sealed class ListPageViewModel : PageViewModel
         // we already have, then rebuilding it. We shouldn't do that. We should
         // still use the results from GetItems and put them into the code in
         // UpdateFilter to intelligently add/remove as needed.
-        // Items.Clear();
-        // FilteredItems.Clear();
-        Collection<SectionInfoList> newItems = new();
+        // TODODO! are we still? ^^
+        Collection<ListItemViewModel> newItems = new(items.Select(i => new ListItemViewModel(i)).ToList());
+        Debug.WriteLine($"  Found {newItems.Count} items");
 
-        var size = sections.Length;
-        for (var sectionIndex = 0; sectionIndex < size; sectionIndex++)
-        {
-            var section = sections[sectionIndex];
-            var sectionItems = new SectionInfoList(
-                section,
-                section.Items
-                    .Where(i => i != null && !string.IsNullOrEmpty(i.Title))
-                    .Select(i => new ListItemViewModel(i)));
-
-            // var items = section.Items;
-            // for (var i = 0; i < items.Length; i++) {
-            //     ListItemViewModel vm = new(items[i]);
-            //     Items.Add(vm);
-            //     FilteredItems.Add(vm);
-            // }
-            newItems.Add(sectionItems);
-
-            // Items.Add(sectionItems);
-            // FilteredItems.Add(sectionItems);
-        }
-
-        ListHelpers.InPlaceUpdateList(_items, newItems);
+        // THIS populates FilteredItems. If you do this off the UI thread, guess what -
+        // the list view won't update. So WATCH OUT
         ListHelpers.InPlaceUpdateList(FilteredItems, newItems);
+        ListHelpers.InPlaceUpdateList(_items, newItems);
+
+        Debug.WriteLine($"Done with UpdateListItems, found {FilteredItems.Count} / {_items.Count}");
     }
 
-    internal async Task<Collection<SectionInfoList>> GetFilteredItems(string query)
+    internal async Task<IEnumerable<ListItemViewModel>> GetFilteredItems(string query)
     {
+        // This method does NOT change any lists. It doesn't modify _items or FilteredItems...
         if (query == _query)
         {
             return FilteredItems;
@@ -111,6 +103,7 @@ public sealed class ListPageViewModel : PageViewModel
         _query = query;
         if (IsDynamic)
         {
+            // ... except here we might modify those lists. But ignore that for now, GH #77 will fix this.
             await UpdateListItems();
             return FilteredItems;
         }
@@ -122,24 +115,14 @@ public sealed class ListPageViewModel : PageViewModel
                 return _items;
             }
 
-            //// TODO! Probably bad that this turns list view models into listitems back to NEW view models
-            // return ListHelpers.FilterList(Items.Select(vm => vm.ListItem), Query).Select(li => new ListItemViewModel(li)).ToList();
-            try
-            {
-                var allFilteredItems = ListHelpers.FilterList(
-                    _items
-                        .SelectMany(section => section)
-                        .Select(vm => vm.ListItem.Unsafe),
-                    _query).Select(li => new ListItemViewModel(li));
+            // TODO! Probably bad that this turns list view models into listitems back to NEW view models
+            // TODO! make this safer
+            // TODODO! ^ still relevant?
+            var newFilter = ListHelpers
+                .FilterList(_items.Select(vm => vm.ListItem.Unsafe), query)
+                .Select(li => new ListItemViewModel(li));
 
-                var newSection = new SectionInfoList(null, allFilteredItems);
-                return [newSection];
-            }
-            catch (COMException ex)
-            {
-                _forceShowDetails = true;
-                return [new SectionInfoList(null, [new ListItemViewModel(new ErrorListItem(ex))])];
-            }
+            return newFilter;
         }
     }
 }

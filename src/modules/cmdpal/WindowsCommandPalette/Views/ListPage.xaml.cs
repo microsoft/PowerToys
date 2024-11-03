@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
+using System.Diagnostics;
 using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
@@ -89,7 +90,6 @@ public sealed partial class ListPage : Microsoft.UI.Xaml.Controls.Page, INotifyP
             DispatcherQueue.TryEnqueue(async () => { await UpdateFilter(FilterBox.Text); });
         }
 
-        this.ItemsCVS.Source = ViewModel?.FilteredItems;
         this.ItemsList.SelectedIndex = 0;
     }
 
@@ -286,50 +286,20 @@ public sealed partial class ListPage : Microsoft.UI.Xaml.Controls.Page, INotifyP
             return;
         }
 
-        // ViewModel.Query = text;
+        Debug.WriteLine($"UpdateFilter({text})");
 
-        // This first part will first filter all the commands that were passed
-        // into us initially. We handle the filtering of these ones. Commands
-        // from async querying happens later.
-        var newMatches = await ViewModel.GetFilteredItems(text);
+        // Go ask the ViewModel for the items to display. This might:
+        // * do an async request to the extension (fixme after GH #77)
+        // * just return already filtered items.
+        // * return a subset of items matching the filter text
+        var items = await ViewModel.GetFilteredItems(text);
 
-        // this.ItemsCVS.Source = ViewModel.FilteredItems;
-        // Returns back on the UI thread
-        ListHelpers.InPlaceUpdateList(ViewModel.FilteredItems, newMatches);
+        Debug.WriteLine($"  UpdateFilter after GetFilteredItems({text}) --> {items.Count()} ; {ViewModel.FilteredItems.Count}");
 
-        /*
-        // for (var i = 0; i < ViewModel.FilteredItems.Count && i < newMatches.Count; i++)
-        // {
-        //     for (var j = i; j < ViewModel.FilteredItems.Count; j++)
-        //     {
-        //         if (ViewModel.FilteredItems[j] == newMatches[i])
-        //         {
-        //             for (var k = i; k < j; k++)
-        //             {
-        //                 ViewModel.FilteredItems.RemoveAt(i);
-        //             }
-        //             break;
-        //         }
-        //     }
-
-        //     if (ViewModel.FilteredItems[i] != newMatches[i])
-        //     {
-        //         ViewModel.FilteredItems.Insert(i, newMatches[i]);
-        //     }
-        // }
-
-        // // Remove any extra trailing items from the destination
-        // while (ViewModel.FilteredItems.Count > newMatches.Count)
-        // {
-        //     ViewModel.FilteredItems.RemoveAt(ViewModel.FilteredItems.Count - 1);//RemoveAtEnd
-        // }
-
-        // // Add any extra trailing items from the source
-        // while (ViewModel.FilteredItems.Count < newMatches.Count)
-        // {
-        //     ViewModel.FilteredItems.Add(newMatches[ViewModel.FilteredItems.Count]);
-        // }
-        */
+        // Here, actually populate ViewModel.FilteredItems
+        // WARNING: if you do this off the UI thread, it sure won't work right.
+        ListHelpers.InPlaceUpdateList(ViewModel.FilteredItems, new(items.ToList()));
+        Debug.WriteLine($"  UpdateFilter after InPlaceUpdateList --> {ViewModel.FilteredItems.Count}");
 
         // set the selected index to the first item in the list
         if (ItemsList.Items.Count > 0)

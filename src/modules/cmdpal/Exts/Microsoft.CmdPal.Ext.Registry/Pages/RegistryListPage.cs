@@ -70,10 +70,8 @@ internal sealed partial class RegistryListPage : DynamicListPage
         return new List<ListItem>();
     }
 
-    public override ISection[] GetItems(string query)
+    public override IListItem[] GetItems(string query)
     {
-        ListItem[] items = Query(query).ToArray();
-
-        return new ISection[] { new ListSection() { Title = "Registry Keys", Items = items } };
+        return Query(query).ToArray();
     }
 }

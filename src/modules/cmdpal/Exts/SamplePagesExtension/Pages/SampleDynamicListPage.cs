@@ -26,28 +26,22 @@ internal sealed partial class SampleDynamicListPage : DynamicListPage
         Name = "SSH Keychain";
     }
 
-    public override ISection[] GetItems(string query)
+    public override IListItem[] GetItems(string query)
     {
         return [
-            new ListSection()
+            new ListItem(new NoOpCommand()) { Title = string.IsNullOrEmpty(query) ? "dynamic item" : query, Subtitle = "Notice how the title changes for this list item when you type in the filter box" },
+            new ListItem(new NoOpCommand()) { Title = "TODO: Implement your extension here" },
+            new ListItem(new NoOpCommand()) { Title = "This one has a subtitle too", Subtitle = "Example Subtitle" },
+            new ListItem(new NoOpCommand())
             {
-                Title = "Sample List Page",
-                Items = [
-                    new ListItem(new NoOpCommand()) { Title = string.IsNullOrEmpty(query) ? "dynamic item" : query, Subtitle = "Notice how the title changes for this list item when you type in the filter box" },
-                    new ListItem(new NoOpCommand()) { Title = "TODO: Implement your extension here" },
-                    new ListItem(new NoOpCommand()) { Title = "This one has a subtitle too", Subtitle = "Example Subtitle" },
-                    new ListItem(new NoOpCommand())
-                    {
-                        Title = "This one has a tag too",
-                        Subtitle = "the one with a tag",
-                        Tags = [new Tag()
-                               {
-                                   Text = "Sample Tag",
-                               }
-                        ],
-                    }
+                Title = "This one has a tag too",
+                Subtitle = "the one with a tag",
+                Tags = [new Tag()
+                        {
+                            Text = "Sample Tag",
+                        }
                 ],
             }
-            ];
+        ];
     }
 }

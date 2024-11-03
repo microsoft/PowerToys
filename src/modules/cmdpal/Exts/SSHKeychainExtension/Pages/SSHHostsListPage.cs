@@ -59,26 +59,22 @@ internal sealed partial class SSHHostsListPage : ListPage
         return hosts;
     }
 
-    public override ISection[] GetItems()
+    public override IListItem[] GetItems()
     {
         var t = DoGetItems();
         t.ConfigureAwait(false);
         return t.Result;
     }
 
-    private async Task<ISection[]> DoGetItems()
+    private async Task<IListItem[]> DoGetItems()
     {
         List<SSHKeychainItem> items = await GetSSHHosts();
-        var s = new ListSection()
-        {
-            Title = "SSH Hosts",
-            Items = items.Select((host) => new ListItem(new LaunchSSHHostCommand(host))
+        var s = items.Select((host) => new ListItem(new LaunchSSHHostCommand(host))
             {
                 Title = host.HostName,
                 Subtitle = host.EscapedHost,
                 MoreCommands = [new CommandContextItem(new OpenConfigFileCommand(_defaultConfigFile))],
-            }).ToArray(),
-        };
-        return [s];
+            }).ToArray();
+        return s;
     }
 }

@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2024-09-06
+last updated: 2024-10-22
 issue id: n/a
 ---
 
@@ -563,11 +563,7 @@ interface IListItem requires INotifyPropChanged {
     ITag[] Tags{ get; };
     IDetails Details{ get; };
     IFallbackHandler FallbackHandler{ get; };
-}
-
-interface ISection {
-    String Title { get; };
-    IListItem[] Items { get; };
+    String Section { get; };
 }
 
 interface IGridProperties  {
@@ -581,24 +577,17 @@ interface IListPage requires IPage {
     IFilters Filters { get; };
     IGridProperties GridProperties { get; };
 
-    ISection[] GetItems(); // DevPal will be responsible for filtering the list of items
+    IListItem[] GetItems(); // DevPal will be responsible for filtering the list of items
 }
 
 interface IDynamicListPage requires IListPage {
-    ISection[] GetItems(String query); // DevPal will do no filtering of these items
+    IListItem[] GetItems(String query); // DevPal will do no filtering of these items
 }
 ```
 
 ![A mockup of individual elements of a list page and the list items](./list-elements-mock.png)
 
-Lists are comprised of a collection of `Section`s, each with filled with
-`ListItems`s as items. Sections may have a title, though they are not required
-to. Sections are displayed to the user in the order they are returned by the
-extension. Many extensions will only have a single section, but if developers
-want to have lots of grouped results, they're free to have as many sections as
-they like.
-* For example: An "Agenda" extension may want to have one section for each day,
-  with each section's items containing the events for the day.
+Lists are comprised of a collection of `IListItems`.
 
 ![Another mockup of the elements of a list item](./list-elements-mock-002.png)
 
@@ -607,7 +596,7 @@ when the user selects the item. If the IListItem has a non-null `Icon`, that
 icon will be displayed in the list. If the `Icon` is null, DevPal will display
 the `Icon` of the list item's `Command` instead.
 
- ListItems may also have a list of `MoreCommands`.
+ListItems may also have a list of `MoreCommands`.
 These are additional commands that the user can take on the item. These will be
 displayed to the user in the "More commands" flyout when the user has that item
 selected. As the user moves focus through the list to select different items, we
@@ -656,6 +645,16 @@ internal sealed class TogglePlayMediaAction : InvokableCommand
 }
 // And a similar InvokableCommand for the PrevNextTrackAction
 ```
+
+List items may also have an optional `Section` provided as a string. When
+displaying items to the user, the Command Palette will group items with the same
+`Section` string together in the order that the `Section`s are first seen in
+the results. Many extensions will not use sections at all. If developers want to
+have lots of grouped results, they're free to have as many sections as they
+like.
+* For example: An "Agenda" extension may want to have one section for each day,
+  with each section's items containing the events for the day.
+* Or a Pokedex extension may want to group results by region.
 
 Lists may either be a list of items like a traditional ListView, or they can be
 a grid of items. Each of these items can be grouped into sections, which will be
@@ -730,15 +729,12 @@ class NewsListItem(NewsPost post) : Microsoft.Windows.Run.Extensions.ListItem {
 }
 class HackerNewsPage: Microsoft.Windows.Run.Extensions.ListPage {
     public bool Loading => true;
-    IListSection[] GetItems() {
+    IListItem[] GetItems() {
         List<NewsItem> items = /* do some RSS feed stuff */;
         this.Loading = false;
-        return new Microsoft.Windows.Run.Extensions.ListSection() {
-            Title = "Posts",
-            Items = items
-                        .Select((post) => new NewsListItem(post))
-                        .ToList()
-        };
+        return items
+                .Select((post) => new NewsListItem(post))
+                .ToArray();
     }
 }
 ```
@@ -1166,7 +1162,6 @@ We'll provide default implementations for the following interfaces:
 
 * `IInvokableCommand`
 * `IListItem`
-* `IListSection`
 * `ICommandContextItem`
 * `ICommandResult`
 * `IGoToPageArgs`
@@ -1218,21 +1213,16 @@ class NewsListItem(NewsPost post) : Microsoft.Windows.Run.Extensions.ListItem {
             Icon = "\uE8F2" // ChatBubbles
         })
     ];
-    public ITag[] Tags => [ new Tag(){ Text=post.Poster, new Tag(){ Text=post.Points } ];
+    public ITag[] Tags => [ new Tag(){ Text=post.Poster, new Tag(){ Text=post.Points } } ];
 }
 class HackerNewsPage: Microsoft.Windows.Run.Extensions.ListPage {
     public bool Loading => true;
-    IListSection[] GetItems(String query) {
+    IListItem[] GetItems(String query) {
         List<NewsItem> items = /* do some RSS feed stuff */;
         this.Loading = false;
-        return [
-            new ListSection() {
-                Title = "Posts",
-                Items = items
-                            .Select((post) => new NewsListItem(post))
-                            .ToArray()
-            }
-        ];
+        return items
+                .Select((post) => new NewsListItem(post))
+                .ToArray();
     }
 }
 ```
@@ -1363,18 +1353,13 @@ classDiagram
         ITag[] Tags
         IDetails Details
         IFallbackHandler FallbackHandler
+        String Section
     }
     IContextItem "*" *-- IListItem
     IDetails "?" *-- IListItem
     ICommand "?" *-- IListItem
     ITag "*" *-- IListItem
     IFallbackHandler "?" *-- IListItem
-
-    class ISection {
-        String Title
-        IListItem[] Items
-    }
-    IListItem "*" *-- ISection
 
     class IGridProperties  {
         Windows.Foundation.Size TileSize
@@ -1388,15 +1373,15 @@ classDiagram
         IFilters Filters
         IGridProperties GridProperties
 
-        ISection[] GetItems()
+        IListItem[] GetItems()
     }
     IGridProperties "?" *-- IListPage
-    ISection "*" *-- IListPage
+    IListItem "*" *-- IListPage
     IFilters "*" *-- IListPage
 
     IDynamicListPage --|> IListPage
     class IDynamicListPage  {
-        ISection[] GetItems(String query)
+        IListItem[] GetItems(String query)
     }
 
     class IDetails {

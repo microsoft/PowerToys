@@ -25,39 +25,35 @@ internal sealed partial class YouTubeChannelsPage : DynamicListPage
         this.ShowDetails = true;
     }
 
-    public override ISection[] GetItems(string query)
+    public override IListItem[] GetItems(string query)
     {
         return DoGetItems(query).GetAwaiter().GetResult(); // Fetch and await the task synchronously
     }
 
-    private async Task<ISection[]> DoGetItems(string query)
+    private async Task<IListItem[]> DoGetItems(string query)
     {
         // Fetch YouTube channels based on the query
         List<YouTubeChannel> items = await GetYouTubeChannels(query);
 
         // Create a section and populate it with the channel results
-        var section = new ListSection()
+        var section = items.Select(channel => new ListItem(new OpenChannelLinkAction(channel.ChannelUrl))
         {
-            Title = "Search Results",
-            Items = items.Select(channel => new ListItem(new OpenChannelLinkAction(channel.ChannelUrl))
+            Title = channel.Name,
+            Subtitle = $"{channel.SubscriberCount} subscribers",
+            Details = new Details()
             {
                 Title = channel.Name,
-                Subtitle = $"{channel.SubscriberCount} subscribers",
-                Details = new Details()
-                {
-                    Title = channel.Name,
-                    HeroImage = new(channel.ProfilePicUrl),
-                    Body = $"Subscribers: {channel.SubscriberCount}\nChannel Description: {channel.Description}",
-                },
-                MoreCommands = [
+                HeroImage = new(channel.ProfilePicUrl),
+                Body = $"Subscribers: {channel.SubscriberCount}\nChannel Description: {channel.Description}",
+            },
+            MoreCommands = [
                     new CommandContextItem(new YouTubeChannelInfoMarkdownPage(channel)),
                     new CommandContextItem(new YouTubeChannelVideosPage(channel.ChannelId, channel.Name)),
                     new CommandContextItem(new YouTubeAPIPage()),
                 ],
-            }).ToArray(),
-        };
+        }).ToArray();
 
-        return new[] { section }; // Properly return an array of sections
+        return section;
     }
 
     // Method to fetch channels from YouTube API

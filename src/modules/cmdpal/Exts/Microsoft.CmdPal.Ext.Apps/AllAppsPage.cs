@@ -11,7 +11,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 public sealed partial class AllAppsPage : ListPage
 {
-    private ISection allAppsSection = new ListSection();
+    private IListItem[] allAppsSection = [];
 
     public AllAppsPage()
     {
@@ -23,22 +23,18 @@ public sealed partial class AllAppsPage : ListPage
         this.PlaceholderText = "Search installed apps...";
     }
 
-    public override ISection[] GetItems()
+    public override IListItem[] GetItems()
     {
-        if (this.allAppsSection == null || allAppsSection.Items.Length == 0)
+        if (this.allAppsSection == null || allAppsSection.Length == 0)
         {
             var apps = GetPrograms();
             this.Loading = false;
-            this.allAppsSection = new ListSection()
-            {
-                Title = "Apps",
-                Items = apps
+            this.allAppsSection = apps
                             .Select((app) => new AppListItem(app))
-                            .ToArray(),
-            };
+                            .ToArray();
         }
 
-        return [allAppsSection];
+        return allAppsSection;
     }
 
     internal static List<AppItem> GetPrograms()

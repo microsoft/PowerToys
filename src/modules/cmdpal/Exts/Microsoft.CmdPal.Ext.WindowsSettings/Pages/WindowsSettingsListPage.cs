@@ -101,10 +101,10 @@ internal sealed partial class WindowsSettingsListPage : DynamicListPage
         }
     }
 
-    public override ISection[] GetItems(string query)
+    public override IListItem[] GetItems(string query)
     {
         ListItem[] items = Query(query).ToArray();
 
-        return new ISection[] { new ListSection() { Title = "Windows Settings", Items = items } };
+        return items;
     }
 }

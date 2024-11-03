@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -20,17 +21,16 @@ public partial class ListViewModel : ObservableObject
 
     public ListViewModel(IListPage model)
     {
-        foreach (var section in model.GetItems())
+        // TEMPORARY: just plop all the items into a single group
+        // see 9806fe5d8 for the last commit that had this with sections
+        ObservableGroup<string, ListItemViewModel> group = new(string.Empty);
+
+        foreach (var item in model.GetItems())
         {
-            ObservableGroup<string, ListItemViewModel> group = new(section.Title);
-
-            foreach (var item in section.Items)
-            {
-                group.Add(new(item));
-            }
-
-            Items.AddGroup(group);
+            group.Add(new(item));
         }
+
+        Items.AddGroup(group);
     }
 
     // InvokeItemCommand is what this will be in Xaml due to source generator

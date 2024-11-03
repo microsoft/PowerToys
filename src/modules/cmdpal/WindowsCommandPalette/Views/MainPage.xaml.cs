@@ -104,7 +104,6 @@ public sealed partial class MainPage : Page
     private void InvokeActionHandler(object sender, ActionViewModel args)
     {
         var action = args.Command;
-        ViewModel.PushRecentAction(action);
         TryAllowForeground(action);
         if (action is IInvokableCommand invokable)
         {

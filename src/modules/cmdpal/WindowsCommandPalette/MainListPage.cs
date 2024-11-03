@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 using WindowsCommandPalette.Models;
@@ -13,65 +15,75 @@ namespace WindowsCommandPalette;
 public sealed partial class MainListPage : DynamicListPage
 {
     private readonly MainViewModel _mainViewModel;
-    private readonly MainListSection _mainSection;
-    private readonly RecentsListSection _recentsListSection;
+
     private readonly FilteredListSection _filteredSection;
-    private readonly ISection[] _sections;
+    private readonly ObservableCollection<MainListItem> topLevelItems = new();
 
     public MainListPage(MainViewModel viewModel)
     {
         this._mainViewModel = viewModel;
 
-        _mainSection = new(_mainViewModel);
-        _recentsListSection = new(_mainViewModel);
-        _filteredSection = new(_mainViewModel);
+        // wacky: "All apps" is added to _mainViewModel.TopLevelCommands before
+        // we're constructed, so we never get a
+        // TopLevelCommands_CollectionChanged callback when we're first launched
+        // that would let us add it
+        foreach (var i in _mainViewModel.TopLevelCommands)
+        {
+            this.topLevelItems.Add(new MainListItem(i.Unsafe));
+        }
 
+        // We're using a FilteredListSection to help abstract some of dealing with
+        // filtering the list of commands & apps. It's just a little more convenient.
+        // It's not an actual section, just vestigial from that era.
+        //
+        // Let the FilteredListSection use our TopLevelItems. That way we don't
+        // need to maintain two lists.
+        _filteredSection = new(_mainViewModel, this.topLevelItems);
+
+        // Listen for changes to the TopLevelCommands. This happens as we async
+        // load them on startup. We'll use CollectionChanged as an opportunity
+        // to raise the 'Items' changed event.
         _mainViewModel.TopLevelCommands.CollectionChanged += TopLevelCommands_CollectionChanged;
-
-        _sections = [
-            _recentsListSection,
-            _mainSection
-        ];
 
         PlaceholderText = "Search...";
         ShowDetails = true;
         Loading = false;
     }
 
-    public override ISection[] GetItems()
-    {
-        return _sections;
-    }
-
-    public override ISection[] GetItems(string query)
+    public override IListItem[] GetItems(string query)
     {
         _filteredSection.Query = query;
-        _mainSection.UpdateQuery(query);
+
+        var fallbacks = topLevelItems
+            .Select(i => i?.FallbackHandler)
+            .Where(fb => fb != null)
+            .Select(fb => fb!);
+
+        foreach (var fb in fallbacks)
+        {
+            fb.UpdateQuery(query);
+        }
+
         if (string.IsNullOrEmpty(query))
         {
-            return _sections;
+            return topLevelItems.ToArray();
         }
         else
         {
-            return [_filteredSection];
+            return _filteredSection.Items;
         }
     }
 
     private void TopLevelCommands_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        Debug.WriteLine("TopLevelCommands_CollectionChanged");
         if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null)
         {
             foreach (var item in e.NewItems)
             {
                 if (item is ExtensionObject<IListItem> listItem)
                 {
-                    // Eh, it's fine to be unsafe here, we're probably tossing MainListItem
-                    if (!_mainViewModel.Recent.Contains(listItem))
-                    {
-                        _mainSection.TopLevelItems.Add(new MainListItem(listItem.Unsafe));
-                    }
-
-                    _filteredSection.TopLevelItems.Add(new MainListItem(listItem.Unsafe));
+                    topLevelItems.Add(new MainListItem(listItem.Unsafe));
                 }
             }
         }
@@ -79,25 +91,20 @@ public sealed partial class MainListPage : DynamicListPage
         {
             foreach (var item in e.OldItems)
             {
-                if (item is ExtensionObject<IListItem> listItem)
+                if (item is ExtensionObject<IListItem> _)
                 {
-                    foreach (var mainListItem in _mainSection.TopLevelItems)
-                    {
-                        if (mainListItem.Item == listItem)
-                        {
-                            _mainSection.TopLevelItems.Remove(mainListItem);
-                            break;
-                        }
-                    }
+                    // If we were maintaining the POC project we'd remove the items here.
                 }
             }
         }
         else if (e.Action == NotifyCollectionChangedAction.Reset)
         {
-            _mainSection.Reset();
-            _filteredSection.Reset();
+            topLevelItems.Clear();
         }
 
-        _recentsListSection.Reset();
+        // Sneaky?
+        // Raise a Items changed event, so the list page knows that our items
+        // have changed, and it should re-fetch them.
+        this.OnPropertyChanged("Items");
     }
 }

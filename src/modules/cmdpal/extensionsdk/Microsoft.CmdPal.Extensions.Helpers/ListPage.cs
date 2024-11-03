@@ -58,5 +58,5 @@ public class ListPage : Page, IListPage
         }
     }
 
-    public virtual ISection[] GetItems() => throw new NotImplementedException();
+    public virtual IListItem[] GetItems() => throw new NotImplementedException();
 }

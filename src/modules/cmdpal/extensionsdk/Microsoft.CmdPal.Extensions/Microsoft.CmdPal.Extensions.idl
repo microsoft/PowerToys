@@ -159,12 +159,7 @@ namespace Microsoft.CmdPal.Extensions
         ITag[] Tags{ get; };
         IDetails Details{ get; };
         IFallbackHandler FallbackHandler{ get; };
-    }
-    
-    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
-    interface ISection {
-        String Title { get; };
-        IListItem[] Items { get; };
+        String Section { get; };
     }
     
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
@@ -180,12 +175,12 @@ namespace Microsoft.CmdPal.Extensions
         IFilters Filters { get; };
         IGridProperties GridProperties { get; };
     
-        ISection[] GetItems(); // DevPal will be responsible for filtering the list of items
+        IListItem[] GetItems(); // DevPal will be responsible for filtering the list of items
     }
     
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     interface IDynamicListPage requires IListPage {
-        ISection[] GetItems(String query); // DevPal will do no filtering of these items
+        IListItem[] GetItems(String query); // DevPal will do no filtering of these items
     }
     
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]

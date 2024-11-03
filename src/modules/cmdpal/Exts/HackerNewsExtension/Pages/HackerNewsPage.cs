@@ -45,27 +45,23 @@ internal sealed partial class HackerNewsPage : ListPage
         return posts;
     }
 
-    public override ISection[] GetItems()
+    public override IListItem[] GetItems()
     {
         var t = DoGetItems();
         t.ConfigureAwait(false);
         return t.Result;
     }
 
-    private async Task<ISection[]> DoGetItems()
+    private async Task<IListItem[]> DoGetItems()
     {
         List<NewsPost> items = await GetHackerNewsTopPosts();
         this.Loading = false;
-        var s = new ListSection()
-        {
-            Title = "Posts",
-            Items = items.Select((post) => new ListItem(new LinkCommand(post))
+        var s = items.Select((post) => new ListItem(new LinkCommand(post))
             {
                 Title = post.Title,
                 Subtitle = post.Link,
                 MoreCommands = [new CommandContextItem(new CommentCommand(post))],
-            }).ToArray(),
-        };
-        return [s];
+            }).ToArray();
+        return s;
     }
 }

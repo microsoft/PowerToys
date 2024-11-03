@@ -70,15 +70,9 @@ internal sealed partial class ProfilesListPage : ListPage
         return result;
     }
 
-    public override ISection[] GetItems()
+    public override IListItem[] GetItems()
     {
-        return [
-            new ListSection()
-            {
-                Title = "Profiles",
-                Items = Query().ToArray(),
-            }
-            ];
+        return Query().ToArray();
     }
 
     private BitmapImage GetLogo(TerminalPackage terminal)

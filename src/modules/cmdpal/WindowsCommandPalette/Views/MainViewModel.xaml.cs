@@ -95,28 +95,7 @@ public sealed class MainViewModel : IDisposable
         return title + subtitle;
     }
 
-    private string[] _recentCommandHashes = [];
-
-    public IEnumerable<IListItem> RecentActions => TopLevelCommands
-        .Select(i => i.Unsafe)
-        .Where((i) =>
-        {
-            if (i != null)
-            {
-                try
-                {
-                    return _recentCommandHashes.Contains(CreateHash(i.Title, i.Subtitle));
-                }
-                catch (COMException)
-                {
-                    return false;
-                }
-            }
-
-            return false;
-        }).Select(i => i!);
-
-    public IEnumerable<IListItem> AppItems => LoadedApps ? Apps.GetItems().First().Items : [];
+    public IEnumerable<IListItem> AppItems => LoadedApps ? Apps.GetItems() : [];
 
     public IEnumerable<ExtensionObject<IListItem>> Everything => TopLevelCommands
         .Concat(AppItems.Select(i => new ExtensionObject<IListItem>(i)))
@@ -125,69 +104,6 @@ public sealed class MainViewModel : IDisposable
             var v = i != null;
             return v;
         });
-
-    public IEnumerable<ExtensionObject<IListItem>> Recent => _recentCommandHashes
-        .Select(hash =>
-            Everything
-                .Where(i =>
-                {
-                    try
-                    {
-                        var o = i.Unsafe;
-                        return CreateHash(o.Title, o.Subtitle) == hash;
-                    }
-                    catch (COMException)
-                    {
-                        return false;
-                    }
-                })
-                .FirstOrDefault())
-        .Where(i => i != null)
-        .Select(i => i!);
-
-    public bool IsRecentCommand(MainListItem item)
-    {
-        try
-        {
-            foreach (var wraprer in Recent)
-            {
-                if (wraprer.Unsafe == item)
-                {
-                    return true;
-                }
-            }
-        }
-        catch (COMException)
-        {
-            return false;
-        }
-
-        return false;
-    }
-
-    internal void PushRecentAction(ICommand action)
-    {
-        foreach (var wrapped in Everything)
-        {
-            try
-            {
-                var listItem = wrapped?.Unsafe;
-                if (listItem != null && listItem.Command == action)
-                {
-                    // Found it, awesome.
-                    var hash = CreateHash(listItem.Title, listItem.Subtitle);
-
-                    // Remove the old one and push the new one to the front
-                    var recent = new List<string>([hash]).Concat(_recentCommandHashes.Where(h => h != hash)).Take(5).ToArray();
-                    _recentCommandHashes = recent.ToArray();
-                    return;
-                }
-            }
-            catch (COMException)
-            { /* log something */
-            }
-        }
-    }
 
     public void Dispose()
     {

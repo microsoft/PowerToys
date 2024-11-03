@@ -26,27 +26,21 @@ internal sealed partial class SampleListPage : ListPage
         Name = "Sample List Page";
     }
 
-    public override ISection[] GetItems()
+    public override IListItem[] GetItems()
     {
         return [
-            new ListSection()
+            new ListItem(new NoOpCommand()) { Title = "TODO: Implement your extension here" },
+            new ListItem(new SampleListPageWithDetails()) { Title = "This one has a subtitle too", Subtitle = "Example Subtitle" },
+            new ListItem(new SampleMarkdownPage())
             {
-                Title = "Sample List Page",
-                Items = [
-                    new ListItem(new NoOpCommand()) { Title = "TODO: Implement your extension here" },
-                    new ListItem(new SampleListPageWithDetails()) { Title = "This one has a subtitle too", Subtitle = "Example Subtitle" },
-                    new ListItem(new SampleMarkdownPage())
-                    {
-                        Title = "This one has a tag too",
-                        Subtitle = "the one with a tag",
-                        Tags = [new Tag()
-                               {
-                                   Text = "Sample Tag",
-                               }
-                        ],
-                    }
+                Title = "This one has a tag too",
+                Subtitle = "the one with a tag",
+                Tags = [new Tag()
+                        {
+                            Text = "Sample Tag",
+                        }
                 ],
             }
-            ];
+        ];
     }
 }

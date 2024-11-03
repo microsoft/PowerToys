@@ -17,15 +17,10 @@ internal sealed partial class MastodonExtensionPage : ListPage
         Name = "Mastodon";
     }
 
-    public override ISection[] GetItems()
+    public override IListItem[] GetItems()
     {
         return [
-            new ListSection()
-            {
-                Items = [
-                    new ListItem(new NoOpCommand()) { Title = "TODO: Implement your extension here" }
-                ],
-            }
+            new ListItem(new NoOpCommand()) { Title = "TODO: Implement your extension here" }
         ];
     }
 }

@@ -16,6 +16,7 @@ public class ListItem : BaseObservable, IListItem
     private ICommand? _command;
     private IContextItem[] _moreCommands = [];
     private IFallbackHandler? _fallbackHandler;
+    private string _section = string.Empty;
 
     public IconDataType? Icon
     {
@@ -101,6 +102,16 @@ public class ListItem : BaseObservable, IListItem
     {
         get => _fallbackHandler ?? _command as IFallbackHandler;
         init => _fallbackHandler = value;
+    }
+
+    public string Section
+    {
+        get => _section;
+        set
+        {
+            _section = value;
+            OnPropertyChanged(nameof(Section));
+        }
     }
 
     public ListItem(ICommand command)

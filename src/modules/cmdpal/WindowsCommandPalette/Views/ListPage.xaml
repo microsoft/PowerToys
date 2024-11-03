@@ -19,7 +19,7 @@
         <ResourceDictionary>
             <converters:StringVisibilityConverter x:Key="StringNotEmptyToVisibilityConverter" EmptyValue="Collapsed" NotEmptyValue="Visible" />
             <converters:BoolToVisibilityConverter x:Key="ReverseBoolToVisibilityConverter" TrueValue="Collapsed" FalseValue="Visible" />
-            <CollectionViewSource x:Name="ItemsCVS" IsSourceGrouped="True" />
+
             <StackLayout
                 x:Name="HorizontalStackLayout"
                 Orientation="Horizontal"
@@ -242,29 +242,9 @@
                 Margin="4,0,0,0"
                 IsItemClickEnabled="True"
                 ItemTemplate="{StaticResource ListItemTemplate}"
-                ItemsSource="{x:Bind ItemsCVS.View, Mode=OneWay}"
+                ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
                 SelectionChanged="ItemsList_SelectionChanged"
                 Style="{StaticResource NoAnimationsPlease}">
-                <ListView.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <ItemsStackPanel AreStickyGroupHeadersEnabled="False" />
-                    </ItemsPanelTemplate>
-                </ListView.ItemsPanel>
-                <ListView.GroupStyle>
-                    <GroupStyle HeaderContainerStyle="{StaticResource CustomHeaderContainerStyle}" HidesIfEmpty="True">
-                        <GroupStyle.HeaderTemplate>
-                            <DataTemplate x:DataType="local:SectionInfoList">
-                                <TextBlock
-                                    Padding="20,12,0,8"
-                                    AutomationProperties.AccessibilityView="Raw"
-                                    FontSize="14"
-                                    FontWeight="SemiBold"
-                                    Text="{x:Bind Title}"
-                                    Visibility="{x:Bind Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
-                            </DataTemplate>
-                        </GroupStyle.HeaderTemplate>
-                    </GroupStyle>
-                </ListView.GroupStyle>
 
             </ListView>
 

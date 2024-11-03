@@ -13,20 +13,23 @@ namespace WindowsCommandPalette;
 
 // The FilteredListSection is for when we've got any filter at all. It starts by
 // enumerating all actions and apps, and returns the subset that matches.
-public sealed partial class FilteredListSection : ISection, INotifyCollectionChanged
+//
+// Although the concept of ISection's is vestigial, this class is still helpful
+// for encapsulating the filtering of the main page, which has weird logic for
+// adding apps or not.
+public sealed partial class FilteredListSection
 {
-    public event NotifyCollectionChangedEventHandler? CollectionChanged;
-
     public string Title => string.Empty;
 
     private readonly MainViewModel _mainViewModel;
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
     // Top-level list items, from builtin commands and extensions
-    public ObservableCollection<MainListItem> TopLevelItems { get; set; }
+    // (This is owned by MainListPage)
+    public ObservableCollection<MainListItem> TopLevelItems { get; init; }
 
     // Apps, from the apps built in command.
-    private IEnumerable<IListItem> AllApps => _mainViewModel.Apps.GetItems().First().Items;
+    private IEnumerable<IListItem> AllApps => _mainViewModel.Apps.GetItems();
 
     // Results from the last searched text
     private IEnumerable<IListItem>? lastSearchResults;
@@ -80,21 +83,10 @@ public sealed partial class FilteredListSection : ISection, INotifyCollectionCha
     // results.
     public IListItem[] Items => ItemsToEnumerate.Where(i => i != null).ToArray();
 
-    public FilteredListSection(MainViewModel viewModel)
+    public FilteredListSection(MainViewModel viewModel, ObservableCollection<MainListItem> topLevelItems)
     {
         this._mainViewModel = viewModel;
-
-        // TODO: We should probably just get rid of MainListItem entirely, so I'm leaveing these uncaught
-        TopLevelItems = new(_mainViewModel.TopLevelCommands.Where(wrapper => wrapper.Unsafe != null).Select(wrapper => new MainListItem(wrapper.Unsafe!)));
-        TopLevelItems.CollectionChanged += Bubble_CollectionChanged;
-    }
-
-    private void Bubble_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        _dispatcherQueue.TryEnqueue(() =>
-        {
-            CollectionChanged?.Invoke(this, e);
-        });
+        this.TopLevelItems = topLevelItems;
     }
 
     internal void Reset()

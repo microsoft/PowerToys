@@ -26,44 +26,40 @@ internal sealed partial class YouTubeVideosPage : DynamicListPage
         this.ShowDetails = true;
     }
 
-    public override ISection[] GetItems(string query)
+    public override IListItem[] GetItems(string query)
     {
         return DoGetItems(query).GetAwaiter().GetResult(); // Fetch and await the task synchronously
     }
 
-    private async Task<ISection[]> DoGetItems(string query)
+    private async Task<IListItem[]> DoGetItems(string query)
     {
         // Fetch YouTube videos based on the query
         List<YouTubeVideo> items = await GetYouTubeVideos(query);
 
         // Create a section and populate it with the video results
-        var section = new ListSection()
+        var section = items.Select(video => new ListItem(new OpenVideoLinkAction(video.Link))
         {
-            Title = "Search Results",
-            Items = items.Select(video => new ListItem(new OpenVideoLinkAction(video.Link))
+            Title = video.Title,
+            Subtitle = $"{video.Channel}",
+            Details = new Details()
             {
                 Title = video.Title,
-                Subtitle = $"{video.Channel}",
-                Details = new Details()
-                {
-                    Title = video.Title,
-                    HeroImage = new(video.ThumbnailUrl),
-                    Body = $"{video.Channel}",
-                },
-                Tags = [new Tag()
+                HeroImage = new(video.ThumbnailUrl),
+                Body = $"{video.Channel}",
+            },
+            Tags = [new Tag()
                                {
                                    Text = video.PublishedAt.ToString("MMMM dd, yyyy", CultureInfo.InvariantCulture), // Show the date of the video post
                                }
                         ],
-                MoreCommands = [
+            MoreCommands = [
                     new CommandContextItem(new OpenChannelLinkAction(video.ChannelUrl)),
                     new CommandContextItem(new YouTubeVideoInfoMarkdownPage(video)),
                     new CommandContextItem(new YouTubeAPIPage()),
                 ],
-            }).ToArray(),
-        };
+        }).ToArray();
 
-        return new[] { section }; // Properly return an array of sections
+        return section; // Properly return an array of sections
     }
 
     // Method to fetch videos from YouTube API

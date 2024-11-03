@@ -14,28 +14,14 @@ namespace Microsoft.CmdPal.UI.Pages;
 /// </summary>
 public partial class MainListPage : DynamicListPage
 {
-    private readonly ISection[] _sections;
+    private readonly IListItem[] _items;
 
     // TODO: Thinking we may want a separate MainViewModel from the ShellViewModel and/or a CommandService/Provider
     // which holds the TopLevelCommands and anything that needs to access those functions...
     public MainListPage(ShellViewModel shellViewModel)
     {
-        _sections = [new MainListSection()
-        {
-            Items = shellViewModel.TopLevelCommands.Select(w => w.Unsafe).Where(li => li != null).ToArray(),
-        }
-        ];
+        _items = shellViewModel.TopLevelCommands.Select(w => w.Unsafe).Where(li => li != null).ToArray();
     }
 
-    public override ISection[] GetItems() => _sections;
-}
-
-//// TODO: Temporary until we sort out proper PageViewModel and SectionViewModel containers/setup
-#pragma warning disable SA1402 // File may only contain a single type
-public partial class MainListSection : ISection
-#pragma warning restore SA1402 // File may only contain a single type
-{
-    public required IListItem[] Items { get; set; }
-
-    public string Title => "Commands"; // TODO: Localization
+    public override IListItem[] GetItems() => _items;
 }

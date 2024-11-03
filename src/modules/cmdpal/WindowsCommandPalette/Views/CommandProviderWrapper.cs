@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Extensions;
 using Windows.Win32;
@@ -47,7 +49,24 @@ public sealed class CommandProviderWrapper
             return;
         }
 
-        var t = new Task<IListItem[]>(() => CommandProvider.TopLevelCommands());
+        var t = new Task<IListItem[]>(() =>
+        {
+            try
+            {
+                return CommandProvider.TopLevelCommands();
+            }
+            catch (COMException e)
+            {
+                if (extensionWrapper != null)
+                {
+                    Debug.WriteLine($"Error loading commands from {extensionWrapper.ExtensionDisplayName}", "error");
+                }
+
+                Debug.WriteLine(e.ToString(), "error");
+            }
+
+            return [];
+        });
         t.Start();
         var commands = await t.ConfigureAwait(false);
 
