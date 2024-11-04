@@ -48,4 +48,4 @@ extends:
     buildPlatforms: ${{ parameters.buildPlatforms }}
     enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
     runTests: ${{ parameters.runTests }}
-    useVSPreview: $ {{ parameters.useVSPreview }}
+    useVSPreview: ${{ parameters.useVSPreview }}
