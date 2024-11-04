@@ -93,7 +93,7 @@ jobs:
     steps:
     - name: check-spelling
       id: spelling
-      uses: check-spelling/check-spelling@v0.0.22
+      uses: check-spelling/check-spelling@v0.0.24
       with:
         config: .github/actions/spell-check
         suppress_push_for_open_pull_request: ${{ github.actor != 'dependabot[bot]' && 1 }}
@@ -148,7 +148,7 @@ jobs:
     if: (success() || failure()) && needs.spelling.outputs.followup && github.event_name == 'push'
     steps:
     - name: comment
-      uses: check-spelling/check-spelling@v0.0.22
+      uses: check-spelling/check-spelling@v0.0.24
       with:
         config: .github/actions/spell-check
         checkout: true
@@ -166,7 +166,7 @@ jobs:
     if: (success() || failure()) && needs.spelling.outputs.followup && contains(github.event_name, 'pull_request')
     steps:
     - name: comment
-      uses: check-spelling/check-spelling@v0.0.22
+      uses: check-spelling/check-spelling@v0.0.24
       with:
         config: .github/actions/spell-check
         checkout: true
@@ -192,7 +192,7 @@ jobs:
       cancel-in-progress: false
     steps:
     - name: apply spelling updates
-      uses: check-spelling/check-spelling@v0.0.22
+      uses: check-spelling/check-spelling@v0.0.24
       with:
         experimental_apply_changes_via_bot: ${{ github.repository_owner != 'microsoft' && 1 }}
         checkout: true
