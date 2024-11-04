@@ -97,11 +97,11 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 In this release, we focused on new features, stability, and improvements.
 
 **Highlights**
-
- - We've added a telemetry opt-in option in the Settings General tab, which is off by default. We encourage users to turn it on, as that helps direct our development efforts to the more popular utilities. More information about the data we collect can be found in the [PowerToys Data and Privacy documentation](https://aka.ms/powertoys-data-and-privacy-documentation).
- - New actions were added to Advanced Paste: Image to text, and paste txt, png or html as a file.
- - As the number of utilities shipped with PowerToys keeps growing, we've added a navigation tree to group utilities in the left navigation menu in Settings.
- - Workspaces received many bug fixes, including the proper launching of many instances of the same application in the same workspace.
+ 
+ - Advanced Paste has new abilities: Image to text, and paste to file (text / png / html).
+ - In settings, we've adjusted the left navigation to group the utilities. As the number of utilities shipped with PowerToys keeps growing, we felt this was a needed adjustment. Thanks everyone for your feedback!
+ - Workspaces received many bug fixes, including the proper launching of many instances of the same application in the same workspace. Note, we are still actively looking at how to properly handle PWA detection.
+ - We've added a telemetry opt-in option in the Settings General tab. As it is off-by-default, we encourage users to turn it on as that helps direct our development efforts and their journeys. More information about the data we collect can be found in the [PowerToys Data and Privacy documentation](https://aka.ms/powertoys-data-and-privacy-documentation) and what each event does.
 
 ### General
 
