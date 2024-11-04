@@ -53,19 +53,37 @@ internal static class DataPackageHelpers
         {
             var storageItems = await dataPackageView.GetStorageItemsAsync();
 
-            if (storageItems.Count == 1 && storageItems.Single() is StorageFile file && ImageFileTypes.Contains(file.FileType))
+            if (storageItems.Count == 1 && storageItems.Single() is StorageFile file)
             {
-                availableFormats |= ClipboardFormat.Image;
-            }
-
-            if (availableFormats == ClipboardFormat.None)
-            {
-                // Advertise the "generic" File format only if there is no other specific format available; confusing for AI otherwise.
                 availableFormats |= ClipboardFormat.File;
+
+                if (ImageFileTypes.Contains(file.FileType))
+                {
+                    availableFormats |= ClipboardFormat.Image;
+                }
             }
         }
 
-        return availableFormats;
+        return FixFormatsForAI(availableFormats);
+    }
+
+    private static ClipboardFormat FixFormatsForAI(ClipboardFormat formats)
+    {
+        var result = formats;
+
+        if (result.HasFlag(ClipboardFormat.File) && result != ClipboardFormat.File)
+        {
+            // Advertise the "generic" File format only if there is no other specific format available; confusing for AI otherwise.
+            result &= ~ClipboardFormat.File;
+        }
+
+        if (result == (ClipboardFormat.Image | ClipboardFormat.Html))
+        {
+            // The Windows Photo application advertises Image and Html when copying an image; this Html format is not easily usable and is confusing for AI.
+            result &= ~ClipboardFormat.Html;
+        }
+
+        return result;
     }
 
     internal static async Task<bool> HasUsableDataAsync(this DataPackageView dataPackageView)

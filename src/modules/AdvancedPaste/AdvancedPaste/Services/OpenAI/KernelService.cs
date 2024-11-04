@@ -27,8 +27,8 @@ public sealed class KernelService(IKernelQueryCacheService queryCacheService, IA
 
     protected override void AddChatCompletionService(IKernelBuilder kernelBuilder) => kernelBuilder.AddOpenAIChatCompletion(ModelName, _aiCredentialsProvider.Key);
 
-    protected override AIServiceUsage GetAIServiceUsage(ChatMessageContent chatResult) =>
-        chatResult.Metadata?.GetValueOrDefault("Usage") is CompletionsUsage completionsUsage
+    protected override AIServiceUsage GetAIServiceUsage(ChatMessageContent chatMessage) =>
+        chatMessage.Metadata?.GetValueOrDefault("Usage") is CompletionsUsage completionsUsage
             ? new(PromptTokens: completionsUsage.PromptTokens, CompletionTokens: completionsUsage.CompletionTokens)
             : AIServiceUsage.None;
 }

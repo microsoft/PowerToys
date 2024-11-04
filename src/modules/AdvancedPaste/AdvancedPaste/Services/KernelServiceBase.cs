@@ -33,7 +33,7 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
 
     protected abstract void AddChatCompletionService(IKernelBuilder kernelBuilder);
 
-    protected abstract AIServiceUsage GetAIServiceUsage(ChatMessageContent chatResult);
+    protected abstract AIServiceUsage GetAIServiceUsage(ChatMessageContent chatMessage);
 
     public async Task<DataPackage> TransformClipboardAsync(string prompt, DataPackageView clipboardData, bool isSavedQuery)
     {
@@ -104,10 +104,14 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
         chatHistory.AddSystemMessage($"Available clipboard formats: {await kernel.GetDataFormatsAsync()}");
         chatHistory.AddUserMessage(prompt);
 
-        var chatResult = await kernel.GetRequiredService<IChatCompletionService>().GetChatMessageContentAsync(chatHistory, PromptExecutionSettings, kernel);
-        chatHistory.AddAssistantMessage(chatResult.Content);
+        var chatResult = await kernel.GetRequiredService<IChatCompletionService>()
+                                     .GetChatMessageContentAsync(chatHistory, PromptExecutionSettings, kernel);
+        chatHistory.Add(chatResult);
 
-        return (chatHistory, GetAIServiceUsage(chatResult));
+        var totalUsage = chatHistory.Select(GetAIServiceUsage)
+                                    .Aggregate(AIServiceUsage.Add);
+
+        return (chatHistory, totalUsage);
     }
 
     private async Task<(ChatHistory ChatHistory, AIServiceUsage Usage)> ExecuteCachedActionChain(Kernel kernel, List<ActionChainItem> actionChain)
@@ -202,10 +206,10 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
         }
     }
 
-    private static string FormatChatHistory(ChatHistory chatHistory) =>
+    private string FormatChatHistory(ChatHistory chatHistory) =>
         chatHistory.Count == 0 ? "[No chat history]" : string.Join(Environment.NewLine, chatHistory.Select(FormatChatMessage));
 
-    private static string FormatChatMessage(ChatMessageContent chatMessage)
+    private string FormatChatMessage(ChatMessageContent chatMessage)
     {
         static string Redact(object data) =>
 #if DEBUG
@@ -230,6 +234,8 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
         var role = chatMessage.Role;
         var content = string.Join(" / ", chatMessage.Items.Select(FormatKernelContent));
         var redactedContent = role == AuthorRole.System || role == AuthorRole.Tool ? content : Redact(content);
-        return $"-> {role}: {redactedContent}";
+        var usage = GetAIServiceUsage(chatMessage);
+        var usageString = usage.HasUsage ? $" [{usage}]" : string.Empty;
+        return $"-> {role}: {redactedContent}{usageString}";
     }
 }

@@ -45,8 +45,8 @@ public sealed class KernelServiceIntegrationTests : IDisposable
     }
 
     [TestMethod]
-    [DataRow("Translate to German", "What is that?", "Was ist das?", 600, new[] { PasteFormats.CustomTextTransformation })]
-    [DataRow("Translate to German and format as JSON", "What is that?", @"[\s*Was ist das\?\s*]", 600, new[] { PasteFormats.CustomTextTransformation, PasteFormats.Json })]
+    [DataRow("Translate to German", "What is that?", "Was ist das?", 1200, new[] { PasteFormats.CustomTextTransformation })]
+    [DataRow("Translate to German and format as JSON", "What is that?", @"[\s*Was ist das\?\s*]", 1500, new[] { PasteFormats.CustomTextTransformation, PasteFormats.Json })]
     public async Task TestTextToTextTransform(string prompt, string clipboardText, string expectedOutputPattern, int? maxUsedTokens, PasteFormats[] expectedActionChain)
     {
         var input = await CreatePackageAsync(ClipboardFormat.Text, clipboardText);
