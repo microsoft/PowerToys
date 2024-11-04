@@ -46,8 +46,7 @@ stages:
                 name: SHINE-INT-L
               ${{ else }}:
                 name: SHINE-OSS-L
-              ${{ if eq(parameters.useVSPreview, true) }}:
-                image: SHINE-VS17-Preview
+              image: SHINE-VS17-Preview
             buildPlatforms:
               - ${{ platform }}
             buildConfigurations: [Release]
