@@ -105,7 +105,7 @@ In this release, we focused on new features, stability, and improvements.
 
 ### General
 
- - Added a setting for telemetry opt-in and sent event visualization.
+ - Added a setting for telemetry opt-in (off by default, however, see above for why we encourage you to opt-in!) and user controls to view data.
  - Improved exception logging by adding the type of Exception and InnerException. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Advanced Paste
