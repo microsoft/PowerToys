@@ -57,19 +57,19 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
         {
             // A UUIDv7 looks like this (see https://www.rfc-editor.org/rfc/rfc9562#name-uuid-version-7)
             // unix_ts_ms:
-            //   48-bit big-endian unsigned number of the Unix Epoch timestamp in milliseconds as per Section 6.1. Occupies bits 0 through 47 (octets 0-5).
+            //   48-bit big-endian unsigned number of the Unix Epoch timestamp in milliseconds, bits 0 through 47 (octets 0-5).
             // ver:
-            //   The 4-bit version field as defined by Section 4.2, set to 0b0111 (7). Occupies bits 48 through 51 of octet 6.
+            //   The 4-bit version field as defined by Section 4.2, set to 0b0111 (7), bits 48 through 51 of octet 6.
             // rand_a:
-            //   12 bits of pseudorandom data to provide uniqueness as per Section 6.9 and/or optional constructs to guarantee additional monotonicity as per Section 6.2. Occupies bits 52 through 63 (octets 6-7).
+            //   12 bits of pseudorandom data to provide uniqueness, bits 52 through 63 (octets 6-7).
             // var:
-            //   The 2-bit variant field as defined by Section 4.1, set to 0b10. Occupies bits 64 and 65 of octet 8.
+            //   The 2-bit variant field as defined by Section 4.1, set to 0b10, bits 64 and 65 of octet 8.
             // rand_b:
-            //   The final 62 bits of pseudorandom data to provide uniqueness as per Section 6.9 and/or an optional counter to guarantee additional monotonicity as per Section 6.2. Occupies bits 66 through 127 (octets 8-15).
+            //   The final 62 bits of pseudorandom data to provide uniqueness, bits 66 through 127 (octets 8-15).
             byte[] result = new byte[16];
             Span<byte> buffer = result.AsSpan();
 
-            // first, fill the whole buffer with pseudorandom data, we use a CSPRNG for this because we don't know what users will use the generated values for.
+            // first, fill the whole buffer with cryptographically-secure pseudorandom data (because we don't know what users will use the generated values for).
             RandomNumberGenerator.Fill(buffer);
 
             // then, get unix_ts_ms. we need to write in big-endian, so shift the 64 bit value by 16 to get the actual timestamp into the upper 48 bits.
@@ -79,12 +79,13 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
             // bytes 6 through 9 (0-indexed) need special treatment as they contain the version followed by 12 bits of randomness, followed by the variant field
             // so we extract the existing random data and mask off the version and variant fields to get the correct format.
             // for the initial read, endianness won't matter because it's pre-filled with random data anyways
+            // we read as LE for simplicity, because that's what most modern processors natively use
             uint bytes6To9 = BinaryPrimitives.ReadUInt32LittleEndian(buffer[6..10]);
 
-            // version field: set upper-most nibble (byte 6) to value 7: (clear by ANDing with 0, and set by ORing with 7).
-            // rand_a: remains 12 bit of unchanged random data (ANDing with 0xFFF, and ORing with 0x000)
-            // var: the upper two bits of byte 8 are set to 0b10: (clear upper two bits by ANDing with 0x3F, and set to 0b10 by ORing with 0x80)
-            // rand_b (partial): the rest of the data shall remain the unchanged pre-filled random data (ANDing with '1' and ORing with '0')
+            // version field: set upper-most nibble (byte 6) to value 7: (clear by AND-ing with 0, and set by OR-ing with 7).
+            // rand_a: remains 12 bit of unchanged random data (AND-ing with 0xFFF, and OR-ing with 0x000)
+            // var: the upper two bits of byte 8 are set to 0b10: (clear upper two bits by AND-ing with 0x3F, and set to 0b10 by OR-ing with 0x80)
+            // rand_b (partial): the rest of the data shall remain the unchanged pre-filled random data (AND-ing with '1' and OR-ing with '0')
             uint bytes6To9Masked = (bytes6To9 & 0x0FFF3FFF) | 0x70008000;
 
             // obviously we need to write the timestamp first. It contains 48 bit of data, followed by 16 bit of zeros (from the shift operation)
