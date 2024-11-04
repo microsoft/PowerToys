@@ -50,7 +50,9 @@ parameters:
   - name: runTests
     type: boolean
     default: true
-
+  - name: useVSPreview
+    type: boolean
+    default: false
   - name: versionNumber
     type: string
     default: '0.0.1'
@@ -184,6 +186,7 @@ jobs:
     ${{ if eq(parameters.useVSPreview, true) }}:
       env:
         VCWhereExtraVersionTarget: '-prerelease'
+
   - pwsh: |-
       & "$(build.sourcesdirectory)\.pipelines\installWiX.ps1"
     displayName: Download and install WiX 3.14 development build

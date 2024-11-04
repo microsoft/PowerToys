@@ -54,6 +54,7 @@ stages:
             enablePackageCaching: true
             enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
             runTests: ${{ parameters.runTests }}
+            useVSPreview: ${{ parameters.useVSPreview }}
 
     - ${{ if eq(parameters.runTests, true) }}:
       - stage: Test_${{ platform }}
