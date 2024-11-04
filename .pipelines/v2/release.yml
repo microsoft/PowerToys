@@ -48,7 +48,7 @@ extends:
     pool:
       name: SHINE-INT-S
       ${{ if eq(parameters.useVSPreview, true) }}:
-        image: SHINE-VS17-Preview
+        demands: ImageOverride -equals SHINE-VS17-Preview
       ${{ else }}:
         image: SHINE-VS17-Latest
       os: windows
@@ -67,7 +67,7 @@ extends:
               pool:
                 name: SHINE-INT-L
                 ${{ if eq(parameters.useVSPreview, true) }}:
-                  image: SHINE-VS17-Preview
+                  demands: ImageOverride -equals SHINE-VS17-Preview
                 ${{ else }}:
                   image: SHINE-VS17-Latest
                 os: windows

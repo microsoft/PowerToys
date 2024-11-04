@@ -21,7 +21,7 @@ parameters:
     default: true
   - name: useVSPreview
     type: boolean
-    default: true
+    default: false
 
 stages:
   # Allow manual builds to skip pre-check
@@ -46,7 +46,8 @@ stages:
                 name: SHINE-INT-L
               ${{ else }}:
                 name: SHINE-OSS-L
-              demands: ImageOverride -equals SHINE-VS17-Preview
+              ${{ if eq(parameters.useVSPreview, true) }}:
+                demands: ImageOverride -equals SHINE-VS17-Preview
             buildPlatforms:
               - ${{ platform }}
             buildConfigurations: [Release]
