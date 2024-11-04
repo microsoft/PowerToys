@@ -46,7 +46,7 @@ stages:
                 name: SHINE-INT-L
               ${{ else }}:
                 name: SHINE-OSS-L
-              image: SHINE-VS17-Preview
+              demands: ImageOverride -equals SHINE-VS17-Preview
             buildPlatforms:
               - ${{ platform }}
             buildConfigurations: [Release]
