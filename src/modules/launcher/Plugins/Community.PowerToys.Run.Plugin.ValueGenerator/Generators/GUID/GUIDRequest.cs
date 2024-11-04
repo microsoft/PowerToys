@@ -4,7 +4,7 @@
 
 using System;
 using System.Security.Cryptography;
-
+using WinRT;
 using Wox.Plugin.Logger;
 
 namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
@@ -42,6 +42,8 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
                         return $"Version {Version} ({hashAlgorithm}): Namespace and name based GUID.";
                     case 4:
                         return "Version 4: Randomly generated GUID";
+                    case 7:
+                        return "Version 7: Time-ordered randomly generated GUID";
                     default:
                         return string.Empty;
                 }
@@ -60,20 +62,19 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
         {
             Version = version;
 
-            if (Version < 1 || Version > 5 || Version == 2)
+            if (Version is < 1 or > 7 or 2 or 6)
             {
                 throw new ArgumentException("Unsupported GUID version. Supported versions are 1, 3, 4 and 5");
             }
 
-            if (version == 3 || version == 5)
+            if (version is 3 or 5)
             {
                 if (guidNamespace == null)
                 {
                     throw new ArgumentNullException(null, NullNamespaceError);
                 }
 
-                Guid guid;
-                if (GUIDGenerator.PredefinedNamespaces.TryGetValue(guidNamespace.ToLowerInvariant(), out guid))
+                if (GUIDGenerator.PredefinedNamespaces.TryGetValue(guidNamespace.ToLowerInvariant(), out Guid guid))
                 {
                     GuidNamespace = guid;
                 }
@@ -108,20 +109,18 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
             IsSuccessful = true;
             try
             {
-                switch (Version)
+                Guid guid = Version switch
                 {
-                    case 1:
-                        GuidResult = GUIDGenerator.V1();
-                        break;
-                    case 3:
-                        GuidResult = GUIDGenerator.V3(GuidNamespace.Value, GuidName);
-                        break;
-                    case 4:
-                        GuidResult = GUIDGenerator.V4();
-                        break;
-                    case 5:
-                        GuidResult = GUIDGenerator.V5(GuidNamespace.Value, GuidName);
-                        break;
+                    1 => GUIDGenerator.V1(),
+                    3 => GUIDGenerator.V3(GuidNamespace.Value, GuidName),
+                    4 => GUIDGenerator.V4(),
+                    5 => GUIDGenerator.V5(GuidNamespace.Value, GuidName),
+                    7 => GUIDGenerator.V7(),
+                    _ => default,
+                };
+                if (guid != default)
+                {
+                    GuidResult = guid;
                 }
 
                 Result = GuidResult.ToByteArray();

@@ -27,6 +27,8 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests
         [DataRow("uUiD5 ns:URL abc", typeof(GUID.GUIDRequest))]
         [DataRow("Guidvv ns:DNS abc", null)]
         [DataRow("guidv4", typeof(GUID.GUIDRequest))]
+        [DataRow("guidv7", typeof(GUID.GUIDRequest))]
+        [DataRow("GUIDv7", typeof(GUID.GUIDRequest))]
         [DataRow("base64 abc", typeof(Base64.Base64Request))]
         [DataRow("base99 abc", null)]
         [DataRow("base64s abc", null)]
