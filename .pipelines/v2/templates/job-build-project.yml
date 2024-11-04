@@ -50,7 +50,9 @@ parameters:
   - name: runTests
     type: boolean
     default: true
-
+  - name: useVSPreview
+    type: boolean
+    default: true
   - name: versionNumber
     type: string
     default: '0.0.1'
