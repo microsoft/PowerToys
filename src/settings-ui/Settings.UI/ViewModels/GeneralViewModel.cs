@@ -1259,20 +1259,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             string localLowEtwDirPath = Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), "AppData", "LocalLow", "Microsoft", "PowerToys", "etw");
             string etwDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\etw");
 
-            string[] localLowEtlFiles = Directory.GetFiles(localLowEtwDirPath, "*.etl");
-
-            foreach (string file in localLowEtlFiles)
+            if (Directory.Exists(localLowEtwDirPath))
             {
-                string fileName = Path.GetFileName(file);
-                string destFile = Path.Combine(etwDirPath, fileName);
-
-                try
+                if (!Directory.Exists(etwDirPath))
                 {
-                    File.Copy(file, destFile, overwrite: true);
+                    Directory.CreateDirectory(etwDirPath);
                 }
-                catch (Exception ex)
+
+                string[] localLowEtlFiles = Directory.GetFiles(localLowEtwDirPath, "*.etl");
+
+                foreach (string file in localLowEtlFiles)
                 {
-                    Logger.LogError($"Failed to copy etl file: {fileName}. Error: {ex.Message}");
+                    string fileName = Path.GetFileName(file);
+                    string destFile = Path.Combine(etwDirPath, fileName);
+
+                    try
+                    {
+                        File.Copy(file, destFile, overwrite: true);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"Failed to copy etl file: {fileName}. Error: {ex.Message}");
+                    }
                 }
             }
 
