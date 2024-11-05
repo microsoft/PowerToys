@@ -15,12 +15,12 @@ BOOL APIENTRY DllMain(HMODULE module_handle, DWORD ul_reason_for_call, LPVOID re
     {
     case DLL_PROCESS_ATTACH:
         module_instance_handle = module_handle;
-        Trace::RegisterProvider();
-        newplus::utilities::init_logger();
+        //Trace::RegisterProvider();
+        //newplus::utilities::init_logger();
         break;
 
     case DLL_PROCESS_DETACH:
-        Trace::UnregisterProvider();
+        //Trace::UnregisterProvider();
         break;
     }
     return TRUE;
@@ -42,3 +42,7 @@ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Outptr_ LPVOID
 }
 
 CoCreatableClass(shell_context_menu_win10)
+
+
+// cgaarden remove
+CoCreatableClassWrlCreatorMapInclude(shell_context_menu_win10)

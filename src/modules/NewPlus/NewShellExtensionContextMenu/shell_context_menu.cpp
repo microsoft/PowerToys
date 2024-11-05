@@ -69,7 +69,7 @@ IFACEMETHODIMP shell_context_menu::GetFlags(_Out_ EXPCMDFLAGS* returned_menu_ite
 
 IFACEMETHODIMP shell_context_menu::EnumSubCommands(_COM_Outptr_ IEnumExplorerCommand** returned_enum_commands)
 {
-    auto e = Make<shell_context_sub_menu>(site_of_folder);
+    auto e = Make<shell_context_sub_menu>(target_folder_view);
     return e->QueryInterface(IID_PPV_ARGS(returned_enum_commands));
 }
 #pragma endregion
@@ -77,7 +77,14 @@ IFACEMETHODIMP shell_context_menu::EnumSubCommands(_COM_Outptr_ IEnumExplorerCom
 #pragma region IObjectWithSite
 IFACEMETHODIMP shell_context_menu::SetSite(_In_ IUnknown* site) noexcept
 {
-    this->site_of_folder = site;
+    if (site)
+    {
+        this->site_of_folder = site;
+        ComPtr<IServiceProvider> service_provider;
+        site->QueryInterface(IID_PPV_ARGS(&service_provider));
+        service_provider->QueryService(__uuidof(IFolderView), IID_PPV_ARGS(&target_folder_view));
+    }
+
     return S_OK;
 }
 IFACEMETHODIMP shell_context_menu::GetSite(_In_ REFIID riid, _COM_Outptr_ void** returned_site) noexcept

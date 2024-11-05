@@ -12,10 +12,10 @@ shell_context_sub_menu_item::shell_context_sub_menu_item()
     this->template_entry = nullptr;
 }
 
-shell_context_sub_menu_item::shell_context_sub_menu_item(const template_item* template_entry, const ComPtr<IUnknown> site_of_folder)
+shell_context_sub_menu_item::shell_context_sub_menu_item(const template_item* template_entry, const ComPtr<IFolderView> target_folder_view)
 {
     this->template_entry = template_entry;
-    this->site_of_folder = site_of_folder;
+    this->target_folder_view = target_folder_view;
 }
 
 IFACEMETHODIMP shell_context_sub_menu_item::GetTitle(_In_opt_ IShellItemArray* items, _Outptr_result_nullonfailure_ PWSTR* title)
@@ -69,14 +69,14 @@ IFACEMETHODIMP shell_context_sub_menu_item::Invoke(_In_opt_ IShellItemArray*, _I
         trace.UpdateState(true);
 
         // Determine target path of where context menu was displayed
-        const auto target_path_name = utilities::get_path_from_unknown_site(site_of_folder);
+        const auto target_path_name = utilities::get_path_from_unknown_site(target_folder_view);
 
         // Determine initial filename
         std::filesystem::path source_fullpath = template_entry->path;
         std::filesystem::path target_fullpath = std::wstring(target_path_name);
 
         // Only append name to target if source is not a directory
-        if (!utilities::is_directory(target_fullpath))
+        if (!utilities::is_directory(source_fullpath))
         {
             target_fullpath.append(this->template_entry->get_target_filename(!utilities::get_newplus_setting_hide_starting_digits()));
         }
@@ -90,7 +90,7 @@ IFACEMETHODIMP shell_context_sub_menu_item::Invoke(_In_opt_ IShellItemArray*, _I
         SHChangeNotify(SHCNE_CREATE, SHCNF_PATH | SHCNF_FLUSH, target_final_fullpath.wstring().c_str(), NULL);
 
         // Enter rename mode
-        this->template_entry->enter_rename_mode(site_of_folder, target_final_fullpath);
+        this->template_entry->enter_rename_mode(target_folder_view, target_final_fullpath);
 
         Trace::EventCopyTemplateResult(S_OK);
     }

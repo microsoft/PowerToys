@@ -39,6 +39,35 @@ namespace newplus::utilities
         return icon_resource;
     }
 
+    inline HICON get_explorer_icon_handle(std::filesystem::path path)
+    {
+        SHFILEINFO shell_file_info = { 0 };
+        const std::wstring filepath = path.wstring();
+        DWORD_PTR result = SHGetFileInfo(filepath.c_str(), 0, &shell_file_info, sizeof(shell_file_info), SHGFI_ICON);
+        if (shell_file_info.hIcon)
+        {
+            return shell_file_info.hIcon;
+        }
+
+
+// cgaarden todo/Hack not tested!!!
+        WCHAR icon_resource_specifier[MAX_PATH] = { 0 };
+        DWORD buffer_length = MAX_PATH;
+        const std::wstring extension = path.extension().wstring();
+        const HRESULT hr = AssocQueryString(ASSOCF_INIT_IGNOREUNKNOWN,
+                                            ASSOCSTR_DEFAULTICON,
+                                            extension.c_str(),
+                                            NULL,
+                                            icon_resource_specifier,
+                                            &buffer_length);
+        const std::wstring icon_resource = icon_resource_specifier;
+        
+        const auto icon_x = GetSystemMetrics(SM_CXSMICON);
+        const auto icon_y = GetSystemMetrics(SM_CYSMICON);
+        HICON hIcon = static_cast<HICON>(LoadImage(NULL, icon_resource.c_str(), IMAGE_ICON, icon_x, icon_y, LR_LOADFROMFILE));
+        return hIcon;
+    }
+
     inline bool is_hidden(const std::filesystem::path path)
     {
         const std::filesystem::path::string_type name = path.filename();
