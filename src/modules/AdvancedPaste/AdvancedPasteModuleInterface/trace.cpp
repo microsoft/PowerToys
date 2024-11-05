@@ -8,20 +8,10 @@ TRACELOGGING_DEFINE_PROVIDER(
     (0x38e8889b, 0x9731, 0x53f5, 0xe9, 0x01, 0xe8, 0xa7, 0xc1, 0x75, 0x30, 0x74),
     TraceLoggingOptionProjectTelemetry());
 
-void Trace::RegisterProvider()
-{
-    TraceLoggingRegister(g_hProvider);
-}
-
-void Trace::UnregisterProvider()
-{
-    TraceLoggingUnregister(g_hProvider);
-}
-
 // Log if the user has AdvancedPaste enabled or disabled
 void Trace::AdvancedPaste_Enable(const bool enabled) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "AdvancedPaste_EnableAdvancedPaste",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -32,7 +22,7 @@ void Trace::AdvancedPaste_Enable(const bool enabled) noexcept
 // Log if the user has invoked AdvancedPaste
 void Trace::AdvancedPaste_Invoked(std::wstring mode) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "AdvancedPaste_InvokeAdvancedPaste",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -43,7 +33,7 @@ void Trace::AdvancedPaste_Invoked(std::wstring mode) noexcept
 // Log if an error occurs in AdvancedPaste
 void Trace::AdvancedPaste_Error(const DWORD errorCode, std::wstring errorMessage, std::wstring methodName) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "AdvancedPaste_Error",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -83,7 +73,7 @@ void Trace::AdvancedPaste_SettingsTelemetry(const PowertoyModuleIface::Hotkey& p
         return it != additionalActionsHotkeys.end() ? getHotkeyCStr(it->second) : L"";
     };
 
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "AdvancedPaste_Settings",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),

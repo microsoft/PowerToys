@@ -17,7 +17,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
-
+using PowerToys.Interop;
 using static HostsUILib.Settings.IUserSettings;
 
 using Host = Hosts.Helpers.Host;
@@ -93,6 +93,12 @@ namespace Hosts
             cleanupBackupThread.Start();
 
             UnhandledException += App_UnhandledException;
+
+            Hosts.Helpers.NativeEventWaiter.WaitForEventLoop(Constants.TerminateHostsSharedEvent(), () =>
+            {
+                EtwTrace?.Dispose();
+                Environment.Exit(0);
+            });
         }
 
         /// <summary>
@@ -112,6 +118,7 @@ namespace Hosts
                     RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
                     {
                         Logger.LogInfo("PowerToys Runner exited. Exiting Hosts");
+                        EtwTrace?.Dispose();
                         dispatcher.TryEnqueue(App.Current.Exit);
                     });
                 }
@@ -133,5 +140,7 @@ namespace Hosts
         }
 
         private Window window;
+
+        public ETWTrace EtwTrace { get; private set; } = new ETWTrace();
     }
 }

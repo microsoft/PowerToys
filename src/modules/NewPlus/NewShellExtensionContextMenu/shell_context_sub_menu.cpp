@@ -7,6 +7,7 @@ using namespace Microsoft::WRL;
 // // Sub context menu command enumerator
 shell_context_sub_menu::shell_context_sub_menu(const ComPtr<IUnknown> site_of_folder)
 {
+    trace.UpdateState(true);
     this->site_of_folder = site_of_folder;
 
     // Determine the New+ Template folder location

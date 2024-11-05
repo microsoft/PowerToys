@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -59,10 +59,7 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root"
-    xmlns=""
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
@@ -2143,6 +2140,51 @@ Take a moment to preview the various utilities listed or view our comprehensive 
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
     <value>Documentation on Microsoft Learn</value>
   </data>
+  <data name="Oobe_Overview_Telemetry_Title.Text" xml:space="preserve">
+    <value>Help us make PowerToys better</value>
+  </data>
+  <data name="Oobe_Overview_Telemetry_Desc.Text" xml:space="preserve">
+    <value>Diagnostics &amp; feedback helps us to improve PowerToys and keep it secure, up to date, and working as expected.</value>
+  </data>
+  <data name="Oobe_Overview_DiagnosticsAndFeedback_Settings_Link.Content" xml:space="preserve">
+    <value>View more diagnostic data settings</value>
+  </data>
+  <data name="Oobe_Overview_DiagnosticsAndFeedback_Link.Content" xml:space="preserve">
+    <value>Learn more about the information PowerToys logs &amp; how it gets used</value>
+  </data>
+  <data name="Oobe_Overview_EnableDataDiagnostics.Header" xml:space="preserve">
+    <value>Diagnostic data</value>
+  </data>
+  <data name="Oobe_Overview_EnableDataDiagnostics.Description" xml:space="preserve">
+    <value>Helps inform bug fixes, performance, and product decisions</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_InfoBar.Header" xml:space="preserve">
+    <value>Turn on diagnostic data to help us improve PowerToys?</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_InfoBar_Desc.Text" xml:space="preserve">
+    <value>PowerToys diagnostic data is completely optional.</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_InfoBar_Button_Enable.Content" xml:space="preserve">
+    <value>Enable</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_Yes_Click_InfoBar_Title" xml:space="preserve">
+    <value>Thank you for helping to make PowerToys better!</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_No_Click_InfoBar_Title" xml:space="preserve">
+    <value>Preference updated.</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_Yes_Click_InfoBar_Desc.Text" xml:space="preserve">
+    <value>You can change this at any time from </value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_Yes_Click_OpenSettings_Text.Text" xml:space="preserve">
+    <value>settings.</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_Button_Yes.Content" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_Button_No.Content" xml:space="preserve">
+    <value>No</value>
+  </data>
   <data name="ReleaseNotes.Content" xml:space="preserve">
     <value>Release notes</value>
   </data>
@@ -3648,6 +3690,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Serbian.Content" xml:space="preserve">
     <value>Serbian</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Serbian_Cyrillic.Content" xml:space="preserve">
+    <value>Serbian Cyrillic</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Hungarian.Content" xml:space="preserve">
     <value>Hungarian</value>
   </data>
@@ -3848,6 +3893,33 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
     <value>Allow experimentation with new features</value>
+  </data>
+  <data name="General_DiagnosticsAndFeedback.Header" xml:space="preserve">
+    <value>Diagnostics &amp; feedback</value>
+  </data>
+  <data name="GeneralPage_DiagnosticsAndFeedback_Link.Content" xml:space="preserve">
+    <value>Learn more about the information we log &amp; how it gets used</value>
+  </data>
+  <data name="GeneralPage_EnableDataDiagnostics.Header" xml:space="preserve">
+    <value>Diagnostic data</value>
+  </data>
+  <data name="GeneralPage_EnableDataDiagnostics.Description" xml:space="preserve">
+    <value>Helps inform bug fixes, performance, and improvements</value>
+  </data>
+  <data name="GeneralPage_ViewDiagnosticData.Header" xml:space="preserve">
+    <value>View diagnostic data</value>
+  </data>
+  <data name="GeneralPage_EnableViewDiagnosticData.Header" xml:space="preserve">
+    <value>Enable viewing</value>
+  </data>
+  <data name="GeneralPage_EnableViewDiagnosticData.Description" xml:space="preserve">
+    <value>Uses up to 1GB (or more) of hard drive space on your PC</value>
+  </data>
+  <data name="GeneralPage_ViewDiagnosticDataViewer.Header" xml:space="preserve">
+    <value>Diagnostic data viewer</value>
+  </data>
+  <data name="GeneralPage_ViewDiagnosticDataViewer.Description" xml:space="preserve">
+    <value>Generate .xml files containing readable diagnostic data. Folder may include .xml and .etl files</value>
   </data>
   <data name="Shell_AdvancedPaste.Content" xml:space="preserve">
     <value>Advanced Paste</value>
@@ -4382,7 +4454,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Oobe_NewPlus_TipsAndTricks.Text" xml:space="preserve">
     <value>You can have multiple templates of the same file type, and you can even template folders!</value>
-  </data>  
+  </data>
   <data name="Workspaces.ModuleDescription" xml:space="preserve">
     <value>Workspaces is a quick and easy way to launch a set of applications to custom positions and configurations with one-click.</value>
   </data>
@@ -4481,5 +4553,26 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Chinese_Traditional_Language" xml:space="preserve">
     <value>Chinese (Traditional)</value>
+  </data>
+  <data name="GeneralPage_ViewDiagnosticDataViewerInfo.Title" xml:space="preserve">
+    <value>Restart PowerToys for enable viewing change to take effect.</value>
+  </data>
+  <data name="GeneralPage_ViewDiagnosticDataViewerInfoButton.Content" xml:space="preserve">
+    <value>Restart</value>
+  </data>
+  <data name="Shell_TopLevelAdvanced.Content" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="Shell_TopLevelFileManagement.Content" xml:space="preserve">
+    <value>File Management</value>
+  </data>
+  <data name="Shell_TopLevelInputOutput.Content" xml:space="preserve">
+    <value>Input / Output</value>
+  </data>
+  <data name="Shell_TopLevelWindowsAndLayouts.Content" xml:space="preserve">
+    <value>Windowing &amp; Layouts</value>
+  </data>
+  <data name="Shell_TopLevelSystemTools.Content" xml:space="preserve">
+    <value>System Tools</value>
   </data>
 </root>
