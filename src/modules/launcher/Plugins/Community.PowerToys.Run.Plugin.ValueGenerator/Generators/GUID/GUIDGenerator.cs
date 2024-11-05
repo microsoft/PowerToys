@@ -66,8 +66,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
             //   The 2-bit variant field as defined by Section 4.1, set to 0b10, bits 64 and 65 of octet 8.
             // rand_b:
             //   The final 62 bits of pseudorandom data to provide uniqueness, bits 66 through 127 (octets 8-15).
-            byte[] result = new byte[16];
-            Span<byte> buffer = result.AsSpan();
+            Span<byte> buffer = stackalloc byte[16];
 
             // first, fill the whole buffer with cryptographically-secure pseudorandom data (because we don't know what users will use the generated values for).
             RandomNumberGenerator.Fill(buffer);
