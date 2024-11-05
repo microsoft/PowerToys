@@ -4,7 +4,7 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class FormPage : Page, IFormPage
+public partial class FormPage : Page, IFormPage
 {
     public virtual IForm[] Forms() => throw new NotImplementedException();
 }

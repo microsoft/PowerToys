@@ -57,11 +57,16 @@
                 Text="{x:Bind ViewModel.Page.Name}" />
         </StackPanel>
 
-        <Grid x:Name="FormContent" Grid.Row="1">
-            <ItemsRepeater
-                ItemTemplate="{StaticResource CardTemplate}"
-                ItemsSource="{x:Bind ViewModel.Forms, Mode=OneWay}"
-                Layout="{StaticResource VerticalStackLayout}" />
-        </Grid>
+        <ScrollViewer
+            x:Name="ScrollViewer"
+            Grid.Row="1">
+            <Grid x:Name="FormContent">
+                <ItemsRepeater
+                    x:Name="FormsRepeater"
+                    ItemTemplate="{StaticResource CardTemplate}"
+                    ItemsSource="{x:Bind ViewModel.Forms, Mode=OneWay}"
+                    Layout="{StaticResource VerticalStackLayout}" />
+            </Grid>
+        </ScrollViewer>
     </Grid>
 </Page>

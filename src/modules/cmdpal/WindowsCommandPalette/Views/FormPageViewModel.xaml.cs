@@ -20,31 +20,37 @@ public sealed class FormPageViewModel : PageViewModel
 
     internal async Task InitialRender()
     {
-        var t = new Task<bool>(() =>
+        // Starting on the main thread...
+
+        // Queue fetching the forms on the BG thread.
+        var t = new Task<IForm[]>(() =>
         {
             try
             {
-                var f = this.Page.Forms();
-                foreach (var form in f)
-                {
-                    var formVm = new FormViewModel(form);
-                    formVm.RequestSubmitForm += RequestSubmitFormBubbler;
-                    Forms.Add(formVm);
-                }
+                var forms = this.Page.Forms();
+                return forms;
             }
             catch (Exception)
             {
             }
 
-            foreach (var form in this.Forms)
-            {
-                form.InitialRender();
-            }
-
-            return true;
+            return [];
         });
         t.Start();
-        await t;
+        var forms = await t; // get back on the main thread
+
+        // Back on the main thread here
+        foreach (var form in forms)
+        {
+            var formVm = new FormViewModel(form);
+            formVm.RequestSubmitForm += RequestSubmitFormBubbler;
+            Forms.Add(formVm); // This needs to be done on the main thread
+        }
+
+        foreach (var form in this.Forms)
+        {
+            form.InitialRender(); // This needs to be done on the main thread
+        }
     }
 
     private void RequestSubmitFormBubbler(object sender, SubmitFormArgs args)

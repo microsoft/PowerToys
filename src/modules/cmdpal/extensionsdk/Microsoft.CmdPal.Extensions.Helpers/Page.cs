@@ -4,7 +4,7 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class Page : Command, IPage
+public partial class Page : Command, IPage
 {
     private bool _loading;
     private string _title = string.Empty;

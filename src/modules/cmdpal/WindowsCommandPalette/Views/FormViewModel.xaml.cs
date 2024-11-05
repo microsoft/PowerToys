@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
+using System.Text.Json;
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
 using AdaptiveCards.Templating;
@@ -36,7 +37,6 @@ public sealed class FormViewModel : INotifyPropertyChanged
 
     internal void InitialRender()
     {
-        // var t = new Task<bool>(() => {
         this._templateJson = this._form.TemplateJson();
 
         try
@@ -48,13 +48,27 @@ public sealed class FormViewModel : INotifyPropertyChanged
             this._dataJson = "{}";
         }
 
-        // return true;
-        // });
-        // t.Start();
-        // await t;
-        AdaptiveCardTemplate template = new(_templateJson);
-        var cardJson = template.Expand(_dataJson);
-        this._card = AdaptiveCard.FromJsonString(cardJson);
+        try
+        {
+            AdaptiveCardTemplate template = new(_templateJson);
+            var cardJson = template.Expand(_dataJson);
+            this._card = AdaptiveCard.FromJsonString(cardJson);
+        }
+        catch (Exception e)
+        {
+            AdaptiveCardTemplate template = new(ErrorCardJson);
+            var dataJson = $$"""
+{
+    "error_message": {{JsonSerializer.Serialize(e.Message)}},
+    "error_stack": {{JsonSerializer.Serialize(e.StackTrace)}},
+    "inner_exception": {{JsonSerializer.Serialize(e.InnerException?.Message)}},
+    "template_json": {{JsonSerializer.Serialize(_templateJson)}},
+    "data_json": {{JsonSerializer.Serialize(_dataJson)}}
+}
+""";
+            var cardJson = template.Expand(dataJson);
+            this._card = AdaptiveCard.FromJsonString(cardJson);
+        }
     }
 
     internal void RenderToXaml(AdaptiveCardRenderer renderer)
@@ -89,4 +103,45 @@ public sealed class FormViewModel : INotifyPropertyChanged
             handlers?.Invoke(this, new() { FormData = inputs, Form = _form });
         }
     }
+
+    private static readonly string ErrorCardJson = """
+{
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.5",
+    "body": [
+        {
+            "type": "TextBlock",
+            "text": "Error parsing form from extension",
+            "wrap": true,
+            "style": "heading",
+            "size": "ExtraLarge",
+            "weight": "Bolder",
+            "color": "Attention"
+        },
+        {
+            "type": "TextBlock",
+            "wrap": true,
+            "text": "${error_message}",
+            "color": "Attention"
+        },
+        {
+            "type": "TextBlock",
+            "text": "${error_stack}",
+            "fontType": "Monospace"
+        },
+        {
+            "type": "TextBlock",
+            "wrap": true,
+            "text": "Inner exception:"
+        },
+        {
+            "type": "TextBlock",
+            "wrap": true,
+            "text": "${inner_exception}",
+            "color": "Attention"
+        }
+    ]
+}
+""";
 }

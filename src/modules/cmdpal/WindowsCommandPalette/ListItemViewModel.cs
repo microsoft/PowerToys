@@ -104,7 +104,7 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
         this.ListItem = new(model);
         this.Title = model.Title;
         this.Subtitle = model.Subtitle;
-        this.Icon = model.Command.Icon.Icon;
+        this.Icon = model.Icon.Icon;
 
         if (model.Tags != null)
         {

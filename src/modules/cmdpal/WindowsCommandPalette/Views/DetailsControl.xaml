@@ -25,11 +25,11 @@
         <Viewbox
             Width="64"
             Height="64"
+            Visibility="{x:Bind ViewModel.HeroImage.Icon, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}"
             HorizontalAlignment="Center">
             <ContentControl
                 Margin="4,0,8,0"
-                Content="{x:Bind ViewModel.IcoElement}"
-                Visibility="{x:Bind ViewModel.HeroImage.Icon, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
+                Content="{x:Bind ViewModel.IcoElement}" />
         </Viewbox>
         <TextBlock
             Grid.Row="1"
