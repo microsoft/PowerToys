@@ -79,7 +79,7 @@ public sealed class CustomActionKernelQueryCacheService : IKernelQueryCacheServi
             }
             else
             {
-                Logger.LogWarning($"Ignoring persisted kernel query cache; version mismatch - actual: {persistedCache.Version}, expected:{Version}");
+                Logger.LogWarning($"Ignoring persisted kernel query cache; version mismatch - actual: {persistedCache.Version}, expected: {Version}");
                 return [];
             }
         }

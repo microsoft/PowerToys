@@ -83,7 +83,7 @@
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard
                             x:Uid="AdvancedPaste_EnableAdvancedAI"
-                            HeaderIcon="{ui:FontIcon Glyph=&#xEC4A;}"
+                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/SemanticKernel.png}"
                             IsEnabled="{x:Bind ViewModel.IsOpenAIEnabled, Mode=OneWay}">
                             <ToggleSwitch IsOn="{x:Bind ViewModel.IsAdvancedAIEnabled, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
