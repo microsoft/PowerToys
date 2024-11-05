@@ -59,6 +59,7 @@ if ($errorTable.Count -gt 0) {
         };
         Write-Host -ForegroundColor Red `r
     }
+    Write-Error "Found arm64 verification errors."
     exit 1;
 }
 

@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -32,6 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private NavigationViewItem selected;
         private ICommand loadedCommand;
         private ICommand itemInvokedCommand;
+        private NavigationViewItem[] _fullListOfNavViewItems;
 
         public bool IsBackEnabled
         {
@@ -76,6 +76,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             NavigationService.NavigationFailed += Frame_NavigationFailed;
             NavigationService.Navigated += Frame_Navigated;
             this.navigationView.BackRequested += OnBackRequested;
+            var topLevelItems = navigationView.MenuItems.OfType<NavigationViewItem>();
+            _fullListOfNavViewItems = topLevelItems.Union(topLevelItems.SelectMany(menuItem => menuItem.MenuItems.OfType<NavigationViewItem>())).ToArray();
         }
 
         private static KeyboardAccelerator BuildKeyboardAccelerator(VirtualKey key, VirtualKeyModifiers? modifiers = null)
@@ -107,11 +109,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void OnItemInvoked(NavigationViewItemInvokedEventArgs args)
         {
-            var item = navigationView.MenuItems
-                            .OfType<NavigationViewItem>()
-                            .First(menuItem => (string)menuItem.Content == (string)args.InvokedItem);
-            var pageType = item.GetValue(NavHelper.NavigateToProperty) as Type;
-            NavigationService.Navigate(pageType);
+            var pageType = args.InvokedItemContainer.GetValue(NavHelper.NavigateToProperty) as Type;
+
+            if (pageType != null)
+            {
+                NavigationService.Navigate(pageType);
+            }
         }
 
         private void OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
@@ -127,9 +130,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private void Frame_Navigated(object sender, NavigationEventArgs e)
         {
             IsBackEnabled = NavigationService.CanGoBack;
-            Selected = navigationView.MenuItems
-                            .OfType<NavigationViewItem>()
-                            .FirstOrDefault(menuItem => IsMenuItemForPageType(menuItem, e.SourcePageType));
+            Selected = _fullListOfNavViewItems.FirstOrDefault(menuItem => IsMenuItemForPageType(menuItem, e.SourcePageType));
         }
 
         private static bool IsMenuItemForPageType(NavigationViewItem menuItem, Type sourcePageType)

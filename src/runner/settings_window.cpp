@@ -6,6 +6,7 @@
 
 #include "powertoy_module.h"
 #include <common/interop/two_way_pipe_message_ipc.h>
+#include <common/interop/shared_constants.h>
 #include "tray_icon.h"
 #include "general_settings.h"
 #include "restart_elevated.h"
@@ -34,6 +35,7 @@ TwoWayPipeMessageIPC* current_settings_ipc = NULL;
 std::mutex ipc_mutex;
 std::atomic_bool g_isLaunchInProgress = false;
 std::atomic_bool isUpdateCheckThreadRunning = false;
+HANDLE g_terminateSettingsEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::TERMINATE_SETTINGS_SHARED_EVENT);
 
 json::JsonObject get_power_toys_settings()
 {
@@ -622,9 +624,11 @@ void close_settings_window()
 {
     if (g_settings_process_id != 0)
     {
-        wil::unique_handle proc{ OpenProcess(PROCESS_TERMINATE, false, g_settings_process_id) };
+        SetEvent(g_terminateSettingsEvent);
+        wil::unique_handle proc{ OpenProcess(PROCESS_ALL_ACCESS, false, g_settings_process_id) };
         if (proc)
         {
+            WaitForSingleObject(proc.get(), 1500);
             TerminateProcess(proc.get(), 0);
         }
     }

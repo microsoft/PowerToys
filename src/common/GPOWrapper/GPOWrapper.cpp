@@ -224,4 +224,8 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredNewPlusHideTemplateFilenameExtensionValue());
     }
+    GpoRuleConfigured GPOWrapper::GetAllowDataDiagnosticsValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowDataDiagnosticsValue());
+    }
 }
