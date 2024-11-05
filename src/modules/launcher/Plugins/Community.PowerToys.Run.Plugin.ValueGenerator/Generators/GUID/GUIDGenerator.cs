@@ -93,7 +93,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
             // make sure to write as big-endian here!
             BinaryPrimitives.WriteUInt64BigEndian(buffer, timestamp48);
             BinaryPrimitives.WriteUInt32BigEndian(buffer[6..], bytes6To9Masked);
-            return new Guid(result);
+            return new Guid(buffer, bigEndian: true);
         }
 
         private static Guid V3AndV5(Guid uuidNamespace, string uuidName, short version)
