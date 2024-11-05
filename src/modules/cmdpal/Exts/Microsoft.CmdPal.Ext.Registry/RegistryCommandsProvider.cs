@@ -8,21 +8,14 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.Registry;
 
-public partial class RegistryCommandsProvider : ICommandProvider
+public partial class RegistryCommandsProvider : CommandProvider
 {
-    public string DisplayName => $"Windows Services";
-
     public RegistryCommandsProvider()
     {
+        DisplayName = $"Windows Registry";
     }
 
-    public IconDataType Icon => new(string.Empty);
-
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-    public void Dispose() => throw new NotImplementedException();
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
-
-    public IListItem[] TopLevelCommands()
+    public override IListItem[] TopLevelCommands()
     {
         return [
             new ListItem(new RegistryListPage())

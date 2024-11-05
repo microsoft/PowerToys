@@ -8,11 +8,12 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace SamplePagesExtension;
 
-public partial class SamplePagesCommandsProvider : ICommandProvider
+public partial class SamplePagesCommandsProvider : CommandProvider
 {
-    public string DisplayName => $"Sample Pages Commands";
-
-    public IconDataType Icon => new(string.Empty);
+    public SamplePagesCommandsProvider()
+    {
+        DisplayName = "Sample Pages Commands";
+    }
 
     private readonly IListItem[] _commands = [
        new ListItem(new SampleMarkdownPage())
@@ -42,11 +43,7 @@ public partial class SamplePagesCommandsProvider : ICommandProvider
        }
     ];
 
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-    public void Dispose() => throw new NotImplementedException();
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
-
-    public IListItem[] TopLevelCommands()
+    public override IListItem[] TopLevelCommands()
     {
         return _commands;
     }

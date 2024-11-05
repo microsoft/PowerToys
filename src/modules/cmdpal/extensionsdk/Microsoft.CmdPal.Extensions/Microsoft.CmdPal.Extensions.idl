@@ -122,6 +122,49 @@ namespace Microsoft.CmdPal.Extensions
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     interface IDetailsSeparator requires IDetailsData {}
     
+    enum MessageState
+    {
+        Info = 0,
+        Success,
+        Warning,
+        Error,
+    };
+    
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    interface IProgressState requires INotifyPropChanged
+    {
+        Boolean IsIndeterminate { get; };
+        UInt32 ProgressPercent { get; };
+    };
+    
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    interface IStatusMessage requires INotifyPropChanged
+    {
+        MessageState State { get; };
+        IProgressState Progress { get; };
+        String Message { get; };
+        // TODO! Icon maybe? Work with design on this
+    };
+    
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    interface ILogMessage
+    {
+        MessageState State { get; };
+        String Message { get; };
+    };
+    
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    interface IExtensionHost
+    {
+        UInt64 HostingHwnd { get; };
+        String LanguageOverride { get; };
+    
+        Windows.Foundation.IAsyncAction ShowStatus(IStatusMessage message);
+        Windows.Foundation.IAsyncAction HideStatus(IStatusMessage message);
+    
+        Windows.Foundation.IAsyncAction LogMessage(ILogMessage message);
+    };
+    
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     interface IPage requires ICommand {
         String Title { get; };
@@ -212,6 +255,8 @@ namespace Microsoft.CmdPal.Extensions
         // TODO! IFormPage SettingsPage { get; };
     
         IListItem[] TopLevelCommands();
+    
+        void InitializeWithHost(IExtensionHost host);
     };
     
 

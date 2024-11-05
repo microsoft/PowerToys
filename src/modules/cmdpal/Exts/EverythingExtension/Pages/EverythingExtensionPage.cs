@@ -30,7 +30,7 @@ internal sealed partial class EverythingExtensionPage : DynamicListPage
         Everything_SetMax(20);
     }
 
-    public override ISection[] GetItems(string query)
+    public override IListItem[] GetItems(string query)
     {
         Everything_SetSearchW(query);
 
@@ -60,18 +60,10 @@ internal sealed partial class EverythingExtensionPage : DynamicListPage
                 items.Add(new ListItem(new NoOpCommand() { Name = "(Are you sure Everything is running?)" }));
             }
 
-            return [
-                new ListSection()
-                {
-                    Items = items.ToArray(),
-                }
-            ];
+            return items.ToArray();
         }
 
         var resultCount = Everything_GetNumResults();
-
-        // Create a new ListSections
-        var section = new ListSection();
 
         // Create a List to store ListItems
         var itemList = new List<ListItem>();
@@ -101,9 +93,6 @@ internal sealed partial class EverythingExtensionPage : DynamicListPage
         }
 
         // Convert the List to an array and assign it to the Items property
-        section.Items = itemList.ToArray();
-
-        // Return the ListSection with the items
-        return [section];
+        return itemList.ToArray();
     }
 }

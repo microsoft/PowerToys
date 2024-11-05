@@ -12,21 +12,18 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace TemplateExtension;
 
-public partial class TemplateExtensionActionsProvider : ICommandProvider
+public partial class TemplateExtensionActionsProvider : CommandProvider
 {
-    public string DisplayName => $"TemplateDisplayName Commands";
-
-    public IconDataType Icon => new(string.Empty);
+    public TemplateExtensionActionsProvider()
+    {
+        DisplayName = "TemplateDisplayName Commands";
+    }
 
     private readonly IListItem[] _commands = [
         new ListItem(new TemplateExtensionPage()),
     ];
 
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-    public void Dispose() => throw new NotImplementedException();
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
-
-    public IListItem[] TopLevelCommands()
+    public override IListItem[] TopLevelCommands()
     {
         return _commands;
     }

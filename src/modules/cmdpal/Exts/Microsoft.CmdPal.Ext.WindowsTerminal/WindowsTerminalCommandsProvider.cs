@@ -4,26 +4,20 @@
 
 using System;
 using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.WindowsTerminal;
 
-public partial class WindowsTerminalCommandsProvider : ICommandProvider
+public partial class WindowsTerminalCommandsProvider : CommandProvider
 {
-    public string DisplayName => $"Windows Terminal";
-
     private readonly TerminalTopLevelListItem terminalCommand = new();
 
     public WindowsTerminalCommandsProvider()
     {
+        DisplayName = $"Windows Terminal";
     }
 
-    public IconDataType Icon => new(string.Empty);
-
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-    public void Dispose() => throw new NotImplementedException();
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
-
-    public IListItem[] TopLevelCommands()
+    public override IListItem[] TopLevelCommands()
     {
         return [terminalCommand];
     }

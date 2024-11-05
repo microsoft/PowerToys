@@ -4,26 +4,20 @@
 
 using System;
 using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.Calc;
 
-public partial class CalculatorCommandProvider : ICommandProvider
+public partial class CalculatorCommandProvider : CommandProvider
 {
-    public string DisplayName => $"Calculator";
-
     private readonly CalculatorTopLevelListItem calculatorCommand = new();
 
     public CalculatorCommandProvider()
     {
+        DisplayName = "Calculator";
     }
 
-    public IconDataType Icon => new(string.Empty);
-
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-    public void Dispose() => throw new NotImplementedException();
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
-
-    public IListItem[] TopLevelCommands()
+    public override IListItem[] TopLevelCommands()
     {
         return [calculatorCommand];
     }

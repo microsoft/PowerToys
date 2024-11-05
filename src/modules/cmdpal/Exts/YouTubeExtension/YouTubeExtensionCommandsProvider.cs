@@ -17,11 +17,12 @@ using YouTubeExtension.Pages;
 
 namespace YouTubeExtension;
 
-public partial class YouTubeExtensionActionsProvider : ICommandProvider
+public partial class YouTubeExtensionActionsProvider : CommandProvider
 {
-    public string DisplayName => $"YouTube";
-
-    public IconDataType Icon => new(string.Empty);
+    public YouTubeExtensionActionsProvider()
+    {
+        DisplayName = "YouTube";
+    }
 
     private readonly IListItem[] _commands = [
         new ListItem(new YouTubeVideosPage())
@@ -48,11 +49,7 @@ public partial class YouTubeExtensionActionsProvider : ICommandProvider
 
     private readonly YouTubeAPIPage apiPage = new();
 
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-    public void Dispose() => throw new NotImplementedException();
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
-
-    public IListItem[] TopLevelCommands()
+    public override IListItem[] TopLevelCommands()
     {
         return TopLevelCommandsAsync().GetAwaiter().GetResult();
     }

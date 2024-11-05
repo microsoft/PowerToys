@@ -11,17 +11,15 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
-public partial class BookmarksCommandProvider : ICommandProvider
+public partial class BookmarksCommandProvider : CommandProvider
 {
-    public string DisplayName => $"Bookmarks";
-
-    public IconDataType Icon => new(string.Empty);
-
     private readonly List<ICommand> _commands = [];
     private readonly AddBookmarkPage _addNewCommand = new();
 
     public BookmarksCommandProvider()
     {
+        DisplayName = "Bookmarks";
+
         _addNewCommand.AddedAction += AddNewCommand_AddedAction;
     }
 
@@ -30,10 +28,6 @@ public partial class BookmarksCommandProvider : ICommandProvider
         _addNewCommand.AddedAction += AddNewCommand_AddedAction;
         _commands.Clear();
     }
-
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-    public void Dispose() => throw new NotImplementedException();
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
 
     private void LoadCommands()
     {
@@ -84,7 +78,7 @@ public partial class BookmarksCommandProvider : ICommandProvider
         _commands.AddRange(collected);
     }
 
-    public IListItem[] TopLevelCommands()
+    public override IListItem[] TopLevelCommands()
     {
         if (_commands.Count == 0)
         {

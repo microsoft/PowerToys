@@ -8,19 +8,11 @@ using Windows.Foundation;
 
 namespace WindowsCommandPalette.BuiltinCommands;
 
-public partial class ReloadExtensionsCommandProvider : ICommandProvider
+public partial class ReloadExtensionsCommandProvider : CommandProvider
 {
-    public string DisplayName => string.Empty;
-
-    public IconDataType Icon => new(string.Empty);
-
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-    public void Dispose() => throw new NotImplementedException();
-
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
     private readonly ReloadExtensionsAction reloadAction = new();
 
-    public IListItem[] TopLevelCommands()
+    public override IListItem[] TopLevelCommands()
     {
         return [new ListItem(reloadAction) { Subtitle = "Reload Command Palette extensions" }];
     }

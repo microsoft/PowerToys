@@ -12,11 +12,12 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace EverythingExtension;
 
-public partial class EverythingExtensionActionsProvider : ICommandProvider
+public partial class EverythingExtensionActionsProvider : CommandProvider
 {
-    public string DisplayName => $"Everything extension for cmdpal";
-
-    public IconDataType Icon => new(string.Empty);
+    public EverythingExtensionActionsProvider()
+    {
+        DisplayName = "Everything extension for cmdpal";
+    }
 
     private readonly IListItem[] _commands = [
         new ListItem(new EverythingExtensionPage())
@@ -26,11 +27,7 @@ public partial class EverythingExtensionActionsProvider : ICommandProvider
         },
     ];
 
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-    public void Dispose() => throw new NotImplementedException();
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
-
-    public IListItem[] TopLevelCommands()
+    public override IListItem[] TopLevelCommands()
     {
         return _commands;
     }

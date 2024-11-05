@@ -1,7 +1,8 @@
 {
   "profiles": {
     "HackerNewsExtension (Package)": {
-      "commandName": "MsixPackage"
+      "commandName": "MsixPackage",
+      "doNotLaunchApp": true
     },
     "HackerNewsExtension (Unpackaged)": {
       "commandName": "Project"

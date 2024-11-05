@@ -4,24 +4,22 @@
 
 using System;
 using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace MediaControlsExtension;
 
-public partial class MediaActionsProvider : ICommandProvider
+public partial class MediaActionsProvider : CommandProvider
 {
-    public string DisplayName => $"Media controls actions";
-
-    public IconDataType Icon => new(string.Empty);
+    public MediaActionsProvider()
+    {
+        DisplayName = "Media controls actions";
+    }
 
     private readonly IListItem[] _actions = [
         new MediaListItem()
     ];
 
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-    public void Dispose() => throw new NotImplementedException();
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
-
-    public IListItem[] TopLevelCommands()
+    public override IListItem[] TopLevelCommands()
     {
         return _actions;
     }

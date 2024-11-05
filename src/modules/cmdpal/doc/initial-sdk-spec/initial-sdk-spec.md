@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2024-10-22
+last updated: 2024-11-04
 issue id: n/a
 ---
 
@@ -62,6 +62,7 @@ functionality.
       - [`INotifyPropChanged`](#inotifypropchanged)
       - [`ICommandProvider`](#icommandprovider)
     - [Settings](#settings)
+    - [Retrieving info from the host](#retrieving-info-from-the-host)
   - [Helper SDK Classes](#helper-sdk-classes)
     - [Default implementations](#default-implementations)
     - [Using the Clipboard](#using-the-clipboard)
@@ -869,7 +870,7 @@ public class SpongebotPage : Microsoft.Windows.Run.Extensions.MarkdownPage, IFal
         return t.Result;
     }
 }
-internal sealed class SpongebotCommandsProvider : ICommandProvider
+internal sealed class SpongebotCommandsProvider : CommandProvider
 {
     public IListItem[] TopLevelCommands()
     {
@@ -1125,6 +1126,8 @@ interface ICommandProvider requires Windows.Foundation.IClosable
     // TODO! IFormPage SettingsPage { get; };
 
     IListItem[] TopLevelCommands();
+
+    void InitializeWithHost(IExtensionHost host);
 };
 ```
 
@@ -1149,6 +1152,10 @@ Cards is great for real-time saving of settings though.
 We probably also want to provide a helper class for storing settings, so that
 apps don't need to worry too much about mucking around with that. I'm especially
 thinking about storing credentials securely.
+
+### Retrieving info from the host
+
+TODO! write me
 
 ## Helper SDK Classes
 
@@ -1241,35 +1248,88 @@ in their extensions.
 
 ### Status messages
 
-[TODO!]: write this
-
-[TODO!]: I'm removing the bit about status updates for now. This is tricky, because things like `InvokableCommand`s want to be able to set status messages too, and they won't necessarily be able to communicate back up to the page hosting them.
-Actions should be able to display realtime feedback to the user:
-
 <img src="./grid-actions-mock.png" height="300px" /> <img src="./grid-status-loading-mock.png" height="300px" /> <img src="./grid-status-success-mock.png" height="300px" />
 
-* PushStatus(StatusMessage) - this will push a status message to the UI. This
-  will be shown in the status bar at the bottom of the window. The status bar
-  will show the most recent status message.
-* PopStatus() - this will begin to fade out the active status message. If there
-  are no more status messages, the status bar will disappear.
+Extensions will want to be able to communicate feedback to the user, based on
+what's going on inside the extension. 
 
-```cs
-runtimeclass PageStatus {
-    bool IsIndeterminate { get; };
-    double ProgressPercent { get; };
-    PageStatusKind Kind { get; };
-    String Caption { get; };
-}
-enum PageStatusKind {
-    Info,
+Consider a `winget` extension that allows the user to search for and install
+packages. When the user starts an install, the extension should be able to show
+a progress bar for the install, and then show a success or error message to the
+user, depending on the result.
+
+To do so, extensions can make use of the `IExtensionHost` interface. This is an
+object which extensions shouldn't implement themselves. Rather, this is
+implemented by the host app itself. On this class is the `ShowStatus` &
+`HideStatus` methods.
+
+Calling `ShowStatus` will display a given message to the user in the status area
+of the UI. The extension can provide an info/success/warning/error state to
+colorize the message. The extension can also provide progress info in the
+message.
+
+When the extension wants to hide the message, they can call `HideStatus`,
+passing the same message object to the method. The host app will keep a log of
+all status's written to it, so a user can alway view old messages once they've
+been hidden. The message also conforms to `INotifyPropChanged`, so extensions
+can modify an existing message if they'd like to. This is recommended, rather
+than writing lots of individual updates as separate messages.
+
+```c#
+enum MessageState
+{
+    Info = 0,
     Success,
     Warning,
-    Error
-}
+    Error,
+};
+
+interface IProgressState requires INotifyPropChanged
+{
+    Boolean IsIndeterminate { get; };
+    UInt32 ProgressPercent { get; };
+};
+
+interface IStatusMessage requires INotifyPropChanged
+{
+    MessageState State { get; };
+    IProgressState Progress { get; };
+    String Message { get; };
+    // TODO! Icon maybe? Work with design on this
+};
+
+interface ILogMessage
+{
+    MessageState State { get; };
+    String Message { get; };
+};
+
+interface IExtensionHost
+{
+    UInt64 HostingHwnd { get; };
+    String LanguageOverride { get; };
+
+    Windows.Foundation.IAsyncAction ShowStatus(IStatusMessage message);
+    Windows.Foundation.IAsyncAction HideStatus(IStatusMessage message);
+
+    Windows.Foundation.IAsyncAction LogMessage(ILogMessage message);
+};
 ```
 
-push pop sounds wrong. Maybe `AddStatus` and `ClearStatus`?
+There's also a `LogMessage` method provided by the `IExtensionHost` interface.
+This is useful for apps that want to write to the debug log of the host app
+itself. These are for messages that wouldn't otherwise be visible to the user,
+but may be helpful for debugging purposes.
+
+`IExtensionHost` is implemented by the hosting app itself. It is passed to a
+command provider on startup, when the host app first connects to the extension.
+For apps which use the helpers library, this will be managed for them. Consumers
+of the helpers lib can simply call `Helpers.ExtensionHost.Host` to get the
+instance from the host app.
+
+[TODO!]: I'm marking these methods async right now, to force extension authors
+to remember that these are x-proc calls, and should be treated asynchronously.
+Should the other properties be async too?
 
 ## Class diagram
 

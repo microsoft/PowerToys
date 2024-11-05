@@ -7,14 +7,11 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace ProcessMonitorExtension;
 
-internal sealed partial class ProcessMonitorCommandProvider : ICommandProvider
+internal sealed partial class ProcessMonitorCommandProvider : CommandProvider
 {
-    public string DisplayName => "Process Monitor Commands";
-
-    public IconDataType Icon => new(string.Empty); // Optionally provide an icon URL
-
-    public void Dispose()
+    public ProcessMonitorCommandProvider()
     {
+        DisplayName = "Process Monitor Commands";
     }
 
     private readonly IListItem[] _actions = [
@@ -25,7 +22,7 @@ internal sealed partial class ProcessMonitorCommandProvider : ICommandProvider
         },
     ];
 
-    public IListItem[] TopLevelCommands()
+    public override IListItem[] TopLevelCommands()
     {
         return _actions;
     }

@@ -9,21 +9,18 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace SpongebotExtension;
 
-internal sealed partial class SpongebotCommandsProvider : ICommandProvider
+internal sealed partial class SpongebotCommandsProvider : CommandProvider
 {
-    public string DisplayName => $"Spongebob, mocking";
-
-    public IconDataType Icon => new(string.Empty);
+    public SpongebotCommandsProvider()
+    {
+        DisplayName = "Spongebob, mocking";
+    }
 
     private readonly SpongebotPage mainPage = new();
 
     private readonly SpongebotSettingsPage settingsPage = new();
 
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-    public void Dispose() => throw new NotImplementedException();
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
-
-    public IListItem[] TopLevelCommands()
+    public override IListItem[] TopLevelCommands()
     {
         var settingsPath = SpongebotPage.StateJsonPath();
         if (!File.Exists(settingsPath))

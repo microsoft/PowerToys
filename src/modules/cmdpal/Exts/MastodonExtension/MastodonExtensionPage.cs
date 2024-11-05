@@ -91,21 +91,18 @@ internal sealed partial class MastodonExtensionPage : ListPage
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]
-public partial class MastodonExtensionActionsProvider : ICommandProvider
+public partial class MastodonExtensionActionsProvider : CommandProvider
 {
-    public string DisplayName => $"Mastodon extension for cmdpal Commands";
-
-    public IconDataType Icon => new(string.Empty);
+    public MastodonExtensionActionsProvider()
+    {
+        DisplayName = "Mastodon extension for cmdpal Commands";
+    }
 
     private readonly IListItem[] _actions = [
         new ListItem(new MastodonExtensionPage()) { Subtitle = "Explore top posts on mastodon.social" },
     ];
 
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-    public void Dispose() => throw new NotImplementedException();
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
-
-    public IListItem[] TopLevelCommands()
+    public override IListItem[] TopLevelCommands()
     {
         return _actions;
     }

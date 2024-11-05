@@ -176,11 +176,12 @@ At this point you should have your command that you created show up in the root 
 In order for users to interact with your extension in the Command Palette, **you need to provide at least one top level command**. To do this, implement the `ICommandProvider` interface located in the `*CommandsProvider.cs` file created by the extension template. This interface has a single method, `TopLevelCommands()`, that returns a list of commands that will be displayed in the root view of the Command Palette. Remember, each top level command that a user sees is represented by a [ListItem](#listitem). In other words, the `TopLevelCommands()` method will return a list of `ListItems`, where each `ListItem` represents a command that will be displayed in the [root view](#root-view) of the Command Palette.
 
 ```csharp
-public class SSHKeychainCommandsProvider : ICommandProvider
+public class SSHKeychainCommandsProvider : CommandProvider
 {
-    public string DisplayName => $"SSH Keychain Commands";
-
-    public IconDataType Icon => new(string.Empty);
+    public SSHKeychainCommandsProvider()
+    {
+        DisplayName = "SSH Keychain Commands";
+    }
 
     private readonly IListItem[] _commands = [
        new ListItem(new NoOpCommand())
@@ -190,11 +191,7 @@ public class SSHKeychainCommandsProvider : ICommandProvider
         },
     ];
 
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-    public void Dispose() => throw new NotImplementedException();
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
-
-    public IListItem[] TopLevelCommands()
+    public override IListItem[] TopLevelCommands()
     {
         return _commands;
     }

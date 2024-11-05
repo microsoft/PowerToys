@@ -94,6 +94,8 @@ public sealed partial class MainWindow : Window
         SetAcrylic();
         ExtendsContentIntoTitleBar = true;
 
+        CommandPaletteHost.Instance.SetHostHwnd((ulong)hwnd.Value);
+
         // Hide our titlebar. We'll make the sides draggable later
         _appWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
 

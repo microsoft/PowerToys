@@ -8,21 +8,13 @@ using Windows.Foundation;
 
 namespace WindowsCommandPalette.BuiltinCommands;
 
-public partial class QuitCommandProvider : ICommandProvider
+public partial class QuitCommandProvider : CommandProvider
 {
-    public string DisplayName => string.Empty;
-
-    public IconDataType Icon => new(string.Empty);
-
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-    public void Dispose() => throw new NotImplementedException();
-
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
     private readonly QuitAction quitAction = new();
 
     public event TypedEventHandler<object?, object?>? QuitRequested { add => quitAction.QuitRequested += value; remove => quitAction.QuitRequested -= value; }
 
-    public IListItem[] TopLevelCommands()
+    public override IListItem[] TopLevelCommands()
     {
         return [new ListItem(quitAction) { Subtitle = "Exit Command Palette" }];
     }

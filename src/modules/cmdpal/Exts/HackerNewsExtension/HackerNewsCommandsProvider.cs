@@ -8,21 +8,18 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace HackerNewsExtension;
 
-public partial class HackerNewsCommandsProvider : ICommandProvider
+public partial class HackerNewsCommandsProvider : CommandProvider
 {
-    public string DisplayName => $"Hacker News Commands";
-
-    public IconDataType Icon => new(string.Empty);
+    public HackerNewsCommandsProvider()
+    {
+        DisplayName = "Hacker News Commands";
+    }
 
     private readonly IListItem[] _actions = [
         new ListItem(new HackerNewsPage()),
     ];
 
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-    public void Dispose() => throw new NotImplementedException();
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
-
-    public IListItem[] TopLevelCommands()
+    public override IListItem[] TopLevelCommands()
     {
         return _actions;
     }

@@ -8,23 +8,16 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.Settings;
 
-public partial class SettingsCommandProvider : ICommandProvider
+public partial class SettingsCommandProvider : CommandProvider
 {
-    public string DisplayName => $"Settings";
-
     private readonly SettingsPage settingsPage = new();
 
     public SettingsCommandProvider()
     {
+        DisplayName = $"Settings";
     }
 
-    public IconDataType Icon => new(string.Empty);
-
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-    public void Dispose() => throw new NotImplementedException();
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
-
-    public IListItem[] TopLevelCommands()
+    public override IListItem[] TopLevelCommands()
     {
         return [new ListItem(settingsPage) { Subtitle = "CmdPal settings" }];
     }
