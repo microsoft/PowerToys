@@ -5,7 +5,7 @@
 using System;
 using System.Buffers.Binary;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests
@@ -69,7 +69,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests
         }
 
         [TestMethod]
-        public async Task GUIDv7GeneratorTimeOrderedAsync()
+        public void GUIDv7GeneratorTimeOrdered()
         {
             const int numberOfSamplesToCheck = 10;
             ulong previousTimestampWithTrailingRandomData = 0uL;
@@ -86,7 +86,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests
                 Assert.IsTrue(timestampWithTrailingRandomData > previousTimestampWithTrailingRandomData, "UUIDv7 wasn't time-ordered");
 
                 // ensure at least one millisecond passes for consistent time-ordering. we wait 10 ms just to be sure.
-                await Task.Delay(10);
+                Thread.Sleep(10);
             }
         }
 
