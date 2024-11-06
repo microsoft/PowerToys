@@ -12,13 +12,9 @@ namespace WorkspacesEditor.Utils
 {
     public class PwaHelper
     {
-        private const string EdgeBase = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModel\\StateRepository\\Cache\\Application\\Data";
-        private const string EdgePwaIdentifier = "PWA";
-        private const string EdgeApplicationUserModelId = "ApplicationUserModelId";
-        private const string EdgeHostId = "HostId";
-        private const string EdgeParameters = "Parameters";
         private const string ChromeBase = "Google\\Chrome\\User Data\\Default\\Web Applications";
-        private const string ChromeIdentifier = "_CRX_";
+        private const string EdgeBase = "Microsoft\\Edge\\User Data\\Default\\Web Applications";
+        private const string PwaDirIdentifier = "_CRX_";
 
         private static List<PwaApp> edgePwaApps = new List<PwaApp>();
         private static List<PwaApp> chromePwaApps = new List<PwaApp>();
@@ -29,104 +25,37 @@ namespace WorkspacesEditor.Utils
 
         public PwaHelper()
         {
-            InitEdgePwaData();
-            InitChromePwaData();
+            edgePwaApps = InitPwaData(EdgeBase);
+            chromePwaApps = InitPwaData(ChromeBase);
         }
 
-        private void InitEdgePwaData()
+        private List<PwaApp> InitPwaData(string p_baseDir)
         {
-            try
-            {
-                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(EdgeBase))
-                {
-                    if (key != null)
-                    {
-                        foreach (string subKeyDir in key.GetSubKeyNames())
-                        {
-                            using (RegistryKey subKey = Registry.LocalMachine.OpenSubKey(EdgeBase + '\\' + subKeyDir))
-                            {
-                                if (subKey == null)
-                                {
-                                    continue;
-                                }
-
-                                string hostId = GetValueFromKey(subKey, EdgeHostId);
-                                if (hostId == null)
-                                {
-                                    continue;
-                                }
-
-                                if (hostId != EdgePwaIdentifier)
-                                {
-                                    continue;
-                                }
-
-                                string applicationUserModelId = GetValueFromKey(subKey, EdgeApplicationUserModelId);
-                                if (applicationUserModelId == null)
-                                {
-                                    continue;
-                                }
-
-                                string appName = applicationUserModelId.Split('_').First();
-                                string parameters = GetValueFromKey(subKey, EdgeParameters);
-                                if (parameters == null)
-                                {
-                                    continue;
-                                }
-
-                                if (edgePwaApps.Any(x => x.Name == appName))
-                                {
-                                    continue;
-                                }
-
-                                edgePwaApps.Add(new PwaApp() { Name = appName, Parameters = parameters });
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-        }
-
-        private string GetValueFromKey(RegistryKey p_key, string p_valueName)
-        {
-            object value = p_key.GetValue(p_valueName);
-            if (value == null)
-            {
-                return null;
-            }
-
-            if (!(value is string))
-            {
-                return null;
-            }
-
-            return value as string;
-        }
-
-        private void InitChromePwaData()
-        {
-            var baseFolderName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ChromeBase);
+            List<PwaApp> result = new List<PwaApp>();
+            var baseFolderName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), p_baseDir);
             if (Directory.Exists(baseFolderName))
             {
                 foreach (string subDir in Directory.GetDirectories(baseFolderName))
                 {
                     string dirName = Path.GetFileName(subDir);
-                    if (!dirName.StartsWith(ChromeIdentifier, StringComparison.InvariantCultureIgnoreCase))
+                    if (!dirName.StartsWith(PwaDirIdentifier, StringComparison.InvariantCultureIgnoreCase))
                     {
                         continue;
                     }
 
-                    foreach (string file in Directory.GetFiles(subDir, "*.lnk"))
+                    string appId = dirName.Substring(PwaDirIdentifier.Length, dirName.Length - PwaDirIdentifier.Length).Trim('_');
+
+                    foreach (string iconFile in Directory.GetFiles(subDir, "*.ico"))
                     {
-                        string filenameWithoutExtension = Path.GetFileNameWithoutExtension(file);
-                        chromePwaApps.Add(new PwaApp() { Name = filenameWithoutExtension, Parameters = file });
+                        string filenameWithoutExtension = Path.GetFileNameWithoutExtension(iconFile);
+
+                        result.Add(new PwaApp() { Name = filenameWithoutExtension, IconFilename = iconFile, AppId = appId });
+                        break;
                     }
                 }
             }
+
+            return result;
         }
 
         internal static List<string> GetEdgeAppsList()
@@ -141,6 +70,81 @@ namespace WorkspacesEditor.Utils
             var list = new List<string>() { "no PWA" };
             list.AddRange(chromePwaApps.Select(a => a.Name));
             return list;
+        }
+
+        internal static string GetChromeAppIconFile(string pwaAppId)
+        {
+            var candidates = chromePwaApps.Where(x => x.AppId == pwaAppId).ToList();
+            if (candidates.Count > 0)
+            {
+                return candidates.First().IconFilename;
+            }
+
+            return null;
+        }
+
+        internal static string GetEdgeAppIconFile(string pwaAppId)
+        {
+            var candidates = edgePwaApps.Where(x => x.AppId == pwaAppId).ToList();
+            if (candidates.Count > 0)
+            {
+                return candidates.First().IconFilename;
+            }
+
+            return null;
+        }
+
+        internal static string GetPwaAppId(string pwaAppName)
+        {
+            var candidates = edgePwaApps.Where(x => x.Name == pwaAppName).ToList();
+            if (candidates.Count > 0)
+            {
+                return candidates.First().AppId;
+            }
+
+            candidates = chromePwaApps.Where(x => x.Name == pwaAppName).ToList();
+            if (candidates.Count > 0)
+            {
+                return candidates.First().AppId;
+            }
+
+            return string.Empty;
+        }
+
+        internal static int GetEdgeItemIndex(string pwaAppId)
+        {
+            if (string.IsNullOrEmpty(pwaAppId))
+            {
+                return 0;
+            }
+
+            for (int appIndex = 0; appIndex < edgePwaApps.Count; appIndex++)
+            {
+                if (edgePwaApps[appIndex].AppId == pwaAppId)
+                {
+                    return appIndex + 1;
+                }
+            }
+
+            return 0;
+        }
+
+        internal static int GetChromeItemIndex(string pwaAppId)
+        {
+            if (string.IsNullOrEmpty(pwaAppId))
+            {
+                return 0;
+            }
+
+            for (int appIndex = 0; appIndex < chromePwaApps.Count; appIndex++)
+            {
+                if (chromePwaApps[appIndex].AppId == pwaAppId)
+                {
+                    return appIndex + 1;
+                }
+            }
+
+            return 0;
         }
     }
 }

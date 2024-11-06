@@ -40,6 +40,7 @@ namespace WorkspacesEditor.Models
             AppTitle = other.AppTitle;
             PackageFullName = other.PackageFullName;
             AppUserModelId = other.AppUserModelId;
+            PwaAppId = other.PwaAppId;
             CommandLineArguments = other.CommandLineArguments;
             IsElevated = other.IsElevated;
             CanLaunchElevated = other.CanLaunchElevated;
@@ -122,6 +123,13 @@ namespace WorkspacesEditor.Models
         {
             get => MainViewModel.GetPwaItems(this);
         }
+
+        public int PwaIndex
+        {
+            get => MainViewModel.GetPwaItemIndex(this);
+        }
+
+        public string PwaAppId { get; set; }
 
         private bool _isElevated;
 
@@ -254,10 +262,23 @@ namespace WorkspacesEditor.Models
                             var iconHandle = bitmap.GetHicon();
                             _icon = Icon.FromHandle(iconHandle);
                         }
-                        else
+                        else if (MainViewModel.IsPwaApp(this))
+                        {
+                            string iconFilename = MainViewModel.GetPwaIconFilename(this);
+                            if (iconFilename != null)
+                            {
+                                var bitmap = new Bitmap(iconFilename);
+                                var iconHandle = bitmap.GetHicon();
+                                _icon = Icon.FromHandle(iconHandle);
+                            }
+                        }
+
+                        if (_icon == null)
                         {
                             _icon = Icon.ExtractAssociatedIcon(AppPath);
                         }
+
+                        IsNotFound = false;
                     }
                     catch (Exception)
                     {
@@ -519,8 +540,13 @@ namespace WorkspacesEditor.Models
             Maximized = false;
         }
 
-        internal void PwaSelectionChanged(int selectedIndex)
+        internal void PwaSelectionChanged(string pwaAppName)
         {
+            PwaAppId = MainViewModel.GetPwaAppId(pwaAppName);
+            _iconBitmapImage = null;
+            _icon = null;
+            OnPropertyChanged(new PropertyChangedEventArgs(nameof(IconBitmapImage)));
+            Parent.Initialize(App.ThemeManager.GetCurrentTheme());
         }
 
         internal bool IsEdge()

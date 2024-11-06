@@ -14,6 +14,10 @@ namespace WorkspacesEditor.Utils
     {
         public string Name { get; set; }
 
-        public string Parameters { get; set; }
+        public string ShortcutFilename { get; set; }
+
+        public string IconFilename { get; set; }
+
+        public string AppId { get; set; }
     }
 }

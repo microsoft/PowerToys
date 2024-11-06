@@ -223,7 +223,7 @@ namespace WorkspacesEditor
         {
             ComboBox comboBox = sender as ComboBox;
             Models.Application application = comboBox.DataContext as Models.Application;
-            application.PwaSelectionChanged(comboBox.SelectedIndex);
+            application.PwaSelectionChanged((string)comboBox.SelectedValue);
         }
     }
 }

@@ -80,7 +80,7 @@
                                 Margin="10"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
-                                Source="{Binding IconBitmapImage}" />
+                                Source="{Binding IconBitmapImage, UpdateSourceTrigger=PropertyChanged}" />
                             <TextBlock
                                 Grid.Column="2"
                                 Width="20"
@@ -133,6 +133,7 @@
                             Visibility="{Binding PwaVisibility}"
                             ItemsSource="{Binding PwaItems}"
                             SelectionChanged="PwaSelectionChanged"
+                            SelectedIndex="{Binding PwaIndex, Mode=OneTime}"
                             />
                         <DockPanel 
                             Margin="100,5,0,0"

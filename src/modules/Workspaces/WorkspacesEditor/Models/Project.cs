@@ -255,6 +255,7 @@ namespace WorkspacesEditor.Models
                     AppName = app.Application,
                     AppPath = app.ApplicationPath,
                     AppTitle = app.Title,
+                    PwaAppId = app.PwaAppId,
                     PackageFullName = app.PackageFullName,
                     AppUserModelId = app.AppUserModelId,
                     Parent = this,

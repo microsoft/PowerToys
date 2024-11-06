@@ -267,6 +267,7 @@ namespace SnapshotUtils
                 .path = data.value().installPath,
                 .packageFullName = data.value().packageFullName,
                 .appUserModelId = data.value().appUserModelId,
+                .pwaAppId = L"",
                 .commandLineArgs = commandLineArgs,
                 .isElevated = IsProcessElevated(pid),
                 .canLaunchElevated = data.value().canLaunchElevated,

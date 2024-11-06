@@ -14,7 +14,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
-
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
@@ -628,6 +627,59 @@ namespace WorkspacesEditor.ViewModels
             else
             {
                 return null;
+            }
+        }
+
+        internal static bool IsPwaApp(Models.Application application)
+        {
+            if (application.IsEdge())
+            {
+                return true;
+            }
+            else if (application.IsChrome())
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        internal static string GetPwaIconFilename(Models.Application application)
+        {
+            if (application.IsEdge())
+            {
+                return PwaHelper.GetEdgeAppIconFile(application.PwaAppId);
+            }
+            else if (application.IsChrome())
+            {
+                return PwaHelper.GetChromeAppIconFile(application.PwaAppId);
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        internal static string GetPwaAppId(string pwaAppName)
+        {
+            return PwaHelper.GetPwaAppId(pwaAppName);
+        }
+
+        internal static int GetPwaItemIndex(Models.Application application)
+        {
+            if (application.IsEdge())
+            {
+                return PwaHelper.GetEdgeItemIndex(application.PwaAppId);
+            }
+            else if (application.IsChrome())
+            {
+                return PwaHelper.GetChromeItemIndex(application.PwaAppId);
+            }
+            else
+            {
+                return 0;
             }
         }
     }
