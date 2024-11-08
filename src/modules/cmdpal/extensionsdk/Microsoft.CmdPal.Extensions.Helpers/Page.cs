@@ -18,6 +18,7 @@ public partial class Page : Command, IPage
             OnPropertyChanged(nameof(Loading));
         }
     }
+
     public string Title
     {
         get => _title;

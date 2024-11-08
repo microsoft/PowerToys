@@ -1,8 +1,10 @@
 #include "winres.h"
 
+#include "../../../../common/version/version.h"
+
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION VERSION_COMMAS
- PRODUCTVERSION VERSION_COMMAS
+ FILEVERSION FILE_VERSION
+ PRODUCTVERSION PRODUCT_VERSION
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -19,9 +21,9 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Microsoft Corporation"
             VALUE "FileDescription", "Microsoft.CmdPal.Extensions.Helpers"
-            VALUE "FileVersion", VERSION_NUMBER
+            VALUE "FileVersion", FILE_VERSION_STRING
             VALUE "ProductName", "Microsoft.CmdPal.Extensions.Helpers"
-            VALUE "ProductVersion", VERSION_NUMBER
+            VALUE "ProductVersion", PRODUCT_VERSION_STRING
             VALUE "LegalCopyright", "Copyright (c) Microsoft Corporation"
         END
     END

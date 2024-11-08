@@ -1,5 +1,0 @@
-<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <CmdPalSDKPackageDir>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..'))</CmdPalSDKPackageDir>
-  </PropertyGroup>
-</Project>

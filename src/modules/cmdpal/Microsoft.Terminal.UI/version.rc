@@ -1,5 +1,7 @@
 #include "winres.h"
 
+#include "../../../../common/version/version.h"
+
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION VERSION_COMMAS
  PRODUCTVERSION VERSION_COMMAS
@@ -19,9 +21,9 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Microsoft Corporation"
             VALUE "FileDescription", "Microsoft.Terminal.UI" 
-            VALUE "FileVersion", VERSION_NUMBER
+            VALUE "FileVersion", FILE_VERSION_STRING
             VALUE "ProductName", "Microsoft.Terminal.UI"
-            VALUE "ProductVersion", VERSION_NUMBER
+            VALUE "ProductVersion", PRODUCT_VERSION_STRING
             VALUE "LegalCopyright", "Copyright (c) Microsoft Corporation"
         END
     END

@@ -17,25 +17,28 @@ public class ListHelpers
         {
             isFallback = true;
             listItem.FallbackHandler.UpdateQuery(query);
-            if(string.IsNullOrWhiteSpace(listItem.Title))
+            if (string.IsNullOrWhiteSpace(listItem.Title))
             {
                 return 0;
             }
         }
+
         if (string.IsNullOrEmpty(query))
         {
             return 1;
         }
-        var nameMatch = StringMatcher.FuzzySearch(query, listItem.Title);
-        //var locNameMatch = StringMatcher.FuzzySearch(query, NameLocalized);
-        var descriptionMatch = StringMatcher.FuzzySearch(query, listItem.Subtitle);
-        //var executableNameMatch = StringMatcher.FuzzySearch(query, ExePath);
-        //var locExecutableNameMatch = StringMatcher.FuzzySearch(query, ExecutableNameLocalized);
-        //var lnkResolvedExecutableNameMatch = StringMatcher.FuzzySearch(query, LnkResolvedExecutableName);
-        //var locLnkResolvedExecutableNameMatch = StringMatcher.FuzzySearch(query, LnkResolvedExecutableNameLocalized);
-        //var score = new[] { nameMatch.Score, (descriptionMatch.Score - 4) / 2, executableNameMatch.Score }.Max();
 
-        return new[] { nameMatch.Score, (descriptionMatch.Score - 4) / 2, 0 }.Max() / ( isFallback? 3 : 1);
+        var nameMatch = StringMatcher.FuzzySearch(query, listItem.Title);
+
+        // var locNameMatch = StringMatcher.FuzzySearch(query, NameLocalized);
+        var descriptionMatch = StringMatcher.FuzzySearch(query, listItem.Subtitle);
+
+        // var executableNameMatch = StringMatcher.FuzzySearch(query, ExePath);
+        // var locExecutableNameMatch = StringMatcher.FuzzySearch(query, ExecutableNameLocalized);
+        // var lnkResolvedExecutableNameMatch = StringMatcher.FuzzySearch(query, LnkResolvedExecutableName);
+        // var locLnkResolvedExecutableNameMatch = StringMatcher.FuzzySearch(query, LnkResolvedExecutableNameLocalized);
+        // var score = new[] { nameMatch.Score, (descriptionMatch.Score - 4) / 2, executableNameMatch.Score }.Max();
+        return new[] { nameMatch.Score, (descriptionMatch.Score - 4) / 2, 0 }.Max() / (isFallback ? 3 : 1);
     }
 
     public static IEnumerable<IListItem> FilterList(IEnumerable<IListItem> items, string query)
@@ -48,7 +51,8 @@ public class ListHelpers
             .Select(score => score.ListItem);
     }
 
-    public static void InPlaceUpdateList<T>(Collection<T> original, Collection<T> newContents) where T : class
+    public static void InPlaceUpdateList<T>(Collection<T> original, Collection<T> newContents)
+        where T : class
     {
         for (var i = 0; i < original.Count && i < newContents.Count; i++)
         {
@@ -61,6 +65,7 @@ public class ListHelpers
                         // This item from the original list was not in the new list. Remove it.
                         original.RemoveAt(i);
                     }
+
                     break;
                 }
             }
@@ -84,7 +89,8 @@ public class ListHelpers
         // Remove any extra trailing items from the destination
         while (original.Count > newContents.Count)
         {
-            original.RemoveAt(original.Count - 1);//RemoveAtEnd
+            // RemoveAtEnd
+            original.RemoveAt(original.Count - 1);
         }
 
         // Add any extra trailing items from the source
@@ -93,7 +99,6 @@ public class ListHelpers
             original.Add(newContents[original.Count]);
         }
     }
-
 }
 
 public struct ScoredListItem

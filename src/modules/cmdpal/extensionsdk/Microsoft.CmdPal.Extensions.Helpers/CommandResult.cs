@@ -19,7 +19,7 @@ public class CommandResult : ICommandResult
     {
         return new CommandResult()
         {
-            _kind = CommandResultKind.Dismiss
+            _kind = CommandResultKind.Dismiss,
         };
     }
 
@@ -31,6 +31,7 @@ public class CommandResult : ICommandResult
             _args = null,
         };
     }
+
     public static CommandResult KeepOpen()
     {
         return new CommandResult()

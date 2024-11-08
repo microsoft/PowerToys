@@ -11,7 +11,7 @@ public class Tag : BaseObservable, ITag
     private Color _color;
     private IconDataType _icon = new(string.Empty);
     private string _text = string.Empty;
-    private string _ToolTip = string.Empty;
+    private string _toolTip = string.Empty;
     private ICommand? _command;
 
     public Color Color
@@ -46,10 +46,10 @@ public class Tag : BaseObservable, ITag
 
     public string ToolTip
     {
-        get => _ToolTip;
+        get => _toolTip;
         set
         {
-            _ToolTip = value;
+            _toolTip = value;
             OnPropertyChanged(nameof(ToolTip));
         }
     }
@@ -63,5 +63,4 @@ public class Tag : BaseObservable, ITag
             OnPropertyChanged(nameof(Command));
         }
     }
-
 }

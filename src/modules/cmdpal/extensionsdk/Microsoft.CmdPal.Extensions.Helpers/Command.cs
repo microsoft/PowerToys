@@ -14,7 +14,7 @@ public class Command : BaseObservable, ICommand
         get => _name;
         set
         {
-            _name = value; 
+            _name = value;
             OnPropertyChanged(nameof(Name));
         }
     }
@@ -24,7 +24,7 @@ public class Command : BaseObservable, ICommand
         get => _icon;
         set
         {
-            _icon = value; 
+            _icon = value;
             OnPropertyChanged(nameof(Icon));
         }
     }

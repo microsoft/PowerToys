@@ -23,5 +23,6 @@ public class MarkdownPage : Page, IMarkdownPage
     public virtual string[] Bodies() => throw new NotImplementedException();
 
     public virtual IDetails Details() => throw new NotImplementedException();
+
     // public IDetails Details { get => _Details; set { _Details = value; OnPropertyChanged(nameof(Details)); } }
 }

@@ -1,3 +1,0 @@
-Do not delete this folder.
-This folder is where the locally built SDK Nuget packages end up to get ingested into Dev Home.
-The build system is always expecting it.

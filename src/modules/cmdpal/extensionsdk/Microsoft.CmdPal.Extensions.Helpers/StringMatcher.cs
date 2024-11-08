@@ -12,15 +12,15 @@ public class StringMatcher
 
     public SearchPrecisionScore UserSettingSearchPrecision { get; set; }
 
-    //private readonly IAlphabet _alphabet;
-
+    // private readonly IAlphabet _alphabet;
     public StringMatcher(/*IAlphabet alphabet = null*/)
     {
-        //_alphabet = alphabet;
+        // _alphabet = alphabet;
     }
 
     private static StringMatcher? _instance;
-    public static StringMatcher Instance 
+
+    public static StringMatcher Instance
     {
         get
         {
@@ -35,7 +35,6 @@ public class StringMatcher
 
     public static MatchResult FuzzySearch(string query, string stringToCompare)
     {
-
         return Instance.FuzzyMatch(query, stringToCompare);
     }
 
@@ -87,11 +86,11 @@ public class StringMatcher
 
         query = query.Trim();
 
-        //if (_alphabet != null)
-        //{
+        // if (_alphabet != null)
+        // {
         //    query = _alphabet.Translate(query);
         //    stringToCompare = _alphabet.Translate(stringToCompare);
-        //}
+        // }
 
         // Using InvariantCulture since this is internal
         var fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToUpper(CultureInfo.InvariantCulture) : stringToCompare;

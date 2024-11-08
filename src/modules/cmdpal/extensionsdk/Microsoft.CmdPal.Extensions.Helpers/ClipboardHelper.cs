@@ -10,7 +10,6 @@ using System.Threading;
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
 // shamelessly from https://github.com/PowerShell/PowerShell/blob/master/src/Microsoft.PowerShell.Commands.Management/commands/management/Clipboard.cs
-
 public static partial class ClipboardHelper
 {
     private static readonly bool? _clipboardSupported = true;
@@ -60,8 +59,10 @@ public static partial class ClipboardHelper
             Tuple.Create(rtfText, s_CF_RTF)));
     }
 
+#pragma warning disable SA1310 // Field names should not contain underscore
     private const uint GMEM_MOVEABLE = 0x0002;
     private const uint GMEM_ZEROINIT = 0x0040;
+#pragma warning restore SA1310 // Field names should not contain underscore
     private const uint GHND = GMEM_MOVEABLE | GMEM_ZEROINIT;
 
     [LibraryImport("kernel32.dll")]
@@ -105,10 +106,14 @@ public static partial class ClipboardHelper
     [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16)]
     private static partial uint RegisterClipboardFormat(string lpszFormat);
 
+#pragma warning disable SA1310 // Field names should not contain underscore
     private const uint CF_TEXT = 1;
     private const uint CF_UNICODETEXT = 13;
 
+#pragma warning disable SA1308 // Variable names should not be prefixed
     private static uint s_CF_RTF;
+#pragma warning restore SA1308 // Variable names should not be prefixed
+#pragma warning restore SA1310 // Field names should not contain underscore
 
     private static bool GetTextImpl(out string text)
     {

@@ -1,5 +1,0 @@
-
-# Allow launchSettings.json in the Properties folder to be committed to source
-# control. This overrides the one in the root .gitignore, because all the cmdpal
-# projects will explode without this file
-!**/Properties/launchSettings.json

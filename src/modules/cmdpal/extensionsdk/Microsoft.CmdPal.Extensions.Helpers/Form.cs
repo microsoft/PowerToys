@@ -4,7 +4,7 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class Form: IForm
+public class Form : IForm
 {
     public string Data { get; set; } = string.Empty;
 

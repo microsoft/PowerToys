@@ -1,4 +1,0 @@
-pool:
-  vmImage: 'windows-latest'
-
-  

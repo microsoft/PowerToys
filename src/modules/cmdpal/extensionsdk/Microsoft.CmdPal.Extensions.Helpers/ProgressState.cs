@@ -7,7 +7,7 @@ namespace Microsoft.CmdPal.Extensions.Helpers;
 public partial class ProgressState : BaseObservable, IProgressState
 {
     private bool _isIndeterminate;
-    
+
     private uint _progressPercent;
 
     public bool IsIndeterminate
@@ -27,72 +27,6 @@ public partial class ProgressState : BaseObservable, IProgressState
         {
             _progressPercent = value;
             OnPropertyChanged(nameof(ProgressPercent));
-        }
-    }
-}
-
-public partial class StatusMessage : BaseObservable, IStatusMessage
-{
-    private MessageState _messageState = MessageState.Info;
-
-    private string _message = string.Empty;
-
-    private IProgressState? _progressState;
-
-    public string Message
-    {
-        get => _message;
-        set
-        {
-            _message = value;
-            OnPropertyChanged(nameof(Message));
-        }
-    }
-    
-    public MessageState State
-    {
-        get => _messageState;
-        set
-        {
-            _messageState = value;
-            OnPropertyChanged(nameof(State));
-        }
-    }
-
-    public IProgressState? Progress
-    {
-        get => _progressState;
-        set
-        {
-            _progressState = value;
-            OnPropertyChanged(nameof(Progress));
-        }
-    }
-}
-
-public partial class LogMessage : BaseObservable, ILogMessage
-{
-    private MessageState _messageState = MessageState.Info;
-
-    private string _message = string.Empty;
-
-    public string Message
-    {
-        get => _message;
-        set
-        {
-            _message = value;
-            OnPropertyChanged(nameof(Message));
-        }
-    }
-    
-    public MessageState State
-    {
-        get => _messageState;
-        set
-        {
-            _messageState = value;
-            OnPropertyChanged(nameof(State));
         }
     }
 }

@@ -41,6 +41,7 @@ public class ListItem : BaseObservable, IListItem
                 return _command?.Name ?? string.Empty;
             }
         }
+
         set
         {
             _title = value;
