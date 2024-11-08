@@ -5,7 +5,7 @@
 using namespace Microsoft::WRL;
 
 // // Sub context menu command enumerator
-shell_context_sub_menu::shell_context_sub_menu(const ComPtr<IFolderView> target_folder_view)
+shell_context_sub_menu::shell_context_sub_menu(const ComPtr<IUnknown> site_of_folder)
 {
     trace.UpdateState(true);
     this->site_of_folder = site_of_folder;
@@ -25,7 +25,7 @@ shell_context_sub_menu::shell_context_sub_menu(const ComPtr<IFolderView> target_
     int index = 0;
     for (int i = 0; i < number_of_templates; i++)
     {
-        explorer_menu_item_commands.push_back(Make<shell_context_sub_menu_item>(templates->get_template_item(i), target_folder_view));
+        explorer_menu_item_commands.push_back(Make<shell_context_sub_menu_item>(templates->get_template_item(i), site_of_folder));
     }
 
     // Add separator to context menu

@@ -122,13 +122,13 @@ void template_item::refresh_target(const std::filesystem::path target_final_full
     SHChangeNotify(SHCNE_CREATE, SHCNF_PATH | SHCNF_FLUSH, target_final_fullpath.wstring().c_str(), NULL);
 }
 
-void template_item::enter_rename_mode(const ComPtr<IFolderView> target_folder_view, const std::filesystem::path target_fullpath) const
+void template_item::enter_rename_mode(const ComPtr<IUnknown> site_of_folder, const std::filesystem::path target_fullpath) const
 {
-    std::thread thread_for_renaming_workaround(rename_on_other_thread_workaround, target_folder_view, target_fullpath);
+    std::thread thread_for_renaming_workaround(rename_on_other_thread_workaround, site_of_folder, target_fullpath);
     thread_for_renaming_workaround.detach();
 }
 
-void template_item::rename_on_other_thread_workaround(const ComPtr<IFolderView> target_folder_view, const std::filesystem::path target_fullpath)
+void template_item::rename_on_other_thread_workaround(const ComPtr<IUnknown> site_of_folder, const std::filesystem::path target_fullpath)
 {
     // Have been unable to have Windows Explorer Shell enter rename mode from the main thread
     // Sleep for a bit to only enter rename mode when icon has been drawn. Not strictly needed.
@@ -137,12 +137,11 @@ void template_item::rename_on_other_thread_workaround(const ComPtr<IFolderView> 
 
     const std::wstring filename = target_fullpath.filename();
 
-    if (target_folder_view == nullptr)
-    {
-        return;
-    }
-
     int count = 0;
+    ComPtr<IServiceProvider> service_provider;
+    ComPtr<IFolderView> target_folder_view;
+    site_of_folder->QueryInterface(IID_PPV_ARGS(&service_provider));
+    service_provider->QueryService(__uuidof(IFolderView), IID_PPV_ARGS(&target_folder_view));
     target_folder_view->ItemCount(SVGIO_ALLVIEW, &count);
 
     for (int i = 0; i < count; ++i)

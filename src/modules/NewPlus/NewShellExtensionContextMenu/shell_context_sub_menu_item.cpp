@@ -12,10 +12,10 @@ shell_context_sub_menu_item::shell_context_sub_menu_item()
     this->template_entry = nullptr;
 }
 
-shell_context_sub_menu_item::shell_context_sub_menu_item(const template_item* template_entry, const ComPtr<IFolderView> target_folder_view)
+shell_context_sub_menu_item::shell_context_sub_menu_item(const template_item* template_entry, const ComPtr<IUnknown> site_of_folder)
 {
     this->template_entry = template_entry;
-    this->target_folder_view = target_folder_view;
+    this->site_of_folder = site_of_folder;
 }
 
 IFACEMETHODIMP shell_context_sub_menu_item::GetTitle(_In_opt_ IShellItemArray* items, _Outptr_result_nullonfailure_ PWSTR* title)
@@ -69,7 +69,7 @@ IFACEMETHODIMP shell_context_sub_menu_item::Invoke(_In_opt_ IShellItemArray*, _I
         trace.UpdateState(true);
 
         // Determine target path of where context menu was displayed
-        const auto target_path_name = utilities::get_path_from_unknown_site(target_folder_view);
+        const auto target_path_name = utilities::get_path_from_unknown_site(site_of_folder);
 
         // Determine initial filename
         std::filesystem::path source_fullpath = template_entry->path;
@@ -78,19 +78,19 @@ IFACEMETHODIMP shell_context_sub_menu_item::Invoke(_In_opt_ IShellItemArray*, _I
         // Only append name to target if source is not a directory
         if (!utilities::is_directory(source_fullpath))
         {
-            target_fullpath.append(this->template_entry->get_target_filename(!utilities::get_newplus_setting_hide_starting_digits()));
+            target_fullpath.append(template_entry->get_target_filename(!utilities::get_newplus_setting_hide_starting_digits()));
         }
 
         // Copy file and determine final filename
-        std::filesystem::path target_final_fullpath = this->template_entry->copy_object_to(GetActiveWindow(), target_fullpath);
+        std::filesystem::path target_final_fullpath = template_entry->copy_object_to(GetActiveWindow(), target_fullpath);
 
         Trace::EventCopyTemplate(target_final_fullpath.extension().c_str());
 
         // Refresh folder items
-        SHChangeNotify(SHCNE_CREATE, SHCNF_PATH | SHCNF_FLUSH, target_final_fullpath.wstring().c_str(), NULL);
+        template_entry->refresh_target(target_final_fullpath);
 
         // Enter rename mode
-        this->template_entry->enter_rename_mode(target_folder_view, target_final_fullpath);
+        template_entry->enter_rename_mode(site_of_folder, target_final_fullpath);
 
         Trace::EventCopyTemplateResult(S_OK);
     }

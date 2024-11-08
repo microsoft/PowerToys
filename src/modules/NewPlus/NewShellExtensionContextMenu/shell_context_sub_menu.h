@@ -13,7 +13,7 @@ using namespace newplus;
 class shell_context_sub_menu final : public RuntimeClass<RuntimeClassFlags<ClassicCom>, IEnumExplorerCommand>
 {
 public:
-    shell_context_sub_menu(const ComPtr<IFolderView> target_folder_view);
+    shell_context_sub_menu(const ComPtr<IUnknown> site_of_folder);
 
     // IEnumExplorerCommand
     IFACEMETHODIMP Next(ULONG celt, __out_ecount_part(celt, *pceltFetched) IExplorerCommand** apUICommand, __out_opt ULONG* pceltFetched);
@@ -26,5 +26,4 @@ protected:
     std::vector<ComPtr<IExplorerCommand>>::const_iterator current_command;
     template_folder* templates;
     ComPtr<IUnknown> site_of_folder;
-    ComPtr<IFolderView> target_folder_view;
 };
