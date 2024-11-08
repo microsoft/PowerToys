@@ -13,6 +13,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Windows.Media.Imaging;
+
 using ManagedCommon;
 using Windows.Management.Deployment;
 
@@ -30,6 +31,7 @@ namespace WorkspacesEditor.Models
 
         public Application(Application other)
         {
+            Id = other.Id;
             AppName = other.AppName;
             AppPath = other.AppPath;
             AppTitle = other.AppTitle;
@@ -93,6 +95,8 @@ namespace WorkspacesEditor.Models
                 return base.GetHashCode();
             }
         }
+
+        public string Id { get; set; }
 
         public string AppName { get; set; }
 
@@ -246,7 +250,7 @@ namespace WorkspacesEditor.Models
                     {
                         Logger.LogWarning($"Icon not found on app path: {AppPath}. Using default icon");
                         IsNotFound = true;
-                        _icon = new Icon(@"images\DefaultIcon.ico");
+                        _icon = new Icon(@"Assets\Workspaces\DefaultIcon.ico");
                     }
                 }
 
@@ -356,7 +360,7 @@ namespace WorkspacesEditor.Models
             {
                 if (_monitorSetup == null)
                 {
-                    _monitorSetup = Parent.Monitors.Where(x => x.MonitorNumber == MonitorNumber).FirstOrDefault();
+                    _monitorSetup = Parent.GetMonitorForApp(this);
                 }
 
                 return _monitorSetup;

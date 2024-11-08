@@ -3,13 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
-    public class CheckBoxWithDescriptionControl : CheckBox
+    public partial class CheckBoxWithDescriptionControl : CheckBox
     {
         private CheckBoxWithDescriptionControl _checkBoxSubTextControl;
 

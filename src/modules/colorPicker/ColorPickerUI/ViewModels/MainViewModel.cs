@@ -7,6 +7,7 @@ using System.ComponentModel.Composition;
 using System.Threading;
 using System.Windows;
 using System.Windows.Media;
+
 using ColorPicker.Common;
 using ColorPicker.Helpers;
 using ColorPicker.Keyboard;
@@ -55,6 +56,12 @@ namespace ColorPicker.ViewModels
             _appStateHandler = appStateHandler;
             _userSettings = userSettings;
             _keyboardMonitor = keyboardMonitor;
+
+            NativeEventWaiter.WaitForEventLoop(
+                Constants.TerminateColorPickerSharedEvent(),
+                Application.Current.Shutdown,
+                Application.Current.Dispatcher,
+                exitToken);
 
             NativeEventWaiter.WaitForEventLoop(
                 Constants.ShowColorPickerSharedEvent(),

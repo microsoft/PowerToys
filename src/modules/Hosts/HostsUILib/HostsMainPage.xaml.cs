@@ -5,6 +5,7 @@
 using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
+
 using CommunityToolkit.Mvvm.Input;
 using HostsUILib.Helpers;
 using HostsUILib.Models;
@@ -31,7 +32,7 @@ namespace HostsUILib.Views
 
         public ICommand UpdateAdditionalLinesCommand => new RelayCommand(UpdateAdditionalLines);
 
-        public ICommand ExitCommand => new RelayCommand(() => { Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread().TryEnqueue(Application.Current.Exit); });
+        public ICommand ExitCommand => new RelayCommand(() => { Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread().TryEnqueue(() => { Environment.Exit(0); }); });
 
         public HostsMainPage(MainViewModel viewModel)
         {

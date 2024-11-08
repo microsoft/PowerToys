@@ -5,11 +5,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Wox.Infrastructure;
 using Wox.Infrastructure.FileSystemHelper;
 using Wox.Plugin;
+
 using Win32Program = Microsoft.Plugin.Program.Programs.Win32Program;
 
 namespace Microsoft.Plugin.Program.UnitTests.Programs

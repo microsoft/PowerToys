@@ -388,7 +388,7 @@
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="10"
                                     Maximum="500"
-                                    Minimum="1"
+                                    Minimum="0"
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.MousePointerCrosshairsRadius, Mode=TwoWay}" />

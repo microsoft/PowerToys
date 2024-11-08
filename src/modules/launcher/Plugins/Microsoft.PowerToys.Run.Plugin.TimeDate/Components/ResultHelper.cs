@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows;
+
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
@@ -49,13 +50,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         {
             try
             {
-                Clipboard.Clear();
                 Clipboard.SetText(text);
                 return true;
             }
             catch (Exception exception)
             {
                 Log.Exception("Can't copy to clipboard", exception, typeof(ResultHelper));
+                MessageBox.Show(exception.Message, Resources.Microsoft_plugin_timedate_copy_failed);
                 return false;
             }
         }

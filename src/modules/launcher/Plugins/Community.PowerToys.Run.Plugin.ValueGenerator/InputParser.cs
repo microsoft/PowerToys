@@ -5,6 +5,7 @@
 using System;
 using System.Security.Cryptography;
 using System.Text;
+
 using Community.PowerToys.Run.Plugin.ValueGenerator.Base64;
 using Community.PowerToys.Run.Plugin.ValueGenerator.GUID;
 using Community.PowerToys.Run.Plugin.ValueGenerator.Hashing;

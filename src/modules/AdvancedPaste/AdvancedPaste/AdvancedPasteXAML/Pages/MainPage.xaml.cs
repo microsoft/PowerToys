@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.ViewModels;
@@ -129,15 +130,15 @@ namespace AdvancedPaste.Pages
             }
         }
 
-        private void ListView_Click(object sender, ItemClickEventArgs e)
+        private async void ListView_Button_Click(object sender, RoutedEventArgs e)
         {
-            if (e.ClickedItem is PasteFormat format)
+            if (sender is Button { DataContext: PasteFormat format })
             {
-                ViewModel.ExecutePasteFormat(format);
+                await ViewModel.ExecutePasteFormatAsync(format, PasteActionSource.ContextMenu);
             }
         }
 
-        private void KeyboardAccelerator_Invoked(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender, Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
+        private async void KeyboardAccelerator_Invoked(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender, Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
         {
             if (GetMainWindow()?.Visible is false)
             {
@@ -170,7 +171,7 @@ namespace AdvancedPaste.Pages
                 case VirtualKey.Number7:
                 case VirtualKey.Number8:
                 case VirtualKey.Number9:
-                    ViewModel.ExecutePasteFormat(sender.Key);
+                    await ViewModel.ExecutePasteFormatAsync(sender.Key);
                     break;
 
                 default:
@@ -198,8 +199,7 @@ namespace AdvancedPaste.Pages
                 }
                 else if (item.Image is not null)
                 {
-                    RandomAccessStreamReference image = null;
-                    image = await item.Item.Content.GetBitmapAsync();
+                    RandomAccessStreamReference image = await item.Item.Content.GetBitmapAsync();
                     ClipboardHelper.SetClipboardImageContent(image);
                 }
             }

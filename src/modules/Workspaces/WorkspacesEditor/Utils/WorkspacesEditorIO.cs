@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
 using ManagedCommon;
 using WorkspacesEditor.Data;
 using WorkspacesEditor.Models;
@@ -96,6 +97,7 @@ namespace WorkspacesEditor.Utils
                 {
                     wrapper.Applications.Add(new ProjectData.ApplicationWrapper
                     {
+                        Id = app.Id,
                         Application = app.AppName,
                         ApplicationPath = app.AppPath,
                         Title = app.AppTitle,

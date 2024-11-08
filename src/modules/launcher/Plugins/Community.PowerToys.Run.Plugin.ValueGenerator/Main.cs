@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
+
 using Community.PowerToys.Run.Plugin.ValueGenerator.Helper;
 using Community.PowerToys.Run.Plugin.ValueGenerator.Properties;
 using ManagedCommon;
@@ -183,9 +184,10 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                             Clipboard.SetText(request.ResultToString());
                             ret = true;
                         }
-                        catch (ExternalException)
+                        catch (ExternalException ex)
                         {
-                            MessageBox.Show(Properties.Resources.copy_failed);
+                            Log.Exception("Copy failed", ex, GetType());
+                            MessageBox.Show(ex.Message, Properties.Resources.copy_failed);
                         }
                     });
                     thread.SetApartmentState(ApartmentState.STA);

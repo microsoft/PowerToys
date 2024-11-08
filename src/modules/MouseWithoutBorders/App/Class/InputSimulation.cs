@@ -15,8 +15,11 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Threading.Tasks;
+
 using Microsoft.PowerToys.Settings.UI.Library;
+using MouseWithoutBorders.Core;
 using Windows.UI.Input.Preview.Injection;
+
 using static MouseWithoutBorders.Class.NativeMethods;
 
 [module: SuppressMessage("Microsoft.Portability", "CA1901:PInvokeDeclarationsShouldBePortable", Scope = "member", Target = "MouseWithoutBorders.InputSimulation.#keybd_event(System.Byte,System.Byte,System.UInt32,System.Int32)", MessageId = "3", Justification = "Dotnet port with style preservation")]
@@ -150,7 +153,7 @@ namespace MouseWithoutBorders.Class
             }
 
             log += "*"; // ((Keys)kd.wVk).ToString(CultureInfo.InvariantCulture);
-            Common.LogDebug(log);
+            Logger.LogDebug(log);
         }
 
         // Md.X, Md.Y is from 0 to 65535
@@ -172,7 +175,7 @@ namespace MouseWithoutBorders.Class
 
             if (md.dwFlags != Common.WM_MOUSEMOVE)
             {
-                Common.LogDebug($"InputSimulation.SendMouse: x = {md.X}, y = {md.Y}, WheelDelta = {md.WheelDelta}, dwFlags = {md.dwFlags}.");
+                Logger.LogDebug($"InputSimulation.SendMouse: x = {md.X}, y = {md.Y}, WheelDelta = {md.WheelDelta}, dwFlags = {md.dwFlags}.");
             }
 
             switch (md.dwFlags)
@@ -240,7 +243,7 @@ namespace MouseWithoutBorders.Class
             mouse_input.mi.dx = (int)dx;
             mouse_input.mi.dy = (int)dy;
 
-            Common.LogDebug($"InputSimulation.MoveMouseEx: x = {x}, y = {y}.");
+            Logger.LogDebug($"InputSimulation.MoveMouseEx: x = {x}, y = {y}.");
 
             mouse_input.mi.dwFlags |= (int)(NativeMethods.MOUSEEVENTF.MOVE | NativeMethods.MOUSEEVENTF.ABSOLUTE);
 
@@ -262,7 +265,7 @@ namespace MouseWithoutBorders.Class
             mouse_input.mi.mouseData = 0;
             mouse_input.mi.dwFlags = (int)(NativeMethods.MOUSEEVENTF.MOVE | NativeMethods.MOUSEEVENTF.ABSOLUTE);
 
-            Common.LogDebug($"InputSimulation.MoveMouse: x = {x}, y = {y}.");
+            Logger.LogDebug($"InputSimulation.MoveMouse: x = {x}, y = {y}.");
 
             Common.DoSomethingInTheInputSimulationThread(() =>
             {
@@ -283,7 +286,7 @@ namespace MouseWithoutBorders.Class
             mouse_input.mi.mouseData = 0;
             mouse_input.mi.dwFlags = (int)NativeMethods.MOUSEEVENTF.MOVE;
 
-            Common.LogDebug($"InputSimulation.MoveMouseRelative: x = {dx}, y = {dy}.");
+            Logger.LogDebug($"InputSimulation.MoveMouseRelative: x = {dx}, y = {dy}.");
 
             Common.DoSomethingInTheInputSimulationThread(() =>
             {
@@ -307,7 +310,7 @@ namespace MouseWithoutBorders.Class
 
                 InputHook.SkipMouseUpCount++;
                 _ = SendInputEx(input);
-                Common.LogDebug("MouseUp() called");
+                Logger.LogDebug("MouseUp() called");
             });
         }
 
@@ -336,7 +339,7 @@ namespace MouseWithoutBorders.Class
                     input.mi.dwFlags = (int)NativeMethods.MOUSEEVENTF.LEFTUP;
                     _ = SendInputEx(input);
 
-                    Common.LogDebug("MouseClick() called");
+                    Logger.LogDebug("MouseClick() called");
                     Thread.Sleep(200);
                 }
                 finally
@@ -448,7 +451,7 @@ namespace MouseWithoutBorders.Class
                             eatKey = true;
                             Common.ReleaseAllKeys();
                             uint rv = NativeMethods.LockWorkStation();
-                            Common.LogDebug("LockWorkStation returned " + rv.ToString(CultureInfo.CurrentCulture));
+                            Logger.LogDebug("LockWorkStation returned " + rv.ToString(CultureInfo.CurrentCulture));
                         }
 
                         break;

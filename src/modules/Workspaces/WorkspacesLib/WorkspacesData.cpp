@@ -3,6 +3,8 @@
 
 #include <common/SettingsAPI/settings_helpers.h>
 
+#include <workspaces-common/GuidUtils.h>
+
 namespace NonLocalizable
 {
     const inline wchar_t ModuleKey[] = L"Workspaces";
@@ -20,12 +22,6 @@ namespace WorkspacesData
     {
         std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
         return settingsFolderPath + L"\\temp-workspaces.json";
-    }
-
-    std::wstring LaunchWorkspacesFile()
-    {
-        std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
-        return settingsFolderPath + L"\\launch-workspaces.json";
     }
     
     RECT WorkspacesProject::Application::Position::toRect() const noexcept
@@ -78,6 +74,7 @@ namespace WorkspacesData
 
             namespace NonLocalizable
             {
+                const static wchar_t* AppIdID = L"id";
                 const static wchar_t* AppNameID = L"application";
                 const static wchar_t* AppPathID = L"application-path";
                 const static wchar_t* AppPackageFullNameID = L"package-full-name";
@@ -95,6 +92,7 @@ namespace WorkspacesData
             json::JsonObject ToJson(const WorkspacesProject::Application& data)
             {
                 json::JsonObject json{};
+                json.SetNamedValue(NonLocalizable::AppIdID, json::value(data.id));
                 json.SetNamedValue(NonLocalizable::AppNameID, json::value(data.name));
                 json.SetNamedValue(NonLocalizable::AppPathID, json::value(data.path));
                 json.SetNamedValue(NonLocalizable::AppTitleID, json::value(data.title));
@@ -116,6 +114,11 @@ namespace WorkspacesData
                 WorkspacesProject::Application result;
                 try
                 {
+                    if (json.HasKey(NonLocalizable::AppIdID))
+                    {
+                        result.id = json.GetNamedString(NonLocalizable::AppIdID);
+                    }
+
                     if (json.HasKey(NonLocalizable::AppNameID))
                     {
                         result.name = json.GetNamedString(NonLocalizable::AppNameID);
@@ -420,18 +423,39 @@ namespace WorkspacesData
     {
         namespace NonLocalizable
         {
-            const static wchar_t* NameID = L"name";
-            const static wchar_t* PathID = L"path";
+            const static wchar_t* ApplicationID = L"application";
             const static wchar_t* StateID = L"state";
         }
 
-        json::JsonObject ToJson(const AppLaunchInfo& data)
+        json::JsonObject ToJson(const LaunchingAppState& data)
         {
             json::JsonObject json{};
-            json.SetNamedValue(NonLocalizable::NameID, json::value(data.name));
-            json.SetNamedValue(NonLocalizable::PathID, json::value(data.path));
-            json.SetNamedValue(NonLocalizable::StateID, json::value(data.state));
+            json.SetNamedValue(NonLocalizable::ApplicationID, WorkspacesProjectJSON::ApplicationJSON::ToJson(data.application));
+            json.SetNamedValue(NonLocalizable::StateID, json::value(static_cast<int>(data.state)));
             return json;
+        }
+
+        std::optional<LaunchingAppState> FromJson(const json::JsonObject& json)
+        {
+            LaunchingAppState result{};
+
+            try
+            {
+                auto app = WorkspacesProjectJSON::ApplicationJSON::FromJson(json.GetNamedObject(NonLocalizable::ApplicationID));
+                if (!app.has_value())
+                {
+                    return std::nullopt;
+                }
+
+                result.application = app.value();
+                result.state = static_cast<LaunchingState>(json.GetNamedNumber(NonLocalizable::StateID));
+            }
+            catch (const winrt::hresult_error&)
+            {
+                return std::nullopt;
+            }
+
+            return result;
         }
     }
 
@@ -442,17 +466,45 @@ namespace WorkspacesData
             const static wchar_t* AppLaunchInfoID = L"appLaunchInfos";
         }
 
-        json::JsonObject ToJson(const std::vector<AppLaunchInfo>& data)
+        json::JsonObject ToJson(const LaunchingAppStateMap& data)
         {
             json::JsonObject json{};
             json::JsonArray appLaunchInfoArray{};
             for (const auto& appLaunchInfo : data)
             {
-                appLaunchInfoArray.Append(AppLaunchInfoJSON::ToJson(appLaunchInfo));
+                appLaunchInfoArray.Append(AppLaunchInfoJSON::ToJson(appLaunchInfo.second));
             }
 
             json.SetNamedValue(NonLocalizable::AppLaunchInfoID, appLaunchInfoArray);
             return json;
+        }
+
+        std::optional<LaunchingAppStateMap> FromJson(const json::JsonObject& json)
+        {
+            LaunchingAppStateMap result{};
+
+            try
+            {
+                auto array = json.GetNamedArray(NonLocalizable::AppLaunchInfoID);
+                for (uint32_t i = 0; i < array.Size(); ++i)
+                {
+                    auto obj = AppLaunchInfoJSON::FromJson(array.GetObjectAt(i));
+                    if (obj.has_value())
+                    {
+                        result.insert({ obj.value().application, obj.value() });
+                    }
+                    else
+                    {
+                        return std::nullopt;
+                    }
+                }
+            }
+            catch (const winrt::hresult_error&)
+            {
+                return std::nullopt;
+            }
+
+            return result;
         }
     }
 
@@ -467,7 +519,7 @@ namespace WorkspacesData
         json::JsonObject ToJson(const AppLaunchData& data)
         {
             json::JsonObject json{};
-            json.SetNamedValue(NonLocalizable::AppsID, AppLaunchInfoListJSON::ToJson(data.appLaunchInfoList));
+            json.SetNamedValue(NonLocalizable::AppsID, AppLaunchInfoListJSON::ToJson(data.appsStateList));
             json.SetNamedValue(NonLocalizable::ProcessID, json::value(data.launcherProcessID));
             return json;
         }

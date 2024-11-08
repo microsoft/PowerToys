@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
@@ -10,7 +11,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
 {
-    public sealed class RunOptionTemplateSelector : DataTemplateSelector
+    public sealed partial class RunOptionTemplateSelector : DataTemplateSelector
     {
         public DataTemplate CheckBoxTemplate { get; set; }
 

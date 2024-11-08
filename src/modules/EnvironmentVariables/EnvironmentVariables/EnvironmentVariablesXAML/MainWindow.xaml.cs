@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+
 using EnvironmentVariables.Win32;
 using EnvironmentVariablesUILib;
 using EnvironmentVariablesUILib.Helpers;
@@ -86,6 +87,11 @@ namespace EnvironmentVariables
             }
 
             return NativeMethods.CallWindowProc(oldWndProc, hWnd, msg, wParam, lParam);
+        }
+
+        private void Window_Closed(object sender, WindowEventArgs args)
+        {
+            (App.Current as EnvironmentVariables.App).EtwTrace?.Dispose();
         }
     }
 }

@@ -4,11 +4,12 @@
 
 using System;
 using System.Globalization;
+
 using Microsoft.UI.Xaml.Data;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
 {
-    public sealed class ImageResizerFitToStringConverter : IValueConverter
+    public sealed partial class ImageResizerFitToStringConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {

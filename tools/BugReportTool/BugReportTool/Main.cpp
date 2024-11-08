@@ -54,7 +54,9 @@ vector<wstring> filesToDelete = {
     L"PowerRename\\replace-mru.json",
     L"PowerRename\\search-mru.json",
     L"PowerToys Run\\Settings\\UserSelectedRecord.json",
-    L"PowerToys Run\\Settings\\QueryHistory.json"
+    L"PowerToys Run\\Settings\\QueryHistory.json",
+    L"NewPlus\\Templates",
+    L"etw",
 };
 
 vector<wstring> GetXpathArray(wstring xpath)

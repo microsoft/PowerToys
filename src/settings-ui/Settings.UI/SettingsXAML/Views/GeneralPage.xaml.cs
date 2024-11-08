@@ -5,6 +5,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -17,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// <summary>
     /// General Settings Page.
     /// </summary>
-    public sealed partial class GeneralPage : Page
+    public sealed partial class GeneralPage : Page, IRefreshablePage
     {
         private static DateTime OkToHideBackupAndRestoreMessageTime { get; set; }
 
@@ -98,6 +99,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
+        private void OpenDiagnosticsAndFeedbackSettings_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.DiagnosticsAndFeedback);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error while trying to open the system Diagnostics & Feedback settings", ex);
+            }
+        }
+
         private void RefreshBackupRestoreStatus(int delayMs = 0)
         {
             Task.Run(() =>
@@ -129,6 +142,26 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
             string r = await Task.FromResult<string>(ShellGetFolder.GetFolderDialog(hwnd));
             return r;
+        }
+
+        private void Click_LanguageRestart(object sender, RoutedEventArgs e)
+        {
+            ViewModel.Restart();
+        }
+
+        private void Click_ViewDiagnosticDataViewerRestart(object sender, RoutedEventArgs e)
+        {
+            ViewModel.Restart();
+        }
+
+        public void RefreshEnabledState()
+        {
+            ViewModel.RefreshSettingsOnExternalChange();
+        }
+
+        private async void ViewDiagnosticData_Click(object sender, RoutedEventArgs e)
+        {
+            await Task.Run(ViewModel.ViewDiagnosticData);
         }
     }
 }

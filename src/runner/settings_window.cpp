@@ -6,6 +6,7 @@
 
 #include "powertoy_module.h"
 #include <common/interop/two_way_pipe_message_ipc.h>
+#include <common/interop/shared_constants.h>
 #include "tray_icon.h"
 #include "general_settings.h"
 #include "restart_elevated.h"
@@ -34,6 +35,7 @@ TwoWayPipeMessageIPC* current_settings_ipc = NULL;
 std::mutex ipc_mutex;
 std::atomic_bool g_isLaunchInProgress = false;
 std::atomic_bool isUpdateCheckThreadRunning = false;
+HANDLE g_terminateSettingsEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::TERMINATE_SETTINGS_SHARED_EVENT);
 
 json::JsonObject get_power_toys_settings()
 {
@@ -232,6 +234,12 @@ void dispatch_received_json(const std::wstring& json_to_parse)
             {
                 SendMessageW(pt_main_window, WM_CLOSE, 0, 0);
             }
+        }
+        else if (name == L"language")
+        {
+            constexpr const wchar_t* language_filename = L"\\language.json";
+            const std::wstring save_file_location = PTSettingsHelper::get_root_save_folder_location() + language_filename;
+            json::to_file(save_file_location, j);
         }
     }
     return;
@@ -616,9 +624,11 @@ void close_settings_window()
 {
     if (g_settings_process_id != 0)
     {
-        wil::unique_handle proc{ OpenProcess(PROCESS_TERMINATE, false, g_settings_process_id) };
+        SetEvent(g_terminateSettingsEvent);
+        wil::unique_handle proc{ OpenProcess(PROCESS_ALL_ACCESS, false, g_settings_process_id) };
         if (proc)
         {
+            WaitForSingleObject(proc.get(), 1500);
             TerminateProcess(proc.get(), 0);
         }
     }
@@ -684,6 +694,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "Dashboard";
     case ESettingsWindowNames::AdvancedPaste:
         return "AdvancedPaste";
+    case ESettingsWindowNames::NewPlus:
+        return "NewPlus";
     default:
     {
         Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
@@ -778,6 +790,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "AdvancedPaste")
     {
         return ESettingsWindowNames::AdvancedPaste;
+    }
+    else if (value == "NewPlus")
+    {
+        return ESettingsWindowNames::NewPlus;
     }
     else
     {

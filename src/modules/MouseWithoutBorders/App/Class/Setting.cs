@@ -15,6 +15,7 @@ using System.Security.Cryptography;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -28,6 +29,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 //     2023- Included in PowerToys.
 // </history>
 using Microsoft.Win32;
+using MouseWithoutBorders.Core;
 using Settings.UI.Library.Attributes;
 
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.Properties.Setting.Values.#LoadIntSetting(System.String,System.Int32)", Justification = "Dotnet port with style preservation")]
@@ -132,7 +134,7 @@ namespace MouseWithoutBorders.Class
             }
             catch (IOException ex)
             {
-                Logger.LogEvent($"Failed to read settings: {ex.Message}", System.Diagnostics.EventLogEntryType.Error);
+                EventLogger.LogEvent($"Failed to read settings: {ex.Message}", System.Diagnostics.EventLogEntryType.Error);
             }
 
             PauseInstantSaving = false;
@@ -167,7 +169,7 @@ namespace MouseWithoutBorders.Class
                     }
                     catch (IOException ex)
                     {
-                        Logger.LogEvent($"Failed to write settings: {ex.Message}", System.Diagnostics.EventLogEntryType.Error);
+                        EventLogger.LogEvent($"Failed to write settings: {ex.Message}", System.Diagnostics.EventLogEntryType.Error);
                     }
 
                     if (saved)
@@ -197,7 +199,7 @@ namespace MouseWithoutBorders.Class
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogEvent($"Failed to update settings: {ex.Message}", System.Diagnostics.EventLogEntryType.Error);
+                    EventLogger.LogEvent($"Failed to update settings: {ex.Message}", System.Diagnostics.EventLogEntryType.Error);
                 }
             });
 
@@ -441,7 +443,7 @@ namespace MouseWithoutBorders.Class
                 {
                     if (_properties.SecurityKey.Value.Length != 0)
                     {
-                        Common.LogDebug("GETSECKEY: Key was already loaded/set: " + _properties.SecurityKey.Value);
+                        Logger.LogDebug("GETSECKEY: Key was already loaded/set: " + _properties.SecurityKey.Value);
                         return _properties.SecurityKey.Value;
                     }
                     else

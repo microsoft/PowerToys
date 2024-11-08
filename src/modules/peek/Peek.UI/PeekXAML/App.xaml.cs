@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -25,6 +26,8 @@ namespace Peek.UI
     {
         public static int PowerToysPID { get; set; }
 
+        public ETWTrace EtwTrace { get; private set; } = new ETWTrace();
+
         public IHost Host
         {
             get;
@@ -39,6 +42,12 @@ namespace Peek.UI
         /// </summary>
         public App()
         {
+            string appLanguage = LanguageHelper.LoadLanguage();
+            if (!string.IsNullOrEmpty(appLanguage))
+            {
+                Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
+            }
+
             InitializeComponent();
             Logger.InitializeLogger("\\Peek\\Logs");
 
@@ -93,12 +102,18 @@ namespace Peek.UI
                 {
                     RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
                     {
+                        EtwTrace?.Dispose();
                         Environment.Exit(0);
                     });
                 }
             }
 
             NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnPeekHotkey);
+            NativeEventWaiter.WaitForEventLoop(Constants.TerminatePeekEvent(), () =>
+            {
+                EtwTrace?.Dispose();
+                Environment.Exit(0);
+            });
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)

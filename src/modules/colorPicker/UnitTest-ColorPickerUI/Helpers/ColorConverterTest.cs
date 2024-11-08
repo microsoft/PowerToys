@@ -5,6 +5,7 @@
 using System;
 using System.Drawing;
 using System.Globalization;
+
 using ManagedCommon;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

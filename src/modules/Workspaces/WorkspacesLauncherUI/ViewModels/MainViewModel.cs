@@ -7,8 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
-using System.IO.Abstractions;
+
 using ManagedCommon;
 using WorkspacesLauncherUI.Data;
 using WorkspacesLauncherUI.Models;
@@ -19,11 +18,8 @@ namespace WorkspacesLauncherUI.ViewModels
     {
         public ObservableCollection<AppLaunching> AppsListed { get; set; } = new ObservableCollection<AppLaunching>();
 
-        private IFileSystemWatcher _watcher;
-        private System.Timers.Timer selfDestroyTimer;
         private StatusWindow _snapshotWindow;
         private int launcherProcessID;
-        private bool _exiting;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -34,61 +30,37 @@ namespace WorkspacesLauncherUI.ViewModels
 
         public MainViewModel()
         {
-            _exiting = false;
-            LoadAppLaunchInfos();
-            string fileName = Path.GetFileName(AppLaunchData.File);
-            _watcher = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper.GetFileWatcher("Workspaces", fileName, () => AppLaunchInfoStateChanged());
+            // receive IPC Message
+            App.IPCMessageReceivedCallback = (string msg) =>
+            {
+                try
+                {
+                    AppLaunchData parser = new AppLaunchData();
+                    AppLaunchData.AppLaunchDataWrapper appLaunchData = parser.Deserialize(msg);
+                    HandleAppLaunchingState(appLaunchData);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex.Message);
+                }
+            };
         }
 
-        private void AppLaunchInfoStateChanged()
+        private void HandleAppLaunchingState(AppLaunchData.AppLaunchDataWrapper appLaunchData)
         {
-            LoadAppLaunchInfos();
-        }
-
-        private void LoadAppLaunchInfos()
-        {
-            if (_exiting)
-            {
-                return;
-            }
-
-            AppLaunchData parser = new AppLaunchData();
-            if (!File.Exists(AppLaunchData.File))
-            {
-                Logger.LogWarning($"AppLaunchInfosData storage file not found: {AppLaunchData.File}");
-                return;
-            }
-
-            AppLaunchData.AppLaunchDataWrapper appLaunchData = parser.Read(AppLaunchData.File);
-
             launcherProcessID = appLaunchData.LauncherProcessID;
-
             List<AppLaunching> appLaunchingList = new List<AppLaunching>();
-            bool allLaunched = true;
             foreach (var app in appLaunchData.AppLaunchInfos.AppLaunchInfoList)
             {
                 appLaunchingList.Add(new AppLaunching()
                 {
-                    Name = app.Name,
-                    AppPath = app.Path,
+                    Application = app.Application,
                     LaunchState = app.State,
                 });
-                if (app.State != "launched" && app.State != "failed")
-                {
-                    allLaunched = false;
-                }
             }
 
             AppsListed = new ObservableCollection<AppLaunching>(appLaunchingList);
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(AppsListed)));
-
-            if (allLaunched)
-            {
-                selfDestroyTimer = new System.Timers.Timer();
-                selfDestroyTimer.Interval = 1000;
-                selfDestroyTimer.Elapsed += SelfDestroy;
-                selfDestroyTimer.Start();
-            }
         }
 
         private void SelfDestroy(object source, System.Timers.ElapsedEventArgs e)
@@ -111,10 +83,7 @@ namespace WorkspacesLauncherUI.ViewModels
 
         internal void CancelLaunch()
         {
-            _exiting = true;
-            _watcher.Dispose();
-            Process proc = Process.GetProcessById(launcherProcessID);
-            proc.Kill();
+            App.SendIPCMessage("cancel");
         }
     }
 }

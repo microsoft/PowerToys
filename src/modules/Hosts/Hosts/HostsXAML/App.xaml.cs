@@ -5,6 +5,7 @@
 using System;
 using System.IO.Abstractions;
 using System.Threading;
+
 using Common.UI;
 using HostsUILib.Helpers;
 using HostsUILib.Settings;
@@ -16,7 +17,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using PowerToys.Interop;
 using static HostsUILib.Settings.IUserSettings;
+
 using Host = Hosts.Helpers.Host;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -35,6 +38,12 @@ namespace Hosts
         /// </summary>
         public App()
         {
+            string appLanguage = LanguageHelper.LoadLanguage();
+            if (!string.IsNullOrEmpty(appLanguage))
+            {
+                Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
+            }
+
             InitializeComponent();
 
             Host.HostInstance = Microsoft.Extensions.Hosting.Host.
@@ -84,6 +93,12 @@ namespace Hosts
             cleanupBackupThread.Start();
 
             UnhandledException += App_UnhandledException;
+
+            Hosts.Helpers.NativeEventWaiter.WaitForEventLoop(Constants.TerminateHostsSharedEvent(), () =>
+            {
+                EtwTrace?.Dispose();
+                Environment.Exit(0);
+            });
         }
 
         /// <summary>
@@ -103,6 +118,7 @@ namespace Hosts
                     RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
                     {
                         Logger.LogInfo("PowerToys Runner exited. Exiting Hosts");
+                        EtwTrace?.Dispose();
                         dispatcher.TryEnqueue(App.Current.Exit);
                     });
                 }
@@ -124,5 +140,7 @@ namespace Hosts
         }
 
         private Window window;
+
+        public ETWTrace EtwTrace { get; private set; } = new ETWTrace();
     }
 }

@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -22,6 +23,12 @@ namespace FileLocksmithUI
         /// </summary>
         public App()
         {
+            string appLanguage = LanguageHelper.LoadLanguage();
+            if (!string.IsNullOrEmpty(appLanguage))
+            {
+                Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
+            }
+
             Logger.InitializeLogger("\\File Locksmith\\FileLocksmithUI\\Logs");
 
             this.InitializeComponent();

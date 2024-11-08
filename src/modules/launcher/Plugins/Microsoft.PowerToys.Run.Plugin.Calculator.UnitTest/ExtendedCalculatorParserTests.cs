@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests

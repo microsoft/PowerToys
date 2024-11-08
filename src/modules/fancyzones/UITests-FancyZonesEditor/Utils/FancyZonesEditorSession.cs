@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+
 using Microsoft.FancyZonesEditor.UITests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;

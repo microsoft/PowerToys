@@ -8,11 +8,13 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Windows.Controls;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
+
 using BrowserInfo = Wox.Plugin.Common.DefaultBrowserInfo;
 
 namespace Community.PowerToys.Run.Plugin.WebSearch
@@ -70,7 +72,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 string arguments = "? ";
                 results.Add(new Result
                 {
-                    Title = Properties.Resources.plugin_description.Remove(Description.Length - 1, 1),
+                    Title = Properties.Resources.plugin_description,
                     SubTitle = string.Format(CultureInfo.CurrentCulture, PluginInBrowserName, BrowserInfo.Name ?? BrowserInfo.MSEdgeName),
                     QueryTextDisplay = string.Empty,
                     IcoPath = _iconPath,

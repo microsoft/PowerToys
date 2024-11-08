@@ -1,4 +1,4 @@
-﻿<Page
+<Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerAccentPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -83,10 +83,12 @@
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Polish" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Portuguese" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Romanian" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Romanization" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Slovak" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Slovenian" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Spanish" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Serbian" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Serbian_Cyrillic" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Swedish" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Turkish" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Welsh" />

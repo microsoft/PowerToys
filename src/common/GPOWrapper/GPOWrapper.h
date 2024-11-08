@@ -51,6 +51,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredQoiPreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredQoiThumbnailsEnabledValue();
         static GpoRuleConfigured GetAllowedAdvancedPasteOnlineAIModelsValue();
+        static GpoRuleConfigured GetConfiguredNewPlusEnabledValue();
         static GpoRuleConfigured GetConfiguredWorkspacesEnabledValue();
         static GpoRuleConfigured GetConfiguredMwbClipboardSharingEnabledValue();
         static GpoRuleConfigured GetConfiguredMwbFileTransferEnabledValue();
@@ -60,6 +61,8 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredMwbValidateRemoteIpValue();
         static GpoRuleConfigured GetConfiguredMwbDisableUserDefinedIpMappingRulesValue();
         static winrt::hstring GPOWrapper::GetConfiguredMwbPolicyDefinedIpMappingRules();
+        static GpoRuleConfigured GetConfiguredNewPlusHideTemplateFilenameExtensionValue();
+        static GpoRuleConfigured GetAllowDataDiagnosticsValue();
     };
 }
 

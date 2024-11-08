@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.Tracing;
+
 using Microsoft.PowerToys.Telemetry.Events;
 
 namespace Microsoft.PowerToys.Telemetry
@@ -36,14 +37,17 @@ namespace Microsoft.PowerToys.Telemetry
         public void WriteEvent<T>(T telemetryEvent)
             where T : EventBase, IEvent
         {
-            this.Write<T>(
-                telemetryEvent.EventName,
-                new EventSourceOptions()
-                {
-                    Keywords = ProjectKeywordMeasure,
-                    Tags = ProjectTelemetryTagProductAndServicePerformance,
-                },
-                telemetryEvent);
+            if (DataDiagnosticsSettings.GetEnabledValue())
+            {
+                this.Write<T>(
+                    telemetryEvent.EventName,
+                    new EventSourceOptions()
+                    {
+                        Keywords = ProjectKeywordMeasure,
+                        Tags = ProjectTelemetryTagProductAndServicePerformance,
+                    },
+                    telemetryEvent);
+            }
         }
     }
 }

@@ -5,7 +5,7 @@
   <policyNamespaces>
     <target prefix="powertoys" namespace="Microsoft.Policies.PowerToys" />
   </policyNamespaces>
-  <resources minRequiredRevision="1.13"/><!-- Last changed with PowerToys v0.85.0 -->
+  <resources minRequiredRevision="1.15"/><!-- Last changed with PowerToys v0.87.0 -->
   <supportedOn>
     <definitions>
       <definition name="SUPPORTED_POWERTOYS_0_64_0" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0)"/>
@@ -22,6 +22,8 @@
       <definition name="SUPPORTED_POWERTOYS_0_83_0" displayName="$(string.SUPPORTED_POWERTOYS_0_83_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_84_0" displayName="$(string.SUPPORTED_POWERTOYS_0_84_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_85_0" displayName="$(string.SUPPORTED_POWERTOYS_0_85_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_86_0" displayName="$(string.SUPPORTED_POWERTOYS_0_86_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_87_0" displayName="$(string.SUPPORTED_POWERTOYS_0_87_0)"/>
     </definitions>
   </supportedOn>
   <categories>
@@ -39,6 +41,9 @@
       <parentCategory ref="PowerToys" />
     </category>
     <category name="GeneralSettings" displayName="$(string.GeneralSettings)">
+      <parentCategory ref="PowerToys" />
+    </category>
+    <category name="NewPlus" displayName="$(string.NewPlus)">
       <parentCategory ref="PowerToys" />
     </category>
   </categories>
@@ -336,6 +341,16 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
+    <policy name="ConfigureEnabledUtilityNewPlus" class="Both" displayName="$(string.ConfigureEnabledUtilityNewPlus)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityNewPlus">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_85_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
     <policy name="ConfigureEnabledUtilityPeek" class="Both" displayName="$(string.ConfigureEnabledUtilityPeek)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityPeek">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_70_0" />
@@ -438,7 +453,7 @@
     </policy>
     <policy name="ConfigureEnabledUtilityZoomIt" class="Both" displayName="$(string.ConfigureEnabledUtilityZoomIt)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityZoomIt">
       <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_85_0" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_87_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>
@@ -499,6 +514,16 @@
     <policy name="AllowExperimentation" class="Both" displayName="$(string.AllowExperimentation)" explainText="$(string.AllowExperimentationDescription)" key="Software\Policies\PowerToys" valueName="AllowExperimentation">
       <parentCategory ref="GeneralSettings" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_68_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="AllowDiagnosticData" class="Both" displayName="$(string.AllowDiagnosticData)" explainText="$(string.AllowDiagnosticDataDescription)" key="Software\Policies\PowerToys" valueName="AllowDataDiagnostics">
+      <parentCategory ref="GeneralSettings" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_86_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>
@@ -610,6 +635,16 @@
         <!--Max length means here max length per line. We support 65 characters per line. (A string containing the hostname, a space and an IPv6 Address is max. 55 characters long.)-->
         <multiText id="MwbPolicyDefinedIpMappingsList" valueName="MwbPolicyDefinedIpMappingRules" maxLength="65" required="true"/>
       </elements>
+    </policy>
+    <policy name="NewPlusHideTemplateFilenameExtension" class="Both" displayName="$(string.NewPlusHideTemplateFilenameExtension)" explainText="$(string.NewPlusHideTemplateFilenameExtensionDescription)" key="Software\Policies\PowerToys" valueName="NewPlusHideTemplateFilenameExtension">
+      <parentCategory ref="NewPlus" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_85_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
     </policy>
   </policies>
 </policyDefinitions>

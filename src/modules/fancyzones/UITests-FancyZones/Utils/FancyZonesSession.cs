@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.FancyZones.UnitTests.Utils

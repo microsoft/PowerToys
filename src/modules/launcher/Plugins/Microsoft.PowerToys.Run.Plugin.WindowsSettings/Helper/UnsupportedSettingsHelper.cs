@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+
 using Wox.Plugin.Logger;
 
 namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper

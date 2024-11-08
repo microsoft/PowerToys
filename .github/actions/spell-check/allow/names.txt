@@ -28,7 +28,8 @@ videoconference
 
 # USERS
 
-LWXpg  # (number eight)LWXpg is actual user name but spell checker throws error with a numeric leading value ... which is kinda odd
+# 8LWXpg is user name but user folder causes a flag
+LWXpg
 Adoumie
 Advaith
 alekhyareddy
@@ -64,6 +65,7 @@ Essey
 ethanfangg
 ferraridavide
 frankychen
+gaardmark
 gabime
 Galaxi
 Garside
