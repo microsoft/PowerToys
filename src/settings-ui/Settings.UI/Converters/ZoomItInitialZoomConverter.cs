@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Data;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
 {
-    public sealed class ZoomItInitialZoomConverter : IValueConverter
+    public sealed partial class ZoomItInitialZoomConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
