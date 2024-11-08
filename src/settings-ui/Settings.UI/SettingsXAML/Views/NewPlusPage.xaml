@@ -24,7 +24,7 @@
                 </tkcontrols:SettingsCard>
 
                 <InfoBar
-                    x:Uid="NewPlus_NoWindows10SupportWarning"
+                    x:Uid="NewPlus_Windows10ExperimentalSupportWarning"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsWin10OrLower, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsWin10OrLower, Mode=OneWay}"

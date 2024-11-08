@@ -25,6 +25,8 @@ namespace newplus
 
         std::filesystem::path copy_object_to(const HWND window_handle, const std::filesystem::path destination) const;
 
+        void refresh_target(const std::filesystem::path target_final_fullpath) const;
+
         void enter_rename_mode(const ComPtr<IFolderView> target_folder_view, const std::filesystem::path target_fullpath) const;
 
         std::filesystem::path path;

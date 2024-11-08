@@ -49,8 +49,6 @@ namespace newplus::utilities
             return shell_file_info.hIcon;
         }
 
-
-// cgaarden todo/Hack not tested!!!
         WCHAR icon_resource_specifier[MAX_PATH] = { 0 };
         DWORD buffer_length = MAX_PATH;
         const std::wstring extension = path.extension().wstring();

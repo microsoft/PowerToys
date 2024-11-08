@@ -117,6 +117,11 @@ std::filesystem::path template_item::copy_object_to(const HWND window_handle, co
     return final_path;
 }
 
+void template_item::refresh_target(const std::filesystem::path target_final_fullpath) const
+{
+    SHChangeNotify(SHCNE_CREATE, SHCNF_PATH | SHCNF_FLUSH, target_final_fullpath.wstring().c_str(), NULL);
+}
+
 void template_item::enter_rename_mode(const ComPtr<IFolderView> target_folder_view, const std::filesystem::path target_fullpath) const
 {
     std::thread thread_for_renaming_workaround(rename_on_other_thread_workaround, target_folder_view, target_fullpath);
@@ -127,7 +132,7 @@ void template_item::rename_on_other_thread_workaround(const ComPtr<IFolderView> 
 {
     // Have been unable to have Windows Explorer Shell enter rename mode from the main thread
     // Sleep for a bit to only enter rename mode when icon has been drawn. Not strictly needed.
-    const std::chrono::milliseconds approx_wait_for_icon_redraw_not_needed{ 1200 };
+    const std::chrono::milliseconds approx_wait_for_icon_redraw_not_needed{ 350 };
     std::this_thread::sleep_for(std::chrono::milliseconds(approx_wait_for_icon_redraw_not_needed));
 
     const std::wstring filename = target_fullpath.filename();

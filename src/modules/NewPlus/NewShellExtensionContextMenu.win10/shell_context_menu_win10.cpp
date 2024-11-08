@@ -8,11 +8,7 @@
 #include "trace.h"
 #include "Generated Files/resource.h"
 #include <common/Themes/icon_helpers.h>
-
-#include <windows.h>
-#include <gdiplus.h>
-#pragma comment(lib, "gdiplus.lib")
-using namespace Gdiplus;
+#include <common/utils/winapi_error.h>
 
 using namespace Microsoft::WRL;
 using namespace newplus;
@@ -25,25 +21,19 @@ shell_context_menu_win10::~shell_context_menu_win10()
     }
 }
 
-
 #pragma region IShellExtInit
 IFACEMETHODIMP shell_context_menu_win10::Initialize(PCIDLIST_ABSOLUTE, IDataObject*, HKEY)
 {
-    // cgaarden HACK UPDATE- -- also check for whether win10 or not
-    if (!NewSettingsInstance().GetEnabled())
-    {
-        return E_FAIL;
-    }
-
     return S_OK;
 }
 #pragma endregion
 
 #pragma region IContextMenu
-IFACEMETHODIMP shell_context_menu_win10::QueryContextMenu(HMENU menu_handle, UINT menu_index, UINT menu_first_cmd_id, UINT menu_last_cmd_id, UINT menu_flags)
+IFACEMETHODIMP shell_context_menu_win10::QueryContextMenu(HMENU menu_handle, UINT menu_index, UINT menu_first_cmd_id, UINT, UINT menu_flags)
 {
-    // cgaarden Update to NOT show Win10 menu when on Windows 11++
-    if (!NewSettingsInstance().GetEnabled())
+    if (!NewSettingsInstance().GetEnabled() 
+        || package::IsWin11OrGreater()
+        )
     {
         return E_FAIL;
     }
@@ -79,8 +69,10 @@ IFACEMETHODIMP shell_context_menu_win10::QueryContextMenu(HMENU menu_handle, UIN
 
     if (bitmap_handles.size() == 0)
     {
-        const std::wstring icon_file = utilities::get_new_icon_resource_filepath(module_instance_handle, ThemeHelpers::GetAppTheme()).c_str();
-        HICON local_icon_handle = static_cast<HICON>(LoadImage(NULL, icon_file.c_str(), IMAGE_ICON, icon_x, icon_y, LR_LOADFROMFILE));
+        const std::wstring icon_file = utilities::get_new_icon_resource_filepath(
+            module_instance_handle, ThemeHelpers::GetAppTheme()).c_str();
+        HICON local_icon_handle = static_cast<HICON>(
+            LoadImage(NULL, icon_file.c_str(), IMAGE_ICON, icon_x, icon_y, LR_LOADFROMFILE));
 
         if (local_icon_handle)
         {
@@ -113,7 +105,9 @@ IFACEMETHODIMP shell_context_menu_win10::QueryContextMenu(HMENU menu_handle, UIN
     {
         const auto template_item = templates->get_template_item(index);
         wchar_t menu_name[256] = { 0 };
-        wcscpy_s(menu_name, ARRAYSIZE(menu_name), template_item->get_menu_title(!utilities::get_newplus_setting_hide_extension(), !utilities::get_newplus_setting_hide_starting_digits()).c_str());
+        wcscpy_s(menu_name, ARRAYSIZE(menu_name), template_item->get_menu_title(
+            !utilities::get_newplus_setting_hide_extension(), 
+            !utilities::get_newplus_setting_hide_starting_digits()).c_str());
         MENUITEMINFO newplus_menu_item_template;
         newplus_menu_item_template.cbSize = sizeof(MENUITEMINFO);
         newplus_menu_item_template.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID | MIIM_DATA;
@@ -141,7 +135,6 @@ IFACEMETHODIMP shell_context_menu_win10::QueryContextMenu(HMENU menu_handle, UIN
         sub_menu_index++;
     }
 
-
     // Add separator to context menu
     MENUITEMINFO menu_item_separator;
     menu_item_separator.cbSize = sizeof(MENUITEMINFO);
@@ -166,8 +159,10 @@ IFACEMETHODIMP shell_context_menu_win10::QueryContextMenu(HMENU menu_handle, UIN
     const auto open_templates_icon_index = index + 1;
     if (bitmap_handles.size() <= open_templates_icon_index)
     {
-        const std::wstring icon_file = utilities::get_open_templates_icon_resource_filepath(module_instance_handle, ThemeHelpers::GetAppTheme()).c_str();
-        HICON open_template_icon_handle = static_cast<HICON>(LoadImage(NULL, icon_file.c_str(), IMAGE_ICON, icon_x, icon_y, LR_LOADFROMFILE));
+        const std::wstring icon_file = utilities::get_open_templates_icon_resource_filepath(
+            module_instance_handle, ThemeHelpers::GetAppTheme()).c_str();
+        HICON open_template_icon_handle = static_cast<HICON>(
+            LoadImage(NULL, icon_file.c_str(), IMAGE_ICON, icon_x, icon_y, LR_LOADFROMFILE));
         if (open_template_icon_handle)
         {
             bitmap_handles.push_back(CreateBitmapFromIcon(open_template_icon_handle));
@@ -183,7 +178,6 @@ IFACEMETHODIMP shell_context_menu_win10::QueryContextMenu(HMENU menu_handle, UIN
     InsertMenuItem(sub_menu_of_templates, sub_menu_index, TRUE, &newplus_menu_item_open_templates);
     menu_id++;
 
-
     // Log that context menu was shown and with how many items
     Trace::EventShowTemplateItems(number_of_templates);
 
@@ -192,8 +186,8 @@ IFACEMETHODIMP shell_context_menu_win10::QueryContextMenu(HMENU menu_handle, UIN
 
     if (!InsertMenuItem(menu_handle, menu_index, TRUE, &newplus_menu_item))
     {
+        Logger::error(L"QueryContextMenu() failed. {}", get_last_error_or_default(GetLastError()));
         return HRESULT_FROM_WIN32(GetLastError());
-        // cgaarden Log error, if not S_SUCCESS
     }
     else
     {
@@ -215,21 +209,20 @@ IFACEMETHODIMP shell_context_menu_win10::InvokeCommand(CMINVOKECOMMANDINFO* para
         return E_FAIL;
     }
 
-    trace.UpdateState(true);
-
     HRESULT hr = S_OK;
     const auto number_of_templates = templates->list_of_templates.size();
     const bool is_template_item = selected_menu_item_index < number_of_templates;
 
     if (is_template_item)
     {
-        // it's a template item
+        // It's a template menu item
+        const auto template_entry = templates->get_template_item(selected_menu_item_index);
 
         try
         {
-            Logger::info(L"Copying template");
+            trace.UpdateState(true);
 
-            const auto template_entry = templates->get_template_item(selected_menu_item_index);
+            Logger::info(L"Copying template");
 
             // Determine target path of where context menu was displayed
             const auto target_path_name = utilities::get_path_from_folder_view(target_folder_view);
@@ -241,19 +234,22 @@ IFACEMETHODIMP shell_context_menu_win10::InvokeCommand(CMINVOKECOMMANDINFO* para
             // Only append name to target if source is not a directory
             if (!utilities::is_directory(source_fullpath))
             {
-                target_fullpath.append(template_entry->get_target_filename(!utilities::get_newplus_setting_hide_starting_digits()));
+                target_fullpath.append(template_entry->get_target_filename(
+                    !utilities::get_newplus_setting_hide_starting_digits()));
             }
 
             // Copy file and determine final filename
-            std::filesystem::path target_final_fullpath = template_entry->copy_object_to(GetActiveWindow(), target_fullpath);
+            std::filesystem::path target_final_fullpath = template_entry->copy_object_to(
+                GetActiveWindow(), target_fullpath);
 
             Trace::EventCopyTemplate(target_final_fullpath.extension().c_str());
 
-            // Refresh folder items
-            SHChangeNotify(SHCNE_CREATE, SHCNF_PATH | SHCNF_FLUSH, target_final_fullpath.wstring().c_str(), NULL);
+            // Refresh folder item
+            template_entry->refresh_target(target_final_fullpath);
 
             // Enter rename mode
-            template_entry->enter_rename_mode(target_folder_view, target_final_fullpath);
+            // Removed for Windows 10 -- causes crash -- looking for possible different approaches, including SHChangeNotify
+            // template_entry->enter_rename_mode(target_folder_view, target_final_fullpath);
 
             Trace::EventCopyTemplateResult(S_OK);
         }
@@ -267,8 +263,8 @@ IFACEMETHODIMP shell_context_menu_win10::InvokeCommand(CMINVOKECOMMANDINFO* para
     }
     else
     {
-        // it's the "Open templates" item
-        Logger::info(L"Open templates folder");
+        // It's the "Open templates" menu item
+        Logger::info(L"Opening templates folder");
         const std::filesystem::path template_folder_root = utilities::get_new_template_folder_location();
         const std::wstring verb_hardcoded_do_not_change = L"open";
         ShellExecute(nullptr, verb_hardcoded_do_not_change.c_str(), template_folder_root.c_str(), NULL, NULL, SW_SHOWNORMAL);
@@ -297,6 +293,33 @@ IFACEMETHODIMP shell_context_menu_win10::SetSite(_In_ IUnknown* site) noexcept
         ComPtr<IServiceProvider> service_provider;
         site->QueryInterface(IID_PPV_ARGS(&service_provider));
         service_provider->QueryService(__uuidof(IFolderView), IID_PPV_ARGS(&target_folder_view));
+
+
+        //ComPtr<IShellBrowser> shell_browser;
+        //service_provider->QueryService(__uuidof(IShellBrowser), IID_PPV_ARGS(&shell_browser));
+        //if (shell_browser)
+        //{
+        //    ComPtr<IShellView> shell_view;
+        //    shell_browser->QueryActiveShellView(&shell_view);
+        //    HRESULT hr;
+        //    LPITEMIDLIST shell_item_id_pointer;
+        //    target_folder_view->Item(1, &shell_item_id_pointer);
+        //    hr = shell_view->SelectItem(shell_item_id_pointer, SVSI_EDIT | SVSI_SELECT | SVSI_DESELECTOTHERS | SVSI_ENSUREVISIBLE | SVSI_FOCUSED);
+        //    CoTaskMemFree(shell_item_id_pointer);
+        //}
+
+
+        //ComPtr<IShellBrowser> shell_browser;
+        //site->QueryInterface(IID_PPV_ARGS(&shell_browser));
+        //if (shell_browser)
+        //{
+        //    ComPtr<IShellView> shell_view;
+        //    shell_browser->QueryActiveShellView(&shell_view);
+        //}
+
+//              Site.QueryInterface(IServiceProvider, ServiceProvider) // Site was received in IObjectWithSite.SetSite
+//            ServiceProvider.QueryService(SID_STopLevelBrowser, IShellBrowser, ShellBrowser)
+//                ShellBrowser.BrowseObject(ChildItem, SBSP_RELATIVE or SBSP_SAMEBROWSER)
     }
 
     return S_OK;
@@ -306,3 +329,4 @@ IFACEMETHODIMP shell_context_menu_win10::GetSite(_In_ REFIID riid, _COM_Outptr_ 
     return this->site_of_folder.CopyTo(riid, returned_site);
 }
 #pragma endregion
+
