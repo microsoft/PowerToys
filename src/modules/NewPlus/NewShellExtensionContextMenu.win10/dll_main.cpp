@@ -36,9 +36,9 @@ STDAPI DllCanUnloadNow()
     return Module<InProc>::GetModule().GetObjectCount() == 0 ? S_OK : S_FALSE;
 }
 
-STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Outptr_ LPVOID FAR* ppv)
+STDAPI DllGetClassObject(_In_ REFCLSID ref_class_id, _In_ REFIID ref_interface_id, _Outptr_ LPVOID FAR* object)
 {
-    return Module<InProc>::GetModule().GetClassObject(rclsid, riid, ppv);
+    return Module<InProc>::GetModule().GetClassObject(ref_class_id, ref_interface_id, object);
 }
 
 CoCreatableClass(shell_context_menu_win10)
