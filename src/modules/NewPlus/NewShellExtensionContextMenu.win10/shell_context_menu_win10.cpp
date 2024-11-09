@@ -225,7 +225,7 @@ IFACEMETHODIMP shell_context_menu_win10::InvokeCommand(CMINVOKECOMMANDINFO* para
             Logger::info(L"Copying template");
 
             // Determine target path of where context menu was displayed
-            const auto target_path_name = utilities::get_path_from_folder_view(target_folder_view);
+            const auto target_path_name = utilities::get_path_from_unknown_site(site_of_folder);
 
             // Determine initial filename
             std::filesystem::path source_fullpath = template_entry->path;
@@ -248,7 +248,8 @@ IFACEMETHODIMP shell_context_menu_win10::InvokeCommand(CMINVOKECOMMANDINFO* para
             template_entry->refresh_target(target_final_fullpath);
 
             // Enter rename mode
-            // Removed for Windows 10 -- causes crash -- looking for possible different approaches, including SHChangeNotify
+            // Removed for Windows 10 -- causes crash -- looking for possible different approaches, 
+            // including SHChangeNotify 
             // template_entry->enter_rename_mode(target_folder_view, target_final_fullpath);
 
             Trace::EventCopyTemplateResult(S_OK);
@@ -287,40 +288,7 @@ IFACEMETHODIMP shell_context_menu_win10::GetCommandString(UINT_PTR, UINT, UINT*,
 #pragma region IObjectWithSite
 IFACEMETHODIMP shell_context_menu_win10::SetSite(_In_ IUnknown* site) noexcept
 {
-    if (site)
-    {
-        this->site_of_folder = site;
-        ComPtr<IServiceProvider> service_provider;
-        site->QueryInterface(IID_PPV_ARGS(&service_provider));
-        service_provider->QueryService(__uuidof(IFolderView), IID_PPV_ARGS(&target_folder_view));
-
-
-        //ComPtr<IShellBrowser> shell_browser;
-        //service_provider->QueryService(__uuidof(IShellBrowser), IID_PPV_ARGS(&shell_browser));
-        //if (shell_browser)
-        //{
-        //    ComPtr<IShellView> shell_view;
-        //    shell_browser->QueryActiveShellView(&shell_view);
-        //    HRESULT hr;
-        //    LPITEMIDLIST shell_item_id_pointer;
-        //    target_folder_view->Item(1, &shell_item_id_pointer);
-        //    hr = shell_view->SelectItem(shell_item_id_pointer, SVSI_EDIT | SVSI_SELECT | SVSI_DESELECTOTHERS | SVSI_ENSUREVISIBLE | SVSI_FOCUSED);
-        //    CoTaskMemFree(shell_item_id_pointer);
-        //}
-
-
-        //ComPtr<IShellBrowser> shell_browser;
-        //site->QueryInterface(IID_PPV_ARGS(&shell_browser));
-        //if (shell_browser)
-        //{
-        //    ComPtr<IShellView> shell_view;
-        //    shell_browser->QueryActiveShellView(&shell_view);
-        //}
-
-//              Site.QueryInterface(IServiceProvider, ServiceProvider) // Site was received in IObjectWithSite.SetSite
-//            ServiceProvider.QueryService(SID_STopLevelBrowser, IShellBrowser, ShellBrowser)
-//                ShellBrowser.BrowseObject(ChildItem, SBSP_RELATIVE or SBSP_SAMEBROWSER)
-    }
+    this->site_of_folder = site;
 
     return S_OK;
 }

@@ -36,7 +36,6 @@ public:
 protected:
     HINSTANCE instance_handle = 0;
     ComPtr<IUnknown> site_of_folder;
-    ComPtr<IFolderView> target_folder_view;
     newplus::template_folder* templates = nullptr;
     std::vector<HBITMAP> bitmap_handles;
 };
