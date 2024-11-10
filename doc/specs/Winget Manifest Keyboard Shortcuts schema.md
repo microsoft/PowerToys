@@ -232,7 +232,8 @@ The `index.yaml` file is a file that contains all the information about the diff
 ```yaml
 DefaultShellName:           # The package identifier of the default shell used in Windows
 Index:                      # List of all manifest files
-  - Filter:                 # The filter of window processes to which the shortcuts apply to
+  - WindowFilter:           # The filter of window processes to which the shortcuts apply to
+    BackgroundProcess:      # Optionally allows applying WindowFilter to background processes
     Apps:                   # List of all manifest files for the filter
 ```
 
@@ -248,9 +249,18 @@ Index:                      # List of all manifest files
 </details>
 
 <details>
- <summary><b>Filter</b> - The filter of window processes to which the shortcuts apply to</summary>
+ <summary><b>WindowFilter</b> - The filter of window processes to which the shortcuts apply to</summary>
 
  See the `WindowFilter` field in the manifest file for more information.
+
+</details>
+
+<details>
+ <summary><b>BackgroundProcess</b> - Optionally allows applying WindowFilter to background processes</summary>
+ 
+ **Optional field**
+
+ See the `BackgroundProcess` field in the manifest file for more information.
 
 </details>
 
@@ -264,6 +274,7 @@ Index:                      # List of all manifest files
 DefaultShellName: "+WindowsNT.Shell"
 Index:
   - Filter: "*"
+    BackgroundProcess: True
     Apps: ["+WindowsNT.Shell", "Microsoft.PowerToys"]
   - Filter: "explorer.exe"
     Apps: ["+WindowsNT.WindowsExplorer"]
