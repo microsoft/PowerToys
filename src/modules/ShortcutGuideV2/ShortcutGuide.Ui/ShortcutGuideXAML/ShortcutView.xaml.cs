@@ -17,7 +17,7 @@ namespace ShortcutGuide
 {
     public sealed partial class ShortcutView : Page, INotifyPropertyChanged
     {
-        private ShortcutList shortcutList = YmlInterpreter.GetShortcutsOfApplication(ShortcutPageParameters.CurrentPageName);
+        private ShortcutList shortcutList = ManifestInterpreter.GetShortcutsOfApplication(ShortcutPageParameters.CurrentPageName);
 
         public ShortcutView()
         {

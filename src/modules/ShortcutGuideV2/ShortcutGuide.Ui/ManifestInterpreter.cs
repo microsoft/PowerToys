@@ -8,17 +8,13 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
 using ShortcutGuide.Models;
-using Windows.Devices.SmartCards;
-using WinUIEx;
 using YamlDotNet.Serialization;
 
 namespace ShortcutGuide
 {
-    public class YmlInterpreter
+    public class ManifestInterpreter
     {
         public static ShortcutList GetShortcutsOfApplication(string applicationName)
         {
