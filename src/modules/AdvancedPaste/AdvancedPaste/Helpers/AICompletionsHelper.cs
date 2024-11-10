@@ -34,7 +34,7 @@ namespace AdvancedPaste.Helpers
 
         private string _openAIKey;
 
-        private string _modelName = "gpt-3.5-turbo-instruct";
+        private string _modelName = "gpt-4o-mini";
 
         public bool IsAIEnabled => !string.IsNullOrEmpty(this._openAIKey);
 
