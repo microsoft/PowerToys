@@ -248,9 +248,7 @@ IFACEMETHODIMP shell_context_menu_win10::InvokeCommand(CMINVOKECOMMANDINFO* para
             template_entry->refresh_target(target_final_fullpath);
 
             // Enter rename mode
-            // Removed for Windows 10 -- causes crash -- looking for possible different approaches, 
-            // including SHChangeNotify 
-            // template_entry->enter_rename_mode(target_folder_view, target_final_fullpath);
+            template_entry->enter_rename_mode(target_final_fullpath);
 
             Trace::EventCopyTemplateResult(S_OK);
         }

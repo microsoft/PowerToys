@@ -27,12 +27,12 @@ namespace newplus
 
         void refresh_target(const std::filesystem::path target_final_fullpath) const;
 
-        void enter_rename_mode(const ComPtr<IUnknown> site, const std::filesystem::path target_fullpath) const;
+        void enter_rename_mode(const std::filesystem::path target_fullpath) const;
 
         std::filesystem::path path;
 
     private:
-        static void rename_on_other_thread_workaround(const ComPtr<IUnknown> site, const std::filesystem::path target_fullpath);
+        static void rename_on_other_thread_workaround(const std::filesystem::path target_fullpath);
 
         std::wstring remove_starting_digits_from_filename(std::wstring filename) const;
     };

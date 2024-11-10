@@ -122,44 +122,18 @@ void template_item::refresh_target(const std::filesystem::path target_final_full
     SHChangeNotify(SHCNE_CREATE, SHCNF_PATH | SHCNF_FLUSH, target_final_fullpath.wstring().c_str(), NULL);
 }
 
-void template_item::enter_rename_mode(const ComPtr<IUnknown> site, const std::filesystem::path target_fullpath) const
+void template_item::enter_rename_mode(const std::filesystem::path target_fullpath) const
 {
-    std::thread thread_for_renaming_workaround(rename_on_other_thread_workaround, site, target_fullpath);
+    std::thread thread_for_renaming_workaround(rename_on_other_thread_workaround, target_fullpath);
     thread_for_renaming_workaround.detach();
 }
 
-void template_item::rename_on_other_thread_workaround(const ComPtr<IUnknown> site, const std::filesystem::path target_fullpath)
+void template_item::rename_on_other_thread_workaround(const std::filesystem::path target_fullpath)
 {
     // Have been unable to have Windows Explorer Shell enter rename mode from the main thread
     // Sleep for a bit to only enter rename mode when icon has been drawn. Not strictly needed.
-    const std::chrono::milliseconds approx_wait_for_icon_redraw_not_needed{ 350 };
+    const std::chrono::milliseconds approx_wait_for_icon_redraw_not_needed{ 250 };
     std::this_thread::sleep_for(std::chrono::milliseconds(approx_wait_for_icon_redraw_not_needed));
 
-    const std::wstring filename = target_fullpath.filename();
-
-    ComPtr<IServiceProvider> service_provider;
-    site->QueryInterface(IID_PPV_ARGS(&service_provider));
-    ComPtr<IFolderView> folder_view;
-    service_provider->QueryService(__uuidof(IFolderView), IID_PPV_ARGS(&folder_view));
-
-    int count = 0;
-    folder_view->ItemCount(SVGIO_ALLVIEW, &count);
-
-    for (int i = 0; i < count; ++i)
-    {
-        std::wstring path_of_item(MAX_PATH, 0);
-        LPITEMIDLIST pidl;
-
-        folder_view->Item(i, &pidl);
-        SHGetPathFromIDList(pidl, &path_of_item[0]);
-        CoTaskMemFree(pidl);
-
-        std::wstring current_filename = std::filesystem::path(path_of_item.c_str()).filename();
-
-        if (utilities::wstring_same_when_comparing_ignore_case(filename, current_filename))
-        {
-            folder_view->SelectItem(i, SVSI_EDIT | SVSI_SELECT | SVSI_DESELECTOTHERS | SVSI_ENSUREVISIBLE | SVSI_FOCUSED);
-            break;
-        }
-    }
+    newplus::utilities::explorer_enter_rename_mode(target_fullpath);
 }

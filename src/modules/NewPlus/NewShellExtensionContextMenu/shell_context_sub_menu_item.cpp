@@ -90,7 +90,7 @@ IFACEMETHODIMP shell_context_sub_menu_item::Invoke(_In_opt_ IShellItemArray*, _I
         template_entry->refresh_target(target_final_fullpath);
 
         // Enter rename mode
-        template_entry->enter_rename_mode(site_of_folder, target_final_fullpath);
+        template_entry->enter_rename_mode(target_final_fullpath);
 
         Trace::EventCopyTemplateResult(S_OK);
     }

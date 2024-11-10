@@ -207,4 +207,115 @@ namespace newplus::utilities
         return path;
     }
 
+    inline bool is_desktop_folder(const std::filesystem::path target_fullpath)
+    {
+        TCHAR desktopPath[MAX_PATH];
+        if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_DESKTOP, NULL, 0, desktopPath)))
+        {
+            return StrCmpIW(target_fullpath.c_str(), desktopPath) == 0;
+        }
+        return false;
+    }
+
+
+    inline void explorer_enter_rename_mode(const std::filesystem::path target_fullpath_of_new_instance)
+    {
+        const std::filesystem::path path_without_new_file_or_dir = target_fullpath_of_new_instance.parent_path();
+        const std::filesystem::path new_file_or_dir_without_path = target_fullpath_of_new_instance.filename();
+
+        ComPtr<IShellWindows> shell_windows;
+
+        HRESULT hr;
+        if (FAILED(CoCreateInstance(CLSID_ShellWindows, NULL, CLSCTX_ALL, IID_PPV_ARGS(&shell_windows))))
+        {
+            return;
+        }
+
+        long window_handle;
+        ComPtr<IDispatch> shell_window;
+        const bool object_created_on_desktop = is_desktop_folder(path_without_new_file_or_dir.c_str());
+        if (object_created_on_desktop)
+        {
+            // Special handling for desktop folder
+            VARIANT empty_yet_needed_incl_init;
+            VariantInit(&empty_yet_needed_incl_init);
+
+            if (FAILED(shell_windows->FindWindowSW(&empty_yet_needed_incl_init, &empty_yet_needed_incl_init, SWC_DESKTOP, &window_handle, SWFO_NEEDDISPATCH, &shell_window)))
+            {
+                return;
+            }
+        }
+        else
+        {
+            long count_of_shell_windows = 0;
+            shell_windows->get_Count(&count_of_shell_windows);
+
+            for (long i = 0; i < count_of_shell_windows; ++i)
+            {
+                ComPtr<IWebBrowserApp> web_browser_app;
+                VARIANT v;
+                V_VT(&v) = VT_I4;
+                V_I4(&v) = i;
+                hr = shell_windows->Item(v, &shell_window);
+                if (SUCCEEDED(hr) && shell_window)
+                {
+                    hr = shell_window.As(&web_browser_app);
+                    if (SUCCEEDED(hr))
+                    {
+                        BSTR folder_view_location;
+                        hr = web_browser_app->get_LocationURL(&folder_view_location);
+                        if (SUCCEEDED(hr) && folder_view_location)
+                        {
+                            wchar_t path[MAX_PATH];
+                            DWORD pathLength = ARRAYSIZE(path);
+                            hr = PathCreateFromUrl(folder_view_location, path, &pathLength, 0);
+                            SysFreeString(folder_view_location);
+                            if (SUCCEEDED(hr) && StrCmpIW(path_without_new_file_or_dir.c_str(), path) == 0)
+                            {
+                                break;
+                            }
+                        }
+                    }
+                }
+                shell_window = nullptr;
+            }
+        }
+
+        if (!shell_window)
+        {
+            return;
+        }
+
+        ComPtr<IServiceProvider> service_provider;
+        shell_window.As(&service_provider);
+        ComPtr<IShellBrowser> shell_browser;
+        service_provider->QueryService(SID_STopLevelBrowser, IID_PPV_ARGS(&shell_browser));
+        ComPtr<IShellView> shell_view;
+        shell_browser->QueryActiveShellView(&shell_view);
+        ComPtr<IFolderView> folder_view;
+        shell_view.As(&folder_view);
+
+        // Find the newly created object (file or folder)
+        // And put into edit mode (SVSI_EDIT)
+        int number_of_objects_in_view = 0;
+        folder_view->ItemCount(SVGIO_ALLVIEW, &number_of_objects_in_view);
+        for (int i = 0; i < number_of_objects_in_view; ++i)
+        {
+            std::wstring path_of_item(MAX_PATH, 0);
+            LPITEMIDLIST shell_item_ids;
+
+            folder_view->Item(i, &shell_item_ids);
+            SHGetPathFromIDList(shell_item_ids, &path_of_item[0]);
+            CoTaskMemFree(shell_item_ids);
+
+            std::wstring current_filename = std::filesystem::path(path_of_item.c_str()).filename();
+
+            //if (utilities::wstring_same_when_comparing_ignore_case(filename, current_filename))
+            if (StrCmpIW(new_file_or_dir_without_path.c_str(), current_filename.c_str()) == 0)
+            {
+                folder_view->SelectItem(i, SVSI_EDIT | SVSI_SELECT | SVSI_DESELECTOTHERS | SVSI_ENSUREVISIBLE | SVSI_FOCUSED);
+                break;
+            }
+        }
+    }
 }

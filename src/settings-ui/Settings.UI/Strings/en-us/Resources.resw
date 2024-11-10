@@ -4396,9 +4396,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Enable New+</value>
     <comment>Localize product name in accordance with Windows New</comment>
   </data>
-  <data name="NewPlus_Windows10ExperimentalSupportWarning.Title" xml:space="preserve">
-    <value>New+ Windows 10 support is experimental.</value>
-  </data>
   <data name="NewPlus_TemplatesNotBackupAndRestoreWarning.Title" xml:space="preserve">
     <value>PowerToys "Backup and Restore" feature doesn't take templates into account at this moment. If you use that feature, templates will have to be copied manually.</value>
   </data>
