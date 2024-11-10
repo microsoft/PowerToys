@@ -13,5 +13,7 @@ namespace ShortcutGuide.Models
         public string WindowFilter { get; set; }
 
         public bool BackgroundProcess { get; set; }
+
+        public string Name { get; set; }
     }
 }

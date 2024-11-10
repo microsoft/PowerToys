@@ -21,17 +21,6 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <SelectorBar Grid.Column="0" Grid.Row="0" x:Name="WindowSelector" SelectionChanged="WindowSelectionChanged">
-            <SelectorBarItem x:Name="WindowsSelectorBarItem" Text="Windows">
-                <SelectorBarItem.Icon>
-                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE770;" />
-                </SelectorBarItem.Icon>
-            </SelectorBarItem>
-            <SelectorBarItem Text="PowerToys" x:Name="PowerToysSelectorBarItem" />
-            <SelectorBarItem Text="Current window" x:Name="CurrentWindowSelectorBarItem">
-                <SelectorBarItem.Icon>
-                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xe923;" />
-                </SelectorBarItem.Icon>
-            </SelectorBarItem>
         </SelectorBar>
         <TextBox Grid.Column="1" Grid.Row="0" Height="32" Width="300" HorizontalAlignment="Right" VerticalContentAlignment="Center" x:Name="SearchBox" HorizontalContentAlignment="Right" TextChanged="SearchBox_TextChanged"></TextBox>
         <Button Grid.Column="2" Grid.Row="0" HorizontalContentAlignment="Center">

@@ -28,8 +28,12 @@ namespace ShortcutGuide
     {
         private AppWindow _appWindow;
 
+        private string[] _currentApplicationIds;
+
         public MainWindow()
         {
+            _currentApplicationIds = YmlInterpreter.GetAllCurrentApplicationIds();
+
             InitializeComponent();
 
             Title = Resource.ResourceManager.GetString("Title", CultureInfo.InvariantCulture)!;
@@ -37,8 +41,7 @@ namespace ShortcutGuide
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             WindowId windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
             _appWindow = AppWindow.GetFromWindowId(windowId);
-#if DEBUG
-#else
+#if !DEBUG
             this.SetIsAlwaysOnTop(true);
             this.SetIsShownInSwitchers(false);
 #endif
@@ -51,8 +54,7 @@ namespace ShortcutGuide
             var windowStyle = GetWindowLongW(hwnd, GWL_STYLE);
             windowStyle &= ~WS_CAPTION;
             _ = SetWindowLongW(hwnd, GWL_STYLE, windowStyle);
-#if DEBUG
-#else
+#if !DEBUG
             SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 #endif
 
@@ -89,20 +91,38 @@ namespace ShortcutGuide
                 _setPosition = true;
             }
 
-            WindowSelector.SelectedItem = WindowsSelectorBarItem;
+            if (WindowSelector.Items.Count == 0)
+            {
+                foreach (var item in _currentApplicationIds)
+                {
+                    if (item == YmlInterpreter.GetIndexYamlFile().DefaultShellName)
+                    {
+                        WindowSelector.Items.Insert(0, new SelectorBarItem { Name = item, Text = "Windows", Icon = new FontIcon() { Glyph = "\xE770" } });
+                    }
+                    else
+                    {
+                        try
+                        {
+                            WindowSelector.Items.Add(new SelectorBarItem { Name = item, Text = YmlInterpreter.GetShortcutsOfApplication(item).Name });
+                        }
+                        catch (IOException)
+                        {
+                        }
+                    }
+                }
+            }
         }
 
         public void WindowSelectionChanged(object sender, SelectorBarSelectionChangedEventArgs e)
         {
-            ShortcutPageParameters.CurrentPageName = ((SelectorBar)sender).SelectedItem.Name switch {
-                "WindowsSelectorBarItem" => YmlInterpreter.GetIndexYamlFile().DefaultShellName,
-                "PowerToysSelectorBarItem" => "Microsoft.PowerToys",
-                _ => throw new NotImplementedException(),
-            };
+            ShortcutPageParameters.CurrentPageName = ((SelectorBar)sender).SelectedItem.Name;
 
-            ContentFrame.Loaded += (s, e) => ShortcutPageParameters.FrameHeight.OnFrameHeightChanged(ContentFrame.ActualHeight);
+            ContentFrame.Loaded += (_, _) => ShortcutPageParameters.FrameHeight.OnFrameHeightChanged(ContentFrame.ActualHeight);
 
             ContentFrame.Navigate(typeof(ShortcutView));
+
+            // I don't know why this has to be called again, but it does.
+            ShortcutPageParameters.FrameHeight.OnFrameHeightChanged(ContentFrame.ActualHeight);
         }
 
         private bool _setPosition;
