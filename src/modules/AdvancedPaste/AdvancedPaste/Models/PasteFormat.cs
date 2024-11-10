@@ -62,5 +62,8 @@ public sealed class PasteFormat
 
     public string ShortcutText { get; set; } = string.Empty;
 
-    public bool SupportsClipboardFormats(ClipboardFormat clipboardFormats) => (clipboardFormats & Metadata.SupportedClipboardFormats) != ClipboardFormat.None;
+    public static bool SupportsClipboardFormats(PasteFormats format, ClipboardFormat clipboardFormats)
+        => (clipboardFormats & MetadataDict[format].SupportedClipboardFormats) != ClipboardFormat.None;
+
+    public bool SupportsClipboardFormats(ClipboardFormat clipboardFormats) => SupportsClipboardFormats(Format, clipboardFormats);
 }

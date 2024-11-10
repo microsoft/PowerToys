@@ -93,7 +93,8 @@ internal static class DataPackageHelpers
         return availableFormats == ClipboardFormat.Text ? !string.IsNullOrEmpty(await dataPackageView.GetTextAsync()) : availableFormats != ClipboardFormat.None;
     }
 
-    internal static async Task<string> GetTextOrEmptyAsync(this DataPackageView dataPackageView) => dataPackageView.Contains(StandardDataFormats.Text) ? await dataPackageView.GetTextAsync() : string.Empty;
+    internal static async Task<string> GetTextOrEmptyAsync(this DataPackageView dataPackageView) =>
+        dataPackageView.Contains(StandardDataFormats.Text) ? await dataPackageView.GetTextAsync() : string.Empty;
 
     internal static async Task<string> GetTextOrHtmlTextAsync(this DataPackageView dataPackageView)
     {

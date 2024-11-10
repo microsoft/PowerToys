@@ -30,7 +30,7 @@ public sealed class PasteFormatExecutor(IKernelService kernelService, ICustomTex
 
         var clipboardData = Clipboard.GetContent();
 
-        // Run on thread-pool; even though we use Async routines consistently, some actions still occasionally take a long time without yielding.
+        // Run on thread-pool; although we use Async routines consistently, some actions still occasionally take a long time without yielding.
         return await Task.Run(async () =>
             pasteFormat.Format switch
             {

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Text.Json;
+
 using AdvancedPaste.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 

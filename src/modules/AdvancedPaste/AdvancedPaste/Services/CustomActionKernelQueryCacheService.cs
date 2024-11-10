@@ -18,6 +18,11 @@ using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace AdvancedPaste.Services;
 
+/// <summary>
+/// Implements <see cref="IKernelQueryCacheService"/> by only caching queries with prompts
+/// that correspond to the user's custom actions or to the localized names of bundled actions.
+/// This avoids potential privacy issues and prevents the cache from getting too large.
+/// </summary>
 public sealed class CustomActionKernelQueryCacheService : IKernelQueryCacheService
 {
     private const string PersistedCacheFileName = "kernelQueryCache.json";
@@ -39,7 +44,7 @@ public sealed class CustomActionKernelQueryCacheService : IKernelQueryCacheServi
 
         _userSettings.Changed += OnUserSettingsChanged;
 
-        RefreshCacheablePrompts();
+        UpdateCacheablePrompts();
 
         _memoryCache = LoadPersistedCacheItems().Where(pair => pair.CacheKey != null)
                                                 .GroupBy(pair => pair.CacheKey, pair => pair.CacheValue)
@@ -92,7 +97,7 @@ public sealed class CustomActionKernelQueryCacheService : IKernelQueryCacheServi
 
     private async void OnUserSettingsChanged(object sender, EventArgs e)
     {
-        RefreshCacheablePrompts();
+        UpdateCacheablePrompts();
 
         if (RemoveInapplicableCacheKeys())
         {
@@ -100,7 +105,7 @@ public sealed class CustomActionKernelQueryCacheService : IKernelQueryCacheServi
         }
     }
 
-    private void RefreshCacheablePrompts()
+    private void UpdateCacheablePrompts()
     {
         var localizedActionNames = from pair in PasteFormat.MetadataDict
                                    let format = pair.Key
@@ -112,7 +117,6 @@ public sealed class CustomActionKernelQueryCacheService : IKernelQueryCacheServi
         var customActionPrompts = from customAction in _userSettings.CustomActions
                                   select customAction.Prompt;
 
-        // Only cache queries with these prompts to prevent the cache from getting too large and to avoid potential privacy issues.
         _cacheablePrompts.Clear();
         _cacheablePrompts.UnionWith(localizedActionNames.Concat(customActionPrompts));
     }

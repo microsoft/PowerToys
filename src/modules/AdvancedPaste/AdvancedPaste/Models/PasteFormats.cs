@@ -14,7 +14,8 @@ public enum PasteFormats
         IconGlyph = "\uE8E9",
         RequiresAIService = false,
         CanPreview = false,
-        SupportedClipboardFormats = ClipboardFormat.Text)]
+        SupportedClipboardFormats = ClipboardFormat.Text,
+        KernelFunctionDescription = "Takes clipboard text and returns it as it is.")]
     PlainText,
 
     [PasteFormatMetadata(

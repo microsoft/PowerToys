@@ -21,9 +21,9 @@ public static class TransformHelpers
     {
         return format switch
         {
-            PasteFormats.PlainText => ToPlainText(clipboardData),
-            PasteFormats.Markdown => ToMarkdown(clipboardData),
-            PasteFormats.Json => ToJson(clipboardData),
+            PasteFormats.PlainText => await ToPlainTextAsync(clipboardData),
+            PasteFormats.Markdown => await ToMarkdownAsync(clipboardData),
+            PasteFormats.Json => await ToJsonAsync(clipboardData),
             PasteFormats.ImageToText => await ImageToTextAsync(clipboardData),
             PasteFormats.PasteAsTxtFile => await ToTxtFileAsync(clipboardData),
             PasteFormats.PasteAsPngFile => await ToPngFileAsync(clipboardData),
@@ -34,22 +34,22 @@ public static class TransformHelpers
         };
     }
 
-    private static DataPackage ToPlainText(DataPackageView clipboardData)
+    private static async Task<DataPackage> ToPlainTextAsync(DataPackageView clipboardData)
     {
         Logger.LogTrace();
-        return CreateDataPackageFromText(MarkdownHelper.PasteAsPlainTextFromClipboard(clipboardData));
+        return CreateDataPackageFromText(await clipboardData.GetTextOrEmptyAsync());
     }
 
-    private static DataPackage ToMarkdown(DataPackageView clipboardData)
+    private static async Task<DataPackage> ToMarkdownAsync(DataPackageView clipboardData)
     {
         Logger.LogTrace();
-        return CreateDataPackageFromText(MarkdownHelper.ToMarkdown(clipboardData));
+        return CreateDataPackageFromText(await MarkdownHelper.ToMarkdownAsync(clipboardData));
     }
 
-    private static DataPackage ToJson(DataPackageView clipboardData)
+    private static async Task<DataPackage> ToJsonAsync(DataPackageView clipboardData)
     {
         Logger.LogTrace();
-        return CreateDataPackageFromText(JsonHelper.ToJsonFromXmlOrCsv(clipboardData));
+        return CreateDataPackageFromText(await JsonHelper.ToJsonFromXmlOrCsvAsync(clipboardData));
     }
 
     private static async Task<DataPackage> ImageToTextAsync(DataPackageView clipboardData)

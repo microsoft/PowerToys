@@ -79,7 +79,7 @@ namespace AdvancedPaste.ViewModels
 
         public bool ClipboardHasData => AvailableClipboardFormats != ClipboardFormat.None;
 
-        public bool ClipboardHasDataForCustomAI => (AvailableClipboardFormats & PasteFormat.MetadataDict[CustomAIFormat].SupportedClipboardFormats) != ClipboardFormat.None;
+        public bool ClipboardHasDataForCustomAI => PasteFormat.SupportsClipboardFormats(CustomAIFormat, AvailableClipboardFormats);
 
         private PasteFormats CustomAIFormat => _userSettings.IsAdvancedAIEnabled ? PasteFormats.KernelQuery : PasteFormats.CustomTextTransformation;
 
@@ -166,7 +166,7 @@ namespace AdvancedPaste.ViewModels
         private PasteFormat CreateStandardPasteFormat(PasteFormats format) =>
             PasteFormat.CreateStandardFormat(format, AvailableClipboardFormats, IsCustomAIServiceEnabled, ResourceLoaderInstance.ResourceLoader.GetString);
 
-        private PasteFormat CreateAIServiceFormat(string name, string prompt, bool isSavedQuery) =>
+        private PasteFormat CreateCustomAIPasteFormat(string name, string prompt, bool isSavedQuery) =>
             PasteFormat.CreateCustomAIFormat(CustomAIFormat, name, prompt, isSavedQuery, AvailableClipboardFormats, IsCustomAIServiceEnabled);
 
         private void RefreshPasteFormats()
@@ -208,7 +208,7 @@ namespace AdvancedPaste.ViewModels
 
             UpdateFormats(
                 CustomActionPasteFormats,
-                IsCustomAIServiceEnabled ? _userSettings.CustomActions.Select(customAction => CreateAIServiceFormat(customAction.Name, customAction.Prompt, isSavedQuery: true)) : []);
+                IsCustomAIServiceEnabled ? _userSettings.CustomActions.Select(customAction => CreateCustomAIPasteFormat(customAction.Name, customAction.Prompt, isSavedQuery: true)) : []);
         }
 
         public void Dispose()
@@ -436,7 +436,7 @@ namespace AdvancedPaste.ViewModels
             if (customAction != null)
             {
                 await ReadClipboardAsync();
-                await ExecutePasteFormatAsync(CreateAIServiceFormat(customAction.Name, customAction.Prompt, isSavedQuery: true), source);
+                await ExecutePasteFormatAsync(CreateCustomAIPasteFormat(customAction.Name, customAction.Prompt, isSavedQuery: true), source);
             }
         }
 
@@ -445,7 +445,7 @@ namespace AdvancedPaste.ViewModels
             var customAction = _userSettings.CustomActions
                                             .FirstOrDefault(customAction => Models.KernelQueryCache.CacheKey.PromptComparer.Equals(customAction.Prompt, Query));
 
-            await ExecutePasteFormatAsync(CreateAIServiceFormat(customAction?.Name ?? "Default", Query, isSavedQuery: customAction != null), triggerSource);
+            await ExecutePasteFormatAsync(CreateCustomAIPasteFormat(customAction?.Name ?? "Default", Query, isSavedQuery: customAction != null), triggerSource);
         }
 
         private void HideWindow()
