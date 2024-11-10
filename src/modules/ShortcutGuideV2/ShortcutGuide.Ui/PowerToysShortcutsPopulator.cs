@@ -14,7 +14,7 @@ namespace ShortcutGuide
     {
         public static void Populate()
         {
-            string path = Path.Combine(YmlInterpreter.GetPathOfIntepretations(), "Microsoft.PowerToys.yml");
+            string path = Path.Combine(ManifestInterpreter.GetPathOfIntepretations(), "Microsoft.PowerToys.yml");
 
             string content = File.ReadAllText(path);
 

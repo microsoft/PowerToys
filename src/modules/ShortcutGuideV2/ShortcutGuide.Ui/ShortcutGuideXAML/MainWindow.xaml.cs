@@ -32,7 +32,7 @@ namespace ShortcutGuide
 
         public MainWindow()
         {
-            _currentApplicationIds = YmlInterpreter.GetAllCurrentApplicationIds();
+            _currentApplicationIds = ManifestInterpreter.GetAllCurrentApplicationIds();
 
             InitializeComponent();
 
@@ -95,7 +95,7 @@ namespace ShortcutGuide
             {
                 foreach (var item in _currentApplicationIds)
                 {
-                    if (item == YmlInterpreter.GetIndexYamlFile().DefaultShellName)
+                    if (item == ManifestInterpreter.GetIndexYamlFile().DefaultShellName)
                     {
                         WindowSelector.Items.Insert(0, new SelectorBarItem { Name = item, Text = "Windows", Icon = new FontIcon() { Glyph = "\xE770" } });
                     }
@@ -103,7 +103,7 @@ namespace ShortcutGuide
                     {
                         try
                         {
-                            WindowSelector.Items.Add(new SelectorBarItem { Name = item, Text = YmlInterpreter.GetShortcutsOfApplication(item).Name });
+                            WindowSelector.Items.Add(new SelectorBarItem { Name = item, Text = ManifestInterpreter.GetShortcutsOfApplication(item).Name });
                         }
                         catch (IOException)
                         {
