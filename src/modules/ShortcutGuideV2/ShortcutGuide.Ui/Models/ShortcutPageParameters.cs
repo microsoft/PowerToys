@@ -33,6 +33,11 @@ namespace ShortcutGuide.Models
 
             public void OnFrameHeightChanged(double height)
             {
+                if (height <= 0)
+                {
+                    return;
+                }
+
                 FrameHeightChanged?.Invoke(this, height);
             }
         }

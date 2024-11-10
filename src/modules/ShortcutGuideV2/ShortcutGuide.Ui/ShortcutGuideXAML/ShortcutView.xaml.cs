@@ -209,15 +209,23 @@ namespace ShortcutGuide
             OverviewStackPanel.Visibility = Visibility.Collapsed;
             ShortcutListElement.Visibility = Visibility.Visible;
 
-            if (int.Parse(sender.SelectedItem.Name, CultureInfo.InvariantCulture) == -1)
+            try
             {
-                OpenOverview();
-                return;
-            }
+                if (int.Parse(sender.SelectedItem.Name, CultureInfo.InvariantCulture) == -1)
+                {
+                    OpenOverview();
+                    return;
+                }
 
-            foreach (var shortcut in shortcutList.Shortcuts[int.Parse(sender.SelectedItem.Name, CultureInfo.InvariantCulture)].Properties)
+                foreach (var shortcut in shortcutList.Shortcuts[int.Parse(sender.SelectedItem.Name, CultureInfo.InvariantCulture)].Properties)
+                {
+                    ShortcutListElement.Items.Add((ShortcutTemplateDataObject)shortcut);
+                }
+            }
+            catch (NullReferenceException)
             {
-                ShortcutListElement.Items.Add((ShortcutTemplateDataObject)shortcut);
+                ErrorMessage.Visibility = Visibility.Visible;
+                ErrorMessage.Text = "Error displaying category";
             }
         }
 

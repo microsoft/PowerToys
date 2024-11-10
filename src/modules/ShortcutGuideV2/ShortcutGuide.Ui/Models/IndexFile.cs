@@ -8,7 +8,9 @@ namespace ShortcutGuide.Models
     {
         public struct IndexItem
         {
-            public string Filter { get; set; }
+            public string WindowFilter { get; set; }
+
+            public bool BackgroundProcess { get; set; }
 
             public string[] Apps { get; set; }
         }

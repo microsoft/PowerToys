@@ -40,10 +40,10 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <SelectorBar Grid.Row="0" x:Name="CategorySelector" />
+        <TextBlock x:Name="ErrorMessage" Style="{StaticResource SubheaderTextBlockStyle}" Grid.Row="1" Margin="6,0,6,0"></TextBlock>
         <ScrollViewer Grid.Row="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
             <Grid>
                 <StackPanel Height="{Binding ContentHeight}" Orientation="Horizontal" Grid.Row="1" x:Name="OverviewStackPanel">
-                    <TextBlock x:Name="ErrorMessage" Style="{StaticResource SubheaderTextBlockStyle}" Grid.Row="1" Margin="6,0,6,0"></TextBlock>
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
