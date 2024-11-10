@@ -149,11 +149,7 @@ namespace Peek.FilePreviewer.Previewers
 
         public static bool IsItemSupported(IFileSystemItem item)
         {
-            // We exclude extensions which the ShellPreviewHandlerPreviewer supports, so filetypes
-            // like CSV are correctly rendered by the Shell when the user has the relevant handler
-            // installed on their machine, and not shown as plaintext files by Monaco.
-            return !ShellPreviewHandlerPreviewer.IsExtensionSupported(item.Extension)
-                && (_supportedFileTypes.Contains(item.Extension) || MonacoHelper.SupportedMonacoFileTypes.Contains(item.Extension));
+            return _supportedFileTypes.Contains(item.Extension) || MonacoHelper.SupportedMonacoFileTypes.Contains(item.Extension);
         }
 
         private bool HasFailedLoadingPreview()
