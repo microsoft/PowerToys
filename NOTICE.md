@@ -1354,8 +1354,8 @@ EXHIBIT A -Mozilla Public License.
 - System.Data.SqlClient 4.8.6
 - System.Diagnostics.EventLog 9.0.0-rc.2.24473.5
 - System.Drawing.Common 9.0.0-rc.2.24474.1
-- System.IO.Abstractions 17.2.3
-- System.IO.Abstractions.TestingHelpers 17.2.3
+- System.IO.Abstractions 21.0.29
+- System.IO.Abstractions.TestingHelpers 21.0.29
 - System.Management 9.0.0-rc.2.24473.5
 - System.Reactive 6.0.1
 - System.Runtime.Caching 9.0.0-rc.2.24473.5
