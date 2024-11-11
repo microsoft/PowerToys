@@ -2572,7 +2572,7 @@ void DrawArrow( HDC hdc, int x1, int y1, int x2, int y2, double length, double w
     int xRight = xMid + static_cast<int>(dy*width+0.5);
     int yRight = yMid - static_cast<int>(dx*width+0.5);
 
-	// Bring midpoint in to make a nicer arrow
+	// Bring in midpoint to make a nicer arrow
     xMid = x2 - static_cast<int>(length/2*dx+0.5);
     yMid = y2 - static_cast<int>(length/2*dy+0.5);
 	if (UseGdiplus) {
@@ -5506,7 +5506,7 @@ LRESULT APIENTRY MainWndProc(
 			
 			} else if( !g_Drawing) {
 
-				// FIX FIX would be nice to reset cursor so screen doesn't move
+				// FIX: would be nice to reset cursor so screen doesn't move
 				prevPt = textStartPt;
 				SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
 				SetCursorPos( prevPt.x, prevPt.y );
@@ -5872,7 +5872,7 @@ LRESULT APIENTRY MainWndProc(
 			hdcScreen = CreateDC( L"DISPLAY", static_cast<PTCHAR>(NULL), static_cast<PTCHAR>(NULL), static_cast<CONST DEVMODE*>(NULL) );
 
 			// toggle second monitor
-			// FIX FIX: we should save whether or not we've switched to a second monitor
+			// FIX: we should save whether or not we've switched to a second monitor
 			// rather than just assume that the setting hasn't changed since the break timer
 			// became active
 			if( g_BreakOnSecondary )
