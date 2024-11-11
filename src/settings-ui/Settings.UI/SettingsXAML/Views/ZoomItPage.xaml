@@ -34,6 +34,12 @@
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
+                <InfoBar
+                    x:Uid="ZoomIt_SimultaneousStandaloneZoomItWarning"
+                    IsClosable="False"
+                    IsOpen="True"
+                    IsTabStop="True"
+                    Severity="Informational" />
                 <controls:SettingsGroup x:Uid="ZoomIt_BehaviorGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Toggle_ShowTrayIcon">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.ShowTrayIcon, Mode=TwoWay}" />

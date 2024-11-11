@@ -6938,6 +6938,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		CreateEvent( NULL, FALSE, FALSE, _T("ZoomitActive"));
 	}	
 	if( GetLastError() == ERROR_ALREADY_EXISTS ) {
+		if (g_StartedByPowerToys)
+		{
+			MessageBox(NULL, L"We've detected another instance of ZoomIt is already running.\nCan't start a new ZoomIt instance from PowerToys.",
+			APPNAME, MB_ICONERROR);
+			return 1;
+		}
 
 		// Tell the other instance to show the options dialog
 		g_hWndMain = FindWindow( L"ZoomitClass", NULL );
