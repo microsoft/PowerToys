@@ -123,5 +123,6 @@
 ^src/modules/MouseWithoutBorders/App/Form/.*\.resx$
 ^src/modules/MouseWithoutBorders/App/Helper/.*\.resx$
 ^src/modules/previewpane/UnitTests-MarkdownPreviewHandler/HelperFiles/MarkdownWithHTMLImageTag.txt$
+^src/common/sysinternals/Eula/
 ^tools/Verification scripts/Check preview handler registration\.ps1$
 ignore$
