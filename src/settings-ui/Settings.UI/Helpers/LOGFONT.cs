@@ -35,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
     public enum FontWeight : int
     {
-        FW_DONTCARE = 0,
+        FW_DONT_CARE = 0,
         FW_THIN = 100,
         FW_EXTRALIGHT = 200,
         FW_LIGHT = 300,
@@ -52,11 +52,11 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         ANSI_CHARSET = 0,
         DEFAULT_CHARSET = 1,
         SYMBOL_CHARSET = 2,
-        SHIFTJIS_CHARSET = 128,
+        SHIFT_JIS_CHARSET = 128,
         HANGEUL_CHARSET = 129,
         HANGUL_CHARSET = HANGEUL_CHARSET,
         GB2312_CHARSET = 134,
-        CHINESEBIG5_CHARSET = 136,
+        CHINESE_BIG5_CHARSET = 136,
         OEM_CHARSET = 255,
         JOHAB_CHARSET = 130,
         HEBREW_CHARSET = 177,
@@ -65,7 +65,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         TURKISH_CHARSET = 162,
         VIETNAMESE_CHARSET = 163,
         THAI_CHARSET = 222,
-        EASTEUROPE_CHARSET = 238,
+        EAST_EUROPE_CHARSET = 238,
         RUSSIAN_CHARSET = 204,
         MAC_CHARSET = 77,
         BALTIC_CHARSET = 186,
@@ -105,8 +105,8 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         PROOF_QUALITY = 2,
         NONANTIALIASED_QUALITY = 3,
         ANTIALIASED_QUALITY = 4,
-        CLEARTYPE_QUALITY = 5,
-        CLEARTYPE_NATURAL_QUALITY = 6,
+        CLEAR_TYPE_QUALITY = 5,
+        CLEAR_TYPE_NATURAL_QUALITY = 6,
     }
 
     [Flags]
@@ -115,7 +115,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         DEFAULT_PITCH = 0,
         FIXED_PITCH = 1,
         VARIABLE_PITCH = 2,
-        FF_DONTCARE = DEFAULT_PITCH,
+        FF_DONT_CARE = DEFAULT_PITCH,
         FF_ROMAN = 1 << 4,
         FF_SWISS = 2 << 4,
         FF_MODERN = 3 << 4,

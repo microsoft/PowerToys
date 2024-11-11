@@ -49,7 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         internal static extern bool GetOpenFileName([In, Out] OpenFileName openFileName);
 
         [DllImport("comdlg32.dll", CharSet = CharSet.Auto, EntryPoint = "ChooseFont", SetLastError = true)]
-        internal static extern bool ChooseFont(IntPtr lpcf);
+        internal static extern bool ChooseFont(IntPtr lpChooseFont);
 
         [DllImport("comdlg32.dll", SetLastError = true)]
         internal static extern int CommDlgExtendedError();

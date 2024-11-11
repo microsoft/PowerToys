@@ -506,7 +506,7 @@ void GetBaselineIndentation()
         SendVirtualKeyUp  ( VK_RIGHT );
     }
 
-    // Extract line indendation
+    // Extract line indentation
     g_BaselineIndentation.clear();
     for( size_t i = 0; i < len; i++ )
     {
@@ -1088,10 +1088,10 @@ void TrimNewlineAroundControl( const std::wstring control, const bool trimLeft, 
 {
     const size_t controlLen = control.length();
 
-    // Seek first occurence of `control` in `g_Text`
+    // Seek first occurrence of `control` in `g_Text`
     size_t nextControl = g_Text.find( control );
 
-    // Loop through each occurence of `control` in `g_Text`
+    // Loop through each occurrence of `control` in `g_Text`
     while( nextControl != std::wstring::npos )
     {
         // Erase the character to the left of `control` if it is a newline
@@ -1108,7 +1108,7 @@ void TrimNewlineAroundControl( const std::wstring control, const bool trimLeft, 
             g_Text.erase( nextControl + controlLen, 1 );
         }
 
-        // Seek next occurence of `control` in `g_Text`
+        // Seek next occurrence of `control` in `g_Text`
         nextControl = g_Text.find( control, nextControl + controlLen);
 
         // Shrink `g_Text` to new size on last pass

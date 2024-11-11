@@ -19,7 +19,7 @@
     <controls:SettingsPageControl
         x:Uid="ZoomIt"
         IsTabStop="False"
-        ModuleImageSource="ms-appx:///Assets/Settings/Modules/ZommIt.png">
+        ModuleImageSource="ms-appx:///Assets/Settings/Modules/ZoomIt.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard

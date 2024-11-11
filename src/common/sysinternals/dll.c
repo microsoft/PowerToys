@@ -61,7 +61,7 @@ HMODULE LoadLibrarySafe(LPCTSTR libraryName, DLL_LOAD_LOCATION location)
 	}
 
 	// LOAD_LIBRARY_SEARCH_SYSTEM32 is only supported on Window 7 or later. On earlier SKUs we could use a fully
-	// qualified path to the system folder but specifying a path causes Ldr to skip sxs file redirection. This can 
+	// qualified path to the system folder but specifying a path causes Ldr to skip SxS file redirection. This can 
 	// cause the wrong library to be loaded if the application is using a manifest that defines a specific version 
 	// of Microsoft.Windows.Common-Controls when loading comctl32.dll
 	if (DLL_LOAD_LOCATION_SYSTEM == location) {

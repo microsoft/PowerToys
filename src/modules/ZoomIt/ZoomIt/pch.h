@@ -88,7 +88,7 @@
 #include <robmikh.common/direct3d11.interop.h>
 #include <robmikh.common/d3d11Helpers.h>
 #include <robmikh.common/graphics.interop.h>
-#include <robmikh.common/dispatcherqueue.desktop.interop.h>
+#include <robmikh.common/dispatcherQueue.desktop.interop.h>
 #include <robmikh.common/d3d11Helpers.desktop.h>
 #include <robmikh.common/composition.desktop.interop.h>
 #include <robmikh.common/hwnd.interop.h>

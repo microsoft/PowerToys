@@ -25,14 +25,14 @@ type_pEnableThemeDialogTexture    pEnableThemeDialogTexture;
 // sent in mouse message when coming from tablet pen
 #define MI_WP_SIGNATURE		0xFF515700
 
-#define ZOOMLEVEL_MIN		1
-#define ZOOMLEVEL_INIT		2
-#define ZOOMLEVEL_STEPIN	((float) 1.1)
-#define ZOOMLEVEL_STEPOUT	((float) 0.8)
-#define ZOOMLEVEL_MAX		32
-#define ZOOMLEVEL_STEPTIME	20
+#define ZOOM_LEVEL_MIN		1
+#define ZOOM_LEVEL_INIT		2
+#define ZOOM_LEVEL_STEP_IN	((float) 1.1)
+#define ZOOM_LEVEL_STEP_OUT	((float) 0.8)
+#define ZOOM_LEVEL_MAX		32
+#define ZOOM_LEVEL_STEP_TIME	20
 
-#define LIVEZOOM_MOVEREGIONS	8
+#define LIVEZOOM_MOVE_REGIONS	8
 
 #define WIN7_VERSION		0x106
 #define WIN10_VERSION		0x206
@@ -44,38 +44,38 @@ type_pEnableThemeDialogTexture    pEnableThemeDialogTexture;
 #define MAX_UNDO_HISTORY	32
 
 #define PEN_WIDTH			5
-#define MIN_PENWIDTH        2
-#define MAX_PENWIDTH		40
-#define MAX_LIVEPENWIDTH    600
+#define MIN_PEN_WIDTH        2
+#define MAX_PEN_WIDTH		40
+#define MAX_LIVE_PEN_WIDTH    600
 
 #define APPNAME		L"ZoomIt"
-#define WM_USER_TRAYACTIVATE	WM_USER+100
-#define WM_USER_TYPINGOFF		WM_USER+101
-#define WM_USER_GETZOOMLEVEL	WM_USER+102
-#define WM_USER_GETSOURCERECT	WM_USER+103
-#define WM_USER_SETZOOM			WM_USER+104
-#define WM_USER_STOPRECORDING	WM_USER+105
-#define WM_USER_SAVECURSOR		WM_USER+106
-#define WM_USER_RESTORECURSOR   WM_USER+107
-#define WM_USER_MAGNIFYCURSOR	WM_USER+108
-#define WM_USER_EXITMODE		WM_USER+109
-#define WM_USER_RELOADSETTINGS	WM_USER+110
+#define WM_USER_TRAY_ACTIVATE	WM_USER+100
+#define WM_USER_TYPING_OFF		WM_USER+101
+#define WM_USER_GET_ZOOM_LEVEL	WM_USER+102
+#define WM_USER_GET_SOURCE_RECT	WM_USER+103
+#define WM_USER_SET_ZOOM		WM_USER+104
+#define WM_USER_STOP_RECORDING	WM_USER+105
+#define WM_USER_SAVE_CURSOR		WM_USER+106
+#define WM_USER_RESTORE_CURSOR	WM_USER+107
+#define WM_USER_MAGNIFY_CURSOR	WM_USER+108
+#define WM_USER_EXIT_MODE		WM_USER+109
+#define WM_USER_RELOAD_SETTINGS	WM_USER+110
 
 typedef struct _TYPED_KEY {
 	RECT		rc;
 	struct _TYPED_KEY *Next;	
-} TYPED_KEY, *PTYPED_KEY;
+} TYPED_KEY, *P_TYPED_KEY;
 
 typedef struct _DRAW_UNDO {
 	HDC			hDc;
 	HBITMAP		hBitmap;
 	struct _DRAW_UNDO *Next;
-} DRAW_UNDO, *PDRAW_UNDO;
+} DRAW_UNDO, *P_DRAW_UNDO;
 
 typedef struct {
 	TCHAR		TabTitle[64];
 	HWND		hPage;
-} OPTION_TABS, *POPTIONS_TABS;
+} OPTION_TABS, *P_OPTIONS_TABS;
 
 #define COLOR_RED		RGB(255, 0, 0)
 #define COLOR_GREEN		RGB(0, 255, 0)
@@ -166,7 +166,7 @@ typedef BOOL (__stdcall *type_pSetLayeredWindowAttributes)(
 
 // Presentation mode check
 typedef HRESULT (__stdcall *type_pSHQueryUserNotificationState)(          
-	QUERY_USER_NOTIFICATION_STATE *pquns
+	QUERY_USER_NOTIFICATION_STATE *pQueryUserNotificationState
 );
 
 typedef BOOL (__stdcall *type_pSystemParametersInfoForDpi)(
@@ -181,17 +181,17 @@ typedef UINT (__stdcall *type_pGetDpiForWindow)(
 	HWND hwnd
 );
 
-class CGraphicsInit
+class ComputerGraphicsInit
 {
 	ULONG_PTR	m_Token;
 public:
-	CGraphicsInit()
+	ComputerGraphicsInit()
 	{
 		Gdiplus::GdiplusStartupOutput	startupOut;
 		Gdiplus::GdiplusStartupInput	startupIn;
 		Gdiplus::GdiplusStartup( &m_Token, &startupIn, &startupOut );
 	}
-	~CGraphicsInit()
+	~ComputerGraphicsInit()
 	{
 		Gdiplus::GdiplusShutdown( m_Token );
 	}
@@ -203,7 +203,7 @@ typedef HRESULT (__stdcall *type_pCreateDirect3D11DeviceFromDXGIDevice)(
 	IInspectable	**graphicsDevice
 );
 typedef HRESULT (__stdcall *type_pCreateDirect3D11SurfaceFromDXGISurface)(
-	IDXGISurface	*dgxiSurface,
+	IDXGISurface	*dxgiSurface,
 	IInspectable	**graphicsSurface
 );
 typedef HRESULT (__stdcall *type_pD3D11CreateDevice)(

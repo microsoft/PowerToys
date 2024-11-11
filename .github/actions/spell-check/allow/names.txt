@@ -34,6 +34,7 @@ Adoumie
 Advaith
 alekhyareddy
 Aleks
+amihaiuc
 angularsen
 Anirudha
 arjunbalgovind
@@ -126,6 +127,7 @@ riri
 riri
 ritchielawrence
 robmikh
+Russinovich
 Rutkas
 ryanbodrug
 saahmedm
@@ -157,6 +159,7 @@ Zykova
 
 # OTHERS
 
+capturevideosample
 cmdow
 Controlz
 cortana

@@ -31,7 +31,7 @@ namespace util
     using namespace robmikh::common::uwp;
 }
 
-const float CLEARCOLOR[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+const float CLEAR_COLOR[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 int32_t EnsureEven(int32_t value)
 {
@@ -335,7 +335,7 @@ void VideoRecordingSession::OnMediaStreamSourceSampleRequested(
                 region.bottom = std::clamp(m_rcCrop.top + height, static_cast<LONG>(0), static_cast<LONG>(desc.Height));
                 region.back = 1;
 
-                m_d3dContext->ClearRenderTargetView(m_renderTargetView.get(), CLEARCOLOR);
+                m_d3dContext->ClearRenderTargetView(m_renderTargetView.get(), CLEAR_COLOR);
                 m_d3dContext->CopySubresourceRegion(
                     backBuffer.get(),
                     0,

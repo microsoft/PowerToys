@@ -49,37 +49,37 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private static LOGFONT PickFontDialog(LOGFONT font)
         {
-            IntPtr pLogfont = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(LOGFONT)));
+            IntPtr pLogFont  = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(LOGFONT)));
             if (font != null)
             {
                 font.lfHeight = -21;
-                Marshal.StructureToPtr(font, pLogfont, false);
+                Marshal.StructureToPtr(font, pLogFont , false);
             }
             else
             {
-                LOGFONT logfont = new LOGFONT();
-                logfont.lfHeight = -21;
-                Marshal.StructureToPtr(logfont, pLogfont, false);
+                LOGFONT logFont = new LOGFONT();
+                logFont.lfHeight = -21;
+                Marshal.StructureToPtr(logFont, pLogFont , false);
             }
 
-            CHOOSEFONT chf = new CHOOSEFONT();
+            CHOOSEFONT chooseFont = new CHOOSEFONT();
             IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
-            chf.hwndOwner = windowHandle;
-            chf.Flags = (int)(CHOOSEFONTFLAGS.CF_SCREENFONTS | CHOOSEFONTFLAGS.CF_INITTOLOGFONTSTRUCT | CHOOSEFONTFLAGS.CF_LIMITSIZE);
-            chf.rgbColors = 0;
-            chf.lCustData = 0;
-            chf.nSizeMin = 16;
-            chf.nSizeMax = 16;
-            chf.nFontType = 0x2000; // SCREEN_FONTTYPE as in the original ZoomIt source.
-            chf.hInstance = Marshal.GetHINSTANCE(typeof(ZoomItPage).Module);
+            chooseFont.hwndOwner = windowHandle;
+            chooseFont.Flags = (int)(CHOOSE_FONT_FLAGS.CF_SCREENFONTS | CHOOSE_FONT_FLAGS.CF_INITTOLOGFONTSTRUCT | CHOOSE_FONT_FLAGS.CF_LIMITSIZE);
+            chooseFont.rgbColors = 0;
+            chooseFont.lCustData = 0;
+            chooseFont.nSizeMin = 16;
+            chooseFont.nSizeMax = 16;
+            chooseFont.nFontType = 0x2000; // SCREEN_FONTTYPE as in the original ZoomIt source.
+            chooseFont.hInstance = Marshal.GetHINSTANCE(typeof(ZoomItPage).Module);
 
-            // TODO: chf.lpTemplateName = FORMATDLGORD31; and CHOOSEFONTFLAGS.CF_ENABLETEMPLATE
-            chf.lpLogFont = pLogfont;
+            // TODO: chooseFont.lpTemplateName = FORMATDLGORD31; and CHOOSE_FONT_FLAGS.CF_ENABLETEMPLATE
+            chooseFont.lpLogFont = pLogFont ;
 
-            IntPtr pChoosefont = Marshal.AllocHGlobal(Marshal.SizeOf(chf));
-            Marshal.StructureToPtr(chf, pChoosefont, false);
+            IntPtr pChooseFont = Marshal.AllocHGlobal(Marshal.SizeOf(chooseFont));
+            Marshal.StructureToPtr(chooseFont, pChooseFont, false);
 
-            bool callResult = NativeMethods.ChooseFont(pChoosefont);
+            bool callResult = NativeMethods.ChooseFont(pChooseFont);
             if (!callResult)
             {
                 int error = NativeMethods.CommDlgExtendedError();
@@ -88,16 +88,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     Logger.LogError($"ChooseFont failed with extended error code {error}");
                 }
 
-                Marshal.FreeHGlobal(pLogfont);
-                Marshal.FreeHGlobal(pChoosefont);
+                Marshal.FreeHGlobal(pLogFont );
+                Marshal.FreeHGlobal(pChooseFont);
                 return null;
             }
 
-            CHOOSEFONT dialogResult = Marshal.PtrToStructure<CHOOSEFONT>(pChoosefont);
+            CHOOSEFONT dialogResult = Marshal.PtrToStructure<CHOOSEFONT>(pChooseFont);
             LOGFONT result = Marshal.PtrToStructure<LOGFONT>(dialogResult.lpLogFont);
 
-            Marshal.FreeHGlobal(pLogfont);
-            Marshal.FreeHGlobal(pChoosefont);
+            Marshal.FreeHGlobal(pLogFont );
+            Marshal.FreeHGlobal(pChooseFont);
             return result;
         }
 

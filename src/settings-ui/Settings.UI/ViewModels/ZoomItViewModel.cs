@@ -375,7 +375,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                if (_typeFont.lfWeight <= (int)FontWeight.FW_DONTCARE)
+                if (_typeFont.lfWeight <= (int)FontWeight.FW_DONT_CARE)
                 {
                     return Microsoft.UI.Text.FontWeights.Normal;
                 }

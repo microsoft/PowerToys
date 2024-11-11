@@ -30,7 +30,7 @@ TCHAR	g_BreakBackgroundFile[MAX_PATH] = {0};
 BOOLEAN	g_OptionsShown = FALSE;
 BOOLEAN	g_ShowTrayIcon = TRUE;
 BOOLEAN g_SnapToGrid = TRUE;
-BOOLEAN	g_TelescopeZoomeOut = TRUE;
+BOOLEAN	g_TelescopeZoomOut = TRUE;
 BOOLEAN	g_BreakOnSecondary = FALSE;
 LOGFONT	g_LogFont;
 BOOLEAN g_DemoTypeUserDriven = false;
@@ -71,7 +71,7 @@ REG_SETTING RegSettings[] = {
 	{ L"ShowExpiredTime", SETTING_TYPE_BOOLEAN, 0, &g_ShowExpiredTime, static_cast<DOUBLE>(g_ShowExpiredTime) },
 	{ L"ShowTrayIcon", SETTING_TYPE_BOOLEAN, 0, &g_ShowTrayIcon, static_cast<DOUBLE>(g_ShowTrayIcon) },
 	{ L"AnimnateZoom", SETTING_TYPE_BOOLEAN, 0, &g_AnimateZoom, static_cast<DOUBLE>(g_AnimateZoom) },
-	{ L"TelescopeZoomOut", SETTING_TYPE_BOOLEAN, 0, &g_TelescopeZoomeOut, static_cast<DOUBLE>(g_TelescopeZoomeOut) },
+	{ L"TelescopeZoomOut", SETTING_TYPE_BOOLEAN, 0, &g_TelescopeZoomOut, static_cast<DOUBLE>(g_TelescopeZoomOut) },
 	{ L"SnapToGrid", SETTING_TYPE_BOOLEAN, 0, &g_SnapToGrid, static_cast<DOUBLE>(g_SnapToGrid) },
 	{ L"ZoominSliderLevel", SETTING_TYPE_DWORD, 0, &g_SliderZoomLevel, static_cast<DOUBLE>(g_SliderZoomLevel) },
 	{ L"Font", SETTING_TYPE_BINARY, sizeof g_LogFont, &g_LogFont, static_cast<DOUBLE>(0) },

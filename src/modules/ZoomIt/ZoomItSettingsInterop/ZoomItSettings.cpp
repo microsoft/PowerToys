@@ -9,7 +9,7 @@
 
 namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
 {
-    CRegistry reg(_T("Software\\Sysinternals\\") APPNAME);
+    ClassRegistry reg(_T("Software\\Sysinternals\\") APPNAME);
 
     const unsigned int SPECIAL_SEMANTICS_SHORTCUT = 1;
     const unsigned int SPECIAL_SEMANTICS_COLOR = 2;
@@ -77,17 +77,17 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
         PowerToysSettings::PowerToyValues _settings(L"ZoomIt",L"ZoomIt");
         reg.ReadRegSettings(RegSettings);
         PREG_SETTING curSetting = RegSettings;
-        while (curSetting->Valuename)
+        while (curSetting->ValueName)
         {
             switch (curSetting->Type)
             {
             case SETTING_TYPE_DWORD:
             {
-                auto special_semantics = settings_with_special_semantics.find(curSetting->Valuename);
+                auto special_semantics = settings_with_special_semantics.find(curSetting->ValueName);
                 DWORD value = *static_cast<PDWORD>(curSetting->Setting);
                 if (special_semantics == settings_with_special_semantics.end())
                 {
-                    _settings.add_property<DWORD>(curSetting->Valuename, value);
+                    _settings.add_property<DWORD>(curSetting->ValueName, value);
                 }
                 else
                 {
@@ -99,19 +99,19 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
                             value & (HOTKEYF_ALT << 8),
                             value & (HOTKEYF_SHIFT << 8),
                             value & 0xFF);
-                        _settings.add_property(curSetting->Valuename, hotkey.get_json());
+                        _settings.add_property(curSetting->ValueName, hotkey.get_json());
                     }
                     else if (special_semantics->second == SPECIAL_SEMANTICS_COLOR)
                     {
                         // PowerToys settings likes colors as #FFFFFF strings.
                         hstring s = winrt::to_hstring(std::format("#{:02x}{:02x}{:02x}", value & 0xFF, (value >> 8) & 0xFF, (value >> 16) & 0xFF));
-                        _settings.add_property(curSetting->Valuename, s);
+                        _settings.add_property(curSetting->ValueName, s);
                     }
                 }
                 break;
             }
             case SETTING_TYPE_BOOLEAN:
-                _settings.add_property<bool>(curSetting->Valuename, *static_cast<PBOOLEAN>(curSetting->Setting));
+                _settings.add_property<bool>(curSetting->ValueName, *static_cast<PBOOLEAN>(curSetting->Setting));
                 break;
             case SETTING_TYPE_DOUBLE:
                 assert(false); // ZoomIt doesn't use this type of setting.
@@ -120,7 +120,7 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
                 assert(false); // ZoomIt doesn't use this type of setting.
                 break;
             case SETTING_TYPE_STRING:
-                _settings.add_property<std::wstring>(curSetting->Valuename, static_cast<PTCHAR>(curSetting->Setting));
+                _settings.add_property<std::wstring>(curSetting->ValueName, static_cast<PTCHAR>(curSetting->Setting));
                 break;
             case SETTING_TYPE_DWORD_ARRAY:
                 assert(false); // ZoomIt doesn't use this type of setting.
@@ -131,7 +131,7 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
             case SETTING_TYPE_BINARY:
                 // Base64 encoding is likely the best way to serialize a byte array into JSON.
                 auto encodedFont = base64_encode(static_cast<PBYTE>(curSetting->Setting), curSetting->Size);
-                _settings.add_property<std::wstring>(curSetting->Valuename, encodedFont);
+                _settings.add_property<std::wstring>(curSetting->ValueName, encodedFont);
                 break;
             }
             curSetting++;
@@ -149,16 +149,16 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
             PowerToysSettings::PowerToyValues::from_json_string(json, L"ZoomIt");
 
         PREG_SETTING curSetting = RegSettings;
-        while (curSetting->Valuename)
+        while (curSetting->ValueName)
         {
             switch (curSetting->Type)
             {
             case SETTING_TYPE_DWORD:
             {
-                auto special_semantics = settings_with_special_semantics.find(curSetting->Valuename);
+                auto special_semantics = settings_with_special_semantics.find(curSetting->ValueName);
                 if (special_semantics == settings_with_special_semantics.end())
                 {
-                    auto possibleValue = valuesFromSettings.get_uint_value(curSetting->Valuename);
+                    auto possibleValue = valuesFromSettings.get_uint_value(curSetting->ValueName);
                     if (possibleValue.has_value())
                     {
                         *static_cast<PDWORD>(curSetting->Setting) = possibleValue.value();
@@ -168,7 +168,7 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
                 {
                     if (special_semantics->second == SPECIAL_SEMANTICS_SHORTCUT)
                     {
-                        auto possibleValue = valuesFromSettings.get_json(curSetting->Valuename);
+                        auto possibleValue = valuesFromSettings.get_json(curSetting->ValueName);
                         if (possibleValue.has_value())
                         {
                             auto hotkey = PowerToysSettings::HotkeyObject::from_json(possibleValue.value());
@@ -195,7 +195,7 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
                     }
                     else if (special_semantics->second == SPECIAL_SEMANTICS_COLOR)
                     {
-                        auto possibleValue = valuesFromSettings.get_string_value(curSetting->Valuename);
+                        auto possibleValue = valuesFromSettings.get_string_value(curSetting->ValueName);
                         if (possibleValue.has_value())
                         {
                             uint8_t r, g, b;
@@ -211,7 +211,7 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
             }
             case SETTING_TYPE_BOOLEAN:
             {
-                auto possibleValue = valuesFromSettings.get_bool_value(curSetting->Valuename);
+                auto possibleValue = valuesFromSettings.get_bool_value(curSetting->ValueName);
                 if (possibleValue.has_value())
                 {
                     *static_cast<PBOOLEAN>(curSetting->Setting) = static_cast<BOOLEAN>(possibleValue.value());
@@ -226,7 +226,7 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
                 break;
             case SETTING_TYPE_STRING:
             {
-                auto possibleValue = valuesFromSettings.get_string_value(curSetting->Valuename);
+                auto possibleValue = valuesFromSettings.get_string_value(curSetting->ValueName);
                 if (possibleValue.has_value())
                 {
                     const TCHAR* value = possibleValue.value().c_str();
@@ -241,7 +241,7 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
                 assert(false); // ZoomIt doesn't use this type of setting.
                 break;
             case SETTING_TYPE_BINARY:
-                auto possibleValue = valuesFromSettings.get_string_value(curSetting->Valuename);
+                auto possibleValue = valuesFromSettings.get_string_value(curSetting->ValueName);
                 if (possibleValue.has_value())
                 {
                     // Base64 encoding is likely the best way to serialize a byte array into JSON.

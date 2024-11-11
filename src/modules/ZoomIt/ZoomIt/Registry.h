@@ -21,7 +21,7 @@ typedef enum {
 } REG_SETTING_TYPE;
 
 typedef struct {
-	PCTSTR	Valuename;
+	PCTSTR	ValueName;
 	REG_SETTING_TYPE	Type;
     DWORD	Size; // Optional
 	PVOID   Setting;
@@ -29,22 +29,22 @@ typedef struct {
 } REG_SETTING, *PREG_SETTING;
 
 
-class CRegistry {
+class ClassRegistry {
 
 private:
-	PTCHAR	m_Keyname;
+	PTCHAR	m_KeyName;
 	HKEY	hKey;
 
 public:
-	CRegistry( PCTSTR Keyname ) 
+	ClassRegistry( PCTSTR KeyName ) 
 	{
-		m_Keyname = _tcsdup( Keyname );
+		m_KeyName = _tcsdup( KeyName );
 		hKey = NULL;
 	}
 
-	~CRegistry()
+	~ClassRegistry()
 	{
-		free( m_Keyname );
+		free( m_KeyName );
 	}
 
 	void ReadRegSettings( PREG_SETTING Settings )
@@ -53,41 +53,41 @@ public:
 
 		hKey = NULL;
 		RegOpenKeyEx(HKEY_CURRENT_USER, 
-				m_Keyname, 0, KEY_READ, &hKey );
+				m_KeyName, 0, KEY_READ, &hKey );
 		curSetting = Settings;
-		while( curSetting->Valuename ) {
+		while( curSetting->ValueName ) {
 
 			switch( curSetting->Type ) {
 			case SETTING_TYPE_DWORD:
-                ReadValue( curSetting->Valuename, static_cast<PDWORD>(curSetting->Setting),
+                ReadValue( curSetting->ValueName, static_cast<PDWORD>(curSetting->Setting),
 					static_cast<DWORD>(curSetting->DefaultSetting));
 				break;
 			case SETTING_TYPE_BOOLEAN:
-                ReadValue( curSetting->Valuename, static_cast<PBOOLEAN>(curSetting->Setting),
+                ReadValue( curSetting->ValueName, static_cast<PBOOLEAN>(curSetting->Setting),
 					static_cast<BOOLEAN>(curSetting->DefaultSetting));
 				break;
 			case SETTING_TYPE_DOUBLE:
-                ReadValue( curSetting->Valuename, static_cast<double *>(curSetting->Setting),
+                ReadValue( curSetting->ValueName, static_cast<double *>(curSetting->Setting),
 					curSetting->DefaultSetting );
 				break;
 			case SETTING_TYPE_WORD:
-                ReadValue( curSetting->Valuename, static_cast<short *>(curSetting->Setting),
+                ReadValue( curSetting->ValueName, static_cast<short *>(curSetting->Setting),
 					static_cast<WORD>(curSetting->DefaultSetting));
 				break;
 			case SETTING_TYPE_STRING:
-				ReadValue( curSetting->Valuename, static_cast<PTCHAR>(curSetting->Setting),
+				ReadValue( curSetting->ValueName, static_cast<PTCHAR>(curSetting->Setting),
 					curSetting->Size, reinterpret_cast<PTCHAR>(static_cast<DWORD_PTR>(curSetting->DefaultSetting)));
 				break;
 			case SETTING_TYPE_DWORD_ARRAY:
-				ReadValueArray( curSetting->Valuename, curSetting->Size/sizeof DWORD,
+				ReadValueArray( curSetting->ValueName, curSetting->Size/sizeof DWORD,
 					static_cast<PWORD>(curSetting->Setting));
 				break;
 			case SETTING_TYPE_WORD_ARRAY:
-				ReadValueArray( curSetting->Valuename, curSetting->Size/sizeof(short),
+				ReadValueArray( curSetting->ValueName, curSetting->Size/sizeof(short),
 					static_cast<PWORD>(curSetting->Setting));
 				break;
 			case SETTING_TYPE_BINARY:
-				ReadValueBinary( curSetting->Valuename, static_cast<PBYTE>(curSetting->Setting),
+				ReadValueBinary( curSetting->ValueName, static_cast<PBYTE>(curSetting->Setting),
 					curSetting->Size );
 				break;
 			}
@@ -103,37 +103,37 @@ public:
 		PREG_SETTING	curSetting;
 
 		if( !RegCreateKeyEx(HKEY_CURRENT_USER, 
-				m_Keyname, NULL, NULL, 0, KEY_WRITE, NULL, &hKey, NULL )) {
+				m_KeyName, NULL, NULL, 0, KEY_WRITE, NULL, &hKey, NULL )) {
 					
 			curSetting = Settings;
-			while( curSetting->Valuename ) {
+			while( curSetting->ValueName ) {
 
 				switch( curSetting->Type ) {
 				case SETTING_TYPE_DWORD:
-					WriteValue( curSetting->Valuename, *static_cast<PDWORD>(curSetting->Setting));
+					WriteValue( curSetting->ValueName, *static_cast<PDWORD>(curSetting->Setting));
 					break;
 				case SETTING_TYPE_BOOLEAN:
-                    WriteValue( curSetting->Valuename, *static_cast<PBOOLEAN>(curSetting->Setting));
+                    WriteValue( curSetting->ValueName, *static_cast<PBOOLEAN>(curSetting->Setting));
 					break;
 				case SETTING_TYPE_DOUBLE:
-                    WriteValue( curSetting->Valuename, *static_cast<double *>(curSetting->Setting));
+                    WriteValue( curSetting->ValueName, *static_cast<double *>(curSetting->Setting));
 					break;
 				case SETTING_TYPE_WORD:
-					WriteValue( curSetting->Valuename, *static_cast<short *>(curSetting->Setting));
+					WriteValue( curSetting->ValueName, *static_cast<short *>(curSetting->Setting));
 					break;
 				case SETTING_TYPE_STRING:
-                    WriteValue( curSetting->Valuename, static_cast<PTCHAR>(curSetting->Setting));
+                    WriteValue( curSetting->ValueName, static_cast<PTCHAR>(curSetting->Setting));
 					break;
 				case SETTING_TYPE_DWORD_ARRAY:
-					WriteValueArray( curSetting->Valuename, curSetting->Size/sizeof DWORD,
+					WriteValueArray( curSetting->ValueName, curSetting->Size/sizeof DWORD,
 						static_cast<PDWORD>(curSetting->Setting));
 					break;
 				case SETTING_TYPE_WORD_ARRAY:
-					WriteValueArray( curSetting->Valuename, curSetting->Size/sizeof(short),
+					WriteValueArray( curSetting->ValueName, curSetting->Size/sizeof(short),
 						static_cast<PWORD>(curSetting->Setting));
 					break;
 				case SETTING_TYPE_BINARY:
-                    WriteValueBinary( curSetting->Valuename, static_cast<PBYTE>(curSetting->Setting),
+                    WriteValueBinary( curSetting->ValueName, static_cast<PBYTE>(curSetting->Setting),
 						curSetting->Size );
 					break;
 				}
@@ -145,20 +145,20 @@ public:
 
 private:
 	// Reads
-	void ReadValue( PCTSTR Valuename, PDWORD Value, DWORD Default = 0 )
+	void ReadValue( PCTSTR ValueName, PDWORD Value, DWORD Default = 0 )
 	{
 		DWORD	length = sizeof(DWORD);
-		if( RegQueryValueEx( hKey, Valuename, NULL, NULL, reinterpret_cast<PBYTE>(Value),
+		if( RegQueryValueEx( hKey, ValueName, NULL, NULL, reinterpret_cast<PBYTE>(Value),
 			&length )) {
 	
 			*Value = Default;
 		}
 	}
-	void ReadValue( PCTSTR Valuename, PBOOLEAN Value, BOOLEAN Default = FALSE )
+	void ReadValue( PCTSTR ValueName, PBOOLEAN Value, BOOLEAN Default = FALSE )
 	{
 		DWORD	length = sizeof(DWORD);
         DWORD	val = static_cast<DWORD>(*Value);
-		if( RegQueryValueEx( hKey, Valuename, NULL, NULL, reinterpret_cast<PBYTE>(&val),
+		if( RegQueryValueEx( hKey, ValueName, NULL, NULL, reinterpret_cast<PBYTE>(&val),
 			&length )) {
 
 			*Value = Default;
@@ -168,11 +168,11 @@ private:
 			*Value = static_cast<BOOLEAN>(val);
 		}
 	}
-	void ReadValue( PCTSTR Valuename, short *Value, short Default = 0 )
+	void ReadValue( PCTSTR ValueName, short *Value, short Default = 0 )
 	{
 		DWORD	length = sizeof(DWORD);
         DWORD	val = static_cast<DWORD>(*Value);
-		if( RegQueryValueEx( hKey, Valuename, NULL, NULL, reinterpret_cast<PBYTE>(&val),
+		if( RegQueryValueEx( hKey, ValueName, NULL, NULL, reinterpret_cast<PBYTE>(&val),
 			&length )) {
 	
 			*Value = Default;
@@ -182,37 +182,37 @@ private:
 			*Value = static_cast<short>(val);
 		}
 	}
-	void ReadValue( PCTSTR Valuename, double *Value, double Default = 0.0 )
+	void ReadValue( PCTSTR ValueName, double *Value, double Default = 0.0 )
 	{
 		DWORD	length = sizeof(double);
-		if( RegQueryValueEx( hKey, Valuename, NULL, NULL, reinterpret_cast<PBYTE>(Value),
+		if( RegQueryValueEx( hKey, ValueName, NULL, NULL, reinterpret_cast<PBYTE>(Value),
 			&length )) {
 	
 			*Value = Default;
 
 		} 
 	}
-	void ReadValue( PCTSTR Valuename, PTCHAR Value, DWORD Length, PCTSTR Default )
+	void ReadValue( PCTSTR ValueName, PTCHAR Value, DWORD Length, PCTSTR Default )
 	{
-		if( RegQueryValueEx( hKey, Valuename, NULL, NULL, reinterpret_cast<PBYTE>(Value),
+		if( RegQueryValueEx( hKey, ValueName, NULL, NULL, reinterpret_cast<PBYTE>(Value),
 			&Length ) && Default ) {
 	
 			_tcscpy_s( Value, Length, Default );
 		}
 	}
-	void ReadValueBinary( PCTSTR Valuename, PBYTE Value, DWORD Length )
+	void ReadValueBinary( PCTSTR ValueName, PBYTE Value, DWORD Length )
 	{
-		RegQueryValueEx( hKey, Valuename, NULL, NULL, Value,
+		RegQueryValueEx( hKey, ValueName, NULL, NULL, Value,
 			&Length );
 	}
-	void ReadValueArray( PCTSTR Valuename, DWORD Number, PDWORD Entries )
+	void ReadValueArray( PCTSTR ValueName, DWORD Number, PDWORD Entries )
 	{
 		HKEY	hSubKey;
 		TCHAR	subVal[16];
 		DWORD	length;
 
 		if( !RegOpenKeyEx(hKey, 
-				Valuename, 0, KEY_READ, &hSubKey )) {	
+				ValueName, 0, KEY_READ, &hSubKey )) {	
 
 			for( DWORD i = 0; i < Number; i++ ) {
 			
@@ -223,7 +223,7 @@ private:
 			RegCloseKey( hSubKey );
 		}
 	}	
-	void ReadValueArray( PCTSTR Valuename, DWORD Number, PWORD Entries )
+	void ReadValueArray( PCTSTR ValueName, DWORD Number, PWORD Entries )
 	{
 		HKEY	hSubKey;
 		TCHAR	subVal[16];
@@ -231,7 +231,7 @@ private:
 		DWORD	val;
 
 		if( !RegOpenKeyEx(hKey, 
-				Valuename, 0, KEY_READ, &hSubKey )) {	
+				ValueName, 0, KEY_READ, &hSubKey )) {	
 
 			for( DWORD i = 0; i < Number; i++ ) {
 			
@@ -248,45 +248,45 @@ private:
 	}	
 
 	// Writes
-	void WriteValue( PCTSTR Valuename, DWORD Value ) 
+	void WriteValue( PCTSTR ValueName, DWORD Value ) 
 	{
-		RegSetValueEx( hKey, Valuename, 0, REG_DWORD, reinterpret_cast<PBYTE>(&Value),
+		RegSetValueEx( hKey, ValueName, 0, REG_DWORD, reinterpret_cast<PBYTE>(&Value),
 				sizeof(DWORD));
 	}
-	void WriteValue( PCTSTR Valuename, short Value ) 
+	void WriteValue( PCTSTR ValueName, short Value ) 
 	{
         DWORD val = static_cast<DWORD>(Value);
-		RegSetValueEx( hKey, Valuename, 0, REG_DWORD, reinterpret_cast<PBYTE>(&val),
+		RegSetValueEx( hKey, ValueName, 0, REG_DWORD, reinterpret_cast<PBYTE>(&val),
 				sizeof(DWORD));
 	}
-	void WriteValue( PCTSTR Valuename, BOOLEAN Value ) 
+	void WriteValue( PCTSTR ValueName, BOOLEAN Value ) 
 	{
         DWORD val = static_cast<DWORD>(Value);
-		RegSetValueEx( hKey, Valuename, 0, REG_DWORD, reinterpret_cast<PBYTE>(&val),
+		RegSetValueEx( hKey, ValueName, 0, REG_DWORD, reinterpret_cast<PBYTE>(&val),
 				sizeof(DWORD));
 	}
-	void WriteValue( PCTSTR Valuename, double Value ) 
+	void WriteValue( PCTSTR ValueName, double Value ) 
 	{
-		RegSetValueEx( hKey, Valuename, 0, REG_BINARY, reinterpret_cast<PBYTE>(&Value),
+		RegSetValueEx( hKey, ValueName, 0, REG_BINARY, reinterpret_cast<PBYTE>(&Value),
 				sizeof(double));
 	}
-	void WriteValue( PCTSTR Valuename, PTCHAR Value ) 
+	void WriteValue( PCTSTR ValueName, PTCHAR Value ) 
 	{
-		RegSetValueEx( hKey, Valuename, 0, REG_SZ, reinterpret_cast<PBYTE>(Value),
+		RegSetValueEx( hKey, ValueName, 0, REG_SZ, reinterpret_cast<PBYTE>(Value),
 				static_cast<DWORD>(_tcslen( Value )) * sizeof(TCHAR));
 	}
-	void WriteValueBinary( PCTSTR Valuename, PBYTE Value, DWORD Length ) 
+	void WriteValueBinary( PCTSTR ValueName, PBYTE Value, DWORD Length ) 
 	{
-		RegSetValueEx( hKey, Valuename, 0, REG_BINARY, Value,
+		RegSetValueEx( hKey, ValueName, 0, REG_BINARY, Value,
 				Length );
 	}
-	void WriteValueArray( PCTSTR Valuename, DWORD Number, PDWORD Entries )
+	void WriteValueArray( PCTSTR ValueName, DWORD Number, PDWORD Entries )
 	{
 		HKEY	hSubKey;
 		TCHAR	subVal[16];
 
 		if( !RegCreateKeyEx(hKey, 
-				Valuename, NULL, NULL, 0, KEY_WRITE, NULL, &hSubKey, NULL )) {	
+				ValueName, NULL, NULL, 0, KEY_WRITE, NULL, &hSubKey, NULL )) {	
 
 			for( DWORD i = 0; i < Number; i++ ) {
 			
@@ -299,14 +299,14 @@ private:
 			RegCloseKey( hSubKey );
 		}
 	}
-	void WriteValueArray( PCTSTR Valuename, DWORD Number, PWORD Entries )
+	void WriteValueArray( PCTSTR ValueName, DWORD Number, PWORD Entries )
 	{
 		HKEY	hSubKey;
 		TCHAR	subVal[16];
 		DWORD	val;
 
 		if( !RegCreateKeyEx(hKey, 
-				Valuename, NULL, NULL, 0, KEY_WRITE, NULL, &hSubKey, NULL )) {	
+				ValueName, NULL, NULL, 0, KEY_WRITE, NULL, &hSubKey, NULL )) {	
 
 			for( DWORD i = 0; i < Number; i++ ) {
 			
