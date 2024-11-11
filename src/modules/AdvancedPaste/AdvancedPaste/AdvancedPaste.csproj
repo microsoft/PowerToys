@@ -59,7 +59,6 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.SemanticKernel" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
-    <!-- HACK: To align Microsoft.Bcl.AsyncInterfaces.dll version with Mouse Without Borders version. -->
     <PackageReference Include="Microsoft.Windows.Compatibility" />
     <PackageReference Include="Microsoft.Windows.CsWin32" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
