@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Net.NetworkInformation;
 using System.Security.Principal;
 
 using Microsoft.PowerToys.Settings.UI.Library.CustomAction;
@@ -63,7 +62,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
                 FileSystem.Directory.CreateDirectory(path);
             }
 
-            var watcher = FileSystem.FileSystemWatcher.CreateNew();
+            var watcher = FileSystem.FileSystemWatcher.New();
             watcher.Path = path;
             watcher.Filter = fileName;
             watcher.NotifyFilter = NotifyFilters.LastWrite;
