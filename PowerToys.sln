@@ -629,6 +629,7 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EtwTrace", "src\common\Telemetry\EtwTrace\EtwTrace.vcxproj", "{8F021B46-362B-485C-BFBA-CCF83E820CBD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MouseWithoutBorders.UnitTests", "src\modules\MouseWithoutBorders\MouseWithoutBorders.UnitTests\MouseWithoutBorders.UnitTests.csproj", "{66614C26-314C-4B91-9071-76133422CFEF}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdvancedPaste.UnitTests", "src\modules\AdvancedPaste\AdvancedPaste.UnitTests\AdvancedPaste.UnitTests.csproj", "{D5E5F5EA-1B6C-4A73-88BE-304F36C9E4EE}"
 EndProject
 Global
