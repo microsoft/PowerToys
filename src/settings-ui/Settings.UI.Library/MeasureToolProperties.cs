@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public MeasureToolProperties()
         {
             ActivationShortcut = DefaultActivationShortcut;
-            UnitsOfMeasure = new IntProperty(0);
+            UnitsOfMeasure = new IntProperty(1);
             PixelTolerance = new IntProperty(30);
             ContinuousCapture = false;
             DrawFeetOnCross = true;

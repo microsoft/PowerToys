@@ -144,10 +144,10 @@ namespace
 
         const auto [crossSymbolPos, measureStringBufLen] =
             measurement.Print(text.buffer.data(),
-                                text.buffer.size(),
-                                drawHorizontalCrossLine,
-                                drawVerticalCrossLine,
-                                commonState.units);
+                              text.buffer.size(),
+                              drawHorizontalCrossLine,
+                              drawVerticalCrossLine,
+                              commonState.units | Measurement::Unit::Millimetre); //TODO: This should be configurable.
 
         d2dState.DrawTextBox(text.buffer.data(),
                              measureStringBufLen,

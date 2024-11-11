@@ -42,8 +42,18 @@ struct Box
 
 class MonitorInfo
 {
+public:
+    typedef struct Size
+    {
+        uint32_t width_logical, height_logical;
+        uint32_t width_physical, height_physical;
+        float width_mm, height_mm;
+    } Geometry;
+
+private:
     HMONITOR handle;
     MONITORINFOEX info = {};
+    Size size = {};
 
 public:
     explicit MonitorInfo(HMONITOR h);
@@ -53,8 +63,22 @@ public:
     }
     Box GetScreenSize(const bool includeNonWorkingArea) const;
     bool IsPrimary() const;
+    inline Size GetSize() const
+    {
+        return size;
+    }
+    inline float GetPhysicalPx2MmRatio() const
+    {
+        auto monitorSize = GetSize();
+        return monitorSize.width_mm / static_cast<float>(monitorSize.width_physical);
+    }
 
     // Returns monitor rects ordered from left to right
     static std::vector<MonitorInfo> GetMonitors(bool includeNonWorkingArea);
     static MonitorInfo GetPrimaryMonitor();
+    static MonitorInfo GetFromWindow(HWND);
+    static MonitorInfo GetFromPoint(int32_t, int32_t);
+
+private:
+    static Size GetSize(const MONITORINFOEX&);
 };

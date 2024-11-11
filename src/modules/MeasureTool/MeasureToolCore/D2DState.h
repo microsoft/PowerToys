@@ -35,7 +35,7 @@ struct D2DState
              std::vector<D2D1::ColorF> solidBrushesColors);
     void DrawTextBox(const wchar_t* text,
                      const size_t textLen,
-                     const std::optional<size_t> halfOpaqueSymbolPos,
+                     const size_t halfOpaqueSymbolPos[2],
                      const D2D_POINT_2F center,
                      const bool screenQuadrantAware,
                      const HWND window) const;

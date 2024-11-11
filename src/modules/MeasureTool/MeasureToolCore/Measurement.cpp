@@ -4,7 +4,8 @@
 
 #include <iostream>
 
-Measurement::Measurement(RECT winRect)
+Measurement::Measurement(RECT winRect, float px2mmRatio) :
+    px2mmRatio{ px2mmRatio }
 {
     rect.left = static_cast<float>(winRect.left);
     rect.right = static_cast<float>(winRect.right);
@@ -12,81 +13,138 @@ Measurement::Measurement(RECT winRect)
     rect.bottom = static_cast<float>(winRect.bottom);
 }
 
-Measurement::Measurement(D2D1_RECT_F d2dRect) :
-    rect{ d2dRect }
+Measurement::Measurement(D2D1_RECT_F d2dRect, float px2mmRatio) :
+    rect{ d2dRect }, px2mmRatio{ px2mmRatio }
 {
 }
 
 namespace
 {
-    inline float Convert(const float pixels, const Measurement::Unit units)
+    inline float Convert(const float pixels, const Measurement::Unit units, float px2mmRatio)
     {
-        switch (units)
+        if (px2mmRatio > 0)
         {
-        case Measurement::Unit::Pixel:
-            return pixels;
-        case Measurement::Unit::Inch:
-            return pixels / 96.f;
-        case Measurement::Unit::Centimetre:
-            return pixels / 96.f * 2.54f;
-        default:
-            return pixels;
+            switch (units)
+            {
+            case Measurement::Unit::Pixel:
+                return pixels;
+            case Measurement::Unit::Inch:
+                return pixels * px2mmRatio / 10.0f / 2.54f;
+            case Measurement::Unit::Centimetre:
+                return pixels * px2mmRatio / 10.0f;
+            case Measurement::Unit::Millimetre:
+                return pixels * px2mmRatio;
+            default:
+                return pixels;
+            }
+        }
+        else
+        {
+            switch (units)
+            {
+            case Measurement::Unit::Pixel:
+                return pixels;
+            case Measurement::Unit::Inch:
+                return pixels / 96.0f;
+            case Measurement::Unit::Centimetre:
+                return pixels / 96.0f * 2.54f;
+            case Measurement::Unit::Millimetre:
+                return pixels / 96.0f / 10.0f * 2.54f;
+            default:
+                return pixels;
+            }
         }
     }
 }
 
 inline float Measurement::Width(const Unit units) const
 {
-    return Convert(rect.right - rect.left + 1.f, units);
+    return Convert(rect.right - rect.left + 1.f, units, px2mmRatio);
 }
 
 inline float Measurement::Height(const Unit units) const
 {
-    return Convert(rect.bottom - rect.top + 1.f, units);
+    return Convert(rect.bottom - rect.top + 1.f, units, px2mmRatio);
 }
 
 Measurement::PrintResult Measurement::Print(wchar_t* buf,
                                             const size_t bufSize,
                                             const bool printWidth,
                                             const bool printHeight,
-                                            const Unit units) const
+                                            const int units) const
 {
     PrintResult result;
-    if (printWidth)
-    {
-        result.strLen += swprintf_s(buf,
-                                    bufSize,
-                                    L"%g",
-                                    Width(units));
-        if (printHeight)
+
+    auto print = [=, &result](Measurement::Unit unit, const bool paren) {
+        if (paren)
         {
-            result.crossSymbolPos = result.strLen + 1;
+            result.strLen += swprintf_s(buf + result.strLen, bufSize - result.strLen, 
+                printWidth && printHeight ? L"\n(" : L" (");
+        }
+        if (printWidth)
+        {
             result.strLen += swprintf_s(buf + result.strLen,
                                         bufSize - result.strLen,
-                                        L" \x00D7 ");
+                                        L"%.4g",
+                                        Width(unit));
+            if (printHeight)
+            {
+                result.crossSymbolPos[paren] = result.strLen + 1;
+                result.strLen += swprintf_s(buf + result.strLen,
+                                            bufSize - result.strLen,
+                                            L" \x00D7 ");
+            }
         }
-    }
+        if (printHeight)
+        {
+            result.strLen += swprintf_s(buf + result.strLen,
+                                        bufSize - result.strLen,
+                                        L"%.4g",
+                                        Height(unit));
+        }
+        switch (unit)
+        {
+        case Measurement::Unit::Pixel:
+            result.strLen += swprintf_s(buf + result.strLen,
+                                        bufSize - result.strLen,
+                                        L" px");
+            break;
+        case Measurement::Unit::Inch:
+            result.strLen += swprintf_s(buf + result.strLen,
+                                        bufSize - result.strLen,
+                                        L" in");
+            break;
+        case Measurement::Unit::Centimetre:
+            result.strLen += swprintf_s(buf + result.strLen,
+                                        bufSize - result.strLen,
+                                        L" cm");
+            break;
+        case Measurement::Unit::Millimetre:
+            result.strLen += swprintf_s(buf + result.strLen,
+                                        bufSize - result.strLen,
+                                        L" mm");
+            break;
+        }
+        if (paren)
+        {
+            result.strLen += swprintf_s(buf + result.strLen, bufSize - result.strLen, L")");
+        }
+    };
 
-    if (printHeight)
+    int count = 0;
+    const Measurement::Unit allUnits[] = {
+        Measurement::Unit::Pixel, Measurement::Unit::Millimetre,
+        Measurement::Unit::Inch, Measurement::Unit::Centimetre,
+    };
+    // We only use two unints at most, it would be to long otherwise.
+    for each (Measurement::Unit unit in allUnits)
     {
-        result.strLen += swprintf_s(buf + result.strLen,
-                                    bufSize - result.strLen,
-                                    L"%g",
-                                    Height(units));
-    }
-
-    switch (units)
-    {
-    case Measurement::Unit::Inch:
-        result.strLen += swprintf_s(buf + result.strLen,
-                                    bufSize - result.strLen,
-                                    L" in");
-        break;
-    case Measurement::Unit::Centimetre:
-        result.strLen += swprintf_s(buf + result.strLen,
-                                    bufSize - result.strLen,
-                                    L" cm");
-        break;
+        if ((unit & units) == unit)
+        {
+            count += 1;
+            if (count > 2) break;
+            print(unit, count != 1);
+        }
     }
 
     return result;
@@ -121,10 +179,12 @@ void Measurement::PrintToStream(std::wostream& stream,
     {
     case Measurement::Unit::Inch:
         stream << L" in";
-
         break;
     case Measurement::Unit::Centimetre:
         stream << L" cm";
+        break;
+    case Measurement::Unit::Millimetre:
+        stream << L" mm";
         break;
     }
 }

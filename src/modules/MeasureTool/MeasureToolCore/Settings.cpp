@@ -69,6 +69,8 @@ Settings Settings::LoadFromFile()
 
         try
         {
+            //TODO: Somehow this value is always 0, and we do not provide a configurable setting property for this.
+            // So we need check this value after.
             result.units = static_cast<Measurement::Unit>(props.GetNamedObject(JSON_KEY_UNITS_OF_MEASURE).GetNamedNumber(JSON_KEY_VALUE));
         }
         catch (...)
@@ -77,6 +79,12 @@ Settings Settings::LoadFromFile()
     }
     catch (...)
     {
+    }
+    
+    // Special check for units, if it is 0, nothing would be shown.
+    if (result.units == 0)
+    {
+        result.units = Measurement::Unit::Pixel;
     }
 
     return result;
