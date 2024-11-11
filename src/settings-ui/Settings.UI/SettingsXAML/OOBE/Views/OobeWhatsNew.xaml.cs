@@ -123,11 +123,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
             // Regex to remove installer hash sections from the release notes, since there'll be no Highlights section for hotfix releases.
             Regex removeHotfixHashRegex = new Regex(RemoveHotFixInstallerHashesRegex, RemoveInstallerHashesRegexOptions);
-
+            int counter = 0;
             foreach (var release in latestReleases)
             {
                 releaseNotesHtmlBuilder.AppendLine("# " + release.Name);
                 var notes = removeHashRegex.Replace(release.ReleaseNotes, "\r\n## Highlights");
+
+                // Add a unique counter to [github-current-release-work] to distinguish each release,
+                // since this variable is used for all latest releases when they are merged.
+                notes = notes.Replace("[github-current-release-work]", $"[github-current-release-work{++counter}]");
                 notes = removeHotfixHashRegex.Replace(notes, string.Empty);
                 releaseNotesHtmlBuilder.AppendLine(notes);
                 releaseNotesHtmlBuilder.AppendLine("&nbsp;");

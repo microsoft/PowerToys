@@ -64,7 +64,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
                 fileSystem.Directory.CreateDirectory(path);
             }
 
-            var watcher = fileSystem.FileSystemWatcher.CreateNew();
+            var watcher = fileSystem.FileSystemWatcher.New();
             watcher.Path = path;
             watcher.Filter = fileName;
             watcher.NotifyFilter = NotifyFilters.LastWrite;
