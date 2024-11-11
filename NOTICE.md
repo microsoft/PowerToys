@@ -1327,6 +1327,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Extensions.Hosting.WindowsServices 8.0.0
 - Microsoft.Extensions.Logging 8.0.1
 - Microsoft.Extensions.Logging.Abstractions 8.0.2
+- Microsoft.SemanticKernel 1.15.0
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
 - Microsoft.Web.WebView2 1.0.2739.15
 - Microsoft.Win32.SystemEvents 8.0.0
@@ -1360,7 +1361,6 @@ EXHIBIT A -Mozilla Public License.
 - System.Management 8.0.0
 - System.Reactive 6.0.1
 - System.Runtime.Caching 8.0.1
-- Microsoft.SemanticKernel 1.15.0
 - System.ServiceProcess.ServiceController 8.0.1
 - System.Text.Encoding.CodePages 8.0.0
 - System.Text.Json 8.0.5
