@@ -214,6 +214,7 @@ namespace Microsoft.CmdPal.Extensions
         IDetails Details{ get; };
         IFallbackHandler FallbackHandler{ get; };
         String Section { get; };
+        String TextToSuggest { get; };
     }
     
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]

@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.ComponentModel.DataAnnotations;
-
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
 public class ListItem : BaseObservable, IListItem
@@ -17,6 +15,7 @@ public class ListItem : BaseObservable, IListItem
     private IContextItem[] _moreCommands = [];
     private IFallbackHandler? _fallbackHandler;
     private string _section = string.Empty;
+    private string _textToSuggest = string.Empty;
 
     public IconDataType? Icon
     {
@@ -30,17 +29,7 @@ public class ListItem : BaseObservable, IListItem
 
     public string Title
     {
-        get
-        {
-            if (!string.IsNullOrEmpty(this._title))
-            {
-                return _title;
-            }
-            else
-            {
-                return _command?.Name ?? string.Empty;
-            }
-        }
+        get => !string.IsNullOrEmpty(this._title) ? _title : _command?.Name ?? string.Empty;
 
         set
         {
@@ -112,6 +101,16 @@ public class ListItem : BaseObservable, IListItem
         {
             _section = value;
             OnPropertyChanged(nameof(Section));
+        }
+    }
+
+    public string TextToSuggest
+    {
+        get => _textToSuggest;
+        set
+        {
+            _textToSuggest = value;
+            OnPropertyChanged(nameof(TextToSuggest));
         }
     }
 

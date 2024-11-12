@@ -24,6 +24,8 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
 
     internal string Icon { get; private set; }
 
+    internal string TextToSuggest { get; private set; }
+
     private readonly Lazy<DetailsViewModel?> _details;
 
     internal DetailsViewModel? Details => _details.Value;
@@ -105,6 +107,7 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
         this.Title = model.Title;
         this.Subtitle = model.Subtitle;
         this.Icon = model.Icon.Icon;
+        this.TextToSuggest = model.TextToSuggest;
 
         if (model.Tags != null)
         {
@@ -149,6 +152,10 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable
                 case nameof(Icon):
                     this.Icon = item.Command.Icon.Icon;
                     BubbleXamlPropertyChanged(nameof(IcoElement));
+                    break;
+                case nameof(TextToSuggest):
+                    this.TextToSuggest = item.TextToSuggest;
+                    BubbleXamlPropertyChanged(nameof(TextToSuggest));
                     break;
             }
 

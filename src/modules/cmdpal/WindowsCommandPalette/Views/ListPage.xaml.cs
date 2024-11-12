@@ -13,7 +13,6 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using WindowsCommandPalette;
 
 namespace WindowsCommandPalette.Views;
 
@@ -52,18 +51,7 @@ public sealed partial class ListPage : Microsoft.UI.Xaml.Controls.Page, INotifyP
         }
     }
 
-    private bool MoreCommandsAvailable
-    {
-        get
-        {
-            if (ItemsList.SelectedItem is not ListItemViewModel li)
-            {
-                return false;
-            }
-
-            return li.HasMoreCommands;
-        }
-    }
+    private bool MoreCommandsAvailable => ItemsList.SelectedItem is not ListItemViewModel li ? false : li.HasMoreCommands;
 
     public ListPage()
     {
@@ -173,7 +161,7 @@ public sealed partial class ListPage : Microsoft.UI.Xaml.Controls.Page, INotifyP
 
     private void MoreCommandsButton_Tapped(object sender, TappedRoutedEventArgs e)
     {
-        FlyoutShowOptions options = new FlyoutShowOptions
+        var options = new FlyoutShowOptions
         {
             ShowMode = FlyoutShowMode.Standard,
         };
@@ -283,6 +271,15 @@ public sealed partial class ListPage : Microsoft.UI.Xaml.Controls.Page, INotifyP
 
             e.Handled = true;
         }
+        else if (e.Key == Windows.System.VirtualKey.Right)
+        {
+            if (!string.IsNullOrEmpty(SelectedItem?.TextToSuggest))
+            {
+                FilterBox.Text = SelectedItem.TextToSuggest;
+                FilterBox.Select(SelectedItem.TextToSuggest.Length, 0);
+                FilterBox.Focus(FocusState.Keyboard);
+            }
+        }
         else if (e.Key == Windows.System.VirtualKey.Enter /* && ItemsList.SelectedItem != null */)
         {
             if (ItemsList.SelectedItem is ListItemViewModel li)
@@ -310,7 +307,7 @@ public sealed partial class ListPage : Microsoft.UI.Xaml.Controls.Page, INotifyP
         } // ctrl+k
         else if (ctrlPressed && e.Key == Windows.System.VirtualKey.K && ActionsDropdown.Items.Count > 0)
         {
-            FlyoutShowOptions options = new FlyoutShowOptions
+            var options = new FlyoutShowOptions
             {
                 ShowMode = FlyoutShowMode.Standard,
             };

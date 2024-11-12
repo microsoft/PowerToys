@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2024-11-07
+last updated: 2024-11-08
 issue id: n/a
 ---
 
@@ -569,6 +569,7 @@ interface IListItem requires INotifyPropChanged {
     IDetails Details{ get; };
     IFallbackHandler FallbackHandler{ get; };
     String Section { get; };
+    String TextToSuggest { get; };
 }
 
 interface IGridProperties  {
@@ -702,6 +703,24 @@ actions (if it sets `Details`).
   bodies to show their details by default. So it would set `ShowDetails =
   false`. If the user activates the automatic "Show details" action, then the
   github action can then fetch the body and show it.
+
+Each item in the list may also provide `TextToSuggest`. This serves a similar
+purpose to `result.QueryTextDisplay` in the original PowerToys Run API. When
+provided, DevPal will use that text to provide a suggested search query to the
+user. The user can accept that suggestion with a single keypress, and DevPal
+will then set the `SearchText` on the page to that `TextToSuggest`. This is
+especially useful for dynamic lists, to easily populate the entire `SearchText`
+as the user navigates the list.
+
+Consider the Windows Registry command. When the page is initially loaded, it
+displays only the top-level registry keys (`HKEY_CURRENT_USER`,
+`HKEY_LOCAL_MACHINE`, etc). If the user types `HKC`, the command will filter the
+results down to just `HKEY_CURRENT_USER`, `HKEY_CLASSES_ROOT` and
+`HKEY_CURRENT_CONFIG`. However, if the user at this point taps the right-arrow
+key, DevPall will use the `TextToSuggest` from the `HKEY_CURRENT_USER`
+`ListItem` to fill the `SearchText` with `"HKEY_CURRENT_USER\"`. The extension
+will then be notified of this change to the search text, and can now return
+results nested under `HKEY_CURRENT_USER\`.
 
 An example list page for the Hacker News extension:
 
