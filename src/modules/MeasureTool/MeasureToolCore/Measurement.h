@@ -33,6 +33,8 @@ struct Measurement
         size_t strLen = {};
     };
 
+    static Unit GetUnitFromIndex(int index);
+
     PrintResult Print(wchar_t* buf,
                       const size_t bufSize,
                       const bool printWidth,

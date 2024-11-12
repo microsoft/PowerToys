@@ -67,6 +67,23 @@ inline float Measurement::Height(const Unit units) const
     return Convert(rect.bottom - rect.top + 1.f, units, px2mmRatio);
 }
 
+Measurement::Unit Measurement::GetUnitFromIndex(int index)
+{
+    switch (index)
+    {
+    case 0:
+        return Measurement::Unit::Pixel;
+    case 1:
+        return Measurement::Unit::Inch;
+    case 2:
+        return Measurement::Unit::Centimetre;
+    case 3:
+        return Measurement::Unit::Millimetre;
+    default:
+        return Measurement::Unit::Pixel;
+    }
+}
+
 Measurement::PrintResult Measurement::Print(wchar_t* buf,
                                             const size_t bufSize,
                                             const bool printWidth,

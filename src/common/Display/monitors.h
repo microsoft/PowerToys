@@ -1,4 +1,5 @@
 #pragma once
+#pragma comment(lib, "Gdi32.lib")
 #include <Windows.h>
 
 #include <compare>
