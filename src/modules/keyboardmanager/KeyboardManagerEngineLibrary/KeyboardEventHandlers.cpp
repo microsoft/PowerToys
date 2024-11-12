@@ -35,7 +35,7 @@ namespace
 
     void UpdateNumpadWithShift(LowlevelKeyboardEvent* data, State& state)
     {
-        //Function for fixing numpas when used as shift https://github.com/microsoft/PowerToys/issues/22346
+        //Function for fixing numpad when used as shift https://github.com/microsoft/PowerToys/issues/22346
         if (Helpers::IsNumpadOriginated(data->lParam->vkCode))
         {
             DWORD decodedKey = Helpers::DecodeKeyNumpadOrigin(data->lParam->vkCode);
