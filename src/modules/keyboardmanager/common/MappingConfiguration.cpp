@@ -21,6 +21,7 @@ void MappingConfiguration::ClearOSLevelShortcuts()
 void MappingConfiguration::ClearSingleKeyRemaps()
 {
     singleKeyReMap.clear();
+    scanMap.clear();
 }
 
 // Function to clear the Keys remapping table.
@@ -64,6 +65,11 @@ bool MappingConfiguration::AddSingleKeyRemap(const DWORD& originalKey, const Key
     }
 
     singleKeyReMap[originalKey] = newRemapKey;
+    auto scanCode = MapVirtualKey(originalKey, MAPVK_VK_TO_VSC);
+    if (scanCode != 0)
+    {
+        scanMap[MapVirtualKey(originalKey, MAPVK_VK_TO_VSC)] = originalKey;
+    }
     return true;
 }
 

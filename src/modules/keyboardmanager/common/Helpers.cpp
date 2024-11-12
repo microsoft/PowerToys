@@ -24,6 +24,7 @@ namespace Helpers
         case VK_NEXT:
         case VK_HOME:
         case VK_END:
+        case VK_CLEAR:
             numpad_originated = !extended;
             break;
         case VK_RETURN:
@@ -36,6 +37,19 @@ namespace Helpers
             return key | GetNumpadOriginEncodingBit();
         else
             return key;
+    }
+
+    DWORD DecodeKeyNumpadOrigin(const DWORD encodedKey)
+    {
+        // Check if the high-order bit is set (0x80000000) and remove it if necessary.
+        if (encodedKey & 0x80000000)
+        {
+            return encodedKey & ~0x80000000; // Clear the high bit
+        }
+        else
+        {
+            return encodedKey; // Return as is if the bit is not set
+        }
     }
 
     DWORD ClearKeyNumpadOrigin(const DWORD key)

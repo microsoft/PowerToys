@@ -51,6 +51,8 @@ public:
     // Stores single key remappings
     SingleKeyRemapTable singleKeyReMap;
 
+    std::unordered_map<DWORD, DWORD> scanMap;
+
     // Stores single key to text remappings
     SingleKeyToTextRemapTable singleKeyToTextReMap;
 
