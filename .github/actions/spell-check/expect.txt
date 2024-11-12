@@ -1680,7 +1680,6 @@ UNCPRIORITY
 UNDNAME
 UNICODETEXT
 uninstantiated
-unints
 uniquifier
 Uniquifies
 unitconverter
