@@ -3,21 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 using Microsoft.CmdPal.Ext.WindowsSettings.Classes;
-using Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
-using Microsoft.UI.Windowing;
 
 namespace Microsoft.CmdPal.Ext.WindowsSettings;
 
@@ -28,7 +18,7 @@ internal sealed partial class WindowsSettingsListPage : DynamicListPage
 
     public WindowsSettingsListPage(Classes.WindowsSettings windowsSettings)
     {
-        Icon = new(string.Empty);
+        Icon = new("\uE713"); // Settings
         Name = "Windows Settings";
         _defaultIconPath = "Images/WindowsSettings.light.png";
         _windowsSettings = windowsSettings;
@@ -92,18 +82,18 @@ internal sealed partial class WindowsSettingsListPage : DynamicListPage
             }
 
             // Search by key char '>' for app name and settings path
-            if (query.Contains('>'))
-            {
-                return ResultHelper.FilterBySettingsPath(found, query);
-            }
-
-            return false;
+            return query.Contains('>') ? ResultHelper.FilterBySettingsPath(found, query) : false;
         }
     }
 
-    public override IListItem[] GetItems(string query)
+    public override void UpdateSearchText(string oldSearch, string newSearch)
     {
-        ListItem[] items = Query(query).ToArray();
+        RaiseItemsChanged(0);
+    }
+
+    public override IListItem[] GetItems()
+    {
+        var items = Query(SearchText).ToArray();
 
         return items;
     }

@@ -145,6 +145,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="IconDataType.h" />
     <ClInclude Include="PropChangedEventArgs.h" />
+    <ClInclude Include="ItemsChangedEventArgs.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Generated Files\module.g.cpp" />
@@ -153,6 +154,7 @@
     </ClCompile>
     <ClCompile Include="IconDataType.cpp" />
     <ClCompile Include="PropChangedEventArgs.cpp" />
+    <ClCompile Include="ItemsChangedEventArgs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="Microsoft.CmdPal.Extensions.idl" />

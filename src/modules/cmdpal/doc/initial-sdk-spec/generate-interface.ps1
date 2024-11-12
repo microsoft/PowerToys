@@ -81,6 +81,17 @@ namespace Microsoft.CmdPal.Extensions
         String PropertyName { get; };
     };
 
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    interface INotifyItemsChanged {
+        event Windows.Foundation.TypedEventHandler<Object, ItemsChangedEventArgs> ItemsChanged;
+    };
+
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    runtimeclass ItemsChangedEventArgs {
+        ItemsChangedEventArgs(Int32 totalItems);
+        Int32 TotalItems { get; };
+    };
+
 $sdkContents
 }
 "@

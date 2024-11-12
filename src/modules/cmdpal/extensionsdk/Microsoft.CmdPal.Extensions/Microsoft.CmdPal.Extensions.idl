@@ -32,6 +32,17 @@ namespace Microsoft.CmdPal.Extensions
     };
 
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    interface INotifyItemsChanged {
+        event Windows.Foundation.TypedEventHandler<Object, ItemsChangedEventArgs> ItemsChanged;
+    };
+
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    runtimeclass ItemsChangedEventArgs {
+        ItemsChangedEventArgs(Int32 totalItems);
+        Int32 TotalItems { get; };
+    };
+
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     interface ICommand requires INotifyPropChanged{
         String Name{ get; };
         IconDataType Icon{ get; };
@@ -211,19 +222,23 @@ namespace Microsoft.CmdPal.Extensions
     }
     
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
-    interface IListPage requires IPage {
+    interface IListPage requires IPage, INotifyItemsChanged {
+        // DevPal will be responsible for filtering the list of items, unless the 
+        // class implements IDynamicListPage
         String SearchText { get; };
         String PlaceholderText { get; };
         Boolean ShowDetails{ get; };
         IFilters Filters { get; };
         IGridProperties GridProperties { get; };
+        Boolean HasMore { get; };
     
-        IListItem[] GetItems(); // DevPal will be responsible for filtering the list of items
+        IListItem[] GetItems();     
+        void LoadMore();
     }
     
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     interface IDynamicListPage requires IListPage {
-        IListItem[] GetItems(String query); // DevPal will do no filtering of these items
+        String SearchText { set; };
     }
     
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]

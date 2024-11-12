@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -30,10 +31,14 @@ internal sealed partial class EverythingExtensionPage : DynamicListPage
         Everything_SetMax(20);
     }
 
-    public override IListItem[] GetItems(string query)
+    public override void UpdateSearchText(string oldSearch, string newSearch)
     {
-        Everything_SetSearchW(query);
+        Everything_SetSearchW(SearchText);
+        RaiseItemsChanged(0);
+    }
 
+    public override IListItem[] GetItems()
+    {
         if (!Everything_QueryW(true))
         {
             // Throwing an exception would make sense, however,

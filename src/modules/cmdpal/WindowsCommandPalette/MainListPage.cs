@@ -50,10 +50,17 @@ public sealed partial class MainListPage : DynamicListPage
         Loading = false;
     }
 
-    public override IListItem[] GetItems(string query)
+    public override void UpdateSearchText(string oldSearch, string newSearch)
     {
-        _filteredSection.Query = query;
+        UpdateQuery();
+    }
 
+    private void UpdateQuery()
+    {
+        // Let our filtering wrapper know the newly typed search text:
+        _filteredSection.Query = SearchText;
+
+        // Update all the top-level commands which are fallback providers:
         var fallbacks = topLevelItems
             .Select(i => i?.FallbackHandler)
             .Where(fb => fb != null)
@@ -61,10 +68,16 @@ public sealed partial class MainListPage : DynamicListPage
 
         foreach (var fb in fallbacks)
         {
-            fb.UpdateQuery(query);
+            fb.UpdateQuery(SearchText);
         }
 
-        if (string.IsNullOrEmpty(query))
+        var count = string.IsNullOrEmpty(SearchText) ? topLevelItems.Count : _filteredSection.Count;
+        RaiseItemsChanged(count);
+    }
+
+    public override IListItem[] GetItems()
+    {
+        if (string.IsNullOrEmpty(SearchText))
         {
             return topLevelItems.ToArray();
         }
@@ -105,6 +118,6 @@ public sealed partial class MainListPage : DynamicListPage
         // Sneaky?
         // Raise a Items changed event, so the list page knows that our items
         // have changed, and it should re-fetch them.
-        this.OnPropertyChanged("Items");
+        this.RaiseItemsChanged(topLevelItems.Count);
     }
 }

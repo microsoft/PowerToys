@@ -24,4 +24,9 @@ public partial class MainListPage : DynamicListPage
     }
 
     public override IListItem[] GetItems() => _items;
+
+    public override void UpdateSearchText(string oldSearch, string newSearch)
+    {
+        /* handle changes to the filter text here */
+    }
 }

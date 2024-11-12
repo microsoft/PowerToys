@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -25,15 +24,20 @@ internal sealed partial class YouTubeChannelsPage : DynamicListPage
         this.ShowDetails = true;
     }
 
-    public override IListItem[] GetItems(string query)
+    public override void UpdateSearchText(string oldSearch, string newSearch)
     {
-        return DoGetItems(query).GetAwaiter().GetResult(); // Fetch and await the task synchronously
+        RaiseItemsChanged(0); // 0 is bodgy
+    }
+
+    public override IListItem[] GetItems()
+    {
+        return DoGetItems(SearchText).GetAwaiter().GetResult(); // Fetch and await the task synchronously
     }
 
     private async Task<IListItem[]> DoGetItems(string query)
     {
         // Fetch YouTube channels based on the query
-        List<YouTubeChannel> items = await GetYouTubeChannels(query);
+        var items = await GetYouTubeChannels(query);
 
         // Create a section and populate it with the channel results
         var section = items.Select(channel => new ListItem(new OpenChannelLinkAction(channel.ChannelUrl))
@@ -65,7 +69,7 @@ internal sealed partial class YouTubeChannelsPage : DynamicListPage
 
         var channels = new List<YouTubeChannel>();
 
-        using (HttpClient client = new HttpClient())
+        using (var client = new HttpClient())
         {
             try
             {
@@ -108,7 +112,7 @@ internal sealed partial class YouTubeChannelsPage : DynamicListPage
     // Fetch subscriber count for each channel using a separate API call
     private static async Task<long> GetChannelSubscriberCount(string apiKey, string channelId)
     {
-        using HttpClient client = new HttpClient();
+        using var client = new HttpClient();
         {
             try
             {

@@ -24,24 +24,34 @@ internal sealed partial class MastodonExtensionPage : ListPage
     internal static readonly HttpClient Client = new();
     internal static readonly JsonSerializerOptions Options = new() { PropertyNameCaseInsensitive = true };
 
+    private readonly List<MastodonStatus> _posts = new();
+
     public MastodonExtensionPage()
     {
         Icon = new("https://mastodon.social/packs/media/icons/android-chrome-36x36-4c61fdb42936428af85afdbf8c6a45a8.png");
         Name = "Mastodon";
         ShowDetails = true;
+        HasMore = true;
     }
 
     public override IListItem[] GetItems()
     {
-        var postsAsync = FetchExplorePage();
-        postsAsync.ConfigureAwait(false);
-        var posts = postsAsync.Result;
-        return posts
+        if (_posts.Count == 0)
+        {
+            var postsAsync = FetchExplorePage();
+            postsAsync.ConfigureAwait(false);
+            var posts = postsAsync.Result;
+            this._posts.AddRange(posts);
+        }
+
+        return _posts
             .Select(p => new ListItem(new MastodonPostPage(p))
             {
                 Title = p.Account.DisplayName, // p.ContentAsPlainText(),
                 Subtitle = $"@{p.Account.Username}",
                 Icon = new(p.Account.Avatar),
+
+                // *
                 Tags = [
                     new Tag()
                     {
@@ -53,7 +63,7 @@ internal sealed partial class MastodonExtensionPage : ListPage
                         Icon = new("\ue8ee"), // RepeatAll
                         Text = p.Boosts.ToString(CultureInfo.CurrentCulture),
                     },
-                ],
+                ], // */
                 Details = new Details()
                 {
                     // It was a cool idea to have a single image as the HeroImage, but the scaling is terrible
@@ -67,14 +77,31 @@ internal sealed partial class MastodonExtensionPage : ListPage
             .ToArray();
     }
 
+    public override void LoadMore()
+    {
+        var postsAsync = FetchExplorePage(20, this._posts.Count);
+        postsAsync.ContinueWith((res) =>
+        {
+            var posts = postsAsync.Result;
+            this._posts.AddRange(posts);
+            this.RaiseItemsChanged(this._posts.Count);
+        }).ConfigureAwait(false);
+    }
+
     public async Task<List<MastodonStatus>> FetchExplorePage()
+    {
+        return await FetchExplorePage(20, 0);
+    }
+
+    public async Task<List<MastodonStatus>> FetchExplorePage(int limit, int offset)
     {
         var statuses = new List<MastodonStatus>();
 
         try
         {
             // Make a GET request to the Mastodon trends API endpoint
-            HttpResponseMessage response = await Client.GetAsync("https://mastodon.social/api/v1/trends/statuses");
+            HttpResponseMessage response = await Client
+                .GetAsync($"https://mastodon.social/api/v1/trends/statuses?limit={limit}&offset={offset}");
             response.EnsureSuccessStatusCode();
 
             // Read and deserialize the response JSON into a list of MastodonStatus objects

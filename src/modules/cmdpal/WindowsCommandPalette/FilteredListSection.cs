@@ -41,9 +41,10 @@ public sealed partial class FilteredListSection
     //   * Just the top-level actions (if there's no query)
     //   * OR the top-level actions AND the apps (if there's a query)
     private IEnumerable<IListItem> ItemsToEnumerate =>
-        lastSearchResults != null ?
+        (lastSearchResults != null ?
             lastSearchResults :
-            TopLevelItems.Concat(AllApps);
+            TopLevelItems.Concat(AllApps))
+        .Where(i => i != null);
 
     private string _lastQuery = string.Empty;
 
@@ -81,7 +82,9 @@ public sealed partial class FilteredListSection
     //
     // instead run the query once when the action query changes, and store the
     // results.
-    public IListItem[] Items => ItemsToEnumerate.Where(i => i != null).ToArray();
+    public IListItem[] Items => ItemsToEnumerate.ToArray();
+
+    public int Count => ItemsToEnumerate.Count();
 
     public FilteredListSection(MainViewModel viewModel, ObservableCollection<MainListItem> topLevelItems)
     {

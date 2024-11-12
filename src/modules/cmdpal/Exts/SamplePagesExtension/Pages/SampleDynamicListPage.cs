@@ -23,25 +23,27 @@ internal sealed partial class SampleDynamicListPage : DynamicListPage
     public SampleDynamicListPage()
     {
         Icon = new(string.Empty);
-        Name = "SSH Keychain";
+        Name = "Dynamic List";
     }
 
-    public override IListItem[] GetItems(string query)
+    public override void UpdateSearchText(string oldSearch, string newSearch)
     {
-        return [
-            new ListItem(new NoOpCommand()) { Title = string.IsNullOrEmpty(query) ? "dynamic item" : query, Subtitle = "Notice how the title changes for this list item when you type in the filter box" },
-            new ListItem(new NoOpCommand()) { Title = "TODO: Implement your extension here" },
-            new ListItem(new NoOpCommand()) { Title = "This one has a subtitle too", Subtitle = "Example Subtitle" },
-            new ListItem(new NoOpCommand())
-            {
-                Title = "This one has a tag too",
-                Subtitle = "the one with a tag",
-                Tags = [new Tag()
-                        {
-                            Text = "Sample Tag",
-                        }
-                ],
-            }
-        ];
+        RaiseItemsChanged(newSearch.Length);
+    }
+
+    public override IListItem[] GetItems()
+    {
+        var items = SearchText.ToCharArray().Select(ch => new ListItem(new NoOpCommand()) { Title = ch.ToString() }).ToArray();
+        if (items.Length == 0)
+        {
+            items = [new ListItem(new NoOpCommand()) { Title = "Start typing in the search box" }];
+        }
+
+        if (items.Length > 0)
+        {
+            items[0].Subtitle = "Notice how the number of items changes for this page when you type in the filter box";
+        }
+
+        return items;
     }
 }

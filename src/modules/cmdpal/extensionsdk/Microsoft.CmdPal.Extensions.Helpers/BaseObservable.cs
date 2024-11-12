@@ -9,6 +9,7 @@ namespace Microsoft.CmdPal.Extensions.Helpers;
 // TODO! We probably want to have OnPropertyChanged raise the event
 // asynchonously, so as to not block the extension app while it's being
 // processed in the host app.
+// (also consider this for ItemsChanged in ListPage)
 public class BaseObservable : INotifyPropChanged
 {
     public event TypedEventHandler<object, PropChangedEventArgs>? PropChanged;

@@ -531,11 +531,15 @@ Lists can be either "static" or "dynamic":
 * A **dynamic** list leaves the extension in charge of filtering the list of
   items.
   * These are implementations of the `IDynamicListPage` interface.
-  * In this case, `GetItems` will be called every time the query
-    changes, and the extension is responsible for filtering the list of items.
+  * In this case, the host app will call the setter for `SearchText` on the
+    `IDynamicListPage` when the user changes the query. The extension may then
+    raise an `ItemsChanged` event afterwards, to let the host know it needs to
+    fetch items again. Additionally, the host app won't do any filtering of the
+    results - it's the extension's responsibility to filter them.
     * Ex: The GitHub extension may want to allow the user to type `is:issue
       is:open`, then return a list of open issues, without string matching on
-      the text.
+      the text. 
+
 
 ```csharp
 interface IFallbackHandler {
@@ -571,18 +575,22 @@ interface IGridProperties  {
     Windows.Foundation.Size TileSize { get; };
 }
 
-interface IListPage requires IPage {
+interface IListPage requires IPage, INotifyItemsChanged {
+    // DevPal will be responsible for filtering the list of items, unless the 
+    // class implements IDynamicListPage
     String SearchText { get; };
     String PlaceholderText { get; };
     Boolean ShowDetails{ get; };
     IFilters Filters { get; };
     IGridProperties GridProperties { get; };
+    Boolean HasMore { get; };
 
-    IListItem[] GetItems(); // DevPal will be responsible for filtering the list of items
+    IListItem[] GetItems();     
+    void LoadMore();
 }
 
 interface IDynamicListPage requires IListPage {
-    IListItem[] GetItems(String query); // DevPal will do no filtering of these items
+    String SearchText { set; };
 }
 ```
 
@@ -766,7 +774,39 @@ changed event.
 > But we want both static and dynamic lists to be able to update the results in
 > real-time. Example: A process list that updates in real-time. We want to be
 > able to add and remove items from the list as they start and stop.
+>
+> Additionally, `HasMoreItems` / `LoadMoreItems` is almost exactly
+> [`ISupportIncrementalLoading`], but without 1: the async aspect, 2: forcing us
+> to pull in XAML as a dependency
 
+Here's a breakdown of how a dynamic list responds to the CmdPal. In this
+example, we'll use a hypothetical GitHub issue search extension, which allows
+the user to type a query and get a list of issues back.
+
+1. CmdPal loads the `ListPage` from the extension. 
+2. It is a `IDynamicListPage`, so the command palette knows not to do any
+   host-side filtering.
+3. CmdPal reads the `SearchText` from the ListPage 
+   - it returns `is:issue is:open` as initial text
+4. CmdPal reads the `HasMoreItems` from the ListPage 
+   - it returns `true`
+5. CmdPal calls `GetItems()` 
+   - the extension returns the first 25 items that match the query. 
+6. User scrolls the page to the bottom 
+   - CmdPal calls `GetMore` on the ListPage, to let it know it should start
+     fetching more results
+7. The extension raises a `ItemsChanged(40)`, to indicate that it now has 40 items
+   - CmdPal calls `GetItems`, which the command returns the whole list of items
+      - CmdPal does an in-place update of the existing items - ignoring the
+        unchanged ones, and appending the new ones to the end of the list
+   - The extension probably also raises a `PropChanged("HasMoreItems")` here,
+     (but we'll skip that for simplicity)
+8. The user types `foo`.
+   - CmdPal calls `page.SearchText("is:issue is:open foo")`, to let the
+     extension know the query has changed
+9. The extension does the background query to match
+10. The extension raises an `ItemsChanged(5)`, to indicate there are 5 results
+11. CmdPal calls `GetItems` to fetch the items.
 
 ##### Filtering the list
 
@@ -1105,6 +1145,12 @@ interface INotifyPropChanged {
 }
 runtimeclass PropChangedEventArgs {
     String PropName { get; };
+}
+interface INotifyItemsChanged {
+    event Windows.Foundation.TypedEventHandler<Object, ItemsChangedEventArgs> ItemsChanged;
+}
+runtimeclass ItemsChangedEventArgs {
+    Int32 TotalItems { get; };
 }
 ```
 
@@ -1688,3 +1734,4 @@ Or, to generate straight to the place I'm consuming it from:
     MBM. Thanks to Mano for helping me figure this one out.
 
 [Dev Home Extension]: https://learn.microsoft.com/en-us/windows/dev-home/extensions
+[`ISupportIncrementalLoading`]: https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.data.isupportincrementalloading

@@ -97,7 +97,7 @@
                 x:Name="mdTextBox"
                 Background="Transparent"
                 IsTextSelectionEnabled="True"
-                Text="{x:Bind ViewModel.MarkdownContent, Mode=OneWay}" />
+                Text="" />
         </ScrollViewer>
 
         <!--  Footer  -->
