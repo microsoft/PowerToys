@@ -4593,10 +4593,10 @@ When you reach the end of the file, ZoomIt will reload the file and start at the
     <value>Drive input with typing</value>
   </data>
   <data name="ZoomIt_DemoType_SpeedSlider.Header" xml:space="preserve">
-    <value>DemoType typing speed (milliseconds per character)</value>
+    <value>DemoType typing speed</value>
   </data>
   <data name="ZoomIt_DemoType_SpeedSlider_Thumbnail_Explanation" xml:space="preserve">
-    <value>smaller is faster</value>
+    <value>bigger is faster</value>
   </data>
   <data name="ZoomIt_BreakGroup.Header" xml:space="preserve">
     <value>Break</value>
