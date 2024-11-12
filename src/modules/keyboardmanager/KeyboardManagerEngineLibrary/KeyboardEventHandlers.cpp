@@ -35,6 +35,7 @@ namespace
 
     void UpdateNumpadWithShift(LowlevelKeyboardEvent* data, State& state)
     {
+        //Function for fixing numpas when used as shift https://github.com/microsoft/PowerToys/issues/22346
         if (Helpers::IsNumpadOriginated(data->lParam->vkCode))
         {
             DWORD decodedKey = Helpers::DecodeKeyNumpadOrigin(data->lParam->vkCode);
@@ -47,18 +48,15 @@ namespace
                 auto keyIt = state.GetSingleKeyRemap(it->second);
                 if (keyIt)
                 {
+                    //if key is stored as shift replace it with the numpad key
                     auto keyValue = keyIt.value();
                     if (keyValue->second.index() == 0)
                     {
                         auto key = std::get<DWORD>(keyValue->second);
                         if (key == VK_LSHIFT || key == VK_RSHIFT)
                         {
-                            if (data->lParam->flags & 0x80)
-                            {
-                                //if a numpad that overides e
-                                // is pressed get the original key
-                                data->lParam->vkCode = it->second;
-                            }
+                            //replace it with original numpad
+                            data->lParam->vkCode = it->second;
                         }
                     }
                     if (keyValue->second.index() == 1)
@@ -66,11 +64,8 @@ namespace
                         auto key = std::get<Shortcut>(keyValue->second);
                         if (key.shiftKey != ModifierKey::Disabled)
                         {
-                            if (data->lParam->flags & 0x80)
-                            {
-                                //if a numpad that overides is pressed get the original key
-                                data->lParam->vkCode = it->second;
-                            }
+                            //replace it with original numpad
+                            data->lParam->vkCode = it->second;
                         }
                     }
                 }
