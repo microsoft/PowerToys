@@ -4721,6 +4721,18 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="ZoomIt_Snip_Shortcut.Header" xml:space="preserve">
     <value>Snip Toggle Hotkey</value>
   </data>
+  <data name="Oobe_ZoomIt.Description" xml:space="preserve">
+    <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
+    <comment>{Locked="ZoomIt"}</comment>
+  </data>
+  <data name="Oobe_ZoomIt.Title" xml:space="preserve">
+    <value>ZoomIt</value>
+    <comment>{Locked="ZoomIt"}</comment>
+  </data>
+  <data name="Oobe_ZoomIt_HowToUse.Text" xml:space="preserve">
+    <value>Enable ZoomIt from the Settings page and check available shortcuts and modes.</value>
+    <comment>{Locked="ZoomIt"}</comment>
+  </data>
   <data name="MouseWithoutBorders_PolicyIPAddressMappingInfo.Title" xml:space="preserve">
     <value>Rules defined by your organization</value>
   </data>

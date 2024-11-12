@@ -34,5 +34,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         WhatsNew,
         RegistryPreview,
         NewPlus,
+        ZoomIt,
     }
 }

@@ -90,7 +90,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             Modules.Insert((int)PowerToysModules.CmdNotFound, new OobePowerToysModule()
             {
                 ModuleName = "CmdNotFound",
-                IsNew = true,
+                IsNew = false,
             });
             Modules.Insert((int)PowerToysModules.ColorPicker, new OobePowerToysModule()
             {
@@ -100,12 +100,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             Modules.Insert((int)PowerToysModules.CropAndLock, new OobePowerToysModule()
             {
                 ModuleName = "CropAndLock",
-                IsNew = true,
+                IsNew = false,
             });
             Modules.Insert((int)PowerToysModules.EnvironmentVariables, new OobePowerToysModule()
             {
                 ModuleName = "EnvironmentVariables",
-                IsNew = true,
+                IsNew = false,
             });
             Modules.Insert((int)PowerToysModules.FancyZones, new OobePowerToysModule()
             {
@@ -115,7 +115,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             Modules.Insert((int)PowerToysModules.FileLocksmith, new OobePowerToysModule()
             {
                 ModuleName = "FileLocksmith",
-                IsNew = true,
+                IsNew = false,
             });
             Modules.Insert((int)PowerToysModules.FileExplorer, new OobePowerToysModule()
             {
@@ -140,12 +140,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             Modules.Insert((int)PowerToysModules.MouseWithoutBorders, new OobePowerToysModule()
             {
                 ModuleName = "MouseWithoutBorders",
-                IsNew = true,
+                IsNew = false,
             });
             Modules.Insert((int)PowerToysModules.Peek, new OobePowerToysModule()
             {
                 ModuleName = "Peek",
-                IsNew = true,
+                IsNew = false,
             });
             Modules.Insert((int)PowerToysModules.PowerRename, new OobePowerToysModule()
             {
@@ -188,13 +188,13 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             Modules.Insert((int)PowerToysModules.Hosts, new OobePowerToysModule()
             {
                 ModuleName = "Hosts",
-                IsNew = true,
+                IsNew = false,
             });
 
             Modules.Insert((int)PowerToysModules.Workspaces, new OobePowerToysModule()
             {
                 ModuleName = "Workspaces",
-                IsNew = false,
+                IsNew = true,
             });
 
             Modules.Insert((int)PowerToysModules.WhatsNew, new OobePowerToysModule()
@@ -206,12 +206,18 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             Modules.Insert((int)PowerToysModules.RegistryPreview, new OobePowerToysModule()
             {
                 ModuleName = "RegistryPreview",
-                IsNew = true,
+                IsNew = false,
             });
 
             Modules.Insert((int)PowerToysModules.NewPlus, new OobePowerToysModule()
             {
                 ModuleName = "NewPlus",
+                IsNew = true,
+            });
+
+            Modules.Insert((int)PowerToysModules.ZoomIt, new OobePowerToysModule()
+            {
+                ModuleName = "ZoomIt",
                 IsNew = true,
             });
         }
@@ -294,6 +300,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "Peek": NavigationFrame.Navigate(typeof(OobePeek)); break;
                     case "NewPlus": NavigationFrame.Navigate(typeof(OobeNewPlus)); break;
                     case "Workspaces": NavigationFrame.Navigate(typeof(OobeWorkspaces)); break;
+                    case "ZoomIt": NavigationFrame.Navigate(typeof(OobeZoomIt)); break;
                 }
             }
         }
