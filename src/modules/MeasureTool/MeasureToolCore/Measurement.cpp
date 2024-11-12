@@ -153,7 +153,7 @@ Measurement::PrintResult Measurement::Print(wchar_t* buf,
         Measurement::Unit::Pixel, Measurement::Unit::Millimetre,
         Measurement::Unit::Inch, Measurement::Unit::Centimetre,
     };
-    // We only use two unints at most, it would be to long otherwise.
+    // We only use two units at most, it would be to long otherwise.
     for each (Measurement::Unit unit in allUnits)
     {
         if ((unit & units) == unit)

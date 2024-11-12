@@ -340,6 +340,7 @@ devblogs
 devdocs
 devenum
 devmgmt
+DEVMODE
 DEVMODEW
 DEVMON
 devpkey
@@ -608,6 +609,7 @@ hmenu
 hmodule
 hmonitor
 homljgmgpmcbpjbnjpfijnhipfkiclkd
+HORZSIZE
 Hostbackdropbrush
 hotkeycontrol
 hotkeys
@@ -1133,6 +1135,7 @@ pcelt
 pch
 pchast
 PCIDLIST
+PCTSTR
 PCWSTR
 pdbs
 pdisp
@@ -1276,6 +1279,7 @@ RAlt
 Rasterize
 RAWINPUTDEVICE
 RAWINPUTHEADER
+RAWMODE
 RAWPATH
 rbhid
 rclsid
@@ -1676,6 +1680,7 @@ UNCPRIORITY
 UNDNAME
 UNICODETEXT
 uninstantiated
+unints
 uniquifier
 Uniquifies
 unitconverter
@@ -1727,6 +1732,7 @@ VERBW
 VERIFYCONTEXT
 verrsrc
 VERSIONINFO
+VERTSIZE
 VFT
 vget
 vgetq
