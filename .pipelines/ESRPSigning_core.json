@@ -215,6 +215,9 @@
                 "PowerToys.VideoConferenceProxyFilter_x64.dll",
                 "PowerToys.VideoConferenceProxyFilter_arm64.dll",
 
+                "PowerToys.ZoomIt.exe",
+                "PowerToys.ZoomItSettingsInterop.dll",
+
                 "WinUI3Apps\\PowerToys.Settings.dll",
                 "WinUI3Apps\\PowerToys.Settings.exe"
             ],
