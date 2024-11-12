@@ -12,9 +12,11 @@ namespace ProcessMonitorExtension;
 [ComVisible(true)]
 [Guid("8BD7A6C4-7185-4426-AE8D-61E438A3E740")]
 [ComDefaultInterface(typeof(IExtension))]
-public sealed partial class SampleExtension : IExtension
+public sealed partial class SampleExtension : IExtension, IDisposable
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
+
+    private readonly ProcessMonitorCommandProvider _provider = new();
 
     public SampleExtension(ManualResetEvent extensionDisposedEvent)
     {
@@ -26,7 +28,7 @@ public sealed partial class SampleExtension : IExtension
         switch (providerType)
         {
             case ProviderType.Commands:
-                return new ProcessMonitorCommandProvider();
+                return _provider;
             default:
                 return null;
         }

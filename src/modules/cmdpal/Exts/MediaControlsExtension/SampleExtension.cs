@@ -12,9 +12,11 @@ namespace MediaControlsExtension;
 [ComVisible(true)]
 [Guid("bb60a98a-0197-4378-9b40-b684f4068d1d")]
 [ComDefaultInterface(typeof(IExtension))]
-public sealed partial class SampleExtension : IExtension
+public sealed partial class SampleExtension : IExtension, IDisposable
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
+
+    private readonly MediaActionsProvider _provider = new();
 
     public SampleExtension(ManualResetEvent extensionDisposedEvent)
     {
@@ -26,7 +28,7 @@ public sealed partial class SampleExtension : IExtension
         switch (providerType)
         {
             case ProviderType.Commands:
-                return new MediaActionsProvider();
+                return _provider;
             default:
                 return null;
         }

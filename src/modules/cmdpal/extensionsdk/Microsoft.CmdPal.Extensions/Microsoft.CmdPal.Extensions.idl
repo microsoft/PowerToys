@@ -247,12 +247,17 @@ namespace Microsoft.CmdPal.Extensions
     }
     
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    interface ICommandSettings {
+        IFormPage SettingsPage { get; };
+    };
+    
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     interface ICommandProvider requires Windows.Foundation.IClosable
     {
         String DisplayName { get; };
         IconDataType Icon { get; };
+        ICommandSettings Settings { get; };
         // TODO! Boolean CanBeCached { get; };
-        // TODO! IFormPage SettingsPage { get; };
     
         IListItem[] TopLevelCommands();
     

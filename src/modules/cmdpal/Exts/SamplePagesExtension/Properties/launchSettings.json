@@ -1,7 +1,8 @@
 {
   "profiles": {
     "SamplePagesExtension (Package)": {
-      "commandName": "MsixPackage"
+      "commandName": "MsixPackage",
+      "doNotLaunchApp": true
     },
     "SamplePagesExtension (Unpackaged)": {
       "commandName": "Project"

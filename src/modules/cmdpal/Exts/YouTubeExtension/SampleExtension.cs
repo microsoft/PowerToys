@@ -12,9 +12,11 @@ namespace YouTubeExtension;
 [ComVisible(true)]
 [Guid("95696eff-5c44-41ad-8f64-c2182ec9e3fd")]
 [ComDefaultInterface(typeof(IExtension))]
-public sealed partial class SampleExtension : IExtension
+public sealed partial class SampleExtension : IExtension, IDisposable
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
+
+    private readonly YouTubeExtensionActionsProvider _provider = new();
 
     public SampleExtension(ManualResetEvent extensionDisposedEvent)
     {
@@ -26,7 +28,7 @@ public sealed partial class SampleExtension : IExtension
         switch (providerType)
         {
             case ProviderType.Commands:
-                return new YouTubeExtensionActionsProvider();
+                return _provider;
             default:
                 return null;
         }

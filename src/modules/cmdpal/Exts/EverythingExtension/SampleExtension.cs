@@ -12,9 +12,11 @@ namespace EverythingExtension;
 [ComVisible(true)]
 [Guid("c4d344ce-480a-4ef5-9875-96e7bf2b6992")]
 [ComDefaultInterface(typeof(IExtension))]
-public sealed partial class SampleExtension : IExtension
+public sealed partial class SampleExtension : IExtension, IDisposable
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
+
+    private readonly EverythingExtensionActionsProvider _provider = new();
 
     public SampleExtension(ManualResetEvent extensionDisposedEvent)
     {
@@ -26,7 +28,7 @@ public sealed partial class SampleExtension : IExtension
         switch (providerType)
         {
             case ProviderType.Commands:
-                return new EverythingExtensionActionsProvider();
+                return _provider;
             default:
                 return null;
         }

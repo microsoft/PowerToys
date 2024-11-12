@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Text.Json;
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
@@ -101,6 +102,12 @@ public sealed class FormViewModel : INotifyPropertyChanged
             // Process them as desired
             var handlers = RequestSubmitForm;
             handlers?.Invoke(this, new() { FormData = inputs, Form = _form });
+        }
+        else if (args.Action is AdaptiveExecuteAction executeAction)
+        {
+            var inputs = executeAction.DataJson?.Stringify();
+            _ = inputs;
+            Debug.WriteLine($"Execute form: {inputs}");
         }
     }
 

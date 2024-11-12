@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.CmdPal.Common.Extensions;
 using Microsoft.CmdPal.Common.Services;
@@ -166,8 +167,21 @@ public sealed partial class MainPage : Page
     {
         var formData = args.FormData;
         var form = args.Form;
-        var result = form.SubmitForm(formData);
-        HandleResult(result);
+
+        // TODO ~ when we have a real MVVM app ~
+        // This should be done in a Task, on a background thread, and awaited
+        try
+        {
+            var result = form.SubmitForm(formData);
+
+            // Log successful form submission
+            HandleResult(result);
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine("Error submitting form to extension");
+            Debug.WriteLine(e.Message);
+        }
     }
 
     private void HandleResult(ICommandResult? res)

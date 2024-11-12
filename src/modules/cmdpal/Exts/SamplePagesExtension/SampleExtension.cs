@@ -12,9 +12,11 @@ namespace SamplePagesExtension;
 [ComVisible(true)]
 [Guid("6112D28D-6341-45C8-92C3-83ED55853A9F")]
 [ComDefaultInterface(typeof(IExtension))]
-public sealed partial class SampleExtension : IExtension
+public sealed partial class SampleExtension : IExtension, IDisposable
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
+
+    private readonly SamplePagesCommandsProvider _provider = new();
 
     public SampleExtension(ManualResetEvent extensionDisposedEvent)
     {
@@ -26,7 +28,7 @@ public sealed partial class SampleExtension : IExtension
         switch (providerType)
         {
             case ProviderType.Commands:
-                return new SamplePagesCommandsProvider();
+                return _provider;
             default:
                 return null;
         }

@@ -12,9 +12,11 @@ namespace SpongebotExtension;
 [ComVisible(true)]
 [Guid("a50859fc-a214-4852-b47b-62ada70df7bc")]
 [ComDefaultInterface(typeof(IExtension))]
-public sealed partial class SampleExtension : IExtension
+public sealed partial class SampleExtension : IExtension, IDisposable
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
+
+    private readonly SpongebotCommandsProvider _provider = new();
 
     public SampleExtension(ManualResetEvent extensionDisposedEvent)
     {
@@ -26,7 +28,7 @@ public sealed partial class SampleExtension : IExtension
         switch (providerType)
         {
             case ProviderType.Commands:
-                return new SpongebotCommandsProvider();
+                return _provider;
             default:
                 return null;
         }

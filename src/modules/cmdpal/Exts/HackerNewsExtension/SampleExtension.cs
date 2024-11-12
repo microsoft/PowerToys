@@ -12,9 +12,11 @@ namespace HackerNewsExtension;
 [ComVisible(true)]
 [Guid("283DDB0F-1AD9-406F-B359-699BFBD2DA68")]
 [ComDefaultInterface(typeof(IExtension))]
-public sealed partial class SampleExtension : IExtension
+public sealed partial class SampleExtension : IExtension, IDisposable
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
+
+    private readonly HackerNewsCommandsProvider _provider = new();
 
     public SampleExtension(ManualResetEvent extensionDisposedEvent)
     {
@@ -26,7 +28,7 @@ public sealed partial class SampleExtension : IExtension
         switch (providerType)
         {
             case ProviderType.Commands:
-                return new HackerNewsCommandsProvider();
+                return _provider;
             default:
                 return null;
         }

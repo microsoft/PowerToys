@@ -12,9 +12,11 @@ namespace TemplateExtension;
 [ComVisible(true)]
 [Guid("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF")]
 [ComDefaultInterface(typeof(IExtension))]
-public sealed partial class SampleExtension : IExtension
+public sealed partial class SampleExtension : IExtension, IDisposable
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
+
+    private readonly TemplateExtensionActionsProvider _provider = new();
 
     public SampleExtension(ManualResetEvent extensionDisposedEvent)
     {
@@ -26,7 +28,7 @@ public sealed partial class SampleExtension : IExtension
         switch (providerType)
         {
             case ProviderType.Commands:
-                return new TemplateExtensionActionsProvider();
+                return _provider;
             default:
                 return null;
         }

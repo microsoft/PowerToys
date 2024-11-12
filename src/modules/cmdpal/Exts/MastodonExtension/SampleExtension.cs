@@ -12,9 +12,11 @@ namespace MastodonExtension;
 [ComVisible(true)]
 [Guid("f0e93f1a-2b64-4896-abcc-8d2145480ede")]
 [ComDefaultInterface(typeof(IExtension))]
-public sealed partial class SampleExtension : IExtension
+public sealed partial class SampleExtension : IExtension, IDisposable
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
+
+    private readonly MastodonExtensionActionsProvider _provider = new();
 
     public SampleExtension(ManualResetEvent extensionDisposedEvent)
     {
@@ -26,7 +28,7 @@ public sealed partial class SampleExtension : IExtension
         switch (providerType)
         {
             case ProviderType.Commands:
-                return new MastodonExtensionActionsProvider();
+                return _provider;
             default:
                 return null;
         }

@@ -12,9 +12,11 @@ namespace SSHKeychainExtension;
 [ComVisible(true)]
 [Guid("D07A5785-2334-4686-9A49-AE19D992284F")]
 [ComDefaultInterface(typeof(IExtension))]
-public sealed partial class SampleExtension : IExtension
+public sealed partial class SampleExtension : IExtension, IDisposable
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
+
+    private readonly SSHKeychainCommandsProvider _provider = new();
 
     public SampleExtension(ManualResetEvent extensionDisposedEvent)
     {
@@ -26,7 +28,7 @@ public sealed partial class SampleExtension : IExtension
         switch (providerType)
         {
             case ProviderType.Commands:
-                return new SSHKeychainCommandsProvider();
+                return _provider;
             default:
                 return null;
         }

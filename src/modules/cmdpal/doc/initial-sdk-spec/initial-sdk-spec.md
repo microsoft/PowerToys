@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2024-11-04
+last updated: 2024-11-07
 issue id: n/a
 ---
 
@@ -62,10 +62,10 @@ functionality.
       - [`INotifyPropChanged`](#inotifypropchanged)
       - [`ICommandProvider`](#icommandprovider)
     - [Settings](#settings)
-    - [Retrieving info from the host](#retrieving-info-from-the-host)
   - [Helper SDK Classes](#helper-sdk-classes)
     - [Default implementations](#default-implementations)
     - [Using the Clipboard](#using-the-clipboard)
+    - [Settings helpers](#settings-helpers)
   - [Advanced scenarios](#advanced-scenarios)
     - [Status messages](#status-messages)
   - [Class diagram](#class-diagram)
@@ -1118,12 +1118,16 @@ prevent confusion with the XAML version.
 This is the interface that an extension must implement to provide commands to DevPal.
 
 ```csharp
+interface ICommandSettings {
+    IFormPage SettingsPage { get; };
+};
+
 interface ICommandProvider requires Windows.Foundation.IClosable
 {
     String DisplayName { get; };
     IconDataType Icon { get; };
+    ICommandSettings Settings { get; };
     // TODO! Boolean CanBeCached { get; };
-    // TODO! IFormPage SettingsPage { get; };
 
     IListItem[] TopLevelCommands();
 
@@ -1141,21 +1145,20 @@ top-level items are `IListItem`s, they can have `MoreCommands`, `Details` and
 
 ### Settings
 
-Extensions may also want to provide settings to the user.
+Extensions may also want to provide settings to the user. They can do this by
+implementing the `ICommandSettings` interface. This interface has a single
+property, `SettingsPage`, which is a `FormPage`. (We're adding the layer of
+abstraction here to allow for further additions to `ICommandSettings` in the
+future.)
 
-[TODO!]: write this
+In the DevPal settings page, we can then link to each extension's given settings
+page. As these pages are just `FormPage`s, they can be as simple or as complex
+as the extension developer wants, and they're rendered and interacted with in
+the same way.
 
-It would be pretty trivial to just allow apps to provide a `FormPage` as their
-settings page. That would hilariously just work I think. I dunno if Adaptive
-Cards is great for real-time saving of settings though.
-
-We probably also want to provide a helper class for storing settings, so that
-apps don't need to worry too much about mucking around with that. I'm especially
-thinking about storing credentials securely.
-
-### Retrieving info from the host
-
-TODO! write me
+We're then additionally going to provide a collection of settings helpers for
+developers in the helper SDK. This should allow developers to quickly work to
+add settings, without mucking around in building the form JSON themselves.
 
 ## Helper SDK Classes
 
@@ -1243,6 +1246,83 @@ presents persistent difficulties.
 
 We'll provide a helper class that allows developers to easily use the clipboard
 in their extensions.
+
+### Settings helpers
+
+The DevPal helpers library also includes a set of helpers for building settings
+pages for you. This lets you define a `Settings` object as a collection of
+properties, controlled by how they're presented in the UI. The helpers library
+will then handle the process of turning those properties into a `IForm` for you.
+
+As a complete example: Here's a sample of an app which defines a pair of
+settings (`onOff` and `whatever`) in their `MyAppSettings` class.
+`MyAppSettings` can be responsible for loading or saving the settings however
+the developer best sees fit. They then pass an instance of that object to the
+`MySettingsPage` class they define. In `MySettingsPage.Forms`, the developer
+doesn't need to do any work to build up the Adaptive Card JSON at all. Just call
+`Settings.ToForms()`. The generated form will call back to the extension's code
+in `SettingsChanged` when the user submits the `IForm`. At that point, the
+extension author is again free to do whatever they'd like - store the json
+wherever they want, use the updated values, whatever.
+
+```cs
+class MyAppSettings {
+    private readonly Helpers.Settings _settings = new();
+    public Helpers.Settings Settings => _settings;
+
+    public MyAppSettings() {
+        // Define the structure of your settings here. 
+        var onOffSetting = new Helpers.ToggleSetting("onOff", "Enable feature", "This feature will do something cool", true);
+        var textSetting = new Helpers.TextSetting("whatever", "Text setting", "This is a text setting", "Default text");
+        _settings.Add(onOffSetting);
+        _settings.Add(onOffSetting);
+    }
+    public void LoadSavedData()
+    {
+        // Possibly, load the settings from a file or something
+        var persistedData = /* load the settings from file */;
+        _settings.LoadState(persistedData);
+    }
+    public void SaveSettings()
+    {
+        /* You can save the settings to the file here */
+        var mySettingsFilePath = /* whatever */;
+        string mySettingsJson = mySettings.Settings.GetState();
+        // Or you could raise a event to indicate to the rest of your app that settings have changed. 
+    }
+}
+
+class MySettingsPage : Microsoft.Windows.Run.Extensions.FormPage 
+{
+    private readonly MyAppSettings mySettings;
+    public MySettingsPage(MyAppSettings s) {
+        mySettings = s;
+        mySettings.Settings.SettingsChanged += SettingsChanged;
+    }
+    public override IForm[] Forms() {
+        // If you haven't already: 
+        mySettings.Settings.LoadSavedData();
+        return mySettings.Settings.ToForms();
+    }
+    
+    private void SettingsChanged(object sender, Settings args)
+    {
+        /* Do something with the new settings here */
+        var onOff = _settings.GetSetting<bool>("onOff");
+        ExtensionHost.LogMessage(new LogMessage() { Message = $"MySettingsPage: Changed the value of onOff to {onOff}" });
+
+        // Possibly even: 
+        mySettings.SaveSettings();
+    }
+}
+
+// elsewhere in your app:
+
+MyAppSettings instance = /* Up to you how you want to pass this around. 
+                            Singleton, dependency injection, whatever. */ 
+var onOff = instance.Settings.Get("onOff");
+
+```
 
 ## Advanced scenarios
 

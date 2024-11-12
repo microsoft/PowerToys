@@ -10,11 +10,15 @@ public partial class CommandProvider : ICommandProvider
 
     private IconDataType _icon = new(string.Empty);
 
+    private ICommandSettings? _settings;
+
     public string DisplayName { get => _displayName; protected set => _displayName = value; }
 
     public IconDataType Icon { get => _icon; protected set => _icon = value; }
 
     public virtual IListItem[] TopLevelCommands() => throw new NotImplementedException();
+
+    public ICommandSettings? Settings { get => _settings; protected set => _settings = value; }
 
     public void InitializeWithHost(IExtensionHost host)
     {
