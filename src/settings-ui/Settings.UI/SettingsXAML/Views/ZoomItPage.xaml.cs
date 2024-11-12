@@ -49,17 +49,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private static LOGFONT PickFontDialog(LOGFONT font)
         {
-            IntPtr pLogFont  = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(LOGFONT)));
+            IntPtr pLogFont = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(LOGFONT)));
             if (font != null)
             {
                 font.lfHeight = -21;
-                Marshal.StructureToPtr(font, pLogFont , false);
+                Marshal.StructureToPtr(font, pLogFont, false);
             }
             else
             {
                 LOGFONT logFont = new LOGFONT();
                 logFont.lfHeight = -21;
-                Marshal.StructureToPtr(logFont, pLogFont , false);
+                Marshal.StructureToPtr(logFont, pLogFont, false);
             }
 
             CHOOSEFONT chooseFont = new CHOOSEFONT();
@@ -74,7 +74,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             chooseFont.hInstance = Marshal.GetHINSTANCE(typeof(ZoomItPage).Module);
 
             // TODO: chooseFont.lpTemplateName = FORMATDLGORD31; and CHOOSE_FONT_FLAGS.CF_ENABLETEMPLATE
-            chooseFont.lpLogFont = pLogFont ;
+            chooseFont.lpLogFont = pLogFont;
 
             IntPtr pChooseFont = Marshal.AllocHGlobal(Marshal.SizeOf(chooseFont));
             Marshal.StructureToPtr(chooseFont, pChooseFont, false);
@@ -88,7 +88,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     Logger.LogError($"ChooseFont failed with extended error code {error}");
                 }
 
-                Marshal.FreeHGlobal(pLogFont );
+                Marshal.FreeHGlobal(pLogFont);
                 Marshal.FreeHGlobal(pChooseFont);
                 return null;
             }
@@ -96,7 +96,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             CHOOSEFONT dialogResult = Marshal.PtrToStructure<CHOOSEFONT>(pChooseFont);
             LOGFONT result = Marshal.PtrToStructure<LOGFONT>(dialogResult.lpLogFont);
 
-            Marshal.FreeHGlobal(pLogFont );
+            Marshal.FreeHGlobal(pLogFont);
             Marshal.FreeHGlobal(pChooseFont);
             return result;
         }
