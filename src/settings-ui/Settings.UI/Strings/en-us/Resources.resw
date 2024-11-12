@@ -4476,6 +4476,9 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
     <comment>{Locked="ZoomIt"}</comment>
   </data>
+  <data name="ZoomIt_ShortDescription" xml:space="preserve">
+    <value>a screen zoom, annotation, and recording tool for technical presentations and demos.</value>
+  </data>
   <data name="ZoomIt.ModuleTitle" xml:space="preserve">
     <value>ZoomIt</value>
     <comment>{Locked="ZoomIt"}</comment>
