@@ -73,12 +73,6 @@
                                 </StackPanel>
                             </tkcontrols:SettingsCard.Description>
                         </tkcontrols:SettingsCard>
-                        <tkcontrols:SettingsCard
-                            x:Uid="AdvancedPaste_ShowCustomPreviewSettingsCard"
-                            HeaderIcon="{ui:FontIcon Glyph=&#xE71E;}"
-                            IsEnabled="{x:Bind ViewModel.IsOpenAIEnabled, Mode=OneWay}">
-                            <ToggleSwitch IsOn="{x:Bind ViewModel.ShowCustomPreview, Mode=TwoWay}" />
-                        </tkcontrols:SettingsCard>
                         <InfoBar
                             x:Uid="GPO_SettingIsManaged"
                             IsClosable="False"
@@ -89,6 +83,12 @@
                                 <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
                             </InfoBar.IconSource>
                         </InfoBar>
+                        <tkcontrols:SettingsCard
+                            x:Uid="AdvancedPaste_ShowCustomPreviewSettingsCard"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE71E;}"
+                            IsEnabled="{x:Bind ViewModel.IsOpenAIEnabled, Mode=OneWay}">
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.ShowCustomPreview, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
                     </controls:SettingsGroup>
 
                     <controls:SettingsGroup x:Uid="AdvancedPaste_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
