@@ -69,7 +69,8 @@ MonitorInfo MonitorInfo::GetFromPoint(int32_t x, int32_t y)
     return MonitorInfo::MonitorInfo(monitor);
 }
 
-MonitorInfo::Size MonitorInfo::GetSize(const MONITORINFOEX& monitorInfoEx) {
+MonitorInfo::Size MonitorInfo::GetSize(const MONITORINFOEX& monitorInfoEx)
+{
     Size size = {};
 
     auto device_name = PCTSTR(monitorInfoEx.szDevice);

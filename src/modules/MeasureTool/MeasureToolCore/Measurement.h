@@ -42,8 +42,8 @@ struct Measurement
                       const int units) const;
 
     void PrintToStream(std::wostream& stream,
-                      const bool prependNewLine,
-                      const bool printWidth,
-                      const bool printHeight,
-                      const Unit units) const;
+                       const bool prependNewLine,
+                       const bool printWidth,
+                       const bool printHeight,
+                       const Unit units) const;
 };

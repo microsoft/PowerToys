@@ -79,6 +79,6 @@ Settings Settings::LoadFromFile()
     catch (...)
     {
     }
-    
+
     return result;
 }

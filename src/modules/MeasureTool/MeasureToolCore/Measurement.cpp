@@ -95,8 +95,7 @@ Measurement::PrintResult Measurement::Print(wchar_t* buf,
     auto print = [=, &result](Measurement::Unit unit, const bool paren) {
         if (paren)
         {
-            result.strLen += swprintf_s(buf + result.strLen, bufSize - result.strLen, 
-                printWidth && printHeight ? L"\n(" : L" (");
+            result.strLen += swprintf_s(buf + result.strLen, bufSize - result.strLen, printWidth && printHeight ? L"\n(" : L" (");
         }
         if (printWidth)
         {
@@ -150,8 +149,10 @@ Measurement::PrintResult Measurement::Print(wchar_t* buf,
 
     int count = 0;
     const Measurement::Unit allUnits[] = {
-        Measurement::Unit::Pixel, Measurement::Unit::Millimetre,
-        Measurement::Unit::Inch, Measurement::Unit::Centimetre,
+        Measurement::Unit::Pixel,
+        Measurement::Unit::Millimetre,
+        Measurement::Unit::Inch,
+        Measurement::Unit::Centimetre,
     };
     // We only use two units at most, it would be to long otherwise.
     for each (Measurement::Unit unit in allUnits)
@@ -159,7 +160,8 @@ Measurement::PrintResult Measurement::Print(wchar_t* buf,
         if ((unit & units) == unit)
         {
             count += 1;
-            if (count > 2) break;
+            if (count > 2)
+                break;
             print(unit, count != 1);
         }
     }
@@ -205,4 +207,3 @@ void Measurement::PrintToStream(std::wostream& stream,
         break;
     }
 }
-
