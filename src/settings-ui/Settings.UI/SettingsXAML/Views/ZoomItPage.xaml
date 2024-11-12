@@ -53,13 +53,14 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.AnimateZoom, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Slider_InitialMagnification">
-                        <Slider MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                Minimum="0"
-                                Maximum="5"
-                                TickFrequency="1"
-                                TickPlacement="Outside"
-                                ThumbToolTipValueConverter="{StaticResource ZoomItInitialZoomConverter}"
-                                Value="{x:Bind ViewModel.ZoominSliderLevel, Mode=TwoWay}" />
+                        <Slider
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            Maximum="5"
+                            Minimum="0"
+                            ThumbToolTipValueConverter="{StaticResource ZoomItInitialZoomConverter}"
+                            TickFrequency="1"
+                            TickPlacement="Outside"
+                            Value="{x:Bind ViewModel.ZoominSliderLevel, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_LiveZoomGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
@@ -76,20 +77,19 @@
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Type_TextFont">
                         <tkcontrols:SettingsCard.Description>
                             <TextBlock
-                                Text="Sample"
                                 FontFamily="{x:Bind ViewModel.DemoSampleFontFamily, Mode=OneWay}"
                                 FontSize="{x:Bind ViewModel.DemoSampleFontSize, Mode=OneWay}"
-                                FontWeight="{x:Bind ViewModel.DemoSampleFontWeight, Mode=OneWay}"
                                 FontStyle="{x:Bind ViewModel.DemoSampleFontStyle, Mode=OneWay}"
-                                TextDecorations="{x:Bind ViewModel.DemoSampleTextDecoration, Mode=OneWay}"
-                                />
+                                FontWeight="{x:Bind ViewModel.DemoSampleFontWeight, Mode=OneWay}"
+                                Text="Sample"
+                                TextDecorations="{x:Bind ViewModel.DemoSampleTextDecoration, Mode=OneWay}" />
                         </tkcontrols:SettingsCard.Description>
-                        <Button x:Uid="ZoomIt_Type_Font_Button" Command="{x:Bind ViewModel.SelectTypeFontCommand, Mode=OneWay}"/>
+                        <Button x:Uid="ZoomIt_Type_Font_Button" Command="{x:Bind ViewModel.SelectTypeFontCommand, Mode=OneWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_DemoTypeGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_DemoType_File" Description="{x:Bind ViewModel.DemoTypeFile, Mode=OneWay}">
-                        <Button x:Uid="ZoomIt_DemoType_File_BrowseButton" Command="{x:Bind ViewModel.SelectDemoTypeFileCommand, Mode=OneWay}"/>
+                        <Button x:Uid="ZoomIt_DemoType_File_BrowseButton" Command="{x:Bind ViewModel.SelectDemoTypeFileCommand, Mode=OneWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_DemoType_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.DemoTypeToggleKey, Mode=TwoWay}" />
@@ -98,11 +98,12 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.DemoTypeUserDrivenMode, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_DemoType_SpeedSlider" Description="{x:Bind ViewModel.DemoTypeSpeedSlider, Mode=OneWay}">
-                        <Slider MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                Minimum="{x:Bind ViewModel.DemoTypeMaxTypingSpeed, Mode=OneWay}"
-                                Maximum="{x:Bind ViewModel.DemoTypeMinTypingSpeed, Mode=OneWay}"
-                                ThumbToolTipValueConverter="{StaticResource ZoomItTypeSpeedSliderConverter}"
-                                Value="{x:Bind ViewModel.DemoTypeSpeedSlider, Mode=TwoWay}" />
+                        <Slider
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            Maximum="{x:Bind ViewModel.DemoTypeMinTypingSpeed, Mode=OneWay}"
+                            Minimum="{x:Bind ViewModel.DemoTypeMaxTypingSpeed, Mode=OneWay}"
+                            ThumbToolTipValueConverter="{StaticResource ZoomItTypeSpeedSliderConverter}"
+                            Value="{x:Bind ViewModel.DemoTypeSpeedSlider, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_BreakGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
@@ -113,8 +114,8 @@
                         <NumberBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             LargeChange="10"
-                            Minimum="1"
                             Maximum="99"
+                            Minimum="1"
                             SmallChange="1"
                             SpinButtonPlacementMode="Compact"
                             Value="{x:Bind ViewModel.BreakTimeout, Mode=TwoWay}" />
@@ -126,8 +127,11 @@
                     <tkcontrols:SettingsExpander x:Uid="ZoomIt_Break_PlaySoundsFile" IsExpanded="True">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.BreakPlaySoundFile, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="ZoomIt_Break_SoundFile" Description="{x:Bind ViewModel.BreakSoundFile, Mode=OneWay}" IsEnabled="{x:Bind ViewModel.BreakPlaySoundFile, Mode=OneWay}">
-                                <Button x:Uid="ZoomIt_Break_SoundFile_BrowseButton" Command="{x:Bind ViewModel.SelectBreakSoundFileCommand, Mode=OneWay}"/>
+                            <tkcontrols:SettingsCard
+                                x:Uid="ZoomIt_Break_SoundFile"
+                                Description="{x:Bind ViewModel.BreakSoundFile, Mode=OneWay}"
+                                IsEnabled="{x:Bind ViewModel.BreakPlaySoundFile, Mode=OneWay}">
+                                <Button x:Uid="ZoomIt_Break_SoundFile_BrowseButton" Command="{x:Bind ViewModel.SelectBreakSoundFileCommand, Mode=OneWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
@@ -163,15 +167,21 @@
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard x:Uid="ZoomIt_Break_ShowDesktopOrImageFile" IsEnabled="{x:Bind ViewModel.BreakShowBackgroundFile, Mode=OneWay}">
                                 <RadioButtons SelectedIndex="{x:Bind ViewModel.BreakShowDesktopOrImageFileIndex, Mode=TwoWay}">
-                                    <RadioButton x:Uid="ZoomIt_Break_ShowFadedDesktop"/>
-                                    <RadioButton x:Uid="ZoomIt_Break_ShowImageFile"/>
+                                    <RadioButton x:Uid="ZoomIt_Break_ShowFadedDesktop" />
+                                    <RadioButton x:Uid="ZoomIt_Break_ShowImageFile" />
                                 </RadioButtons>
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="ZoomIt_Break_BackgroundFile" Description="{x:Bind ViewModel.BreakBackgroundFile, Mode=OneWay}" IsEnabled="{x:Bind ViewModel.BreakShowBackgroundFile, Mode=OneWay}">
-                                <Button x:Uid="ZoomIt_Break_BackgroundFile_BrowseButton" Command="{x:Bind ViewModel.SelectBreakBackgroundFileCommand, Mode=OneWay}"/>
+                            <tkcontrols:SettingsCard
+                                x:Uid="ZoomIt_Break_BackgroundFile"
+                                Description="{x:Bind ViewModel.BreakBackgroundFile, Mode=OneWay}"
+                                IsEnabled="{x:Bind ViewModel.BreakShowBackgroundFile, Mode=OneWay}">
+                                <Button x:Uid="ZoomIt_Break_BackgroundFile_BrowseButton" Command="{x:Bind ViewModel.SelectBreakBackgroundFileCommand, Mode=OneWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="ZoomIt_Break_BackgroundStretch">
-                                <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.BreakBackgroundStretch, Mode=TwoWay}" IsEnabled="{x:Bind ViewModel.BreakShowBackgroundFile, Mode=OneWay}"/>
+                                <ToggleSwitch
+                                    x:Uid="ToggleSwitch"
+                                    IsEnabled="{x:Bind ViewModel.BreakShowBackgroundFile, Mode=OneWay}"
+                                    IsOn="{x:Bind ViewModel.BreakBackgroundStretch, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
@@ -195,10 +205,15 @@
                         </ComboBox>
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Record_CaptureAudio">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.RecordCaptureAudio, Mode=TwoWay}"/>
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.RecordCaptureAudio, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Record_Microphone">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" ItemsSource="{x:Bind ViewModel.MicrophoneList}" DisplayMemberPath="Item2" SelectedValuePath="Item1" SelectedValue="{x:Bind Path=ViewModel.RecordMicrophoneDeviceId, Mode=TwoWay}"/>
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            DisplayMemberPath="Item2"
+                            ItemsSource="{x:Bind ViewModel.MicrophoneList}"
+                            SelectedValue="{x:Bind Path=ViewModel.RecordMicrophoneDeviceId, Mode=TwoWay}"
+                            SelectedValuePath="Item1" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_SnipGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
