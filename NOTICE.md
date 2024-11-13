@@ -1353,6 +1353,7 @@ EXHIBIT A -Mozilla Public License.
 - System.Data.OleDb 9.0.0
 - System.Data.SqlClient 4.8.6
 - System.Diagnostics.EventLog 9.0.0
+- System.Diagnostics.PerformanceCounter 9.0.0
 - System.Drawing.Common 9.0.0
 - System.IO.Abstractions 21.0.29
 - System.IO.Abstractions.TestingHelpers 21.0.29
