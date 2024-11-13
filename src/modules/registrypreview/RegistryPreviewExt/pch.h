@@ -9,7 +9,6 @@
 
 #include <thread>
 
-#include <ProjectTelemetry.h>
 #include <winrt/Windows.Foundation.Collections.h>
 //#include <Shlwapi.h>
 #include <common/SettingsAPI/settings_helpers.h>

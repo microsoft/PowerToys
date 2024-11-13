@@ -19,6 +19,7 @@ using System.Security.Principal;
 //     2023- Included in PowerToys.
 // </history>
 using MouseWithoutBorders.Class;
+using MouseWithoutBorders.Core;
 
 namespace MouseWithoutBorders
 {
@@ -44,17 +45,17 @@ namespace MouseWithoutBorders
                 {
                     dwSessionId = (uint)Process.GetCurrentProcess().SessionId;
                     uint rv = NativeMethods.WTSQueryUserToken(dwSessionId, ref hUserToken);
-                    LogDebug("WTSQueryUserToken returned " + rv.ToString(CultureInfo.CurrentCulture));
+                    Logger.LogDebug("WTSQueryUserToken returned " + rv.ToString(CultureInfo.CurrentCulture));
 
                     if (rv == 0)
                     {
-                        LogDebug($"WTSQueryUserToken failed with: {Marshal.GetLastWin32Error()}.");
+                        Logger.LogDebug($"WTSQueryUserToken failed with: {Marshal.GetLastWin32Error()}.");
                         return false;
                     }
 
                     if (!NativeMethods.DuplicateToken(hUserToken, (int)NativeMethods.SECURITY_IMPERSONATION_LEVEL.SecurityImpersonation, ref hUserTokenDup))
                     {
-                        TelemetryLogTrace($"DuplicateToken Failed! {GetStackTrace(new StackTrace())}", SeverityLevel.Warning);
+                        Logger.TelemetryLogTrace($"DuplicateToken Failed! {Logger.GetStackTrace(new StackTrace())}", SeverityLevel.Warning);
                         _ = NativeMethods.CloseHandle(hUserToken);
                         _ = NativeMethods.CloseHandle(hUserTokenDup);
                         return false;
@@ -70,7 +71,7 @@ namespace MouseWithoutBorders
                     }
                     else
                     {
-                        Log("ImpersonateLoggedOnUser Failed!");
+                        Logger.Log("ImpersonateLoggedOnUser Failed!");
                         _ = NativeMethods.CloseHandle(hUserToken);
                         _ = NativeMethods.CloseHandle(hUserTokenDup);
                         return false;
@@ -78,7 +79,7 @@ namespace MouseWithoutBorders
                 }
                 catch (Exception e)
                 {
-                    Common.Log(e);
+                    Logger.Log(e);
                     return false;
                 }
             }
@@ -102,7 +103,7 @@ namespace MouseWithoutBorders
             int dwSessionId;
             IntPtr hUserToken = IntPtr.Zero, hUserTokenDup = IntPtr.Zero;
 
-            Common.LogDebug("CreateProcessInInputDesktopSession called, launching " + commandLineWithArg + " on " + desktop);
+            Logger.LogDebug("CreateProcessInInputDesktopSession called, launching " + commandLineWithArg + " on " + desktop);
 
             try
             {
@@ -122,7 +123,7 @@ namespace MouseWithoutBorders
                 if (!NativeMethods.DuplicateTokenEx(hUserToken, NativeMethods.MAXIMUM_ALLOWED, ref sa, (int)NativeMethods.SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, (int)NativeMethods.TOKEN_TYPE.TokenPrimary, ref hUserTokenDup))
                 {
                     lastError = Marshal.GetLastWin32Error();
-                    Common.Log(string.Format(CultureInfo.CurrentCulture, "DuplicateTokenEx error: {0} Token does not have the privilege.", lastError));
+                    Logger.Log(string.Format(CultureInfo.CurrentCulture, "DuplicateTokenEx error: {0} Token does not have the privilege.", lastError));
                     _ = NativeMethods.CloseHandle(hUserToken);
                     return 0;
                 }
@@ -138,7 +139,7 @@ namespace MouseWithoutBorders
 
                     if (!rv)
                     {
-                        Log("ConvertStringSidToSid failed");
+                        Logger.Log("ConvertStringSidToSid failed");
                         _ = NativeMethods.CloseHandle(hUserToken);
                         _ = NativeMethods.CloseHandle(hUserTokenDup);
                         return 0;
@@ -151,7 +152,7 @@ namespace MouseWithoutBorders
 
                     if (!rv)
                     {
-                        Log("SetTokenInformation failed");
+                        Logger.Log("SetTokenInformation failed");
                         _ = NativeMethods.CloseHandle(hUserToken);
                         _ = NativeMethods.CloseHandle(hUserTokenDup);
                         return 0;
@@ -185,7 +186,7 @@ namespace MouseWithoutBorders
 
                 // GetLastError should be 0
                 int iResultOfCreateProcessAsUser = Marshal.GetLastWin32Error();
-                LogDebug("CreateProcessAsUser returned " + iResultOfCreateProcessAsUser.ToString(CultureInfo.CurrentCulture));
+                Logger.LogDebug("CreateProcessAsUser returned " + iResultOfCreateProcessAsUser.ToString(CultureInfo.CurrentCulture));
 
                 // Close handles task
                 _ = NativeMethods.CloseHandle(hUserToken);
@@ -195,7 +196,7 @@ namespace MouseWithoutBorders
             }
             catch (Exception e)
             {
-                Common.Log(e);
+                Logger.Log(e);
                 return 0;
             }
         }
@@ -223,19 +224,19 @@ namespace MouseWithoutBorders
                         {
                             if ((p = Process.GetProcessById(processId)) == null)
                             {
-                                Log("Process exited!");
+                                Logger.Log("Process exited!");
                                 break;
                             }
                         }
                         catch (ArgumentException)
                         {
-                            Log("GetProcessById.ArgumentException");
+                            Logger.Log("GetProcessById.ArgumentException");
                             break;
                         }
 
                         if ((!p.HasExited && p.PrivateMemorySize64 > limitedMem) || (++sec > (wait / 1000)))
                         {
-                            Log(string.Format(CultureInfo.CurrentCulture, "Process log (mem): {0}, {1}", sec, p.PrivateMemorySize64));
+                            Logger.Log(string.Format(CultureInfo.CurrentCulture, "Process log (mem): {0}, {1}", sec, p.PrivateMemorySize64));
                             return false;
                         }
 
@@ -248,11 +249,11 @@ namespace MouseWithoutBorders
 
                     if ((p = Process.GetProcessById(processId)) == null)
                     {
-                        Log("Process exited!");
+                        Logger.Log("Process exited!");
                     }
                     else if (NativeMethods.WaitForSingleObject(p.Handle, wait) != NativeMethods.WAIT_OBJECT_0 && killIfTimedOut)
                     {
-                        Log("Process log (time).");
+                        Logger.Log("Process log (time).");
                         TerminateProcessTree(p.Handle, (uint)processId, -1);
                         return false;
                     }
@@ -287,12 +288,12 @@ namespace MouseWithoutBorders
                         }
                         catch (InvalidOperationException e)
                         {
-                            Log(e);
+                            Logger.Log(e);
                             continue;
                         }
                         catch (Win32Exception e)
                         {
-                            Log(e);
+                            Logger.Log(e);
                             continue;
                         }
                     }

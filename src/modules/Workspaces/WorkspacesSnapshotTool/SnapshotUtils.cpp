@@ -545,6 +545,19 @@ namespace SnapshotUtils
                 CoUninitialize();
             }
 
+            bool isMinimized = WindowUtils::IsMinimized(window);
+            unsigned int monitorNumber = getMonitorNumberFromWindowHandle(window);
+
+            if (isMinimized)
+            {
+                // set the screen area as position, the values we get for the minimized windows are out of the screens' area
+                WorkspacesData::WorkspacesProject::Monitor::MonitorRect monitorRect = getMonitorRect(monitorNumber);
+                rect.left = monitorRect.left;
+                rect.top = monitorRect.top;
+                rect.right = monitorRect.left + monitorRect.width;
+                rect.bottom = monitorRect.top + monitorRect.height;
+            }
+
             WorkspacesData::WorkspacesProject::Application app{
                 .name = finalName,
                 .title = title,
@@ -555,7 +568,7 @@ namespace SnapshotUtils
                 .commandLineArgs = L"",
                 .isElevated = IsProcessElevated(pid),
                 .canLaunchElevated = data.value().canLaunchElevated,
-                .isMinimized = WindowUtils::IsMinimized(window),
+                .isMinimized = isMinimized,
                 .isMaximized = WindowUtils::IsMaximized(window),
                 .position = WorkspacesData::WorkspacesProject::Application::Position{
                     .x = rect.left,
@@ -563,7 +576,7 @@ namespace SnapshotUtils
                     .width = rect.right - rect.left,
                     .height = rect.bottom - rect.top,
                 },
-                .monitor = getMonitorNumberFromWindowHandle(window),
+                .monitor = monitorNumber,
             };
 
             apps.push_back(app);

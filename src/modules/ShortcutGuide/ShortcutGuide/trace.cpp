@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "trace.h"
 
+#include <common/Telemetry/TraceBase.h>
+
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,
     "Microsoft.PowerToys",
@@ -8,19 +10,9 @@ TRACELOGGING_DEFINE_PROVIDER(
     (0x38e8889b, 0x9731, 0x53f5, 0xe9, 0x01, 0xe8, 0xa7, 0xc1, 0x75, 0x30, 0x74),
     TraceLoggingOptionProjectTelemetry());
 
-void Trace::RegisterProvider() noexcept
-{
-    TraceLoggingRegister(g_hProvider);
-}
-
-void Trace::UnregisterProvider() noexcept
-{
-    TraceLoggingUnregister(g_hProvider);
-}
-
 void Trace::SendGuideSession(const __int64 duration_ms, const wchar_t* close_type) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "ShortcutGuide_GuideSession",
         TraceLoggingInt64(duration_ms, "DurationInMs"),
@@ -32,7 +24,7 @@ void Trace::SendGuideSession(const __int64 duration_ms, const wchar_t* close_typ
 
 void Trace::SendSettings(ShortcutGuideSettings settings) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "ShortcutGuide_Settings",
         TraceLoggingWideString(settings.hotkey.c_str(), "Hotkey"),

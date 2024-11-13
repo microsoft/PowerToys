@@ -120,9 +120,12 @@
   <data name="AIMistakeNote.Text" xml:space="preserve">
     <value>AI can make mistakes.</value>
   </data>
-  <data name="ClipboardDataTypeMismatchWarning" xml:space="preserve">
-    <value>Clipboard data is not text</value>
+  <data name="ClipboardEmptyWarning" xml:space="preserve">
+    <value>Clipboard does not contain any usable formats</value>
   </data>
+  <data name="ClipboardDataNotTextWarning" xml:space="preserve">
+    <value>Clipboard data is not text</value>
+  </data>  
   <data name="OpenAINotConfigured" xml:space="preserve">
     <value>To custom with AI is not enabled</value>
   </data>
@@ -135,6 +138,9 @@
   <data name="OpenAIApiKeyError" xml:space="preserve">
     <value>OpenAI request failed with status code: </value>
   </data>
+  <data name="PasteError" xml:space="preserve">
+    <value>An error occurred during the paste operation</value>
+  </data>  
   <data name="ClipboardHistoryButton.Text" xml:space="preserve">
     <value>Clipboard history</value>
   </data>
@@ -151,7 +157,7 @@
     <value>Privacy</value>
   </data>
   <data name="LoadingText.Text" xml:space="preserve">
-    <value>Connecting to AI services and generating output..</value>
+    <value>Generating output...</value>
   </data>
   <data name="PasteAsJson" xml:space="preserve">
     <value>Paste as JSON</value>
@@ -162,6 +168,18 @@
   <data name="PasteAsPlainText" xml:space="preserve">
     <value>Paste as plain text</value>
   </data>
+  <data name="ImageToText" xml:space="preserve">
+    <value>Image to text</value>
+  </data>
+  <data name="PasteAsTxtFile" xml:space="preserve">
+    <value>Paste as .txt file</value>
+  </data>
+  <data name="PasteAsPngFile" xml:space="preserve">
+    <value>Paste as .png file</value>
+  </data>
+  <data name="PasteAsHtmlFile" xml:space="preserve">
+    <value>Paste as .html file</value>
+  </data>  
   <data name="PasteButtonAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Paste</value>
   </data>
@@ -228,4 +246,7 @@
   <data name="CtrlKey" xml:space="preserve">
     <value>Ctrl</value>
   </data>
+  <data name="PasteAsFile_FilePrefix" xml:space="preserve">
+    <value>PowerToys_Paste_</value>
+  </data>  
 </root>
