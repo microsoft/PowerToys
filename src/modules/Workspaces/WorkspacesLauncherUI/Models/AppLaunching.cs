@@ -16,6 +16,7 @@ using System.Windows.Media.Imaging;
 using ManagedCommon;
 using Windows.Management.Deployment;
 using WorkspacesLauncherUI.Data;
+using WorkspacesLauncherUI.ViewModels;
 
 namespace WorkspacesLauncherUI.Models
 {
@@ -49,7 +50,18 @@ namespace WorkspacesLauncherUI.Models
                             var iconHandle = bitmap.GetHicon();
                             _icon = Icon.FromHandle(iconHandle);
                         }
-                        else
+                        else if (IsEdge || IsChrome)
+                        {
+                            string iconFilename = MainViewModel.GetPwaIconFilename(this);
+                            if (iconFilename != null)
+                            {
+                                var bitmap = new Bitmap(iconFilename);
+                                var iconHandle = bitmap.GetHicon();
+                                _icon = Icon.FromHandle(iconHandle);
+                            }
+                        }
+
+                        if (_icon == null)
                         {
                             _icon = Icon.ExtractAssociatedIcon(Application.ApplicationPath);
                         }
@@ -212,6 +224,16 @@ namespace WorkspacesLauncherUI.Models
 
                 return _iconBitmapImage;
             }
+        }
+
+        public bool IsEdge
+        {
+            get => Application.ApplicationPath.EndsWith("edge.exe", StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        public bool IsChrome
+        {
+            get => Application.ApplicationPath.EndsWith("chrome.exe", StringComparison.InvariantCultureIgnoreCase);
         }
 
         public void Dispose()
