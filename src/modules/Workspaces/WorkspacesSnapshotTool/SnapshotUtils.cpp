@@ -13,16 +13,9 @@
 
 #include <WorkspacesLib/AppUtils.h>
 #include <tlhelp32.h>
-#include <intsafe.h>
 #include <winternl.h>
-#include <UIAutomation.h>
-#include <iostream>
-#include <atlbase.h>  // For CComPtr
-#include <vector>
 #include <initguid.h>
 
-#pragma comment(lib, "Ole32.lib")
-#pragma comment(lib, "Uiautomationcore.lib")
 #pragma comment(lib, "ntdll.lib")
 
 namespace SnapshotUtils
@@ -66,69 +59,114 @@ namespace SnapshotUtils
         virtual HRESULT STDMETHODCALLTYPE GetAppIDForProcess(DWORD dwProcessId, WCHAR** pszAppId, void* pUnknown1, void* pUnknown2, void* pUnknown3) = 0;
     };
 
-    BOOL ShowAppId_7(HWND hWnd)
+    BOOL GetAppId_7(HWND hWnd, std::wstring* result)
     {
         HRESULT hr;
 
-        IAppResolver_7* CAppResolver;
-        hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_7, reinterpret_cast<void**>(&CAppResolver));
+        IAppResolver_7* AppResolver;
+        hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_7, reinterpret_cast<void**>(&AppResolver));
         if (SUCCEEDED(hr))
         {
             WCHAR* pszAppId;
-            hr = CAppResolver->GetAppIDForWindow(hWnd, &pszAppId, NULL, NULL, NULL);
-            if (SUCCEEDED(hr))
-            {
-                CoTaskMemFree(pszAppId);
-            }
-
-            CAppResolver->Release();
-        }
-
-        return SUCCEEDED(hr);
-    }
-
-    BOOL ShowAppId_8(HWND hWnd, std::wstring* result)
-    {
-        HRESULT hr;
-        *result = L"";
-
-        IAppResolver_8* CAppResolver;
-        hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_8, reinterpret_cast<void**>(&CAppResolver));
-        if (SUCCEEDED(hr))
-        {
-            WCHAR* pszAppId;
-            hr = CAppResolver->GetAppIDForWindow(hWnd, &pszAppId, NULL, NULL, NULL);
+            hr = AppResolver->GetAppIDForWindow(hWnd, &pszAppId, NULL, NULL, NULL);
             if (SUCCEEDED(hr))
             {
                 *result = std::wstring(pszAppId);
                 CoTaskMemFree(pszAppId);
             }
 
-            CAppResolver->Release();
+            AppResolver->Release();
         }
 
         return SUCCEEDED(hr);
     }
-    BOOL ShowProcessId_8(DWORD dwProcessId, std::wstring* result)
+
+    BOOL GetAppId_8(HWND hWnd, std::wstring* result)
     {
         HRESULT hr;
         *result = L"";
 
-        IAppResolver_8* CAppResolver;
-        hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_8, reinterpret_cast<void**>(&CAppResolver));
+        IAppResolver_8* AppResolver;
+        hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_8, reinterpret_cast<void**>(&AppResolver));
         if (SUCCEEDED(hr))
         {
             WCHAR* pszAppId;
-            hr = CAppResolver->GetAppIDForProcess(dwProcessId, &pszAppId, NULL, NULL, NULL);
+            hr = AppResolver->GetAppIDForWindow(hWnd, &pszAppId, NULL, NULL, NULL);
             if (SUCCEEDED(hr))
             {
                 *result = std::wstring(pszAppId);
                 CoTaskMemFree(pszAppId);
             }
 
-            CAppResolver->Release();
+            AppResolver->Release();
         }
 
+        return SUCCEEDED(hr);
+    }
+
+    BOOL GetAppId(HWND hWnd, std::wstring* result)
+    {
+        HRESULT hr = GetAppId_8(hWnd, result);
+        if (!SUCCEEDED(hr))
+        {
+            hr = GetAppId_7(hWnd, result);
+        }
+        return SUCCEEDED(hr);
+    }
+
+    BOOL GetProcessId_7(DWORD dwProcessId, std::wstring* result)
+    {
+        HRESULT hr;
+        *result = L"";
+
+        IAppResolver_7* AppResolver;
+        hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_7, reinterpret_cast<void**>(&AppResolver));
+        if (SUCCEEDED(hr))
+        {
+            WCHAR* pszAppId;
+            hr = AppResolver->GetAppIDForProcess(dwProcessId, &pszAppId, NULL, NULL, NULL);
+            if (SUCCEEDED(hr))
+            {
+                *result = std::wstring(pszAppId);
+                CoTaskMemFree(pszAppId);
+            }
+
+            AppResolver->Release();
+        }
+
+        return SUCCEEDED(hr);
+    }
+
+    BOOL GetProcessId_8(DWORD dwProcessId, std::wstring* result)
+    {
+        HRESULT hr;
+        *result = L"";
+
+        IAppResolver_8* AppResolver;
+        hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_8, reinterpret_cast<void**>(&AppResolver));
+        if (SUCCEEDED(hr))
+        {
+            WCHAR* pszAppId;
+            hr = AppResolver->GetAppIDForProcess(dwProcessId, &pszAppId, NULL, NULL, NULL);
+            if (SUCCEEDED(hr))
+            {
+                *result = std::wstring(pszAppId);
+                CoTaskMemFree(pszAppId);
+            }
+
+            AppResolver->Release();
+        }
+
+        return SUCCEEDED(hr);
+    }
+
+    BOOL GetProcessId(DWORD dwProcessId, std::wstring* result)
+    {
+        HRESULT hr = GetProcessId_8(dwProcessId, result);
+        if (!SUCCEEDED(hr))
+        {
+            hr = GetProcessId_7(dwProcessId, result);
+        }
         return SUCCEEDED(hr);
     }
 
@@ -141,7 +179,7 @@ namespace SnapshotUtils
         if (process == NULL)
         {
             DWORD err = GetLastError();
-            std::cerr << "failed to open the process, error: " << err << std::endl;
+            Logger::error(L"Failed to open the process, error: {}", err);
         }
         else
         {
@@ -150,7 +188,7 @@ namespace SnapshotUtils
             NTSTATUS status = NtQueryInformationProcess(process, ProcessBasicInformation, &pbi, sizeof(pbi), NULL);
             if (status != STATUS_SUCCESS)
             {
-                std::cerr << "failed to query the process, error: " << status << std::endl;
+                Logger::error(L"Failed to query the process, error: {}", status);
             }
             else
             {
@@ -159,7 +197,7 @@ namespace SnapshotUtils
                 if (!ReadProcessMemory(process, pbi.PebBaseAddress, &peb, sizeof(peb), NULL))
                 {
                     DWORD err = GetLastError();
-                    std::cerr << "failed to read the process PEB, error: " << err << std::endl;
+                    Logger::error(L"Failed to read the process PEB, error: {}", err);
                 }
                 else
                 {
@@ -168,7 +206,7 @@ namespace SnapshotUtils
                     if (!ReadProcessMemory(process, peb.ProcessParameters, &params, sizeof(params), NULL))
                     {
                         DWORD err = GetLastError();
-                        std::cerr << "failed to read the process params, error: " << err << std::endl;
+                        Logger::error(L"Failed to read the process params, error: {}", err);
                     }
                     else
                     {
@@ -177,7 +215,7 @@ namespace SnapshotUtils
                         if (!ReadProcessMemory(process, commandLineArgs.Buffer, buffer.data(), commandLineArgs.Length, NULL))
                         {
                             DWORD err = GetLastError();
-                            std::cerr << "failed to read the process command line, error: " << err << std::endl;
+                            Logger::error(L"Failed to read the process command line, error: {}", err);
                         }
                         else
                         {
@@ -223,136 +261,6 @@ namespace SnapshotUtils
         return pwaHelperProcessIds;
     }
 
-    class WbemHelper
-    {
-    public:
-        WbemHelper() = default;
-        ~WbemHelper()
-        {
-            if (m_services)
-            {
-                m_services->Release();
-            }
-
-            if (m_locator)
-            {
-                m_locator->Release();
-            }
-        }
-
-        bool Initialize()
-        {
-            // Obtain the initial locator to WMI.
-            HRESULT hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, reinterpret_cast<LPVOID*>(&m_locator));
-            if (FAILED(hres))
-            {
-                Logger::error(L"Failed to create IWbemLocator object. Error: {}", get_last_error_or_default(hres));
-                return false;
-            }
-
-            // Connect to WMI through the IWbemLocator::ConnectServer method.
-            hres = m_locator->ConnectServer(_bstr_t(L"ROOT\\CIMV2"), NULL, NULL, 0, NULL, 0, 0, &m_services);
-            if (FAILED(hres))
-            {
-                Logger::error(L"Could not connect to WMI. Error: {}", get_last_error_or_default(hres));
-                return false;
-            }
-
-            // Set security levels on the proxy.
-            hres = CoSetProxyBlanket(m_services, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, NULL, RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE);
-            if (FAILED(hres))
-            {
-                Logger::error(L"Could not set proxy blanket. Error: {}", get_last_error_or_default(hres));
-                return false;
-            }
-
-            return true;
-        }
-
-        std::wstring GetCommandLineArgs(DWORD processID) const
-        {
-            static std::wstring property = L"CommandLine";
-            std::wstring query = L"SELECT " + property + L" FROM Win32_Process WHERE ProcessId = " + std::to_wstring(processID);
-            return Query(query, property);
-        }
-
-        std::wstring GetExecutablePath(DWORD processID) const
-        {
-            static std::wstring property = L"ExecutablePath";
-            std::wstring query = L"SELECT " + property + L" FROM Win32_Process WHERE ProcessId = " + std::to_wstring(processID);
-            return Query(query, property);
-        }
-
-    private:
-        std::wstring Query(const std::wstring& query, const std::wstring& propertyName) const
-        {
-            if (!m_locator || !m_services)
-            {
-                return L"";
-            }
-
-            IEnumWbemClassObject* pEnumerator = NULL;
-
-            HRESULT hres = m_services->ExecQuery(bstr_t("WQL"), bstr_t(query.c_str()), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
-            if (FAILED(hres))
-            {
-                Logger::error(L"Query for process failed. Error: {}", get_last_error_or_default(hres));
-                return L"";
-            }
-
-            IWbemClassObject* pClassObject = NULL;
-            ULONG uReturn = 0;
-            std::wstring result = L"";
-            while (pEnumerator)
-            {
-                HRESULT hr = pEnumerator->Next(WBEM_INFINITE, 1, &pClassObject, &uReturn);
-                if (uReturn == 0)
-                {
-                    break;
-                }
-
-                VARIANT vtProp;
-                hr = pClassObject->Get(propertyName.c_str(), 0, &vtProp, 0, 0);
-                if (SUCCEEDED(hr) && vtProp.vt == VT_BSTR)
-                {
-                    result = vtProp.bstrVal;
-                }
-                VariantClear(&vtProp);
-
-                pClassObject->Release();
-            }
-
-            pEnumerator->Release();
-
-            return result;
-        }
-
-        IWbemLocator* m_locator = NULL;
-        IWbemServices* m_services = NULL;     
-    };
-
-    std::wstring GetCommandLineArgs(DWORD processID, const WbemHelper& wbemHelper)
-    {
-        std::wstring executablePath = wbemHelper.GetExecutablePath(processID);
-        std::wstring commandLineArgs = wbemHelper.GetCommandLineArgs(processID);
-
-        if (!commandLineArgs.empty())
-        {
-            auto pos = commandLineArgs.find(executablePath);
-            if (pos != std::wstring::npos)
-            {
-                commandLineArgs = commandLineArgs.substr(pos + executablePath.size());
-                auto spacePos = commandLineArgs.find_first_of(' ');
-                if (spacePos != std::wstring::npos)
-                {
-                    commandLineArgs = commandLineArgs.substr(spacePos + 1);
-                }
-			}
-        }
-
-        return commandLineArgs;
-    }
-
     bool IsProcessElevated(DWORD processID)
     {
         wil::unique_handle hProcess{ OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, processID) };
@@ -392,7 +300,7 @@ namespace SnapshotUtils
         for (auto subProcessID : pwaHelperProcessIds)
         {
             std::wstring aumidID;
-            ShowProcessId_8(subProcessID, &aumidID);
+            GetProcessId(subProcessID, &aumidID);
             std::wstring commandLineArg = GetProcCommandLine(subProcessID);
             auto appIdIndexStart = commandLineArg.find(NonLocalizable::EdgeAppIdIdentifier);
             if (appIdIndexStart != std::wstring::npos)
@@ -517,10 +425,6 @@ namespace SnapshotUtils
 
         auto installedApps = Utils::Apps::GetAppsList();
         auto windows = WindowEnumerator::Enumerate(WindowFilter::Filter);
-        
-        // for command line args detection
-         WbemHelper wbemHelper;
-         wbemHelper.Initialize();
 
         for (const auto window : windows)
         {
@@ -601,7 +505,7 @@ namespace SnapshotUtils
                 InitAumidToAppId(pid, &pwaAumidToAppId, &pwaAppIdsToAppNames);
 
                 std::wstring windowAumid;
-                ShowAppId_8(window, &windowAumid);
+                GetAppId(window, &windowAumid);
                 auto pwaIndex = pwaAumidToAppId.find(windowAumid);
                 if (pwaIndex != pwaAumidToAppId.end())
                 {
@@ -621,7 +525,7 @@ namespace SnapshotUtils
                 InitChromeAppIds(&chromeAppIds, &pwaAppIdsToAppNames);
 
                 std::wstring windowAumid;
-                ShowAppId_8(window, &windowAumid);
+                GetAppId(window, &windowAumid);
                 auto appIdIndexStart = windowAumid.find(NonLocalizable::ChromeAppIdIdentifier);
                 if (appIdIndexStart != std::wstring::npos)
                 {
