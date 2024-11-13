@@ -193,8 +193,8 @@ namespace SnapshotUtils
             else
             {
                 // Get the address of the process parameters in the PEB
-                PEB peb = {};
-                if (!ReadProcessMemory(process, pbi.PebBaseAddress, &peb, sizeof(peb), NULL))
+                PEB processEnvironmentBlock = {};
+                if (!ReadProcessMemory(process, pbi.PebBaseAddress, &processEnvironmentBlock, sizeof(processEnvironmentBlock), NULL))
                 {
                     DWORD err = GetLastError();
                     Logger::error(L"Failed to read the process PEB, error: {}", err);
@@ -203,7 +203,7 @@ namespace SnapshotUtils
                 {
                     // Get the command line arguments from the process parameters
                     RTL_USER_PROCESS_PARAMETERS params = {};
-                    if (!ReadProcessMemory(process, peb.ProcessParameters, &params, sizeof(params), NULL))
+                    if (!ReadProcessMemory(process, processEnvironmentBlock.ProcessParameters, &params, sizeof(params), NULL))
                     {
                         DWORD err = GetLastError();
                         Logger::error(L"Failed to read the process params, error: {}", err);
