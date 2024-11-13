@@ -111,7 +111,11 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
 #endif
             _overlayUIStates.push_back(std::move(overlayUI));
         }
+
+        trace.UpdateState(true);
         Trace::BoundsToolActivated();
+        trace.Flush();
+        trace.UpdateState(false);
     }
 
     void Core::StartMeasureTool(const bool horizontal, const bool vertical)
@@ -160,7 +164,10 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
             _screenCaptureThreads.emplace_back(std::move(thread));
         }
 
+        trace.UpdateState(true);
         Trace::MeasureToolActivated();
+        trace.Flush();
+        trace.UpdateState(false);
     }
 
     void MeasureToolCore::implementation::Core::SetToolCompletionEvent(ToolSessionCompleted sessionCompletedTrigger)

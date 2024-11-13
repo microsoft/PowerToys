@@ -398,6 +398,11 @@ namespace WorkspacesEditor.ViewModels
 
         public async void LaunchProject(Project project, bool exitAfterLaunch = false)
         {
+            if (project == null)
+            {
+                return;
+            }
+
             await Task.Run(() => RunLauncher(project.Id, InvokePoint.EditorButton));
             if (_workspacesEditorIO.ParseWorkspaces(this).Result == true)
             {

@@ -1,9 +1,6 @@
 # FALSE POSITIVES
 ## "PackagemanagerWrapper.cs" should be "PackageManagerWrapper.cs"
 ## NOTICE.MD > MOZILLA PUBLIC LICENSE v1.1
-
-# user name but user folder causes a flag
-8LWXpg 
 aaaa
 abcdefghjkmnpqrstuvxyz
 abgr
@@ -59,14 +56,12 @@ APPBARDATA
 appdata
 APPEXECLINK
 Appium
-applayout
 Applicationcan
 APPLICATIONFRAMEHOST
 appmanifest
 APPNAME
 appref
 appsettings
-appsfolder
 appwindow
 appwiz
 APSTUDIO
@@ -147,7 +142,6 @@ BTNFACE
 bugreport
 BUILDARCH
 BUILDNUMBER
-buildtask
 buildtransitive
 BVal
 BValue
@@ -272,7 +266,6 @@ CSettings
 cso
 CSRW
 CStyle
-cswinrt
 CSY
 CTest
 currentculture
@@ -354,7 +347,6 @@ devpkey
 DEVSOURCE
 DIIRFLAG
 dimm
-directshow
 DISABLEASACTIONKEY
 diskmgmt
 DISPLAYCHANGE
@@ -370,7 +362,6 @@ dllmain
 DNLEN
 DONOTROUND
 DONTVALIDATEPATH
-DOPUS
 dotnet
 DPICHANGED
 DPIs
@@ -453,12 +444,13 @@ erwrite
 ESettings
 esrp
 etl
-ETW
+etw
 EUQ
 eurochange
 eventlog
 eventvwr
 everytime
+evntrace
 evt
 EWXFORCE
 EWXFORCEIFHUNG
@@ -530,7 +522,6 @@ FZE
 gacutil
 Gaeilge
 Gaidhlig
-GBarm
 GCLP
 gdi
 gdiplus
@@ -1001,7 +992,6 @@ NCRENDERING
 ndp
 NEEDDISPATCH
 needinfo
-netcore
 netcoreapp
 netcpl
 netframework
@@ -1010,6 +1000,7 @@ netsh
 newcolor
 newdev
 NEWDIALOGSTYLE
+NEWFILE
 newitem
 newpath
 newplus
@@ -1078,7 +1069,6 @@ NTAPI
 ntdll
 ntfs
 NTSTATUS
-nugets
 nullonfailure
 numberbox
 nwc
@@ -1224,11 +1214,13 @@ prgms
 pri
 PRINTCLIENT
 printmanagement
+privacystatement
 prm
 proactively
 PROCESSENTRY
 PROCESSKEY
 processthreadsapi
+PROCESSTRACE
 PRODEXT
 PRODUCTVERSION
 Progman
@@ -1270,7 +1262,6 @@ PWSTR
 pwsz
 pwtd
 QDC
-QDir
 qianlifeng
 qit
 QITAB
@@ -1594,7 +1585,6 @@ SYSKEYUP
 SYSLIB
 SYSMENU
 SYSTEMAPPS
-SYSTEMSETTINGS
 SYSTEMTIME
 SYSTEMWOW
 tailwindcss
@@ -1617,7 +1607,6 @@ TCustom
 tdbuild
 TDefault
 TDevice
-telem
 telephon
 templatenamespace
 testprocess
@@ -1649,11 +1638,12 @@ toolkitconverters
 Toolset
 toolwindow
 TOPDOWNDIB
-TOTALCMD
 TOUCHEVENTF
 TOUCHINPUT
 touchpad
+TRACEHANDLE
 tracelogging
+tracerpt
 trafficmanager
 traies
 transicc
@@ -1711,11 +1701,9 @@ urlmon
 Usb
 USEDEFAULT
 USEFILEATTRIBUTES
-USEPOSITION
 USERDATA
 Userenv
 USESHOWWINDOW
-USESIZE
 USESTDHANDLES
 USRDLL
 UType
@@ -1808,7 +1796,6 @@ wgpocpl
 WIC
 wil
 winapi
-winappdriver
 wincodec
 Wincodecsdk
 wincolor
@@ -1872,6 +1859,7 @@ WNDCLASSEX
 WNDCLASSEXW
 WNDCLASSW
 WNDPROC
+wnode
 workarounds
 WORKSPACESEDITOR
 WORKSPACESLAUNCHER
@@ -1914,9 +1902,9 @@ XFile
 XIncrement
 XLoc
 XNamespace
+Xoshiro
 XPels
 XPixel
-xplorer
 XResource
 xsi
 XStr
