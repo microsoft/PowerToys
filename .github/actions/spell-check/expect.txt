@@ -1142,7 +1142,7 @@ pdo
 pdto
 pdtobj
 pdw
-Peb
+peb
 pef
 PElems
 Pels
