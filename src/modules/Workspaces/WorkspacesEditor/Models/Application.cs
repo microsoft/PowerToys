@@ -114,21 +114,6 @@ namespace WorkspacesEditor.Models
 
         public string CommandLineArguments { get; set; }
 
-        public Visibility PwaVisibility
-        {
-            get => MainViewModel.GetPwaVisibility(this);
-        }
-
-        public List<string> PwaItems
-        {
-            get => MainViewModel.GetPwaItems(this);
-        }
-
-        public int PwaIndex
-        {
-            get => MainViewModel.GetPwaItemIndex(this);
-        }
-
         public string PwaAppId { get; set; }
 
         private bool _isElevated;
@@ -538,15 +523,6 @@ namespace WorkspacesEditor.Models
         internal void MinimizedChecked()
         {
             Maximized = false;
-        }
-
-        internal void PwaSelectionChanged(string pwaAppName)
-        {
-            PwaAppId = MainViewModel.GetPwaAppId(pwaAppName);
-            _iconBitmapImage = null;
-            _icon = null;
-            OnPropertyChanged(new PropertyChangedEventArgs(nameof(IconBitmapImage)));
-            Parent.Initialize(App.ThemeManager.GetCurrentTheme());
         }
 
         internal bool IsEdge()

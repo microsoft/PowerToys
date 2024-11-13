@@ -598,38 +598,6 @@ namespace WorkspacesEditor.ViewModels
             PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
         }
 
-        internal static Windows.UI.Xaml.Visibility GetPwaVisibility(Models.Application application)
-        {
-            if (application.IsEdge())
-            {
-                return PwaHelper.EdgeAppsCount > 0 ? Windows.UI.Xaml.Visibility.Visible : Windows.UI.Xaml.Visibility.Collapsed;
-            }
-            else if (application.IsChrome())
-            {
-                return PwaHelper.ChromeAppsCount > 0 ? Windows.UI.Xaml.Visibility.Visible : Windows.UI.Xaml.Visibility.Collapsed;
-            }
-            else
-            {
-                return Windows.UI.Xaml.Visibility.Collapsed;
-            }
-        }
-
-        internal static List<string> GetPwaItems(Models.Application application)
-        {
-            if (application.IsEdge())
-            {
-                return PwaHelper.GetEdgeAppsList();
-            }
-            else if (application.IsChrome())
-            {
-                return PwaHelper.GetChromeAppsList();
-            }
-            else
-            {
-                return null;
-            }
-        }
-
         internal static bool IsPwaApp(Models.Application application)
         {
             if (application.IsEdge())
@@ -659,27 +627,6 @@ namespace WorkspacesEditor.ViewModels
             else
             {
                 return string.Empty;
-            }
-        }
-
-        internal static string GetPwaAppId(string pwaAppName)
-        {
-            return PwaHelper.GetPwaAppId(pwaAppName);
-        }
-
-        internal static int GetPwaItemIndex(Models.Application application)
-        {
-            if (application.IsEdge())
-            {
-                return PwaHelper.GetEdgeItemIndex(application.PwaAppId);
-            }
-            else if (application.IsChrome())
-            {
-                return PwaHelper.GetChromeItemIndex(application.PwaAppId);
-            }
-            else
-            {
-                return 0;
             }
         }
     }

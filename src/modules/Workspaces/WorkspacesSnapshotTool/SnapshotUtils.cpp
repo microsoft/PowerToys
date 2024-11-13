@@ -183,7 +183,7 @@ namespace SnapshotUtils
         }
         else
         {
-            // Get the address of the PEB
+            // Get the address of the ProcessEnvironmentBlock
             PROCESS_BASIC_INFORMATION pbi = {};
             NTSTATUS status = NtQueryInformationProcess(process, ProcessBasicInformation, &pbi, sizeof(pbi), NULL);
             if (status != STATUS_SUCCESS)
@@ -192,12 +192,12 @@ namespace SnapshotUtils
             }
             else
             {
-                // Get the address of the process parameters in the PEB
+                // Get the address of the process parameters in the ProcessEnvironmentBlock
                 PEB processEnvironmentBlock = {};
                 if (!ReadProcessMemory(process, pbi.PebBaseAddress, &processEnvironmentBlock, sizeof(processEnvironmentBlock), NULL))
                 {
                     DWORD err = GetLastError();
-                    Logger::error(L"Failed to read the process PEB, error: {}", err);
+                    Logger::error(L"Failed to read the process ProcessEnvironmentBlock, error: {}", err);
                 }
                 else
                 {

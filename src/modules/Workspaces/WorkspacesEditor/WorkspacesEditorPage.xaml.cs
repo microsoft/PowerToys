@@ -218,12 +218,5 @@ namespace WorkspacesEditor
             scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - scrollAmount);
             e.Handled = true;
         }
-
-        private void PwaSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            ComboBox comboBox = sender as ComboBox;
-            Models.Application application = comboBox.DataContext as Models.Application;
-            application.PwaSelectionChanged((string)comboBox.SelectedValue);
-        }
     }
 }

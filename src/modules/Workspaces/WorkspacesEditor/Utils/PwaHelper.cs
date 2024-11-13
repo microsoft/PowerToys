@@ -58,20 +58,6 @@ namespace WorkspacesEditor.Utils
             return result;
         }
 
-        internal static List<string> GetEdgeAppsList()
-        {
-            var list = new List<string>() { "no PWA" };
-            list.AddRange(edgePwaApps.Select(a => a.Name));
-            return list;
-        }
-
-        internal static List<string> GetChromeAppsList()
-        {
-            var list = new List<string>() { "no PWA" };
-            list.AddRange(chromePwaApps.Select(a => a.Name));
-            return list;
-        }
-
         internal static string GetChromeAppIconFile(string pwaAppId)
         {
             var candidates = chromePwaApps.Where(x => x.AppId == pwaAppId).ToList();
@@ -92,59 +78,6 @@ namespace WorkspacesEditor.Utils
             }
 
             return null;
-        }
-
-        internal static string GetPwaAppId(string pwaAppName)
-        {
-            var candidates = edgePwaApps.Where(x => x.Name == pwaAppName).ToList();
-            if (candidates.Count > 0)
-            {
-                return candidates.First().AppId;
-            }
-
-            candidates = chromePwaApps.Where(x => x.Name == pwaAppName).ToList();
-            if (candidates.Count > 0)
-            {
-                return candidates.First().AppId;
-            }
-
-            return string.Empty;
-        }
-
-        internal static int GetEdgeItemIndex(string pwaAppId)
-        {
-            if (string.IsNullOrEmpty(pwaAppId))
-            {
-                return 0;
-            }
-
-            for (int appIndex = 0; appIndex < edgePwaApps.Count; appIndex++)
-            {
-                if (edgePwaApps[appIndex].AppId == pwaAppId)
-                {
-                    return appIndex + 1;
-                }
-            }
-
-            return 0;
-        }
-
-        internal static int GetChromeItemIndex(string pwaAppId)
-        {
-            if (string.IsNullOrEmpty(pwaAppId))
-            {
-                return 0;
-            }
-
-            for (int appIndex = 0; appIndex < chromePwaApps.Count; appIndex++)
-            {
-                if (chromePwaApps[appIndex].AppId == pwaAppId)
-                {
-                    return appIndex + 1;
-                }
-            }
-
-            return 0;
         }
     }
 }
