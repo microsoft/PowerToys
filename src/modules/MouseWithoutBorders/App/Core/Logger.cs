@@ -12,6 +12,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 
 // <summary>
@@ -30,7 +31,7 @@ namespace MouseWithoutBorders.Core;
 internal static class Logger
 {
     internal static readonly string[] AllLogs = new string[MAX_LOG];
-    private static readonly object AllLogsLock = new();
+    private static readonly Lock AllLogsLock = new();
     internal static readonly ConcurrentDictionary<string, int> LogCounter = new();
     private const int MAX_LOG = 10000;
     private static int allLogsIndex;
