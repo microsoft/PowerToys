@@ -87,10 +87,7 @@
                             IsEnabled="{x:Bind ViewModel.IsOpenAIEnabled, Mode=OneWay}">
                             <ToggleSwitch IsOn="{x:Bind ViewModel.IsAdvancedAIEnabled, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
-                        <tkcontrols:SettingsCard
-                            x:Uid="AdvancedPaste_ShowCustomPreviewSettingsCard"
-                            HeaderIcon="{ui:FontIcon Glyph=&#xE71E;}"
-                            IsEnabled="{x:Bind ViewModel.IsOpenAIEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_ShowCustomPreviewSettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE71E;}">
                             <ToggleSwitch IsOn="{x:Bind ViewModel.ShowCustomPreview, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                         <InfoBar
