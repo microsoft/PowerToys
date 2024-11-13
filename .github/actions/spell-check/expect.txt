@@ -157,6 +157,7 @@ CALG
 callbackptr
 calpwstr
 Cangjie
+caniuse
 CANRENAME
 CAPTUREBLT
 CAPTURECHANGED
@@ -739,6 +740,7 @@ ith
 ITHUMBNAIL
 IUI
 IUnknown
+IUse
 IWbem
 IWeb
 IWIC
@@ -1595,6 +1597,7 @@ SYSTEMAPPS
 SYSTEMSETTINGS
 SYSTEMTIME
 SYSTEMWOW
+tailwindcss
 tapp
 TApplication
 TApplied
