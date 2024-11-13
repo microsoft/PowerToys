@@ -416,7 +416,7 @@ namespace SnapshotUtils
         return L"";
     }
 
-    std::vector<WorkspacesData::WorkspacesProject::Application> GetApps(const std::function<unsigned int(HWND)> getMonitorNumberFromWindowHandle)
+    std::vector<WorkspacesData::WorkspacesProject::Application> GetApps(const std::function<unsigned int(HWND)> getMonitorNumberFromWindowHandle, const std::function<WorkspacesData::WorkspacesProject::Monitor::MonitorRect(unsigned int)> getMonitorRect)
     {
         std::vector<WorkspacesData::WorkspacesProject::Application> apps{};
         std::map<std::wstring, std::wstring> pwaAumidToAppId;
