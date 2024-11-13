@@ -58,12 +58,16 @@ namespace MouseWithoutBorders
         private Timer helperTimer;
 #pragma warning restore CA2213
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         internal int CurIcon { get; set; }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         internal NotifyIcon NotifyIcon { get; set; }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         internal System.Windows.Forms.ToolStripMenuItem MenuAllPC { get; set; }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         internal System.Windows.Forms.ContextMenuStrip MainMenu { get; set; }
 
         internal FrmScreen()

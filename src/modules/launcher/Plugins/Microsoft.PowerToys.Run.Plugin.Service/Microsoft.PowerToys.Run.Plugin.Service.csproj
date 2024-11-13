@@ -20,6 +20,9 @@
 
   <ItemGroup>
     <PackageReference Include="System.ServiceProcess.ServiceController" />
+    <PackageReference Include="System.Diagnostics.EventLog">
+      <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
