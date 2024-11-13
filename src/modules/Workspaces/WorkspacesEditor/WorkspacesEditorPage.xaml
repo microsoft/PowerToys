@@ -127,8 +127,7 @@
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-                        <DockPanel 
-                            Margin="100,5,0,0">
+                        <DockPanel Margin="100,5,0,0">
                             <TextBlock
                                 VerticalAlignment="Center"
                                 FontSize="14"
