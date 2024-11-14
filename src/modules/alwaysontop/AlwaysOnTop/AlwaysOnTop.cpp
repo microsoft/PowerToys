@@ -170,11 +170,13 @@ void AlwaysOnTop::ProcessCommand(HWND window)
     bool gameMode = detect_game_mode();
     if (AlwaysOnTopSettings::settings().blockInGameMode && gameMode)
     {
+        Logger::info(L"Game mode detected, blocking AlwaysOnTop command.");
         return;
     }
 
     if (isExcluded(window))
     {
+        Logger::info(L"Window is excluded, blocking AlwaysOnTop command.");
         return;
     }
 
@@ -191,6 +193,11 @@ void AlwaysOnTop::ProcessCommand(HWND window)
             }
 
             Trace::AlwaysOnTop::UnpinWindow();
+            Logger::info(L"Window unpinned from AlwaysOnTop.");
+        }
+        else
+        {
+            Logger::error(L"Failed to unpin window from AlwaysOnTop.");
         }
     }
     else
@@ -200,6 +207,11 @@ void AlwaysOnTop::ProcessCommand(HWND window)
             soundType = Sound::Type::On;
             AssignBorder(window);
             Trace::AlwaysOnTop::PinWindow();
+            Logger::info(L"Window pinned to AlwaysOnTop.");
+        }
+        else
+        {
+            Logger::error(L"Failed to pin window to AlwaysOnTop.");
         }
     }
 

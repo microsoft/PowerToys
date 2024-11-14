@@ -35,42 +35,18 @@ public sealed class PasteFormatExecutor(AICompletionsHelper aiHelper) : IPasteFo
 
     private async Task<string> ExecutePasteFormatCoreAsync(PasteFormat pasteFormat, DataPackageView clipboardData)
     {
-        switch (pasteFormat.Format)
+        return pasteFormat.Format switch
         {
-            case PasteFormats.PlainText:
-                ToPlainText(clipboardData);
-                return null;
-
-            case PasteFormats.Markdown:
-                ToMarkdown(clipboardData);
-                return null;
-
-            case PasteFormats.Json:
-                ToJson(clipboardData);
-                return null;
-
-            case PasteFormats.ImageToText:
-                await ImageToTextAsync(clipboardData);
-                return null;
-
-            case PasteFormats.PasteAsTxtFile:
-                await ToTxtFileAsync(clipboardData);
-                return null;
-
-            case PasteFormats.PasteAsPngFile:
-                await ToPngFileAsync(clipboardData);
-                return null;
-
-            case PasteFormats.PasteAsHtmlFile:
-                await ToHtmlFileAsync(clipboardData);
-                return null;
-
-            case PasteFormats.Custom:
-                return await ToCustomAsync(pasteFormat.Prompt, clipboardData);
-
-            default:
-                throw new ArgumentException($"Unknown paste format {pasteFormat.Format}", nameof(pasteFormat));
-        }
+            PasteFormats.PlainText => ToPlainText(clipboardData),
+            PasteFormats.Markdown => ToMarkdown(clipboardData),
+            PasteFormats.Json => ToJson(clipboardData),
+            PasteFormats.ImageToText => await ImageToTextAsync(clipboardData),
+            PasteFormats.PasteAsTxtFile => await ToTxtFileAsync(clipboardData),
+            PasteFormats.PasteAsPngFile => await ToPngFileAsync(clipboardData),
+            PasteFormats.PasteAsHtmlFile => await ToHtmlFileAsync(clipboardData),
+            PasteFormats.Custom => await ToCustomAsync(pasteFormat.Prompt, clipboardData),
+            _ => throw new ArgumentException($"Unknown paste format {pasteFormat.Format}", nameof(pasteFormat)),
+        };
     }
 
     private static void WriteTelemetry(PasteFormats format, PasteActionSource source)
