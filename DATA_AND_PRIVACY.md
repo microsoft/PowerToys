@@ -139,6 +139,10 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.AdvancedPasteInAppKeyboardShortcutEvent</td>
     <td>Triggered when a keyboard shortcut is used within the Advanced Paste interface.</td>
   </tr>  
+  <tr>
+    <td>Microsoft.PowerToys.AdvancedPasteSemanticKernelFormatEvent</td>
+    <td>Triggered when Advanced Paste leverages the Semantic Kernel.</td>
+  </tr>  
 </table>
 
 ### Always on Top
