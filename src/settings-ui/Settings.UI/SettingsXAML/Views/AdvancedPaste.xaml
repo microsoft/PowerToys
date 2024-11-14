@@ -87,9 +87,6 @@
                             IsEnabled="{x:Bind ViewModel.IsOpenAIEnabled, Mode=OneWay}">
                             <ToggleSwitch IsOn="{x:Bind ViewModel.IsAdvancedAIEnabled, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
-                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_ShowCustomPreviewSettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE71E;}">
-                            <ToggleSwitch IsOn="{x:Bind ViewModel.ShowCustomPreview, Mode=TwoWay}" />
-                        </tkcontrols:SettingsCard>
                         <InfoBar
                             x:Uid="GPO_SettingIsManaged"
                             IsClosable="False"
@@ -113,6 +110,9 @@
                             Severity="Informational" />
                         <tkcontrols:SettingsCard x:Uid="AdvancedPaste_CloseAfterLosingFocus" HeaderIcon="{ui:FontIcon Glyph=&#xED1A;}">
                             <ToggleSwitch IsOn="{x:Bind ViewModel.CloseAfterLosingFocus, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_ShowCustomPreviewSettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE71E;}">
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.ShowCustomPreview, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     </controls:SettingsGroup>
 
