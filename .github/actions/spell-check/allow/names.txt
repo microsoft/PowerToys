@@ -28,7 +28,7 @@ videoconference
 
 # USERS
 
-# 8LWXpg is user name but user folder causes a flag
+# 8LWXpg is user name but numeric in name causes a flag
 LWXpg
 Adoumie
 Advaith
@@ -147,7 +147,8 @@ TBM
 tilovell
 Triet
 waaverecords
-wech71
+# wech71 is user name but numeric in name causes a flag
+wech
 Xpg
 ycv
 Yuniardi
