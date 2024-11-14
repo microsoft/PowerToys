@@ -4,7 +4,6 @@
 
 using System;
 using System.Security.Cryptography;
-using WinRT;
 using Wox.Plugin.Logger;
 
 namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
@@ -19,36 +18,15 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
 
         private int Version { get; set; }
 
-        public string Description
+        public string Description => Version switch
         {
-            get
-            {
-                switch (Version)
-                {
-                    case 1:
-                        return "Version 1: Time base GUID";
-                    case 3:
-                    case 5:
-                        string hashAlgorithm;
-                        if (Version == 3)
-                        {
-                            hashAlgorithm = HashAlgorithmName.MD5.ToString();
-                        }
-                        else
-                        {
-                            hashAlgorithm = HashAlgorithmName.SHA1.ToString();
-                        }
-
-                        return $"Version {Version} ({hashAlgorithm}): Namespace and name based GUID.";
-                    case 4:
-                        return "Version 4: Randomly generated GUID";
-                    case 7:
-                        return "Version 7: Time-ordered randomly generated GUID";
-                    default:
-                        return string.Empty;
-                }
-            }
-        }
+            1 => "Version 1: Time base GUID",
+            3 => $"Version 3 ({HashAlgorithmName.MD5}): Namespace and name based GUID.",
+            4 => "Version 4: Randomly generated GUID",
+            5 => $"Version 5 ({HashAlgorithmName.SHA1}): Namespace and name based GUID.",
+            7 => "Version 7: Time-ordered randomly generated GUID",
+            _ => string.Empty,
+        };
 
         private Guid? GuidNamespace { get; set; }
 

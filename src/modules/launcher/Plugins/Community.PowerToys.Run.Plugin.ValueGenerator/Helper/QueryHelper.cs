@@ -4,7 +4,6 @@
 
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 
 using Community.PowerToys.Run.Plugin.ValueGenerator.Properties;
 
