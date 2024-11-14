@@ -523,7 +523,7 @@ namespace SnapshotUtils
                 }
                 else
                 {
-                    Logger::info(L"The found edge window doea not contain a PWA app", pwaAppId);
+                    Logger::info(L"The found edge window does not contain a PWA app", pwaAppId);
                 }
 
                 CoUninitialize();
