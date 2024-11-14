@@ -252,7 +252,6 @@ namespace SnapshotUtils
                 if (_wcsicmp(pe.szExeFile, L"PwaHelper.exe") == 0 && pe.th32ParentProcessID == parentProcessId)
                 {
                     pwaHelperProcessIds.push_back(pe.th32ProcessID);
-                    //PrintProcessHandles(pe.th32ProcessID);
                 }
             } while (Process32Next(hSnapshot, &pe));
         }
@@ -314,6 +313,7 @@ namespace SnapshotUtils
             }
             std::wstring appId{ commandLineArg };
             pwaAumidToAppId->insert(std::map<std::wstring, std::wstring>::value_type(aumidID, appId));
+            Logger::info(L"Found an edge Pwa helper process with AumidID {} and PwaAppId {}", aumidID, appId);
 
             PWSTR path = NULL;
             HRESULT hres = SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &path);
@@ -339,6 +339,7 @@ namespace SnapshotUtils
                                         if (filenameString.extension().wstring() == L".ico")
                                         {
                                             pwaAppIdsToAppNames->insert(std::map<std::wstring, std::wstring>::value_type(appId, filenameString.stem().wstring()));
+                                            Logger::info(L"Storing an edge Pwa app name {} for PwaAppId {}", filenameString.stem().wstring(), appId);
                                         }
                                     }
                                 }
@@ -349,7 +350,7 @@ namespace SnapshotUtils
                 CoTaskMemFree(path);
             }
         }
-
+        Logger::info(L"Found {} edge Pwa helper processes", pwaAumidToAppId->size());
     }
 
     void InitChromeAppIds(std::vector<std::wstring>* chromeAppIds, std::map<std::wstring, std::wstring>* pwaAppIdsToAppNames)
@@ -382,6 +383,7 @@ namespace SnapshotUtils
                                 if (filenameString.extension().wstring() == L".ico")
                                 {
                                     pwaAppIdsToAppNames->insert(std::map<std::wstring, std::wstring>::value_type(appId, filenameString.stem().wstring()));
+                                    Logger::info(L"Found an installed chrome Pwa app {} with PwaAppId {}", filenameString.stem().wstring(), appId);
                                 }
                             }
                         }
@@ -479,7 +481,7 @@ namespace SnapshotUtils
                     if (pid != otherPid && title == WindowUtils::GetWindowTitle(otherWindow))
                     {
                         processPath = get_process_path(otherPid);
-						break;
+                        break;
                     }
                 }
             }
@@ -506,15 +508,22 @@ namespace SnapshotUtils
 
                 std::wstring windowAumid;
                 GetAppId(window, &windowAumid);
+                Logger::info(L"Found an edge window with aumid {}", windowAumid);
                 auto pwaIndex = pwaAumidToAppId.find(windowAumid);
                 if (pwaIndex != pwaAumidToAppId.end())
                 {
                     pwaAppId = pwaIndex->second;
+                    Logger::info(L"The found edge window is a PWA app with appId {}", pwaAppId);
                     pwaName = SearchPwaName(pwaAppIdsToAppNames, pwaAppId);
                     if (!pwaName.empty())
                     {
                         finalName = pwaName + L" (" + finalName + L")";
+                        Logger::info(L"The found edge window is a PWA app with name {}", finalName);
                     }
+                }
+                else
+                {
+                    Logger::info(L"The found edge window doea not contain a PWA app", pwaAppId);
                 }
 
                 CoUninitialize();
@@ -526,6 +535,7 @@ namespace SnapshotUtils
 
                 std::wstring windowAumid;
                 GetAppId(window, &windowAumid);
+                Logger::info(L"Found a chrome window with aumid {}", windowAumid);
                 auto appIdIndexStart = windowAumid.find(NonLocalizable::ChromeAppIdIdentifier);
                 if (appIdIndexStart != std::wstring::npos)
                 {
