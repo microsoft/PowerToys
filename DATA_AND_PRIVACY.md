@@ -67,6 +67,10 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.TrayFlyoutModuleRunEvent</td>
     <td>Logs when a utility from the tray flyout menu is run.</td>
   </tr>
+  <tr>
+    <td>Microsoft.PowerToys.Uninstall_Success</td>
+    <td>Logs when PowerToys is successfully uninstalled (who would do such a thing!).</td>
+  </tr>
 </table>
 
 ### OOBE (Out-of-box experience)
