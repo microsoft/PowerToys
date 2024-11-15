@@ -360,14 +360,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public FontFamily DemoSampleFontFamily
         {
-            get => new FontFamily(_typeFont.lfFaceName);
+            get
+            {
+                return new FontFamily(_typeFont.lfFaceName);
+            }
         }
 
         public double DemoSampleFontSize
         {
             get
             {
-                return _typeFont.lfHeight < 0 ? 16 : _typeFont.lfHeight; // 16 is always the height we expect?
+                return _typeFont.lfHeight <= 0 ? 16 : _typeFont.lfHeight; // 16 is always the height we expect?
             }
         }
 

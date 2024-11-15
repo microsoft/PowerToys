@@ -13,6 +13,7 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
 
     const unsigned int SPECIAL_SEMANTICS_SHORTCUT = 1;
     const unsigned int SPECIAL_SEMANTICS_COLOR = 2;
+    const unsigned int SPECIAL_SEMANTICS_LOG_FONT = 3;
 
     std::vector<unsigned char> base64_decode(const std::wstring& base64_string)
     {
@@ -70,6 +71,7 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
         { L"DemoTypeToggleKey", SPECIAL_SEMANTICS_SHORTCUT },
         { L"PenColor", SPECIAL_SEMANTICS_COLOR },
         { L"BreakPenColor", SPECIAL_SEMANTICS_COLOR },
+        { L"Font", SPECIAL_SEMANTICS_LOG_FONT },
     };
 
     hstring ZoomItSettings::LoadSettingsJson()
@@ -129,6 +131,20 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
                 assert(false); // ZoomIt doesn't use this type of setting.
                 break;
             case SETTING_TYPE_BINARY:
+                auto special_semantics = settings_with_special_semantics.find(curSetting->ValueName);
+                if (special_semantics != settings_with_special_semantics.end() && special_semantics->second == SPECIAL_SEMANTICS_LOG_FONT)
+                {
+                    // This is the font setting. It's a special case where the default value needs to be calculated if it's still 0.
+                    if (g_LogFont.lfFaceName[0] == L'\0')
+                    {
+                        GetObject(GetStockObject(DEFAULT_GUI_FONT), sizeof g_LogFont, &g_LogFont);
+                        g_LogFont.lfWeight = FW_NORMAL;
+                        auto hDc = CreateCompatibleDC(NULL);
+                        g_LogFont.lfHeight = -MulDiv(8, GetDeviceCaps(hDc, LOGPIXELSY), 72);
+                        DeleteDC(hDc);
+                    }
+                }
+
                 // Base64 encoding is likely the best way to serialize a byte array into JSON.
                 auto encodedFont = base64_encode(static_cast<PBYTE>(curSetting->Setting), curSetting->Size);
                 _settings.add_property<std::wstring>(curSetting->ValueName, encodedFont);
