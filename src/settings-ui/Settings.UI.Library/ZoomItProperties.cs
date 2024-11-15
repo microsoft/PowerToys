@@ -48,8 +48,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public IntProperty PenWidth { get; set; }
 
-        public BoolProperty OptionsShown { get; set; }
-
         public StringProperty BreakPenColor { get; set; }
 
         public KeyboardKeysProperty BreakTimerKey { get; set; }

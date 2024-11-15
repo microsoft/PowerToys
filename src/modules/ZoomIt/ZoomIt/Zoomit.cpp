@@ -3630,12 +3630,12 @@ LRESULT APIENTRY MainWndProc(
 		g_SnipToggleMod = GetKeyMod( g_SnipToggleKey );
 		g_RecordToggleMod = GetKeyMod( g_RecordToggleKey );
 
-		if( !g_OptionsShown ) {
-
+		if( !g_OptionsShown && !g_StartedByPowerToys ) {
+			// First run should show options when running as standalone. If not running as standalone,
+			// options screen won't show and we should register keys instead.
 			SendMessage( hWnd, WM_COMMAND, IDC_OPTIONS, 0 );
 			g_OptionsShown = TRUE;
 			reg.WriteRegSettings( RegSettings );
-		
 		} else {
 			BOOL	showOptions = FALSE;
 
