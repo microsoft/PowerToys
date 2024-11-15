@@ -1,4 +1,3 @@
-// dllmain.cpp : Defines the entry point for the DLL application.
 #include "pch.h"
 
 #include "AdvancedPasteConstants.h"
@@ -57,6 +56,7 @@ namespace
     const wchar_t JSON_KEY_PASTE_AS_JSON_HOTKEY[] = L"paste-as-json-hotkey";
     const wchar_t JSON_KEY_SHOW_CUSTOM_PREVIEW[] = L"ShowCustomPreview";
     const wchar_t JSON_KEY_VALUE[] = L"value";
+    const wchar_t JSON_KEY_CUSTOM_ACTION_HOTKEY[] = L"custom-action-hotkey"; // New custom action hotkey
 
     const wchar_t OPENAI_VAULT_RESOURCE[] = L"https://platform.openai.com/api-keys";
     const wchar_t OPENAI_VAULT_USERNAME[] = L"PowerToys_AdvancedPaste_OpenAIKey";
@@ -85,6 +85,7 @@ private:
     Hotkey m_advanced_paste_ui_hotkey = { .win = true, .ctrl = false, .shift = true, .alt = false, .key = 'V' };
     Hotkey m_paste_as_markdown_hotkey{};
     Hotkey m_paste_as_json_hotkey{};
+    Hotkey m_custom_action_hotkey{}; // New custom action hotkey
 
     template<class Id>
     struct ActionData
@@ -302,7 +303,8 @@ private:
                     { { &m_paste_as_plain_hotkey, JSON_KEY_PASTE_AS_PLAIN_HOTKEY },
                       { &m_advanced_paste_ui_hotkey, JSON_KEY_ADVANCED_PASTE_UI_HOTKEY },
                       { &m_paste_as_markdown_hotkey, JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY },
-                      { &m_paste_as_json_hotkey, JSON_KEY_PASTE_AS_JSON_HOTKEY } }
+                      { &m_paste_as_json_hotkey, JSON_KEY_PASTE_AS_JSON_HOTKEY },
+                      { &m_custom_action_hotkey, JSON_KEY_CUSTOM_ACTION_HOTKEY } } // New custom action hotkey
                 };
 
                 for (auto& [hotkey, keyName] : defaultHotkeys)
@@ -930,7 +932,13 @@ public:
                 Trace::AdvancedPaste_Invoked(L"JsonDirect");
                 return true;
             }
-
+            if (hotkeyId == 4)
+            { // m_custom_action_hotkey
+                Logger::trace(L"Starting custom action directly");
+                send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_CUSTOM_ACTION_MESSAGE);
+                Trace::AdvancedPaste_Invoked(L"CustomActionDirect");
+                return true;
+            }
 
             const auto additional_action_index = hotkeyId - NUM_DEFAULT_HOTKEYS;
             if (additional_action_index < m_additional_actions.size())
@@ -970,7 +978,8 @@ public:
             const std::array default_hotkeys = { m_paste_as_plain_hotkey,
                                                  m_advanced_paste_ui_hotkey,
                                                  m_paste_as_markdown_hotkey,
-                                                 m_paste_as_json_hotkey };
+                                                 m_paste_as_json_hotkey,
+                                                 m_custom_action_hotkey }; // New custom action hotkey
             std::copy(default_hotkeys.begin(), default_hotkeys.end(), hotkeys);
 
             const auto get_action_hotkey = [](const auto& action) { return action.hotkey; };

@@ -256,6 +256,14 @@ void FancyZonesSettings::LoadSettings()
                    GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
                    MB_OK);
     }
+    catch (const std::exception& e)
+    {
+        Logger::error(L"Standard exception: {}", e.what());
+    }
+    catch (...)
+    {
+        Logger::error(L"Unknown error occurred while loading settings.");
+    }
 }
 
 void FancyZonesSettings::NotifyObservers(SettingId id) const

@@ -34,4 +34,6 @@ enum class SettingId
     ExcludedApps,
     AllowSnapChildWindows,
     DisableRoundCornersOnSnapping,
+    ErrorHandling, // New constant for error handling
+    Logging // New constant for logging
 };

@@ -89,3 +89,13 @@ void Trace::AdvancedPaste_SettingsTelemetry(const PowertoyModuleIface::Hotkey& p
         TraceLoggingWideString(getAdditionalActionHotkeyCStr(L"PasteAsHtmlFile"), "PasteAsHtmlFileHotkey")
     );
 }
+
+// Log if the user has invoked the new custom action
+void Trace::AdvancedPaste_CustomActionInvoked() noexcept
+{
+    TraceLoggingWriteWrapper(
+        g_hProvider,
+        "AdvancedPaste_CustomActionInvoked",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}

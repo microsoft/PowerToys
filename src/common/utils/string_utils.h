@@ -49,10 +49,9 @@ inline void replace_chars(std::basic_string<CharT>& s,
                           const std::basic_string_view<CharT> chars_to_replace,
                           const CharT replacement_char)
 {
-    for (const CharT c : chars_to_replace)
-    {
-        std::replace(begin(s), end(s), c, replacement_char);
-    }
+    std::replace_if(begin(s), end(s), [&chars_to_replace](const CharT c) {
+        return chars_to_replace.find(c) != std::basic_string_view<CharT>::npos;
+    }, replacement_char);
 }
 
 inline std::string unwide(const std::wstring& wide)

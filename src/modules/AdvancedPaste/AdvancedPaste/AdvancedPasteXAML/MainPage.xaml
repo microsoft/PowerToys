@@ -1,0 +1,39 @@
+<Page
+    x:Class="AdvancedPaste.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:AdvancedPaste"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:helpers="using:AdvancedPaste.Helpers"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <muxc:CommandBar Grid.Row="0">
+            <muxc:AppBarButton Icon="Paste" Label="Paste" Click="OnPasteClick"/>
+            <muxc:AppBarButton Icon="Copy" Label="Copy" Click="OnCopyClick"/>
+            <muxc:AppBarButton Icon="Cut" Label="Cut" Click="OnCutClick"/>
+            <muxc:AppBarButton Icon="Undo" Label="Undo" Click="OnUndoClick"/>
+            <muxc:AppBarButton Icon="Redo" Label="Redo" Click="OnRedoClick"/>
+            <muxc:AppBarButton Icon="Save" Label="Save" Click="OnSaveClick"/>
+            <muxc:AppBarButton Icon="OpenFile" Label="Open" Click="OnOpenClick"/>
+            <muxc:AppBarButton Icon="Delete" Label="Delete" Click="OnDeleteClick"/>
+            <muxc:AppBarButton Icon="Find" Label="Find" Click="OnFindClick"/>
+            <muxc:AppBarButton Icon="Replace" Label="Replace" Click="OnReplaceClick"/>
+            <muxc:AppBarButton Icon="SelectAll" Label="Select All" Click="OnSelectAllClick"/>
+            <muxc:AppBarButton Icon="Settings" Label="Settings" Click="OnSettingsClick"/>
+        </muxc:CommandBar>
+
+        <ScrollViewer Grid.Row="1">
+            <StackPanel>
+                <TextBlock Text="Advanced Paste" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+                <TextBox x:Name="InputTextBox" PlaceholderText="Enter text here" Margin="0,0,0,20"/>
+                <Button Content="Custom Action" Click="OnCustomActionClick" Style="{StaticResource SubtleButtonStyle}"/>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

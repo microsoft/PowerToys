@@ -28,6 +28,8 @@
 #define EventMoveOrResizeEndedKey "FancyZones_MoveOrResizeEnded"
 #define EventCycleActiveZoneSetKey "FancyZones_CycleActiveZoneSet"
 #define EventQuickLayoutSwitchKey "FancyZones_QuickLayoutSwitch"
+#define EventErrorKey "FancyZones_Error" // New event key for error handling
+#define EventLoggingKey "FancyZones_Logging" // New event key for logging
 
 #define EventEnabledKey "Enabled"
 #define PressedKeyCodeKey "Hotkey"
@@ -76,6 +78,10 @@
 #define InputModeKey "InputMode"
 #define OverlappingZonesAlgorithmKey "OverlappingZonesAlgorithm"
 #define QuickLayoutSwitchedWithShortcutUsed "ShortcutUsed"
+#define ErrorCodeKey "ErrorCode" // New key for error code
+#define ErrorMessageKey "ErrorMessage" // New key for error message
+#define MethodNameKey "MethodName" // New key for method name
+#define LogMessageKey "LogMessage" // New key for log message
 
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,
@@ -231,12 +237,23 @@ void Trace::FancyZones::Error(const DWORD errorCode, std::wstring errorMessage, 
 {
     TraceLoggingWriteWrapper(
         g_hProvider,
-        "FancyZones_Error",
+        EventErrorKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingValue(methodName.c_str(), "MethodName"),
-        TraceLoggingValue(errorCode, "ErrorCode"),
-        TraceLoggingValue(errorMessage.c_str(), "ErrorMessage"));
+        TraceLoggingValue(methodName.c_str(), MethodNameKey),
+        TraceLoggingValue(errorCode, ErrorCodeKey),
+        TraceLoggingValue(errorMessage.c_str(), ErrorMessageKey));
+}
+
+// Log general messages in FZ
+void Trace::FancyZones::Log(const std::wstring& message) noexcept
+{
+    TraceLoggingWriteWrapper(
+        g_hProvider,
+        EventLoggingKey,
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingValue(message.c_str(), LogMessageKey));
 }
 
 void Trace::FancyZones::QuickLayoutSwitched(bool shortcutUsed) noexcept

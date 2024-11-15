@@ -20,6 +20,7 @@ public:
         static void QuickLayoutSwitched(bool shortcutUsed) noexcept;
         static void SnapNewWindowIntoZone(Layout* activeLayout, const LayoutAssignedWindows& layoutWindows) noexcept;
         static void KeyboardSnapWindowToZone(Layout* activeLayout, const LayoutAssignedWindows& layoutWindows) noexcept;
+        static void Log(const std::wstring& message) noexcept; // New method for logging
     };
 
     static void SettingsTelemetry(const Settings& settings) noexcept;

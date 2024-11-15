@@ -22,4 +22,7 @@ public:
                                          const PowertoyModuleIface::Hotkey& pasteJsonHotkey,
                                          const bool preview_custom_format_output,
                                          const std::unordered_map<std::wstring, PowertoyModuleIface::Hotkey>& additionalActionsHotkeys) noexcept;
+
+    // Log if the user has invoked the new custom action
+    static void AdvancedPaste_CustomActionInvoked() noexcept;
 };

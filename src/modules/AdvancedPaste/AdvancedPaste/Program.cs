@@ -42,5 +42,11 @@ namespace AdvancedPaste
                 Logger.LogWarning("Another instance of AdvancedPasteUI is running. Exiting.");
             }
         }
+
+        private static void OnCustomActionClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            // Handle the custom action click event
+            Logger.LogInfo("Custom action clicked.");
+        }
     }
 }

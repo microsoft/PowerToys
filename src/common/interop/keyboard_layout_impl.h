@@ -26,16 +26,18 @@ private:
     // Stores a fixed order key code list for the drop down menus. It is kept fixed to change in ordering due to languages
     std::vector<DWORD> keyCodeList;
 
-public:
+    // Stores mappings for all the virtual key codes to the name of the key
     std::map<DWORD, std::wstring> keyboardLayoutMap;
 
-    // Update Keyboard layout according to input locale identifier
-    void UpdateLayout();
-
+public:
+    // Constructor to initialize the keyboard layout
     LayoutMapImpl()
     {
         UpdateLayout();
     }
+
+    // Update Keyboard layout according to input locale identifier
+    void UpdateLayout();
 
     // Function to return the unicode string name of the key
     std::wstring GetKeyName(DWORD key);
@@ -45,4 +47,16 @@ public:
 
     // Function to return the list of key name pairs in the order for the drop down based on the key codes
     std::vector<std::pair<DWORD, std::wstring>> GetKeyNameList(const bool isShortcut);
+
+    // Getter for keyboardLayoutMap
+    std::map<DWORD, std::wstring> GetKeyboardLayoutMap() const
+    {
+        return keyboardLayoutMap;
+    }
+
+    // Setter for keyboardLayoutMap
+    void SetKeyboardLayoutMap(const std::map<DWORD, std::wstring>& layoutMap)
+    {
+        keyboardLayoutMap = layoutMap;
+    }
 };
