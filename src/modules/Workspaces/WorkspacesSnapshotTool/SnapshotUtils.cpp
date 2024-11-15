@@ -239,6 +239,7 @@ namespace SnapshotUtils
         HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
         if (hSnapshot == INVALID_HANDLE_VALUE)
         {
+            Logger::info(L"Invalid handle when creating snapshot for the search for PwaHelper processes");
             return pwaHelperProcessIds;
         }
 
@@ -296,6 +297,7 @@ namespace SnapshotUtils
         }
 
         auto pwaHelperProcessIds = FindPwaHelperProcessIds(pid);
+        Logger::info(L"Found {} edge Pwa helper processes", pwaHelperProcessIds.size());
         for (auto subProcessID : pwaHelperProcessIds)
         {
             std::wstring aumidID;
@@ -350,7 +352,6 @@ namespace SnapshotUtils
                 CoTaskMemFree(path);
             }
         }
-        Logger::info(L"Found {} edge Pwa helper processes", pwaAumidToAppId->size());
     }
 
     void InitChromeAppIds(std::vector<std::wstring>* chromeAppIds, std::map<std::wstring, std::wstring>* pwaAppIdsToAppNames)
