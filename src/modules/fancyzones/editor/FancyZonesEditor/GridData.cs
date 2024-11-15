@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,16 +12,9 @@ using ManagedCommon;
 
 namespace FancyZonesEditor
 {
-    /// <summary>
-    /// Represents the data for a grid layout in the FancyZones editor.
-    /// </summary>
     public class GridData
     {
-        /// <summary>
-        /// Calculates the prefix sum of a list of integers.
-        /// </summary>
-        /// <param name="list">The list of integers.</param>
-        /// <returns>A list containing the prefix sums.</returns>
+        // result[k] is the sum of the first k elements of the given list.
         public static List<int> PrefixSum(List<int> list)
         {
             var result = new List<int>(list.Count + 1);
@@ -33,11 +30,7 @@ namespace FancyZonesEditor
             return result;
         }
 
-        /// <summary>
-        /// Calculates the adjacent differences of a list of integers.
-        /// </summary>
-        /// <param name="list">The list of integers.</param>
-        /// <returns>A list containing the adjacent differences.</returns>
+        // Opposite of PrefixSum, returns the list containing differences of consecutive elements
         private static List<int> AdjacentDifference(List<int> list)
         {
             if (list.Count <= 1)
@@ -55,11 +48,9 @@ namespace FancyZonesEditor
             return result;
         }
 
-        /// <summary>
-        /// Returns a list of unique elements from the given list, preserving the order.
-        /// </summary>
-        /// <param name="list">The list of integers.</param>
-        /// <returns>A list containing unique elements.</returns>
+        // IEnumerable.Distinct does not guarantee the items will be returned in the same order.
+        // In addition, here each element of the list will occupy a contiguous segment, simplifying
+        // the implementation.
         private static List<int> Unique(List<int> list)
         {
             var result = new List<int>();
@@ -84,25 +75,27 @@ namespace FancyZonesEditor
             return result;
         }
 
-        /// <summary>
-        /// Represents a zone in the grid layout.
-        /// </summary>
         public struct Zone
         {
             public int Index { get; set; }
+
             public int Left { get; set; }
+
             public int Top { get; set; }
+
             public int Right { get; set; }
+
             public int Bottom { get; set; }
         }
 
-        /// <summary>
-        /// Represents a resizer in the grid layout.
-        /// </summary>
         public struct Resizer
         {
             public Orientation Orientation { get; set; }
+
+            // all zones to the left/up, in order
             public List<int> NegativeSideIndices { get; set; }
+
+            // all zones to the right/down, in order
             public List<int> PositiveSideIndices { get; set; }
         }
 
@@ -110,19 +103,14 @@ namespace FancyZonesEditor
         private List<Resizer> _resizers;
 
         public int MinZoneWidth { get; set; }
+
         public int MinZoneHeight { get; set; }
 
         private GridLayoutModel _model;
 
-        /// <summary>
-        /// The sum of row/column percents should be equal to this number.
-        /// </summary>
+        // The sum of row/column percents should be equal to this number
         public const int Multiplier = 10000;
 
-        /// <summary>
-        /// Converts the grid layout model to a list of zones.
-        /// </summary>
-        /// <param name="model">The grid layout model.</param>
         private void ModelToZones(GridLayoutModel model)
         {
             int rows = model.Rows;
@@ -205,12 +193,9 @@ namespace FancyZonesEditor
             }
         }
 
-        /// <summary>
-        /// Converts the grid layout model to a list of resizers.
-        /// </summary>
-        /// <param name="model">The grid layout model.</param>
         private void ModelToResizers(GridLayoutModel model)
         {
+            // Short name, to avoid clutter
             var grid = model.CellChildMap;
 
             int rows = model.Rows;
@@ -218,7 +203,7 @@ namespace FancyZonesEditor
 
             _resizers = new List<Resizer>();
 
-            // Horizontal resizers
+            // Horizontal
             for (int row = 1; row < rows; row++)
             {
                 for (int startCol = 0; startCol < cols;)
@@ -256,7 +241,7 @@ namespace FancyZonesEditor
                 }
             }
 
-            // Vertical resizers
+            // Vertical
             for (int col = 1; col < cols; col++)
             {
                 for (int startRow = 0; startRow < rows;)
@@ -295,20 +280,12 @@ namespace FancyZonesEditor
             }
         }
 
-        /// <summary>
-        /// Converts the grid layout model to zones and resizers.
-        /// </summary>
-        /// <param name="model">The grid layout model.</param>
         private void FromModel(GridLayoutModel model)
         {
             ModelToZones(model);
             ModelToResizers(model);
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GridData"/> class.
-        /// </summary>
-        /// <param name="model">The grid layout model.</param>
         public GridData(GridLayoutModel model)
         {
             _model = model;
@@ -318,26 +295,17 @@ namespace FancyZonesEditor
             FromModel(model);
         }
 
-        /// <summary>
-        /// Gets the list of zones in the grid layout.
-        /// </summary>
         public IReadOnlyList<Zone> Zones
         {
             get { return _zones; }
         }
 
-        /// <summary>
-        /// Gets the list of resizers in the grid layout.
-        /// </summary>
         public IReadOnlyList<Resizer> Resizers
         {
             get { return _resizers; }
         }
 
-        /// <summary>
-        /// Converts the list of zones to the grid layout model.
-        /// </summary>
-        /// <param name="model">The grid layout model.</param>
+        // Converts the known list of zones from _zones to the given model. Ignores Zone.Index, so these indices can also be invalid.
         private void ZonesToModel(GridLayoutModel model)
         {
             var xCoords = _zones.Select((zone) => zone.Right).Concat(_zones.Select((zone) => zone.Left)).Distinct().OrderBy((x) => x).ToList();
@@ -367,13 +335,10 @@ namespace FancyZonesEditor
             }
         }
 
-        /// <summary>
-        /// Computes the closure of the given list of indices.
-        /// </summary>
-        /// <param name="indices">The list of indices.</param>
-        /// <returns>A tuple containing the list of indices and the zone to replace the merged zones.</returns>
+        // Returns a tuple consisting of the list of indices and the Zone which should replace the zones to be merged.
         private Tuple<List<int>, Zone> ComputeClosure(List<int> indices)
         {
+            // First, find the minimum bounding rectangle which doesn't intersect any zone
             int left = int.MaxValue;
             int right = int.MinValue;
             int top = int.MaxValue;
@@ -421,12 +386,14 @@ namespace FancyZonesEditor
 
                     if (newArea != 0 && newArea != area)
                     {
+                        // bad intersection found, extend
                         Extend(zone);
                         possiblyBroken = true;
                     }
                 }
             }
 
+            // Pick zones which are inside this area
             var resultIndices = _zones.FindAll((zone) =>
             {
                 bool inside = true;
@@ -445,20 +412,11 @@ namespace FancyZonesEditor
             });
         }
 
-        /// <summary>
-        /// Returns the list of indices in the closure of the given list of indices.
-        /// </summary>
-        /// <param name="indices">The list of indices.</param>
-        /// <returns>The list of indices in the closure.</returns>
         public List<int> MergeClosureIndices(List<int> indices)
         {
             return ComputeClosure(indices).Item1;
         }
 
-        /// <summary>
-        /// Merges the zones with the given indices.
-        /// </summary>
-        /// <param name="indices">The list of indices.</param>
         public void DoMerge(List<int> indices)
         {
             Logger.LogTrace();
@@ -470,25 +428,21 @@ namespace FancyZonesEditor
 
             int lowestIndex = indices.Min();
 
+            // make sure the set of indices is closed.
             var closure = ComputeClosure(indices);
             var closureIndices = closure.Item1.ToHashSet();
             Zone closureZone = closure.Item2;
 
+            // Erase zones with these indices
             _zones = _zones.FindAll((zone) => !closureIndices.Contains(zone.Index)).ToList();
 
             _zones.Insert(lowestIndex, closureZone);
 
+            // Restore invariants
             ZonesToModel(_model);
             FromModel(_model);
         }
 
-        /// <summary>
-        /// Determines whether the zone can be split at the given position.
-        /// </summary>
-        /// <param name="zoneIndex">The index of the zone.</param>
-        /// <param name="position">The position to split.</param>
-        /// <param name="orientation">The orientation of the split.</param>
-        /// <returns>True if the zone can be split; otherwise, false.</returns>
         public bool CanSplit(int zoneIndex, int position, Orientation orientation)
         {
             Zone zone = _zones[zoneIndex];
@@ -503,12 +457,6 @@ namespace FancyZonesEditor
             }
         }
 
-        /// <summary>
-        /// Splits the zone at the given position.
-        /// </summary>
-        /// <param name="zoneIndex">The index of the zone.</param>
-        /// <param name="position">The position to split.</param>
-        /// <param name="orientation">The orientation of the split.</param>
         public void Split(int zoneIndex, int position, Orientation orientation)
         {
             Logger.LogTrace();
@@ -537,16 +485,12 @@ namespace FancyZonesEditor
             _zones.Insert(zoneIndex, zone1);
             _zones.Insert(zoneIndex + 1, zone2);
 
+            // Restore invariants
             ZonesToModel(_model);
             FromModel(_model);
         }
 
-        /// <summary>
-        /// Determines whether the resizer can be dragged by the given amount.
-        /// </summary>
-        /// <param name="resizerIndex">The index of the resizer.</param>
-        /// <param name="delta">The amount to drag.</param>
-        /// <returns>True if the resizer can be dragged; otherwise, false.</returns>
+        // Check if some zone becomes too small when the resizer is dragged by amount delta
         public bool CanDrag(int resizerIndex, int delta)
         {
             var resizer = _resizers[resizerIndex];
@@ -578,11 +522,6 @@ namespace FancyZonesEditor
             return true;
         }
 
-        /// <summary>
-        /// Drags the resizer by the given amount.
-        /// </summary>
-        /// <param name="resizerIndex">The index of the resizer.</param>
-        /// <param name="delta">The amount to drag.</param>
         public void Drag(int resizerIndex, int delta)
         {
             Logger.LogTrace();
@@ -626,6 +565,7 @@ namespace FancyZonesEditor
                 _zones[zoneIndex] = zone;
             }
 
+            // Restore invariants
             ZonesToModel(_model);
             FromModel(_model);
         }
