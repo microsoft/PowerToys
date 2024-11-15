@@ -235,6 +235,7 @@ namespace SnapshotUtils
     std::vector<DWORD> FindPwaHelperProcessIds(DWORD parentProcessId)
     {
         std::vector<DWORD> pwaHelperProcessIds;
+        Logger::info(L"Start searching for child processes of the main edge process with id {}", parentProcessId);
 
         HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
         if (hSnapshot == INVALID_HANDLE_VALUE)
@@ -252,7 +253,16 @@ namespace SnapshotUtils
             {
                 if (_wcsicmp(pe.szExeFile, L"PwaHelper.exe") == 0 && pe.th32ParentProcessID == parentProcessId)
                 {
+                    Logger::info(L"Found a PWA process with id {}", pe.th32ProcessID);
                     pwaHelperProcessIds.push_back(pe.th32ProcessID);
+                }
+                else if (_wcsicmp(pe.szExeFile, L"PwaHelper.exe") == 0)
+                {
+                    Logger::info(L"Found a process with filename 'PwaHelper.exe' process with id {}, its parent process id is {}", pe.th32ProcessID, pe.th32ParentProcessID);
+                }
+                else if (pe.th32ParentProcessID == parentProcessId)
+                {
+                    Logger::info(L"Found a process with the desired parent process id, but filename is {}, process id is {}", pe.szExeFile, pe.th32ProcessID);
                 }
             } while (Process32Next(hSnapshot, &pe));
         }
