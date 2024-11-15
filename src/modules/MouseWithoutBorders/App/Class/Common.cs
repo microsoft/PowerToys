@@ -474,7 +474,7 @@ namespace MouseWithoutBorders
             }
         }
 
-        private static readonly object InputSimulationLock = new();
+        private static readonly Lock InputSimulationLock = new();
 
         internal static void DoSomethingInTheInputSimulationThread(ThreadStart target)
         {

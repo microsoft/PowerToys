@@ -57,7 +57,6 @@ damienleroy
 davidegiacometti
 debian
 Deibisu
-Deibisu
 Delimarsky
 Deondre
 DHowett
@@ -87,7 +86,6 @@ Jaswal
 jefflord
 Jordi
 jyuwono
-Kairu
 Kairu
 Kamra
 Kantarci
@@ -123,7 +121,6 @@ quachpas
 Quriz
 randyrants
 ricardosantos
-riri
 riri
 ritchielawrence
 robmikh
