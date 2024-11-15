@@ -521,6 +521,16 @@ namespace SnapshotUtils
                         finalName = pwaName + L" (" + finalName + L")";
                         Logger::info(L"The found edge window is a PWA app with name {}", finalName);
                     }
+                    else
+                    {
+                        std::wstring nameFromAumid{ windowAumid };
+                        std::size_t delimiterPos = nameFromAumid.find(L"-");
+                        if (delimiterPos != std::string::npos)
+                        {
+                            nameFromAumid = nameFromAumid.substr(0, delimiterPos);
+                        }
+                        finalName = nameFromAumid + L" (" + finalName + L")";
+                    }
                 }
                 else
                 {

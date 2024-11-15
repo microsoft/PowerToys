@@ -56,7 +56,16 @@ namespace WorkspacesLauncherUI.Models
                             string iconFilename = MainViewModel.GetPwaIconFilename(this);
                             if (iconFilename != null)
                             {
-                                var bitmap = new Bitmap(iconFilename);
+                                Bitmap bitmap;
+                                if (iconFilename.EndsWith("ico", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    bitmap = new Bitmap(iconFilename);
+                                }
+                                else
+                                {
+                                    bitmap = (Bitmap)Image.FromFile(iconFilename);
+                                }
+
                                 var iconHandle = bitmap.GetHicon();
                                 _icon = Icon.FromHandle(iconHandle);
                             }

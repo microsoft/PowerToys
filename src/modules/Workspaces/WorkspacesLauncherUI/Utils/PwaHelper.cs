@@ -13,6 +13,8 @@ namespace WorkspacesLauncherUI.Utils
     {
         private const string ChromeBase = "Google\\Chrome\\User Data\\Default\\Web Applications";
         private const string EdgeBase = "Microsoft\\Edge\\User Data\\Default\\Web Applications";
+        private const string ResourcesDir = "Manifest Resources";
+        private const string IconsDir = "Icons";
         private const string PwaDirIdentifier = "_CRX_";
 
         private static List<PwaApp> edgePwaApps = new List<PwaApp>();
@@ -50,6 +52,31 @@ namespace WorkspacesLauncherUI.Utils
 
                         result.Add(new PwaApp() { Name = filenameWithoutExtension, IconFilename = iconFile, AppId = appId });
                         break;
+                    }
+                }
+
+                string resourcesDir = Path.Combine(baseFolderName, ResourcesDir);
+                if (Directory.Exists(resourcesDir))
+                {
+                    foreach (string subDir in Directory.GetDirectories(resourcesDir))
+                    {
+                        string dirName = Path.GetFileName(subDir);
+                        if (result.Any(app => app.AppId == dirName))
+                        {
+                            continue;
+                        }
+
+                        string iconsDir = Path.Combine(subDir, IconsDir);
+                        if (Directory.Exists(iconsDir))
+                        {
+                            foreach (string iconFile in Directory.GetFiles(iconsDir, "*.png"))
+                            {
+                                string filenameWithoutExtension = Path.GetFileNameWithoutExtension(iconFile);
+
+                                result.Add(new PwaApp() { Name = filenameWithoutExtension, IconFilename = iconFile, AppId = dirName });
+                                break;
+                            }
+                        }
                     }
                 }
             }
