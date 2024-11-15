@@ -25,6 +25,8 @@ public sealed partial class ListPage : Microsoft.UI.Xaml.Controls.Page, INotifyP
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    public SolidColorBrush AccentColorBrush { get; set; } = new();
+
     private ListItemViewModel? _selectedItem;
 
     public ListItemViewModel? SelectedItem
@@ -117,6 +119,9 @@ public sealed partial class ListPage : Microsoft.UI.Xaml.Controls.Page, INotifyP
         {
             return;
         }
+
+        this.AccentColorBrush = new SolidColorBrush(ViewModel.AccentColor);
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AccentColorBrush)));
 
         if (e.NavigationMode == NavigationMode.New)
         {

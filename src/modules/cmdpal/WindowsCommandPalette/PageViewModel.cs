@@ -4,6 +4,7 @@
 
 using Microsoft.CmdPal.Extensions;
 using Windows.Foundation;
+using Windows.UI;
 
 namespace WindowsCommandPalette;
 
@@ -15,6 +16,8 @@ public class PageViewModel
 
     // public IPage PageAction { get => pageAction; set => pageAction = value; }
     public ActionViewModel Command { get; }
+
+    public Color AccentColor => PageAction.AccentColor;
 
     public event TypedEventHandler<object, ActionViewModel>? RequestDoAction;
 

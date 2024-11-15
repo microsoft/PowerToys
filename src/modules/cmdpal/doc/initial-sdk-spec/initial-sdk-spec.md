@@ -491,6 +491,8 @@ information that the host application will then use to render the page.
 interface IPage requires ICommand {
     String Title { get; };
     Boolean Loading { get; };
+    
+    Windows.UI.Color AccentColor { get; };
 }
 ```
 
@@ -514,6 +516,9 @@ content to indicate that something is happening in the background.
 Pages are `ICommands`, which means they also are observable via the
 `INotifyPropChanged` interface. This allows the page to set `Loading` as needed
 and change the value once the results are loaded.
+
+Pages may also specify an `AccentColor`. DevPal will use this color to stylize
+elements of the page with that color.
 
 #### List Pages
 

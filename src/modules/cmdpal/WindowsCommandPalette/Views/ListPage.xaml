@@ -10,7 +10,7 @@
     xmlns:mtu="using:Microsoft.Terminal.UI"
     xmlns:rsdk="using:Microsoft.CmdPal.Extensions"
     xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
-    Background="Transparent"
+    Background="{x:Bind AccentColorBrush, Mode=OneWay}"
     Loaded="Page_Loaded"
     mc:Ignorable="d">
 

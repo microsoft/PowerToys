@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
-using Windows.Media.Protection.PlayReady;
+using Windows.UI;
 
 namespace MastodonExtension;
 
@@ -32,6 +32,9 @@ internal sealed partial class MastodonExtensionPage : ListPage
         Name = "Mastodon";
         ShowDetails = true;
         HasMore = true;
+
+        // #6364ff
+        AccentColor = Color.FromArgb(255, 99, 100, 255);
     }
 
     public override IListItem[] GetItems()
@@ -100,7 +103,7 @@ internal sealed partial class MastodonExtensionPage : ListPage
         try
         {
             // Make a GET request to the Mastodon trends API endpoint
-            HttpResponseMessage response = await Client
+            var response = await Client
                 .GetAsync($"https://mastodon.social/api/v1/trends/statuses?limit={limit}&offset={offset}");
             response.EnsureSuccessStatusCode();
 
@@ -270,7 +273,7 @@ public partial class MastodonPostPage : FormPage
         {
             // Make a GET request to the Mastodon context API endpoint
             var url = $"https://mastodon.social/api/v1/statuses/{post.Id}/context";
-            HttpResponseMessage response = await MastodonExtensionPage.Client.GetAsync(url);
+            var response = await MastodonExtensionPage.Client.GetAsync(url);
             response.EnsureSuccessStatusCode();
 
             // Read and deserialize the response JSON into a MastodonContext object
@@ -328,9 +331,9 @@ public class MastodonStatus
 
     public string ContentAsPlainText()
     {
-        HtmlDocument doc = new HtmlDocument();
+        var doc = new HtmlDocument();
         doc.LoadHtml(Content);
-        StringBuilder plainTextBuilder = new StringBuilder();
+        var plainTextBuilder = new StringBuilder();
         foreach (var node in doc.DocumentNode.ChildNodes)
         {
             plainTextBuilder.Append(ParseNodeToPlaintext(node));
@@ -341,9 +344,9 @@ public class MastodonStatus
 
     public string ContentAsMarkdown(bool escapeHashtags, bool addMedia)
     {
-        HtmlDocument doc = new HtmlDocument();
+        var doc = new HtmlDocument();
         doc.LoadHtml(Content.Replace("<br>", "\n\n").Replace("<br />", "\n\n"));
-        StringBuilder markdownBuilder = new StringBuilder();
+        var markdownBuilder = new StringBuilder();
         foreach (var node in doc.DocumentNode.ChildNodes)
         {
             markdownBuilder.Append(ParseNodeToMarkdown(node, escapeHashtags));

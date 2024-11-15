@@ -4,7 +4,6 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.UI.Dispatching;
@@ -59,10 +58,10 @@ public sealed class ListPageViewModel : PageViewModel
         switch (args.PropertyName)
         {
             case nameof(HasMore):
-            {
-                HasMore = Page.HasMore;
-                break;
-            }
+                {
+                    HasMore = Page.HasMore;
+                    break;
+                }
         }
     }
 
