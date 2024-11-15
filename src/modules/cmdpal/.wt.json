@@ -11,6 +11,11 @@
             "input": "tasklist | findstr Extension",
             "name": "List running extensions",
             "description": "This will list all running extensions, as long as they have 'Extension' in the name (they should)"
+        },
+        {
+            "input": "for /F \"tokens=2\" %A in ('tasklist ^| findstr Extension') do taskkill /PID %A /F",
+            "name": "🚨 Terminate extensions 🚨",
+            "description": "Terminate anything with 'Extension' in the name"
         }
     ]
 }

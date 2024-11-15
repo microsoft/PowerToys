@@ -92,16 +92,11 @@
                                 <Run Text="{x:Bind Subtitle, Mode=OneWay}" />
                             </TextBlock>
                         </StackPanel>
-                        <StackPanel
-                            Grid.Column="2"
-                            HorizontalAlignment="Right"
-                            Orientation="Horizontal"
-                            Visibility="{x:Bind HasTags}">
-                            <ItemsRepeater
-                                ItemTemplate="{StaticResource TagTemplate}"
-                                ItemsSource="{x:Bind Tags}"
-                                Layout="{StaticResource HorizontalStackLayout}" />
-                        </StackPanel>
+                        <ItemsRepeater ItemTemplate="{StaticResource TagTemplate}"
+                                       ItemsSource="{x:Bind Tags}"
+                                       Grid.Column="2"
+                                       Visibility="{x:Bind HasTags}"
+                                       Layout="{StaticResource HorizontalStackLayout}" />
                     </Grid>
                 </ListViewItem>
             </DataTemplate>
