@@ -5642,6 +5642,13 @@ LRESULT APIENTRY MainWndProc(
 
 		// Apply hotkey settings
 		UnregisterAllHotkeys(hWnd);
+		g_ToggleMod = GetKeyMod(g_ToggleKey);
+        g_LiveZoomToggleMod = GetKeyMod(g_LiveZoomToggleKey);
+        g_DrawToggleMod = GetKeyMod(g_DrawToggleKey);
+        g_BreakToggleMod = GetKeyMod(g_BreakToggleKey);
+        g_DemoTypeToggleMod = GetKeyMod(g_DemoTypeToggleKey);
+        g_SnipToggleMod = GetKeyMod(g_SnipToggleKey);
+        g_RecordToggleMod = GetKeyMod(g_RecordToggleKey);
 		RegisterAllHotkeys(hWnd);
 		
 		break;
