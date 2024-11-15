@@ -17,14 +17,14 @@ public partial class CalculatorTopLevelListItem : ListItem, IFallbackHandler
         // In the case of the calculator, the ListItem itself is the fallback
         // handler so that it can update its Title and Subtitle accordingly.
         FallbackHandler = this;
-        Subtitle = "Type an equation";
+        SetDefaultTitle();
     }
 
     public void UpdateQuery(string query)
     {
         if (string.IsNullOrEmpty(query) || query == "=")
         {
-            Title = "=";
+            SetDefaultTitle();
         }
         else if (query.StartsWith('='))
         {
@@ -35,6 +35,12 @@ public partial class CalculatorTopLevelListItem : ListItem, IFallbackHandler
         {
             Title = string.Empty;
         }
+    }
+
+    private void SetDefaultTitle()
+    {
+        Title = "=";
+        Subtitle = "Type an equation";
     }
 
     private string ParseQuery(string query)

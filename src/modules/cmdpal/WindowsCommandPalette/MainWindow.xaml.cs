@@ -107,6 +107,7 @@ public sealed partial class MainWindow : Window
 
         _mainViewModel.QuitRequested += (s, e) =>
         {
+            Activated -= MainWindow_Activated;
             Close();
 
             // Application.Current.Exit();
@@ -121,12 +122,12 @@ public sealed partial class MainWindow : Window
         var success = Windows.Win32.PInvoke.RegisterHotKey(hwnd, 0, mod, vk);
         hotKeyPrc = HotKeyPrc;
         var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(hotKeyPrc);
-        origPrc = Marshal.GetDelegateForFunctionPointer<WNDPROC>((IntPtr)Windows.Win32.PInvoke.SetWindowLongPtr(hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, hotKeyPrcPointer));
+        origPrc = Marshal.GetDelegateForFunctionPointer<WNDPROC>(Windows.Win32.PInvoke.SetWindowLongPtr(hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, hotKeyPrcPointer));
     }
 
     private void PositionCentered()
     {
-        _appWindow.Resize(new SizeInt32 { Width = 860, Height = 560 });
+        _appWindow.Resize(new SizeInt32 { Width = 1000, Height = 680 });
         DisplayArea displayArea = DisplayArea.GetFromWindowId(_appWindow.Id, DisplayAreaFallback.Nearest);
         if (displayArea is not null)
         {
@@ -150,7 +151,7 @@ public sealed partial class MainWindow : Window
         var onLeft = false;
         try
         {
-            using RegistryKey? key = Registry.CurrentUser?.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced");
+            using var key = Registry.CurrentUser?.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced");
             if (key != null)
             {
                 var o = key.GetValue("TaskbarGlomLevel");
@@ -174,7 +175,7 @@ public sealed partial class MainWindow : Window
             // react appropriately
         }
 
-        Microsoft.UI.Windowing.DisplayArea displayArea = Microsoft.UI.Windowing.DisplayArea.GetFromWindowId(_appWindow.Id, Microsoft.UI.Windowing.DisplayAreaFallback.Nearest);
+        var displayArea = Microsoft.UI.Windowing.DisplayArea.GetFromWindowId(_appWindow.Id, Microsoft.UI.Windowing.DisplayAreaFallback.Nearest);
         if (displayArea is not null)
         {
             var centeredPosition = _appWindow.Position;
@@ -233,14 +234,9 @@ public sealed partial class MainWindow : Window
     private static string KeybindingToString(VirtualKey key, VirtualKeyModifiers modifiers)
     {
         var keyString = key.ToString();
-        if (keyString.Length == 1)
-        {
-            keyString = keyString.ToUpper(System.Globalization.CultureInfo.CurrentCulture);
-        }
-        else
-        {
-            keyString = Regex.Replace(keyString, "([a-z])([A-Z])", "$1+$2");
-        }
+        keyString = keyString.Length == 1
+            ? keyString.ToUpper(System.Globalization.CultureInfo.CurrentCulture)
+            : Regex.Replace(keyString, "([a-z])([A-Z])", "$1+$2");
 
         var modifierString = string.Empty;
         if (modifiers.HasFlag(VirtualKeyModifiers.Control))
@@ -370,20 +366,16 @@ public sealed partial class MainWindow : Window
 
     private DesktopAcrylicController GetAcrylicConfig()
     {
-        if (((FrameworkElement)this.Content).ActualTheme == ElementTheme.Light)
-        {
-            return new DesktopAcrylicController()
+        return ((FrameworkElement)this.Content).ActualTheme == ElementTheme.Light
+            ? new DesktopAcrylicController()
             {
                 Kind = DesktopAcrylicKind.Thin,
                 TintColor = Windows.UI.Color.FromArgb(255, 243, 243, 243),
                 LuminosityOpacity = 0.90f,
                 TintOpacity = 0.0f,
                 FallbackColor = Windows.UI.Color.FromArgb(255, 238, 238, 238),
-            };
-        }
-        else
-        {
-            return new DesktopAcrylicController()
+            }
+            : new DesktopAcrylicController()
             {
                 Kind = DesktopAcrylicKind.Thin,
                 TintColor = Windows.UI.Color.FromArgb(255, 32, 32, 32),
@@ -391,7 +383,6 @@ public sealed partial class MainWindow : Window
                 TintOpacity = 0.5f,
                 FallbackColor = Windows.UI.Color.FromArgb(255, 28, 28, 28),
             };
-        }
     }
 
     private void MainWindow_ActualThemeChanged(FrameworkElement sender, object args)

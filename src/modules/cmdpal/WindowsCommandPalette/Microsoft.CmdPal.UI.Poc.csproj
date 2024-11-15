@@ -40,7 +40,8 @@
     <PackageReference Include="AdaptiveCards.ObjectModel.WinUI3" GeneratePathProperty="true" />
     <PackageReference Include="AdaptiveCards.Rendering.WinUI3" GeneratePathProperty="True" />
     <PackageReference Include="AdaptiveCards.Templating" />
-    <PackageReference Include="CommunityToolkit.WinUI.Converters" />
+    <PackageReference Include="CommunityToolkit.WinUI.Animations" />
+	  <PackageReference Include="CommunityToolkit.WinUI.Converters" />
 
     <!-- <PackageReference Include="CommunityToolkit.WinUI" /> -->
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" />

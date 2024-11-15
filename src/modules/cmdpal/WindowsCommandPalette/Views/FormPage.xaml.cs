@@ -22,7 +22,7 @@ public sealed partial class FormPage : Page
     public FormPage()
     {
         this.InitializeComponent();
-        UISettings settings = new UISettings();
+        var settings = new UISettings();
 
         // yep this is the way to check if you're in light theme or dark.
         // yep it's this dumb
@@ -50,7 +50,7 @@ public sealed partial class FormPage : Page
         {
             DispatcherQueue.TryEnqueue(() =>
             {
-                FormsRepeater.ItemsSource = ViewModel.Forms;
+                FormItems.ItemsSource = ViewModel.Forms;
 
                 Debug.WriteLine($"Rendering {this.ViewModel.Forms.Count} forms");
                 foreach (var form in this.ViewModel.Forms)
@@ -58,14 +58,14 @@ public sealed partial class FormPage : Page
                     AddCardElement(form);
                 }
 
-                FormContent.Focus(FocusState.Programmatic);
+                FormItems.Focus(FocusState.Programmatic);
             });
         });
     }
 
     private void Page_Loaded(object sender, RoutedEventArgs e)
     {
-        FormContent.Focus(FocusState.Programmatic);
+        FormItems.Focus(FocusState.Programmatic);
     }
 
     private void BackButton_Tapped(object sender, TappedRoutedEventArgs e)

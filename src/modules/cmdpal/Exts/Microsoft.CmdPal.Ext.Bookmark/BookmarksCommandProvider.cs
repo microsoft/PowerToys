@@ -90,14 +90,18 @@ public partial class BookmarksCommandProvider : CommandProvider
             var listItem = new ListItem(action);
 
             // Add actions for folder types
-            if (action is UrlAction urlAction && urlAction.Type == "folder")
+            if (action is UrlAction urlAction)
             {
-                listItem.MoreCommands = [
-                    new CommandContextItem(new OpenInTerminalAction(urlAction.Url))
-                ];
+                if (urlAction.Type == "folder")
+                {
+                    listItem.MoreCommands = [
+                        new CommandContextItem(new OpenInTerminalAction(urlAction.Url))
+                    ];
+                }
+
+                listItem.Subtitle = urlAction.Url;
             }
 
-            // listItem.Subtitle = "Bookmark";
             if (action is not AddBookmarkPage)
             {
                 listItem.Tags = [

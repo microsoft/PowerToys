@@ -443,36 +443,13 @@ internal sealed partial class PokedexExtensionPage : ListPage
 
     public PokedexExtensionPage()
     {
-        Icon = new(string.Empty);
+        Icon = new("https://e7.pngegg.com/pngimages/311/5/png-clipart-pokedex-pokemon-go-hoenn-pokemon-x-and-y-hoenn-pokedex-pokemon-ash-thumbnail.png");
         Name = "Pokedex";
     }
 
     public override IListItem[] GetItems()
     {
         return _kanto.AsEnumerable().Concat(_johto.AsEnumerable()).Concat(_hoenn.AsEnumerable()).Select(p => GetPokemonListItem(p)).ToArray();
-        /*return [
-            new ListSection()
-            {
-                Title = "Kanto",
-                Items = _kanto
-                    .AsEnumerable()
-                    .Select(p => GetPokemonListItem(p)).ToArray(),
-            },
-            new ListSection()
-            {
-                Title = "Johto",
-                Items = _johto
-                    .AsEnumerable()
-                    .Select(p => GetPokemonListItem(p)).ToArray(),
-            },
-            new ListSection()
-            {
-                Title = "Hoenn",
-                Items = _hoenn
-                    .AsEnumerable()
-                    .Select(p => GetPokemonListItem(p)).ToArray(),
-            },
-        ];*/
     }
 
     private static ListItem GetPokemonListItem(Pokemon pokemon)

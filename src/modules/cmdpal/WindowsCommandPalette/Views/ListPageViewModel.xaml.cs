@@ -91,28 +91,27 @@ public sealed class ListPageViewModel : PageViewModel
 
         // still on main thread
 
-        // TODO! For dynamic lists, we're clearing out the whole list of items
-        // we already have, then rebuilding it. We shouldn't do that. We should
-        // still use the results from GetItems and put them into the code in
-        // UpdateFilter to intelligently add/remove as needed.
-        // TODODO! are we still? ^^
+        // This creates an entirely new list of ListItemViewModels, and we're
+        // really hoping that the equality check in `InPlaceUpdateList`
+        // properly uses ListItemViewModel.Equals to compare if the objects
+        // are literally the same.
         Collection<ListItemViewModel> newItems = new(items.Select(i => new ListItemViewModel(i)).ToList());
-        Debug.WriteLine($"  Found {newItems.Count} items");
+
+        // Debug.WriteLine($"  Found {newItems.Count} items");
 
         // THIS populates FilteredItems. If you do this off the UI thread, guess what -
         // the list view won't update. So WATCH OUT
         ListHelpers.InPlaceUpdateList(FilteredItems, newItems);
         ListHelpers.InPlaceUpdateList(_items, newItems);
 
-        Debug.WriteLine($"Done with UpdateListItems, found {FilteredItems.Count} / {_items.Count}");
+        // Debug.WriteLine($"Done with UpdateListItems, found {FilteredItems.Count} / {_items.Count}");
     }
 
-    internal IEnumerable<ListItemViewModel> GetFilteredItems(string query)
+    public void UpdateSearchText(string query)
     {
-        // This method does NOT change any lists. It doesn't modify _items or FilteredItems...
         if (query == _query)
         {
-            return FilteredItems;
+            return;
         }
 
         _query = query;
@@ -120,25 +119,13 @@ public sealed class ListPageViewModel : PageViewModel
         {
             // Tell the dynamic page the new search text. If they need to update, they will.
             IsDynamicPage.SearchText = _query;
-
-            return FilteredItems;
         }
         else
         {
-            // Static lists don't need to re-fetch the items
-            if (string.IsNullOrEmpty(query))
-            {
-                return _items;
-            }
-
-            // TODO! Probably bad that this turns list view models into listitems back to NEW view models
-            // TODO! make this safer
-            // TODODO! ^ still relevant?
-            var newFilter = ListHelpers
-                .FilterList(_items.Select(vm => vm.ListItem.Unsafe), query)
-                .Select(li => new ListItemViewModel(li));
-
-            return newFilter;
+            var filtered = ListItemViewModel
+                .FilterList(_items, query);
+            Collection<ListItemViewModel> newItems = new(filtered.ToList());
+            ListHelpers.InPlaceUpdateList(FilteredItems, newItems);
         }
     }
 

@@ -1,0 +1,13 @@
+
+GetMenu
+GetMenuItemInfoW
+SendMessageW
+EnumWindows
+IsWindowVisible
+GetWindowTextW
+GetWindowTextLength
+GetMenuItemCount
+GetSubMenu
+PostMessage
+SetActiveWindow
+SetForegroundWindow 

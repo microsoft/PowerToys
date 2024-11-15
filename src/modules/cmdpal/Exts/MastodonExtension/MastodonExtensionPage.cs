@@ -24,7 +24,7 @@ internal sealed partial class MastodonExtensionPage : ListPage
     internal static readonly HttpClient Client = new();
     internal static readonly JsonSerializerOptions Options = new() { PropertyNameCaseInsensitive = true };
 
-    private readonly List<MastodonStatus> _posts = new();
+    private readonly List<ListItem> _items = new();
 
     public MastodonExtensionPage()
     {
@@ -37,18 +37,11 @@ internal sealed partial class MastodonExtensionPage : ListPage
         AccentColor = Color.FromArgb(255, 99, 100, 255);
     }
 
-    public override IListItem[] GetItems()
+    private void AddPosts(List<MastodonStatus> posts)
     {
-        if (_posts.Count == 0)
+        foreach (var p in posts)
         {
-            var postsAsync = FetchExplorePage();
-            postsAsync.ConfigureAwait(false);
-            var posts = postsAsync.Result;
-            this._posts.AddRange(posts);
-        }
-
-        return _posts
-            .Select(p => new ListItem(new MastodonPostPage(p))
+            var postItem = new ListItem(new MastodonPostPage(p))
             {
                 Title = p.Account.DisplayName, // p.ContentAsPlainText(),
                 Subtitle = $"@{p.Account.Username}",
@@ -76,18 +69,38 @@ internal sealed partial class MastodonExtensionPage : ListPage
                 MoreCommands = [
                     new CommandContextItem(new OpenUrlCommand(p.Url) { Name = "Open on web" }),
                 ],
-            })
+            };
+            this._items.Add(postItem);
+        }
+    }
+
+    public override IListItem[] GetItems()
+    {
+        if (_items.Count == 0)
+        {
+            var postsAsync = FetchExplorePage();
+            postsAsync.ConfigureAwait(false);
+            var posts = postsAsync.Result;
+            this.AddPosts(posts);
+        }
+
+        return _items
             .ToArray();
     }
 
     public override void LoadMore()
     {
-        var postsAsync = FetchExplorePage(20, this._posts.Count);
+        this.Loading = true;
+        ExtensionHost.LogMessage(new LogMessage() { Message = $"Loading 20 posts, starting with {_items.Count}..." });
+        var postsAsync = FetchExplorePage(20, this._items.Count);
         postsAsync.ContinueWith((res) =>
         {
             var posts = postsAsync.Result;
-            this._posts.AddRange(posts);
-            this.RaiseItemsChanged(this._posts.Count);
+            this.AddPosts(posts);
+            ExtensionHost.LogMessage(new LogMessage() { Message = $"... got {posts.Count} new posts" });
+
+            this.Loading = false;
+            this.RaiseItemsChanged(this._items.Count);
         }).ConfigureAwait(false);
     }
 
