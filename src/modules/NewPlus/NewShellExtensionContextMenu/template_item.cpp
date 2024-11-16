@@ -131,8 +131,8 @@ void template_item::enter_rename_mode(const std::filesystem::path target_fullpat
 void template_item::rename_on_other_thread_workaround(const std::filesystem::path target_fullpath)
 {
     // Have been unable to have Windows Explorer Shell enter rename mode from the main thread
-    // Sleep for a bit to only enter rename mode when icon has been drawn. Not strictly needed.
-    const std::chrono::milliseconds approx_wait_for_icon_redraw_not_needed{ 250 };
+    // Sleep for a bit to only enter rename mode when icon has been drawn.
+    const std::chrono::milliseconds approx_wait_for_icon_redraw_not_needed{ 50 };
     std::this_thread::sleep_for(std::chrono::milliseconds(approx_wait_for_icon_redraw_not_needed));
 
     newplus::utilities::explorer_enter_rename_mode(target_fullpath);

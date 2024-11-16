@@ -7,8 +7,12 @@
 
 #include "constants.h"
 #include "settings.h"
+#include "template_item.h"
+#include "trace.h"
 
 #pragma comment(lib, "Shlwapi.lib")
+
+using namespace newplus;
 
 namespace newplus::utilities
 {
@@ -217,7 +221,6 @@ namespace newplus::utilities
         return false;
     }
 
-
     inline void explorer_enter_rename_mode(const std::filesystem::path target_fullpath_of_new_instance)
     {
         const std::filesystem::path path_without_new_file_or_dir = target_fullpath_of_new_instance.parent_path();
@@ -296,26 +299,116 @@ namespace newplus::utilities
         shell_view.As(&folder_view);
 
         // Find the newly created object (file or folder)
-        // And put into edit mode (SVSI_EDIT)
+        // And put object into edit mode (SVSI_EDIT) and if desktop also reposition
         int number_of_objects_in_view = 0;
+        bool done = false;
         folder_view->ItemCount(SVGIO_ALLVIEW, &number_of_objects_in_view);
-        for (int i = 0; i < number_of_objects_in_view; ++i)
+        for (int i = 0; i < number_of_objects_in_view && !done; ++i)
         {
             std::wstring path_of_item(MAX_PATH, 0);
             LPITEMIDLIST shell_item_ids;
 
             folder_view->Item(i, &shell_item_ids);
             SHGetPathFromIDList(shell_item_ids, &path_of_item[0]);
-            CoTaskMemFree(shell_item_ids);
 
-            std::wstring current_filename = std::filesystem::path(path_of_item.c_str()).filename();
+            const std::wstring current_filename = std::filesystem::path(path_of_item.c_str()).filename();
 
-            //if (utilities::wstring_same_when_comparing_ignore_case(filename, current_filename))
-            if (StrCmpIW(new_file_or_dir_without_path.c_str(), current_filename.c_str()) == 0)
+            if (utilities::wstring_same_when_comparing_ignore_case(new_file_or_dir_without_path, current_filename))
             {
-                folder_view->SelectItem(i, SVSI_EDIT | SVSI_SELECT | SVSI_DESELECTOTHERS | SVSI_ENSUREVISIBLE | SVSI_FOCUSED);
-                break;
+                const DWORD common_select_flags = SVSI_EDIT | SVSI_SELECT | SVSI_DESELECTOTHERS | SVSI_ENSUREVISIBLE | SVSI_FOCUSED;
+
+                if (object_created_on_desktop)
+                {
+                    // Newly created object is on the desktop -- reposition under mouse and enter rename mode
+                    LPCITEMIDLIST shell_item_to_select_and_position[] = { shell_item_ids };
+                    POINT mouse_position;
+                    GetCursorPos(&mouse_position);
+                    mouse_position.x -= GetSystemMetrics(SM_CXMENUSIZE);
+                    mouse_position.x = max(mouse_position.x, 20);
+                    mouse_position.y -= GetSystemMetrics(SM_CXMENUSIZE)/2;
+                    mouse_position.y = max(mouse_position.y, 20);
+                        POINT position[] = { mouse_position };
+                    folder_view->SelectAndPositionItems(1, shell_item_to_select_and_position, position, common_select_flags | SVSI_POSITIONITEM);
+                }
+                else
+                {
+                    // Enter rename mode
+                    folder_view->SelectItem(i, common_select_flags);
+                }
+                done = true;
             }
+            CoTaskMemFree(shell_item_ids);
         }
+    }
+
+    inline HRESULT copy_template(const template_item* template_entry, const ComPtr<IUnknown> site_of_folder)
+    {
+        HRESULT hr = S_OK;
+
+        Trace trace_on;
+
+        try
+        {
+            Logger::info(L"Copying template");
+
+            // Determine target path of where context menu was displayed
+            const auto target_path_name = utilities::get_path_from_unknown_site(site_of_folder);
+
+            // Determine initial filename
+            std::filesystem::path source_fullpath = template_entry->path;
+            std::filesystem::path target_fullpath = std::wstring(target_path_name);
+
+            // Only append name to target if source is not a directory
+            if (!utilities::is_directory(source_fullpath))
+            {
+                target_fullpath.append(template_entry->get_target_filename(!utilities::get_newplus_setting_hide_starting_digits()));
+            }
+
+            // Copy file and determine final filename
+            std::filesystem::path target_final_fullpath = template_entry->copy_object_to(GetActiveWindow(), target_fullpath);
+
+            Trace::EventCopyTemplate(target_final_fullpath.extension().c_str());
+
+            // Refresh folder items
+            template_entry->refresh_target(target_final_fullpath);
+
+            // Enter rename mode
+            template_entry->enter_rename_mode(target_final_fullpath);
+        }
+        catch (const std::exception& ex)
+        {
+            Logger::error(ex.what());
+
+            hr = S_FALSE;
+        }
+
+        Trace::EventCopyTemplateResult(hr);
+
+        return hr;
+    }
+
+    inline HRESULT open_template_folder(const std::filesystem::path template_folder)
+    {
+        HRESULT hr = S_OK;
+
+        Trace trace_on;
+
+        try
+        {
+            Logger::info(L"Open templates folder");
+
+            const std::wstring verb_hardcoded_do_not_change = L"open";
+            ShellExecute(nullptr, verb_hardcoded_do_not_change.c_str(), template_folder.c_str(), NULL, NULL, SW_SHOWNORMAL);
+
+            Trace::EventOpenTemplates();
+        }
+        catch (const std::exception& ex)
+        {
+            Logger::error(ex.what());
+
+            hr = S_FALSE;
+        }
+
+        return hr;
     }
 }
