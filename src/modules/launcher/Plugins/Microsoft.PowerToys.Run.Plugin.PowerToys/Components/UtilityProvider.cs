@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
         private const int MaxNumberOfRetry = 5;
         private readonly List<Utility> _utilities;
         private readonly FileSystemWatcher _watcher;
-        private readonly object _loadingSettingsLock = new();
+        private readonly Lock _loadingSettingsLock = new();
         private bool _disposed;
 
         public UtilityProvider()

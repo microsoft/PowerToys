@@ -21,7 +21,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Used to enforce single execution of EnumWindows
         /// </summary>
-        private static readonly object _enumWindowsLock = new();
+        private static readonly Lock _enumWindowsLock = new();
 
         /// <summary>
         /// PowerLauncher main executable

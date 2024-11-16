@@ -19,6 +19,7 @@ namespace MouseWithoutBorders
 
         [Category("Appearance")]
         [Description("The thickness of the border around the field")]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public int BorderSize
         {
             get => _borderSize;
@@ -33,6 +34,7 @@ namespace MouseWithoutBorders
 
         [Category("Appearance")]
         [Description("The color of the border around the field")]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public Color BorderColor
         {
             get => _borderColor;
@@ -47,6 +49,7 @@ namespace MouseWithoutBorders
 
         [Category("Appearance")]
         [Description("The color of the border around the field when it has focus")]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public Color FocusColor
         {
             get => _focusColor;
@@ -59,12 +62,14 @@ namespace MouseWithoutBorders
 
         [Category("Behavior")]
         [Description("The maximum number of characters that can be typed in the field")]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public int MaximumLength
         {
             get => InnerField.MaxLength;
             set => InnerField.MaxLength = value;
         }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public override string Text
         {
             get => InnerField.Text;

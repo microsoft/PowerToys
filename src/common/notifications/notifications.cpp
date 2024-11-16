@@ -178,7 +178,8 @@ void notifications::show_toast_with_activations(std::wstring message,
                                                 std::wstring title,
                                                 std::wstring_view background_handler_id,
                                                 std::vector<action_t> actions,
-                                                toast_params params)
+                                                toast_params params,
+                                                std::wstring launch_uri)
 {
     // DO NOT LOCALIZE any string in this function, because they're XML tags and a subject to
     // https://learn.microsoft.com/windows/uwp/design/shell/tiles-and-notifications/toast-xml-schema
@@ -189,7 +190,18 @@ void notifications::show_toast_with_activations(std::wstring message,
     // We must set toast's title and contents immediately, because some of the toasts we send could be snoozed.
     // Windows instantiates the snoozed toast from scratch before showing it again, so all bindings that were set
     // using NotificationData would be empty.
-    toast_xml += LR"(<?xml version="1.0"?><toast><visual><binding template="ToastGeneric">)";
+    // Add the launch attribute if launch_uri is provided, otherwise omit it
+    toast_xml += LR"(<?xml version="1.0"?>)";
+    if (!launch_uri.empty())
+    {
+        toast_xml += LR"(<toast launch=")" + launch_uri + LR"(" activationType="protocol">)"; // Use the launch URI if provided
+    }
+    else
+    {
+        toast_xml += LR"(<toast>)"; // No launch attribute if empty
+    }
+
+    toast_xml += LR"(<visual><binding template="ToastGeneric">)";
     toast_xml += LR"(<text id="1">)";
     toast_xml += std::move(title);
     toast_xml += LR"(</text>)";

@@ -1,7 +1,6 @@
 # FALSE POSITIVES
 ## "PackagemanagerWrapper.cs" should be "PackageManagerWrapper.cs"
 ## NOTICE.MD > MOZILLA PUBLIC LICENSE v1.1
-
 aaaa
 abcdefghjkmnpqrstuvxyz
 abgr
@@ -43,7 +42,6 @@ AMPROPSETID
 amr
 ANDSCANS
 animatedvisuals
-anr
 ansicolor
 ANull
 AOC
@@ -1214,6 +1212,7 @@ prgms
 pri
 PRINTCLIENT
 printmanagement
+privacystatement
 prm
 proactively
 PROCESSENTRY

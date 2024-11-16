@@ -625,7 +625,7 @@ void close_settings_window()
     if (g_settings_process_id != 0)
     {
         SetEvent(g_terminateSettingsEvent);
-        wil::unique_handle proc{ OpenProcess(PROCESS_TERMINATE, false, g_settings_process_id) };
+        wil::unique_handle proc{ OpenProcess(PROCESS_ALL_ACCESS, false, g_settings_process_id) };
         if (proc)
         {
             WaitForSingleObject(proc.get(), 1500);
