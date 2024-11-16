@@ -19,7 +19,7 @@ namespace MouseWithoutBorders.Core;
 
 internal sealed class Thread
 {
-    private static readonly object ThreadsLock = new();
+    private static readonly Lock ThreadsLock = new();
     private static List<System.Threading.Thread> threads;
 
     private readonly System.Threading.Thread thread;
