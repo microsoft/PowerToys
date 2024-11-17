@@ -5634,25 +5634,90 @@ LRESULT APIENTRY MainWndProc(
 		break;
 
 	case WM_USER_RELOAD_SETTINGS:
-		// Reload the settings
-		reg.ReadRegSettings(RegSettings);
+    {
+        // Reload the settings. This message is called from PowerToys after a setting is changed by the user.
+        reg.ReadRegSettings(RegSettings);
 
-		// Apply tray icon setting
-		EnableDisableTrayIcon( hWnd, g_ShowTrayIcon );
+        // Apply tray icon setting
+        EnableDisableTrayIcon(hWnd, g_ShowTrayIcon);
 
-		// Apply hotkey settings
-		UnregisterAllHotkeys(hWnd);
-		g_ToggleMod = GetKeyMod(g_ToggleKey);
+        // Apply hotkey settings
+        UnregisterAllHotkeys(hWnd);
+        g_ToggleMod = GetKeyMod(g_ToggleKey);
         g_LiveZoomToggleMod = GetKeyMod(g_LiveZoomToggleKey);
         g_DrawToggleMod = GetKeyMod(g_DrawToggleKey);
         g_BreakToggleMod = GetKeyMod(g_BreakToggleKey);
         g_DemoTypeToggleMod = GetKeyMod(g_DemoTypeToggleKey);
         g_SnipToggleMod = GetKeyMod(g_SnipToggleKey);
         g_RecordToggleMod = GetKeyMod(g_RecordToggleKey);
-		RegisterAllHotkeys(hWnd);
-		
+        BOOL showOptions = FALSE;
+        if (g_ToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, ZOOM_HOTKEY, g_ToggleMod, g_ToggleKey & 0xFF))
+            {
+                MessageBox(hWnd, L"The specified zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.", APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+            }
+        }
+        if (g_LiveZoomToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF))
+            {
+                MessageBox(hWnd, L"The specified live-zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.", APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+            }
+        }
+        if (g_DrawToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, DRAW_HOTKEY, g_DrawToggleMod, g_DrawToggleKey & 0xFF))
+            {
+                MessageBox(hWnd, L"The specified draw w/out zoom hotkey is already in use.\nSelect a different draw w/out zoom hotkey.", APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+            }
+        }
+        if (g_BreakToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, BREAK_HOTKEY, g_BreakToggleMod, g_BreakToggleKey & 0xFF))
+            {
+                MessageBox(hWnd, L"The specified break timer hotkey is already in use.\nSelect a different break timer hotkey.", APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+            }
+        }
+        if (g_DemoTypeToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, DEMOTYPE_HOTKEY, g_DemoTypeToggleMod, g_DemoTypeToggleKey & 0xFF) ||
+                !RegisterHotKey(hWnd, DEMOTYPE_RESET_HOTKEY, (g_DemoTypeToggleMod ^ MOD_SHIFT), g_DemoTypeToggleKey & 0xFF))
+            {
+                MessageBox(hWnd, L"The specified live-type hotkey is already in use.\nSelect a different live-type hotkey.", APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+            }
+        }
+        if (g_SnipToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF) ||
+                !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, (g_SnipToggleMod ^ MOD_SHIFT), g_SnipToggleKey & 0xFF))
+            {
+                MessageBox(hWnd, L"The specified snip hotkey is already in use.\nSelect a different snip hotkey.", APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+            }
+        }
+        if (g_RecordToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF) ||
+                !RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, (g_RecordToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF) ||
+                !RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, (g_RecordToggleMod ^ MOD_ALT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF))
+            {
+                MessageBox(hWnd, L"The specified record hotkey is already in use.\nSelect a different record hotkey.", APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+            }
+        }
+        if (showOptions)
+        {
+            // To open the PowerToys settings in the ZoomIt page.
+            SendMessage(hWnd, WM_COMMAND, IDC_OPTIONS, 0);
+        }
 		break;
-
+    }
 	case WM_COMMAND:
 
 		switch(LOWORD( wParam )) {
