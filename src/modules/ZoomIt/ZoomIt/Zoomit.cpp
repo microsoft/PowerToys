@@ -15,6 +15,7 @@
 #include "ZoomItSettings.h"
 #include <common/interop/shared_constants.h>
 #include <common/utils/ProcessWaiter.h>
+#include <common/utils/process_path.h>
 
 namespace winrt
 {
@@ -3498,6 +3499,45 @@ void UpdateMonitorInfo( POINT point, MONITORINFO* monInfo )
 	}
 }
 
+    HRESULT OpenPowerToysSettingsApp()
+    {
+        std::wstring path = get_module_folderpath(g_hInstance);
+        path += L"\\PowerToys.exe";
+
+        std::wstring openSettings = L"--open-settings=ZoomIt";
+
+        std::wstring full_command_path = path + L" " + openSettings;
+
+        STARTUPINFO startupInfo;
+        ZeroMemory(&startupInfo, sizeof(STARTUPINFO));
+        startupInfo.cb = sizeof(STARTUPINFO);
+        startupInfo.wShowWindow = SW_SHOWNORMAL;
+
+        PROCESS_INFORMATION processInformation;
+
+        CreateProcess(
+            path.c_str(),
+            full_command_path.data(),
+            NULL,
+            NULL,
+            TRUE,
+            0,
+            NULL,
+            NULL,
+            &startupInfo,
+            &processInformation);
+
+        if (!CloseHandle(processInformation.hProcess))
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+        if (!CloseHandle(processInformation.hThread))
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+        return S_OK;
+    }
+
 //----------------------------------------------------------------------------
 //
 // MainWndProc
@@ -5910,8 +5950,12 @@ LRESULT APIENTRY MainWndProc(
 
 		case IDC_OPTIONS:
 			// Don't show win32 forms options if started by PowerToys.
-			// TODO: Call Settings app instead.
-			if (!g_StartedByPowerToys)
+			// Show the PowerToys Settings application instead.
+			if (g_StartedByPowerToys)
+			{
+				OpenPowerToysSettingsApp();
+			}
+			else
 			{
 				DialogBox( g_hInstance, L"OPTIONS", hWnd, OptionsProc );
 			}
