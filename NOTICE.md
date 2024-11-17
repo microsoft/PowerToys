@@ -1327,7 +1327,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Extensions.Logging 9.0.0
 - Microsoft.Extensions.Logging.Abstractions 9.0.0
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
-- Microsoft.Web.WebView2 1.0.2739.15
+- Microsoft.Web.WebView2 1.0.2849.39
 - Microsoft.Win32.SystemEvents 9.0.0
 - Microsoft.Windows.Compatibility 9.0.0
 - Microsoft.Windows.CsWin32 0.2.46-beta
