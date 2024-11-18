@@ -8,8 +8,8 @@ export function srtDefinition() {
             block: [
                 [/^\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}/, {
                     cases: {
-                        '@eos': {token: 'tag', next: '@subtitle'},
-                        '@default': {token: 'tag', next: '@ignore'}
+                        '@eos': {token: 'type.identifier', next: '@subtitle'},
+                        '@default': {token: 'type.identifier', next: '@ignore'}
                     }
                 }],
                 [/^$/, 'string', '@pop']
@@ -19,35 +19,11 @@ export function srtDefinition() {
                 [/.+$/, '', '@subtitle']
             ],
             
-            tags: [
-                [/^$/, 'string', '@popall'],
-                [/<b>/, 'string.bold', '@bold'],
-                [/<i>/, 'string.emphasis', '@italic'],
-                [/<u>/, 'string.underline', '@underline']
-            ],
-            
             subtitle: [
-                {include: '@tags'},
+                [/^$/, 'string', '@popall'],
+                [/<\/?(?:[ibu]|font(?:\s+color="[^"]+"\s*)?)>/, 'tag'],
                 [/./, 'string']
-            ],
-            
-            bold: [
-                [/<\/b>/, 'string.bold', '@pop'],
-                {include: '@tags'},
-                [/./, 'string.bold'],
-            ],
-            
-            italic: [
-                [/<\/i>/, 'string.emphasis', '@pop'],
-                {include: '@tags'},
-                [/./, 'string.emphasis'],
-            ],
-            
-            underline: [
-                [/<\/u>/, 'string.underline', '@pop'],
-                {include: '@tags'},
-                [/./, 'string.underline'],
-            ],
+            ]
         }
     };
 }
