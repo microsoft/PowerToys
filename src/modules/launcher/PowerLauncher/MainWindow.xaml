@@ -50,8 +50,10 @@
         <!--  Have to use a Grid instead of a StackPanel for scrolling to work?  -->
         <Grid
             x:Name="KeywordsOverviewGrid"
-            Grid.Row="1"
-            MaxHeight="{Binding Results.MaxHeight}"
+            Grid.Row="1" MaxHeight="{Binding Results.MaxHeight}"
+            
+            
+            
             Visibility="{Binding PluginsOverviewVisibility}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
