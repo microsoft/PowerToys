@@ -4487,6 +4487,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Learn more about ZoomIt</value>
     <comment>{Locked="ZoomIt"}</comment>
   </data>
+  <data name="ZoomIt.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+    <comment>giving credit to the projects this utility was based on</comment>
+  </data>
   <data name="ZoomIt_SimultaneousStandaloneZoomItWarning.Title" xml:space="preserve">
     <value>Running ZoomIt through PowerToys and the classical standalone ZoomIt executable at the same time is not supported. Please exit the original ZoomIt before enabling it here.</value>
   </data>
