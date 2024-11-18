@@ -54,7 +54,7 @@ namespace WorkspacesLauncherUI.Models
                         else if (IsEdge || IsChrome)
                         {
                             string iconFilename = MainViewModel.GetPwaIconFilename(this);
-                            if (iconFilename != null)
+                            if (!string.IsNullOrEmpty(iconFilename))
                             {
                                 Bitmap bitmap;
                                 if (iconFilename.EndsWith("ico", StringComparison.InvariantCultureIgnoreCase))

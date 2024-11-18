@@ -4,11 +4,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using Microsoft.Win32;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace WorkspacesEditor.Utils
+namespace WorkspacesCsharpLibrary
 {
     public class PwaHelper
     {
@@ -85,7 +85,7 @@ namespace WorkspacesEditor.Utils
             return result;
         }
 
-        internal static string GetChromeAppIconFile(string pwaAppId)
+        public static string GetChromeAppIconFile(string pwaAppId)
         {
             var candidates = chromePwaApps.Where(x => x.AppId == pwaAppId).ToList();
             if (candidates.Count > 0)
@@ -93,10 +93,10 @@ namespace WorkspacesEditor.Utils
                 return candidates.First().IconFilename;
             }
 
-            return null;
+            return string.Empty;
         }
 
-        internal static string GetEdgeAppIconFile(string pwaAppId)
+        public static string GetEdgeAppIconFile(string pwaAppId)
         {
             var candidates = edgePwaApps.Where(x => x.AppId == pwaAppId).ToList();
             if (candidates.Count > 0)
@@ -104,7 +104,7 @@ namespace WorkspacesEditor.Utils
                 return candidates.First().IconFilename;
             }
 
-            return null;
+            return string.Empty;
         }
     }
 }

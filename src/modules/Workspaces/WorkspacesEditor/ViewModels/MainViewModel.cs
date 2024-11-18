@@ -17,6 +17,7 @@ using System.Windows;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
+using WorkspacesCsharpLibrary;
 using WorkspacesEditor.Data;
 using WorkspacesEditor.Models;
 using WorkspacesEditor.Telemetry;

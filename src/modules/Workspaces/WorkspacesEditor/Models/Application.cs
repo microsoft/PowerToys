@@ -250,7 +250,7 @@ namespace WorkspacesEditor.Models
                         else if (MainViewModel.IsPwaApp(this))
                         {
                             string iconFilename = MainViewModel.GetPwaIconFilename(this);
-                            if (iconFilename != null)
+                            if (!string.IsNullOrEmpty(iconFilename))
                             {
                                 Bitmap bitmap;
                                 if (iconFilename.EndsWith("ico", StringComparison.InvariantCultureIgnoreCase))

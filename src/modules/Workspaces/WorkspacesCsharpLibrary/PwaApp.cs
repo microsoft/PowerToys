@@ -8,14 +8,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WorkspacesEditor.Utils
+namespace WorkspacesCsharpLibrary
 {
     public class PwaApp
     {
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
-        public string IconFilename { get; set; }
+        public required string IconFilename { get; set; }
 
-        public string AppId { get; set; }
+        public required string AppId { get; set; }
     }
 }
