@@ -2,6 +2,15 @@
 // Microsoft Visual C++ generated include file.
 // Used by ZoomIt.rc
 //
+//////////////////////////////
+// Non-localizable
+
+#define FILE_DESCRIPTION "Sysinternals Screen Magnifier"
+#define INTERNAL_NAME "ZoomIt"
+#define ORIGINAL_FILENAME "PowerToys.ZoomIt.exe"
+
+// Non-localizable
+//////////////////////////////
 #define IDC_AUDIO                       117
 #define IDC_LINK                        1000
 #define IDC_ALT                         1001
