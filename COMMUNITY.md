@@ -112,6 +112,8 @@ Find My Mouse is based on Raymond Chen's SuperSonar.
 
 Crop And Lock is based on the original work of Robert Mikhayelyan, with Program Manager support from [@kevinguo305](https://github.com/kevinguo305) - Kevin Guo.
 
+ZoomIt's Video Recording Session code is based on Robert Mikhayelyan's https://github.com/robmikh/capturevideosample code.
+
 ### Microsoft InVEST team
 
 This amazing team helped PowerToys develop PowerToys Run and Keyboard manager as well as update our Settings to v2.  @alekhyareddy28, @arjunbalgovind, @jyuwono @laviusmotileng-ms, @ryanbodrug-microsoft, @saahmedm, @somil55, @traies, @udit3333
