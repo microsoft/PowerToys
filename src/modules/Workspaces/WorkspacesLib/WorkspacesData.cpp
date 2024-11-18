@@ -140,7 +140,14 @@ namespace WorkspacesData
 
                     if (json.HasKey(NonLocalizable::PwaAppId))
                     {
-                        result.pwaAppId = json.GetNamedString(NonLocalizable::PwaAppId);
+                        try
+                        {
+                            result.pwaAppId = json.GetNamedString(NonLocalizable::PwaAppId);
+                        }
+                        catch (const winrt::hresult_error&)
+                        {
+                            result.pwaAppId = L"";
+                        }
                     }
 
                     result.commandLineArgs = json.GetNamedString(NonLocalizable::CommandLineArgsID);
