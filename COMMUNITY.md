@@ -151,6 +151,14 @@ Other contributors:
   * Paul Schmitt - WWL
   * And many other Users!
 
+## ZoomIt original contributors
+
+ZoomIt source code was originally implemented by [Sysinternals](https://sysinternals.com):
+
+- [@markrussinovich](https://github.com/markrussinovich) - Mark Russinovich
+- [@foxmsft](https://github.com/foxmsft) - Alex Mihaiuc
+- [@johnstep](https://github.com/johnstep) - John Stephens
+
 ## PowerToys core team
 
 - [@crutkas](https://github.com/crutkas/) - Clint Rutkas - Lead
