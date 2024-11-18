@@ -91,7 +91,7 @@ BEGIN
             VALUE "InternalName", INTERNAL_NAME
             VALUE "LegalCopyright", COPYRIGHT_NOTE
             VALUE "OriginalFilename", ORIGINAL_FILENAME
-            VALUE "ProductName", PRODUCT_NAME
+            VALUE "ProductName", "PowerToys Sysinternals ZoomIt"
             VALUE "ProductVersion", PRODUCT_VERSION_STRING
         END
     END
