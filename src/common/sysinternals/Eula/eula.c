@@ -129,185 +129,185 @@ static BOOL EulaCenter( HWND hwndChild, HWND hwndParent )
 
 static BOOL PrintRichedit( HWND hRichedit )
 {
-	// Get the printer.
-	PRINTDLG	pd = { 0 };
+    // Get the printer.
+    PRINTDLG	pd = { 0 };
 
-	pd.lStructSize	= sizeof pd;
-	pd.hwndOwner	= hRichedit;
-	pd.hInstance	= GetModuleHandle(NULL);
-	pd.Flags		= PD_RETURNDC | PD_NOPAGENUMS | PD_NOSELECTION | PD_PRINTSETUP;
-	if ( !PrintDlg( &pd ) )  
-		return FALSE;
+    pd.lStructSize	= sizeof pd;
+    pd.hwndOwner	= hRichedit;
+    pd.hInstance	= GetModuleHandle(NULL);
+    pd.Flags		= PD_RETURNDC | PD_NOPAGENUMS | PD_NOSELECTION | PD_PRINTSETUP;
+    if ( !PrintDlg( &pd ) )  
+        return FALSE;
 
-	{
-		HCURSOR		oldCursor	= SetCursor( LoadCursor( NULL, IDC_WAIT ) );
-		int         nHorzRes	= GetDeviceCaps( pd.hDC, HORZRES );
-		int			nVertRes	= GetDeviceCaps( pd.hDC, VERTRES );
-		int			nLogPixelsX = GetDeviceCaps( pd.hDC, LOGPIXELSX );
-		int			nLogPixelsY = GetDeviceCaps( pd.hDC, LOGPIXELSY );
-		FORMATRANGE fr = { 0 };
-		DOCINFO		di = { 0 };
-		int			TotalLength;
-		
-		// Ensure the printer DC is in MM_TEXT mode.
-		SetMapMode( pd.hDC, MM_TEXT );
-		
-		// Rendering to the same DC we are measuring.
-		fr.hdc			= pd.hDC;
-		fr.hdcTarget	= pd.hDC;
-		
-		// Set up the page.
-		fr.rcPage.top		= 0;
-		fr.rcPage.left		= 0;
-		fr.rcPage.bottom	= (nVertRes/nLogPixelsY) * 1440;
-		fr.rcPage.right		= (nHorzRes/nLogPixelsX) * 1440;
-		
-		// Set up 1" margins all around.
-		fr.rc = fr.rcPage;
-		InflateRect( &fr.rc, -1440, -1440 );
-		
-		// Default the range of text to print as the entire document.
-		fr.chrg.cpMin = 0;
-		fr.chrg.cpMax = -1;
-		
-		// Set up the print job (standard printing stuff here).
-		di.cbSize = sizeof di;
-		di.lpszDocName = _T("Sysinternals License");
-		
-		// Start the document.
-		StartDoc( pd.hDC, &di );
-		
-		// Find out real size of document in characters.
-		TotalLength = (int) SendMessage ( hRichedit, WM_GETTEXTLENGTH, 0, 0 );
-		for (;;)  {
-			int NextPage;
+    {
+        HCURSOR		oldCursor	= SetCursor( LoadCursor( NULL, IDC_WAIT ) );
+        int         nHorzRes	= GetDeviceCaps( pd.hDC, HORZRES );
+        int			nVertRes	= GetDeviceCaps( pd.hDC, VERTRES );
+        int			nLogPixelsX = GetDeviceCaps( pd.hDC, LOGPIXELSX );
+        int			nLogPixelsY = GetDeviceCaps( pd.hDC, LOGPIXELSY );
+        FORMATRANGE fr = { 0 };
+        DOCINFO		di = { 0 };
+        int			TotalLength;
+        
+        // Ensure the printer DC is in MM_TEXT mode.
+        SetMapMode( pd.hDC, MM_TEXT );
+        
+        // Rendering to the same DC we are measuring.
+        fr.hdc			= pd.hDC;
+        fr.hdcTarget	= pd.hDC;
+        
+        // Set up the page.
+        fr.rcPage.top		= 0;
+        fr.rcPage.left		= 0;
+        fr.rcPage.bottom	= (nVertRes/nLogPixelsY) * 1440;
+        fr.rcPage.right		= (nHorzRes/nLogPixelsX) * 1440;
+        
+        // Set up 1" margins all around.
+        fr.rc = fr.rcPage;
+        InflateRect( &fr.rc, -1440, -1440 );
+        
+        // Default the range of text to print as the entire document.
+        fr.chrg.cpMin = 0;
+        fr.chrg.cpMax = -1;
+        
+        // Set up the print job (standard printing stuff here).
+        di.cbSize = sizeof di;
+        di.lpszDocName = _T("Sysinternals License");
+        
+        // Start the document.
+        StartDoc( pd.hDC, &di );
+        
+        // Find out real size of document in characters.
+        TotalLength = (int) SendMessage ( hRichedit, WM_GETTEXTLENGTH, 0, 0 );
+        for (;;)  {
+            int NextPage;
 
-			// Start the page.
-			StartPage( pd.hDC );
-			
-			// Print as much text as can fit on a page. The return value is
-			// the index of the first character on the next page. 
-			NextPage = (int) SendMessage( hRichedit, EM_FORMATRANGE, TRUE, (LPARAM)&fr );
-			
-			// Print last page.
-			EndPage( pd.hDC );
-			
-			if ( NextPage >= TotalLength )
-				break;
+            // Start the page.
+            StartPage( pd.hDC );
+            
+            // Print as much text as can fit on a page. The return value is
+            // the index of the first character on the next page. 
+            NextPage = (int) SendMessage( hRichedit, EM_FORMATRANGE, TRUE, (LPARAM)&fr );
+            
+            // Print last page.
+            EndPage( pd.hDC );
+            
+            if ( NextPage >= TotalLength )
+                break;
 
-			// Adjust the range of characters to start printing at the first character of the next page.
-			fr.chrg.cpMin = NextPage;
-			fr.chrg.cpMax = -1;
-		}
+            // Adjust the range of characters to start printing at the first character of the next page.
+            fr.chrg.cpMin = NextPage;
+            fr.chrg.cpMax = -1;
+        }
 
-		// Tell the control to release cached information.
-		SendMessage( hRichedit, EM_FORMATRANGE, 0, (LPARAM)NULL );
-		EndDoc( pd.hDC );
+        // Tell the control to release cached information.
+        SendMessage( hRichedit, EM_FORMATRANGE, 0, (LPARAM)NULL );
+        EndDoc( pd.hDC );
 
-		SetCursor( oldCursor );
-	}
+        SetCursor( oldCursor );
+    }
 
-	return TRUE;
+    return TRUE;
 } 
 
 // combine all text strings into a single string
 char * GetEulaText()
 {
-	char	*	text;
-	DWORD		len = 1;
-	int			i;
-	for ( i = 0; EulaText[i]; ++i )
-		len += (DWORD) strlen( EulaText[i] );
-	text = (char *) malloc( len );
-	len = 0;
-	for ( i = 0; EulaText[i]; ++i )  {
-		strcpy( text+len, EulaText[i] );
-		len += (DWORD) strlen( EulaText[i] );
-	}
-	text[len] = 0; 
-	return text;
+    char	*	text;
+    DWORD		len = 1;
+    int			i;
+    for ( i = 0; EulaText[i]; ++i )
+        len += (DWORD) strlen( EulaText[i] );
+    text = (char *) malloc( len );
+    len = 0;
+    for ( i = 0; EulaText[i]; ++i )  {
+        strcpy( text+len, EulaText[i] );
+        len += (DWORD) strlen( EulaText[i] );
+    }
+    text[len] = 0; 
+    return text;
 }
 
 DWORD CALLBACK StreamCallback( DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb )
 {
-	const char	**	ptr = (const char **) dwCookie;
-	LONG_PTR		len = strlen(*ptr);
-	if ( cb > len )
-		cb = (int) len;
-	memcpy( pbBuff, *ptr, cb );
-	*pcb = cb;
-	*ptr += cb;
-	return 0;
+    const char	**	ptr = (const char **) dwCookie;
+    LONG_PTR		len = strlen(*ptr);
+    if ( cb > len )
+        cb = (int) len;
+    memcpy( pbBuff, *ptr, cb );
+    *pcb = cb;
+    *ptr += cb;
+    return 0;
 }
 
 static INT_PTR CALLBACK EulaProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
-	switch ( uMsg ) {
-	case WM_INITDIALOG:
-		{
-			TCHAR		title[MAX_PATH];
-			char	*	text = GetEulaText();
-			char	*	textptr = text;
-			EDITSTREAM	stream = { 0, 0, StreamCallback };
-			stream.dwCookie = (DWORD_PTR) &textptr;
-			_stprintf_s( title, MAX_PATH, _T("%s License Agreement"), (TCHAR *) lParam );
-			SetWindowText( hwndDlg, title );
-			
-			// enter RTF into edit box
-			SendMessage( GetDlgItem(hwndDlg,IDC_TEXT), EM_EXLIMITTEXT, 0, 1024*1024 );
-			SendMessage( GetDlgItem(hwndDlg,IDC_TEXT), EM_STREAMIN, SF_RTF, (LPARAM)&stream );
-			free( text );
-		}
-		return TRUE;
+    switch ( uMsg ) {
+    case WM_INITDIALOG:
+        {
+            TCHAR		title[MAX_PATH];
+            char	*	text = GetEulaText();
+            char	*	textptr = text;
+            EDITSTREAM	stream = { 0, 0, StreamCallback };
+            stream.dwCookie = (DWORD_PTR) &textptr;
+            _stprintf_s( title, MAX_PATH, _T("%s License Agreement"), (TCHAR *) lParam );
+            SetWindowText( hwndDlg, title );
+            
+            // enter RTF into edit box
+            SendMessage( GetDlgItem(hwndDlg,IDC_TEXT), EM_EXLIMITTEXT, 0, 1024*1024 );
+            SendMessage( GetDlgItem(hwndDlg,IDC_TEXT), EM_STREAMIN, SF_RTF, (LPARAM)&stream );
+            free( text );
+        }
+        return TRUE;
 
-	case WM_CTLCOLORSTATIC:
-		// force background of read-only text window to be white
-		if ( (HWND)lParam == GetDlgItem( hwndDlg, IDC_TEXT)  )  {
-			return (INT_PTR)GetSysColorBrush( COLOR_WINDOW );
-		}
-		break;
+    case WM_CTLCOLORSTATIC:
+        // force background of read-only text window to be white
+        if ( (HWND)lParam == GetDlgItem( hwndDlg, IDC_TEXT)  )  {
+            return (INT_PTR)GetSysColorBrush( COLOR_WINDOW );
+        }
+        break;
 
-	case WM_COMMAND:
-		switch( LOWORD( wParam )) {
-		case IDOK:
-			EndDialog( hwndDlg, TRUE );
-			return TRUE;
-		case IDCANCEL:
-			EndDialog( hwndDlg, FALSE );
-			return TRUE;
-		case IDC_PRINT:
-			PrintRichedit( GetDlgItem(hwndDlg,IDC_TEXT) );
-			return TRUE;
-		}
-		break;
-	}
-	return FALSE;
+    case WM_COMMAND:
+        switch( LOWORD( wParam )) {
+        case IDOK:
+            EndDialog( hwndDlg, TRUE );
+            return TRUE;
+        case IDCANCEL:
+            EndDialog( hwndDlg, FALSE );
+            return TRUE;
+        case IDC_PRINT:
+            PrintRichedit( GetDlgItem(hwndDlg,IDC_TEXT) );
+            return TRUE;
+        }
+        break;
+    }
+    return FALSE;
 }
 
 
 static WORD * Align2( WORD * pos )
 {
-	return (WORD *)(((DWORD_PTR)pos + 1) & ~((DWORD_PTR) 1));
+    return (WORD *)(((DWORD_PTR)pos + 1) & ~((DWORD_PTR) 1));
 }
 static WORD * Align4( WORD * pos )
 {
-	return (WORD *)(((DWORD_PTR)pos + 3) & ~((DWORD_PTR) 3));
+    return (WORD *)(((DWORD_PTR)pos + 3) & ~((DWORD_PTR) 3));
 }
 
 static int CopyText( WORD * pos, const WCHAR * text )
 {
-	int len = (int) wcslen( text ) + 1;
-	wcscpy( (PWCHAR) pos, text );
-	return len;
+    int len = (int) wcslen( text ) + 1;
+    wcscpy( (PWCHAR) pos, text );
+    return len;
 }
 
 BOOL ShowEulaInternal( const TCHAR * ToolName, DWORD eulaAccepted )
 {
 #if !defined(SYSMON_SHARED)
-	HKEY		hKey = NULL;
-	TCHAR		keyName[MAX_PATH];
+    HKEY		hKey = NULL;
+    TCHAR		keyName[MAX_PATH];
 
-	_stprintf_s( keyName, MAX_PATH, _T("Software\\Sysinternals\\%s"), ToolName );
+    _stprintf_s( keyName, MAX_PATH, _T("Software\\Sysinternals\\%s"), ToolName );
 
     //
     // check the regkey value if no -accepteula switch append
@@ -318,258 +318,258 @@ BOOL ShowEulaInternal( const TCHAR * ToolName, DWORD eulaAccepted )
     }
 #endif
 
-	if( !eulaAccepted ) {
-		if (IsIoTEdition())
-		{
-			eulaAccepted = ShowEulaConsole();	// display Eula to console and prompt for Eula Accepted.
-			{
-			}
-		}
-		else if (IsRemoteOnlyEdition() || IsRunningRemotely()) // Nano and in remote session will not be able to accept eula from prompt
-		{
-			ShowEulaConsoleNoPrompt();
-		}
-		else
-		{
-			DLGTEMPLATE		*	dlg = (DLGTEMPLATE	*)LocalAlloc(LPTR, 1000);
-			WORD			*	extra = (WORD *)(dlg + 1);
-			DLGITEMTEMPLATE	*	item;
+    if( !eulaAccepted ) {
+        if (IsIoTEdition())
+        {
+            eulaAccepted = ShowEulaConsole();	// display Eula to console and prompt for Eula Accepted.
+            {
+            }
+        }
+        else if (IsRemoteOnlyEdition() || IsRunningRemotely()) // Nano and in remote session will not be able to accept eula from prompt
+        {
+            ShowEulaConsoleNoPrompt();
+        }
+        else
+        {
+            DLGTEMPLATE		*	dlg = (DLGTEMPLATE	*)LocalAlloc(LPTR, 1000);
+            WORD			*	extra = (WORD *)(dlg + 1);
+            DLGITEMTEMPLATE	*	item;
 
 #if defined(SYSMON_SHARED)
-			printf( "Displaying EULA Gui dialog box ... (use -accepteula to avoid).\n" );
+            printf( "Displaying EULA Gui dialog box ... (use -accepteula to avoid).\n" );
 #endif
 
-			LoadLibrarySafe(_T("Riched32.dll"), DLL_LOAD_LOCATION_SYSTEM );	// Richedit 1.0 library
+            LoadLibrarySafe(_T("Riched32.dll"), DLL_LOAD_LOCATION_SYSTEM );	// Richedit 1.0 library
 
-			// header
-			dlg->style = DS_MODALFRAME | DS_CENTER | DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU | DS_NOFAILCREATE;
-			dlg->x = 0;
-			dlg->y = 0;
-			dlg->cx = 312;
-			dlg->cy = 180;
-			dlg->cdit = 0;	// number of controls
+            // header
+            dlg->style = DS_MODALFRAME | DS_CENTER | DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU | DS_NOFAILCREATE;
+            dlg->x = 0;
+            dlg->y = 0;
+            dlg->cx = 312;
+            dlg->cy = 180;
+            dlg->cdit = 0;	// number of controls
 
-			*extra++ = 0;	// menu
-			*extra++ = 0;	// class
-			extra += CopyText(extra, L"License Agreement");
-			*extra++ = 8;	// font size
-			extra += CopyText(extra, L"MS Shell Dlg");
+            *extra++ = 0;	// menu
+            *extra++ = 0;	// class
+            extra += CopyText(extra, L"License Agreement");
+            *extra++ = 8;	// font size
+            extra += CopyText(extra, L"MS Shell Dlg");
 
-			// Command-line message
-			item = (DLGITEMTEMPLATE *)Align4(extra);
-			item->x = 7;
-			item->y = 3;
-			item->cx = 298;
-			item->cy = 14;
-			item->id = IDC_TEXT1;
-			item->style = WS_CHILD | WS_VISIBLE;
-			extra = (WORD *)(item + 1);
-			*extra++ = 0xFFFF;	// class is ordinal
-			*extra++ = 0x0082;	// class is static
-			extra += CopyText(extra, L"You can also use the /accepteula command-line switch to accept the EULA.");
-			*extra++ = 0;		// creation data
-			dlg->cdit++;
+            // Command-line message
+            item = (DLGITEMTEMPLATE *)Align4(extra);
+            item->x = 7;
+            item->y = 3;
+            item->cx = 298;
+            item->cy = 14;
+            item->id = IDC_TEXT1;
+            item->style = WS_CHILD | WS_VISIBLE;
+            extra = (WORD *)(item + 1);
+            *extra++ = 0xFFFF;	// class is ordinal
+            *extra++ = 0x0082;	// class is static
+            extra += CopyText(extra, L"You can also use the /accepteula command-line switch to accept the EULA.");
+            *extra++ = 0;		// creation data
+            dlg->cdit++;
 
-			// Agree button
-			item = (DLGITEMTEMPLATE *)Align4(extra);
-			item->x = 201;
-			item->y = 159;
-			item->cx = 50;
-			item->cy = 14;
-			item->id = IDOK;
-			item->style = BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP; // | WS_DEFAULT;
-			extra = (WORD *)(item + 1);
-			*extra++ = 0xFFFF;	// class is ordinal
-			*extra++ = 0x0080;	// class is button
-			extra += CopyText(extra, L"&Agree");
-			*extra++ = 0;		// creation data
-			dlg->cdit++;
+            // Agree button
+            item = (DLGITEMTEMPLATE *)Align4(extra);
+            item->x = 201;
+            item->y = 159;
+            item->cx = 50;
+            item->cy = 14;
+            item->id = IDOK;
+            item->style = BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP; // | WS_DEFAULT;
+            extra = (WORD *)(item + 1);
+            *extra++ = 0xFFFF;	// class is ordinal
+            *extra++ = 0x0080;	// class is button
+            extra += CopyText(extra, L"&Agree");
+            *extra++ = 0;		// creation data
+            dlg->cdit++;
 
-			// Decline button
-			item = (DLGITEMTEMPLATE *)Align4(extra);
-			item->x = 255;
-			item->y = 159;
-			item->cx = 50;
-			item->cy = 14;
-			item->id = IDCANCEL;
-			item->style = BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP;
-			extra = (WORD *)(item + 1);
-			*extra++ = 0xFFFF;	// class is ordinal
-			*extra++ = 0x0080;	// class is button
-			extra += CopyText(extra, L"&Decline");
-			*extra++ = 0;		// creation data
-			dlg->cdit++;
+            // Decline button
+            item = (DLGITEMTEMPLATE *)Align4(extra);
+            item->x = 255;
+            item->y = 159;
+            item->cx = 50;
+            item->cy = 14;
+            item->id = IDCANCEL;
+            item->style = BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP;
+            extra = (WORD *)(item + 1);
+            *extra++ = 0xFFFF;	// class is ordinal
+            *extra++ = 0x0080;	// class is button
+            extra += CopyText(extra, L"&Decline");
+            *extra++ = 0;		// creation data
+            dlg->cdit++;
 
-			// Print button
-			item = (DLGITEMTEMPLATE *)Align4(extra);
-			item->x = 7;
-			item->y = 159;
-			item->cx = 50;
-			item->cy = 14;
-			item->id = IDC_PRINT;
-			item->style = BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP;
-			extra = (WORD *)(item + 1);
-			*extra++ = 0xFFFF;	// class is ordinal
-			*extra++ = 0x0080;	// class is button
-			extra += CopyText(extra, L"&Print");
-			*extra++ = 0;		// creation data
-			dlg->cdit++;
+            // Print button
+            item = (DLGITEMTEMPLATE *)Align4(extra);
+            item->x = 7;
+            item->y = 159;
+            item->cx = 50;
+            item->cy = 14;
+            item->id = IDC_PRINT;
+            item->style = BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP;
+            extra = (WORD *)(item + 1);
+            *extra++ = 0xFFFF;	// class is ordinal
+            *extra++ = 0x0080;	// class is button
+            extra += CopyText(extra, L"&Print");
+            *extra++ = 0;		// creation data
+            dlg->cdit++;
 
-			// Edit box
-			item = (DLGITEMTEMPLATE *)Align4(extra);
-			item->x = 7;
-			item->y = 14;
-			item->cx = 298;
-			item->cy = 140;
-			item->id = IDC_TEXT;
-			item->style = WS_BORDER | ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL | ES_READONLY | WS_CHILD | WS_VISIBLE | WS_TABSTOP;
-			extra = (WORD *)(item + 1);
-			extra += CopyText(extra, L"RICHEDIT");
-			extra += CopyText(extra, L"&Decline");
-			*extra++ = 0;		// creation data
-			dlg->cdit++;
+            // Edit box
+            item = (DLGITEMTEMPLATE *)Align4(extra);
+            item->x = 7;
+            item->y = 14;
+            item->cx = 298;
+            item->cy = 140;
+            item->id = IDC_TEXT;
+            item->style = WS_BORDER | ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL | ES_READONLY | WS_CHILD | WS_VISIBLE | WS_TABSTOP;
+            extra = (WORD *)(item + 1);
+            extra += CopyText(extra, L"RICHEDIT");
+            extra += CopyText(extra, L"&Decline");
+            *extra++ = 0;		// creation data
+            dlg->cdit++;
 
-			eulaAccepted = (DWORD)DialogBoxIndirectParam(NULL, dlg, NULL, EulaProc, (LPARAM)ToolName);
-			LocalFree(dlg);
-		}
-	}
+            eulaAccepted = (DWORD)DialogBoxIndirectParam(NULL, dlg, NULL, EulaProc, (LPARAM)ToolName);
+            LocalFree(dlg);
+        }
+    }
 #if !defined(SYSMON_SHARED)
-	if ( eulaAccepted ) {
+    if ( eulaAccepted ) {
         if (RegCreateKey(HKEY_CURRENT_USER, keyName, &hKey) == ERROR_SUCCESS) {
             RegSetValueEx(hKey, _T("EulaAccepted"), 0, REG_DWORD, (BYTE *)&eulaAccepted, sizeof(eulaAccepted));
             RegCloseKey(hKey);
         }
-	}
+    }
 #endif
 
-	return eulaAccepted != 0;
+    return eulaAccepted != 0;
 }
 
 BOOL ShowEulaW( const TCHAR * ToolName, int *argc, PWCHAR argv[] )
 {
-	DWORD		eulaAccepted = 0;
-	int			i;
+    DWORD		eulaAccepted = 0;
+    int			i;
 
-	if ( argc == NULL  ||  argv == NULL )  {
-		typedef LPWSTR * (WINAPI * type_CommandLineToArgvW)( LPCWSTR lpCmdLine, int *pNumArgs );
-		type_CommandLineToArgvW pCommandLineToArgvW = (type_CommandLineToArgvW) GetProcAddress( LoadLibrarySafe(_T("Shell32.dll"), DLL_LOAD_LOCATION_SYSTEM), "CommandLineToArgvW" );
-		if ( pCommandLineToArgvW )  {
-			static int argc2;
-			argc = &argc2;
-			argv = (*pCommandLineToArgvW)( GetCommandLineW(), argc );
-		} else {
-			argc = NULL;
-		}
-	}
+    if ( argc == NULL  ||  argv == NULL )  {
+        typedef LPWSTR * (WINAPI * type_CommandLineToArgvW)( LPCWSTR lpCmdLine, int *pNumArgs );
+        type_CommandLineToArgvW pCommandLineToArgvW = (type_CommandLineToArgvW) GetProcAddress( LoadLibrarySafe(_T("Shell32.dll"), DLL_LOAD_LOCATION_SYSTEM), "CommandLineToArgvW" );
+        if ( pCommandLineToArgvW )  {
+            static int argc2;
+            argc = &argc2;
+            argv = (*pCommandLineToArgvW)( GetCommandLineW(), argc );
+        } else {
+            argc = NULL;
+        }
+    }
 
 
-	//
-	// See if its accepted via command line switch
-	//
-	if( argc ) {
+    //
+    // See if its accepted via command line switch
+    //
+    if( argc ) {
 
-		for( i = 0; i < *argc; i++ ) {
+        for( i = 0; i < *argc; i++ ) {
 
-			eulaAccepted = (!_wcsicmp( argv[i], L"/accepteula") ||
-							!_wcsicmp( argv[i], L"-accepteula"));
-			if( eulaAccepted ) {
+            eulaAccepted = (!_wcsicmp( argv[i], L"/accepteula") ||
+                            !_wcsicmp( argv[i], L"-accepteula"));
+            if( eulaAccepted ) {
 
-				for( ; i < *argc - 1; i++ ) {
+                for( ; i < *argc - 1; i++ ) {
 
-					argv[i] = argv[i+1];
-				}
-				(*argc)--;
-				break;
-			}
-		}
-	}
-	if( ShowEulaInternal( ToolName, eulaAccepted )) {
+                    argv[i] = argv[i+1];
+                }
+                (*argc)--;
+                break;
+            }
+        }
+    }
+    if( ShowEulaInternal( ToolName, eulaAccepted )) {
 
-		eulaAccepted = 1;
-	}
-	return eulaAccepted != 0;
+        eulaAccepted = 1;
+    }
+    return eulaAccepted != 0;
 }
 
 
 BOOL ShowEula( const TCHAR * ToolName, int *argc, PTCHAR argv[] )
 {
-	DWORD		eulaAccepted = 0;
-	int			i;
+    DWORD		eulaAccepted = 0;
+    int			i;
 
-	if ( argc == NULL  ||  argv == NULL )  {
-		return ShowEulaW( ToolName, NULL, NULL );
-	}
+    if ( argc == NULL  ||  argv == NULL )  {
+        return ShowEulaW( ToolName, NULL, NULL );
+    }
 
-	//
-	// See if its accepted via command line switch
-	//
-	if( argc ) {
+    //
+    // See if its accepted via command line switch
+    //
+    if( argc ) {
 
-		for( i = 0; i < *argc; i++ ) {
+        for( i = 0; i < *argc; i++ ) {
 
-			eulaAccepted = (!_tcsicmp( argv[i], _T("/accepteula")) ||
-							!_tcsicmp( argv[i], _T("-accepteula")));
-			if( eulaAccepted ) {
+            eulaAccepted = (!_tcsicmp( argv[i], _T("/accepteula")) ||
+                            !_tcsicmp( argv[i], _T("-accepteula")));
+            if( eulaAccepted ) {
 
-				for( ; i < *argc - 1; i++ ) {
+                for( ; i < *argc - 1; i++ ) {
 
-					argv[i] = argv[i+1];
-				}
-				(*argc)--;
-				break;
-			}
-		}
-	}
-	if( ShowEulaInternal( ToolName, eulaAccepted )) {
+                    argv[i] = argv[i+1];
+                }
+                (*argc)--;
+                break;
+            }
+        }
+    }
+    if( ShowEulaInternal( ToolName, eulaAccepted )) {
 
-		eulaAccepted = 1;
-	}
-	return eulaAccepted != 0;
+        eulaAccepted = 1;
+    }
+    return eulaAccepted != 0;
 }
 
 // Determine whether we are on the IoT SKU by looking at the ProductName.
 BOOL IsIoTEdition()
 {
-	HKEY		hKey = NULL;
-	wchar_t		ProductName[MAX_PATH];
-	BOOL		bRet = FALSE;	// assume "not" IoT Edition
-	DWORD		dwSize = sizeof(ProductName);
-	DWORD		type = 0;
+    HKEY		hKey = NULL;
+    wchar_t		ProductName[MAX_PATH];
+    BOOL		bRet = FALSE;	// assume "not" IoT Edition
+    DWORD		dwSize = sizeof(ProductName);
+    DWORD		type = 0;
 
-	if (ERROR_SUCCESS == RegOpenKey(HKEY_LOCAL_MACHINE, _T("Software\\Microsoft\\windows nt\\currentversion"), &hKey))
-	{
-		if (ERROR_SUCCESS == RegQueryValueExW(hKey, L"ProductName", 0, &type, (LPBYTE)ProductName, &dwSize))
-		{
-			if (!_wcsicmp(L"iotuap", ProductName))
-				bRet = TRUE;
-		}
-		RegCloseKey(hKey);
-	}
+    if (ERROR_SUCCESS == RegOpenKey(HKEY_LOCAL_MACHINE, _T("Software\\Microsoft\\windows nt\\currentversion"), &hKey))
+    {
+        if (ERROR_SUCCESS == RegQueryValueExW(hKey, L"ProductName", 0, &type, (LPBYTE)ProductName, &dwSize))
+        {
+            if (!_wcsicmp(L"iotuap", ProductName))
+                bRet = TRUE;
+        }
+        RegCloseKey(hKey);
+    }
 
-	return bRet;
+    return bRet;
 }
 
 // Determine whether we are on the remote only edition, where we cannot prompt for user input.
 BOOL IsRemoteOnlyEdition()
 {
-	HKEY		hKey = NULL;
-	DWORD		dwNanoServer = 0;
-	BOOL		bRet = FALSE;
-	DWORD		dwSize = sizeof(dwNanoServer);
-	DWORD		type = 0;
+    HKEY		hKey = NULL;
+    DWORD		dwNanoServer = 0;
+    BOOL		bRet = FALSE;
+    DWORD		dwSize = sizeof(dwNanoServer);
+    DWORD		type = 0;
 
-	// Currently Nano is the only remote only edtion.
-	if (ERROR_SUCCESS == RegOpenKey(HKEY_LOCAL_MACHINE, _T("Software\\Microsoft\\Windows NT\\CurrentVersion\\Server\\ServerLevels"), &hKey))
-	{
-		if (ERROR_SUCCESS == RegQueryValueEx(hKey, _T("NanoServer"), 0, &type, (LPBYTE)&dwNanoServer, &dwSize))
-		{
-			if (type == REG_DWORD && dwNanoServer == 1)
-				bRet = TRUE;
-		}
-		RegCloseKey(hKey);
-	}
+    // Currently Nano is the only remote only edtion.
+    if (ERROR_SUCCESS == RegOpenKey(HKEY_LOCAL_MACHINE, _T("Software\\Microsoft\\Windows NT\\CurrentVersion\\Server\\ServerLevels"), &hKey))
+    {
+        if (ERROR_SUCCESS == RegQueryValueEx(hKey, _T("NanoServer"), 0, &type, (LPBYTE)&dwNanoServer, &dwSize))
+        {
+            if (type == REG_DWORD && dwNanoServer == 1)
+                bRet = TRUE;
+        }
+        RegCloseKey(hKey);
+    }
 
-	return bRet;
+    return bRet;
 }
 
 BOOL IsRunningRemotely()
@@ -581,30 +581,30 @@ BOOL IsRunningRemotely()
 
 DWORD ShowEulaConsole()
 {
-	DWORD dwRet = 0;
-	char ch;
-	BOOLEAN eulaAcknowledged = FALSE;
+    DWORD dwRet = 0;
+    char ch;
+    BOOLEAN eulaAcknowledged = FALSE;
 
-	wprintf(Raw_EulaText);
+    wprintf(Raw_EulaText);
 
-	while( eulaAcknowledged != TRUE )
-	{
-		printf("Accept Eula (Y/N)?");
-		ch = (char) _getch();
-		printf("%c\n", ch);
-		if ('y' == ch || 'Y' == ch)
-		{
-			dwRet = 1;	// EULA Accepted.
-			eulaAcknowledged = TRUE;
-		}
+    while( eulaAcknowledged != TRUE )
+    {
+        printf("Accept Eula (Y/N)?");
+        ch = (char) _getch();
+        printf("%c\n", ch);
+        if ('y' == ch || 'Y' == ch)
+        {
+            dwRet = 1;	// EULA Accepted.
+            eulaAcknowledged = TRUE;
+        }
 
-		if ('n' == ch || 'N' == ch)
-		{
-			// EULA not accepted.
-			eulaAcknowledged = TRUE;
-		}
-	}
-	return dwRet;
+        if ('n' == ch || 'N' == ch)
+        {
+            // EULA not accepted.
+            eulaAcknowledged = TRUE;
+        }
+    }
+    return dwRet;
 }
 
 void ShowEulaConsoleNoPrompt()

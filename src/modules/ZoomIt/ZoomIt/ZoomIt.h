@@ -15,9 +15,9 @@
 #pragma warning( disable: 4996 )
 
 typedef HRESULT (__stdcall * type_pEnableThemeDialogTexture)(
-				HWND hwnd,
-				DWORD dwFlags
-				);
+                HWND hwnd,
+                DWORD dwFlags
+                );
 type_pEnableThemeDialogTexture    pEnableThemeDialogTexture;
 
 // For testing anti-aliased bitmap stretching
@@ -64,19 +64,19 @@ type_pEnableThemeDialogTexture    pEnableThemeDialogTexture;
 #define WM_USER_RELOAD_SETTINGS	WM_USER+110
 
 typedef struct _TYPED_KEY {
-	RECT		rc;
-	struct _TYPED_KEY *Next;	
+    RECT		rc;
+    struct _TYPED_KEY *Next;	
 } TYPED_KEY, *P_TYPED_KEY;
 
 typedef struct _DRAW_UNDO {
-	HDC			hDc;
-	HBITMAP		hBitmap;
-	struct _DRAW_UNDO *Next;
+    HDC			hDc;
+    HBITMAP		hBitmap;
+    struct _DRAW_UNDO *Next;
 } DRAW_UNDO, *P_DRAW_UNDO;
 
 typedef struct {
-	TCHAR		TabTitle[64];
-	HWND		hPage;
+    TCHAR		TabTitle[64];
+    HWND		hPage;
 } OPTION_TABS, *P_OPTIONS_TABS;
 
 #define COLOR_RED		RGB(255, 0, 0)
@@ -109,8 +109,8 @@ typedef HMONITOR (__stdcall *type_MonitorFromPoint)(
 );
 
 typedef HRESULT (__stdcall *type_pSHAutoComplete)(
-	HWND hwndEdit,
-	DWORD dwFlags 
+    HWND hwndEdit,
+    DWORD dwFlags 
 );
 
 // DPI awareness
@@ -124,38 +124,38 @@ typedef BOOL (__stdcall *type_pMagSetWindowTransform)(HWND hwnd,
     PMAGTRANSFORM pTransform
 );
 typedef BOOL(__stdcall* type_pMagSetFullscreenTransform)(
-	float magLevel,
-	int   xOffset,
-	int   yOffset
+    float magLevel,
+    int   xOffset,
+    int   yOffset
 );
 typedef BOOL(__stdcall* type_pMagSetInputTransform)(
-	BOOL         fEnabled,
-	const LPRECT pRectSource,
-	const LPRECT pRectDest
+    BOOL         fEnabled,
+    const LPRECT pRectSource,
+    const LPRECT pRectDest
 );
 typedef BOOL (__stdcall *type_pMagShowSystemCursor)(
-	BOOL fShowCursor
+    BOOL fShowCursor
 );
 typedef BOOL(__stdcall *type_pMagSetWindowFilterList)(
-	HWND  hwnd,
-	DWORD dwFilterMode,
-	int   count,
-	HWND* pHWND
+    HWND  hwnd,
+    DWORD dwFilterMode,
+    int   count,
+    HWND* pHWND
 );
 typedef BOOL (__stdcall *type_pMagInitialize)(VOID);
 
 typedef BOOL(__stdcall *type_pGetPointerType)(
-	_In_   UINT32 pointerId,
-	_Out_  POINTER_INPUT_TYPE *pointerType
-	);
+    _In_   UINT32 pointerId,
+    _Out_  POINTER_INPUT_TYPE *pointerType
+    );
 
 typedef BOOL(__stdcall *type_pGetPointerPenInfo)(
-	_In_   UINT32 pointerId,
-	_Out_  POINTER_PEN_INFO *penInfo
-	);
+    _In_   UINT32 pointerId,
+    _Out_  POINTER_PEN_INFO *penInfo
+    );
 
 typedef HRESULT (__stdcall *type_pDwmIsCompositionEnabled)(          
-	BOOL *pfEnabled
+    BOOL *pfEnabled
 );
 
 // opacity
@@ -168,55 +168,55 @@ typedef BOOL (__stdcall *type_pSetLayeredWindowAttributes)(
 
 // Presentation mode check
 typedef HRESULT (__stdcall *type_pSHQueryUserNotificationState)(          
-	QUERY_USER_NOTIFICATION_STATE *pQueryUserNotificationState
+    QUERY_USER_NOTIFICATION_STATE *pQueryUserNotificationState
 );
 
 typedef BOOL (__stdcall *type_pSystemParametersInfoForDpi)(
-	UINT  uiAction,
-	UINT  uiParam,
-	PVOID pvParam,
-	UINT  fWinIni,
-	UINT  dpi
+    UINT  uiAction,
+    UINT  uiParam,
+    PVOID pvParam,
+    UINT  fWinIni,
+    UINT  dpi
 );
 
 typedef UINT (__stdcall *type_pGetDpiForWindow)(
-	HWND hwnd
+    HWND hwnd
 );
 
 class ComputerGraphicsInit
 {
-	ULONG_PTR	m_Token;
+    ULONG_PTR	m_Token;
 public:
-	ComputerGraphicsInit()
-	{
-		Gdiplus::GdiplusStartupOutput	startupOut;
-		Gdiplus::GdiplusStartupInput	startupIn;
-		Gdiplus::GdiplusStartup( &m_Token, &startupIn, &startupOut );
-	}
-	~ComputerGraphicsInit()
-	{
-		Gdiplus::GdiplusShutdown( m_Token );
-	}
+    ComputerGraphicsInit()
+    {
+        Gdiplus::GdiplusStartupOutput	startupOut;
+        Gdiplus::GdiplusStartupInput	startupIn;
+        Gdiplus::GdiplusStartup( &m_Token, &startupIn, &startupOut );
+    }
+    ~ComputerGraphicsInit()
+    {
+        Gdiplus::GdiplusShutdown( m_Token );
+    }
 };
 
 // Direct3D
 typedef HRESULT (__stdcall *type_pCreateDirect3D11DeviceFromDXGIDevice)(
-	IDXGIDevice		*dxgiDevice,
-	IInspectable	**graphicsDevice
+    IDXGIDevice		*dxgiDevice,
+    IInspectable	**graphicsDevice
 );
 typedef HRESULT (__stdcall *type_pCreateDirect3D11SurfaceFromDXGISurface)(
-	IDXGISurface	*dxgiSurface,
-	IInspectable	**graphicsSurface
+    IDXGISurface	*dxgiSurface,
+    IInspectable	**graphicsSurface
 );
 typedef HRESULT (__stdcall *type_pD3D11CreateDevice)(
-	IDXGIAdapter			*pAdapter,
-	D3D_DRIVER_TYPE			DriverType,
-	HMODULE					Software,
-	UINT					Flags,
-	const D3D_FEATURE_LEVEL	*pFeatureLevels,
-	UINT					FeatureLevels,
-	UINT					SDKVersion,
-	ID3D11Device			**ppDevice,
-	D3D_FEATURE_LEVEL		*pFeatureLevel,
-	ID3D11DeviceContext		**ppImmediateContext
+    IDXGIAdapter			*pAdapter,
+    D3D_DRIVER_TYPE			DriverType,
+    HMODULE					Software,
+    UINT					Flags,
+    const D3D_FEATURE_LEVEL	*pFeatureLevels,
+    UINT					FeatureLevels,
+    UINT					SDKVersion,
+    ID3D11Device			**ppDevice,
+    D3D_FEATURE_LEVEL		*pFeatureLevel,
+    ID3D11DeviceContext		**ppImmediateContext
 );
