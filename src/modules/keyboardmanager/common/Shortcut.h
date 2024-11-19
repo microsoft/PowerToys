@@ -26,6 +26,9 @@ private:
     std::vector<int32_t> Shortcut::ConvertToNumbers(std::vector<std::wstring>& keys);
 
 public:
+
+    bool exactMatch = false;
+
     enum ElevationLevel
     {
         NonElevated = 0,
