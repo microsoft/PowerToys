@@ -24,6 +24,7 @@
 #include <common/logger/logger.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/winapi_error.h>
+#include <common/utils/gpo.h>
 
 namespace winrt
 {
@@ -7052,6 +7053,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     if (!pid.empty())
     {
 		g_StartedByPowerToys = TRUE;
+
+		if (powertoys_gpo::getConfiguredZoomItEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
+        {
+            Logger::warn(L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+            return 1;
+        }
 
 		trace = new Shared::Trace::ETWTrace();
 		Trace::RegisterProvider();
