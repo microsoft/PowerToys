@@ -21,6 +21,9 @@
 
 #include "../ZoomItModuleInterface/trace.h"
 #include <common/Telemetry/EtwTrace/EtwTrace.h>
+#include <common/logger/logger.h>
+#include <common/utils/logger_helper.h>
+#include <common/utils/winapi_error.h>
 
 namespace winrt
 {
@@ -329,6 +332,10 @@ VOID ErrorDialog( HWND hParent, PCTSTR message, DWORD _Error )
 					MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 					reinterpret_cast<LPTSTR>(&lpMsgBuf), 0, NULL );
 	_stprintf( errmsg, L"%s: %s", message, lpMsgBuf );
+	if (g_StartedByPowerToys)
+	{
+        Logger::error(errmsg);
+    }
 	MessageBox( hParent, errmsg, APPNAME, MB_OK|MB_ICONERROR);
 }
 
@@ -344,7 +351,11 @@ VOID ErrorDialogString( HWND hParent, PCTSTR Message, const wchar_t *_Error )
 	_stprintf( errmsg, L"%s: %s", Message, _Error );
 	if( hParent == g_hWndMain )
 		EnsureForeground();
-	MessageBox( hParent, errmsg, APPNAME, MB_OK | MB_ICONERROR );
+    if (g_StartedByPowerToys)
+    {
+        Logger::error(errmsg);
+    }
+    MessageBox(hParent, errmsg, APPNAME, MB_OK | MB_ICONERROR);
 	if( hParent == g_hWndMain )
 		RestoreForeground();
 }
@@ -7047,17 +7058,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		trace->UpdateState(true);
         Trace::ZoomItStarted();
 
+	    // Initialize logger
+        LoggerHelpers::init_logger(L"ZoomIt", L"", LogSettings::zoomItLoggerName);
+
         ProcessWaiter::OnProcessTerminate(pid, [mainThreadId](int err) {
             if (err != ERROR_SUCCESS)
             {
-                //Logger::error(L"Failed to wait for parent process exit. {}", get_last_error_or_default(err));
+                Logger::error(L"Failed to wait for parent process exit. {}", get_last_error_or_default(err));
             }
             else
             {
-                //Logger::trace(L"PowerToys runner exited.");
+                Logger::trace(L"PowerToys runner exited.");
             }
 
-            //Logger::trace(L"Exiting ZoomIt");
+            Logger::trace(L"Exiting ZoomIt");
             PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
         });
     }
@@ -7207,7 +7221,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		m_exit_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_EXIT_EVENT);
         if (!m_reload_settings_event_handle || !m_exit_event_handle)
 		{
-			//Logger::warn(L"Failed to create events. {}", get_last_error_or_default(GetLastError()));
+			Logger::warn(L"Failed to create events. {}", get_last_error_or_default(GetLastError()));
 			return 1;
 		}
 		m_event_triggers_thread = std::thread([&]() {
@@ -7225,14 +7239,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 				case WAIT_OBJECT_0:
 				{
 					// Reload Settings Event
-					//Logger::trace(L"Received a reload settings event.");
+					Logger::trace(L"Received a reload settings event.");
                     PostMessage(g_hWndMain, WM_USER_RELOAD_SETTINGS, 0, 0);
 					break;
 				}
 				case WAIT_OBJECT_0 + 1:
 				{
 					// Exit Event
-					//Logger::trace(L"Received an exit event.");
+					Logger::trace(L"Received an exit event.");
                     PostMessage(g_hWndMain, WM_QUIT, 0, 0);
 					break;
 				}
