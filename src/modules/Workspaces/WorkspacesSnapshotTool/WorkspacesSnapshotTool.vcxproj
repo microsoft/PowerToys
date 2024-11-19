@@ -104,7 +104,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>shcore.lib;Shell32.lib;propsys.lib;DbgHelp.lib;wbemuuid.lib</AdditionalDependencies>
+      <AdditionalDependencies>shcore.lib;Shell32.lib;propsys.lib;DbgHelp.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">

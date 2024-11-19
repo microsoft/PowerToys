@@ -4,9 +4,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace WorkspacesCsharpLibrary
 {
@@ -18,22 +17,16 @@ namespace WorkspacesCsharpLibrary
         private const string IconsDir = "Icons";
         private const string PwaDirIdentifier = "_CRX_";
 
-        private static List<PwaApp> edgePwaApps = new List<PwaApp>();
-        private static List<PwaApp> chromePwaApps = new List<PwaApp>();
-
-        public static int EdgeAppsCount { get => edgePwaApps.Count; }
-
-        public static int ChromeAppsCount { get => chromePwaApps.Count; }
+        private static List<PwaApp> pwaApps = new List<PwaApp>();
 
         public PwaHelper()
         {
-            edgePwaApps = InitPwaData(EdgeBase);
-            chromePwaApps = InitPwaData(ChromeBase);
+            InitPwaData(EdgeBase);
+            InitPwaData(ChromeBase);
         }
 
-        private List<PwaApp> InitPwaData(string p_baseDir)
+        private void InitPwaData(string p_baseDir)
         {
-            List<PwaApp> result = new List<PwaApp>();
             var baseFolderName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), p_baseDir);
             if (Directory.Exists(baseFolderName))
             {
@@ -51,7 +44,7 @@ namespace WorkspacesCsharpLibrary
                     {
                         string filenameWithoutExtension = Path.GetFileNameWithoutExtension(iconFile);
 
-                        result.Add(new PwaApp() { Name = filenameWithoutExtension, IconFilename = iconFile, AppId = appId });
+                        pwaApps.Add(new PwaApp() { Name = filenameWithoutExtension, IconFilename = iconFile, AppId = appId });
                         break;
                     }
                 }
@@ -62,7 +55,7 @@ namespace WorkspacesCsharpLibrary
                     foreach (string subDir in Directory.GetDirectories(resourcesDir))
                     {
                         string dirName = Path.GetFileName(subDir);
-                        if (result.Any(app => app.AppId == dirName))
+                        if (pwaApps.Any(app => app.AppId == dirName))
                         {
                             continue;
                         }
@@ -74,31 +67,18 @@ namespace WorkspacesCsharpLibrary
                             {
                                 string filenameWithoutExtension = Path.GetFileNameWithoutExtension(iconFile);
 
-                                result.Add(new PwaApp() { Name = filenameWithoutExtension, IconFilename = iconFile, AppId = dirName });
+                                pwaApps.Add(new PwaApp() { Name = filenameWithoutExtension, IconFilename = iconFile, AppId = dirName });
                                 break;
                             }
                         }
                     }
                 }
             }
-
-            return result;
         }
 
-        public static string GetChromeAppIconFile(string pwaAppId)
+        public static string GetPwaIconFilename(string pwaAppId)
         {
-            var candidates = chromePwaApps.Where(x => x.AppId == pwaAppId).ToList();
-            if (candidates.Count > 0)
-            {
-                return candidates.First().IconFilename;
-            }
-
-            return string.Empty;
-        }
-
-        public static string GetEdgeAppIconFile(string pwaAppId)
-        {
-            var candidates = edgePwaApps.Where(x => x.AppId == pwaAppId).ToList();
+            var candidates = pwaApps.Where(x => x.AppId == pwaAppId).ToList();
             if (candidates.Count > 0)
             {
                 return candidates.First().IconFilename;

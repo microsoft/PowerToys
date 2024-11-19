@@ -16,6 +16,7 @@ using System.Windows.Media.Imaging;
 
 using ManagedCommon;
 using Windows.Management.Deployment;
+using WorkspacesCsharpLibrary;
 using WorkspacesLauncherUI.Data;
 using WorkspacesLauncherUI.ViewModels;
 
@@ -53,7 +54,7 @@ namespace WorkspacesLauncherUI.Models
                         }
                         else if (IsEdge || IsChrome)
                         {
-                            string iconFilename = MainViewModel.GetPwaIconFilename(this);
+                            string iconFilename = PwaHelper.GetPwaIconFilename(Application.PwaAppId);
                             if (!string.IsNullOrEmpty(iconFilename))
                             {
                                 Bitmap bitmap;

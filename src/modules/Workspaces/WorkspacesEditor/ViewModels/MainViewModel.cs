@@ -603,37 +603,5 @@ namespace WorkspacesEditor.ViewModels
             telemetryEvent.Successful = true;
             PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
         }
-
-        internal static bool IsPwaApp(Models.Application application)
-        {
-            if (application.IsEdge())
-            {
-                return true;
-            }
-            else if (application.IsChrome())
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        internal static string GetPwaIconFilename(Models.Application application)
-        {
-            if (application.IsEdge())
-            {
-                return PwaHelper.GetEdgeAppIconFile(application.PwaAppId);
-            }
-            else if (application.IsChrome())
-            {
-                return PwaHelper.GetChromeAppIconFile(application.PwaAppId);
-            }
-            else
-            {
-                return string.Empty;
-            }
-        }
     }
 }

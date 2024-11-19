@@ -1,9 +1,6 @@
 #include "pch.h"
 #include "SnapshotUtils.h"
 
-#include <comdef.h>
-#include <Wbemidl.h>
-
 #include <common/utils/elevation.h>
 #include <common/utils/process_path.h>
 #include <common/notifications/NotificationUtil.h>

@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -14,11 +13,9 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Windows.Media.Imaging;
-
 using ManagedCommon;
 using Windows.Management.Deployment;
-using Windows.UI.Xaml;
-using WorkspacesEditor.ViewModels;
+using WorkspacesCsharpLibrary;
 
 namespace WorkspacesEditor.Models
 {
@@ -247,9 +244,9 @@ namespace WorkspacesEditor.Models
                             var iconHandle = bitmap.GetHicon();
                             _icon = Icon.FromHandle(iconHandle);
                         }
-                        else if (MainViewModel.IsPwaApp(this))
+                        else if (IsEdge() || IsChrome())
                         {
-                            string iconFilename = MainViewModel.GetPwaIconFilename(this);
+                            string iconFilename = PwaHelper.GetPwaIconFilename(PwaAppId);
                             if (!string.IsNullOrEmpty(iconFilename))
                             {
                                 Bitmap bitmap;

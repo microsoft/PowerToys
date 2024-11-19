@@ -90,21 +90,5 @@ namespace WorkspacesLauncherUI.ViewModels
         {
             App.SendIPCMessage("cancel");
         }
-
-        internal static string GetPwaIconFilename(AppLaunching appLaunching)
-        {
-            if (appLaunching.IsEdge)
-            {
-                return PwaHelper.GetEdgeAppIconFile(appLaunching.Application.PwaAppId);
-            }
-            else if (appLaunching.IsChrome)
-            {
-                return PwaHelper.GetChromeAppIconFile(appLaunching.Application.PwaAppId);
-            }
-            else
-            {
-                return string.Empty;
-            }
-        }
     }
 }
