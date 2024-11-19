@@ -171,19 +171,24 @@ private:
     {
         m_enabled = false;
 
-        // Tell the ZoomIt process to exit.
-        SetEvent(m_exit_event_handle);
-
-        ResetEvent(m_reload_settings_event_handle);
-
         // Log telemetry
         if (traceEvent)
         {
             Trace::EnableZoomIt(false);
         }
 
+        // Tell the ZoomIt process to exit.
+        SetEvent(m_exit_event_handle);
+
+        ResetEvent(m_reload_settings_event_handle);
+
+        // Wait for 1.5 seconds for the process to end correctly and stop etw tracer
+        WaitForSingleObject(m_hProcess, 1500);
+
+        // If process is still running, terminate it
         if (m_hProcess)
         {
+            TerminateProcess(m_hProcess, 0);
             m_hProcess = nullptr;
         }
 

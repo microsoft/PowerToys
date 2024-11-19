@@ -19,6 +19,9 @@
 #include <common/utils/ProcessWaiter.h>
 #include <common/utils/process_path.h>
 
+#include "../ZoomItModuleInterface/trace.h"
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
+
 namespace winrt
 {
 	using namespace Windows::Foundation;
@@ -1485,7 +1488,6 @@ INT_PTR CALLBACK AdvancedBreakProc( HWND hDlg, UINT message, WPARAM wParam, LPAR
 
 	switch ( message )  {
 	case WM_INITDIALOG:
-		
 		if( pSHAutoComplete ) {
 			pSHAutoComplete( GetDlgItem( hDlg, IDC_SOUND_FILE), SHACF_FILESYSTEM );
 			pSHAutoComplete( GetDlgItem( hDlg, IDC_BACKGROUND_FILE), SHACF_FILESYSTEM );
@@ -3779,6 +3781,9 @@ LRESULT APIENTRY MainWndProc(
 			//
 			// Enter drawing mode without zoom
 			//
+            if (g_StartedByPowerToys)
+                Trace::ZoomItActivateDraw();
+
 			if( !g_Zoomed ) {
 
 #if WINDOWS_CURSOR_RECORDING_WORKAROUND
@@ -3801,6 +3806,8 @@ LRESULT APIENTRY MainWndProc(
 		case SNIP_HOTKEY:
 		{
 			bool zoomed = true;
+            if (g_StartedByPowerToys)
+				Trace::ZoomItActivateSnip();
 
 			// First, static zoom
 			if( !g_Zoomed )
@@ -3908,7 +3915,11 @@ LRESULT APIENTRY MainWndProc(
 			case UNKNOWN_FILE_DATA:
 				MessageBox( hWnd, L"Unrecognized DemoType file content", APPNAME, MB_OK );
 				break;
-			}
+            default:
+                if (g_StartedByPowerToys)
+                    Trace::ZoomItActivateDemoType();
+                break;
+            }
 			break;
 		}
 
@@ -3917,9 +3928,10 @@ LRESULT APIENTRY MainWndProc(
 			// Live zoom
 			//
 			if( !g_Zoomed && !g_TimerActive && ( !g_fullScreenWorkaround || !g_RecordToggle ) ) {
+                if (g_StartedByPowerToys)
+                    Trace::ZoomItActivateLiveZoom();
 
 				if( g_hWndLiveZoom == NULL ) {
-					
 					g_hWndLiveZoom = CreateWindowEx( WS_EX_TOOLWINDOW | WS_EX_LAYERED | WS_EX_TRANSPARENT,
 						L"MagnifierClass", L"ZoomIt Live Zoom", 
 						WS_POPUP | WS_CLIPSIBLINGS,
@@ -4113,6 +4125,9 @@ LRESULT APIENTRY MainWndProc(
 			if( g_RecordToggle == FALSE )
 			{
 				g_RecordToggle = TRUE;
+                if (g_StartedByPowerToys)
+                    Trace::ZoomItActivateRecord();
+
 				StartRecordingAsync( hWnd, &cropRc, hWndRecord );
 			}
 			else
@@ -4175,6 +4190,9 @@ LRESULT APIENTRY MainWndProc(
 					g_Zoomed = TRUE;
 					g_DrawingShape = FALSE;
 					OutputDebug( L"Zoom on\n");
+
+					if(g_StartedByPowerToys)
+                        Trace::ZoomItActivateZoom();
 
 					// Hide the cursor before capturing if in live zoom
 					if( g_hWndLiveZoom != nullptr )
@@ -6048,6 +6066,9 @@ LRESULT APIENTRY MainWndProc(
 			activeBreakShowDesktop = g_BreakShowDesktop;
 
 			g_TimerActive = TRUE;
+			if (g_StartedByPowerToys)
+                Trace::ZoomItActivateBreak();
+
 			breakTimeout = g_BreakTimeout * 60 + 1;
 
 			// Create font
@@ -7011,6 +7032,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 {
 	MSG					msg; 	
 	HACCEL				hAccel;
+	Shared::Trace::ETWTrace* trace = nullptr;
 
 	if( !ShowEula( APPNAME, NULL, NULL )) return 1;
 
@@ -7019,6 +7041,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     if (!pid.empty())
     {
 		g_StartedByPowerToys = TRUE;
+
+		trace = new Shared::Trace::ETWTrace();
+		Trace::RegisterProvider();
+		trace->UpdateState(true);
+        Trace::ZoomItStarted();
+
         ProcessWaiter::OnProcessTerminate(pid, [mainThreadId](int err) {
             if (err != ERROR_SUCCESS)
             {
@@ -7235,6 +7263,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
  
 	if(g_StartedByPowerToys)
 	{
+		if (trace!=nullptr) {
+			trace->Flush();
+			delete trace;
+		}
+    	Trace::UnregisterProvider();
 		// Needed to unblock MsgWaitForMultipleObjects one last time
 		SetEvent(m_reload_settings_event_handle);
 		CloseHandle(m_reload_settings_event_handle);
