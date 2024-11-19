@@ -16,4 +16,8 @@
     <AssemblyName>PowerToys.WorkspacesCsharpLibrary</AssemblyName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+  </ItemGroup>
+
 </Project>
