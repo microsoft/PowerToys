@@ -9,9 +9,6 @@
 #include <workspaces-common/WindowFilter.h>
 
 #include <WorkspacesLib/AppUtils.h>
-#include <tlhelp32.h>
-#include <winternl.h>
-#include <initguid.h>
 #include <PwaHelper.h>
 
 #pragma comment(lib, "ntdll.lib")
@@ -136,8 +133,7 @@ namespace SnapshotUtils
             std::wstring pwaName = L"";
             if (IsEdge(data.value()))
             {
-                CoInitialize(NULL);
-                pwaHelper.InitAumidToAppId(pid);
+                pwaHelper.InitAumidToAppId();
 
                 std::wstring windowAumid;
                 pwaHelper.GetAppId(window, &windowAumid);
@@ -156,12 +152,9 @@ namespace SnapshotUtils
                 {
                     Logger::info(L"The found edge window does not contain a PWA app", pwaAppId);
                 }
-
-                CoUninitialize();
             }
             else if (IsChrome(data.value()))
             {
-                CoInitialize(NULL);
                 pwaHelper.InitChromeAppIds();
 
                 std::wstring windowAumid;
@@ -175,8 +168,6 @@ namespace SnapshotUtils
                         finalName = pwaName + L" (" + finalName + L")";
                     }
                 }
-                
-                CoUninitialize();
             }
 
             bool isMinimized = WindowUtils::IsMinimized(window);

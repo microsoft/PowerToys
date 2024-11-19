@@ -5,7 +5,11 @@ namespace SnapshotUtils
     class PwaHelper
     {
     public:
-        void InitAumidToAppId(DWORD pid);
+        std::map<std::wstring, std::wstring> pwaAumidToAppId;
+        std::vector<std::wstring> chromeAppIds;
+        std::map<std::wstring, std::wstring> pwaAppIdsToAppNames;
+
+        void InitAumidToAppId();
         BOOL GetAppId(HWND hWnd, std::wstring* result);
         BOOL GetPwaAppId(std::wstring windowAumid, std::wstring* result);
         BOOL SearchPwaName(std::wstring pwaAppId, std::wstring windowAumid, std::wstring* pwaName);

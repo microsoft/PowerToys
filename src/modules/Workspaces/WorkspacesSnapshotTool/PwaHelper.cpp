@@ -1,19 +1,15 @@
 #include "pch.h"
 #include "PwaHelper.h"
-#include <comdef.h>
-#include <Wbemidl.h>
-
-#include <common/utils/elevation.h>
-#include <common/utils/process_path.h>
-#include <common/notifications/NotificationUtil.h>
-
-#include <workspaces-common/WindowEnumerator.h>
-#include <workspaces-common/WindowFilter.h>
-
-#include <WorkspacesLib/AppUtils.h>
+#include <ShlObj.h>
 #include <tlhelp32.h>
 #include <winternl.h>
 #include <initguid.h>
+#include <filesystem>
+#include <wil/result_macros.h>
+#include <common/logger/logger.h>
+#include <common/utils/winapi_error.h>
+#include <wil\com.h>
+#pragma comment(lib, "ntdll.lib")
 
 namespace SnapshotUtils
 {
@@ -56,19 +52,18 @@ namespace SnapshotUtils
     {
         HRESULT hr;
 
-        IAppResolver_7* AppResolver;
-        hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_7, reinterpret_cast<void**>(&AppResolver));
+        wil::com_ptr<IAppResolver_7> appResolver;
+        hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_7, reinterpret_cast<void**>(appResolver.put()));
         if (SUCCEEDED(hr))
         {
-            WCHAR* pszAppId;
-            hr = AppResolver->GetAppIDForWindow(hWnd, &pszAppId, NULL, NULL, NULL);
+            wil::unique_cotaskmem_string pszAppId;
+            hr = appResolver->GetAppIDForWindow(hWnd, &pszAppId, NULL, NULL, NULL);
             if (SUCCEEDED(hr))
             {
-                *result = std::wstring(pszAppId);
-                CoTaskMemFree(pszAppId);
+                *result = std::wstring(pszAppId.get());
             }
 
-            AppResolver->Release();
+            appResolver->Release();
         }
 
         return SUCCEEDED(hr);
@@ -79,19 +74,18 @@ namespace SnapshotUtils
         HRESULT hr;
         *result = L"";
 
-        IAppResolver_8* AppResolver;
-        hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_8, reinterpret_cast<void**>(&AppResolver));
+        wil::com_ptr<IAppResolver_8> appResolver;
+        hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_8, reinterpret_cast<void**>(appResolver.put()));
         if (SUCCEEDED(hr))
         {
-            WCHAR* pszAppId;
-            hr = AppResolver->GetAppIDForWindow(hWnd, &pszAppId, NULL, NULL, NULL);
+            wil::unique_cotaskmem_string pszAppId;
+            hr = appResolver->GetAppIDForWindow(hWnd, &pszAppId, NULL, NULL, NULL);
             if (SUCCEEDED(hr))
             {
-                *result = std::wstring(pszAppId);
-                CoTaskMemFree(pszAppId);
+                *result = std::wstring(pszAppId.get());
             }
 
-            AppResolver->Release();
+            appResolver->Release();
         }
 
         return SUCCEEDED(hr);
@@ -112,19 +106,18 @@ namespace SnapshotUtils
         HRESULT hr;
         *result = L"";
 
-        IAppResolver_7* AppResolver;
-        hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_7, reinterpret_cast<void**>(&AppResolver));
+        wil::com_ptr<IAppResolver_7> appResolver;
+        hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_7, reinterpret_cast<void**>(appResolver.put()));
         if (SUCCEEDED(hr))
         {
-            WCHAR* pszAppId;
-            hr = AppResolver->GetAppIDForProcess(dwProcessId, &pszAppId, NULL, NULL, NULL);
+            wil::unique_cotaskmem_string pszAppId;
+            hr = appResolver->GetAppIDForProcess(dwProcessId, &pszAppId, NULL, NULL, NULL);
             if (SUCCEEDED(hr))
             {
-                *result = std::wstring(pszAppId);
-                CoTaskMemFree(pszAppId);
+                *result = std::wstring(pszAppId.get());
             }
 
-            AppResolver->Release();
+            appResolver->Release();
         }
 
         return SUCCEEDED(hr);
@@ -135,19 +128,18 @@ namespace SnapshotUtils
         HRESULT hr;
         *result = L"";
 
-        IAppResolver_8* AppResolver;
-        hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_8, reinterpret_cast<void**>(&AppResolver));
+        wil::com_ptr<IAppResolver_8> appResolver;
+        hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_8, reinterpret_cast<void**>(appResolver.put()));
         if (SUCCEEDED(hr))
         {
-            WCHAR* pszAppId;
-            hr = AppResolver->GetAppIDForProcess(dwProcessId, &pszAppId, NULL, NULL, NULL);
+            wil::unique_cotaskmem_string pszAppId;
+            hr = appResolver->GetAppIDForProcess(dwProcessId, &pszAppId, NULL, NULL, NULL);
             if (SUCCEEDED(hr))
             {
-                *result = std::wstring(pszAppId);
-                CoTaskMemFree(pszAppId);
+                *result = std::wstring(pszAppId.get());
             }
 
-            AppResolver->Release();
+            appResolver->Release();
         }
 
         return SUCCEEDED(hr);
@@ -163,20 +155,15 @@ namespace SnapshotUtils
         return SUCCEEDED(hr);
     }
 
-    std::map<std::wstring, std::wstring> pwaAumidToAppId;
-    std::vector<std::wstring> chromeAppIds;
-    std::map<std::wstring, std::wstring> pwaAppIdsToAppNames;
-
     std::wstring GetProcCommandLine(DWORD pid)
     {
         std::wstring commandLine;
 
         // Open a handle to the process
-        HANDLE process = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid);
+        const HANDLE process = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid);
         if (process == NULL)
         {
-            DWORD err = GetLastError();
-            Logger::error(L"Failed to open the process, error: {}", err);
+            Logger::error(L"Failed to open the process, error: {}", get_last_error_or_default(GetLastError()));
         }
         else
         {
@@ -193,8 +180,7 @@ namespace SnapshotUtils
                 PEB processEnvironmentBlock = {};
                 if (!ReadProcessMemory(process, pbi.PebBaseAddress, &processEnvironmentBlock, sizeof(processEnvironmentBlock), NULL))
                 {
-                    DWORD err = GetLastError();
-                    Logger::error(L"Failed to read the process ProcessEnvironmentBlock, error: {}", err);
+                    Logger::error(L"Failed to read the process ProcessEnvironmentBlock, error: {}", get_last_error_or_default(GetLastError()));
                 }
                 else
                 {
@@ -202,8 +188,7 @@ namespace SnapshotUtils
                     RTL_USER_PROCESS_PARAMETERS params = {};
                     if (!ReadProcessMemory(process, processEnvironmentBlock.ProcessParameters, &params, sizeof(params), NULL))
                     {
-                        DWORD err = GetLastError();
-                        Logger::error(L"Failed to read the process params, error: {}", err);
+                        Logger::error(L"Failed to read the process params, error: {}", get_last_error_or_default(GetLastError()));
                     }
                     else
                     {
@@ -211,8 +196,7 @@ namespace SnapshotUtils
                         std::vector<WCHAR> buffer(commandLineArgs.Length / sizeof(WCHAR));
                         if (!ReadProcessMemory(process, commandLineArgs.Buffer, buffer.data(), commandLineArgs.Length, NULL))
                         {
-                            DWORD err = GetLastError();
-                            Logger::error(L"Failed to read the process command line, error: {}", err);
+                            Logger::error(L"Failed to read the process command line, error: {}", get_last_error_or_default(GetLastError()));
                         }
                         else
                         {
@@ -232,7 +216,7 @@ namespace SnapshotUtils
     std::vector<DWORD> FindPwaHelperProcessIds()
     {
         std::vector<DWORD> pwaHelperProcessIds;
-        HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        const HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
         if (hSnapshot == INVALID_HANDLE_VALUE)
         {
             Logger::info(L"Invalid handle when creating snapshot for the search for PwaHelper processes");
@@ -258,16 +242,16 @@ namespace SnapshotUtils
         return pwaHelperProcessIds;
     }
 
-    void PwaHelper::InitAumidToAppId(DWORD pid)
+    void PwaHelper::InitAumidToAppId()
     {
         if (pwaAumidToAppId.size() > 0)
         {
             return;
         }
 
-        auto pwaHelperProcessIds = FindPwaHelperProcessIds();
+        const auto pwaHelperProcessIds = FindPwaHelperProcessIds();
         Logger::info(L"Found {} edge Pwa helper processes", pwaHelperProcessIds.size());
-        for (auto subProcessID : pwaHelperProcessIds)
+        for (const auto subProcessID : pwaHelperProcessIds)
         {
             std::wstring aumidID;
             GetProcessId(subProcessID, &aumidID);
@@ -292,21 +276,21 @@ namespace SnapshotUtils
             {
                 std::filesystem::path fsPath(path);
                 fsPath /= NonLocalizable::EdgeBase;
-                for (auto& directory : std::filesystem::directory_iterator(fsPath))
+                for (const auto& directory : std::filesystem::directory_iterator(fsPath))
                 {
                     if (directory.is_directory())
                     {
-                        std::filesystem::path directoryName = directory.path().filename();
+                        const std::filesystem::path directoryName = directory.path().filename();
                         if (directoryName.wstring().find(NonLocalizable::EdgeDirPrefix) == 0)
                         {
-                            std::wstring appIdDir = directoryName.wstring().substr(NonLocalizable::EdgeDirPrefix.size());
+                            const std::wstring appIdDir = directoryName.wstring().substr(NonLocalizable::EdgeDirPrefix.size());
                             if (appIdDir == appId)
                             {
-                                for (auto& filename : std::filesystem::directory_iterator(directory))
+                                for (const auto& filename : std::filesystem::directory_iterator(directory))
                                 {
                                     if (!filename.is_directory())
                                     {
-                                        std::filesystem::path filenameString = filename.path().filename();
+                                        const std::filesystem::path filenameString = filename.path().filename();
                                         if (filenameString.extension().wstring() == L".ico")
                                         {
                                             pwaAppIdsToAppNames.insert(std::map<std::wstring, std::wstring>::value_type(appId, filenameString.stem().wstring()));
@@ -325,7 +309,7 @@ namespace SnapshotUtils
 
     BOOL PwaHelper::GetPwaAppId(std::wstring windowAumid, std::wstring* result)
     {
-        auto pwaIndex = pwaAumidToAppId.find(windowAumid);
+        const auto pwaIndex = pwaAumidToAppId.find(windowAumid);
         if (pwaIndex != pwaAumidToAppId.end())
         {
             *result = pwaIndex->second;
@@ -337,7 +321,7 @@ namespace SnapshotUtils
 
     BOOL PwaHelper::SearchPwaName(std::wstring pwaAppId, std::wstring windowAumid, std::wstring* pwaName)
     {
-        auto index = pwaAppIdsToAppNames.find(pwaAppId);
+        const auto index = pwaAppIdsToAppNames.find(pwaAppId);
         if (index != pwaAppIdsToAppNames.end())
         {
             *pwaName = index->second;
@@ -345,7 +329,7 @@ namespace SnapshotUtils
         }
 
         std::wstring nameFromAumid{ windowAumid };
-        std::size_t delimiterPos = nameFromAumid.find(L"-");
+        const std::size_t delimiterPos = nameFromAumid.find(L"-");
         if (delimiterPos != std::string::npos)
         {
             nameFromAumid = nameFromAumid.substr(0, delimiterPos);
@@ -368,20 +352,20 @@ namespace SnapshotUtils
         {
             std::filesystem::path fsPath(path);
             fsPath /= NonLocalizable::ChromeBase;
-            for (auto& directory : std::filesystem::directory_iterator(fsPath))
+            for (const auto& directory : std::filesystem::directory_iterator(fsPath))
             {
                 if (directory.is_directory())
                 {
-                    std::filesystem::path directoryName = directory.path().filename();
+                    const std::filesystem::path directoryName = directory.path().filename();
                     if (directoryName.wstring().find(NonLocalizable::ChromeDirPrefix) == 0)
                     {
-                        std::wstring appId = directoryName.wstring().substr(NonLocalizable::ChromeDirPrefix.size());
+                        const std::wstring appId = directoryName.wstring().substr(NonLocalizable::ChromeDirPrefix.size());
                         chromeAppIds.push_back(appId);
-                        for (auto& filename : std::filesystem::directory_iterator(directory))
+                        for (const auto& filename : std::filesystem::directory_iterator(directory))
                         {
                             if (!filename.is_directory())
                             {
-                                std::filesystem::path filenameString = filename.path().filename();
+                                const std::filesystem::path filenameString = filename.path().filename();
                                 if (filenameString.extension().wstring() == L".ico")
                                 {
                                     pwaAppIdsToAppNames.insert(std::map<std::wstring, std::wstring>::value_type(appId, filenameString.stem().wstring()));
@@ -398,18 +382,18 @@ namespace SnapshotUtils
 
     BOOL PwaHelper::SearchPwaAppId(std::wstring windowAumid, std::wstring* pwaAppId)
     {
-        auto appIdIndexStart = windowAumid.find(NonLocalizable::ChromeAppIdIdentifier);
+        const auto appIdIndexStart = windowAumid.find(NonLocalizable::ChromeAppIdIdentifier);
         if (appIdIndexStart != std::wstring::npos)
         {
             windowAumid = windowAumid.substr(appIdIndexStart + NonLocalizable::ChromeAppIdIdentifier.size());
-            auto appIdIndexEnd = windowAumid.find(L" ");
+            const auto appIdIndexEnd = windowAumid.find(L" ");
             if (appIdIndexEnd != std::wstring::npos)
             {
                 windowAumid = windowAumid.substr(0, appIdIndexEnd);
             }
 
-            std::wstring windowAumidBegin = windowAumid.substr(0, 10);
-            for (auto chromeAppId : chromeAppIds)
+            const std::wstring windowAumidBegin = windowAumid.substr(0, 10);
+            for (const auto chromeAppId : chromeAppIds)
             {
                 if (chromeAppId.find(windowAumidBegin) == 0)
                 {
