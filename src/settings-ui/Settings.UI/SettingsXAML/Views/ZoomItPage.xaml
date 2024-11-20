@@ -137,16 +137,16 @@
                     </tkcontrols:SettingsExpander>
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Break_TimerOpacity">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.BreakTimerOpacityIndex, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_10Percent"/>
-                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_20Percent"/>
-                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_30Percent"/>
-                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_40Percent"/>
-                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_50Percent"/>
-                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_60Percent"/>
-                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_70Percent"/>
-                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_80Percent"/>
-                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_90Percent"/>
-                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_100Percent"/>
+                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_10Percent" />
+                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_20Percent" />
+                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_30Percent" />
+                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_40Percent" />
+                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_50Percent" />
+                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_60Percent" />
+                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_70Percent" />
+                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_80Percent" />
+                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_90Percent" />
+                            <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_100Percent" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Break_TimerPosition">
