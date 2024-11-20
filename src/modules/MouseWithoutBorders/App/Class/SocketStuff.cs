@@ -826,7 +826,7 @@ namespace MouseWithoutBorders.Class
         }
 
         private static readonly Dictionary<string, List<IPAddress>> BadIPs = new();
-        private static readonly object BadIPsLock = new();
+        private static readonly Lock BadIPsLock = new();
 
         private static bool IsBadIP(string machineName, IPAddress ip)
         {

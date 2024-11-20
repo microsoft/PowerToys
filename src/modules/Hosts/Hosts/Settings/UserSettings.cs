@@ -20,7 +20,7 @@ namespace Hosts.Settings
 
         private readonly SettingsUtils _settingsUtils;
         private readonly IFileSystemWatcher _watcher;
-        private readonly object _loadingSettingsLock = new object();
+        private readonly Lock _loadingSettingsLock = new Lock();
 
         public bool ShowStartupWarning { get; private set; }
 
