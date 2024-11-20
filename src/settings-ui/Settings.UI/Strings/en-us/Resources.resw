@@ -4637,6 +4637,36 @@ Change the break timer color using the same keys that the drawing color. The bre
   <data name="ZoomIt_Break_TimerOpacity.Header" xml:space="preserve">
     <value>Timer Opacity</value>
   </data>
+  <data name="ZoomIt_Break_TimerOpacity_10Percent.Content" xml:space="preserve">
+    <value>10%</value>
+  </data>
+  <data name="ZoomIt_Break_TimerOpacity_20Percent.Content" xml:space="preserve">
+    <value>20%</value>
+  </data>
+  <data name="ZoomIt_Break_TimerOpacity_30Percent.Content" xml:space="preserve">
+    <value>30%</value>
+  </data>
+  <data name="ZoomIt_Break_TimerOpacity_40Percent.Content" xml:space="preserve">
+    <value>40%</value>
+  </data>
+  <data name="ZoomIt_Break_TimerOpacity_50Percent.Content" xml:space="preserve">
+    <value>50%</value>
+  </data>
+  <data name="ZoomIt_Break_TimerOpacity_60Percent.Content" xml:space="preserve">
+    <value>60%</value>
+  </data>
+  <data name="ZoomIt_Break_TimerOpacity_70Percent.Content" xml:space="preserve">
+    <value>70%</value>
+  </data>
+  <data name="ZoomIt_Break_TimerOpacity_80Percent.Content" xml:space="preserve">
+    <value>80%</value>
+  </data>
+  <data name="ZoomIt_Break_TimerOpacity_90Percent.Content" xml:space="preserve">
+    <value>90%</value>
+  </data>
+  <data name="ZoomIt_Break_TimerOpacity_100Percent.Content" xml:space="preserve">
+    <value>100%</value>
+  </data>
   <data name="ZoomIt_Break_TimerPosition.Header" xml:space="preserve">
     <value>Timer Position</value>
   </data>
