@@ -65,7 +65,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ControlzEx" />
     <PackageReference Include="ModernWpfUI" />
     <PackageReference Include="System.IO.Abstractions" />
   </ItemGroup>

@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
-  <Import Project="..\..\..\Common.SelfContained.props" />
 
   <PropertyGroup>
     <AssemblyTitle>PowerToys.WorkspacesCsharpLibrary</AssemblyTitle>
@@ -15,9 +14,5 @@
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <AssemblyName>PowerToys.WorkspacesCsharpLibrary</AssemblyName>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
-  </ItemGroup>
 
 </Project>
