@@ -54,12 +54,15 @@
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
+    <!-- Including MessagePack to force version, since it's used by StreamJsonRpc but contains vulnerabilities. After StreamJsonRpc updates the version of MessagePack, we can upgrade StreamJsonRpc instead. -->
+    <PackageReference Include="MessagePack" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <!-- HACK: To align Microsoft.Bcl.AsyncInterfaces.dll version with Mouse Without Borders version. -->
+    <PackageReference Include="Microsoft.Windows.Compatibility" />
     <PackageReference Include="Microsoft.Windows.CsWin32" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="ReverseMarkdown" />
-    <!-- HACK: To align Microsoft.Bcl.AsyncInterfaces.dll version with PowerToys.Settings.csproj. -->
     <PackageReference Include="StreamJsonRpc" />
     <PackageReference Include="WinUIEx" />
     <!-- HACK: To make sure the version pulled in by Microsoft.Extensions.Hosting is current. -->

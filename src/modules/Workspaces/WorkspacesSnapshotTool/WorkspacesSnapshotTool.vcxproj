@@ -104,7 +104,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>shcore.lib;Shell32.lib;propsys.lib;DbgHelp.lib;wbemuuid.lib</AdditionalDependencies>
+      <AdditionalDependencies>shcore.lib;Shell32.lib;propsys.lib;DbgHelp.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
@@ -130,10 +130,12 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="PwaHelper.cpp" />
     <ClCompile Include="SnapshotUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="PwaHelper.h" />
     <ClInclude Include="resource.base.h" />
     <ClInclude Include="SnapshotUtils.h" />
   </ItemGroup>

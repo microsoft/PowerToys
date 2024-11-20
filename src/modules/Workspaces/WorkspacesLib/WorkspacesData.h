@@ -38,6 +38,7 @@ namespace WorkspacesData
             std::wstring path;
             std::wstring packageFullName;
             std::wstring appUserModelId;
+            std::wstring pwaAppId;
             std::wstring commandLineArgs;
             bool isElevated{};
             bool canLaunchElevated{};

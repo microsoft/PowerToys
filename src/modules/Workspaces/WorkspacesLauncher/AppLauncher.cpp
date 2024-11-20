@@ -18,6 +18,15 @@ using namespace Windows::Management::Deployment;
 
 namespace AppLauncher
 {
+    namespace NonLocalizable
+    {
+        const std::wstring EdgeFilename = L"msedge.exe";
+        const std::wstring EdgePwaFilename = L"msedge_proxy.exe";
+        const std::wstring ChromeFilename = L"chrome.exe";
+        const std::wstring ChromePwaFilename = L"chrome_proxy.exe";
+        const std::wstring PwaCommandLineAddition = L"--profile-directory=Default --app-id=";
+    }
+
     Result<SHELLEXECUTEINFO, std::wstring> LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated)
     {
         std::wstring dir = std::filesystem::path(appPath).parent_path();
@@ -133,30 +142,50 @@ namespace AppLauncher
             launched = LaunchPackagedApp(app.packageFullName, launchErrors);
         }
 
+        std::wstring appPathFinal;
+        std::wstring commandLineArgsFinal;
+        appPathFinal = app.path;
+        commandLineArgsFinal = app.commandLineArgs;
+
+        if (!launched && !app.pwaAppId.empty())
+        {
+            std::filesystem::path appPath(app.path);
+            if (appPath.filename() == NonLocalizable::EdgeFilename)
+            {
+                appPathFinal = appPath.parent_path() / NonLocalizable::EdgePwaFilename;
+                commandLineArgsFinal = NonLocalizable::PwaCommandLineAddition + app.pwaAppId + L" " + app.commandLineArgs;
+            }
+            if (appPath.filename() == NonLocalizable::ChromeFilename)
+            {
+                appPathFinal = appPath.parent_path() / NonLocalizable::ChromePwaFilename;
+                commandLineArgsFinal = NonLocalizable::PwaCommandLineAddition + app.pwaAppId + L" " + app.commandLineArgs;
+            }
+        }
+
         if (!launched)
         {
-            Logger::trace(L"Launching {} at {}", app.name, app.path);
+            Logger::trace(L"Launching {} at {}", app.name, appPathFinal);
 
-            DWORD dwAttrib = GetFileAttributesW(app.path.c_str());
+            DWORD dwAttrib = GetFileAttributesW(appPathFinal.c_str());
             if (dwAttrib == INVALID_FILE_ATTRIBUTES)
             {
-                Logger::error(L"File not found at {}", app.path);
-                launchErrors.push_back({ std::filesystem::path(app.path).filename(), L"File not found" });
+                Logger::error(L"File not found at {}", appPathFinal);
+                launchErrors.push_back({ std::filesystem::path(appPathFinal).filename(), L"File not found" });
                 return false;
             }
 
-            auto res = LaunchApp(app.path, app.commandLineArgs, app.isElevated);
+            auto res = LaunchApp(appPathFinal, commandLineArgsFinal, app.isElevated);
             if (res.isOk())
             {
                 launched = true;
             }
             else
             {
-                launchErrors.push_back({ std::filesystem::path(app.path).filename(), res.error() });
+                launchErrors.push_back({ std::filesystem::path(appPathFinal).filename(), res.error() });
             }
         }
 
-        Logger::trace(L"{} {} at {}", app.name, (launched ? L"launched" : L"not launched"), app.path);
+        Logger::trace(L"{} {} at {}", app.name, (launched ? L"launched" : L"not launched"), appPathFinal);
         return launched;
     }
 }
