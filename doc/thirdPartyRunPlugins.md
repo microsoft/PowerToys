@@ -58,3 +58,4 @@ Below are community created plugins that target a website or software.  They are
 | [PowerSearch for 1Password](https://github.com/KairuDeibisu/PowerToysRunPlugin1Password) | [KairuDeibisu](https://github.com/KairuDeibisu) | An unofficial plugin for searching 1Password for usernames and passwords |
 | [HackMD](https://github.com/8LWXpg/PowerToysRun-HackMD) | [8LWXpg](https://github.com/8LWXpg) | Open HackMD notes |
 | [SSH](https://github.com/8LWXpg/PowerToysRun-SSH) | [8LWXpg](https://github.com/8LWXpg) | Connect to ssh clients |
+| [Bilibili](https://github.com/Whuihuan/PowerToysRun-Bilibili) | [Whuihuan](https://github.com/Whuihuan) | Use AVID or BVID to parse and jump to Bilibili |
