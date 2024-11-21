@@ -228,7 +228,7 @@
     <value>months ago</value>
   </data>
   <data name="MoveIfExist" xml:space="preserve">
-    <value>Move apps if present</value>
+    <value>Move existing windows</value>
   </data>
   <data name="Name" xml:space="preserve">
     <value>Name</value>

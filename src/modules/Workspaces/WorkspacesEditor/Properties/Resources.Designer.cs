@@ -385,7 +385,7 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Move apps if present.
+        ///   Looks up a localized string similar to Move existing windows.
         /// </summary>
         public static string MoveIfExist {
             get {
