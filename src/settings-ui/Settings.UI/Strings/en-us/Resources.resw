@@ -4477,7 +4477,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>{Locked="ZoomIt"}</comment>
   </data>
   <data name="ZoomIt_ShortDescription" xml:space="preserve">
-    <value>a screen zoom, annotation, and recording tool for technical presentations and demos.</value>
+    <value>A screen zoom, annotation, and recording tool for technical presentations and demos.</value>
   </data>
   <data name="ZoomIt.ModuleTitle" xml:space="preserve">
     <value>ZoomIt</value>
