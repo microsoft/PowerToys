@@ -16,6 +16,11 @@
             "input": "for /F \"tokens=2\" %A in ('tasklist ^| findstr Extension') do taskkill /PID %A /F",
             "name": "🚨 Terminate extensions 🚨",
             "description": "Terminate anything with 'Extension' in the name"
+        },
+        {
+            "input": "start https://github.com/zadjii-msft/PowerToys/compare/main...zadjii-msft:PowerToys:{branch}?expand=1\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D",
+            "name": "New PR",
+            "description": "Create a new PR targeting the right fork.\nReplace {branch} with the actual branch you want to merge."
         }
     ]
 }
