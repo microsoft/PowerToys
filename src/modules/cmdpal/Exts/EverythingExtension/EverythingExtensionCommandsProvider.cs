@@ -19,15 +19,15 @@ public partial class EverythingExtensionActionsProvider : CommandProvider
         DisplayName = "Everything extension for cmdpal";
     }
 
-    private readonly IListItem[] _commands = [
-        new ListItem(new EverythingExtensionPage())
+    private readonly ICommandItem[] _commands = [
+        new CommandItem(new EverythingExtensionPage())
         {
             Title = "Search Everything",
             Subtitle = "Search files with Everything",
         },
     ];
 
-    public override IListItem[] TopLevelCommands()
+    public override ICommandItem[] TopLevelCommands()
     {
         return _commands;
     }

@@ -141,11 +141,11 @@ public partial class MastodonExtensionActionsProvider : CommandProvider
         DisplayName = "Mastodon extension for cmdpal Commands";
     }
 
-    private readonly IListItem[] _actions = [
-        new ListItem(new MastodonExtensionPage()) { Subtitle = "Explore top posts on mastodon.social" },
+    private readonly ICommandItem[] _actions = [
+        new CommandItem(new MastodonExtensionPage()) { Subtitle = "Explore top posts on mastodon.social" },
     ];
 
-    public override IListItem[] TopLevelCommands()
+    public override ICommandItem[] TopLevelCommands()
     {
         return _actions;
     }

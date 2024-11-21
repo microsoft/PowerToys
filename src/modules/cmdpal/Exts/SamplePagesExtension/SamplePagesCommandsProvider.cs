@@ -14,15 +14,15 @@ public partial class SamplePagesCommandsProvider : CommandProvider
         DisplayName = "Sample Pages Commands";
     }
 
-    private readonly IListItem[] _commands = [
-       new ListItem(new SamplesListPage())
+    private readonly ICommandItem[] _commands = [
+       new CommandItem(new SamplesListPage())
        {
            Title = "Sample Pages",
            Subtitle = "View example commands",
        },
     ];
 
-    public override IListItem[] TopLevelCommands()
+    public override ICommandItem[] TopLevelCommands()
     {
         return _commands;
     }

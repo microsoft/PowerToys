@@ -4,16 +4,14 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class CommandContextItem : ICommandContextItem
+public partial class CommandContextItem : CommandItem, ICommandContextItem
 {
     public bool IsCritical { get; set; }
 
-    public ICommand Command { get; set; }
-
-    public string Tooltip { get; set; } = string.Empty;
+    public KeyChord? RequestedShortcut { get; set; }
 
     public CommandContextItem(ICommand command)
+        : base(command)
     {
-        Command = command;
     }
 }

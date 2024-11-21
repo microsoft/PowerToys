@@ -15,11 +15,11 @@ public partial class HackerNewsCommandsProvider : CommandProvider
         DisplayName = "Hacker News Commands";
     }
 
-    private readonly IListItem[] _actions = [
-        new ListItem(new HackerNewsPage()),
+    private readonly ICommandItem[] _actions = [
+        new CommandItem(new HackerNewsPage()),
     ];
 
-    public override IListItem[] TopLevelCommands()
+    public override ICommandItem[] TopLevelCommands()
     {
         return _actions;
     }

@@ -12,16 +12,16 @@ public class ListHelpers
     public static int ScoreListItem(string query, IListItem listItem)
     {
         var isFallback = false;
-        if (listItem.FallbackHandler != null)
-        {
-            isFallback = true;
 
-            if (string.IsNullOrWhiteSpace(listItem.Title))
-            {
-                return 0;
-            }
-        }
-
+        // if (listItem.FallbackHandler != null)
+        // {
+        //    isFallback = true;
+        //    listItem.FallbackHandler.UpdateQuery(query);
+        //    if (string.IsNullOrWhiteSpace(listItem.Title))
+        //    {
+        //        return 0;
+        //    }
+        // }
         if (string.IsNullOrEmpty(query))
         {
             return 1;

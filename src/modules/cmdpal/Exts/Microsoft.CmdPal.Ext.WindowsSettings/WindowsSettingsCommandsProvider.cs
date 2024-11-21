@@ -10,7 +10,7 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings;
 
 public partial class WindowsSettingsCommandsProvider : CommandProvider
 {
-    private readonly ListItem _searchSettingsListItem;
+    private readonly CommandItem _searchSettingsListItem;
 
 #pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
     private readonly WindowsSettings.Classes.WindowsSettings? _windowsSettings;
@@ -21,7 +21,7 @@ public partial class WindowsSettingsCommandsProvider : CommandProvider
         DisplayName = $"Windows Settings";
 
         _windowsSettings = JsonSettingsListHelper.ReadAllPossibleSettings();
-        _searchSettingsListItem = new ListItem(new WindowsSettingsListPage(_windowsSettings))
+        _searchSettingsListItem = new CommandItem(new WindowsSettingsListPage(_windowsSettings))
         {
             Title = "Windows Settings",
             Subtitle = "Navigate to specific Windows settings",
@@ -33,7 +33,7 @@ public partial class WindowsSettingsCommandsProvider : CommandProvider
         WindowsSettingsPathHelper.GenerateSettingsPathValues(_windowsSettings);
     }
 
-    public override IListItem[] TopLevelCommands()
+    public override ICommandItem[] TopLevelCommands()
     {
         return [
             _searchSettingsListItem

@@ -17,7 +17,23 @@ namespace Microsoft.CmdPal.Extensions
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     runtimeclass IconDataType {
         IconDataType(String iconString);
+        static IconDataType FromStream(Windows.Storage.Streams.IRandomAccessStreamReference stream);
+
         String Icon { get; };
+        Windows.Storage.Streams.IRandomAccessStreamReference Data { get; };
+    };
+    
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    runtimeclass KeyChord
+    {
+        KeyChord();
+        KeyChord(Windows.System.VirtualKeyModifiers modifiers, Int32 vkey, Int32 scanCode);
+        KeyChord(Boolean ctrl, Boolean alt, Boolean shift, Boolean win, Int32 vkey, Int32 scanCode);
+        UInt64 Hash();
+        Boolean Equals(KeyChord other);
+        Windows.System.VirtualKeyModifiers Modifiers;
+        Int32 Vkey;
+        Int32 ScanCode;
     };
 
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
@@ -52,6 +68,7 @@ namespace Microsoft.CmdPal.Extensions
     enum CommandResultKind {
         Dismiss,    // Reset the palette to the main page and dismiss
         GoHome,     // Go back to the main page, but keep it open
+        Hide,       // Keep this page open, but hide the palette. 
         KeepOpen,   // Do nothing.
         GoToPage,   // Go to another page. GoToPageArgs will tell you where.
     };
@@ -185,37 +202,33 @@ namespace Microsoft.CmdPal.Extensions
         Windows.UI.Color AccentColor { get; };
     }
     
-    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
-    interface IFallbackHandler {
-        void UpdateQuery(String query);
-    }
-    
     [uuid("c78b9851-e76b-43ee-8f76-da5ba14e69a4")]
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     interface IContextItem {}
     
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
-    interface ICommandContextItem requires IContextItem {
-        ICommand Command { get; };
-        String Tooltip { get; };
-        Boolean IsCritical { get; }; // todo: better name for "make this red"
+    interface ICommandItem requires INotifyPropChanged {
+        ICommand Command{ get; };
+        IContextItem[] MoreCommands{ get; };
+        IconDataType Icon{ get; };
+        String Title{ get; };
+        String Subtitle{ get; };
+    } 
     
-        // TODO-future: we should allow app developers to specify a default keybinding for each of these actions
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    interface ICommandContextItem requires ICommandItem, IContextItem {
+        Boolean IsCritical { get; }; // READ: "make this red"
+        KeyChord RequestedShortcut { get; };
     }
+    
     [uuid("924a87fc-32fe-4471-9156-84b3b30275a6")]
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     interface ISeparatorContextItem requires IContextItem {}
     
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
-    interface IListItem requires INotifyPropChanged {
-        IconDataType Icon{ get; };
-        String Title{ get; };
-        String Subtitle{ get; };
-        ICommand Command{ get; };
-        IContextItem[] MoreCommands{ get; };
+    interface IListItem requires ICommandItem {
         ITag[] Tags{ get; };
         IDetails Details{ get; };
-        IFallbackHandler FallbackHandler{ get; };
         String Section { get; };
         String TextToSuggest { get; };
     }
@@ -271,6 +284,16 @@ namespace Microsoft.CmdPal.Extensions
     };
     
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    interface IFallbackHandler {
+        void UpdateQuery(String query);
+    };
+    
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    interface IFallbackCommandItem requires ICommandItem {
+        IFallbackHandler FallbackHandler{ get; };
+    };
+    
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     interface ICommandProvider requires Windows.Foundation.IClosable
     {
         String DisplayName { get; };
@@ -278,7 +301,8 @@ namespace Microsoft.CmdPal.Extensions
         ICommandSettings Settings { get; };
         Boolean Frozen { get; };
     
-        IListItem[] TopLevelCommands();
+        ICommandItem[] TopLevelCommands();
+        IFallbackCommandItem[] FallbackCommands();
     
         ICommand GetCommand(String id);
     

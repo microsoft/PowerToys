@@ -19,9 +19,10 @@ public sealed class CommandProviderWrapper
     private ICommandProvider CommandProvider { get; }
 
     private readonly IExtensionWrapper? extensionWrapper;
-    private IListItem[] _topLevelItems = [];
+    private ICommandItem[] _topLevelItems = [];
+    private IFallbackCommandItem[] _topLevelFallbacks = [];
 
-    public IListItem[] TopLevelItems => _topLevelItems;
+    public IEnumerable<ICommandItem> TopLevelItems => _topLevelItems.Concat(_topLevelFallbacks);
 
     public CommandProviderWrapper(ICommandProvider provider)
     {
@@ -53,11 +54,11 @@ public sealed class CommandProviderWrapper
             return;
         }
 
-        var t = new Task<IListItem[]>(() =>
+        var t = new Task<(ICommandItem[], IFallbackCommandItem[])>(() =>
         {
             try
             {
-                return CommandProvider.TopLevelCommands();
+                return (CommandProvider.TopLevelCommands(), CommandProvider.FallbackCommands());
             }
             catch (COMException e)
             {
@@ -69,15 +70,20 @@ public sealed class CommandProviderWrapper
                 Debug.WriteLine(e.ToString(), "error");
             }
 
-            return [];
+            return ([], []);
         });
         t.Start();
-        var commands = await t.ConfigureAwait(false);
+        var (commands, fallbacks) = await t.ConfigureAwait(false);
 
         // On a BG thread here
         if (commands != null)
         {
             _topLevelItems = commands;
+        }
+
+        if (fallbacks != null)
+        {
+            _topLevelFallbacks = fallbacks;
         }
     }
 

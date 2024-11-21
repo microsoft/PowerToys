@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2024-11-12
+last updated: 2024-11-20
 issue id: n/a
 ---
 
@@ -54,8 +54,6 @@ functionality.
       - [List Pages](#list-pages)
         - [Updating the list](#updating-the-list)
         - [Filtering the list](#filtering-the-list)
-      - [Fallback actions](#fallback-actions)
-        - [Special considerations for Top-level `IListItem`s](#special-considerations-for-top-level-ilistitems)
       - [Markdown Pages](#markdown-pages)
       - [Form Pages](#form-pages)
     - [Other types](#other-types)
@@ -64,6 +62,7 @@ functionality.
       - [`Details`](#details)
       - [`INotifyPropChanged`](#inotifypropchanged)
       - [`ICommandProvider`](#icommandprovider)
+      - [Fallback commands](#fallback-commands)
         - [`GetCommand`](#getcommand)
         - [Settings](#settings)
   - [Helper SDK Classes](#helper-sdk-classes)
@@ -72,6 +71,7 @@ functionality.
     - [Settings helpers](#settings-helpers)
   - [Advanced scenarios](#advanced-scenarios)
     - [Status messages](#status-messages)
+    - [Rendering of ICommandItems in Lists and Menus](#rendering-of-icommanditems-in-lists-and-menus)
   - [Class diagram](#class-diagram)
   - [Future considerations](#future-considerations)
     - [Arbitrary parameters and arguments](#arbitrary-parameters-and-arguments)
@@ -299,7 +299,7 @@ The structure of the data DevPal caches will look something like the following:
                     "title": "",
                     "subtitle": "",
                     "name": "",
-                    // Any other fields we feel we need to cache....
+                    "moreCommands": [ /* Additional commands... */]
                 }
             ]
         }
@@ -407,11 +407,12 @@ keep warm at a given time. We'll probably also want to offer an option like
 the memory usage as much.
 
 > [WARNING!]
-> If your command provider returns a `IListItem` which implements
-> `IFallbackHandler`, and that provider is marked `frozen`, DevPal will always
+> 
+> If your command provider returns a `IFallbackCommandItem`s from
+> `FallbackCommands`, and that provider is marked `frozen`, DevPal will always
 > treat your provider as "fresh". Otherwise, devpal wouldn't be able to call
 > into the extension to have the `IFallbackHandler` respond to the search query.
-> 
+>
 > The alternative would be to have DevPal just ignore the fallback handler from
 > that provider. Silently doing nothing seemed less user friendly than silently
 > doing What's Expected.
@@ -536,6 +537,7 @@ interface ICommand requires INotifyPropChanged{
 enum CommandResultKind {
     Dismiss,    // Reset the palette to the main page and dismiss
     GoHome,     // Go back to the main page, but keep it open
+    Hide,       // Keep this page open, but hide the palette. 
     KeepOpen,   // Do nothing.
     GoToPage,   // Go to another page. GoToPageArgs will tell you where.
 };
@@ -565,12 +567,15 @@ As a simple example[^1]:
 
 ```cs
 class HackerNewsAction : Microsoft.Windows.Run.Extensions.InvokableCommand {
-    public string Name => "Hacker News";
-    public IconDataType Icon => "https://news.ycombinator.com/favicon.ico";
+    public class HackerNewsAction()
+    {
+        Name = "Hacker News";
+        Icon = "https://news.ycombinator.com/favicon.ico";
+    }
 
-    public ActionResult Invoke() {
+    public ICommandResult Invoke() {
         Process.Start(new ProcessStartInfo("https://news.ycombinator.com/") { UseShellExecute = true });
-        return ActionResult.Success;
+        return CommandResult.Hide();
     }
 }
 ```
@@ -578,7 +583,7 @@ class HackerNewsAction : Microsoft.Windows.Run.Extensions.InvokableCommand {
 This will create a single action in DevPal that, when selected, will open
 Hacker News in the user's default web browser.
 
-Actions can also be `Page`s, which represent additional "nested" pages within
+Commands can also be `Page`s, which represent additional "nested" pages within
 DevPal. When the user selects an action that implements `IPage`, DevPal will
 navigate to a page for that action, rather than calling `Invoke` on it. Skip
 ahead to [Pages](#Pages) for more information on the different types of pages.
@@ -589,10 +594,10 @@ support more efficient command lookup in
 
 #### Results
 
-Actions can return a `ActionResult` to indicate what DevPal should do after
+Commands can return a `CommandResult` to indicate what DevPal should do after
 the command is executed. This allows for commands to control the flow of the
 DevPal. For example, an action that opens a URL might return `Kind =
-ActionResult.Dismiss` to close DevPal after the URL is opened.
+CommandResult.Dismiss` to close DevPal after the URL is opened.
 
 Use cases for each `CommandResultKind`:
 
@@ -692,32 +697,28 @@ Lists can be either "static" or "dynamic":
 
 
 ```csharp
-interface IFallbackHandler {
-    void UpdateQuery(String query);
-}
-
 [uuid("c78b9851-e76b-43ee-8f76-da5ba14e69a4")]
 interface IContextItem {}
 
-interface ICommandContextItem requires IContextItem {
-    ICommand Command { get; };
-    String Tooltip { get; };
-    Boolean IsCritical { get; }; // todo: better name for "make this red"
-
-    // TODO-future: we should allow app developers to specify a default keybinding for each of these actions
-}
-[uuid("924a87fc-32fe-4471-9156-84b3b30275a6")]
-interface ISeparatorContextItem requires IContextItem {}
-
-interface IListItem requires INotifyPropChanged {
+interface ICommandItem requires INotifyPropChanged {
+    ICommand Command{ get; };
+    IContextItem[] MoreCommands{ get; };
     IconDataType Icon{ get; };
     String Title{ get; };
     String Subtitle{ get; };
-    ICommand Command{ get; };
-    IContextItem[] MoreCommands{ get; };
+} 
+
+interface ICommandContextItem requires ICommandItem, IContextItem {
+    Boolean IsCritical { get; }; // READ: "make this red"
+    KeyChord RequestedShortcut { get; };
+}
+
+[uuid("924a87fc-32fe-4471-9156-84b3b30275a6")]
+interface ISeparatorContextItem requires IContextItem {}
+
+interface IListItem requires ICommandItem {
     ITag[] Tags{ get; };
     IDetails Details{ get; };
-    IFallbackHandler FallbackHandler{ get; };
     String Section { get; };
     String TextToSuggest { get; };
 }
@@ -749,22 +750,38 @@ interface IDynamicListPage requires IListPage {
 
 Lists are comprised of a collection of `IListItems`.
 
+
 ![Another mockup of the elements of a list item](./list-elements-mock-002.png)
+
+> NOTE: The above diagram is from before Nov 2024. It doesn't properly include the relationship between `ICommandItems` and list items.   
+> A more up-to-date explainer of the elements of the UI can be found in
+> ["Rendering of ICommandItems in Lists and Menus"](#rendering-of-icommanditems-in-lists-and-menus)
 
 Each ListItem has one default `Command`. This is the command that will be run
 when the user selects the item. If the IListItem has a non-null `Icon`, that
 icon will be displayed in the list. If the `Icon` is null, DevPal will display
 the `Icon` of the list item's `Command` instead.
 
-ListItems may also have a list of `MoreCommands`.
-These are additional commands that the user can take on the item. These will be
-displayed to the user in the "More commands" flyout when the user has that item
-selected. As the user moves focus through the list to select different items, we
-will update the UI to show the commands for the currently selected item.
+ListItems may also have a list of `MoreCommands`. These are additional commands
+that the user can take on the item. These will be displayed to the user in the
+"More commands" flyout when the user has that item selected. As the user moves
+focus through the list to select different items, we will update the UI to show
+the commands for the currently selected item.
 
 ![A prototype of the ListItem context menu with commands](./context-actions-prototype.png)
 
-For more details on the structure of the `Actions` property, see the
+The elements of a ListPage (`IListItem`s) and the context menu
+(`ICommandContextItem`) both share the same base type. Basically, they're both a
+list of things which have:
+* A `ICommand` to invoke or navigate to. 
+* a `Title` which might replace their `Command`'s `Name`, 
+* an `Icon` which might replace their `Command`'s `Icon`, 
+* A `Subtitle`, which is visible on the list, and a _tooltip_ for a context menu
+* They might also have `MoreCommands`:
+  * For a `IListItem`, this is the context menu. 
+  * For a ContextItem in the context menu, this creates a sub-context menu. 
+
+For more details on the structure of the `MoreCommands` property, see the
 [`ContextItem`s](#contextitems) section below.
 
 As an example, here's how the Media Controls extension adds play/pause, next &
@@ -795,8 +812,12 @@ internal sealed class MediaListItem : ListItem
 }
 internal sealed class TogglePlayMediaAction : InvokableCommand
 {
-    public string Name => "Play";
-    public IconDataType Icon => new("\ue768"); //play
+    public TogglePlayMediaAction()
+    {
+        Name = "Play";
+        Icon = new("\ue768"); //play
+    }
+
     public ICommandResult Invoke()
     {
         _ = mediaSession.TryTogglePlayPauseAsync();
@@ -1021,89 +1042,7 @@ For example:
   "Albums", 'Podcasts'. When the user selects "Artists", the Spotify extension
   will only return artists in the list of items.
 
-#### Fallback actions
-
-List items may also specify a `FallbackHandler`[^2]. This is an object that will be
-informed whenever the query changes in List page hosting it. This is commonly
-used for commands that want to allow the user to search for something that
-they've typed that doesn't match any of the commands in the list.
-
-For example, if the user types "What's the weather?":
-* the Copilot action might want to be able to update their own action's `Name`
-  to be "Ask Copilot 'What's the weather'?".
-* The Store application may want to show a "Search the Store" action.
-* And of course, the SpongeBot extension will want to update its name to "wHaT's
-  tHe wEaThEr?".
-
-This also gives the action an opportunity to know what the query was before the
-the page is navigated to.
-
-List items with a `FallbackHandler` will be shown in a static List view even if
-the query doesn't match their `Title`/`Subtitle`/`Tags`, unless their `Title` is
-empty, in which case they won't be shown. This allows for:
-* Fallback items that have dynamic names in response to the search query, but
-  not restricted to the query.
-* Fallback items that are hidden until the user types something
-
-As an example, here's how a developer might implement a fallback action that
-changes its name to be mOcKiNgCaSe.
-
-```cs
-public class SpongebotPage : Microsoft.Windows.Run.Extensions.MarkdownPage, IFallbackAction
-{
-    // Name, Icon, IPropertyChanged: all those are defined in the MarkdownPage base class
-    public SpongebotPage()
-    {
-        this.Name = "";
-        this.Icon = new("https://imgflip.com/s/meme/Mocking-Spongebob.jpg");
-    }
-    public void IFallbackAction.UpdateQuery(string query) {
-        if (string.IsNullOrEmpty(query)) {
-            this.Name = "";
-        } else {
-            this.Name = ConvertToAlternatingCase(query);
-        }
-        return Task.CompletedTask.AsAsyncAction();
-    }
-    static string ConvertToAlternatingCase(string input) {
-        StringBuilder sb = new StringBuilder();
-        for (var i = 0; i < input.Length; i++)
-        {
-            sb.Append(i % 2 == 0 ? char.ToUpper(input[i]) : char.ToLower(input[i]));
-        }
-        return sb.ToString();
-    }
-    public override string Body() {
-        var t = _GenerateMeme(this.Name); // call out to imgflip APIs to generate the meme
-        t.ConfigureAwait(false);
-        return t.Result;
-    }
-}
-internal sealed class SpongebotCommandsProvider : CommandProvider
-{
-    public IListItem[] TopLevelCommands()
-    {
-        var spongebotPage = new SpongebotPage();
-        var listItem = new Microsoft.Windows.Run.Extensions.ListItem(spongebotPage);
-        // ^ The ListItem ctor will automatically set its FallbackHandler to the
-        // Action passed in, if the action implements IFallbackHandler
-        return [ listItem ];
-    }
-}
-```
-
-`Microsoft.Windows.Run.Extensions.ListItem` in the SDK helpers will automatically set
-the `FallbackHandler` property on the `IListItem` to the `Action` it's
-initialized with, if that action implements `IFallbackHandler`. This allows the
-action to directly update itself in response to the query. You may also specify
-a different `IFallbackHandler`, if needed.
-
-We'll include specific affordances within the DevPal settings to allow the user
-to configure which top-level fallbacks are enabled, and in what order. This will
-give the user greater control over the apps that can respond to queries that
-don't match any of the commands in the list.
-
-##### Special considerations for Top-level `IListItem`s
+<!-- ##### Special considerations for Top-level `IListItem`s
 
 For the most part, the ListItem's that are returned through `ICommandProvider`'s
 `TopLevelCommands()` call are treated just like any other list items. There are
@@ -1127,7 +1066,7 @@ applied to top-level `IListItem`s:
 
 Again: this only applies to the top-level list items of frozen command
 providers. Once the command provider is instantiated and running, `IListItem`s
-on nested pages will all work exactly as expected.
+on nested pages will all work exactly as expected. -->
 
 #### Markdown Pages
 
@@ -1251,6 +1190,9 @@ The following are additional type definitions that are used throughout the SDK.
 This represents a collection of items that might appear in the `MoreCommands`
 flyout. Mostly, these are just commands and seperators.
 
+If an `ICommandContextItem` has `MoreCommands`, then when it's invoked, we'll
+create a sub-menu with those items in it.
+
 #### `IconDataType`
 
 This is a wrapper type for passing information about an icon to DevPal. This
@@ -1259,19 +1201,28 @@ allows extensions to specify apps in a variety of ways, including:
 * A URL to an image on the web or filesystem
 * A string for an emoji or Segoe Fluent icon
 * A path to an exe, dll or lnk file, to extract the icon from
-* A `IRandomAccessStream` to an image... [TODO!api-review] This is how DevHome does it but _why_
+* A `IRandomAccessStreamReference` to raw image data. This would be for
+  extensions that want to pass us raw image data, which isn't necessarily a file
+  which DevPal can load itself.
 
-[TODO!]: actually define this.
 <!-- In .CS because it's manually added to the idl -->
 ```cs
 struct IconDataType {
     IconDataType(String iconString);
+    static IconDataType FromStream(Windows.Storage.Streams.IRandomAccessStreamReference stream);
+
     String Icon { get; };
+    Windows.Storage.Streams.IRandomAccessStreamReference Data { get; };
 }
 ```
 
 Terminal already has a robust arbitrary string -> icon loader that we can easily
-reuse for this.
+reuse for this. DevPal will only fall back to the `Data` member if the `Icon`
+member is null or the empty string.
+
+As a future consideration, we may also consider supporting a base64 encoded
+image in the `Icon` member. Base64 doesn't include `:`, `.` or `\`, the presence
+of any of which would indicate the string is probably a URI, not base64 data.
 
 #### `Details`
 
@@ -1363,6 +1314,14 @@ interface ICommandSettings {
     IFormPage SettingsPage { get; };
 };
 
+interface IFallbackHandler {
+    void UpdateQuery(String query);
+};
+
+interface IFallbackCommandItem requires ICommandItem {
+    IFallbackHandler FallbackHandler{ get; };
+};
+
 interface ICommandProvider requires Windows.Foundation.IClosable
 {
     String DisplayName { get; };
@@ -1370,7 +1329,8 @@ interface ICommandProvider requires Windows.Foundation.IClosable
     ICommandSettings Settings { get; };
     Boolean Frozen { get; };
 
-    IListItem[] TopLevelCommands();
+    ICommandItem[] TopLevelCommands();
+    IFallbackCommandItem[] FallbackCommands();
 
     ICommand GetCommand(String id);
 
@@ -1383,9 +1343,105 @@ that should be shown when the user opens DevPal. These are the commands that wil
 allow the user to interact with the rest of your extension. They can be simple
 actions, or they can be pages that the user can navigate to. 
 
-For a list of caveats on restrictions that apply to top-level list items, refer
-to
-[Special considerations for Top-level `IListItem`s](#special-considerations-for-top-level-ilistitems).
+`TopLevelCommands` returns a list of `ICommandItem`s. These are basically just a
+simpler form of `IListItem`, shich can be displayed even as a stub (as described
+in [Caching](#caching)), before the extension process is loaded.
+
+#### Fallback commands
+
+Providers may also specify a set of `FallbackCommands`[^2]. These are special
+top-level items which allow extensions to have dynamic top-level items which
+respond to the text the user types on the main list page.
+
+These are implemented with a special `IFallbackHandler` interface. This is an
+object that will be informed whenever the query changes in List page hosting it.
+This is commonly used for commands that want to allow the user to search for
+something that they've typed that doesn't match any of the commands in the list.
+
+For example, if the user types "What's the weather?":
+* the Copilot action might want to be able to update their own action's `Name`
+  to be "Ask Copilot 'What's the weather'?".
+* The Store application may want to show a "Search the Store for 'weather'" action.
+* And of course, the SpongeBot extension will want to update its name to "wHaT's
+  tHe wEaThEr?".
+
+This also gives the action an opportunity to know what the query was before the
+the page is navigated to.
+
+Fallback commands will be shown in the top-level search results, even if the
+query doesn't match their `Title`/`Subtitle`, unless their `Title` is empty, in
+which case they won't be shown. This allows for:
+* Fallback items that have dynamic names in response to the search query, but
+  not restricted to the query.
+* Fallback items that are hidden until the user types something
+
+As an example, here's how a developer might implement a fallback action that
+changes its name to be mOcKiNgCaSe.
+
+```cs
+public class SpongebotPage : Microsoft.Windows.Run.Extensions.MarkdownPage, IFallbackHandler
+{
+    // Name, Icon, IPropertyChanged: all those are defined in the MarkdownPage base class
+    public SpongebotPage()
+    {
+        this.Name = "";
+        this.Icon = new("https://imgflip.com/s/meme/Mocking-Spongebob.jpg");
+    }
+    public void IFallbackHandler.UpdateQuery(string query) {
+        if (string.IsNullOrEmpty(query)) {
+            this.Name = "";
+        } else {
+            this.Name = ConvertToAlternatingCase(query);
+        }
+        return Task.CompletedTask.AsAsyncAction();
+    }
+    static string ConvertToAlternatingCase(string input) {
+        StringBuilder sb = new StringBuilder();
+        for (var i = 0; i < input.Length; i++)
+        {
+            sb.Append(i % 2 == 0 ? char.ToUpper(input[i]) : char.ToLower(input[i]));
+        }
+        return sb.ToString();
+    }
+    public override string Body() {
+        var t = _GenerateMeme(this.Name); // call out to imgflip APIs to generate the meme
+        t.ConfigureAwait(false);
+        return t.Result;
+    }
+}
+internal sealed class SpongebotCommandsProvider : CommandProvider
+{
+    public ICommandItem[] TopLevelCommands() => [];
+    public IFallbackCommandItem[] FallbackCommands()
+    {        
+        var spongebotPage = new SpongebotPage();
+        var listItem = new FallbackCommandItem(spongebotPage);
+        // ^ The FallbackCommandItem ctor will automatically set its FallbackHandler to the
+        // Command passed in, if the command implements IFallbackHandler
+        return [ listItem ];
+    }
+}
+```
+
+`Microsoft.Windows.Run.Extensions.FallbackCommandItem` in the SDK helpers will automatically set
+the `FallbackHandler` property on the `IFallbackCommandItem` to the `Command` it's
+initialized with, if that command implements `IFallbackHandler`. This allows the
+action to directly update itself in response to the query. You may also specify
+a different `IFallbackHandler`, if needed.
+
+We'll include specific affordances within the DevPal settings to allow the user
+to configure which top-level fallbacks are enabled, and in what order. This will
+give the user greater control over the apps that can respond to queries that
+don't match any of the commands in the list.
+
+If an extension's own list page wants to implement a similar fallback mechanism
+- it's free to use `IDynamicListPage` to listen for changes to the query and
+have it's own ListItem it updates manually.
+
+> [!IMPORTANT] 
+> If your extension has top-level `FallbackCommandItem`s, then
+> DevPal will treat your `ICommandProvider` as fresh, never frozen, regardless
+of the value of `Frozen` you set.
 
 ##### `GetCommand`
 
@@ -1668,6 +1724,39 @@ instance from the host app.
 to remember that these are x-proc calls, and should be treated asynchronously.
 Should the other properties be async too?
 
+### Rendering of ICommandItems in Lists and Menus
+
+When displaying a list item:
+* The icon is `ICommandItem.Icon ?? ICommandItem.Command.Icon`
+* The title is `ICommandItem.Title ?? ICommandItem.Command.Name`
+* The Subtitle is `ICommandItem.Subtitle`
+* The text displayed for the default action (<kbd>↲</kbd>) is `ICommandItem.Command.Name`
+
+When displaying a command context menu item:
+* The icon is `ICommandItem.Icon ?? ICommandItem.Command.Icon`
+* The text is `ICommandItem.Title ?? ICommandItem.Command.Name`
+* The tooltip is `ICommandItem.Subtitle`
+
+When displaying a `IListItem`'s default `Command` as a context item, we'll make a new 
+```cs
+ICommandContextItem(){ 
+    Command = ICommandItem.Command,
+    MoreCommands = null,
+    Icon = Command.Icon, // use icon from command, not list item 
+    Title = Command.Name, // Use command's name, not list item
+    Subtitle = IListItem.Title, // Use the title of the list item as the tooltip on the context menu
+    IsCritical = false,
+}
+```
+
+If a `ICommandItem` in a context menu has `MoreCommands`, then activating it will open a submenu with those items. 
+If a `ICommandItem` in a context menu has `MoreCommands` AND a non-null `Command`, then activating it will open a submenu with the `Command` first (following the same rules above for building a context item from a default `Command`), followed by the items in `MoreCommands`. 
+
+When displaying a page:
+* The title will be `IPage.Title ?? ICommand.Name`
+* The icon will be `ICommand.Icon`
+
+
 ## Class diagram
 
 This is a diagram attempting to show the relationships between the various types we've defined for the SDK. Some elements are omitted for clarity. (Notably, `IconDataType` and `IPropChanged`, which are used in many places.)
@@ -1821,10 +1910,12 @@ classDiagram
         IconDataType Icon
         Boolean Frozen
 
-        IListItem[] TopLevelCommands()
+        ICommandItem[] TopLevelCommands()
+        IFallbackCommandItem[] FallbackCommands()
         IListItem GetCommand(String id)
     }
-    IListItem "*" *-- ICommandProvider
+    ICommandItem "*" *-- ICommandProvider
+    IFallbackCommandItem "*" *-- ICommandProvider
 ```
 
 

@@ -15,11 +15,11 @@ public partial class MediaActionsProvider : CommandProvider
         DisplayName = "Media controls actions";
     }
 
-    private readonly IListItem[] _actions = [
+    private readonly CommandItem[] _actions = [
         new MediaListItem()
     ];
 
-    public override IListItem[] TopLevelCommands()
+    public override CommandItem[] TopLevelCommands()
     {
         return _actions;
     }

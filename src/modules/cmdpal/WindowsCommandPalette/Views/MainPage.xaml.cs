@@ -17,7 +17,7 @@ namespace WindowsCommandPalette.Views;
 /// <summary>
 /// An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
-public sealed partial class MainPage : Page
+public sealed partial class MainPage : Microsoft.UI.Xaml.Controls.Page
 {
     private string _log = string.Empty;
 
@@ -54,7 +54,7 @@ public sealed partial class MainPage : Page
     private void HackyBadClearFilter()
     {
         // BODGY but I don't care, cause i'm throwing this all out
-        if ((this.RootFrame.Content as Page)?.FindName("FilterBox") is TextBox tb)
+        if ((this.RootFrame.Content as Microsoft.UI.Xaml.Controls.Page)?.FindName("FilterBox") is TextBox tb)
         {
             tb.Text = string.Empty;
             tb.Focus(FocusState.Programmatic);
@@ -307,9 +307,9 @@ public sealed partial class MainPage : Page
     {
         // TODO! do this better async
         await commandProvider.LoadTopLevelCommands().ConfigureAwait(false);
-        foreach (var i in commandProvider.TopLevelItems)
+        foreach (var commandItem in commandProvider.TopLevelItems)
         {
-            ViewModel.TopLevelCommands.Add(new(i));
+            ViewModel.TopLevelCommands.Add(new(commandItem));
         }
     }
 

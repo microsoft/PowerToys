@@ -9,14 +9,13 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.Calc;
 
-public partial class CalculatorTopLevelListItem : ListItem, IFallbackHandler
+public partial class CalculatorTopLevelListItem : CommandItem, IFallbackHandler
 {
     public CalculatorTopLevelListItem()
         : base(new CalculatorAction())
     {
         // In the case of the calculator, the ListItem itself is the fallback
         // handler so that it can update its Title and Subtitle accordingly.
-        FallbackHandler = this;
         SetDefaultTitle();
     }
 

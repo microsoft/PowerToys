@@ -51,11 +51,11 @@ public sealed partial class MainListSection : /*ISection, */INotifyCollectionCha
 
     internal void UpdateQuery(string query)
     {
-        var fallbacks = TopLevelItems.Select(i => i?.FallbackHandler).Where(fb => fb != null).Select(fb => fb!);
-        foreach (var fb in fallbacks)
-        {
-            fb.UpdateQuery(query);
-        }
+        // var fallbacks = TopLevelItems.Select(i => i?.FallbackHandler).Where(fb => fb != null).Select(fb => fb!);
+        // foreach (var fb in fallbacks)
+        // {
+        //    fb.UpdateQuery(query);
+        // }
     }
 
     private void Bubble_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

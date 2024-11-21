@@ -16,9 +16,9 @@ public sealed class CommandProviderWrapper
     private readonly ICommandProvider _commandProvider;
 
     private readonly IExtensionWrapper? extensionWrapper;
-    private IListItem[] _topLevelItems = [];
+    private ICommandItem[] _topLevelItems = [];
 
-    public IListItem[] TopLevelItems => _topLevelItems;
+    public ICommandItem[] TopLevelItems => _topLevelItems;
 
     public CommandProviderWrapper(ICommandProvider provider)
     {
@@ -46,7 +46,7 @@ public sealed class CommandProviderWrapper
             return;
         }
 
-        var t = new Task<IListItem[]>(() => _commandProvider.TopLevelCommands());
+        var t = new Task<ICommandItem[]>(() => _commandProvider.TopLevelCommands());
         t.Start();
         var commands = await t.ConfigureAwait(false);
 

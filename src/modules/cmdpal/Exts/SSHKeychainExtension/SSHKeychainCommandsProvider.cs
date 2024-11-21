@@ -15,15 +15,15 @@ public partial class SSHKeychainCommandsProvider : CommandProvider
         DisplayName = "SSH Keychain Commands";
     }
 
-    private readonly IListItem[] _commands = [
-       new ListItem(new SSHHostsListPage())
+    private readonly ICommandItem[] _commands = [
+       new CommandItem(new SSHHostsListPage())
         {
             Title = "Search SSH Keys",
             Subtitle = "Quickly find and launch into hosts from your SSH config file",
         },
     ];
 
-    public override IListItem[] TopLevelCommands()
+    public override ICommandItem[] TopLevelCommands()
     {
         return _commands;
     }

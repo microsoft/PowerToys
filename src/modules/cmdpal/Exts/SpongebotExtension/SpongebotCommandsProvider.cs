@@ -13,21 +13,30 @@ internal sealed partial class SpongebotCommandsProvider : CommandProvider
     public SpongebotCommandsProvider()
     {
         DisplayName = "Spongebob, mocking";
+        Frozen = false;
     }
 
     private readonly SpongebotPage mainPage = new();
 
     private readonly SpongebotSettingsPage settingsPage = new();
 
-    public override IListItem[] TopLevelCommands()
+    public override ICommandItem[] TopLevelCommands()
+    {
+        var settingsPath = SpongebotPage.StateJsonPath();
+        return !File.Exists(settingsPath)
+            ? [new CommandItem(settingsPage) { Title = "Spongebot settings", Subtitle = "Enter your imgflip credentials" }]
+            : [];
+    }
+
+    public override IFallbackCommandItem[] FallbackCommands()
     {
         var settingsPath = SpongebotPage.StateJsonPath();
         if (!File.Exists(settingsPath))
         {
-            return [new ListItem(settingsPage) { Title = "Spongebot settings", Subtitle = "Enter your imgflip credentials" }];
+            return null;
         }
 
-        var listItem = new ListItem(mainPage)
+        var listItem = new FallbackCommandItem(mainPage)
         {
             MoreCommands = [
                 new CommandContextItem(mainPage.CopyCommand),

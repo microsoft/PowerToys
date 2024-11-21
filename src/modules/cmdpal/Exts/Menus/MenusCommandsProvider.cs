@@ -22,11 +22,11 @@ public partial class MenusActionsProvider : CommandProvider
         DisplayName = $"Menus from the open windows";
     }
 
-    private readonly IListItem[] _commands = [
-        new ListItem(new AllWindowsPage()) { Subtitle = "Search menus in open windows" },
+    private readonly ICommandItem[] _commands = [
+        new CommandItem(new AllWindowsPage()) { Subtitle = "Search menus in open windows" },
     ];
 
-    public override IListItem[] TopLevelCommands()
+    public override ICommandItem[] TopLevelCommands()
     {
         return _commands;
     }

@@ -9,7 +9,7 @@ using Windows.Media.Control;
 
 namespace MediaControlsExtension;
 
-internal sealed partial class MediaListItem : ListItem
+internal sealed partial class MediaListItem : CommandItem
 {
     private GlobalSystemMediaTransportControlsSession _mediaSession;
 

@@ -146,6 +146,7 @@
     <ClInclude Include="IconDataType.h" />
     <ClInclude Include="PropChangedEventArgs.h" />
     <ClInclude Include="ItemsChangedEventArgs.h" />
+    <ClInclude Include="KeyChord.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Generated Files\module.g.cpp" />
@@ -155,6 +156,7 @@
     <ClCompile Include="IconDataType.cpp" />
     <ClCompile Include="PropChangedEventArgs.cpp" />
     <ClCompile Include="ItemsChangedEventArgs.cpp" />
+    <ClCompile Include="KeyChord.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="Microsoft.CmdPal.Extensions.idl" />

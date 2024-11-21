@@ -14,10 +14,10 @@ public partial class RegistryCommandsProvider : CommandProvider
         DisplayName = $"Windows Registry";
     }
 
-    public override IListItem[] TopLevelCommands()
+    public override ICommandItem[] TopLevelCommands()
     {
         return [
-            new ListItem(new RegistryListPage())
+            new CommandItem(new RegistryListPage())
             {
                 Title = "Registry",
                 Subtitle = "Navigate the Windows registry",

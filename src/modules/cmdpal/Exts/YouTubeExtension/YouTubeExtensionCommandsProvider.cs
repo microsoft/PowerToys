@@ -24,37 +24,27 @@ public partial class YouTubeExtensionActionsProvider : CommandProvider
         DisplayName = "YouTube";
     }
 
-    private readonly IListItem[] _commands = [
-        new ListItem(new YouTubeVideosPage())
+    private readonly ICommandItem[] _commands = [
+        new CommandItem(new YouTubeVideosPage())
             {
                 Title = "Search Videos on YouTube",
                 Subtitle = "YouTube",
-                Tags = [new Tag()
-                        {
-                            Text = "Extension",
-                        }
-                ],
             },
-        new ListItem(new YouTubeChannelsPage())
+        new CommandItem(new YouTubeChannelsPage())
             {
                 Title = "Search Channels on YouTube",
                 Subtitle = "YouTube",
-                Tags = [new Tag()
-                        {
-                            Text = "Extension",
-                        }
-                ],
             },
     ];
 
     private readonly YouTubeAPIPage apiPage = new();
 
-    public override IListItem[] TopLevelCommands()
+    public override ICommandItem[] TopLevelCommands()
     {
         return TopLevelCommandsAsync().GetAwaiter().GetResult();
     }
 
-    public async Task<IListItem[]> TopLevelCommandsAsync()
+    public async Task<ICommandItem[]> TopLevelCommandsAsync()
     {
         var settingsPath = YouTubeHelper.StateJsonPath();
 
@@ -63,15 +53,10 @@ public partial class YouTubeExtensionActionsProvider : CommandProvider
         {
             return new[]
             {
-                new ListItem(apiPage)
+                new CommandItem(apiPage)
                     {
                         Title = "YouTube Extension",
                         Subtitle = "Enter your API key.",
-                        Tags = [new Tag()
-                                {
-                                    Text = "Extension",
-                                }
-                        ],
                     },
             };
         }
@@ -86,15 +71,10 @@ public partial class YouTubeExtensionActionsProvider : CommandProvider
         {
             return new[]
             {
-                new ListItem(apiPage)
+                new CommandItem(apiPage)
                     {
                         Title = "YouTube Extension",
                         Subtitle = "Enter your API key.",
-                        Tags = [new Tag()
-                                {
-                                    Text = "Extension",
-                                }
-                        ],
                     },
             };
         }

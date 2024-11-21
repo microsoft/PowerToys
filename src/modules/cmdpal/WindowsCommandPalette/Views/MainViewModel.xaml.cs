@@ -30,7 +30,7 @@ public sealed class MainViewModel : IDisposable
 
     public ObservableCollection<CommandProviderWrapper> ActionsProvider { get; set; } = [];
 
-    public ObservableCollection<ExtensionObject<IListItem>> TopLevelCommands { get; set; } = [];
+    public ObservableCollection<ExtensionObject<ICommandItem>> TopLevelCommands { get; set; } = [];
 
     public List<ICommandProvider> BuiltInCommands { get; set; } = [];
 
@@ -101,8 +101,9 @@ public sealed class MainViewModel : IDisposable
 
     public IEnumerable<IListItem> AppItems => LoadedApps ? Apps.GetItems() : [];
 
-    public IEnumerable<ExtensionObject<IListItem>> Everything => TopLevelCommands
-        .Concat(AppItems.Select(i => new ExtensionObject<IListItem>(i)))
+    // Okay this is definitely bad - Evaluating this re-wraps every app in the list with a new wrapper, holy fuck that's stupid
+    public IEnumerable<ExtensionObject<ICommandItem>> Everything => TopLevelCommands
+        .Concat(AppItems.Select(i => new ExtensionObject<ICommandItem>(i)))
         .Where(i =>
         {
             var v = i != null;

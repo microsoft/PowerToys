@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.CmdPal.Models;
 using Microsoft.CmdPal.UI.Pages;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -53,7 +54,7 @@ public partial class ShellViewModel : ObservableObject
         await commandProvider.LoadTopLevelCommands();
         foreach (var i in commandProvider.TopLevelItems)
         {
-            TopLevelCommands.Add(new(i));
+            TopLevelCommands.Add(new(new ListItem(i)));
         }
     }
 }

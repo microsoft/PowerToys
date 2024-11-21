@@ -19,11 +19,11 @@ public partial class VirtualDesktopExtensionActionsProvider : CommandProvider
         DisplayName = "Virtual Desktop Manager for Command Palette Commands";
     }
 
-    private readonly IListItem[] _commands = [
-        new ListItem(new VirtualDesktopExtensionPage()),
+    private readonly ICommandItem[] _commands = [
+        new CommandItem(new VirtualDesktopExtensionPage()),
     ];
 
-    public override IListItem[] TopLevelCommands()
+    public override ICommandItem[] TopLevelCommands()
     {
         return _commands;
     }

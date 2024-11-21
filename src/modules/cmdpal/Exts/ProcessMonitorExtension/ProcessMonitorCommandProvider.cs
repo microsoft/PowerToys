@@ -14,15 +14,15 @@ internal sealed partial class ProcessMonitorCommandProvider : CommandProvider
         DisplayName = "Process Monitor Commands";
     }
 
-    private readonly IListItem[] _actions = [
-        new ListItem(new ProcessListPage())
+    private readonly ICommandItem[] _actions = [
+        new CommandItem(new ProcessListPage())
         {
             Title = "Process Manager",
             Subtitle = "Kill processes",
         },
     ];
 
-    public override IListItem[] TopLevelCommands()
+    public override ICommandItem[] TopLevelCommands()
     {
         return _actions;
     }

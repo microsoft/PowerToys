@@ -19,11 +19,11 @@ public partial class TemplateExtensionActionsProvider : CommandProvider
         DisplayName = "TemplateDisplayName Commands";
     }
 
-    private readonly IListItem[] _commands = [
-        new ListItem(new TemplateExtensionPage()),
+    private readonly ICommandItem[] _commands = [
+        new CommandItem(new TemplateExtensionPage()),
     ];
 
-    public override IListItem[] TopLevelCommands()
+    public override ICommandItem[] TopLevelCommands()
     {
         return _commands;
     }

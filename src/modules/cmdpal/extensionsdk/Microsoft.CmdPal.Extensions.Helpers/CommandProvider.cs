@@ -16,7 +16,12 @@ public abstract partial class CommandProvider : ICommandProvider
 
     public IconDataType Icon { get => _icon; protected set => _icon = value; }
 
-    public abstract IListItem[] TopLevelCommands();
+    public abstract ICommandItem[] TopLevelCommands();
+
+    public virtual IFallbackCommandItem[]? FallbackCommands()
+    {
+        return null;
+    }
 
     public virtual ICommand? GetCommand(string id)
     {

@@ -27,7 +27,7 @@ public partial class WindowsTerminalCommandsProvider : CommandProvider
         _terminalCommand.MoreCommands = [new CommandContextItem(new SettingsPage(_settingsManager))];
     }
 
-    public override IListItem[] TopLevelCommands()
+    public override ICommandItem[] TopLevelCommands()
     {
         return [_terminalCommand];
     }
