@@ -9,13 +9,13 @@ namespace WorkspacesEditor.Utils
     public class Settings
     {
         private const string WorkspacesModuleName = "Workspaces";
-        private static SettingsUtils _settingsUtils = new SettingsUtils();
+        private static readonly SettingsUtils _settingsUtils = new();
 
         public static WorkspacesSettings ReadSettings()
         {
             if (!_settingsUtils.SettingsExists(WorkspacesModuleName))
             {
-                var defaultWorkspacesSettings = new WorkspacesSettings();
+                WorkspacesSettings defaultWorkspacesSettings = new();
                 defaultWorkspacesSettings.Save(_settingsUtils);
                 return defaultWorkspacesSettings;
             }

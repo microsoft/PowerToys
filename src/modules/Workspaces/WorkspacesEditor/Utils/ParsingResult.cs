@@ -4,19 +4,12 @@
 
 namespace WorkspacesEditor.Utils
 {
-    public struct ParsingResult
+    public readonly struct ParsingResult(bool result, string message = "", string data = "")
     {
-        public bool Result { get; }
+        public bool Result { get; } = result;
 
-        public string Message { get; }
+        public string Message { get; } = message;
 
-        public string MalformedData { get; }
-
-        public ParsingResult(bool result, string message = "", string data = "")
-        {
-            Result = result;
-            Message = message;
-            MalformedData = data;
-        }
+        public string MalformedData { get; } = data;
     }
 }

@@ -92,18 +92,6 @@ namespace FancyZones
     }
 }
 
-bool ShouldMoveApp(const WorkspacesData::WorkspacesProject::Application& app, WorkspacesData::WorkspacesProject& project)
-{
-    if (app.moveIfExists == WorkspacesData::AppLaunchMode::AsInWorkspace)
-    {
-        return project.moveExistingWindows;
-    }
-    else
-    {
-        return app.moveIfExists == WorkspacesData::AppLaunchMode::MoveIfExists;
-    }
-}
-
 int CalculateDistance(const WorkspacesData::WorkspacesProject::Application& app, HWND window)
 {
     RECT windowPosition;
@@ -240,7 +228,7 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
                 continue;
             }
 
-            if (ShouldMoveApp(app, project))
+            if (project.moveExistingWindows)
             {
                 int nearestWindowDistance = 0;
                 HWND nearestWindow = NULL;

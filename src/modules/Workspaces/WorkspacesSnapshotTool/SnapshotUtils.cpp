@@ -195,7 +195,6 @@ namespace SnapshotUtils
                 .canLaunchElevated = data.value().canLaunchElevated,
                 .isMinimized = isMinimized,
                 .isMaximized = WindowUtils::IsMaximized(window),
-                .moveIfExists = WorkspacesData::AppLaunchMode::AsInWorkspace,
                 .position = WorkspacesData::WorkspacesProject::Application::Position{
                     .x = rect.left,
                     .y = rect.top,

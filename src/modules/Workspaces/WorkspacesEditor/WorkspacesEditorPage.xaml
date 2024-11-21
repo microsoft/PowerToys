@@ -168,20 +168,6 @@
                                 Checked="MinimizedChecked"
                                 Content="{x:Static props:Resources.Minimized}"
                                 IsChecked="{Binding Minimized, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                            <ComboBox
-                                Margin="45,0,0,0"
-                                VerticalAlignment="Center"
-                                Background="{DynamicResource SecondaryBackgroundBrush}"
-                                BorderBrush="{DynamicResource PrimaryBorderBrush}"
-                                BorderThickness="2"
-                                FontSize="14"
-                                FontWeight="Normal"
-                                SelectedIndex="{Binding MoveIfExistsIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                Text="{x:Static props:Resources.MoveOrCreate}">
-                                <ComboBoxItem Content="{x:Static props:Resources.DoAsInWorkspace}" />
-                                <ComboBoxItem Content="{x:Static props:Resources.MoveAppIfExist}" />
-                                <ComboBoxItem Content="{x:Static props:Resources.AlwaysLaunch}" />
-                            </ComboBox>
                         </StackPanel>
                         <StackPanel
                             Grid.Row="2"

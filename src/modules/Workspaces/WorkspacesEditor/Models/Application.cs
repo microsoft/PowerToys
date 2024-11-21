@@ -4,20 +4,9 @@
 
 using System;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
-using System.Windows.Media.Imaging;
-using ManagedCommon;
-using Windows.Management.Deployment;
-using WorkspacesCsharpLibrary;
 using WorkspacesCsharpLibrary.Models;
-using static WorkspacesEditor.Data.WorkspacesData;
 
 namespace WorkspacesEditor.Models
 {
@@ -45,7 +34,6 @@ namespace WorkspacesEditor.Models
             Maximized = other.Maximized;
             Position = other.Position;
             MonitorNumber = other.MonitorNumber;
-            MoveIfExists = other.MoveIfExists;
 
             Parent = other.Parent;
             IsNotFound = other.IsNotFound;
@@ -81,7 +69,7 @@ namespace WorkspacesEditor.Models
                 return left.X != right.X || left.Y != right.Y || left.Width != right.Width || left.Height != right.Height;
             }
 
-            public override bool Equals(object obj)
+            public override readonly bool Equals(object obj)
             {
                 if (obj == null || GetType() != obj.GetType())
                 {
@@ -92,7 +80,7 @@ namespace WorkspacesEditor.Models
                 return X == pos.X && Y == pos.Y && Width == pos.Width && Height == pos.Height;
             }
 
-            public override int GetHashCode()
+            public override readonly int GetHashCode()
             {
                 return base.GetHashCode();
             }
@@ -166,27 +154,7 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        private AppLaunchMode _moveIfExists;
-
-        public AppLaunchMode MoveIfExists
-        {
-            get => _moveIfExists;
-            set
-            {
-                _moveIfExists = value;
-            }
-        }
-
-        public int MoveIfExistsIndex
-        {
-            get => (int)_moveIfExists;
-            set
-            {
-                MoveIfExists = (AppLaunchMode)value;
-            }
-        }
-
-        public bool EditPositionEnabled { get => !Minimized && !Maximized; }
+        public bool EditPositionEnabled => !Minimized && !Maximized;
 
         private string _appMainParams;
 
@@ -205,7 +173,7 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        public bool IsAppMainParamVisible { get => !string.IsNullOrWhiteSpace(_appMainParams); }
+        public bool IsAppMainParamVisible => !string.IsNullOrWhiteSpace(_appMainParams);
 
         [JsonIgnore]
         public bool IsHighlighted { get; set; }
@@ -214,13 +182,7 @@ namespace WorkspacesEditor.Models
         public int RepeatIndex { get; set; }
 
         [JsonIgnore]
-        public string RepeatIndexString
-        {
-            get
-            {
-                return RepeatIndex <= 1 ? string.Empty : RepeatIndex.ToString(CultureInfo.InvariantCulture);
-            }
-        }
+        public string RepeatIndexString => RepeatIndex <= 1 ? string.Empty : RepeatIndex.ToString(CultureInfo.InvariantCulture);
 
         private WindowPosition _position;
 
@@ -264,10 +226,7 @@ namespace WorkspacesEditor.Models
         {
             get
             {
-                if (_monitorSetup == null)
-                {
-                    _monitorSetup = Parent.GetMonitorForApp(this);
-                }
+                _monitorSetup ??= Parent.GetMonitorForApp(this);
 
                 return _monitorSetup;
             }
@@ -293,7 +252,7 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        public string DeleteButtonContent { get => _isIncluded ? Properties.Resources.Delete : Properties.Resources.AddBack; }
+        public string DeleteButtonContent => _isIncluded ? Properties.Resources.Delete : Properties.Resources.AddBack;
 
         private bool _isIncluded = true;
 

@@ -3,11 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-
-using Workspaces.Data;
-
 using static WorkspacesEditor.Data.ProjectData;
-using static WorkspacesEditor.Data.WorkspacesData;
 
 namespace WorkspacesEditor.Data
 {
@@ -49,8 +45,6 @@ namespace WorkspacesEditor.Data
             public bool Minimized { get; set; }
 
             public bool Maximized { get; set; }
-
-            public AppLaunchMode MoveIfExists { get; set; }
 
             public WindowPositionWrapper Position { get; set; }
 

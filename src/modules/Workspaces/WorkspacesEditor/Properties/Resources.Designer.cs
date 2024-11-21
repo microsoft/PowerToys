@@ -79,15 +79,6 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Launch app.
-        /// </summary>
-        public static string AlwaysLaunch {
-            get {
-                return ResourceManager.GetString("AlwaysLaunch", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to app.
         /// </summary>
         public static string App {
@@ -228,15 +219,6 @@ namespace WorkspacesEditor.Properties {
         public static string DeleteSelected {
             get {
                 return ResourceManager.GetString("DeleteSelected", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Launch or Move App as in Workspace defined.
-        /// </summary>
-        public static string DoAsInWorkspace {
-            get {
-                return ResourceManager.GetString("DoAsInWorkspace", resourceCulture);
             }
         }
         
@@ -403,29 +385,11 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Move app if present.
-        /// </summary>
-        public static string MoveAppIfExist {
-            get {
-                return ResourceManager.GetString("MoveAppIfExist", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Move apps if present.
         /// </summary>
         public static string MoveIfExist {
             get {
                 return ResourceManager.GetString("MoveIfExist", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Move or launch?.
-        /// </summary>
-        public static string MoveOrCreate {
-            get {
-                return ResourceManager.GetString("MoveOrCreate", resourceCulture);
             }
         }
         

@@ -9,13 +9,6 @@ namespace WorkspacesData
     std::wstring WorkspacesFile();
     std::wstring TempWorkspacesFile();
 
-    enum AppLaunchMode
-    {
-        AsInWorkspace = 0,
-        MoveIfExists = 1,
-        LaunchAlways = 2,
-    };
-
     struct WorkspacesProject
     {
         struct Application
@@ -44,7 +37,6 @@ namespace WorkspacesData
             bool canLaunchElevated{};
             bool isMinimized{};
             bool isMaximized{};
-            AppLaunchMode moveIfExists{ AsInWorkspace };
             Position position{};
             unsigned int monitor{};
 

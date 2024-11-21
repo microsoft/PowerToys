@@ -18,14 +18,7 @@ namespace WorkspacesEditor.Models
 
         public override System.Windows.DataTemplate SelectTemplate(object item, System.Windows.DependencyObject container)
         {
-            if (item is MonitorHeaderRow)
-            {
-                return HeaderTemplate;
-            }
-            else
-            {
-                return AppTemplate;
-            }
+            return item is MonitorHeaderRow ? HeaderTemplate : AppTemplate;
         }
     }
 }
