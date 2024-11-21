@@ -52,8 +52,7 @@ public sealed class Settings
 
         var bodies = string.Join(",", settings
             .Select(s => JsonSerializer.Serialize(s.ToDictionary(), _jsonSerializerOptions)));
-        var datas = string.Join(",", settings
-            .Select(s => s.ToDataIdentifier()));
+        var datas = string.Join(",", settings.Select(s => s.ToDataIdentifier()));
 
         var json = $$"""
 {
@@ -75,6 +74,18 @@ public sealed class Settings
 }
 """;
         return json;
+    }
+
+    public string ToJson()
+    {
+        var settings = _settings
+            .Values
+            .Where(s => s is ISettingsForm)
+            .Select(s => s as ISettingsForm)
+            .Where(s => s != null)
+            .Select(s => s!);
+        var content = string.Join(",\n", settings.Select(s => s.ToState()));
+        return $"{{\n{content}\n}}";
     }
 
     public IForm[] ToForms()

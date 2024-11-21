@@ -10,6 +10,7 @@ using System.Resources;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
+using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 using Windows.UI;
@@ -30,7 +31,7 @@ internal sealed partial class LaunchProfileAsAdminCommand : InvokableCommand
         this._openNewTab = openNewTab;
         this._openQuake = openQuake;
 
-        this.Name = "Launch Profile as Admin";
+        this.Name = Resources.launch_profile_as_admin;
         this.Icon = new("\xE7EF"); // Admin icon
     }
 
@@ -95,6 +96,6 @@ internal sealed partial class LaunchProfileAsAdminCommand : InvokableCommand
             // TODO GH #108 We need to figure out some logging
         }
 
-        return CommandResult.KeepOpen();
+        return CommandResult.Dismiss();
     }
 }

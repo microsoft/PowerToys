@@ -80,4 +80,6 @@ public abstract class Setting<T> : ISettingsForm
     }
 
     public abstract void Update(JsonObject payload);
+
+    public abstract string ToState();
 }

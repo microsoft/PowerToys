@@ -27,6 +27,6 @@ public partial class SettingsForm : Form
         _settings.Update(payload);
         _settings.RaiseSettingsChanged();
 
-        return CommandResult.KeepOpen();
+        return CommandResult.GoHome();
     }
 }

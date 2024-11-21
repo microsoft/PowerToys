@@ -45,9 +45,19 @@ public sealed class ToggleSetting : Setting<bool>
 
     public override void Update(JsonObject payload)
     {
-        // Adaptive cards returns boolean values as a string "true"/"false", cause of course.
-        var strFromJson = payload[Key]?.GetValue<string>() ?? string.Empty;
-        var val = strFromJson switch { "true" => true, "false" => false, _ => false };
-        Value = val;
+        // If the key doesn't exist in the payload, don't do anything
+        if (payload[Key] != null)
+        {
+            // Adaptive cards returns boolean values as a string "true"/"false", cause of course.
+            var strFromJson = payload[Key]?.GetValue<string>() ?? string.Empty;
+            var val = strFromJson switch { "true" => true, "false" => false, _ => false };
+            Value = val;
+        }
+    }
+
+    public override string ToState()
+    {
+        var adaptiveCardsUsesStringsForBools = Value ? "true" : "false";
+        return $"\"{Key}\": \"{adaptiveCardsUsesStringsForBools}\"";
     }
 }

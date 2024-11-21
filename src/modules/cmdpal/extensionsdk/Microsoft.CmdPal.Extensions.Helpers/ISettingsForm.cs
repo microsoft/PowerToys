@@ -15,4 +15,6 @@ internal interface ISettingsForm
     public Dictionary<string, object> ToDictionary();
 
     public string ToDataIdentifier();
+
+    public string ToState();
 }
