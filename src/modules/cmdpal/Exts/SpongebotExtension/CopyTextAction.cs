@@ -4,7 +4,6 @@
 
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
-using Windows.ApplicationModel.DataTransfer;
 
 namespace SpongebotExtension;
 
@@ -21,11 +20,7 @@ public partial class CopyTextAction : InvokableCommand
 
     public override ICommandResult Invoke()
     {
-        var dataPackage = new DataPackage();
-        dataPackage.SetText(Text);
-        Clipboard.SetContent(dataPackage);
-
-        // ClipboardHelper.SetText(Text);
-        return CommandResult.KeepOpen();
+        ClipboardHelper.SetText(Text);
+        return CommandResult.Dismiss();
     }
 }

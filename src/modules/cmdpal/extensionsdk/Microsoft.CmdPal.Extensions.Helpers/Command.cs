@@ -7,6 +7,7 @@ namespace Microsoft.CmdPal.Extensions.Helpers;
 public class Command : BaseObservable, ICommand
 {
     private string _name = string.Empty;
+    private string _id = string.Empty;
     private IconDataType _icon = new(string.Empty);
 
     public string Name
@@ -18,6 +19,8 @@ public class Command : BaseObservable, ICommand
             OnPropertyChanged(nameof(Name));
         }
     }
+
+    public string Id { get => _id; protected set => _id = value; }
 
     public IconDataType Icon
     {

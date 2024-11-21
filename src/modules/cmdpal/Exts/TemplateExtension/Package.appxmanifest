@@ -44,7 +44,7 @@
       <Extensions>
         <com:Extension Category="windows.comServer">
           <com:ComServer>
-            <com:ExeServer Executable="TemplateExtension.exe" Arguments="-RegisterProcessAsComServer" DisplayName="ClementineExtensionApp">
+            <com:ExeServer Executable="TemplateExtension.exe" Arguments="-RegisterProcessAsComServer" DisplayName="TemplateDisplayName">
               <com:Class Id="FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF" DisplayName="TemplateDisplayName" />
             </com:ExeServer>
           </com:ComServer>

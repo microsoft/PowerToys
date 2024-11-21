@@ -45,6 +45,7 @@ namespace Microsoft.CmdPal.Extensions
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     interface ICommand requires INotifyPropChanged{
         String Name{ get; };
+        String Id{ get; };
         IconDataType Icon{ get; };
     }
     
@@ -275,9 +276,11 @@ namespace Microsoft.CmdPal.Extensions
         String DisplayName { get; };
         IconDataType Icon { get; };
         ICommandSettings Settings { get; };
-        // TODO! Boolean CanBeCached { get; };
+        Boolean Frozen { get; };
     
         IListItem[] TopLevelCommands();
+    
+        ICommand GetCommand(String id);
     
         void InitializeWithHost(IExtensionHost host);
     };
