@@ -27,6 +27,7 @@ public sealed partial class MainPage : Page
     {
         this.InitializeComponent();
         this.ViewModel.SummonRequested += ViewModel_SummonRequested;
+        this.ViewModel.GoToCommandRequested += ViewModel_GoToCommandRequested;
         var rootListVm = new ListPageViewModel(new MainListPage(ViewModel));
         InitializePage(rootListVm);
 
@@ -104,24 +105,29 @@ public sealed partial class MainPage : Page
 
     private void InvokeActionHandler(object sender, ActionViewModel args)
     {
-        var action = args.Command;
-        TryAllowForeground(action);
-        if (action is IInvokableCommand invokable)
+        var command = args.Command;
+        InvokeCommandHandler(command);
+    }
+
+    private void InvokeCommandHandler(ICommand command)
+    {
+        TryAllowForeground(command);
+        if (command is IInvokableCommand invokable)
         {
             HandleResult(invokable.Invoke());
             return;
         }
-        else if (action is IListPage listPage)
+        else if (command is IListPage listPage)
         {
             GoToList(listPage);
             return;
         }
-        else if (action is IMarkdownPage mdPage)
+        else if (command is IMarkdownPage mdPage)
         {
             GoToMarkdown(mdPage);
             return;
         }
-        else if (action is IFormPage formPage)
+        else if (command is IFormPage formPage)
         {
             GoToForm(formPage);
             return;
@@ -130,6 +136,14 @@ public sealed partial class MainPage : Page
         // This is bad
         // TODO! handle this with some sort of badly authored extension error
         throw new NotImplementedException();
+    }
+
+    private void ViewModel_GoToCommandRequested(object sender, ICommand? args)
+    {
+        if (args != null)
+        {
+            InvokeCommandHandler(args);
+        }
     }
 
     private void TryAllowForeground(ICommand action)

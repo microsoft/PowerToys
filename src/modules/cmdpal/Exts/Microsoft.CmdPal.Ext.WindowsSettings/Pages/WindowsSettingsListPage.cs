@@ -20,6 +20,7 @@ internal sealed partial class WindowsSettingsListPage : DynamicListPage
     {
         Icon = new("\uE713"); // Settings
         Name = "Windows Settings";
+        Id = "com.microsoft.cmdpal.windowsSettings";
         _defaultIconPath = "Images/WindowsSettings.light.png";
         _windowsSettings = windowsSettings;
     }

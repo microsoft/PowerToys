@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.IO;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
@@ -31,7 +30,7 @@ internal sealed partial class SpongebotCommandsProvider : CommandProvider
         var listItem = new ListItem(mainPage)
         {
             MoreCommands = [
-                new CommandContextItem(mainPage.CopyTextAction),
+                new CommandContextItem(mainPage.CopyCommand),
                 new CommandContextItem(settingsPage),
             ],
         };

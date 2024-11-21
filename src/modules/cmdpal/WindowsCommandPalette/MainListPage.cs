@@ -63,6 +63,12 @@ public sealed partial class MainListPage : DynamicListPage
 
     private void UpdateQuery()
     {
+        // First things first: Check our list of aliases to see if this is a match.
+        if (_mainViewModel.CheckAlias(SearchText))
+        {
+            return;
+        }
+
         // Update all the top-level commands which are fallback providers:
         var fallbacks = topLevelItems
             .Select(i => i?.FallbackHandler)

@@ -20,6 +20,7 @@ internal sealed partial class RegistryListPage : DynamicListPage
     {
         Icon = new("\uE74C"); // OEM
         Name = "Windows Registry";
+        Id = "com.microsoft.cmdpal.registry";
         _defaultIconPath = "Images/reg.light.png";
     }
 

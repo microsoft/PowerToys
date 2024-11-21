@@ -129,6 +129,7 @@ public sealed partial class ListPage : Microsoft.UI.Xaml.Controls.Page, INotifyP
             {
                 DispatcherQueue.TryEnqueue(() => { UpdateFilter(FilterBox.Text); });
                 ViewModel.FilteredItems.CollectionChanged += FilteredItems_CollectionChanged;
+                ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             });
         }
         else
@@ -137,6 +138,16 @@ public sealed partial class ListPage : Microsoft.UI.Xaml.Controls.Page, INotifyP
         }
 
         this.ItemsList.SelectedIndex = 0;
+    }
+
+    private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(ViewModel.SearchText):
+                FilterBox.Select(FilterBox.Text.Length, 0);
+                break;
+        }
     }
 
     private void FilteredItems_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
