@@ -19,7 +19,7 @@
   IgnorableNamespaces="uap mp rescap uap3 uap17 desktop6 virtualization">
 
   <Identity
-	Name="CmdPal"
+	Name="Microsoft.CmdPal"
 	Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
 	Version="0.0.1.0" />
 

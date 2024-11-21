@@ -20,12 +20,12 @@
   IgnorableNamespaces="uap mp rescap uap3 uap17 desktop6 virtualization">
 
   <Identity
-    Name="CmdPal"
+    Name="Microsoft.CmdPal.POC"
     Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
     Version="0.0.1.0" />
 
   <Properties>
-    <DisplayName>Command Palette</DisplayName>
+    <DisplayName>Command Palette Prototype</DisplayName>
     <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
 
@@ -47,8 +47,8 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="Command Palette"
-        Description="Windows Command Palette"
+        DisplayName="Command Palette Prototype"
+        Description="The prototype of the Windows Command Palette"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
