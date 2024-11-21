@@ -169,24 +169,24 @@
                                 Style="{StaticResource TextBlockEnabledStyle}"
                                 Text="{x:Static props:Resources.WindowPosition}" />
                             <ComboBox
+                                Margin="15,0,0,0"
+                                VerticalAlignment="Center"
                                 Background="{DynamicResource SecondaryBackgroundBrush}"
                                 BorderBrush="{DynamicResource PrimaryBorderBrush}"
                                 BorderThickness="2"
-                                VerticalAlignment="Center"
                                 FontSize="14"
                                 FontWeight="Normal"
-                                Margin="15,0,0,0"
                                 SelectedIndex="{Binding PositionComboboxIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                                <ComboBoxItem Content="{x:Static props:Resources.Custom}"/>
-                                <ComboBoxItem Content="{x:Static props:Resources.Maximized}"/>
-                                <ComboBoxItem Content="{x:Static props:Resources.Minimized}"/>
+                                <ComboBoxItem Content="{x:Static props:Resources.Custom}" />
+                                <ComboBoxItem Content="{x:Static props:Resources.Maximized}" />
+                                <ComboBoxItem Content="{x:Static props:Resources.Minimized}" />
                             </ComboBox>
                             <TextBlock
+                                Margin="15,0,0,0"
                                 VerticalAlignment="Center"
                                 FontSize="14"
                                 FontWeight="Normal"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-                                Margin="15,0,0,0"
                                 Style="{StaticResource TextBlockEnabledStyle}"
                                 Text="{x:Static props:Resources.Left}" />
                             <TextBox
@@ -349,16 +349,14 @@
                     DockPanel.Dock="Right" />
             </DockPanel>
         </Border>
-        <DockPanel
-            Grid.Row="2"
-            HorizontalAlignment="Stretch">
+        <DockPanel Grid.Row="2" HorizontalAlignment="Stretch">
             <StackPanel Orientation="Vertical">
                 <TextBlock
-                Margin="0,10,0,0"
-                FontSize="14"
-                FontWeight="Normal"
-                Foreground="{DynamicResource PrimaryForegroundBrush}"
-                Text="{x:Static props:Resources.WorkspaceName}" />
+                    Margin="0,10,0,0"
+                    FontSize="14"
+                    FontWeight="Normal"
+                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                    Text="{x:Static props:Resources.WorkspaceName}" />
                 <TextBox
                     x:Name="EditNameTextBox"
                     Width="300"
@@ -373,20 +371,20 @@
                     TextChanged="EditNameTextBox_TextChanged" />
             </StackPanel>
             <StackPanel
-                Orientation="Horizontal"
                 HorizontalAlignment="Right"
-                DockPanel.Dock="Right">
+                DockPanel.Dock="Right"
+                Orientation="Horizontal">
                 <CheckBox
                     Margin="20,0,0,0"
+                    VerticalAlignment="Bottom"
                     Content="{x:Static props:Resources.CreateShortcut}"
                     FontSize="14"
-                    VerticalAlignment="Bottom"
                     IsChecked="{Binding IsShortcutNeeded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 <CheckBox
                     Margin="20,0,0,0"
+                    VerticalAlignment="Bottom"
                     Content="{x:Static props:Resources.MoveIfExist}"
                     FontSize="14"
-                    VerticalAlignment="Bottom"
                     IsChecked="{Binding MoveExistingWindows, Mode=TwoWay}" />
             </StackPanel>
         </DockPanel>
