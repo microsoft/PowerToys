@@ -181,6 +181,7 @@
 
                 "WinUI3Apps\\PowerToys.NewPlus.ShellExtension.dll",
                 "WinUI3Apps\\NewPlusPackage.msix",
+                "WinUI3Apps\\PowerToys.NewPlus.ShellExtension.win10.dll",
 
                 "PowerAccent.Core.dll",
                 "PowerToys.PowerAccent.dll",
