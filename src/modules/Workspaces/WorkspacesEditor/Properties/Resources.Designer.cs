@@ -178,6 +178,15 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Custom.
+        /// </summary>
+        public static string Custom {
+            get {
+                return ResourceManager.GetString("Custom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to days ago.
         /// </summary>
         public static string DaysAgo {
@@ -633,6 +642,15 @@ namespace WorkspacesEditor.Properties {
         public static string Width {
             get {
                 return ResourceManager.GetString("Width", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Window position.
+        /// </summary>
+        public static string WindowPosition {
+            get {
+                return ResourceManager.GetString("WindowPosition", resourceCulture);
             }
         }
         

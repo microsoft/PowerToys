@@ -157,6 +157,9 @@
   <data name="CreateShortcut" xml:space="preserve">
     <value>Create desktop shortcut</value>
   </data>
+  <data name="Custom" xml:space="preserve">
+    <value>Custom</value>
+  </data>
   <data name="DaysAgo" xml:space="preserve">
     <value>days ago</value>
   </data>
@@ -317,6 +320,9 @@
   </data>
   <data name="Width" xml:space="preserve">
     <value>Width</value>
+  </data>
+  <data name="WindowPosition" xml:space="preserve">
+    <value>Window position</value>
   </data>
   <data name="WriteArgs" xml:space="preserve">
     <value>Write arguments here</value>

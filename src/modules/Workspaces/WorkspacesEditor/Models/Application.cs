@@ -10,6 +10,13 @@ using WorkspacesCsharpLibrary.Models;
 
 namespace WorkspacesEditor.Models
 {
+    public enum WindowPositionKind
+    {
+        Custom = 0,
+        Maximized = 1,
+        Minimized = 2,
+    }
+
     public class Application : BaseApplication, IDisposable
     {
         private bool _isInitialized;
@@ -126,35 +133,23 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        private bool _minimized;
+        public bool Minimized { get; set; }
 
-        public bool Minimized
-        {
-            get => _minimized;
-            set
-            {
-                _minimized = value;
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(Minimized)));
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(EditPositionEnabled)));
-                RedrawPreviewImage();
-            }
-        }
-
-        private bool _maximized;
-
-        public bool Maximized
-        {
-            get => _maximized;
-            set
-            {
-                _maximized = value;
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(Maximized)));
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(EditPositionEnabled)));
-                RedrawPreviewImage();
-            }
-        }
+        public bool Maximized { get; set; }
 
         public bool EditPositionEnabled => !Minimized && !Maximized;
+
+        public int PositionComboboxIndex
+        {
+            get => Maximized ? (int)WindowPositionKind.Maximized : Minimized ? (int)WindowPositionKind.Minimized : (int)WindowPositionKind.Custom;
+            set
+            {
+                Maximized = value == (int)WindowPositionKind.Maximized;
+                Minimized = value == (int)WindowPositionKind.Minimized;
+                OnPropertyChanged(new PropertyChangedEventArgs(nameof(EditPositionEnabled)));
+                RedrawPreviewImage();
+            }
+        }
 
         private string _appMainParams;
 
@@ -278,16 +273,6 @@ namespace WorkspacesEditor.Models
         {
             CommandLineArguments = newCommandLineValue;
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(AppMainParams)));
-        }
-
-        internal void MaximizedChecked()
-        {
-            Minimized = false;
-        }
-
-        internal void MinimizedChecked()
-        {
-            Maximized = false;
         }
     }
 }

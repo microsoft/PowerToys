@@ -156,18 +156,6 @@
                                 Content="{x:Static props:Resources.LaunchAsAdmin}"
                                 IsChecked="{Binding IsElevated, Mode=TwoWay}"
                                 IsEnabled="{Binding CanLaunchElevated, Mode=OneWay}" />
-                            <CheckBox
-                                MinWidth="10"
-                                Margin="15,0,0,0"
-                                Checked="MaximizedChecked"
-                                Content="{x:Static props:Resources.Maximized}"
-                                IsChecked="{Binding Maximized, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                            <CheckBox
-                                MinWidth="10"
-                                Margin="15,0,0,0"
-                                Checked="MinimizedChecked"
-                                Content="{x:Static props:Resources.Minimized}"
-                                IsChecked="{Binding Minimized, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
                         <StackPanel
                             Grid.Row="2"
@@ -178,6 +166,27 @@
                                 FontSize="14"
                                 FontWeight="Normal"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                Style="{StaticResource TextBlockEnabledStyle}"
+                                Text="{x:Static props:Resources.WindowPosition}" />
+                            <ComboBox
+                                Background="{DynamicResource SecondaryBackgroundBrush}"
+                                BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                                BorderThickness="2"
+                                VerticalAlignment="Center"
+                                FontSize="14"
+                                FontWeight="Normal"
+                                Margin="15,0,0,0"
+                                SelectedIndex="{Binding PositionComboboxIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                <ComboBoxItem Content="{x:Static props:Resources.Custom}"/>
+                                <ComboBoxItem Content="{x:Static props:Resources.Maximized}"/>
+                                <ComboBoxItem Content="{x:Static props:Resources.Minimized}"/>
+                            </ComboBox>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="14"
+                                FontWeight="Normal"
+                                IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                Margin="15,0,0,0"
                                 Style="{StaticResource TextBlockEnabledStyle}"
                                 Text="{x:Static props:Resources.Left}" />
                             <TextBox
