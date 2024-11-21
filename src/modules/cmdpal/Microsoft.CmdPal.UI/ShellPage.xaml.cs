@@ -22,6 +22,8 @@ public sealed partial class ShellPage :
 {
     private readonly DrillInNavigationTransitionInfo _drillInNavigationTransitionInfo = new();
 
+    private readonly SlideNavigationTransitionInfo _slideRightTransition = new() { Effect = SlideNavigationTransitionEffect.FromRight };
+
     public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
 
     public ShellPage()
@@ -44,5 +46,9 @@ public sealed partial class ShellPage :
         }
     }
 
-    public void Receive(NavigateToListMessage message) => RootFrame.Navigate(typeof(ListPage), message.ViewModel, _drillInNavigationTransitionInfo);
+    public void Receive(NavigateToListMessage message)
+    {
+        RootFrame.Navigate(typeof(ListPage), message.ViewModel, _slideRightTransition);
+        SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+    }
 }

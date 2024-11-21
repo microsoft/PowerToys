@@ -8,7 +8,6 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
-using static System.Collections.Specialized.BitVector32;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -37,6 +36,14 @@ public partial class ListViewModel : ObservableObject
     [RelayCommand]
     private void InvokeItem(ListItemViewModel item)
     {
-        WeakReferenceMessenger.Default.Send<NavigateToDetailsMessage>(new(item));
+        // TODO: we should probably just have the shell handle a "NavigateToCommand" message
+        if (item.Command is IListPage listPage)
+        {
+            WeakReferenceMessenger.Default.Send<NavigateToListMessage>(new(new(listPage)));
+        }
+        else
+        {
+            WeakReferenceMessenger.Default.Send<NavigateToDetailsMessage>(new(item));
+        }
     }
 }

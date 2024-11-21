@@ -17,7 +17,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <controls:SearchBar Grid.Row="0" VerticalAlignment="Top" />
+        <controls:SearchBar x:Name="SearchBox" Grid.Row="0" VerticalAlignment="Top" />
 
         <Frame
             Name="RootFrame"

@@ -4,7 +4,11 @@
 
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
+using Microsoft.CmdPal.Ext.Registry;
 using Microsoft.CmdPal.Ext.Settings;
+using Microsoft.CmdPal.Ext.WindowsServices;
+using Microsoft.CmdPal.Ext.WindowsSettings;
+using Microsoft.CmdPal.Ext.WindowsTerminal;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -61,9 +65,14 @@ public partial class App : Application
         ServiceCollection services = new();
 
         // Built-in Commands
+        // NOTE: Quit and Reload are still missing from this list.
         services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
         services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
         services.AddSingleton<ICommandProvider, SettingsCommandProvider>();
+        services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
+        services.AddSingleton<ICommandProvider, WindowsServicesCommandsProvider>();
+        services.AddSingleton<ICommandProvider, RegistryCommandsProvider>();
+        services.AddSingleton<ICommandProvider, WindowsSettingsCommandsProvider>();
 
         // ViewModels
         services.AddSingleton<ShellViewModel>((services) => new(services.GetServices<ICommandProvider>()));

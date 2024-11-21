@@ -23,6 +23,8 @@ public partial class ListItemViewModel : ObservableObject
 
     public ITag[] Tags => _listItemModel.Unsafe.Tags;
 
+    public ICommand Command => _listItemModel.Unsafe.Command;
+
     public bool HasTags => Tags.Length > 0;
 
     public ListItemViewModel(IListItem model)

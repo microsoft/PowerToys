@@ -63,6 +63,19 @@ public sealed partial class SearchBar : UserControl
             ActionsDropdown.SelectedIndex = 0;
             ActionsDropdown.Focus(FocusState.Programmatic);*/
         }
+        else if (e.Key == VirtualKey.Escape)
+        {
+            if (string.IsNullOrEmpty(FilterBox.Text))
+            {
+                WeakReferenceMessenger.Default.Send<NavigateBackMessage>();
+            }
+            else
+            {
+                // TODO: Clear the search box
+            }
+
+            e.Handled = true;
+        }
     }
 
     private void FilterBox_TextChanged(object sender, TextChangedEventArgs e)

@@ -21,13 +21,54 @@
 
         <!--  https://learn.microsoft.com/windows/apps/design/controls/itemsview#specify-the-look-of-the-items  -->
         <DataTemplate x:Key="ListItemViewModelTemplate" x:DataType="viewmodels:ListItemViewModel">
-            <StackPanel
-                AutomationProperties.Name="{x:Bind Title}"
-                Orientation="Horizontal"
-                Spacing="8">
-                <TextBlock Text="{x:Bind Title}" />
-                <TextBlock Foreground="{ThemeResource SystemAccentColor}" Text="{x:Bind Subtitle}" />
-            </StackPanel>
+
+            <!--TODO: collapse item if it's empty -->
+            <ListViewItem MinHeight="56">
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="28" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Viewbox Width="20"
+                        Height="20"
+                        VerticalAlignment="Center">
+                        <!--TODO: Icon 
+                        <ContentControl Content="{x:Bind IcoElement, Mode=OneWay}" />
+                        -->
+                    </Viewbox>
+
+                    <StackPanel
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Orientation="Vertical"
+                        Spacing="0">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            FontWeight="Medium"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{x:Bind Title, Mode=OneWay}"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="NoWrap" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{x:Bind Subtitle, Mode=OneWay}"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="NoWrap" />
+                        <!--TODO: collapse subtitle if it's empty -->
+                    </StackPanel>
+                    <!--TODO: Add tags again -->
+                    <!--<ItemsRepeater ItemTemplate="{StaticResource TagTemplate}"
+                       ItemsSource="{x:Bind Tags}"
+                       Grid.Column="2"
+                       Visibility="{x:Bind HasTags}"
+                       Layout="{StaticResource HorizontalStackLayout}" />-->
+                </Grid>
+            </ListViewItem>
         </DataTemplate>
     </Page.Resources>
 
