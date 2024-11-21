@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 using AdvancedPaste.Helpers;
@@ -22,26 +23,52 @@ namespace AdvancedPaste.UnitTests.ServicesTests;
 [Ignore("Test requires active OpenAI API key.")] // Comment out this line to run these tests after setting up OpenAI API key using AdvancedPaste Settings
 [TestClass]
 
-/// <summary>Batch integration tests for the AI services; connects to OpenAI and uses full AdvancedPaste action catalog for Semantic Kernel.</summary>
+/// <summary>
+/// Tests that write batch AI outputs against a list of inputs. Connects to OpenAI and uses the full AdvancedPaste action catalog for Semantic Kernel.
+/// If queries produce errors, the error message is written to the output file. If queries produce text-file output, their contents are included as though they were text output.
+/// To run this test-suite, first:
+/// 1. Setup an OpenAI API key using AdvancedPaste Settings.
+/// 2. Comment out the [Ignore] attribute above.
+/// 3. Ensure the %USERPROFILE% folder contains the required input files (paths are below).
+/// These tests are idempotent and resumable, allowing for partial runs and restarts. It's ok to use existing output files as input files - output-related fields will simply be ignored.
+/// </summary>
 public sealed class AIServiceBatchIntegrationTests
 {
-    private sealed record class BatchTestInput(string Prompt, string Clipboard, string Genre);
-
-    private sealed record class BatchTestResult(string Prompt, string Clipboard, string Genre, string Result)
+    private record class BatchTestInput
     {
-        internal BatchTestInput ToInput() => new(Prompt, Clipboard, Genre);
+        public string Prompt { get; init; }
+
+        public string Clipboard { get; init; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string Genre { get; init; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string Category { get; init; }
     }
 
-    private const string InputFilePath = @"%USERPROFILE%\allAdvancedPasteTests-Input-V2.json";
+    private sealed record class BatchTestResult : BatchTestInput
+    {
+        [JsonPropertyOrder(1)]
+        public string Result { get; init; }
+
+        internal BatchTestInput ToInput() => new() { Prompt = Prompt, Clipboard = Clipboard, Genre = Genre, Category = Category, };
+    }
+
+    private const string AllTestsFilePath = @"%USERPROFILE%\allAdvancedPasteTests-Input-V2.json";
+    private const string HarmsTestsFilePath = @"%USERPROFILE%\HarmsCategorized-Input.json";
+
     private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true };
 
     [TestMethod]
-    [DataRow(PasteFormats.CustomTextTransformation)]
-    [DataRow(PasteFormats.KernelQuery)]
-    public async Task TestGenerateBatchResults(PasteFormats format)
+    [DataRow(AllTestsFilePath, PasteFormats.CustomTextTransformation)]
+    [DataRow(AllTestsFilePath, PasteFormats.KernelQuery)]
+    [DataRow(HarmsTestsFilePath, PasteFormats.CustomTextTransformation)]
+    [DataRow(HarmsTestsFilePath, PasteFormats.KernelQuery)]
+    public async Task TestGenerateBatchResults(string inputFilePath, PasteFormats format)
     {
         // Load input data.
-        var fullInputFilePath = Environment.ExpandEnvironmentVariables(InputFilePath);
+        var fullInputFilePath = Environment.ExpandEnvironmentVariables(inputFilePath);
         var inputs = await GetDataListAsync<BatchTestInput>(fullInputFilePath);
         Assert.IsTrue(inputs.Count > 0);
 
@@ -60,8 +87,8 @@ public sealed class AIServiceBatchIntegrationTests
         {
             try
             {
-                var output = await GetTextOutputAsync(input, format);
-                results.Add(new BatchTestResult(input.Prompt, input.Clipboard, input.Genre, output));
+                var textOutput = await GetTextOutputAsync(input, format);
+                results.Add(new() { Prompt = input.Prompt, Clipboard = input.Clipboard, Genre = input.Genre, Category = input.Category, Result = textOutput, });
             }
             catch (Exception)
             {
