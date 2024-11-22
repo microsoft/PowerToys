@@ -11,6 +11,4 @@
 // Windows Header Files
 #include <windows.h>
 
-#include <ProjectTelemetry.h>
-
 #endif //PCH_H

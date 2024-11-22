@@ -18,6 +18,7 @@ using AdvancedPaste.ViewModels;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Graphics;
@@ -37,6 +38,8 @@ namespace AdvancedPaste
     public partial class App : Application, IDisposable
     {
         public IHost Host { get; private set; }
+
+        public ETWTrace EtwTrace { get; private set; } = new ETWTrace();
 
         private static readonly Dictionary<string, PasteFormats> AdditionalActionIPCKeys =
                  typeof(PasteFormats).GetFields()
@@ -111,7 +114,11 @@ namespace AdvancedPaste
                 {
                     RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
                     {
-                        Environment.Exit(0);
+                        _dispatcherQueue.TryEnqueue(() =>
+                        {
+                            Dispose();
+                            Environment.Exit(0);
+                        });
                     });
                 }
             }
@@ -153,6 +160,11 @@ namespace AdvancedPaste
             else if (messageType == PowerToys.Interop.Constants.AdvancedPasteCustomActionMessage())
             {
                 await OnAdvancedPasteCustomActionHotkey(messageParts);
+            }
+            else if (messageType == PowerToys.Interop.Constants.AdvancedPasteTerminateAppMessage())
+            {
+                Dispose();
+                Environment.Exit(0);
             }
         }
 
@@ -244,6 +256,7 @@ namespace AdvancedPaste
             {
                 if (disposing)
                 {
+                    EtwTrace?.Dispose();
                     window.Dispose();
                 }
 

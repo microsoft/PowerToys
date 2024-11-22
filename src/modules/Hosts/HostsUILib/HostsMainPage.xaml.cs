@@ -32,7 +32,7 @@ namespace HostsUILib.Views
 
         public ICommand UpdateAdditionalLinesCommand => new RelayCommand(UpdateAdditionalLines);
 
-        public ICommand ExitCommand => new RelayCommand(() => { Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread().TryEnqueue(Application.Current.Exit); });
+        public ICommand ExitCommand => new RelayCommand(() => { Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread().TryEnqueue(() => { Environment.Exit(0); }); });
 
         public HostsMainPage(MainViewModel viewModel)
         {

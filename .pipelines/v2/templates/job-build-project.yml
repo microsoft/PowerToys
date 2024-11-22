@@ -50,7 +50,9 @@ parameters:
   - name: runTests
     type: boolean
     default: true
-
+  - name: useVSPreview
+    type: boolean
+    default: false
   - name: versionNumber
     type: string
     default: '0.0.1'
@@ -135,7 +137,7 @@ jobs:
   - template: steps-ensure-dotnet-version.yml
     parameters:
       sdk: true
-      version: '8.0'
+      version: '9.0'
 
   - ${{ if eq(parameters.runTests, true) }}:
     - task: VisualStudioTestPlatformInstaller@1
@@ -143,13 +145,19 @@ jobs:
 
   - pwsh: |-
       & '.pipelines/applyXamlStyling.ps1' -Passive
+    displayName: Verify XAML formatting
+
+  - pwsh: |-
       & '.pipelines/verifyNugetPackages.ps1' -solution '$(build.sourcesdirectory)\PowerToys.sln'
+    displayName: Verify Nuget package versions for PowerToys.sln
+
+  - pwsh: |-
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\PowerToys.sln'
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\BugReportTool\BugReportTool.sln'
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\WebcamReportTool\WebcamReportTool.sln'
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\StylesReportTool\StylesReportTool.sln'
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.sln'
-    displayName: Verify formatting, nuget, and ARM64 configurations
+    displayName: Verify ARM64 configurations
 
   - ${{ if eq(parameters.enablePackageCaching, true) }}:
     - task: Cache@2
@@ -175,6 +183,9 @@ jobs:
   - pwsh: |-
       & "$(build.sourcesdirectory)\.pipelines\verifyAndSetLatestVCToolsVersion.ps1"
     displayName: Work around DD-1541167 (VCToolsVersion)
+    ${{ if eq(parameters.useVSPreview, true) }}:
+      env:
+        VCWhereExtraVersionTarget: '-prerelease'
 
   - pwsh: |-
       & "$(build.sourcesdirectory)\.pipelines\installWiX.ps1"
@@ -222,7 +233,10 @@ jobs:
     inputs:
       solution: '**\HostsUILib.csproj'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-hosts.binlog
+      ${{ if eq(parameters.useVSPreview, true) }}:
+        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-hosts.binlog /p:NoWarn=NU5104
+      ${{ else }}:
+        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-hosts.binlog
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
@@ -235,7 +249,10 @@ jobs:
     inputs:
       solution: '**\EnvironmentVariablesUILib.csproj'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-env-var-editor.binlog
+      ${{ if eq(parameters.useVSPreview, true) }}:
+        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-env-var-editor.binlog /p:NoWarn=NU5104
+      ${{ else }}:
+        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-env-var-editor.binlog
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
@@ -248,7 +265,10 @@ jobs:
     inputs:
       solution: '**\RegistryPreviewUILib.csproj'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-registry-preview.binlog
+      ${{ if eq(parameters.useVSPreview, true) }}:
+        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-registry-preview.binlog /p:NoWarn=NU5104
+      ${{ else }}:
+        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-registry-preview.binlog
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
@@ -369,6 +389,16 @@ jobs:
         configuration: $(BuildConfiguration)
         msbuildArchitecture: x64
         maximumCpuCount: true
+
+  ### HACK: On ARM64 builds, building an app with Windows App SDK copies the x64 WebView2 dll instead of the ARM64 one. This task makes sure the right dll is used.
+  - task: CopyFiles@2
+    displayName: HACK Copy core WebView2 ARM64 dll to output directory
+    condition: eq(variables['BuildPlatform'],'arm64')
+    inputs:
+      contents: packages/Microsoft.Web.WebView2.1.0.2739.15/runtimes/win-ARM64/native_uap/Microsoft.Web.WebView2.Core.dll
+      targetFolder: $(Build.SourcesDirectory)/ARM64/Release/WinUI3Apps/
+      flattenFolders: True
+      OverWrite: True
 
   # Check if deps.json files don't reference different dll versions.
   - pwsh: |-

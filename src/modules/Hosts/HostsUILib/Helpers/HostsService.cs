@@ -52,7 +52,7 @@ namespace HostsUILib.Helpers
 
             _hostsFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\drivers\etc\hosts");
 
-            _fileSystemWatcher = _fileSystem.FileSystemWatcher.CreateNew();
+            _fileSystemWatcher = _fileSystem.FileSystemWatcher.New();
             _fileSystemWatcher.Path = _fileSystem.Path.GetDirectoryName(HostsFilePath);
             _fileSystemWatcher.Filter = _fileSystem.Path.GetFileName(HostsFilePath);
             _fileSystemWatcher.NotifyFilter = NotifyFilters.LastWrite;
@@ -130,7 +130,7 @@ namespace HostsUILib.Helpers
                 throw new NotRunningElevatedException();
             }
 
-            if (_fileSystem.FileInfo.FromFileName(HostsFilePath).IsReadOnly)
+            if (_fileSystem.FileInfo.New(HostsFilePath).IsReadOnly)
             {
                 throw new ReadOnlyHostsException();
             }
@@ -200,7 +200,7 @@ namespace HostsUILib.Helpers
                 }
 
                 // FileMode.OpenOrCreate is necessary to prevent UnauthorizedAccessException when the hosts file is hidden
-                using var stream = _fileSystem.FileStream.Create(HostsFilePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read, _defaultBufferSize, FileOptions.Asynchronous);
+                using var stream = _fileSystem.FileStream.New(HostsFilePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read, _defaultBufferSize, FileOptions.Asynchronous);
                 using var writer = new StreamWriter(stream, Encoding);
                 foreach (var line in lines)
                 {
@@ -305,7 +305,7 @@ namespace HostsUILib.Helpers
 
         public void RemoveReadOnlyAttribute()
         {
-            var fileInfo = _fileSystem.FileInfo.FromFileName(HostsFilePath);
+            var fileInfo = _fileSystem.FileInfo.New(HostsFilePath);
             if (fileInfo.IsReadOnly)
             {
                 fileInfo.IsReadOnly = false;

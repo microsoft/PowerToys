@@ -8,6 +8,8 @@
 #include <common/utils/EventLocker.h>
 #include <common/utils/winapi_error.h>
 
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
+
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/common/MappingConfiguration.h>
 
@@ -426,11 +428,15 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
 
 void CreateEditKeyboardWindow(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, MappingConfiguration& mappingConfiguration)
 {
+    Shared::Trace::ETWTrace trace;
+    trace.UpdateState(true);
+
     // Move implementation into the separate method so resources get destroyed correctly
     CreateEditKeyboardWindowImpl(hInst, keyboardManagerState, mappingConfiguration);
 
     // Calling ClearXamlIslands() outside of the message loop is not enough to prevent
     // Microsoft.UI.XAML.dll from crashing during deinitialization, see https://github.com/microsoft/PowerToys/issues/10906
+    trace.Flush();
     Logger::trace("Terminating process {}", GetCurrentProcessId());
     Logger::flush();
     TerminateProcess(GetCurrentProcess(), 0);
