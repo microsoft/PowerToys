@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;
 using System.Xml;
+
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Settings.UI.Library.Attributes;
 

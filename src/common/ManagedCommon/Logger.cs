@@ -5,7 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO.Abstractions;
+using System.IO;
 using System.Reflection;
 
 using PowerToys.Interop;
@@ -14,7 +14,6 @@ namespace ManagedCommon
 {
     public static class Logger
     {
-        private static readonly IFileSystem _fileSystem = new FileSystem();
         private static readonly Assembly Assembly = Assembly.GetExecutingAssembly();
         private static readonly string Version = FileVersionInfo.GetVersionInfo(Assembly.Location).ProductVersion;
 
@@ -41,12 +40,12 @@ namespace ManagedCommon
                 applicationLogPath = Constants.AppDataPath() + applicationLogPath + "\\" + Version;
             }
 
-            if (!_fileSystem.Directory.Exists(applicationLogPath))
+            if (!Directory.Exists(applicationLogPath))
             {
-                _fileSystem.Directory.CreateDirectory(applicationLogPath);
+                Directory.CreateDirectory(applicationLogPath);
             }
 
-            var logFilePath = _fileSystem.Path.Combine(applicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
+            var logFilePath = Path.Combine(applicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
 
             Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
 
@@ -60,14 +59,29 @@ namespace ManagedCommon
 
         public static void LogError(string message, Exception ex)
         {
-            Log(
-                message + Environment.NewLine +
-                ex?.Message + Environment.NewLine +
-                "Inner exception: " + Environment.NewLine +
-                ex?.InnerException?.Message + Environment.NewLine +
-                "Stack trace: " + Environment.NewLine +
-                ex?.StackTrace,
-                Error);
+            if (ex == null)
+            {
+                LogError(message);
+            }
+            else
+            {
+                var exMessage =
+                    message + Environment.NewLine +
+                    ex.GetType() + ": " + ex.Message + Environment.NewLine;
+
+                if (ex.InnerException != null)
+                {
+                    exMessage +=
+                        "Inner exception: " + Environment.NewLine +
+                        ex.InnerException.GetType() + ": " + ex.InnerException.Message + Environment.NewLine;
+                }
+
+                exMessage +=
+                    "Stack trace: " + Environment.NewLine +
+                    ex.StackTrace;
+
+                Log(exMessage, Error);
+            }
         }
 
         public static void LogWarning(string message)

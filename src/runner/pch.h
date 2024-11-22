@@ -26,7 +26,6 @@
 #include <unordered_map>
 #include <string>
 #include <set>
-#include <ProjectTelemetry.h>
 
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Networking.Connectivity.h>

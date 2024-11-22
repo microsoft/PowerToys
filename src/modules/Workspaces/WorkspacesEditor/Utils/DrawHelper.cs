@@ -54,7 +54,13 @@ namespace WorkspacesEditor.Utils
                 if (app.Maximized)
                 {
                     Project project = app.Parent;
-                    var monitor = project.Monitors.Where(x => x.MonitorNumber == app.MonitorNumber).FirstOrDefault();
+                    var monitor = project.GetMonitorForApp(app);
+                    if (monitor == null)
+                    {
+                        // unrealistic case, there are no monitors at all in the workspace, use original rect
+                        return new Rectangle(TransformX(app.ScaledPosition.X), TransformY(app.ScaledPosition.Y), Scaled(app.ScaledPosition.Width), Scaled(app.ScaledPosition.Height));
+                    }
+
                     return new Rectangle(TransformX(monitor.MonitorDpiAwareBounds.Left), TransformY(monitor.MonitorDpiAwareBounds.Top), Scaled(monitor.MonitorDpiAwareBounds.Width), Scaled(monitor.MonitorDpiAwareBounds.Height));
                 }
                 else
@@ -69,16 +75,16 @@ namespace WorkspacesEditor.Utils
 
             foreach (Application app in appsIncluded)
             {
-                if (repeatCounter.TryGetValue(app.AppPath, out int value))
+                if (repeatCounter.TryGetValue(app.AppPath + app.AppTitle, out int value))
                 {
-                    repeatCounter[app.AppPath] = ++value;
+                    repeatCounter[app.AppPath + app.AppTitle] = ++value;
                 }
                 else
                 {
-                    repeatCounter.Add(app.AppPath, 1);
+                    repeatCounter.Add(app.AppPath + app.AppTitle, 1);
                 }
 
-                app.RepeatIndex = repeatCounter[app.AppPath];
+                app.RepeatIndex = repeatCounter[app.AppPath + app.AppTitle];
             }
 
             foreach (Application app in project.Applications.Where(x => !x.IsIncluded))

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
-	
+
   <PropertyGroup>
     <Description>PowerToys Telemetry</Description>
     <AssemblyName>PowerToys.ManagedTelemetry</AssemblyName>
@@ -11,4 +11,8 @@
     <Compile Include="..\..\Telemetry\TelemetryBase.cs" Link="TelemetryBase.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" />
+  </ItemGroup>
 </Project>

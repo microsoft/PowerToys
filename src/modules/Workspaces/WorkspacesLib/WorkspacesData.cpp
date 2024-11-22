@@ -3,6 +3,8 @@
 
 #include <common/SettingsAPI/settings_helpers.h>
 
+#include <workspaces-common/GuidUtils.h>
+
 namespace NonLocalizable
 {
     const inline wchar_t ModuleKey[] = L"Workspaces";
@@ -21,7 +23,7 @@ namespace WorkspacesData
         std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
         return settingsFolderPath + L"\\temp-workspaces.json";
     }
-    
+
     RECT WorkspacesProject::Application::Position::toRect() const noexcept
     {
         return RECT{ .left = x, .top = y, .right = x + width, .bottom = y + height };
@@ -72,10 +74,12 @@ namespace WorkspacesData
 
             namespace NonLocalizable
             {
+                const static wchar_t* AppIdID = L"id";
                 const static wchar_t* AppNameID = L"application";
                 const static wchar_t* AppPathID = L"application-path";
                 const static wchar_t* AppPackageFullNameID = L"package-full-name";
                 const static wchar_t* AppUserModelId = L"app-user-model-id";
+                const static wchar_t* PwaAppId = L"pwa-app-id";
                 const static wchar_t* AppTitleID = L"title";
                 const static wchar_t* CommandLineArgsID = L"command-line-arguments";
                 const static wchar_t* ElevatedID = L"is-elevated";
@@ -89,11 +93,13 @@ namespace WorkspacesData
             json::JsonObject ToJson(const WorkspacesProject::Application& data)
             {
                 json::JsonObject json{};
+                json.SetNamedValue(NonLocalizable::AppIdID, json::value(data.id));
                 json.SetNamedValue(NonLocalizable::AppNameID, json::value(data.name));
                 json.SetNamedValue(NonLocalizable::AppPathID, json::value(data.path));
                 json.SetNamedValue(NonLocalizable::AppTitleID, json::value(data.title));
                 json.SetNamedValue(NonLocalizable::AppPackageFullNameID, json::value(data.packageFullName));
                 json.SetNamedValue(NonLocalizable::AppUserModelId, json::value(data.appUserModelId));
+                json.SetNamedValue(NonLocalizable::PwaAppId, json::value(data.pwaAppId));
                 json.SetNamedValue(NonLocalizable::CommandLineArgsID, json::value(data.commandLineArgs));
                 json.SetNamedValue(NonLocalizable::ElevatedID, json::value(data.isElevated));
                 json.SetNamedValue(NonLocalizable::CanLaunchElevatedID, json::value(data.canLaunchElevated));
@@ -110,6 +116,11 @@ namespace WorkspacesData
                 WorkspacesProject::Application result;
                 try
                 {
+                    if (json.HasKey(NonLocalizable::AppIdID))
+                    {
+                        result.id = json.GetNamedString(NonLocalizable::AppIdID);
+                    }
+
                     if (json.HasKey(NonLocalizable::AppNameID))
                     {
                         result.name = json.GetNamedString(NonLocalizable::AppNameID);
@@ -125,6 +136,11 @@ namespace WorkspacesData
                     if (json.HasKey(NonLocalizable::AppUserModelId))
                     {
                         result.appUserModelId = json.GetNamedString(NonLocalizable::AppUserModelId);
+                    }
+
+                    if (json.HasKey(NonLocalizable::PwaAppId))
+                    {
+                        result.pwaAppId = json.GetNamedString(NonLocalizable::PwaAppId);
                     }
 
                     result.commandLineArgs = json.GetNamedString(NonLocalizable::CommandLineArgsID);
@@ -321,11 +337,11 @@ namespace WorkspacesData
                 {
                     result.isShortcutNeeded = json.GetNamedBoolean(NonLocalizable::IsShortcutNeededID);
                 }
-                
+
                 if (json.HasKey(NonLocalizable::MoveExistingWindowsID))
                 {
-					result.moveExistingWindows = json.GetNamedBoolean(NonLocalizable::MoveExistingWindowsID);
-				}
+                    result.moveExistingWindows = json.GetNamedBoolean(NonLocalizable::MoveExistingWindowsID);
+                }
 
                 auto appsArray = json.GetNamedArray(NonLocalizable::AppsID);
                 for (uint32_t i = 0; i < appsArray.Size(); ++i)

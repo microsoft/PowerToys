@@ -15,7 +15,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.IO.Abstractions" />
     <PackageReference Include="System.Management" />
   </ItemGroup>
 

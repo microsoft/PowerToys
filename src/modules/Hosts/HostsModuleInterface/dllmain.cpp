@@ -55,6 +55,8 @@ private:
 
     HANDLE m_hShowAdminEvent{};
 
+    HANDLE m_hTerminateEvent{};
+
     bool is_process_running()
     {
         return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
@@ -142,6 +144,17 @@ public:
             }
         }
 
+        m_hTerminateEvent = CreateDefaultEvent(CommonSharedConstants::TERMINATE_HOSTS_EVENT);
+        if (!m_hTerminateEvent)
+        {
+            Logger::error(L"Failed to create terminate hosts event");
+            auto message = get_last_error_message(GetLastError());
+            if (message.has_value())
+            {
+                Logger::error(message.value());
+            }
+        }
+
         m_showEventWaiter = EventWaiter(CommonSharedConstants::SHOW_HOSTS_EVENT, [&](int err)
         {
             if (m_enabled && err == ERROR_SUCCESS)
@@ -201,6 +214,12 @@ public:
         {
             CloseHandle(m_hShowAdminEvent);
             m_hShowAdminEvent = nullptr;
+        }
+
+        if (m_hTerminateEvent)
+        {
+            CloseHandle(m_hTerminateEvent);
+            m_hTerminateEvent = nullptr;
         }
 
         delete this;
@@ -264,7 +283,10 @@ public:
                 ResetEvent(m_hShowAdminEvent);
             }
 
+            SetEvent(m_hTerminateEvent);
+            WaitForSingleObject(m_hProcess, 1500);
             TerminateProcess(m_hProcess, 1);
+            ResetEvent(m_hTerminateEvent);
         }
 
         m_enabled = false;

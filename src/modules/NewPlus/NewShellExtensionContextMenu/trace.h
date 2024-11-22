@@ -2,11 +2,11 @@
 
 #include "pch.h"
 
-class Trace
+#include <common/Telemetry/TraceBase.h>
+
+class Trace : public telemetry::TraceBase
 {
 public:
-    static void RegisterProvider() noexcept;
-    static void UnregisterProvider() noexcept;
     static void EventToggleOnOff(_In_ const bool new_enabled_state) noexcept;
     static void EventChangedTemplateLocation() noexcept;
     static void EventShowTemplateItems(_In_ const size_t number_of_templates) noexcept;

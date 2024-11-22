@@ -1,6 +1,7 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "pch.h"
 
+#include <common/telemetry/EtwTrace/EtwTrace.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
 #include <common/utils/elevation.h>
@@ -20,6 +21,7 @@
 using namespace Microsoft::WRL;
 
 HINSTANCE g_hInst = 0;
+Shared::Trace::ETWTrace trace(L"FileLocksmithContextMenu");
 
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
@@ -91,6 +93,8 @@ public:
 
     IFACEMETHODIMP Invoke(_In_opt_ IShellItemArray* selection, _In_opt_ IBindCtx*) noexcept
     {
+        trace.UpdateState(true);
+
         Trace::Invoked();
         ipc::Writer writer;
 
@@ -102,6 +106,9 @@ public:
         if (HRESULT result = writer.start(); FAILED(result))
         {
             Trace::InvokedRet(result);
+
+            trace.Flush();
+            trace.UpdateState(false);
             return result;
         }
 
@@ -114,6 +121,10 @@ public:
         {
             result = E_FAIL;
             Trace::InvokedRet(result);
+
+            trace.Flush();
+            trace.UpdateState(false);
+
             return result;
         }
 
@@ -140,6 +151,10 @@ public:
         }
 
         Trace::InvokedRet(S_OK);
+
+        trace.Flush();
+        trace.UpdateState(false);
+
         return S_OK;
     }
 

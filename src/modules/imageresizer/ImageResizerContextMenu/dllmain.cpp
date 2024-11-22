@@ -7,6 +7,7 @@
 #include <shobjidl_core.h>
 #include <string>
 
+#include <common/telemetry/EtwTrace/EtwTrace.h>
 #include <common/utils/elevation.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
@@ -20,6 +21,7 @@
 using namespace Microsoft::WRL;
 
 HINSTANCE g_hInst = 0;
+Shared::Trace::ETWTrace trace(L"ImageResizerContextMenu");
 
 #define BUFSIZE 4096 * 4
 
@@ -134,6 +136,7 @@ public:
     IFACEMETHODIMP Invoke(_In_opt_ IShellItemArray* selection, _In_opt_ IBindCtx*) noexcept
     try
     {
+        trace.UpdateState(true);
 
         Trace::Invoked();
         HRESULT hr = S_OK;
@@ -144,6 +147,9 @@ public:
         }
 
         Trace::InvokedRet(hr);
+
+        trace.UpdateState(false);
+        trace.Flush();
 
         return hr;
     }

@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <AssemblyTitle>PowerToys.WorkspacesCsharpLibrary</AssemblyTitle>
+    <AssemblyDescription>PowerToys Workspaces Csharp Library</AssemblyDescription>
+    <Description>PowerToys Workspaces Csharp Library</Description>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <AssemblyName>PowerToys.WorkspacesCsharpLibrary</AssemblyName>
+  </PropertyGroup>
+
+</Project>
