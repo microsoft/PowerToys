@@ -60,9 +60,9 @@
 
                     <InfoBar
                         x:Uid="NewPlus_TemplatesNotBackupAndRestoreWarning"
-                        IsClosable="True"
-                        IsOpen="True"
-                        IsTabStop="True"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
                         Severity="Informational" />
 
                 </controls:SettingsGroup>

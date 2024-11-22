@@ -5,6 +5,7 @@
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
+
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.Library

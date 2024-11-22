@@ -3,10 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
 using MouseWithoutBorders.Class;
+using MouseWithoutBorders.Core;
 using MouseWithoutBorders.Properties;
 
 namespace MouseWithoutBorders
@@ -31,6 +33,7 @@ namespace MouseWithoutBorders
 
         private int _animationFrame;
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public bool ReturnToSettings { get; set; }
 
         public SetupPage3a()
@@ -42,7 +45,7 @@ namespace MouseWithoutBorders
         private void ShowStatus(string status)
         {
             labelStatus.Text = status;
-            Common.Log(status);
+            Logger.Log(status);
         }
 
         public override void OnPageClosing()

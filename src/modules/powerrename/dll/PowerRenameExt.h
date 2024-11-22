@@ -1,6 +1,8 @@
 #pragma once
 #include "pch.h"
 
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
+
 class __declspec(uuid("0440049F-D1DC-4E46-B27B-98393D79486B")) CPowerRenameMenu :
     public IShellExtInit,
     public IContextMenu,
@@ -70,4 +72,6 @@ private:
     HBITMAP m_hbmpIcon = nullptr;
     CComPtr<IDataObject> m_spdo;
     std::wstring context_menu_caption;
+
+    Shared::Trace::ETWTrace m_etwTrace{ L"PowerRenameExt" };
 };
