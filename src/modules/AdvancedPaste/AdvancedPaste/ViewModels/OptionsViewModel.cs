@@ -230,6 +230,61 @@ namespace AdvancedPaste.ViewModels
 
             ClipboardHistoryEnabled = IsClipboardHistoryEnabled();
             GeneratedResponses.Clear();
+            await GenerateAvailableFormatsText();
+        }
+
+        public async Task<bool> GenerateAvailableFormatsText()
+        {
+            AvailableFormatsText.Clear();
+
+            List<Tuple<ClipboardFormat, string>> formatQueryList = new()
+                {
+                    new Tuple<ClipboardFormat, string>(ClipboardFormat.Text, "Text,"),
+                    new Tuple<ClipboardFormat, string>(ClipboardFormat.Html, "Html,"),
+                    new Tuple<ClipboardFormat, string>(ClipboardFormat.Audio, "Audio,"),
+                    new Tuple<ClipboardFormat, string>(ClipboardFormat.Image, "Image,"),
+                    new Tuple<ClipboardFormat, string>(ClipboardFormat.ImageFile, "ImageFile,"),
+                };
+
+            ObservableCollection<Tuple<string, string>> returnList = new();
+
+            foreach (var formatQuery in formatQueryList)
+            {
+                if (AvailableClipboardFormats.HasFlag(formatQuery.Item1))
+                {
+                    string presentedString = formatQuery.Item2;
+                    string tooltipContent = null;
+
+                    if (formatQuery.Item1 == ClipboardFormat.Text)
+                    {
+                        tooltipContent = await ClipboardHelper.GetClipboardTextContent(ClipboardData);
+                    }
+                    else if (formatQuery.Item1 == ClipboardFormat.Html)
+                    {
+                        tooltipContent = await ClipboardHelper.GetClipboardHtmlContent(ClipboardData);
+                    }
+
+                    returnList.Add(new Tuple<string, string>(formatQuery.Item2, tooltipContent));
+                }
+            }
+
+            // Remove comma from last item
+            if (returnList.Count > 0)
+            {
+                Tuple<string, string> lastItem = returnList.Last();
+                if (!string.IsNullOrEmpty(lastItem.Item1))
+                {
+                    lastItem = new Tuple<string, string>(lastItem.Item1.Substring(0, lastItem.Item1.Length - 1), lastItem.Item2);
+                    returnList[returnList.Count - 1] = lastItem;
+                }
+            }
+
+            foreach (var item in returnList)
+            {
+                AvailableFormatsText.Add(item);
+            }
+
+            return true;
         }
 
         // List to store generated responses
@@ -284,32 +339,7 @@ namespace AdvancedPaste.ViewModels
             }
         }
 
-        public ObservableCollection<Tuple<string, string>> AvailableFormatsText
-        {
-            get
-            {
-                List<Tuple<ClipboardFormat, string>> formatQueryList = new()
-                {
-                    new Tuple<ClipboardFormat, string>(ClipboardFormat.Text, "Text "),
-                    new Tuple<ClipboardFormat, string>(ClipboardFormat.Html, "Html "),
-                    new Tuple<ClipboardFormat, string>(ClipboardFormat.Audio, "Audio "),
-                    new Tuple<ClipboardFormat, string>(ClipboardFormat.Image, "Image "),
-                    new Tuple<ClipboardFormat, string>(ClipboardFormat.ImageFile, "ImageFile "),
-                };
-
-                ObservableCollection<Tuple<string, string>> returnList = new();
-
-                foreach (var formatQuery in formatQueryList)
-                {
-                    if (AvailableClipboardFormats.HasFlag(formatQuery.Item1))
-                    {
-                        returnList.Add(new Tuple<string, string>(formatQuery.Item2, "Hello world"));
-                    }
-                }
-
-                return returnList;
-            }
-        }
+        public ObservableCollection<Tuple<string, string>> AvailableFormatsText { get; } = [];
 
         [ObservableProperty]
         private string _customFormatResult;

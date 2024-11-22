@@ -17,6 +17,7 @@
         <tkconverters:BoolToVisibilityConverter x:Name="BoolToVisibilityConverter" />
         <converters:CountToVisibilityConverter x:Name="countToVisibilityConverter" />
         <converters:PasteFormatsToHeightConverter x:Name="standardPasteFormatsToHeightConverter" />
+        <converters:InfoBadgeStyleConverter x:Name="infoBadgeStyleConverter" />
         <converters:CountToDoubleConverter
             x:Name="customActionsToMinHeightConverter"
             ValueIfNonZero="40"
@@ -123,7 +124,7 @@
         <controls:PromptBox
             x:Name="CustomFormatTextBox"
             x:Uid="CustomFormatTextBox"
-            Margin="8,4,8,0"
+            Margin="8,4,8,-12"
             x:FieldModifier="public"
             TabIndex="0">
             <controls:PromptBox.Footer>
@@ -172,8 +173,8 @@
                             </ToolTipService.ToolTip>
                         </TextBlock>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Margin="0 5 0 5">Available formats :</TextBlock>
+                    <StackPanel Margin="-5 5 0 0" Orientation="Horizontal">
+                        <TextBlock Foreground="#CCCCCC" Style="{StaticResource CaptionTextBlockStyle}">Choose a paste action. Clipboard has: </TextBlock>
                         <ItemsControl ItemsSource="{x:Bind ViewModel.AvailableFormatsText, Mode=OneWay}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -182,7 +183,14 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Item1}" Margin="5,0" ToolTipService.ToolTip="{Binding Item2}" />
+                                    <StackPanel Orientation="Horizontal" Margin="2 0 0 0">
+                                        <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="{Binding Item1}" ToolTipService.ToolTip="{Binding Item2}" />
+                                        <InfoBadge Style="{ThemeResource InformationalDotInfoBadgeStyle}"  Width="4" Height="4" Margin="-2 0 0 8">
+                                            <InfoBadge.Visibility>
+                                                <Binding Path="Item2" Converter="{StaticResource infoBadgeStyleConverter}" />
+                                            </InfoBadge.Visibility>
+                                        </InfoBadge>
+                                    </StackPanel>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>

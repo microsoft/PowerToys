@@ -175,6 +175,11 @@ namespace AdvancedPaste.Helpers
         internal static async Task<string> GetClipboardHtmlContent(DataPackageView clipboardData) =>
             clipboardData.Contains(StandardDataFormats.Html) ? await clipboardData.GetHtmlFormatAsync() : string.Empty;
 
+        internal static async Task<string> GetClipboardTextContent(DataPackageView clipboardData)
+        {
+            return clipboardData.Contains(StandardDataFormats.Text) ? await clipboardData.GetTextAsync() : string.Empty;
+        }
+
         internal static async Task<SoftwareBitmap> GetClipboardImageContentAsync(DataPackageView clipboardData)
         {
             using var stream = await GetClipboardImageStreamAsync(clipboardData);
