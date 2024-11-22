@@ -25,7 +25,7 @@ namespace Microsoft.Plugin.Folder.Sources
         public IEnumerable<DisplayFileInfo> MatchFileSystemInfo(string search, string incompleteName, bool isRecursive)
         {
             // search folder and add results
-            var directoryInfo = _directoryInfoFactory.FromDirectoryName(search);
+            var directoryInfo = _directoryInfoFactory.New(search);
             var fileSystemInfos = directoryInfo.EnumerateFileSystemInfos(incompleteName, new EnumerationOptions
             {
                 MatchType = _matchType,
