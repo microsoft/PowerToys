@@ -11,12 +11,12 @@ public partial class ActionBarContextItemViewModel : ObservableObject
     ////private ICommand _command;
 
     [ObservableProperty]
-    private string _name = "Placeholder"; // Command.Name;
+    public partial string Name { get; set; } = "Placeholder";
 
     ////private IconDataType Icon => Command.Icon;
 
     [ObservableProperty]
-    private bool _canInvoke = true; // Command != null && Command is IInvokableCommand or IPage;
+    public partial bool CanInvoke { get; set; } = true;
 
     // TODO: do we want the icon here or get it over in the UI project?
     ////[ObservableProperty]

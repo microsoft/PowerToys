@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Input;
@@ -18,7 +20,8 @@ namespace Microsoft.CmdPal.UI;
 /// <summary>
 /// An empty window that can be used on its own or navigated to within a Frame.
 /// </summary>
-public sealed partial class MainWindow : Window
+public sealed partial class MainWindow : Window,
+    IRecipient<QuitMessage>
 {
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
@@ -30,6 +33,7 @@ public sealed partial class MainWindow : Window
         PositionCentered();
         SetAcrylic();
 
+        WeakReferenceMessenger.Default.Register<QuitMessage>(this);
         // Hide our titlebar.
         // We need to both ExtendsContentIntoTitleBar, then set the height to Collapsed
         // to hide the old caption buttons. Then, in UpdateRegionsForCustomTitleBar,
@@ -121,6 +125,11 @@ public sealed partial class MainWindow : Window
             _acrylicController = null!;
             _configurationSource = null!;
         }
+    }
+
+    public void Receive(QuitMessage message)
+    {
+        Close();
     }
 
     private void MainWindow_Closed(object sender, WindowEventArgs args)

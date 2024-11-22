@@ -16,7 +16,7 @@ public partial class ListViewModel : ObservableObject
     // Observable from MVVM Toolkit will auto create public properties that use INotifyPropertyChange change
     // https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/observablegroupedcollections for grouping support
     [ObservableProperty]
-    private ObservableGroupedCollection<string, ListItemViewModel> _items = [];
+    public partial ObservableGroupedCollection<string, ListItemViewModel> Items { get; set; } = [];
 
     public ListViewModel(IListPage model)
     {

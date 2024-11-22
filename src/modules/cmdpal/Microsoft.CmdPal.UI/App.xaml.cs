@@ -11,6 +11,7 @@ using Microsoft.CmdPal.Ext.WindowsSettings;
 using Microsoft.CmdPal.Ext.WindowsTerminal;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 
@@ -62,20 +63,22 @@ public partial class App : Application
     /// </summary>
     private static ServiceProvider ConfigureServices()
     {
+        // TODO: It's in the Labs feed, but we can use Sergio's AOT-friendly source generator for this: https://github.com/CommunityToolkit/Labs-Windows/discussions/463
         ServiceCollection services = new();
 
         // Built-in Commands
-        // NOTE: Quit and Reload are still missing from this list.
         services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
         services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
         services.AddSingleton<ICommandProvider, SettingsCommandProvider>();
+        services.AddSingleton<ICommandProvider, QuitCommandProvider>();
+        services.AddSingleton<ICommandProvider, ReloadExtensionsCommandProvider>();
         services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
         services.AddSingleton<ICommandProvider, WindowsServicesCommandsProvider>();
         services.AddSingleton<ICommandProvider, RegistryCommandsProvider>();
         services.AddSingleton<ICommandProvider, WindowsSettingsCommandsProvider>();
 
         // ViewModels
-        services.AddSingleton<ShellViewModel>((services) => new(services.GetServices<ICommandProvider>()));
+        services.AddSingleton<ShellViewModel>();
 
         return services.BuildServiceProvider();
     }

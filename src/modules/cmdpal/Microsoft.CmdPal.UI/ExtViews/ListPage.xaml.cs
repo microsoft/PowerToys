@@ -23,7 +23,8 @@ public sealed partial class ListPage : Page,
     {
         this.InitializeComponent();
 
-        WeakReferenceMessenger.Default.RegisterAll(this);
+        WeakReferenceMessenger.Default.Register<NavigateNextCommand>(this);
+        WeakReferenceMessenger.Default.Register<NavigatePreviousCommand>(this);
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
