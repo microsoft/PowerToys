@@ -345,8 +345,6 @@ namespace newplus::utilities
     {
         HRESULT hr = S_OK;
 
-        Trace trace_on;
-
         try
         {
             Logger::info(L"Copying template");
@@ -367,7 +365,10 @@ namespace newplus::utilities
             // Copy file and determine final filename
             std::filesystem::path target_final_fullpath = template_entry->copy_object_to(GetActiveWindow(), target_fullpath);
 
+            trace.UpdateState(true);
             Trace::EventCopyTemplate(target_final_fullpath.extension().c_str());
+            trace.Flush();
+            trace.UpdateState(false);
 
             // Refresh folder items
             template_entry->refresh_target(target_final_fullpath);
@@ -382,7 +383,10 @@ namespace newplus::utilities
             hr = S_FALSE;
         }
 
+        trace.UpdateState(true);
         Trace::EventCopyTemplateResult(hr);
+        trace.Flush();
+        trace.UpdateState(false);
 
         return hr;
     }
@@ -391,8 +395,6 @@ namespace newplus::utilities
     {
         HRESULT hr = S_OK;
 
-        Trace trace_on;
-
         try
         {
             Logger::info(L"Open templates folder");
@@ -400,7 +402,10 @@ namespace newplus::utilities
             const std::wstring verb_hardcoded_do_not_change = L"open";
             ShellExecute(nullptr, verb_hardcoded_do_not_change.c_str(), template_folder.c_str(), NULL, NULL, SW_SHOWNORMAL);
 
+            trace.UpdateState(true);
             Trace::EventOpenTemplates();
+            trace.Flush();
+            trace.UpdateState(false);
         }
         catch (const std::exception& ex)
         {

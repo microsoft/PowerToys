@@ -43,8 +43,6 @@ IFACEMETHODIMP shell_context_menu_win10::QueryContextMenu(HMENU menu_handle, UIN
         return MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 0);
     }
 
-    Trace trace_on;
-
     try
     {
         // Create the initial context popup menu containing the list of templates and open templates action
@@ -124,9 +122,6 @@ IFACEMETHODIMP shell_context_menu_win10::QueryContextMenu(HMENU menu_handle, UIN
         }
         else
         {
-            // Log that context menu was shown and with how many items
-            Trace::EventShowTemplateItems(number_of_templates);
-
             // Return the amount if entries inserted
             const auto number_of_items_inserted = menu_id - menu_first_cmd_id;
             return MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, number_of_items_inserted);
@@ -231,6 +226,12 @@ IFACEMETHODIMP shell_context_menu_win10::InvokeCommand(CMINVOKECOMMANDINFO* para
 
     const auto number_of_templates = templates->list_of_templates.size();
     const bool is_template_item = selected_menu_item_index < number_of_templates;
+
+    // Log that context menu was shown and with how many items
+    trace.UpdateState(true);
+    Trace::EventShowTemplateItems(number_of_templates);
+    trace.Flush();
+    trace.UpdateState(false);
 
     if (is_template_item)
     {

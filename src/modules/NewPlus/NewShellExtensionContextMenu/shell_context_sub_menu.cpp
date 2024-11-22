@@ -7,7 +7,6 @@ using namespace Microsoft::WRL;
 // // Sub context menu command enumerator
 shell_context_sub_menu::shell_context_sub_menu(const ComPtr<IUnknown> site_of_folder)
 {
-    trace.UpdateState(true);
     this->site_of_folder = site_of_folder;
 
     // Determine the New+ Template folder location
@@ -37,7 +36,10 @@ shell_context_sub_menu::shell_context_sub_menu(const ComPtr<IUnknown> site_of_fo
     current_command = explorer_menu_item_commands.cbegin();
 
     // Log that context menu was shown and with how many items
+    trace.UpdateState(true);
     Trace::EventShowTemplateItems(number_of_templates);
+    trace.Flush();
+    trace.UpdateState(false);
 }
 
 // IEnumExplorerCommand

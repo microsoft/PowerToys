@@ -10,16 +10,6 @@ TRACELOGGING_DEFINE_PROVIDER(
     (0x38e8889b, 0x9731, 0x53f5, 0xe9, 0x01, 0xe8, 0xa7, 0xc1, 0x75, 0x30, 0x74),
     TraceLoggingOptionProjectTelemetry());
 
-Trace::Trace()
-{
-    trace.UpdateState(true);
-}
-Trace::~Trace()
-{
-    trace.Flush();
-    trace.UpdateState(false);
-}
-
 void Trace::EventToggleOnOff(_In_ const bool enabled) noexcept
 {
     TraceLoggingWriteWrapper(
