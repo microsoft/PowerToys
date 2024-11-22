@@ -71,7 +71,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
                     hashGeneratorFunction = (filename) =>
                     {
                         using FileStream fs = new(filename, FileMode.Open, FileAccess.Read, FileShare.Read);
-                        return BitConverter.ToString(System.Security.Cryptography.MD5.Create().ComputeHash(fs)).Replace("-", string.Empty);
+                        return Convert.ToHexString(System.Security.Cryptography.MD5.Create().ComputeHash(fs));
                     };
 #pragma warning restore CA5351
                     fileExtension = ".md5";
@@ -81,7 +81,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
                     hashGeneratorFunction = (filename) =>
                     {
                         using FileStream fs = new(filename, FileMode.Open, FileAccess.Read, FileShare.Read);
-                        return BitConverter.ToString(System.Security.Cryptography.SHA1.Create().ComputeHash(fs)).Replace("-", string.Empty);
+                        return Convert.ToHexString(System.Security.Cryptography.SHA1.Create().ComputeHash(fs));
                     };
 #pragma warning restore CA5350
                     fileExtension = ".sha1";
@@ -90,7 +90,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
                     hashGeneratorFunction = (filename) =>
                     {
                         using FileStream fs = new(filename, FileMode.Open, FileAccess.Read, FileShare.Read);
-                        return BitConverter.ToString(System.Security.Cryptography.SHA256.Create().ComputeHash(fs)).Replace("-", string.Empty);
+                        return Convert.ToHexString(System.Security.Cryptography.SHA256.Create().ComputeHash(fs));
                     };
                     fileExtension = ".sha256";
                     break;
@@ -98,7 +98,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
                     hashGeneratorFunction = (filename) =>
                     {
                         using FileStream fs = new(filename, FileMode.Open, FileAccess.Read, FileShare.Read);
-                        return BitConverter.ToString(System.Security.Cryptography.SHA384.Create().ComputeHash(fs)).Replace("-", string.Empty);
+                        return Convert.ToHexString(System.Security.Cryptography.SHA384.Create().ComputeHash(fs));
                     };
                     fileExtension = ".sha384";
                     break;
@@ -106,7 +106,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
                     hashGeneratorFunction = (filename) =>
                     {
                         using FileStream fs = new(filename, FileMode.Open, FileAccess.Read, FileShare.Read);
-                        return BitConverter.ToString(System.Security.Cryptography.SHA512.Create().ComputeHash(fs)).Replace("-", string.Empty);
+                        return Convert.ToHexString(System.Security.Cryptography.SHA512.Create().ComputeHash(fs));
                     };
                     fileExtension = ".sha512";
                     break;
@@ -114,7 +114,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
                     hashGeneratorFunction = (filename) =>
                     {
                         using FileStream fs = new(filename, FileMode.Open, FileAccess.Read, FileShare.Read);
-                        return BitConverter.ToString(System.Security.Cryptography.SHA3_256.Create().ComputeHash(fs)).Replace("-", string.Empty);
+                        return Convert.ToHexString(System.Security.Cryptography.SHA3_256.Create().ComputeHash(fs));
                     };
                     fileExtension = ".sha3-256";
                     break;
@@ -122,7 +122,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
                     hashGeneratorFunction = (filename) =>
                     {
                         using FileStream fs = new(filename, FileMode.Open, FileAccess.Read, FileShare.Read);
-                        return BitConverter.ToString(System.Security.Cryptography.SHA3_384.Create().ComputeHash(fs)).Replace("-", string.Empty);
+                        return Convert.ToHexString(System.Security.Cryptography.SHA3_384.Create().ComputeHash(fs));
                     };
                     fileExtension = ".sha3-384";
                     break;
@@ -130,7 +130,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
                     hashGeneratorFunction = (filename) =>
                     {
                         using FileStream fs = new(filename, FileMode.Open, FileAccess.Read, FileShare.Read);
-                        return BitConverter.ToString(System.Security.Cryptography.SHA3_512.Create().ComputeHash(fs)).Replace("-", string.Empty);
+                        return Convert.ToHexString(System.Security.Cryptography.SHA3_512.Create().ComputeHash(fs));
                     };
                     fileExtension = ".sha3-512";
                     break;
@@ -140,7 +140,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
                         using FileStream fs = new(filename, FileMode.Open, FileAccess.Read, FileShare.Read);
                         Crc32 crc32 = new();
                         crc32.Append(fs);
-                        return BitConverter.ToString(crc32.GetCurrentHash()).Replace("-", string.Empty);
+                        return Convert.ToHexString(crc32.GetCurrentHash());
                     };
                     fileExtension = ".crc32";
                     break;
@@ -160,7 +160,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
                         using FileStream fs = new(filename, FileMode.Open, FileAccess.Read, FileShare.Read);
                         Crc64 crc64 = new();
                         crc64.Append(fs);
-                        return BitConverter.ToString(crc64.GetCurrentHash()).Replace("-", string.Empty);
+                        return Convert.ToHexString(crc64.GetCurrentHash());
                     };
                     fileExtension = ".crc64";
                     break;
