@@ -12,6 +12,7 @@ using Azure.AI.OpenAI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
+using OpenAI.Moderations;
 using Windows.Security.Credentials;
 
 namespace AdvancedPaste.Helpers
@@ -76,13 +77,28 @@ namespace AdvancedPaste.Helpers
         {
             OpenAIClient azureAIClient = new OpenAIClient(_openAIKey);
 
+            string inputString = systemInstructions + "\n\n" + userMessage;
+
+            ModerationClient moderationClient = new("omni-moderation-latest", _openAIKey);
+
+            // TODO: Run this as async along with the chat completion result to maintain speed
+            ModerationResult moderationResult = moderationClient.ClassifyText(inputString);
+
+            if (moderationResult.Flagged)
+            {
+#pragma warning disable CA2201 // Use explicit type
+                // TODO: Use a more explicit type and handle the error more gracefully
+                throw new Exception("Flagged by moderation");
+#pragma warning restore CA2201 // Use explicit type
+            }
+
             var response = azureAIClient.GetCompletions(
                 new CompletionsOptions()
                 {
                     DeploymentName = _modelName,
                     Prompts =
                     {
-                        systemInstructions + "\n\n" + userMessage,
+                        inputString,
                     },
                     Temperature = 0.01F,
                     MaxTokens = 2000,

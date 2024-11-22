@@ -62,6 +62,7 @@
     <PackageReference Include="Microsoft.Windows.Compatibility" />
     <PackageReference Include="Microsoft.Windows.CsWin32" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="OpenAI" />
     <PackageReference Include="ReverseMarkdown" />
     <PackageReference Include="StreamJsonRpc" />
     <PackageReference Include="WinUIEx" />
