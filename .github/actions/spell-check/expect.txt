@@ -151,6 +151,7 @@ CALG
 callbackptr
 calpwstr
 Cangjie
+caniuse
 CANRENAME
 CAPTUREBLT
 CAPTURECHANGED
@@ -259,6 +260,7 @@ CRH
 critsec
 Crossdevice
 CRSEL
+crx
 crw
 CSearch
 CSettings
@@ -639,6 +641,7 @@ HWNDLAST
 HWNDNEXT
 HWNDPREV
 hyjiacan
+IApp
 IBeam
 ICapture
 IClass
@@ -730,6 +733,7 @@ ith
 ITHUMBNAIL
 IUI
 IUnknown
+IUse
 IWbem
 IWeb
 IWIC
@@ -1140,7 +1144,7 @@ pdo
 pdto
 pdtobj
 pdw
-Peb
+peb
 pef
 PElems
 Pels
@@ -1585,6 +1589,8 @@ SYSLIB
 SYSMENU
 SYSTEMAPPS
 SYSTEMTIME
+SYSTEMWOW
+tailwindcss
 tapp
 TApplication
 TApplied
@@ -1628,6 +1634,7 @@ tkconverters
 TLayout
 tlb
 tlbimp
+tlhelp
 TMPVAR
 TNP
 Toolhelp
