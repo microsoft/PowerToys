@@ -25,8 +25,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         private static SettingsBackupAndRestoreUtils instance;
         private (bool Success, string Severity, bool LastBackupExists, DateTime? LastRan) lastBackupSettingsResults;
-        private static object backupSettingsInternalLock = new object();
-        private static object removeOldBackupsLock = new object();
+        private static Lock backupSettingsInternalLock = new Lock();
+        private static Lock removeOldBackupsLock = new Lock();
 
         public DateTime LastBackupStartTime { get; set; }
 
@@ -933,7 +933,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         private static void RemoveOldBackups(string location, int minNumberToKeep, TimeSpan deleteIfOlderThanTs)
         {
-            if (!Monitor.TryEnter(removeOldBackupsLock, 1000))
+            if (!removeOldBackupsLock.TryEnter(1000))
             {
                 return;
             }
@@ -1002,7 +1002,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
             finally
             {
-                Monitor.Exit(removeOldBackupsLock);
+                removeOldBackupsLock.Exit();
             }
         }
 

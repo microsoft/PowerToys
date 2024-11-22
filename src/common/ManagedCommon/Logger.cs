@@ -5,7 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO.Abstractions;
+using System.IO;
 using System.Reflection;
 
 using PowerToys.Interop;
@@ -14,7 +14,6 @@ namespace ManagedCommon
 {
     public static class Logger
     {
-        private static readonly IFileSystem _fileSystem = new FileSystem();
         private static readonly Assembly Assembly = Assembly.GetExecutingAssembly();
         private static readonly string Version = FileVersionInfo.GetVersionInfo(Assembly.Location).ProductVersion;
 
@@ -41,12 +40,12 @@ namespace ManagedCommon
                 applicationLogPath = Constants.AppDataPath() + applicationLogPath + "\\" + Version;
             }
 
-            if (!_fileSystem.Directory.Exists(applicationLogPath))
+            if (!Directory.Exists(applicationLogPath))
             {
-                _fileSystem.Directory.CreateDirectory(applicationLogPath);
+                Directory.CreateDirectory(applicationLogPath);
             }
 
-            var logFilePath = _fileSystem.Path.Combine(applicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
+            var logFilePath = Path.Combine(applicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
 
             Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
 

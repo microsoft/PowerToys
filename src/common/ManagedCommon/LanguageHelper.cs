@@ -4,7 +4,6 @@
 
 using System;
 using System.IO;
-using System.IO.Abstractions;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -23,15 +22,14 @@ namespace ManagedCommon
 
         public static string LoadLanguage()
         {
-            FileSystem fileSystem = new FileSystem();
             var localAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             var file = localAppDataDir + SettingsFilePath + SettingsFile;
 
-            if (fileSystem.File.Exists(file))
+            if (File.Exists(file))
             {
                 try
                 {
-                    Stream inputStream = fileSystem.File.Open(file, FileMode.Open);
+                    var inputStream = File.Open(file, FileMode.Open);
                     StreamReader reader = new StreamReader(inputStream);
                     string data = reader.ReadToEnd();
                     inputStream.Close();
