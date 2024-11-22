@@ -192,12 +192,24 @@ namespace Awake.Core
                     };
                 }
 
-                if (!Bridge.Shell_NotifyIcon(message, ref _notifyIconData))
+                for (int attempt = 1; attempt <= 3; attempt++)
                 {
-                    int errorCode = Marshal.GetLastWin32Error();
-                    Logger.LogInfo($"Could not set the shell icon. Action: {action} and error code: {errorCode}. HIcon handle is {icon?.Handle} and HWnd is {hWnd}");
+                    if (Bridge.Shell_NotifyIcon(message, ref _notifyIconData))
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        int errorCode = Marshal.GetLastWin32Error();
+                        Logger.LogInfo($"Could not set the shell icon. Action: {action}, error code: {errorCode}. HIcon handle is {icon?.Handle} and HWnd is {hWnd}");
 
-                    throw new Win32Exception(errorCode, $"Failed to change tray icon. Action: {action} and error code: {errorCode}");
+                        if (attempt == 3)
+                        {
+                            throw new Win32Exception(errorCode, $"Failed to change tray icon after 3 attempts. Action: {action} and error code: {errorCode}");
+                        }
+
+                        Thread.Sleep(100);
+                    }
                 }
 
                 if (action == TrayIconAction.Delete)
