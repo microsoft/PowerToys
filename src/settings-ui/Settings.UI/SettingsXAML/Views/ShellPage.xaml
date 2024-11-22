@@ -105,135 +105,159 @@
                 </NavigationViewItem>
                 <NavigationViewItemSeparator />
 
+                <!--  System Tools  -->
                 <NavigationViewItem
-                    x:Uid="Shell_AdvancedPaste"
-                    helpers:NavHelper.NavigateTo="views:AdvancedPastePage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AdvancedPaste.png}" />
+                    x:Uid="Shell_TopLevelSystemTools"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/SystemTools.png}"
+                    SelectsOnInvoked="False">
+                    <NavigationViewItem.MenuItems>
+                        <NavigationViewItem
+                            x:Uid="Shell_AdvancedPaste"
+                            helpers:NavHelper.NavigateTo="views:AdvancedPastePage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AdvancedPaste.png}" />
+                        <NavigationViewItem
+                            x:Uid="Shell_Awake"
+                            helpers:NavHelper.NavigateTo="views:AwakePage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Awake.png}" />
+                        <NavigationViewItem
+                            x:Uid="Shell_ColorPicker"
+                            helpers:NavHelper.NavigateTo="views:ColorPickerPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ColorPicker.png}" />
+                        <NavigationViewItem
+                            x:Uid="Shell_PowerLauncher"
+                            helpers:NavHelper.NavigateTo="views:PowerLauncherPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToysRun.png}" />
+                        <NavigationViewItem
+                            x:Uid="Shell_MeasureTool"
+                            helpers:NavHelper.NavigateTo="views:MeasureToolPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ScreenRuler.png}" />
+                        <NavigationViewItem
+                            x:Uid="Shell_ShortcutGuide"
+                            helpers:NavHelper.NavigateTo="views:ShortcutGuidePage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ShortcutGuide.png}" />
+                        <NavigationViewItem
+                            x:Uid="Shell_TextExtractor"
+                            helpers:NavHelper.NavigateTo="views:PowerOcrPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExtractor.png}" />
+                    </NavigationViewItem.MenuItems>
+                </NavigationViewItem>
 
+                <!--  Windowing & Layouts  -->
                 <NavigationViewItem
-                    x:Uid="Shell_AlwaysOnTop"
-                    helpers:NavHelper.NavigateTo="views:AlwaysOnTopPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AlwaysOnTop.png}" />
+                    x:Uid="Shell_TopLevelWindowsAndLayouts "
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/WindowingAndLayouts.png}"
+                    SelectsOnInvoked="False">
+                    <NavigationViewItem.MenuItems>
+                        <NavigationViewItem
+                            x:Uid="Shell_AlwaysOnTop"
+                            helpers:NavHelper.NavigateTo="views:AlwaysOnTopPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AlwaysOnTop.png}" />
+                        <NavigationViewItem
+                            x:Uid="Shell_CropAndLock"
+                            helpers:NavHelper.NavigateTo="views:CropAndLockPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CropAndLock.png}" />
+                        <NavigationViewItem
+                            x:Uid="Shell_FancyZones"
+                            helpers:NavHelper.NavigateTo="views:FancyZonesPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FancyZones.png}" />
+                        <NavigationViewItem
+                            x:Uid="Shell_Workspaces"
+                            helpers:NavHelper.NavigateTo="views:WorkspacesPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}" />
+                    </NavigationViewItem.MenuItems>
+                </NavigationViewItem>
 
+                <!--  Input / Output  -->
                 <NavigationViewItem
-                    x:Uid="Shell_Awake"
-                    helpers:NavHelper.NavigateTo="views:AwakePage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Awake.png}" />
+                    x:Uid="Shell_TopLevelInputOutput"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/InputOutput.png}"
+                    SelectsOnInvoked="False">
+                    <NavigationViewItem.MenuItems>
+                        <NavigationViewItem
+                            x:Uid="Shell_KeyboardManager"
+                            helpers:NavHelper.NavigateTo="views:KeyboardManagerPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/KeyboardManager.png}" />
+                        <!--  Find my mouse  -->
+                        <!--  Mouse Highlighter  -->
+                        <NavigationViewItem
+                            x:Uid="Shell_MouseUtilities"
+                            helpers:NavHelper.NavigateTo="views:MouseUtilsPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseUtils.png}" />
+                        <NavigationViewItem
+                            x:Uid="Shell_MouseWithoutBorders"
+                            helpers:NavHelper.NavigateTo="views:MouseWithoutBordersPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}" />
+                        <NavigationViewItem
+                            x:Uid="Shell_QuickAccent"
+                            helpers:NavHelper.NavigateTo="views:PowerAccentPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}" />
+                        <!--  Mouse pointer cross hair  -->
+                        <NavigationViewItem
+                            x:Uid="Shell_VideoConference"
+                            helpers:NavHelper.NavigateTo="views:VideoConferencePage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/VideoConferenceMute.png}"
+                            IsEnabled="{x:Bind ViewModel.IsVideoConferenceBuild, Mode=OneWay}" />
+                    </NavigationViewItem.MenuItems>
+                </NavigationViewItem>
 
+                <!--  File Management  -->
                 <NavigationViewItem
-                    x:Uid="Shell_ColorPicker"
-                    helpers:NavHelper.NavigateTo="views:ColorPickerPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ColorPicker.png}" />
+                    x:Uid="Shell_TopLevelFileManagement"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileManagement.png}"
+                    SelectsOnInvoked="False">
+                    <NavigationViewItem.MenuItems>
+                        <NavigationViewItem
+                            x:Uid="Shell_PowerPreview"
+                            helpers:NavHelper.NavigateTo="views:PowerPreviewPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileExplorerPreview.png}" />
+                        <!--  File Explorer Thumbnails  -->
+                        <NavigationViewItem
+                            x:Uid="Shell_FileLocksmith"
+                            helpers:NavHelper.NavigateTo="views:FileLocksmithPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileLocksmith.png}" />
+                        <NavigationViewItem
+                            x:Uid="Shell_ImageResizer"
+                            helpers:NavHelper.NavigateTo="views:ImageResizerPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ImageResizer.png}" />
+                        <NavigationViewItem
+                            x:Uid="NewPlus_Product_Name"
+                            helpers:NavHelper.NavigateTo="views:NewPlusPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}" />
+                        <NavigationViewItem
+                            x:Uid="Shell_Peek"
+                            helpers:NavHelper.NavigateTo="views:PeekPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Peek.png}" />
+                        <NavigationViewItem
+                            x:Uid="Shell_PowerRename"
+                            helpers:NavHelper.NavigateTo="views:PowerRenamePage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerRename.png}" />
+                    </NavigationViewItem.MenuItems>
+                </NavigationViewItem>
 
+                <!--  Advanced  -->
                 <NavigationViewItem
-                    x:Uid="Shell_CmdNotFound"
-                    helpers:NavHelper.NavigateTo="views:CmdNotFoundPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CommandNotFound.png}" />
-
-                <NavigationViewItem
-                    x:Uid="Shell_CropAndLock"
-                    helpers:NavHelper.NavigateTo="views:CropAndLockPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CropAndLock.png}" />
-
-                <NavigationViewItem
-                    x:Uid="Shell_EnvironmentVariables"
-                    helpers:NavHelper.NavigateTo="views:EnvironmentVariablesPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/EnvironmentVariables.png}" />
-
-                <NavigationViewItem
-                    x:Uid="Shell_FancyZones"
-                    helpers:NavHelper.NavigateTo="views:FancyZonesPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FancyZones.png}" />
-
-                <NavigationViewItem
-                    x:Uid="Shell_PowerPreview"
-                    helpers:NavHelper.NavigateTo="views:PowerPreviewPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileExplorerPreview.png}" />
-
-                <NavigationViewItem
-                    x:Uid="Shell_FileLocksmith"
-                    helpers:NavHelper.NavigateTo="views:FileLocksmithPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileLocksmith.png}" />
-
-                <NavigationViewItem
-                    x:Uid="Shell_Hosts"
-                    helpers:NavHelper.NavigateTo="views:HostsPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Hosts.png}" />
-
-                <NavigationViewItem
-                    x:Uid="Shell_ImageResizer"
-                    helpers:NavHelper.NavigateTo="views:ImageResizerPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ImageResizer.png}" />
-
-                <NavigationViewItem
-                    x:Uid="Shell_KeyboardManager"
-                    helpers:NavHelper.NavigateTo="views:KeyboardManagerPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/KeyboardManager.png}" />
-
-                <NavigationViewItem
-                    x:Uid="Shell_MouseUtilities"
-                    helpers:NavHelper.NavigateTo="views:MouseUtilsPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseUtils.png}" />
-
-                <NavigationViewItem
-                    x:Uid="Shell_MouseWithoutBorders"
-                    helpers:NavHelper.NavigateTo="views:MouseWithoutBordersPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}" />
-
-                <NavigationViewItem
-                    x:Uid="NewPlus_Product_Name"
-                    helpers:NavHelper.NavigateTo="views:NewPlusPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}" />
-
-                <NavigationViewItem
-                    x:Uid="Shell_Peek"
-                    helpers:NavHelper.NavigateTo="views:PeekPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Peek.png}" />
-
-                <NavigationViewItem
-                    x:Uid="Shell_PowerRename"
-                    helpers:NavHelper.NavigateTo="views:PowerRenamePage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerRename.png}" />
-                <NavigationViewItem
-                    x:Uid="Shell_PowerLauncher"
-                    helpers:NavHelper.NavigateTo="views:PowerLauncherPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToysRun.png}" />
-
-                <NavigationViewItem
-                    x:Uid="Shell_QuickAccent"
-                    helpers:NavHelper.NavigateTo="views:PowerAccentPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}" />
-
-                <NavigationViewItem
-                    x:Uid="Shell_RegistryPreview"
-                    helpers:NavHelper.NavigateTo="views:RegistryPreviewPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/RegistryPreview.png}" />
-
-                <NavigationViewItem
-                    x:Uid="Shell_MeasureTool"
-                    helpers:NavHelper.NavigateTo="views:MeasureToolPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ScreenRuler.png}" />
-
-                <NavigationViewItem
-                    x:Uid="Shell_ShortcutGuide"
-                    helpers:NavHelper.NavigateTo="views:ShortcutGuidePage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ShortcutGuide.png}" />
-
-                <NavigationViewItem
-                    x:Uid="Shell_TextExtractor"
-                    helpers:NavHelper.NavigateTo="views:PowerOcrPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExtractor.png}" />
-
-                <NavigationViewItem
-                    x:Uid="Shell_VideoConference"
-                    helpers:NavHelper.NavigateTo="views:VideoConferencePage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/VideoConferenceMute.png}"
-                    IsEnabled="{x:Bind ViewModel.IsVideoConferenceBuild, Mode=OneWay}" />
-
-                <NavigationViewItem
-                    x:Uid="Shell_Workspaces"
-                    helpers:NavHelper.NavigateTo="views:WorkspacesPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}" />
+                    x:Uid="Shell_TopLevelAdvanced"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Advanced.png}"
+                    SelectsOnInvoked="False">
+                    <NavigationViewItem.MenuItems>
+                        <NavigationViewItem
+                            x:Uid="Shell_CmdNotFound"
+                            helpers:NavHelper.NavigateTo="views:CmdNotFoundPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CommandNotFound.png}" />
+                        <NavigationViewItem
+                            x:Uid="Shell_EnvironmentVariables"
+                            helpers:NavHelper.NavigateTo="views:EnvironmentVariablesPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/EnvironmentVariables.png}" />
+                        <NavigationViewItem
+                            x:Uid="Shell_Hosts"
+                            helpers:NavHelper.NavigateTo="views:HostsPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Hosts.png}" />
+                        <NavigationViewItem
+                            x:Uid="Shell_RegistryPreview"
+                            helpers:NavHelper.NavigateTo="views:RegistryPreviewPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/RegistryPreview.png}" />
+                    </NavigationViewItem.MenuItems>
+                </NavigationViewItem>
             </NavigationView.MenuItems>
             <NavigationView.PaneFooter>
                 <StackPanel Orientation="Vertical">

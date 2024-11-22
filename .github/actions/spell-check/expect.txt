@@ -1,7 +1,6 @@
 # FALSE POSITIVES
 ## "PackagemanagerWrapper.cs" should be "PackageManagerWrapper.cs"
 ## NOTICE.MD > MOZILLA PUBLIC LICENSE v1.1
-
 aaaa
 abcdefghjkmnpqrstuvxyz
 abgr
@@ -150,6 +149,7 @@ CALG
 callbackptr
 calpwstr
 Cangjie
+caniuse
 CANRENAME
 CAPTUREBLT
 CAPTURECHANGED
@@ -258,6 +258,7 @@ CRH
 critsec
 Crossdevice
 CRSEL
+crx
 CSearch
 CSettings
 cso
@@ -635,6 +636,7 @@ HWNDLAST
 HWNDNEXT
 HWNDPREV
 hyjiacan
+IApp
 IBeam
 ICapture
 IClass
@@ -725,6 +727,7 @@ ith
 ITHUMBNAIL
 IUI
 IUnknown
+IUse
 IWbem
 IWeb
 IWIC
@@ -1127,7 +1130,8 @@ pdo
 pdto
 pdtobj
 pdw
-Peb
+peb
+pef
 PElems
 Pels
 PERCEIVEDFLAG
@@ -1198,6 +1202,7 @@ prgms
 pri
 PRINTCLIENT
 printmanagement
+privacystatement
 prm
 proactively
 PROCESSENTRY
@@ -1565,6 +1570,8 @@ SYSLIB
 SYSMENU
 SYSTEMAPPS
 SYSTEMTIME
+SYSTEMWOW
+tailwindcss
 tapp
 TApplication
 TApplied
@@ -1608,6 +1615,7 @@ tkconverters
 TLayout
 tlb
 tlbimp
+tlhelp
 TMPVAR
 TNP
 Toolhelp

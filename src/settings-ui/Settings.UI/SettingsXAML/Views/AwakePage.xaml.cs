@@ -54,7 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             var settingsPath = _settingsUtils.GetSettingsFilePath(_appName);
 
-            _fileSystemWatcher = _fileSystem.FileSystemWatcher.CreateNew();
+            _fileSystemWatcher = _fileSystem.FileSystemWatcher.New();
             _fileSystemWatcher.Path = _fileSystem.Path.GetDirectoryName(settingsPath);
             _fileSystemWatcher.Filter = _fileSystem.Path.GetFileName(settingsPath);
             _fileSystemWatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime;

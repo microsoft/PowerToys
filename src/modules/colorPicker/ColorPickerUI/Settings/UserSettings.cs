@@ -33,7 +33,7 @@ namespace ColorPicker.Settings
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Actually, call back is LoadSettingsFromJson")]
         private readonly IFileSystemWatcher _watcher;
 
-        private readonly object _loadingSettingsLock = new object();
+        private readonly Lock _loadingSettingsLock = new Lock();
 
         private bool _loadingColorsHistory;
 

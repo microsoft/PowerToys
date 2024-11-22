@@ -421,7 +421,7 @@ namespace ImageResizer.Properties
             string jsonData = JsonSerializer.Serialize(new SettingsWrapper() { Properties = this }, _jsonSerializerOptions);
 
             // Create directory if it doesn't exist
-            IFileInfo file = _fileSystem.FileInfo.FromFileName(SettingsPath);
+            IFileInfo file = _fileSystem.FileInfo.New(SettingsPath);
             file.Directory.Create();
 
             // write string to file
