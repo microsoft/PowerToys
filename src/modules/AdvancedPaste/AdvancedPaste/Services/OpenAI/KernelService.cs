@@ -11,8 +11,8 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace AdvancedPaste.Services.OpenAI;
 
-public sealed class KernelService(IKernelQueryCacheService queryCacheService, IAICredentialsProvider aiCredentialsProvider, ICustomTextTransformService customTextTransformService) :
-    KernelServiceBase(queryCacheService, customTextTransformService)
+public sealed class KernelService(IKernelQueryCacheService queryCacheService, IAICredentialsProvider aiCredentialsProvider, IPromptModerationService promptModerationService, ICustomTextTransformService customTextTransformService) :
+    KernelServiceBase(queryCacheService, promptModerationService, customTextTransformService)
 {
     private readonly IAICredentialsProvider _aiCredentialsProvider = aiCredentialsProvider;
 

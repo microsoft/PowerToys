@@ -16,14 +16,19 @@ using Microsoft.PowerToys.Telemetry;
 
 namespace AdvancedPaste.Services.OpenAI;
 
-public sealed class CustomTextTransformService(IAICredentialsProvider aiCredentialsProvider) : ICustomTextTransformService
+public sealed class CustomTextTransformService(IAICredentialsProvider aiCredentialsProvider, IPromptModerationService promptModerationService) : ICustomTextTransformService
 {
     private const string ModelName = "gpt-3.5-turbo-instruct";
 
     private readonly IAICredentialsProvider _aiCredentialsProvider = aiCredentialsProvider;
+    private readonly IPromptModerationService _promptModerationService = promptModerationService;
 
     private async Task<Completions> GetAICompletionAsync(string systemInstructions, string userMessage)
     {
+        var fullPrompt = systemInstructions + "\n\n" + userMessage;
+
+        await _promptModerationService.ValidateAsync(fullPrompt);
+
         OpenAIClient azureAIClient = new(_aiCredentialsProvider.Key);
 
         var response = await azureAIClient.GetCompletionsAsync(
@@ -32,7 +37,7 @@ public sealed class CustomTextTransformService(IAICredentialsProvider aiCredenti
                 DeploymentName = ModelName,
                 Prompts =
                 {
-                    systemInstructions + "\n\n" + userMessage,
+                    fullPrompt,
                 },
                 Temperature = 0.01F,
                 MaxTokens = 2000,
@@ -89,9 +94,18 @@ Output:
         catch (Exception ex)
         {
             Logger.LogError($"{nameof(TransformTextAsync)} failed", ex);
-            PowerToysTelemetry.Log.WriteEvent(new AdvancedPasteGenerateCustomErrorEvent(ex.Message));
 
-            throw new PasteActionException(ErrorHelpers.TranslateErrorText((ex as RequestFailedException)?.Status ?? -1), ex);
+            AdvancedPasteGenerateCustomErrorEvent errorEvent = new(ex is PasteActionModeratedException ? PasteActionModeratedException.ErrorDescription : ex.Message);
+            PowerToysTelemetry.Log.WriteEvent(errorEvent);
+
+            if (ex is PasteActionException)
+            {
+                throw;
+            }
+            else
+            {
+                throw new PasteActionException(ErrorHelpers.TranslateErrorText((ex as RequestFailedException)?.Status ?? -1), ex);
+            }
         }
     }
 }

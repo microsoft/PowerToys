@@ -20,11 +20,12 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace AdvancedPaste.Services;
 
-public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheService, ICustomTextTransformService customTextTransformService) : IKernelService
+public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheService, IPromptModerationService promptModerationService, ICustomTextTransformService customTextTransformService) : IKernelService
 {
     private const string PromptParameterName = "prompt";
 
     private readonly IKernelQueryCacheService _queryCacheService = queryCacheService;
+    private readonly IPromptModerationService _promptModerationService = promptModerationService;
     private readonly ICustomTextTransformService _customTextTransformService = customTextTransformService;
 
     protected abstract string ModelName { get; }
@@ -80,14 +81,50 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
             Logger.LogError($"Error executing kernel operation", ex);
             Logger.LogError($"Kernel operation Error: \n{FormatChatHistory(chatHistory)}");
 
-            var message = ex is HttpOperationException httpOperationEx
-                                ? ErrorHelpers.TranslateErrorText((int?)httpOperationEx.StatusCode ?? -1)
-                                : ResourceLoaderInstance.ResourceLoader.GetString("PasteError");
+            AdvancedPasteSemanticKernelErrorEvent errorEvent = new(ex is PasteActionModeratedException ? PasteActionModeratedException.ErrorDescription : ex.Message);
+            PowerToysTelemetry.Log.WriteEvent(errorEvent);
 
-            var lastAssistantMessage = chatHistory.LastOrDefault(chatMessage => chatMessage.Role == AuthorRole.Assistant)?.ToString();
+            if (ex is PasteActionException)
+            {
+                throw;
+            }
+            else
+            {
+                var message = ex is HttpOperationException httpOperationEx
+                    ? ErrorHelpers.TranslateErrorText((int?)httpOperationEx.StatusCode ?? -1)
+                    : ResourceLoaderInstance.ResourceLoader.GetString("PasteError");
 
-            throw new PasteActionException(message, innerException: ex, aiServiceMessage: lastAssistantMessage);
+                var lastAssistantMessage = chatHistory.LastOrDefault(chatMessage => chatMessage.Role == AuthorRole.Assistant)?.ToString();
+                throw new PasteActionException(message, innerException: ex, aiServiceMessage: lastAssistantMessage);
+            }
         }
+    }
+
+    private static string GetFullPrompt(ChatHistory initialHistory)
+    {
+        if (initialHistory.Count == 0)
+        {
+            throw new ArgumentException("Chat history must not be empty", nameof(initialHistory));
+        }
+
+        int numSystemMessages = initialHistory.Count - 1;
+        var systemMessages = initialHistory.Take(numSystemMessages);
+        var userPromptMessage = initialHistory.Last();
+
+        if (systemMessages.Any(message => message.Role != AuthorRole.System))
+        {
+            throw new ArgumentException("Chat history must start with system messages", nameof(initialHistory));
+        }
+
+        if (userPromptMessage.Role != AuthorRole.User)
+        {
+            throw new ArgumentException("Chat history must end with a user message", nameof(initialHistory));
+        }
+
+        var newLine = Environment.NewLine;
+
+        var combinedSystemMessage = string.Join(newLine, systemMessages.Select(message => message.Content));
+        return $"{combinedSystemMessage}{newLine}{newLine}User instructions:{newLine}{userPromptMessage.Content}";
     }
 
     private async Task<(ChatHistory ChatHistory, AIServiceUsage Usage)> ExecuteAICompletion(Kernel kernel, string prompt)
@@ -103,6 +140,8 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
                 """);
         chatHistory.AddSystemMessage($"Available clipboard formats: {await kernel.GetDataFormatsAsync()}");
         chatHistory.AddUserMessage(prompt);
+
+        await _promptModerationService.ValidateAsync(GetFullPrompt(chatHistory));
 
         var chatResult = await kernel.GetRequiredService<IChatCompletionService>()
                                      .GetChatMessageContentAsync(chatHistory, PromptExecutionSettings, kernel);

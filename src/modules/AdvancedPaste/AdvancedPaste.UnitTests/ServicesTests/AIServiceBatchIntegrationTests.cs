@@ -56,15 +56,15 @@ public sealed class AIServiceBatchIntegrationTests
     }
 
     private const string AllTestsFilePath = @"%USERPROFILE%\allAdvancedPasteTests-Input-V2.json";
-    private const string HarmsTestsFilePath = @"%USERPROFILE%\HarmsCategorized-Input.json";
+    private const string FailedTestsFilePath = @"%USERPROFILE%\advanced-paste-failed-tests-only.json";
 
     private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true };
 
     [TestMethod]
     [DataRow(AllTestsFilePath, PasteFormats.CustomTextTransformation)]
     [DataRow(AllTestsFilePath, PasteFormats.KernelQuery)]
-    [DataRow(HarmsTestsFilePath, PasteFormats.CustomTextTransformation)]
-    [DataRow(HarmsTestsFilePath, PasteFormats.KernelQuery)]
+    [DataRow(FailedTestsFilePath, PasteFormats.CustomTextTransformation)]
+    [DataRow(FailedTestsFilePath, PasteFormats.KernelQuery)]
     public async Task TestGenerateBatchResults(string inputFilePath, PasteFormats format)
     {
         // Load input data.
@@ -117,6 +117,10 @@ public sealed class AIServiceBatchIntegrationTests
                 _ => throw new InvalidOperationException($"Unexpected format {outputFormat}"),
             };
         }
+        catch (PasteActionModeratedException)
+        {
+            return $"Error: {PasteActionModeratedException.ErrorDescription}";
+        }
         catch (PasteActionException ex) when (!string.IsNullOrEmpty(ex.AIServiceMessage))
         {
             return $"Error: {ex.AIServiceMessage}";
@@ -125,8 +129,9 @@ public sealed class AIServiceBatchIntegrationTests
 
     private static async Task<DataPackage> GetOutputDataPackageAsync(BatchTestInput batchTestInput, PasteFormats format)
     {
-        VaultCredentialsProvider aiCredentialsProvider = new();
-        CustomTextTransformService customTextTransformService = new(aiCredentialsProvider);
+        VaultCredentialsProvider credentialsProvider = new();
+        PromptModerationService promptModerationService = new(credentialsProvider);
+        CustomTextTransformService customTextTransformService = new(credentialsProvider, promptModerationService);
 
         switch (format)
         {
@@ -135,7 +140,7 @@ public sealed class AIServiceBatchIntegrationTests
 
             case PasteFormats.KernelQuery:
                 var clipboardData = DataPackageHelpers.CreateFromText(batchTestInput.Clipboard).GetView();
-                KernelService kernelService = new(new NoOpKernelQueryCacheService(), aiCredentialsProvider, customTextTransformService);
+                KernelService kernelService = new(new NoOpKernelQueryCacheService(), credentialsProvider, promptModerationService, customTextTransformService);
                 return await kernelService.TransformClipboardAsync(batchTestInput.Prompt, clipboardData, isSavedQuery: false);
 
             default:

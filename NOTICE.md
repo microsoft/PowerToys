@@ -1343,6 +1343,7 @@ EXHIBIT A -Mozilla Public License.
 - MSTest 3.5.0
 - NLog.Extensions.Logging 5.3.8
 - NLog.Schema 5.2.8
+- OpenAI 2.0.0
 - ReverseMarkdown 4.1.0
 - ScipBe.Common.Office.OneNote 3.0.1
 - SharpCompress 0.37.2

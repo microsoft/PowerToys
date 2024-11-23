@@ -137,7 +137,10 @@
   </data>
   <data name="PasteError" xml:space="preserve">
     <value>An error occurred during the paste operation</value>
-  </data>  
+  </data>
+  <data name="PasteActionModerated" xml:space="preserve">
+    <value>The paste operation was moderated due to sensitive content. Please try another query.</value>
+  </data>
   <data name="ClipboardHistoryButton.Text" xml:space="preserve">
     <value>Clipboard history</value>
   </data>
@@ -248,5 +251,5 @@
   </data>
   <data name="PasteAsFile_FilePrefix" xml:space="preserve">
     <value>PowerToys_Paste_</value>
-  </data>  
+  </data>
 </root>
