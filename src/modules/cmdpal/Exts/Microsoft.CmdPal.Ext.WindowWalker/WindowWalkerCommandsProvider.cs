@@ -6,6 +6,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
+using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
+using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 
@@ -18,7 +20,7 @@ public partial class WindowWalkerCommandsProvider : CommandProvider
 
     public WindowWalkerCommandsProvider()
     {
-        DisplayName = Resources.extension_name;
+        DisplayName = "Window Walker"; // TODO -- localization with properties please! 
 
         _walkerCommand = new WalkerTopLevelCommandItem(_settingsManager);
 
