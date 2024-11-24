@@ -35,6 +35,7 @@ public class SettingsManager
     public bool SubtitleShowDesktopName => _subtitleShowDesktopName.Value;
 
     public bool ConfirmKillProcess => _confirmKillProcess.Value;
+
     public bool KillProcessTree => _killProcessTree.Value;
 
     public bool OpenAfterKillAndClose => _openAfterKillAndClose.Value;

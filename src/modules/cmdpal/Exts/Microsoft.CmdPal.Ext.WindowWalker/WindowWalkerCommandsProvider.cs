@@ -20,7 +20,7 @@ public partial class WindowWalkerCommandsProvider : CommandProvider
 
     public WindowWalkerCommandsProvider()
     {
-        DisplayName = "Window Walker"; // TODO -- localization with properties please! 
+        DisplayName = "Window Walker"; // TODO -- localization with properties please!
 
         _walkerCommand = new WalkerTopLevelCommandItem(_settingsManager);
 
