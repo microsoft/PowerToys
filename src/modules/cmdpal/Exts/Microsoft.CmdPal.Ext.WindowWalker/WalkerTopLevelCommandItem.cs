@@ -5,10 +5,11 @@
 using System;
 using System.Data;
 using System.IO;
+using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 
-namespace Microsoft.CmdPal.Ext.WindowWalker.Properties;
+namespace Microsoft.CmdPal.Ext.WindowWalker;
 
 public partial class WalkerTopLevelCommandItem : CommandItem
 {
