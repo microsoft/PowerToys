@@ -11,6 +11,7 @@ using Microsoft.CmdPal.Ext.Settings;
 using Microsoft.CmdPal.Ext.WindowsServices;
 using Microsoft.CmdPal.Ext.WindowsSettings;
 using Microsoft.CmdPal.Ext.WindowsTerminal;
+using Microsoft.CmdPal.Ext.WindowWalker;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 using Windows.Foundation;
@@ -61,6 +62,7 @@ public sealed class MainViewModel : IDisposable
         BuiltInCommands.Add(new WindowsServicesCommandsProvider());
         BuiltInCommands.Add(new RegistryCommandsProvider());
         BuiltInCommands.Add(new WindowsSettingsCommandsProvider());
+        BuiltInCommands.Add(new WindowWalkerCommandProvider());
 
         ResetTopLevel();
 

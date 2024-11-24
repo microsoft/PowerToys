@@ -6,13 +6,10 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
-using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
-using Microsoft.CmdPal.Ext.WindowsTerminal.Pages;
-using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 
-namespace Microsoft.CmdPal.Ext.WindowsTerminal;
+namespace Microsoft.CmdPal.Ext.WindowWalker;
 
 public partial class WindowWalkerCommandsProvider : CommandProvider
 {
