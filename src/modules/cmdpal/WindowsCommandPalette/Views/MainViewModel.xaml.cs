@@ -62,7 +62,7 @@ public sealed class MainViewModel : IDisposable
         BuiltInCommands.Add(new WindowsServicesCommandsProvider());
         BuiltInCommands.Add(new RegistryCommandsProvider());
         BuiltInCommands.Add(new WindowsSettingsCommandsProvider());
-        BuiltInCommands.Add(new WindowWalkerCommandProvider());
+        BuiltInCommands.Add(new WindowWalkerCommandsProvider());
 
         ResetTopLevel();
 
