@@ -7,6 +7,13 @@
 #include <WorkspacesLib/LaunchingStatus.h>
 #include <WorkspacesLib/WorkspacesData.h>
 
+struct WindowWithDistance
+{
+    int distance;
+    HWND window;
+};
+
+
 class WindowArranger
 {
 public:
@@ -21,7 +28,7 @@ private:
     //const WindowCreationHandler m_windowCreationHandler;
     IPCHelper m_ipcHelper;
     LaunchingStatus m_launchingStatus;
-    bool GetNearestWindow(WorkspacesData::WorkspacesProject::Application app, std::vector<HWND> movedWindows, int* nearestDistance, HWND* nearestWindow);
+    bool GetNearestWindow(WorkspacesData::WorkspacesProject::Application app, std::vector<HWND> movedWindows, WindowWithDistance* nearestWindowWithDistance);
     bool TryMoveWindow(const WorkspacesData::WorkspacesProject::Application& app, HWND windowToMove);
     
     //void onWindowCreated(HWND window);
