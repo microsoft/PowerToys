@@ -69,11 +69,9 @@ AQS
 ARandom
 ARCHITEW
 ARemapped
-ari
 ARPINSTALLLOCATION
 ARPPRODUCTICON
 ARRAYSIZE
-arw
 asf
 AShortcut
 ASingle
@@ -151,6 +149,7 @@ CALG
 callbackptr
 calpwstr
 Cangjie
+caniuse
 CANRENAME
 CAPTUREBLT
 CAPTURECHANGED
@@ -259,7 +258,7 @@ CRH
 critsec
 Crossdevice
 CRSEL
-crw
+crx
 CSearch
 CSettings
 cso
@@ -301,8 +300,8 @@ DCOM
 dcommon
 dcomp
 DComposition
-dcr
-dcs
+DCR
+DCs
 ddd
 DDEIf
 DDevice
@@ -372,7 +371,6 @@ DRAWCLIPBOARD
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
-drf
 drivedetectionwarning
 dshow
 DSTINVERT
@@ -416,7 +414,6 @@ editkeyboardwindow
 EDITSHORTCUTS
 editshortcutswindow
 EFile
-eip
 ekus
 emmintrin
 Emoji
@@ -590,7 +587,7 @@ Hiberboot
 HIBYTE
 hicon
 HIDEWINDOW
-hif
+Hif
 HIMAGELIST
 himl
 hinst
@@ -639,6 +636,7 @@ HWNDLAST
 HWNDNEXT
 HWNDPREV
 hyjiacan
+IApp
 IBeam
 ICapture
 IClass
@@ -665,7 +663,6 @@ IGNOREUNKNOWN
 IGraphics
 iid
 Iindex
-iiq
 IJson
 Ijwhost
 IKs
@@ -730,15 +727,14 @@ ith
 ITHUMBNAIL
 IUI
 IUnknown
+IUse
 IWbem
 IWeb
 IWIC
 iwr
 IYUV
-jfi
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
-jif
 jjw
 jobject
 jpe
@@ -747,7 +743,6 @@ Jsons
 jsonval
 junja
 jxr
-kdc
 keybd
 KEYBDDATA
 KEYBDINPUT
@@ -872,7 +867,6 @@ MAXIMIZEBOX
 MAXSHORTCUTSIZE
 maxversiontested
 MBR
-mdc
 MDICHILD
 MDL
 mdtext
@@ -880,7 +874,6 @@ mdtxt
 mdwn
 MEDIASUBTYPE
 mediatype
-mef
 MENUITEMINFO
 MENUITEMINFOW
 MERGECOPY
@@ -938,7 +931,6 @@ mpmc
 MRM
 MRT
 mru
-mrw
 msc
 mscorlib
 msdata
@@ -1061,7 +1053,6 @@ NOZORDER
 NPH
 npmjs
 NResize
-nrw
 nsunt
 NTAPI
 ntdll
@@ -1091,7 +1082,6 @@ opensource
 openxmlformats
 OPTIMIZEFORINVOKE
 ORAW
-ori
 ORPHANEDDIALOGTITLE
 ORSCANS
 oss
@@ -1140,7 +1130,7 @@ pdo
 pdto
 pdtobj
 pdw
-Peb
+peb
 pef
 PElems
 Pels
@@ -1270,7 +1260,6 @@ QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
 QUNS
-raf
 RAII
 RAlt
 Rasterize
@@ -1374,8 +1363,6 @@ runtimes
 ruuid
 rvm
 rwin
-rwl
-rwz
 sacl
 safeprojectname
 SAMEKEYPREVIOUSLYMAPPED
@@ -1509,7 +1496,6 @@ Srch
 SRCINVERT
 SRCPAINT
 SResize
-srf
 srme
 srre
 srw
@@ -1584,6 +1570,8 @@ SYSLIB
 SYSMENU
 SYSTEMAPPS
 SYSTEMTIME
+SYSTEMWOW
+tailwindcss
 tapp
 TApplication
 TApplied
@@ -1627,6 +1615,7 @@ tkconverters
 TLayout
 tlb
 tlbimp
+tlhelp
 TMPVAR
 TNP
 Toolhelp
