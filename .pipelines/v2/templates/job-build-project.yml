@@ -50,7 +50,9 @@ parameters:
   - name: runTests
     type: boolean
     default: true
-
+  - name: useVSPreview
+    type: boolean
+    default: false
   - name: versionNumber
     type: string
     default: '0.0.1'
@@ -135,7 +137,7 @@ jobs:
   - template: steps-ensure-dotnet-version.yml
     parameters:
       sdk: true
-      version: '8.0'
+      version: '9.0'
 
   - ${{ if eq(parameters.runTests, true) }}:
     - task: VisualStudioTestPlatformInstaller@1
@@ -181,6 +183,9 @@ jobs:
   - pwsh: |-
       & "$(build.sourcesdirectory)\.pipelines\verifyAndSetLatestVCToolsVersion.ps1"
     displayName: Work around DD-1541167 (VCToolsVersion)
+    ${{ if eq(parameters.useVSPreview, true) }}:
+      env:
+        VCWhereExtraVersionTarget: '-prerelease'
 
   - pwsh: |-
       & "$(build.sourcesdirectory)\.pipelines\installWiX.ps1"
@@ -228,7 +233,10 @@ jobs:
     inputs:
       solution: '**\HostsUILib.csproj'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-hosts.binlog
+      ${{ if eq(parameters.useVSPreview, true) }}:
+        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-hosts.binlog /p:NoWarn=NU5104
+      ${{ else }}:
+        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-hosts.binlog
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
@@ -241,7 +249,10 @@ jobs:
     inputs:
       solution: '**\EnvironmentVariablesUILib.csproj'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-env-var-editor.binlog
+      ${{ if eq(parameters.useVSPreview, true) }}:
+        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-env-var-editor.binlog /p:NoWarn=NU5104
+      ${{ else }}:
+        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-env-var-editor.binlog
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
@@ -254,7 +265,10 @@ jobs:
     inputs:
       solution: '**\RegistryPreviewUILib.csproj'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-registry-preview.binlog
+      ${{ if eq(parameters.useVSPreview, true) }}:
+        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-registry-preview.binlog /p:NoWarn=NU5104
+      ${{ else }}:
+        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-registry-preview.binlog
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true

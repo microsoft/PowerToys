@@ -19,7 +19,7 @@ namespace MouseWithoutBorders
     public partial class FormHelper : System.Windows.Forms.Form
     {
         private readonly List<FocusArea> focusZone = new();
-        private readonly object bmScreenLock = new();
+        private readonly Lock bmScreenLock = new();
         private long lastClipboardEventTime;
 
         private IClipboardHelper remoteClipboardHelper;

@@ -201,6 +201,7 @@
                 "PowerToys.WorkspacesLauncherUI.exe",
                 "PowerToys.WorkspacesLauncherUI.dll",
                 "PowerToys.WorkspacesModuleInterface.dll",
+                "PowerToys.WorkspacesCsharpLibrary.dll",
 
                 "WinUI3Apps\\PowerToys.RegistryPreviewExt.dll",
                 "WinUI3Apps\\PowerToys.RegistryPreviewUILib.dll",
