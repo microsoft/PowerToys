@@ -121,30 +121,27 @@ namespace PlacementHelper
 bool WindowArranger::TryMoveWindow(const WorkspacesData::WorkspacesProject::Application& app, HWND windowToMove)
 {
     Logger::info(L"The app {} is found at launch, moving it", app.name);
-    bool success = moveWindow(windowToMove, app);
-    const auto& apps = m_launchingStatus.Get();
-    auto iter = apps.find(app);
-    if (iter == apps.end())
+    auto appState = m_launchingStatus.Get(app);
+    if (!appState.has_value())
     {
-        Logger::info(L"The app {} is not found in the map of apps (unrealistic)", app.name);
-        return success;
+        Logger::info(L"The app {} is not found in the map of apps", app.name);
+        return false;
+    }
+
+    bool success = moveWindow(windowToMove, app);
+    if (success)
+    {
+        m_launchingStatus.Update(appState.value().application, LaunchingState::LaunchedAndMoved);
+        m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({ app, nullptr, appState.value().state }).ToString().c_str());
     }
     else
     {
-        if (success)
-        {
-            m_launchingStatus.Update(iter->first, LaunchingState::LaunchedAndMoved);
-            m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({ app, nullptr, iter->second.state }).ToString().c_str());
-            return true;
-        }
-        else
-        {
-            Logger::info(L"Failed to move the existing app {} ", app.name);
-            m_launchingStatus.Update(iter->first, LaunchingState::Failed);
-            m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({ app, nullptr, iter->second.state }).ToString().c_str());
-            return false;
-        }
+        Logger::info(L"Failed to move the existing app {} ", app.name);
+        m_launchingStatus.Update(appState.value().application, LaunchingState::Failed);
+        m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({ app, nullptr, appState.value().state }).ToString().c_str());
     }
+
+    return success;
 }
 
 bool WindowArranger::GetNearestWindow(WorkspacesData::WorkspacesProject::Application app, const std::vector<HWND> movedWindows, WindowWithDistance* nearestWindowWithDistance)
