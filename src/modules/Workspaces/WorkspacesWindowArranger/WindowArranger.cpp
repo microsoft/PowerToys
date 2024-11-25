@@ -95,8 +95,6 @@ namespace PlacementHelper
 
     int CalculateDistance(const WorkspacesData::WorkspacesProject::Application& app, HWND window)
     {
-        RECT windowPosition;
-        GetWindowRect(window, &windowPosition);
         WINDOWPLACEMENT placement{};
         ::GetWindowPlacement(window, &placement);
 
@@ -114,6 +112,13 @@ namespace PlacementHelper
             placementDiffPenalty = PlacementDistanceAdditionNormalAndMinimized;
         }
 
+        RECT windowPosition;
+        GetWindowRect(window, &windowPosition);
+        float width = static_cast<float>(windowPosition.right - windowPosition.left);
+        float hight = static_cast<float>(windowPosition.bottom - windowPosition.top);
+        DPIAware::InverseConvert(MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY), width, hight);
+        windowPosition.right = windowPosition.left + static_cast<long>(width);
+        windowPosition.bottom = windowPosition.top + static_cast<long>(hight);
         return placementDiffPenalty + abs(app.position.x - windowPosition.left) + abs(app.position.y - windowPosition.top) + abs(app.position.x + app.position.width - windowPosition.right) + abs(app.position.y + app.position.height - windowPosition.bottom);
     }
 }
@@ -144,7 +149,7 @@ bool WindowArranger::TryMoveWindow(const WorkspacesData::WorkspacesProject::Appl
     return success;
 }
 
-std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(WorkspacesData::WorkspacesProject::Application app, const std::vector<HWND>& movedWindows)
+std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const WorkspacesData::WorkspacesProject::Application& app, const std::vector<HWND>& movedWindows)
 {
     std::optional<Utils::Apps::AppData> appDataNearest = std::nullopt;
     WindowWithDistance nearestWindowWithDistance{};
@@ -212,12 +217,11 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
     {
         bool isMovePhase = true;
         bool movedAny = false;
+        std::vector<HWND> movedWindows;
+        std::vector<WorkspacesData::WorkspacesProject::Application> movedApps;
 
         while (isMovePhase)
         {
-            std::vector<HWND> movedWindows;
-            std::vector<WorkspacesData::WorkspacesProject::Application> movedApps;
-
             isMovePhase = false;
             int minDistance = INT_MAX;
             WorkspacesData::WorkspacesProject::Application appToMove;
