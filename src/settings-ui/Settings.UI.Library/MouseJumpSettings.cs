@@ -9,7 +9,6 @@ using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using MouseJump.Common.Helpers;
 using MouseJump.Common.Models.Settings;
-using Windows.UI.Xaml.Printing;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
