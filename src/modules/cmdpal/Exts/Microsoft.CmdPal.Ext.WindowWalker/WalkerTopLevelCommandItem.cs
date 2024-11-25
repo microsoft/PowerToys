@@ -6,6 +6,7 @@ using System;
 using System.Data;
 using System.IO;
 using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
+using Microsoft.CmdPal.Ext.WindowWalker.Pages;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
@@ -19,5 +20,8 @@ public partial class WalkerTopLevelCommandItem : CommandItem
     {
         Title = Resources.window_walker_top_level_command_title;
         Subtitle = Resources.wox_plugin_windowwalker_plugin_name;
+        MoreCommands = [
+            new CommandContextItem(new SettingsPage(settingsManager)),
+        ];
     }
 }

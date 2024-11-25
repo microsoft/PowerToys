@@ -19,13 +19,15 @@ public class SettingsManager
     private readonly string _filePath;
     private readonly Settings _settings = new();
 
+    private static SettingsManager? instance;
+
     private readonly ToggleSetting _resultsFromVisibleDesktopOnly = new(nameof(ResultsFromVisibleDesktopOnly), Resources.wox_plugin_windowwalker_SettingResultsVisibleDesktop, Resources.wox_plugin_windowwalker_SettingResultsVisibleDesktop, false);
     private readonly ToggleSetting _subtitleShowPid = new(nameof(SubtitleShowPid), Resources.wox_plugin_windowwalker_SettingSubtitlePid, Resources.wox_plugin_windowwalker_SettingSubtitlePid, false);
     private readonly ToggleSetting _subtitleShowDesktopName = new(nameof(SubtitleShowDesktopName), Resources.wox_plugin_windowwalker_SettingSubtitleDesktopName, Resources.wox_plugin_windowwalker_SettingSubtitleDesktopName_Description, true);
     private readonly ToggleSetting _confirmKillProcess = new(nameof(ConfirmKillProcess), Resources.wox_plugin_windowwalker_SettingConfirmKillProcess, Resources.wox_plugin_windowwalker_SettingConfirmKillProcess, true);
     private readonly ToggleSetting _killProcessTree = new(nameof(KillProcessTree), Resources.wox_plugin_windowwalker_SettingKillProcessTree, Resources.wox_plugin_windowwalker_SettingKillProcessTree_Description, false);
     private readonly ToggleSetting _openAfterKillAndClose = new(nameof(OpenAfterKillAndClose), Resources.wox_plugin_windowwalker_SettingOpenAfterKillAndClose, Resources.wox_plugin_windowwalker_SettingOpenAfterKillAndClose_Description, false);
-    private readonly ToggleSetting _hideKillProcessOnElevatedProcess = new(nameof(HideKillProcessOnElevatedProcess), Resources.wox_plugin_windowwalker_SettingHideKillProcess, Resources.wox_plugin_windowwalker_SettingHideKillProcess, false);
+    private readonly ToggleSetting _hideKillProcessOnElevatedProcesses = new(nameof(HideKillProcessOnElevatedProcesses), Resources.wox_plugin_windowwalker_SettingHideKillProcess, Resources.wox_plugin_windowwalker_SettingHideKillProcess, false);
     private readonly ToggleSetting _hideExplorerSettingInfo = new(nameof(HideExplorerSettingInfo), Resources.wox_plugin_windowwalker_SettingExplorerSettingInfo, Resources.wox_plugin_windowwalker_SettingExplorerSettingInfo_Description, false);
 
     public bool ResultsFromVisibleDesktopOnly => _resultsFromVisibleDesktopOnly.Value;
@@ -40,7 +42,7 @@ public class SettingsManager
 
     public bool OpenAfterKillAndClose => _openAfterKillAndClose.Value;
 
-    public bool HideKillProcessOnElevatedProcess => _hideKillProcessOnElevatedProcess.Value;
+    public bool HideKillProcessOnElevatedProcesses => _hideKillProcessOnElevatedProcesses.Value;
 
     public bool HideExplorerSettingInfo => _hideExplorerSettingInfo.Value;
 
@@ -77,6 +79,15 @@ public class SettingsManager
 
         // Load settings from file upon initialization
         LoadSettings();
+    }
+
+    internal static SettingsManager Instance
+    {
+        get
+        {
+            instance ??= new SettingsManager();
+            return instance;
+        }
     }
 
     public Settings GetSettings()
