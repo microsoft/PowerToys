@@ -30,6 +30,6 @@ public partial class WindowWalkerCommandsProvider : CommandProvider
 
     public override ICommandItem[] TopLevelCommands()
     {
-        return [_walkerCommand];
+        return [new WalkerTopLevelCommandItem(_settingsManager)];
     }
 }
