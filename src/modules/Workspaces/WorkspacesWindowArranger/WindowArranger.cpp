@@ -13,7 +13,7 @@
 
 #include <WindowProperties/WorkspacesWindowPropertyUtils.h>
 
-namespace FancyZones
+namespace PlacementHelper
 {
     // When calculating the coordinates difference (== 'distance') between 2 windows, there are additional values added to the real distance
     // if both windows are minimized, the 'distance' is 0, the minimal value, this is the best match, we prefer this 'pairing'
@@ -92,30 +92,30 @@ namespace FancyZones
 
         return true;
     }
-}
 
-int CalculateDistance(const WorkspacesData::WorkspacesProject::Application& app, HWND window)
-{
-    RECT windowPosition;
-    GetWindowRect(window, &windowPosition);
-    WINDOWPLACEMENT placement{};
-    ::GetWindowPlacement(window, &placement);
-
-    if (app.isMinimized && (placement.showCmd == SW_SHOWMINIMIZED))
+    int CalculateDistance(const WorkspacesData::WorkspacesProject::Application& app, HWND window)
     {
-        // The most preferred case: both windows are minimized. The 'distance' between these 2 windows is 0, the lowest value
-        return 0;
-    }
+        RECT windowPosition;
+        GetWindowRect(window, &windowPosition);
+        WINDOWPLACEMENT placement{};
+        ::GetWindowPlacement(window, &placement);
 
-    int placementDiffPenalty = FancyZones::PlacementDistanceAdditionBothNormal;
-    if (app.isMinimized || (placement.showCmd == SW_SHOWMINIMIZED))
-    {
-        // The least preferred case: one window is minimized the other one isn't.
-        // We add a high number to the real distance, as we want this 2 windows be matched only if there is no other match
-        placementDiffPenalty = FancyZones::PlacementDistanceAdditionNormalAndMinimized;
-    }
+        if (app.isMinimized && (placement.showCmd == SW_SHOWMINIMIZED))
+        {
+            // The most preferred case: both windows are minimized. The 'distance' between these 2 windows is 0, the lowest value
+            return 0;
+        }
 
-    return placementDiffPenalty + abs(app.position.x - windowPosition.left) + abs(app.position.y - windowPosition.top) + abs(app.position.x + app.position.width - windowPosition.right) + abs(app.position.y + app.position.height - windowPosition.bottom);
+        int placementDiffPenalty = PlacementDistanceAdditionBothNormal;
+        if (app.isMinimized || (placement.showCmd == SW_SHOWMINIMIZED))
+        {
+            // The least preferred case: one window is minimized the other one isn't.
+            // We add a high number to the real distance, as we want this 2 windows be matched only if there is no other match
+            placementDiffPenalty = PlacementDistanceAdditionNormalAndMinimized;
+        }
+
+        return placementDiffPenalty + abs(app.position.x - windowPosition.left) + abs(app.position.y - windowPosition.top) + abs(app.position.x + app.position.width - windowPosition.right) + abs(app.position.y + app.position.height - windowPosition.bottom);
+    }
 }
 
 bool WindowArranger::TryMoveWindow(const WorkspacesData::WorkspacesProject::Application& app, HWND windowToMove)
@@ -179,12 +179,12 @@ bool WindowArranger::GetNearestWindow(WorkspacesData::WorkspacesProject::Applica
             if (!appDataNearest.has_value())
             {
                 appDataNearest = data;
-                nearestWindowWithDistance->distance = CalculateDistance(app, window);
+                nearestWindowWithDistance->distance = PlacementHelper::CalculateDistance(app, window);
                 nearestWindowWithDistance->window = window;
             }
             else
             {
-                int currentDistance = CalculateDistance(app, window);
+                int currentDistance = PlacementHelper::CalculateDistance(app, window);
                 if (currentDistance < nearestWindowWithDistance->distance)
                 {
                     appDataNearest = data;
@@ -302,16 +302,6 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
     }
 }
 
-//void WindowArranger::onWindowCreated(HWND window)
-//{
-//    if (!WindowFilter::Filter(window))
-//    {
-//        return;
-//    }
-//
-//    processWindow(window);
-//}
-
 void WindowArranger::processWindows(bool processAll)
 {
     std::vector<HWND> windows = WindowEnumerator::Enumerate(WindowFilter::Filter);
@@ -421,7 +411,7 @@ bool WindowArranger::moveWindow(HWND window, const WorkspacesData::WorkspacesPro
     rect.top = static_cast<long>(std::round(rect.top * mult));
     rect.bottom = static_cast<long>(std::round(rect.bottom * mult));
 
-    if (FancyZones::SizeWindowToRect(window, currentMonitor, launchMinimized, launchMaximized, rect))
+    if (PlacementHelper::SizeWindowToRect(window, currentMonitor, launchMinimized, launchMaximized, rect))
     {
         WorkspacesWindowProperties::StampWorkspacesLaunchedProperty(window);
         Logger::trace(L"Placed {} to ({},{}) [{}x{}]", app.name, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
