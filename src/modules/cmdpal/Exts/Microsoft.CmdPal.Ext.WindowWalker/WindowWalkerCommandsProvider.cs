@@ -26,8 +26,6 @@ public partial class WindowWalkerCommandsProvider : CommandProvider
         DisplayName = "Window Walker"; // TODO -- localization with properties please!
 
         _walkerCommand = new WalkerTopLevelCommandItem(_settingsManager);
-
-        // _terminalCommand.MoreCommands = [new CommandContextItem(new SettingsPage(_settingsManager))];
     }
 
     public override ICommandItem[] TopLevelCommands()

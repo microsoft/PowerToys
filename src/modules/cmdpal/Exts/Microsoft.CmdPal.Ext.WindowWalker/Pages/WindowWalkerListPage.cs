@@ -18,6 +18,8 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
 {
     private System.Threading.CancellationTokenSource _cancellationTokenSource = new();
 
+    private bool _disposed;
+
     public WindowWalkerListPage()
     {
         Name = Resources.wox_plugin_windowwalker_plugin_name;
@@ -26,7 +28,7 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
-        RaiseItemsChanged(0);
+       RaiseItemsChanged(0);
     }
 
     public List<WindowWalkerListItem> Query(string query)
@@ -52,6 +54,19 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
 
     public void Dispose()
     {
-        throw new NotImplementedException();
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
+
+    public void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                _cancellationTokenSource?.Dispose();
+                _disposed = true;
+            }
+        }
     }
 }
