@@ -70,9 +70,9 @@ internal sealed partial class KillProcessCommand : InvokableCommand
     {
         if (KillProcess(_window))
         {
-            return CommandResult.KeepOpen();
+            return CommandResult.Dismiss();
         }
 
-        return CommandResult.Dismiss();
+        return CommandResult.KeepOpen();
     }
 }
