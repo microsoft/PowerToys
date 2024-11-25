@@ -140,20 +140,30 @@ namespace ManagedCommon
 
             var topMethod = stackTrace.GetFrame(topFrame)?.GetMethod();
 
-            if (topMethod?.Name == nameof(IAsyncStateMachine.MoveNext) && typeof(IAsyncStateMachine).IsAssignableFrom(topMethod?.DeclaringType))
+            try
             {
-                // Async method; return actual method as determined by heuristic:
-                // "Nearest method on stack to async state-machine's MoveNext() in same namespace but in a different type".
-                // There are tighter ways of determining the actual method, but this is good enough and probably faster.
-                for (int deepFrame = topFrame + 1; deepFrame < stackTrace.FrameCount; deepFrame++)
+                if (topMethod?.Name == nameof(IAsyncStateMachine.MoveNext) && typeof(IAsyncStateMachine).IsAssignableFrom(topMethod?.DeclaringType))
                 {
-                    var deepMethod = stackTrace.GetFrame(deepFrame)?.GetMethod();
-
-                    if (deepMethod?.DeclaringType != topMethod?.DeclaringType && deepMethod?.DeclaringType?.Namespace == topMethod?.DeclaringType?.Namespace)
+                    // Async method; return actual method as determined by heuristic:
+                    // "Nearest method on stack to async state-machine's MoveNext() in same namespace but in a different type".
+                    // There are tighter ways of determining the actual method, but this is good enough and probably faster.
+                    for (int deepFrame = topFrame + 1; deepFrame < stackTrace.FrameCount; deepFrame++)
                     {
-                        return deepMethod;
+                        var deepMethod = stackTrace.GetFrame(deepFrame)?.GetMethod();
+
+                        if (deepMethod?.DeclaringType != topMethod?.DeclaringType && deepMethod?.DeclaringType?.Namespace == topMethod?.DeclaringType?.Namespace)
+                        {
+                            return deepMethod;
+                        }
                     }
                 }
+            }
+            catch (Exception)
+            {
+                // Ignore exceptions in Release. The code above won't throw, but if it does, we don't want to crash the app.
+#if DEBUG
+                throw;
+#endif
             }
 
             return topMethod;
