@@ -144,11 +144,11 @@ bool WindowArranger::TryMoveWindow(const WorkspacesData::WorkspacesProject::Appl
     return success;
 }
 
-bool WindowArranger::GetNearestWindow(WorkspacesData::WorkspacesProject::Application app, const std::vector<HWND>& movedWindows, WindowWithDistance* nearestWindowWithDistance)
+std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(WorkspacesData::WorkspacesProject::Application app, const std::vector<HWND>& movedWindows)
 {
     std::optional<Utils::Apps::AppData> appDataNearest = std::nullopt;
-    nearestWindowWithDistance->distance = 0;
-    nearestWindowWithDistance->window = NULL;
+    WindowWithDistance nearestWindowWithDistance{};
+
     for (HWND window : m_windowsBefore)
     {
         if (std::find(movedWindows.begin(), movedWindows.end(), window) != movedWindows.end())
@@ -176,24 +176,29 @@ bool WindowArranger::GetNearestWindow(WorkspacesData::WorkspacesProject::Applica
             if (!appDataNearest.has_value())
             {
                 appDataNearest = data;
-                nearestWindowWithDistance->distance = PlacementHelper::CalculateDistance(app, window);
-                nearestWindowWithDistance->window = window;
+                nearestWindowWithDistance.distance = PlacementHelper::CalculateDistance(app, window);
+                nearestWindowWithDistance.window = window;
             }
             else
             {
                 int currentDistance = PlacementHelper::CalculateDistance(app, window);
-                if (currentDistance < nearestWindowWithDistance->distance)
+                if (currentDistance < nearestWindowWithDistance.distance)
                 {
                     appDataNearest = data;
-                    nearestWindowWithDistance->distance = currentDistance;
-                    nearestWindowWithDistance->window = window;
+                    nearestWindowWithDistance.distance = currentDistance;
+                    nearestWindowWithDistance.window = window;
                 }
             }
         }
     }
-    return appDataNearest.has_value();
-}
 
+    if (appDataNearest.has_value())
+    {
+        return nearestWindowWithDistance;
+    }
+
+    return std::nullopt;
+}
 WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
     m_project(project),
     m_windowsBefore(WindowEnumerator::Enumerate(WindowFilter::Filter)),
@@ -225,17 +230,15 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
                     continue;
                 }
 
-                WindowWithDistance nearestWindowWithDistance;
-                nearestWindowWithDistance.distance = 0;
-                nearestWindowWithDistance.window = NULL;
-                bool isThereWindow = GetNearestWindow(app, movedWindows, &nearestWindowWithDistance);
-                if (isThereWindow)
+                std::optional<WindowWithDistance> nearestWindowWithDistance;
+                nearestWindowWithDistance = GetNearestWindow(app, movedWindows);
+                if (nearestWindowWithDistance.has_value())
                 {
-                    if (nearestWindowWithDistance.distance < minDistance)
+                    if (nearestWindowWithDistance.value().distance < minDistance)
                     {
-                        minDistance = nearestWindowWithDistance.distance;
+                        minDistance = nearestWindowWithDistance.value().distance;
                         appToMove = app;
-                        windowToMove = nearestWindowWithDistance.window;
+                        windowToMove = nearestWindowWithDistance.value().window;
                     }
                 }
                 else
