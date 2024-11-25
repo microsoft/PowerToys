@@ -144,7 +144,7 @@ bool WindowArranger::TryMoveWindow(const WorkspacesData::WorkspacesProject::Appl
     return success;
 }
 
-bool WindowArranger::GetNearestWindow(WorkspacesData::WorkspacesProject::Application app, const std::vector<HWND> movedWindows, WindowWithDistance* nearestWindowWithDistance)
+bool WindowArranger::GetNearestWindow(WorkspacesData::WorkspacesProject::Application app, const std::vector<HWND>& movedWindows, WindowWithDistance* nearestWindowWithDistance)
 {
     std::optional<Utils::Apps::AppData> appDataNearest = std::nullopt;
     nearestWindowWithDistance->distance = 0;
@@ -203,9 +203,6 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
     m_ipcHelper(IPCHelperStrings::WindowArrangerPipeName, IPCHelperStrings::LauncherArrangerPipeName, std::bind(&WindowArranger::receiveIpcMessage, this, std::placeholders::_1)),
     m_launchingStatus(m_project)
 {
-    std::vector<HWND> movedWindows;
-    std::vector<WorkspacesData::WorkspacesProject::Application> movedApps;
-
     if (project.moveExistingWindows)
     {
         bool isMovePhase = true;
@@ -213,6 +210,9 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
 
         while (isMovePhase)
         {
+            std::vector<HWND> movedWindows;
+            std::vector<WorkspacesData::WorkspacesProject::Application> movedApps;
+
             isMovePhase = false;
             int minDistance = INT_MAX;
             WorkspacesData::WorkspacesProject::Application appToMove;

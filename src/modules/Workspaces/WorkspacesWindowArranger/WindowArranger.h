@@ -13,7 +13,6 @@ struct WindowWithDistance
     HWND window;
 };
 
-
 class WindowArranger
 {
 public:
@@ -28,9 +27,9 @@ private:
     //const WindowCreationHandler m_windowCreationHandler;
     IPCHelper m_ipcHelper;
     LaunchingStatus m_launchingStatus;
-    bool GetNearestWindow(WorkspacesData::WorkspacesProject::Application app, std::vector<HWND> movedWindows, WindowWithDistance* nearestWindowWithDistance);
+    bool GetNearestWindow(WorkspacesData::WorkspacesProject::Application app, const std::vector<HWND>& movedWindows, WindowWithDistance* nearestWindowWithDistance);
     bool TryMoveWindow(const WorkspacesData::WorkspacesProject::Application& app, HWND windowToMove);
-    
+
     //void onWindowCreated(HWND window);
     void processWindows(bool processAll);
     void processWindow(HWND window);
