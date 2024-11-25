@@ -10,17 +10,15 @@ using System.Globalization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Wox.Plugin.Common.VirtualDesktop.Helper;
-using Wox.Plugin.Common.Win32;
-using Wox.Plugin.Logger;
+using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
+using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Components;
 
 /// <summary>
 /// Represents a specific open window
 /// </summary>
-internal class Window
+internal sealed class Window
 {
     /// <summary>
     /// The handle to the window
@@ -31,7 +29,7 @@ internal class Window
     /// A static cache for the process data of all known windows
     /// that we don't have to query the data every time
     /// </summary>
-    private static readonly Dictionary<IntPtr, WindowProcess> _handlesToProcessCache = new Dictionary<IntPtr, WindowProcess>();
+    private static readonly Dictionary<IntPtr, WindowProcess> _handlesToProcessCache = new();
 
     /// <summary>
     /// An instance of <see cref="WindowProcess"/> that contains the process information for the window
@@ -50,7 +48,7 @@ internal class Window
     {
         get
         {
-            int sizeOfTitle = NativeMethods.GetWindowTextLength(hwnd);
+            var sizeOfTitle = NativeMethods.GetWindowTextLength(hwnd);
             if (sizeOfTitle++ > 0)
             {
                 StringBuilder titleBuffer = new StringBuilder(sizeOfTitle);
@@ -72,130 +70,67 @@ internal class Window
     /// <summary>
     /// Gets the handle to the window
     /// </summary>
-    internal IntPtr Hwnd
-    {
-        get { return hwnd; }
-    }
+    internal IntPtr Hwnd => hwnd;
 
     /// <summary>
     /// Gets the object of with the process information of the window
     /// </summary>
-    internal WindowProcess Process
-    {
-        get { return processInfo; }
-    }
+    internal WindowProcess Process => processInfo;
 
     /// <summary>
     /// Gets the object of with the desktop information of the window
     /// </summary>
-    internal VDesktop Desktop
-    {
-        get { return desktopInfo; }
-    }
+    internal VDesktop Desktop => desktopInfo;
 
     /// <summary>
     /// Gets the name of the class for the window represented
     /// </summary>
-    internal string ClassName
-    {
-        get
-        {
-            return GetWindowClassName(Hwnd);
-        }
-    }
+    internal string ClassName => GetWindowClassName(Hwnd);
 
     /// <summary>
     /// Gets a value indicating whether the window is visible (might return false if it is a hidden IE tab)
     /// </summary>
-    internal bool Visible
-    {
-        get
-        {
-            return NativeMethods.IsWindowVisible(Hwnd);
-        }
-    }
+    internal bool Visible => NativeMethods.IsWindowVisible(Hwnd);
 
     /// <summary>
     /// Gets a value indicating whether the window is cloaked (true) or not (false).
     /// (A cloaked window is not visible to the user. But the window is still composed by DWM.)
     /// </summary>
-    internal bool IsCloaked
-    {
-        get
-        {
-            return GetWindowCloakState() != WindowCloakState.None;
-        }
-    }
+    internal bool IsCloaked => GetWindowCloakState() != WindowCloakState.None;
 
     /// <summary>
     /// Gets a value indicating whether the specified window handle identifies an existing window.
     /// </summary>
-    internal bool IsWindow
-    {
-        get
-        {
-            return NativeMethods.IsWindow(Hwnd);
-        }
-    }
+    internal bool IsWindow => NativeMethods.IsWindow(Hwnd);
 
     /// <summary>
     /// Gets a value indicating whether the window is a toolwindow
     /// </summary>
-    internal bool IsToolWindow
-    {
-        get
-        {
-            return (NativeMethods.GetWindowLong(Hwnd, Win32Constants.GWL_EXSTYLE) &
+    internal bool IsToolWindow => (NativeMethods.GetWindowLong(Hwnd, Win32Constants.GWL_EXSTYLE) &
                 (uint)ExtendedWindowStyles.WS_EX_TOOLWINDOW) ==
                 (uint)ExtendedWindowStyles.WS_EX_TOOLWINDOW;
-        }
-    }
 
     /// <summary>
     /// Gets a value indicating whether the window is an appwindow
     /// </summary>
-    internal bool IsAppWindow
-    {
-        get
-        {
-            return (NativeMethods.GetWindowLong(Hwnd, Win32Constants.GWL_EXSTYLE) &
+    internal bool IsAppWindow => (NativeMethods.GetWindowLong(Hwnd, Win32Constants.GWL_EXSTYLE) &
                 (uint)ExtendedWindowStyles.WS_EX_APPWINDOW) ==
                 (uint)ExtendedWindowStyles.WS_EX_APPWINDOW;
-        }
-    }
 
     /// <summary>
     /// Gets a value indicating whether the window has ITaskList_Deleted property
     /// </summary>
-    internal bool TaskListDeleted
-    {
-        get
-        {
-            return NativeMethods.GetProp(Hwnd, "ITaskList_Deleted") != IntPtr.Zero;
-        }
-    }
+    internal bool TaskListDeleted => NativeMethods.GetProp(Hwnd, "ITaskList_Deleted") != IntPtr.Zero;
 
     /// <summary>
     /// Gets a value indicating whether the specified windows is the owner (i.e. doesn't have an owner)
     /// </summary>
-    internal bool IsOwner
-    {
-        get
-        {
-            return NativeMethods.GetWindow(Hwnd, GetWindowCmd.GW_OWNER) == IntPtr.Zero;
-        }
-    }
+    internal bool IsOwner => NativeMethods.GetWindow(Hwnd, GetWindowCmd.GW_OWNER) == IntPtr.Zero;
 
     /// <summary>
     /// Gets a value indicating whether the window is minimized
     /// </summary>
-    internal bool Minimized
-    {
-        get
-        {
-            return GetWindowSizeState() == WindowSizeState.Minimized;
-        }
-    }
+    internal bool Minimized => GetWindowSizeState() == WindowSizeState.Minimized;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Window"/> class.
@@ -207,7 +142,7 @@ internal class Window
         // TODO: Add verification as to whether the window handle is valid
         this.hwnd = hwnd;
         processInfo = CreateWindowProcessInstance(hwnd);
-        desktopInfo = Main.VirtualDesktopHelperInstance.GetWindowDesktop(hwnd);
+        desktopInfo = WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.GetWindowDesktop(hwnd);
     }
 
     /// <summary>
@@ -304,7 +239,7 @@ internal class Window
     /// <returns>The state (none, app, ...) of the window</returns>
     internal WindowCloakState GetWindowCloakState()
     {
-        _ = NativeMethods.DwmGetWindowAttribute(Hwnd, (int)DwmWindowAttributes.Cloaked, out int isCloakedState, sizeof(uint));
+        _ = NativeMethods.DwmGetWindowAttribute(Hwnd, (int)DwmWindowAttributes.Cloaked, out var isCloakedState, sizeof(uint));
 
         switch (isCloakedState)
         {
@@ -313,7 +248,7 @@ internal class Window
             case (int)DwmWindowCloakStates.CloakedApp:
                 return WindowCloakState.App;
             case (int)DwmWindowCloakStates.CloakedShell:
-                return Main.VirtualDesktopHelperInstance.IsWindowCloakedByVirtualDesktopManager(hwnd, Desktop.Id) ? WindowCloakState.OtherDesktop : WindowCloakState.Shell;
+                return WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.IsWindowCloakedByVirtualDesktopManager(hwnd, Desktop.Id) ? WindowCloakState.OtherDesktop : WindowCloakState.Shell;
             case (int)DwmWindowCloakStates.CloakedInherited:
                 return WindowCloakState.Inherited;
             default:
@@ -382,7 +317,7 @@ internal class Window
                 else
                 {
                     // For the dwm process we can not receive the name. This is no problem because the window isn't part of result list.
-                    Log.Debug($"Invalid process {processId} ({processName}) for window handle {hWindow}.", typeof(Window));
+                    ExtensionHost.LogMessage(new LogMessage() { Message = $"Invalid process {processId} ({processName}) for window handle {hWindow}." });
                     _handlesToProcessCache.Add(hWindow, new WindowProcess(0, 0, string.Empty));
                 }
             }

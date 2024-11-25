@@ -16,7 +16,7 @@ namespace Microsoft.CmdPal.Ext.WindowWalker;
 public partial class WalkerTopLevelCommandItem : CommandItem
 {
     public WalkerTopLevelCommandItem(SettingsManager settingsManager)
-        : base(new NoOpCommand())
+        : base(new WindowWalkerListPage())
     {
         Title = Resources.window_walker_top_level_command_title;
         Subtitle = Resources.wox_plugin_windowwalker_plugin_name;

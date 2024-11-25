@@ -7,19 +7,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.WindowWalker.Commands;
 using Microsoft.CmdPal.Ext.WindowWalker.Components;
 using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker;
 
-internal partial class WindowWalkerListItem : ListItem
+internal sealed partial class WindowWalkerListItem : ListItem
 {
     private readonly Window _window;
 
     public Window Window => _window;
 
     public WindowWalkerListItem(Window window)
-        : base(new NoOpCommand())
+        : base(new SwitchToWindowCommand(window))
     {
         _window = window;
     }

@@ -61,6 +61,24 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to On all Desktops.
+        /// </summary>
+        public static string VirtualDesktopHelper_AllDesktops {
+            get {
+                return ResourceManager.GetString("VirtualDesktopHelper_AllDesktops", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string VirtualDesktopHelper_Desktop {
+            get {
+                return ResourceManager.GetString("VirtualDesktopHelper_Desktop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Switch between open windows.
         /// </summary>
         public static string window_walker_top_level_command_title {

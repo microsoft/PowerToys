@@ -161,5 +161,6 @@ public sealed class MainViewModel : IDisposable
         this.AddAlias(new CommandAlias(":", "com.microsoft.cmdpal.registry", true));
         this.AddAlias(new CommandAlias("$", "com.microsoft.cmdpal.windowsSettings", true));
         this.AddAlias(new CommandAlias("=", "com.microsoft.cmdpal.calculator", true));
+        this.AddAlias(new CommandAlias("<", "com.microsoft.cmdpal.windowwalker", true));
     }
 }

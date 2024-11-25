@@ -3,44 +3,43 @@
 // See the LICENSE file in the project root for more information.
 
 // Code forked from Betsegaw Tadele's https://github.com/betsegaw/windowwalker/
-namespace Microsoft.Plugin.WindowWalker.Components
+namespace Microsoft.CmdPal.Ext.WindowWalker.Components;
+
+/// <summary>
+/// A class to represent a search string
+/// </summary>
+/// <remarks>Class was added inorder to be able to attach various context data to
+/// a search string</remarks>
+internal sealed class SearchString
 {
     /// <summary>
-    /// A class to represent a search string
+    /// Gets where is the search string coming from (is it a shortcut
+    /// or direct string, etc...)
     /// </summary>
-    /// <remarks>Class was added inorder to be able to attach various context data to
-    /// a search string</remarks>
-    internal class SearchString
+    internal SearchResult.SearchType SearchType
     {
-        /// <summary>
-        /// Gets where is the search string coming from (is it a shortcut
-        /// or direct string, etc...)
-        /// </summary>
-        internal SearchResult.SearchType SearchType
-        {
-            get;
-            private set;
-        }
+        get;
+        private set;
+    }
 
-        /// <summary>
-        /// Gets the actual text we are searching for
-        /// </summary>
-        internal string SearchText
-        {
-            get;
-            private set;
-        }
+    /// <summary>
+    /// Gets the actual text we are searching for
+    /// </summary>
+    internal string SearchText
+    {
+        get;
+        private set;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SearchString"/> class.
-        /// Constructor
-        /// </summary>
-        /// <param name="searchText">text from search</param>
-        /// <param name="searchType">type of search</param>
-        internal SearchString(string searchText, SearchResult.SearchType searchType)
-        {
-            SearchText = searchText;
-            SearchType = searchType;
-        }
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SearchString"/> class.
+    /// Constructor
+    /// </summary>
+    /// <param name="searchText">text from search</param>
+    /// <param name="searchType">type of search</param>
+    internal SearchString(string searchText, SearchResult.SearchType searchType)
+    {
+        SearchText = searchText;
+        SearchType = searchType;
     }
 }

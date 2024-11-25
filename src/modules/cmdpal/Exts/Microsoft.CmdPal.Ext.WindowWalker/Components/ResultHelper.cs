@@ -4,182 +4,111 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CmdPal.Ext.WindowWalker.Commands;
+using Microsoft.CmdPal.Ext.WindowWalker.Components;
+using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
+using Microsoft.CmdPal.Ext.WindowWalker.Properties;
+using Microsoft.CmdPal.Extensions.Helpers;
 
-using Microsoft.Plugin.WindowWalker.Properties;
-using Wox.Infrastructure;
-using Wox.Plugin;
+namespace Microsoft.CmdPal.Ext.WindowWalker.Components;
 
-namespace Microsoft.Plugin.WindowWalker.Components
+/// <summary>
+/// Helper class to work with results
+/// </summary>
+internal static class ResultHelper
 {
     /// <summary>
-    /// Helper class to work with results
+    /// Returns a list of all results for the query.
     /// </summary>
-    internal static class ResultHelper
+    /// <param name="searchControllerResults">List with all search controller matches</param>
+    /// <param name="icon">The path to the result icon</param>
+    /// <returns>List of results</returns>
+    internal static List<WindowWalkerListItem> GetResultList(List<SearchResult> searchControllerResults, bool isKeywordSearch, string icon, string infoIcon)
     {
-        /// <summary>
-        /// Returns a list of all results for the query.
-        /// </summary>
-        /// <param name="searchControllerResults">List with all search controller matches</param>
-        /// <param name="icon">The path to the result icon</param>
-        /// <returns>List of results</returns>
-        internal static List<Result> GetResultList(List<SearchResult> searchControllerResults, bool isKeywordSearch, string icon, string infoIcon)
+        if (searchControllerResults == null || searchControllerResults.Count == 0)
         {
-            if (searchControllerResults == null || searchControllerResults.Count == 0)
-            {
-                return new List<Result>();
-            }
-
-            List<Result> resultsList = new List<Result>(searchControllerResults.Count);
-            bool addExplorerInfo = searchControllerResults.Any(x =>
-                string.Equals(x.Result.Process.Name, "explorer.exe", StringComparison.OrdinalIgnoreCase) &&
-                x.Result.Process.IsShellProcess);
-
-            // Process each SearchResult to convert it into a Result.
-            // Using parallel processing if the operation is CPU-bound and the list is large.
-            resultsList = searchControllerResults
-                .AsParallel()
-                .Select(x => CreateResultFromSearchResult(x, icon))
-                .ToList();
-
-            if (addExplorerInfo && isKeywordSearch && !WindowWalkerSettings.Instance.HideExplorerSettingInfo)
-            {
-                resultsList.Add(GetExplorerInfoResult(infoIcon));
-            }
-
-            return resultsList;
+            return new List<WindowWalkerListItem>();
         }
 
-        /// <summary>
-        /// Creates a Result object from a given SearchResult.
-        /// </summary>
-        /// <param name="searchResult">The SearchResult object to convert.</param>
-        /// <param name="icon">The path to the icon that should be used for the Result.</param>
-        /// <returns>A Result object populated with data from the SearchResult.</returns>
-        private static Result CreateResultFromSearchResult(SearchResult searchResult, string icon)
-        {
-            return new Result
-            {
-                Title = searchResult.Result.Title,
-                IcoPath = icon,
-                SubTitle = GetSubtitle(searchResult.Result),
-                ContextData = searchResult.Result,
-                Action = c =>
-                {
-                    searchResult.Result.SwitchToWindow();
-                    return true;
-                },
+        List<WindowWalkerListItem> resultsList = new List<WindowWalkerListItem>(searchControllerResults.Count);
+        var addExplorerInfo = searchControllerResults.Any(x =>
+            string.Equals(x.Result.Process.Name, "explorer.exe", StringComparison.OrdinalIgnoreCase) &&
+            x.Result.Process.IsShellProcess);
 
-                // For debugging you can set the second parameter to true to see more information.
-                ToolTipData = GetToolTip(searchResult.Result, false),
-            };
+        // Process each SearchResult to convert it into a Result.
+        // Using parallel processing if the operation is CPU-bound and the list is large.
+        resultsList = searchControllerResults
+            .AsParallel()
+            .Select(x => CreateResultFromSearchResult(x, icon))
+            .ToList();
+
+        if (addExplorerInfo && isKeywordSearch && !SettingsManager.Instance.HideExplorerSettingInfo)
+        {
+            resultsList.Add(GetExplorerInfoResult(infoIcon));
         }
 
-        /// <summary>
-        /// Returns the subtitle for a result
-        /// </summary>
-        /// <param name="window">The window properties of the result</param>
-        /// <returns>String with the subtitle</returns>
-        private static string GetSubtitle(Window window)
+        return resultsList;
+    }
+
+    /// <summary>
+    /// Creates a Result object from a given SearchResult.
+    /// </summary>
+    /// <param name="searchResult">The SearchResult object to convert.</param>
+    /// <param name="icon">The path to the icon that should be used for the Result.</param>
+    /// <returns>A Result object populated with data from the SearchResult.</returns>
+    private static WindowWalkerListItem CreateResultFromSearchResult(SearchResult searchResult, string icon)
+    {
+        var item = new WindowWalkerListItem(searchResult.Result)
         {
-            if (window == null || !(window is Window))
-            {
-                return string.Empty;
-            }
+            Title = searchResult.Result.Title,
+            Icon = new(icon),
+            Subtitle = GetSubtitle(searchResult.Result),
+        };
+        item.MoreCommands = ContextMenuHelper.GetContextMenuResults(item).ToArray();
 
-            string subtitleText = Resources.wox_plugin_windowwalker_Running + ": " + window.Process.Name;
+        return item;
+    }
 
-            if (WindowWalkerSettings.Instance.SubtitleShowPid)
-            {
-                subtitleText += $" ({window.Process.ProcessID})";
-            }
-
-            if (!window.Process.IsResponding)
-            {
-                subtitleText += $" [{Resources.wox_plugin_windowwalker_NotResponding}]";
-            }
-
-            if (WindowWalkerSettings.Instance.SubtitleShowDesktopName && Main.VirtualDesktopHelperInstance.GetDesktopCount() > 1)
-            {
-                subtitleText += $" - {Resources.wox_plugin_windowwalker_Desktop}: {window.Desktop.Name}";
-            }
-
-            return subtitleText;
+    /// <summary>
+    /// Returns the subtitle for a result
+    /// </summary>
+    /// <param name="window">The window properties of the result</param>
+    /// <returns>String with the subtitle</returns>
+    private static string GetSubtitle(Window window)
+    {
+        if (window == null || !(window is Window))
+        {
+            return string.Empty;
         }
 
-        /// <summary>
-        /// Returns the tool tip for a result
-        /// </summary>
-        /// <param name="window">The window properties of the result</param>
-        /// <param name="debugToolTip">Value indicating if a detailed debug tooltip should be returned</param>
-        /// <returns>Tooltip for the result or null of failure</returns>
-        private static ToolTipData GetToolTip(Window window, bool debugToolTip)
+        var subtitleText = Resources.wox_plugin_windowwalker_Running + ": " + window.Process.Name;
+
+        if (SettingsManager.Instance.SubtitleShowPid)
         {
-            if (window == null || !(window is Window))
-            {
-                return null;
-            }
-
-            if (!debugToolTip)
-            {
-                string text = $"{Resources.wox_plugin_windowwalker_Process}: {window.Process.Name}";
-                text += $"\n{Resources.wox_plugin_windowwalker_ProcessId}: {window.Process.ProcessID}";
-
-                if (Main.VirtualDesktopHelperInstance.GetDesktopCount() > 1)
-                {
-                    text += $"\n{Resources.wox_plugin_windowwalker_Desktop}: {window.Desktop.Name}";
-
-                    if (!window.Desktop.IsAllDesktopsView)
-                    {
-                        text += $" ({Resources.wox_plugin_windowwalker_Number} {window.Desktop.Number})";
-                    }
-                }
-
-                return new ToolTipData(window.Title, text);
-            }
-            else
-            {
-                string text = $"hWnd: {window.Hwnd}\n" +
-                    $"Window class: {window.ClassName}\n" +
-                    $"Process ID: {window.Process.ProcessID}\n" +
-                    $"Thread ID: {window.Process.ThreadID}\n" +
-                    $"Process: {window.Process.Name}\n" +
-                    $"Process exists: {window.Process.DoesExist}\n" +
-                    $"Is full access denied: {window.Process.IsFullAccessDenied}\n" +
-                    $"Is uwp app: {window.Process.IsUwpApp}\n" +
-                    $"Is ShellProcess: {window.Process.IsShellProcess}\n" +
-                    $"Is window cloaked: {window.IsCloaked}\n" +
-                    $"Window cloak state: {window.GetWindowCloakState()}\n" +
-                    $"Desktop id: {window.Desktop.Id}\n" +
-                    $"Desktop name: {window.Desktop.Name}\n" +
-                    $"Desktop number: {window.Desktop.Number}\n" +
-                    $"Desktop is visible: {window.Desktop.IsVisible}\n" +
-                    $"Desktop position: {window.Desktop.Position}\n" +
-                    $"Is AllDesktops view: {window.Desktop.IsAllDesktopsView}\n" +
-                    $"Responding: {window.Process.IsResponding}";
-
-                return new ToolTipData(window.Title, text);
-            }
+            subtitleText += $" ({window.Process.ProcessID})";
         }
 
-        /// <summary>
-        /// Returns an information result about the explorer setting
-        /// </summary>
-        /// <param name="iIcon">The path to the info icon.</param>
-        /// <returns>An object of the type <see cref="Result"/> with the information.</returns>
-        private static Result GetExplorerInfoResult(string iIcon)
+        if (!window.Process.IsResponding)
         {
-            return new Result()
-            {
-                Title = Resources.wox_plugin_windowwalker_ExplorerInfoTitle,
-                IcoPath = iIcon,
-                SubTitle = Resources.wox_plugin_windowwalker_ExplorerInfoSubTitle,
-                Action = c =>
-                {
-                    Helper.OpenInShell("rundll32.exe", "shell32.dll,Options_RunDLL 7"); // "shell32.dll,Options_RunDLL 7" opens the view tab in folder options of explorer.
-                    return true;
-                },
-                Score = 100_000,
-            };
+            subtitleText += $" [{Resources.wox_plugin_windowwalker_NotResponding}]";
         }
+
+        if (SettingsManager.Instance.SubtitleShowDesktopName && WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.GetDesktopCount() > 1)
+        {
+            subtitleText += $" - {Resources.wox_plugin_windowwalker_Desktop}: {window.Desktop.Name}";
+        }
+
+        return subtitleText;
+    }
+
+    private static WindowWalkerListItem GetExplorerInfoResult(string iIcon)
+    {
+        return new WindowWalkerListItem(null)
+        {
+            Title = Resources.wox_plugin_windowwalker_ExplorerInfoTitle,
+            Icon = new(iIcon),
+            Subtitle = Resources.wox_plugin_windowwalker_ExplorerInfoSubTitle,
+            Command = new ExplorerInfoResultCommand(),
+        };
     }
 }

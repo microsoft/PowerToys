@@ -13,7 +13,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Components;
 
-internal class ContextMenuHelper
+internal sealed class ContextMenuHelper
 {
     internal static List<CommandContextItem> GetContextMenuResults(in WindowWalkerListItem listItem)
     {
@@ -28,8 +28,6 @@ internal class ContextMenuHelper
             {
                 // AcceleratorKey = Key.F4,
                 // AcceleratorModifiers = ModifierKeys.Control,
-                Icon = new("\xE8BB"),
-                Title = $"{Resources.wox_plugin_windowwalker_Close} (Ctrl+F4)",
             },
         };
 
@@ -38,54 +36,9 @@ internal class ContextMenuHelper
         if (!windowData.Process.IsShellProcess && !(windowData.Process.IsUwpApp && string.Equals(windowData.Process.Name, "ApplicationFrameHost.exe", StringComparison.OrdinalIgnoreCase))
             && !(windowData.Process.IsFullAccessDenied && SettingsManager.Instance.HideKillProcessOnElevatedProcesses))
         {
-            contextMenu.Add(new ContextMenuResult
-            {
-                AcceleratorKey = Key.Delete,
-                AcceleratorModifiers = ModifierKeys.Control,
-                FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
-                Glyph = "\xE74D",                       // E74D => Symbol: Delete
-                Title = $"{Resources.wox_plugin_windowwalker_Kill} (Ctrl+Delete)",
-                Action = _ => KillProcessCommand(windowData),
-            });
+            contextMenu.Add(new CommandContextItem(new KillProcessCommand(windowData)));
         }
 
         return contextMenu;
-    }
-
-    /// <summary>
-    /// Method to initiate killing the process of a window
-    /// </summary>
-    /// <param name="window">Window data</param>
-    /// <returns>True if the PT Run window should close, otherwise false.</returns>
-    private static bool KillProcessCommand(Window window)
-    {
-        // Validate process
-        if (!window.IsWindow || !window.Process.DoesExist || !window.Process.Name.Equals(WindowProcess.GetProcessNameFromProcessID(window.Process.ProcessID), StringComparison.Ordinal))
-        {
-            Log.Debug($"Can not kill process '{window.Process.Name}' ({window.Process.ProcessID}) of the window '{window.Title}' ({window.Hwnd}), because it doesn't exist.", typeof(ContextMenuHelper));
-            return false;
-        }
-
-        // Request user confirmation
-        if (WindowWalkerSettings.Instance.ConfirmKillProcess)
-        {
-            string messageBody = $"{Resources.wox_plugin_windowwalker_KillMessage}\n"
-                + $"{window.Process.Name} ({window.Process.ProcessID})\n\n"
-                + $"{(window.Process.IsUwpApp ? Resources.wox_plugin_windowwalker_KillMessageUwp : Resources.wox_plugin_windowwalker_KillMessageQuestion)}";
-            MessageBoxResult messageBoxResult = MessageBox.Show(
-                messageBody,
-                Resources.wox_plugin_windowwalker_plugin_name + " - " + Resources.wox_plugin_windowwalker_KillMessageTitle,
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-
-            if (messageBoxResult == MessageBoxResult.No)
-            {
-                return false;
-            }
-        }
-
-        // Kill process
-        window.Process.KillThisProcess(WindowWalkerSettings.Instance.KillProcessTree);
-        return !WindowWalkerSettings.Instance.OpenAfterKillAndClose;
     }
 }

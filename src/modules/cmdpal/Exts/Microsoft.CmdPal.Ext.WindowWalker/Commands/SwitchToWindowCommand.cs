@@ -14,25 +14,21 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Commands;
 
-internal sealed partial class CloseWindowCommand : InvokableCommand
+internal sealed partial class SwitchToWindowCommand : InvokableCommand
 {
     private readonly Window _window;
 
-    public CloseWindowCommand(Window window)
+    public SwitchToWindowCommand(Window window)
     {
-        Icon = new("\xE8BB");
-        Name = $"{Resources.wox_plugin_windowwalker_Close} (Ctrl+F4)";
+        Name = Resources.window_walker_top_level_command_title;
+        Icon = new(string.Empty);
         _window = window;
     }
 
     public override ICommandResult Invoke()
     {
-        if (!_window.IsWindow)
-        {
-            ExtensionHost.LogMessage(new LogMessage() { Message = $"Can not close the window '{_window.Title}' ({_window.Hwnd}), because it doesn't exist." });
-        }
+        _window.SwitchToWindow();
 
-        _window.CloseThisWindow();
         return CommandResult.Dismiss();
     }
 }

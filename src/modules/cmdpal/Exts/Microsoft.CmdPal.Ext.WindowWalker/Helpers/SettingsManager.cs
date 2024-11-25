@@ -74,7 +74,7 @@ public class SettingsManager
         _settings.Add(_confirmKillProcess);
         _settings.Add(_killProcessTree);
         _settings.Add(_openAfterKillAndClose);
-        _settings.Add(_hideKillProcessOnElevatedProcess);
+        _settings.Add(_hideKillProcessOnElevatedProcesses);
         _settings.Add(_hideExplorerSettingInfo);
 
         // Load settings from file upon initialization

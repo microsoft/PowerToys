@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
+using Microsoft.CmdPal.Ext.WindowWalker.Components;
 using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CmdPal.Extensions;
@@ -17,6 +18,8 @@ public partial class WindowWalkerCommandsProvider : CommandProvider
 {
     private readonly WalkerTopLevelCommandItem _walkerCommand;
     private readonly SettingsManager _settingsManager = new();
+
+    internal static readonly VirtualDesktopHelper VirtualDesktopHelperInstance = new();
 
     public WindowWalkerCommandsProvider()
     {
