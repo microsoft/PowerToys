@@ -102,6 +102,7 @@ backtracer
 bbwe
 bck
 BESTEFFORT
+bezelled
 bhid
 BIF
 bigbar
@@ -725,6 +726,7 @@ ISSEPARATOR
 ITask
 ith
 ITHUMBNAIL
+ITwoWayPipeMessageIPCManaged
 IUI
 IUnknown
 IUse
