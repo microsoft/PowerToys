@@ -18,6 +18,8 @@ namespace Peek.UI
 
         private readonly SettingsUtils _settingsUtils;
 
+        private readonly Lock _settingsLock = new();
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Defined in helper called in constructor.")]
         private readonly IFileSystemWatcher _watcher;
 
@@ -37,10 +39,13 @@ namespace Peek.UI
 
         private void ApplySettings(PeekSettings settings)
         {
-            CloseAfterLosingFocus = settings.Properties.CloseAfterLosingFocus.Value;
+            lock (_settingsLock)
+            {
+                CloseAfterLosingFocus = settings.Properties.CloseAfterLosingFocus.Value;
+            }
         }
 
-        private void ApplyDefaults()
+        private void ApplyDefaultSettings()
         {
             ApplySettings(new PeekSettings());
         }
@@ -60,7 +65,7 @@ namespace Peek.UI
                     if (attempt == MaxAttempts)
                     {
                         Logger.LogError($"Failed to load Peek settings after {MaxAttempts} attempts. Continuing with default settings.");
-                        ApplyDefaults();
+                        ApplyDefaultSettings();
                         return;
                     }
 
@@ -71,7 +76,7 @@ namespace Peek.UI
                 {
                     // Anything other than an IO exception is an immediate failure.
                     Logger.LogError($"Peek settings load failed, continuing with defaults: {ex.Message}", ex);
-                    ApplyDefaults();
+                    ApplyDefaultSettings();
                     return;
                 }
             }
