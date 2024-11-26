@@ -46,26 +46,26 @@ dotnet_naming_rule.non_field_members_should_be_pascal_case.style = pascal_case
 
 dotnet_naming_symbols.interface.applicable_kinds = interface
 dotnet_naming_symbols.interface.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
-dotnet_naming_symbols.interface.required_modifiers = 
+dotnet_naming_symbols.interface.required_modifiers =
 
 dotnet_naming_symbols.types.applicable_kinds = class, struct, interface, enum
 dotnet_naming_symbols.types.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
-dotnet_naming_symbols.types.required_modifiers = 
+dotnet_naming_symbols.types.required_modifiers =
 
 dotnet_naming_symbols.non_field_members.applicable_kinds = property, event, method
 dotnet_naming_symbols.non_field_members.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
-dotnet_naming_symbols.non_field_members.required_modifiers = 
+dotnet_naming_symbols.non_field_members.required_modifiers =
 
 # Naming styles
 
 dotnet_naming_style.begins_with_i.required_prefix = I
-dotnet_naming_style.begins_with_i.required_suffix = 
-dotnet_naming_style.begins_with_i.word_separator = 
+dotnet_naming_style.begins_with_i.required_suffix =
+dotnet_naming_style.begins_with_i.word_separator =
 dotnet_naming_style.begins_with_i.capitalization = pascal_case
 
-dotnet_naming_style.pascal_case.required_prefix = 
-dotnet_naming_style.pascal_case.required_suffix = 
-dotnet_naming_style.pascal_case.word_separator = 
+dotnet_naming_style.pascal_case.required_prefix =
+dotnet_naming_style.pascal_case.required_suffix =
+dotnet_naming_style.pascal_case.word_separator =
 dotnet_naming_style.pascal_case.capitalization = pascal_case
 
 dotnet_style_coalesce_expression = true:suggestion
@@ -99,7 +99,7 @@ dotnet_diagnostic.IDE0009.severity = none
 dotnet_diagnostic.IDE0005.severity = suggestion
 
 # IDE0008: Use explicit type instead of 'var'
-dotnet_diagnostic.IDE0008.severity = suggestion
+dotnet_diagnostic.IDE0008.severity = silent
 
 # IDE0016: Use throw expression
 dotnet_diagnostic.IDE0016.severity = suggestion
@@ -111,19 +111,19 @@ dotnet_diagnostic.IDE0018.severity = suggestion
 dotnet_diagnostic.IDE0019.severity = suggestion
 
 # IDE0021: Use expression body for constructors
-dotnet_diagnostic.IDE0021.severity = suggestion
+dotnet_diagnostic.IDE0021.severity = silent
 
 # IDE0022: Use expression body for methods
-dotnet_diagnostic.IDE0022.severity = suggestion
+dotnet_diagnostic.IDE0022.severity = silent
 
 # IDE0023: Use expression body for conversion operators
-dotnet_diagnostic.IDE0023.severity = suggestion
+dotnet_diagnostic.IDE0023.severity = silent
 
 # IDE0025: Use expression body for properties
-dotnet_diagnostic.IDE0025.severity = suggestion
+dotnet_diagnostic.IDE0025.severity = silent
 
 # IDE0027: Use expression body for accessors
-dotnet_diagnostic.IDE0027.severity = suggestion
+dotnet_diagnostic.IDE0027.severity = silent
 
 # IDE0028: Use collection initializers
 dotnet_diagnostic.IDE0028.severity = suggestion
@@ -152,7 +152,7 @@ dotnet_diagnostic.IDE0042.severity = suggestion
 # IDE0044: Add readonly modifier
 dotnet_diagnostic.IDE0044.severity = suggestion
 
-# IDE0045: Use conditional expression for assignment	
+# IDE0045: Use conditional expression for assignment
 dotnet_diagnostic.IDE0045.severity = suggestion
 
 # IDE0046: Use conditional expression for return
@@ -186,7 +186,7 @@ dotnet_diagnostic.IDE0059.severity = suggestion
 dotnet_diagnostic.IDE0060.severity = suggestion
 
 # IDE0061: Use expression body for local functions
-dotnet_diagnostic.IDE0061.severity = suggestion
+dotnet_diagnostic.IDE0061.severity = silent
 
 # IDE0063: Use simple 'using' statement
 dotnet_diagnostic.IDE0063.severity = suggestion
@@ -222,7 +222,7 @@ dotnet_diagnostic.IDE0100.severity = suggestion
 dotnet_diagnostic.IDE0130.severity = suggestion
 
 # IDE0160: Use block-scoped namespace
-dotnet_diagnostic.IDE0160.severity = suggestion
+dotnet_diagnostic.IDE0160.severity = silent
 
 # IDE0180: Use tuple to swap values
 dotnet_diagnostic.IDE0180.severity = suggestion
