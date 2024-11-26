@@ -68,10 +68,6 @@ dotnet_naming_style.pascal_case.required_suffix =
 dotnet_naming_style.pascal_case.word_separator = 
 dotnet_naming_style.pascal_case.capitalization = pascal_case
 
-dotnet_naming_style.pascal_case.required_prefix = 
-dotnet_naming_style.pascal_case.required_suffix = 
-dotnet_naming_style.pascal_case.word_separator = 
-dotnet_naming_style.pascal_case.capitalization = pascal_case
 dotnet_style_coalesce_expression = true:suggestion
 dotnet_style_null_propagation = true:suggestion
 dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
