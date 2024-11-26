@@ -1,6 +1,8 @@
 #pragma once
 
-namespace SnapshotUtils
+#include <WorkspacesLib/AppUtils.h>
+
+namespace Utils
 {
     class PwaHelper
     {
@@ -11,6 +13,9 @@ namespace SnapshotUtils
         BOOL SearchPwaName(std::wstring pwaAppId, std::wstring windowAumid, std::wstring* pwaName);
         void InitChromeAppIds();
         BOOL SearchPwaAppId(std::wstring windowAumid, std::wstring* pwaAppId);
+        BOOL IsEdge(Apps::AppData appData);
+        BOOL IsChrome(Apps::AppData appData);
+        void UpdatePwaApp(Apps::AppData* appData, HWND window);
 
     private:
         std::map<std::wstring, std::wstring> pwaAumidToAppId;

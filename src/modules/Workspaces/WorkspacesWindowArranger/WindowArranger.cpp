@@ -12,6 +12,7 @@
 #include <workspaces-common/WindowUtils.h>
 
 #include <WindowProperties/WorkspacesWindowPropertyUtils.h>
+#include <WorkspacesLib/PwaHelper.h>
 
 namespace PlacementHelper
 {
@@ -154,6 +155,7 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
 {
     std::optional<Utils::Apps::AppData> appDataNearest = std::nullopt;
     WindowWithDistance nearestWindowWithDistance{};
+    Utils::PwaHelper pwaHelper{};
 
     for (HWND window : m_windowsBefore)
     {
@@ -177,7 +179,9 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
             continue;
         }
 
-        if (app.name == data.value().name || app.path == data.value().installPath)
+        pwaHelper.UpdatePwaApp(&data.value(), window);
+
+        if ((app.name == data.value().name || app.path == data.value().installPath) && (app.pwaAppId == data.value().pwaAppId))
         {
             if (!appDataNearest.has_value())
             {

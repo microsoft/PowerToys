@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "PwaHelper.h"
+#include "AppUtils.h"
 #include <ShlObj.h>
 #include <tlhelp32.h>
 #include <winternl.h>
@@ -11,7 +12,7 @@
 #include <wil\com.h>
 #pragma comment(lib, "ntdll.lib")
 
-namespace SnapshotUtils
+namespace Utils
 {
     namespace NonLocalizable
     {
@@ -21,7 +22,10 @@ namespace SnapshotUtils
         const std::wstring EdgeBase = L"Microsoft\\Edge\\User Data\\Default\\Web Applications";
         const std::wstring ChromeDirPrefix = L"_crx_";
         const std::wstring EdgeDirPrefix = L"_crx__";
+        const std::wstring EdgeFilename = L"msedge.exe";
+        const std::wstring ChromeFilename = L"chrome.exe";
     }
+
     // {c8900b66-a973-584b-8cae-355b7f55341b}
     DEFINE_GUID(CLSID_StartMenuCacheAndAppResolver, 0x660b90c8, 0x73a9, 0x4b58, 0x8c, 0xae, 0x35, 0x5b, 0x7f, 0x55, 0x34, 0x1b);
 
@@ -405,5 +409,63 @@ namespace SnapshotUtils
 
         *pwaAppId = L"";
         return false;
+    }
+
+    BOOL PwaHelper::IsEdge(Utils::Apps::AppData appData)
+    {
+        return appData.installPath.ends_with(NonLocalizable::EdgeFilename);
+    }
+
+    BOOL PwaHelper::IsChrome(Utils::Apps::AppData appData)
+    {
+        return appData.installPath.ends_with(NonLocalizable::ChromeFilename);
+    }
+
+    void PwaHelper::UpdatePwaApp(Utils::Apps::AppData* appData, HWND window)
+    {
+        std::wstring pwaAppId = L"";
+        std::wstring finalName = appData->name;
+        std::wstring pwaName = L"";
+        if (IsEdge(*appData))
+        {
+            InitAumidToAppId();
+
+            std::wstring windowAumid;
+            GetAppId(window, &windowAumid);
+            Logger::info(L"Found an edge window with aumid {}", windowAumid);
+
+            if (GetPwaAppId(windowAumid, &pwaAppId))
+            {
+                Logger::info(L"The found edge window is a PWA app with appId {}", pwaAppId);
+                if (SearchPwaName(pwaAppId, windowAumid, &pwaName))
+                {
+                    Logger::info(L"The found edge window is a PWA app with name {}", finalName);
+                }
+                finalName = pwaName + L" (" + finalName + L")";
+            }
+            else
+            {
+                Logger::info(L"The found edge window does not contain a PWA app", pwaAppId);
+            }
+        }
+        else if (IsChrome(*appData))
+        {
+            InitChromeAppIds();
+
+            std::wstring windowAumid;
+            GetAppId(window, &windowAumid);
+            Logger::info(L"Found a chrome window with aumid {}", windowAumid);
+
+            if (SearchPwaAppId(windowAumid, &pwaAppId))
+            {
+                if (SearchPwaName(pwaAppId, windowAumid, &pwaName))
+                {
+                    finalName = pwaName + L" (" + finalName + L")";
+                }
+            }
+        }
+
+        appData->name = finalName;
+        appData->pwaAppId = pwaAppId;
     }
 }
