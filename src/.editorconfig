@@ -182,7 +182,7 @@ dotnet_diagnostic.IDE0057.severity = suggestion
 # IDE0059: Remove unnecessary value assignment
 dotnet_diagnostic.IDE0059.severity = suggestion
 
-# IDE0060: Remove unused paramete
+# IDE0060: Remove unused parameter
 dotnet_diagnostic.IDE0060.severity = suggestion
 
 # IDE0061: Use expression body for local functions
