@@ -114,11 +114,8 @@ namespace PlacementHelper
 
         RECT windowPosition;
         GetWindowRect(window, &windowPosition);
-        float width = static_cast<float>(windowPosition.right - windowPosition.left);
-        float hight = static_cast<float>(windowPosition.bottom - windowPosition.top);
-        DPIAware::InverseConvert(MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY), width, hight);
-        windowPosition.right = windowPosition.left + static_cast<long>(width);
-        windowPosition.bottom = windowPosition.top + static_cast<long>(hight);
+        DPIAware::InverseConvert(MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY), windowPosition);
+
         return placementDiffPenalty + abs(app.position.x - windowPosition.left) + abs(app.position.y - windowPosition.top) + abs(app.position.x + app.position.width - windowPosition.right) + abs(app.position.y + app.position.height - windowPosition.bottom);
     }
 }
@@ -137,13 +134,17 @@ bool WindowArranger::TryMoveWindow(const WorkspacesData::WorkspacesProject::Appl
     if (success)
     {
         m_launchingStatus.Update(appState.value().application, LaunchingState::LaunchedAndMoved);
-        m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({ app, nullptr, appState.value().state }).ToString().c_str());
     }
     else
     {
         Logger::info(L"Failed to move the existing app {} ", app.name);
         m_launchingStatus.Update(appState.value().application, LaunchingState::Failed);
-        m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({ app, nullptr, appState.value().state }).ToString().c_str());
+    }
+
+    auto updatedState = m_launchingStatus.Get(app);
+    if (updatedState.has_value())
+    {
+        m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson(updatedState.value()).ToString().c_str());
     }
 
     return success;
@@ -209,12 +210,12 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
     m_windowsBefore(WindowEnumerator::Enumerate(WindowFilter::Filter)),
     m_monitors(MonitorUtils::IdentifyMonitors()),
     m_installedApps(Utils::Apps::GetAppsList()),
-    //m_windowCreationHandler(std::bind(&WindowArranger::onWindowCreated, this, std::placeholders::_1)),
     m_ipcHelper(IPCHelperStrings::WindowArrangerPipeName, IPCHelperStrings::LauncherArrangerPipeName, std::bind(&WindowArranger::receiveIpcMessage, this, std::placeholders::_1)),
     m_launchingStatus(m_project)
 {
     if (project.moveExistingWindows)
     {
+        Logger::info(L"Moving existing windows");
         bool isMovePhase = true;
         bool movedAny = false;
         std::vector<HWND> movedWindows;
@@ -269,6 +270,8 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
             // Wait if there were moved windows. This message might not arrive if sending immediately after the last "moved" message (status update)
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
+
+        Logger::info(L"Finished moving existing windows");
     }
 
     m_ipcHelper.send(L"ready");
