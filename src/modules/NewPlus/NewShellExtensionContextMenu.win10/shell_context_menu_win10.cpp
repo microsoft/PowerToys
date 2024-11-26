@@ -227,11 +227,9 @@ IFACEMETHODIMP shell_context_menu_win10::InvokeCommand(CMINVOKECOMMANDINFO* para
     const auto number_of_templates = templates->list_of_templates.size();
     const bool is_template_item = selected_menu_item_index < number_of_templates;
 
-    // Log that context menu was shown and with how many items
-    trace.UpdateState(true);
-    Trace::EventShowTemplateItems(number_of_templates);
-    trace.Flush();
-    trace.UpdateState(false);
+    // Save how many item templates we have so it can be sent later when we do something with New+.
+    // It will be sent when the user does something, similar to Windows 11 context menu.
+    newplus::utilities::set_saved_number_of_templates(static_cast<size_t>(number_of_templates));
 
     if (is_template_item)
     {

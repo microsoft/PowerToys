@@ -16,6 +16,8 @@ using namespace newplus;
 
 namespace newplus::utilities
 {
+    size_t get_saved_number_of_templates();
+    void set_saved_number_of_templates(size_t templates);
 
     inline std::wstring get_explorer_icon(std::filesystem::path path)
     {
@@ -349,6 +351,15 @@ namespace newplus::utilities
         {
             Logger::info(L"Copying template");
 
+            if (newplus::utilities::get_saved_number_of_templates() >= 0)
+            {
+                // Log that context menu was shown and with how many items
+                trace.UpdateState(true);
+                Trace::EventShowTemplateItems(newplus::utilities::get_saved_number_of_templates());
+                trace.Flush();
+                trace.UpdateState(false);
+            }
+
             // Determine target path of where context menu was displayed
             const auto target_path_name = utilities::get_path_from_unknown_site(site_of_folder);
 
@@ -398,6 +409,15 @@ namespace newplus::utilities
         try
         {
             Logger::info(L"Open templates folder");
+
+            if (newplus::utilities::get_saved_number_of_templates() >= 0)
+            {
+                // Log that context menu was shown and with how many items
+                trace.UpdateState(true);
+                Trace::EventShowTemplateItems(newplus::utilities::get_saved_number_of_templates());
+                trace.Flush();
+                trace.UpdateState(false);
+            }
 
             const std::wstring verb_hardcoded_do_not_change = L"open";
             ShellExecute(nullptr, verb_hardcoded_do_not_change.c_str(), template_folder.c_str(), NULL, NULL, SW_SHOWNORMAL);
