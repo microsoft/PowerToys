@@ -183,10 +183,10 @@
                                         </ToolTip>
                                     </ToolTipService.ToolTip>
                                     <Button.Content>
-                                        <ui:FontIcon
-                                            AutomationProperties.Name="{x:Static p:Resources.ContextMenuIcon}"
-                                            FontFamily="{Binding FontFamily}"
-                                            Glyph="{Binding Glyph}" />
+                                        <TextBlock
+                                        AutomationProperties.Name="{x:Static p:Resources.ContextMenuIcon}"
+                                        FontFamily="{Binding FontFamily}"
+                                        Text="{Binding Glyph}" />
                                     </Button.Content>
                                 </Button>
                             </DataTemplate>

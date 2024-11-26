@@ -1015,12 +1015,6 @@ namespace PowerLauncher.ViewModel
                 // So we set it back with https://github.com/lepoco/wpfui/blob/303f0aefcd59a142bc681415dc4360a34a15f33d/src/Wpf.Ui/Controls/Window/WindowBackdrop.cs#L191
                 var window = Application.Current.MainWindow;
 
-                // Only makes sense for Windows 11 or greater, since Windows 10 doesn't have Mica.
-                if (OSVersionHelper.IsWindows11())
-                {
-                    Wpf.Ui.Controls.WindowBackdrop.RemoveBackground(window);
-                }
-
                 // Setting uint titlebarPvAttribute = 0xFFFFFFFE; works on 22H2 or higher, 21H2 (aka SV1) this value causes a crash
                 if (OSVersionHelper.IsGreaterThanWindows11_21H2())
                 {

@@ -3,11 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-
+using System.Runtime.CompilerServices;
+using System.Windows;
+using ControlzEx.Theming;
 using ManagedCommon;
+using Microsoft.Office.Interop.OneNote;
+using Microsoft.Win32;
+using UnitsNet;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.UserSettings;
-using Wpf.Ui.Appearance;
+using static PowerLauncher.Helper.WindowsInteropHelper;
 
 namespace PowerLauncher.Helper
 {
@@ -15,10 +20,10 @@ namespace PowerLauncher.Helper
     {
         private readonly PowerToysRunSettings _settings;
         private readonly MainWindow _mainWindow;
-        private Theme _currentTheme;
+        private ManagedCommon.Theme _currentTheme;
         private bool _disposed;
 
-        public Theme CurrentTheme => _currentTheme;
+        public ManagedCommon.Theme CurrentTheme => _currentTheme;
 
         public event Common.UI.ThemeChangedHandler ThemeChanged;
 
@@ -26,51 +31,98 @@ namespace PowerLauncher.Helper
         {
             _settings = settings;
             _mainWindow = mainWindow;
-            _currentTheme = ApplicationThemeManager.GetAppTheme().ToTheme();
-            SetTheme(false);
-
-            ApplicationThemeManager.Changed += ApplicationThemeManager_Changed;
+            SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
         }
 
-        public void SetTheme(bool fromSettings)
+        private void OnUserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
         {
-            if (_settings.Theme == Theme.Light)
+            if (e.Category == UserPreferenceCategory.General)
             {
-                _currentTheme = Theme.Light;
-                _mainWindow?.Dispatcher.Invoke(() => ApplicationThemeManager.Apply(ApplicationTheme.Light, _mainWindow.WindowBackdropType));
+                // Theme has changed, update resources
+                UpdateTheme();
             }
-            else if (_settings.Theme == Theme.Dark)
+        }
+
+        private void SetSystemTheme(ManagedCommon.Theme theme)
+        {
+#pragma warning disable WPF0001
+            if (theme == ManagedCommon.Theme.Dark)
             {
-                _currentTheme = Theme.Dark;
-                _mainWindow?.Dispatcher.Invoke(() => ApplicationThemeManager.Apply(ApplicationTheme.Dark, _mainWindow.WindowBackdropType));
+                _mainWindow.ThemeMode = ThemeMode.Dark;
+                ImageLoader.UpdateIconPath(ManagedCommon.Theme.Dark);
+                ThemeChanged?.Invoke(ManagedCommon.Theme.Dark, ManagedCommon.Theme.Light);
             }
-            else if (fromSettings)
+            else if (theme == ManagedCommon.Theme.Light)
             {
-                _mainWindow?.Dispatcher.Invoke(ApplicationThemeManager.ApplySystemTheme);
+                _mainWindow.ThemeMode = ThemeMode.Light;
+                ImageLoader.UpdateIconPath(ManagedCommon.Theme.Light);
+                ThemeChanged?.Invoke(ManagedCommon.Theme.Light, ManagedCommon.Theme.Dark);
+            }
+            else
+            {
+                ImageLoader.UpdateIconPath(theme);
+                _mainWindow.ThemeMode = ThemeMode.None;
+                string themeString = theme switch
+                {
+                    ManagedCommon.Theme.HighContrastOne => "Themes/HighContrast1.xaml",
+                    ManagedCommon.Theme.HighContrastTwo => "Themes/HighContrast2.xaml",
+                    ManagedCommon.Theme.HighContrastWhite => "Themes/HighContrastWhite.xaml",
+                    _ => "Themes/HighContrastBlack.xaml",
+                };
+                if (_mainWindow.Resources.Contains("SystemColorWindowColorBrush"))
+                {
+                    _mainWindow.Resources.Remove("SystemColorWindowColorBrush");
+                }
+
+                _mainWindow.Resources.MergedDictionaries.Clear();
+                if (_mainWindow.Resources.Contains("SystemColorWindowColorBrush"))
+                {
+                    _mainWindow.Resources.Remove("SystemColorWindowColorBrush");
+                }
+
+                /* _mainWindow.Resources.MergedDictionaries.Add(new ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.xaml", UriKind.Absolute),
+                });*/
+                _mainWindow.Resources.MergedDictionaries.Add(new ResourceDictionary
+                {
+                    Source = new Uri("Styles/Styles.xaml", UriKind.Relative),
+                });
+                if (_mainWindow.Resources.Contains("SystemColorWindowColorBrush"))
+                {
+                    _mainWindow.Resources.Remove("SystemColorWindowColorBrush");
+                }
+
+                _mainWindow.Resources.MergedDictionaries.Add(new ResourceDictionary
+                {
+                    Source = new Uri(themeString, UriKind.Relative),
+                });
+            }
+        }
+
+        public void UpdateTheme()
+        {
+            _currentTheme = _settings.Theme;
+            ManagedCommon.Theme theme = ThemeExtensions.GetHighContrastBaseType();
+            if (theme != ManagedCommon.Theme.Light)
+            {
+                _currentTheme = theme;
+            }
+            else if (_settings.Theme == ManagedCommon.Theme.System)
+            {
+                _currentTheme = ThemeExtensions.GetCurrentTheme();
             }
 
-            ImageLoader.UpdateIconPath(_currentTheme);
-
-            // oldTheme isn't used
-            ThemeChanged?.Invoke(_currentTheme, _currentTheme);
+            _mainWindow.Dispatcher.Invoke(() =>
+            {
+                SetSystemTheme(_currentTheme);
+            });
         }
 
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
-        }
-
-        private void ApplicationThemeManager_Changed(ApplicationTheme currentApplicationTheme, System.Windows.Media.Color systemAccent)
-        {
-            var newTheme = currentApplicationTheme.ToTheme();
-            if (_currentTheme == newTheme)
-            {
-                return;
-            }
-
-            _currentTheme = newTheme;
-            SetTheme(false);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -82,7 +134,7 @@ namespace PowerLauncher.Helper
 
             if (disposing)
             {
-                ApplicationThemeManager.Changed -= ApplicationThemeManager_Changed;
+                SystemEvents.UserPreferenceChanged -= OnUserPreferenceChanged;
             }
 
             _disposed = true;
