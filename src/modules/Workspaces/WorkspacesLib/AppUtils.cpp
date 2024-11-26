@@ -214,7 +214,7 @@ namespace Utils
             std::wstring appPathUpper(appPath);
             std::transform(appPathUpper.begin(), appPathUpper.end(), appPathUpper.begin(), towupper);
 
-            // filter out ApplicationFrameHost.exe   
+            // filter out ApplicationFrameHost.exe
             if (appPathUpper.ends_with(NonLocalizable::ApplicationFrameHost))
             {
                 return std::nullopt;
@@ -249,6 +249,7 @@ namespace Utils
             }
 
             // search in apps list
+            std::optional<AppData> appDataPlanB{ std::nullopt };
             for (const auto& appData : apps)
             {
                 if (!appData.installPath.empty())
@@ -271,11 +272,17 @@ namespace Utils
 
                     // edge case, some apps (e.g., Gitkraken) have different .exe files in the subfolders.
                     // apps list contains only one path, so in this case app is not found
+                    // remember the match and return it in case the loop is over and there are no direct matches
                     if (std::filesystem::path(appPath).filename() == std::filesystem::path(appData.installPath).filename())
                     {
-                        return appData;
+                        appDataPlanB = appData;
                     }
                 }
+            }
+
+            if (appDataPlanB.has_value())
+            {
+                return appDataPlanB.value();
             }
 
             // try by name if path not found
@@ -325,7 +332,7 @@ namespace Utils
                     }
                 }
             }
-            
+
             return AppData{
                 .name = std::filesystem::path(appPath).stem(),
                 .installPath = appPath
@@ -335,7 +342,7 @@ namespace Utils
         std::optional<AppData> GetApp(HWND window, const AppList& apps)
         {
             std::wstring processPath = get_process_path(window);
-            
+
             DWORD pid{};
             GetWindowThreadProcessId(window, &pid);
 
