@@ -2174,7 +2174,7 @@ Take a moment to preview the various utilities listed or view our comprehensive 
     <value>Preference updated.</value>
   </data>
   <data name="Oobe_WhatsNew_DataDiagnostics_Yes_Click_InfoBar_Desc.Text" xml:space="preserve">
-    <value>You can change this at any time from </value>
+    <value>You can change this at any time from</value>
   </data>
   <data name="Oobe_WhatsNew_DataDiagnostics_Yes_Click_OpenSettings_Text.Text" xml:space="preserve">
     <value>settings.</value>
