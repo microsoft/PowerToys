@@ -58,3 +58,12 @@ void Trace::EventCopyTemplateResult(_In_ const HRESULT hr) noexcept
         TraceLoggingHResult(hr),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
+
+void Trace::EventOpenTemplates() noexcept
+{
+    TraceLoggingWriteWrapper(
+        g_hProvider,
+        "NewPlus_EventOpenTemplates",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
