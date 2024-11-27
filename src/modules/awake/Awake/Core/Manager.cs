@@ -10,6 +10,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
@@ -233,9 +234,9 @@ namespace Awake.Core
             }
         }
 
-        internal static void SetTimedKeepAwake(uint seconds, bool keepDisplayOn = true)
+        internal static void SetTimedKeepAwake(uint seconds, bool keepDisplayOn = true, [CallerMemberName] string callerName = "")
         {
-            Logger.LogInfo($"Timed keep-awake. Expected runtime: {seconds} seconds with display on setting set to {keepDisplayOn}.");
+            Logger.LogInfo($"Timed keep-awake invoked by {callerName}. Expected runtime: {seconds} seconds with display on setting set to {keepDisplayOn}.");
 
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeTimedKeepAwakeEvent());
 
@@ -262,7 +263,7 @@ namespace Awake.Core
                 },
                 () =>
                 {
-                    Console.WriteLine("Completed timed thread.");
+                    Logger.LogInfo("Completed timed thread.");
                     CancelExistingThread();
 
                     if (IsUsingPowerToysConfig)
@@ -285,15 +286,19 @@ namespace Awake.Core
                 {
                     AwakeSettings currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
                     TimeSpan timeSpan = TimeSpan.FromSeconds(seconds);
+
+                    uint totalHours = (uint)timeSpan.TotalHours;
+                    uint remainingMinutes = (uint)(timeSpan.TotalMinutes % 60);
+
                     bool settingsChanged = currentSettings.Properties.Mode != AwakeMode.TIMED ||
-                                          currentSettings.Properties.IntervalHours != (uint)timeSpan.Hours ||
-                                          currentSettings.Properties.IntervalMinutes != (uint)timeSpan.Minutes;
+                                          currentSettings.Properties.IntervalHours != totalHours ||
+                                          currentSettings.Properties.IntervalMinutes != remainingMinutes;
 
                     if (settingsChanged)
                     {
                         currentSettings.Properties.Mode = AwakeMode.TIMED;
-                        currentSettings.Properties.IntervalHours = (uint)timeSpan.Hours;
-                        currentSettings.Properties.IntervalMinutes = (uint)timeSpan.Minutes;
+                        currentSettings.Properties.IntervalHours = totalHours;
+                        currentSettings.Properties.IntervalMinutes = remainingMinutes;
                         ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
                     }
                 }
