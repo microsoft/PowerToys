@@ -20,7 +20,7 @@ public partial class MainListPage : DynamicListPage
     // which holds the TopLevelCommands and anything that needs to access those functions...
     public MainListPage(ShellViewModel shellViewModel)
     {
-        _items = shellViewModel.TopLevelCommands.Select(w => w.Unsafe).Where(li => li != null).ToArray();
+        _items = shellViewModel.TopLevelCommands.Select(w => w.Unsafe!).Where(li => li != null).ToArray();
     }
 
     public override IListItem[] GetItems() => _items;

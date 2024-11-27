@@ -59,7 +59,7 @@ public sealed partial class ShellPage :
 
     public void Receive(PerformCommandMessage message)
     {
-        var command = message.Command;
+        var command = message.Command.Unsafe;
         if (command == null)
         {
             return;

@@ -23,13 +23,16 @@ public partial class ActionBarViewModel : ObservableObject
     }
 
     [ObservableProperty]
-    public partial string ActionName { get; set; } = string.Empty;
+    public partial string PrimaryActionName { get; set; } = string.Empty;
 
     [ObservableProperty]
-    public partial bool MoreCommandsAvailable { get; set; } = false;
+    public partial string SecondaryActionName { get; set; } = string.Empty;
 
     [ObservableProperty]
-    public partial ObservableCollection<ActionBarContextItemViewModel> ContextActions { get; set; } = [];
+    public partial bool ShouldShowContextMenu { get; set; } = false;
+
+    [ObservableProperty]
+    public partial ObservableCollection<CommandContextItemViewModel> ContextActions { get; set; } = [];
 
     public ActionBarViewModel()
     {
@@ -39,29 +42,28 @@ public partial class ActionBarViewModel : ObservableObject
     {
         if (value != null)
         {
-            ActionName = value.Command.Name;
+            PrimaryActionName = value.Name;
+            SecondaryActionName = value.SecondaryCommandName;
 
-            if (value.HasMoreCommands)
+            if (value.MoreCommands.Count > 0)
             {
-                MoreCommandsAvailable = true;
-                ContextActions = new(value.AllCommands
-                    .Select(command => new ActionBarContextItemViewModel(command)));
+                ShouldShowContextMenu = true;
+                ContextActions = [.. value.AllCommands];
             }
             else
             {
-                MoreCommandsAvailable = false;
+                ShouldShowContextMenu = false;
             }
         }
         else
         {
-            ActionName = string.Empty;
+            PrimaryActionName = string.Empty;
+            SecondaryActionName = string.Empty;
+            ShouldShowContextMenu = false;
         }
     }
 
     // InvokeItemCommand is what this will be in Xaml due to source generator
     [RelayCommand]
-    private void InvokeItem(ActionBarContextItemViewModel item)
-    {
-        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command));
-    }
+    private void InvokeItem(CommandContextItemViewModel item) => WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command));
 }

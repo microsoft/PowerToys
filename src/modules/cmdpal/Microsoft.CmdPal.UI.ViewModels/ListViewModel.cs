@@ -26,7 +26,9 @@ public partial class ListViewModel : ObservableObject
 
         foreach (var item in model.GetItems())
         {
-            group.Add(new(item));
+            ListItemViewModel viewModel = new(item);
+            _ = viewModel.InitializePropertiesAsync();
+            group.Add(viewModel);
         }
 
         Items.AddGroup(group);
@@ -34,14 +36,8 @@ public partial class ListViewModel : ObservableObject
 
     // InvokeItemCommand is what this will be in Xaml due to source generator
     [RelayCommand]
-    private void InvokeItem(ListItemViewModel item)
-    {
-        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command));
-    }
+    private void InvokeItem(ListItemViewModel item) => WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command));
 
     [RelayCommand]
-    private void UpdateSelectedItem(ListItemViewModel item)
-    {
-        WeakReferenceMessenger.Default.Send<UpdateActionBarMessage>(new(item));
-    }
+    private void UpdateSelectedItem(ListItemViewModel item) => WeakReferenceMessenger.Default.Send<UpdateActionBarMessage>(new(item));
 }

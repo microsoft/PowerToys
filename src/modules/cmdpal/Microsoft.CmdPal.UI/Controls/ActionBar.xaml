@@ -16,7 +16,7 @@
             <converters:StringVisibilityConverter x:Key="StringNotEmptyToVisibilityConverter" EmptyValue="Collapsed" NotEmptyValue="Visible" />
 
             <!--  Template for actions in the mode actions dropdown button  -->
-            <DataTemplate x:Key="ContextMenuViewModelTemplate" x:DataType="viewmodels:ActionBarContextItemViewModel">
+            <DataTemplate x:Key="ContextMenuViewModelTemplate" x:DataType="viewmodels:CommandContextItemViewModel">
                 <ListViewItem KeyDown="ActionListViewItem_KeyDown" Tapped="ActionListViewItem_Tapped">
                     <Grid ColumnSpacing="8">
                         <Grid.ColumnDefinitions>
@@ -72,12 +72,12 @@
             BorderThickness="1"
             CornerRadius="4"
             Orientation="Horizontal"
-            Visibility="{x:Bind ViewModel.ActionName, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}">
+            Visibility="{x:Bind ViewModel.PrimaryActionName, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}">
             <TextBlock
                 FontSize="11"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Style="{StaticResource CaptionTextBlockStyle}"
-                Text="{x:Bind ViewModel.ActionName, Mode=OneWay}" />
+                Text="{x:Bind ViewModel.PrimaryActionName, Mode=OneWay}" />
             <FontIcon
                 Margin="4,0,0,0"
                 VerticalAlignment="Center"
@@ -93,7 +93,7 @@
             VerticalAlignment="Center"
             Content="Actions"
             FontSize="12"
-            Visibility="{x:Bind ViewModel.MoreCommandsAvailable, Mode=OneWay}">
+            Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}">
             <SplitButton.Flyout>
                 <Flyout Placement="TopEdgeAlignedRight">
                     <ListView

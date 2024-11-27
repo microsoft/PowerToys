@@ -35,14 +35,11 @@ public sealed partial class ActionBar : UserControl,
             return;
         }
 
-        if (listItem.DataContext is ActionBarContextItemViewModel item)
+        if (listItem.DataContext is CommandContextItemViewModel item)
         {
             ViewModel?.InvokeItemCommand.Execute(item);
         }
     }
 
-    public void Receive(UpdateActionBarMessage message)
-    {
-        ViewModel.SelectedItem = message.ViewModel;
-    }
+    public void Receive(UpdateActionBarMessage message) => ViewModel.SelectedItem = message.ViewModel;
 }
