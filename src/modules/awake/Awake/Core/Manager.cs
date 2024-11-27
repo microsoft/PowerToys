@@ -174,6 +174,8 @@ namespace Awake.Core
                 }
             }
 
+            Logger.LogInfo($"Indefinite keep-awake starting...");
+
             TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_INDEFINITE}]", _indefiniteIcon, TrayIconAction.Update);
 
             _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
@@ -213,6 +215,8 @@ namespace Awake.Core
                     Logger.LogError($"Failed to handle indefinite keep awake command: {ex.Message}");
                 }
             }
+
+            Logger.LogInfo($"Expirable keep-awake starting...");
 
             if (expireAt > DateTimeOffset.Now)
             {
@@ -286,19 +290,28 @@ namespace Awake.Core
                 }
             }
 
+            Logger.LogInfo($"Timed keep-awake starting...");
+
             _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
             TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}]", _timedIcon, TrayIconAction.Update);
 
-            IObservable<long> timerObservable = Observable.Timer(TimeSpan.FromSeconds(seconds));
-            IObservable<long> intervalObservable = Observable.Interval(TimeSpan.FromSeconds(1)).TakeUntil(timerObservable);
+            ulong desiredDuration = (ulong)seconds * 1000;
+            ulong targetDuration = Math.Min(desiredDuration, uint.MaxValue - 1) / 1000;
 
+            if (desiredDuration > uint.MaxValue)
+            {
+                Logger.LogInfo($"The desired interval of {seconds}s ({desiredDuration}ms) exceeds the limit. Defaulting to maximum possible value: {targetDuration}s.");
+            }
+
+            IObservable<long> timerObservable = Observable.Timer(TimeSpan.FromSeconds(targetDuration));
+            IObservable<long> intervalObservable = Observable.Interval(TimeSpan.FromSeconds(1)).TakeUntil(timerObservable);
             IObservable<long> combinedObservable = Observable.CombineLatest(intervalObservable, timerObservable.StartWith(0), (elapsedSeconds, _) => elapsedSeconds + 1);
 
             combinedObservable.Subscribe(
                 elapsedSeconds =>
                 {
-                    uint timeRemaining = seconds - (uint)elapsedSeconds;
+                    uint timeRemaining = (uint)targetDuration - (uint)elapsedSeconds;
                     if (timeRemaining >= 0)
                     {
                         TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}]\n{TimeSpan.FromSeconds(timeRemaining).ToHumanReadableString()}", _timedIcon, TrayIconAction.Update);
@@ -423,6 +436,8 @@ namespace Awake.Core
                     Logger.LogError($"Failed to reset Awake mode: {ex.Message}");
                 }
             }
+
+            Logger.LogInfo($"Passive keep-awake starting...");
 
             TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_OFF}]", _disabledIcon, TrayIconAction.Update);
         }
