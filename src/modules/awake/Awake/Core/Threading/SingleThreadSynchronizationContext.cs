@@ -7,8 +7,6 @@ using System.Collections.Generic;
 using System.Threading;
 using ManagedCommon;
 
-using ManagedCommon;
-
 namespace Awake.Core.Threading
 {
     internal sealed class SingleThreadSynchronizationContext : SynchronizationContext

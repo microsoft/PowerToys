@@ -29,14 +29,12 @@ namespace Awake.Core
     internal static class TrayHelper
     {
         private static NotifyIconData _notifyIconData;
-        private static IntPtr _trayMenu;
-        private static IntPtr _hiddenWindowHandle;
         private static SingleThreadSynchronizationContext? _syncContext;
         private static Thread? _mainThread;
 
-        private static IntPtr TrayMenu { get => _trayMenu; set => _trayMenu = value; }
+        private static IntPtr TrayMenu { get; set; }
 
-        internal static IntPtr HiddenWindowHandle { get => _hiddenWindowHandle; private set => _hiddenWindowHandle = value; }
+        internal static IntPtr HiddenWindowHandle { get; private set; }
 
         static TrayHelper()
         {
@@ -59,7 +57,7 @@ namespace Awake.Core
             Bridge.ScreenToClient(hWnd, ref cursorPos);
 
             // Set menu information
-            var menuInfo = new MenuInfo
+            MenuInfo menuInfo = new()
             {
                 CbSize = (uint)Marshal.SizeOf<MenuInfo>(),
                 FMask = Native.Constants.MIM_STYLE,
@@ -169,7 +167,7 @@ namespace Awake.Core
                         break;
                 }
 
-                if (action == TrayIconAction.Add || action == TrayIconAction.Update)
+                if (action is TrayIconAction.Add or TrayIconAction.Update)
                 {
                     _notifyIconData = new NotifyIconData
                     {
@@ -240,7 +238,7 @@ namespace Awake.Core
             switch (message)
             {
                 case Native.Constants.WM_USER:
-                    if (lParam == (IntPtr)Native.Constants.WM_LBUTTONDOWN || lParam == (IntPtr)Native.Constants.WM_RBUTTONDOWN)
+                    if (lParam is Native.Constants.WM_LBUTTONDOWN or Native.Constants.WM_RBUTTONDOWN)
                     {
                         // Show the context menu associated with the tray icon
                         ShowContextMenu(hWnd);
@@ -404,13 +402,13 @@ namespace Awake.Core
 
         private static void CreateAwakeTimeSubMenu(Dictionary<string, int> trayTimeShortcuts, bool isChecked = false)
         {
-            var awakeTimeMenu = Bridge.CreatePopupMenu();
+            nint awakeTimeMenu = Bridge.CreatePopupMenu();
             for (int i = 0; i < trayTimeShortcuts.Count; i++)
             {
                 Bridge.InsertMenu(awakeTimeMenu, (uint)i, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING, (uint)TrayCommands.TC_TIME + (uint)i, trayTimeShortcuts.ElementAt(i).Key);
             }
 
-            Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_POPUP | (isChecked == true ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)awakeTimeMenu, Resources.AWAKE_KEEP_ON_INTERVAL);
+            Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_POPUP | (isChecked ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)awakeTimeMenu, Resources.AWAKE_KEEP_ON_INTERVAL);
         }
 
         private static void InsertAwakeModeMenuItems(AwakeMode mode)
