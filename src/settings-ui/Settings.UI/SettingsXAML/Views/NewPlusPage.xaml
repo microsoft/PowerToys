@@ -24,13 +24,6 @@
                 </tkcontrols:SettingsCard>
 
                 <InfoBar
-                    x:Uid="NewPlus_NoWindows10SupportWarning"
-                    IsClosable="False"
-                    IsOpen="{x:Bind ViewModel.IsWin10OrLower, Mode=OneWay}"
-                    IsTabStop="{x:Bind ViewModel.IsWin10OrLower, Mode=OneWay}"
-                    Severity="Warning" />
-
-                <InfoBar
                     x:Uid="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"

@@ -33,6 +33,20 @@ public sealed class SizeInfo
         get;
     }
 
+    public SizeInfo Clamp(SizeInfo max)
+    {
+        return new(
+            width: Math.Clamp(this.Width, 0, max.Width),
+            height: Math.Clamp(this.Height, 0, max.Height));
+    }
+
+    public SizeInfo Clamp(decimal maxWidth, decimal maxHeight)
+    {
+        return new(
+            width: Math.Clamp(this.Width, 0, maxWidth),
+            height: Math.Clamp(this.Height, 0, maxHeight));
+    }
+
     public SizeInfo Enlarge(BorderStyle border) =>
         new(
             this.Width + border.Horizontal,
@@ -42,6 +56,17 @@ public sealed class SizeInfo
         new(
             this.Width + padding.Horizontal,
             this.Height + padding.Vertical);
+
+    /// <summary>
+    /// Rounds down the width and height of this size to the nearest whole number.
+    /// </summary>
+    /// <returns>A new <see cref="SizeInfo"/> instance with floored dimensions.</returns>
+    public SizeInfo Floor()
+    {
+        return new SizeInfo(
+            Math.Floor(this.Width),
+            Math.Floor(this.Height));
+    }
 
     /// <summary>
     /// Calculates the intersection of this size with another size, resulting in a size that represents
@@ -69,19 +94,6 @@ public sealed class SizeInfo
     public SizeInfo Invert() =>
         new(-this.Width, -this.Height);
 
-    public SizeInfo Scale(decimal scalingFactor) => new(
-        this.Width * scalingFactor,
-        this.Height * scalingFactor);
-
-    public SizeInfo Shrink(BorderStyle border) =>
-        new(this.Width - border.Horizontal, this.Height - border.Vertical);
-
-    public SizeInfo Shrink(MarginStyle margin) =>
-        new(this.Width - margin.Horizontal, this.Height - margin.Vertical);
-
-    public SizeInfo Shrink(PaddingStyle padding) =>
-        new(this.Width - padding.Horizontal, this.Height - padding.Vertical);
-
     /// <summary>
     /// Creates a new <see cref="RectangleInfo"/> instance representing a rectangle with this size,
     /// positioned at the specified coordinates.
@@ -92,32 +104,39 @@ public sealed class SizeInfo
     public RectangleInfo PlaceAt(decimal x, decimal y) =>
         new(x, y, this.Width, this.Height);
 
+    public SizeInfo Round() =>
+        this.Round(0);
+
+    public SizeInfo Round(int decimals) => new(
+        Math.Round(this.Width, decimals),
+        Math.Round(this.Height, decimals));
+
+    public SizeInfo Scale(decimal scalingFactor) => new(
+        this.Width * scalingFactor,
+        this.Height * scalingFactor);
+
     /// <summary>
     /// Scales this size to fit within the bounds of another size, while maintaining the aspect ratio.
     /// </summary>
     /// <param name="bounds">The size to fit this size into.</param>
     /// <returns>A new <see cref="SizeInfo"/> instance representing the scaled size.</returns>
-    public SizeInfo ScaleToFit(SizeInfo bounds)
+    public SizeInfo ScaleToFit(SizeInfo bounds, out decimal scalingRatio)
     {
         var widthRatio = bounds.Width / this.Width;
         var heightRatio = bounds.Height / this.Height;
-        return widthRatio.CompareTo(heightRatio) switch
+        switch (widthRatio.CompareTo(heightRatio))
         {
-            < 0 => new(bounds.Width, this.Height * widthRatio),
-            0 => bounds,
-            > 0 => new(this.Width * heightRatio, bounds.Height),
-        };
-    }
-
-    /// <summary>
-    /// Rounds down the width and height of this size to the nearest whole number.
-    /// </summary>
-    /// <returns>A new <see cref="SizeInfo"/> instance with floored dimensions.</returns>
-    public SizeInfo Floor()
-    {
-        return new SizeInfo(
-            Math.Floor(this.Width),
-            Math.Floor(this.Height));
+            case < 0:
+                scalingRatio = widthRatio;
+                return new(bounds.Width, this.Height * widthRatio);
+            case 0:
+                // widthRatio and heightRatio are the same, so just pick one
+                scalingRatio = widthRatio;
+                return bounds;
+            case > 0:
+                scalingRatio = heightRatio;
+                return new(this.Width * heightRatio, bounds.Height);
+        }
     }
 
     /// <summary>
@@ -139,6 +158,15 @@ public sealed class SizeInfo
 
         return scalingRatio;
     }
+
+    public SizeInfo Shrink(BorderStyle border) =>
+        new(this.Width - border.Horizontal, this.Height - border.Vertical);
+
+    public SizeInfo Shrink(MarginStyle margin) =>
+        new(this.Width - margin.Horizontal, this.Height - margin.Vertical);
+
+    public SizeInfo Shrink(PaddingStyle padding) =>
+        new(this.Width - padding.Horizontal, this.Height - padding.Vertical);
 
     public Size ToSize() => new((int)this.Width, (int)this.Height);
 
