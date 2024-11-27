@@ -194,9 +194,6 @@ dotnet_diagnostic.IDE0063.severity = suggestion
 # IDE0071: Simplify interpolation
 dotnet_diagnostic.IDE0071.severity = suggestion
 
-# IDE0073: Use file header
-dotnet_diagnostic.IDE0073.severity = suggestion
-
 # IDE0074: Use coalesce compound assignment
 dotnet_diagnostic.IDE0074.severity = suggestion
 
