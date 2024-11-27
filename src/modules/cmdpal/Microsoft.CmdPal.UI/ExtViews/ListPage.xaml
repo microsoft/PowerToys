@@ -80,6 +80,7 @@
             x:Name="ItemsList"
             IsItemClickEnabled="True"
             ItemClick="ListView_ItemClick"
+            SelectionChanged="ItemsList_SelectionChanged"
             ItemTemplate="{StaticResource ListItemViewModelTemplate}"
             ItemsSource="{x:Bind ItemsCVS.View, Mode=OneWay}">
             <ListView.GroupStyle>

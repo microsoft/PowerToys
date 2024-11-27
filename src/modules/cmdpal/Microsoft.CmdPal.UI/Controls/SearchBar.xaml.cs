@@ -56,7 +56,8 @@ public sealed partial class SearchBar : UserControl
         }
         else if (e.Key == VirtualKey.Enter)
         {
-            // TODO: ExecuteCommandMessage?
+            WeakReferenceMessenger.Default.Send<ActivateSelectedListItemMessage>();
+
             e.Handled = true;
         } // ctrl+k
         else if (ctrlPressed && e.Key == VirtualKey.K)
@@ -79,7 +80,8 @@ public sealed partial class SearchBar : UserControl
             }
             else
             {
-                // TODO: Clear the search box
+                // Clear the search box
+                FilterBox.Text = string.Empty;
             }
 
             e.Handled = true;

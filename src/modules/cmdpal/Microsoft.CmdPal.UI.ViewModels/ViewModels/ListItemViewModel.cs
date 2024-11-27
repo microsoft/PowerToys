@@ -4,6 +4,7 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.CmdPal.Models;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -26,6 +27,39 @@ public partial class ListItemViewModel : ObservableObject
     public ICommand Command => _listItemModel.Unsafe.Command;
 
     public bool HasTags => Tags.Length > 0;
+
+    public IEnumerable<ICommandContextItem> ContextMenuCommands
+    {
+        get
+        {
+            var item = _listItemModel.Unsafe;
+            return item.MoreCommands == null ?
+                [] :
+                item.MoreCommands.Where(i => i is ICommandContextItem).Select(i => (ICommandContextItem)i);
+        }
+    }
+
+    public bool HasMoreCommands => ContextMenuCommands.Any();
+
+    internal IEnumerable<ICommandContextItem> AllCommands
+    {
+        get
+        {
+            var l = ContextMenuCommands.ToList();
+            var def = Command;
+            if (def != null)
+            {
+                l.Insert(0, new CommandContextItem(def)
+                {
+                    Title = def.Name,
+                    Subtitle = def.Name,
+                    Icon = def.Icon,
+                });
+            }
+
+            return l;
+        }
+    }
 
     public ListItemViewModel(IListItem model)
     {

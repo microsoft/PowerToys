@@ -30,10 +30,10 @@
                                 Grid.Column="0"
                                 Width="24"
                                 Height="24">
-                                <SymbolIcon Symbol="Emoji" />
+                                <!--<SymbolIcon Symbol="Emoji" />-->
                             </ContentControl>
                         </Viewbox>
-                        <TextBlock Grid.Column="1" Text="{x:Bind Name}" />
+                        <TextBlock Grid.Column="1" Text="{x:Bind Title}" />
                     </Grid>
                 </ListViewItem>
             </DataTemplate>

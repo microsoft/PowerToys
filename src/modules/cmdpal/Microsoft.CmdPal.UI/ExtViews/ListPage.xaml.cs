@@ -15,16 +15,14 @@ namespace Microsoft.CmdPal.UI;
 /// </summary>
 public sealed partial class ListPage : Page,
     IRecipient<NavigateNextCommand>,
-    IRecipient<NavigatePreviousCommand>
+    IRecipient<NavigatePreviousCommand>,
+    IRecipient<ActivateSelectedListItemMessage>
 {
-    public ListViewModel? ViewModel { get; set;  }
+    public ListViewModel? ViewModel { get; set; }
 
     public ListPage()
     {
         this.InitializeComponent();
-
-        WeakReferenceMessenger.Default.Register<NavigateNextCommand>(this);
-        WeakReferenceMessenger.Default.Register<NavigatePreviousCommand>(this);
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -34,7 +32,21 @@ public sealed partial class ListPage : Page,
             ViewModel = lvm;
         }
 
+        // RegisterAll isn't AOT compatible
+        WeakReferenceMessenger.Default.Register<NavigateNextCommand>(this);
+        WeakReferenceMessenger.Default.Register<NavigatePreviousCommand>(this);
+        WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
+
         base.OnNavigatedTo(e);
+    }
+
+    protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
+    {
+        base.OnNavigatingFrom(e);
+
+        WeakReferenceMessenger.Default.Unregister<NavigateNextCommand>(this);
+        WeakReferenceMessenger.Default.Unregister<NavigatePreviousCommand>(this);
+        WeakReferenceMessenger.Default.Unregister<ActivateSelectedListItemMessage>(this);
     }
 
     private void ListView_ItemClick(object sender, ItemClickEventArgs e)
@@ -64,6 +76,22 @@ public sealed partial class ListPage : Page,
         {
             ItemsList.SelectedIndex--;
             ItemsList.ScrollIntoView(ItemsList.SelectedItem);
+        }
+    }
+
+    public void Receive(ActivateSelectedListItemMessage message)
+    {
+        if (ItemsList.SelectedItem is ListItemViewModel item)
+        {
+            ViewModel?.InvokeItemCommand.Execute(item);
+        }
+    }
+
+    private void ItemsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ItemsList.SelectedItem is ListItemViewModel item)
+        {
+            ViewModel?.UpdateSelectedItemCommand.Execute(item);
         }
     }
 }
