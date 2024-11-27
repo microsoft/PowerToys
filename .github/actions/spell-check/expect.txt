@@ -994,6 +994,7 @@ newdev
 NEWDIALOGSTYLE
 NEWFILE
 newitem
+NEWKONA
 newpath
 newplus
 NEWPLUSCONTEXTMENU
