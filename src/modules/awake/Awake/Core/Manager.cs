@@ -32,9 +32,7 @@ namespace Awake.Core
     /// </summary>
     public class Manager
     {
-        private static bool _isUsingPowerToysConfig;
-
-        internal static bool IsUsingPowerToysConfig { get => _isUsingPowerToysConfig; set => _isUsingPowerToysConfig = value; }
+        internal static bool IsUsingPowerToysConfig { get; set; }
 
         private static readonly CompositeFormat AwakeMinutes = CompositeFormat.Parse(Resources.AWAKE_MINUTES);
         private static readonly CompositeFormat AwakeHours = CompositeFormat.Parse(Resources.AWAKE_HOURS);
@@ -49,9 +47,7 @@ namespace Awake.Core
 
         private static CancellationTokenSource _tokenSource;
 
-        private static SettingsUtils? _moduleSettings;
-
-        internal static SettingsUtils? ModuleSettings { get => _moduleSettings; set => _moduleSettings = value; }
+        internal static SettingsUtils? ModuleSettings { get; set; }
 
         static Manager()
         {
@@ -86,7 +82,7 @@ namespace Awake.Core
         {
             Bridge.AllocConsole();
 
-            var outputFilePointer = Bridge.CreateFile("CONOUT$", Native.Constants.GENERIC_READ | Native.Constants.GENERIC_WRITE, FileShare.Write, IntPtr.Zero, FileMode.OpenOrCreate, 0, IntPtr.Zero);
+            nint outputFilePointer = Bridge.CreateFile("CONOUT$", Native.Constants.GENERIC_READ | Native.Constants.GENERIC_WRITE, FileShare.Write, IntPtr.Zero, FileMode.OpenOrCreate, 0, IntPtr.Zero);
 
             Bridge.SetStdHandle(Native.Constants.STD_OUTPUT_HANDLE, outputFilePointer);
 
@@ -104,7 +100,7 @@ namespace Awake.Core
         {
             try
             {
-                var stateResult = Bridge.SetThreadExecutionState(state);
+                ExecutionState stateResult = Bridge.SetThreadExecutionState(state);
                 return stateResult != 0;
             }
             catch
@@ -156,8 +152,8 @@ namespace Awake.Core
             {
                 try
                 {
-                    var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
-                    var settingsChanged = currentSettings.Properties.Mode != AwakeMode.INDEFINITE ||
+                    AwakeSettings currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                    bool settingsChanged = currentSettings.Properties.Mode != AwakeMode.INDEFINITE ||
                                           currentSettings.Properties.KeepDisplayOn != keepDisplayOn;
 
                     if (settingsChanged)
@@ -217,8 +213,8 @@ namespace Awake.Core
             {
                 try
                 {
-                    var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
-                    var settingsChanged = currentSettings.Properties.Mode != AwakeMode.EXPIRABLE ||
+                    AwakeSettings currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                    bool settingsChanged = currentSettings.Properties.Mode != AwakeMode.EXPIRABLE ||
                                           currentSettings.Properties.ExpirationDateTime != expireAt ||
                                           currentSettings.Properties.KeepDisplayOn != keepDisplayOn;
 
@@ -250,15 +246,15 @@ namespace Awake.Core
 
             TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}]", _timedIcon, TrayIconAction.Update);
 
-            var timerObservable = Observable.Timer(TimeSpan.FromSeconds(seconds));
-            var intervalObservable = Observable.Interval(TimeSpan.FromSeconds(1)).TakeUntil(timerObservable);
+            IObservable<long> timerObservable = Observable.Timer(TimeSpan.FromSeconds(seconds));
+            IObservable<long> intervalObservable = Observable.Interval(TimeSpan.FromSeconds(1)).TakeUntil(timerObservable);
 
-            var combinedObservable = Observable.CombineLatest(intervalObservable, timerObservable.StartWith(0), (elapsedSeconds, _) => elapsedSeconds + 1);
+            IObservable<long> combinedObservable = Observable.CombineLatest(intervalObservable, timerObservable.StartWith(0), (elapsedSeconds, _) => elapsedSeconds + 1);
 
             combinedObservable.Subscribe(
                 elapsedSeconds =>
                 {
-                    var timeRemaining = seconds - (uint)elapsedSeconds;
+                    uint timeRemaining = seconds - (uint)elapsedSeconds;
                     if (timeRemaining >= 0)
                     {
                         TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}]\n{TimeSpan.FromSeconds(timeRemaining).ToHumanReadableString()}", _timedIcon, TrayIconAction.Update);
@@ -287,9 +283,9 @@ namespace Awake.Core
             {
                 try
                 {
-                    var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
-                    var timeSpan = TimeSpan.FromSeconds(seconds);
-                    var settingsChanged = currentSettings.Properties.Mode != AwakeMode.TIMED ||
+                    AwakeSettings currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                    TimeSpan timeSpan = TimeSpan.FromSeconds(seconds);
+                    bool settingsChanged = currentSettings.Properties.Mode != AwakeMode.TIMED ||
                                           currentSettings.Properties.IntervalHours != (uint)timeSpan.Hours ||
                                           currentSettings.Properties.IntervalMinutes != (uint)timeSpan.Minutes;
 
@@ -343,7 +339,7 @@ namespace Awake.Core
 
                 if (registryKey != null)
                 {
-                    var versionString = $"{registryKey.GetValue("ProductName")} {registryKey.GetValue("DisplayVersion")} {registryKey.GetValue("BuildLabEx")}";
+                    string versionString = $"{registryKey.GetValue("ProductName")} {registryKey.GetValue("DisplayVersion")} {registryKey.GetValue("BuildLabEx")}";
                     return versionString;
                 }
                 else
@@ -392,7 +388,7 @@ namespace Awake.Core
             {
                 try
                 {
-                    var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                    AwakeSettings currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
 
                     if (currentSettings.Properties.Mode != AwakeMode.PASSIVE)
                     {
@@ -416,7 +412,7 @@ namespace Awake.Core
             {
                 try
                 {
-                    var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                    AwakeSettings currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
                     currentSettings.Properties.KeepDisplayOn = !currentSettings.Properties.KeepDisplayOn;
                     ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
                 }

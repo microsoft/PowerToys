@@ -53,8 +53,6 @@ namespace Awake.Core.Models
         public byte HiberFileType;
         [MarshalAs(UnmanagedType.U1)]
         public bool AoAcConnectivitySupported;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 6)]
-        private readonly byte[] spare3;
         [MarshalAs(UnmanagedType.U1)]
         public bool SystemBatteriesPresent;
         [MarshalAs(UnmanagedType.U1)]

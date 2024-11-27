@@ -27,14 +27,14 @@ namespace Awake
 {
     internal sealed class Program
     {
-        private static Mutex? _mutex;
+        private static readonly ETWTrace _etwTrace = new();
+
         private static FileSystemWatcher? _watcher;
         private static SettingsUtils? _settingsUtils;
-        private static ETWTrace _etwTrace = new ETWTrace();
 
         private static bool _startedFromPowerToys;
 
-        public static Mutex? LockMutex { get => _mutex; set => _mutex = value; }
+        public static Mutex? LockMutex { get; set; }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         private static ConsoleEventHandler _handler;
@@ -106,37 +106,37 @@ namespace Awake
 
                     Logger.LogInfo("Parsing parameters...");
 
-                    var configOption = new Option<bool>(AliasesConfigOption, () => false, Resources.AWAKE_CMD_HELP_CONFIG_OPTION)
+                    Option<bool> configOption = new(AliasesConfigOption, () => false, Resources.AWAKE_CMD_HELP_CONFIG_OPTION)
                     {
                         Arity = ArgumentArity.ZeroOrOne,
                         IsRequired = false,
                     };
 
-                    var displayOption = new Option<bool>(AliasesDisplayOption, () => true, Resources.AWAKE_CMD_HELP_DISPLAY_OPTION)
+                    Option<bool> displayOption = new(AliasesDisplayOption, () => true, Resources.AWAKE_CMD_HELP_DISPLAY_OPTION)
                     {
                         Arity = ArgumentArity.ZeroOrOne,
                         IsRequired = false,
                     };
 
-                    var timeOption = new Option<uint>(AliasesTimeOption, () => 0, Resources.AWAKE_CMD_HELP_TIME_OPTION)
+                    Option<uint> timeOption = new(AliasesTimeOption, () => 0, Resources.AWAKE_CMD_HELP_TIME_OPTION)
                     {
                         Arity = ArgumentArity.ExactlyOne,
                         IsRequired = false,
                     };
 
-                    var pidOption = new Option<int>(AliasesPidOption, () => 0, Resources.AWAKE_CMD_HELP_PID_OPTION)
+                    Option<int> pidOption = new(AliasesPidOption, () => 0, Resources.AWAKE_CMD_HELP_PID_OPTION)
                     {
                         Arity = ArgumentArity.ZeroOrOne,
                         IsRequired = false,
                     };
 
-                    var expireAtOption = new Option<string>(AliasesExpireAtOption, () => string.Empty, Resources.AWAKE_CMD_HELP_EXPIRE_AT_OPTION)
+                    Option<string> expireAtOption = new(AliasesExpireAtOption, () => string.Empty, Resources.AWAKE_CMD_HELP_EXPIRE_AT_OPTION)
                     {
                         Arity = ArgumentArity.ZeroOrOne,
                         IsRequired = false,
                     };
 
-                    var parentPidOption = new Option<bool>(AliasesParentPidOption, () => false, Resources.AWAKE_CMD_PARENT_PID_OPTION)
+                    Option<bool> parentPidOption = new(AliasesParentPidOption, () => false, Resources.AWAKE_CMD_PARENT_PID_OPTION)
                     {
                         Arity = ArgumentArity.ZeroOrOne,
                         IsRequired = false,
@@ -208,7 +208,7 @@ namespace Awake
 
             TrayHelper.InitializeTray(_defaultAwakeIcon, Core.Constants.FullAppName);
 
-            var eventHandle = new EventWaitHandle(false, EventResetMode.ManualReset, PowerToys.Interop.Constants.AwakeExitEvent());
+            EventWaitHandle eventHandle = new(false, EventResetMode.ManualReset, PowerToys.Interop.Constants.AwakeExitEvent());
             new Thread(() =>
             {
                 WaitHandle.WaitAny([eventHandle]);
@@ -337,8 +337,8 @@ namespace Awake
 
         private static void SetupFileSystemWatcher(string settingsPath)
         {
-            var directory = Path.GetDirectoryName(settingsPath)!;
-            var fileName = Path.GetFileName(settingsPath);
+            string directory = Path.GetDirectoryName(settingsPath)!;
+            string fileName = Path.GetFileName(settingsPath);
 
             _watcher = new FileSystemWatcher
             {
@@ -363,7 +363,7 @@ namespace Awake
 
         private static void InitializeSettings()
         {
-            var settings = Manager.ModuleSettings?.GetSettings<AwakeSettings>(Core.Constants.AppName) ?? new AwakeSettings();
+            AwakeSettings settings = Manager.ModuleSettings?.GetSettings<AwakeSettings>(Core.Constants.AppName) ?? new AwakeSettings();
             TrayHelper.SetTray(settings, _startedFromPowerToys);
         }
 
@@ -384,7 +384,7 @@ namespace Awake
         {
             try
             {
-                var settings = _settingsUtils!.GetSettings<AwakeSettings>(Core.Constants.AppName)
+                AwakeSettings settings = _settingsUtils!.GetSettings<AwakeSettings>(Core.Constants.AppName)
                     ?? throw new InvalidOperationException("Settings are null.");
 
                 Logger.LogInfo($"Identified custom time shortcuts for the tray: {settings.Properties.CustomTrayTimes.Count}");
