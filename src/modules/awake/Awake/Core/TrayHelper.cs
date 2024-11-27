@@ -204,7 +204,8 @@ namespace Awake.Core
 
                         if (attempt == 3)
                         {
-                            throw new Win32Exception(errorCode, $"Failed to change tray icon after 3 attempts. Action: {action} and error code: {errorCode}");
+                            Logger.LogError($"Failed to change tray icon after 3 attempts. Action: {action} and error code: {errorCode}");
+                            break;
                         }
 
                         Thread.Sleep(100);
