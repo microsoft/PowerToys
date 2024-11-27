@@ -30,6 +30,19 @@ namespace WorkspacesEditor
             MainViewModel = mainViewModel;
             mainViewModel.SetMainWindow(this);
 
+            if (Properties.Settings.Default.Height == -1)
+            {
+                // This is the very first time the window is created. Place it on the screen center
+                WindowInteropHelper windowInteropHelper = new WindowInteropHelper(this);
+                System.Windows.Forms.Screen screen = System.Windows.Forms.Screen.FromHandle(windowInteropHelper.Handle);
+                double dpi = MonitorHelper.GetScreenDpiFromScreen(screen);
+                this.Height = screen.WorkingArea.Height / dpi * 0.90;
+                this.Width = screen.WorkingArea.Width / dpi * 0.75;
+                this.Top = screen.WorkingArea.Top + (int)(screen.WorkingArea.Height / dpi * 0.05);
+                this.Left = screen.WorkingArea.Left + (int)(screen.WorkingArea.Width / dpi * 0.125);
+                SavePosition();
+            }
+
             this.Top = Properties.Settings.Default.Top;
             this.Left = Properties.Settings.Default.Left;
             this.Height = Properties.Settings.Default.Height;
@@ -75,7 +88,7 @@ namespace WorkspacesEditor
                 cancellationToken.Token);
         }
 
-        private void OnClosing(object sender, EventArgs e)
+        private void SavePosition()
         {
             if (WindowState == WindowState.Maximized)
             {
@@ -96,6 +109,11 @@ namespace WorkspacesEditor
             }
 
             Properties.Settings.Default.Save();
+        }
+
+        private void OnClosing(object sender, EventArgs e)
+        {
+            SavePosition();
             cancellationToken.Dispose();
             App.Current.Shutdown();
         }
