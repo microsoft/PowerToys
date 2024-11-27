@@ -10,5 +10,5 @@ namespace AdvancedPaste.Services;
 
 public interface IKernelService
 {
-    Task<DataPackage> TransformClipboardAsync(string prompt, DataPackageView clipboardData, bool isSavedQuery);
+    Task<DataPackage> TransformClipboardAsync(string prompt, DataPackageView clipboardData, bool isSavedQuery, System.IProgress<double> progress);
 }

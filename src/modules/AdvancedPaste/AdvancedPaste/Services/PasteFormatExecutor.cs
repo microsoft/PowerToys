@@ -17,7 +17,7 @@ public sealed class PasteFormatExecutor(IKernelService kernelService, ICustomTex
     private readonly IKernelService _kernelService = kernelService;
     private readonly ICustomTextTransformService _customTextTransformService = customTextTransformService;
 
-    public async Task<DataPackage> ExecutePasteFormatAsync(PasteFormat pasteFormat, PasteActionSource source)
+    public async Task<DataPackage> ExecutePasteFormatAsync(PasteFormat pasteFormat, PasteActionSource source, IProgress<double> progress)
     {
         if (!pasteFormat.IsEnabled)
         {
@@ -34,9 +34,9 @@ public sealed class PasteFormatExecutor(IKernelService kernelService, ICustomTex
         return await Task.Run(async () =>
             pasteFormat.Format switch
             {
-                PasteFormats.KernelQuery => await _kernelService.TransformClipboardAsync(pasteFormat.Prompt, clipboardData, pasteFormat.IsSavedQuery),
-                PasteFormats.CustomTextTransformation => DataPackageHelpers.CreateFromText(await _customTextTransformService.TransformTextAsync(pasteFormat.Prompt, await clipboardData.GetTextAsync())),
-                _ => await TransformHelpers.TransformAsync(format, clipboardData),
+                PasteFormats.KernelQuery => await _kernelService.TransformClipboardAsync(pasteFormat.Prompt, clipboardData, pasteFormat.IsSavedQuery, progress),
+                PasteFormats.CustomTextTransformation => DataPackageHelpers.CreateFromText(await _customTextTransformService.TransformTextAsync(pasteFormat.Prompt, await clipboardData.GetTextAsync(), progress)),
+                _ => await TransformHelpers.TransformAsync(format, clipboardData, progress),
             });
     }
 

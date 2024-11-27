@@ -17,7 +17,7 @@ namespace AdvancedPaste.Helpers;
 
 public static class TransformHelpers
 {
-    public static async Task<DataPackage> TransformAsync(PasteFormats format, DataPackageView clipboardData)
+    public static async Task<DataPackage> TransformAsync(PasteFormats format, DataPackageView clipboardData, IProgress<double> progress)
     {
         return format switch
         {
@@ -28,6 +28,8 @@ public static class TransformHelpers
             PasteFormats.PasteAsTxtFile => await ToTxtFileAsync(clipboardData),
             PasteFormats.PasteAsPngFile => await ToPngFileAsync(clipboardData),
             PasteFormats.PasteAsHtmlFile => await ToHtmlFileAsync(clipboardData),
+            PasteFormats.TranscodeToMp3 => await TranscodeHelpers.TranscodeToMp3Async(clipboardData, progress),
+            PasteFormats.TranscodeToMp4 => await TranscodeHelpers.TranscodeToMp4Async(clipboardData, progress),
             PasteFormats.KernelQuery => throw new ArgumentException($"Unsupported format {format}", nameof(format)),
             PasteFormats.CustomTextTransformation => throw new ArgumentException($"Unsupported format {format}", nameof(format)),
             _ => throw new ArgumentException($"Unknown value {format}", nameof(format)),

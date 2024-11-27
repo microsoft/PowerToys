@@ -29,7 +29,7 @@ using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 namespace AdvancedPaste.ViewModels
 {
-    public sealed partial class OptionsViewModel : ObservableObject, IDisposable
+    public sealed partial class OptionsViewModel : ObservableObject, IProgress<double>, IDisposable
     {
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         private readonly DispatcherTimer _clipboardTimer;
@@ -67,6 +67,10 @@ namespace AdvancedPaste.ViewModels
         [ObservableProperty]
         private bool _busy;
 
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasIndeterminateTransformProgress))]
+        private double _transformProgress = double.NaN;
+
         public ObservableCollection<PasteFormat> StandardPasteFormats { get; } = [];
 
         public ObservableCollection<PasteFormat> CustomActionPasteFormats { get; } = [];
@@ -80,6 +84,8 @@ namespace AdvancedPaste.ViewModels
         public bool ClipboardHasData => AvailableClipboardFormats != ClipboardFormat.None;
 
         public bool ClipboardHasDataForCustomAI => PasteFormat.SupportsClipboardFormats(CustomAIFormat, AvailableClipboardFormats);
+
+        public bool HasIndeterminateTransformProgress => double.IsNaN(TransformProgress);
 
         private PasteFormats CustomAIFormat => _userSettings.IsAdvancedAIEnabled ? PasteFormats.KernelQuery : PasteFormats.CustomTextTransformation;
 
@@ -324,6 +330,7 @@ namespace AdvancedPaste.ViewModels
         {
             await ClipboardHelper.TryCopyPasteAsync(package, HideWindow);
             Query = string.Empty;
+            _ = Task.Run(() => package.GetView().TryCleanupAfterDelayAsync());
         }
 
         // Command to select the previous custom format
@@ -378,6 +385,7 @@ namespace AdvancedPaste.ViewModels
             Logger.LogDebug($"Started executing {pasteFormat.Format} from source {source}");
 
             Busy = true;
+            TransformProgress = double.NaN;
             PasteActionError = PasteActionError.None;
             Query = pasteFormat.Query;
 
@@ -386,7 +394,7 @@ namespace AdvancedPaste.ViewModels
                 // Minimum time to show busy spinner for AI actions when triggered by global keyboard shortcut.
                 var aiActionMinTaskTime = TimeSpan.FromSeconds(2);
                 var delayTask = (Visible && source == PasteActionSource.GlobalKeyboardShortcut) ? Task.Delay(aiActionMinTaskTime) : Task.CompletedTask;
-                var dataPackage = await _pasteFormatExecutor.ExecutePasteFormatAsync(pasteFormat, source);
+                var dataPackage = await _pasteFormatExecutor.ExecutePasteFormatAsync(pasteFormat, source, this);
 
                 await delayTask;
 
@@ -483,6 +491,14 @@ namespace AdvancedPaste.ViewModels
             UpdateAllowedByGPO();
 
             return IsAllowedByGPO && _aiCredentialsProvider.Refresh();
+        }
+
+        public void Report(double value)
+        {
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                TransformProgress = value;
+            });
         }
     }
 }

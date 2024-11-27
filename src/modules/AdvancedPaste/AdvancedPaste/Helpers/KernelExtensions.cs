@@ -17,6 +17,7 @@ internal static class KernelExtensions
     private const string DataPackageKey = "DataPackage";
     private const string LastErrorKey = "LastError";
     private const string ActionChainKey = "ActionChain";
+    private const string ProgressKey = "IProgress";
 
     internal static DataPackageView GetDataPackageView(this Kernel kernel)
     {
@@ -39,6 +40,10 @@ internal static class KernelExtensions
     internal static void SetDataPackage(this Kernel kernel, DataPackage dataPackage) => kernel.Data[DataPackageKey] = dataPackage;
 
     internal static void SetDataPackageView(this Kernel kernel, DataPackageView dataPackageView) => kernel.Data[DataPackageKey] = dataPackageView;
+
+    internal static IProgress<double> GetProgress(this Kernel kernel) => kernel.Data.TryGetValue(ProgressKey, out object obj) ? obj as IProgress<double> : null;
+
+    internal static void SetProgress(this Kernel kernel, IProgress<double> progress) => kernel.Data[ProgressKey] = progress;
 
     internal static Exception GetLastError(this Kernel kernel) => kernel.Data.TryGetValue(LastErrorKey, out object obj) ? obj as Exception : null;
 

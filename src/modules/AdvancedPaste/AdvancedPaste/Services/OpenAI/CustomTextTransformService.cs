@@ -51,7 +51,7 @@ public sealed class CustomTextTransformService(IAICredentialsProvider aiCredenti
         return response;
     }
 
-    public async Task<string> TransformTextAsync(string prompt, string inputText)
+    public async Task<string> TransformTextAsync(string prompt, string inputText, IProgress<double> progress)
     {
         if (string.IsNullOrWhiteSpace(prompt))
         {

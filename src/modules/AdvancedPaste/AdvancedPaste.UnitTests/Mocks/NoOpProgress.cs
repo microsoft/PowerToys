@@ -3,11 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Threading.Tasks;
 
-namespace AdvancedPaste.Services;
+namespace AdvancedPaste.UnitTests.Mocks;
 
-public interface ICustomTextTransformService
+internal sealed class NoOpProgress : IProgress<double>
 {
-    Task<string> TransformTextAsync(string prompt, string inputText, IProgress<double> progress);
+    public void Report(double value)
+    {
+    }
 }

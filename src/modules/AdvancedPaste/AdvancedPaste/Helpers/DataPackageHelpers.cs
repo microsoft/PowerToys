@@ -4,10 +4,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 using AdvancedPaste.Models;
+using ManagedCommon;
+using Microsoft.Win32;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Data.Html;
 using Windows.Graphics.Imaging;
@@ -19,6 +23,10 @@ namespace AdvancedPaste.Helpers;
 internal static class DataPackageHelpers
 {
     private static readonly HashSet<string> ImageFileTypes = new(StringComparer.InvariantCultureIgnoreCase) { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".ico", ".svg" };
+
+    private static readonly Lazy<HashSet<string>> AudioFileTypes = new(GetMediaFileTypes("audio"));
+
+    private static readonly Lazy<HashSet<string>> VideoFileTypes = new(GetMediaFileTypes("video"));
 
     private static readonly (string DataFormat, ClipboardFormat ClipboardFormat)[] DataFormats =
     [
@@ -61,6 +69,16 @@ internal static class DataPackageHelpers
                 {
                     availableFormats |= ClipboardFormat.Image;
                 }
+
+                if (AudioFileTypes.Value.Contains(file.FileType))
+                {
+                    availableFormats |= ClipboardFormat.Audio;
+                }
+
+                if (VideoFileTypes.Value.Contains(file.FileType))
+                {
+                    availableFormats |= ClipboardFormat.Video;
+                }
             }
         }
 
@@ -92,6 +110,60 @@ internal static class DataPackageHelpers
 
         return availableFormats == ClipboardFormat.Text ? !string.IsNullOrEmpty(await dataPackageView.GetTextAsync()) : availableFormats != ClipboardFormat.None;
     }
+
+    internal static async Task TryCleanupAfterDelayAsync(this DataPackageView dataPackageView)
+    {
+        try
+        {
+            var tempFile = await GetSingleTempFileOrNullAsync(dataPackageView);
+
+            if (tempFile != null)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(30));
+
+                Logger.LogDebug($"Cleaning up temporary file with extension [{tempFile.Extension}] from data package after delay");
+
+                tempFile.Delete();
+                if (NormalizeDirectoryPath(tempFile.Directory?.Parent?.FullName) == NormalizeDirectoryPath(Path.GetTempPath()))
+                {
+                    tempFile.Directory?.Delete();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to clean up temporary files", ex);
+        }
+    }
+
+    private static async Task<FileInfo> GetSingleTempFileOrNullAsync(this DataPackageView dataPackageView)
+    {
+        if (!dataPackageView.Contains(StandardDataFormats.StorageItems))
+        {
+            return null;
+        }
+
+        var storageItems = await dataPackageView.GetStorageItemsAsync();
+
+        if (storageItems.Count != 1 || storageItems.Single() is not StorageFile file)
+        {
+            return null;
+        }
+
+        FileInfo fileInfo = new(file.Path);
+        var tempPathDirectory = NormalizeDirectoryPath(Path.GetTempPath());
+
+        var directoryPaths = new[] { fileInfo.Directory, fileInfo.Directory?.Parent }
+                            .Where(directory => directory != null)
+                            .Select(directory => NormalizeDirectoryPath(directory.FullName));
+
+        return directoryPaths.Contains(NormalizeDirectoryPath(Path.GetTempPath())) ? fileInfo : null;
+    }
+
+    private static string NormalizeDirectoryPath(string path) =>
+        Path.GetFullPath(new Uri(path).LocalPath)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            .ToUpperInvariant();
 
     internal static async Task<string> GetTextOrEmptyAsync(this DataPackageView dataPackageView) =>
         dataPackageView.Contains(StandardDataFormats.Text) ? await dataPackageView.GetTextAsync() : string.Empty;
@@ -147,5 +219,28 @@ internal static class DataPackageHelpers
         }
 
         return null;
+    }
+
+    private static HashSet<string> GetMediaFileTypes(string mediaKind)
+    {
+        static string AssocQueryStringValue(NativeMethods.AssocStr assocStr, string extension)
+        {
+            uint pcchOut = 0;
+
+            NativeMethods.AssocQueryString(NativeMethods.AssocF.None, assocStr, extension, null, null, ref pcchOut);
+
+            StringBuilder pszOut = new((int)pcchOut);
+            var hResult = NativeMethods.AssocQueryString(NativeMethods.AssocF.None, assocStr, extension, null, pszOut, ref pcchOut);
+            return hResult == NativeMethods.HResult.Ok ? pszOut.ToString() : string.Empty;
+        }
+
+        var comparison = StringComparison.OrdinalIgnoreCase;
+        var extensions = from extension in Registry.ClassesRoot.GetSubKeyNames()
+                         where extension.StartsWith('.')
+                         where AssocQueryStringValue(NativeMethods.AssocStr.PerceivedType, extension).Equals(mediaKind, comparison) ||
+                               AssocQueryStringValue(NativeMethods.AssocStr.ContentType, extension).StartsWith($"{mediaKind}/", comparison)
+                         select extension;
+
+        return extensions.ToHashSet(StringComparer.InvariantCultureIgnoreCase);
     }
 }

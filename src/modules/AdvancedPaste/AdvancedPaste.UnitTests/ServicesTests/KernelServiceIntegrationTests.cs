@@ -130,7 +130,7 @@ public sealed class KernelServiceIntegrationTests : IDisposable
 
     private async Task<DataPackageView> GetKernelOutputAsync(string prompt, DataPackage input)
     {
-        var output = await _kernelService.TransformClipboardAsync(prompt, input.GetView(), isSavedQuery: false);
+        var output = await _kernelService.TransformClipboardAsync(prompt, input.GetView(), isSavedQuery: false, new NoOpProgress());
 
         Assert.AreEqual(1, _eventListener.SemanticKernelEvents.Count);
         Assert.IsTrue(_eventListener.SemanticKernelTokens > 0);

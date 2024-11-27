@@ -36,12 +36,13 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
 
     protected abstract AIServiceUsage GetAIServiceUsage(ChatMessageContent chatMessage);
 
-    public async Task<DataPackage> TransformClipboardAsync(string prompt, DataPackageView clipboardData, bool isSavedQuery)
+    public async Task<DataPackage> TransformClipboardAsync(string prompt, DataPackageView clipboardData, bool isSavedQuery, IProgress<double> progress)
     {
         Logger.LogTrace();
 
         var kernel = CreateKernel();
         kernel.SetDataPackageView(clipboardData);
+        kernel.SetProgress(progress);
 
         CacheKey cacheKey = new() { Prompt = prompt, AvailableFormats = await clipboardData.GetAvailableFormatsAsync() };
         var maybeCacheValue = _queryCacheService.ReadOrNull(cacheKey);
@@ -209,14 +210,14 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
             async dataPackageView =>
             {
                 var input = await dataPackageView.GetTextAsync();
-                string output = await GetPromptBasedOutput(format, prompt, input);
+                string output = await GetPromptBasedOutput(format, prompt, input, kernel.GetProgress());
                 return DataPackageHelpers.CreateFromText(output);
             });
 
-    private async Task<string> GetPromptBasedOutput(PasteFormats format, string prompt, string input) =>
+    private async Task<string> GetPromptBasedOutput(PasteFormats format, string prompt, string input, IProgress<double> progress) =>
         format switch
         {
-            PasteFormats.CustomTextTransformation => await _customTextTransformService.TransformTextAsync(prompt, input),
+            PasteFormats.CustomTextTransformation => await _customTextTransformService.TransformTextAsync(prompt, input, progress),
             _ => throw new ArgumentException($"Unsupported format {format} for prompt transform", nameof(format)),
         };
 
@@ -224,7 +225,7 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
         ExecuteTransformAsync(
            kernel,
            new ActionChainItem(format, Arguments: []),
-           async dataPackageView => await TransformHelpers.TransformAsync(format, dataPackageView));
+           async dataPackageView => await TransformHelpers.TransformAsync(format, dataPackageView, kernel.GetProgress()));
 
     private static async Task<string> ExecuteTransformAsync(Kernel kernel, ActionChainItem actionChainItem, Func<DataPackageView, Task<DataPackage>> transformFunc)
     {
