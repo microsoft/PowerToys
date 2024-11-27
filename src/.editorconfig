@@ -260,9 +260,6 @@ dotnet_diagnostic.IDE0305.severity = suggestion
 # IDE1005: Use conditional delegate call
 dotnet_diagnostic.IDE1005.severity = suggestion
 
-# IDE1006: Naming rule violation: Interface should begin with 'I'
-dotnet_diagnostic.IDE1006.severity = suggestion
-
 # CA1859: Use concrete types when possible for improved performance
 dotnet_diagnostic.CA1859.severity = suggestion
 
