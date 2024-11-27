@@ -246,7 +246,7 @@ dotnet_diagnostic.IDE0260.severity = suggestion
 dotnet_diagnostic.IDE0270.severity = suggestion
 
 # IDE0290: Use primary constructor
-dotnet_diagnostic.IDE0290.severity = suggestion
+dotnet_diagnostic.IDE0290.severity = silent
 
 # IDE0300: Use collection expression for array
 dotnet_diagnostic.IDE0300.severity = suggestion
