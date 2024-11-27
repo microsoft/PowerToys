@@ -11,6 +11,7 @@ namespace Microsoft.Plugin.Indexer.Interop
     [ComImport]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1715:Identifiers should have correct prefix", Justification = "Using original name from type lib")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1302:Interface names should begin with I", Justification = "Using original name from type lib")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Using original name from type lib")]
     public interface CSearchQueryHelper : ISearchQueryHelper
     {
     }
