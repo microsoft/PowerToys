@@ -140,14 +140,13 @@ namespace Awake.Core
             Logger.LogInfo("Instantiating of new token source and thread token completed.");
         }
 
-        internal static void SetIndefiniteKeepAwake(bool keepDisplayOn = false)
+        internal static void SetIndefiniteKeepAwake(bool keepDisplayOn = false, [CallerMemberName] string callerName = "")
         {
+            Logger.LogInfo($"Indefinite keep-awake invoked by {callerName}.");
+
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeIndefinitelyKeepAwakeEvent());
 
-            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_INDEFINITE}]", _indefiniteIcon, TrayIconAction.Update);
-
             CancelExistingThread();
-            _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
             if (IsUsingPowerToysConfig)
             {
@@ -162,6 +161,11 @@ namespace Awake.Core
                         currentSettings.Properties.Mode = AwakeMode.INDEFINITE;
                         currentSettings.Properties.KeepDisplayOn = keepDisplayOn;
                         ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+
+                        // We return here because when the settings are save, they will be automatically
+                        // processed. That means that when they are processed, the indefinite keep-awake will kick-in properly
+                        // and we avoid double execution.
+                        return;
                     }
                 }
                 catch (Exception ex)
@@ -169,15 +173,46 @@ namespace Awake.Core
                     Logger.LogError($"Failed to handle indefinite keep awake command: {ex.Message}");
                 }
             }
+
+            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_INDEFINITE}]", _indefiniteIcon, TrayIconAction.Update);
+
+            _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
         }
 
-        internal static void SetExpirableKeepAwake(DateTimeOffset expireAt, bool keepDisplayOn = true)
+        internal static void SetExpirableKeepAwake(DateTimeOffset expireAt, bool keepDisplayOn = true, [CallerMemberName] string callerName = "")
         {
-            Logger.LogInfo($"Expirable keep-awake. Expected expiration date/time: {expireAt} with display on setting set to {keepDisplayOn}.");
-
+            Logger.LogInfo($"Expirable keep-awake invoked by {callerName}. Expected expiration date/time: {expireAt} with display on setting set to {keepDisplayOn}.");
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeExpirableKeepAwakeEvent());
 
             CancelExistingThread();
+
+            if (IsUsingPowerToysConfig)
+            {
+                try
+                {
+                    AwakeSettings currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                    bool settingsChanged = currentSettings.Properties.Mode != AwakeMode.EXPIRABLE ||
+                                          currentSettings.Properties.ExpirationDateTime != expireAt ||
+                                          currentSettings.Properties.KeepDisplayOn != keepDisplayOn;
+
+                    if (settingsChanged)
+                    {
+                        currentSettings.Properties.Mode = AwakeMode.EXPIRABLE;
+                        currentSettings.Properties.KeepDisplayOn = keepDisplayOn;
+                        currentSettings.Properties.ExpirationDateTime = expireAt;
+                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+
+                        // We return here because when the settings are save, they will be automatically
+                        // processed. That means that when they are processed, the expirable keep-awake will kick-in properly
+                        // and we avoid double execution.
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to handle indefinite keep awake command: {ex.Message}");
+                }
+            }
 
             if (expireAt > DateTimeOffset.Now)
             {
@@ -209,40 +244,48 @@ namespace Awake.Core
                 Logger.LogError("The specified target date and time is not in the future.");
                 Logger.LogError($"Current time: {DateTimeOffset.Now}\tTarget time: {expireAt}");
             }
+        }
+
+        internal static void SetTimedKeepAwake(uint seconds, bool keepDisplayOn = true, [CallerMemberName] string callerName = "")
+        {
+            Logger.LogInfo($"Timed keep-awake invoked by {callerName}. Expected runtime: {seconds} seconds with display on setting set to {keepDisplayOn}.");
+            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeTimedKeepAwakeEvent());
+
+            CancelExistingThread();
 
             if (IsUsingPowerToysConfig)
             {
                 try
                 {
                     AwakeSettings currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
-                    bool settingsChanged = currentSettings.Properties.Mode != AwakeMode.EXPIRABLE ||
-                                          currentSettings.Properties.ExpirationDateTime != expireAt ||
-                                          currentSettings.Properties.KeepDisplayOn != keepDisplayOn;
+                    TimeSpan timeSpan = TimeSpan.FromSeconds(seconds);
+
+                    uint totalHours = (uint)timeSpan.TotalHours;
+                    uint remainingMinutes = (uint)(timeSpan.TotalMinutes % 60);
+
+                    bool settingsChanged = currentSettings.Properties.Mode != AwakeMode.TIMED ||
+                                          currentSettings.Properties.IntervalHours != totalHours ||
+                                          currentSettings.Properties.IntervalMinutes != remainingMinutes;
 
                     if (settingsChanged)
                     {
-                        currentSettings.Properties.Mode = AwakeMode.EXPIRABLE;
-                        currentSettings.Properties.KeepDisplayOn = keepDisplayOn;
-                        currentSettings.Properties.ExpirationDateTime = expireAt;
+                        currentSettings.Properties.Mode = AwakeMode.TIMED;
+                        currentSettings.Properties.IntervalHours = totalHours;
+                        currentSettings.Properties.IntervalMinutes = remainingMinutes;
                         ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+
+                        // We return here because when the settings are save, they will be automatically
+                        // processed. That means that when they are processed, the timed keep-awake will kick-in properly
+                        // and we avoid double execution.
+                        return;
                     }
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError($"Failed to handle indefinite keep awake command: {ex.Message}");
+                    Logger.LogError($"Failed to handle timed keep awake command: {ex.Message}");
                 }
             }
-        }
 
-        internal static void SetTimedKeepAwake(uint seconds, bool keepDisplayOn = true, [CallerMemberName] string callerName = "")
-        {
-            Logger.LogInfo($"Timed keep-awake invoked by {callerName}. Expected runtime: {seconds} seconds with display on setting set to {keepDisplayOn}.");
-
-            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeTimedKeepAwakeEvent());
-
-            CancelExistingThread();
-
-            Logger.LogInfo($"Timed keep awake started for {seconds} seconds.");
             _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
             TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}]", _timedIcon, TrayIconAction.Update);
@@ -279,34 +322,6 @@ namespace Awake.Core
                     }
                 },
                 _tokenSource.Token);
-
-            if (IsUsingPowerToysConfig)
-            {
-                try
-                {
-                    AwakeSettings currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
-                    TimeSpan timeSpan = TimeSpan.FromSeconds(seconds);
-
-                    uint totalHours = (uint)timeSpan.TotalHours;
-                    uint remainingMinutes = (uint)(timeSpan.TotalMinutes % 60);
-
-                    bool settingsChanged = currentSettings.Properties.Mode != AwakeMode.TIMED ||
-                                          currentSettings.Properties.IntervalHours != totalHours ||
-                                          currentSettings.Properties.IntervalMinutes != remainingMinutes;
-
-                    if (settingsChanged)
-                    {
-                        currentSettings.Properties.Mode = AwakeMode.TIMED;
-                        currentSettings.Properties.IntervalHours = totalHours;
-                        currentSettings.Properties.IntervalMinutes = remainingMinutes;
-                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError($"Failed to handle timed keep awake command: {ex.Message}");
-                }
-            }
         }
 
         /// <summary>
@@ -379,15 +394,12 @@ namespace Awake.Core
         /// Resets the computer to standard power settings.
         /// </summary>
         /// <param name="updateSettings">In certain cases, such as exits, we want to make sure that settings are not reset for the passive mode but rather retained based on previous execution. Default is to save settings, but otherwise it can be overridden.</param>
-        internal static void SetPassiveKeepAwake(bool updateSettings = true)
+        internal static void SetPassiveKeepAwake(bool updateSettings = true, [CallerMemberName] string callerName = "")
         {
-            Logger.LogInfo($"Operating in passive mode (computer's standard power plan). No custom keep awake settings enabled.");
-
+            Logger.LogInfo($"Operating in passive mode (computer's standard power plan). Invoked by {callerName}. No custom keep awake settings enabled.");
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeNoKeepAwakeEvent());
 
             CancelExistingThread();
-
-            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_OFF}]", _disabledIcon, TrayIconAction.Update);
 
             if (IsUsingPowerToysConfig && updateSettings)
             {
@@ -399,6 +411,11 @@ namespace Awake.Core
                     {
                         currentSettings.Properties.Mode = AwakeMode.PASSIVE;
                         ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+
+                        // We return here because when the settings are save, they will be automatically
+                        // processed. That means that when they are processed, the passive keep-awake will kick-in properly
+                        // and we avoid double execution.
+                        return;
                     }
                 }
                 catch (Exception ex)
@@ -406,13 +423,16 @@ namespace Awake.Core
                     Logger.LogError($"Failed to reset Awake mode: {ex.Message}");
                 }
             }
+
+            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_OFF}]", _disabledIcon, TrayIconAction.Update);
         }
 
         /// <summary>
         /// Sets the display settings.
         /// </summary>
-        internal static void SetDisplay()
+        internal static void SetDisplay([CallerMemberName] string callerName = "")
         {
+            Logger.LogInfo($"Setting display configuration from settings. Invoked by {callerName}.");
             if (IsUsingPowerToysConfig)
             {
                 try
