@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 using PowerToys.Interop;
 
@@ -52,16 +53,18 @@ namespace ManagedCommon
             Trace.AutoFlush = true;
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void LogError(string message)
         {
             Log(message, Error);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void LogError(string message, Exception ex)
         {
             if (ex == null)
             {
-                LogError(message);
+                Log(message, Error);
             }
             else
             {
@@ -84,26 +87,31 @@ namespace ManagedCommon
             }
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void LogWarning(string message)
         {
             Log(message, Warning);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void LogInfo(string message)
         {
             Log(message, Info);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void LogDebug(string message)
         {
             Log(message, Debug);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void LogTrace()
         {
             Log(string.Empty, TraceFlag);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private static void Log(string message, string type)
         {
             Trace.WriteLine("[" + DateTime.Now.TimeOfDay + "] [" + type + "] " + GetCallerInfo());
@@ -116,13 +124,49 @@ namespace ManagedCommon
             Trace.Unindent();
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private static string GetCallerInfo()
         {
             StackTrace stackTrace = new();
 
-            var methodName = stackTrace.GetFrame(3)?.GetMethod();
-            var className = methodName?.DeclaringType.Name;
-            return className + "::" + methodName?.Name;
+            var callerMethod = GetCallerMethod(stackTrace);
+
+            return $"{callerMethod?.DeclaringType?.Name}::{callerMethod.Name}";
+        }
+
+        private static MethodBase GetCallerMethod(StackTrace stackTrace)
+        {
+            const int topFrame = 3;
+
+            var topMethod = stackTrace.GetFrame(topFrame)?.GetMethod();
+
+            try
+            {
+                if (topMethod?.Name == nameof(IAsyncStateMachine.MoveNext) && typeof(IAsyncStateMachine).IsAssignableFrom(topMethod?.DeclaringType))
+                {
+                    // Async method; return actual method as determined by heuristic:
+                    // "Nearest method on stack to async state-machine's MoveNext() in same namespace but in a different type".
+                    // There are tighter ways of determining the actual method, but this is good enough and probably faster.
+                    for (int deepFrame = topFrame + 1; deepFrame < stackTrace.FrameCount; deepFrame++)
+                    {
+                        var deepMethod = stackTrace.GetFrame(deepFrame)?.GetMethod();
+
+                        if (deepMethod?.DeclaringType != topMethod?.DeclaringType && deepMethod?.DeclaringType?.Namespace == topMethod?.DeclaringType?.Namespace)
+                        {
+                            return deepMethod;
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Ignore exceptions in Release. The code above won't throw, but if it does, we don't want to crash the app.
+#if DEBUG
+                throw;
+#endif
+            }
+
+            return topMethod;
         }
     }
 }

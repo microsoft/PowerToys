@@ -12,4 +12,5 @@ public:
     static void EventShowTemplateItems(_In_ const size_t number_of_templates) noexcept;
     static void EventCopyTemplate(_In_ const std::wstring template_file_extension) noexcept;
     static void EventCopyTemplateResult(_In_ const HRESULT hr) noexcept;
+    static void EventOpenTemplates() noexcept;
 };

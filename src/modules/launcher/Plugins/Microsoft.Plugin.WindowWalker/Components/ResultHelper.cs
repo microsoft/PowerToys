@@ -68,6 +68,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                     searchResult.Result.SwitchToWindow();
                     return true;
                 },
+                Score = searchResult.Score,
 
                 // For debugging you can set the second parameter to true to see more information.
                 ToolTipData = GetToolTip(searchResult.Result, false),
