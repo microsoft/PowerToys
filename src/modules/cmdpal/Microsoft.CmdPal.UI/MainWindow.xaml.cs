@@ -13,6 +13,9 @@ using Windows.Foundation;
 using Windows.Graphics;
 using Windows.UI;
 using Windows.UI.WindowManagement;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
 
 namespace Microsoft.CmdPal.UI;
@@ -23,12 +26,16 @@ namespace Microsoft.CmdPal.UI;
 public sealed partial class MainWindow : Window,
     IRecipient<QuitMessage>
 {
+    private readonly HWND _hwnd;
+
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
 
     public MainWindow()
     {
         InitializeComponent();
+
+        _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
 
         PositionCentered();
         SetAcrylic();
@@ -167,5 +174,16 @@ public sealed partial class MainWindow : Window,
             _Y: (int)Math.Round(bounds.Y * scale),
             _Width: (int)Math.Round(bounds.Width * scale),
             _Height: (int)Math.Round(bounds.Height * scale));
+    }
+
+    public void Summon()
+    {
+        PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOW);
+        PInvoke.SetForegroundWindow(_hwnd);
+
+        // Windows.Win32.PInvoke.SetFocus(hwnd);
+        PInvoke.SetActiveWindow(_hwnd);
+
+        // MainPage.ViewModel.Summon();
     }
 }

@@ -29,6 +29,10 @@ public partial class App : Application
     /// </summary>
     public static new App Current => (App)Application.Current;
 
+    private Window? _window;
+
+    public Window? AppWindow => _window;
+
     /// <summary>
     /// Gets the <see cref="IServiceProvider"/> instance to resolve application services.
     /// </summary>
@@ -55,8 +59,6 @@ public partial class App : Application
         _window = new MainWindow();
         _window.Activate();
     }
-
-    private Window? _window;
 
     /// <summary>
     /// Configures the services for the application
