@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Interactions="using:Microsoft.Xaml.Interactions.Core"
     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -19,22 +20,28 @@
             IsSourceGrouped="True"
             Source="{x:Bind ViewModel.Items, Mode=OneWay}" />
 
+        <converters:StringVisibilityConverter
+            x:Key="StringVisibilityConverter"
+            EmptyValue="Collapsed"
+            NotEmptyValue="Visible" />
+
         <!--  https://learn.microsoft.com/windows/apps/design/controls/itemsview#specify-the-look-of-the-items  -->
         <DataTemplate x:Key="ListItemViewModelTemplate" x:DataType="viewmodels:ListItemViewModel">
 
-            <!--TODO: collapse item if it's empty -->
-            <ListViewItem MinHeight="56">
-                <Grid ColumnSpacing="12">
+            <!--  TODO: collapse item if it's empty  -->
+            <ListViewItem>
+                <Grid Padding="0,10,0,10" ColumnSpacing="12">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="28" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <Viewbox Width="20"
+                    <Viewbox
+                        Width="20"
                         Height="20"
                         VerticalAlignment="Center">
-                        <!--TODO: Icon 
+                        <!--TODO: Icon
                         <ContentControl Content="{x:Bind IcoElement, Mode=OneWay}" />
                         -->
                     </Viewbox>
@@ -58,10 +65,10 @@
                             Style="{StaticResource CaptionTextBlockStyle}"
                             Text="{x:Bind Subtitle, Mode=OneWay}"
                             TextTrimming="CharacterEllipsis"
-                            TextWrapping="NoWrap" />
-                        <!--TODO: collapse subtitle if it's empty -->
+                            TextWrapping="NoWrap"
+                            Visibility="{x:Bind Subtitle, Mode=OneWay, Converter={StaticResource StringVisibilityConverter}}" />
                     </StackPanel>
-                    <!--TODO: Add tags again -->
+                    <!--  TODO: Add tags again  -->
                     <!--<ItemsRepeater ItemTemplate="{StaticResource TagTemplate}"
                        ItemsSource="{x:Bind Tags}"
                        Grid.Column="2"
@@ -74,8 +81,10 @@
 
     <Grid>
         <!--  not using Interactivity:Interaction.Behaviors due to wanting to do AoT  -->
-        <!--  sticking with ListView as ItemsView doesn't have grouping built-in, could investigate coordinating
-              keyboards between them and using ItemsRepeater for group headers, though that wouldn't use CVS either  -->
+        <!--
+            sticking with ListView as ItemsView doesn't have grouping built-in, could investigate coordinating
+            keyboards between them and using ItemsRepeater for group headers, though that wouldn't use CVS either
+        -->
         <ListView
             x:Name="ItemsList"
             IsItemClickEnabled="True"
@@ -83,18 +92,21 @@
             SelectionChanged="ItemsList_SelectionChanged"
             ItemTemplate="{StaticResource ListItemViewModelTemplate}"
             ItemsSource="{x:Bind ItemsCVS.View, Mode=OneWay}">
-            <ListView.GroupStyle>
+            <ListView.ItemContainerTransitions>
+                <TransitionCollection />
+            </ListView.ItemContainerTransitions>
+            <!--<ListView.GroupStyle>
                 <GroupStyle HidesIfEmpty="True">
                     <GroupStyle.HeaderTemplate>
                         <DataTemplate>
                             <TextBlock
-                                FontFamily="Segoe UI"
-                                FontSize="16"
-                                Text="{Binding Key}" />
+                                Margin="0,16,0,0"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="{Binding Key, Mode=OneWay}" />
                         </DataTemplate>
                     </GroupStyle.HeaderTemplate>
                 </GroupStyle>
-            </ListView.GroupStyle>
+            </ListView.GroupStyle>-->
         </ListView>
     </Grid>
 </Page>

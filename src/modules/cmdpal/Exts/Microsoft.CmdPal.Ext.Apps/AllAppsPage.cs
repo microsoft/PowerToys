@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
+using Windows.UI;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
@@ -21,6 +22,7 @@ public sealed partial class AllAppsPage : ListPage
         this.ShowDetails = true;
         this.Loading = true;
         this.PlaceholderText = "Search installed apps...";
+        this.AccentColor = Color.FromArgb(255, 255, 102, 0);
     }
 
     public override IListItem[] GetItems()

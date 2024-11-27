@@ -20,9 +20,6 @@ using WinRT;
 
 namespace Microsoft.CmdPal.UI;
 
-/// <summary>
-/// An empty window that can be used on its own or navigated to within a Frame.
-/// </summary>
 public sealed partial class MainWindow : Window,
     IRecipient<QuitMessage>
 {
@@ -61,7 +58,7 @@ public sealed partial class MainWindow : Window,
 
     private void PositionCentered()
     {
-        AppWindow.Resize(new SizeInt32 { Width = 860, Height = 560 });
+        AppWindow.Resize(new SizeInt32 { Width = 1000, Height = 620 });
         var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
         if (displayArea is not null)
         {
