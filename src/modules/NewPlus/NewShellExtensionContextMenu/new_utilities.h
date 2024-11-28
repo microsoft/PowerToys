@@ -376,8 +376,10 @@ namespace newplus::utilities
             // Copy file and determine final filename
             std::filesystem::path target_final_fullpath = template_entry->copy_object_to(GetActiveWindow(), target_fullpath);
 
+            // Consider copy completed. If we do tracing after enter_rename_mode, then rename mode won't consistently work
             trace.UpdateState(true);
             Trace::EventCopyTemplate(target_final_fullpath.extension().c_str());
+            Trace::EventCopyTemplateResult(hr);
             trace.Flush();
             trace.UpdateState(false);
 
@@ -385,19 +387,19 @@ namespace newplus::utilities
             template_entry->refresh_target(target_final_fullpath);
 
             // Enter rename mode
-            explorer_enter_rename_mode(target_final_fullpath);
+            template_entry->enter_rename_mode(target_final_fullpath);
         }
         catch (const std::exception& ex)
         {
+            hr = S_FALSE;
+
             Logger::error(ex.what());
 
-            hr = S_FALSE;
+            trace.UpdateState(true);
+            Trace::EventCopyTemplateResult(hr);
+            trace.Flush();
+            trace.UpdateState(false);
         }
-
-        trace.UpdateState(true);
-        Trace::EventCopyTemplateResult(hr);
-        trace.Flush();
-        trace.UpdateState(false);
 
         return hr;
     }
