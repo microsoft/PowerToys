@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Interactions="using:Microsoft.Xaml.Interactions.Core"
     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.CmdPal.UI"
@@ -85,28 +86,43 @@
             sticking with ListView as ItemsView doesn't have grouping built-in, could investigate coordinating
             keyboards between them and using ItemsRepeater for group headers, though that wouldn't use CVS either
         -->
-        <ListView
-            x:Name="ItemsList"
-            IsItemClickEnabled="True"
-            ItemClick="ListView_ItemClick"
-            SelectionChanged="ItemsList_SelectionChanged"
-            ItemTemplate="{StaticResource ListItemViewModelTemplate}"
-            ItemsSource="{x:Bind ItemsCVS.View, Mode=OneWay}">
-            <ListView.ItemContainerTransitions>
-                <TransitionCollection />
-            </ListView.ItemContainerTransitions>
-            <!--<ListView.GroupStyle>
-                <GroupStyle HidesIfEmpty="True">
-                    <GroupStyle.HeaderTemplate>
-                        <DataTemplate>
-                            <TextBlock
-                                Margin="0,16,0,0"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="{Binding Key, Mode=OneWay}" />
-                        </DataTemplate>
-                    </GroupStyle.HeaderTemplate>
-                </GroupStyle>
-            </ListView.GroupStyle>-->
-        </ListView>
+        <controls:SwitchPresenter TargetType="local:ViewModelLoadedState" Value="{x:Bind LoadedState, Mode=OneWay}">
+            <controls:Case Value="Loaded">
+                <ListView
+                    x:Name="ItemsList"
+                    IsItemClickEnabled="True"
+                    ItemClick="ListView_ItemClick"
+                    SelectionChanged="ItemsList_SelectionChanged"
+                    ItemTemplate="{StaticResource ListItemViewModelTemplate}"
+                    ItemsSource="{x:Bind ItemsCVS.View, Mode=OneWay}">
+                    <ListView.ItemContainerTransitions>
+                        <TransitionCollection />
+                    </ListView.ItemContainerTransitions>
+                    <!--<ListView.GroupStyle>
+                        <GroupStyle HidesIfEmpty="True">
+                            <GroupStyle.HeaderTemplate>
+                                <DataTemplate>
+                                    <TextBlock
+                                        Margin="0,16,0,0"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="{Binding Key, Mode=OneWay}" />
+                                </DataTemplate>
+                            </GroupStyle.HeaderTemplate>
+                        </GroupStyle>
+                    </ListView.GroupStyle>-->
+                </ListView>
+            </controls:Case>
+
+            <controls:Case IsDefault="True" Value="Loading">
+                <ProgressRing
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    IsIndeterminate="True" />
+            </controls:Case>
+            
+            <controls:Case Value="Error">
+                <TextBlock Text="Error loading List Page" />
+            </controls:Case>
+        </controls:SwitchPresenter>
     </Grid>
 </Page>

@@ -3,8 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 
@@ -18,7 +21,27 @@ public sealed partial class ListPage : Page,
     IRecipient<NavigatePreviousCommand>,
     IRecipient<ActivateSelectedListItemMessage>
 {
-    public ListViewModel? ViewModel { get; set; }
+    private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
+
+    public ListViewModel? ViewModel
+    {
+        get => (ListViewModel?)GetValue(ViewModelProperty);
+        set => SetValue(ViewModelProperty, value);
+    }
+
+    // Using a DependencyProperty as the backing store for ViewModel.  This enables animation, styling, binding, etc...
+    public static readonly DependencyProperty ViewModelProperty =
+        DependencyProperty.Register(nameof(ViewModel), typeof(ListViewModel), typeof(ListPage), new PropertyMetadata(null));
+
+    public ViewModelLoadedState LoadedState
+    {
+        get => (ViewModelLoadedState)GetValue(LoadedStateProperty);
+        set => SetValue(LoadedStateProperty, value);
+    }
+
+    // Using a DependencyProperty as the backing store for LoadedState.  This enables animation, styling, binding, etc...
+    public static readonly DependencyProperty LoadedStateProperty =
+        DependencyProperty.Register(nameof(LoadedState), typeof(ViewModelLoadedState), typeof(ListPage), new PropertyMetadata(ViewModelLoadedState.Loading));
 
     public ListPage()
     {
@@ -27,9 +50,44 @@ public sealed partial class ListPage : Page,
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
+        LoadedState = ViewModelLoadedState.Loading;
         if (e.Parameter is ListViewModel lvm)
         {
-            ViewModel = lvm;
+            if (!lvm.IsInitialized
+                && lvm.InitializeCommand != null)
+            {
+                ViewModel = null;
+                lvm.InitializeCommand.Execute(null);
+
+                _ = Task.Run(async () =>
+                {
+                    await lvm.InitializeCommand.ExecutionTask!;
+
+                    if (lvm.InitializeCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
+                    {
+                        // TODO: Handle failure case
+                        System.Diagnostics.Debug.WriteLine(lvm.InitializeCommand.ExecutionTask.Exception);
+
+                        _ = _queue.EnqueueAsync(() =>
+                        {
+                            LoadedState = ViewModelLoadedState.Error;
+                        });
+                    }
+                    else
+                    {
+                        _ = _queue.EnqueueAsync(() =>
+                        {
+                            ViewModel = lvm;
+                            LoadedState = ViewModelLoadedState.Loaded;
+                        });
+                    }
+                });
+            }
+            else
+            {
+                ViewModel = lvm;
+                LoadedState = ViewModelLoadedState.Loaded;
+            }
         }
 
         // RegisterAll isn't AOT compatible
@@ -94,4 +152,11 @@ public sealed partial class ListPage : Page,
             ViewModel?.UpdateSelectedItemCommand.Execute(item);
         }
     }
+}
+
+public enum ViewModelLoadedState
+{
+    Loaded,
+    Loading,
+    Error,
 }

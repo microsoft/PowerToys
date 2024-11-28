@@ -7,23 +7,17 @@ using Microsoft.CmdPal.UI.ViewModels.Models;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ListItemViewModel : CommandItemViewModel
+public partial class ListItemViewModel(IListItem model) : CommandItemViewModel(new(model))
 {
-    private readonly ExtensionObject<IListItem> _listItemModel;
+    private readonly ExtensionObject<IListItem> _listItemModel = new(model);
 
     public ITag[] Tags { get; private set; } = [];
 
     public bool HasTags => Tags.Length > 0;
 
-    public ListItemViewModel(IListItem model)
-        : base(new(model))
+    public override void InitializeProperties()
     {
-        _listItemModel = new(model);
-    }
-
-    protected override void Initialize()
-    {
-        base.Initialize();
+        base.InitializeProperties();
 
         // TODO load tags here, details, suggested text, all that
         var li = _listItemModel.Unsafe;

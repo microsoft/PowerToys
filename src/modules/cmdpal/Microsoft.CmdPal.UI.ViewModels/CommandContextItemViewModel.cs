@@ -7,23 +7,18 @@ using Microsoft.CmdPal.UI.ViewModels.Models;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class CommandContextItemViewModel : CommandItemViewModel
+public partial class CommandContextItemViewModel(ICommandContextItem contextItem) : CommandItemViewModel(new(contextItem))
 {
-    private readonly ExtensionObject<ICommandContextItem> _contextItemModel;
+    private readonly ExtensionObject<ICommandContextItem> _contextItemModel = new(contextItem);
 
     public bool IsCritical { get; private set; }
 
     public KeyChord? RequestedShortcut { get; private set; }
 
-    public CommandContextItemViewModel(ICommandContextItem contextItem)
-        : base(new(contextItem))
+    public override void InitializeProperties()
     {
-        _contextItemModel = new(contextItem);
-    }
+        base.InitializeProperties();
 
-    protected override void Initialize()
-    {
-        base.Initialize();
         var contextItem = _contextItemModel.Unsafe;
         if (contextItem == null)
         {

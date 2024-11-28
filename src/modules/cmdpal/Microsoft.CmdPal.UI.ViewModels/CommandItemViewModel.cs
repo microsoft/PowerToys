@@ -59,24 +59,8 @@ public partial class CommandItemViewModel : ObservableObject
         _commandItemModel = item;
     }
 
-    public async virtual Task InitializePropertiesAsync()
-    {
-        var t = new Task(() =>
-        {
-            try
-            {
-                Initialize();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex);
-            }
-        });
-        t.Start();
-        await t;
-    }
-
-    protected virtual void Initialize()
+    //// Called from ListViewModel on background thread started in ListPage.xaml.cs
+    public virtual void InitializeProperties()
     {
         var model = _commandItemModel.Unsafe;
         if (model == null)
@@ -99,7 +83,7 @@ public partial class CommandItemViewModel : ObservableObject
         // use Initialize straight up
         MoreCommands.ForEach(contextItem =>
         {
-            contextItem.Initialize();
+            contextItem.InitializeProperties();
         });
 
         model.PropChanged += Model_PropChanged;
