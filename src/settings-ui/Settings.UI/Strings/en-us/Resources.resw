@@ -59,10 +59,7 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root"
-    xmlns=""
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
@@ -2177,7 +2174,7 @@ Take a moment to preview the various utilities listed or view our comprehensive 
     <value>Preference updated.</value>
   </data>
   <data name="Oobe_WhatsNew_DataDiagnostics_Yes_Click_InfoBar_Desc.Text" xml:space="preserve">
-    <value>You can change this at any time from </value>
+    <value>You can change this at any time from</value>
   </data>
   <data name="Oobe_WhatsNew_DataDiagnostics_Yes_Click_OpenSettings_Text.Text" xml:space="preserve">
     <value>settings.</value>
@@ -4127,13 +4124,17 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Launch Registry Preview</value>
     <comment>"Registry Preview" is the name of the utility</comment>
   </data>
+  <data name="MouseUtils_MouseJump.Header" xml:space="preserve">
+    <value>Mouse Jump</value>
+    <comment>Refers to the utility name</comment>
+  </data>
   <data name="MouseUtils_MouseJump.Description" xml:space="preserve">
     <value>Quickly move the mouse pointer long distances.</value>
     <comment>"Mouse Jump" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
-  <data name="MouseUtils_MouseJump.Header" xml:space="preserve">
-    <value>Mouse Jump</value>
-    <comment>Refers to the utility name</comment>
+  <data name="MouseUtils_Enable_MouseJump.Header" xml:space="preserve">
+    <value>Enable Mouse Jump</value>
+    <comment>"Mouse Jump" is the name of the utility.</comment>
   </data>
   <data name="MouseUtils_MouseJump_ActivationShortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to turn on or off this mode</value>
@@ -4141,9 +4142,124 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="MouseUtils_MouseJump_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
-  <data name="MouseUtils_Enable_MouseJump.Header" xml:space="preserve">
-    <value>Enable Mouse Jump</value>
-    <comment>"Mouse Jump" is the name of the utility.</comment>
+  <data name="MouseUtils_MouseJump_ThumbnailSize.Header" xml:space="preserve">
+    <value>Thumbnail Size</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ThumbnailSize_Description_Prefix.Text" xml:space="preserve">
+    <value>Constrain thumbnail image size to a maximum of</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ThumbnailSize_Description_Suffix.Text" xml:space="preserve">
+    <value>pixels</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ThumbnailSize_Edit_Height.Header" xml:space="preserve">
+    <value>Maximum height (px)</value>
+    <comment>px = pixels</comment>
+  </data>
+  <data name="MouseUtils_MouseJump_ThumbnailSize_Edit_Width.Header" xml:space="preserve">
+    <value>Maximum width (px)</value>
+    <comment>px = pixels</comment>
+  </data>
+  <data name="MouseUtils_MouseJump_Appearance.Header" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="MouseUtils_MouseJump_PreviewType.Header" xml:space="preserve">
+    <value>Preview style</value>
+  </data>
+  <data name="MouseUtils_MouseJump_PreviewType.Description" xml:space="preserve">
+    <value>Select a predefined style, or apply a custom one</value>
+  </data>
+  <data name="MouseUtils_MouseJump_PreviewType_Compact.Text" xml:space="preserve">
+    <value>Compact</value>
+  </data>
+  <data name="MouseUtils_MouseJump_PreviewType_Bezelled.Text" xml:space="preserve">
+    <value>Bezelled</value>
+  </data>
+  <data name="MouseUtils_MouseJump_PreviewType_Custom.Text" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="MouseUtils_MouseJump_CopyStyle.Content" xml:space="preserve">
+    <value>Copy to Custom preview style</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BackgroundColor1.Header" xml:space="preserve">
+    <value>Background color 1</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BackgroundColor1.Description" xml:space="preserve">
+    <value>The start color for the background gradient fill on the preview image</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BackgroundColor2.Header" xml:space="preserve">
+    <value>Background color 2</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BackgroundColor2.Description" xml:space="preserve">
+    <value>The end color for the background gradient fill on the preview image</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BorderThickness.Header" xml:space="preserve">
+    <value>Border thickness</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BorderThickness.Description" xml:space="preserve">
+    <value>The thickness (in pixels) of the border that surrounds the preview image</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BorderColor.Header" xml:space="preserve">
+    <value>Border color</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BorderColor.Description" xml:space="preserve">
+    <value>The color of the border that surrounds the preview image</value>
+  </data>
+  <data name="MouseUtils_MouseJump_Border3dDepth.Header" xml:space="preserve">
+    <value>Border 3D depth</value>
+  </data>
+  <data name="MouseUtils_MouseJump_Border3dDepth.Description" xml:space="preserve">
+    <value>The width (in pixels) of the 3d effect on the border that surrounds the preview image</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BorderPadding.Header" xml:space="preserve">
+    <value>Border padding</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BorderPadding.Description" xml:space="preserve">
+    <value>The amount of padding to draw between the border that surrounds the main preview image and the screen images</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BezelThickness.Header" xml:space="preserve">
+    <value>Bezel thickness</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BezelThickness.Description" xml:space="preserve">
+    <value>The thickness (in pixels) of the border that surrounds the individual screen images</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BezelColor.Header" xml:space="preserve">
+    <value>Bezel color</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BezelColor.Description" xml:space="preserve">
+    <value>The color of the border that surrounds the individual screen images</value>
+  </data>
+  <data name="MouseUtils_MouseJump_Bezel3dDepth.Header" xml:space="preserve">
+    <value>Bezel 3D depth</value>
+  </data>
+  <data name="MouseUtils_MouseJump_Bezel3dDepth.Description" xml:space="preserve">
+    <value>The width (in pixels) of the 3d effect on the border that surrounds individual screen images</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ScreenMargin.Header" xml:space="preserve">
+    <value>Screen spacing</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ScreenMargin.Description" xml:space="preserve">
+    <value>The width (in pixels) of the margin drawn between individual screen images</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ScreenColor1.Header" xml:space="preserve">
+    <value>Screen color 1</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ScreenColor1.Description" xml:space="preserve">
+    <value>The start color for the background gradient fill on individual screen images</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ScreenColor2.Header" xml:space="preserve">
+    <value>Screen color 2</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ScreenColor2.Description" xml:space="preserve">
+    <value>The end color for the background gradient fill on individual screen images</value>
+  </data>
+  <data name="MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_Title" xml:space="preserve">
+    <value>Copy to Custom preview style</value>
+  </data>
+  <data name="MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_Text" xml:space="preserve">
+    <value>This will replace the current settings in the Custom preview style.</value>
+  </data>
+  <data name="MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_PrimaryButtonText" xml:space="preserve">
+    <value>Copy</value>
   </data>
   <data name="Hosts_Toggle_LoopbackDuplicates.Description" xml:space="preserve">
     <value>127.0.0.1, ::1, ...</value>
@@ -4170,23 +4286,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="AdvancedPaste_ShortcutWarning.Title" xml:space="preserve">
     <value>Using this shortcut may prevent non-text paste actions (e.g. images, files) or built-in paste plain text actions in other applications from functioning.</value>
-  </data>
-  <data name="MouseUtils_MouseJump_ThumbnailSize.Header" xml:space="preserve">
-    <value>Thumbnail Size</value>
-  </data>
-  <data name="MouseUtils_MouseJump_ThumbnailSize_Description_Prefix.Text" xml:space="preserve">
-    <value>Constrain thumbnail image size to a maximum of</value>
-  </data>
-  <data name="MouseUtils_MouseJump_ThumbnailSize_Description_Suffix.Text" xml:space="preserve">
-    <value>pixels</value>
-  </data>
-  <data name="MouseUtils_MouseJump_ThumbnailSize_Edit_Height.Header" xml:space="preserve">
-    <value>Maximum height (px)</value>
-    <comment>px = pixels</comment>
-  </data>
-  <data name="MouseUtils_MouseJump_ThumbnailSize_Edit_Width.Header" xml:space="preserve">
-    <value>Maximum width (px)</value>
-    <comment>px = pixels</comment>
   </data>
   <data name="Oobe_Peek.Description" xml:space="preserve">
     <value>A lightning fast file preview feature for Windows.</value>
@@ -4399,9 +4498,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Enable New+</value>
     <comment>Localize product name in accordance with Windows New</comment>
   </data>
-  <data name="NewPlus_NoWindows10SupportWarning.Title" xml:space="preserve">
-    <value>New+ is not supported in Windows 10 and is not expected to work.</value>
-  </data>
   <data name="NewPlus_TemplatesNotBackupAndRestoreWarning.Title" xml:space="preserve">
     <value>PowerToys "Backup and Restore" feature doesn't take templates into account at this moment. If you use that feature, templates will have to be copied manually.</value>
   </data>
@@ -4562,5 +4658,20 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GeneralPage_ViewDiagnosticDataViewerInfoButton.Content" xml:space="preserve">
     <value>Restart</value>
+  </data>
+  <data name="Shell_TopLevelAdvanced.Content" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="Shell_TopLevelFileManagement.Content" xml:space="preserve">
+    <value>File Management</value>
+  </data>
+  <data name="Shell_TopLevelInputOutput.Content" xml:space="preserve">
+    <value>Input / Output</value>
+  </data>
+  <data name="Shell_TopLevelWindowsAndLayouts.Content" xml:space="preserve">
+    <value>Windowing &amp; Layouts</value>
+  </data>
+  <data name="Shell_TopLevelSystemTools.Content" xml:space="preserve">
+    <value>System Tools</value>
   </data>
 </root>

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using System.Windows.Forms;
 
 // <summary>
@@ -34,12 +35,14 @@ namespace MouseWithoutBorders
             MachineEnabled = false;
         }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         internal string MachineName
         {
             get => textBoxName.Text;
             set => textBoxName.Text = value;
         }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         internal bool MachineEnabled
         {
             get => checkBoxEnabled.Checked;
@@ -52,6 +55,7 @@ namespace MouseWithoutBorders
             }
         }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         internal bool Editable
         {
             set => textBoxName.Enabled = value;
@@ -59,6 +63,7 @@ namespace MouseWithoutBorders
             // get { return textBoxName.Enabled;  }
         }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         internal bool CheckAble
         {
             set
@@ -73,6 +78,7 @@ namespace MouseWithoutBorders
             }
         }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         internal bool LocalHost
         {
             // get { return localhost; }
@@ -165,6 +171,7 @@ namespace MouseWithoutBorders
             return rv;
         }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         internal SocketStatus StatusClient
         {
             get => statusClient;
@@ -182,6 +189,7 @@ namespace MouseWithoutBorders
             }
         }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         internal SocketStatus StatusServer
         {
             get => statusServer;

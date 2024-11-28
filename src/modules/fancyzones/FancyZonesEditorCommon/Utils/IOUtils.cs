@@ -31,7 +31,7 @@ namespace FancyZonesEditorCommon.Utils
                 {
                     try
                     {
-                        using (Stream inputStream = _fileSystem.File.Open(fileName, FileMode.Open))
+                        using (FileSystemStream inputStream = _fileSystem.File.Open(fileName, FileMode.Open))
                         using (StreamReader reader = new StreamReader(inputStream))
                         {
                             string data = reader.ReadToEnd();
