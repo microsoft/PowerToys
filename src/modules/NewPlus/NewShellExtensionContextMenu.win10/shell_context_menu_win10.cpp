@@ -32,7 +32,7 @@ IFACEMETHODIMP shell_context_menu_win10::Initialize(PCIDLIST_ABSOLUTE, IDataObje
 IFACEMETHODIMP shell_context_menu_win10::QueryContextMenu(HMENU menu_handle, UINT menu_index, UINT menu_first_cmd_id, UINT, UINT menu_flags)
 {
     if (!NewSettingsInstance().GetEnabled() 
-            || package::IsWin11OrGreater()
+//            || package::IsWin11OrGreater()
         )
     {
         return E_FAIL;

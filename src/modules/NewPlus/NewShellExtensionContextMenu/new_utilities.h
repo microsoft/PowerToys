@@ -215,10 +215,10 @@ namespace newplus::utilities
 
     inline bool is_desktop_folder(const std::filesystem::path target_fullpath)
     {
-        TCHAR desktopPath[MAX_PATH];
-        if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_DESKTOP, NULL, 0, desktopPath)))
+        TCHAR desktop_path[MAX_PATH];
+        if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_DESKTOP, NULL, 0, desktop_path)))
         {
-            return StrCmpIW(target_fullpath.c_str(), desktopPath) == 0;
+            return StrCmpIW(target_fullpath.c_str(), desktop_path) == 0;
         }
         return false;
     }
@@ -385,7 +385,7 @@ namespace newplus::utilities
             template_entry->refresh_target(target_final_fullpath);
 
             // Enter rename mode
-            template_entry->enter_rename_mode(target_final_fullpath);
+            explorer_enter_rename_mode(target_final_fullpath);
         }
         catch (const std::exception& ex)
         {
