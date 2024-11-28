@@ -9,6 +9,10 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
+
+    <IsAotCompatible>true</IsAotCompatible>
+    <CsWinRTAotOptimizerEnabled>true</CsWinRTAotOptimizerEnabled>
+    <CsWinRTAotWarningLevel>2</CsWinRTAotWarningLevel>
   </PropertyGroup>
 
   <PropertyGroup>
