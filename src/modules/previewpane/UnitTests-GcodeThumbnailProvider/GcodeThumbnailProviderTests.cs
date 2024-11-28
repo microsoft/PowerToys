@@ -5,7 +5,6 @@
 using System.Drawing;
 using System.IO;
 
-using Microsoft.PowerToys.STATestExtension;
 using Microsoft.PowerToys.ThumbnailHandler.Gcode;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

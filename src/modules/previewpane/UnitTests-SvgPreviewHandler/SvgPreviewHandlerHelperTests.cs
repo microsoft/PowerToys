@@ -5,7 +5,6 @@
 using System.Text;
 
 using Common.Utilities;
-using Microsoft.PowerToys.STATestExtension;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SvgPreviewHandlerUnitTests

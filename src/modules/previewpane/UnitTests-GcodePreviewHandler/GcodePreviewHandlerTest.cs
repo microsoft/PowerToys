@@ -10,7 +10,6 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Windows.Forms;
 
 using Microsoft.PowerToys.PreviewHandler.Gcode;
-using Microsoft.PowerToys.STATestExtension;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
