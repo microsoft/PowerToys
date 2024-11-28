@@ -392,9 +392,9 @@ namespace Awake.Core
         /// Generates the default system tray options in situations where no custom options are provided.
         /// </summary>
         /// <returns>Returns a dictionary of default Awake timed interval options.</returns>
-        internal static Dictionary<string, int> GetDefaultTrayOptions()
+        internal static Dictionary<string, uint> GetDefaultTrayOptions()
         {
-            Dictionary<string, int> optionsList = new()
+            Dictionary<string, uint> optionsList = new()
             {
                 { string.Format(CultureInfo.InvariantCulture, AwakeMinutes, 30), 1800 },
                 { string.Format(CultureInfo.InvariantCulture, AwakeHours, 1), 3600 },
