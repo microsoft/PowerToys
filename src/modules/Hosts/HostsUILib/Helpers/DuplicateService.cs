@@ -14,7 +14,7 @@ using Microsoft.UI.Dispatching;
 
 namespace HostsUILib.Helpers
 {
-    public class DuplicateService : IDuplicateService, IDisposable
+    public partial class DuplicateService : IDuplicateService, IDisposable
     {
         private record struct Check(string Address, string[] Hosts);
 

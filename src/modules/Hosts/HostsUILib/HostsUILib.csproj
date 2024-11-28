@@ -15,6 +15,10 @@
     <ProjectPriFileName>PowerToys.HostsUILib.pri</ProjectPriFileName>
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
     <IsPackable>true</IsPackable>
+    <!-- AOT settings -->
+    <IsAotCompatible>true</IsAotCompatible>
+    <CsWinRTAotOptimizerEnabled>true</CsWinRTAotOptimizerEnabled>
+    <CsWinRTAotWarningLevel>2</CsWinRTAotWarningLevel>
   </PropertyGroup>
 
   <PropertyGroup>
