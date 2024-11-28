@@ -39,7 +39,5 @@
     <Content Include="HelperFiles\sample_QOI.gcode">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Compile Include="..\STATestClassAttribute.cs" Link="STATestClassAttribute.cs" />
-    <Compile Include="..\STATestMethodAttribute.cs" Link="STATestMethodAttribute.cs" />
   </ItemGroup>
 </Project>

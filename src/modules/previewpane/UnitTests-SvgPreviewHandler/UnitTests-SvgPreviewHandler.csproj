@@ -31,10 +31,6 @@
     <ProjectReference Include="..\SvgPreviewHandler\SvgPreviewHandler.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\STATestClassAttribute.cs" Link="STATestClassAttribute.cs" />
-    <Compile Include="..\STATestMethodAttribute.cs" Link="STATestMethodAttribute.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="HelperFiles\file1.svg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
