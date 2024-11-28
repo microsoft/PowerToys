@@ -226,3 +226,7 @@ arcosh
 dbus
 anypass
 gpg
+
+# .NET
+
+AOT
