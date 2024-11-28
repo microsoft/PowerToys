@@ -214,6 +214,15 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Generate a version 7: Time-ordered randomly generated UUID.
+        /// </summary>
+        public static string generator_description_uuidv7 {
+            get {
+                return ResourceManager.GetString("generator_description_uuidv7", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to your input.
         /// </summary>
         public static string generator_description_your_input {
