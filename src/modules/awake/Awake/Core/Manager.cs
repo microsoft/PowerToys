@@ -301,7 +301,7 @@ namespace Awake.Core
 
             if (desiredDuration > uint.MaxValue)
             {
-                Logger.LogInfo($"The desired interval of {seconds}s ({desiredDuration}ms) exceeds the limit. Defaulting to maximum possible value: {targetDuration}s.");
+                Logger.LogInfo($"The desired interval of {seconds} seconds ({desiredDuration}ms) exceeds the limit. Defaulting to maximum possible value: {targetDuration} seconds. Read more about existing limits in the official documentation: https://aka.ms/powertoys/awake");
             }
 
             IObservable<long> timerObservable = Observable.Timer(TimeSpan.FromSeconds(targetDuration));
