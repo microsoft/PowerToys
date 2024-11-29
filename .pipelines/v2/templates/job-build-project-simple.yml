@@ -1,0 +1,256 @@
+parameters:
+  - name: additionalBuildOptions
+    type: string
+    default: ''
+  - name: buildConfigurations
+    type: object
+    default:
+      - Release
+  - name: buildPlatforms
+    type: object
+    default:
+      - x64
+      - arm64
+  - name: codeSign
+    type: boolean
+    default: false
+  - name: artifactStem
+    type: string
+    default: ''
+  - name: jobName
+    type: string
+    default: 'Build'
+  - name: condition
+    type: string
+    default: ''
+  - name: dependsOn
+    type: object
+    default: []
+  - name: pool
+    type: object
+    default: []
+  - name: beforeBuildSteps
+    type: stepList
+    default: []
+  - name: variables
+    type: object
+    default: {}
+  - name: publishArtifacts
+    type: boolean
+    default: true
+  - name: signingIdentity
+    type: object
+    default: {}
+  - name: enablePackageCaching
+    type: boolean
+    default: false
+  - name: enableMsBuildCaching
+    type: boolean
+    default: false
+  - name: runTests
+    type: boolean
+    default: true
+  - name: useVSPreview
+    type: boolean
+    default: false
+  - name: versionNumber
+    type: string
+    default: '0.0.1'
+  - name: csProjectsToPublish
+    type: object
+    default:
+      - 'src/settings-ui/Settings.UI/PowerToys.Settings.csproj'
+      - 'src/modules/launcher/PowerLauncher/PowerLauncher.csproj'
+      - 'src/modules/previewpane/MonacoPreviewHandler/MonacoPreviewHandler.csproj'
+      - 'src/modules/previewpane/MarkdownPreviewHandler/MarkdownPreviewHandler.csproj'
+      - 'src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj'
+      - 'src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.csproj'
+      - 'src/modules/FileLocksmith/FileLocksmithUI/FileLocksmithUI.csproj'
+
+jobs:
+- job: ${{ parameters.jobName }}
+  ${{ if ne(length(parameters.pool), 0) }}:
+    pool: ${{ parameters.pool }}
+  dependsOn: ${{ parameters.dependsOn }}
+  condition: ${{ parameters.condition }}
+  strategy:
+    matrix:
+      ${{ each config in parameters.buildConfigurations }}:
+        ${{ each platform in parameters.buildPlatforms }}:
+          ${{ config }}_${{ platform }}:
+            BuildConfiguration: ${{ config }}
+            BuildPlatform: ${{ platform }}
+            ${{ if eq(platform, 'x86') }}:
+              OutputBuildPlatform: Win32
+            ${{ elseif eq(platform, 'Any CPU') }}:
+              OutputBuildPlatform: AnyCPU
+            ${{ else }}:
+              OutputBuildPlatform: ${{ platform }}
+  variables:
+    # Azure DevOps abhors a vacuum
+    # If these are blank, expansion will fail later on... which will result in direct substitution of the variable *names*
+    # later on. We'll just... set them to a single space and if we need to, check IsNullOrWhiteSpace.
+    # Yup.
+    MSBuildCacheParameters: ' '
+    JobOutputDirectory: $(Build.ArtifactStagingDirectory)
+    LogOutputDirectory: $(Build.ArtifactStagingDirectory)\logs
+    JobOutputArtifactName: build-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
+    NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
+    NODE_OPTIONS: --max_old_space_size=16384
+    ${{ if eq(parameters.runTests, true) }}:
+      MSBuildMainBuildTargets: Build;Test
+    ${{ else }}:
+      MSBuildMainBuildTargets: Build
+    ${{ insert }}: ${{ parameters.variables }}
+  displayName: Build
+  timeoutInMinutes: 240
+  cancelTimeoutInMinutes: 1
+  templateContext: # Required when this template is hosted in 1ES PT
+    outputs:
+    - output: pipelineArtifact
+      artifactName: $(JobOutputArtifactName)
+      targetPath: $(Build.ArtifactStagingDirectory)
+  steps:
+  - checkout: self
+    clean: true
+    submodules: true
+    persistCredentials: True
+    fetchTags: false
+    fetchDepth: 1
+
+  - ${{ if eq(parameters.enableMsBuildCaching, true) }}:
+    - pwsh: |-
+        $MSBuildCacheParameters = ""
+        $MSBuildCacheParameters += " -graph"
+        $MSBuildCacheParameters += " -reportfileaccesses"
+        $MSBuildCacheParameters += " -p:MSBuildCacheEnabled=true"
+        $MSBuildCacheParameters += " -p:MSBuildCacheLogDirectory=$(LogOutputDirectory)\MSBuildCacheLogs"
+        Write-Host "MSBuildCacheParameters: $MSBuildCacheParameters"
+        Write-Host "##vso[task.setvariable variable=MSBuildCacheParameters]$MSBuildCacheParameters"
+      displayName: Prepare MSBuildCache variables
+
+  - template: steps-ensure-dotnet-version.yml
+    parameters:
+      sdk: true
+      version: '6.0'
+
+  - template: steps-ensure-dotnet-version.yml
+    parameters:
+      sdk: true
+      version: '9.0'
+
+  - ${{ if eq(parameters.runTests, true) }}:
+    - task: VisualStudioTestPlatformInstaller@1
+      displayName: Ensure VSTest Platform
+
+  # - pwsh: |-
+  #     & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\PowerToys.sln'
+  #     & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\BugReportTool\BugReportTool.sln'
+  #     & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\WebcamReportTool\WebcamReportTool.sln'
+  #     & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\StylesReportTool\StylesReportTool.sln'
+  #     & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.sln'
+  #   displayName: Verify ARM64 configurations
+
+  # - ${{ if eq(parameters.enablePackageCaching, true) }}:
+  #   - task: Cache@2
+  #     displayName: 'Cache nuget packages (PackageReference)'
+  #     inputs:
+  #       key: '"PackageReference" | "$(Agent.OS)" | Directory.Packages.props'
+  #       restoreKeys: |
+  #          "PackageReference" | "$(Agent.OS)"
+  #          "PackageReference"
+  #       path: $(NUGET_PACKAGES)
+
+  #   - task: Cache@2
+  #     displayName: 'Cache nuget packages (packages.config)'
+  #     inputs:
+  #       key: '"packages.config" | "$(Agent.OS)" | **/packages.config'
+  #       restoreKeys: |
+  #          "packages.config" | "$(Agent.OS)"
+  #          "packages.config"
+  #       path: packages
+
+  - task: NuGetAuthenticate@1
+
+  - task: PowerShell@2
+    displayName: Update WinAppSDK Versions
+    inputs:
+      filePath: '$(build.sourcesdirectory)\.pipelines\UpdateVersions.ps1'
+
+  - script: echo $(WinAppSDKVersion)
+    displayName: 'Display WinAppSDK Version Found'
+
+  - task: DownloadPipelineArtifact@2
+    displayName: 'Download WindowsAppSDK'
+    inputs:
+      buildType: 'specific'
+      project: '55e8140e-57ac-4e5f-8f9c-c7c15b51929d'
+      definition: '104083'
+      buildVersionToDownload: 'latestFromBranch'
+      branchName: 'refs/heads/release/1.6-stable'
+      artifactName: 'WindowsAppSDK_Nuget_And_MSIX'
+      targetPath: '$(Build.SourcesDirectory)\localpackages'
+  
+  - script: dir $(Build.SourcesDirectory)\localpackages\NugetPackages
+    displayName: 'List downloaded packages'
+
+  - task: NuGetCommand@2
+    displayName: 'Install WindowsAppSDK'
+    inputs:
+      command: 'custom'
+      arguments: >
+        install "Microsoft.WindowsAppSDK"
+        -Source "$(Build.SourcesDirectory)\localpackages\NugetPackages"
+        -Version "$(WinAppSDKVersion)"
+        -OutputDirectory "$(Build.SourcesDirectory)\localpackages\output"
+        -FallbackSource "https://microsoft.pkgs.visualstudio.com/ProjectReunion/_packaging/Project.Reunion.nuget.internal/nuget/v3/index.json"
+
+  # In the Microsoft Azure DevOps tenant, NuGetCommand is ambiguous.
+  # This should be `task: NuGetCommand@2`
+  - task: NuGetCommand@2
+    displayName: Restore NuGet packages
+    inputs:
+      command: 'restore'
+      feedsToUse: 'config'
+      nugetConfigPath: '$(build.sourcesdirectory)\nuget.config'
+      restoreSolution: '$(build.sourcesdirectory)\**\*.sln'
+      includeNuGetOrg: false
+
+  - pwsh: |-
+      & "$(build.sourcesdirectory)\.pipelines\verifyAndSetLatestVCToolsVersion.ps1"
+    displayName: Work around DD-1541167 (VCToolsVersion)
+    ${{ if eq(parameters.useVSPreview, true) }}:
+      env:
+        VCWhereExtraVersionTarget: '-prerelease'
+
+  - pwsh: |-
+      & "$(build.sourcesdirectory)\.pipelines\installWiX.ps1"
+    displayName: Download and install WiX 3.14 development build
+
+  - ${{ parameters.beforeBuildSteps }}
+
+  - task: VSBuild@1
+    ${{ if eq(parameters.runTests, true) }}:
+      displayName: Build and Test PowerToys main project
+    ${{ else }}:
+      displayName: Build PowerToys main project
+    inputs:
+      solution: 'PowerToys.sln'
+      vsVersion: 17.0
+      msbuildArgs: >-
+        -restore -graph
+        /p:RestorePackagesConfig=true
+        /p:CIBuild=true
+        /bl:$(LogOutputDirectory)\build-0-main.binlog
+        ${{ parameters.additionalBuildOptions }}
+        $(MSBuildCacheParameters)
+        /t:$(MSBuildMainBuildTargets)
+        /p:RestoreAdditionalProjectSources="$(Build.SourcesDirectory)\localpackages\NugetPackages"
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
