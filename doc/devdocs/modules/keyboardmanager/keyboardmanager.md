@@ -34,7 +34,7 @@ On enabling KBM, the low level keyboard hook is started, and it is unhooked on d
 
 In addition to stopping the hook, any active KBM UI windows are also closed on disabling. This is done because the KBM UI uses the same keyboard hook for the Type button where you can type a key/shortcut, so if KBM is disabled the windows would not be completely functional.
 
-The enable/disable code can be found [here](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/dll/dllmain.cpp#L301-L322)
+The [enable/disable code can be found in dllmain.cpp](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/dll/dllmain.cpp#L301-L322)
 
 ## Settings format
 KBM uses two sets of settings files. 
