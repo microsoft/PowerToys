@@ -23,7 +23,7 @@ The KBM UI was originally implemented as a XAML Island, but in order to easily s
 
 Mica is then achieved by calling [`BackdropMaterial::SetApplyToRootOrPageBackground()`](https://github.com/microsoft/PowerToys/blob/b3f27057d43445abc59aa04405f7c24bb895a61c/src/modules/keyboardmanager/KeyboardManagerEditorLibrary/EditKeyboardWindow.cpp#L388-L400) in both of the editor windows, or falls back to the `ApplicationPageBackgroundThemeBrush` background if Mica isn't available.
 
-The UI was also updated to use WinUI 2.8 to match the look and feel of the Fluent design language of Windows 11 and the rest of PowerToys. There has been talk about [migrating the implementation to XAML files instead of code-behind](https://github.com/microsoft/PowerToys/issues/2027) and [utilizing WinUI 3 going forward](https://github.com/microsoft/PowerToys/issues/15870). More about the update can be read in [here](https://github.com/microsoft/PowerToys/pull/28473).
+The UI was also updated to use WinUI 2.8 to match the look and feel of the Fluent design language of Windows 11 and the rest of PowerToys. There has been talk about [migrating the implementation to XAML files instead of code-behind](https://github.com/microsoft/PowerToys/issues/2027) and [utilizing WinUI 3 going forward](https://github.com/microsoft/PowerToys/issues/15870). More about the update can be read in [[Keyboard Manager] Modernize the editor UI - PR#28473](https://github.com/microsoft/PowerToys/pull/28473).
 
 [**Link to the original documentation**](https://github.com/microsoft/PowerToys/blob/b3f27057d43445abc59aa04405f7c24bb895a61c/doc/devdocs/modules/keyboardmanager/keyboardmanagerui.md#c-xaml-islands)
 
