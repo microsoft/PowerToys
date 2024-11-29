@@ -232,7 +232,7 @@ namespace RegistryPreviewUILib
                 }
                 else if (registryLine.StartsWith("@=", StringComparison.InvariantCulture))
                 {
-                    // This is the a Value called "(Default)" so we tweak the line for the UX
+                    // This is the Value called "(Default)" so we tweak the line for the UX
                     registryLine = registryLine.Replace("@=", "\"(Default)\"=");
                 }
 
