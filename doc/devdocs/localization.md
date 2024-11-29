@@ -86,7 +86,7 @@ Since C# projects natively support `resx` files, the only step required here is 
 <EmbeddedResource Include="Properties\Resources.*.resx" />
 ```
 
-**Note:** Building with localized resources may cause a build warning `Referenced assembly 'mscorlib.dll' targets a different processor` which is a VS bug. More details can be found [here](https://github.com/microsoft/PowerToys/issues/7269).
+**Note:** Building with localized resources may cause a build warning `Referenced assembly 'mscorlib.dll' targets a different processor` which is a VS bug. More details can be found in [PowerToys issue #7269](https://github.com/microsoft/PowerToys/issues/7269).
 
 **Note:** If a project needs to be migrated from XAML resources to resx, the easiest way to convert the resources would be to change to format to `=` separates resources by either manually (by Ctrl+H on a text editor), or by a script, and then running [`resgen`](https://learn.microsoft.com/dotnet/framework/tools/resgen-exe-resource-file-generator#Convert) on `Developer Command Prompt for VS` to convert it to resx format.
 ```
