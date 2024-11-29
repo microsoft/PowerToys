@@ -391,10 +391,9 @@ namespace newplus::utilities
         }
         catch (const std::exception& ex)
         {
-            hr = S_FALSE;
-
             Logger::error(ex.what());
 
+            hr = S_FALSE;
             trace.UpdateState(true);
             Trace::EventCopyTemplateResult(hr);
             trace.Flush();
