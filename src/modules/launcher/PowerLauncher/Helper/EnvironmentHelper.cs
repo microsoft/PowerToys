@@ -107,7 +107,7 @@ namespace PowerLauncher.Helper
                 // Later we only like to recreate the changed ones
                 foreach (string varName in newEnvironment.Keys.ToList())
                 {
-                    // To be able to detect changed names correctly we have to compare case sensitive
+                    // To be able to detect changed names correctly we have to compare case-sensitive
                     if (oldProcessEnvironment.Contains(varName))
                     {
                         if (oldProcessEnvironment[varName].Equals(newEnvironment[varName]))
