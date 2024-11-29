@@ -196,7 +196,7 @@ namespace RegistryPreviewUILib
                 return false;
             }
 
-            // REG files have to start with one of two headers and it's case insensitive
+            // REG files have to start with one of two headers and it's case-insensitive
             registryLine = registryLines[0];
             registryLine = registryLine.ToLowerInvariant();
 
