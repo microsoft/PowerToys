@@ -363,7 +363,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
             {
                 if (_handlesToProcessCache.Count > 7000)
                 {
-                    Debug.Print("Clearing Process Cache because it's size is " + _handlesToProcessCache.Count);
+                    Debug.Print("Clearing Process Cache because its size is " + _handlesToProcessCache.Count);
                     _handlesToProcessCache.Clear();
                 }
 
