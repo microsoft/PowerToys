@@ -45,7 +45,7 @@ For example, for a project in the folder `src\path` where the resx file is prese
     ]
 }
 ```
-The rest of the steps depend on the project type and are covered in the sections below. The steps to add the localized files to the MSI can be found [here](#Enabling-localized-MSI-for-a-new-project).
+The rest of the steps depend on the project type and are covered in the sections below. The steps to add the localized files to the MSI can be found in [Enabling localized MSI for a new project](#Enabling-localized-MSI-for-a-new-project).
 
 ### C++
 C++ projects do not support `resx` files, and instead use `rc` files along with `resource.h` files. The CDPX pipeline however doesn't support localizing `rc` files and the other alternative they support is directly translating the resources from the binary which makes it harder to maintain resources. To avoid this, a custom script has been added which expects a resx file and converts the entries to an rc file with a string table and adds resource declarations to a resource.h file so that the resources can be compiled with the C++ project.
