@@ -4579,7 +4579,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Rules defined by your organization</value>
   </data>
   <data name="MouseWithoutBorders_PolicyIPAddressMappingInfo_TextBoxControl.Description" xml:space="preserve">
-    <value>You can not change, remove or disable these enforced rules.</value>
+    <value>You cannot change, remove or disable these enforced rules.</value>
   </data>
   <data name="OpenSettings.Content" xml:space="preserve">
     <value>Open settings</value>
