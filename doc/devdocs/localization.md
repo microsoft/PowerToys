@@ -153,7 +153,7 @@ For C++ and UWP projects no additional files are generated with localization tha
 ```
 
 For C# projects, satellite dlls are generated when the project is built. For a project named `ProjName`, files are created in the format `langId\ProjName.resources.dll` where `langId` is in the same format as the lcl files. The satellite dlls need to be included with the MSI, but they must be added only if the solution is built from the build farm, as the localized resx files will not be present on local machines (and that could cause local builds of the installer to fail).
-This can be done by adding the directory name of the project to [Product.wxs near line 806](https://github.com/microsoft/PowerToys/blob/f92bd6ffd38014c228544bb8d68d0937ce4c2b6d/installer/PowerToysSetup/Product.wxs#L806) and a resource component for the project can be created [here](https://github.com/microsoft/PowerToys/blob/f92bd6ffd38014c228544bb8d68d0937ce4c2b6d/installer/PowerToysSetup/Product.wxs#L845-L847) in this format:
+This can be done by adding the directory name of the project to [Product.wxs near line 806](https://github.com/microsoft/PowerToys/blob/f92bd6ffd38014c228544bb8d68d0937ce4c2b6d/installer/PowerToysSetup/Product.wxs#L806) and a resource component for the project can be created in [Product.wxs near lines 845-847](https://github.com/microsoft/PowerToys/blob/f92bd6ffd38014c228544bb8d68d0937ce4c2b6d/installer/PowerToysSetup/Product.wxs#L845-L847) in this format:
 ```
 <Component Id="ProjName_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ProjNameInstallFolder">
     <File Id="ProjName_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\ProjName\$(var.Language)\ProjName.resources.dll" />
