@@ -51,7 +51,7 @@ The [`Shortcut` class](https://github.com/microsoft/PowerToys/blob/main/src/modu
 [This method](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/common/Shortcut.cpp#L517-L614) uses `GetVirtualKeyState` (internally calls `GetAsyncKeyState` in production code), to check if all the modifiers of the current shortcut are being pressed. Since Win doesn't have a non-L/R key code we check this by checking both LWIN and RWIN.
 
 ### Tests
-Tests for some methods in the `Shortcut` class can be found [here](https://github.com/microsoft/PowerToys/blob/main/src/modules/keyboardmanager/test/ShortcutTests.cpp).
+Tests for some methods in the `Shortcut` class can be found in [`OSLevelShortcutRemappingTests.cpp`](https://github.com/microsoft/PowerToys/blob/main/src/modules/keyboardmanager/KeyboardManagerEngineTest/OSLevelShortcutRemappingTests.cpp) and [`AppSpecificShortcutRemappingTests.cpp`](https://github.com/microsoft/PowerToys/blob/main/src/modules/keyboardmanager/KeyboardManagerEngineTest/AppSpecificShortcutRemappingTests.cpp).
 
 ## Helpers
 [This namespace](https://github.com/microsoft/PowerToys/blob/main/src/modules/keyboardmanager/common/Helpers.cpp) has any methods which are used across either UI or the backend which aren't specific to either. Some of these methods have tests [here](https://github.com/microsoft/PowerToys/blob/main/src/modules/keyboardmanager/test/SetKeyEventTests.cpp).
