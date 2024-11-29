@@ -30,7 +30,7 @@ The `KeyboardManager` module has [3 main class members](https://github.com/micro
 - An object of type `KeyboardManagerState`. This object contains all the data related to remappings and is also used in the sense of a [View Model as it used to communicate common data that is shared between the KBM UI and the backend](keyboardmanagercommon.md#keyboardmanagerstate).
 
 ## Enable/Disable
-On enabling KBM, the low level keyboard hook is started, and it is unhooked on disable. This is done to allow users to manually restart KBM if some other application which registers a keyboard hook was launched after PowerToys, so that it can be brought back to the highest priority hook (as the last hook to be registered receives the input first as mentioned [here](https://learn.microsoft.com/windows/win32/winmsg/about-hooks#hook-procedures)).
+On enabling KBM, the low level keyboard hook is started, and it is unhooked on disable. This is done to allow users to manually restart KBM if some other application which registers a keyboard hook was launched after PowerToys, so that it can be brought back to the highest priority hook (as the [last hook to be registered receives the input first](https://learn.microsoft.com/windows/win32/winmsg/about-hooks#hook-procedures)).
 
 In addition to stopping the hook, any active KBM UI windows are also closed on disabling. This is done because the KBM UI uses the same keyboard hook for the Type button where you can type a key/shortcut, so if KBM is disabled the windows would not be completely functional.
 
