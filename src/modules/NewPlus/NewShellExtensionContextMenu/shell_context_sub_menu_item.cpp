@@ -63,49 +63,7 @@ IFACEMETHODIMP shell_context_sub_menu_item::GetState(_In_opt_ IShellItemArray* s
 
 IFACEMETHODIMP shell_context_sub_menu_item::Invoke(_In_opt_ IShellItemArray*, _In_opt_ IBindCtx*) noexcept
 {
-    HRESULT hr = S_OK;
-    try
-    {
-        trace.UpdateState(true);
-
-        // Determine target path of where context menu was displayed
-        const auto target_path_name = utilities::get_path_from_unknown_site(site_of_folder);
-
-        // Determine initial filename
-        std::filesystem::path source_fullpath = template_entry->path;
-        std::filesystem::path target_fullpath = std::wstring(target_path_name);
-
-        // Only append name to target if source is not a directory
-        if (!utilities::is_directory(target_fullpath))
-        {
-            target_fullpath.append(this->template_entry->get_target_filename(!utilities::get_newplus_setting_hide_starting_digits()));
-        }
-
-        // Copy file and determine final filename
-        std::filesystem::path target_final_fullpath = this->template_entry->copy_object_to(GetActiveWindow(), target_fullpath);
-
-        Trace::EventCopyTemplate(target_final_fullpath.extension().c_str());
-
-        // Refresh folder items
-        SHChangeNotify(SHCNE_CREATE, SHCNF_PATH | SHCNF_FLUSH, target_final_fullpath.wstring().c_str(), NULL);
-
-        // Enter rename mode
-        this->template_entry->enter_rename_mode(site_of_folder, target_final_fullpath);
-
-        Trace::EventCopyTemplateResult(S_OK);
-    }
-    catch (const std::exception& ex)
-    {
-        Trace::EventCopyTemplateResult(S_FALSE);
-        Logger::error(ex.what());
-
-        hr = S_FALSE;
-    }
-
-    trace.Flush();
-    trace.UpdateState(false);
-
-    return hr;
+    return newplus::utilities::copy_template(template_entry, site_of_folder);
 }
 
 IFACEMETHODIMP shell_context_sub_menu_item::GetFlags(_Out_ EXPCMDFLAGS* returned_flags)
@@ -162,9 +120,5 @@ IFACEMETHODIMP template_folder_context_menu_item::GetIcon(_In_opt_ IShellItemArr
 
 IFACEMETHODIMP template_folder_context_menu_item::Invoke(_In_opt_ IShellItemArray* selection, _In_opt_ IBindCtx*) noexcept
 {
-    Logger::info(L"Open templates folder");
-    const std::wstring verb_hardcoded_do_not_change = L"open";
-    ShellExecute(nullptr, verb_hardcoded_do_not_change.c_str(), shell_template_folder.c_str(), NULL, NULL, SW_SHOWNORMAL);
-
-    return S_OK;
+    return newplus::utilities::open_template_folder(shell_template_folder);
 }

@@ -39,7 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             0,
         };
 
-        private readonly object _machineMatrixStringLock = new();
+        private readonly Lock _machineMatrixStringLock = new();
 
         private static readonly Dictionary<SocketStatus, Brush> StatusColors = new Dictionary<SocketStatus, Brush>()
 {

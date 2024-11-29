@@ -56,7 +56,6 @@ damienleroy
 davidegiacometti
 debian
 Deibisu
-Deibisu
 Delimarsky
 Deondre
 DHowett
@@ -72,6 +71,7 @@ Garside
 Gershaft
 Giordani
 Gokce
+grzhan
 Guo
 hanselman
 Harmath
@@ -86,7 +86,6 @@ Jaswal
 jefflord
 Jordi
 jyuwono
-Kairu
 Kairu
 Kamra
 Kantarci
@@ -123,7 +122,6 @@ Quriz
 randyrants
 ricardosantos
 riri
-riri
 ritchielawrence
 robmikh
 Rutkas
@@ -147,6 +145,7 @@ TBM
 tilovell
 Triet
 waaverecords
+Whuihuan
 Xpg
 ycv
 Yuniardi
@@ -157,6 +156,8 @@ Zykova
 
 # OTHERS
 
+Bilibili
+BVID
 cmdow
 Controlz
 cortana

@@ -13,6 +13,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -44,7 +45,7 @@ namespace MouseWithoutBorders.Class
         internal bool Changed;
 
         private readonly SettingsUtils _settingsUtils;
-        private readonly object _loadingSettingsLock = new object();
+        private readonly Lock _loadingSettingsLock = new Lock();
         private readonly IFileSystemWatcher _watcher;
 
         private MouseWithoutBordersProperties _properties;

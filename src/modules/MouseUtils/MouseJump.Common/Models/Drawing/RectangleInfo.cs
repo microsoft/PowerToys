@@ -203,6 +203,15 @@ public sealed class RectangleInfo
     public RectangleInfo Offset(decimal dx, decimal dy) =>
         new(this.X + dx, this.Y + dy, this.Width, this.Height);
 
+    public RectangleInfo Round() =>
+        this.Round(0);
+
+    public RectangleInfo Round(int decimals) => new(
+        Math.Round(this.X, decimals),
+        Math.Round(this.Y, decimals),
+        Math.Round(this.Width, decimals),
+        Math.Round(this.Height, decimals));
+
     /// <summary>
     /// Returns a new <see cref="RectangleInfo"/> that is a scaled version of the current rectangle.
     /// The dimensions of the new rectangle are calculated by multiplying the current rectangle's dimensions by the scaling factor.
