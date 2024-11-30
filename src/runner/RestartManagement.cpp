@@ -12,6 +12,8 @@ void RestartProcess(const std::wstring& processName)
     WCHAR sessionKey[CCH_RM_SESSION_KEY + 1];
     if (RmStartSession(&sessionHandle, 0, sessionKey) != ERROR_SUCCESS)
     {
+        DWORD ErrorCode = GetLastError();
+        printf("RmStartSession failed with an error code: %d\n", ErrorCode);
         return;
     }
     auto processHandles = getProcessHandlesByName(processName, PROCESS_QUERY_INFORMATION);
@@ -29,6 +31,8 @@ void RestartProcess(const std::wstring& processName)
     if (pInfo.empty() ||
         RmRegisterResources(sessionHandle, 0, nullptr, sizeof(pInfo), pInfo.data(), 0, nullptr) != ERROR_SUCCESS)
     {
+        DWORD second_ErrorCode = GetLastError();
+        printf("RmRegisterResources failed with an error code: %d\n", second_ErrorCode);
         return;
     }
     RmShutdown(sessionHandle, RmForceShutdown, nullptr);
