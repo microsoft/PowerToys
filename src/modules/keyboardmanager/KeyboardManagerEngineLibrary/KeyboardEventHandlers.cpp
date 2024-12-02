@@ -79,7 +79,7 @@ namespace
         }
         if (Helpers::IsNumpadKey(data->lParam->vkCode))
         {
-            // store if the Numpad key was pressed or not. If numpad numbers were pressed but then we get the same key KEY UP but with numlock unlocked we will replace it.
+            // store if the Numpad key was pressed or not. If numpad numbers were pressed but then we get the same key KEY UP but with Numpad unlocked we will replace it.
             state.numpadKeyPressed[data->lParam->vkCode] = (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN);
         }
     }
