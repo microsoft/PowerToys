@@ -38,7 +38,7 @@ namespace
         //Function for fixing numpad when used as shift https://github.com/microsoft/PowerToys/issues/22346
         if (Helpers::IsNumpadOriginated(data->lParam->vkCode))
         {
-            DWORD decodedKey = Helpers::DecodeKeyNumpadOrigin(data->lParam->vkCode);
+            DWORD decodedKey = Helpers::ClearKeyNumpadOrigin(data->lParam->vkCode);
 
             //check if we already have a stored scanID
             auto scanKey = MapVirtualKey(decodedKey, MAPVK_VK_TO_VSC);
@@ -55,8 +55,11 @@ namespace
                         auto key = std::get<DWORD>(keyValue->second);
                         if (key == VK_LSHIFT || key == VK_RSHIFT)
                         {
-                            //replace it with original numpad
-                            data->lParam->vkCode = it->second;
+                            if (state.numpadKeyPressed[it->second])
+                            {
+                                //replace it with original numpad
+                                data->lParam->vkCode = it->second;
+                            }
                         }
                     }
                     if (keyValue->second.index() == 1)
@@ -64,12 +67,20 @@ namespace
                         auto key = std::get<Shortcut>(keyValue->second);
                         if (key.shiftKey != ModifierKey::Disabled)
                         {
-                            //replace it with original numpad
-                            data->lParam->vkCode = it->second;
+                            if (state.numpadKeyPressed[it->second])
+                            { 
+                                //replace it with original numpad
+                                data->lParam->vkCode = it->second;
+                            }
                         }
                     }
                 }
             }
+        }
+        if (Helpers::IsNumpadKey(data->lParam->vkCode))
+        {
+            // store if the Numpad key was pressed or not. If numpad numbers were pressed but then we get the same key KEY UP but with numlock unlocked we will replace it.
+            state.numpadKeyPressed[data->lParam->vkCode] = (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN);
         }
     }
 }

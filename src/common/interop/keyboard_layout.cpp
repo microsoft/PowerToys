@@ -154,8 +154,9 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
     keyboardLayoutMap[VK_HOME | numpadOriginBit] = L"Home (Numpad)";
     keyboardLayoutMap[VK_END | numpadOriginBit] = L"End (Numpad)";
     keyboardLayoutMap[VK_RETURN | numpadOriginBit] = L"Enter (Numpad)";
+    keyboardLayoutMap[VK_CLEAR | numpadOriginBit] = L"Clear (Numpad)";
     keyboardLayoutMap[VK_DIVIDE | numpadOriginBit] = L"/ (Numpad)";
-
+   
     keyboardLayoutMap[VK_SUBTRACT] = L"- (Subtract)";
     keyboardLayoutMap[VK_SELECT] = L"Select";
     keyboardLayoutMap[VK_PRINT] = L"Print";

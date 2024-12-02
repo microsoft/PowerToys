@@ -17,9 +17,9 @@ namespace Helpers
 
     // Functions to encode that a key is originated from numpad
     DWORD EncodeKeyNumpadOrigin(const DWORD key, const bool extended);
-    DWORD DecodeKeyNumpadOrigin(const DWORD encodedKey);
     DWORD ClearKeyNumpadOrigin(const DWORD key);
     bool IsNumpadOriginated(const DWORD key);
+    bool IsNumpadKey(const DWORD vkCode);
     DWORD GetNumpadOriginEncodingBit();
 
     // Function to check if the key is a modifier key

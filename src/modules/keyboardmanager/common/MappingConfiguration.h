@@ -53,6 +53,8 @@ public:
 
     std::unordered_map<DWORD, DWORD> scanMap;
 
+    std::unordered_map<DWORD, bool> numpadKeyPressed;
+
     // Stores single key to text remappings
     SingleKeyToTextRemapTable singleKeyToTextReMap;
 

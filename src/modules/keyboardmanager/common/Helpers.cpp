@@ -39,19 +39,6 @@ namespace Helpers
             return key;
     }
 
-    DWORD DecodeKeyNumpadOrigin(const DWORD encodedKey)
-    {
-        // Check if the high-order bit is set (0x80000000) and remove it if necessary.
-        if (encodedKey & 0x80000000)
-        {
-            return encodedKey & ~0x80000000; // Clear the high bit
-        }
-        else
-        {
-            return encodedKey; // Return as is if the bit is not set
-        }
-    }
-
     DWORD ClearKeyNumpadOrigin(const DWORD key)
     {
         return (key & ~GetNumpadOriginEncodingBit());
@@ -61,6 +48,27 @@ namespace Helpers
     {
         return !!(key & GetNumpadOriginEncodingBit());
     }
+
+    bool IsNumpadKey(const DWORD vkCode)
+    {
+        switch (vkCode)
+        {
+        case VK_NUMPAD0:
+        case VK_NUMPAD1:
+        case VK_NUMPAD2:
+        case VK_NUMPAD3:
+        case VK_NUMPAD4:
+        case VK_NUMPAD5:
+        case VK_NUMPAD6:
+        case VK_NUMPAD7:
+        case VK_NUMPAD8:
+        case VK_NUMPAD9:
+        case VK_DECIMAL:
+            return true;
+        }
+        return false;
+    }
+
     DWORD GetNumpadOriginEncodingBit()
     {
         // Intentionally do not mimic KF_EXTENDED to avoid confusion, because it's not the same thing
