@@ -27,5 +27,8 @@ namespace Utils
 
         bool UpdateAppVersion(WorkspacesData::WorkspacesProject::Application& app, const AppList& installedApps);
         bool UpdateWorkspacesApps(WorkspacesData::WorkspacesProject& workspace, const AppList& installedApps);
+
+        BOOL IsEdge(Apps::AppData appData);
+        BOOL IsChrome(Apps::AppData appData);
     }
 }
