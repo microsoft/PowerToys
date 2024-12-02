@@ -215,10 +215,10 @@ namespace newplus::utilities
 
     inline bool is_desktop_folder(const std::filesystem::path target_fullpath)
     {
-        TCHAR desktopPath[MAX_PATH];
-        if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_DESKTOP, NULL, 0, desktopPath)))
+        TCHAR desktop_path[MAX_PATH];
+        if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_DESKTOP, NULL, 0, desktop_path)))
         {
-            return StrCmpIW(target_fullpath.c_str(), desktopPath) == 0;
+            return StrCmpIW(target_fullpath.c_str(), desktop_path) == 0;
         }
         return false;
     }
@@ -376,8 +376,10 @@ namespace newplus::utilities
             // Copy file and determine final filename
             std::filesystem::path target_final_fullpath = template_entry->copy_object_to(GetActiveWindow(), target_fullpath);
 
+            // Consider copy completed. If we do tracing after enter_rename_mode, then rename mode won't consistently work
             trace.UpdateState(true);
             Trace::EventCopyTemplate(target_final_fullpath.extension().c_str());
+            Trace::EventCopyTemplateResult(hr);
             trace.Flush();
             trace.UpdateState(false);
 
@@ -392,12 +394,11 @@ namespace newplus::utilities
             Logger::error(ex.what());
 
             hr = S_FALSE;
+            trace.UpdateState(true);
+            Trace::EventCopyTemplateResult(hr);
+            trace.Flush();
+            trace.UpdateState(false);
         }
-
-        trace.UpdateState(true);
-        Trace::EventCopyTemplateResult(hr);
-        trace.Flush();
-        trace.UpdateState(false);
 
         return hr;
     }
