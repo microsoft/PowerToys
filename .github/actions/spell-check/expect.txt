@@ -668,6 +668,7 @@ Iindex
 IJson
 Ijwhost
 IKs
+iljxck
 ILogon
 IMAGEHLP
 IMAGERESIZERCONTEXTMENU
@@ -771,6 +772,7 @@ lastcodeanalysissucceeded
 Lastdevice
 LASTEXITCODE
 LAYOUTRTL
+lcb
 LCIDTo
 lcl
 Lclean
