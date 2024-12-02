@@ -4,7 +4,7 @@
 
 #include <initguid.h>
 #include <windows.h>
-#include <unknwn.h>
+#include <Unknwn.h>
 #include <restrictederrorinfo.h>
 #include <hstring.h>
 #include <dxgi.h>
