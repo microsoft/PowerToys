@@ -411,7 +411,7 @@ namespace Utils
         std::optional<std::wstring> pwaAppId = std::nullopt;
         std::wstring finalName = appData->name;
         std::wstring pwaName = L"";
-        if (IsEdge(*appData))
+        if (appData->IsEdge())
         {
             InitAumidToAppId();
 
@@ -432,7 +432,7 @@ namespace Utils
                 Logger::info(L"The found edge window does not contain a PWA app");
             }
         }
-        else if (IsChrome(*appData))
+        else if (appData->IsChrome())
         {
             InitChromeAppIds();
 

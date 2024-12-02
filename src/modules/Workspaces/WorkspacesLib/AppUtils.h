@@ -14,6 +14,9 @@ namespace Utils
             std::wstring appUserModelId;
             std::wstring pwaAppId;
             bool canLaunchElevated = false;
+
+            bool IsEdge() const;
+            bool IsChrome() const;
         };
 
         using AppList = std::vector<AppData>;
@@ -27,8 +30,5 @@ namespace Utils
 
         bool UpdateAppVersion(WorkspacesData::WorkspacesProject::Application& app, const AppList& installedApps);
         bool UpdateWorkspacesApps(WorkspacesData::WorkspacesProject& workspace, const AppList& installedApps);
-
-        BOOL IsEdge(Apps::AppData appData);
-        BOOL IsChrome(Apps::AppData appData);
     }
 }

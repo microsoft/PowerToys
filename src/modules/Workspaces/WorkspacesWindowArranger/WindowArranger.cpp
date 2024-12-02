@@ -151,11 +151,10 @@ bool WindowArranger::TryMoveWindow(const WorkspacesData::WorkspacesProject::Appl
     return success;
 }
 
-std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const WorkspacesData::WorkspacesProject::Application& app, const std::vector<HWND>& movedWindows)
+std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const WorkspacesData::WorkspacesProject::Application& app, const std::vector<HWND>& movedWindows, Utils::PwaHelper& pwaHelper)
 {
     std::optional<Utils::Apps::AppData> appDataNearest = std::nullopt;
     WindowWithDistance nearestWindowWithDistance{};
-    Utils::PwaHelper pwaHelper{};
 
     for (HWND window : m_windowsBefore)
     {
@@ -224,6 +223,7 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
         bool movedAny = false;
         std::vector<HWND> movedWindows;
         std::vector<WorkspacesData::WorkspacesProject::Application> movedApps;
+        Utils::PwaHelper pwaHelper{};
 
         while (isMovePhase)
         {
@@ -240,7 +240,7 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
                 }
 
                 std::optional<WindowWithDistance> nearestWindowWithDistance;
-                nearestWindowWithDistance = GetNearestWindow(app, movedWindows);
+                nearestWindowWithDistance = GetNearestWindow(app, movedWindows, pwaHelper);
                 if (nearestWindowWithDistance.has_value())
                 {
                     if (nearestWindowWithDistance.value().distance < minDistance)
