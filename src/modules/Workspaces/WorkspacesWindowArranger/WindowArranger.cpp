@@ -134,12 +134,12 @@ bool WindowArranger::TryMoveWindow(const WorkspacesData::WorkspacesProject::Appl
     bool success = moveWindow(windowToMove, app);
     if (success)
     {
-        m_launchingStatus.Update(appState.value().application, LaunchingState::LaunchedAndMoved);
+        m_launchingStatus.Update(appState.value().application, windowToMove, LaunchingState::LaunchedAndMoved);
     }
     else
     {
         Logger::info(L"Failed to move the existing app {} ", app.name);
-        m_launchingStatus.Update(appState.value().application, LaunchingState::Failed);
+        m_launchingStatus.Update(appState.value().application, windowToMove, LaunchingState::Failed);
     }
 
     auto updatedState = m_launchingStatus.Get(app);
