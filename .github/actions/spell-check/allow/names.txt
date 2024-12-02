@@ -44,6 +44,7 @@ Bartosz
 betadele
 betsegaw
 bricelam
+bsky
 CCcat
 Chinh
 chrdavis
@@ -71,6 +72,7 @@ Garside
 Gershaft
 Giordani
 Gokce
+grzhan
 Guo
 hanselman
 Harmath
@@ -89,6 +91,7 @@ Kairu
 Kamra
 Kantarci
 Karthick
+kaylacinnamon
 kevinguo
 Krigun
 Lambson
