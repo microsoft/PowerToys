@@ -24,7 +24,6 @@ namespace Helpers
         case VK_NEXT:
         case VK_HOME:
         case VK_END:
-        case VK_CLEAR:
             numpad_originated = !extended;
             break;
         case VK_RETURN:

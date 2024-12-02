@@ -36,10 +36,11 @@ namespace
     void UpdateNumpadWithShift(LowlevelKeyboardEvent* data, State& state)
     {
         //Function for fixing numpad when used as shift https://github.com/microsoft/PowerToys/issues/22346
-        if (Helpers::IsNumpadOriginated(data->lParam->vkCode))
+        //VK_CLEAR is not encoded in IsNumpadOriginated
+        if (Helpers::IsNumpadOriginated(data->lParam->vkCode) || data->lParam->vkCode == VK_CLEAR)
         {
+            // Decode it. If it is VK_CLEAR it will do nothing
             DWORD decodedKey = Helpers::ClearKeyNumpadOrigin(data->lParam->vkCode);
-
             //check if we already have a stored scanID
             auto scanKey = MapVirtualKey(decodedKey, MAPVK_VK_TO_VSC);
             auto it = state.scanMap.find(scanKey);

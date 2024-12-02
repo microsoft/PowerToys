@@ -65,10 +65,13 @@ bool MappingConfiguration::AddSingleKeyRemap(const DWORD& originalKey, const Key
     }
 
     singleKeyReMap[originalKey] = newRemapKey;
-    auto scanCode = MapVirtualKey(originalKey, MAPVK_VK_TO_VSC);
-    if (scanCode != 0)
+    if (Helpers::IsNumpadKey(originalKey))
     {
-        scanMap[MapVirtualKey(originalKey, MAPVK_VK_TO_VSC)] = originalKey;
+        auto scanCode = MapVirtualKey(originalKey, MAPVK_VK_TO_VSC);
+        if (scanCode != 0)
+        {
+            scanMap[MapVirtualKey(originalKey, MAPVK_VK_TO_VSC)] = originalKey;
+        }
     }
     return true;
 }
