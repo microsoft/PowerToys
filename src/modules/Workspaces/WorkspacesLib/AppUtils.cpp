@@ -381,14 +381,14 @@ namespace Utils
             return updated;
         }
 
-        BOOL IsEdge(Utils::Apps::AppData appData)
+        bool AppData::IsEdge() const
         {
-            return appData.installPath.ends_with(NonLocalizable::EdgeFilename);
+            return installPath.ends_with(NonLocalizable::EdgeFilename);
         }
 
-        BOOL IsChrome(Utils::Apps::AppData appData)
+        bool AppData::IsChrome() const
         {
-            return appData.installPath.ends_with(NonLocalizable::ChromeFilename);
+            return installPath.ends_with(NonLocalizable::ChromeFilename);
         }
 
     }
