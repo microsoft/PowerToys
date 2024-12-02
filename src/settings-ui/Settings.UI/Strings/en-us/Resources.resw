@@ -3540,7 +3540,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage.Description" xml:space="preserve">
     <value>Show only accented characters common to the selected set</value>
   </data>
-	<data name="QuickAccent_SelectedLanguage_All.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_All.Content" xml:space="preserve">
     <value>All available</value>
   </data>
   <data name="QuickAccent_Group_Special" xml:space="preserve">
