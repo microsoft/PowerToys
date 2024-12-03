@@ -10,7 +10,7 @@ using Peek.UI.Extensions;
 
 namespace Peek.UI.Models
 {
-    public class NeighboringItems : IReadOnlyList<IFileSystemItem>
+    public partial class NeighboringItems : IReadOnlyList<IFileSystemItem>
     {
         public IFileSystemItem this[int index] => Items[index] = Items[index] ?? ShellItemArray.GetItemAt(index).ToIFileSystemItem();
 
