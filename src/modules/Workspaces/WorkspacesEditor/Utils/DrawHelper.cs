@@ -75,16 +75,16 @@ namespace WorkspacesEditor.Utils
 
             foreach (Application app in appsIncluded)
             {
-                if (repeatCounter.TryGetValue(app.AppPath, out int value))
+                if (repeatCounter.TryGetValue(app.AppPath + app.AppTitle, out int value))
                 {
-                    repeatCounter[app.AppPath] = ++value;
+                    repeatCounter[app.AppPath + app.AppTitle] = ++value;
                 }
                 else
                 {
-                    repeatCounter.Add(app.AppPath, 1);
+                    repeatCounter.Add(app.AppPath + app.AppTitle, 1);
                 }
 
-                app.RepeatIndex = repeatCounter[app.AppPath];
+                app.RepeatIndex = repeatCounter[app.AppPath + app.AppTitle];
             }
 
             foreach (Application app in project.Applications.Where(x => !x.IsIncluded))

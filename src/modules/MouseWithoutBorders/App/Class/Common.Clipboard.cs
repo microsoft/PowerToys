@@ -368,7 +368,7 @@ namespace MouseWithoutBorders
             }
         }
 
-        private static readonly object ClipboardThreadOldLock = new();
+        private static readonly Lock ClipboardThreadOldLock = new();
         private static System.Threading.Thread clipboardThreadOld;
 
         internal static void GetRemoteClipboard(string postAction)

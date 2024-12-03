@@ -11,6 +11,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:mtu="using:Microsoft.Terminal.UI"
     xmlns:rsdk="using:Microsoft.CmdPal.Extensions"
+    Background="Transparent"
     Loaded="Page_Loaded"
     mc:Ignorable="d">
 
@@ -242,7 +243,6 @@
             Grid.Row="2"
             Padding="24,12,0,0"
             Orientation="Horizontal"
-            Visibility="Collapsed"
             Spacing="16">
             <TextBlock
                 FontSize="12"
@@ -294,7 +294,10 @@
         </Grid>
 
         <!--  Footer  -->
-        <Grid Grid.Row="4" Padding="8,0,8,0">
+        <Grid
+            Grid.Row="4"
+            Padding="8,0,8,0"
+            Background="{x:Bind AccentColorBrush, Mode=OneWay}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />

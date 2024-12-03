@@ -20,7 +20,7 @@ public sealed partial class SearchBar : UserControl
     /// <summary>
     /// Gets the <see cref="DispatcherQueueTimer"/> that we create to track keyboard input and throttle/debounce before we make queries.
     /// </summary>
-    private DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
+    private readonly DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
 
     public bool Nested { get; set; }
 
@@ -29,10 +29,7 @@ public sealed partial class SearchBar : UserControl
         this.InitializeComponent();
     }
 
-    private void BackButton_Tapped(object sender, TappedRoutedEventArgs e)
-    {
-        WeakReferenceMessenger.Default.Send<NavigateBackMessage>();
-    }
+    private void BackButton_Tapped(object sender, TappedRoutedEventArgs e) => WeakReferenceMessenger.Default.Send<NavigateBackMessage>();
 
     private void FilterBox_KeyDown(object sender, KeyRoutedEventArgs e)
     {
@@ -56,7 +53,8 @@ public sealed partial class SearchBar : UserControl
         }
         else if (e.Key == VirtualKey.Enter)
         {
-            // TODO: ExecuteCommandMessage?
+            WeakReferenceMessenger.Default.Send<ActivateSelectedListItemMessage>();
+
             e.Handled = true;
         } // ctrl+k
         else if (ctrlPressed && e.Key == VirtualKey.K)
@@ -79,7 +77,8 @@ public sealed partial class SearchBar : UserControl
             }
             else
             {
-                // TODO: Clear the search box
+                // Clear the search box
+                FilterBox.Text = string.Empty;
             }
 
             e.Handled = true;

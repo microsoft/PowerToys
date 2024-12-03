@@ -251,10 +251,11 @@ namespace WorkspacesEditor.Models
             {
                 Models.Application newApp = new Models.Application()
                 {
-                    Id = app.Id != null ? app.Id : $"{{{Guid.NewGuid().ToString()}}}",
+                    Id = string.IsNullOrEmpty(app.Id) ? $"{{{Guid.NewGuid().ToString()}}}" : app.Id,
                     AppName = app.Application,
                     AppPath = app.ApplicationPath,
                     AppTitle = app.Title,
+                    PwaAppId = string.IsNullOrEmpty(app.PwaAppId) ? string.Empty : app.PwaAppId,
                     PackageFullName = app.PackageFullName,
                     AppUserModelId = app.AppUserModelId,
                     Parent = this,

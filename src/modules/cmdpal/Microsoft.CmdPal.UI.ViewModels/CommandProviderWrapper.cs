@@ -16,9 +16,8 @@ public sealed class CommandProviderWrapper
     private readonly ICommandProvider _commandProvider;
 
     private readonly IExtensionWrapper? extensionWrapper;
-    private ICommandItem[] _topLevelItems = [];
 
-    public ICommandItem[] TopLevelItems => _topLevelItems;
+    public ICommandItem[] TopLevelItems { get; private set; } = [];
 
     public CommandProviderWrapper(ICommandProvider provider)
     {
@@ -29,8 +28,14 @@ public sealed class CommandProviderWrapper
     public CommandProviderWrapper(IExtensionWrapper extension)
     {
         extensionWrapper = extension;
+        if (!extensionWrapper.IsRunning())
+        {
+            throw new ArgumentException("You forgot to start the extension. This is a coding error - make sure to call StartExtensionAsync");
+        }
+
         var extensionImpl = extension.GetExtensionObject();
-        if (extensionImpl?.GetProvider(ProviderType.Commands) is not ICommandProvider provider)
+        var providerObject = extensionImpl?.GetProvider(ProviderType.Commands);
+        if (providerObject is not ICommandProvider provider)
         {
             throw new ArgumentException("extension didn't actually implement ICommandProvider");
         }
@@ -46,14 +51,14 @@ public sealed class CommandProviderWrapper
             return;
         }
 
-        var t = new Task<ICommandItem[]>(() => _commandProvider.TopLevelCommands());
+        var t = new Task<ICommandItem[]>(_commandProvider.TopLevelCommands);
         t.Start();
         var commands = await t.ConfigureAwait(false);
 
         // On a BG thread here
         if (commands != null)
         {
-            _topLevelItems = commands;
+            TopLevelItems = commands;
         }
     }
 

@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+
   <PropertyGroup>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal</OutputPath>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\Microsoft.CmdPal.Extensions.Helpers</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -33,4 +34,7 @@
     <ProjectReference Include="..\Microsoft.CmdPal.Extensions\Microsoft.CmdPal.Extensions.vcxproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="$(TargetDir)\..\Microsoft.CmdPal.Extensions\Microsoft.CmdPal.Extensions.winmd" Link="Microsoft.CmdPal.Extensions.winmd" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

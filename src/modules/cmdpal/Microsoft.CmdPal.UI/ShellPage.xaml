@@ -17,12 +17,19 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <controls:SearchBar x:Name="SearchBox" Grid.Row="0" VerticalAlignment="Top" />
+        <controls:SearchBar
+            x:Name="SearchBox"
+            Grid.Row="0"
+            VerticalAlignment="Top" />
 
-        <Frame
-            Name="RootFrame"
+        <Grid
             Grid.Row="1"
-            IsNavigationStackEnabled="True" />
+            Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,1">
+            <Frame Name="RootFrame" IsNavigationStackEnabled="True" />
+        </Grid>
+
 
         <controls:ActionBar Grid.Row="2" VerticalAlignment="Top" />
     </Grid>

@@ -2,9 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.Pages;
 
@@ -14,16 +17,26 @@ namespace Microsoft.CmdPal.UI.Pages;
 /// </summary>
 public partial class MainListPage : DynamicListPage
 {
-    private readonly IListItem[] _items;
+    private readonly IServiceProvider _serviceProvider;
 
-    // TODO: Thinking we may want a separate MainViewModel from the ShellViewModel and/or a CommandService/Provider
-    // which holds the TopLevelCommands and anything that needs to access those functions...
-    public MainListPage(ShellViewModel shellViewModel)
+    private readonly ObservableCollection<TopLevelCommandWrapper> _commands;
+
+    public MainListPage(IServiceProvider serviceProvider)
     {
-        _items = shellViewModel.TopLevelCommands.Select(w => w.Unsafe).Where(li => li != null).ToArray();
+        _serviceProvider = serviceProvider;
+
+        var tlcManager = _serviceProvider.GetService<TopLevelCommandManager>();
+
+        // reference the TLC collection directly... maybe? TODO is this a good idea ot a terrible one?
+        _commands = tlcManager!.TopLevelCommands;
+        _commands.CollectionChanged += Commands_CollectionChanged;
     }
 
-    public override IListItem[] GetItems() => _items;
+    private void Commands_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => RaiseItemsChanged(_commands.Count);
+
+    public override IListItem[] GetItems() => _commands
+        .Select(tlc => tlc)
+        .ToArray();
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {

@@ -5,6 +5,7 @@ Write-output "Checking repo root at $gitroot"
 $extensionsRoot = "$gitroot\x64\Debug\WinUI3Apps\CmdPalExtensions"
 Get-ChildItem -Path $extensionsRoot | ForEach-Object {
     $extensionName = $_.Name
+    Write-Host "`e[1m$extensionName`e[m"
     $extensionName
     $extensionAppx = $_.PsPath + "\Appx"
     if ((Test-Path $extensionAppx) -eq $false) {
@@ -23,11 +24,39 @@ Get-ChildItem -Path $extensionsRoot | ForEach-Object {
         }
     }
 }
-$winmdRoot = "$gitroot\\x64\Debug\Microsoft.CmdPal.Extensions"
-$winmdOutput = "$winmdRoot\Microsoft.CmdPal.Extensions.winmd"
-if ((Test-Path $appxWinmd)) {
-    Write-Host "Found Microsoft.CmdPal.Extensions.winmd where it's supposed to be"
+
+Write-Host "`e[1mChecking host apps:`e[m"
+$hostAppxRoot = "$gitroot/x64/Debug/WinUI3Apps/CmdPal"
+$hostAppxWinmd = $hostAppxRoot + "/Microsoft.CmdPal.Extensions.winmd"
+$prototypeAppxRoot = "$gitroot/x64/Debug/WinUI3Apps/CmdPal.Poc"
+$prototypeAppxWinmd = $hostAppxRoot + "/Microsoft.CmdPal.Extensions.winmd"
+if ((Test-Path $hostAppxWinmd)) {
+    Write-Host "  Found Microsoft.CmdPal.Extensions.winmd in The Real App's Appx/"
+}
+else {
+    Write-Host "  `e[31;1mUNEXPECTED`e[0m: Did not find Microsoft.CmdPal.Extensions.winmd in The Real App's Appx/"    
+    Write-Host "    Go look in: "    
+    Write-Host "    start file://$hostAppxRoot"    
+}
+if ((Test-Path $prototypeAppxWinmd)) {
+    Write-Host "  Found Microsoft.CmdPal.Extensions.winmd in the prototype's Appx/"
+}
+else {
+    Write-Host "  `e[31;1mUNEXPECTED`e[0m: Did not find Microsoft.CmdPal.Extensions.winmd in the prototype's Appx/"    
+    Write-Host "    Go look in: "    
+    Write-Host "    start file://$prototypeAppxRoot"    
+}
+
+Write-Host "`e[1mChecking actual extension interface project output:`e[m"
+
+$winmdRoot = "$gitroot/x64/Debug/Microsoft.CmdPal.Extensions"
+$winmdOutput = "$winmdRoot/Microsoft.CmdPal.Extensions.winmd"
+
+if ((Test-Path $winmdOutput)) {
+    Write-Host "  Found Microsoft.CmdPal.Extensions.winmd where it's built"
 }
 else {
     Write-Host "  `e[31;1mUNEXPECTED`e[0m: Did not find Microsoft.CmdPal.Extensions.winmd where it's supposed to be built! Did you build Microsoft.CmdPal.Extensions?"    
+    Write-Host "  Go look in: "    
+    Write-Host "  start file://$winmdRoot"    
 }
