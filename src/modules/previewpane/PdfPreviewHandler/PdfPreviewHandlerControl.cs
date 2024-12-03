@@ -1,8 +1,17 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
+using System;
+using System.Drawing;
+using System.IO;
+using System.Runtime.InteropServices.ComTypes;
+using System.Windows.Forms;
+
 using Common;
+using Common.Utilities;
 using Microsoft.PowerToys.PreviewHandler.Pdf.Properties;
+using Microsoft.PowerToys.PreviewHandler.Pdf.Telemetry.Events;
+using Microsoft.PowerToys.Telemetry;
 using Windows.Data.Pdf;
 using Windows.Storage.Streams;
 using Windows.UI.ViewManagement;
@@ -149,9 +158,25 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
                         memStream.Dispose();
                     }
                 }
+
+                try
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new PdfFilePreviewed());
+                }
+                catch
+                { // Should not crash if sending telemetry is failing. Ignore the exception.
+                }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                try
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new PdfFilePreviewError { Message = ex.Message });
+                }
+                catch
+                { // Should not crash if sending telemetry is failing. Ignore the exception.
+                }
+
                 Controls.Clear();
                 _infoBar = GetTextBoxControl(Resources.PdfNotPreviewedError);
                 Controls.Add(_infoBar);

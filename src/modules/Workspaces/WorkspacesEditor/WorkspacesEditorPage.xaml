@@ -80,7 +80,7 @@
                                 Margin="10"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
-                                Source="{Binding IconBitmapImage}" />
+                                Source="{Binding IconBitmapImage, UpdateSourceTrigger=PropertyChanged}" />
                             <TextBlock
                                 Grid.Column="2"
                                 Width="20"

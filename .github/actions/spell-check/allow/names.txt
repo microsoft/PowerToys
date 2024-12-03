@@ -44,6 +44,7 @@ Bartosz
 betadele
 betsegaw
 bricelam
+bsky
 CCcat
 Chinh
 chrdavis
@@ -55,7 +56,6 @@ crutkas
 damienleroy
 davidegiacometti
 debian
-Deibisu
 Deibisu
 Delimarsky
 Deondre
@@ -72,6 +72,7 @@ Garside
 Gershaft
 Giordani
 Gokce
+grzhan
 Guo
 hanselman
 Harmath
@@ -87,10 +88,10 @@ jefflord
 Jordi
 jyuwono
 Kairu
-Kairu
 Kamra
 Kantarci
 Karthick
+kaylacinnamon
 kevinguo
 Krigun
 Lambson
@@ -123,7 +124,6 @@ Quriz
 randyrants
 ricardosantos
 riri
-riri
 ritchielawrence
 robmikh
 Rutkas
@@ -147,6 +147,7 @@ TBM
 tilovell
 Triet
 waaverecords
+Whuihuan
 Xpg
 ycv
 Yuniardi
@@ -157,6 +158,8 @@ Zykova
 
 # OTHERS
 
+Bilibili
+BVID
 cmdow
 Controlz
 cortana

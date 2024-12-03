@@ -6,13 +6,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Threading;
 
 namespace ColorPicker.Common
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "File name is correct, ignore generics")]
     public sealed class RangeObservableCollection<T> : ObservableCollection<T>
     {
-        private object _collectionChangedLock = new object();
+        private Lock _collectionChangedLock = new Lock();
         private bool _suppressNotification;
 
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
