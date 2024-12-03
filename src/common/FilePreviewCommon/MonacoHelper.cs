@@ -6,9 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Reflection;
 using System.Text.Json;
-
 using Microsoft.PowerToys.FilePreviewCommon.Monaco.Formatters;
 
 namespace Microsoft.PowerToys.FilePreviewCommon
@@ -38,15 +36,15 @@ namespace Microsoft.PowerToys.FilePreviewCommon
 
         private static string GetRuntimeMonacoDirectory()
         {
-            string exePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty;
+            string baseDirectory = AppContext.BaseDirectory ?? string.Empty;
 
             // If the executable is within "WinUI3Apps", correct the path first.
-            if (Path.GetFileName(exePath) == "WinUI3Apps")
+            if (Path.GetFileName(baseDirectory) == "WinUI3Apps")
             {
-                exePath = Path.Combine(exePath, "..");
+                baseDirectory = Path.Combine(baseDirectory, "..");
             }
 
-            string monacoPath = Path.Combine(exePath, "Assets", "Monaco");
+            string monacoPath = Path.Combine(baseDirectory, "Assets", "Monaco");
 
             return Directory.Exists(monacoPath) ?
                 monacoPath :
