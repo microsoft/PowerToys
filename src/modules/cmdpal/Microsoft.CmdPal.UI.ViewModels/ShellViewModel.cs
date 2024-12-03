@@ -2,15 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.CmdPal.UI.Pages;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
-using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -20,39 +16,28 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider) : Observa
     [ObservableProperty]
     public partial bool IsLoaded { get; set; } = false;
 
-    public ObservableCollection<CommandProviderWrapper> ActionsProvider { get; set; } = [];
-
-    public ObservableCollection<ExtensionObject<IListItem>> TopLevelCommands { get; set; } = [];
-
-    private IEnumerable<ICommandProvider>? _builtInCommands;
-
     [RelayCommand]
     public async Task<bool> LoadAsync()
     {
-        _builtInCommands = _serviceProvider.GetServices<ICommandProvider>();
-
-        // Load Built In Commands First
-        foreach (var provider in _builtInCommands)
-        {
-            CommandProviderWrapper wrapper = new(provider);
-            ActionsProvider.Add(wrapper);
-
-            await LoadTopLevelCommandsFromProvider(wrapper);
-        }
-
+        var tlcManager = _serviceProvider.GetService<TopLevelCommandManager>();
+        await tlcManager!.LoadBuiltinsAsync();
         IsLoaded = true;
 
-        // TODO: would want to hydrate this from our services provider in the View layer, need to think about construction here...
-        WeakReferenceMessenger.Default.Send<NavigateToListMessage>(new(new(new MainListPage(this))));
-        return true;
-    }
+        // Built-ins have loaded. We can display our page at this point.
+        var page = new MainListPage(_serviceProvider);
+        WeakReferenceMessenger.Default.Send<NavigateToListMessage>(new(new(page!)));
 
-    private async Task LoadTopLevelCommandsFromProvider(CommandProviderWrapper commandProvider)
-    {
-        await commandProvider.LoadTopLevelCommands();
-        foreach (var i in commandProvider.TopLevelItems)
+        // After loading built-ins, and starting navigation, kick off a thread to load extensions.
+        tlcManager.LoadExtensionsCommand.Execute(null);
+        _ = Task.Run(async () =>
         {
-            TopLevelCommands.Add(new(new ListItem(i)));
-        }
+            await tlcManager.LoadExtensionsCommand.ExecutionTask!;
+            if (tlcManager.LoadExtensionsCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
+            {
+                // TODO: Handle failure case
+            }
+        });
+
+        return true;
     }
 }
