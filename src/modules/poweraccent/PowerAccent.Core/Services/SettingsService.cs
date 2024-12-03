@@ -66,7 +66,10 @@ public class SettingsService
                         ExcludedApps = settings.Properties.ExcludedApps.Value;
                         _keyboardListener.UpdateExcludedApps(ExcludedApps);
 
-                        SelectedLang = Enum.TryParse(settings.Properties.SelectedLang.Value, out Language selectedLangValue) ? selectedLangValue : Language.ALL;
+                        SelectedLang = settings.Properties.SelectedLang.Value
+                            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(lang => Enum.TryParse(lang, out Language selectedLangValue) ? selectedLangValue : Language.SPECIAL)
+                            .ToArray();
 
                         switch (settings.Properties.ToolbarPosition.Value)
                         {
@@ -187,9 +190,9 @@ public class SettingsService
         }
     }
 
-    private Language _selectedLang;
+    private Language[] _selectedLang;
 
-    public Language SelectedLang
+    public Language[] SelectedLang
     {
         get
         {

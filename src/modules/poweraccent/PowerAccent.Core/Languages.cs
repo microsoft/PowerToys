@@ -10,7 +10,7 @@ namespace PowerAccent.Core
 {
     public enum Language
     {
-        ALL,
+        SPECIAL,
         BG,
         CA,
         CRH,
@@ -54,52 +54,68 @@ namespace PowerAccent.Core
 
     internal sealed class Languages
     {
-        public static string[] GetDefaultLetterKey(LetterKey letter, Language lang)
+        public static string[] GetDefaultLetterKey(LetterKey letter, Language[] langs)
         {
-            return lang switch
+            if (langs.Length == Enum.GetValues(typeof(Language)).Length)
             {
-                Language.ALL => GetDefaultLetterKeyALL(letter), // All
-                Language.BG => GetDefaultLetterKeyBG(letter), // Bulgarian
-                Language.CA => GetDefaultLetterKeyCA(letter), // Catalan
-                Language.CRH => GetDefaultLetterKeyCRH(letter), // Crimean Tatar
-                Language.CUR => GetDefaultLetterKeyCUR(letter), // Currency
-                Language.CY => GetDefaultLetterKeyCY(letter), // Welsh
-                Language.CZ => GetDefaultLetterKeyCZ(letter), // Czech
-                Language.DK => GetDefaultLetterKeyDK(letter), // Danish
-                Language.GA => GetDefaultLetterKeyGA(letter), // Gaeilge (Irish)
-                Language.GD => GetDefaultLetterKeyGD(letter), // Gàidhlig (Scottish Gaelic)
-                Language.DE => GetDefaultLetterKeyDE(letter), // German
-                Language.EL => GetDefaultLetterKeyEL(letter), // Greek
-                Language.EST => GetDefaultLetterKeyEST(letter), // Estonian
-                Language.EPO => GetDefaultLetterKeyEPO(letter), // Esperanto
-                Language.FI => GetDefaultLetterKeyFI(letter), // Finnish
-                Language.FR => GetDefaultLetterKeyFR(letter), // French
-                Language.HR => GetDefaultLetterKeyHR(letter), // Croatian
-                Language.HE => GetDefaultLetterKeyHE(letter), // Hebrew
-                Language.HU => GetDefaultLetterKeyHU(letter), // Hungarian
-                Language.IS => GetDefaultLetterKeyIS(letter), // Iceland
-                Language.IPA => GetDefaultLetterKeyIPA(letter), // IPA (International phonetic alphabet)
-                Language.IT => GetDefaultLetterKeyIT(letter), // Italian
-                Language.KU => GetDefaultLetterKeyKU(letter), // Kurdish
-                Language.LT => GetDefaultLetterKeyLT(letter), // Lithuanian
-                Language.MK => GetDefaultLetterKeyMK(letter), // Macedonian
-                Language.MI => GetDefaultLetterKeyMI(letter), // Maori
-                Language.NL => GetDefaultLetterKeyNL(letter), // Dutch
-                Language.NO => GetDefaultLetterKeyNO(letter), // Norwegian
-                Language.PI => GetDefaultLetterKeyPI(letter), // Pinyin
-                Language.PL => GetDefaultLetterKeyPL(letter), // Polish
-                Language.PT => GetDefaultLetterKeyPT(letter), // Portuguese
-                Language.RO => GetDefaultLetterKeyRO(letter), // Romanian
-                Language.ROM => GetDefaultLetterKeyROM(letter), // Middle Eastern Romanization
-                Language.SK => GetDefaultLetterKeySK(letter), // Slovak
-                Language.SL => GetDefaultLetterKeySL(letter), // Slovenian
-                Language.SP => GetDefaultLetterKeySP(letter), // Spain
-                Language.SR => GetDefaultLetterKeySR(letter), // Serbian
-                Language.SR_CYRL => GetDefaultLetterKeySRCyrillic(letter), // Serbian Cyrillic
-                Language.SV => GetDefaultLetterKeySV(letter), // Swedish
-                Language.TK => GetDefaultLetterKeyTK(letter), // Turkish
-                _ => throw new ArgumentException("The language {0} is not known in this context", lang.ToString()),
-            };
+                return GetDefaultLetterKeyALL(letter);
+            }
+
+            if (langs.Length == 0)
+            {
+                return Array.Empty<string>();
+            }
+
+            var characters = new List<string>();
+            foreach (var lang in langs)
+            {
+                characters.AddRange(lang switch
+                {
+                    Language.SPECIAL => GetDefaultLetterKeySPECIAL(letter), // Special Characters
+                    Language.BG => GetDefaultLetterKeyBG(letter), // Bulgarian
+                    Language.CA => GetDefaultLetterKeyCA(letter), // Catalan
+                    Language.CRH => GetDefaultLetterKeyCRH(letter), // Crimean Tatar
+                    Language.CUR => GetDefaultLetterKeyCUR(letter), // Currency
+                    Language.CY => GetDefaultLetterKeyCY(letter), // Welsh
+                    Language.CZ => GetDefaultLetterKeyCZ(letter), // Czech
+                    Language.DK => GetDefaultLetterKeyDK(letter), // Danish
+                    Language.GA => GetDefaultLetterKeyGA(letter), // Gaeilge (Irish)
+                    Language.GD => GetDefaultLetterKeyGD(letter), // Gàidhlig (Scottish Gaelic)
+                    Language.DE => GetDefaultLetterKeyDE(letter), // German
+                    Language.EL => GetDefaultLetterKeyEL(letter), // Greek
+                    Language.EST => GetDefaultLetterKeyEST(letter), // Estonian
+                    Language.EPO => GetDefaultLetterKeyEPO(letter), // Esperanto
+                    Language.FI => GetDefaultLetterKeyFI(letter), // Finnish
+                    Language.FR => GetDefaultLetterKeyFR(letter), // French
+                    Language.HR => GetDefaultLetterKeyHR(letter), // Croatian
+                    Language.HE => GetDefaultLetterKeyHE(letter), // Hebrew
+                    Language.HU => GetDefaultLetterKeyHU(letter), // Hungarian
+                    Language.IS => GetDefaultLetterKeyIS(letter), // Iceland
+                    Language.IPA => GetDefaultLetterKeyIPA(letter), // IPA (International phonetic alphabet)
+                    Language.IT => GetDefaultLetterKeyIT(letter), // Italian
+                    Language.KU => GetDefaultLetterKeyKU(letter), // Kurdish
+                    Language.LT => GetDefaultLetterKeyLT(letter), // Lithuanian
+                    Language.MK => GetDefaultLetterKeyMK(letter), // Macedonian
+                    Language.MI => GetDefaultLetterKeyMI(letter), // Maori
+                    Language.NL => GetDefaultLetterKeyNL(letter), // Dutch
+                    Language.NO => GetDefaultLetterKeyNO(letter), // Norwegian
+                    Language.PI => GetDefaultLetterKeyPI(letter), // Pinyin
+                    Language.PL => GetDefaultLetterKeyPL(letter), // Polish
+                    Language.PT => GetDefaultLetterKeyPT(letter), // Portuguese
+                    Language.RO => GetDefaultLetterKeyRO(letter), // Romanian
+                    Language.ROM => GetDefaultLetterKeyROM(letter), // Middle Eastern Romanization
+                    Language.SK => GetDefaultLetterKeySK(letter), // Slovak
+                    Language.SL => GetDefaultLetterKeySL(letter), // Slovenian
+                    Language.SP => GetDefaultLetterKeySP(letter), // Spain
+                    Language.SR => GetDefaultLetterKeySR(letter), // Serbian
+                    Language.SR_CYRL => GetDefaultLetterKeySRCyrillic(letter), // Serbian Cyrillic
+                    Language.SV => GetDefaultLetterKeySV(letter), // Swedish
+                    Language.TK => GetDefaultLetterKeyTK(letter), // Turkish
+                    _ => throw new ArgumentException("The language {0} is not known in this context", lang.ToString()),
+                });
+            }
+
+            return characters.Distinct().ToArray();
         }
 
         // Store the computed letters for each key, so that subsequent calls don't take as long.
@@ -149,7 +165,7 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeySRCyrillic(letter))
                 .Union(GetDefaultLetterKeySV(letter))
                 .Union(GetDefaultLetterKeyTK(letter))
-                .Union(GetDefaultLetterKeyAllLanguagesOnly(letter))
+                .Union(GetDefaultLetterKeySPECIAL(letter))
                 .ToArray();
 
                 _allLanguagesCache[letter] = cachedValue;
@@ -160,7 +176,7 @@ namespace PowerAccent.Core
 
         // Contains all characters that should be shown in all languages but currently don't belong to any of the single languages available for that letter.
         // These characters can be removed from this list after they've been added to one of the other languages for that specific letter.
-        private static string[] GetDefaultLetterKeyAllLanguagesOnly(LetterKey letter)
+        private static string[] GetDefaultLetterKeySPECIAL(LetterKey letter)
         {
             return letter switch
             {

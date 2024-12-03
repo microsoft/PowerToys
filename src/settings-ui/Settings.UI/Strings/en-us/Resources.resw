@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -3585,124 +3585,133 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_All.Content" xml:space="preserve">
     <value>All available</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Bulgarian.Content" xml:space="preserve">
+  <data name="QuickAccent_Group_Special" xml:space="preserve">
+    <value>Special sets</value>
+  </data>
+  <data name="QuickAccent_Group_Language" xml:space="preserve">
+    <value>Language sets</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Special" xml:space="preserve">
+    <value>Special Characters</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Bulgarian" xml:space="preserve">
     <value>Bulgarian</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Catalan.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Catalan" xml:space="preserve">
     <value>Catalan</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Crimean.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Crimean" xml:space="preserve">
     <value>Crimean Tatar</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Currency.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Currency" xml:space="preserve">
     <value>Currency</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Croatian.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Croatian" xml:space="preserve">
     <value>Croatian</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Czech.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Czech" xml:space="preserve">
     <value>Czech</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Danish.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Danish" xml:space="preserve">
     <value>Danish</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Gaeilge.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Gaeilge" xml:space="preserve">
     <value>Gaeilge</value>
     <comment>Gaelic language spoken in Ireland</comment>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Gaidhlig.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Gaidhlig" xml:space="preserve">
     <value>Gàidhlig</value>
     <comment>Scottish Gaelic</comment>
   </data>
-  <data name="QuickAccent_SelectedLanguage_German.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_German" xml:space="preserve">
     <value>German</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Greek.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Greek" xml:space="preserve">
     <value>Greek</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Hebrew.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Hebrew" xml:space="preserve">
     <value>Hebrew</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_French.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_French" xml:space="preserve">
     <value>French</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Finnish.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Finnish" xml:space="preserve">
     <value>Finnish</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Estonian.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Estonian" xml:space="preserve">
     <value>Estonian</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Esperanto.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Esperanto" xml:space="preserve">
     <value>Esperanto</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_IPA.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_IPA" xml:space="preserve">
     <value>IPA</value>
     <comment>International Phonetic Alphabet</comment>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Lithuanian.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Lithuanian" xml:space="preserve">
     <value>Lithuanian</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Macedonian.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Macedonian" xml:space="preserve">
     <value>Macedonian</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Maori.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Maori" xml:space="preserve">
     <value>Maori</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Romanization.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Romanization" xml:space="preserve">
     <value>Middle Eastern Romanization</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Dutch.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Dutch" xml:space="preserve">
     <value>Dutch</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Norwegian.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Norwegian" xml:space="preserve">
     <value>Norwegian</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Pinyin.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Pinyin" xml:space="preserve">
     <value>Pinyin</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Polish.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Polish" xml:space="preserve">
     <value>Polish</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Portuguese.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Portuguese" xml:space="preserve">
     <value>Portuguese</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Slovak.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Slovak" xml:space="preserve">
     <value>Slovak</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Slovenian.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Slovenian" xml:space="preserve">
     <value>Slovenian</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Spanish.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Spanish" xml:space="preserve">
     <value>Spanish</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Swedish.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Swedish" xml:space="preserve">
     <value>Swedish</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Turkish.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Turkish" xml:space="preserve">
     <value>Turkish</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Icelandic.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Icelandic" xml:space="preserve">
     <value>Icelandic</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Romanian.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Romanian" xml:space="preserve">
     <value>Romanian</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Serbian.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Serbian" xml:space="preserve">
     <value>Serbian</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Serbian_Cyrillic.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Serbian_Cyrillic" xml:space="preserve">
     <value>Serbian Cyrillic</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Hungarian.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Hungarian" xml:space="preserve">
     <value>Hungarian</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Italian.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Italian" xml:space="preserve">
     <value>Italian</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Kurdish.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Kurdish" xml:space="preserve">
     <value>Kurdish</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Welsh.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Welsh" xml:space="preserve">
     <value>Welsh</value>
   </data>
   <data name="Hosts.ModuleDescription" xml:space="preserve">

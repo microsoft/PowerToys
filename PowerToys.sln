@@ -171,6 +171,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		src\.editorconfig = src\.editorconfig
 		.vsconfig = .vsconfig
+		src\Common.Dotnet.AotCompatibility.props = src\Common.Dotnet.AotCompatibility.props
 		src\Common.Dotnet.CsWinRT.props = src\Common.Dotnet.CsWinRT.props
 		src\Common.SelfContained.props = src\Common.SelfContained.props
 		Cpp.Build.props = Cpp.Build.props
