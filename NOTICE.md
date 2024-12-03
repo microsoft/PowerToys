@@ -1333,7 +1333,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Windows.CsWin32 0.2.46-beta
 - Microsoft.Windows.CsWinRT 2.1.5
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.2428
-- Microsoft.WindowsAppSDK 1.6.240923002
+- Microsoft.WindowsAppSDK 1.6.241114003
 - Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
 - Microsoft.Xaml.Behaviors.Wpf 1.1.39
 - ModernWpfUI 0.9.4
