@@ -29,7 +29,6 @@ AFFINETRANSFORM
 AFX
 AGGREGATABLE
 AHybrid
-AKV
 akv
 ALarger
 ALLAPPS
@@ -57,14 +56,12 @@ APPBARDATA
 appdata
 APPEXECLINK
 Appium
-applayout
 Applicationcan
 APPLICATIONFRAMEHOST
 appmanifest
 APPNAME
 appref
 appsettings
-appsfolder
 appwindow
 appwiz
 APSTUDIO
@@ -72,11 +69,9 @@ AQS
 ARandom
 ARCHITEW
 ARemapped
-ari
 ARPINSTALLLOCATION
 ARPPRODUCTICON
 ARRAYSIZE
-arw
 asf
 AShortcut
 ASingle
@@ -107,6 +102,7 @@ backtracer
 bbwe
 bck
 BESTEFFORT
+bezelled
 bhid
 BIF
 bigbar
@@ -145,7 +141,6 @@ BTNFACE
 bugreport
 BUILDARCH
 BUILDNUMBER
-buildtask
 buildtransitive
 BVal
 BValue
@@ -155,6 +150,7 @@ CALG
 callbackptr
 calpwstr
 Cangjie
+caniuse
 CANRENAME
 CAPTUREBLT
 CAPTURECHANGED
@@ -263,13 +259,12 @@ CRH
 critsec
 Crossdevice
 CRSEL
-crw
+crx
 CSearch
 CSettings
 cso
 CSRW
 CStyle
-cswinrt
 CSY
 CTest
 currentculture
@@ -306,8 +301,8 @@ DCOM
 dcommon
 dcomp
 DComposition
-dcr
-dcs
+DCR
+DCs
 ddd
 DDEIf
 DDevice
@@ -351,7 +346,6 @@ devpkey
 DEVSOURCE
 DIIRFLAG
 dimm
-directshow
 DISABLEASACTIONKEY
 diskmgmt
 DISPLAYCHANGE
@@ -367,7 +361,6 @@ dllmain
 DNLEN
 DONOTROUND
 DONTVALIDATEPATH
-DOPUS
 dotnet
 DPICHANGED
 DPIs
@@ -379,7 +372,6 @@ DRAWCLIPBOARD
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
-drf
 drivedetectionwarning
 dshow
 DSTINVERT
@@ -423,7 +415,6 @@ editkeyboardwindow
 EDITSHORTCUTS
 editshortcutswindow
 EFile
-eip
 ekus
 emmintrin
 Emoji
@@ -450,12 +441,13 @@ erwrite
 ESettings
 esrp
 etl
-ETW
+etw
 EUQ
 eurochange
 eventlog
 eventvwr
 everytime
+evntrace
 evt
 EWXFORCE
 EWXFORCEIFHUNG
@@ -527,7 +519,6 @@ FZE
 gacutil
 Gaeilge
 Gaidhlig
-GBarm
 GCLP
 gdi
 gdiplus
@@ -597,7 +588,7 @@ Hiberboot
 HIBYTE
 hicon
 HIDEWINDOW
-hif
+Hif
 HIMAGELIST
 himl
 hinst
@@ -646,6 +637,7 @@ HWNDLAST
 HWNDNEXT
 HWNDPREV
 hyjiacan
+IApp
 IBeam
 ICapture
 IClass
@@ -672,10 +664,10 @@ IGNOREUNKNOWN
 IGraphics
 iid
 Iindex
-iiq
 IJson
 Ijwhost
 IKs
+iljxck
 ILogon
 IMAGEHLP
 IMAGERESIZERCONTEXTMENU
@@ -735,17 +727,17 @@ ISSEPARATOR
 ITask
 ith
 ITHUMBNAIL
+ITwoWayPipeMessageIPCManaged
 IUI
 IUnknown
+IUse
 IWbem
 IWeb
 IWIC
 iwr
 IYUV
-jfi
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
-jif
 jjw
 jobject
 jpe
@@ -754,7 +746,6 @@ Jsons
 jsonval
 junja
 jxr
-kdc
 keybd
 KEYBDDATA
 KEYBDINPUT
@@ -780,6 +771,7 @@ lastcodeanalysissucceeded
 Lastdevice
 LASTEXITCODE
 LAYOUTRTL
+lcb
 LCIDTo
 lcl
 Lclean
@@ -879,7 +871,6 @@ MAXIMIZEBOX
 MAXSHORTCUTSIZE
 maxversiontested
 MBR
-mdc
 MDICHILD
 MDL
 mdtext
@@ -887,7 +878,6 @@ mdtxt
 mdwn
 MEDIASUBTYPE
 mediatype
-mef
 MENUITEMINFO
 MENUITEMINFOW
 MERGECOPY
@@ -945,7 +935,6 @@ mpmc
 MRM
 MRT
 mru
-mrw
 msc
 mscorlib
 msdata
@@ -997,7 +986,6 @@ NCRENDERING
 ndp
 NEEDDISPATCH
 needinfo
-netcore
 netcoreapp
 netcpl
 netframework
@@ -1006,10 +994,12 @@ netsh
 newcolor
 newdev
 NEWDIALOGSTYLE
+NEWFILE
 newitem
 newpath
 newplus
 NEWPLUSCONTEXTMENU
+NEWPLUSSHELLEXTENSIONWIN
 newrow
 newsgroups
 NIF
@@ -1068,13 +1058,11 @@ NOZORDER
 NPH
 npmjs
 NResize
-nrw
 nsunt
 NTAPI
 ntdll
 ntfs
 NTSTATUS
-nugets
 nullonfailure
 numberbox
 nwc
@@ -1099,7 +1087,6 @@ opensource
 openxmlformats
 OPTIMIZEFORINVOKE
 ORAW
-ori
 ORPHANEDDIALOGTITLE
 ORSCANS
 oss
@@ -1148,7 +1135,7 @@ pdo
 pdto
 pdtobj
 pdw
-Peb
+peb
 pef
 PElems
 Pels
@@ -1184,6 +1171,7 @@ pnid
 Pnp
 Popups
 POPUPWINDOW
+POSITIONITEM
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1220,11 +1208,13 @@ prgms
 pri
 PRINTCLIENT
 printmanagement
+privacystatement
 prm
 proactively
 PROCESSENTRY
 PROCESSKEY
 processthreadsapi
+PROCESSTRACE
 PRODEXT
 PRODUCTVERSION
 Progman
@@ -1266,7 +1256,6 @@ PWSTR
 pwsz
 pwtd
 QDC
-QDir
 qianlifeng
 qit
 QITAB
@@ -1277,7 +1266,6 @@ QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
 QUNS
-raf
 RAII
 RAlt
 Rasterize
@@ -1381,8 +1369,6 @@ runtimes
 ruuid
 rvm
 rwin
-rwl
-rwz
 sacl
 safeprojectname
 SAMEKEYPREVIOUSLYMAPPED
@@ -1516,7 +1502,6 @@ Srch
 SRCINVERT
 SRCPAINT
 SResize
-srf
 srme
 srre
 srw
@@ -1590,9 +1575,9 @@ SYSKEYUP
 SYSLIB
 SYSMENU
 SYSTEMAPPS
-systemsettings
 SYSTEMTIME
 SYSTEMWOW
+tailwindcss
 tapp
 TApplication
 TApplied
@@ -1612,7 +1597,6 @@ TCustom
 tdbuild
 TDefault
 TDevice
-telem
 telephon
 templatenamespace
 testprocess
@@ -1637,6 +1621,7 @@ tkconverters
 TLayout
 tlb
 tlbimp
+tlhelp
 TMPVAR
 TNP
 Toolhelp
@@ -1644,11 +1629,12 @@ toolkitconverters
 Toolset
 toolwindow
 TOPDOWNDIB
-TOTALCMD
 TOUCHEVENTF
 TOUCHINPUT
 touchpad
+TRACEHANDLE
 tracelogging
+tracerpt
 trafficmanager
 traies
 transicc
@@ -1706,11 +1692,9 @@ urlmon
 Usb
 USEDEFAULT
 USEFILEATTRIBUTES
-USEPOSITION
 USERDATA
 Userenv
 USESHOWWINDOW
-USESIZE
 USESTDHANDLES
 USRDLL
 UType
@@ -1803,7 +1787,6 @@ wgpocpl
 WIC
 wil
 winapi
-winappdriver
 wincodec
 Wincodecsdk
 wincolor
@@ -1867,6 +1850,7 @@ WNDCLASSEX
 WNDCLASSEXW
 WNDCLASSW
 WNDPROC
+wnode
 workarounds
 WORKSPACESEDITOR
 WORKSPACESLAUNCHER
@@ -1909,9 +1893,9 @@ XFile
 XIncrement
 XLoc
 XNamespace
+Xoshiro
 XPels
 XPixel
-xplorer
 XResource
 xsi
 XStr

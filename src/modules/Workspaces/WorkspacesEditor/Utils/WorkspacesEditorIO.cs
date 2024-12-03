@@ -97,11 +97,13 @@ namespace WorkspacesEditor.Utils
                 {
                     wrapper.Applications.Add(new ProjectData.ApplicationWrapper
                     {
+                        Id = app.Id,
                         Application = app.AppName,
                         ApplicationPath = app.AppPath,
                         Title = app.AppTitle,
                         PackageFullName = app.PackageFullName,
                         AppUserModelId = app.AppUserModelId,
+                        PwaAppId = app.PwaAppId,
                         CommandLineArguments = app.CommandLineArguments,
                         IsElevated = app.IsElevated,
                         CanLaunchElevated = app.CanLaunchElevated,

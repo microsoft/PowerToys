@@ -25,6 +25,8 @@ namespace WorkspacesEditor.Data
                 public int Height { get; set; }
             }
 
+            public string Id { get; set; }
+
             public string Application { get; set; }
 
             public string ApplicationPath { get; set; }
@@ -34,6 +36,8 @@ namespace WorkspacesEditor.Data
             public string PackageFullName { get; set; }
 
             public string AppUserModelId { get; set; }
+
+            public string PwaAppId { get; set; }
 
             public string CommandLineArguments { get; set; }
 

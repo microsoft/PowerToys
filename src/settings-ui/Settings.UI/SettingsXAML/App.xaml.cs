@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -69,6 +70,8 @@ namespace Microsoft.PowerToys.Settings.UI
 
         public static Action<string> IPCMessageReceivedCallback { get; set; }
 
+        public ETWTrace EtwTrace { get; private set; } = new ETWTrace();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="App"/> class.
         /// Initializes the singleton application object. This is the first line of authored code
@@ -87,6 +90,13 @@ namespace Microsoft.PowerToys.Settings.UI
             InitializeComponent();
 
             UnhandledException += App_UnhandledException;
+
+            NativeEventWaiter.WaitForEventLoop(
+                Constants.PowerToysRunnerTerminateSettingsEvent(), () =>
+            {
+                EtwTrace?.Dispose();
+                Environment.Exit(0);
+            });
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)

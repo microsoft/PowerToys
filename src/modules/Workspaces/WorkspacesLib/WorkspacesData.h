@@ -25,11 +25,13 @@ namespace WorkspacesData
                 auto operator<=>(const Position&) const = default;
             };
 
+            std::wstring id;
             std::wstring name;
             std::wstring title;
             std::wstring path;
             std::wstring packageFullName;
             std::wstring appUserModelId;
+            std::wstring pwaAppId;
             std::wstring commandLineArgs;
             bool isElevated{};
             bool canLaunchElevated{};

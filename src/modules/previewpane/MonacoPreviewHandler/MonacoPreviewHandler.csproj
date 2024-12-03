@@ -17,6 +17,7 @@
     <RootNamespace>Microsoft.PowerToys.PreviewHandler.Monaco</RootNamespace>
     <AssemblyName>PowerToys.MonacoPreviewHandler</AssemblyName>
     <OutputType>WinExe</OutputType>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">

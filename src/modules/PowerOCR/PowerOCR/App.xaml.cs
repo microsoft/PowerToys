@@ -6,10 +6,12 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Windows;
-
+using Common.UI;
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using PowerOCR.Keyboard;
 using PowerOCR.Settings;
+using PowerToys.Interop;
 
 namespace PowerOCR;
 
@@ -22,6 +24,7 @@ public partial class App : Application, IDisposable
     private EventMonitor? eventMonitor;
     private Mutex? _instanceMutex;
     private int _powerToysRunnerPid;
+    private ETWTrace etwTrace = new ETWTrace();
 
     private CancellationTokenSource NativeThreadCTS { get; set; }
 
@@ -43,12 +46,19 @@ public partial class App : Application, IDisposable
         }
 
         NativeThreadCTS = new CancellationTokenSource();
+
+        NativeEventWaiter.WaitForEventLoop(
+            Constants.TerminatePowerOCRSharedEvent(),
+            this.Shutdown,
+            this.Dispatcher,
+            NativeThreadCTS.Token);
     }
 
     public void Dispose()
     {
         GC.SuppressFinalize(this);
         keyboardMonitor?.Dispose();
+        etwTrace?.Dispose();
     }
 
     private void Application_Startup(object sender, StartupEventArgs e)

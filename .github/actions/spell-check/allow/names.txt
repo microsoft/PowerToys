@@ -28,7 +28,8 @@ videoconference
 
 # USERS
 
-LWXpg  # (number eight)LWXpg is actual user name but spell checker throws error with a numeric leading value ... which is kinda odd
+# 8LWXpg is user name but user folder causes a flag
+LWXpg
 Adoumie
 Advaith
 alekhyareddy
@@ -43,6 +44,7 @@ Bartosz
 betadele
 betsegaw
 bricelam
+bsky
 CCcat
 Chinh
 chrdavis
@@ -54,7 +56,6 @@ crutkas
 damienleroy
 davidegiacometti
 debian
-Deibisu
 Deibisu
 Delimarsky
 Deondre
@@ -71,6 +72,7 @@ Garside
 Gershaft
 Giordani
 Gokce
+grzhan
 Guo
 hanselman
 Harmath
@@ -86,10 +88,10 @@ jefflord
 Jordi
 jyuwono
 Kairu
-Kairu
 Kamra
 Kantarci
 Karthick
+kaylacinnamon
 kevinguo
 Krigun
 Lambson
@@ -122,7 +124,6 @@ Quriz
 randyrants
 ricardosantos
 riri
-riri
 ritchielawrence
 robmikh
 Rutkas
@@ -146,6 +147,7 @@ TBM
 tilovell
 Triet
 waaverecords
+Whuihuan
 Xpg
 ycv
 Yuniardi
@@ -156,6 +158,8 @@ Zykova
 
 # OTHERS
 
+Bilibili
+BVID
 cmdow
 Controlz
 cortana
