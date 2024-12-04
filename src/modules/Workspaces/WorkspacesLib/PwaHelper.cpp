@@ -272,16 +272,16 @@ namespace Utils
             return result;
         }
 
-        PROPVARIANT propvar;
-        PropVariantInit(&propvar);
+        PROPVARIANT propVariant;
+        PropVariantInit(&propVariant);
 
-        hr = propertyStore->GetValue(PKEY_AppUserModel_ID, &propvar);
-        if (SUCCEEDED(hr) && propvar.vt == VT_LPWSTR && propvar.pwszVal != nullptr)
+        hr = propertyStore->GetValue(PKEY_AppUserModel_ID, &propVariant);
+        if (SUCCEEDED(hr) && propVariant.vt == VT_LPWSTR && propVariant.pwszVal != nullptr)
         {
-            result = propvar.pwszVal;
+            result = propVariant.pwszVal;
         }
 
-        PropVariantClear(&propvar);
+        PropVariantClear(&propVariant);
 
         Logger::info(L"Found a window with aumid {}", result);
         return result;

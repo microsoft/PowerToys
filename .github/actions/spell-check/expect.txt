@@ -59,6 +59,7 @@ Appium
 Applicationcan
 APPLICATIONFRAMEHOST
 appmanifest
+appmodel
 APPNAME
 appref
 appsettings
