@@ -166,6 +166,9 @@ Other contributors:
 - [@gokcekantarci](https://github.com/gokcekantarci) - Gokce Kantarci - Dev
 - [@SeraphimaZykova](https://github.com/SeraphimaZykova) - Seraphima Zykova - Dev
 - [@stefansjfw](https://github.com/stefansjfw) - Stefan Markovic - Dev
+- [@moooyo](https://github.com/moooyo) - Yu Leng - Dev
+- [@shuaiyuanxx](https://github.com/shuaiyuanxx) - Shawn Yuan - Dev
+- [@lei9444](https://github.com/lei9444) - Leilei Zhang - Dev
 
 # Former PowerToys core team members
 
