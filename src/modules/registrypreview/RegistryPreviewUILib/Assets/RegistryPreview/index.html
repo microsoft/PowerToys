@@ -36,7 +36,7 @@
 	<script src="http://PowerToysLocalMonaco/monacoSRC/min/vs/loader.js"></script>
 	<script type="module">
         import { registerAdditionalLanguages } from 'http://PowerToysLocalMonaco/monacoSpecialLanguages.js';
-        import { customTokenColors } from 'http://PowerToysLocalMonaco/customTokenColors.js';
+        import { customTokenThemeRules } from 'http://PowerToysLocalMonaco/customTokenThemeRules.js';
         require.config({ paths: { vs: 'http://PowerToysLocalMonaco/monacoSRC/min/vs' } });
 		require(['vs/editor/editor.main'], async function () {
             await registerAdditionalLanguages(monaco)

@@ -2,8 +2,8 @@
 <!-- Include Monaco Editor source code -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)\Monaco\customTokenColors.js">
-      <Link>Assets\Monaco\customTokenColors.js</Link>
+    <None Include="$(MSBuildThisFileDirectory)\Monaco\customTokenThemeRules.js">
+      <Link>Assets\Monaco\customTokenThemeRules.js</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="$(MSBuildThisFileDirectory)\Monaco\monacoSpecialLanguages.js">
