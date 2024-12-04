@@ -172,6 +172,7 @@ Other contributors:
 - [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev lead
 - [@yeelam-gordon](https://github.com/yeelam-gordon) - Gordon Lam - Dev lead
 - [@drawbyperpetual](https://github.com/drawbyperpetual) - Anirudha Shankar - Dev
+- [@mantaionut](https://github.com/mantaionut) - Ionuț Manța - Dev
 - [@donlaci](https://github.com/donlaci) - Laszlo Nemeth - Dev
 - [@SeraphimaZykova](https://github.com/SeraphimaZykova) - Seraphima Zykova - Dev
 - [@stefansjfw](https://github.com/stefansjfw) - Stefan Markovic - Dev
