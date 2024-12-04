@@ -170,7 +170,7 @@ Other contributors:
 - [@joadoumie](https://github.com/joadoumie) - Jordi Adoumie - Product Manager
 - [@jaimecbernardo](https://github.com/jaimecbernardo) - Jaime Bernardo - Dev lead
 - [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev lead
-- [@yeelam-gordon] - Gordon Lam - Dev lead
+- [@yeelam-gordon](https://github.com/yeelam-gordon) - Gordon Lam - Dev lead
 - [@drawbyperpetual](https://github.com/drawbyperpetual) - Anirudha Shankar - Dev
 - [@donlaci](https://github.com/donlaci) - Laszlo Nemeth - Dev
 - [@SeraphimaZykova](https://github.com/SeraphimaZykova) - Seraphima Zykova - Dev
