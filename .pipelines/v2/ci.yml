@@ -30,13 +30,7 @@ resources:
     name: 1ESPipelineTemplates/1ESPipelineTemplates
     ref: refs/tags/release
 
-# Expose all of these parameters for user configuration.
 parameters:
-  - name: publishSymbolsToPublic
-    displayName: "Publish Symbols to **PUBLIC** (use only for Final Builds)"
-    type: boolean
-    default: false
-
   - name: versionNumber
     displayName: "Version Number"
     type: string
@@ -59,19 +53,7 @@ parameters:
     type: boolean
     displayName: "Build Using Visual Studio Preview"
     default: false
-#   - task: PowerShell@2
-#   displayName: UpdateVersions
-#   inputs:
-#     filePath: '.\.pipelines\UpdateVersions.ps1'
 
-# - task: NuGetCommand@2
-#   inputs:
-#     command: 'restore'
-#     restoreSolution: '**/*.sln'
-#     feedsToUse: 'config'
-#     nugetConfigPath: './nuget.config'
-#     includeNuGetOrg: false
-#   displayName: 'Restore NuGet packages'
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
@@ -84,17 +66,17 @@ extends:
       ${{ else }}:
         image: SHINE-VS17-Latest
       os: windows
-    # sdl:
-    #   tsa:
-    #     enabled: true
-    #     configFile: '$(Build.SourcesDirectory)\.pipelines\tsa.json'
+    sdl:
+      tsa:
+        enabled: true
+        configFile: '$(Build.SourcesDirectory)\.pipelines\tsa.json'
 
     stages:
       - stage: Build
         displayName: Build
         dependsOn: []
         jobs:
-          - template: .pipelines/v2/templates/job-build-project-simple.yml@self
+          - template: .pipelines/v2/templates/job-build-project-using-latest-winappsdk.yml@self
             parameters:
               pool:
                 name: SHINE-INT-L
@@ -112,7 +94,7 @@ extends:
               versionNumber: ${{ parameters.versionNumber }}
               publishArtifacts: false # 1ES PT handles publication for us.
               codeSign: false
-              runTests: false
+              runTests: true
               # signingIdentity:
               #   serviceName: $(SigningServiceName)
               #   appId: $(SigningAppId)
