@@ -48,7 +48,8 @@ namespace Helpers
         return !!(key & GetNumpadOriginEncodingBit());
     }
 
-    bool IsNumpadKey(const DWORD vkCode)
+    // Check if it's one of the numpad keys that the shift key can affect, so we can introduce a workaround when they are mapped to shift.
+    bool IsNumpadKeyThatIsAffectedByShift(const DWORD vkCode)
     {
         switch (vkCode)
         {
