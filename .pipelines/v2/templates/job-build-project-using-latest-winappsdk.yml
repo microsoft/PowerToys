@@ -53,9 +53,6 @@ parameters:
   - name: useVSPreview
     type: boolean
     default: false
-  - name: versionNumber
-    type: string
-    default: '0.0.1'
   - name: csProjectsToPublish
     type: object
     default:

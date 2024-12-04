@@ -31,11 +31,6 @@ resources:
     ref: refs/tags/release
 
 parameters:
-  - name: versionNumber
-    displayName: "Version Number"
-    type: string
-    default: '0.0.1'
-
   - name: buildConfigurations
     displayName: "Build Configurations"
     type: object
@@ -91,7 +86,6 @@ extends:
                 # IsExperimentationLive: 1 # The build and installer use this to turn on experimentation
               buildPlatforms: ${{ parameters.buildPlatforms }}
               buildConfigurations: ${{ parameters.buildConfigurations }}
-              versionNumber: ${{ parameters.versionNumber }}
               publishArtifacts: false # 1ES PT handles publication for us.
               codeSign: false
               runTests: true
@@ -104,17 +98,3 @@ extends:
               #   signCertName: $(SigningSignCertName)
               # Have msbuild use the release nuget config profile
               # additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config"
-              # beforeBuildSteps:
-              #   # Sets versions for all PowerToy created DLLs
-              #   - pwsh: |-
-              #       .pipelines/versionSetting.ps1 -versionNumber '${{ parameters.versionNumber }}' -DevEnvironment ''
-              #     displayName: Prepare versioning
-
-              #   # Prepare the localizations and telemetry config before the release build
-              #   - template: .pipelines/v2/templates/steps-fetch-and-prepare-localizations.yml@self
-
-              #   - script: |
-              #       call nuget.exe restore -configFile .pipelines/release-nuget.config -PackagesDirectory . .pipelines/packages.config || exit /b 1
-              #       move /Y "Microsoft.PowerToys.Telemetry.2.0.2\build\include\TraceLoggingDefines.h" "src\common\Telemetry\TraceLoggingDefines.h" || exit /b 1
-              #       move /Y "Microsoft.PowerToys.Telemetry.2.0.2\build\include\TelemetryBase.cs" "src\common\Telemetry\TelemetryBase.cs" || exit /b 1
-              #     displayName: Emplace telemetry files
