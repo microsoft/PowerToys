@@ -19,7 +19,7 @@ namespace Helpers
     DWORD EncodeKeyNumpadOrigin(const DWORD key, const bool extended);
     DWORD ClearKeyNumpadOrigin(const DWORD key);
     bool IsNumpadOriginated(const DWORD key);
-    bool IsNumpadKey(const DWORD vkCode);
+    bool IsNumpadKeyThatIsAffectedByShift(const DWORD vkCode);
     DWORD GetNumpadOriginEncodingBit();
 
     // Function to check if the key is a modifier key
