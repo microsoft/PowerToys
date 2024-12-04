@@ -86,6 +86,7 @@ Horvalds
 Howett
 htcfreek
 Huynh
+Ionuț
 Jaswal
 jefflord
 Jordi
