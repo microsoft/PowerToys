@@ -23,78 +23,33 @@ pr:
 
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
-resources:
-  repositories:
-  - repository: 1ESPipelineTemplates
-    type: git
-    name: 1ESPipelineTemplates/1ESPipelineTemplates
-    ref: refs/tags/release
-
 parameters:
-  - name: buildConfigurations
-    displayName: "Build Configurations"
-    type: object
-    default:
-      - Release
-
   - name: buildPlatforms
-    displayName: "Build Platforms"
     type: object
     default:
       - x64
       - arm64
-
+  - name: enableMsBuildCaching
+    type: boolean
+    displayName: "Enable MSBuild Caching"
+    default: false
+  - name: runTests
+    type: boolean
+    displayName: "Run Tests"
+    default: true
   - name: useVSPreview
     type: boolean
     displayName: "Build Using Visual Studio Preview"
     default: false
+  - name: useLatestWinAppSDK
+    type: boolean
+    default: false
 
 extends:
-  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  template: templates/pipeline-ci-build.yml
   parameters:
-    customBuildTags:
-    - 1ES.PT.ViaStartRight
-    pool:
-      name: SHINE-INT-L
-      ${{ if eq(parameters.useVSPreview, true) }}:
-        demands: ImageOverride -equals SHINE-VS17-Preview
-      ${{ else }}:
-        image: SHINE-VS17-Latest
-      os: windows
-    sdl:
-      tsa:
-        enabled: true
-        configFile: '$(Build.SourcesDirectory)\.pipelines\tsa.json'
-
-    stages:
-      - stage: Build
-        displayName: Build
-        dependsOn: []
-        jobs:
-          - template: .pipelines/v2/templates/job-build-project-using-latest-winappsdk.yml@self
-            parameters:
-              pool:
-                name: SHINE-INT-L
-                ${{ if eq(parameters.useVSPreview, true) }}:
-                  demands: ImageOverride -equals SHINE-VS17-Preview
-                ${{ else }}:
-                  image: SHINE-VS17-Latest
-                os: windows
-              variables:
-                IsPipeline: 1 # The installer uses this to detect whether it should pick up localizations
-                SkipCppCodeAnalysis: 1 # Skip the code analysis to speed up release CI. It runs on PR CI, anyway
-                # IsExperimentationLive: 1 # The build and installer use this to turn on experimentation
-              buildPlatforms: ${{ parameters.buildPlatforms }}
-              buildConfigurations: ${{ parameters.buildConfigurations }}
-              publishArtifacts: false # 1ES PT handles publication for us.
-              codeSign: false
-              runTests: true
-              # signingIdentity:
-              #   serviceName: $(SigningServiceName)
-              #   appId: $(SigningAppId)
-              #   tenantId: $(SigningTenantId)
-              #   akvName: $(SigningAKVName)
-              #   authCertName: $(SigningAuthCertName)
-              #   signCertName: $(SigningSignCertName)
-              # Have msbuild use the release nuget config profile
-              # additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config"
+    buildPlatforms: ${{ parameters.buildPlatforms }}
+    enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+    runTests: ${{ parameters.runTests }}
+    useVSPreview: ${{ parameters.useVSPreview }}
+    useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
