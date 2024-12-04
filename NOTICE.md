@@ -1296,6 +1296,7 @@ EXHIBIT A -Mozilla Public License.
 
 ## NuGet Packages used by PowerToys
 
+- : Auto-referenced
 - Appium.WebDriver 4.4.5
 - Azure.AI.OpenAI 1.0.0-beta.12
 - CommunityToolkit.Mvvm 8.2.2
