@@ -47,6 +47,28 @@ namespace Helpers
     {
         return !!(key & GetNumpadOriginEncodingBit());
     }
+
+    // Check if it's one of the numpad keys that the shift key can affect, so we can introduce a workaround when they are mapped to shift.
+    bool IsNumpadKeyThatIsAffectedByShift(const DWORD vkCode)
+    {
+        switch (vkCode)
+        {
+        case VK_NUMPAD0:
+        case VK_NUMPAD1:
+        case VK_NUMPAD2:
+        case VK_NUMPAD3:
+        case VK_NUMPAD4:
+        case VK_NUMPAD5:
+        case VK_NUMPAD6:
+        case VK_NUMPAD7:
+        case VK_NUMPAD8:
+        case VK_NUMPAD9:
+        case VK_DECIMAL:
+            return true;
+        }
+        return false;
+    }
+
     DWORD GetNumpadOriginEncodingBit()
     {
         // Intentionally do not mimic KF_EXTENDED to avoid confusion, because it's not the same thing

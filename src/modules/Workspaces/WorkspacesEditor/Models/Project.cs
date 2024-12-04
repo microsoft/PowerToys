@@ -347,6 +347,7 @@ namespace WorkspacesEditor.Models
             Id = other.Id;
             Name = other.Name;
             IsRevertEnabled = true;
+            MoveExistingWindows = other.MoveExistingWindows;
         }
 
         internal void CloseExpanders()
