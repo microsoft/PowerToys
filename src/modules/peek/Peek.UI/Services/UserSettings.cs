@@ -35,7 +35,6 @@ namespace Peek.UI
             LoadSettingsFromJson();
 
             _watcher = Helper.GetFileWatcher(PeekModuleName, SettingsUtils.DefaultFileName, LoadSettingsFromJson);
-
         }
 
         private void ApplySettings(PeekSettings settings)
