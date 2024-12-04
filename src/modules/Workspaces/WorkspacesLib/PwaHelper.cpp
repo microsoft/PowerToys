@@ -102,15 +102,9 @@ namespace Utils
         {
             std::wstring aumidID = GetAUMIDFromProcessId(subProcessID);
             std::wstring commandLineArg = commandLineArgsHelper.GetCommandLineArgs(subProcessID);
-
-            auto appIdIndexEnd = commandLineArg.find(L" ");
-            if (appIdIndexEnd != std::wstring::npos)
-            {
-                commandLineArg = commandLineArg.substr(0, appIdIndexEnd);
-            }
-
-            std::wstring appId{ commandLineArg };
-            m_pwaAumidToAppId.insert(std::map<std::wstring, std::wstring>::value_type(aumidID, appId));
+            std::wstring appId = GetAppIdFromCommandLineArgs(commandLineArg);
+            
+            m_pwaAumidToAppId.insert({ aumidID, appId });
             Logger::info(L"Found an edge Pwa helper process with AumidID {} and PwaAppId {}", aumidID, appId);
 
             std::filesystem::path folderPath(GetLocalAppDataFolder());
@@ -229,6 +223,25 @@ namespace Utils
             }
             CoTaskMemFree(path);
         }
+
+    std::wstring PwaHelper::GetAppIdFromCommandLineArgs(const std::wstring& commandLineArgs) const
+    {
+        auto result = commandLineArgs;
+
+        // remove the prefix
+        if (result.find(NonLocalizable::EdgeAppIdIdentifier) == 0)
+        {
+            result.erase(0, NonLocalizable::EdgeAppIdIdentifier.length());
+        }
+
+        // remove the suffix
+        auto appIdIndexEnd = result.find(L" ");
+        if (appIdIndexEnd != std::wstring::npos)
+        {
+            result = result.substr(0, appIdIndexEnd);
+        }
+
+        return result;
     }
 
     std::wstring PwaHelper::GetAUMIDFromWindow(HWND hwnd) const

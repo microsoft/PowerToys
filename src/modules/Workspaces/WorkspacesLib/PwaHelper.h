@@ -13,6 +13,7 @@ namespace Utils
         void InitEdgeAppIds();
         void InitChromeAppIds();
 
+        std::wstring GetAppIdFromCommandLineArgs(const std::wstring& commandLineArgs) const;
         std::wstring GetAUMIDFromWindow(HWND hWnd) const;
         std::wstring GetAUMIDFromProcessId(DWORD processId) const;
 
