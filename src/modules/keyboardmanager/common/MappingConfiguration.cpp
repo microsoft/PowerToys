@@ -65,7 +65,7 @@ bool MappingConfiguration::AddSingleKeyRemap(const DWORD& originalKey, const Key
     }
 
     singleKeyReMap[originalKey] = newRemapKey;
-    if (Helpers::IsNumpadKey(originalKey))
+    if (Helpers::IsNumpadKeyThatIsAffectedByShift(originalKey))
     {
         auto scanCode = MapVirtualKey(originalKey, MAPVK_VK_TO_VSC);
         if (scanCode != 0)
