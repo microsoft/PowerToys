@@ -85,9 +85,62 @@ namespace Utils
         return pwaHelperProcessIds;
     }
 
+    void PwaHelper::InitAppIds(const std::wstring& browserDataFolder, const std::wstring& browserDirPrefix, const std::function<void(const std::wstring&)>& addingAppIdCallback)
+    {
+        std::filesystem::path folderPath(GetLocalAppDataFolder());
+        folderPath.append(browserDataFolder);
+        if (!std::filesystem::exists(folderPath))
+        {
+            Logger::info(L"Edge base path does not exist: {}", folderPath.wstring());
+            return;
+        }
+
+        try
+        {
+            for (const auto& directory : std::filesystem::directory_iterator(folderPath))
+            {
+                if (!directory.is_directory())
+                {
+                    continue;
+                }
+
+                const std::wstring directoryName = directory.path().filename();
+                if (directoryName.find(browserDirPrefix) != 0)
+                {
+                    continue;
+                }
+
+                const std::wstring appId = directoryName.substr(browserDirPrefix.length());
+                if (addingAppIdCallback)
+                {
+                    addingAppIdCallback(appId);
+                }
+
+                for (const auto& filename : std::filesystem::directory_iterator(directory))
+                {
+                    if (!filename.is_directory())
+                    {
+                        const std::filesystem::path filenameString = filename.path().filename();
+                        if (StringUtils::CaseInsensitiveEquals(filenameString.extension(), NonLocalizable::IcoExtension))
+                        {
+                            const auto stem = filenameString.stem().wstring();
+                            m_pwaAppIdsToAppNames.insert({ appId, stem });
+                            Logger::info(L"Found an installed Pwa app {} with PwaAppId {}", stem, appId);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        catch (std::exception& ex)
+        {
+            Logger::error("Failed to iterate over the directory: {}", ex.what());
+        }
+    }
+
     void PwaHelper::InitEdgeAppIds()
     {
-        if (!m_pwaAumidToAppId.empty())
+        if (!m_edgeAppIds.empty())
         {
             // already initialized
             return;
@@ -103,67 +156,61 @@ namespace Utils
             std::wstring aumidID = GetAUMIDFromProcessId(subProcessID);
             std::wstring commandLineArg = commandLineArgsHelper.GetCommandLineArgs(subProcessID);
             std::wstring appId = GetAppIdFromCommandLineArgs(commandLineArg);
-            
-            m_pwaAumidToAppId.insert({ aumidID, appId });
+
+            m_edgeAppIds.insert({ aumidID, appId });
             Logger::info(L"Found an edge Pwa helper process with AumidID {} and PwaAppId {}", aumidID, appId);
-
-            std::filesystem::path folderPath(GetLocalAppDataFolder());
-            folderPath.append(NonLocalizable::EdgeBase);
-            if (!std::filesystem::exists(folderPath))
-            {
-                Logger::info(L"Edge base path does not exist: {}", folderPath.wstring());
-                continue;
-            }
-
-            try
-            {
-                for (const auto& directory : std::filesystem::directory_iterator(folderPath))
-                {
-                    if (directory.is_directory())
-                    {
-                        continue;
-                    }
-
-                    const std::wstring directoryName = directory.path().filename();
-                    if (directoryName.find(NonLocalizable::EdgeDirPrefix) != 0)
-                    {
-                        continue;
-                    }
-
-                    const std::wstring appIdDir = directoryName.substr(NonLocalizable::EdgeDirPrefix.size());
-                    if (appIdDir == appId)
-                    {
-                        for (const auto& filename : std::filesystem::directory_iterator(directory))
-                        {
-                            const std::filesystem::path filenameString = filename.path().filename();
-                            if (StringUtils::CaseInsensitiveEquals(filenameString.extension(), NonLocalizable::IcoExtension))
-                            {
-                                const auto stem = filenameString.stem().wstring();
-                                m_pwaAppIdsToAppNames.insert({ appId, stem });
-                                Logger::info(L"Storing an edge Pwa app name {} for PwaAppId {}", stem, appId);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            catch (std::exception& ex)
-            {
-                Logger::error("Failed to iterate over the directory: {}", ex.what());
-            }
         }
+
+        InitAppIds(NonLocalizable::EdgeBase, NonLocalizable::EdgeDirPrefix, [&](const std::wstring&) {});
     }
 
-    std::optional<std::wstring> PwaHelper::GetPwaAppId(const std::wstring& windowAumid) const
+    void PwaHelper::InitChromeAppIds()
     {
-        const auto pwaIndex = m_pwaAumidToAppId.find(windowAumid);
-        if (pwaIndex != m_pwaAumidToAppId.end())
+        if (!m_chromeAppIds.empty())
+        {
+            // already initialized
+            return;
+        }
+
+        InitAppIds(NonLocalizable::ChromeBase, NonLocalizable::ChromeDirPrefix, [&](const std::wstring& appId) {
+            m_chromeAppIds.push_back(appId);
+        });
+    }
+
+    std::optional<std::wstring> PwaHelper::GetEdgeAppId(const std::wstring& windowAumid) const
+    {
+        const auto pwaIndex = m_edgeAppIds.find(windowAumid);
+        if (pwaIndex != m_edgeAppIds.end())
         {
             return pwaIndex->second;
         }
 
         return std::nullopt;
-        ;
+    }
+    
+    std::optional<std::wstring> PwaHelper::GetChromeAppId(const std::wstring& windowAumid) const
+    {
+        const auto appIdIndexStart = windowAumid.find(NonLocalizable::ChromeAppIdIdentifier);
+        if (appIdIndexStart != std::wstring::npos)
+        {
+            std::wstring windowAumidSub = windowAumid.substr(appIdIndexStart + NonLocalizable::ChromeAppIdIdentifier.size());
+            const auto appIdIndexEnd = windowAumidSub.find(L" ");
+            if (appIdIndexEnd != std::wstring::npos)
+            {
+                windowAumidSub = windowAumidSub.substr(0, appIdIndexEnd);
+            }
+
+            const std::wstring windowAumidBegin = windowAumidSub.substr(0, 10);
+            for (const auto chromeAppId : m_chromeAppIds)
+            {
+                if (chromeAppId.find(windowAumidBegin) == 0)
+                {
+                    return chromeAppId;
+                }
+            }
+        }
+
+        return std::nullopt;
     }
 
     std::wstring PwaHelper::SearchPwaName(const std::wstring& pwaAppId, const std::wstring& windowAumid) const
@@ -183,46 +230,6 @@ namespace Utils
 
         return nameFromAumid;
     }
-
-    void PwaHelper::InitChromeAppIds()
-    {
-        if (m_chromeAppIds.size() > 0)
-        {
-            return;
-        }
-
-        std::filesystem::path folderPath(GetLocalAppDataFolder());
-        folderPath.append(NonLocalizable::ChromeBase);
-        if (!std::filesystem::exists(folderPath))
-        {
-            Logger::info(L"Chrome base path does not exist: {}", folderPath.wstring());
-            return;
-        }
-            {
-                if (directory.is_directory())
-                {
-                    const std::filesystem::path directoryName = directory.path().filename();
-                    if (directoryName.wstring().find(NonLocalizable::ChromeDirPrefix) == 0)
-                    {
-                        const std::wstring appId = directoryName.wstring().substr(NonLocalizable::ChromeDirPrefix.size());
-                        m_chromeAppIds.push_back(appId);
-                        for (const auto& filename : std::filesystem::directory_iterator(directory))
-                        {
-                            if (!filename.is_directory())
-                            {
-                                const std::filesystem::path filenameString = filename.path().filename();
-                                if (filenameString.extension().wstring() == L".ico")
-                                {
-                                    m_pwaAppIdsToAppNames.insert(std::map<std::wstring, std::wstring>::value_type(appId, filenameString.stem().wstring()));
-                                    Logger::info(L"Found an installed chrome Pwa app {} with PwaAppId {}", filenameString.stem().wstring(), appId);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            CoTaskMemFree(path);
-        }
 
     std::wstring PwaHelper::GetAppIdFromCommandLineArgs(const std::wstring& commandLineArgs) const
     {
@@ -323,31 +330,6 @@ namespace Utils
         return std::wstring(appModelId.data());
     }
 
-    std::optional<std::wstring> PwaHelper::SearchPwaAppId(const std::wstring& windowAumid) const
-    {
-        const auto appIdIndexStart = windowAumid.find(NonLocalizable::ChromeAppIdIdentifier);
-        if (appIdIndexStart != std::wstring::npos)
-        {
-            std::wstring windowAumidSub = windowAumid.substr(appIdIndexStart + NonLocalizable::ChromeAppIdIdentifier.size());
-            const auto appIdIndexEnd = windowAumidSub.find(L" ");
-            if (appIdIndexEnd != std::wstring::npos)
-            {
-                windowAumidSub = windowAumidSub.substr(0, appIdIndexEnd);
-            }
-
-            const std::wstring windowAumidBegin = windowAumidSub.substr(0, 10);
-            for (const auto chromeAppId : m_chromeAppIds)
-            {
-                if (chromeAppId.find(windowAumidBegin) == 0)
-                {
-                    return chromeAppId;
-                }
-            }
-        }
-
-        return std::nullopt;
-    }
-
     void PwaHelper::UpdatePwaApp(Utils::Apps::AppData* appData, HWND window)
     {
         std::optional<std::wstring> pwaAppId = std::nullopt;
@@ -360,7 +342,7 @@ namespace Utils
             std::wstring windowAumid = GetAUMIDFromWindow(window);
             Logger::info(L"Found an edge window with aumid {}", windowAumid);
 
-            pwaAppId = GetPwaAppId(windowAumid);
+            pwaAppId = GetEdgeAppId(windowAumid);
             if (pwaAppId.has_value())
             {
                 Logger::info(L"The found edge window is a PWA app with appId {}", pwaAppId.value());
@@ -380,7 +362,7 @@ namespace Utils
             std::wstring windowAumid = GetAUMIDFromWindow(window);
             Logger::info(L"Found a chrome window with aumid {}", windowAumid);
 
-            pwaAppId = SearchPwaAppId(windowAumid);
+            pwaAppId = GetChromeAppId(windowAumid);
             if (pwaAppId.has_value())
             {
                 pwaName = SearchPwaName(pwaAppId.value(), windowAumid);
