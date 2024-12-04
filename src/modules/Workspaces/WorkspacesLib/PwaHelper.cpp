@@ -1,24 +1,21 @@
 #include "pch.h"
 #include "PwaHelper.h"
 
-#include "AppUtils.h"
-
 #include <filesystem>
-#include <appmodel.h>
-#include <shobjidl.h>
-#include <propkey.h>
-#include <wrl.h>
-#include <ShlObj.h>
-#include <tlhelp32.h>
-#include <winternl.h>
-#include <shellapi.h>
 
-#include <wil/result_macros.h>
+#include <appmodel.h>
+#include <shellapi.h>
+#include <ShlObj.h>
+#include <shobjidl.h>
+#include <tlhelp32.h>
+#include <wrl.h>
+#include <propkey.h>
 
 #include <common/logger/logger.h>
 #include <common/utils/winapi_error.h>
 
-#pragma comment(lib, "ntdll.lib")
+#include <WorkspacesLib/AppUtils.h>
+#include <WorkspacesLib/CommandLineArgsHelper.h>
 
 namespace Utils
 {
@@ -30,63 +27,6 @@ namespace Utils
         const std::wstring EdgeBase = L"Microsoft\\Edge\\User Data\\Default\\Web Applications";
         const std::wstring ChromeDirPrefix = L"_crx_";
         const std::wstring EdgeDirPrefix = L"_crx__";
-    }
-
-    std::wstring GetProcCommandLine(DWORD pid)
-    {
-        std::wstring commandLine;
-
-        // Open a handle to the process
-        const HANDLE process = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid);
-        if (process == NULL)
-        {
-            Logger::error(L"Failed to open the process, error: {}", get_last_error_or_default(GetLastError()));
-        }
-        else
-        {
-            // Get the address of the ProcessEnvironmentBlock
-            PROCESS_BASIC_INFORMATION pbi = {};
-            NTSTATUS status = NtQueryInformationProcess(process, ProcessBasicInformation, &pbi, sizeof(pbi), NULL);
-            if (status != STATUS_SUCCESS)
-            {
-                Logger::error(L"Failed to query the process, error: {}", status);
-            }
-            else
-            {
-                // Get the address of the process parameters in the ProcessEnvironmentBlock
-                PEB processEnvironmentBlock = {};
-                if (!ReadProcessMemory(process, pbi.PebBaseAddress, &processEnvironmentBlock, sizeof(processEnvironmentBlock), NULL))
-                {
-                    Logger::error(L"Failed to read the process ProcessEnvironmentBlock, error: {}", get_last_error_or_default(GetLastError()));
-                }
-                else
-                {
-                    // Get the command line arguments from the process parameters
-                    RTL_USER_PROCESS_PARAMETERS params = {};
-                    if (!ReadProcessMemory(process, processEnvironmentBlock.ProcessParameters, &params, sizeof(params), NULL))
-                    {
-                        Logger::error(L"Failed to read the process params, error: {}", get_last_error_or_default(GetLastError()));
-                    }
-                    else
-                    {
-                        UNICODE_STRING& commandLineArgs = params.CommandLine;
-                        std::vector<WCHAR> buffer(commandLineArgs.Length / sizeof(WCHAR));
-                        if (!ReadProcessMemory(process, commandLineArgs.Buffer, buffer.data(), commandLineArgs.Length, NULL))
-                        {
-                            Logger::error(L"Failed to read the process command line, error: {}", get_last_error_or_default(GetLastError()));
-                        }
-                        else
-                        {
-                            commandLine.assign(buffer.data(), buffer.size());
-                        }
-                    }
-                }
-            }
-
-            CloseHandle(process);
-        }
-
-        return commandLine;
     }
 
     // Finds all PwaHelper.exe processes with the specified parent process ID
@@ -126,22 +66,22 @@ namespace Utils
             return;
         }
 
+        CommandLineArgsHelper commandLineArgsHelper{};
+
         const auto pwaHelperProcessIds = FindPwaHelperProcessIds();
         Logger::info(L"Found {} edge Pwa helper processes", pwaHelperProcessIds.size());
+
         for (const auto subProcessID : pwaHelperProcessIds)
         {
             std::wstring aumidID = GetAUMIDFromProcessId(subProcessID);
-            std::wstring commandLineArg = GetProcCommandLine(subProcessID);
-            auto appIdIndexStart = commandLineArg.find(NonLocalizable::EdgeAppIdIdentifier);
-            if (appIdIndexStart != std::wstring::npos)
+            std::wstring commandLineArg = commandLineArgsHelper.GetCommandLineArgs(subProcessID);
+
+            auto appIdIndexEnd = commandLineArg.find(L" ");
+            if (appIdIndexEnd != std::wstring::npos)
             {
-                commandLineArg = commandLineArg.substr(appIdIndexStart + NonLocalizable::EdgeAppIdIdentifier.size());
-                auto appIdIndexEnd = commandLineArg.find(L" ");
-                if (appIdIndexEnd != std::wstring::npos)
-                {
-                    commandLineArg = commandLineArg.substr(0, appIdIndexEnd);
-                }
+                commandLineArg = commandLineArg.substr(0, appIdIndexEnd);
             }
+
             std::wstring appId{ commandLineArg };
             m_pwaAumidToAppId.insert(std::map<std::wstring, std::wstring>::value_type(aumidID, appId));
             Logger::info(L"Found an edge Pwa helper process with AumidID {} and PwaAppId {}", aumidID, appId);
