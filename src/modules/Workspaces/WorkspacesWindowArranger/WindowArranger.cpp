@@ -178,9 +178,36 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
             continue;
         }
 
-        pwaHelper.UpdatePwaApp(&data.value(), window);
+        auto appData = data.value();
 
-        if ((app.name == data.value().name || app.path == data.value().installPath) && (app.pwaAppId == data.value().pwaAppId))
+        // PWA apps
+        bool isEdge = appData.IsEdge();
+        bool isChrome = appData.IsChrome();
+        if (isEdge || isChrome)
+        {
+            auto windowAumid = pwaHelper.GetAUMIDFromWindow(window);
+            std::optional<std::wstring> pwaAppId{};
+
+            if (isEdge)
+            {
+                pwaAppId = pwaHelper.GetEdgeAppId(windowAumid);
+            }
+            else if (isChrome)
+            {
+                pwaAppId = pwaHelper.GetChromeAppId(windowAumid);
+            }
+
+            if (pwaAppId.has_value())
+            {
+                auto pwaName = pwaHelper.SearchPwaName(pwaAppId.value(), windowAumid);
+                Logger::info(L"Found {} PWA app with name {}, appId: {}", (isEdge ? L"Edge" : (isChrome ? L"Chrome" : L"unknown")), pwaName, pwaAppId.value());
+
+                appData.pwaAppId = pwaAppId.value();
+                appData.name = pwaName + L" (" + appData.name + L")";
+            }
+        }
+
+        if ((app.name == appData.name || app.path == appData.installPath) && (app.pwaAppId == appData.pwaAppId))
         {
             if (!appDataNearest.has_value())
             {

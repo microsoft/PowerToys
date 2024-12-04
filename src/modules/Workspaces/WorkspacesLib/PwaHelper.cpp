@@ -85,6 +85,12 @@ namespace Utils
         return pwaHelperProcessIds;
     }
 
+    PwaHelper::PwaHelper()
+    {
+        InitChromeAppIds();
+        InitEdgeAppIds();
+    }
+
     void PwaHelper::InitAppIds(const std::wstring& browserDataFolder, const std::wstring& browserDirPrefix, const std::function<void(const std::wstring&)>& addingAppIdCallback)
     {
         std::filesystem::path folderPath(GetLocalAppDataFolder());
@@ -276,6 +282,8 @@ namespace Utils
         }
 
         PropVariantClear(&propvar);
+
+        Logger::info(L"Found a window with aumid {}", result);
         return result;
     }
 
@@ -328,49 +336,5 @@ namespace Utils
 
         CloseHandle(hProcess);
         return std::wstring(appModelId.data());
-    }
-
-    void PwaHelper::UpdatePwaApp(Utils::Apps::AppData* appData, HWND window)
-    {
-        std::optional<std::wstring> pwaAppId = std::nullopt;
-        std::wstring finalName = appData->name;
-        std::wstring pwaName = L"";
-        if (appData->IsEdge())
-        {
-            InitEdgeAppIds();
-
-            std::wstring windowAumid = GetAUMIDFromWindow(window);
-            Logger::info(L"Found an edge window with aumid {}", windowAumid);
-
-            pwaAppId = GetEdgeAppId(windowAumid);
-            if (pwaAppId.has_value())
-            {
-                Logger::info(L"The found edge window is a PWA app with appId {}", pwaAppId.value());
-                pwaName = SearchPwaName(pwaAppId.value(), windowAumid);
-                Logger::info(L"The found edge window is a PWA app with name {}", pwaName);
-                finalName = pwaName + L" (" + finalName + L")";
-            }
-            else
-            {
-                Logger::info(L"The found edge window does not contain a PWA app");
-            }
-        }
-        else if (appData->IsChrome())
-        {
-            InitChromeAppIds();
-
-            std::wstring windowAumid = GetAUMIDFromWindow(window);
-            Logger::info(L"Found a chrome window with aumid {}", windowAumid);
-
-            pwaAppId = GetChromeAppId(windowAumid);
-            if (pwaAppId.has_value())
-            {
-                pwaName = SearchPwaName(pwaAppId.value(), windowAumid);
-                finalName = pwaName + L" (" + finalName + L")";
-            }
-        }
-
-        appData->name = finalName;
-        appData->pwaAppId = pwaAppId.has_value() ? pwaAppId.value() : L"";
     }
 }

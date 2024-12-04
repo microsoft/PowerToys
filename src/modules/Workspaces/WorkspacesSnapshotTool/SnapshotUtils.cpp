@@ -116,7 +116,33 @@ namespace SnapshotUtils
                 continue;
             }
 
-            pwaHelper.UpdatePwaApp(&data.value(), window);
+            auto appData = data.value();
+
+            bool isEdge = appData.IsEdge();
+            bool isChrome = appData.IsChrome();
+            if (isEdge || isChrome)
+            {
+                auto windowAumid = pwaHelper.GetAUMIDFromWindow(window);
+                std::optional<std::wstring> pwaAppId{};
+
+                if (isEdge)
+                {
+                    pwaAppId = pwaHelper.GetEdgeAppId(windowAumid);
+                }
+                else if (isChrome)
+                {
+                    pwaAppId = pwaHelper.GetChromeAppId(windowAumid);
+                }
+
+                if (pwaAppId.has_value())
+                {
+                    auto pwaName = pwaHelper.SearchPwaName(pwaAppId.value(), windowAumid);
+                    Logger::info(L"Found {} PWA app with name {}, appId: {}", (isEdge ? L"Edge" : (isChrome ? L"Chrome" : L"unknown")), pwaName, pwaAppId.value());
+
+                    appData.pwaAppId = pwaAppId.value();
+                    appData.name = pwaName + L" (" + appData.name + L")";
+                }
+            }
 
             bool isMinimized = WindowUtils::IsMinimized(window);
             unsigned int monitorNumber = getMonitorNumberFromWindowHandle(window);
@@ -132,15 +158,15 @@ namespace SnapshotUtils
             }
 
             WorkspacesData::WorkspacesProject::Application app{
-                .name = data.value().name,
+                .name = appData.name,
                 .title = title,
-                .path = data.value().installPath,
-                .packageFullName = data.value().packageFullName,
-                .appUserModelId = data.value().appUserModelId,
-                .pwaAppId = data.value().pwaAppId,
+                .path = appData.installPath,
+                .packageFullName = appData.packageFullName,
+                .appUserModelId = appData.appUserModelId,
+                .pwaAppId = appData.pwaAppId,
                 .commandLineArgs = L"",
                 .isElevated = IsProcessElevated(pid),
-                .canLaunchElevated = data.value().canLaunchElevated,
+                .canLaunchElevated = appData.canLaunchElevated,
                 .isMinimized = isMinimized,
                 .isMaximized = WindowUtils::IsMaximized(window),
                 .position = WorkspacesData::WorkspacesProject::Application::Position{
