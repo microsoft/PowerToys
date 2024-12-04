@@ -31,6 +31,9 @@ namespace Utils
             constexpr const wchar_t* PowerToysSettings = L"PowerToys.Settings.exe";
             constexpr const wchar_t* ApplicationFrameHost = L"APPLICATIONFRAMEHOST.EXE";
             constexpr const wchar_t* Exe = L".EXE";
+
+            constexpr const wchar_t* EdgeFilename = L"msedge.exe";
+            constexpr const wchar_t* ChromeFilename = L"chrome.exe";
         }
 
         AppList IterateAppsFolder()
@@ -214,7 +217,7 @@ namespace Utils
             std::wstring appPathUpper(appPath);
             std::transform(appPathUpper.begin(), appPathUpper.end(), appPathUpper.begin(), towupper);
 
-            // filter out ApplicationFrameHost.exe   
+            // filter out ApplicationFrameHost.exe
             if (appPathUpper.ends_with(NonLocalizable::ApplicationFrameHost))
             {
                 return std::nullopt;
@@ -325,7 +328,7 @@ namespace Utils
                     }
                 }
             }
-            
+
             return AppData{
                 .name = std::filesystem::path(appPath).stem(),
                 .installPath = appPath
@@ -335,7 +338,7 @@ namespace Utils
         std::optional<AppData> GetApp(HWND window, const AppList& apps)
         {
             std::wstring processPath = get_process_path(window);
-            
+
             DWORD pid{};
             GetWindowThreadProcessId(window, &pid);
 
@@ -376,6 +379,16 @@ namespace Utils
             }
 
             return updated;
+        }
+
+        bool AppData::IsEdge() const
+        {
+            return installPath.ends_with(NonLocalizable::EdgeFilename);
+        }
+
+        bool AppData::IsChrome() const
+        {
+            return installPath.ends_with(NonLocalizable::ChromeFilename);
         }
 
     }

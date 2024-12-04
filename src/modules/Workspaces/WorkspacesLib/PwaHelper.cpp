@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "PwaHelper.h"
+#include "AppUtils.h"
 #include <ShlObj.h>
 #include <tlhelp32.h>
 #include <winternl.h>
@@ -11,7 +12,7 @@
 #include <wil\com.h>
 #pragma comment(lib, "ntdll.lib")
 
-namespace SnapshotUtils
+namespace Utils
 {
     namespace NonLocalizable
     {
@@ -22,6 +23,7 @@ namespace SnapshotUtils
         const std::wstring ChromeDirPrefix = L"_crx_";
         const std::wstring EdgeDirPrefix = L"_crx__";
     }
+
     // {c8900b66-a973-584b-8cae-355b7f55341b}
     DEFINE_GUID(CLSID_StartMenuCacheAndAppResolver, 0x660b90c8, 0x73a9, 0x4b58, 0x8c, 0xae, 0x35, 0x5b, 0x7f, 0x55, 0x34, 0x1b);
 
@@ -48,9 +50,10 @@ namespace SnapshotUtils
         virtual HRESULT STDMETHODCALLTYPE GetAppIDForProcess(DWORD dwProcessId, WCHAR** pszAppId, void* pUnknown1, void* pUnknown2, void* pUnknown3) = 0;
     };
 
-    BOOL GetAppId_7(HWND hWnd, std::wstring* result)
+    std::optional<std::wstring> PwaHelper::GetAppId_7(HWND hWnd) const
     {
         HRESULT hr;
+        std::optional<std::wstring> result = std::nullopt;
 
         wil::com_ptr<IAppResolver_7> appResolver;
         hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_7, reinterpret_cast<void**>(appResolver.put()));
@@ -60,19 +63,19 @@ namespace SnapshotUtils
             hr = appResolver->GetAppIDForWindow(hWnd, &pszAppId, NULL, NULL, NULL);
             if (SUCCEEDED(hr))
             {
-                *result = std::wstring(pszAppId.get());
+                result = std::wstring(pszAppId.get());
             }
 
             appResolver->Release();
         }
 
-        return SUCCEEDED(hr);
+        return result;
     }
 
-    BOOL GetAppId_8(HWND hWnd, std::wstring* result)
+    std::optional<std::wstring> PwaHelper::GetAppId_8(HWND hWnd) const
     {
         HRESULT hr;
-        *result = L"";
+        std::optional<std::wstring> result = std::nullopt;
 
         wil::com_ptr<IAppResolver_8> appResolver;
         hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_8, reinterpret_cast<void**>(appResolver.put()));
@@ -82,29 +85,29 @@ namespace SnapshotUtils
             hr = appResolver->GetAppIDForWindow(hWnd, &pszAppId, NULL, NULL, NULL);
             if (SUCCEEDED(hr))
             {
-                *result = std::wstring(pszAppId.get());
+                result = std::wstring(pszAppId.get());
             }
 
             appResolver->Release();
         }
 
-        return SUCCEEDED(hr);
+        return result;
     }
 
-    BOOL PwaHelper::GetAppId(HWND hWnd, std::wstring* result)
+    std::wstring PwaHelper::GetAppId(HWND hWnd) const
     {
-        HRESULT hr = GetAppId_8(hWnd, result);
-        if (!SUCCEEDED(hr))
+        std::optional<std::wstring> result = GetAppId_8(hWnd);
+        if (result == std::nullopt)
         {
-            hr = GetAppId_7(hWnd, result);
+            result = GetAppId_7(hWnd);
         }
-        return SUCCEEDED(hr);
+        return result.has_value() ? result.value() : L"";
     }
 
-    BOOL GetProcessId_7(DWORD dwProcessId, std::wstring* result)
+    std::optional<std::wstring> PwaHelper::GetProcessId_7(DWORD dwProcessId) const
     {
         HRESULT hr;
-        *result = L"";
+        std::optional<std::wstring> result = std::nullopt;
 
         wil::com_ptr<IAppResolver_7> appResolver;
         hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_7, reinterpret_cast<void**>(appResolver.put()));
@@ -114,19 +117,19 @@ namespace SnapshotUtils
             hr = appResolver->GetAppIDForProcess(dwProcessId, &pszAppId, NULL, NULL, NULL);
             if (SUCCEEDED(hr))
             {
-                *result = std::wstring(pszAppId.get());
+                result = std::wstring(pszAppId.get());
             }
 
             appResolver->Release();
         }
 
-        return SUCCEEDED(hr);
+        return result;
     }
 
-    BOOL GetProcessId_8(DWORD dwProcessId, std::wstring* result)
+    std::optional<std::wstring> PwaHelper::GetProcessId_8(DWORD dwProcessId) const
     {
         HRESULT hr;
-        *result = L"";
+        std::optional<std::wstring> result = std::nullopt;
 
         wil::com_ptr<IAppResolver_8> appResolver;
         hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_8, reinterpret_cast<void**>(appResolver.put()));
@@ -136,23 +139,23 @@ namespace SnapshotUtils
             hr = appResolver->GetAppIDForProcess(dwProcessId, &pszAppId, NULL, NULL, NULL);
             if (SUCCEEDED(hr))
             {
-                *result = std::wstring(pszAppId.get());
+                result = std::wstring(pszAppId.get());
             }
 
             appResolver->Release();
         }
 
-        return SUCCEEDED(hr);
+        return result;
     }
 
-    BOOL GetProcessId(DWORD dwProcessId, std::wstring* result)
+    std::wstring PwaHelper::GetProcessId(DWORD dwProcessId) const
     {
-        HRESULT hr = GetProcessId_8(dwProcessId, result);
-        if (!SUCCEEDED(hr))
+        std::optional<std::wstring> result = GetProcessId_8(dwProcessId);
+        if (result == std::nullopt)
         {
-            hr = GetProcessId_7(dwProcessId, result);
+            result = GetProcessId_7(dwProcessId);
         }
-        return SUCCEEDED(hr);
+        return result.has_value() ? result.value() : L"";
     }
 
     std::wstring GetProcCommandLine(DWORD pid)
@@ -244,7 +247,7 @@ namespace SnapshotUtils
 
     void PwaHelper::InitAumidToAppId()
     {
-        if (pwaAumidToAppId.size() > 0)
+        if (m_pwaAumidToAppId.size() > 0)
         {
             return;
         }
@@ -254,7 +257,7 @@ namespace SnapshotUtils
         for (const auto subProcessID : pwaHelperProcessIds)
         {
             std::wstring aumidID;
-            GetProcessId(subProcessID, &aumidID);
+            aumidID = GetProcessId(subProcessID);
             std::wstring commandLineArg = GetProcCommandLine(subProcessID);
             auto appIdIndexStart = commandLineArg.find(NonLocalizable::EdgeAppIdIdentifier);
             if (appIdIndexStart != std::wstring::npos)
@@ -267,7 +270,7 @@ namespace SnapshotUtils
                 }
             }
             std::wstring appId{ commandLineArg };
-            pwaAumidToAppId.insert(std::map<std::wstring, std::wstring>::value_type(aumidID, appId));
+            m_pwaAumidToAppId.insert(std::map<std::wstring, std::wstring>::value_type(aumidID, appId));
             Logger::info(L"Found an edge Pwa helper process with AumidID {} and PwaAppId {}", aumidID, appId);
 
             PWSTR path = NULL;
@@ -293,7 +296,7 @@ namespace SnapshotUtils
                                         const std::filesystem::path filenameString = filename.path().filename();
                                         if (filenameString.extension().wstring() == L".ico")
                                         {
-                                            pwaAppIdsToAppNames.insert(std::map<std::wstring, std::wstring>::value_type(appId, filenameString.stem().wstring()));
+                                            m_pwaAppIdsToAppNames.insert(std::map<std::wstring, std::wstring>::value_type(appId, filenameString.stem().wstring()));
                                             Logger::info(L"Storing an edge Pwa app name {} for PwaAppId {}", filenameString.stem().wstring(), appId);
                                         }
                                     }
@@ -307,41 +310,39 @@ namespace SnapshotUtils
         }
     }
 
-    BOOL PwaHelper::GetPwaAppId(std::wstring windowAumid, std::wstring* result)
+    std::optional<std::wstring> PwaHelper::GetPwaAppId(const std::wstring& windowAumid) const
     {
-        const auto pwaIndex = pwaAumidToAppId.find(windowAumid);
-        if (pwaIndex != pwaAumidToAppId.end())
+        const auto pwaIndex = m_pwaAumidToAppId.find(windowAumid);
+        if (pwaIndex != m_pwaAumidToAppId.end())
         {
-            *result = pwaIndex->second;
-            return true;
+            return pwaIndex->second;
         }
 
-        return false;
+        return std::nullopt;
+        ;
     }
 
-    BOOL PwaHelper::SearchPwaName(std::wstring pwaAppId, std::wstring windowAumid, std::wstring* pwaName)
+    std::wstring PwaHelper::SearchPwaName(const std::wstring& pwaAppId, const std::wstring& windowAumid) const
     {
-        const auto index = pwaAppIdsToAppNames.find(pwaAppId);
-        if (index != pwaAppIdsToAppNames.end())
+        const auto index = m_pwaAppIdsToAppNames.find(pwaAppId);
+        if (index != m_pwaAppIdsToAppNames.end())
         {
-            *pwaName = index->second;
-            return true;
+            return index->second;
         }
 
         std::wstring nameFromAumid{ windowAumid };
         const std::size_t delimiterPos = nameFromAumid.find(L"-");
         if (delimiterPos != std::string::npos)
         {
-            nameFromAumid = nameFromAumid.substr(0, delimiterPos);
+            return nameFromAumid.substr(0, delimiterPos);
         }
 
-        *pwaName = nameFromAumid;
-        return false;
+        return nameFromAumid;
     }
 
     void PwaHelper::InitChromeAppIds()
     {
-        if (chromeAppIds.size() > 0)
+        if (m_chromeAppIds.size() > 0)
         {
             return;
         }
@@ -360,7 +361,7 @@ namespace SnapshotUtils
                     if (directoryName.wstring().find(NonLocalizable::ChromeDirPrefix) == 0)
                     {
                         const std::wstring appId = directoryName.wstring().substr(NonLocalizable::ChromeDirPrefix.size());
-                        chromeAppIds.push_back(appId);
+                        m_chromeAppIds.push_back(appId);
                         for (const auto& filename : std::filesystem::directory_iterator(directory))
                         {
                             if (!filename.is_directory())
@@ -368,7 +369,7 @@ namespace SnapshotUtils
                                 const std::filesystem::path filenameString = filename.path().filename();
                                 if (filenameString.extension().wstring() == L".ico")
                                 {
-                                    pwaAppIdsToAppNames.insert(std::map<std::wstring, std::wstring>::value_type(appId, filenameString.stem().wstring()));
+                                    m_pwaAppIdsToAppNames.insert(std::map<std::wstring, std::wstring>::value_type(appId, filenameString.stem().wstring()));
                                     Logger::info(L"Found an installed chrome Pwa app {} with PwaAppId {}", filenameString.stem().wstring(), appId);
                                 }
                             }
@@ -380,30 +381,73 @@ namespace SnapshotUtils
         }
     }
 
-    BOOL PwaHelper::SearchPwaAppId(std::wstring windowAumid, std::wstring* pwaAppId)
+    std::optional<std::wstring> PwaHelper::SearchPwaAppId(const std::wstring& windowAumid) const
     {
         const auto appIdIndexStart = windowAumid.find(NonLocalizable::ChromeAppIdIdentifier);
         if (appIdIndexStart != std::wstring::npos)
         {
-            windowAumid = windowAumid.substr(appIdIndexStart + NonLocalizable::ChromeAppIdIdentifier.size());
-            const auto appIdIndexEnd = windowAumid.find(L" ");
+            std::wstring windowAumidSub = windowAumid.substr(appIdIndexStart + NonLocalizable::ChromeAppIdIdentifier.size());
+            const auto appIdIndexEnd = windowAumidSub.find(L" ");
             if (appIdIndexEnd != std::wstring::npos)
             {
-                windowAumid = windowAumid.substr(0, appIdIndexEnd);
+                windowAumidSub = windowAumidSub.substr(0, appIdIndexEnd);
             }
 
-            const std::wstring windowAumidBegin = windowAumid.substr(0, 10);
-            for (const auto chromeAppId : chromeAppIds)
+            const std::wstring windowAumidBegin = windowAumidSub.substr(0, 10);
+            for (const auto chromeAppId : m_chromeAppIds)
             {
                 if (chromeAppId.find(windowAumidBegin) == 0)
                 {
-                    *pwaAppId = chromeAppId;
-                    return true;
+                    return chromeAppId;
                 }
             }
         }
 
-        *pwaAppId = L"";
-        return false;
+        return std::nullopt;
+    }
+
+    void PwaHelper::UpdatePwaApp(Utils::Apps::AppData* appData, HWND window)
+    {
+        std::optional<std::wstring> pwaAppId = std::nullopt;
+        std::wstring finalName = appData->name;
+        std::wstring pwaName = L"";
+        if (appData->IsEdge())
+        {
+            InitAumidToAppId();
+
+            std::wstring windowAumid = GetAppId(window);
+
+            Logger::info(L"Found an edge window with aumid {}", windowAumid);
+
+            pwaAppId = GetPwaAppId(windowAumid);
+            if (pwaAppId.has_value())
+            {
+                Logger::info(L"The found edge window is a PWA app with appId {}", pwaAppId.value());
+                pwaName = SearchPwaName(pwaAppId.value(), windowAumid);
+                Logger::info(L"The found edge window is a PWA app with name {}", pwaName);
+                finalName = pwaName + L" (" + finalName + L")";
+            }
+            else
+            {
+                Logger::info(L"The found edge window does not contain a PWA app");
+            }
+        }
+        else if (appData->IsChrome())
+        {
+            InitChromeAppIds();
+
+            std::wstring windowAumid = GetAppId(window);
+            Logger::info(L"Found a chrome window with aumid {}", windowAumid);
+
+            pwaAppId = SearchPwaAppId(windowAumid);
+            if (pwaAppId.has_value())
+            {
+                pwaName = SearchPwaName(pwaAppId.value(), windowAumid);
+                finalName = pwaName + L" (" + finalName + L")";
+            }
+        }
+
+        appData->name = finalName;
+        appData->pwaAppId = pwaAppId.has_value() ? pwaAppId.value() : L"";
     }
 }

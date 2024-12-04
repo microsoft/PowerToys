@@ -9,7 +9,7 @@
 #include <workspaces-common/WindowFilter.h>
 
 #include <WorkspacesLib/AppUtils.h>
-#include <PwaHelper.h>
+#include <WorkspacesLib/PwaHelper.h>
 
 #pragma comment(lib, "ntdll.lib")
 
@@ -18,8 +18,6 @@ namespace SnapshotUtils
     namespace NonLocalizable
     {
         const std::wstring ApplicationFrameHost = L"ApplicationFrameHost.exe";
-        const std::wstring EdgeFilename = L"msedge.exe";
-        const std::wstring ChromeFilename = L"chrome.exe";
     }
 
     bool IsProcessElevated(DWORD processID)
@@ -40,19 +38,9 @@ namespace SnapshotUtils
         return false;
     }
 
-    bool IsEdge(Utils::Apps::AppData appData)
-    {
-        return appData.installPath.ends_with(NonLocalizable::EdgeFilename);
-    }
-
-    bool IsChrome(Utils::Apps::AppData appData)
-    {
-        return appData.installPath.ends_with(NonLocalizable::ChromeFilename);
-    }
-
     std::vector<WorkspacesData::WorkspacesProject::Application> GetApps(const std::function<unsigned int(HWND)> getMonitorNumberFromWindowHandle, const std::function<WorkspacesData::WorkspacesProject::Monitor::MonitorRect(unsigned int)> getMonitorRect)
     {
-        PwaHelper pwaHelper{};
+        Utils::PwaHelper pwaHelper{};
         std::vector<WorkspacesData::WorkspacesProject::Application> apps{};
 
         auto installedApps = Utils::Apps::GetAppsList();
@@ -128,47 +116,7 @@ namespace SnapshotUtils
                 continue;
             }
 
-            std::wstring pwaAppId = L"";
-            std::wstring finalName = data.value().name;
-            std::wstring pwaName = L"";
-            if (IsEdge(data.value()))
-            {
-                pwaHelper.InitAumidToAppId();
-
-                std::wstring windowAumid;
-                pwaHelper.GetAppId(window, &windowAumid);
-                Logger::info(L"Found an edge window with aumid {}", windowAumid);
-
-                if (pwaHelper.GetPwaAppId(windowAumid, &pwaAppId))  
-                {
-                    Logger::info(L"The found edge window is a PWA app with appId {}", pwaAppId);
-                    if (pwaHelper.SearchPwaName(pwaAppId, windowAumid ,& pwaName))
-                    {
-                        Logger::info(L"The found edge window is a PWA app with name {}", finalName);
-                    }
-                    finalName = pwaName + L" (" + finalName + L")";
-                }
-                else
-                {
-                    Logger::info(L"The found edge window does not contain a PWA app", pwaAppId);
-                }
-            }
-            else if (IsChrome(data.value()))
-            {
-                pwaHelper.InitChromeAppIds();
-
-                std::wstring windowAumid;
-                pwaHelper.GetAppId(window, &windowAumid);
-                Logger::info(L"Found a chrome window with aumid {}", windowAumid);
-
-                if (pwaHelper.SearchPwaAppId(windowAumid, &pwaAppId))
-                {
-                    if (pwaHelper.SearchPwaName(pwaAppId, windowAumid, &pwaName))
-                    {
-                        finalName = pwaName + L" (" + finalName + L")";
-                    }
-                }
-            }
+            pwaHelper.UpdatePwaApp(&data.value(), window);
 
             bool isMinimized = WindowUtils::IsMinimized(window);
             unsigned int monitorNumber = getMonitorNumberFromWindowHandle(window);
@@ -184,12 +132,12 @@ namespace SnapshotUtils
             }
 
             WorkspacesData::WorkspacesProject::Application app{
-                .name = finalName,
+                .name = data.value().name,
                 .title = title,
                 .path = data.value().installPath,
                 .packageFullName = data.value().packageFullName,
                 .appUserModelId = data.value().appUserModelId,
-                .pwaAppId = pwaAppId,
+                .pwaAppId = data.value().pwaAppId,
                 .commandLineArgs = L"",
                 .isElevated = IsProcessElevated(pid),
                 .canLaunchElevated = data.value().canLaunchElevated,
