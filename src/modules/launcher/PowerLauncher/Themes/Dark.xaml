@@ -6,7 +6,7 @@
     xmlns:system="clr-namespace:System;assembly=System.Runtime"
     mc:Ignorable="options">
 
-    <!--  Metadata  -->
+
     <system:String x:Key="Theme.Name">Dark.Accent1</system:String>
     <system:String x:Key="Theme.Origin">PowerToysRun</system:String>
     <system:String x:Key="Theme.DisplayName">Accent1 (Dark)</system:String>

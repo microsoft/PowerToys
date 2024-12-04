@@ -6,15 +6,14 @@
     xmlns:local="clr-namespace:PowerLauncher"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:p="clr-namespace:PowerLauncher.Properties"
-
     d:DesignHeight="300"
     d:DesignWidth="720"
     mc:Ignorable="d">
     <UserControl.Resources>
-        <Style 
-            x:Key="QueryTextBoxStyle" 
-               BasedOn="{StaticResource DefaultTextBoxStyle}"
-               TargetType="{x:Type TextBox}">
+        <Style
+            x:Key="QueryTextBoxStyle"
+            BasedOn="{StaticResource DefaultTextBoxStyle}"
+            TargetType="{x:Type TextBox}">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
@@ -34,7 +33,7 @@
                                 Margin="6,0,0,0"
                                 VerticalAlignment="Center"
                                 FontSize="{DynamicResource TitleFontSize}"
-                                       Text="{TemplateBinding Tag}">
+                                Text="{TemplateBinding Tag}">
                                 <TextBlock.Style>
                                     <Style TargetType="{x:Type TextBlock}">
                                         <Setter Property="Foreground" Value="Transparent" />
@@ -48,16 +47,16 @@
                             </TextBlock>
                             <Border
                                 x:Name="border"
-                                    Background="{TemplateBinding Background}"
+                                Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    SnapsToDevicePixels="True">
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                SnapsToDevicePixels="True">
                                 <ScrollViewer
                                     x:Name="PART_ContentHost"
-                                              Background="{TemplateBinding Background}"
-                                              Focusable="false"
-                                              HorizontalScrollBarVisibility="Hidden"
-                                              VerticalScrollBarVisibility="Hidden">
+                                    Background="{TemplateBinding Background}"
+                                    Focusable="false"
+                                    HorizontalScrollBarVisibility="Hidden"
+                                    VerticalScrollBarVisibility="Hidden">
                                     <ScrollViewer.ContentTemplate>
                                         <DataTemplate>
                                             <Grid Background="{Binding Background, ElementName=PART_ContentHost}">
@@ -117,10 +116,12 @@
             FontSize="{DynamicResource TitleFontSize}"
             Foreground="{DynamicResource TextPlaceholderColorBrush}" />
         <TextBlock
-             AutomationProperties.Name="{x:Static p:Resources.SearchIcon}"
+            AutomationProperties.Name="{x:Static p:Resources.SearchIcon}"
             FontSize="20"
             Foreground="{DynamicResource TextPlaceholderColorBrush}"
             FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-            Text="&#xE094;" />
+            Text="&#xE094;"
+            Grid.Column="0"
+            Margin="10,7,0,0" />
     </Grid>
 </UserControl>

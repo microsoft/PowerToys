@@ -31,27 +31,18 @@ namespace PowerLauncher.Helper
             const string registryKey = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
             const string registryValue = "AppsUseLightTheme";
 
-            try
+            // Retrieve the registry value, which is a DWORD (0 or 1)
+            object registryValueObj = Registry.GetValue(registryKey, registryValue, null);
+            if (registryValueObj != null)
             {
-                // Retrieve the registry value, which is a DWORD (0 or 1)
-                object registryValueObj = Registry.GetValue(registryKey, registryValue, null);
-                if (registryValueObj != null)
-                {
-                    // 0 = Dark mode, 1 = Light mode
-                    bool isLightMode = Convert.ToBoolean((int)registryValueObj, CultureInfo.InvariantCulture);
-                    return !isLightMode; // Invert because 0 = Dark
-                }
-                else
-                {
-                    // Default to Light theme if the registry key is missing
-                    return false; // Default to dark mode assumption
-                }
+                // 0 = Dark mode, 1 = Light mode
+                bool isLightMode = Convert.ToBoolean((int)registryValueObj, CultureInfo.InvariantCulture);
+                return !isLightMode; // Invert because 0 = Dark
             }
-            catch (Exception ex)
+            else
             {
-                // Handle errors reading from the registry
-                Console.WriteLine($"Error reading registry: {ex.Message}");
-                return false; // Default to dark mode on error
+                // Default to Light theme if the registry key is missing
+                return false; // Default to dark mode assumption
             }
         }
 
@@ -60,31 +51,22 @@ namespace PowerLauncher.Helper
             const string registryKey = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes";
             const string registryValue = "CurrentTheme";
 
-            try
+            string themePath = (string)Registry.GetValue(registryKey, registryValue, string.Empty);
+            if (string.IsNullOrEmpty(themePath))
             {
-                string themePath = (string)Registry.GetValue(registryKey, registryValue, string.Empty);
-                if (string.IsNullOrEmpty(themePath))
-                {
-                    return Theme.Light; // Default to light theme if missing
-                }
-
-                string theme = themePath.Split('\\').Last().Split('.').First().ToLowerInvariant();
-
-                return theme switch
-                {
-                    "hc1" => Theme.HighContrastOne,
-                    "hc2" => Theme.HighContrastTwo,
-                    "hcwhite" => Theme.HighContrastWhite,
-                    "hcblack" => Theme.HighContrastBlack,
-                    _ => Theme.Light,
-                };
+                return Theme.Light; // Default to light theme if missing
             }
-            catch (Exception ex)
+
+            string theme = themePath.Split('\\').Last().Split('.').First().ToLowerInvariant();
+
+            return theme switch
             {
-                // Handle errors reading from the registry
-                Console.WriteLine($"Error reading registry: {ex.Message}");
-                return Theme.Light; // Default to light theme on error
-            }
+                "hc1" => Theme.HighContrastOne,
+                "hc2" => Theme.HighContrastTwo,
+                "hcwhite" => Theme.HighContrastWhite,
+                "hcblack" => Theme.HighContrastBlack,
+                _ => Theme.Light,
+            };
         }
     }
 }
