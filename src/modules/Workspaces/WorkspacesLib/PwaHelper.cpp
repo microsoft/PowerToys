@@ -11,6 +11,8 @@
 #include <wrl.h>
 #include <propkey.h>
 
+#include <wil/com.h>
+
 #include <common/logger/logger.h>
 #include <common/utils/winapi_error.h>
 
@@ -27,6 +29,28 @@ namespace Utils
         const std::wstring EdgeBase = L"Microsoft\\Edge\\User Data\\Default\\Web Applications";
         const std::wstring ChromeDirPrefix = L"_crx_";
         const std::wstring EdgeDirPrefix = L"_crx__";
+    }
+
+    static const std::wstring& GetLocalAppDataFolder()
+    {
+        static std::wstring localFolder{};
+
+        if (localFolder.empty())
+        {
+            wil::unique_cotaskmem_string folderPath;
+            HRESULT hres = SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &folderPath);
+            if (SUCCEEDED(hres))
+            {
+                localFolder = folderPath.get();
+            }
+            else
+            {
+                Logger::error(L"Failed to get the local app data folder path: {}", get_last_error_or_default(hres));
+                localFolder = L""; // Ensure it is explicitly set to empty on failure
+            }
+        }
+        
+        return localFolder;
     }
 
     // Finds all PwaHelper.exe processes with the specified parent process ID
@@ -86,12 +110,14 @@ namespace Utils
             m_pwaAumidToAppId.insert(std::map<std::wstring, std::wstring>::value_type(aumidID, appId));
             Logger::info(L"Found an edge Pwa helper process with AumidID {} and PwaAppId {}", aumidID, appId);
 
-            PWSTR path = NULL;
-            HRESULT hres = SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &path);
-            if (SUCCEEDED(hres))
+            std::filesystem::path folderPath(GetLocalAppDataFolder());
+            folderPath.append(NonLocalizable::EdgeBase);
+            if (!std::filesystem::exists(folderPath))
             {
-                std::filesystem::path fsPath(path);
-                fsPath /= NonLocalizable::EdgeBase;
+                Logger::info(L"Edge base path does not exist: {}", folderPath.wstring());
+                continue;
+            }
+
                 for (const auto& directory : std::filesystem::directory_iterator(fsPath))
                 {
                     if (directory.is_directory())
@@ -160,13 +186,13 @@ namespace Utils
             return;
         }
 
-        PWSTR path = NULL;
-        HRESULT hres = SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &path);
-        if (SUCCEEDED(hres))
+        std::filesystem::path folderPath(GetLocalAppDataFolder());
+        folderPath.append(NonLocalizable::ChromeBase);
+        if (!std::filesystem::exists(folderPath))
         {
-            std::filesystem::path fsPath(path);
-            fsPath /= NonLocalizable::ChromeBase;
-            for (const auto& directory : std::filesystem::directory_iterator(fsPath))
+            Logger::info(L"Chrome base path does not exist: {}", folderPath.wstring());
+            return;
+        }
             {
                 if (directory.is_directory())
                 {
