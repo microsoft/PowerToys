@@ -67,6 +67,7 @@ bool MappingConfiguration::AddSingleKeyRemap(const DWORD& originalKey, const Key
     singleKeyReMap[originalKey] = newRemapKey;
     if (Helpers::IsNumpadKeyThatIsAffectedByShift(originalKey))
     {
+        // Numpad keys might get altered by shift being pressed. We need to save their scancode instead to try and detect that they were unpressed when they are mapped to shift.
         auto scanCode = MapVirtualKey(originalKey, MAPVK_VK_TO_VSC);
         if (scanCode != 0)
         {
