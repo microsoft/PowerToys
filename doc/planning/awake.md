@@ -12,7 +12,7 @@ The build ID moniker is made up of two components - a reference to a [Halo](http
 
 | Build ID                                                           | Build Date        |
 |:-------------------------------------------------------------------|:------------------|
-| [`NEWKONA_11272024`](#NEWKONA_11272024-november-27-2024)           | November 27, 2024 |
+| [`TILLSON_11272024`](#TILLSON_11272024-november-27-2024)           | November 27, 2024 |
 | [`PROMETHEAN_09082024`](#PROMETHEAN_09082024-september-8-2024)     | September 8, 2024 |
 | [`VISEGRADRELAY_08152024`](#VISEGRADRELAY_08152024-august-15-2024) | August 15, 2024   |
 | [`DAISY023_04102024`](#DAISY023_04102024-april-10-2024)            | April 10, 2024    |
@@ -20,10 +20,10 @@ The build ID moniker is made up of two components - a reference to a [Halo](http
 | [`LIBRARIAN_03202022`](#librarian_03202022-march-20-2022)          | March 20, 2022    |
 | `ARBITER_01312022`                                                 | January 31, 2022  |
 
-### `NEWKONA_11272024` (November 27, 2024)
+### `TILLSON_11272024` (November 27, 2024)
 
 >[!NOTE]
->See pull request: [Awake - `PROMETHEAN_09082024`](https://github.com/microsoft/PowerToys/pull/36049)
+>See pull request: [Awake - `TILLSON_11272024`](https://github.com/microsoft/PowerToys/pull/36049)
 
 - [#35250] Updates the icon retry policy, making sure that the icon consistently and correctly renders in the tray.
 - [#35848] Fixed a bug where custom tray time shortcuts for longer than 24 hours would be parsed as zero hours/zero minutes.
