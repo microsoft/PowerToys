@@ -39,6 +39,9 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [GitHubRepo](https://github.com/8LWXpg/PowerToysRun-GitHubRepo) | [8LWXpg](https://github.com/8LWXpg) | Search and open GitHub repositories |
 | [ProcessKiller](https://github.com/8LWXpg/PowerToysRun-ProcessKiller) | [8LWXpg](https://github.com/8LWXpg) | Search and kill processes |
 | [ChatGPT](https://github.com/ferraridavide/ChatGPTPowerToys) | [ferraridavide](https://github.com/ferraridavide) | Ask a question to ChatGPT |
+| [CanIUse](https://github.com/skttl/ptrun-caniuse) | [skttl](https://github.com/skttl) | Look up browser feature support with caniuse.com |
+| [TailwindCSS](https://github.com/skttl/ptrun-tailwindcss) | [skttl](https://github.com/skttl) | Search the documentation of TailwindCSS |
+| [HttpStatusCodes](https://github.com/grzhan/HttpStatusCodePowerToys) | [grzhan](https://github.com/grzhan) | Search for http status codes |
 
 ## Extending software plugins
 

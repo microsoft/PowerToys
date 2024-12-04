@@ -46,32 +46,28 @@ dotnet_naming_rule.non_field_members_should_be_pascal_case.style = pascal_case
 
 dotnet_naming_symbols.interface.applicable_kinds = interface
 dotnet_naming_symbols.interface.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
-dotnet_naming_symbols.interface.required_modifiers = 
+dotnet_naming_symbols.interface.required_modifiers =
 
 dotnet_naming_symbols.types.applicable_kinds = class, struct, interface, enum
 dotnet_naming_symbols.types.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
-dotnet_naming_symbols.types.required_modifiers = 
+dotnet_naming_symbols.types.required_modifiers =
 
 dotnet_naming_symbols.non_field_members.applicable_kinds = property, event, method
 dotnet_naming_symbols.non_field_members.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
-dotnet_naming_symbols.non_field_members.required_modifiers = 
+dotnet_naming_symbols.non_field_members.required_modifiers =
 
 # Naming styles
 
 dotnet_naming_style.begins_with_i.required_prefix = I
-dotnet_naming_style.begins_with_i.required_suffix = 
-dotnet_naming_style.begins_with_i.word_separator = 
+dotnet_naming_style.begins_with_i.required_suffix =
+dotnet_naming_style.begins_with_i.word_separator =
 dotnet_naming_style.begins_with_i.capitalization = pascal_case
 
-dotnet_naming_style.pascal_case.required_prefix = 
-dotnet_naming_style.pascal_case.required_suffix = 
-dotnet_naming_style.pascal_case.word_separator = 
+dotnet_naming_style.pascal_case.required_prefix =
+dotnet_naming_style.pascal_case.required_suffix =
+dotnet_naming_style.pascal_case.word_separator =
 dotnet_naming_style.pascal_case.capitalization = pascal_case
 
-dotnet_naming_style.pascal_case.required_prefix = 
-dotnet_naming_style.pascal_case.required_suffix = 
-dotnet_naming_style.pascal_case.word_separator = 
-dotnet_naming_style.pascal_case.capitalization = pascal_case
 dotnet_style_coalesce_expression = true:suggestion
 dotnet_style_null_propagation = true:suggestion
 dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
@@ -97,3 +93,175 @@ dotnet_diagnostic.IDE0065.severity = none
 
 # IDE0009: Add this or Me qualification
 dotnet_diagnostic.IDE0009.severity = none
+
+# IDE-based code analysis rules
+# IDE0005: Remove unnecessary import
+dotnet_diagnostic.IDE0005.severity = suggestion
+
+# IDE0008: Use explicit type instead of 'var'
+dotnet_diagnostic.IDE0008.severity = silent
+
+# IDE0016: Use throw expression
+dotnet_diagnostic.IDE0016.severity = suggestion
+
+# IDE0018: Inline variable declaration
+dotnet_diagnostic.IDE0018.severity = suggestion
+
+# IDE0019: Use pattern matching
+dotnet_diagnostic.IDE0019.severity = suggestion
+
+# IDE0021: Use expression body for constructors
+dotnet_diagnostic.IDE0021.severity = silent
+
+# IDE0022: Use expression body for methods
+dotnet_diagnostic.IDE0022.severity = silent
+
+# IDE0023: Use expression body for conversion operators
+dotnet_diagnostic.IDE0023.severity = silent
+
+# IDE0025: Use expression body for properties
+dotnet_diagnostic.IDE0025.severity = silent
+
+# IDE0027: Use expression body for accessors
+dotnet_diagnostic.IDE0027.severity = silent
+
+# IDE0028: Use collection initializers
+dotnet_diagnostic.IDE0028.severity = suggestion
+
+# IDE0029: Null check can be simplified
+dotnet_diagnostic.IDE0029.severity = suggestion
+
+# IDE0031: Use null propagation
+dotnet_diagnostic.IDE0031.severity = suggestion
+
+# IDE0032: Use auto property
+dotnet_diagnostic.IDE0032.severity = suggestion
+
+# IDE0034: Simplify default expression
+dotnet_diagnostic.IDE0034.severity = suggestion
+
+# IDE0036: Order modifiers
+dotnet_diagnostic.IDE0036.severity = suggestion
+
+# IDE0039: Use local function instead of lambda
+dotnet_diagnostic.IDE0039.severity = suggestion
+
+# IDE0042: Deconstruct variable declaration
+dotnet_diagnostic.IDE0042.severity = suggestion
+
+# IDE0044: Add readonly modifier
+dotnet_diagnostic.IDE0044.severity = suggestion
+
+# IDE0045: Use conditional expression for assignment
+dotnet_diagnostic.IDE0045.severity = suggestion
+
+# IDE0046: Use conditional expression for return
+dotnet_diagnostic.IDE0046.severity = suggestion
+
+# IDE0047: Remove unnecessary parentheses
+dotnet_diagnostic.IDE0047.severity = suggestion
+
+# IDE0051: Remove unused private member
+dotnet_diagnostic.IDE0051.severity = suggestion
+
+# IDE0052: Remove unread private member
+dotnet_diagnostic.IDE0052.severity = suggestion
+
+# IDE0054: Use compound assignment
+dotnet_diagnostic.IDE0054.severity = suggestion
+
+# IDE0055: Fix formatting
+dotnet_diagnostic.IDE0055.severity = suggestion
+
+# IDE0056: Use index operator
+dotnet_diagnostic.IDE0056.severity = suggestion
+
+# IDE0057: Use range operator
+dotnet_diagnostic.IDE0057.severity = suggestion
+
+# IDE0059: Remove unnecessary value assignment
+dotnet_diagnostic.IDE0059.severity = suggestion
+
+# IDE0060: Remove unused parameter
+dotnet_diagnostic.IDE0060.severity = suggestion
+
+# IDE0061: Use expression body for local functions
+dotnet_diagnostic.IDE0061.severity = silent
+
+# IDE0063: Use simple 'using' statement
+dotnet_diagnostic.IDE0063.severity = suggestion
+
+# IDE0071: Simplify interpolation
+dotnet_diagnostic.IDE0071.severity = suggestion
+
+# IDE0074: Use coalesce compound assignment
+dotnet_diagnostic.IDE0074.severity = suggestion
+
+# IDE0075: Simplify conditional expression
+dotnet_diagnostic.IDE0075.severity = suggestion
+
+# IDE0077: Avoid legacy format target in global 'SuppressMessageAttribute'
+dotnet_diagnostic.IDE0077.severity = suggestion
+
+# IDE0078: Use pattern matching
+dotnet_diagnostic.IDE0078.severity = suggestion
+
+# IDE0083: Use pattern matching ('not' operator)
+dotnet_diagnostic.IDE0083.severity = suggestion
+
+# IDE0090: Simplify 'new' expression
+dotnet_diagnostic.IDE0090.severity = suggestion
+
+# IDE0100: Remove unnecessary equality operator
+dotnet_diagnostic.IDE0100.severity = suggestion
+
+# IDE0130: Namespace does not match folder structure
+dotnet_diagnostic.IDE0130.severity = suggestion
+
+# IDE0160: Use block-scoped namespace
+dotnet_diagnostic.IDE0160.severity = silent
+
+# IDE0180: Use tuple to swap values
+dotnet_diagnostic.IDE0180.severity = suggestion
+
+# IDE0200: Remove unnecessary lambda expression
+dotnet_diagnostic.IDE0200.severity = suggestion
+
+# IDE0240: Nullable directive is redundant
+dotnet_diagnostic.IDE0240.severity = suggestion
+
+# IDE0250: Struct can be made 'readonly'
+dotnet_diagnostic.IDE0250.severity = suggestion
+
+# IDE0251: Member can be made 'readonly''
+dotnet_diagnostic.IDE0251.severity = suggestion
+
+# IDE0260: Use pattern matching
+dotnet_diagnostic.IDE0260.severity = suggestion
+
+# IDE0270: Null check can be simplified
+dotnet_diagnostic.IDE0270.severity = suggestion
+
+# IDE0290: Use primary constructor
+dotnet_diagnostic.IDE0290.severity = silent
+
+# IDE0300: Use collection expression for array
+dotnet_diagnostic.IDE0300.severity = suggestion
+
+# IDE0301: Use collection expression for empty
+dotnet_diagnostic.IDE0301.severity = suggestion
+
+# IDE0305: Use collection expression for fluent
+dotnet_diagnostic.IDE0305.severity = suggestion
+
+# IDE1005: Use conditional delegate call
+dotnet_diagnostic.IDE1005.severity = suggestion
+
+# CA1859: Use concrete types when possible for improved performance
+dotnet_diagnostic.CA1859.severity = suggestion
+
+# CA2202: Avoid inexact read with Stream.Read
+dotnet_diagnostic.CA2022.severity = suggestion
+
+# CA2263: Prefer generic overload when type is known
+dotnet_diagnostic.CA2263.severity = suggestion

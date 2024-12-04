@@ -31,6 +31,9 @@ namespace Utils
             constexpr const wchar_t* PowerToysSettings = L"PowerToys.Settings.exe";
             constexpr const wchar_t* ApplicationFrameHost = L"APPLICATIONFRAMEHOST.EXE";
             constexpr const wchar_t* Exe = L".EXE";
+
+            constexpr const wchar_t* EdgeFilename = L"msedge.exe";
+            constexpr const wchar_t* ChromeFilename = L"chrome.exe";
         }
 
         AppList IterateAppsFolder()
@@ -383,6 +386,16 @@ namespace Utils
             }
 
             return updated;
+        }
+
+        bool AppData::IsEdge() const
+        {
+            return installPath.ends_with(NonLocalizable::EdgeFilename);
+        }
+
+        bool AppData::IsChrome() const
+        {
+            return installPath.ends_with(NonLocalizable::ChromeFilename);
         }
 
     }
