@@ -131,6 +131,7 @@ boxmodel
 BPBF
 bpmf
 bpp
+Breadcrumb
 Browsable
 BROWSEINFO
 bsd
@@ -154,6 +155,7 @@ CANRENAME
 CAPTUREBLT
 CAPTURECHANGED
 CARETBLINKING
+casues
 CAtl
 cch
 CCHDEVICENAME
@@ -343,6 +345,7 @@ DEVMODEW
 DEVMON
 devpkey
 DEVSOURCE
+DGR
 DIIRFLAG
 dimm
 DISABLEASACTIONKEY
@@ -499,6 +502,8 @@ Filterx
 findfast
 FIXEDFILEINFO
 flac
+fluentcontrols
+fluentui
 flyouts
 FMask
 FOF
@@ -588,6 +593,7 @@ HIBYTE
 hicon
 HIDEWINDOW
 Hif
+Highcontrast
 HIMAGELIST
 himl
 hinst
@@ -1325,6 +1331,7 @@ restrictedcapabilities
 restrictederrorinfo
 resultlist
 RETURNONLYFSDIRS
+revist
 RGBQUAD
 rgbs
 rgelt
@@ -1386,6 +1393,7 @@ secpol
 SENDCHANGE
 sendinput
 sendvirtualinput
+seperate
 serverside
 SETCONTEXT
 setcursor
@@ -1911,3 +1919,5 @@ zonable
 zoneset
 Zoneszonabletester
 zzz
+
+
