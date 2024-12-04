@@ -16,8 +16,6 @@ using FileActionsMenu.Interfaces;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Graphics.Display;
-using Windows.UI.ViewManagement;
 using WinRT.Interop;
 using WinUIEx;
 
@@ -296,8 +294,8 @@ namespace FileActionsMenu.Ui
 
             if (GetCursorPos(out POINT p))
             {
-                var dpi = GetDpiForWindow(WindowNative.GetWindowHandle(this));
-                var scaleFactor = dpi / 96.0;
+                int dpi = GetDpiForWindow(WindowNative.GetWindowHandle(this));
+                double scaleFactor = dpi / 96.0;
                 p.X = (int)(p.X / scaleFactor);
                 p.Y = (int)(p.Y / scaleFactor);
                 _menu.ShowAt((UIElement)sender, new Windows.Foundation.Point(p.X, p.Y));
