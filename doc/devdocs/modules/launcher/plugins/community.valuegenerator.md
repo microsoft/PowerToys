@@ -1,6 +1,6 @@
 # Value Generator Plugin
 
-The Value Generator plugin is used to generate hashes for strings, to calculate base64 encodings, escape and encode URLs/URIs and to generate GUIDs versions 1, 3, 4 and 5.
+The Value Generator plugin is used to generate hashes for strings, to calculate base64 encodings, escape and encode URLs/URIs and to generate GUIDs of version 1, 3, 4, 5, and 7.
 
 ![Image of Value Generator plugin](/doc/images/launcher/plugin/community.valuegenerator.png)
 
@@ -34,7 +34,10 @@ The Value Generator plugin is used to generate hashes for strings, to calculate 
 
 ### [`GUIDGenerator`](/src/modules/launcher/Plugins/Community.PowerToys.Run.Plugin.ValueGenerator/Generators/GUID/GUIDGenerator.cs)
 - Utility class for generating or calculating GUIDs
-- Generating GUID versions 1 and 4 is done using builtin APIs. [`UuidCreateSequential`](https://learn.microsoft.com/en-us/windows/win32/api/rpcdce/nf-rpcdce-uuidcreatesequential) for version 1 and `System.Guid.NewGuid()` for version 4
+- Generating GUID versions 1, 4, and 7 is done using builtin APIs: 
+  - [`UuidCreateSequential`](https://learn.microsoft.com/en-us/windows/win32/api/rpcdce/nf-rpcdce-uuidcreatesequential) for version 1 
+  - `System.Guid.NewGuid()` for version 4
+  - `System.Guid.CreateVersion7()` for version 7
 - Versions 3 and 5 take two parameters, a namespace and a name
 - The namespace must be a valid GUID or one of the [predefined ones](https://datatracker.ietf.org/doc/html/rfc4122#appendix-C)
 - The `PredefinedNamespaces` dictionary contains aliases for the predefined namespaces
