@@ -18,6 +18,7 @@
     <AssemblyName>PowerToys.GcodePreviewHandler</AssemblyName>
     <ProjectGuid>{805306FF-A562-4415-8DEF-E493BDC45918}</ProjectGuid>
     <RootNamespace>Microsoft.PowerToys.PreviewHandler.Gcode</RootNamespace>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
   </PropertyGroup>
 
   <ItemGroup>
