@@ -65,7 +65,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ControlzEx" />
     <PackageReference Include="ModernWpfUI" />
     <PackageReference Include="System.IO.Abstractions" />
   </ItemGroup>
@@ -77,6 +76,7 @@
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\WorkspacesCsharpLibrary\WorkspacesCsharpLibrary.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">

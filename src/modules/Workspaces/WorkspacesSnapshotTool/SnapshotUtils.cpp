@@ -1,9 +1,6 @@
 #include "pch.h"
 #include "SnapshotUtils.h"
 
-#include <comdef.h>
-#include <Wbemidl.h>
-
 #include <common/utils/elevation.h>
 #include <common/utils/process_path.h>
 #include <common/notifications/NotificationUtil.h>
@@ -12,142 +9,17 @@
 #include <workspaces-common/WindowFilter.h>
 
 #include <WorkspacesLib/AppUtils.h>
+#include <PwaHelper.h>
+
+#pragma comment(lib, "ntdll.lib")
 
 namespace SnapshotUtils
 {
     namespace NonLocalizable
     {
         const std::wstring ApplicationFrameHost = L"ApplicationFrameHost.exe";
-    }
-
-    class WbemHelper
-    {
-    public:
-        WbemHelper() = default;
-        ~WbemHelper()
-        {
-            if (m_services)
-            {
-                m_services->Release();
-            }
-
-            if (m_locator)
-            {
-                m_locator->Release();
-            }
-        }
-
-        bool Initialize()
-        {
-            // Obtain the initial locator to WMI.
-            HRESULT hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, reinterpret_cast<LPVOID*>(&m_locator));
-            if (FAILED(hres))
-            {
-                Logger::error(L"Failed to create IWbemLocator object. Error: {}", get_last_error_or_default(hres));
-                return false;
-            }
-
-            // Connect to WMI through the IWbemLocator::ConnectServer method.
-            hres = m_locator->ConnectServer(_bstr_t(L"ROOT\\CIMV2"), NULL, NULL, 0, NULL, 0, 0, &m_services);
-            if (FAILED(hres))
-            {
-                Logger::error(L"Could not connect to WMI. Error: {}", get_last_error_or_default(hres));
-                return false;
-            }
-
-            // Set security levels on the proxy.
-            hres = CoSetProxyBlanket(m_services, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, NULL, RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE);
-            if (FAILED(hres))
-            {
-                Logger::error(L"Could not set proxy blanket. Error: {}", get_last_error_or_default(hres));
-                return false;
-            }
-
-            return true;
-        }
-
-        std::wstring GetCommandLineArgs(DWORD processID) const
-        {
-            static std::wstring property = L"CommandLine";
-            std::wstring query = L"SELECT " + property + L" FROM Win32_Process WHERE ProcessId = " + std::to_wstring(processID);
-            return Query(query, property);
-        }
-
-        std::wstring GetExecutablePath(DWORD processID) const
-        {
-            static std::wstring property = L"ExecutablePath";
-            std::wstring query = L"SELECT " + property + L" FROM Win32_Process WHERE ProcessId = " + std::to_wstring(processID);
-            return Query(query, property);
-        }
-
-    private:
-        std::wstring Query(const std::wstring& query, const std::wstring& propertyName) const
-        {
-            if (!m_locator || !m_services)
-            {
-                return L"";
-            }
-
-            IEnumWbemClassObject* pEnumerator = NULL;
-
-            HRESULT hres = m_services->ExecQuery(bstr_t("WQL"), bstr_t(query.c_str()), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
-            if (FAILED(hres))
-            {
-                Logger::error(L"Query for process failed. Error: {}", get_last_error_or_default(hres));
-                return L"";
-            }
-
-            IWbemClassObject* pClassObject = NULL;
-            ULONG uReturn = 0;
-            std::wstring result = L"";
-            while (pEnumerator)
-            {
-                HRESULT hr = pEnumerator->Next(WBEM_INFINITE, 1, &pClassObject, &uReturn);
-                if (uReturn == 0)
-                {
-                    break;
-                }
-
-                VARIANT vtProp;
-                hr = pClassObject->Get(propertyName.c_str(), 0, &vtProp, 0, 0);
-                if (SUCCEEDED(hr) && vtProp.vt == VT_BSTR)
-                {
-                    result = vtProp.bstrVal;
-                }
-                VariantClear(&vtProp);
-
-                pClassObject->Release();
-            }
-
-            pEnumerator->Release();
-
-            return result;
-        }
-
-        IWbemLocator* m_locator = NULL;
-        IWbemServices* m_services = NULL;     
-    };
-
-    std::wstring GetCommandLineArgs(DWORD processID, const WbemHelper& wbemHelper)
-    {
-        std::wstring executablePath = wbemHelper.GetExecutablePath(processID);
-        std::wstring commandLineArgs = wbemHelper.GetCommandLineArgs(processID);
-        
-        if (!commandLineArgs.empty())
-        {
-            auto pos = commandLineArgs.find(executablePath);
-            if (pos != std::wstring::npos)
-            {
-                commandLineArgs = commandLineArgs.substr(pos + executablePath.size());
-                auto spacePos = commandLineArgs.find_first_of(' ');
-                if (spacePos != std::wstring::npos)
-                {
-                    commandLineArgs = commandLineArgs.substr(spacePos + 1);
-                }
-			}
-        }
-
-        return commandLineArgs;
+        const std::wstring EdgeFilename = L"msedge.exe";
+        const std::wstring ChromeFilename = L"chrome.exe";
     }
 
     bool IsProcessElevated(DWORD processID)
@@ -168,16 +40,23 @@ namespace SnapshotUtils
         return false;
     }
 
+    bool IsEdge(Utils::Apps::AppData appData)
+    {
+        return appData.installPath.ends_with(NonLocalizable::EdgeFilename);
+    }
+
+    bool IsChrome(Utils::Apps::AppData appData)
+    {
+        return appData.installPath.ends_with(NonLocalizable::ChromeFilename);
+    }
+
     std::vector<WorkspacesData::WorkspacesProject::Application> GetApps(const std::function<unsigned int(HWND)> getMonitorNumberFromWindowHandle, const std::function<WorkspacesData::WorkspacesProject::Monitor::MonitorRect(unsigned int)> getMonitorRect)
     {
+        PwaHelper pwaHelper{};
         std::vector<WorkspacesData::WorkspacesProject::Application> apps{};
 
         auto installedApps = Utils::Apps::GetAppsList();
         auto windows = WindowEnumerator::Enumerate(WindowFilter::Filter);
-        
-        // for command line args detection
-        // WbemHelper wbemHelper;
-        // wbemHelper.Initialize();
 
         for (const auto window : windows)
         {
@@ -232,7 +111,7 @@ namespace SnapshotUtils
                     if (pid != otherPid && title == WindowUtils::GetWindowTitle(otherWindow))
                     {
                         processPath = get_process_path(otherPid);
-						break;
+                        break;
                     }
                 }
             }
@@ -249,6 +128,48 @@ namespace SnapshotUtils
                 continue;
             }
 
+            std::wstring pwaAppId = L"";
+            std::wstring finalName = data.value().name;
+            std::wstring pwaName = L"";
+            if (IsEdge(data.value()))
+            {
+                pwaHelper.InitAumidToAppId();
+
+                std::wstring windowAumid;
+                pwaHelper.GetAppId(window, &windowAumid);
+                Logger::info(L"Found an edge window with aumid {}", windowAumid);
+
+                if (pwaHelper.GetPwaAppId(windowAumid, &pwaAppId))  
+                {
+                    Logger::info(L"The found edge window is a PWA app with appId {}", pwaAppId);
+                    if (pwaHelper.SearchPwaName(pwaAppId, windowAumid ,& pwaName))
+                    {
+                        Logger::info(L"The found edge window is a PWA app with name {}", finalName);
+                    }
+                    finalName = pwaName + L" (" + finalName + L")";
+                }
+                else
+                {
+                    Logger::info(L"The found edge window does not contain a PWA app", pwaAppId);
+                }
+            }
+            else if (IsChrome(data.value()))
+            {
+                pwaHelper.InitChromeAppIds();
+
+                std::wstring windowAumid;
+                pwaHelper.GetAppId(window, &windowAumid);
+                Logger::info(L"Found a chrome window with aumid {}", windowAumid);
+
+                if (pwaHelper.SearchPwaAppId(windowAumid, &pwaAppId))
+                {
+                    if (pwaHelper.SearchPwaName(pwaAppId, windowAumid, &pwaName))
+                    {
+                        finalName = pwaName + L" (" + finalName + L")";
+                    }
+                }
+            }
+
             bool isMinimized = WindowUtils::IsMinimized(window);
             unsigned int monitorNumber = getMonitorNumberFromWindowHandle(window);
 
@@ -263,12 +184,13 @@ namespace SnapshotUtils
             }
 
             WorkspacesData::WorkspacesProject::Application app{
-                .name = data.value().name,
+                .name = finalName,
                 .title = title,
                 .path = data.value().installPath,
                 .packageFullName = data.value().packageFullName,
                 .appUserModelId = data.value().appUserModelId,
-                .commandLineArgs = L"", // GetCommandLineArgs(pid, wbemHelper),
+                .pwaAppId = pwaAppId,
+                .commandLineArgs = L"",
                 .isElevated = IsProcessElevated(pid),
                 .canLaunchElevated = data.value().canLaunchElevated,
                 .isMinimized = isMinimized,

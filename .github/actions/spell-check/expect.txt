@@ -73,12 +73,10 @@ AQS
 ARandom
 ARCHITEW
 ARemapped
-ari
 ARPINSTALLLOCATION
 ARPPRODUCTICON
 ARRAYSIZE
 ARROWKEYS
-arw
 asf
 AShortcut
 ASingle
@@ -114,6 +112,7 @@ backtracer
 bbwe
 bck
 BESTEFFORT
+bezelled
 bhid
 BIF
 bigbar
@@ -167,6 +166,7 @@ CALG
 callbackptr
 calpwstr
 Cangjie
+caniuse
 CANRENAME
 CAPTUREBLT
 CAPTURECHANGED
@@ -279,7 +279,7 @@ CRH
 critsec
 Crossdevice
 CRSEL
-crw
+crx
 CSearch
 CSettings
 cso
@@ -323,8 +323,8 @@ DCOM
 dcommon
 dcomp
 DComposition
-dcr
-dcs
+DCR
+DCs
 ddd
 DDEIf
 DDevice
@@ -402,7 +402,6 @@ DRAWCLIPBOARD
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
-drf
 drivedetectionwarning
 DROPFILES
 dshow
@@ -450,7 +449,6 @@ EDITSHORTCUTS
 editshortcutswindow
 EDITTEXT
 EFile
-eip
 ekus
 emmintrin
 Emoji
@@ -643,7 +641,7 @@ HIBYTE
 hicon
 HIDEREADONLY
 HIDEWINDOW
-hif
+Hif
 HIMAGELIST
 himl
 hinst
@@ -697,6 +695,7 @@ HWNDNEXT
 HWNDPARENT
 HWNDPREV
 hyjiacan
+IApp
 IBeam
 ICapture
 IClass
@@ -726,10 +725,10 @@ IGNOREUNKNOWN
 IGraphics
 iid
 Iindex
-iiq
 IJson
 Ijwhost
 IKs
+iljxck
 ILogon
 IMAGEHLP
 IMAGERESIZERCONTEXTMENU
@@ -792,17 +791,17 @@ ISSEPARATOR
 ITask
 ith
 ITHUMBNAIL
+ITwoWayPipeMessageIPCManaged
 IUI
 IUnknown
+IUse
 IWbem
 IWeb
 IWIC
 iwr
 IYUV
-jfi
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
-jif
 jjw
 jobject
 jpe
@@ -811,7 +810,6 @@ Jsons
 jsonval
 junja
 jxr
-kdc
 keybd
 KEYBDDATA
 KEYBDINPUT
@@ -837,6 +835,7 @@ lastcodeanalysissucceeded
 Lastdevice
 LASTEXITCODE
 LAYOUTRTL
+lcb
 LCIDTo
 lcl
 Lclean
@@ -951,7 +950,6 @@ MAXIMIZEBOX
 MAXSHORTCUTSIZE
 maxversiontested
 MBR
-mdc
 MDICHILD
 MDL
 mdtext
@@ -959,7 +957,6 @@ mdtxt
 mdwn
 MEDIASUBTYPE
 mediatype
-mef
 MENUITEMINFO
 MENUITEMINFOW
 MERGECOPY
@@ -1019,7 +1016,6 @@ mpmc
 MRM
 MRT
 mru
-mrw
 msc
 mscorlib
 msctls
@@ -1087,6 +1083,7 @@ newitem
 newpath
 newplus
 NEWPLUSCONTEXTMENU
+NEWPLUSSHELLEXTENSIONWIN
 newrow
 newsgroups
 NIF
@@ -1155,7 +1152,6 @@ NOZORDER
 NPH
 npmjs
 NResize
-nrw
 nsunt
 NTAPI
 ntdll
@@ -1188,7 +1184,6 @@ opensource
 openxmlformats
 OPTIMIZEFORINVOKE
 ORAW
-ori
 ORPHANEDDIALOGTITLE
 ORSCANS
 oss
@@ -1244,7 +1239,7 @@ pdo
 pdto
 pdtobj
 pdw
-Peb
+peb
 pef
 PElems
 Pels
@@ -1286,6 +1281,7 @@ POINTERID
 POINTERUPDATE
 Popups
 POPUPWINDOW
+POSITIONITEM
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1383,7 +1379,6 @@ QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
 QUNS
-raf
 RAII
 RAlt
 Rasterize
@@ -1489,8 +1484,6 @@ runtimes
 ruuid
 rvm
 rwin
-rwl
-rwz
 sacl
 safeprojectname
 SAMEKEYPREVIOUSLYMAPPED
@@ -1638,7 +1631,6 @@ Srch
 SRCINVERT
 SRCPAINT
 SResize
-srf
 srme
 srre
 srw
@@ -1719,6 +1711,8 @@ SYSMENU
 SYSTEMAPPS
 SYSTEMMODAL
 SYSTEMTIME
+SYSTEMWOW
+tailwindcss
 tapp
 TApplication
 TApplied
@@ -1773,6 +1767,7 @@ tkconverters
 TLayout
 tlb
 tlbimp
+tlhelp
 TMPVAR
 TNP
 Toolhelp
