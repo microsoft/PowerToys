@@ -12,9 +12,18 @@
 #include <workspaces-common/WindowUtils.h>
 
 #include <WindowProperties/WorkspacesWindowPropertyUtils.h>
+#include <WorkspacesLib/PwaHelper.h>
 
-namespace FancyZones
+namespace PlacementHelper
 {
+    // When calculating the coordinates difference (== 'distance') between 2 windows, there are additional values added to the real distance
+    // if both windows are minimized, the 'distance' is 0, the minimal value, this is the best match, we prefer this 'pairing'
+    // if both are in normal state (non-minimized), we add 1 to the calculated 'distance', this is the 2nd best match
+    // if one window is minimized and the other is maximized, we add a high value (10.000) to the result as
+    //   this case is the least desired match, we want this pairing (matching) only if there is no other possibility left
+    const int PlacementDistanceAdditionBothNormal = 1;
+    const int PlacementDistanceAdditionNormalAndMinimized = 10000;
+
     inline void ScreenToWorkAreaCoords(HWND window, HMONITOR monitor, RECT& rect)
     {
         MONITORINFOEXW monitorInfo{ sizeof(MONITORINFOEXW) };
@@ -52,14 +61,7 @@ namespace FancyZones
         }
         else
         {
-            if ((placement.showCmd != SW_SHOWMINIMIZED) &&
-                (placement.showCmd != SW_MINIMIZE))
-            {
-                if (placement.showCmd == SW_SHOWMAXIMIZED)
-                    placement.flags &= ~WPF_RESTORETOMAXIMIZED;
-
-                placement.showCmd = SW_RESTORE;
-            }
+            placement.showCmd = SW_RESTORE;
 
             ScreenToWorkAreaCoords(window, monitor, rect);
             placement.rcNormalPosition = rect;
@@ -91,18 +93,191 @@ namespace FancyZones
 
         return true;
     }
+
+    int CalculateDistance(const WorkspacesData::WorkspacesProject::Application& app, HWND window)
+    {
+        WINDOWPLACEMENT placement{};
+        ::GetWindowPlacement(window, &placement);
+
+        if (app.isMinimized && (placement.showCmd == SW_SHOWMINIMIZED))
+        {
+            // The most preferred case: both windows are minimized. The 'distance' between these 2 windows is 0, the lowest value
+            return 0;
+        }
+
+        int placementDiffPenalty = PlacementDistanceAdditionBothNormal;
+        if (app.isMinimized || (placement.showCmd == SW_SHOWMINIMIZED))
+        {
+            // The least preferred case: one window is minimized the other one isn't.
+            // We add a high number to the real distance, as we want this 2 windows be matched only if there is no other match
+            placementDiffPenalty = PlacementDistanceAdditionNormalAndMinimized;
+        }
+
+        RECT windowPosition;
+        GetWindowRect(window, &windowPosition);
+        DPIAware::InverseConvert(MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY), windowPosition);
+
+        return placementDiffPenalty + abs(app.position.x - windowPosition.left) + abs(app.position.y - windowPosition.top) + abs(app.position.x + app.position.width - windowPosition.right) + abs(app.position.y + app.position.height - windowPosition.bottom);
+    }
 }
 
+bool WindowArranger::TryMoveWindow(const WorkspacesData::WorkspacesProject::Application& app, HWND windowToMove)
+{
+    Logger::info(L"The app {} is found at launch, moving it", app.name);
+    auto appState = m_launchingStatus.Get(app);
+    if (!appState.has_value())
+    {
+        Logger::info(L"The app {} is not found in the map of apps", app.name);
+        return false;
+    }
 
+    bool success = moveWindow(windowToMove, app);
+    if (success)
+    {
+        m_launchingStatus.Update(appState.value().application, windowToMove, LaunchingState::LaunchedAndMoved);
+    }
+    else
+    {
+        Logger::info(L"Failed to move the existing app {} ", app.name);
+        m_launchingStatus.Update(appState.value().application, windowToMove, LaunchingState::Failed);
+    }
+
+    auto updatedState = m_launchingStatus.Get(app);
+    if (updatedState.has_value())
+    {
+        m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson(updatedState.value()).ToString().c_str());
+    }
+
+    return success;
+}
+
+std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const WorkspacesData::WorkspacesProject::Application& app, const std::vector<HWND>& movedWindows, Utils::PwaHelper& pwaHelper)
+{
+    std::optional<Utils::Apps::AppData> appDataNearest = std::nullopt;
+    WindowWithDistance nearestWindowWithDistance{};
+
+    for (HWND window : m_windowsBefore)
+    {
+        if (std::find(movedWindows.begin(), movedWindows.end(), window) != movedWindows.end())
+        {
+            continue;
+        }
+
+        std::wstring processPath = get_process_path(window);
+        if (processPath.empty())
+        {
+            continue;
+        }
+
+        DWORD pid{};
+        GetWindowThreadProcessId(window, &pid);
+
+        auto data = Utils::Apps::GetApp(processPath, pid, m_installedApps);
+        if (!data.has_value())
+        {
+            continue;
+        }
+
+        pwaHelper.UpdatePwaApp(&data.value(), window);
+
+        if ((app.name == data.value().name || app.path == data.value().installPath) && (app.pwaAppId == data.value().pwaAppId))
+        {
+            if (!appDataNearest.has_value())
+            {
+                appDataNearest = data;
+                nearestWindowWithDistance.distance = PlacementHelper::CalculateDistance(app, window);
+                nearestWindowWithDistance.window = window;
+            }
+            else
+            {
+                int currentDistance = PlacementHelper::CalculateDistance(app, window);
+                if (currentDistance < nearestWindowWithDistance.distance)
+                {
+                    appDataNearest = data;
+                    nearestWindowWithDistance.distance = currentDistance;
+                    nearestWindowWithDistance.window = window;
+                }
+            }
+        }
+    }
+
+    if (appDataNearest.has_value())
+    {
+        return nearestWindowWithDistance;
+    }
+
+    return std::nullopt;
+}
 WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
     m_project(project),
     m_windowsBefore(WindowEnumerator::Enumerate(WindowFilter::Filter)),
     m_monitors(MonitorUtils::IdentifyMonitors()),
     m_installedApps(Utils::Apps::GetAppsList()),
-    //m_windowCreationHandler(std::bind(&WindowArranger::onWindowCreated, this, std::placeholders::_1)),
     m_ipcHelper(IPCHelperStrings::WindowArrangerPipeName, IPCHelperStrings::LauncherArrangerPipeName, std::bind(&WindowArranger::receiveIpcMessage, this, std::placeholders::_1)),
     m_launchingStatus(m_project)
 {
+    if (project.moveExistingWindows)
+    {
+        Logger::info(L"Moving existing windows");
+        bool isMovePhase = true;
+        bool movedAny = false;
+        std::vector<HWND> movedWindows;
+        std::vector<WorkspacesData::WorkspacesProject::Application> movedApps;
+        Utils::PwaHelper pwaHelper{};
+
+        while (isMovePhase)
+        {
+            isMovePhase = false;
+            int minDistance = INT_MAX;
+            WorkspacesData::WorkspacesProject::Application appToMove;
+            HWND windowToMove = NULL;
+            for (auto& app : project.apps)
+            {
+                // move the apps which are set to "Move-If-Exists" and are already present (launched, running)
+                if (std::find(movedApps.begin(), movedApps.end(), app) != movedApps.end())
+                {
+                    continue;
+                }
+
+                std::optional<WindowWithDistance> nearestWindowWithDistance;
+                nearestWindowWithDistance = GetNearestWindow(app, movedWindows, pwaHelper);
+                if (nearestWindowWithDistance.has_value())
+                {
+                    if (nearestWindowWithDistance.value().distance < minDistance)
+                    {
+                        minDistance = nearestWindowWithDistance.value().distance;
+                        appToMove = app;
+                        windowToMove = nearestWindowWithDistance.value().window;
+                    }
+                }
+                else
+                {
+                    Logger::info(L"The app {} is not found at launch, cannot be moved, has to be started", app.name);
+                    movedApps.push_back(app);
+                }
+            }
+            if (minDistance < INT_MAX)
+            {
+                isMovePhase = true;
+                movedAny = true;
+                bool success = TryMoveWindow(appToMove, windowToMove);
+                movedApps.push_back(appToMove);
+                if (success)
+                {
+                    movedWindows.push_back(windowToMove);
+                }
+            }
+        }
+
+        if (movedAny)
+        {
+            // Wait if there were moved windows. This message might not arrive if sending immediately after the last "moved" message (status update)
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+
+        Logger::info(L"Finished moving existing windows");
+    }
+
     m_ipcHelper.send(L"ready");
 
     const long maxLaunchingWaitingTime = 10000, maxRepositionWaitingTime = 3000, ms = 300;
@@ -138,27 +313,17 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
     }
 }
 
-//void WindowArranger::onWindowCreated(HWND window)
-//{
-//    if (!WindowFilter::Filter(window))
-//    {
-//        return;
-//    }
-//
-//    processWindow(window);
-//}
-
 void WindowArranger::processWindows(bool processAll)
 {
     std::vector<HWND> windows = WindowEnumerator::Enumerate(WindowFilter::Filter);
-    
+
     if (!processAll)
     {
         std::vector<HWND> windowsDiff{};
         std::copy_if(windows.begin(), windows.end(), std::back_inserter(windowsDiff), [&](HWND window) { return std::find(m_windowsBefore.begin(), m_windowsBefore.end(), window) == m_windowsBefore.end(); });
         windows = windowsDiff;
     }
-    
+
     for (HWND window : windows)
     {
         processWindow(window);
@@ -194,12 +359,11 @@ void WindowArranger::processWindow(HWND window)
     }
 
     const auto& apps = m_launchingStatus.Get();
-    auto iter = std::find_if(apps.begin(), apps.end(), [&](const auto& val) 
-        { 
-            return val.second.state == LaunchingState::Launched && 
-                !val.second.window && 
-                (val.first.name == data.value().name || val.first.path == data.value().installPath); 
-        });
+    auto iter = std::find_if(apps.begin(), apps.end(), [&](const auto& val) {
+        return val.second.state == LaunchingState::Launched &&
+               !val.second.window &&
+               (val.first.name == data.value().name || val.first.path == data.value().installPath);
+    });
 
     if (iter == apps.end())
     {
@@ -258,7 +422,7 @@ bool WindowArranger::moveWindow(HWND window, const WorkspacesData::WorkspacesPro
     rect.top = static_cast<long>(std::round(rect.top * mult));
     rect.bottom = static_cast<long>(std::round(rect.bottom * mult));
 
-    if (FancyZones::SizeWindowToRect(window, currentMonitor, launchMinimized, launchMaximized, rect))
+    if (PlacementHelper::SizeWindowToRect(window, currentMonitor, launchMinimized, launchMaximized, rect))
     {
         WorkspacesWindowProperties::StampWorkspacesLaunchedProperty(window);
         Logger::trace(L"Placed {} to ({},{}) [{}x{}]", app.name, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);

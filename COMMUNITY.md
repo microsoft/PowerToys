@@ -9,11 +9,17 @@ Names are in alphabetical order based on first name.
 ### [@Aaron-Junker](https://github.com/Aaron-Junker) - [Aaron Junker](https://aaron-junker.github.io)
 Aaron has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes. Aaron was the primary person for helping build the File Explorer preview pane handler for developer files.
 
+### [@cgaarden](https://github.com/cgaarden) - [Christian Gaarden Gaardmark](https://www.onegreatworld.com) 
+Christian contributed New+ utility
+
 ### [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)
 CleanCodeDeveloper helped do massive amounts of code stability and image resizer work.
 
 ### [@damienleroy](https://github.com/damienleroy) - [Damien Leroy](https://www.linkedin.com/in/Damien-Leroy-b2734416a/)
 Damien has helped out by developing and contributing the Quick Accent utility.
+
+### [@daverayment ](https://github.com/daverayment ) - [David Rayment](https://www.linkedin.com/in/david-rayment-168b5251/)
+Dave has helped improve the experience inside of Peek by adding in new features and fixing bugs.
 
 ### [@davidegiacometti](https://github.com/davidegiacometti) - [Davide Giacometti](https://www.linkedin.com/in/davidegiacometti/)
 Davide has helped fix multiple bugs, added new utilities, features, as well as help us with the ARM64 effort by porting applications to .NET Core.
@@ -41,6 +47,9 @@ Color Picker is from Martin.
 
 ### [@mikeclayton](https://github.com/mikeclayton) - [Michael Clayton](https://michael-clayton.com)
 Michael contributed the [initial version](https://github.com/microsoft/PowerToys/issues/23216) of the Mouse Jump tool and [a number of updates](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+author%3Amikeclayton) based on his FancyMouse utility.
+
+### [@PesBandi](https://github.com/PesBandi/) - PesBandi
+PesBandi has helped do massive amounts of Quick Accent and bug fixes.
 
 ### [@riverar](https://github.com/riverar) - [Rafael Rivera](https://withinrafael.com/)
 Rafael has helped do the [upgrade from CppWinRT 1.x to 2.0](https://github.com/microsoft/PowerToys/issues/1907).  He directly provided feedback to the CppWinRT team for bugs from this migration as well.
@@ -154,18 +163,23 @@ Other contributors:
 ## PowerToys core team
 
 - [@crutkas](https://github.com/crutkas/) - Clint Rutkas - Lead
-- [@ethanfangg](https://github.com/ethanfangg) - Ethan Fang - Lead
-- [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon - Product Manager
+- [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon - Lead
+- [@ethanfangg](https://github.com/ethanfangg) - Ethan Fang - Product Manager
 - [@plante-msft](https://github.com/plante-msft) - Connor Plante - Product Manager
 - [@nguyen-dows](https://github.com/nguyen-dows) - Christopher Nguyen - Product Manager
 - [@joadoumie](https://github.com/joadoumie) - Jordi Adoumie - Product Manager
 - [@jaimecbernardo](https://github.com/jaimecbernardo) - Jaime Bernardo - Dev lead
 - [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev lead
+- [@yeelam-gordon](https://github.com/yeelam-gordon) - Gordon Lam - Dev lead
 - [@drawbyperpetual](https://github.com/drawbyperpetual) - Anirudha Shankar - Dev
+- [@mantaionut](https://github.com/mantaionut) - Ionut Manta - Dev
 - [@donlaci](https://github.com/donlaci) - Laszlo Nemeth - Dev
-- [@gokcekantarci](https://github.com/gokcekantarci) - Gokce Kantarci - Dev
 - [@SeraphimaZykova](https://github.com/SeraphimaZykova) - Seraphima Zykova - Dev
 - [@stefansjfw](https://github.com/stefansjfw) - Stefan Markovic - Dev
+- [@lei9444](https://github.com/lei9444) - Leilei Zhang - Dev
+- [@shuaiyuanxx](https://github.com/shuaiyuanxx) - Shawn Yuan - Dev
+- [@moooyo](https://github.com/moooyo) - Yu Leng - Dev
+- [@haoliuu](https://github.com/haoliuu) - Hao Liu - Dev
 
 # Former PowerToys core team members
 
@@ -176,3 +190,4 @@ Other contributors:
 - [@mykhailopylyp](https://github.com/mykhailopylyp) - Mykhailo Pylyp - Dev
 - [@taras-janea](https://github.com/taras-janea) - Taras Sich - Dev
 - [@yuyoyuppe](https://github.com/yuyoyuppe) - Andrey Nekrasov - Dev
+- [@gokcekantarci](https://github.com/gokcekantarci) - Gokce Kantarci - Dev
