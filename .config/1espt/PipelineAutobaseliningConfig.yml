@@ -14,8 +14,8 @@ pipelines:
           lastModifiedDate: 2024-09-11
       binary:
         credscan:
-          lastModifiedDate: 2024-12-03
+          lastModifiedDate: 2024-12-04
         binskim:
-          lastModifiedDate: 2024-12-03
+          lastModifiedDate: 2024-12-04
         spotbugs:
-          lastModifiedDate: 2024-12-03
+          lastModifiedDate: 2024-12-04
