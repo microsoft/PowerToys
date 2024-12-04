@@ -183,7 +183,7 @@ namespace Awake
             Manager.CompleteExit(exitCode);
         }
 
-        private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid, string expireAt, bool useParentPid)
+        private static async void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid, string expireAt, bool useParentPid)
         {
             if (pid == 0 && !useParentPid)
             {
@@ -206,7 +206,7 @@ namespace Awake
             // Start the monitor thread that will be used to track the current state.
             Manager.StartMonitor();
 
-            TrayHelper.InitializeTray(_defaultAwakeIcon, Core.Constants.FullAppName);
+            await TrayHelper.InitializeTray(_defaultAwakeIcon, Core.Constants.FullAppName);
 
             EventWaitHandle eventHandle = new(false, EventResetMode.ManualReset, PowerToys.Interop.Constants.AwakeExitEvent());
             new Thread(() =>
@@ -218,7 +218,8 @@ namespace Awake
             if (usePtConfig)
             {
                 // Configuration file is used, therefore we disregard any other command-line parameter
-                // and instead watch for changes in the file.
+                // and instead watch for changes in the file. This is used as a priority against all other arguments,
+                // so if --use-pt-config is applied the rest of the arguments are irrelevant.
                 Manager.IsUsingPowerToysConfig = true;
 
                 try
@@ -258,6 +259,7 @@ namespace Awake
                 // Second, we snap to process-based execution. Because this is something that
                 // is snapped to a running entity, we only want to enable the ability to set
                 // indefinite keep-awake with the display settings that the user wants to set.
+                // In this context, manual (explicit) PID takes precedence over parent PID.
                 int targetPid = pid != 0 ? pid : useParentPid ? Manager.GetParentProcess()?.Id ?? 0 : 0;
 
                 if (targetPid != 0)

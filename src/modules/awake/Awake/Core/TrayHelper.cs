@@ -7,9 +7,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
-
+using System.Threading.Tasks;
 using Awake.Core.Models;
 using Awake.Core.Native;
 using Awake.Core.Threading;
@@ -75,8 +76,10 @@ namespace Awake.Core
                   IntPtr.Zero);
         }
 
-        public static void InitializeTray(Icon icon, string text)
+        public static Task InitializeTray(Icon icon, string text)
         {
+            TaskCompletionSource<bool> trayInitialized = new();
+
             IntPtr hWnd = IntPtr.Zero;
 
             // Start the message loop asynchronously
@@ -87,53 +90,63 @@ namespace Awake.Core
 
                 RunOnMainThread(() =>
                 {
-                    WndClassEx wcex = new()
+                    try
                     {
-                        CbSize = (uint)Marshal.SizeOf(typeof(WndClassEx)),
-                        Style = 0,
-                        LpfnWndProc = Marshal.GetFunctionPointerForDelegate<Bridge.WndProcDelegate>(WndProc),
-                        CbClsExtra = 0,
-                        CbWndExtra = 0,
-                        HInstance = Marshal.GetHINSTANCE(typeof(Program).Module),
-                        HIcon = IntPtr.Zero,
-                        HCursor = IntPtr.Zero,
-                        HbrBackground = IntPtr.Zero,
-                        LpszMenuName = string.Empty,
-                        LpszClassName = Constants.TrayWindowId,
-                        HIconSm = IntPtr.Zero,
-                    };
+                        WndClassEx wcex = new()
+                        {
+                            CbSize = (uint)Marshal.SizeOf(typeof(WndClassEx)),
+                            Style = 0,
+                            LpfnWndProc = Marshal.GetFunctionPointerForDelegate<Bridge.WndProcDelegate>(WndProc),
+                            CbClsExtra = 0,
+                            CbWndExtra = 0,
+                            HInstance = Marshal.GetHINSTANCE(typeof(Program).Module),
+                            HIcon = IntPtr.Zero,
+                            HCursor = IntPtr.Zero,
+                            HbrBackground = IntPtr.Zero,
+                            LpszMenuName = string.Empty,
+                            LpszClassName = Constants.TrayWindowId,
+                            HIconSm = IntPtr.Zero,
+                        };
 
-                    Bridge.RegisterClassEx(ref wcex);
+                        Bridge.RegisterClassEx(ref wcex);
 
-                    hWnd = Bridge.CreateWindowEx(
-                        0,
-                        Constants.TrayWindowId,
-                        text,
-                        0x00CF0000 | 0x00000001 | 0x00000008, // WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_MINIMIZEBOX
-                        0,
-                        0,
-                        0,
-                        0,
-                        unchecked(-3),
-                        IntPtr.Zero,
-                        Marshal.GetHINSTANCE(typeof(Program).Module),
-                        IntPtr.Zero);
+                        hWnd = Bridge.CreateWindowEx(
+                            0,
+                            Constants.TrayWindowId,
+                            text,
+                            0x00CF0000 | 0x00000001 | 0x00000008, // WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_MINIMIZEBOX
+                            0,
+                            0,
+                            0,
+                            0,
+                            unchecked(-3),
+                            IntPtr.Zero,
+                            Marshal.GetHINSTANCE(typeof(Program).Module),
+                            IntPtr.Zero);
 
-                    if (hWnd == IntPtr.Zero)
-                    {
-                        int errorCode = Marshal.GetLastWin32Error();
-                        throw new Win32Exception(errorCode, "Failed to add tray icon. Error code: " + errorCode);
+                        if (hWnd == IntPtr.Zero)
+                        {
+                            int errorCode = Marshal.GetLastWin32Error();
+                            throw new Win32Exception(errorCode, "Failed to add tray icon. Error code: " + errorCode);
+                        }
+
+                        // Keep this as a reference because we will need it when we update
+                        // the tray icon in the future.
+                        HiddenWindowHandle = hWnd;
+
+                        Bridge.ShowWindow(hWnd, 0); // SW_HIDE
+                        Bridge.UpdateWindow(hWnd);
+                        Logger.LogInfo($"Created HWND for the window: {hWnd}");
+
+                        SetShellIcon(hWnd, text, icon);
+
+                        trayInitialized.SetResult(true);
                     }
-
-                    // Keep this as a reference because we will need it when we update
-                    // the tray icon in the future.
-                    HiddenWindowHandle = hWnd;
-
-                    Bridge.ShowWindow(hWnd, 0); // SW_HIDE
-                    Bridge.UpdateWindow(hWnd);
-                    Logger.LogInfo($"Created HWND for the window: {hWnd}");
-
-                    SetShellIcon(hWnd, text, icon);
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"Failed to properly initialize the tray. {ex.Message}");
+                        trayInitialized.SetException(ex);
+                    }
                 });
 
                 RunOnMainThread(() =>
@@ -146,10 +159,14 @@ namespace Awake.Core
 
             _mainThread.IsBackground = true;
             _mainThread.Start();
+
+            return trayInitialized.Task;
         }
 
-        internal static void SetShellIcon(IntPtr hWnd, string text, Icon? icon, TrayIconAction action = TrayIconAction.Add)
+        internal static void SetShellIcon(IntPtr hWnd, string text, Icon? icon, TrayIconAction action = TrayIconAction.Add, [CallerMemberName] string callerName = "")
         {
+            Logger.LogInfo($"Attempting to set the shell icon. Invoked by {callerName}.");
+
             if (hWnd != IntPtr.Zero && icon != null)
             {
                 int message = Native.Constants.NIM_ADD;
