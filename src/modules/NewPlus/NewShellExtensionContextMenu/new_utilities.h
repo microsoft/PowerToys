@@ -346,18 +346,14 @@ namespace newplus::utilities
     inline void update_last_write_time(const std::filesystem::path path)
     {
         const std::filesystem::file_time_type now = std::filesystem::file_time_type::clock::now();
-        if (std::filesystem::is_regular_file(path))
-        {
-            std::filesystem::last_write_time(path, now);
-        }
-        else if (std::filesystem::is_directory(path))
+
+        std::filesystem::last_write_time(path, now);
+        
+        if (std::filesystem::is_directory(path))
         {
             for (const auto& entry : std::filesystem::recursive_directory_iterator(path))
             {
-                if (std::filesystem::is_regular_file(entry.path()))
-                {
-                    std::filesystem::last_write_time(entry.path(), now);
-                }
+                std::filesystem::last_write_time(entry.path(), now);
             }
         }
     }
