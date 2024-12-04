@@ -1136,7 +1136,7 @@ pdo
 pdto
 pdtobj
 pdw
-peb
+Peb
 pef
 PElems
 Pels
