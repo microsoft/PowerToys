@@ -54,7 +54,7 @@ namespace
                     if (keyValue->second.index() == 0)
                     {
                         auto key = std::get<DWORD>(keyValue->second);
-                        if (key == VK_LSHIFT || key == VK_RSHIFT)
+                        if (key == VK_LSHIFT || key == VK_RSHIFT || key == VK_SHIFT)
                         {
                             if (state.numpadKeyPressed[it->second])
                             {
