@@ -10,7 +10,7 @@ namespace Utils
         void UpdatePwaApp(Apps::AppData* appData, HWND window);
 
     private:
-        void InitAumidToAppId();
+        void InitEdgeAppIds();
         void InitChromeAppIds();
 
         std::wstring GetAUMIDFromWindow(HWND hWnd) const;

@@ -18,6 +18,7 @@
 
 #include <WorkspacesLib/AppUtils.h>
 #include <WorkspacesLib/CommandLineArgsHelper.h>
+#include <WorkspacesLib/StringUtils.h>
 
 namespace Utils
 {
@@ -29,6 +30,7 @@ namespace Utils
         const std::wstring EdgeBase = L"Microsoft\\Edge\\User Data\\Default\\Web Applications";
         const std::wstring ChromeDirPrefix = L"_crx_";
         const std::wstring EdgeDirPrefix = L"_crx__";
+        const std::wstring IcoExtension = L".ico";
     }
 
     static const std::wstring& GetLocalAppDataFolder()
@@ -83,10 +85,11 @@ namespace Utils
         return pwaHelperProcessIds;
     }
 
-    void PwaHelper::InitAumidToAppId()
+    void PwaHelper::InitEdgeAppIds()
     {
-        if (m_pwaAumidToAppId.size() > 0)
+        if (!m_pwaAumidToAppId.empty())
         {
+            // already initialized
             return;
         }
 
@@ -118,33 +121,41 @@ namespace Utils
                 continue;
             }
 
-                for (const auto& directory : std::filesystem::directory_iterator(fsPath))
+            try
+            {
+                for (const auto& directory : std::filesystem::directory_iterator(folderPath))
                 {
                     if (directory.is_directory())
                     {
-                        const std::filesystem::path directoryName = directory.path().filename();
-                        if (directoryName.wstring().find(NonLocalizable::EdgeDirPrefix) == 0)
+                        continue;
+                    }
+
+                    const std::wstring directoryName = directory.path().filename();
+                    if (directoryName.find(NonLocalizable::EdgeDirPrefix) != 0)
+                    {
+                        continue;
+                    }
+
+                    const std::wstring appIdDir = directoryName.substr(NonLocalizable::EdgeDirPrefix.size());
+                    if (appIdDir == appId)
+                    {
+                        for (const auto& filename : std::filesystem::directory_iterator(directory))
                         {
-                            const std::wstring appIdDir = directoryName.wstring().substr(NonLocalizable::EdgeDirPrefix.size());
-                            if (appIdDir == appId)
+                            const std::filesystem::path filenameString = filename.path().filename();
+                            if (StringUtils::CaseInsensitiveEquals(filenameString.extension(), NonLocalizable::IcoExtension))
                             {
-                                for (const auto& filename : std::filesystem::directory_iterator(directory))
-                                {
-                                    if (!filename.is_directory())
-                                    {
-                                        const std::filesystem::path filenameString = filename.path().filename();
-                                        if (filenameString.extension().wstring() == L".ico")
-                                        {
-                                            m_pwaAppIdsToAppNames.insert(std::map<std::wstring, std::wstring>::value_type(appId, filenameString.stem().wstring()));
-                                            Logger::info(L"Storing an edge Pwa app name {} for PwaAppId {}", filenameString.stem().wstring(), appId);
-                                        }
-                                    }
-                                }
+                                const auto stem = filenameString.stem().wstring();
+                                m_pwaAppIdsToAppNames.insert({ appId, stem });
+                                Logger::info(L"Storing an edge Pwa app name {} for PwaAppId {}", stem, appId);
+                                break;
                             }
                         }
                     }
                 }
-                CoTaskMemFree(path);
+            }
+            catch (std::exception& ex)
+            {
+                Logger::error("Failed to iterate over the directory: {}", ex.what());
             }
         }
     }
@@ -331,7 +342,7 @@ namespace Utils
         std::wstring pwaName = L"";
         if (appData->IsEdge())
         {
-            InitAumidToAppId();
+            InitEdgeAppIds();
 
             std::wstring windowAumid = GetAUMIDFromWindow(window);
             Logger::info(L"Found an edge window with aumid {}", windowAumid);

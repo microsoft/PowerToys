@@ -41,6 +41,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="PwaHelper.h" />
     <ClInclude Include="Result.h" />
+    <ClInclude Include="StringUtils.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="WbemHelper.h" />
     <ClInclude Include="WorkspacesData.h" />
