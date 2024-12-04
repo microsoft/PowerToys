@@ -54,6 +54,7 @@ Coplen
 craigloewen
 crutkas
 damienleroy
+daverayment
 davidegiacometti
 debian
 Deibisu
@@ -160,7 +161,7 @@ Yuniardi
 yuyoyuppe
 Zeol
 Zoltan
-Zykovadaverayment
+Zykova
 
 # OTHERS
 
