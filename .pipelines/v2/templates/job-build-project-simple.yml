@@ -254,3 +254,26 @@ jobs:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
+  - task: PublishTestResults@2
+    condition: ne(variables['BuildPlatform'],'arm64')
+    displayName: 'Publish Test Results'
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: '**/*.trx'
+    
+  # Native dlls
+  - task: VSTest@2
+    condition: ne(variables['BuildPlatform'],'arm64') # No arm64 agents to run the tests.
+    displayName: 'Native Tests'
+    inputs:
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      testSelector: 'testAssemblies'
+      testAssemblyVer2: |
+        **\KeyboardManagerEngineTest.dll
+        **\KeyboardManagerEditorTest.dll
+        **\UnitTests-CommonLib.dll
+        **\PowerRenameUnitTests.dll
+        **\UnitTests-FancyZones.dll
+        !**\obj\**
+
