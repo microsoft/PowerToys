@@ -996,7 +996,6 @@ newdev
 NEWDIALOGSTYLE
 NEWFILE
 newitem
-NEWKONA
 newpath
 newplus
 NEWPLUSCONTEXTMENU
@@ -1612,6 +1611,7 @@ THISCOMPONENT
 THotkey
 thumbcache
 TILEDWINDOW
+TILLSON
 timedate
 timediff
 timeunion
