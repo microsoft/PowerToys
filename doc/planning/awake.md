@@ -28,6 +28,9 @@ The build ID moniker is made up of two components - a reference to a [Halo](http
 - [#35250] Updates the icon retry policy, making sure that the icon consistently and correctly renders in the tray.
 - [#35848] Fixed a bug where custom tray time shortcuts for longer than 24 hours would be parsed as zero hours/zero minutes.
 - Added configuration safeguards to make sure that invalid values for timed keep-awake times do not result in exceptions.
+- Updated the tray initialization logic, making sure we wait for it to be properly created before setting icons.
+- Expanded logging capabilities to track invoking functions.
+- Added command validation logic to make sure that incorrect command line arguments display an error.
 
 ### `PROMETHEAN_09082024` (September 8, 2024)
 

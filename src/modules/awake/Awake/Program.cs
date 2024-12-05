@@ -51,7 +51,7 @@ namespace Awake
         private static SystemPowerCapabilities _powerCapabilities;
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
-        private static int Main(string[] args)
+        private static async Task<int> Main(string[] args)
         {
             _settingsUtils = new SettingsUtils();
 
@@ -72,6 +72,8 @@ namespace Awake
                 Logger.LogError("CultureNotFoundException: " + ex.Message);
             }
 
+            await TrayHelper.InitializeTray(_defaultAwakeIcon, Core.Constants.FullAppName);
+            AppDomain.CurrentDomain.ProcessExit += (_, _) => TrayHelper.RunOnMainThread(() => LockMutex?.ReleaseMutex());
             AppDomain.CurrentDomain.UnhandledException += AwakeUnhandledExceptionCatcher;
 
             if (!instantiated)
@@ -149,7 +151,7 @@ namespace Awake
                     {
                         if (result.Tokens.Count != 0 && !uint.TryParse(result.Tokens[0].Value, out _))
                         {
-                            const string errorMessage = "Interval in --time-limit could not be parsed correctly. Check that the value is valid and doesn't exceed 4,294,967,295.";
+                            string errorMessage = $"Interval in --time-limit could not be parsed correctly. Check that the value is valid and doesn't exceed 4,294,967,295. Value used: {result.Tokens[0].Value}.";
                             Logger.LogError(errorMessage);
                             result.ErrorMessage = errorMessage;
                         }
@@ -159,7 +161,7 @@ namespace Awake
                     {
                         if (result.Tokens.Count != 0 && !int.TryParse(result.Tokens[0].Value, out _))
                         {
-                            const string errorMessage = "PID value in --pid could not be parsed correctly. Check that the value is valid and falls within the boundaries of Windows PID process limits.";
+                            string errorMessage = $"PID value in --pid could not be parsed correctly. Check that the value is valid and falls within the boundaries of Windows PID process limits. Value used: {result.Tokens[0].Value}.";
                             Logger.LogError(errorMessage);
                             result.ErrorMessage = errorMessage;
                         }
@@ -169,7 +171,7 @@ namespace Awake
                     {
                         if (result.Tokens.Count != 0 && !DateTimeOffset.TryParse(result.Tokens[0].Value, out _))
                         {
-                            const string errorMessage = "Date and time value in --expire-at could not be parsed correctly. Check that the value is valid date and time. Refer to https://aka.ms/powertoys/awake for format examples.";
+                            string errorMessage = $"Date and time value in --expire-at could not be parsed correctly. Check that the value is valid date and time. Refer to https://aka.ms/powertoys/awake for format examples. Value used: {result.Tokens[0].Value}.";
                             Logger.LogError(errorMessage);
                             result.ErrorMessage = errorMessage;
                         }
@@ -216,7 +218,7 @@ namespace Awake
             Manager.CompleteExit(exitCode);
         }
 
-        private static async void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid, string expireAt, bool useParentPid)
+        private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid, string expireAt, bool useParentPid)
         {
             if (pid == 0 && !useParentPid)
             {
@@ -238,9 +240,6 @@ namespace Awake
 
             // Start the monitor thread that will be used to track the current state.
             Manager.StartMonitor();
-
-            await TrayHelper.InitializeTray(_defaultAwakeIcon, Core.Constants.FullAppName);
-            AppDomain.CurrentDomain.ProcessExit += (_, _) => TrayHelper.RunOnMainThread(() => LockMutex?.ReleaseMutex());
 
             EventWaitHandle eventHandle = new(false, EventResetMode.ManualReset, PowerToys.Interop.Constants.AwakeExitEvent());
             new Thread(() =>
