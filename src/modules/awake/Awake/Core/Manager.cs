@@ -176,7 +176,7 @@ namespace Awake.Core
 
             string processText = processId == 0
                 ? string.Empty
-                : $" - {Resources.AWAKE_TRAY_TEXT_PID_BINDING} {processId}";
+                : $" - {Resources.AWAKE_TRAY_TEXT_PID_BINDING}: {processId}";
 
             TrayHelper.SetShellIcon(
                 TrayHelper.HiddenWindowHandle,

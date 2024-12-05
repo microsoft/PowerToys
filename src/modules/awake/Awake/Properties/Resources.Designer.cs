@@ -295,7 +295,7 @@ namespace Awake.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Bound To.
+        ///   Looks up a localized string similar to Bound to.
         /// </summary>
         internal static string AWAKE_TRAY_TEXT_PID_BINDING {
             get {

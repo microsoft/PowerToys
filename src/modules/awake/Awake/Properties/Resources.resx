@@ -209,7 +209,7 @@
     <value>Uses the parent process as the bound target - once the process terminates, Awake stops.</value>
   </data>
   <data name="AWAKE_TRAY_TEXT_PID_BINDING" xml:space="preserve">
-    <value>Bound To</value>
+    <value>Bound to</value>
     <comment>Describes the process ID Awake is bound to when running.</comment>
   </data>
   <data name="AWAKE_TRAY_TEXT_KEEP_DISPLAY_ON" xml:space="preserve">
