@@ -74,7 +74,7 @@
 
 # hit-count: 18 file-count: 15
 # microsoft
-\b(?:https?://|)(?:(?:download\.visualstudio|docs|msdn2?|research)\.microsoft|blogs\.msdn)\.com/[-_a-zA-Z0-9()=./%]*
+\b(?:https?://|)(?:(?:download\.visualstudio|docs|msdn2?|research)\.microsoft|blogs\.msdn)\.com/[-_a-zA-Z0-9()=./%#]*
 
 # hit-count: 14 file-count: 5
 # githubusercontent
