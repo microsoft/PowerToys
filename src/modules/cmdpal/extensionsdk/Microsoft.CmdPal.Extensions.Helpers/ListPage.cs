@@ -85,9 +85,13 @@ public class ListPage : Page, IListPage
 
     protected void RaiseItemsChanged(int totalItems)
     {
-        if (ItemsChanged != null)
+        try
         {
-            ItemsChanged.Invoke(this, new ItemsChangedEventArgs(totalItems));
+            // TODO #181 - This is the same thing that BaseObservable has to deal with.
+            ItemsChanged?.Invoke(this, new ItemsChangedEventArgs(totalItems));
+        }
+        catch
+        {
         }
     }
 }

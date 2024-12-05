@@ -7,10 +7,13 @@ using Microsoft.CmdPal.UI.ViewModels.Models;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ListItemViewModel(IListItem model) : CommandItemViewModel(new(model))
+public partial class ListItemViewModel(IListItem model, TaskScheduler scheduler)
+    : CommandItemViewModel(new(model), scheduler)
 {
     private readonly ExtensionObject<IListItem> _listItemModel = new(model);
 
+    // Remember - "observable" properties from the model (via PropChanged)
+    // cannot be marked [ObservableProperty]
     public ITag[] Tags { get; private set; } = [];
 
     public bool HasTags => Tags.Length > 0;

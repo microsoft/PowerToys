@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -23,6 +24,8 @@ internal sealed partial class HackerNewsPage : ListPage
         Icon = new("https://news.ycombinator.com/favicon.ico");
         Name = "Hacker News";
         AccentColor = Color.FromArgb(255, 255, 102, 0);
+        Loading = true;
+        ShowDetails = true;
     }
 
     private static async Task<List<NewsPost>> GetHackerNewsTopPosts()
@@ -49,9 +52,29 @@ internal sealed partial class HackerNewsPage : ListPage
 
     public override IListItem[] GetItems()
     {
-        var t = DoGetItems();
-        t.ConfigureAwait(false);
-        return t.Result;
+        try
+        {
+            Loading = true;
+            var t = DoGetItems();
+            t.ConfigureAwait(false);
+            return t.Result;
+        }
+        catch (Exception ex)
+        {
+            return [
+                new ListItem(new NoOpCommand()) { Title = "Exception getting posts from HN" },
+                new ListItem(new NoOpCommand())
+                {
+                    Title = $"{ex.HResult}",
+                    Subtitle = ex.HResult == -2147023174 ? "This is probably zadjii-msft/PowerToys#181" : string.Empty,
+                },
+                new ListItem(new NoOpCommand())
+                {
+                    Title = "Stack trace",
+                    Details = new Details() { Body = $"```{ex.Source}\n{ex.StackTrace}```" },
+                },
+            ];
+        }
     }
 
     private async Task<IListItem[]> DoGetItems()

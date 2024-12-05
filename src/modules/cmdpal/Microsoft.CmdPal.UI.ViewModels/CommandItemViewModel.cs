@@ -2,18 +2,24 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class CommandItemViewModel : ObservableObject
+public partial class CommandItemViewModel : ExtensionObjectViewModel
 {
     private readonly ExtensionObject<ICommandItem> _commandItemModel = new(null);
 
-    // private bool _initialized;
+    protected TaskScheduler Scheduler { get; private set; }
+
+    // These are properties that are "observable" from the extension object
+    // itself, in the sense that they get raised by PropChanged events from the
+    // extension. However, we don't want to actually make them
+    // [ObservableProperty]s, because PropChanged comes in off the UI thread,
+    // and ObservableProperty is not smart enough to raisee the PropertyChanged
+    // on the UI thread.
     public string Name { get; private set; } = string.Empty;
 
     public string Title { get; private set; } = string.Empty;
@@ -38,7 +44,7 @@ public partial class CommandItemViewModel : ObservableObject
             var model = new CommandContextItem(command!)
             {
             };
-            CommandContextItemViewModel defaultCommand = new(model)
+            CommandContextItemViewModel defaultCommand = new(model, Scheduler)
             {
                 Name = Name,
                 Title = Name,
@@ -54,13 +60,14 @@ public partial class CommandItemViewModel : ObservableObject
         }
     }
 
-    public CommandItemViewModel(ExtensionObject<ICommandItem> item)
+    public CommandItemViewModel(ExtensionObject<ICommandItem> item, TaskScheduler scheduler)
     {
         _commandItemModel = item;
+        Scheduler = scheduler;
     }
 
     //// Called from ListViewModel on background thread started in ListPage.xaml.cs
-    public virtual void InitializeProperties()
+    public override void InitializeProperties()
     {
         var model = _commandItemModel.Unsafe;
         if (model == null)
@@ -76,7 +83,7 @@ public partial class CommandItemViewModel : ObservableObject
         MoreCommands = model.MoreCommands
             .Where(contextItem => contextItem is ICommandContextItem)
             .Select(contextItem => (contextItem as ICommandContextItem)!)
-            .Select(contextItem => new CommandContextItemViewModel(contextItem))
+            .Select(contextItem => new CommandContextItemViewModel(contextItem, Scheduler))
             .ToList();
 
         // Here, we're already theoretically in the async context, so we can
@@ -96,7 +103,6 @@ public partial class CommandItemViewModel : ObservableObject
         try
         {
             FetchProperty(args.PropertyName);
-            OnPropertyChanged(args.PropertyName);
         }
         catch (Exception)
         {
@@ -127,5 +133,9 @@ public partial class CommandItemViewModel : ObservableObject
                 // TODO! Icon
                 // TODO! MoreCommands array, which needs to also raise HasMoreCommands
         }
+
+        UpdateProperty(propertyName);
     }
+
+    protected void UpdateProperty(string propertyName) => Task.Factory.StartNew(() => { OnPropertyChanged(propertyName); }, CancellationToken.None, TaskCreationOptions.None, Scheduler);
 }

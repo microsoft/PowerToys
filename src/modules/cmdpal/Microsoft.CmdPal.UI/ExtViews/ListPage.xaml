@@ -81,6 +81,10 @@
     </Page.Resources>
 
     <Grid>
+        <ProgressBar 
+            IsIndeterminate="True" 
+            VerticalAlignment="Top"
+            Visibility="{x:Bind ViewModel.Loading, Mode=OneWay}" />
         <!--  not using Interactivity:Interaction.Behaviors due to wanting to do AoT  -->
         <!--
             sticking with ListView as ItemsView doesn't have grouping built-in, could investigate coordinating
@@ -114,14 +118,17 @@
             </controls:Case>
 
             <controls:Case IsDefault="True" Value="Loading">
-                <ProgressRing
+                <!--<ProgressRing
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    IsIndeterminate="True" />
+                    IsIndeterminate="True" />-->
             </controls:Case>
             
             <controls:Case Value="Error">
-                <TextBlock Text="Error loading List Page" />
+                <StackPanel Orientation="Vertical" Margin="16">
+                    <TextBlock Text="Error on page" FontSize="18" Foreground="{ThemeResource SystemErrorTextColor}" />
+                    <TextBlock Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" IsTextSelectionEnabled="True"/>
+                </StackPanel>
             </controls:Case>
         </controls:SwitchPresenter>
     </Grid>

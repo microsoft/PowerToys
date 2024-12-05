@@ -24,7 +24,7 @@ internal sealed partial class MastodonExtensionPage : ListPage
     internal static readonly HttpClient Client = new();
     internal static readonly JsonSerializerOptions Options = new() { PropertyNameCaseInsensitive = true };
 
-    private readonly List<ListItem> _items = new();
+    private readonly List<ListItem> _items = [];
 
     public MastodonExtensionPage()
     {
@@ -32,6 +32,7 @@ internal sealed partial class MastodonExtensionPage : ListPage
         Name = "Mastodon";
         ShowDetails = true;
         HasMore = true;
+        Loading = true;
 
         // #6364ff
         AccentColor = Color.FromArgb(255, 99, 100, 255);
@@ -104,10 +105,7 @@ internal sealed partial class MastodonExtensionPage : ListPage
         }).ConfigureAwait(false);
     }
 
-    public async Task<List<MastodonStatus>> FetchExplorePage()
-    {
-        return await FetchExplorePage(20, 0);
-    }
+    public async Task<List<MastodonStatus>> FetchExplorePage() => await FetchExplorePage(20, 0);
 
     public async Task<List<MastodonStatus>> FetchExplorePage(int limit, int offset)
     {
@@ -129,6 +127,8 @@ internal sealed partial class MastodonExtensionPage : ListPage
             Console.WriteLine($"An error occurred: {e.Message}");
         }
 
+        Loading = false;
+
         return statuses;
     }
 }
@@ -145,10 +145,7 @@ public partial class MastodonExtensionActionsProvider : CommandProvider
         new CommandItem(new MastodonExtensionPage()) { Subtitle = "Explore top posts on mastodon.social" },
     ];
 
-    public override ICommandItem[] TopLevelCommands()
-    {
-        return _actions;
-    }
+    public override ICommandItem[] TopLevelCommands() => _actions;
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]
@@ -177,10 +174,7 @@ public partial class MastodonPostForm : IForm
 
     public string StateJson() => throw new NotImplementedException();
 
-    public ICommandResult SubmitForm(string payload)
-    {
-        return CommandResult.Dismiss();
-    }
+    public ICommandResult SubmitForm(string payload) => CommandResult.Dismiss();
 
     public string TemplateJson()
     {
@@ -404,10 +398,7 @@ public class MastodonStatus
         }
     }
 
-    private static string ParseNodeToPlaintext(HtmlNode node)
-    {
-        return node.InnerText;
-    }
+    private static string ParseNodeToPlaintext(HtmlNode node) => node.InnerText;
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]

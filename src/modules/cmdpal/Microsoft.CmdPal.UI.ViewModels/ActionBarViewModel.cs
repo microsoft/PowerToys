@@ -10,7 +10,9 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ActionBarViewModel : ObservableObject
+public partial class ActionBarViewModel : ObservableObject,
+    IRecipient<UpdateActionBarPage>,
+    IRecipient<UpdateActionBarMessage>
 {
     public ListItemViewModel? SelectedItem
     {
@@ -32,11 +34,18 @@ public partial class ActionBarViewModel : ObservableObject
     public partial bool ShouldShowContextMenu { get; set; } = false;
 
     [ObservableProperty]
+    public partial PageViewModel? CurrentPage { get; private set; }
+
+    [ObservableProperty]
     public partial ObservableCollection<CommandContextItemViewModel> ContextActions { get; set; } = [];
 
     public ActionBarViewModel()
     {
+        WeakReferenceMessenger.Default.Register<UpdateActionBarPage>(this);
+        WeakReferenceMessenger.Default.Register<UpdateActionBarMessage>(this);
     }
+
+    public void Receive(UpdateActionBarMessage message) => SelectedItem = message.ViewModel;
 
     private void SetSelectedItem(ListItemViewModel? value)
     {
@@ -45,7 +54,7 @@ public partial class ActionBarViewModel : ObservableObject
             PrimaryActionName = value.Name;
             SecondaryActionName = value.SecondaryCommandName;
 
-            if (value.MoreCommands.Count > 0)
+            if (value.MoreCommands.Count > 1)
             {
                 ShouldShowContextMenu = true;
                 ContextActions = [.. value.AllCommands];
@@ -66,4 +75,6 @@ public partial class ActionBarViewModel : ObservableObject
     // InvokeItemCommand is what this will be in Xaml due to source generator
     [RelayCommand]
     private void InvokeItem(CommandContextItemViewModel item) => WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command));
+
+    public void Receive(UpdateActionBarPage message) => CurrentPage = message.Page;
 }
