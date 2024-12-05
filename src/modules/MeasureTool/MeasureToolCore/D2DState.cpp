@@ -152,7 +152,7 @@ void D2DState::DrawTextBox(const wchar_t* text,
         auto opacityEffect = winrt::make_self<OpacityEffect>();
         opacityEffect->alpha = consts::CROSS_OPACITY;
         winrt::check_hresult(textLayout->SetDrawingEffect(opacityEffect.get(), textRange));
-        if (halfOpaqueSymbolPos[1] > 0 && halfOpaqueSymbolPos[1] > halfOpaqueSymbolPos[0])
+        if (halfOpaqueSymbolPos[1] > halfOpaqueSymbolPos[0])
         {
             textRange = { static_cast<uint32_t>(halfOpaqueSymbolPos[1]), 2 };
             winrt::check_hresult(textLayout->SetDrawingEffect(opacityEffect.get(), textRange));

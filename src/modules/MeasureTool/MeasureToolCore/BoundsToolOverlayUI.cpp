@@ -29,7 +29,7 @@ namespace
 
             if (handle == window && perScreen.currentBounds)
             {
-                auto px2mmRatio = MonitorInfo::GetFromWindow(window).GetPhysicalPx2MmRatio();
+                auto px2mmRatio = toolState.commonState->GetPhysicalPx2MmRatio(window);
                 allMeasurements.push_back(GetMeasurement(*perScreen.currentBounds, cursorPos, px2mmRatio));
             }
         }
@@ -86,7 +86,7 @@ namespace
 
         if (const bool shiftPress = GetKeyState(VK_SHIFT) & 0x80000; shiftPress && perScreen.currentBounds)
         {
-            auto px2mmRatio = MonitorInfo::GetFromWindow(window).GetPhysicalPx2MmRatio();
+            auto px2mmRatio = toolState->commonState->GetPhysicalPx2MmRatio(window);
             perScreen.measurements.push_back(GetMeasurement(*perScreen.currentBounds, cursorPos, px2mmRatio));
         }
 
@@ -316,7 +316,7 @@ void DrawBoundsToolTick(const CommonState& commonState,
         D2D1_RECT_F rect;
         std::tie(rect.left, rect.right) = std::minmax(perScreen.currentBounds->startPos.x, perScreen.currentBounds->currentPos.x);
         std::tie(rect.top, rect.bottom) = std::minmax(perScreen.currentBounds->startPos.y, perScreen.currentBounds->currentPos.y);
-        auto px2mmRatio = MonitorInfo::GetFromWindow(window).GetPhysicalPx2MmRatio();
+        auto px2mmRatio = toolState.commonState->GetPhysicalPx2MmRatio(window);
         DrawMeasurement(Measurement{ rect, px2mmRatio }, commonState, window, d2dState, perScreen.currentBounds->currentPos);
     }
 }

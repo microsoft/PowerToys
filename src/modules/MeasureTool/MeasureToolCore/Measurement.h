@@ -1,4 +1,5 @@
 #pragma once
+#include "pch.h"
 
 #include <dcommon.h>
 #include <windef.h>
@@ -17,6 +18,7 @@ struct Measurement
     D2D1_RECT_F rect = {}; // corners are inclusive
 
     float px2mmRatio = 0;
+    static winrt::hstring abbrs[4]; // Abbreviations of units.
 
     Measurement(const Measurement&) = default;
     Measurement& operator=(const Measurement&) = default;
@@ -33,7 +35,9 @@ struct Measurement
         size_t strLen = {};
     };
 
+    static void InitResources();
     static Unit GetUnitFromIndex(int index);
+    static const wchar_t* GetUnitAbbreviation(const Unit units);
 
     PrintResult Print(wchar_t* buf,
                       const size_t bufSize,

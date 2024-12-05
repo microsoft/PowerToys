@@ -294,7 +294,7 @@ void UpdateCaptureState(const CommonState& commonState,
                                     cursorPos,
                                     perColorChannelEdgeDetection,
                                     pixelTolerance);
-    auto px2mmRatio = MonitorInfo::GetFromWindow(window).GetPhysicalPx2MmRatio();
+    auto px2mmRatio = commonState.GetPhysicalPx2MmRatio(window);
 
 #if defined(DEBUG_EDGES)
     char buffer[256];

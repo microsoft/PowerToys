@@ -49,12 +49,11 @@ public:
         uint32_t width_logical, height_logical;
         uint32_t width_physical, height_physical;
         float width_mm, height_mm;
-    } Geometry;
+    } Size;
 
 private:
     HMONITOR handle;
     MONITORINFOEX info = {};
-    Size size = {};
 
 public:
     explicit MonitorInfo(HMONITOR h);
@@ -64,15 +63,7 @@ public:
     }
     Box GetScreenSize(const bool includeNonWorkingArea) const;
     bool IsPrimary() const;
-    inline Size GetSize() const
-    {
-        return size;
-    }
-    inline float GetPhysicalPx2MmRatio() const
-    {
-        auto monitorSize = GetSize();
-        return monitorSize.width_mm / static_cast<float>(monitorSize.width_physical);
-    }
+    Size GetSize() const;
 
     // Returns monitor rects ordered from left to right
     static std::vector<MonitorInfo> GetMonitors(bool includeNonWorkingArea);

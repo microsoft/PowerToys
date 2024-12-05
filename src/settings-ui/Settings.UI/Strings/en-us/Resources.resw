@@ -180,7 +180,7 @@
     <value>Extra units of measurement</value>
   </data>
   <data name="MeasureTool_UnitsOfMeasure_Pixels.Content" xml:space="preserve">
-    <value>Pixels</value>
+    <value>Show only pixels</value>
   </data>
   <data name="MeasureTool_UnitsOfMeasure_Inches.Content" xml:space="preserve">
     <value>Inches</value>

@@ -15,12 +15,8 @@ bool MonitorInfo::IsPrimary() const
 MonitorInfo::MonitorInfo(HMONITOR h) :
     handle{ h }
 {
-    if (handle != nullptr)
-    {
-        info.cbSize = sizeof(MONITORINFOEX);
-        GetMonitorInfoW(handle, &info);
-        size = GetSize(info);
-    }
+    info.cbSize = sizeof(MONITORINFOEX);
+    GetMonitorInfoW(handle, &info);
 }
 
 static BOOL CALLBACK GetDisplaysEnumCb(HMONITOR monitor, HDC /*hdc*/, LPRECT /*rect*/, LPARAM data)
@@ -95,4 +91,16 @@ MonitorInfo::Size MonitorInfo::GetSize(const MONITORINFOEX& monitorInfoEx)
     }
 
     return size;
+}
+
+MonitorInfo::Size MonitorInfo::GetSize() const
+{
+    if (this->handle)
+    {
+        return MonitorInfo::GetSize(this->info);
+    }
+    else
+    {
+        return MonitorInfo::Size{};
+    }
 }

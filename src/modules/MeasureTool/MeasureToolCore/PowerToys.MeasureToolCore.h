@@ -32,6 +32,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         ~Core();
         void Close();
 
+        void InitResources();
         void StartBoundsTool();
         void StartMeasureTool(const bool horizontal, const bool vertical);
         void SetToolCompletionEvent(ToolSessionCompleted sessionCompletedTrigger);
