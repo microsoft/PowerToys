@@ -4,6 +4,7 @@
 
 using System;
 using System.ComponentModel.Composition;
+using System.Threading;
 using System.Windows;
 using System.Windows.Interop;
 
@@ -23,7 +24,7 @@ namespace ColorPicker.Helpers
         private readonly IUserSettings _userSettings;
         private ColorEditorWindow _colorEditorWindow;
         private bool _colorPickerShown;
-        private object _colorPickerVisibilityLock = new object();
+        private Lock _colorPickerVisibilityLock = new Lock();
 
         private HwndSource _hwndSource;
         private const int _globalHotKeyId = 0x0001;

@@ -29,7 +29,7 @@ namespace PowerLauncher
         private readonly SettingsUtils _settingsUtils;
 
         private const int MaxRetries = 10;
-        private static readonly object _readSyncObject = new object();
+        private static readonly Lock _readSyncObject = new Lock();
         private readonly PowerToysRunSettings _settings;
         private readonly ThemeManager _themeManager;
         private Action _refreshPluginsOverviewCallback;
@@ -73,7 +73,7 @@ namespace PowerLauncher
 
         public void ReadSettings()
         {
-            Monitor.Enter(_readSyncObject);
+            _readSyncObject.Enter();
             var retry = true;
             var retryCount = 0;
             while (retry)
@@ -224,7 +224,7 @@ namespace PowerLauncher
                 }
             }
 
-            Monitor.Exit(_readSyncObject);
+            _readSyncObject.Exit();
         }
 
         public void SetRefreshPluginsOverviewCallback(Action callback)

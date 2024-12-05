@@ -44,6 +44,7 @@ Bartosz
 betadele
 betsegaw
 bricelam
+bsky
 CCcat
 Chinh
 chrdavis
@@ -53,9 +54,9 @@ Coplen
 craigloewen
 crutkas
 damienleroy
+daverayment
 davidegiacometti
 debian
-Deibisu
 Deibisu
 Delimarsky
 Deondre
@@ -65,6 +66,7 @@ Essey
 ethanfangg
 ferraridavide
 frankychen
+Gaarden
 gaardmark
 gabime
 Galaxi
@@ -72,6 +74,8 @@ Garside
 Gershaft
 Giordani
 Gokce
+gordon
+grzhan
 Guo
 hanselman
 Harmath
@@ -82,20 +86,22 @@ Horvalds
 Howett
 htcfreek
 Huynh
+Ionut
 Jaswal
 jefflord
 Jordi
 jyuwono
 Kairu
-Kairu
 Kamra
 Kantarci
 Karthick
+kaylacinnamon
 kevinguo
 Krigun
 Lambson
 Laute
 laviusmotileng
+Leilei
 Luecking
 Mahalingam
 Markovic
@@ -111,6 +117,7 @@ nathancartlidge
 Nemeth
 nielslaute
 oldnewthing
+onegreatworld
 palenshus
 pedrolamas
 peteblois
@@ -121,8 +128,8 @@ Pylyp
 quachpas
 Quriz
 randyrants
+rayment
 ricardosantos
-riri
 riri
 ritchielawrence
 robmikh
@@ -147,8 +154,10 @@ TBM
 tilovell
 Triet
 waaverecords
+Whuihuan
 Xpg
 ycv
+yeelam
 Yuniardi
 yuyoyuppe
 Zeol
@@ -157,6 +166,8 @@ Zykova
 
 # OTHERS
 
+Bilibili
+BVID
 cmdow
 Controlz
 cortana

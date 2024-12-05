@@ -49,7 +49,7 @@ namespace PowerLauncher
         private ETWTrace etwTrace = new ETWTrace();
 
         // To prevent two disposals running at the same time.
-        private static readonly object _disposingLock = new object();
+        private static readonly Lock _disposingLock = new Lock();
 
         [STAThread]
         public static void Main()

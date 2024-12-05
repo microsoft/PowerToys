@@ -14,7 +14,7 @@ using Microsoft.PowerToys.Settings.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class MouseUtilsViewModel : Observable
+    public partial class MouseUtilsViewModel : Observable
     {
         private ISettingsUtils SettingsUtils { get; set; }
 
@@ -23,8 +23,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private FindMyMouseSettings FindMyMouseSettingsConfig { get; set; }
 
         private MouseHighlighterSettings MouseHighlighterSettingsConfig { get; set; }
-
-        private MouseJumpSettings MouseJumpSettingsConfig { get; set; }
 
         private MousePointerCrosshairsSettings MousePointerCrosshairsSettingsConfig { get; set; }
 
@@ -80,10 +78,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _highlightFadeDurationMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDurationMs.Value;
             _highlighterAutoActivate = MouseHighlighterSettingsConfig.Properties.AutoActivate.Value;
 
-            ArgumentNullException.ThrowIfNull(mouseJumpSettingsRepository);
-
-            MouseJumpSettingsConfig = mouseJumpSettingsRepository.SettingsConfig;
-            MouseJumpSettingsConfig.Properties.ThumbnailSize.PropertyChanged += MouseJumpThumbnailSizePropertyChanged;
+            this.InitializeMouseJumpSettings(mouseJumpSettingsRepository);
 
             ArgumentNullException.ThrowIfNull(mousePointerCrosshairsSettingsRepository);
 
@@ -138,17 +133,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _isMouseHighlighterEnabled = GeneralSettingsConfig.Enabled.MouseHighlighter;
             }
 
-            _jumpEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredMouseJumpEnabledValue();
-            if (_jumpEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _jumpEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
-            {
-                // Get the enabled state from GPO.
-                _jumpEnabledStateIsGPOConfigured = true;
-                _isMouseJumpEnabled = _jumpEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
-            }
-            else
-            {
-                _isMouseJumpEnabled = GeneralSettingsConfig.Enabled.MouseJump;
-            }
+            this.InitializeMouseJumpEnabledValues();
 
             _mousePointerCrosshairsEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredMousePointerCrosshairsEnabledValue();
             if (_mousePointerCrosshairsEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _mousePointerCrosshairsEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
@@ -657,87 +642,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SettingsUtils.SaveSettings(MouseHighlighterSettingsConfig.ToJsonString(), MouseHighlighterSettings.ModuleName);
         }
 
-        public bool IsMouseJumpEnabled
-        {
-            get => _isMouseJumpEnabled;
-            set
-            {
-                if (_jumpEnabledStateIsGPOConfigured)
-                {
-                    // If it's GPO configured, shouldn't be able to change this state.
-                    return;
-                }
-
-                if (_isMouseJumpEnabled != value)
-                {
-                    _isMouseJumpEnabled = value;
-
-                    GeneralSettingsConfig.Enabled.MouseJump = value;
-                    OnPropertyChanged(nameof(_isMouseJumpEnabled));
-
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
-                    SendConfigMSG(outgoing.ToString());
-
-                    NotifyMouseJumpPropertyChanged();
-                }
-            }
-        }
-
-        public bool IsJumpEnabledGpoConfigured
-        {
-            get => _jumpEnabledStateIsGPOConfigured;
-        }
-
-        public HotkeySettings MouseJumpActivationShortcut
-        {
-            get
-            {
-                return MouseJumpSettingsConfig.Properties.ActivationShortcut;
-            }
-
-            set
-            {
-                if (MouseJumpSettingsConfig.Properties.ActivationShortcut != value)
-                {
-                    MouseJumpSettingsConfig.Properties.ActivationShortcut = value ?? MouseJumpSettingsConfig.Properties.DefaultActivationShortcut;
-                    NotifyMouseJumpPropertyChanged();
-                }
-            }
-        }
-
-        public MouseJumpThumbnailSize MouseJumpThumbnailSize
-        {
-            get
-            {
-                return MouseJumpSettingsConfig.Properties.ThumbnailSize;
-            }
-
-            set
-            {
-                if ((MouseJumpSettingsConfig.Properties.ThumbnailSize.Width != value?.Width)
-                    && (MouseJumpSettingsConfig.Properties.ThumbnailSize.Height != value?.Height))
-                {
-                    MouseJumpSettingsConfig.Properties.ThumbnailSize = value;
-                    NotifyMouseJumpPropertyChanged();
-                }
-            }
-        }
-
-        public void MouseJumpThumbnailSizePropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            NotifyMouseJumpPropertyChanged(nameof(MouseJumpThumbnailSize));
-        }
-
-        public void NotifyMouseJumpPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            OnPropertyChanged(propertyName);
-
-            SndMouseJumpSettings outsettings = new SndMouseJumpSettings(MouseJumpSettingsConfig);
-            SndModuleSettings<SndMouseJumpSettings> ipcMessage = new SndModuleSettings<SndMouseJumpSettings>(outsettings);
-            SendConfigMSG(ipcMessage.ToJsonString());
-            SettingsUtils.SaveSettings(MouseJumpSettingsConfig.ToJsonString(), MouseJumpSettings.ModuleName);
-        }
-
         public bool IsMousePointerCrosshairsEnabled
         {
             get => _isMousePointerCrosshairsEnabled;
@@ -1016,10 +920,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _highlightFadeDelayMs;
         private int _highlightFadeDurationMs;
         private bool _highlighterAutoActivate;
-
-        private GpoRuleConfigured _jumpEnabledGpoRuleConfiguration;
-        private bool _jumpEnabledStateIsGPOConfigured;
-        private bool _isMouseJumpEnabled;
 
         private GpoRuleConfigured _mousePointerCrosshairsEnabledGpoRuleConfiguration;
         private bool _mousePointerCrosshairsEnabledStateIsGPOConfigured;

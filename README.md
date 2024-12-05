@@ -1,6 +1,6 @@
 # Microsoft PowerToys
 
-![Hero image for Microsoft PowerToys](doc/images/overview/PT_hero_image.png)
+![Hero image for Microsoft PowerToys](doc/images/overview/PT_holiday_hero_image.png)
 
 [How to use PowerToys][usingPowerToys-docs-link] | [Downloads & Release notes][github-release-link] | [Contributing to PowerToys](#contributing) | [What's Happening](#whats-happening) | [Roadmap](#powertoys-roadmap)
 
@@ -19,6 +19,12 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 | [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) | [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) | [Quick Accent](https://aka.ms/PowerToysOverview_QuickAccent) |
 | [Registry Preview](https://aka.ms/PowerToysOverview_RegistryPreview) | [Screen Ruler](https://aka.ms/PowerToysOverview_ScreenRuler) | [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) |
 | [Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) | [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) | [Workspaces](https://aka.ms/PowerToysOverview_Workspaces) |
+
+## 🎁⭐ PowerToys Advent calendar ⭐🎁
+
+We will be highlighting a cool utility each day for 24 days in December! To follow along, check out these threads:
+- https://bsky.app/profile/kaylacinnamon.bsky.social/post/3lcb7iljxck2o
+- https://x.com/cinnamon_msft/status/1863284610773246257
 
 ## Installing and running Microsoft PowerToys
 
@@ -101,11 +107,11 @@ In this release, we focused on new features, stability, and improvements.
  - Advanced Paste has new abilities: Image to text, and paste to file (text / png / html).
  - In settings, we've adjusted the left navigation to group the utilities. As the number of utilities shipped with PowerToys keeps growing, we felt this was a needed adjustment. Thanks everyone for your feedback!
  - Workspaces received many bug fixes, including the proper launching of many instances of the same application in the same workspace. Note, we are still actively looking at how to properly handle PWA detection.
- - We've added a telemetry opt-in option in the Settings General tab. As it is off-by-default, we encourage users to turn it on as that helps direct our development efforts and their journeys. More information about the data we collect can be found in the [PowerToys Data and Privacy documentation](https://aka.ms/powertoys-data-and-privacy-documentation) and what each event does.
+ - We've added a diagnostic data (telemetry) opt-in option in the Settings General tab. As it is off-by-default, we encourage users to turn it on as that helps direct our development efforts and their journeys. More information about the data we collect can be found in the [PowerToys Data and Privacy documentation](https://aka.ms/powertoys-data-and-privacy-documentation) and what each event does.
 
 ### General
 
- - Added a setting for telemetry opt-in (off by default, however, see above for why we encourage you to opt-in!) and user controls to view data.
+ - Added a setting for diagnostic data (telemetry) opt-in (off by default, however, see above for why we encourage you to opt-in!) and user controls to view data.
  - Improved exception logging by adding the type of Exception and InnerException. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Advanced Paste
@@ -204,7 +210,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct][oss-conduct
 
 ## Privacy Statement
 
-The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has the trends from the telemetry. Please read the [Microsoft privacy statement][privacy-link] for more information.
+The application logs basic diagnostic data (telemetry). For more information on privacy and what we collect, see our [PowerToys Data and Privacy documentation](https://aka.ms/powertoys-data-and-privacy-documentation).
 
 [oss-CLA]: https://cla.opensource.microsoft.com
 [oss-conduct-code]: CODE_OF_CONDUCT.md

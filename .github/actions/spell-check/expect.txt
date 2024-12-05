@@ -69,11 +69,9 @@ AQS
 ARandom
 ARCHITEW
 ARemapped
-ari
 ARPINSTALLLOCATION
 ARPPRODUCTICON
 ARRAYSIZE
-arw
 asf
 AShortcut
 ASingle
@@ -104,6 +102,7 @@ backtracer
 bbwe
 bck
 BESTEFFORT
+bezelled
 bhid
 BIF
 bigbar
@@ -151,6 +150,7 @@ CALG
 callbackptr
 calpwstr
 Cangjie
+caniuse
 CANRENAME
 CAPTUREBLT
 CAPTURECHANGED
@@ -259,7 +259,7 @@ CRH
 critsec
 Crossdevice
 CRSEL
-crw
+crx
 CSearch
 CSettings
 cso
@@ -301,8 +301,8 @@ DCOM
 dcommon
 dcomp
 DComposition
-dcr
-dcs
+DCR
+DCs
 ddd
 DDEIf
 DDevice
@@ -373,7 +373,6 @@ DRAWCLIPBOARD
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
-drf
 drivedetectionwarning
 dshow
 DSTINVERT
@@ -417,7 +416,6 @@ editkeyboardwindow
 EDITSHORTCUTS
 editshortcutswindow
 EFile
-eip
 ekus
 emmintrin
 Emoji
@@ -591,7 +589,7 @@ Hiberboot
 HIBYTE
 hicon
 HIDEWINDOW
-hif
+Hif
 HIMAGELIST
 himl
 hinst
@@ -641,6 +639,7 @@ HWNDLAST
 HWNDNEXT
 HWNDPREV
 hyjiacan
+IApp
 IBeam
 ICapture
 IClass
@@ -667,10 +666,10 @@ IGNOREUNKNOWN
 IGraphics
 iid
 Iindex
-iiq
 IJson
 Ijwhost
 IKs
+iljxck
 ILogon
 IMAGEHLP
 IMAGERESIZERCONTEXTMENU
@@ -730,17 +729,17 @@ ISSEPARATOR
 ITask
 ith
 ITHUMBNAIL
+ITwoWayPipeMessageIPCManaged
 IUI
 IUnknown
+IUse
 IWbem
 IWeb
 IWIC
 iwr
 IYUV
-jfi
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
-jif
 jjw
 jobject
 jpe
@@ -749,7 +748,6 @@ Jsons
 jsonval
 junja
 jxr
-kdc
 keybd
 KEYBDDATA
 KEYBDINPUT
@@ -775,6 +773,7 @@ lastcodeanalysissucceeded
 Lastdevice
 LASTEXITCODE
 LAYOUTRTL
+lcb
 LCIDTo
 lcl
 Lclean
@@ -874,7 +873,6 @@ MAXIMIZEBOX
 MAXSHORTCUTSIZE
 maxversiontested
 MBR
-mdc
 MDICHILD
 MDL
 mdtext
@@ -882,7 +880,6 @@ mdtxt
 mdwn
 MEDIASUBTYPE
 mediatype
-mef
 MENUITEMINFO
 MENUITEMINFOW
 MERGECOPY
@@ -940,7 +937,6 @@ mpmc
 MRM
 MRT
 mru
-mrw
 msc
 mscorlib
 msdata
@@ -1005,6 +1001,7 @@ newitem
 newpath
 newplus
 NEWPLUSCONTEXTMENU
+NEWPLUSSHELLEXTENSIONWIN
 newrow
 newsgroups
 NIF
@@ -1063,7 +1060,6 @@ NOZORDER
 NPH
 npmjs
 NResize
-nrw
 nsunt
 NTAPI
 ntdll
@@ -1093,7 +1089,6 @@ opensource
 openxmlformats
 OPTIMIZEFORINVOKE
 ORAW
-ori
 ORPHANEDDIALOGTITLE
 ORSCANS
 oss
@@ -1143,7 +1138,7 @@ pdo
 pdto
 pdtobj
 pdw
-Peb
+peb
 pef
 PElems
 Pels
@@ -1179,6 +1174,7 @@ pnid
 Pnp
 Popups
 POPUPWINDOW
+POSITIONITEM
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1273,7 +1269,6 @@ QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
 QUNS
-raf
 RAII
 RAlt
 Rasterize
@@ -1378,8 +1373,6 @@ runtimes
 ruuid
 rvm
 rwin
-rwl
-rwz
 sacl
 safeprojectname
 SAMEKEYPREVIOUSLYMAPPED
@@ -1513,7 +1506,6 @@ Srch
 SRCINVERT
 SRCPAINT
 SResize
-srf
 srme
 srre
 srw
@@ -1588,6 +1580,8 @@ SYSLIB
 SYSMENU
 SYSTEMAPPS
 SYSTEMTIME
+SYSTEMWOW
+tailwindcss
 tapp
 TApplication
 TApplied
@@ -1631,6 +1625,7 @@ tkconverters
 TLayout
 tlb
 tlbimp
+tlhelp
 TMPVAR
 TNP
 Toolhelp

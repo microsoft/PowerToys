@@ -14,10 +14,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
-
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
+using WorkspacesCsharpLibrary;
 using WorkspacesEditor.Data;
 using WorkspacesEditor.Models;
 using WorkspacesEditor.Telemetry;
@@ -39,6 +39,7 @@ namespace WorkspacesEditor.ViewModels
         private MainWindow _mainWindow;
         private Timer lastUpdatedTimer;
         private WorkspacesSettings settings;
+        private PwaHelper _pwaHelper;
 
         public ObservableCollection<Project> Workspaces { get; set; } = new ObservableCollection<Project>();
 
@@ -147,6 +148,7 @@ namespace WorkspacesEditor.ViewModels
             settings = Utils.Settings.ReadSettings();
             _orderByIndex = (int)settings.Properties.SortBy;
             _workspacesEditorIO = workspacesEditorIO;
+            _pwaHelper = new PwaHelper();
             lastUpdatedTimer = new System.Timers.Timer();
             lastUpdatedTimer.Interval = 1000;
             lastUpdatedTimer.Elapsed += LastUpdatedTimerElapsed;

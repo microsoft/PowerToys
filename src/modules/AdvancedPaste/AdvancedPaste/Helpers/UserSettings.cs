@@ -21,7 +21,7 @@ namespace AdvancedPaste.Settings
         private readonly SettingsUtils _settingsUtils;
         private readonly TaskScheduler _taskScheduler;
         private readonly IFileSystemWatcher _watcher;
-        private readonly object _loadingSettingsLock = new();
+        private readonly Lock _loadingSettingsLock = new();
         private readonly List<PasteFormats> _additionalActions;
         private readonly List<AdvancedPasteCustomAction> _customActions;
 
