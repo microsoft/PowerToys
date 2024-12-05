@@ -23,7 +23,7 @@ internal sealed partial class OpenPathAction(string target) : InvokableCommand
 
     public override CommandResult Invoke()
     {
-        LaunchTarget(_target).Start();
+        _ = LaunchTarget(_target).ConfigureAwait(false);
 
         return CommandResult.GoHome();
     }

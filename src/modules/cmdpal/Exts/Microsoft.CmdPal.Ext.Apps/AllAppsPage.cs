@@ -75,7 +75,7 @@ public sealed partial class AllAppsPage : ListPage
                     Name = app.Name,
                     Subtitle = app.Description,
                     IcoPath = app.FullPath, // similarly, this should be IcoPath, but :shrug:
-                    ExePath = app.FullPath,
+                    ExePath = app.LnkFilePath ?? app.FullPath,
                     DirPath = app.Location,
                 });
 

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
 using Microsoft.CmdPal.Ext.Registry;
@@ -73,6 +74,7 @@ public partial class App : Application
         services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
 
         // Built-in Commands
+        services.AddSingleton<ICommandProvider, AllAppsCommandProvider>();
         services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
         services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
         services.AddSingleton<ICommandProvider, SettingsCommandProvider>();
