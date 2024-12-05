@@ -16,5 +16,4 @@
     <system:String x:Key="Theme.BaseColorScheme">HighContrast</system:String>
     <system:String x:Key="Theme.ColorScheme">Accent3</system:String>
     <Color x:Key="Theme.PrimaryAccentColor">White</Color>
-    <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FFffff00" />
 </ResourceDictionary>

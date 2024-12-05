@@ -52,8 +52,13 @@ namespace PowerLauncher.Helper
 
             if (theme is ManagedCommon.Theme.Dark or ManagedCommon.Theme.Light)
             {
-#pragma warning disable WPF0001
-                _mainWindow.ThemeMode = theme is ManagedCommon.Theme.Light ? ThemeMode.Light : ThemeMode.Dark;
+                string themeString = theme == ManagedCommon.Theme.Light ? "pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.Light.xaml"
+                    : "pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.Dark.xaml";
+                ResourceDictionary fluentThemeDictionary = new()
+                {
+                    Source = new Uri(themeString, UriKind.Absolute),
+                };
+                _mainWindow.Resources.MergedDictionaries.Add(fluentThemeDictionary);
             }
             else
             {
