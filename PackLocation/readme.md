@@ -1,1 +1,0 @@
-Local source for packages.  Microsoft.WindowsAppSDK.*.nupkg get placed here when building locally.
