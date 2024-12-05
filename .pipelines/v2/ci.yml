@@ -41,9 +41,6 @@ parameters:
     type: boolean
     displayName: "Build Using Visual Studio Preview"
     default: false
-  - name: useLatestWinAppSDK
-    type: boolean
-    default: false
 
 extends:
   template: templates/pipeline-ci-build.yml
@@ -52,4 +49,3 @@ extends:
     enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
     runTests: ${{ parameters.runTests }}
     useVSPreview: ${{ parameters.useVSPreview }}
-    useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
