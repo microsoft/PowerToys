@@ -194,6 +194,7 @@ namespace PowerLauncher
             _viewModel.RegisterHotkey(_hwndSource.Handle);
             if (OSVersionHelper.IsWindows11())
             {
+                // ResizeMode="NoResize" removes rounded corners. So force them to rounded.
                 IntPtr hWnd = new WindowInteropHelper(GetWindow(this)).EnsureHandle();
                 DWMWINDOWATTRIBUTE attribute = DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE;
                 DWM_WINDOW_CORNER_PREFERENCE preference = DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND;
