@@ -94,7 +94,11 @@ namespace WorkspacesEditor.Utils
             FileStream fileStream = new FileStream(path, FileMode.CreateNew);
             using (var memoryStream = new MemoryStream())
             {
-                icon.Save(memoryStream, ImageFormat.Png);
+                ImageCodecInfo imageCodecInfo = ImageCodecInfo.GetImageEncoders().FirstOrDefault(codec => codec.FormatID == ImageFormat.Png.Guid);
+                EncoderParameters encoderParameters = new(1);
+                encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, 50);
+
+                icon.Save(memoryStream, imageCodecInfo, encoderParameters);
 
                 BinaryWriter iconWriter = new BinaryWriter(fileStream);
                 if (fileStream != null && iconWriter != null)
