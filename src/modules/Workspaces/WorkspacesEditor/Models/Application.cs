@@ -1,25 +1,22 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
-using System.Windows.Media.Imaging;
-using ManagedCommon;
-using Windows.Management.Deployment;
-using WorkspacesCsharpLibrary;
 using WorkspacesCsharpLibrary.Models;
 
 namespace WorkspacesEditor.Models
 {
+    public enum WindowPositionKind
+    {
+        Custom = 0,
+        Maximized = 1,
+        Minimized = 2,
+    }
+
     public class Application : BaseApplication, IDisposable
     {
         private bool _isInitialized;
@@ -79,7 +76,7 @@ namespace WorkspacesEditor.Models
                 return left.X != right.X || left.Y != right.Y || left.Width != right.Width || left.Height != right.Height;
             }
 
-            public override bool Equals(object obj)
+            public override readonly bool Equals(object obj)
             {
                 if (obj == null || GetType() != obj.GetType())
                 {
@@ -90,7 +87,7 @@ namespace WorkspacesEditor.Models
                 return X == pos.X && Y == pos.Y && Width == pos.Width && Height == pos.Height;
             }
 
-            public override int GetHashCode()
+            public override readonly int GetHashCode()
             {
                 return base.GetHashCode();
             }
@@ -136,35 +133,23 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        private bool _minimized;
+        public bool Minimized { get; set; }
 
-        public bool Minimized
+        public bool Maximized { get; set; }
+
+        public bool EditPositionEnabled => !Minimized && !Maximized;
+
+        public int PositionComboboxIndex
         {
-            get => _minimized;
+            get => Maximized ? (int)WindowPositionKind.Maximized : Minimized ? (int)WindowPositionKind.Minimized : (int)WindowPositionKind.Custom;
             set
             {
-                _minimized = value;
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(Minimized)));
+                Maximized = value == (int)WindowPositionKind.Maximized;
+                Minimized = value == (int)WindowPositionKind.Minimized;
                 OnPropertyChanged(new PropertyChangedEventArgs(nameof(EditPositionEnabled)));
                 RedrawPreviewImage();
             }
         }
-
-        private bool _maximized;
-
-        public bool Maximized
-        {
-            get => _maximized;
-            set
-            {
-                _maximized = value;
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(Maximized)));
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(EditPositionEnabled)));
-                RedrawPreviewImage();
-            }
-        }
-
-        public bool EditPositionEnabled { get => !Minimized && !Maximized; }
 
         private string _appMainParams;
 
@@ -183,7 +168,7 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        public bool IsAppMainParamVisible { get => !string.IsNullOrWhiteSpace(_appMainParams); }
+        public bool IsAppMainParamVisible => !string.IsNullOrWhiteSpace(_appMainParams);
 
         [JsonIgnore]
         public bool IsHighlighted { get; set; }
@@ -192,13 +177,7 @@ namespace WorkspacesEditor.Models
         public int RepeatIndex { get; set; }
 
         [JsonIgnore]
-        public string RepeatIndexString
-        {
-            get
-            {
-                return RepeatIndex <= 1 ? string.Empty : RepeatIndex.ToString(CultureInfo.InvariantCulture);
-            }
-        }
+        public string RepeatIndexString => RepeatIndex <= 1 ? string.Empty : RepeatIndex.ToString(CultureInfo.InvariantCulture);
 
         private WindowPosition _position;
 
@@ -242,10 +221,7 @@ namespace WorkspacesEditor.Models
         {
             get
             {
-                if (_monitorSetup == null)
-                {
-                    _monitorSetup = Parent.GetMonitorForApp(this);
-                }
+                _monitorSetup ??= Parent.GetMonitorForApp(this);
 
                 return _monitorSetup;
             }
@@ -271,7 +247,7 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        public string DeleteButtonContent { get => _isIncluded ? Properties.Resources.Delete : Properties.Resources.AddBack; }
+        public string DeleteButtonContent => _isIncluded ? Properties.Resources.Delete : Properties.Resources.AddBack;
 
         private bool _isIncluded = true;
 
@@ -297,16 +273,6 @@ namespace WorkspacesEditor.Models
         {
             CommandLineArguments = newCommandLineValue;
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(AppMainParams)));
-        }
-
-        internal void MaximizedChecked()
-        {
-            Minimized = false;
-        }
-
-        internal void MinimizedChecked()
-        {
-            Maximized = false;
         }
     }
 }

@@ -21,6 +21,7 @@
         <ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
         <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
         <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+        <ProjectReference Include="..\..\modules\MouseUtils\MouseJump.Common\MouseJump.Common.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -5,7 +5,14 @@
 #include <WorkspacesLib/AppUtils.h>
 #include <WorkspacesLib/IPCHelper.h>
 #include <WorkspacesLib/LaunchingStatus.h>
+#include <WorkspacesLib/PwaHelper.h>
 #include <WorkspacesLib/WorkspacesData.h>
+
+struct WindowWithDistance
+{
+    int distance;
+    HWND window;
+};
 
 class WindowArranger
 {
@@ -21,7 +28,9 @@ private:
     //const WindowCreationHandler m_windowCreationHandler;
     IPCHelper m_ipcHelper;
     LaunchingStatus m_launchingStatus;
-    
+    std::optional<WindowWithDistance> GetNearestWindow(const WorkspacesData::WorkspacesProject::Application& app, const std::vector<HWND>& movedWindows, Utils::PwaHelper& pwaHelper);
+    bool TryMoveWindow(const WorkspacesData::WorkspacesProject::Application& app, HWND windowToMove);
+
     //void onWindowCreated(HWND window);
     void processWindows(bool processAll);
     void processWindow(HWND window);
