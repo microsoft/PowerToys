@@ -31,10 +31,6 @@
     <ProjectReference Include="..\GcodeThumbnailProvider\GcodeThumbnailProvider.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\STATestClassAttribute.cs" Link="STATestClassAttribute.cs" />
-    <Compile Include="..\STATestMethodAttribute.cs" Link="STATestMethodAttribute.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="HelperFiles\sample.gcode">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
