@@ -60,9 +60,10 @@ namespace PowerLauncher.Helper
                     Source = new Uri(themeString, UriKind.Absolute),
                 };
                 _mainWindow.Resources.MergedDictionaries.Add(fluentThemeDictionary);
-                if (Common.UI.OSVersionHelper.IsWindows11())
+                if (!Common.UI.OSVersionHelper.IsWindows11())
                 {
                     // Apply background only on Windows 10
+                    // Windows theme does not work properly for dark and light mode so right now set the background color manual.
                     _mainWindow.Background = new SolidColorBrush
                     {
                         Color = theme is ManagedCommon.Theme.Dark ? (Color)ColorConverter.ConvertFromString("#202020") : (Color)ColorConverter.ConvertFromString("#fafafa"),
