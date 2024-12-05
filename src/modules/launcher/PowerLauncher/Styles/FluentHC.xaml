@@ -4380,7 +4380,7 @@
                                     Stroke="{DynamicResource RadioButtonOuterEllipseStroke}"
                                     StrokeThickness="{StaticResource RadioButtonStrokeThickness}"
                                     UseLayoutRounding="False" />
-                                <!--  A separate element is added since the two orthogonal state groups cannot touch the same property -->
+                                <!--  A separate element is added since the two orthogonal state groups cannot touch the same property  -->
                                 <Ellipse
                                     x:Name="CheckOuterEllipse"
                                     Width="20"
