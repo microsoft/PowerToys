@@ -72,3 +72,26 @@ Get-ChildItem -Recurse *.csproj | ForEach-Object {
         Write-Host "Modified " $_.FullName 
     }
 }
+
+# Load the nuget.config file
+Write-Host "Updating nuget.config file"
+$filePath = "nuget.config"
+[xml]$xml = Get-Content -Path $filePath
+
+# Add localpackages source into nuget.config
+$packageSourcesNode = $xml.configuration.packageSources
+$addNode = $xml.CreateElement("add")
+$addNode.SetAttribute("key", "localpackages")
+$addNode.SetAttribute("value", "localpackages")
+$packageSourcesNode.AppendChild($addNode) | Out-Null
+
+# Remove <packageSourceMapping> tag and its content
+$packageSourceMappingNode = $xml.configuration.packageSourceMapping
+if ($packageSourceMappingNode) {
+    $xml.configuration.RemoveChild($packageSourceMappingNode) | Out-Null
+}
+
+# print nuget.config after modification
+$xml.OuterXml
+# Save the modified nuget.config file
+$xml.Save($filePath)
