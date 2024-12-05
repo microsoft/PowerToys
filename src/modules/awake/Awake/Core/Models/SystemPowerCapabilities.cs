@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 
 namespace Awake.Core.Models
 {
@@ -94,10 +95,19 @@ namespace Awake.Core.Models
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
         public BatteryReportingScale[] BatteryScale;
 
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public SystemPowerState AcOnLineWake;
+
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public SystemPowerState SoftLidWake;
+
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public SystemPowerState RtcWake;
+
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public SystemPowerState MinDeviceWakeState;
+
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public SystemPowerState DefaultLowLatencyWake;
     }
 }

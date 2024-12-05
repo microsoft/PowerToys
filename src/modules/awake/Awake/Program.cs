@@ -27,7 +27,16 @@ namespace Awake
 {
     internal sealed class Program
     {
+        private static readonly string[] _aliasesConfigOption = ["--use-pt-config", "-c"];
+        private static readonly string[] _aliasesDisplayOption = ["--display-on", "-d"];
+        private static readonly string[] _aliasesTimeOption = ["--time-limit", "-t"];
+        private static readonly string[] _aliasesPidOption = ["--pid", "-p"];
+        private static readonly string[] _aliasesExpireAtOption = ["--expire-at", "-e"];
+        private static readonly string[] _aliasesParentPidOption = ["--use-parent-pid", "-u"];
+
+        private static readonly JsonSerializerOptions _serializerOptions = new() { IncludeFields = true };
         private static readonly ETWTrace _etwTrace = new();
+        private static readonly Icon _defaultAwakeIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/awake.ico"));
 
         private static FileSystemWatcher? _watcher;
         private static SettingsUtils? _settingsUtils;
@@ -41,19 +50,13 @@ namespace Awake
         private static SystemPowerCapabilities _powerCapabilities;
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
-        internal static readonly string[] AliasesConfigOption = ["--use-pt-config", "-c"];
-        internal static readonly string[] AliasesDisplayOption = ["--display-on", "-d"];
-        internal static readonly string[] AliasesTimeOption = ["--time-limit", "-t"];
-        internal static readonly string[] AliasesPidOption = ["--pid", "-p"];
-        internal static readonly string[] AliasesExpireAtOption = ["--expire-at", "-e"];
-        internal static readonly string[] AliasesParentPidOption = ["--use-parent-pid", "-u"];
-
-        private static readonly Icon _defaultAwakeIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/awake.ico"));
-
         private static int Main(string[] args)
         {
             _settingsUtils = new SettingsUtils();
+
             LockMutex = new Mutex(true, Core.Constants.AppName, out bool instantiated);
+            AppDomain.CurrentDomain.ProcessExit += (_, _) => TrayHelper.RunOnMainThread(() => LockMutex?.ReleaseMutex());
+
             Logger.InitializeLogger(Path.Combine("\\", Core.Constants.AppName, "Logs"));
 
             try
@@ -102,41 +105,41 @@ namespace Awake
                     // To make it easier to diagnose future issues, let's get the
                     // system power capabilities and aggregate them in the log.
                     Bridge.GetPwrCapabilities(out _powerCapabilities);
-                    Logger.LogInfo(JsonSerializer.Serialize(_powerCapabilities));
+                    Logger.LogInfo(JsonSerializer.Serialize(_powerCapabilities, _serializerOptions));
 
                     Logger.LogInfo("Parsing parameters...");
 
-                    Option<bool> configOption = new(AliasesConfigOption, () => false, Resources.AWAKE_CMD_HELP_CONFIG_OPTION)
+                    Option<bool> configOption = new(_aliasesConfigOption, () => false, Resources.AWAKE_CMD_HELP_CONFIG_OPTION)
                     {
                         Arity = ArgumentArity.ZeroOrOne,
                         IsRequired = false,
                     };
 
-                    Option<bool> displayOption = new(AliasesDisplayOption, () => true, Resources.AWAKE_CMD_HELP_DISPLAY_OPTION)
+                    Option<bool> displayOption = new(_aliasesDisplayOption, () => true, Resources.AWAKE_CMD_HELP_DISPLAY_OPTION)
                     {
                         Arity = ArgumentArity.ZeroOrOne,
                         IsRequired = false,
                     };
 
-                    Option<uint> timeOption = new(AliasesTimeOption, () => 0, Resources.AWAKE_CMD_HELP_TIME_OPTION)
+                    Option<uint> timeOption = new(_aliasesTimeOption, () => 0, Resources.AWAKE_CMD_HELP_TIME_OPTION)
                     {
                         Arity = ArgumentArity.ExactlyOne,
                         IsRequired = false,
                     };
 
-                    Option<int> pidOption = new(AliasesPidOption, () => 0, Resources.AWAKE_CMD_HELP_PID_OPTION)
+                    Option<int> pidOption = new(_aliasesPidOption, () => 0, Resources.AWAKE_CMD_HELP_PID_OPTION)
                     {
                         Arity = ArgumentArity.ZeroOrOne,
                         IsRequired = false,
                     };
 
-                    Option<string> expireAtOption = new(AliasesExpireAtOption, () => string.Empty, Resources.AWAKE_CMD_HELP_EXPIRE_AT_OPTION)
+                    Option<string> expireAtOption = new(_aliasesExpireAtOption, () => string.Empty, Resources.AWAKE_CMD_HELP_EXPIRE_AT_OPTION)
                     {
                         Arity = ArgumentArity.ZeroOrOne,
                         IsRequired = false,
                     };
 
-                    Option<bool> parentPidOption = new(AliasesParentPidOption, () => false, Resources.AWAKE_CMD_PARENT_PID_OPTION)
+                    Option<bool> parentPidOption = new(_aliasesParentPidOption, () => false, Resources.AWAKE_CMD_PARENT_PID_OPTION)
                     {
                         Arity = ArgumentArity.ZeroOrOne,
                         IsRequired = false,

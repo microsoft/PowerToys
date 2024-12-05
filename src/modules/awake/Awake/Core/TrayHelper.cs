@@ -94,7 +94,7 @@ namespace Awake.Core
                     {
                         WndClassEx wcex = new()
                         {
-                            CbSize = (uint)Marshal.SizeOf(typeof(WndClassEx)),
+                            CbSize = (uint)Marshal.SizeOf<WndClassEx>(),
                             Style = 0,
                             LpfnWndProc = Marshal.GetFunctionPointerForDelegate<Bridge.WndProcDelegate>(WndProc),
                             CbClsExtra = 0,
@@ -188,7 +188,7 @@ namespace Awake.Core
                 {
                     _notifyIconData = new NotifyIconData
                     {
-                        CbSize = Marshal.SizeOf(typeof(NotifyIconData)),
+                        CbSize = Marshal.SizeOf<NotifyIconData>(),
                         HWnd = hWnd,
                         UId = 1000,
                         UFlags = Native.Constants.NIF_ICON | Native.Constants.NIF_TIP | Native.Constants.NIF_MESSAGE,
@@ -201,7 +201,7 @@ namespace Awake.Core
                 {
                     _notifyIconData = new NotifyIconData
                     {
-                        CbSize = Marshal.SizeOf(typeof(NotifyIconData)),
+                        CbSize = Marshal.SizeOf<NotifyIconData>(),
                         HWnd = hWnd,
                         UId = 1000,
                         UFlags = 0,
@@ -268,7 +268,7 @@ namespace Awake.Core
                     Bridge.PostQuitMessage(0);
                     break;
                 case Native.Constants.WM_COMMAND:
-                    int trayCommandsSize = Enum.GetNames(typeof(TrayCommands)).Length;
+                    int trayCommandsSize = Enum.GetNames<TrayCommands>().Length;
 
                     long targetCommandIndex = wParam.ToInt64() & 0xFFFF;
 
