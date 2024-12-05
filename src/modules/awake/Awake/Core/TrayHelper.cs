@@ -165,8 +165,6 @@ namespace Awake.Core
 
         internal static void SetShellIcon(IntPtr hWnd, string text, Icon? icon, TrayIconAction action = TrayIconAction.Add, [CallerMemberName] string callerName = "")
         {
-            Logger.LogInfo($"Attempting to set the shell icon. Invoked by {callerName}.");
-
             if (hWnd != IntPtr.Zero && icon != null)
             {
                 int message = Native.Constants.NIM_ADD;
