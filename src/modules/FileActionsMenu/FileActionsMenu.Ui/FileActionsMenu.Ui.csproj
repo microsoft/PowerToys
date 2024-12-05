@@ -56,6 +56,7 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="System.IO.Hashing" />
+    <!-- This reference is needed, cause it is used in the PowerToys settings used by the PowerToys plugin. Why it is needed here exactly, no idea. -->
     <PackageReference Include="TestableIO.System.IO.Abstractions" />
     <PackageReference Include="WinUIEx" />
     <Manifest Include="$(ApplicationManifest)" />

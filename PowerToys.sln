@@ -10,7 +10,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "runner", "src\runner\runner
 		{17DA04DF-E393-4397-9CF0-84DABE11032E} = {17DA04DF-E393-4397-9CF0-84DABE11032E}
 		{217DF501-135C-4E38-BFC8-99D4821032EA} = {217DF501-135C-4E38-BFC8-99D4821032EA}
 		{2BE46397-4DFA-414C-9BD4-41E4BBF8CB34} = {2BE46397-4DFA-414C-9BD4-41E4BBF8CB34}
-		{3A2398AB-D8F5-49C5-9EA7-483BED398BEC} = {3A2398AB-D8F5-49C5-9EA7-483BED398BEC}
 		{48804216-2A0E-4168-A6D8-9CD068D14227} = {48804216-2A0E-4168-A6D8-9CD068D14227}
 		{51920F1F-C28C-4ADF-8660-4238766796C2} = {51920F1F-C28C-4ADF-8660-4238766796C2}
 		{5CCC8468-DEC8-4D36-99D4-5C891BEBD481} = {5CCC8468-DEC8-4D36-99D4-5C891BEBD481}
@@ -178,7 +177,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
 		Directory.Packages.props = Directory.Packages.props
-		src\Monaco.props = src\Monaco.props
 		Solution.props = Solution.props
 		src\Version.props = src\Version.props
 	EndProjectSection
@@ -299,7 +297,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Telemetry", "Telemetry", "{
 	ProjectSection(SolutionItems) = preProject
 		src\common\Telemetry\ProjectTelemetry.h = src\common\Telemetry\ProjectTelemetry.h
 		src\common\Telemetry\TelemetryBase.cs = src\common\Telemetry\TelemetryBase.cs
-		src\common\Telemetry\TraceBase.h = src\common\Telemetry\TraceBase.h
 		src\common\Telemetry\TraceLoggingDefines.h = src\common\Telemetry\TraceLoggingDefines.h
 	EndProjectSection
 EndProject
