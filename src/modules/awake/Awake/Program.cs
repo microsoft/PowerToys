@@ -4,6 +4,7 @@
 
 using System;
 using System.CommandLine;
+using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
@@ -55,7 +56,6 @@ namespace Awake
             _settingsUtils = new SettingsUtils();
 
             LockMutex = new Mutex(true, Core.Constants.AppName, out bool instantiated);
-            AppDomain.CurrentDomain.ProcessExit += (_, _) => TrayHelper.RunOnMainThread(() => LockMutex?.ReleaseMutex());
 
             Logger.InitializeLogger(Path.Combine("\\", Core.Constants.AppName, "Logs"));
 
@@ -64,7 +64,7 @@ namespace Awake
                 string appLanguage = LanguageHelper.LoadLanguage();
                 if (!string.IsNullOrEmpty(appLanguage))
                 {
-                    System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(appLanguage);
+                    Thread.CurrentThread.CurrentUICulture = new CultureInfo(appLanguage);
                 }
             }
             catch (CultureNotFoundException ex)
@@ -145,6 +145,36 @@ namespace Awake
                         IsRequired = false,
                     };
 
+                    timeOption.AddValidator(result =>
+                    {
+                        if (result.Tokens.Count != 0 && !uint.TryParse(result.Tokens[0].Value, out _))
+                        {
+                            const string errorMessage = "Interval in --time-limit could not be parsed correctly. Check that the value is valid and doesn't exceed 4,294,967,295.";
+                            Logger.LogError(errorMessage);
+                            result.ErrorMessage = errorMessage;
+                        }
+                    });
+
+                    pidOption.AddValidator(result =>
+                    {
+                        if (result.Tokens.Count != 0 && !int.TryParse(result.Tokens[0].Value, out _))
+                        {
+                            const string errorMessage = "PID value in --pid could not be parsed correctly. Check that the value is valid and falls within the boundaries of Windows PID process limits.";
+                            Logger.LogError(errorMessage);
+                            result.ErrorMessage = errorMessage;
+                        }
+                    });
+
+                    expireAtOption.AddValidator(result =>
+                    {
+                        if (result.Tokens.Count != 0 && !DateTimeOffset.TryParse(result.Tokens[0].Value, out _))
+                        {
+                            const string errorMessage = "Date and time value in --expire-at could not be parsed correctly. Check that the value is valid date and time. Refer to https://aka.ms/powertoys/awake for format examples.";
+                            Logger.LogError(errorMessage);
+                            result.ErrorMessage = errorMessage;
+                        }
+                    });
+
                     RootCommand? rootCommand =
                     [
                         configOption,
@@ -210,6 +240,7 @@ namespace Awake
             Manager.StartMonitor();
 
             await TrayHelper.InitializeTray(_defaultAwakeIcon, Core.Constants.FullAppName);
+            AppDomain.CurrentDomain.ProcessExit += (_, _) => TrayHelper.RunOnMainThread(() => LockMutex?.ReleaseMutex());
 
             EventWaitHandle eventHandle = new(false, EventResetMode.ManualReset, PowerToys.Interop.Constants.AwakeExitEvent());
             new Thread(() =>

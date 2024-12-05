@@ -215,11 +215,11 @@ namespace Awake.Core
                     else
                     {
                         int errorCode = Marshal.GetLastWin32Error();
-                        Logger.LogInfo($"Could not set the shell icon. Action: {action}, error code: {errorCode}. HIcon handle is {icon?.Handle} and HWnd is {hWnd}");
+                        Logger.LogInfo($"Could not set the shell icon. Action: {action}, error code: {errorCode}. HIcon handle is {icon?.Handle} and HWnd is {hWnd}. Invoked by {callerName}.");
 
                         if (attempt == 3)
                         {
-                            Logger.LogError($"Failed to change tray icon after 3 attempts. Action: {action} and error code: {errorCode}");
+                            Logger.LogError($"Failed to change tray icon after 3 attempts. Action: {action} and error code: {errorCode}. Invoked by {callerName}.");
                             break;
                         }
 
