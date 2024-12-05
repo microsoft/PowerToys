@@ -59,6 +59,7 @@ Appium
 Applicationcan
 APPLICATIONFRAMEHOST
 appmanifest
+appmodel
 APPNAME
 appref
 appsettings
@@ -1135,7 +1136,7 @@ pdo
 pdto
 pdtobj
 pdw
-peb
+Peb
 pef
 PElems
 Pels
