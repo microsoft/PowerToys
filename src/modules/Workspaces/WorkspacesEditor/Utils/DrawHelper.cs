@@ -153,11 +153,7 @@ namespace WorkspacesEditor.Utils
             }
 
             using MemoryStream memory = new();
-            ImageCodecInfo imageCodecInfo = ImageCodecInfo.GetImageEncoders().FirstOrDefault(codec => codec.FormatID == ImageFormat.Png.Guid);
-            EncoderParameters encoderParameters = new(1);
-            encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, 50);
-
-            previewBitmap.Save(memory, imageCodecInfo, encoderParameters);
+            WorkspacesCsharpLibrary.DrawHelper.SaveBitmap(previewBitmap, memory);
 
             memory.Position = 0;
 
@@ -317,11 +313,8 @@ namespace WorkspacesEditor.Utils
 
             using MemoryStream memory = new();
 
-            ImageCodecInfo imageCodecInfo = ImageCodecInfo.GetImageEncoders().FirstOrDefault(codec => codec.FormatID == ImageFormat.Png.Guid);
-            EncoderParameters encoderParameters = new(1);
-            encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, 50);
+            WorkspacesCsharpLibrary.DrawHelper.SaveBitmap(previewBitmap, memory);
 
-            previewBitmap.Save(memory, imageCodecInfo, encoderParameters);
             memory.Position = 0;
 
             BitmapImage bitmapImage = new();
