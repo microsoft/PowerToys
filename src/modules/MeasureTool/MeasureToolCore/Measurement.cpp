@@ -57,7 +57,7 @@ namespace
     }
 }
 
-winrt::hstring Measurement::abbrs[4]{};
+winrt::hstring Measurement::abbreviations[4]{};
 
 inline float Measurement::Width(const Unit units) const
 {
@@ -90,10 +90,10 @@ void Measurement::InitResources()
 {
     auto rm = winrt::ResourceManager{};
     auto mm = rm.MainResourceMap();
-    abbrs[0] = mm.GetValue(L"Resources/MeasurementUnitAbbrPixel").ValueAsString();
-    abbrs[1] = mm.GetValue(L"Resources/MeasurementUnitAbbrInch").ValueAsString();
-    abbrs[2] = mm.GetValue(L"Resources/MeasurementUnitAbbrCentimetre").ValueAsString();
-    abbrs[3] = mm.GetValue(L"Resources/MeasurementUnitAbbrMillimetre").ValueAsString();
+    abbreviations[0] = mm.GetValue(L"Resources/MeasurementUnitAbbrPixel").ValueAsString();
+    abbreviations[1] = mm.GetValue(L"Resources/MeasurementUnitAbbrInch").ValueAsString();
+    abbreviations[2] = mm.GetValue(L"Resources/MeasurementUnitAbbrCentimetre").ValueAsString();
+    abbreviations[3] = mm.GetValue(L"Resources/MeasurementUnitAbbrMillimetre").ValueAsString();
 }
 
 const wchar_t* Measurement::GetUnitAbbreviation(Measurement::Unit units)
@@ -101,13 +101,13 @@ const wchar_t* Measurement::GetUnitAbbreviation(Measurement::Unit units)
     switch (units)
     {
     case Unit::Pixel:
-        return abbrs[0].c_str();
+        return abbreviations[0].c_str();
     case Unit::Inch:
-        return abbrs[1].c_str();
+        return abbreviations[1].c_str();
     case Unit::Centimetre:
-        return abbrs[2].c_str();
+        return abbreviations[2].c_str();
     case Unit::Millimetre:
-        return abbrs[3].c_str();
+        return abbreviations[3].c_str();
     default:
         return L"??";
     }

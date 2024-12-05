@@ -18,7 +18,7 @@ struct Measurement
     D2D1_RECT_F rect = {}; // corners are inclusive
 
     float px2mmRatio = 0;
-    static winrt::hstring abbrs[4]; // Abbreviations of units.
+    static winrt::hstring abbreviations[4]; // Abbreviations of units.
 
     Measurement(const Measurement&) = default;
     Measurement& operator=(const Measurement&) = default;
