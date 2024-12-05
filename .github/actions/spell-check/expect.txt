@@ -155,7 +155,6 @@ CANRENAME
 CAPTUREBLT
 CAPTURECHANGED
 CARETBLINKING
-casues
 CAtl
 cch
 CCHDEVICENAME
@@ -1331,7 +1330,6 @@ restrictedcapabilities
 restrictederrorinfo
 resultlist
 RETURNONLYFSDIRS
-revist
 RGBQUAD
 rgbs
 rgelt
@@ -1393,7 +1391,6 @@ secpol
 SENDCHANGE
 sendinput
 sendvirtualinput
-seperate
 serverside
 SETCONTEXT
 setcursor

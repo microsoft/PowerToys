@@ -1776,7 +1776,7 @@
                                         BorderThickness="1.5"
                                         CornerRadius="{DynamicResource PopupCornerRadius}"
                                         SnapsToDevicePixels="True">
-                                        <!--  Will revist this code while doing performance evaluation for dynamic resources.  -->
+                                        <!--  Will revisit this code while doing performance evaluation for dynamic resources.  -->
                                         <Border.RenderTransform>
                                             <TranslateTransform />
                                         </Border.RenderTransform>
@@ -4133,7 +4133,7 @@
     <Style x:Key="DefaultPageStyle" TargetType="{x:Type Page}">
         <Setter Property="Foreground" Value="{DynamicResource PageForeground}" />
         <Setter Property="Background" Value="{DynamicResource PageBackground}" />
-        <!--  The Display option casues a large aliasing effect  -->
+        <!--  The Display option causes a large aliasing effect  -->
         <!-- <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" /> -->
         <Setter Property="Focusable" Value="False" />
         <Setter Property="SnapsToDevicePixels" Value="True" />
@@ -4380,8 +4380,8 @@
                                     Stroke="{DynamicResource RadioButtonOuterEllipseStroke}"
                                     StrokeThickness="{StaticResource RadioButtonStrokeThickness}"
                                     UseLayoutRounding="False" />
-                                <!--  A seperate element is added since the two orthogonal state groups that cannot touch the same property  -->
-                                <Ellipse
+								<!--  A separate element is added since the two orthogonal state groups cannot touch the same property -->
+								<Ellipse
                                     x:Name="CheckOuterEllipse"
                                     Width="20"
                                     Height="20"
