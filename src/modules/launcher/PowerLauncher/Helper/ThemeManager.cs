@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Windows;
+using System.Windows.Media;
 using Microsoft.Win32;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.UserSettings;
@@ -59,6 +60,14 @@ namespace PowerLauncher.Helper
                     Source = new Uri(themeString, UriKind.Absolute),
                 };
                 _mainWindow.Resources.MergedDictionaries.Add(fluentThemeDictionary);
+                if (Common.UI.OSVersionHelper.IsWindows11())
+                {
+                    // Apply background only on Windows 10
+                    _mainWindow.Background = new SolidColorBrush
+                    {
+                        Color = theme is ManagedCommon.Theme.Dark ? (Color)ColorConverter.ConvertFromString("#202020") : (Color)ColorConverter.ConvertFromString("#fafafa"),
+                    };
+                }
             }
             else
             {

@@ -28,9 +28,6 @@
     WindowStyle="None"
     mc:Ignorable="d">
     <Grid x:Name="RootGrid" MouseDown="OnMouseDown">
-        <Grid.Background>
-            <SolidColorBrush Opacity="0.8" Color="{DynamicResource ApplicationBackgroundColor}" />
-        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
