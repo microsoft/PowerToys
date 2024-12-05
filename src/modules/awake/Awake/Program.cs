@@ -266,7 +266,7 @@ namespace Awake
                 {
                     Logger.LogInfo($"Bound to target process: {targetPid}");
 
-                    Manager.SetIndefiniteKeepAwake(displayOn);
+                    Manager.SetIndefiniteKeepAwake(displayOn, targetPid);
 
                     RunnerHelper.WaitForPowerToysRunner(targetPid, () =>
                     {

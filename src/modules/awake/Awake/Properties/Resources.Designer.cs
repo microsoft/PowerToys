@@ -286,6 +286,15 @@ namespace Awake.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Bound To.
+        /// </summary>
+        internal static string AWAKE_TRAY_TEXT_PID_BINDING {
+            get {
+                return ResourceManager.GetString("AWAKE_TRAY_TEXT_PID_BINDING", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Interval.
         /// </summary>
         internal static string AWAKE_TRAY_TEXT_TIMED {

@@ -140,10 +140,8 @@ namespace Awake.Core
             Logger.LogInfo("Instantiating of new token source and thread token completed.");
         }
 
-        internal static void SetIndefiniteKeepAwake(bool keepDisplayOn = false, [CallerMemberName] string callerName = "")
+        internal static void SetIndefiniteKeepAwake(bool keepDisplayOn = false, int processId = 0, [CallerMemberName] string callerName = "")
         {
-            Logger.LogInfo($"Indefinite keep-awake invoked by {callerName}.");
-
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeIndefinitelyKeepAwakeEvent());
 
             CancelExistingThread();
@@ -170,13 +168,21 @@ namespace Awake.Core
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError($"Failed to handle indefinite keep awake command: {ex.Message}");
+                    Logger.LogError($"Failed to handle indefinite keep awake command invoked by {callerName}: {ex.Message}");
                 }
             }
 
-            Logger.LogInfo($"Indefinite keep-awake starting...");
+            Logger.LogInfo($"Indefinite keep-awake starting, invoked by {callerName}...");
 
-            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_INDEFINITE}]", _indefiniteIcon, TrayIconAction.Update);
+            string processText = processId == 0
+                ? string.Empty
+                : $" - {Resources.AWAKE_TRAY_TEXT_PID_BINDING} {processId}";
+
+            TrayHelper.SetShellIcon(
+                TrayHelper.HiddenWindowHandle,
+                $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_INDEFINITE}{processText}]",
+                _indefiniteIcon,
+                TrayIconAction.Update);
 
             _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
         }
