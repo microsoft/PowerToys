@@ -2,8 +2,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:core="clr-namespace:System;assembly=mscorlib">
-    <SolidColorBrush x:Key="TextPlaceholderColorBrush" 
-                 Color="Gray" />
+    <SolidColorBrush x:Key="TextPlaceholderColorBrush" Color="Gray" />
     <Style
         x:Key="CaptionTextBlockStyle"
         BasedOn="{StaticResource {x:Type TextBlock}}"
@@ -57,9 +56,7 @@
                             <Grid
                                 Margin="{TemplateBinding Padding}"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
-                               
-                            </Grid>
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                         </Border>
                         <!--  The Accent Border is a separate element so that changes to the border thickness do not affect the position of the element  -->
                         <Border

@@ -116,12 +116,12 @@
             FontSize="{DynamicResource TitleFontSize}"
             Foreground="{DynamicResource TextPlaceholderColorBrush}" />
         <TextBlock
+            Grid.Column="0"
+            Margin="10,7,0,0"
             AutomationProperties.Name="{x:Static p:Resources.SearchIcon}"
+            FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
             FontSize="20"
             Foreground="{DynamicResource TextPlaceholderColorBrush}"
-            FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-            Text="&#xE094;"
-            Grid.Column="0"
-            Margin="10,7,0,0" />
+            Text="&#xE094;" />
     </Grid>
 </UserControl>

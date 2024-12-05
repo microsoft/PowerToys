@@ -30,7 +30,7 @@
     <Grid x:Name="RootGrid" MouseDown="OnMouseDown">
         <!--  We set the background here because the Acrylic can be too translucent / background too bright on Light theme  -->
         <Grid.Background>
-            <SolidColorBrush Opacity="0.8"/>
+            <SolidColorBrush Opacity="0.8" Color="{DynamicResource ApplicationBackgroundColor}"/>
         </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -138,6 +138,9 @@
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding EscCommand}" />
         <KeyBinding Key="Enter" Command="{Binding OpenResultWithKeyboardCommand}" />
-        <KeyBinding Key="F4" Command="{Binding IgnoreCommand}" Modifiers="Alt" />
+        <KeyBinding
+            Key="F4"
+            Command="{Binding IgnoreCommand}"
+            Modifiers="Alt" />
     </Window.InputBindings>
 </Window>
