@@ -277,6 +277,15 @@ namespace Awake.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Keep display on.
+        /// </summary>
+        internal static string AWAKE_TRAY_TEXT_KEEP_DISPLAY_ON {
+            get {
+                return ResourceManager.GetString("AWAKE_TRAY_TEXT_KEEP_DISPLAY_ON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Passive.
         /// </summary>
         internal static string AWAKE_TRAY_TEXT_OFF {

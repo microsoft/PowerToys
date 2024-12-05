@@ -212,4 +212,8 @@
     <value>Bound To</value>
     <comment>Describes the process ID Awake is bound to when running.</comment>
   </data>
+  <data name="AWAKE_TRAY_TEXT_KEEP_DISPLAY_ON" xml:space="preserve">
+    <value>Keep display on</value>
+    <comment>Used to label whether the display is on in the tray.</comment>
+  </data>
 </root>

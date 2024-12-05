@@ -31,6 +31,7 @@ The build ID moniker is made up of two components - a reference to a [Halo](http
 - Updated the tray initialization logic, making sure we wait for it to be properly created before setting icons.
 - Expanded logging capabilities to track invoking functions.
 - Added command validation logic to make sure that incorrect command line arguments display an error.
+- Display state now shown in the tray tooltip.
 
 ### `PROMETHEAN_09082024` (September 8, 2024)
 

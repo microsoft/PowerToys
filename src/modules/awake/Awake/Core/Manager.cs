@@ -180,7 +180,7 @@ namespace Awake.Core
 
             TrayHelper.SetShellIcon(
                 TrayHelper.HiddenWindowHandle,
-                $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_INDEFINITE}{processText}]",
+                $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_INDEFINITE}{processText}]\n{Resources.AWAKE_TRAY_TEXT_KEEP_DISPLAY_ON}: {keepDisplayOn}",
                 _indefiniteIcon,
                 TrayIconAction.Update);
 
@@ -229,7 +229,7 @@ namespace Awake.Core
                 Logger.LogInfo($"Starting expirable log for {expireAt}");
                 _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
-                TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_EXPIRATION} - {expireAt}]", _expirableIcon, TrayIconAction.Update);
+                TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_EXPIRATION} - {expireAt}]\n{Resources.AWAKE_TRAY_TEXT_KEEP_DISPLAY_ON}: {keepDisplayOn}", _expirableIcon, TrayIconAction.Update);
 
                 Observable.Timer(expireAt - DateTimeOffset.Now).Subscribe(
                 _ =>
@@ -300,7 +300,7 @@ namespace Awake.Core
 
             _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
-            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}]", _timedIcon, TrayIconAction.Update);
+            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}]\n{Resources.AWAKE_TRAY_TEXT_KEEP_DISPLAY_ON}: {keepDisplayOn}", _timedIcon, TrayIconAction.Update);
 
             ulong desiredDuration = (ulong)seconds * 1000;
             ulong targetDuration = Math.Min(desiredDuration, uint.MaxValue - 1) / 1000;
