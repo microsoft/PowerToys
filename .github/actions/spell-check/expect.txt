@@ -155,7 +155,6 @@ CANRENAME
 CAPTUREBLT
 CAPTURECHANGED
 CARETBLINKING
-casues
 CAtl
 cch
 CCHDEVICENAME
@@ -502,8 +501,6 @@ Filterx
 findfast
 FIXEDFILEINFO
 flac
-fluentcontrols
-fluentui
 flyouts
 FMask
 FOF
@@ -593,7 +590,6 @@ HIBYTE
 hicon
 HIDEWINDOW
 Hif
-Highcontrast
 HIMAGELIST
 himl
 hinst
@@ -1331,7 +1327,6 @@ restrictedcapabilities
 restrictederrorinfo
 resultlist
 RETURNONLYFSDIRS
-revist
 RGBQUAD
 rgbs
 rgelt
@@ -1393,7 +1388,6 @@ secpol
 SENDCHANGE
 sendinput
 sendvirtualinput
-seperate
 serverside
 SETCONTEXT
 setcursor

@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:base="clr-namespace:System.Windows;assembly=WindowsBase"
     xmlns:controls="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
-    xmlns:fluentcontrols="clr-namespace:Fluent.Controls"
+    xmlns:fluentControls="clr-namespace:Fluent.Controls"
     xmlns:framework="clr-namespace:MS.Internal;assembly=PresentationFramework"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:system="clr-namespace:System;assembly=System.Runtime"
@@ -107,7 +107,7 @@
         2.5 controls should not depends on brushes
         https://github.com/microsoft/microsoft-ui-xaml/blob/main/dev/CommonStyles/Common_themeresources_any.xaml
     -->
-    <!--  Highcontrast theme  -->
+    <!--  HighContrast theme  -->
     <DynamicResource x:Key="SystemColorWindowTextColor" ResourceKey="{x:Static SystemColors.WindowTextColorKey}" />
     <DynamicResource x:Key="SystemColorWindowColor" ResourceKey="{x:Static SystemColors.WindowColorKey}" />
     <DynamicResource x:Key="SystemColorHighlightTextColor" ResourceKey="{x:Static SystemColors.HighlightTextColorKey}" />
@@ -1776,7 +1776,7 @@
                                         BorderThickness="1.5"
                                         CornerRadius="{DynamicResource PopupCornerRadius}"
                                         SnapsToDevicePixels="True">
-                                        <!--  Will revist this code while doing performance evaluation for dynamic resources.  -->
+                                        <!--  Will revisit this code while doing performance evaluation for dynamic resources.  -->
                                         <Border.RenderTransform>
                                             <TranslateTransform />
                                         </Border.RenderTransform>
@@ -2529,7 +2529,7 @@
             </Trigger>
         </Style.Triggers>
     </Style>
-    <fluentcontrols:FallbackBrushConverter x:Key="FallbackBrushConverter" />
+    <fluentControls:FallbackBrushConverter x:Key="FallbackBrushConverter" />
     <!-- <Color x:Key="FallbackColor">#FFFF0000</Color> -->
     <Thickness x:Key="DataGridCheckBoxPadding">11,5,11,6</Thickness>
     <Thickness x:Key="DataGridCheckBoxBorderThemeThickness">1</Thickness>
@@ -2883,7 +2883,7 @@
     <Thickness x:Key="ExpanderPadding">11,11,11,11</Thickness>
     <Thickness x:Key="ExpanderBorderThemeThickness">1</Thickness>
     <system:Double x:Key="ExpanderChevronSize">12.0</system:Double>
-    <fluentcontrols:AnimationFactorToValueConverter x:Key="AnimationFactorToValueConverter" />
+    <fluentControls:AnimationFactorToValueConverter x:Key="AnimationFactorToValueConverter" />
     <system:String x:Key="ExpanderChevronUpGlyph"></system:String>
     <system:String x:Key="ExpanderChevronDownGlyph"></system:String>
     <system:String x:Key="ExpanderChevronLeftGlyph"></system:String>
@@ -4133,7 +4133,7 @@
     <Style x:Key="DefaultPageStyle" TargetType="{x:Type Page}">
         <Setter Property="Foreground" Value="{DynamicResource PageForeground}" />
         <Setter Property="Background" Value="{DynamicResource PageBackground}" />
-        <!--  The Display option casues a large aliasing effect  -->
+        <!--  The Display option causes a large aliasing effect  -->
         <!-- <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" /> -->
         <Setter Property="Focusable" Value="False" />
         <Setter Property="SnapsToDevicePixels" Value="True" />
@@ -4380,7 +4380,7 @@
                                     Stroke="{DynamicResource RadioButtonOuterEllipseStroke}"
                                     StrokeThickness="{StaticResource RadioButtonStrokeThickness}"
                                     UseLayoutRounding="False" />
-                                <!--  A seperate element is added since the two orthogonal state groups that cannot touch the same property  -->
+                                <!--  A separate element is added since the two orthogonal state groups that cannot touch the same property  -->
                                 <Ellipse
                                     x:Name="CheckOuterEllipse"
                                     Width="20"
@@ -4403,7 +4403,7 @@
                                         <ScaleTransform />
                                     </Ellipse.RenderTransform>
                                 </Ellipse>
-                                <!--  A seperate element is added since the two orthogonal state groups that cannot touch the same property  -->
+                                <!--  A separate element is added since the two orthogonal state groups that cannot touch the same property  -->
                                 <Border
                                     x:Name="PressedCheckGlyph"
                                     Width="4"
