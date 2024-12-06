@@ -39,7 +39,7 @@
                                         <Setter Property="Foreground" Value="Transparent" />
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding Path=Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
-                                                <Setter Property="Foreground" Value="{DynamicResource TextPlaceholderColorBrush}" />
+                                                <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForeground}" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -114,14 +114,14 @@
             x:FieldModifier="public"
             Canvas.ZIndex="-1"
             FontSize="{DynamicResource TitleFontSize}"
-            Foreground="{DynamicResource TextPlaceholderColorBrush}" />
+            Foreground="{DynamicResource TextControlPlaceholderForeground}" />
         <TextBlock
             Grid.Column="0"
             Margin="10,7,0,0"
             AutomationProperties.Name="{x:Static p:Resources.SearchIcon}"
             FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
             FontSize="20"
-            Foreground="{DynamicResource TextPlaceholderColorBrush}"
+            Foreground="{DynamicResource TextControlPlaceholderForeground}"
             Text="&#xE094;" />
     </Grid>
 </UserControl>

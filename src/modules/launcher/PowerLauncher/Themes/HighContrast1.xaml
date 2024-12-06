@@ -6,14 +6,12 @@
     xmlns:system="clr-namespace:System;assembly=System.Runtime"
     mc:Ignorable="options">
 
-    <DynamicResource x:Key="SystemColorGrayTextColor" ResourceKey="{x:Static SystemColors.GrayTextColorKey}" />
-    <SolidColorBrush x:Key="SubtleFillColorTertiaryBrush" Color="{StaticResource SystemColorGrayTextColor}" />
-    <SolidColorBrush x:Key="ControlAltFillColorQuarternaryBrush" Color="{StaticResource SystemColorGrayTextColor}" />
-    <!--  Metadata  -->
+	<Color x:Key="ApplicationBackgroundColor">#505b5e</Color>
+	<!--  Metadata  -->
     <system:String x:Key="Theme.Name">HighContrast.Accent2</system:String>
     <system:String x:Key="Theme.Origin">PowerToysRun</system:String>
     <system:String x:Key="Theme.DisplayName">Accent2 (HighContrast)</system:String>
     <system:String x:Key="Theme.BaseColorScheme">HighContrast</system:String>
     <system:String x:Key="Theme.ColorScheme">Accent2</system:String>
-    <Color x:Key="Theme.PrimaryAccentColor">White</Color>
+	<Color x:Key="Theme.PrimaryAccentColor">White</Color>
 </ResourceDictionary>

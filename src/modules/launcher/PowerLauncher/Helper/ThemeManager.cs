@@ -50,7 +50,10 @@ namespace PowerLauncher.Helper
         private void SetSystemTheme(ManagedCommon.Theme theme)
         {
             _mainWindow.Resources.MergedDictionaries.Clear();
-
+            _mainWindow.Resources.MergedDictionaries.Add(new ResourceDictionary
+            {
+                Source = new Uri("Styles/Styles.xaml", UriKind.Relative),
+            });
             if (theme is ManagedCommon.Theme.Dark or ManagedCommon.Theme.Light)
             {
                 string themeString = theme == ManagedCommon.Theme.Light ? "pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.Light.xaml"
@@ -60,6 +63,7 @@ namespace PowerLauncher.Helper
                     Source = new Uri(themeString, UriKind.Absolute),
                 };
                 _mainWindow.Resources.MergedDictionaries.Add(fluentThemeDictionary);
+                _mainWindow.Background = null;
                 if (!Common.UI.OSVersionHelper.IsWindows11())
                 {
                     // Apply background only on Windows 10
@@ -76,25 +80,29 @@ namespace PowerLauncher.Helper
                 {
                     Source = new Uri("Styles/FluentHC.xaml", UriKind.Relative),
                 });
+                string styleThemeString = theme switch
+                {
+                    ManagedCommon.Theme.Light => "Themes/Light.xaml",
+                    ManagedCommon.Theme.Dark => "Themes/Dark.xaml",
+                    ManagedCommon.Theme.HighContrastOne => "Themes/HighContrast1.xaml",
+                    ManagedCommon.Theme.HighContrastTwo => "Themes/HighContrast2.xaml",
+                    ManagedCommon.Theme.HighContrastWhite => "Themes/HighContrastWhite.xaml",
+                    _ => "Themes/HighContrastBlack.xaml",
+                };
+                _mainWindow.Resources.MergedDictionaries.Add(new ResourceDictionary
+                {
+                    Source = new Uri(styleThemeString, UriKind.Relative),
+                });
+                if (Common.UI.OSVersionHelper.IsWindows11())
+                {
+                    // Apply background only on Windows 11 to keep the same style as WPFUI
+                    _mainWindow.Background = new SolidColorBrush
+                    {
+                        Color = (Color)_mainWindow.FindResource("ApplicationBackgroundColor"), // Use your DynamicResource key here
+                    };
+                }
             }
 
-            _mainWindow.Resources.MergedDictionaries.Add(new ResourceDictionary
-            {
-                Source = new Uri("Styles/Styles.xaml", UriKind.Relative),
-            });
-            string styleThemeString = theme switch
-            {
-                ManagedCommon.Theme.Light => "Themes/Light.xaml",
-                ManagedCommon.Theme.Dark => "Themes/Dark.xaml",
-                ManagedCommon.Theme.HighContrastOne => "Themes/HighContrast1.xaml",
-                ManagedCommon.Theme.HighContrastTwo => "Themes/HighContrast2.xaml",
-                ManagedCommon.Theme.HighContrastWhite => "Themes/HighContrastWhite.xaml",
-                _ => "Themes/HighContrastBlack.xaml",
-            };
-            _mainWindow.Resources.MergedDictionaries.Add(new ResourceDictionary
-            {
-                Source = new Uri(styleThemeString, UriKind.Relative),
-            });
             ImageLoader.UpdateIconPath(theme);
             ThemeChanged(_currentTheme, theme);
             _currentTheme = theme;
