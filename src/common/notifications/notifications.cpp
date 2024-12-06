@@ -4,7 +4,7 @@
 #include "utils/com_object_factory.h"
 #include "utils/window.h"
 
-#include <unknwn.h>
+#include <Unknwn.h>
 #include <winrt/base.h>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Data.Xml.Dom.h>

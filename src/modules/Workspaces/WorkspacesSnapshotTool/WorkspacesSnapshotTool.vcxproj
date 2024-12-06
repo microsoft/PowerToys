@@ -130,12 +130,10 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="PwaHelper.cpp" />
     <ClCompile Include="SnapshotUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="PwaHelper.h" />
     <ClInclude Include="resource.base.h" />
     <ClInclude Include="SnapshotUtils.h" />
   </ItemGroup>
