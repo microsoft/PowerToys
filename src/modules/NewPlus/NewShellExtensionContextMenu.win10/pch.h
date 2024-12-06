@@ -21,7 +21,7 @@
 #include <wrl.h>
 #include <wrl/module.h>
 #include <wrl/client.h>
-#include <unknwn.h>
+#include <Unknwn.h>
 using namespace Microsoft::WRL;
 
 // PowerToys project common
