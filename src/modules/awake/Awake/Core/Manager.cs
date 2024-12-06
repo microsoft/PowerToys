@@ -214,7 +214,7 @@ namespace Awake.Core
                         currentSettings.Properties.KeepDisplayOn = keepDisplayOn;
                         ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
 
-                        // We return here because when the settings are save, they will be automatically
+                        // We return here because when the settings are saved, they will be automatically
                         // processed. That means that when they are processed, the indefinite keep-awake will kick-in properly
                         // and we avoid double execution.
                         return;
@@ -260,7 +260,7 @@ namespace Awake.Core
                         currentSettings.Properties.ExpirationDateTime = expireAt;
                         ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
 
-                        // We return here because when the settings are save, they will be automatically
+                        // We return here because when the settings are saved, they will be automatically
                         // processed. That means that when they are processed, the expirable keep-awake will kick-in properly
                         // and we avoid double execution.
                         return;
@@ -338,7 +338,7 @@ namespace Awake.Core
                         currentSettings.Properties.IntervalMinutes = remainingMinutes;
                         ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
 
-                        // We return here because when the settings are save, they will be automatically
+                        // We return here because when the settings are saved, they will be automatically
                         // processed. That means that when they are processed, the timed keep-awake will kick-in properly
                         // and we avoid double execution.
                         return;
@@ -492,7 +492,7 @@ namespace Awake.Core
                         currentSettings.Properties.Mode = AwakeMode.PASSIVE;
                         ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
 
-                        // We return here because when the settings are save, they will be automatically
+                        // We return here because when the settings are saved, they will be automatically
                         // processed. That means that when they are processed, the passive keep-awake will kick-in properly
                         // and we avoid double execution.
                         return;
