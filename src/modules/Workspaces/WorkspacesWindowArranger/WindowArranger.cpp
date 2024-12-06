@@ -317,7 +317,7 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
     }
 }
 
-void WindowArranger::processWindows(bool processAll)
+bool WindowArranger::processWindows(bool processAll)
 {
     bool processedAnyWindow = false;
     std::vector<HWND> windows = WindowEnumerator::Enumerate(WindowFilter::Filter);
