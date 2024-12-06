@@ -16,14 +16,14 @@ namespace Microsoft.CmdPal.Ext.WindowsTerminal;
 
 public partial class WindowsTerminalCommandsProvider : CommandProvider
 {
-    private readonly TerminalTopLevelListItem _terminalCommand;
+    private readonly TerminalTopLevelCommandItem _terminalCommand;
     private readonly SettingsManager _settingsManager = new();
 
     public WindowsTerminalCommandsProvider()
     {
         DisplayName = Resources.extension_name;
 
-        _terminalCommand = new TerminalTopLevelListItem(_settingsManager);
+        _terminalCommand = new TerminalTopLevelCommandItem(_settingsManager);
         _terminalCommand.MoreCommands = [new CommandContextItem(new SettingsPage(_settingsManager))];
     }
 

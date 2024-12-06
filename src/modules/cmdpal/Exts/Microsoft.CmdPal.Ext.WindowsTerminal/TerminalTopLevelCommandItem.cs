@@ -13,9 +13,9 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.WindowsTerminal;
 
-public partial class TerminalTopLevelListItem : CommandItem
+public partial class TerminalTopLevelCommandItem : CommandItem
 {
-    public TerminalTopLevelListItem(SettingsManager settingsManager)
+    public TerminalTopLevelCommandItem(SettingsManager settingsManager)
         : base(new ProfilesListPage(settingsManager.GetSettings()))
     {
         Icon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory.ToString(), "Images\\WindowsTerminal.dark.png"));

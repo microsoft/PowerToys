@@ -5,30 +5,53 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
+using Microsoft.CmdPal.Ext.Shell.Properties;
 using Microsoft.CmdPal.Extensions.Helpers;
 
-#nullable enable
-
-namespace Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
+namespace Microsoft.CmdPal.Ext.Shell.Helpers;
 
 public class SettingsManager
 {
     private readonly string _filePath;
     private readonly Settings _settings = new();
 
-    private readonly ToggleSetting _showHiddenProfiles = new(nameof(ShowHiddenProfiles), Resources.show_hidden_profiles, Resources.show_hidden_profiles, false);
-    private readonly ToggleSetting _openNewTab = new(nameof(OpenNewTab), Resources.open_new_tab, Resources.open_new_tab, false);
-    private readonly ToggleSetting _openQuake = new(nameof(OpenQuake), Resources.open_quake, Resources.open_quake_description, false);
+    private readonly List<ChoiceSetSetting.Choice> _choices = new()
+    {
+        new ChoiceSetSetting.Choice(Resources.find_executable_file_and_run_it, "2"), // idk why but this is how PT Run did it? Maybe ordering matters there
+        new ChoiceSetSetting.Choice(Resources.run_command_in_command_prompt, "0"),
+        new ChoiceSetSetting.Choice(Resources.run_command_in_powershell, "1"),
+        new ChoiceSetSetting.Choice(Resources.run_command_in_powershell_seven, "6"),
+        new ChoiceSetSetting.Choice(Resources.run_command_in_windows_terminal_cmd, "5"),
+        new ChoiceSetSetting.Choice(Resources.run_command_in_windows_terminal_powershell, "3"),
+        new ChoiceSetSetting.Choice(Resources.run_command_in_windows_terminal_powershell_seven, "4"),
+    };
 
-    public bool ShowHiddenProfiles => _showHiddenProfiles.Value;
+    private readonly ToggleSetting _leaveShellOpen = new(nameof(LeaveShellOpen), Resources.leave_shell_open, Resources.leave_shell_open,  false); // TODO -- double check default value
+    private readonly ChoiceSetSetting _shellCommandExecution;
 
-    public bool OpenNewTab => _openNewTab.Value;
+    public bool LeaveShellOpen => _leaveShellOpen.Value;
 
-    public bool OpenQuake => _openQuake.Value;
+    public string ShellCommandExecution => _shellCommandExecution.Value != null ? _shellCommandExecution.Value : string.Empty;
+
+    public bool RunAsAdministrator { get; set; }
+
+    public Dictionary<string, int> Count { get; } = new Dictionary<string, int>();
+
+    public void AddCmdHistory(string cmdName)
+    {
+        if (Count.TryGetValue(cmdName, out var currentCount))
+        {
+            Count[cmdName] = currentCount + 1;
+        }
+        else
+        {
+            Count[cmdName] = 1;
+        }
+    }
 
     private static readonly JsonSerializerOptions _serializerOptions = new()
     {
@@ -45,16 +68,17 @@ public class SettingsManager
         var directory = Path.GetDirectoryName(path) ?? string.Empty;
 
         // now, the state is just next to the exe
-        return Path.Combine(directory, "wt_state.json");
+        return Path.Combine(directory, "shell-state.json");
     }
 
     public SettingsManager()
     {
         _filePath = SettingsJsonPath();
 
-        _settings.Add(_showHiddenProfiles);
-        _settings.Add(_openNewTab);
-        _settings.Add(_openQuake);
+        _shellCommandExecution = new(nameof(ShellCommandExecution), Resources.shell_command_execution, Resources.shell_command_execution_description, _choices);
+
+        _settings.Add(_leaveShellOpen);
+        _settings.Add(_shellCommandExecution);
 
         // Load settings from file upon initialization
         LoadSettings();
