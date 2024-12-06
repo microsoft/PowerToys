@@ -1,6 +1,3 @@
-# FALSE POSITIVES
-## "PackagemanagerWrapper.cs" should be "PackageManagerWrapper.cs"
-## NOTICE.MD > MOZILLA PUBLIC LICENSE v1.1
 aaaa
 abcdefghjkmnpqrstuvxyz
 abgr
@@ -23,7 +20,6 @@ ADDUNDORECORD
 ADifferent
 adml
 admx
-advapi
 advfirewall
 AFeature
 AFFINETRANSFORM
@@ -60,9 +56,9 @@ APPBARDATA
 appdata
 APPEXECLINK
 Appium
-Applicationcan
 APPLICATIONFRAMEHOST
 appmanifest
+appmodel
 APPNAME
 appref
 appsettings
@@ -138,7 +134,6 @@ bmi
 bms
 BNumber
 BODGY
-BOKMAL
 bootstrapper
 BOOTSTRAPPERINSTALLFOLDER
 bostrot
@@ -179,7 +174,6 @@ CCom
 CContext
 CDeclaration
 CDEF
-cdpx
 CElems
 CENTERALIGN
 ceq
@@ -196,7 +190,6 @@ cidl
 cim
 CImage
 cla
-clangformat
 CLASSDC
 CLASSNOTAVAILABLE
 clickable
@@ -218,12 +211,10 @@ CMINVOKECOMMANDINFO
 CMINVOKECOMMANDINFOEX
 CMock
 CMONITORS
-cmpgt
 cmph
 cne
 CNF
 coclass
-codeofconduct
 codereview
 Codespaces
 codicon
@@ -233,7 +224,6 @@ colorformat
 colorhistory
 colorhistorylimit
 COLORKEY
-comctl
 comdef
 comdlg
 comexp
@@ -243,9 +233,6 @@ commctrl
 commdlg
 compmgmt
 COMPOSITIONFULL
-comsupp
-comsuppw
-comsuppwd
 comutil
 CONFIGW
 CONFLICTINGMODIFIERKEY
@@ -267,7 +254,6 @@ countof
 cph
 cplusplus
 CPower
-cppblog
 cppwinrt
 createdump
 CREATEPROCESS
@@ -285,7 +271,6 @@ CSettings
 cso
 CSRW
 CStyle
-CSY
 CTest
 CTEXT
 CTLCOLORSTATIC
@@ -298,7 +283,6 @@ CUSTOMACTIONTEST
 CVal
 cvd
 CVirtual
-cvtepu
 cxfksword
 CXSCREEN
 CXSMICON
@@ -314,7 +298,6 @@ datareader
 datatracker
 dataversion
 Dayof
-Dbghelp
 DBLCLKS
 DBLEPSILON
 DCapture
@@ -409,7 +392,7 @@ DSTINVERT
 DSurface
 DTexture
 DUMMYUNIONNAME
-dutil
+Dutil
 DVASPECT
 DVASPECTINFO
 DVD
@@ -438,22 +421,18 @@ dwrite
 dxgi
 dxgidebug
 dxgiformat
-dxguid
 easeofaccess
 ecount
 EData
 Edid
 EDITKEYBOARD
-editkeyboardwindow
 EDITSHORTCUTS
-editshortcutswindow
 EDITTEXT
 EFile
 ekus
 emmintrin
 Emoji
 ENABLEDELAYEDEXPANSION
-enabledisable
 ENABLEDPOPUP
 ENABLETAB
 ENABLETEMPLATE
@@ -480,11 +459,9 @@ ETDT
 etl
 etw
 eula
-EUQ
 eurochange
 eventlog
 eventvwr
-everytime
 evntrace
 evt
 EWXFORCE
@@ -564,6 +541,7 @@ FZE
 gacutil
 Gaeilge
 Gaidhlig
+GC'ed
 GCLP
 gdi
 gdiplus
@@ -597,12 +575,10 @@ GSM
 gtm
 guiddata
 guiddef
-guidgenerator
 GUITHREADINFO
 GValue
 gwl
 GWLP
-handlekeyboardhookevent
 hangeul
 Hanzi
 Hardlines
@@ -662,6 +638,7 @@ hmodule
 hmonitor
 homljgmgpmcbpjbnjpfijnhipfkiclkd
 HORZRES
+HORZSIZE
 Hostbackdropbrush
 hotkeycontrol
 HOTKEYF
@@ -695,41 +672,28 @@ HWNDNEXT
 HWNDPARENT
 HWNDPREV
 hyjiacan
-IApp
 IBeam
-ICapture
-IClass
 ICONERROR
 ICONLOCATION
-IData
 idc
 IDCANCEL
 IDD
-IDesktop
-IDirect
 idl
 idlist
 IDOK
-IDOn
 IDR
 IDXGI
-IEnum
 ietf
-IExec
 IEXPLORE
 IFACEMETHOD
 IFACEMETHODIMP
 IFile
-IFilter
 IGNOREUNKNOWN
-IGraphics
 iid
 Iindex
-IJson
 Ijwhost
 IKs
 iljxck
-ILogon
 IMAGEHLP
 IMAGERESIZERCONTEXTMENU
 IMAGERESIZEREXT
@@ -743,7 +707,7 @@ Infobar
 INFOEXAMPLE
 Infotip
 INITDIALOG
-initguid
+INITGUID
 INITTOLOGFONTSTRUCT
 inorder
 INPC
@@ -752,7 +716,6 @@ INPUTHARDWARE
 INPUTKEYBOARD
 INPUTLANGCHANGED
 INPUTMOUSE
-inputparser
 INPUTSINK
 INPUTTYPE
 INSTALLDESKTOPSHORTCUT
@@ -773,30 +736,21 @@ INTRESOURCE
 INVALIDARG
 invalidoperatioexception
 ipcmanager
-IPlugin
-IPower
 IPREVIEW
 ipreviewhandlervisualssetfont
-IProperty
-IPublic
 irprops
 isbi
 ISearch
 ISettings
-IShell
 isocpp
 iss
 issecret
 ISSEPARATOR
-ITask
 ith
 ITHUMBNAIL
-ITwoWayPipeMessageIPCManaged
 IUI
 IUnknown
 IUse
-IWbem
-IWeb
 IWIC
 iwr
 IYUV
@@ -818,7 +772,6 @@ keyboardmanagercommon
 KEYBOARDMANAGEREDITOR
 keyboardmanagerstate
 keyboardmanagerui
-keydropdowncontrol
 KEYEVENTF
 KEYIMAGE
 keynum
@@ -830,27 +783,23 @@ kmph
 Knownfolders
 KSPROPERTY
 Kybd
-languagesjson
 lastcodeanalysissucceeded
 Lastdevice
 LASTEXITCODE
 LAYOUTRTL
 lcb
 LCIDTo
-lcl
 Lclean
 Ldone
 Ldr
 ldx
 LEFTSCROLLBAR
 LEFTTEXT
-lego
 LError
 LEVELID
 LExit
 lhwnd
 LIBID
-licate
 LIMITSIZE
 LIMITTEXT
 lindex
@@ -940,7 +889,6 @@ MAKELANGID
 MAKELONG
 MAKELPARAM
 MAKEWPARAM
-makepri
 manifestdependency
 MAPPEDTOSAMEKEY
 MAPTOSAMESHORTCUT
@@ -968,13 +916,11 @@ mfc
 mfidl
 mfobjects
 mfplat
-Mfsensorgroup
 mftransform
 Mgmt
 mic
 midl
 mii
-MIIM
 mindaro
 Minimatch
 Minimizable
@@ -1069,7 +1015,6 @@ NCPAINT
 NCRENDERING
 ndp
 NEEDDISPATCH
-needinfo
 netcoreapp
 netcpl
 netframework
@@ -1087,7 +1032,6 @@ NEWPLUSSHELLEXTENSIONWIN
 newrow
 newsgroups
 NIF
-NLD
 NLog
 NLSTEXT
 NMAKE
@@ -1177,7 +1121,6 @@ oldpath
 oldtheme
 oleaut
 OLECHAR
-onebranch
 opencode
 OPENFILENAME
 opensource
@@ -1239,8 +1182,7 @@ pdo
 pdto
 pdtobj
 pdw
-peb
-pef
+Peb
 PElems
 Pels
 PELSHEIGHT
@@ -1267,7 +1209,6 @@ pinvoke
 pipename
 PKBDLLHOOKSTRUCT
 plib
-PLK
 ploc
 ploca
 plocm
@@ -1318,7 +1259,6 @@ prgms
 pri
 PRINTCLIENT
 printmanagement
-privacystatement
 prm
 proactively
 PROCESSENTRY
@@ -1334,7 +1274,6 @@ projectname
 PROPBAG
 PROPERTYKEY
 propkey
-propsys
 PROPVARIANT
 propvarutil
 PRTL
@@ -1345,7 +1284,6 @@ PSECURITY
 psfgao
 psfi
 PSMODULEPATH
-Psr
 psrm
 psrree
 pstatstg
@@ -1363,7 +1301,7 @@ PTOKEN
 PToy
 ptstr
 pui
-pwa
+PWAs
 pwcs
 PWSTR
 pwsz
@@ -1384,6 +1322,7 @@ RAlt
 Rasterize
 RAWINPUTDEVICE
 RAWINPUTHEADER
+RAWMODE
 RAWPATH
 rbhid
 rclsid
@@ -1430,7 +1369,6 @@ Renamer
 reparented
 reparenting
 reparse
-reportbug
 reportfileaccesses
 requery
 requerying
@@ -1442,7 +1380,6 @@ RESIZETOFIT
 resmimetype
 RESOURCEID
 RESTORETOMAXIMIZED
-restrictedcapabilities
 restrictederrorinfo
 resultlist
 RETURNONLYFSDIRS
@@ -1469,7 +1406,6 @@ Rsp
 rstringalnum
 rstringalpha
 rstringdigit
-Rstrtmgr
 RTB
 RTLREADING
 ruleset
@@ -1478,7 +1414,6 @@ rundll
 rungameid
 RUNLEVEL
 runtimeclass
-runtimeobject
 runtimepack
 runtimes
 ruuid
@@ -1499,7 +1434,7 @@ SCREENFONTS
 screensaver
 screenshots
 scrollviewer
-sddl
+SDDL
 SDKDDK
 sdns
 searchterm
@@ -1508,7 +1443,6 @@ SECONDARYDISPLAY
 secpol
 SELCHANGE
 SENDCHANGE
-sendinput
 sendvirtualinput
 serverside
 SETBUDDYINT
@@ -1533,7 +1467,6 @@ settingsheader
 settingshotkeycontrol
 setvariable
 SETWORKAREA
-setzero
 sfgao
 SFGAOF
 SHACF
@@ -1542,7 +1475,7 @@ sharpkeys
 SHCNE
 SHCNF
 SHCONTF
-shcore
+Shcore
 shellapi
 SHELLDETAILS
 SHELLDLL
@@ -1563,7 +1496,6 @@ shmem
 SHNAMEMAPPING
 shobjidl
 SHORTCUTATLEAST
-shortcutcontrol
 SHORTCUTMAXONEACTIONKEY
 SHORTCUTNOREPEATEDMODIFIER
 SHORTCUTONEACTIONKEY
@@ -1593,7 +1525,6 @@ sigdn
 SIGNINGSCENARIO
 Signtool
 SINGLEKEY
-singlekeyremapcontrol
 sipolicy
 SIZEBOX
 Sizename
@@ -1667,7 +1598,6 @@ STRINGIZE
 stringtable
 stringval
 Strm
-Strmiids
 strret
 strsafe
 strutil
@@ -1711,7 +1641,6 @@ SYSMENU
 SYSTEMAPPS
 SYSTEMMODAL
 SYSTEMTIME
-SYSTEMWOW
 tailwindcss
 tapp
 TApplication
@@ -1724,7 +1653,7 @@ TARGETHEADER
 targetver
 taskkill
 taskschd
-tchar
+TCHAR
 TCIF
 TCITEM
 TCN
@@ -1787,7 +1716,6 @@ traies
 transicc
 TRAYMOUSEMESSAGE
 triaging
-TRK
 trl
 trx
 tsa
@@ -1826,7 +1754,7 @@ uniquifier
 Uniquifies
 unitconverter
 unittests
-unknwn
+Unknwn
 UNLEN
 UNORM
 unregistering
@@ -1848,14 +1776,13 @@ Usb
 USEDEFAULT
 USEFILEATTRIBUTES
 USERDATA
-Userenv
 USESHOWWINDOW
 USESTDHANDLES
 USRDLL
 UType
 uuidv
 uwp
-uxtheme
+Uxtheme
 vabdq
 validmodulename
 valuegenerator
@@ -1878,6 +1805,7 @@ VERIFYCONTEXT
 verrsrc
 VERSIONINFO
 VERTRES
+VERTSIZE
 VFT
 vget
 vgetq
@@ -1921,8 +1849,6 @@ Vtbl
 WANTMAPPINGHANDLE
 WANTPALM
 wbem
-Wbemidl
-wbemuuid
 WBounds
 Wca
 wcautil
@@ -1941,9 +1867,9 @@ webcam
 webpage
 websites
 wekyb
-Wevtapi
 wgpocpl
 WIC
+wifi
 wil
 winapi
 wincodec
@@ -1960,7 +1886,6 @@ WINDOWPOSCHANGED
 WINDOWPOSCHANGING
 windowsapp
 WINDOWSBUILDNUMBER
-Windowscodecs
 windowssearch
 windowssettings
 WINDOWSTYLES
@@ -1971,20 +1896,17 @@ WINEVENT
 winevt
 winexe
 winforms
-winfx
 winget
 wingetcreate
 Winhook
 WINL
 winlogon
 winmd
-winmm
-winnt
+WINNT
 winres
 winrt
 winsdk
 winsdkver
-winspool
 winsta
 winternl
 WINTHRESHOLD
@@ -2011,7 +1933,6 @@ WNDCLASSEXW
 WNDCLASSW
 WNDPROC
 wnode
-workarounds
 WORKSPACESEDITOR
 WORKSPACESLAUNCHER
 WORKSPACESSNAPSHOTTOOL
@@ -2051,7 +1972,6 @@ XElement
 xfd
 XFile
 XIncrement
-XLoc
 XNamespace
 Xoshiro
 XPels

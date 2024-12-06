@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "WorkspacesData.h"
-
 #include <common/SettingsAPI/settings_helpers.h>
 
 #include <workspaces-common/GuidUtils.h>
@@ -157,6 +156,7 @@ namespace WorkspacesData
 
                     result.isMaximized = json.GetNamedBoolean(NonLocalizable::MaximizedID);
                     result.isMinimized = json.GetNamedBoolean(NonLocalizable::MinimizedID);
+
                     result.monitor = static_cast<int>(json.GetNamedNumber(NonLocalizable::MonitorID));
                     if (json.HasKey(NonLocalizable::PositionID))
                     {

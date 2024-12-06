@@ -5,7 +5,7 @@ Contains the executable starting point, initialization code and the list of know
 Contains code for initializing and managing the PowerToy modules. `PowertoyModule` is a RAII-style holder for the `PowertoyModuleIface` pointer, which we got by [invoking module DLL's `powertoy_create` function](https://github.com/microsoft/PowerToys/blob/1760af50c8803588cb575167baae0439af38a9c1/src/runner/powertoy_module.cpp#L13-L24).
 
 #### [`powertoys_events.cpp`](/src/runner/powertoys_events.cpp)
-Contains code that handles the various events listeners, and forwards those events to the PowerToys modules. You can learn more about the current event architecture [here](/doc/devdocs/shared-hooks.md).
+Contains code that handles the various events listeners, and forwards those events to the PowerToys modules. You can learn more about the current event architecture in [shared hooks](/doc/devdocs/shared-hooks.md).
 
 #### [`lowlevel_keyboard_event.cpp`](/src/runner/lowlevel_keyboard_event.cpp)
 Contains code for registering the low level keyboard event hook that listens for keyboard events. Please note that `signal_event` is called from the main thread for this event.

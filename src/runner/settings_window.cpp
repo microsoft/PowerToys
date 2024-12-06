@@ -93,7 +93,7 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                 else if (action == L"restart_maintain_elevation")
                 {
                     // this was added to restart and maintain elevation, which is needed after settings are change from outside the normal process.
-                    // since a normal PostQuitMessage(0) would usually cause this process to save it's in memory settings to disk, we need to
+                    // since a normal PostQuitMessage(0) would usually cause this process to save its in memory settings to disk, we need to
                     // send a PostQuitMessage(1) and check for that on exit, and skip the settings-flush.
                     auto loaded = PTSettingsHelper::load_general_settings();
 
@@ -348,12 +348,12 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     if (UuidCreate(&temp_uuid) == RPC_S_UUID_NO_ADDRESS)
     {
         auto val = get_last_error_message(GetLastError());
-        Logger::warn(L"UuidCreate can not create guid. {}", val.has_value() ? val.value() : L"");
+        Logger::warn(L"UuidCreate cannot create guid. {}", val.has_value() ? val.value() : L"");
     }
     else if (UuidToString(&temp_uuid, reinterpret_cast<RPC_WSTR*>(&uuid_chars)) != RPC_S_OK)
     {
         auto val = get_last_error_message(GetLastError());
-        Logger::warn(L"UuidToString can not convert to string. {}", val.has_value() ? val.value() : L"");
+        Logger::warn(L"UuidToString cannot convert to string. {}", val.has_value() ? val.value() : L"");
     }
 
     if (uuid_chars != nullptr)

@@ -132,7 +132,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         } }.detach();
 
         chdir_current_executable();
-        // Load Powertoys DLLs
+        // Load PowerToys DLLs
 
         std::vector<std::wstring_view> knownModules = {
             L"PowerToys.FancyZonesModuleInterface.dll",

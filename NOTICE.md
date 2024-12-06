@@ -1338,7 +1338,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Xaml.Behaviors.Wpf 1.1.39
 - ModernWpfUI 0.9.4
 - Moq 4.18.4
-- MSTest 3.5.0
+- MSTest 3.6.3
 - NLog.Extensions.Logging 5.3.8
 - NLog.Schema 5.2.8
 - ReverseMarkdown 4.1.0
