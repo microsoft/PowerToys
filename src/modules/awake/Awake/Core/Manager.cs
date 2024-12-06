@@ -210,7 +210,7 @@ namespace Awake.Core
                         currentSettings.Properties.ExpirationDateTime = expireAt;
                         ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
 
-                        // We return here because when the settings are save, they will be automatically
+                        // We return here because when the settings are saved, they will be automatically
                         // processed. That means that when they are processed, the expirable keep-awake will kick-in properly
                         // and we avoid double execution.
                         return;
