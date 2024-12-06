@@ -21,6 +21,9 @@ Pbgra
 WHITEONBLACK
 
 
+# COUNTRIES
+RUS
+
 # FILES
 
 AYUV
@@ -128,6 +131,9 @@ XBUTTONDOWN
 XBUTTONUP
 XDOWN
 
+# Prefix
+pcs
+
 # User32.SYSTEM_METRICS_INDEX.cs
 
 CLEANBOOT
@@ -220,12 +226,21 @@ TABLETPC
 artanh
 arsinh
 arcosh
+roundf
 
 # Linux
 
 dbus
 anypass
+github
 gpg
+https
+ssh
+ubuntu
+workarounds
+
+# For upgrade to check-spelling v0.0.24
+pwa
 
 # .NET
 

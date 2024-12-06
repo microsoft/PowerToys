@@ -34,14 +34,14 @@ name: Spell checking
 #
 #   For background, see: https://github.com/check-spelling/check-spelling/wiki/Feature:-Update-with-deploy-key
 
-# Sarif reporting
+# SARIF reporting
 #
-# Access to Sarif reports is generally restricted (by GitHub) to members of the repository.
+# Access to SARIF reports is generally restricted (by GitHub) to members of the repository.
 #
 # Requires enabling `security-events: write`
 # and configuring the action with `use_sarif: 1`
 #
-#   For information on the feature, see: https://github.com/check-spelling/check-spelling/wiki/Feature:-Sarif-output
+#   For information on the feature, see: https://github.com/check-spelling/check-spelling/wiki/Feature:-SARIF-output
 
 # Minimal workflow structure:
 #
@@ -60,23 +60,23 @@ name: Spell checking
 on:
   push:
     branches:
-    - "**"
+      - "**"
     tags-ignore:
-    - "**"
+      - "**"
   pull_request_target:
     branches:
-    - "**"
+      - "**"
     types:
-    - 'opened'
-    - 'reopened'
-    - 'synchronize'
+      - "opened"
+      - "reopened"
+      - "synchronize"
   issue_comment:
     types:
-    - 'created'
+      - "created"
 
 jobs:
   spelling:
-    name: Spell checking
+    name: Check Spelling
     permissions:
       contents: read
       pull-requests: read
@@ -91,52 +91,59 @@ jobs:
       # note: If you use only_check_changed_files, you do not want cancel-in-progress
       cancel-in-progress: true
     steps:
-    - name: check-spelling
-      id: spelling
-      uses: check-spelling/check-spelling@v0.0.22
-      with:
-        config: .github/actions/spell-check
-        suppress_push_for_open_pull_request: ${{ github.actor != 'dependabot[bot]' && 1 }}
-        checkout: true
-        check_file_names: 1
-        spell_check_this: microsoft/PowerToys@main
-        post_comment: 0
-        use_magic_file: 1
-        warnings: bad-regex,binary-file,deprecated-feature,ignored-expect-variant,large-file,limited-references,no-newline-at-eof,noisy-file,non-alpha-in-dictionary,token-is-substring,unexpected-line-ending,whitespace-in-dictionary,minified-file,unsupported-configuration,no-files-to-check
-        experimental_apply_changes_via_bot: ${{ github.repository_owner != 'microsoft' && 1 }}
-        use_sarif: ${{ (!github.event.pull_request || (github.event.pull_request.head.repo.full_name == github.repository)) && 1 }}
-        extra_dictionary_limit: 20
-        extra_dictionaries:
-          cspell:aws/aws.txt
-          cspell:cpp/src/compiler-clang-attributes.txt
-          cspell:cpp/src/compiler-msvc.txt
-          cspell:cpp/src/lang-keywords.txt
-          cspell:cpp/src/stdlib-c.txt
-          cspell:cpp/src/stdlib-cmath.txt
-          cspell:cpp/src/stdlib-cpp.txt
-          cspell:csharp/csharp.txt
-          cspell:css/dict/css.txt
-          cspell:django/dict/django.txt
-          cspell:dotnet/dict/dotnet.txt
-          cspell:filetypes/filetypes.txt
-          cspell:fullstack/dict/fullstack.txt
-          cspell:golang/dict/go.txt
-          cspell:html/dict/html.txt
-          cspell:java/src/java.txt
-          cspell:java/src/java-terms.txt
-          cspell:k8s/dict/k8s.txt
-          cspell:lorem-ipsum/dictionary.txt
-          cspell:monkeyc/src/monkeyc_keywords.txt
-          cspell:node/dict/node.txt
-          cspell:php/dict/php.txt
-          cspell:powershell/dict/powershell.txt
-          cspell:python/src/common/extra.txt
-          cspell:python/src/python/python.txt
-          cspell:python/src/python/python-lib.txt
-          cspell:scala/dict/scala.txt
-          cspell:software-terms/dict/softwareTerms.txt
-          cspell:swift/src/swift.txt
-          cspell:typescript/dict/typescript.txt
+      - name: check-spelling
+        id: spelling
+        uses: check-spelling/check-spelling@v0.0.24
+        with:
+          config: .github/actions/spell-check
+          suppress_push_for_open_pull_request: ${{ github.actor != 'dependabot[bot]' && 1 }}
+          checkout: true
+          check_file_names: 1
+          spell_check_this: microsoft/PowerToys@main
+          post_comment: 0
+          use_magic_file: 1
+          report-timing: 1
+          warnings: bad-regex,binary-file,deprecated-feature,ignored-expect-variant,large-file,limited-references,no-newline-at-eof,noisy-file,non-alpha-in-dictionary,token-is-substring,unexpected-line-ending,whitespace-in-dictionary,minified-file,unsupported-configuration,no-files-to-check,unclosed-block-ignore-begin,unclosed-block-ignore-end
+          experimental_apply_changes_via_bot: 1
+          use_sarif: ${{ (!github.event.pull_request || (github.event.pull_request.head.repo.full_name == github.repository)) && 1 }}
+          check_extra_dictionaries: ""
+          dictionary_source_prefixes: >
+            {
+            "cspell": "https://raw.githubusercontent.com/check-spelling/cspell-dicts/v20241114/dictionaries/"
+            }
+          extra_dictionaries: |
+            cspell:software-terms/softwareTerms.txt
+            cspell:cpp/stdlib-cpp.txt
+            cspell:filetypes/filetypes.txt
+            cspell:cpp/stdlib-c.txt
+            cspell:lorem-ipsum/dictionary.txt
+            cspell:python/python/python-lib.txt
+            cspell:php/php.txt
+            cspell:fullstack/fullstack.txt
+            cspell:dotnet/dotnet.txt
+            cspell:swift/swift.txt
+            cspell:node/node.txt
+            cspell:dart/dart.txt
+            cspell:django/django.txt
+            cspell:python/python/python.txt
+            cspell:powershell/powershell.txt
+            cspell:npm/npm.txt
+            cspell:golang/go.txt
+            cspell:cpp/compiler-msvc.txt
+            cspell:csharp/csharp.txt
+            cspell:html/html.txt
+            cspell:java/java.txt
+            cspell:aws/aws.txt
+            cspell:typescript/typescript.txt
+            cspell:cpp/lang-keywords.txt
+            cspell:python/common/extra.txt
+            cspell:scala/scala.txt
+            cspell:shell/shell-all-words.txt
+            cspell:css/css.txt
+            cspell:r/r.txt
+            cspell:java/java-terms.txt
+            cspell:cpp/stdlib-cerrno.txt
+            cspell:k8s/k8s.txt
 
   comment-push:
     name: Report (Push)
@@ -144,16 +151,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: spelling
     permissions:
+      actions: read
       contents: write
     if: (success() || failure()) && needs.spelling.outputs.followup && github.event_name == 'push'
     steps:
-    - name: comment
-      uses: check-spelling/check-spelling@v0.0.22
-      with:
-        config: .github/actions/spell-check
-        checkout: true
-        spell_check_this: microsoft/PowerToys@main
-        task: ${{ needs.spelling.outputs.followup }}
+      - name: comment
+        uses: check-spelling/check-spelling@v0.0.24
+        with:
+          config: .github/actions/spell-check
+          checkout: true
+          spell_check_this: microsoft/PowerToys@main
+          task: ${{ needs.spelling.outputs.followup }}
 
   comment-pr:
     name: Report (PR)
@@ -161,18 +169,19 @@ jobs:
     runs-on: ubuntu-latest
     needs: spelling
     permissions:
+      actions: read
       contents: read
       pull-requests: write
     if: (success() || failure()) && needs.spelling.outputs.followup && contains(github.event_name, 'pull_request')
     steps:
-    - name: comment
-      uses: check-spelling/check-spelling@v0.0.22
-      with:
-        config: .github/actions/spell-check
-        checkout: true
-        spell_check_this: check-spelling/spell-check-this@prerelease
-        task: ${{ needs.spelling.outputs.followup }}
-        experimental_apply_changes_via_bot: ${{ github.repository_owner != 'microsoft' && 1 }}
+      - name: comment
+        uses: check-spelling/check-spelling@v0.0.24
+        with:
+          config: .github/actions/spell-check
+          checkout: true
+          spell_check_this: check-spelling/spell-check-this@prerelease
+          task: ${{ needs.spelling.outputs.followup }}
+          experimental_apply_changes_via_bot: ${{ github.repository_owner != 'microsoft' && 1 }}
 
   update:
     name: Update PR
@@ -182,18 +191,19 @@ jobs:
       actions: read
     runs-on: ubuntu-latest
     if: ${{
-        github.repository_owner != 'microsoft' &&
-        github.event_name == 'issue_comment' &&
-        github.event.issue.pull_request &&
-        contains(github.event.comment.body, '@check-spelling-bot apply')
+      github.repository_owner != 'microsoft' &&
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '@check-spelling-bot apply') &&
+      contains(github.event.comment.body, 'https://')
       }}
     concurrency:
       group: spelling-update-${{ github.event.issue.number }}
       cancel-in-progress: false
     steps:
-    - name: apply spelling updates
-      uses: check-spelling/check-spelling@v0.0.22
-      with:
-        experimental_apply_changes_via_bot: ${{ github.repository_owner != 'microsoft' && 1 }}
-        checkout: true
-        ssh_key: "${{ secrets.CHECK_SPELLING }}"
+      - name: apply spelling updates
+        uses: check-spelling/check-spelling@v0.0.24
+        with:
+          experimental_apply_changes_via_bot: ${{ github.repository_owner != 'microsoft' && 1 }}
+          checkout: true
+          ssh_key: "${{ secrets.CHECK_SPELLING }}"

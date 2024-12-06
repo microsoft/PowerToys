@@ -32,6 +32,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         ~Core();
         void Close();
 
+        void InitResources();
         void StartBoundsTool();
         void StartMeasureTool(const bool horizontal, const bool vertical);
         void SetToolCompletionEvent(ToolSessionCompleted sessionCompletedTrigger);
@@ -45,7 +46,7 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
         wil::shared_event _stopMouseCaptureThreadSignal;
         std::thread _mouseCaptureThread;
         std::vector<std::thread> _screenCaptureThreads;
-        
+
         std::vector<std::unique_ptr<OverlayUIState>> _overlayUIStates;
         Serialized<MeasureToolState> _measureToolState;
         BoundsToolState _boundsToolState;

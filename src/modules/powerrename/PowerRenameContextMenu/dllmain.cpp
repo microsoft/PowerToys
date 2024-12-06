@@ -218,12 +218,12 @@ private:
             if (UuidCreate(&temp_uuid) == RPC_S_UUID_NO_ADDRESS)
             {
                 auto val = get_last_error_message(GetLastError());
-                Logger::warn(L"UuidCreate can not create guid. {}", val.has_value() ? val.value() : L"");
+                Logger::warn(L"UuidCreate cannot create guid. {}", val.has_value() ? val.value() : L"");
             }
             else if (UuidToString(&temp_uuid, reinterpret_cast<RPC_WSTR*>(& uuid_chars)) != RPC_S_OK)
             {
                 auto val = get_last_error_message(GetLastError());
-                Logger::warn(L"UuidToString can not convert to string. {}", val.has_value() ? val.value() : L"");
+                Logger::warn(L"UuidToString cannot convert to string. {}", val.has_value() ? val.value() : L"");
             }
 
             if (uuid_chars != nullptr)
