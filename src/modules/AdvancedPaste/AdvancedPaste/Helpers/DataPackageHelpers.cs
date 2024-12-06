@@ -111,7 +111,7 @@ internal static class DataPackageHelpers
         return availableFormats == ClipboardFormat.Text ? !string.IsNullOrEmpty(await dataPackageView.GetTextAsync()) : availableFormats != ClipboardFormat.None;
     }
 
-    internal static async Task TryCleanupAfterDelayAsync(this DataPackageView dataPackageView)
+    internal static async Task TryCleanupAfterDelayAsync(this DataPackageView dataPackageView, TimeSpan delay)
     {
         try
         {
@@ -119,7 +119,7 @@ internal static class DataPackageHelpers
 
             if (tempFile != null)
             {
-                await Task.Delay(TimeSpan.FromSeconds(30));
+                await Task.Delay(delay);
 
                 Logger.LogDebug($"Cleaning up temporary file with extension [{tempFile.Extension}] from data package after delay");
 

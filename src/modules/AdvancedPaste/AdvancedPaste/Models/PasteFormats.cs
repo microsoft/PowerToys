@@ -96,7 +96,7 @@ public enum PasteFormats
     [PasteFormatMetadata(
         IsCoreAction = false,
         ResourceId = "TranscodeToMp4",
-        IconGlyph = "\uEA0C",
+        IconGlyph = "\uE714",
         RequiresAIService = false,
         CanPreview = false,
         SupportedClipboardFormats = ClipboardFormat.Video,

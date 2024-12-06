@@ -330,7 +330,7 @@ namespace AdvancedPaste.ViewModels
         {
             await ClipboardHelper.TryCopyPasteAsync(package, HideWindow);
             Query = string.Empty;
-            _ = Task.Run(() => package.GetView().TryCleanupAfterDelayAsync());
+            _ = Task.Run(() => package.GetView().TryCleanupAfterDelayAsync(TimeSpan.FromSeconds(30)));
         }
 
         // Command to select the previous custom format

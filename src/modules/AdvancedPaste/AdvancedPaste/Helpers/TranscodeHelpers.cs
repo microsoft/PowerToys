@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 using ManagedCommon;
@@ -16,49 +17,128 @@ namespace AdvancedPaste.Helpers;
 
 internal static class TranscodeHelpers
 {
-    public static async Task<DataPackage> TranscodeToMp3Async(DataPackageView clipboardData, IProgress<double> progress)
-    {
-        return await TranscodeMediaAsync(clipboardData, MediaEncodingProfile.CreateMp3(AudioEncodingQuality.High), ".mp3", progress);
-    }
+    public static async Task<DataPackage> TranscodeToMp3Async(DataPackageView clipboardData, IProgress<double> progress) =>
+        await TranscodeMediaAsync(clipboardData, MediaEncodingProfile.CreateMp3(AudioEncodingQuality.High), ".mp3", progress);
 
-    public static async Task<DataPackage> TranscodeToMp4Async(DataPackageView clipboardData, IProgress<double> progress)
-    {
-        return await TranscodeMediaAsync(clipboardData, MediaEncodingProfile.CreateMp4(VideoEncodingQuality.HD720p), ".mp4", progress);
-    }
+    public static async Task<DataPackage> TranscodeToMp4Async(DataPackageView clipboardData, IProgress<double> progress) =>
+        await TranscodeMediaAsync(clipboardData, MediaEncodingProfile.CreateMp4(VideoEncodingQuality.HD1080p), ".mp4", progress);
 
-    private static async Task<DataPackage> TranscodeMediaAsync(DataPackageView clipboardData, MediaEncodingProfile profile, string extension, IProgress<double> progress)
+    private static async Task<DataPackage> TranscodeMediaAsync(DataPackageView clipboardData, MediaEncodingProfile baseOutputProfile, string extension, IProgress<double> progress)
     {
         Logger.LogTrace();
 
-        var sourceFiles = await clipboardData.GetStorageItemsAsync();
+        var inputFiles = await clipboardData.GetStorageItemsAsync();
 
-        if (sourceFiles.Count != 1)
+        if (inputFiles.Count != 1)
         {
             throw new InvalidOperationException($"{nameof(TranscodeMediaAsync)} does not support multiple files");
         }
 
-        var sourceFile = sourceFiles[0] as StorageFile;
-        var sourcePath = sourceFile.Path;
-        var sourceNameWithoutExtension = Path.GetFileNameWithoutExtension(sourcePath);
+        var inputFile = inputFiles.Single() as StorageFile ?? throw new InvalidOperationException($"{nameof(TranscodeMediaAsync)} only supports files");
+        var inputFileNameWithoutExtension = Path.GetFileNameWithoutExtension(inputFile.Path);
 
-        var destinationFolder = await Task.Run(() => Directory.CreateTempSubdirectory("PowerToys_AdvancedPaste_"));
-        var destinationName = StringComparer.OrdinalIgnoreCase.Equals(Path.GetExtension(sourcePath), extension) ? sourceNameWithoutExtension + "_1" : sourceNameWithoutExtension;
-        var destinationPath = Path.Combine(destinationFolder.FullName, Path.ChangeExtension(destinationName, extension));
-        await File.WriteAllBytesAsync(destinationPath, []);
+        var inputProfile = await MediaEncodingProfile.CreateFromFileAsync(inputFile);
+        var outputProfile = CreateOutputProfile(inputProfile, baseOutputProfile);
 
-        var destinationFile = await StorageFile.GetFileFromPathAsync(destinationPath);
-        await TranscodeMediaAsync(sourceFile, destinationFile, profile, progress);
+#if DEBUG
+        static string ProfileToString(MediaEncodingProfile profile) => System.Text.Json.JsonSerializer.Serialize(profile, options: new() { WriteIndented = true });
+        Logger.LogDebug($"{nameof(inputProfile)}: {ProfileToString(inputProfile)}");
+        Logger.LogDebug($"{nameof(outputProfile)}: {ProfileToString(outputProfile)}");
+#endif
 
-        return await DataPackageHelpers.CreateFromFileAsync(destinationPath);
+        var outputFolder = await Task.Run(() => Directory.CreateTempSubdirectory("PowerToys_AdvancedPaste_"));
+        var outputFileName = StringComparer.OrdinalIgnoreCase.Equals(Path.GetExtension(inputFile.Path), extension) ? inputFileNameWithoutExtension + "_1" : inputFileNameWithoutExtension;
+        var outputFilePath = Path.Combine(outputFolder.FullName, Path.ChangeExtension(outputFileName, extension));
+        await File.WriteAllBytesAsync(outputFilePath, []); // TranscodeAsync seems to require the output file to exist
+
+        await TranscodeMediaAsync(inputFile, await StorageFile.GetFileFromPathAsync(outputFilePath), outputProfile, progress);
+
+        return await DataPackageHelpers.CreateFromFileAsync(outputFilePath);
     }
 
-    private static async Task TranscodeMediaAsync(StorageFile sourceFile, StorageFile destinationFile, MediaEncodingProfile profile, IProgress<double> progress)
+    private static MediaEncodingProfile CreateOutputProfile(MediaEncodingProfile inputProfile, MediaEncodingProfile baseOutputProfile)
     {
-        var prepareOp = await new MediaTranscoder().PrepareFileTranscodeAsync(sourceFile, destinationFile, profile);
+        MediaEncodingProfile outputProfile = new()
+        {
+            Video = null,
+            Audio = null,
+        };
+
+        outputProfile.Container = baseOutputProfile.Container.Copy();
+
+        if (inputProfile.Video != null && baseOutputProfile.Video != null)
+        {
+            outputProfile.Video = baseOutputProfile.Video.Copy();
+
+            if (inputProfile.Video.Bitrate != 0)
+            {
+                outputProfile.Video.Bitrate = inputProfile.Video.Bitrate;
+            }
+
+            if (inputProfile.Video.FrameRate.Numerator != 0)
+            {
+                outputProfile.Video.FrameRate.Numerator = inputProfile.Video.FrameRate.Numerator;
+            }
+
+            if (inputProfile.Video.FrameRate.Denominator != 0)
+            {
+                outputProfile.Video.FrameRate.Denominator = inputProfile.Video.FrameRate.Denominator;
+            }
+
+            if (inputProfile.Video.PixelAspectRatio.Numerator != 0)
+            {
+                outputProfile.Video.PixelAspectRatio.Numerator = inputProfile.Video.PixelAspectRatio.Numerator;
+            }
+
+            if (inputProfile.Video.PixelAspectRatio.Denominator != 0)
+            {
+                outputProfile.Video.PixelAspectRatio.Denominator = inputProfile.Video.PixelAspectRatio.Denominator;
+            }
+
+            outputProfile.Video.Width = inputProfile.Video.Width;
+            outputProfile.Video.Height = inputProfile.Video.Height;
+        }
+
+        if (inputProfile.Audio != null && baseOutputProfile.Audio != null)
+        {
+            outputProfile.Audio = baseOutputProfile.Audio.Copy();
+
+            if (inputProfile.Audio.Bitrate != 0)
+            {
+                outputProfile.Audio.Bitrate = inputProfile.Audio.Bitrate;
+            }
+
+            if (inputProfile.Audio.BitsPerSample != 0)
+            {
+                outputProfile.Audio.BitsPerSample = inputProfile.Audio.BitsPerSample;
+            }
+
+            if (inputProfile.Audio.ChannelCount != 0)
+            {
+                outputProfile.Audio.ChannelCount = inputProfile.Audio.ChannelCount;
+            }
+
+            if (inputProfile.Audio.SampleRate != 0)
+            {
+                outputProfile.Audio.SampleRate = inputProfile.Audio.SampleRate;
+            }
+        }
+
+        return outputProfile;
+    }
+
+    private static async Task TranscodeMediaAsync(StorageFile inputFile, StorageFile outputFile, MediaEncodingProfile outputProfile, IProgress<double> progress)
+    {
+        if (outputProfile.Video == null && outputProfile.Audio == null)
+        {
+            throw new InvalidOperationException("Target profile does not contain media");
+        }
+
+        var prepareOp = await new MediaTranscoder().PrepareFileTranscodeAsync(inputFile, outputFile, outputProfile);
 
         if (!prepareOp.CanTranscode)
         {
-            throw new InvalidOperationException($"Error transcoding; Reason={prepareOp.FailureReason}");
+            throw new InvalidOperationException($"Error transcoding; {nameof(prepareOp.FailureReason)}={prepareOp.FailureReason}");
         }
 
         var transcodeOp = prepareOp.TranscodeAsync();
