@@ -41,6 +41,8 @@ namespace Awake.Core
 
         private static bool IsDisplayOn { get; set; }
 
+        private static uint TimeRemaining { get; set; }
+
         private static string ScreenStateString => IsDisplayOn ? Resources.AWAKE_SCREEN_ON : Resources.AWAKE_SCREEN_OFF;
 
         private static int ProcessId { get; set; }
@@ -310,7 +312,7 @@ namespace Awake.Core
                     TimeSpan timeSpan = TimeSpan.FromSeconds(seconds);
 
                     uint totalHours = (uint)timeSpan.TotalHours;
-                    uint remainingMinutes = (uint)(timeSpan.TotalMinutes % 60);
+                    uint remainingMinutes = (uint)Math.Ceiling(timeSpan.TotalMinutes % 60);
 
                     bool settingsChanged = currentSettings.Properties.Mode != AwakeMode.TIMED ||
                                           currentSettings.Properties.IntervalHours != totalHours ||
@@ -359,12 +361,12 @@ namespace Awake.Core
             combinedObservable.Subscribe(
                 elapsedSeconds =>
                 {
-                    uint timeRemaining = (uint)targetDuration - (uint)elapsedSeconds;
-                    if (timeRemaining >= 0)
+                    TimeRemaining = (uint)targetDuration - (uint)elapsedSeconds;
+                    if (TimeRemaining >= 0)
                     {
                         TrayHelper.SetShellIcon(
                             TrayHelper.WindowHandle,
-                            $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}][{ScreenStateString}][{TimeSpan.FromSeconds(timeRemaining).ToHumanReadableString()}]",
+                            $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}][{ScreenStateString}][{TimeSpan.FromSeconds(TimeRemaining).ToHumanReadableString()}]",
                             TrayHelper.TimedIcon,
                             TrayIconAction.Update);
                     }
@@ -508,6 +510,18 @@ namespace Awake.Core
                 {
                     AwakeSettings currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
                     currentSettings.Properties.KeepDisplayOn = !currentSettings.Properties.KeepDisplayOn;
+
+                    // We want to make sure that if the display setting changes (e.g., through the tray)
+                    // then we do not reset the counter from zero. Because the settings are only storing
+                    // hours and minutes, we round up the minutes value up when changes occur.
+                    if (CurrentOperatingMode == AwakeMode.TIMED && TimeRemaining > 0)
+                    {
+                        TimeSpan timeSpan = TimeSpan.FromSeconds(TimeRemaining);
+
+                        currentSettings.Properties.IntervalHours = (uint)timeSpan.TotalHours;
+                        currentSettings.Properties.IntervalMinutes = (uint)Math.Ceiling(timeSpan.TotalMinutes % 60);
+                    }
+
                     ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
                 }
                 catch (Exception ex)
