@@ -171,7 +171,7 @@ Other contributors:
 - [@jaimecbernardo](https://github.com/jaimecbernardo) - Jaime Bernardo - Dev lead
 - [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev lead
 - [@yeelam-gordon](https://github.com/yeelam-gordon) - Gordon Lam - Dev lead
-- [@jerryxu-msft](https://github.com/jerryxu-msft) - Jerry Xu - Dev lead
+- [@jamrobot](https://github.com/jamrobot) - Jerry Xu - Dev lead
 - [@drawbyperpetual](https://github.com/drawbyperpetual) - Anirudha Shankar - Dev
 - [@mantaionut](https://github.com/mantaionut) - Ionut Manta - Dev
 - [@donlaci](https://github.com/donlaci) - Laszlo Nemeth - Dev
