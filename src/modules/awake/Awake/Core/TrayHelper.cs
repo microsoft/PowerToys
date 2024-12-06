@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -32,15 +33,22 @@ namespace Awake.Core
         private static NotifyIconData _notifyIconData;
         private static SingleThreadSynchronizationContext? _syncContext;
         private static Thread? _mainThread;
+        private static uint _taskbarCreatedMessage;
 
         private static IntPtr TrayMenu { get; set; }
 
-        internal static IntPtr HiddenWindowHandle { get; private set; }
+        internal static IntPtr WindowHandle { get; private set; }
+
+        internal static readonly Icon DefaultAwakeIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/awake.ico"));
+        internal static readonly Icon TimedIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/timed.ico"));
+        internal static readonly Icon ExpirableIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/expirable.ico"));
+        internal static readonly Icon IndefiniteIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/indefinite.ico"));
+        internal static readonly Icon DisabledIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/disabled.ico"));
 
         static TrayHelper()
         {
             TrayMenu = IntPtr.Zero;
-            HiddenWindowHandle = IntPtr.Zero;
+            WindowHandle = IntPtr.Zero;
         }
 
         private static void ShowContextMenu(IntPtr hWnd)
@@ -119,7 +127,7 @@ namespace Awake.Core
                             0,
                             0,
                             0,
-                            unchecked(-3),
+                            IntPtr.Zero,
                             IntPtr.Zero,
                             Marshal.GetHINSTANCE(typeof(Program).Module),
                             IntPtr.Zero);
@@ -132,7 +140,7 @@ namespace Awake.Core
 
                         // Keep this as a reference because we will need it when we update
                         // the tray icon in the future.
-                        HiddenWindowHandle = hWnd;
+                        WindowHandle = hWnd;
 
                         Bridge.ShowWindow(hWnd, 0); // SW_HIDE
                         Bridge.UpdateWindow(hWnd);
@@ -261,6 +269,13 @@ namespace Awake.Core
                     }
 
                     break;
+
+                case Native.Constants.WM_CREATE:
+                    {
+                        _taskbarCreatedMessage = (uint)Bridge.RegisterWindowMessage("TaskbarCreated");
+                    }
+
+                    break;
                 case Native.Constants.WM_DESTROY:
                     // Clean up resources when the window is destroyed
                     Bridge.PostQuitMessage(0);
@@ -318,6 +333,12 @@ namespace Awake.Core
 
                     break;
                 default:
+                    if (message == _taskbarCreatedMessage)
+                    {
+                        Logger.LogInfo("Taskbar re-created");
+                        Manager.SetModeShellIcon(forceAdd: true);
+                    }
+
                     // Let the default window procedure handle other messages
                     return Bridge.DefWindowProc(hWnd, message, wParam, lParam);
             }

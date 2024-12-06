@@ -6,7 +6,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Reactive.Linq;
@@ -25,7 +24,7 @@ using Microsoft.Win32;
 
 namespace Awake.Core
 {
-    public delegate bool ConsoleEventHandler(Models.ControlType ctrlType);
+    public delegate bool ConsoleEventHandler(ControlType ctrlType);
 
     /// <summary>
     /// Helper class that allows talking to Win32 APIs without having to rely on PInvoke in other parts
@@ -35,20 +34,22 @@ namespace Awake.Core
     {
         internal static bool IsUsingPowerToysConfig { get; set; }
 
+        internal static SettingsUtils? ModuleSettings { get; set; }
+
+        private static AwakeMode CurrentOperatingMode { get; set; }
+
+        private static bool IsDisplayOn { get; set; }
+
+        private static string ScreenStateString => IsDisplayOn ? Resources.AWAKE_SCREEN_ON : Resources.AWAKE_SCREEN_OFF;
+
+        private static int ProcessId { get; set; }
+
+        private static DateTimeOffset ExpireAt { get; set; }
+
         private static readonly CompositeFormat AwakeMinutes = CompositeFormat.Parse(Resources.AWAKE_MINUTES);
         private static readonly CompositeFormat AwakeHours = CompositeFormat.Parse(Resources.AWAKE_HOURS);
-
         private static readonly BlockingCollection<ExecutionState> _stateQueue;
-
-        // Core icons used for the tray
-        private static readonly Icon _timedIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/timed.ico"));
-        private static readonly Icon _expirableIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/expirable.ico"));
-        private static readonly Icon _indefiniteIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/indefinite.ico"));
-        private static readonly Icon _disabledIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/disabled.ico"));
-
         private static CancellationTokenSource _tokenSource;
-
-        internal static SettingsUtils? ModuleSettings { get; set; }
 
         static Manager()
         {
@@ -140,6 +141,59 @@ namespace Awake.Core
             Logger.LogInfo("Instantiating of new token source and thread token completed.");
         }
 
+        internal static void SetModeShellIcon(bool forceAdd = false)
+        {
+            switch (CurrentOperatingMode)
+            {
+                case AwakeMode.INDEFINITE:
+                    {
+                        string processText = ProcessId == 0
+                            ? string.Empty
+                            : $" - {Resources.AWAKE_TRAY_TEXT_PID_BINDING}: {ProcessId}";
+
+                        TrayHelper.SetShellIcon(
+                            TrayHelper.WindowHandle,
+                            $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_INDEFINITE}{processText}][{ScreenStateString}]",
+                            TrayHelper.IndefiniteIcon,
+                            forceAdd ? TrayIconAction.Add : TrayIconAction.Update);
+                    }
+
+                    break;
+                case AwakeMode.PASSIVE:
+                    {
+                        TrayHelper.SetShellIcon(
+                            TrayHelper.WindowHandle,
+                            $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_OFF}]",
+                            TrayHelper.DisabledIcon,
+                            forceAdd ? TrayIconAction.Add : TrayIconAction.Update);
+                    }
+
+                    break;
+
+                case AwakeMode.EXPIRABLE:
+                    {
+                        TrayHelper.SetShellIcon(
+                            TrayHelper.WindowHandle,
+                            $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_EXPIRATION}][{ScreenStateString}][{ExpireAt:yyyy-MM-dd HH:mm:ss}]",
+                            TrayHelper.ExpirableIcon,
+                            forceAdd ? TrayIconAction.Add : TrayIconAction.Update);
+                    }
+
+                    break;
+
+                case AwakeMode.TIMED:
+                    {
+                        TrayHelper.SetShellIcon(
+                            TrayHelper.WindowHandle,
+                            $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}][{ScreenStateString}]",
+                            TrayHelper.TimedIcon,
+                            forceAdd ? TrayIconAction.Add : TrayIconAction.Update);
+                    }
+
+                    break;
+            }
+        }
+
         internal static void SetIndefiniteKeepAwake(bool keepDisplayOn = false, int processId = 0, [CallerMemberName] string callerName = "")
         {
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeIndefinitelyKeepAwakeEvent());
@@ -174,17 +228,13 @@ namespace Awake.Core
 
             Logger.LogInfo($"Indefinite keep-awake starting, invoked by {callerName}...");
 
-            string processText = processId == 0
-                ? string.Empty
-                : $" - {Resources.AWAKE_TRAY_TEXT_PID_BINDING}: {processId}";
-
-            TrayHelper.SetShellIcon(
-                TrayHelper.HiddenWindowHandle,
-                $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_INDEFINITE}{processText}]\n{Resources.AWAKE_TRAY_TEXT_KEEP_DISPLAY_ON}: {keepDisplayOn}",
-                _indefiniteIcon,
-                TrayIconAction.Update);
-
             _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
+
+            IsDisplayOn = keepDisplayOn;
+            CurrentOperatingMode = AwakeMode.INDEFINITE;
+            ProcessId = processId;
+
+            SetModeShellIcon();
         }
 
         internal static void SetExpirableKeepAwake(DateTimeOffset expireAt, bool keepDisplayOn = true, [CallerMemberName] string callerName = "")
@@ -229,7 +279,11 @@ namespace Awake.Core
                 Logger.LogInfo($"Starting expirable log for {expireAt}");
                 _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
-                TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_EXPIRATION} - {expireAt}]\n{Resources.AWAKE_TRAY_TEXT_KEEP_DISPLAY_ON}: {keepDisplayOn}", _expirableIcon, TrayIconAction.Update);
+                IsDisplayOn = keepDisplayOn;
+                CurrentOperatingMode = AwakeMode.EXPIRABLE;
+                ExpireAt = expireAt;
+
+                SetModeShellIcon();
 
                 Observable.Timer(expireAt - DateTimeOffset.Now).Subscribe(
                 _ =>
@@ -300,7 +354,10 @@ namespace Awake.Core
 
             _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
-            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}]\n{Resources.AWAKE_TRAY_TEXT_KEEP_DISPLAY_ON}: {keepDisplayOn}", _timedIcon, TrayIconAction.Update);
+            IsDisplayOn = keepDisplayOn;
+            CurrentOperatingMode = AwakeMode.TIMED;
+
+            SetModeShellIcon();
 
             ulong desiredDuration = (ulong)seconds * 1000;
             ulong targetDuration = Math.Min(desiredDuration, uint.MaxValue - 1) / 1000;
@@ -320,7 +377,11 @@ namespace Awake.Core
                     uint timeRemaining = (uint)targetDuration - (uint)elapsedSeconds;
                     if (timeRemaining >= 0)
                     {
-                        TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}]\n{TimeSpan.FromSeconds(timeRemaining).ToHumanReadableString()}", _timedIcon, TrayIconAction.Update);
+                        TrayHelper.SetShellIcon(
+                            TrayHelper.WindowHandle,
+                            $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}][{ScreenStateString}][{TimeSpan.FromSeconds(timeRemaining).ToHumanReadableString()}]",
+                            TrayHelper.TimedIcon,
+                            TrayIconAction.Update);
                     }
                 },
                 () =>
@@ -351,15 +412,15 @@ namespace Awake.Core
         {
             SetPassiveKeepAwake(updateSettings: false);
 
-            if (TrayHelper.HiddenWindowHandle != IntPtr.Zero)
+            if (TrayHelper.WindowHandle != IntPtr.Zero)
             {
                 // Delete the icon.
-                TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, string.Empty, null, TrayIconAction.Delete);
+                TrayHelper.SetShellIcon(TrayHelper.WindowHandle, string.Empty, null, TrayIconAction.Delete);
 
                 // Close the message window that we used for the tray.
-                Bridge.SendMessage(TrayHelper.HiddenWindowHandle, Native.Constants.WM_CLOSE, 0, 0);
+                Bridge.SendMessage(TrayHelper.WindowHandle, Native.Constants.WM_CLOSE, 0, 0);
 
-                Bridge.DestroyWindow(TrayHelper.HiddenWindowHandle);
+                Bridge.DestroyWindow(TrayHelper.WindowHandle);
             }
 
             Bridge.PostQuitMessage(exitCode);
@@ -445,7 +506,9 @@ namespace Awake.Core
 
             Logger.LogInfo($"Passive keep-awake starting...");
 
-            TrayHelper.SetShellIcon(TrayHelper.HiddenWindowHandle, $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_OFF}]", _disabledIcon, TrayIconAction.Update);
+            CurrentOperatingMode = AwakeMode.PASSIVE;
+
+            SetModeShellIcon();
         }
 
         /// <summary>

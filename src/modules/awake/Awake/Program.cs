@@ -37,7 +37,6 @@ namespace Awake
 
         private static readonly JsonSerializerOptions _serializerOptions = new() { IncludeFields = true };
         private static readonly ETWTrace _etwTrace = new();
-        private static readonly Icon _defaultAwakeIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/awake.ico"));
 
         private static FileSystemWatcher? _watcher;
         private static SettingsUtils? _settingsUtils;
@@ -72,7 +71,7 @@ namespace Awake
                 Logger.LogError("CultureNotFoundException: " + ex.Message);
             }
 
-            await TrayHelper.InitializeTray(_defaultAwakeIcon, Core.Constants.FullAppName);
+            await TrayHelper.InitializeTray(TrayHelper.DefaultAwakeIcon, Core.Constants.FullAppName);
             AppDomain.CurrentDomain.ProcessExit += (_, _) => TrayHelper.RunOnMainThread(() => LockMutex?.ReleaseMutex());
             AppDomain.CurrentDomain.UnhandledException += AwakeUnhandledExceptionCatcher;
 
