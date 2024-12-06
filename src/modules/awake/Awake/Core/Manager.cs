@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Reactive.Linq;
@@ -143,55 +144,40 @@ namespace Awake.Core
 
         internal static void SetModeShellIcon(bool forceAdd = false)
         {
+            string iconText = string.Empty;
+            Icon? icon = null;
+
             switch (CurrentOperatingMode)
             {
                 case AwakeMode.INDEFINITE:
-                    {
-                        string processText = ProcessId == 0
-                            ? string.Empty
-                            : $" - {Resources.AWAKE_TRAY_TEXT_PID_BINDING}: {ProcessId}";
-
-                        TrayHelper.SetShellIcon(
-                            TrayHelper.WindowHandle,
-                            $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_INDEFINITE}{processText}][{ScreenStateString}]",
-                            TrayHelper.IndefiniteIcon,
-                            forceAdd ? TrayIconAction.Add : TrayIconAction.Update);
-                    }
-
+                    string processText = ProcessId == 0
+                        ? string.Empty
+                        : $" - {Resources.AWAKE_TRAY_TEXT_PID_BINDING}: {ProcessId}";
+                    iconText = $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_INDEFINITE}{processText}][{ScreenStateString}]";
+                    icon = TrayHelper.IndefiniteIcon;
                     break;
-                case AwakeMode.PASSIVE:
-                    {
-                        TrayHelper.SetShellIcon(
-                            TrayHelper.WindowHandle,
-                            $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_OFF}]",
-                            TrayHelper.DisabledIcon,
-                            forceAdd ? TrayIconAction.Add : TrayIconAction.Update);
-                    }
 
+                case AwakeMode.PASSIVE:
+                    iconText = $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_OFF}]";
+                    icon = TrayHelper.DisabledIcon;
                     break;
 
                 case AwakeMode.EXPIRABLE:
-                    {
-                        TrayHelper.SetShellIcon(
-                            TrayHelper.WindowHandle,
-                            $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_EXPIRATION}][{ScreenStateString}][{ExpireAt:yyyy-MM-dd HH:mm:ss}]",
-                            TrayHelper.ExpirableIcon,
-                            forceAdd ? TrayIconAction.Add : TrayIconAction.Update);
-                    }
-
+                    iconText = $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_EXPIRATION}][{ScreenStateString}][{ExpireAt:yyyy-MM-dd HH:mm:ss}]";
+                    icon = TrayHelper.ExpirableIcon;
                     break;
 
                 case AwakeMode.TIMED:
-                    {
-                        TrayHelper.SetShellIcon(
-                            TrayHelper.WindowHandle,
-                            $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}][{ScreenStateString}]",
-                            TrayHelper.TimedIcon,
-                            forceAdd ? TrayIconAction.Add : TrayIconAction.Update);
-                    }
-
+                    iconText = $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}][{ScreenStateString}]";
+                    icon = TrayHelper.TimedIcon;
                     break;
             }
+
+            TrayHelper.SetShellIcon(
+                TrayHelper.WindowHandle,
+                iconText,
+                icon,
+                forceAdd ? TrayIconAction.Add : TrayIconAction.Update);
         }
 
         internal static void SetIndefiniteKeepAwake(bool keepDisplayOn = false, int processId = 0, [CallerMemberName] string callerName = "")
