@@ -121,25 +121,24 @@ namespace Awake.Core
 
         internal static void CancelExistingThread()
         {
-            Logger.LogInfo($"Attempting to ensure that the thread is properly cleaned up...");
+            Logger.LogInfo("Ensuring the thread is properly cleaned up...");
 
-            // Resetting the thread state.
+            // Reset the thread state and handle cancellation.
             _stateQueue.Add(ExecutionState.ES_CONTINUOUS);
 
-            // Next, make sure that any existing background threads are terminated.
             if (_tokenSource != null)
             {
                 _tokenSource.Cancel();
                 _tokenSource.Dispose();
-
-                _tokenSource = new CancellationTokenSource();
             }
             else
             {
-                Logger.LogWarning("The token source was null.");
+                Logger.LogWarning("Token source is null.");
             }
 
-            Logger.LogInfo("Instantiating of new token source and thread token completed.");
+            _tokenSource = new CancellationTokenSource();
+
+            Logger.LogInfo("New token source and thread token instantiated.");
         }
 
         internal static void SetModeShellIcon(bool forceAdd = false)
@@ -260,21 +259,27 @@ namespace Awake.Core
 
             Logger.LogInfo($"Expirable keep-awake starting...");
 
-            if (expireAt > DateTimeOffset.Now)
+            if (expireAt <= DateTimeOffset.Now)
             {
-                Logger.LogInfo($"Starting expirable log for {expireAt}");
-                _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
+                Logger.LogError($"The specified target date and time is not in the future. Current time: {DateTimeOffset.Now}, Target time: {expireAt}");
+                return;
+            }
 
-                IsDisplayOn = keepDisplayOn;
-                CurrentOperatingMode = AwakeMode.EXPIRABLE;
-                ExpireAt = expireAt;
+            Logger.LogInfo($"Starting expirable log for {expireAt}");
+            _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
-                SetModeShellIcon();
+            IsDisplayOn = keepDisplayOn;
+            CurrentOperatingMode = AwakeMode.EXPIRABLE;
+            ExpireAt = expireAt;
 
-                Observable.Timer(expireAt - DateTimeOffset.Now).Subscribe(
+            SetModeShellIcon();
+
+            TimeSpan remainingTime = expireAt - DateTimeOffset.Now;
+
+            Observable.Timer(remainingTime).Subscribe(
                 _ =>
                 {
-                    Logger.LogInfo($"Completed expirable keep-awake.");
+                    Logger.LogInfo("Completed expirable keep-awake.");
                     CancelExistingThread();
 
                     if (IsUsingPowerToysConfig)
@@ -288,12 +293,6 @@ namespace Awake.Core
                     }
                 },
                 _tokenSource.Token);
-            }
-            else
-            {
-                Logger.LogError("The specified target date and time is not in the future.");
-                Logger.LogError($"Current time: {DateTimeOffset.Now}\tTarget time: {expireAt}");
-            }
         }
 
         internal static void SetTimedKeepAwake(uint seconds, bool keepDisplayOn = true, [CallerMemberName] string callerName = "")

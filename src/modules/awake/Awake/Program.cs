@@ -6,7 +6,6 @@ using System;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
-using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
