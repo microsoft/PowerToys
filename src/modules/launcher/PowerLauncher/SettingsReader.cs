@@ -159,9 +159,8 @@ namespace PowerLauncher
                     if (_settings.Theme != overloadSettings.Properties.Theme)
                     {
                         _settings.Theme = overloadSettings.Properties.Theme;
+                        _themeManager.UpdateTheme();
                     }
-
-                    _themeManager.UpdateTheme();
 
                     if (_settings.StartupPosition != overloadSettings.Properties.Position)
                     {

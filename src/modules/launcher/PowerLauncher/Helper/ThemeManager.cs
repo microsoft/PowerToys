@@ -27,6 +27,7 @@ namespace PowerLauncher.Helper
         {
             _settings = settings;
             _mainWindow = mainWindow;
+            UpdateTheme();
             SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
         }
 
@@ -63,7 +64,6 @@ namespace PowerLauncher.Helper
                     Source = new Uri(themeString, UriKind.Absolute),
                 };
                 _mainWindow.Resources.MergedDictionaries.Add(fluentThemeDictionary);
-                _mainWindow.Background = null;
                 if (!Common.UI.OSVersionHelper.IsWindows11())
                 {
                     // Apply background only on Windows 10
@@ -98,13 +98,13 @@ namespace PowerLauncher.Helper
                     // Apply background only on Windows 11 to keep the same style as WPFUI
                     _mainWindow.Background = new SolidColorBrush
                     {
-                        Color = (Color)_mainWindow.FindResource("ApplicationBackgroundColor"), // Use your DynamicResource key here
+                        Color = (Color)_mainWindow.FindResource("LauncherBackgroundColor"), // Use your DynamicResource key here
                     };
                 }
             }
 
             ImageLoader.UpdateIconPath(theme);
-            ThemeChanged(_currentTheme, theme);
+            ThemeChanged?.Invoke(_currentTheme, theme);
             _currentTheme = theme;
         }
 
