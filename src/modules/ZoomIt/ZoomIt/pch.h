@@ -8,7 +8,7 @@
 #include <tchar.h>
 #include <wincodec.h>
 #include <magnification.h>
-#include <uxtheme.h>
+#include <Uxtheme.h>
 #include <math.h>
 #include <shellapi.h>
 #include <shlwapi.h>

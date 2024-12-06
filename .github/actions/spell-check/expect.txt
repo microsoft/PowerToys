@@ -224,6 +224,7 @@ colorformat
 colorhistory
 colorhistorylimit
 COLORKEY
+comctl
 comdef
 comdlg
 comexp
@@ -1730,7 +1731,7 @@ TYPEKEYBOARD
 TYPEMOUSE
 TYPESHORTCUT
 UAC
-UACUIAccess
+UACUI
 UAL
 uap
 UBR
@@ -1794,6 +1795,7 @@ VCINSTALLDIR
 vcm
 Vcpkg
 VCRT
+VCENTER
 vcruntime
 vcvars
 VDesktop
