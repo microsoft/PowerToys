@@ -1783,7 +1783,7 @@ USRDLL
 UType
 uuidv
 uwp
-Uxtheme
+uxtheme
 vabdq
 validmodulename
 valuegenerator
