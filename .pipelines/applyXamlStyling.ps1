@@ -97,7 +97,7 @@ if (-not $Passive)
 
     if ($files.count -gt 0)
     {
-        dotnet tool run xstyler -c "$PSScriptRoot\..\src\Settings.XamlStyler" -f $files
+        dotnet tool run xstyler -c "$PSScriptRoot\..\.config\Settings.XamlStyler" -f $files
     }
     else
     {
@@ -107,7 +107,7 @@ if (-not $Passive)
 else 
 {
     Write-Output "Checking all files (passively)"
-    $files = Get-ChildItem -Path "$PSScriptRoot\..\.config\*.xaml" -Recurse | Select-Object -ExpandProperty FullName | Where-Object { $_ -notmatch "(\\obj\\)|(\\bin\\)|(\\x64\\)|(\\Generated Files\\PowerRenameXAML\\)" }
+    $files = Get-ChildItem -Path "$PSScriptRoot\..\src\*.xaml" -Recurse | Select-Object -ExpandProperty FullName | Where-Object { $_ -notmatch "(\\obj\\)|(\\bin\\)|(\\x64\\)|(\\Generated Files\\PowerRenameXAML\\)" }
 
     if ($files.count -gt 0)
     {
