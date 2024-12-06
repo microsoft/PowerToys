@@ -28,7 +28,7 @@
     <file src="..\Microsoft.CmdPal.Extensions.Helpers\x64\release\Microsoft.CmdPal.Extensions.Helpers\Microsoft.CmdPal.Extensions.Helpers.deps.json" target="lib\net8.0-windows10.0.19041.0\"/>
     <!-- Native dlls and winmd from SDK cpp project -->
     <file src="..\Microsoft.CmdPal.Extensions\x64\release\Microsoft.CmdPal.Extensions\Microsoft.CmdPal.Extensions.dll" target="runtimes\win-x64\native\"/>
-    <file src="..\Microsoft.CmdPal.Extensions\arm64\release\WinUI3Apps\CmdPal\Microsoft.CmdPal.Extensions.dll" target="runtimes\win-arm64\native\"/>
+    <file src="..\Microsoft.CmdPal.Extensions\arm64\release\Microsoft.CmdPal.Extensions\Microsoft.CmdPal.Extensions.dll" target="runtimes\win-arm64\native\"/>
     <!-- Not putting in the following the lib folder because we don't want plugin project to directly reference the winmd -->
     <file src="..\Microsoft.CmdPal.Extensions\x64\release\Microsoft.CmdPal.Extensions\Microsoft.CmdPal.Extensions.winmd" target="winmd\"/>
   </files>
