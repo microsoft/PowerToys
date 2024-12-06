@@ -1,4 +1,5 @@
-﻿<ResourceDictionary
+﻿<!--  https://github.com/dotnet/wpf/blob/main/src/Microsoft.DotNet.Wpf/src/Themes/PresentationFramework.Fluent/Controls/AnimationFactorToValueConverter.cs  -->
+<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:base="clr-namespace:System.Windows;assembly=WindowsBase"
