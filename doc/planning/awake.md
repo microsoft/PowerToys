@@ -27,6 +27,7 @@ The build ID moniker is made up of two components - a reference to a [Halo](http
 
 - [#35250] Updates the icon retry policy, making sure that the icon consistently and correctly renders in the tray.
 - [#35848] Fixed a bug where custom tray time shortcuts for longer than 24 hours would be parsed as zero hours/zero minutes.
+- [#34716] Properly recover the state icon in the tray after an `explorer.exe` crash.
 - Added configuration safeguards to make sure that invalid values for timed keep-awake times do not result in exceptions.
 - Updated the tray initialization logic, making sure we wait for it to be properly created before setting icons.
 - Expanded logging capabilities to track invoking functions.
