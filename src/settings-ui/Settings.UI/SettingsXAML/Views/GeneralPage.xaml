@@ -435,7 +435,11 @@
                             IsClosable="False"
                             IsOpen="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}"
                             IsTabStop="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}"
-                            Severity="Informational" />
+                            Severity="Informational">
+                            <InfoBar.IconSource>
+                                <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                            </InfoBar.IconSource>
+                        </InfoBar>
 
                     </StackPanel>
                 </controls:SettingsGroup>
