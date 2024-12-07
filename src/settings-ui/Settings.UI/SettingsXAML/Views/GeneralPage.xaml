@@ -418,9 +418,7 @@
                             IsExpanded="True">
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard x:Uid="GeneralPage_EnableViewDiagnosticData" IsEnabled="{x:Bind ViewModel.EnableDataDiagnostics, Mode=TwoWay}">
-                                    <ToggleSwitch
-                                        x:Uid="ToggleSwitch"
-                                        IsOn="{x:Bind ViewModel.EnableViewDataDiagnostics, Mode=TwoWay}" />
+                                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableViewDataDiagnostics, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard
                                     x:Uid="GeneralPage_ViewDiagnosticDataViewer"
