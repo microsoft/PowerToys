@@ -33,6 +33,11 @@ parameters:
       - x64
       - arm64
 
+  - name: useVSPreview
+    type: boolean
+    displayName: "Build Using Visual Studio Preview"
+    default: false
+
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
 extends:
@@ -42,7 +47,10 @@ extends:
     - 1ES.PT.ViaStartRight
     pool:
       name: SHINE-INT-S
-      image: SHINE-VS17-Latest
+      ${{ if eq(parameters.useVSPreview, true) }}:
+        demands: ImageOverride -equals SHINE-VS17-Preview
+      ${{ else }}:
+        image: SHINE-VS17-Latest
       os: windows
     sdl:
       tsa:
@@ -58,7 +66,10 @@ extends:
             parameters:
               pool:
                 name: SHINE-INT-L
-                image: SHINE-VS17-Latest
+                ${{ if eq(parameters.useVSPreview, true) }}:
+                  demands: ImageOverride -equals SHINE-VS17-Preview
+                ${{ else }}:
+                  image: SHINE-VS17-Latest
                 os: windows
               variables:
                 IsPipeline: 1 # The installer uses this to detect whether it should pick up localizations
@@ -90,8 +101,8 @@ extends:
 
                 - script: |
                     call nuget.exe restore -configFile .pipelines/release-nuget.config -PackagesDirectory . .pipelines/packages.config || exit /b 1
-                    move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TraceLoggingDefines.h" "src\common\Telemetry\TraceLoggingDefines.h" || exit /b 1
-                    move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TelemetryBase.cs" "src\common\Telemetry\TelemetryBase.cs" || exit /b 1
+                    move /Y "Microsoft.PowerToys.Telemetry.2.0.2\build\include\TraceLoggingDefines.h" "src\common\Telemetry\TraceLoggingDefines.h" || exit /b 1
+                    move /Y "Microsoft.PowerToys.Telemetry.2.0.2\build\include\TelemetryBase.cs" "src\common\Telemetry\TelemetryBase.cs" || exit /b 1
                   displayName: Emplace telemetry files
 
       - stage: Publish

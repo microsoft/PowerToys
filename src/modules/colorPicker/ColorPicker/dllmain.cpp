@@ -67,6 +67,8 @@ private:
     // Handle to event used to invoke ColorPicker
     HANDLE m_hInvokeEvent;
 
+    HANDLE m_hAppTerminateEvent;
+
     void parse_hotkey(PowerToysSettings::PowerToyValues& settings)
     {
         auto settingsObject = settings.get_raw_json();
@@ -158,6 +160,7 @@ public:
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", "ColorPicker");
         send_telemetry_event = CreateDefaultEvent(CommonSharedConstants::COLOR_PICKER_SEND_SETTINGS_TELEMETRY_EVENT);
         m_hInvokeEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_COLOR_PICKER_SHARED_EVENT);
+        m_hAppTerminateEvent = CreateDefaultEvent(CommonSharedConstants::TERMINATE_COLOR_PICKER_SHARED_EVENT);
         init_settings();
     }
 
@@ -249,6 +252,10 @@ public:
         {
             ResetEvent(send_telemetry_event);
             ResetEvent(m_hInvokeEvent);
+
+            SetEvent(m_hAppTerminateEvent);
+            WaitForSingleObject(m_hProcess, 1500);
+
             TerminateProcess(m_hProcess, 1);
         }
 

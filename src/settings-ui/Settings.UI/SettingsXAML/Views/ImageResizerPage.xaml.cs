@@ -4,6 +4,7 @@
 
 using System;
 using System.Globalization;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;

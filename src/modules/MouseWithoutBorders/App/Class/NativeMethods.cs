@@ -36,7 +36,10 @@ using System.Text;
 [module: SuppressMessage("Microsoft.Portability", "CA1901:PInvokeDeclarationsShouldBePortable", Scope = "member", Target = "MouseWithoutBorders.NativeMethods.#GetAsyncKeyState(System.IntPtr)", MessageId = "0", Justification = "Dotnet port with style preservation")]
 [module: SuppressMessage("Microsoft.Portability", "CA1901:PInvokeDeclarationsShouldBePortable", Scope = "member", Target = "MouseWithoutBorders.NativeMethods.#GetAsyncKeyState(System.IntPtr)", MessageId = "return", Justification = "Dotnet port with style preservation")]
 
+// Disable the warning to preserve original code
+#pragma warning disable CA1716
 namespace MouseWithoutBorders.Class
+#pragma warning restore CA1716
 {
     internal partial class NativeMethods
     {

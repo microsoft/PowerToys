@@ -31,6 +31,9 @@ namespace Utils
             constexpr const wchar_t* PowerToysSettings = L"PowerToys.Settings.exe";
             constexpr const wchar_t* ApplicationFrameHost = L"APPLICATIONFRAMEHOST.EXE";
             constexpr const wchar_t* Exe = L".EXE";
+
+            constexpr const wchar_t* EdgeFilename = L"msedge.exe";
+            constexpr const wchar_t* ChromeFilename = L"chrome.exe";
         }
 
         AppList IterateAppsFolder()
@@ -214,7 +217,7 @@ namespace Utils
             std::wstring appPathUpper(appPath);
             std::transform(appPathUpper.begin(), appPathUpper.end(), appPathUpper.begin(), towupper);
 
-            // filter out ApplicationFrameHost.exe   
+            // filter out ApplicationFrameHost.exe
             if (appPathUpper.ends_with(NonLocalizable::ApplicationFrameHost))
             {
                 return std::nullopt;
@@ -325,7 +328,7 @@ namespace Utils
                     }
                 }
             }
-            
+
             return AppData{
                 .name = std::filesystem::path(appPath).stem(),
                 .installPath = appPath
@@ -335,11 +338,58 @@ namespace Utils
         std::optional<AppData> GetApp(HWND window, const AppList& apps)
         {
             std::wstring processPath = get_process_path(window);
-            
+
             DWORD pid{};
             GetWindowThreadProcessId(window, &pid);
 
             return Utils::Apps::GetApp(processPath, pid, apps);
         }
+
+        bool UpdateAppVersion(WorkspacesData::WorkspacesProject::Application& app, const AppList& installedApps)
+        {
+            auto installedApp = std::find_if(installedApps.begin(), installedApps.end(), [&](const AppData& val) { return val.name == app.name; });
+            if (installedApp == installedApps.end())
+            {
+                return false;
+            }
+
+            // Packaged apps have version in the path, it will be outdated after update.
+            // We need make sure the current package is up to date.
+            if (!app.packageFullName.empty())
+            {
+                if (app.packageFullName != installedApp->packageFullName)
+                {
+                    std::wstring exeFileName = app.path.substr(app.path.find_last_of(L"\\") + 1);
+                    app.packageFullName = installedApp->packageFullName;
+                    app.path = installedApp->installPath + L"\\" + exeFileName;
+                    Logger::trace(L"Updated package full name for {}: {}", app.name, app.packageFullName);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        bool UpdateWorkspacesApps(WorkspacesData::WorkspacesProject& workspace, const AppList& installedApps)
+        {
+            bool updated = false;
+            for (auto& app : workspace.apps)
+            {
+                updated |= UpdateAppVersion(app, installedApps);
+            }
+
+            return updated;
+        }
+
+        bool AppData::IsEdge() const
+        {
+            return installPath.ends_with(NonLocalizable::EdgeFilename);
+        }
+
+        bool AppData::IsChrome() const
+        {
+            return installPath.ends_with(NonLocalizable::ChromeFilename);
+        }
+
     }
 }

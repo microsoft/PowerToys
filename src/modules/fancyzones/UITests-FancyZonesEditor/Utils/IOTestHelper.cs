@@ -27,7 +27,11 @@ namespace Microsoft.FancyZonesEditor.UITests.Utils
             }
             else
             {
-                _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(file));
+                var path = Path.GetDirectoryName(file);
+                if (path != null)
+                {
+                    _fileSystem.Directory.CreateDirectory(path);
+                }
             }
         }
 

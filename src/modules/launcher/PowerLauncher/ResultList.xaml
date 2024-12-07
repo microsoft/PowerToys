@@ -32,9 +32,9 @@
     <ListView
         x:Name="SuggestionsList"
         x:FieldModifier="public"
-        BorderBrush="Transparent"
-        Background="Transparent"
         AutomationProperties.Name="{x:Static p:Resources.Results}"
+        Background="Transparent"
+        BorderBrush="Transparent"
         ItemsSource="{Binding Results.Results, Mode=OneWay}"
         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
         ScrollViewer.VerticalScrollBarVisibility="Auto"

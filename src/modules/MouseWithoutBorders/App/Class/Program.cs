@@ -34,6 +34,8 @@ using Microsoft.PowerToys.Telemetry;
 using Newtonsoft.Json;
 using StreamJsonRpc;
 
+using Logger = MouseWithoutBorders.Core.Logger;
+
 [module: SuppressMessage("Microsoft.MSInternal", "CA904:DeclareTypesInMicrosoftOrSystemNamespace", Scope = "namespace", Target = "MouseWithoutBorders", Justification = "Dotnet port with style preservation")]
 [module: SuppressMessage("Microsoft.Design", "CA1014:MarkAssembliesWithClsCompliant", Justification = "Dotnet port with style preservation")]
 [module: SuppressMessage("Microsoft.Globalization", "CA1304:SpecifyCultureInfo", Scope = "member", Target = "MouseWithoutBorders.Program.#Main()", MessageId = "System.String.ToLower", Justification = "Dotnet port with style preservation")]
@@ -53,11 +55,13 @@ namespace MouseWithoutBorders.Class
         private static void Main()
         {
             ManagedCommon.Logger.InitializeLogger("\\MouseWithoutBorders\\Logs");
-            Common.Log(Application.ProductName + " Started!");
+            Logger.Log(Application.ProductName + " Started!");
+
+            ETWTrace etwTrace = new ETWTrace();
 
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMouseWithoutBordersEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
-                Common.Log("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+                Logger.Log("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
                 return;
             }
 
@@ -81,9 +85,9 @@ namespace MouseWithoutBorders.Class
                 }
 
                 User = WindowsIdentity.GetCurrent().Name;
-                Common.LogDebug("*** Started as " + User);
+                Logger.LogDebug("*** Started as " + User);
 
-                Common.Log(Environment.CommandLine);
+                Logger.Log(Environment.CommandLine);
 
                 bool serviceMode = firstArg == ServiceModeArg;
 
@@ -99,8 +103,8 @@ namespace MouseWithoutBorders.Class
                     }
                     catch (Exception ex)
                     {
-                        Common.Log("Couldn't start the service. Will try to continue as not a service.");
-                        Common.Log(ex);
+                        Logger.Log("Couldn't start the service. Will try to continue as not a service.");
+                        Logger.Log(ex);
                         ShowServiceModeErrorTooltip = true;
                         serviceMode = false;
                         Setting.Values.UseService = false;
@@ -115,13 +119,13 @@ namespace MouseWithoutBorders.Class
                     }
                 }
 
-                ShutdownWithPowerToys.WaitForPowerToysRunner();
+                ShutdownWithPowerToys.WaitForPowerToysRunner(etwTrace);
 
                 if (firstArg != string.Empty)
                 {
                     if (Common.CheckSecondInstance(Common.RunWithNoAdminRight))
                     {
-                        Common.Log("*** Second instance, exiting...");
+                        Logger.Log("*** Second instance, exiting...");
                         return;
                     }
 
@@ -130,16 +134,16 @@ namespace MouseWithoutBorders.Class
                     if (firstArg.Equals("winlogon", StringComparison.OrdinalIgnoreCase))
                     {
                         // Executed by service, running on logon desktop
-                        Common.Log("*** Running on " + firstArg + " desktop");
+                        Logger.Log("*** Running on " + firstArg + " desktop");
                         Common.RunOnLogonDesktop = true;
                     }
                     else if (args[1].Trim().Equals("default", StringComparison.OrdinalIgnoreCase))
                     {
-                        Common.Log("*** Running on " + firstArg + " desktop");
+                        Logger.Log("*** Running on " + firstArg + " desktop");
                     }
                     else if (args[1].Equals(myDesktop, StringComparison.OrdinalIgnoreCase))
                     {
-                        Common.Log("*** Running on " + myDesktop);
+                        Logger.Log("*** Running on " + myDesktop);
                         if (myDesktop.Equals("Screen-saver", StringComparison.OrdinalIgnoreCase))
                         {
                             Common.RunOnScrSaverDesktop = true;
@@ -151,7 +155,7 @@ namespace MouseWithoutBorders.Class
                 {
                     if (Common.CheckSecondInstance(true))
                     {
-                        Common.Log("*** Second instance, exiting...");
+                        Logger.Log("*** Second instance, exiting...");
                         return;
                     }
                 }
@@ -165,10 +169,10 @@ namespace MouseWithoutBorders.Class
                 }
                 catch (Exception e)
                 {
-                    Common.Log(e);
+                    Logger.Log(e);
                 }
 
-                Common.Log(Environment.OSVersion.ToString());
+                Logger.Log(Environment.OSVersion.ToString());
 
                 // Environment.OSVersion is unreliable from 6.2 and up, so just forcefully call the APIs and log the exception unsupported by Windows:
                 int setProcessDpiAwarenessResult = -1;
@@ -176,31 +180,31 @@ namespace MouseWithoutBorders.Class
                 try
                 {
                     setProcessDpiAwarenessResult = NativeMethods.SetProcessDpiAwareness(2);
-                    Common.Log(string.Format(CultureInfo.InvariantCulture, "SetProcessDpiAwareness: {0}.", setProcessDpiAwarenessResult));
+                    Logger.Log(string.Format(CultureInfo.InvariantCulture, "SetProcessDpiAwareness: {0}.", setProcessDpiAwarenessResult));
                 }
                 catch (DllNotFoundException)
                 {
-                    Common.Log("SetProcessDpiAwareness is unsupported in Windows 7 and lower.");
+                    Logger.Log("SetProcessDpiAwareness is unsupported in Windows 7 and lower.");
                 }
                 catch (EntryPointNotFoundException)
                 {
-                    Common.Log("SetProcessDpiAwareness is unsupported in Windows 7 and lower.");
+                    Logger.Log("SetProcessDpiAwareness is unsupported in Windows 7 and lower.");
                 }
                 catch (Exception e)
                 {
-                    Common.Log(e);
+                    Logger.Log(e);
                 }
 
                 try
                 {
                     if (setProcessDpiAwarenessResult != 0)
                     {
-                        Common.Log(string.Format(CultureInfo.InvariantCulture, "SetProcessDPIAware: {0}.", NativeMethods.SetProcessDPIAware()));
+                        Logger.Log(string.Format(CultureInfo.InvariantCulture, "SetProcessDPIAware: {0}.", NativeMethods.SetProcessDPIAware()));
                     }
                 }
                 catch (Exception e)
                 {
-                    Common.Log(e);
+                    Logger.Log(e);
                 }
 
                 System.Threading.Thread mainUIThread = Thread.CurrentThread;
@@ -223,10 +227,12 @@ namespace MouseWithoutBorders.Class
                 var formScreen = new FrmScreen();
 
                 Application.Run(formScreen);
+
+                etwTrace?.Dispose();
             }
             catch (Exception e)
             {
-                Common.Log(e);
+                Logger.Log(e);
             }
         }
 
@@ -397,14 +403,14 @@ namespace MouseWithoutBorders.Class
                 {
                     if (pp.Id != me.Id)
                     {
-                        Common.Log(string.Format(CultureInfo.InvariantCulture, "Killing process {0}.", pp.Id));
+                        Logger.Log(string.Format(CultureInfo.InvariantCulture, "Killing process {0}.", pp.Id));
                         pp.KillProcess();
                     }
                 }
             }
             catch (Exception e)
             {
-                Common.Log(e);
+                Logger.Log(e);
             }
 
             Common.StartMouseWithoutBordersService();

@@ -26,6 +26,8 @@ namespace EnvironmentVariables
     {
         public IHost Host { get; }
 
+        public ETWTrace EtwTrace { get; } = new ETWTrace();
+
         public static T GetService<T>()
             where T : class
         {

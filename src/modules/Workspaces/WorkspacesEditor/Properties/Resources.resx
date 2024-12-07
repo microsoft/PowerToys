@@ -123,9 +123,6 @@
   <data name="Admin" xml:space="preserve">
     <value>Admin</value>
   </data>
-  <data name="AlwaysLaunch" xml:space="preserve">
-    <value>Launch new app instances</value>
-  </data>
   <data name="App" xml:space="preserve">
     <value>app</value>
   </data>
@@ -159,6 +156,9 @@
   </data>
   <data name="CreateShortcut" xml:space="preserve">
     <value>Create desktop shortcut</value>
+  </data>
+  <data name="Custom" xml:space="preserve">
+    <value>Custom</value>
   </data>
   <data name="DaysAgo" xml:space="preserve">
     <value>days ago</value>
@@ -231,7 +231,7 @@
     <value>months ago</value>
   </data>
   <data name="MoveIfExist" xml:space="preserve">
-    <value>Move apps if present</value>
+    <value>Move existing windows</value>
   </data>
   <data name="Name" xml:space="preserve">
     <value>Name</value>
@@ -320,6 +320,9 @@
   </data>
   <data name="Width" xml:space="preserve">
     <value>Width</value>
+  </data>
+  <data name="WindowPosition" xml:space="preserve">
+    <value>Window position</value>
   </data>
   <data name="WriteArgs" xml:space="preserve">
     <value>Write arguments here</value>

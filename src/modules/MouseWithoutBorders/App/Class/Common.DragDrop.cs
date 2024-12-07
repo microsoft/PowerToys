@@ -20,6 +20,7 @@ using Microsoft.PowerToys.Telemetry;
 //     2023- Included in PowerToys.
 // </history>
 using MouseWithoutBorders.Class;
+using MouseWithoutBorders.Core;
 
 namespace MouseWithoutBorders
 {
@@ -73,12 +74,12 @@ namespace MouseWithoutBorders
                 MouseDown = true;
                 DragMachine = desMachineID;
                 dropMachineID = ID.NONE;
-                LogDebug("DragDropStep01: MouseDown");
+                Logger.LogDebug("DragDropStep01: MouseDown");
             }
             else if (wParam == WM_LBUTTONUP)
             {
                 MouseDown = false;
-                LogDebug("DragDropStep01: MouseUp");
+                Logger.LogDebug("DragDropStep01: MouseUp");
             }
 
             if (wParam == WM_RBUTTONUP && IsDropping)
@@ -92,7 +93,7 @@ namespace MouseWithoutBorders
         {
             if (desMachineID == MachineID)
             {
-                LogDebug("DragDropStep02: SendCheckExplorerDragDrop sent to myself");
+                Logger.LogDebug("DragDropStep02: SendCheckExplorerDragDrop sent to myself");
                 DoSomethingInUIThread(() =>
                 {
                     _ = NativeMethods.PostMessage(MainForm.Handle, NativeMethods.WM_CHECK_EXPLORER_DRAG_DROP, (IntPtr)0, (IntPtr)0);
@@ -101,7 +102,7 @@ namespace MouseWithoutBorders
             else
             {
                 SendCheckExplorerDragDrop();
-                LogDebug("DragDropStep02: SendCheckExplorerDragDrop sent");
+                Logger.LogDebug("DragDropStep02: SendCheckExplorerDragDrop sent");
             }
         }
 
@@ -114,11 +115,11 @@ namespace MouseWithoutBorders
 
             if (package.Des == MachineID || package.Des == ID.ALL)
             {
-                LogDebug("DragDropStep03: ExplorerDragDrop Received.");
+                Logger.LogDebug("DragDropStep03: ExplorerDragDrop Received.");
                 dropMachineID = package.Src; // Drop machine is the machine that sent ExplorerDragDrop
                 if (MouseDown || IsDropping)
                 {
-                    LogDebug("DragDropStep03: Mouse is down, check if dragging...sending WM_CHECK_EXPLORER_DRAG_DROP to myself...");
+                    Logger.LogDebug("DragDropStep03: Mouse is down, check if dragging...sending WM_CHECK_EXPLORER_DRAG_DROP to myself...");
                     DoSomethingInUIThread(() =>
                     {
                         _ = NativeMethods.PostMessage(MainForm.Handle, NativeMethods.WM_CHECK_EXPLORER_DRAG_DROP, (IntPtr)0, (IntPtr)0);
@@ -150,12 +151,12 @@ namespace MouseWithoutBorders
                     {
                         if (dragDropStep05ExCalledByIpc > 0)
                         {
-                            LogDebug("DragDropStep04: DragDropStep05ExCalledByIpc.");
+                            Logger.LogDebug("DragDropStep04: DragDropStep05ExCalledByIpc.");
                             break;
                         }
 
                         _ = NativeMethods.GetCursorPos(ref p);
-                        LogDebug("DragDropStep04: Moving Mouse Without Borders Helper to (" + p.X.ToString(CultureInfo.CurrentCulture) + ", " + p.Y.ToString(CultureInfo.CurrentCulture) + ")");
+                        Logger.LogDebug("DragDropStep04: Moving Mouse Without Borders Helper to (" + p.X.ToString(CultureInfo.CurrentCulture) + ", " + p.Y.ToString(CultureInfo.CurrentCulture) + ")");
                         _ = NativeMethods.SetWindowPos(h, NativeMethods.HWND_TOPMOST, p.X - 100 + i, p.Y - 100 + i, 200, 200, 0);
                         _ = NativeMethods.SendMessage(h, 0x000F, IntPtr.Zero, IntPtr.Zero); // WM_PAINT
                         Thread.Sleep(20);
@@ -166,20 +167,20 @@ namespace MouseWithoutBorders
                 }
                 else
                 {
-                    LogDebug("DragDropStep04: Mouse without Borders Helper not found!");
+                    Logger.LogDebug("DragDropStep04: Mouse without Borders Helper not found!");
                 }
             }
             else
             {
-                LogDebug("DragDropStep04: IsDropping == true, skip checking");
+                Logger.LogDebug("DragDropStep04: IsDropping == true, skip checking");
             }
 
-            LogDebug("DragDropStep04: Got WM_CHECK_EXPLORER_DRAG_DROP, done with processing jump to DragDropStep05...");
+            Logger.LogDebug("DragDropStep04: Got WM_CHECK_EXPLORER_DRAG_DROP, done with processing jump to DragDropStep05...");
         }
 
         internal static void DragDropStep05Ex(string dragFileName)
         {
-            LogDebug("DragDropStep05 called.");
+            Logger.LogDebug("DragDropStep05 called.");
 
             _ = Interlocked.Exchange(ref dragDropStep05ExCalledByIpc, 1);
 
@@ -204,21 +205,21 @@ namespace MouseWithoutBorders
                         }
 
                         DragDropStep06();
-                        LogDebug("DragDropStep05: File dragging: " + dragFileName);
+                        Logger.LogDebug("DragDropStep05: File dragging: " + dragFileName);
                         _ = NativeMethods.PostMessage(MainForm.Handle, NativeMethods.WM_HIDE_DD_HELPER, (IntPtr)1, (IntPtr)0);
                     }
                     else
                     {
-                        LogDebug("DragDropStep05: File not found: [" + dragFileName + "]");
+                        Logger.LogDebug("DragDropStep05: File not found: [" + dragFileName + "]");
                         _ = NativeMethods.PostMessage(MainForm.Handle, NativeMethods.WM_HIDE_DD_HELPER, (IntPtr)0, (IntPtr)0);
                     }
 
-                    LogDebug("DragDropStep05: WM_HIDE_DDHelper sent");
+                    Logger.LogDebug("DragDropStep05: WM_HIDE_DDHelper sent");
                 });
             }
             else
             {
-                LogDebug("DragDropStep05: IsDropping == true, change drop machine...");
+                Logger.LogDebug("DragDropStep05: IsDropping == true, change drop machine...");
                 IsDropping = false;
                 MainFormVisible = true; // WM_HIDE_DRAG_DROP
                 SendDropBegin(); // To dropMachineID set in DragDropStep03
@@ -230,7 +231,7 @@ namespace MouseWithoutBorders
         internal static void DragDropStep06()
         {
             IsDragging = true;
-            LogDebug("DragDropStep06: SendClipboardBeatDragDrop");
+            Logger.LogDebug("DragDropStep06: SendClipboardBeatDragDrop");
             SendClipboardBeatDragDrop();
             SendDropBegin();
         }
@@ -238,7 +239,7 @@ namespace MouseWithoutBorders
         internal static void DragDropStep08(DATA package)
         {
             GetNameOfMachineWithClipboardData(package);
-            LogDebug("DragDropStep08: ClipboardDragDrop Received. machine with drag file was set");
+            Logger.LogDebug("DragDropStep08: ClipboardDragDrop Received. machine with drag file was set");
         }
 
         internal static void DragDropStep08_2(DATA package)
@@ -247,7 +248,7 @@ namespace MouseWithoutBorders
             {
                 IsDropping = true;
                 dropMachineID = MachineID;
-                LogDebug("DragDropStep08_2: ClipboardDragDropOperation Received. IsDropping set");
+                Logger.LogDebug("DragDropStep08_2: ClipboardDragDropOperation Received. IsDropping set");
             }
         }
 
@@ -278,7 +279,7 @@ namespace MouseWithoutBorders
 
         internal static void DragDropStep10()
         {
-            LogDebug("DragDropStep10: Hide the form and get data...");
+            Logger.LogDebug("DragDropStep10: Hide the form and get data...");
             IsDropping = false;
             IsDragging = false;
             LastIDWithClipboardData = ID.NONE;
@@ -294,7 +295,7 @@ namespace MouseWithoutBorders
 
         internal static void DragDropStep11()
         {
-            LogDebug("DragDropStep11: Mouse drag coming back, canceling drag/drop");
+            Logger.LogDebug("DragDropStep11: Mouse drag coming back, canceling drag/drop");
             SendClipboardBeatDragDropEnd();
             IsDropping = false;
             IsDragging = false;
@@ -306,7 +307,7 @@ namespace MouseWithoutBorders
 
         internal static void DragDropStep12()
         {
-            LogDebug("DragDropStep12: ClipboardDragDropEnd received");
+            Logger.LogDebug("DragDropStep12: ClipboardDragDropEnd received");
             IsDropping = false;
             LastIDWithClipboardData = ID.NONE;
 
@@ -374,7 +375,7 @@ namespace MouseWithoutBorders
 
         internal static void SendDropBegin()
         {
-            LogDebug("SendDropBegin...");
+            Logger.LogDebug("SendDropBegin...");
             SendPackage(dropMachineID, PackageType.ClipboardDragDropOperation);
         }
 

@@ -11,6 +11,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -29,7 +30,7 @@ namespace PowerLauncher.Plugin
     {
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IDirectory Directory = FileSystem.Directory;
-        private static readonly object AllPluginsLock = new object();
+        private static readonly Lock AllPluginsLock = new Lock();
 
         private static readonly CompositeFormat FailedToInitializePluginsDescription = System.Text.CompositeFormat.Parse(Properties.Resources.FailedToInitializePluginsDescription);
 

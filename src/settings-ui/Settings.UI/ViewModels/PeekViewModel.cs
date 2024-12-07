@@ -5,6 +5,7 @@
 using System;
 using System.Globalization;
 using System.Text.Json;
+
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;

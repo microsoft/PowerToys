@@ -22,13 +22,13 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID /*lpRese
     {
     case DLL_PROCESS_ATTACH:
         g_hInst_MouseWithoutBorders = hModule;
-        Trace::RegisterProvider();
+        Trace::MouseWithoutBorders::RegisterProvider();
         break;
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
         break;
     case DLL_PROCESS_DETACH:
-        Trace::UnregisterProvider();
+        Trace::MouseWithoutBorders::UnregisterProvider();
         break;
     }
     return TRUE;

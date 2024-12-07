@@ -11,5 +11,6 @@ namespace WorkspacesLauncherUI.Data
         Launched,
         LaunchedAndMoved,
         Failed,
+        Canceled,
     }
 }

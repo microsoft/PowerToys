@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Timers;
+
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -34,9 +35,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private readonly ISettingsUtils _settingsUtils;
-        private readonly object _delayedActionLock = new object();
+        private readonly System.Threading.Lock _delayedActionLock = new System.Threading.Lock();
 
         private readonly AdvancedPasteSettings _advancedPasteSettings;
+        private readonly AdvancedPasteAdditionalActions _additionalActions;
         private readonly ObservableCollection<AdvancedPasteCustomAction> _customActions;
         private Timer _delayedTimer;
 
@@ -68,6 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _advancedPasteSettings = advancedPasteSettingsRepository.SettingsConfig;
 
+            _additionalActions = _advancedPasteSettings.Properties.AdditionalActions;
             _customActions = _advancedPasteSettings.Properties.CustomActions.Value;
 
             InitializeEnabledValue();
@@ -79,6 +82,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _delayedTimer.Interval = SaveSettingsDelayInMs;
             _delayedTimer.Elapsed += DelayedTimer_Tick;
             _delayedTimer.AutoReset = false;
+
+            foreach (var action in _additionalActions.AllActions)
+            {
+                action.PropertyChanged += OnAdditionalActionPropertyChanged;
+            }
 
             foreach (var customAction in _customActions)
             {
@@ -141,6 +149,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         public ObservableCollection<AdvancedPasteCustomAction> CustomActions => _customActions;
+
+        public AdvancedPasteAdditionalActions AdditionalActions => _additionalActions;
 
         private bool OpenAIKeyExists()
         {
@@ -335,12 +345,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsConflictingCopyShortcut
-        {
-            get => _customActions.Select(customAction => customAction.Shortcut)
-                                 .Concat([PasteAsPlainTextShortcut, AdvancedPasteUIShortcut, PasteAsMarkdownShortcut, PasteAsJsonShortcut])
-                                 .Any(hotkey => WarnHotkeys.Contains(hotkey.ToString()));
-        }
+        public bool IsConflictingCopyShortcut =>
+            _customActions.Select(customAction => customAction.Shortcut)
+                          .Concat([PasteAsPlainTextShortcut, AdvancedPasteUIShortcut, PasteAsMarkdownShortcut, PasteAsJsonShortcut])
+                          .Any(hotkey => WarnHotkeys.Contains(hotkey.ToString()));
+
+        public bool IsAdditionalActionConflictingCopyShortcut =>
+            _additionalActions.AllActions
+                              .OfType<AdvancedPasteAdditionalAction>()
+                              .Select(additionalAction => additionalAction.Shortcut)
+                              .Any(hotkey => WarnHotkeys.Contains(hotkey.ToString()));
 
         private void DelayedTimer_Tick(object sender, EventArgs e)
         {
@@ -458,6 +472,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             _settingsUtils.SaveSettings(_advancedPasteSettings.ToJsonString(), AdvancedPasteSettings.ModuleName);
             NotifySettingsChanged();
+        }
+
+        private void OnAdditionalActionPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            SaveAndNotifySettings();
+
+            if (e.PropertyName == nameof(AdvancedPasteAdditionalAction.Shortcut))
+            {
+                OnPropertyChanged(nameof(IsAdditionalActionConflictingCopyShortcut));
+            }
         }
 
         private void OnCustomActionPropertyChanged(object sender, PropertyChangedEventArgs e)

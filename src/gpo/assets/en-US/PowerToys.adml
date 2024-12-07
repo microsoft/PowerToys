@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.13" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.14" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <displayName>PowerToys</displayName>
   <description>PowerToys</description>
   <resources>
@@ -28,6 +28,7 @@
       <string id="SUPPORTED_POWERTOYS_0_83_0">PowerToys version 0.83.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_84_0">PowerToys version 0.84.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_85_0">PowerToys version 0.85.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_86_0">PowerToys version 0.86.0 or later</string>
 
       <string id="ConfigureAllUtilityGlobalEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
 
@@ -101,6 +102,12 @@ If disabled or not configured, the user can control this in the settings of Powe
 If this setting is enabled or not configured, the user can control experimentation in the PowerToys settings menu.
 
 If this setting is disabled, experimentation is not allowed.
+</string>
+      <string id="AllowDiagnosticDataDescription">This policy configures whether sending of PowerToys diagnostic data is allowed. With diagnostic data sending allowed the user helps inform bug fixes, performance and improvements.
+
+If this setting is enabled or not configured, the user can control diagnostic data sending in the PowerToys settings menu.
+
+If this setting is disabled, diagnostic data sending is not allowed.
 </string>
       <string id="PowerToysRunAllPluginsEnabledStateDescription">This policy configures the enabled state for all PowerToys Run plugins. All plugins will have the same state.
 
@@ -258,6 +265,7 @@ If you don't configure this policy, the user takes control over the setting and 
       <string id="MwbDisableUserDefinedIpMappingRules">Disable user defined IP Address mapping rules</string>
       <string id="MwbPolicyDefinedIpMappingRules">Predefined IP Address mapping rules</string>
       <string id="NewPlusHideTemplateFilenameExtension">Hide template filename extension</string>
+      <string id="AllowDiagnosticData">Allow sending diagnostic data</string>
     </stringTable>
 
     <presentationTable>

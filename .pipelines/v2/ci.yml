@@ -37,6 +37,10 @@ parameters:
     type: boolean
     displayName: "Run Tests"
     default: true
+  - name: useVSPreview
+    type: boolean
+    displayName: "Build Using Visual Studio Preview"
+    default: false
 
 extends:
   template: templates/pipeline-ci-build.yml
@@ -44,3 +48,4 @@ extends:
     buildPlatforms: ${{ parameters.buildPlatforms }}
     enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
     runTests: ${{ parameters.runTests }}
+    useVSPreview: ${{ parameters.useVSPreview }}

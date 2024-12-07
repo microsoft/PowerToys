@@ -21,6 +21,7 @@ using System.Windows.Forms;
 //     2023- Included in PowerToys.
 // </history>
 using MouseWithoutBorders.Class;
+using MouseWithoutBorders.Core;
 
 namespace MouseWithoutBorders
 {
@@ -52,19 +53,19 @@ namespace MouseWithoutBorders
             {
                 // For logging only
                 _ = NativeMethods.GetDpiForMonitor(hMonitor, 0, out uint dpiX, out uint dpiY);
-                Log(string.Format(CultureInfo.CurrentCulture, "MONITOR: ({0}, {1}, {2}, {3}). DPI: ({4}, {5})", mi.rcMonitor.Left, mi.rcMonitor.Top, mi.rcMonitor.Right, mi.rcMonitor.Bottom, dpiX, dpiY));
+                Logger.Log(string.Format(CultureInfo.CurrentCulture, "MONITOR: ({0}, {1}, {2}, {3}). DPI: ({4}, {5})", mi.rcMonitor.Left, mi.rcMonitor.Top, mi.rcMonitor.Right, mi.rcMonitor.Bottom, dpiX, dpiY));
             }
             catch (DllNotFoundException)
             {
-                Common.Log("GetDpiForMonitor is unsupported in Windows 7 and lower.");
+                Logger.Log("GetDpiForMonitor is unsupported in Windows 7 and lower.");
             }
             catch (EntryPointNotFoundException)
             {
-                Common.Log("GetDpiForMonitor is unsupported in Windows 7 and lower.");
+                Logger.Log("GetDpiForMonitor is unsupported in Windows 7 and lower.");
             }
             catch (Exception e)
             {
-                Common.Log(e);
+                Logger.Log(e);
             }
 
             if (mi.rcMonitor.Left == 0 && mi.rcMonitor.Top == 0 && mi.rcMonitor.Right != 0 && mi.rcMonitor.Bottom != 0)
@@ -116,7 +117,7 @@ namespace MouseWithoutBorders
         {
             try
             {
-                Common.LogDebug("==================== GetScreenConfig started");
+                Logger.LogDebug("==================== GetScreenConfig started");
                 newDesktopBounds = new MyRectangle();
                 newPrimaryScreenBounds = new MyRectangle();
                 newDesktopBounds.Left = newPrimaryScreenBounds.Left = Screen.PrimaryScreen.Bounds.Left;
@@ -124,7 +125,7 @@ namespace MouseWithoutBorders
                 newDesktopBounds.Right = newPrimaryScreenBounds.Right = Screen.PrimaryScreen.Bounds.Right;
                 newDesktopBounds.Bottom = newPrimaryScreenBounds.Bottom = Screen.PrimaryScreen.Bounds.Bottom;
 
-                Common.Log(string.Format(
+                Logger.Log(string.Format(
                     CultureInfo.CurrentCulture,
                     "logon = {0} PrimaryScreenBounds = {1},{2},{3},{4} desktopBounds = {5},{6},{7},{8}",
                     Common.RunOnLogonDesktop,
@@ -162,7 +163,7 @@ namespace MouseWithoutBorders
                 Interlocked.Exchange(ref desktopBounds, newDesktopBounds);
                 Interlocked.Exchange(ref primaryScreenBounds, newPrimaryScreenBounds);
 
-                Common.Log(string.Format(
+                Logger.Log(string.Format(
                     CultureInfo.CurrentCulture,
                     "logon = {0} PrimaryScreenBounds = {1},{2},{3},{4} desktopBounds = {5},{6},{7},{8}",
                     Common.RunOnLogonDesktop,
@@ -175,11 +176,11 @@ namespace MouseWithoutBorders
                     Common.DesktopBounds.Right,
                     Common.DesktopBounds.Bottom));
 
-                Common.Log("==================== GetScreenConfig ended");
+                Logger.Log("==================== GetScreenConfig ended");
             }
             catch (Exception e)
             {
-                Log(e);
+                Logger.Log(e);
             }
         }
 
@@ -265,7 +266,7 @@ namespace MouseWithoutBorders
         {
             if (!Common.RunWithNoAdminRight)
             {
-                LogDebug("*** Starting on active Desktop: " + desktopToRunMouseWithoutBordersOn);
+                Logger.LogDebug("*** Starting on active Desktop: " + desktopToRunMouseWithoutBordersOn);
                 StartMouseWithoutBordersService(desktopToRunMouseWithoutBordersOn);
             }
         }
@@ -282,19 +283,19 @@ namespace MouseWithoutBorders
                     while (NativeMethods.WTSGetActiveConsoleSessionId() == 0xFFFFFFFF && waitCount > 0)
                     {
                         waitCount--;
-                        LogDebug("The session is detached/attached.");
+                        Logger.LogDebug("The session is detached/attached.");
                         Thread.Sleep(500);
                     }
 
                     string myDesktop = GetMyDesktop();
                     activeDesktop = GetInputDesktop();
 
-                    LogDebug("*** Active Desktop = " + activeDesktop);
-                    LogDebug("*** My Desktop = " + myDesktop);
+                    Logger.LogDebug("*** Active Desktop = " + activeDesktop);
+                    Logger.LogDebug("*** My Desktop = " + myDesktop);
 
                     if (myDesktop.Equals(activeDesktop, StringComparison.OrdinalIgnoreCase))
                     {
-                        LogDebug("*** Active Desktop == My Desktop (TS session)");
+                        Logger.LogDebug("*** Active Desktop == My Desktop (TS session)");
                     }
 
                     if (!activeDesktop.Equals("winlogon", StringComparison.OrdinalIgnoreCase) &&
@@ -307,25 +308,25 @@ namespace MouseWithoutBorders
                         }
                         catch (Exception e)
                         {
-                            Common.Log($"{nameof(CheckForDesktopSwitchEvent)}: {e}");
+                            Logger.Log($"{nameof(CheckForDesktopSwitchEvent)}: {e}");
                         }
                     }
                     else
                     {
                         if (!myDesktop.Equals(activeDesktop, StringComparison.OrdinalIgnoreCase))
                         {
-                            Log("*** Active Desktop <> My Desktop");
+                            Logger.Log("*** Active Desktop <> My Desktop");
                         }
 
                         uint sid = NativeMethods.WTSGetActiveConsoleSessionId();
 
                         if (Process.GetProcessesByName(Common.BinaryName).Any(p => (uint)p.SessionId == sid))
                         {
-                            Log("Found MouseWithoutBorders on the active session!");
+                            Logger.Log("Found MouseWithoutBorders on the active session!");
                         }
                         else
                         {
-                            Log("MouseWithoutBorders not found on the active session!");
+                            Logger.Log("MouseWithoutBorders not found on the active session!");
                             StartMMService(null);
                         }
                     }
@@ -333,7 +334,7 @@ namespace MouseWithoutBorders
                     if (!myDesktop.Equals("winlogon", StringComparison.OrdinalIgnoreCase) &&
                         !myDesktop.Equals("default", StringComparison.OrdinalIgnoreCase))
                     {
-                        LogDebug("*** Desktop inactive, exiting: " + myDesktop);
+                        Logger.LogDebug("*** Desktop inactive, exiting: " + myDesktop);
                         Setting.Values.LastX = JUST_GOT_BACK_FROM_SCREEN_SAVER;
                         if (cleanupIfExit)
                         {
@@ -346,7 +347,7 @@ namespace MouseWithoutBorders
             }
             catch (Exception e)
             {
-                Log(e);
+                Logger.Log(e);
             }
         }
 

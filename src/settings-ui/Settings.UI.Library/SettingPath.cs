@@ -4,6 +4,7 @@
 
 using System;
 using System.IO.Abstractions;
+
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.Library

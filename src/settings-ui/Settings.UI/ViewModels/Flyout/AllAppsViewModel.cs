@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;

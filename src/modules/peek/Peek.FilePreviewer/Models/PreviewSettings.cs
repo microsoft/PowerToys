@@ -20,7 +20,7 @@ namespace Peek.FilePreviewer.Models
 
         private readonly SettingsUtils _settingsUtils;
         private readonly IFileSystemWatcher _watcher;
-        private readonly object _loadingSettingsLock = new();
+        private readonly Lock _loadingSettingsLock = new();
 
         public bool SourceCodeWrapText { get; private set; }
 

@@ -47,7 +47,7 @@ namespace PowerLauncher.ViewModel
         private readonly PowerToysRunSettings _settings;
         private readonly QueryHistory _history;
         private readonly UserSelectedRecord _userSelectedRecord;
-        private static readonly object _addResultsLock = new object();
+        private static readonly Lock _addResultsLock = new Lock();
         private readonly System.Diagnostics.Stopwatch _hotkeyTimer = new System.Diagnostics.Stopwatch();
 
         private string _queryTextBeforeLeaveResults;

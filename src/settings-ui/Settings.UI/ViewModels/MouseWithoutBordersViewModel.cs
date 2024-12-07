@@ -13,6 +13,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -38,7 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             0,
         };
 
-        private readonly object _machineMatrixStringLock = new();
+        private readonly Lock _machineMatrixStringLock = new();
 
         private static readonly Dictionary<SocketStatus, Brush> StatusColors = new Dictionary<SocketStatus, Brush>()
 {
@@ -417,7 +418,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             InitializeEnabledValue();
             InitializePolicyValues();
 
-            // MouseWithoutBorders settings may be changed by the logic in the utility as machines connect. We need to get a fresh version everytime instead of using a repository.
+            // MouseWithoutBorders settings may be changed by the logic in the utility as machines connect. We need to get a fresh version every time instead of using a repository.
             MouseWithoutBordersSettings moduleSettings;
             moduleSettings = SettingsUtils.GetSettingsOrDefault<MouseWithoutBordersSettings>("MouseWithoutBorders");
 

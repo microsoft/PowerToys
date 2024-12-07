@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;

@@ -14,6 +14,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Windows.Input;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
@@ -280,7 +281,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return (string.IsNullOrEmpty(NewRemapString) || NewRemapString == "*Unsupported*") ? MapKeys(NewRemapKeys) : new List<string> { NewRemapString };
         }
 
-        // Instead of doing something fancy pants, we 'll just display the RunProgramFilePath data when it's IsRunProgram
+        // Instead of doing something fancy pants, we'll just display the RunProgramFilePath data when it's IsRunProgram
         // It truncates the start of the program to run, if it's long and truncates the end of the args if it's long
         // e.g.: c:\MyCool\PathIs\Long\software.exe myArg1 myArg2 myArg3 -> (something like) "...ng\software.exe myArg1..."
         // the idea is you get the most important part of the program to run and some of the args in case that the only thing thats different,

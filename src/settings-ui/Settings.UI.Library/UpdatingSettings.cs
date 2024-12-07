@@ -102,7 +102,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             {
                 try
                 {
-                    Stream inputStream = fileSystem.File.Open(file, FileMode.Open);
+                    FileSystemStream inputStream = fileSystem.File.Open(file, FileMode.Open);
                     StreamReader reader = new StreamReader(inputStream);
                     string data = reader.ReadToEnd();
                     inputStream.Close();

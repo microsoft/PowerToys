@@ -65,7 +65,15 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
         }
 
         return monitorNumber;
-    });
+        }, [&](unsigned int monitorId) -> WorkspacesData::WorkspacesProject::Monitor::MonitorRect {
+        for (const auto& monitor : project.monitors)
+        {
+            if (monitor.number == monitorId)
+            {
+                return monitor.monitorRectDpiUnaware;
+            }
+        }
+        return project.monitors[0].monitorRectDpiUnaware; });
 
     JsonUtils::Write(WorkspacesData::TempWorkspacesFile(), project);
     Logger::trace(L"WorkspacesProject {}:{} created", project.name, project.id);

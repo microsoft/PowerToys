@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Windows.Threading;
+
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -136,24 +137,32 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void ModuleEnabledChangedOnSettingsPage()
         {
-            ActiveModules.Clear();
-            DisabledModules.Clear();
-            generalSettingsConfig = _settingsRepository.SettingsConfig;
-            foreach (DashboardListItem item in _allModules)
+            try
             {
-                item.IsEnabled = ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, item.Tag);
-                if (item.IsEnabled)
-                {
-                    ActiveModules.Add(item);
-                }
-                else
-                {
-                    DisabledModules.Add(item);
-                }
-            }
+                ActiveModules.Clear();
+                DisabledModules.Clear();
 
-            OnPropertyChanged(nameof(ActiveModules));
-            OnPropertyChanged(nameof(DisabledModules));
+                generalSettingsConfig = _settingsRepository.SettingsConfig;
+                foreach (DashboardListItem item in _allModules)
+                {
+                    item.IsEnabled = ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, item.Tag);
+                    if (item.IsEnabled)
+                    {
+                        ActiveModules.Add(item);
+                    }
+                    else
+                    {
+                        DisabledModules.Add(item);
+                    }
+                }
+
+                OnPropertyChanged(nameof(ActiveModules));
+                OnPropertyChanged(nameof(DisabledModules));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Updating active/disabled modules list failed: {ex.Message}");
+            }
         }
 
         private ObservableCollection<DashboardModuleItem> GetModuleItems(ModuleType moduleType)

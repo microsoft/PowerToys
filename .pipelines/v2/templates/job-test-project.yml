@@ -45,7 +45,7 @@ jobs:
   - template: steps-ensure-dotnet-version.yml
     parameters:
       sdk: true
-      version: '8.0'
+      version: '9.0'
 
   - task: VisualStudioTestPlatformInstaller@1
     displayName: Ensure VSTest Platform

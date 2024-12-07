@@ -20,6 +20,7 @@ using System.Windows.Forms;
 //     2023- Included in PowerToys.
 // </history>
 using MouseWithoutBorders.Class;
+using MouseWithoutBorders.Core;
 
 [module: SuppressMessage("Microsoft.Reliability", "CA2002:DoNotLockOnObjectsWithWeakIdentity", Scope = "member", Target = "MouseWithoutBorders.Common.#PreProcess(MouseWithoutBorders.DATA)", Justification = "Dotnet port with style preservation")]
 
@@ -30,8 +31,10 @@ namespace MouseWithoutBorders
         private static readonly uint QUEUE_SIZE = 50;
         private static readonly int[] RecentProcessedPackageIDs = new int[QUEUE_SIZE];
         private static int recentProcessedPackageIndex;
-        private static long processedPackageCount;
-        private static long skippedPackageCount;
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
+        internal static long processedPackageCount;
+        internal static long skippedPackageCount;
+#pragma warning restore SA1307
 
         internal static long JustGotAKey { get; set; }
 
@@ -45,12 +48,12 @@ namespace MouseWithoutBorders
                 }
 
                 Common.InvalidPackageCount++;
-                Common.Log("Invalid packages received!");
+                Logger.Log("Invalid packages received!");
                 return false;
             }
             else if (package.Type == 0)
             {
-                Common.Log("Got an unknown package!");
+                Logger.Log("Got an unknown package!");
                 return false;
             }
             else if (package.Type is not PackageType.ClipboardText and not PackageType.ClipboardImage
@@ -157,7 +160,7 @@ namespace MouseWithoutBorders
                                 {
                                     HasSwitchedMachineSinceLastCopy = true;
 
-                                    Common.LogDebug(string.Format(
+                                    Logger.LogDebug(string.Format(
                                         CultureInfo.CurrentCulture,
                                         "***** Controlled Machine: newDesMachineIdEx set = [{0}]. Mouse is now at ({1},{2})",
                                         newDesMachineIdEx,
@@ -191,7 +194,7 @@ namespace MouseWithoutBorders
                     break;
 
                 case PackageType.NextMachine:
-                    LogDebug("PackageType.NextMachine received!");
+                    Logger.LogDebug("PackageType.NextMachine received!");
 
                     if (IsSwitchingByMouseEnabled())
                     {
@@ -334,7 +337,7 @@ namespace MouseWithoutBorders
                             }
                             catch (Exception e)
                             {
-                                Log(e);
+                                Logger.Log(e);
                             }
                         });
                     }
@@ -395,7 +398,7 @@ namespace MouseWithoutBorders
                     else
                     {
                         // We should never get to this point!
-                        Common.Log("Invalid package received!");
+                        Logger.Log("Invalid package received!");
                         return;
                     }
             }
@@ -421,7 +424,7 @@ namespace MouseWithoutBorders
 
         private static void SignalBigClipboardData()
         {
-            LogDebug("SignalBigClipboardData");
+            Logger.LogDebug("SignalBigClipboardData");
             SetToggleIcon(new int[TOGGLE_ICONS_SIZE] { ICON_BIG_CLIPBOARD, -1, ICON_BIG_CLIPBOARD, -1 });
         }
     }

@@ -29,34 +29,28 @@ namespace Microsoft.PowerToys.FilePreviewCommon
             new XmlFormatter(),
         }.AsReadOnly();
 
-        private static string? _monacoDirectory;
+        private static readonly Lazy<string> _monacoDirectory = new(GetRuntimeMonacoDirectory);
 
-        public static string GetRuntimeMonacoDirectory()
+        /// <summary>
+        /// Gets the path of the Monaco assets folder.
+        /// </summary>
+        public static string MonacoDirectory => _monacoDirectory.Value;
+
+        private static string GetRuntimeMonacoDirectory()
         {
-            string codeBase = Assembly.GetExecutingAssembly().Location;
-            string path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(codeBase) ?? string.Empty, "Assets", "Monaco"));
-            if (Path.Exists(path))
-            {
-                return path;
-            }
-            else
-            {
-                // We're likely in WinUI3Apps directory and need to go back to the base directory.
-                return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(codeBase) ?? string.Empty, "..", "Assets", "Monaco"));
-            }
-        }
+            string exePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty;
 
-        public static string MonacoDirectory
-        {
-            get
+            // If the executable is within "WinUI3Apps", correct the path first.
+            if (Path.GetFileName(exePath) == "WinUI3Apps")
             {
-                if (string.IsNullOrEmpty(_monacoDirectory))
-                {
-                    _monacoDirectory = GetRuntimeMonacoDirectory();
-                }
-
-                return _monacoDirectory;
+                exePath = Path.Combine(exePath, "..");
             }
+
+            string monacoPath = Path.Combine(exePath, "Assets", "Monaco");
+
+            return Directory.Exists(monacoPath) ?
+                monacoPath :
+                throw new DirectoryNotFoundException($"Monaco assets directory not found at {monacoPath}");
         }
 
         public static JsonDocument GetLanguages()
