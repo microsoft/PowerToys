@@ -80,4 +80,9 @@ public partial class ListItemViewModel(IListItem model, TaskScheduler scheduler)
 
         UpdateProperty(propertyName);
     }
+
+    // TODO: Do we want filters to match descriptions and other properties? Tags, etc... Yes?
+    public bool MatchesFilter(string filter) => Title.Contains(filter) || Name.Contains(filter);
+
+    public override string ToString() => $"{Name} ListItemViewModel";
 }

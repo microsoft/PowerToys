@@ -63,7 +63,7 @@
             Grid.Column="1"
             VerticalAlignment="Center"
             FontSize="12"
-            Text="{x:Bind ViewModel.CurrentPage.Name, Mode=OneWay}" />
+            Text="{x:Bind CurrentPageViewModel.Name, Mode=OneWay}" />
         <!--  TO DO: Replace with ItemsRepeater and bind "Primary commands"?  -->
         <StackPanel
             Grid.Column="2"

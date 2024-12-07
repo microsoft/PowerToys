@@ -20,7 +20,8 @@
         <controls:SearchBar
             x:Name="SearchBox"
             Grid.Row="0"
-            VerticalAlignment="Top" />
+            VerticalAlignment="Top"
+            CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
 
         <Grid
             Grid.Row="1"
@@ -31,6 +32,9 @@
         </Grid>
 
 
-        <controls:ActionBar Grid.Row="2" VerticalAlignment="Top" />
+        <controls:ActionBar
+            Grid.Row="2"
+            VerticalAlignment="Top"
+            CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
     </Grid>
 </Page>

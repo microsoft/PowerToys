@@ -89,7 +89,7 @@ public sealed partial class ListPage : Page,
                             var result = (bool)lvm.InitializeCommand.ExecutionTask.GetResultOrDefault()!;
 
                             ViewModel = lvm;
-                            WeakReferenceMessenger.Default.Send<UpdateActionBarPage>(new(result ? lvm : null));
+                            WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(result ? lvm : null));
                             LoadedState = result ? ViewModelLoadedState.Loaded : ViewModelLoadedState.Error;
                         });
                     }
@@ -98,7 +98,7 @@ public sealed partial class ListPage : Page,
             else
             {
                 ViewModel = lvm;
-                WeakReferenceMessenger.Default.Send<UpdateActionBarPage>(new(lvm));
+                WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(lvm));
                 LoadedState = ViewModelLoadedState.Loaded;
             }
         }

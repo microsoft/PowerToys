@@ -80,7 +80,7 @@ public sealed partial class ShellPage :
                         RootFrame.BackStack.Clear();
                     }
 
-                    WeakReferenceMessenger.Default.Send<UpdateActionBarPage>(new(pageViewModel));
+                    ViewModel.CurrentPage = pageViewModel;
                 });
             }
 

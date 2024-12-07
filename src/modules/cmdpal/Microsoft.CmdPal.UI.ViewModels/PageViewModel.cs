@@ -23,6 +23,10 @@ public partial class PageViewModel : ExtensionObjectViewModel
     [ObservableProperty]
     public partial string ErrorMessage { get; private set; } = string.Empty;
 
+    // This is set from the SearchBar
+    [ObservableProperty]
+    public partial string Filter { get; set; } = string.Empty;
+
     // These are properties that are "observable" from the extension object
     // itself, in the sense that they get raised by PropChanged events from the
     // extension. However, we don't want to actually make them
@@ -89,6 +93,14 @@ public partial class PageViewModel : ExtensionObjectViewModel
         {
             // TODO log? throw?
         }
+    }
+
+    partial void OnFilterChanged(string oldValue, string newValue) => OnFilterUpdated(newValue);
+
+    protected virtual void OnFilterUpdated(string filter)
+    {
+        // The base page has no notion of data, so we do nothing here...
+        // subclasses should override.
     }
 
     protected virtual void FetchProperty(string propertyName)
