@@ -28,7 +28,7 @@ steps:
     project: '55e8140e-57ac-4e5f-8f9c-c7c15b51929d'
     definition: '104083'
     buildVersionToDownload: 'latestFromBranch'
-    branchName: 'refs/heads/release/1.6-stable'
+    branchName: 'refs/heads/release/$(parameters.versionNumber)-stable'
     artifactName: 'WindowsAppSDK_Nuget_And_MSIX'
     targetPath: '$(Build.SourcesDirectory)\localpackages'
 
