@@ -19,10 +19,9 @@ internal sealed partial class ProcessListPage : ListPage
         this.Name = "Process Monitor";
     }
 
-    public override IListItem[] GetItems()
-    {
-        return DoGetItems();
-    }
+    public override IListItem[] GetItems() => DoGetItems();
+
+    internal void UpdateItems() => this.RaiseItemsChanged(-1);
 
     private IListItem[] DoGetItems()
     {
@@ -35,7 +34,7 @@ internal sealed partial class ProcessListPage : ListPage
                 Title = process.Name,
                 Subtitle = $"PID: {process.ProcessId}",
                 MoreCommands = [
-                    new CommandContextItem(new TerminateProcess(process))
+                    new CommandContextItem(new TerminateProcess(process, this))
                 ],
             }).ToArray();
         return s;

@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.IO;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CmdPal.Ext.Shell.Pages;
 using Microsoft.CmdPal.Ext.Shell.Properties;
@@ -16,10 +14,13 @@ public partial class ShellCommandsProvider : CommandProvider
 {
     private readonly CommandItem _shellPageItem;
     private readonly SettingsManager _settingsManager = new();
+    private readonly FallbackCommandItem _fallbackItem;
 
     public ShellCommandsProvider()
     {
         DisplayName = Resources.cmd_plugin_name;
+        _fallbackItem = new FallbackExecuteItem(_settingsManager);
+
         _shellPageItem = new CommandItem(new ShellListPage(_settingsManager))
         {
             Icon = new("\uE756"),
@@ -30,4 +31,6 @@ public partial class ShellCommandsProvider : CommandProvider
     }
 
     public override ICommandItem[] TopLevelCommands() => [_shellPageItem];
+
+    public override IFallbackCommandItem[]? FallbackCommands() => [_fallbackItem];
 }

@@ -15,8 +15,9 @@ namespace Microsoft.CmdPal.Ext.Shell.Commands;
 internal sealed partial class ExecuteItem : InvokableCommand
 {
     private readonly SettingsManager _settings;
-    private readonly string _cmd;
     private readonly RunAsType _runas;
+
+    public string Cmd { get; internal set; } = string.Empty;
 
     private static readonly char[] Separator = [' '];
 
@@ -38,7 +39,7 @@ internal sealed partial class ExecuteItem : InvokableCommand
             Icon = new("\uE751"); // Return Key Icon
         }
 
-        _cmd = cmd;
+        Cmd = cmd;
         _settings = settings;
         _runas = type;
     }
@@ -245,7 +246,7 @@ internal sealed partial class ExecuteItem : InvokableCommand
     {
         try
         {
-            Execute(Process.Start, PrepareProcessStartInfo(_cmd, _runas));
+            Execute(Process.Start, PrepareProcessStartInfo(Cmd, _runas));
         }
         catch
         {
