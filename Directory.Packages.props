@@ -84,7 +84,6 @@
     <PackageVersion Include="System.ServiceProcess.ServiceController" Version="9.0.0" />
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="9.0.0" />
     <PackageVersion Include="System.Text.Json" Version="9.0.0" />
-    <PackageVersion Include="TestableIO.System.IO.Abstractions" Version="21.1.7" />
     <PackageVersion Include="UnicodeInformation" Version="2.6.0" />
     <PackageVersion Include="UnitsNet" Version="5.56.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
