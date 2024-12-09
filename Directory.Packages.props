@@ -26,7 +26,7 @@
     <PackageVersion Include="Markdig.Signed" Version="0.34.0" />
     <!-- Including MessagePack to force version, since it's used by StreamJsonRpc but contains vulnerabilities. After StreamJsonRpc updates the version of MessagePack, we can upgrade StreamJsonRpc instead. -->
     <PackageVersion Include="MessagePack" Version="2.5.187" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24508.2" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.16" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
