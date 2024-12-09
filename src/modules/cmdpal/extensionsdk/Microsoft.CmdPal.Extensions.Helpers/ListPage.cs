@@ -47,13 +47,13 @@ public class ListPage : Page, IListPage
         }
     }
 
-    public bool HasMore
+    public bool HasMoreItems
     {
         get => _hasMore;
         set
         {
             _hasMore = value;
-            OnPropertyChanged(nameof(HasMore));
+            OnPropertyChanged(nameof(HasMoreItems));
         }
     }
 

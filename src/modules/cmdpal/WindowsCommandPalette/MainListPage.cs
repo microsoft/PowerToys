@@ -19,7 +19,7 @@ public sealed partial class MainListPage : DynamicListPage
     private readonly MainViewModel _mainViewModel;
 
     private readonly FilteredListSection _filteredSection;
-    private readonly ObservableCollection<MainListItem> topLevelItems = new();
+    private readonly ObservableCollection<MainListItem> topLevelItems = [];
 
     private readonly DispatcherQueue _dispatcherQueue;
 
@@ -53,13 +53,10 @@ public sealed partial class MainListPage : DynamicListPage
 
         PlaceholderText = "Search...";
         ShowDetails = true;
-        Loading = false;
+        IsLoading = false;
     }
 
-    public override void UpdateSearchText(string oldSearch, string newSearch)
-    {
-        UpdateQuery();
-    }
+    public override void UpdateSearchText(string oldSearch, string newSearch) => UpdateQuery();
 
     private void UpdateQuery()
     {
@@ -130,7 +127,7 @@ public sealed partial class MainListPage : DynamicListPage
         {
             foreach (var item in e.OldItems)
             {
-                if (item is ExtensionObject<ICommandItem> _)
+                if (item is ExtensionObject<ICommandItem>)
                 {
                     // If we were maintaining the POC project we'd remove the items here.
                 }

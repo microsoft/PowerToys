@@ -26,7 +26,7 @@ internal sealed partial class ProcessListPage : ListPage
     private IListItem[] DoGetItems()
     {
         var items = GetRunningProcesses();
-        this.Loading = false;
+        this.IsLoading = false;
         var s = items
             .OrderByDescending(p => p.Memory)
             .Select((process) => new ListItem(new SwitchToProcess(process))

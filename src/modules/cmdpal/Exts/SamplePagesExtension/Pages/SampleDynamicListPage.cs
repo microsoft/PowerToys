@@ -15,7 +15,7 @@ internal sealed partial class SampleDynamicListPage : DynamicListPage
     {
         Icon = new(string.Empty);
         Name = "Dynamic List";
-        Loading = true;
+        IsLoading = true;
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch) => RaiseItemsChanged(newSearch.Length);

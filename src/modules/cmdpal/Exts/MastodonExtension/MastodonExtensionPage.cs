@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
-using Windows.UI;
 
 namespace MastodonExtension;
 
@@ -31,11 +30,11 @@ internal sealed partial class MastodonExtensionPage : ListPage
         Icon = new("https://mastodon.social/packs/media/icons/android-chrome-36x36-4c61fdb42936428af85afdbf8c6a45a8.png");
         Name = "Mastodon";
         ShowDetails = true;
-        HasMore = true;
-        Loading = true;
+        HasMoreItems = true;
+        IsLoading = true;
 
         // #6364ff
-        AccentColor = Color.FromArgb(255, 99, 100, 255);
+        AccentColor = ColorHelpers.FromRgb(99, 100, 255);
     }
 
     private void AddPosts(List<MastodonStatus> posts)
@@ -91,7 +90,7 @@ internal sealed partial class MastodonExtensionPage : ListPage
 
     public override void LoadMore()
     {
-        this.Loading = true;
+        this.IsLoading = true;
         ExtensionHost.LogMessage(new LogMessage() { Message = $"Loading 20 posts, starting with {_items.Count}..." });
         var postsAsync = FetchExplorePage(20, this._items.Count);
         postsAsync.ContinueWith((res) =>
@@ -100,7 +99,7 @@ internal sealed partial class MastodonExtensionPage : ListPage
             this.AddPosts(posts);
             ExtensionHost.LogMessage(new LogMessage() { Message = $"... got {posts.Count} new posts" });
 
-            this.Loading = false;
+            this.IsLoading = false;
             this.RaiseItemsChanged(this._items.Count);
         }).ConfigureAwait(false);
     }
@@ -127,7 +126,7 @@ internal sealed partial class MastodonExtensionPage : ListPage
             Console.WriteLine($"An error occurred: {e.Message}");
         }
 
-        Loading = false;
+        IsLoading = false;
 
         return statuses;
     }

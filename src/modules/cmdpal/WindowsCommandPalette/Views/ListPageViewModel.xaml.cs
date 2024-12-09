@@ -19,8 +19,6 @@ public sealed class ListPageViewModel : PageViewModel, INotifyPropertyChanged
 
     internal IListPage Page => (IListPage)this.PageAction;
 
-    private bool IsDynamic => Page is IDynamicListPage;
-
     private IDynamicListPage? IsDynamicPage => Page as IDynamicListPage;
 
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
@@ -30,7 +28,7 @@ public sealed class ListPageViewModel : PageViewModel, INotifyPropertyChanged
 
     public bool ShowDetails => _forceShowDetails || Page.ShowDetails;
 
-    public bool HasMore { get; private set; }
+    public bool HasMoreItems { get; private set; }
 
     public string PlaceholderText { get; private set; } = "Type here to search...";
 
@@ -46,7 +44,7 @@ public sealed class ListPageViewModel : PageViewModel, INotifyPropertyChanged
         page.PropChanged += Page_PropChanged;
         page.ItemsChanged += Page_ItemsChanged;
 
-        HasMore = page.HasMore;
+        HasMoreItems = page.HasMoreItems;
         PlaceholderText = page.PlaceholderText;
     }
 
@@ -68,8 +66,8 @@ public sealed class ListPageViewModel : PageViewModel, INotifyPropertyChanged
         {
             switch (args.PropertyName)
             {
-                case nameof(HasMore):
-                    HasMore = Page.HasMore;
+                case nameof(HasMoreItems):
+                    HasMoreItems = Page.HasMoreItems;
                     break;
                 case nameof(PlaceholderText):
                     PlaceholderText = Page.PlaceholderText;
@@ -83,10 +81,7 @@ public sealed class ListPageViewModel : PageViewModel, INotifyPropertyChanged
         });
     }
 
-    internal Task InitialRender()
-    {
-        return UpdateListItems();
-    }
+    internal Task InitialRender() => UpdateListItems();
 
     internal async Task UpdateListItems()
     {
@@ -113,7 +108,7 @@ public sealed class ListPageViewModel : PageViewModel, INotifyPropertyChanged
         // really hoping that the equality check in `InPlaceUpdateList`
         // properly uses ListItemViewModel.Equals to compare if the objects
         // are literally the same.
-        Collection<ListItemViewModel> newItems = new(items.Select(i => new ListItemViewModel(i)).ToList());
+        Collection<ListItemViewModel> newItems = [.. items.Select(i => new ListItemViewModel(i)).ToList()];
 
         // Debug.WriteLine($"  Found {newItems.Count} items");
 
@@ -142,14 +137,14 @@ public sealed class ListPageViewModel : PageViewModel, INotifyPropertyChanged
         {
             var filtered = ListItemViewModel
                 .FilterList(_items, query);
-            Collection<ListItemViewModel> newItems = new(filtered.ToList());
+            Collection<ListItemViewModel> newItems = [.. filtered.ToList()];
             ListHelpers.InPlaceUpdateList(FilteredItems, newItems);
         }
     }
 
     public async void LoadMoreIfNeeded()
     {
-        if (!_loadingMore && HasMore)
+        if (!_loadingMore && HasMoreItems)
         {
             // This is kinda a hack, to prevent us from over-requesting
             // more at the bottom.
@@ -160,7 +155,7 @@ public sealed class ListPageViewModel : PageViewModel, INotifyPropertyChanged
             // TODO GH #73: When we have a real prototype, this should be an async call
             // A thought: maybe the ExtensionObject.Unsafe could be an async
             // call, so that you _know_ you need to wrap it up when you call it?
-            var t = new Task(() => Page.LoadMore());
+            var t = new Task(Page.LoadMore);
             t.Start();
             await t;
         }

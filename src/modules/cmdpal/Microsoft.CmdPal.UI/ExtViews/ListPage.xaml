@@ -113,7 +113,7 @@
         <ProgressBar 
             IsIndeterminate="True" 
             VerticalAlignment="Top"
-            Visibility="{x:Bind ViewModel.Loading, Mode=OneWay}" />
+            Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
         <!--  not using Interactivity:Interaction.Behaviors due to wanting to do AoT  -->
         <!--
             sticking with ListView as ItemsView doesn't have grouping built-in, could investigate coordinating

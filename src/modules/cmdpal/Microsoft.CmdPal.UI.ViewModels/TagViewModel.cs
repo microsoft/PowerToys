@@ -4,7 +4,6 @@
 
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.UI.ViewModels.Models;
-using Windows.UI;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -18,7 +17,7 @@ public partial class TagViewModel(ITag _tag, TaskScheduler Scheduler) : Extensio
 
     public string Tooltip { get; private set; } = string.Empty;
 
-    public Color Color { get; private set; }
+    public OptionalColor Color { get; private set; }
 
     // TODO Icon
     public ExtensionObject<ICommand> Command { get; private set; } = new(null);

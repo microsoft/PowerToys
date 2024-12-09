@@ -2,19 +2,17 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Windows.UI;
-
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
 public class Tag : BaseObservable, ITag
 {
-    private Color _color;
+    private OptionalColor _color;
     private IconDataType _icon = new(string.Empty);
     private string _text = string.Empty;
     private string _toolTip = string.Empty;
     private ICommand? _command;
 
-    public Color Color
+    public OptionalColor Color
     {
         get => _color;
         set

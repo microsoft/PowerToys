@@ -31,7 +31,7 @@ public partial class PageViewModel : ExtensionObjectViewModel
     // on the UI thread.
     public string Name { get; private set; } = string.Empty;
 
-    public bool Loading { get; private set; } = true;
+    public bool IsLoading { get; private set; } = true;
 
     public PageViewModel(IPage model, TaskScheduler scheduler)
     {
@@ -69,11 +69,11 @@ public partial class PageViewModel : ExtensionObjectViewModel
         }
 
         Name = page.Name;
-        Loading = page.Loading;
+        IsLoading = page.IsLoading;
 
         // Let the UI know about our initial properties too.
         UpdateProperty(nameof(Name));
-        UpdateProperty(nameof(Loading));
+        UpdateProperty(nameof(IsLoading));
 
         page.PropChanged += Model_PropChanged;
     }
@@ -104,8 +104,8 @@ public partial class PageViewModel : ExtensionObjectViewModel
             case nameof(Name):
                 this.Name = model.Name ?? string.Empty;
                 break;
-            case nameof(Loading):
-                this.Loading = model.Loading;
+            case nameof(IsLoading):
+                this.IsLoading = model.IsLoading;
                 break;
         }
 
