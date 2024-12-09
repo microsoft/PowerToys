@@ -1,5 +1,5 @@
 # Overview
-`Settings` is Windows App Sdk WinUI3 .Net Unpackaged desktop application. More details about Windows App Sdk can be found [here](https://github.com/microsoft/WindowsAppSDK#windows-app-sdk---calling-all-windows-developers). More details about WinUI can be found [here](https://microsoft.github.io/microsoft-ui-xaml/about.html#what-is-it).
+`Settings` is Windows App Sdk WinUI3 .Net Unpackaged desktop application. More details about Windows App Sdk can be found in [Windows App SDK - Calling all Windows developers!](https://github.com/microsoft/WindowsAppSDK#windows-app-sdk---calling-all-windows-developers). More details about WinUI can be found in [Build apps with WinUI](https://developer.microsoft.com/en-us/windows/develop/).
 
 ## Settings V2 Project structure
 The Settings project .Net WinUI3 based project which

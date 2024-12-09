@@ -523,7 +523,7 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND hWnd, UINT messageCode, WPARAM wPa
     }
     break;
     default:
-        // If the Xaml Bridge object exists, then use it's message handler to handle keyboard focus operations
+        // If the Xaml Bridge object exists, then use its message handler to handle keyboard focus operations
         if (xamlBridgePtr != nullptr)
         {
             return xamlBridgePtr->MessageHandler(messageCode, wParam, lParam);

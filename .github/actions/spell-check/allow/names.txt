@@ -44,6 +44,7 @@ Bartosz
 betadele
 betsegaw
 bricelam
+bsky
 CCcat
 Chinh
 chrdavis
@@ -53,6 +54,7 @@ Coplen
 craigloewen
 crutkas
 damienleroy
+daverayment
 davidegiacometti
 debian
 Deibisu
@@ -64,6 +66,7 @@ Essey
 ethanfangg
 ferraridavide
 frankychen
+Gaarden
 gaardmark
 gabime
 Galaxi
@@ -71,6 +74,7 @@ Garside
 Gershaft
 Giordani
 Gokce
+gordon
 grzhan
 Guo
 hanselman
@@ -82,6 +86,7 @@ Horvalds
 Howett
 htcfreek
 Huynh
+Ionut
 Jaswal
 jefflord
 Jordi
@@ -90,11 +95,13 @@ Kairu
 Kamra
 Kantarci
 Karthick
+kaylacinnamon
 kevinguo
 Krigun
 Lambson
 Laute
 laviusmotileng
+Leilei
 Luecking
 Mahalingam
 Markovic
@@ -110,6 +117,7 @@ nathancartlidge
 Nemeth
 nielslaute
 oldnewthing
+onegreatworld
 palenshus
 pedrolamas
 peteblois
@@ -120,6 +128,7 @@ Pylyp
 quachpas
 Quriz
 randyrants
+rayment
 ricardosantos
 riri
 ritchielawrence
@@ -148,6 +157,7 @@ waaverecords
 Whuihuan
 Xpg
 ycv
+yeelam
 Yuniardi
 yuyoyuppe
 Zeol
