@@ -73,6 +73,10 @@ namespace PowerLauncher.Helper
                         Color = theme is ManagedCommon.Theme.Dark ? (Color)ColorConverter.ConvertFromString("#202020") : (Color)ColorConverter.ConvertFromString("#fafafa"),
                     };
                 }
+                else
+                {
+                    _mainWindow.Background = null;
+                }
             }
             else
             {
