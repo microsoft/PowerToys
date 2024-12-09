@@ -1,10 +1,10 @@
 [CmdletBinding()]
 Param(
 # Using the default value of 1.6 for versionNumber and useExperimentalVersion as false
-  [Parameter(Mandatory=$False,Position=1)]
+  #[Parameter(Mandatory=$False,Position=1)]
   [string]$versionNumber = "1.6",
 
-  [Parameter(Mandatory=$False,Position=2)]
+  #[Parameter(Mandatory=$False,Position=2)]
   [bool]$useExperimentalVersion = $False
 )
 

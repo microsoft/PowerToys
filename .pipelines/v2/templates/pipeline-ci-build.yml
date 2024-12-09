@@ -25,6 +25,12 @@ parameters:
   - name: useLatestWinAppSDK
     type: boolean
     default: false
+  - name: winAppSDKVersionNumber
+    type: string
+    default: 1.6
+  - name: useExperimentalVersion
+    type: boolean
+    default: false
 
 stages:
   # Allow manual builds to skip pre-check
@@ -59,6 +65,9 @@ stages:
             runTests: ${{ parameters.runTests }}
             useVSPreview: ${{ parameters.useVSPreview }}
             useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
+            ${{ if eq(parameters.useLatestWinAppSDK, true) }}:
+              winAppSDKVersionNumber: ${{ parameters.winAppSDKVersionNumber }}
+              useExperimentalVersion: ${{ parameters.useExperimentalVersion }}
 
     - ${{ if eq(parameters.runTests, true) }}:
       - stage: Test_${{ platform }}
