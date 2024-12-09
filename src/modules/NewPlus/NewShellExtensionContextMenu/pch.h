@@ -20,7 +20,7 @@
 #include <atlbase.h>
 #include <wrl.h>
 #include <wrl/module.h>
-#include <unknwn.h>
+#include <Unknwn.h>
 
 // PowerToys project common
 #include <ProjectTelemetry.h>

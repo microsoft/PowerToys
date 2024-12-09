@@ -15,11 +15,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\previewpane\STATestClassAttribute.cs" Link="STATestClassAttribute.cs" />
-    <Compile Include="..\..\previewpane\STATestMethodAttribute.cs" Link="STATestMethodAttribute.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Plugins\Microsoft.Plugin.Folder\Microsoft.Plugin.Folder.csproj" />
     <ProjectReference Include="..\Plugins\Microsoft.Plugin.Indexer\Microsoft.Plugin.Indexer.csproj" />
     <ProjectReference Include="..\Plugins\Microsoft.Plugin.Program\Microsoft.Plugin.Program.csproj" />

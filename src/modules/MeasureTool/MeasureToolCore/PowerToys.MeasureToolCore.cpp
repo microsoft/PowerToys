@@ -62,6 +62,11 @@ namespace winrt::PowerToys::MeasureToolCore::implementation
             _mouseCaptureThread.join();
     }
 
+    void Core::InitResources()
+    {
+        Measurement::InitResources();
+    }
+
     void Core::ResetState()
     {
         _commonState.closeOnOtherMonitors = true;
