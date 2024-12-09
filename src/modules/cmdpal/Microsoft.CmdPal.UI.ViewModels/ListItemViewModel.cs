@@ -9,8 +9,8 @@ using Microsoft.CmdPal.UI.ViewModels.Models;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ListItemViewModel(IListItem model, TaskScheduler scheduler)
-    : CommandItemViewModel(new(model), scheduler)
+public partial class ListItemViewModel(IListItem model, TaskScheduler scheduler, IErrorContext context)
+    : CommandItemViewModel(new(model), scheduler, context)
 {
     private readonly ExtensionObject<IListItem> _listItemModel = new(model);
 
@@ -41,7 +41,7 @@ public partial class ListItemViewModel(IListItem model, TaskScheduler scheduler)
 
         Tags = li.Tags?.Select(t =>
         {
-            var vm = new TagViewModel(t, Scheduler);
+            var vm = new TagViewModel(t, Scheduler, ErrorContext);
             vm.InitializeProperties();
             return vm;
         })
@@ -51,7 +51,7 @@ public partial class ListItemViewModel(IListItem model, TaskScheduler scheduler)
         var extensionDetails = li.Details;
         if (extensionDetails != null)
         {
-            Details = new(extensionDetails, Scheduler);
+            Details = new(extensionDetails, Scheduler, ErrorContext);
             Details.InitializeProperties();
             UpdateProperty(nameof(Details));
             UpdateProperty(nameof(HasDetails));
@@ -78,7 +78,7 @@ public partial class ListItemViewModel(IListItem model, TaskScheduler scheduler)
             case nameof(Tags):
                 Tags = model.Tags?.Select(t =>
                 {
-                    var vm = new TagViewModel(t, Scheduler);
+                    var vm = new TagViewModel(t, Scheduler, ErrorContext);
                     vm.InitializeProperties();
                     return vm;
                 })
@@ -93,7 +93,7 @@ public partial class ListItemViewModel(IListItem model, TaskScheduler scheduler)
                 break;
             case nameof(Details):
                 var extensionDetails = model.Details;
-                Details = extensionDetails != null ? new(extensionDetails, Scheduler) : null;
+                Details = extensionDetails != null ? new(extensionDetails, Scheduler, ErrorContext) : null;
                 UpdateProperty(nameof(Details));
                 UpdateProperty(nameof(HasDetails));
                 break;

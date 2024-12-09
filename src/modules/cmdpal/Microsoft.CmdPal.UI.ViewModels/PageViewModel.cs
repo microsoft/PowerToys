@@ -4,14 +4,12 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class PageViewModel : ExtensionObjectViewModel
+public partial class PageViewModel : ExtensionObjectViewModel, IErrorContext
 {
     protected TaskScheduler Scheduler { get; private set; }
 
@@ -35,12 +33,16 @@ public partial class PageViewModel : ExtensionObjectViewModel
     // on the UI thread.
     public string Name { get; private set; } = string.Empty;
 
+    public string Title { get => string.IsNullOrEmpty(field) ? Name : field; private set; } = string.Empty;
+
     public bool IsLoading { get; private set; } = true;
 
     public PageViewModel(IPage model, TaskScheduler scheduler)
+        : base(null)
     {
         _pageModel = new(model);
         Scheduler = scheduler;
+        ErrorContext = this;
     }
 
     //// Run on background thread from ListPage.xaml.cs
@@ -55,8 +57,9 @@ public partial class PageViewModel : ExtensionObjectViewModel
         {
             InitializeProperties();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            ShowException(ex);
             return Task.FromResult(false);
         }
 
@@ -74,9 +77,11 @@ public partial class PageViewModel : ExtensionObjectViewModel
 
         Name = page.Name;
         IsLoading = page.IsLoading;
+        Title = page.Title;
 
         // Let the UI know about our initial properties too.
         UpdateProperty(nameof(Name));
+        UpdateProperty(nameof(Title));
         UpdateProperty(nameof(IsLoading));
 
         page.PropChanged += Model_PropChanged;
@@ -89,9 +94,9 @@ public partial class PageViewModel : ExtensionObjectViewModel
             var propName = args.PropertyName;
             FetchProperty(propName);
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            // TODO log? throw?
+            ShowException(e);
         }
     }
 
@@ -115,6 +120,10 @@ public partial class PageViewModel : ExtensionObjectViewModel
         {
             case nameof(Name):
                 this.Name = model.Name ?? string.Empty;
+                UpdateProperty(nameof(Title));
+                break;
+            case nameof(Title):
+                this.Title = model.Title ?? string.Empty;
                 break;
             case nameof(IsLoading):
                 this.IsLoading = model.IsLoading;
@@ -126,16 +135,20 @@ public partial class PageViewModel : ExtensionObjectViewModel
 
     protected void UpdateProperty(string propertyName) => Task.Factory.StartNew(() => { OnPropertyChanged(propertyName); }, CancellationToken.None, TaskCreationOptions.None, Scheduler);
 
-    protected void ShowException(Exception ex)
+    public void ShowException(Exception ex)
     {
         Task.Factory.StartNew(
             () =>
         {
-            ErrorMessage = $"{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n\nThis is due to a bug in the extension's code.";
-            WeakReferenceMessenger.Default.Send<ShowExceptionMessage>(new(ex));
+            ErrorMessage += $"{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n\nThis is due to a bug in the extension's code.";
         },
             CancellationToken.None,
             TaskCreationOptions.None,
             Scheduler);
     }
+}
+
+public interface IErrorContext
+{
+    public void ShowException(Exception ex);
 }

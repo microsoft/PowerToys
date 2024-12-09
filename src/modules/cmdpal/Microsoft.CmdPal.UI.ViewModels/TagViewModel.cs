@@ -7,7 +7,7 @@ using Microsoft.CmdPal.UI.ViewModels.Models;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class TagViewModel(ITag _tag, TaskScheduler Scheduler) : ExtensionObjectViewModel
+public partial class TagViewModel(ITag _tag, TaskScheduler Scheduler, IErrorContext context) : ExtensionObjectViewModel(context)
 {
     private readonly ExtensionObject<ITag> _tagModel = new(_tag);
 

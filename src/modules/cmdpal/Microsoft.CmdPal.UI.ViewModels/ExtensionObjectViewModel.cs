@@ -8,6 +8,20 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public abstract partial class ExtensionObjectViewModel : ObservableObject
 {
+    public IErrorContext ErrorContext { get; set; }
+
+    public ExtensionObjectViewModel(IErrorContext? errorContext)
+    {
+        if (errorContext != null)
+        {
+            ErrorContext = errorContext;
+        }
+        else
+        {
+            ErrorContext = this is IErrorContext context ? context : throw new ArgumentException("You need to pass in an IErrorContext");
+        }
+    }
+
     public async virtual Task InitializePropertiesAsync()
     {
         var t = new Task(() =>
@@ -18,7 +32,7 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex);
+                ErrorContext.ShowException(ex);
             }
         });
         t.Start();

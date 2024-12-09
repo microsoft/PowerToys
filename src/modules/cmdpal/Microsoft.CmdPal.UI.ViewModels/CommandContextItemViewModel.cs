@@ -7,7 +7,7 @@ using Microsoft.CmdPal.UI.ViewModels.Models;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class CommandContextItemViewModel(ICommandContextItem contextItem, TaskScheduler scheduler) : CommandItemViewModel(new(contextItem), scheduler)
+public partial class CommandContextItemViewModel(ICommandContextItem contextItem, TaskScheduler scheduler, IErrorContext context) : CommandItemViewModel(new(contextItem), scheduler, context)
 {
     private readonly ExtensionObject<ICommandContextItem> _contextItemModel = new(contextItem);
 

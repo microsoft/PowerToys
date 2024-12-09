@@ -44,7 +44,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
             var model = new CommandContextItem(command!)
             {
             };
-            CommandContextItemViewModel defaultCommand = new(model, Scheduler)
+            CommandContextItemViewModel defaultCommand = new(model, Scheduler, ErrorContext)
             {
                 Name = Name,
                 Title = Name,
@@ -60,7 +60,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
         }
     }
 
-    public CommandItemViewModel(ExtensionObject<ICommandItem> item, TaskScheduler scheduler)
+    public CommandItemViewModel(ExtensionObject<ICommandItem> item, TaskScheduler scheduler, IErrorContext errorContext)
+        : base(errorContext)
     {
         _commandItemModel = item;
         Scheduler = scheduler;
@@ -83,7 +84,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
         MoreCommands = model.MoreCommands
             .Where(contextItem => contextItem is ICommandContextItem)
             .Select(contextItem => (contextItem as ICommandContextItem)!)
-            .Select(contextItem => new CommandContextItemViewModel(contextItem, Scheduler))
+            .Select(contextItem => new CommandContextItemViewModel(contextItem, Scheduler, ErrorContext))
             .ToList();
 
         // Here, we're already theoretically in the async context, so we can
@@ -104,9 +105,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
         {
             FetchProperty(args.PropertyName);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // TODO log? throw?
+            ErrorContext.ShowException(ex);
         }
     }
 

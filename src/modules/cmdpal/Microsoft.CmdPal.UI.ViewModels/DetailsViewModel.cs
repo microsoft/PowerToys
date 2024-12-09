@@ -7,7 +7,7 @@ using Microsoft.CmdPal.UI.ViewModels.Models;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class DetailsViewModel(IDetails _details, TaskScheduler Scheduler) : ExtensionObjectViewModel
+public partial class DetailsViewModel(IDetails _details, TaskScheduler Scheduler, IErrorContext context) : ExtensionObjectViewModel(context)
 {
     private readonly ExtensionObject<IDetails> _detailsModel = new(_details);
 

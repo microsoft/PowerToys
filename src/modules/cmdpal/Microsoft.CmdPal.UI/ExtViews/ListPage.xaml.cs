@@ -20,15 +20,26 @@ namespace Microsoft.CmdPal.UI;
 public sealed partial class ListPage : Page,
     IRecipient<NavigateNextCommand>,
     IRecipient<NavigatePreviousCommand>,
-    IRecipient<ActivateSelectedListItemMessage>,
-    IRecipient<ShowExceptionMessage>
+    IRecipient<ActivateSelectedListItemMessage>
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
 
     public ListViewModel? ViewModel
     {
         get => (ListViewModel?)GetValue(ViewModelProperty);
-        set => SetValue(ViewModelProperty, value);
+        set
+        {
+            if (ViewModel != null)
+            {
+                ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+            }
+
+            SetValue(ViewModelProperty, value);
+            if (value != null)
+            {
+                value.PropertyChanged += ViewModel_PropertyChanged;
+            }
+        }
     }
 
     // Using a DependencyProperty as the backing store for ViewModel.  This enables animation, styling, binding, etc...
@@ -107,7 +118,6 @@ public sealed partial class ListPage : Page,
         WeakReferenceMessenger.Default.Register<NavigateNextCommand>(this);
         WeakReferenceMessenger.Default.Register<NavigatePreviousCommand>(this);
         WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
-        WeakReferenceMessenger.Default.Register<ShowExceptionMessage>(this);
 
         base.OnNavigatedTo(e);
     }
@@ -119,14 +129,23 @@ public sealed partial class ListPage : Page,
         WeakReferenceMessenger.Default.Unregister<NavigateNextCommand>(this);
         WeakReferenceMessenger.Default.Unregister<NavigatePreviousCommand>(this);
         WeakReferenceMessenger.Default.Unregister<ActivateSelectedListItemMessage>(this);
-        WeakReferenceMessenger.Default.Unregister<ShowExceptionMessage>(this);
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too agressive at pruning methods bound in XAML")]
     private void ListView_ItemClick(object sender, ItemClickEventArgs e)
     {
         if (e.ClickedItem is ListItemViewModel item)
         {
             ViewModel?.InvokeItemCommand.Execute(item);
+        }
+    }
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too agressive at pruning methods bound in XAML")]
+    private void ItemsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ItemsList.SelectedItem is ListItemViewModel item)
+        {
+            ViewModel?.UpdateSelectedItemCommand.Execute(item);
         }
     }
 
@@ -160,20 +179,16 @@ public sealed partial class ListPage : Page,
         }
     }
 
-    private void ItemsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (ItemsList.SelectedItem is ListItemViewModel item)
+        var prop = e.PropertyName;
+        if (prop == nameof(ViewModel.ErrorMessage) && ViewModel != null)
         {
-            ViewModel?.UpdateSelectedItemCommand.Execute(item);
+            if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
+            {
+                LoadedState = ViewModelLoadedState.Error;
+            }
         }
-    }
-
-    public void Receive(ShowExceptionMessage message)
-    {
-        _ = _queue.EnqueueAsync(() =>
-        {
-            LoadedState = ViewModelLoadedState.Error;
-        });
     }
 }
 
