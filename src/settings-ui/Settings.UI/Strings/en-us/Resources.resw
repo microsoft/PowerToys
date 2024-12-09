@@ -4686,4 +4686,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Shell_TopLevelSystemTools.Content" xml:space="preserve">
     <value>System Tools</value>
   </data>
+  <data name="Enable_Module.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Enable module</value>
+  </data>
 </root>
