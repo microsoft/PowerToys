@@ -37,6 +37,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="$(TargetDir)\..\..\..\..\Microsoft.CmdPal.Extensions\$(Platform)\$(Configuration)\Microsoft.CmdPal.Extensions\Microsoft.CmdPal.Extensions.winmd" Link="Microsoft.CmdPal.Extensions.winmd" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(SolutionDir)$(Platform)\$(Configuration)\Microsoft.CmdPal.Extensions\Microsoft.CmdPal.Extensions.winmd" Link="Microsoft.CmdPal.Extensions.winmd" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

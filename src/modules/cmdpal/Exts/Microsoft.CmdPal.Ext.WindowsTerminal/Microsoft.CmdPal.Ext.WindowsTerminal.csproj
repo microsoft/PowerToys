@@ -8,7 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
 	  <Content Include="Images\WindowsTerminal.dark.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>	
   </ItemGroup>
   <ItemGroup>

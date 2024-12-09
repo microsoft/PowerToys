@@ -5,7 +5,7 @@
     <WasdkNuget>$(PathToRoot)packages\Microsoft.WindowsAppSDK.1.6.240923002</WasdkNuget>
     <CppWinRTNuget>$(PathToRoot)packages\Microsoft.Windows.CppWinRT.2.0.240111.5</CppWinRTNuget>
     <WindowsSdkBuildToolsNuget>$(PathToRoot)packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428</WindowsSdkBuildToolsNuget>
-    <WebView2Nuget>$(PathToRoot)packages\Microsoft.Web.WebView2.1.0.2739.15</WebView2Nuget>
+    <WebView2Nuget>$(PathToRoot)packages\Microsoft.Web.WebView2.1.0.2903.40</WebView2Nuget>
   </PropertyGroup>
   <Import Project="$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.props" Condition="Exists('$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.props')" />
   <Import Project="$(CppWinRTNuget)\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('$(CppWinRTNuget)\build\native\Microsoft.Windows.CppWinRT.props')" />
