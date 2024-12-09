@@ -13,7 +13,7 @@ $sourceLink = "https://microsoft.pkgs.visualstudio.com/ProjectReunion/_packaging
 # Execute nuget list and capture the output
 if ($useExperimentalVersion) {
     # The nuget list for experimental versions will cost more time
-    # So, we will not use -AllVersions to wasting time
+    # So, we will not use -AllVersions to wast time
     # But it can only get the latest experimental version
     Write-Host "Fetching WindowsAppSDK with experimental versions"
     $nugetOutput = nuget list Microsoft.WindowsAppSDK `

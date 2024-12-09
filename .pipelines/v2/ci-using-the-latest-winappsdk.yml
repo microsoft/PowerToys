@@ -1,25 +1,12 @@
-trigger:
-  batch: true
-  branches:
-    include:
-      - main
-      - stable
-#  paths:
-#    exclude:
-#      - doc/*
-#      - temp/*
-#      - tools/*
-#      - '**.md'
-
-pr:
-  branches:
-    include:
-      - main
-      - stable
-#  paths:
-#    exclude:
-#      - '**.md'
-#      - doc
+trigger: none
+pr: none
+schedules:
+  - cron: "0 0 * * *" # every day at midnight
+    displayName: "Daily midnight Build"
+    branches:
+      include:
+        - main
+    always: false # only run if there's code changes!
 
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
