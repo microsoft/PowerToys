@@ -1,25 +1,12 @@
-trigger:
-  batch: true
-  branches:
-    include:
-      - main
-      - stable
-#  paths:
-#    exclude:
-#      - doc/*
-#      - temp/*
-#      - tools/*
-#      - '**.md'
-
-pr:
-  branches:
-    include:
-      - main
-      - stable
-#  paths:
-#    exclude:
-#      - '**.md'
-#      - doc
+trigger: none
+pr: none
+schedules:
+  - cron: "0 0 * * *" # every day at midnight
+    displayName: "Daily midnight Build"
+    branches:
+      include:
+        - main
+    always: false # only run if there's code changes!
 
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
@@ -44,6 +31,12 @@ parameters:
   - name: useLatestWinAppSDK
     type: boolean
     default: true
+  - name: winAppSDKVersionNumber
+    type: string
+    default: 1.6
+  - name: useExperimentalVersion
+    type: boolean
+    default: false
 
 extends:
   template: templates/pipeline-ci-build.yml
@@ -53,3 +46,5 @@ extends:
     runTests: ${{ parameters.runTests }}
     useVSPreview: ${{ parameters.useVSPreview }}
     useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
+    winAppSDKVersionNumber: ${{ parameters.winAppSDKVersionNumber }}
+    useExperimentalVersion: ${{ parameters.useExperimentalVersion }}

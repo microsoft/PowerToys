@@ -59,6 +59,12 @@ parameters:
   - name: useLatestWinAppSDK
     type: boolean
     default: false
+  - name: winAppSDKVersionNumber
+    type: string
+    default: 1.6
+  - name: useExperimentalVersion
+    type: boolean
+    default: false
   - name: csProjectsToPublish
     type: object
     default:
@@ -187,6 +193,9 @@ jobs:
   
   - ${{ if eq(parameters.useLatestWinAppSDK, true)}}:
     - template: .\steps-update-winappsdk-and-restore-nuget.yml
+      parameters:
+        versionNumber: ${{ parameters.winAppSDKVersionNumber }}
+        useExperimentalVersion: ${{ parameters.useExperimentalVersion }}
   
   - ${{ if eq(parameters.useLatestWinAppSDK, false)}}:
     - template: .\steps-restore-nuget.yml
@@ -245,7 +254,7 @@ jobs:
     inputs:
       solution: '**\HostsUILib.csproj'
       vsVersion: 17.0
-      ${{ if eq(parameters.useVSPreview, true) }}:
+      ${{ if or(eq(parameters.useVSPreview, true), eq(parameters.useLatestWinAppSDK, true)) }}:
         msbuildArgs: >-
           /p:CIBuild=true;NoBuild=true -t:pack
           /bl:$(LogOutputDirectory)\build-hosts.binlog
@@ -255,7 +264,6 @@ jobs:
         msbuildArgs: >-
           /p:CIBuild=true;NoBuild=true -t:pack
           /bl:$(LogOutputDirectory)\build-hosts.binlog
-          $(RestoreAdditionalProjectSourcesArg)
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
@@ -268,7 +276,7 @@ jobs:
     inputs:
       solution: '**\EnvironmentVariablesUILib.csproj'
       vsVersion: 17.0
-      ${{ if eq(parameters.useVSPreview, true) }}:
+      ${{ if or(eq(parameters.useVSPreview, true), eq(parameters.useLatestWinAppSDK, true)) }}:
         msbuildArgs: >-
           /p:CIBuild=true;NoBuild=true -t:pack
           /bl:$(LogOutputDirectory)\build-env-var-editor.binlog
@@ -278,7 +286,6 @@ jobs:
         msbuildArgs: >-
           /p:CIBuild=true;NoBuild=true
           -t:pack /bl:$(LogOutputDirectory)\build-env-var-editor.binlog
-          $(RestoreAdditionalProjectSourcesArg)
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
@@ -291,7 +298,7 @@ jobs:
     inputs:
       solution: '**\RegistryPreviewUILib.csproj'
       vsVersion: 17.0
-      ${{ if eq(parameters.useVSPreview, true) }}:
+      ${{ if or(eq(parameters.useVSPreview, true), eq(parameters.useLatestWinAppSDK, true)) }}:
         msbuildArgs: >-
           /p:CIBuild=true;NoBuild=true -t:pack
           /bl:$(LogOutputDirectory)\build-registry-preview.binlog
@@ -301,7 +308,6 @@ jobs:
         msbuildArgs: >-
           /p:CIBuild=true;NoBuild=true -t:pack
           /bl:$(LogOutputDirectory)\build-registry-preview.binlog
-          $(RestoreAdditionalProjectSourcesArg)
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
