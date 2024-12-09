@@ -177,16 +177,19 @@
     <value>Vertical spacing</value>
   </data>
   <data name="MeasureTool_UnitsOfMeasure.Header" xml:space="preserve">
-    <value>Units of measurement</value>
+    <value>Extra units of measurement</value>
   </data>
   <data name="MeasureTool_UnitsOfMeasure_Pixels.Content" xml:space="preserve">
-    <value>Pixels</value>
+    <value>Show only pixels</value>
   </data>
   <data name="MeasureTool_UnitsOfMeasure_Inches.Content" xml:space="preserve">
     <value>Inches</value>
   </data>
   <data name="MeasureTool_UnitsOfMeasure_Centimeters.Content" xml:space="preserve">
     <value>Centimeters</value>
+  </data>
+  <data name="MeasureTool_UnitsOfMeasure_Millimeters.Content" xml:space="preserve">
+    <value>Millimeters</value>
   </data>
   <data name="MeasureTool_PixelTolerance.Header" xml:space="preserve">
     <value>Pixel tolerance for edge detection</value>
@@ -4576,7 +4579,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Rules defined by your organization</value>
   </data>
   <data name="MouseWithoutBorders_PolicyIPAddressMappingInfo_TextBoxControl.Description" xml:space="preserve">
-    <value>You can not change, remove or disable these enforced rules.</value>
+    <value>You cannot change, remove or disable these enforced rules.</value>
   </data>
   <data name="OpenSettings.Content" xml:space="preserve">
     <value>Open settings</value>

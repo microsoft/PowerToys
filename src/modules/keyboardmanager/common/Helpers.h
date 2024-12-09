@@ -19,6 +19,7 @@ namespace Helpers
     DWORD EncodeKeyNumpadOrigin(const DWORD key, const bool extended);
     DWORD ClearKeyNumpadOrigin(const DWORD key);
     bool IsNumpadOriginated(const DWORD key);
+    bool IsNumpadKeyThatIsAffectedByShift(const DWORD vkCode);
     DWORD GetNumpadOriginEncodingBit();
 
     // Function to check if the key is a modifier key
@@ -51,6 +52,6 @@ namespace Helpers
     // Function to filter the key codes for artificial key codes
     int32_t FilterArtificialKeys(const int32_t& key);
 
-    // Function to sort a vector of shortcuts based on it's size
+    // Function to sort a vector of shortcuts based on its size
     void SortShortcutVectorBasedOnSize(std::vector<Shortcut>& shortcutVector);
 }

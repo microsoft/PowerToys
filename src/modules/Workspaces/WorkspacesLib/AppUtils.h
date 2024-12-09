@@ -12,7 +12,11 @@ namespace Utils
             std::wstring installPath;
             std::wstring packageFullName;
             std::wstring appUserModelId;
+            std::wstring pwaAppId;
             bool canLaunchElevated = false;
+
+            bool IsEdge() const;
+            bool IsChrome() const;
         };
 
         using AppList = std::vector<AppData>;
