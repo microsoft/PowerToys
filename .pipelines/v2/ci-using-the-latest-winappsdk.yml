@@ -44,6 +44,12 @@ parameters:
   - name: useLatestWinAppSDK
     type: boolean
     default: true
+  - name: winAppSDKVersionNumber
+    type: string
+    default: 1.6
+  - name: useExperimentalVersion
+    type: boolean
+    default: false
 
 extends:
   template: templates/pipeline-ci-build.yml
@@ -53,3 +59,5 @@ extends:
     runTests: ${{ parameters.runTests }}
     useVSPreview: ${{ parameters.useVSPreview }}
     useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
+    winAppSDKVersionNumber: ${{ parameters.winAppSDKVersionNumber }}
+    useExperimentalVersion: ${{ parameters.useExperimentalVersion }}

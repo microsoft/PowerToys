@@ -1,13 +1,40 @@
+[CmdletBinding()]
+Param(
+# Using the default value of 1.6 for versionNumber and useExperimentalVersion as false
+  [Parameter(Mandatory=$False,Position=1)]
+  [string]$versionNumber = "1.6",
+
+  [Parameter(Mandatory=$False,Position=2)]
+  [bool]$useExperimentalVersion = $False
+)
+
+$sourceLink = "https://microsoft.pkgs.visualstudio.com/ProjectReunion/_packaging/Project.Reunion.nuget.internal/nuget/v3/index.json"
+
 # Execute nuget list and capture the output
-$nugetOutput = nuget list Microsoft.WindowsAppSDK `
-    -Source "https://microsoft.pkgs.visualstudio.com/ProjectReunion/_packaging/Project.Reunion.nuget.internal/nuget/v3/index.json" `
-    -AllVersions
+if ($useExperimentalVersion) {
+    # The nuget list for experimental versions will cost more time
+    # So, we will not use -AllVersions to wasting time
+    # But it can only get the latest experimental version
+    Write-Host "Fetching WindowsAppSDK with experimental versions"
+    $nugetOutput = nuget list Microsoft.WindowsAppSDK `
+        -Source  $sourceLink `
+        -Prerelease
+    # Filter versions based on the specified version prefix
+    $escapedVersionNumber = [regex]::Escape($versionNumber)
+    $filteredVersions = $nugetOutput | Where-Object { $_ -match "Microsoft.WindowsAppSDK $escapedVersionNumber\." }
+    $latestVersions = $filteredVersions
+} else {
+    Write-Host "Fetching stable WindowsAppSDK versions for $versionNumber"
+    $nugetOutput = nuget list Microsoft.WindowsAppSDK `
+        -Source $sourceLink `
+        -AllVersions
+    # Filter versions based on the specified version prefix
+    $escapedVersionNumber = [regex]::Escape($versionNumber)
+    $filteredVersions = $nugetOutput | Where-Object { $_ -match "Microsoft.WindowsAppSDK $escapedVersionNumber\." }
+    $latestVersions = $filteredVersions | Sort-Object { [version]($_ -split ' ')[1] } -Descending | Select-Object -First 1
+}
 
-$filteredVersions = $nugetOutput | Where-Object { $_ -match "Microsoft.WindowsAppSDK 1\.6\." }
-# Write-Host "Filtered versions: $filteredVersions"
-$latestVersions = $filteredVersions | Sort-Object { [version]($_ -split ' ')[1] } -Descending | Select-Object -First 1
 Write-Host "Latest versions found: $latestVersions"
-
 # Extract the latest version number from the output
 $latestVersion = $latestVersions -split "`n" | `
     Select-String -Pattern 'Microsoft.WindowsAppSDK\s*([0-9]+\.[0-9]+\.[0-9]+-*[a-zA-Z0-9]*)' | `

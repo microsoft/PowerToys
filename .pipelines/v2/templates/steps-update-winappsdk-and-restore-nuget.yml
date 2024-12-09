@@ -1,3 +1,11 @@
+parameters:
+  - name: versionNumber
+    type: string
+    default: 1.6
+  - name: useExperimentalVersion
+    type: boolean
+    default: false
+
 steps:
 - task: NuGetAuthenticate@1
   displayName: 'NuGet Authenticate'
@@ -6,6 +14,9 @@ steps:
   displayName: Update WinAppSDK Versions
   inputs:
     filePath: '$(build.sourcesdirectory)\.pipelines\UpdateVersions.ps1'
+    arguments: >
+      -versionNumber $(parameters.versionNumber)
+      -useExperimentalVersion $(parameters.useExperimentalVersion)
 
 - script: echo $(WinAppSDKVersion)
   displayName: 'Display WinAppSDK Version Found'
