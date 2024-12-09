@@ -19,6 +19,7 @@ namespace PowerToys
             void StartBoundsTool();
             void ResetState();
 
+            void InitResources();
             void SetToolbarBoundingBox(Int32 fromX, Int32 fromY, Int32 toX, Int32 toY);
             Single GetDPIScaleForWindow(Int64 windowHandle);
         }

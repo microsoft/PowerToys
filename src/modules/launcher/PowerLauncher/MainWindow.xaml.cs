@@ -617,7 +617,7 @@ namespace PowerLauncher
                 catch (ArgumentOutOfRangeException ex)
                 {
                     // Due to virtualization being enabled for the listview, the layout system updates elements in a deferred manner using an algorithm that balances performance and concurrency.
-                    // Hence, there can be a situation where the element index that we want to scroll into view is out of range for it's parent control.
+                    // Hence, there can be a situation where the element index that we want to scroll into view is out of range for its parent control.
                     // To mitigate this we use the UpdateLayout function, which forces layout update to ensure that the parent element contains the latest properties.
                     // However, it has a performance impact and is therefore not called each time.
                     Log.Exception("The parent element layout is not updated yet", ex, GetType());

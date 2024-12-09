@@ -79,7 +79,7 @@
     <script src="http://[[PT_URL]]/monacoSpecialLanguages.js" type="module"></script>
     <script type="module">
         import { registerAdditionalLanguages } from 'http://[[PT_URL]]/monacoSpecialLanguages.js';
-        import { customTokenColors } from 'http://[[PT_URL]]/customTokenColors.js';
+        import { customTokenThemeRules } from 'http://[[PT_URL]]/customTokenThemeRules.js';
         require.config({ paths: { vs: 'http://[[PT_URL]]/monacoSRC/min/vs' } });
         require(['vs/editor/editor.main'], async function () {
             await registerAdditionalLanguages(monaco)
@@ -88,7 +88,7 @@
             monaco.editor.defineTheme('theme', {
                 base: theme, // Sets the base theme to "vs" or "vs-dark" depending on the user's preference
                 inherit: true,
-                rules: customTokenColors,
+                rules: customTokenThemeRules,
                 colors: {} // `colors` is a required attribute
             });
 

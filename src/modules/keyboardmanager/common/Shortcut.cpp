@@ -21,7 +21,7 @@ std::vector<std::wstring> Shortcut::splitwstring(const std::wstring& input, wcha
     return splittedStrings;
 }
 
-// Constructor to initialize Shortcut from it's virtual key code string representation.
+// Constructor to initialize Shortcut from its virtual key code string representation.
 Shortcut::Shortcut(const std::wstring& shortcutVK) :
     winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
 {
@@ -46,7 +46,7 @@ Shortcut::Shortcut(const DWORD key)
     SetKey(key);
 }
 
-// Constructor to initialize Shortcut from it's virtual key code string representation.
+// Constructor to initialize Shortcut from its virtual key code string representation.
 Shortcut::Shortcut(const std::wstring& shortcutVK, const DWORD secondKeyOfChord) :
     winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
 {
