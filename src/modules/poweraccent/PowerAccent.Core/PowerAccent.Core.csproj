@@ -2,6 +2,7 @@
   <!-- Look at Directory.Build.props in root for common stuff as well -->
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
   <Import Project="..\..\..\Common.SelfContained.props" />
+  <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -9,10 +10,6 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
-
-    <IsAotCompatible>true</IsAotCompatible>
-    <CsWinRTAotOptimizerEnabled>true</CsWinRTAotOptimizerEnabled>
-    <CsWinRTAotWarningLevel>2</CsWinRTAotWarningLevel>
   </PropertyGroup>
 
   <PropertyGroup>
