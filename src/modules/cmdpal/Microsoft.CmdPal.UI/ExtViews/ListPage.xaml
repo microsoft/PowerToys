@@ -26,6 +26,35 @@
             EmptyValue="Collapsed"
             NotEmptyValue="Visible" />
 
+        <StackLayout
+            x:Name="HorizontalStackLayout"
+            Orientation="Horizontal"
+            Spacing="8" />
+
+        <DataTemplate x:Key="TagTemplate" x:DataType="viewmodels:TagViewModel">
+            <!--  TODO: Actually colorize the tags again -->
+            <Border
+                Padding="4,2,4,2"
+                VerticalAlignment="Center"
+                BorderBrush="{ThemeResource TextBoxBorderThemeBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
+                <StackPanel Orientation="Horizontal">
+                    <!-- -TODO: Icon
+                    <ContentControl
+                        Width="12"
+                        Height="12"
+                        Margin="0,0,4,0"
+                        Content="{x:Bind IcoElement, Mode=OneWay}"
+                        Visibility="{x:Bind HasIcon, Mode=OneWay}" /> -->
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        Text="{x:Bind Text, Mode=OneWay}" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
         <!--  https://learn.microsoft.com/windows/apps/design/controls/itemsview#specify-the-look-of-the-items  -->
         <DataTemplate x:Key="ListItemViewModelTemplate" x:DataType="viewmodels:ListItemViewModel">
 
@@ -69,12 +98,12 @@
                             TextWrapping="NoWrap"
                             Visibility="{x:Bind Subtitle, Mode=OneWay, Converter={StaticResource StringVisibilityConverter}}" />
                     </StackPanel>
-                    <!--  TODO: Add tags again  -->
-                    <!--<ItemsRepeater ItemTemplate="{StaticResource TagTemplate}"
+                    
+                    <ItemsRepeater ItemTemplate="{StaticResource TagTemplate}"
                        ItemsSource="{x:Bind Tags}"
                        Grid.Column="2"
                        Visibility="{x:Bind HasTags}"
-                       Layout="{StaticResource HorizontalStackLayout}" />-->
+                       Layout="{StaticResource HorizontalStackLayout}" />
                 </Grid>
             </ListViewItem>
         </DataTemplate>
