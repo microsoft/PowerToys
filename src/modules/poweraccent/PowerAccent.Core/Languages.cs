@@ -56,7 +56,7 @@ namespace PowerAccent.Core
     {
         public static string[] GetDefaultLetterKey(LetterKey letter, Language[] langs)
         {
-            if (langs.Length == Enum.GetValues(typeof(Language)).Length)
+            if (langs.Length == Enum.GetValues<Language>().Length)
             {
                 return GetDefaultLetterKeyALL(letter);
             }
