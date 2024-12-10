@@ -64,7 +64,6 @@
             <ListView
                 x:Name="pluginsHintsList"
                 Grid.Row="1"
-                Margin="16,0,0,0"
                 Background="Transparent"
                 BorderBrush="Transparent"
                 ItemContainerStyle="{StaticResource PluginsListViewItemStyle}"
