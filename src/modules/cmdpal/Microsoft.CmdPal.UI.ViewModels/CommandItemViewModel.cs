@@ -80,11 +80,11 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
         Title = model.Title;
         Subtitle = model.Subtitle;
         IconUri = model.Icon.Icon;
-        /*MoreCommands = model.MoreCommands
+        MoreCommands = model.MoreCommands
             .Where(contextItem => contextItem is ICommandContextItem)
             .Select(contextItem => (contextItem as ICommandContextItem)!)
             .Select(contextItem => new CommandContextItemViewModel(contextItem, Scheduler))
-            .ToList();*/
+            .ToList();
 
         // Here, we're already theoretically in the async context, so we can
         // use Initialize straight up
