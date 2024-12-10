@@ -50,6 +50,11 @@ public sealed partial class ShellPage :
             RootFrame.ForwardStack.Clear();
             SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
         }
+        else
+        {
+            // If we can't go back then we must be at the top and thus escape again should quit.
+            WeakReferenceMessenger.Default.Send<QuitMessage>();
+        }
     }
 
     public void Receive(PerformCommandMessage message)
