@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0-windows10.0.22621.0</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -9,6 +9,9 @@
   <PropertyGroup>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\AdvancedPaste.FuzzTests\</OutputPath>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\AdvancedPaste\Helpers\JsonHelper.cs" Link="JsonHelper.cs" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="MSTest" />
@@ -19,7 +22,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="OneFuzzConfig.json">
-     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 </Project>
