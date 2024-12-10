@@ -18,7 +18,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
     // itself, in the sense that they get raised by PropChanged events from the
     // extension. However, we don't want to actually make them
     // [ObservableProperty]s, because PropChanged comes in off the UI thread,
-    // and ObservableProperty is not smart enough to raisee the PropertyChanged
+    // and ObservableProperty is not smart enough to raise the PropertyChanged
     // on the UI thread.
     public string Name { get; private set; } = string.Empty;
 

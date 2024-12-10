@@ -11,14 +11,20 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ShellViewModel(IServiceProvider _serviceProvider) : ObservableObject
+public partial class ShellViewModel(IServiceProvider _serviceProvider) : ObservableObject,
+    IRecipient<NavigateToPageMessage>
 {
     [ObservableProperty]
     public partial bool IsLoaded { get; set; } = false;
 
+    [ObservableProperty]
+    public partial PageViewModel? CurrentPage { get; set; }
+
     [RelayCommand]
     public async Task<bool> LoadAsync()
     {
+        WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
+
         var tlcManager = _serviceProvider.GetService<TopLevelCommandManager>();
         await tlcManager!.LoadBuiltinsAsync();
         IsLoaded = true;
@@ -40,4 +46,6 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider) : Observa
 
         return true;
     }
+
+    public void Receive(NavigateToPageMessage message) => CurrentPage = message.Page;
 }
