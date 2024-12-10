@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Microsoft.CmdPal.UI.FormsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Interactions="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.CmdPal.UI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    Background="Transparent"
+    mc:Ignorable="d">
+
+    <Grid>
+        <ProgressBar 
+            IsIndeterminate="True" 
+            VerticalAlignment="Top"
+            Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
+
+        <controls:SwitchPresenter TargetType="local:ViewModelLoadedState" Value="{x:Bind LoadedState, Mode=OneWay}">
+            <controls:Case Value="Loaded">
+                <TextBlock Text="I am a form page" />
+            </controls:Case>
+
+            <controls:Case IsDefault="True" Value="Loading">
+                <TextBlock Text="I am a loading form page" />
+            </controls:Case>
+            
+            <controls:Case Value="Error">
+                <StackPanel Orientation="Vertical" Margin="16">
+                    <TextBlock Text="I am an error form page" />
+                    <TextBlock Text="Error on page" FontSize="18" Foreground="{ThemeResource SystemErrorTextColor}" />
+                    <TextBlock Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" IsTextSelectionEnabled="True"/>
+                </StackPanel>
+            </controls:Case>
+        </controls:SwitchPresenter>
+    </Grid>
+</Page>

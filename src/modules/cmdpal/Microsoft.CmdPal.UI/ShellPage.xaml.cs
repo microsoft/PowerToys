@@ -97,6 +97,18 @@ public sealed partial class ShellPage :
                     ViewModel.CurrentPage = pageViewModel;
                 });
             }
+            else if (command is IFormPage formsPage)
+            {
+                _ = DispatcherQueue.TryEnqueue(() =>
+                {
+                    // Also hide our details pane about here, if we had one
+                    HideDetails();
+                    var pageViewModel = new FormsPageViewModel(formsPage, TaskScheduler.FromCurrentSynchronizationContext());
+                    RootFrame.Navigate(typeof(FormsPage), pageViewModel, _slideRightTransition);
+                    SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+                    WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(pageViewModel));
+                });
+            }
 
             // else if markdown, forms, TODO
             else if (command is IInvokableCommand invokable)
