@@ -186,7 +186,7 @@
                                         <TextBlock
                                             AutomationProperties.Name="{x:Static p:Resources.ContextMenuIcon}"
                                             FontFamily="{Binding FontFamily}"
-                                            FontSize="14" 
+                                            FontSize="14"
                                             Text="{Binding Glyph}" />
                                     </Button.Content>
                                 </Button>
