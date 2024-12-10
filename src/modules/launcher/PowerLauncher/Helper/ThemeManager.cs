@@ -50,6 +50,11 @@ namespace PowerLauncher.Helper
 
         private void SetSystemTheme(ManagedCommon.Theme theme)
         {
+            if (!Common.UI.OSVersionHelper.IsWindows11())
+            {
+                _mainWindow.Background = SystemColors.WindowBrush;
+            }
+
             _mainWindow.Resources.MergedDictionaries.Clear();
             _mainWindow.Resources.MergedDictionaries.Add(new ResourceDictionary
             {
@@ -72,10 +77,6 @@ namespace PowerLauncher.Helper
                     {
                         Color = theme is ManagedCommon.Theme.Dark ? (Color)ColorConverter.ConvertFromString("#202020") : (Color)ColorConverter.ConvertFromString("#fafafa"),
                     };
-                }
-                else
-                {
-                    _mainWindow.Background = null;
                 }
             }
             else
