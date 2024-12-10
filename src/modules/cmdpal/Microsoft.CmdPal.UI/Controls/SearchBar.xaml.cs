@@ -35,7 +35,19 @@ public sealed partial class SearchBar : UserControl, ICurrentPageAware
 
     // Using a DependencyProperty as the backing store for CurrentPageViewModel.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty CurrentPageViewModelProperty =
-        DependencyProperty.Register(nameof(CurrentPageViewModel), typeof(PageViewModel), typeof(SearchBar), new PropertyMetadata(null));
+        DependencyProperty.Register(nameof(CurrentPageViewModel), typeof(PageViewModel), typeof(SearchBar), new PropertyMetadata(null, OnCurrentPageViewModelChanged));
+
+    private static void OnCurrentPageViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        //// TODO: If the Debounce timer hasn't fired, we may want to store the current Filter in the OldValue/prior VM, but we don't want that to go actually do work...
+
+        if (d is SearchBar @this
+            && e.NewValue is PageViewModel page)
+        {
+            // TODO: In some cases we probably want commands to clear a filter somewhere in the process, so we need to figure out when that is.
+            @this.FilterBox.Text = page.Filter;
+        }
+    }
 
     public SearchBar()
     {
