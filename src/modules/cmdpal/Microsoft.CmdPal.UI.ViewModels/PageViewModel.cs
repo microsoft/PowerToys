@@ -9,9 +9,9 @@ using Microsoft.CmdPal.UI.ViewModels.Models;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class PageViewModel : ExtensionObjectViewModel, IErrorContext
+public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 {
-    protected TaskScheduler Scheduler { get; private set; }
+    public TaskScheduler Scheduler { get; private set; }
 
     private readonly ExtensionObject<IPage> _pageModel;
 
@@ -42,7 +42,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IErrorContext
     {
         _pageModel = new(model);
         Scheduler = scheduler;
-        ErrorContext = this;
+        PageContext = this;
     }
 
     //// Run on background thread from ListPage.xaml.cs
@@ -133,8 +133,6 @@ public partial class PageViewModel : ExtensionObjectViewModel, IErrorContext
         UpdateProperty(propertyName);
     }
 
-    protected void UpdateProperty(string propertyName) => Task.Factory.StartNew(() => { OnPropertyChanged(propertyName); }, CancellationToken.None, TaskCreationOptions.None, Scheduler);
-
     public void ShowException(Exception ex)
     {
         Task.Factory.StartNew(
@@ -148,7 +146,9 @@ public partial class PageViewModel : ExtensionObjectViewModel, IErrorContext
     }
 }
 
-public interface IErrorContext
+public interface IPageContext
 {
     public void ShowException(Exception ex);
+
+    public TaskScheduler Scheduler { get; }
 }

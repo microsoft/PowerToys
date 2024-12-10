@@ -8,18 +8,11 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public abstract partial class ExtensionObjectViewModel : ObservableObject
 {
-    public IErrorContext ErrorContext { get; set; }
+    public IPageContext PageContext { get; set; }
 
-    public ExtensionObjectViewModel(IErrorContext? errorContext)
+    public ExtensionObjectViewModel(IPageContext? context)
     {
-        if (errorContext != null)
-        {
-            ErrorContext = errorContext;
-        }
-        else
-        {
-            ErrorContext = this is IErrorContext context ? context : throw new ArgumentException("You need to pass in an IErrorContext");
-        }
+        PageContext = context ?? (this is IPageContext c ? c : throw new ArgumentException("You need to pass in an IErrorContext"));
     }
 
     public async virtual Task InitializePropertiesAsync()
@@ -32,7 +25,7 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject
             }
             catch (Exception ex)
             {
-                ErrorContext.ShowException(ex);
+                PageContext.ShowException(ex);
             }
         });
         t.Start();
@@ -40,4 +33,14 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject
     }
 
     public abstract void InitializeProperties();
+
+    protected void UpdateProperty(string propertyName) =>
+        Task.Factory.StartNew(
+            () =>
+        {
+            OnPropertyChanged(propertyName);
+        },
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            PageContext.Scheduler);
 }

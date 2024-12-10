@@ -7,7 +7,7 @@ using Microsoft.CmdPal.UI.ViewModels.Models;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class TagViewModel(ITag _tag, TaskScheduler Scheduler, IErrorContext context) : ExtensionObjectViewModel(context)
+public partial class TagViewModel(ITag _tag, IPageContext context) : ExtensionObjectViewModel(context)
 {
     private readonly ExtensionObject<ITag> _tagModel = new(_tag);
 
@@ -39,6 +39,4 @@ public partial class TagViewModel(ITag _tag, TaskScheduler Scheduler, IErrorCont
         UpdateProperty(nameof(Color));
         UpdateProperty(nameof(Tooltip));
     }
-
-    protected void UpdateProperty(string propertyName) => Task.Factory.StartNew(() => { OnPropertyChanged(propertyName); }, CancellationToken.None, TaskCreationOptions.None, Scheduler);
 }

@@ -44,7 +44,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
             var model = new CommandContextItem(command!)
             {
             };
-            CommandContextItemViewModel defaultCommand = new(model, Scheduler, ErrorContext)
+            CommandContextItemViewModel defaultCommand = new(model, Scheduler, PageContext)
             {
                 Name = Name,
                 Title = Name,
@@ -60,7 +60,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
         }
     }
 
-    public CommandItemViewModel(ExtensionObject<ICommandItem> item, TaskScheduler scheduler, IErrorContext errorContext)
+    public CommandItemViewModel(ExtensionObject<ICommandItem> item, TaskScheduler scheduler, IPageContext errorContext)
         : base(errorContext)
     {
         _commandItemModel = item;
@@ -84,7 +84,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
         MoreCommands = model.MoreCommands
             .Where(contextItem => contextItem is ICommandContextItem)
             .Select(contextItem => (contextItem as ICommandContextItem)!)
-            .Select(contextItem => new CommandContextItemViewModel(contextItem, Scheduler, ErrorContext))
+            .Select(contextItem => new CommandContextItemViewModel(contextItem, Scheduler, PageContext))
             .ToList();
 
         // Here, we're already theoretically in the async context, so we can
@@ -107,7 +107,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
         }
         catch (Exception ex)
         {
-            ErrorContext.ShowException(ex);
+            PageContext.ShowException(ex);
         }
     }
 
@@ -137,6 +137,4 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
 
         UpdateProperty(propertyName);
     }
-
-    protected void UpdateProperty(string propertyName) => Task.Factory.StartNew(() => { OnPropertyChanged(propertyName); }, CancellationToken.None, TaskCreationOptions.None, Scheduler);
 }
