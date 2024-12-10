@@ -9,8 +9,8 @@ using Microsoft.CmdPal.UI.ViewModels.Models;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ListItemViewModel(IListItem model, TaskScheduler scheduler, IPageContext context)
-    : CommandItemViewModel(new(model), scheduler, context)
+public partial class ListItemViewModel(IListItem model, IPageContext context)
+    : CommandItemViewModel(new(model), context)
 {
     private readonly ExtensionObject<IListItem> _listItemModel = new(model);
 

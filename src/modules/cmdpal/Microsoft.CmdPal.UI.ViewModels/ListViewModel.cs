@@ -86,7 +86,7 @@ public partial class ListViewModel : PageViewModel
             foreach (var item in newItems)
             {
                 // TODO: When we fetch next page of items or refreshed items, we may need to check if we have an existing ViewModel in the cache?
-                ListItemViewModel viewModel = new(item, Scheduler, this);
+                ListItemViewModel viewModel = new(item, this);
                 viewModel.InitializeProperties();
                 _itemCache.Add(viewModel); // TODO: Figure out when we clear/remove things from cache...
 
