@@ -19,7 +19,10 @@ public partial class TagViewModel(ITag _tag, TaskScheduler Scheduler) : Extensio
 
     public OptionalColor Color { get; private set; }
 
-    // TODO Icon
+    public IconDataType Icon { get; private set; } = new(string.Empty);
+
+    public bool HasIcon => !string.IsNullOrEmpty(Icon.Icon);
+
     public ExtensionObject<ICommand> Command { get; private set; } = new(null);
 
     public override void InitializeProperties()
@@ -34,10 +37,12 @@ public partial class TagViewModel(ITag _tag, TaskScheduler Scheduler) : Extensio
         Text = model.Text;
         Color = model.Color;
         Tooltip = model.ToolTip;
+        Icon = model.Icon;
 
         UpdateProperty(nameof(Text));
         UpdateProperty(nameof(Color));
         UpdateProperty(nameof(Tooltip));
+        UpdateProperty(nameof(Icon));
     }
 
     protected void UpdateProperty(string propertyName) => Task.Factory.StartNew(() => { OnPropertyChanged(propertyName); }, CancellationToken.None, TaskCreationOptions.None, Scheduler);

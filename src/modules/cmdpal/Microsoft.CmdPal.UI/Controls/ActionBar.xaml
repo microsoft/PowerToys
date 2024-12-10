@@ -5,10 +5,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
     xmlns:local="using:Microsoft.CmdPal.UI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -24,19 +26,21 @@
                 <ListViewItem KeyDown="ActionListViewItem_KeyDown" Tapped="ActionListViewItem_Tapped">
                     <Grid ColumnSpacing="8">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="24" />
+                            <ColumnDefinition Width="20" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <Viewbox Width="16" Height="16">
-                            <!--  TODO bind to icon  -->
-                            <ContentControl
+                        <Border x:Name="IconBorder"
                                 Grid.Column="0"
-                                Width="24"
-                                Height="24">
-                                <!--<SymbolIcon Symbol="Emoji" />-->
-                            </ContentControl>
-                        </Viewbox>
+                                Width="16"
+                                Height="16"
+                                Margin="0,0,0,0">
+                            <!-- LoadIconBehavior will magically fill this border up with an icon -->
+                            <Interactivity:Interaction.Behaviors>
+                                <cmdpalUI:LoadIconBehavior Source="{x:Bind Icon, Mode=OneWay}"/>
+                            </Interactivity:Interaction.Behaviors>
+                        </Border>
+
                         <TextBlock Grid.Column="1" Text="{x:Bind Title}" />
                     </Grid>
                 </ListViewItem>
@@ -51,13 +55,17 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <!--  TO DO: Placeholder, needs to be replaced with extension info  -->
-        <Border
-            Width="20"
-            Height="20"
-            Margin="12,0,0,0"
-            Background="{ThemeResource AccentFillColorDefaultBrush}"
-            CornerRadius="{StaticResource ControlCornerRadius}" />
+        
+        <Border x:Name="IconBorder"
+                Width="20"
+                Height="20"
+                Margin="12,0,0,0"
+                CornerRadius="{StaticResource ControlCornerRadius}">
+            <!-- LoadIconBehavior will magically fill this border up with an icon -->
+            <Interactivity:Interaction.Behaviors>
+                <cmdpalUI:LoadIconBehavior Source="{x:Bind ViewModel.CurrentPage.Icon, Mode=OneWay}"/>
+            </Interactivity:Interaction.Behaviors>
+        </Border>
 
         <TextBlock
             Grid.Column="1"
@@ -73,15 +81,24 @@
             <Button
                 Height="40"
                 Padding="8,4,8,4"
-                Visibility="{x:Bind ViewModel.PrimaryActionName, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}">
+                Visibility="{x:Bind ViewModel.PrimaryAction.Name, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}">
 
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <FontIcon Glyph="&#xEA3A;" />
+                    <!-- <FontIcon Glyph="&#xEA3A;" /> -->
+                    <Border Width="16"
+                            Height="16"
+                            Margin="4,4,4,4">
+                        <!-- LoadIconBehavior will magically fill this border up with an icon -->
+                        <Interactivity:Interaction.Behaviors>
+                            <cmdpalUI:LoadIconBehavior Source="{x:Bind ViewModel.PrimaryAction.Icon, Mode=OneWay}"/>
+                        </Interactivity:Interaction.Behaviors>
+                    </Border>
+
                     <StackPanel Orientation="Vertical" Spacing="2">
                         <TextBlock
                             FontSize="12"
                             Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="{x:Bind ViewModel.PrimaryActionName, Mode=OneWay}" />
+                            Text="{x:Bind ViewModel.PrimaryAction.Name, Mode=OneWay}" />
                         <FontIcon
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
@@ -94,14 +111,24 @@
             <Button
                 Height="40"
                 Padding="8,4,8,4"
-                Visibility="{x:Bind ViewModel.SecondaryActionName, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}">
+                Visibility="{x:Bind ViewModel.HasSecondaryCommand, Mode=OneWay}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <FontIcon Glyph="&#xEA3A;" />
+                    <!-- <FontIcon Glyph="&#xEA3A;" /> -->
+                    
+                    <Border Width="16"
+                            Height="16"
+                            Margin="4,4,4,4">
+                        <!-- LoadIconBehavior will magically fill this border up with an icon -->
+                        <Interactivity:Interaction.Behaviors>
+                            <cmdpalUI:LoadIconBehavior Source="{x:Bind ViewModel.SecondaryAction.Icon, Mode=OneWay}"/>
+                        </Interactivity:Interaction.Behaviors>
+                    </Border>
+
                     <StackPanel Orientation="Vertical" Spacing="1">
                         <TextBlock
                             FontSize="12"
                             Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="{x:Bind ViewModel.SecondaryActionName, Mode=OneWay}" />
+                            Text="{x:Bind ViewModel.SecondaryAction.Name, Mode=OneWay}" />
                         <TextBlock
                             FontSize="10"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"

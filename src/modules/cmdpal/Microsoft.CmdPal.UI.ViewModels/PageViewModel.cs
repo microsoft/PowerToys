@@ -37,6 +37,8 @@ public partial class PageViewModel : ExtensionObjectViewModel
 
     public bool IsLoading { get; private set; } = true;
 
+    public IconDataType Icon { get; private set; } = new(string.Empty);
+
     public PageViewModel(IPage model, TaskScheduler scheduler)
     {
         _pageModel = new(model);
@@ -74,10 +76,12 @@ public partial class PageViewModel : ExtensionObjectViewModel
 
         Name = page.Name;
         IsLoading = page.IsLoading;
+        Icon = page.Icon;
 
         // Let the UI know about our initial properties too.
         UpdateProperty(nameof(Name));
         UpdateProperty(nameof(IsLoading));
+        UpdateProperty(nameof(Icon));
 
         page.PropChanged += Model_PropChanged;
     }
@@ -118,6 +122,9 @@ public partial class PageViewModel : ExtensionObjectViewModel
                 break;
             case nameof(IsLoading):
                 this.IsLoading = model.IsLoading;
+                break;
+            case nameof(Icon):
+                this.Icon = model.Icon;
                 break;
         }
 
