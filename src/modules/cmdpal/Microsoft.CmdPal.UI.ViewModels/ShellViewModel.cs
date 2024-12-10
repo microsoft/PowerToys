@@ -18,6 +18,12 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider) : Observa
     public partial bool IsLoaded { get; set; } = false;
 
     [ObservableProperty]
+    public partial DetailsViewModel? Details { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsDetailsVisible { get; set; }
+
+    [ObservableProperty]
     public partial PageViewModel? CurrentPage { get; set; }
 
     [RelayCommand]
