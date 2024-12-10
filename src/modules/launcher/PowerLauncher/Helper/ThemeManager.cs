@@ -50,10 +50,7 @@ namespace PowerLauncher.Helper
 
         private void SetSystemTheme(ManagedCommon.Theme theme)
         {
-            if (!Common.UI.OSVersionHelper.IsWindows11())
-            {
-                _mainWindow.Background = SystemColors.WindowBrush;
-            }
+            _mainWindow.Background = Common.UI.OSVersionHelper.IsWindows11() is false ? SystemColors.WindowBrush : null;
 
             _mainWindow.Resources.MergedDictionaries.Clear();
             _mainWindow.Resources.MergedDictionaries.Add(new ResourceDictionary
