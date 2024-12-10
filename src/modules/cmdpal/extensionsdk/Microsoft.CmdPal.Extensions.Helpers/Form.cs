@@ -4,13 +4,13 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class Form : IForm
+public abstract class Form : IForm
 {
-    public string Data { get; set; } = string.Empty;
+    public virtual string Data { get; set; } = string.Empty;
 
-    public string State { get; set; } = string.Empty;
+    public virtual string State { get; set; } = string.Empty;
 
-    public string Template { get; set; } = string.Empty;
+    public virtual string Template { get; set; } = string.Empty;
 
     public virtual string DataJson() => Data;
 
@@ -18,5 +18,5 @@ public class Form : IForm
 
     public virtual string TemplateJson() => Template;
 
-    public virtual ICommandResult SubmitForm(string payload) => throw new NotImplementedException();
+    public abstract ICommandResult SubmitForm(string payload);
 }
