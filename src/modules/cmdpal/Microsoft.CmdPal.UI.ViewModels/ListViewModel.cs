@@ -35,6 +35,7 @@ public partial class ListViewModel : PageViewModel
     {
         //// TODO: Just temp testing, need to think about where we want to filter, as ACVS in View could be done, but then grouping need CVS, maybe we do grouping in view
         //// and manage filtering below, but we should be smarter about this and understand caching and other requirements...
+        //// Investigate if we re-use src\modules\cmdpal\extensionsdk\Microsoft.CmdPal.Extensions.Helpers\ListHelpers.cs InPlaceUpdateList and FilterList?
 
         // Remove all items out right if we clear the filter, otherwise, recheck the items already displayed.
         if (string.IsNullOrWhiteSpace(filter))
@@ -53,7 +54,7 @@ public partial class ListViewModel : PageViewModel
             }
         }
 
-        // Add any new items which do match the filter
+        // Add back any new items which do match the filter
         foreach (var item in _itemCache)
         {
             if ((filter == string.Empty || item.MatchesFilter(filter))
