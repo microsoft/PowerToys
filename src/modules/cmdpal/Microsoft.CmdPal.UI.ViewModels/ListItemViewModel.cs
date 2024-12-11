@@ -107,4 +107,8 @@ public partial class ListItemViewModel(IListItem model, TaskScheduler scheduler)
     public bool MatchesFilter(string filter) => StringMatcher.FuzzySearch(filter, Title).Success || StringMatcher.FuzzySearch(filter, Subtitle).Success;
 
     public override string ToString() => $"{Name} ListItemViewModel";
+
+    public override bool Equals(object? obj) => obj is ListItemViewModel vm && vm._listItemModel.Equals(this._listItemModel);
+
+    public override int GetHashCode() => _listItemModel.GetHashCode();
 }
