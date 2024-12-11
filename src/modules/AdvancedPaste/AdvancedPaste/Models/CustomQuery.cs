@@ -9,7 +9,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace AdvancedPaste.Models
 {
-    internal sealed class CustomQuery : ISettingsConfig
+    public sealed class CustomQuery : ISettingsConfig
     {
         public string Query { get; set; }
 
@@ -17,10 +17,10 @@ namespace AdvancedPaste.Models
 
         public string GetModuleName() => Constants.AdvancedPasteModuleName;
 
-        public string ToJsonString() => JsonSerializer.Serialize(this);
+        public string ToJsonString() => JsonSerializer.Serialize(this, AdvancedPasteJsonSerializerContext.Default.CustomQuery);
 
         public override string ToString()
-            => JsonSerializer.Serialize(this);
+            => JsonSerializer.Serialize(this, AdvancedPasteJsonSerializerContext.Default.CustomQuery);
 
         public bool UpgradeSettingsConfiguration() => false;
     }

@@ -2,6 +2,7 @@
   <!-- Look at Directory.Build.props in root for common stuff as well -->
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
   <Import Project="..\..\..\Common.SelfContained.props" />
+  <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -50,10 +51,10 @@
   <ItemGroup>
     <PackageReference Include="Azure.AI.OpenAI" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
-    <PackageReference Include="CommunityToolkit.WinUI.Animations" />
-    <PackageReference Include="CommunityToolkit.WinUI.Converters" />
-    <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
-    <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
+    <PackageReference Include="CommunityToolkit.WinUI.Animations"/>
+    <PackageReference Include="CommunityToolkit.WinUI.Converters"/>
+    <PackageReference Include="CommunityToolkit.WinUI.Extensions"/>
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives"/>
     <!-- Including MessagePack to force version, since it's used by StreamJsonRpc but contains vulnerabilities. After StreamJsonRpc updates the version of MessagePack, we can upgrade StreamJsonRpc instead. -->
     <PackageReference Include="MessagePack" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
@@ -74,7 +75,7 @@
     <!-- TODO: fix issues and reenable -->
     <!-- These are caused by streamjsonrpc dependency on Microsoft.VisualStudio.Threading.Analyzers -->
     <!-- We might want to add that to the project and fix the issues as well -->
-    <NoWarn>VSTHRD002;VSTHRD110;VSTHRD100;VSTHRD200;VSTHRD101</NoWarn>
+    <NoWarn>VSTHRD002;VSTHRD110;VSTHRD100;VSTHRD200;VSTHRD101;IL2059</NoWarn>
   </PropertyGroup>
 
   <!-- 
