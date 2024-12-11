@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
   <Import Project="..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\Common.Dotnet.AotCompatibility.props" />
 
   <PropertyGroup>
     <Description>PowerToys ManagedCommon</Description>

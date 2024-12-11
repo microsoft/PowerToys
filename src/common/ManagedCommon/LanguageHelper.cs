@@ -35,7 +35,7 @@ namespace ManagedCommon
                     inputStream.Close();
                     reader.Dispose();
 
-                    return JsonSerializer.Deserialize<OutGoingLanguageSettings>(data).LanguageTag;
+                    return JsonSerializer.Deserialize<OutGoingLanguageSettings>(data, ManagedCommonJsonSerializerContext.Default.OutGoingLanguageSettings).LanguageTag;
                 }
                 catch (Exception)
                 {
