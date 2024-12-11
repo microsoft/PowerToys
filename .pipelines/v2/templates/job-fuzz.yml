@@ -1,0 +1,39 @@
+parameters:
+  - name: configuration
+    type: string
+    default: "Release"
+  - name: platform
+    type: string
+    default: ""
+  - name: inputArtifactStem
+    type: string
+    default: ""
+
+jobs:
+  - job: OneFuzz
+    pool:
+      vmImage: windows-2022
+
+    steps:
+      - checkout: self
+        submodules: false
+        clean: true
+        fetchDepth: 1
+        fetchTags: false
+
+      - download: current
+        displayName: Download artifacts
+        artifact: build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}
+        patterns: |-
+          **/tests/*.FuzzTests/**
+      - script: |
+          echo "Printing files in target directory..."
+          dir "$(Pipeline.Workspace)\build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}\x64\Release\tests\AdvancedPaste.FuzzTests\net8.0-windows10.0.19041.0"
+        displayName: "Print files in target directory"
+
+      - task: onefuzz-task@0
+        inputs:
+          onefuzzOSes: Windows
+        env:
+          onefuzzDropDirectory: $(Pipeline.Workspace)\build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}\x64\Release\tests\AdvancedPaste.FuzzTests\net8.0-windows10.0.19041.0
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
