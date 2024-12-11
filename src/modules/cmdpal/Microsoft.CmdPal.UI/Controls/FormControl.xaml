@@ -25,7 +25,6 @@
         x:Name="ContentGrid"
         Padding="12, 8, 8, 8" 
         CornerRadius="{StaticResource OverlayCornerRadius}"
-        TabFocusNavigation="Cycle"
         Margin="0,4,4,4"
         Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">

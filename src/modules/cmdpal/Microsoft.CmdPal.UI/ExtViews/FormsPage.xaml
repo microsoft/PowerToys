@@ -23,15 +23,16 @@
 
         <controls:SwitchPresenter TargetType="local:ViewModelLoadedState" Value="{x:Bind LoadedState, Mode=OneWay}">
             <controls:Case Value="Loaded">
-
-                <ItemsControl Margin="8" ItemsSource="{x:Bind ViewModel.Forms, Mode=OneWay}">
-                    <!-- or ListView or ItemsRepeater more likely... -->
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="viewmodels:FormViewModel">
-                            <cmdPalControls:FormControl ViewModel="{x:Bind}"/>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <ScrollView VerticalAlignment="Top" VerticalScrollMode="Enabled">
+                    <ItemsControl  VerticalAlignment="Stretch" Margin="8" ItemsSource="{x:Bind ViewModel.Forms, Mode=OneWay}">
+                        <!-- or ListView or ItemsRepeater more likely... -->
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="viewmodels:FormViewModel">
+                                <cmdPalControls:FormControl ViewModel="{x:Bind}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollView>
 
             </controls:Case>
 
