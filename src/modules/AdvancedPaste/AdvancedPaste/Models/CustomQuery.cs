@@ -9,7 +9,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace AdvancedPaste.Models
 {
-    public sealed class CustomQuery : ISettingsConfig
+    internal sealed class CustomQuery : ISettingsConfig
     {
         public string Query { get; set; }
 

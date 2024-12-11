@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 namespace AdvancedPaste.Models
 {
     [JsonSerializable(typeof(CustomQuery))]
-    public partial class AdvancedPasteJsonSerializerContext : JsonSerializerContext
+    internal sealed partial class AdvancedPasteJsonSerializerContext : JsonSerializerContext
     {
     }
 }
