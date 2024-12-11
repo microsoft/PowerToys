@@ -57,7 +57,7 @@
     <PackageVersion Include="NLog" Version="5.0.4" />
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.3.8" />
     <PackageVersion Include="NLog.Schema" Version="5.2.8" />
-    <PackageVersion Include="ReverseMarkdown" Version="4.6.0" />
+    <PackageVersion Include="ReverseMarkdown" Version="4.1.0" />
     <PackageVersion Include="ScipBe.Common.Office.OneNote" Version="3.0.1" />
     <PackageVersion Include="SharpCompress" Version="0.37.2" />
     <PackageVersion Include="StreamJsonRpc" Version="2.19.27" />
