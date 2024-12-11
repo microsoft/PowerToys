@@ -28,7 +28,6 @@ namespace Microsoft.PowerToys.FilePreviewCommon.Monaco.Formatters
             using (var jDocument = JsonDocument.Parse(value, new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip }))
             {
                 FilePreviewJsonSerializerContext context = new(_serializerOptions);
-
                 return JsonSerializer.Serialize(jDocument, context.JsonDocument);
             }
         }
