@@ -208,4 +208,14 @@
   <data name="AWAKE_CMD_PARENT_PID_OPTION" xml:space="preserve">
     <value>Uses the parent process as the bound target - once the process terminates, Awake stops.</value>
   </data>
+  <data name="AWAKE_TRAY_TEXT_PID_BINDING" xml:space="preserve">
+    <value>Bound to</value>
+    <comment>Describes the process ID Awake is bound to when running.</comment>
+  </data>
+  <data name="AWAKE_SCREEN_ON" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="AWAKE_SCREEN_OFF" xml:space="preserve">
+    <value>Off</value>
+  </data>
 </root>

@@ -97,7 +97,7 @@ if (-not $Passive)
 
     if ($files.count -gt 0)
     {
-        dotnet tool run xstyler -c "$PSScriptRoot\..\Settings.XamlStyler" -f $files
+        dotnet tool run xstyler -c "$PSScriptRoot\..\src\Settings.XamlStyler" -f $files
     }
     else
     {
@@ -111,7 +111,7 @@ else
 
     if ($files.count -gt 0)
     {
-        dotnet tool run xstyler -p -c "$PSScriptRoot\..\Settings.XamlStyler" -f $files
+        dotnet tool run xstyler -p -c "$PSScriptRoot\..\src\Settings.XamlStyler" -f $files
 
         if ($lastExitCode -eq 1)
         {

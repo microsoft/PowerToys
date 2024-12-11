@@ -22,10 +22,6 @@
     <PackageReference Include="MSTest" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\STATestClassAttribute.cs" Link="STATestClassAttribute.cs" />
-    <Compile Include="..\STATestMethodAttribute.cs" Link="STATestMethodAttribute.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Moq" />
   </ItemGroup>
   <ItemGroup>

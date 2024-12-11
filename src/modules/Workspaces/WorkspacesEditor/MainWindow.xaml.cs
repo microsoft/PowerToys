@@ -30,13 +30,28 @@ namespace WorkspacesEditor
             MainViewModel = mainViewModel;
             mainViewModel.SetMainWindow(this);
 
-            WindowInteropHelper windowInteropHelper = new WindowInteropHelper(this);
-            System.Windows.Forms.Screen screen = System.Windows.Forms.Screen.FromHandle(windowInteropHelper.Handle);
-            double dpi = MonitorHelper.GetScreenDpiFromScreen(screen);
-            this.Height = screen.WorkingArea.Height / dpi * 0.90;
-            this.Width = screen.WorkingArea.Width / dpi * 0.75;
-            this.Top = screen.WorkingArea.Top + (int)(screen.WorkingArea.Height / dpi * 0.05);
-            this.Left = screen.WorkingArea.Left + (int)(screen.WorkingArea.Width / dpi * 0.125);
+            if (Properties.Settings.Default.Height == -1)
+            {
+                // This is the very first time the window is created. Place it on the screen center
+                WindowInteropHelper windowInteropHelper = new WindowInteropHelper(this);
+                System.Windows.Forms.Screen screen = System.Windows.Forms.Screen.FromHandle(windowInteropHelper.Handle);
+                double dpi = MonitorHelper.GetScreenDpiFromScreen(screen);
+                this.Height = screen.WorkingArea.Height / dpi * 0.90;
+                this.Width = screen.WorkingArea.Width / dpi * 0.75;
+                this.Top = screen.WorkingArea.Top + (int)(screen.WorkingArea.Height / dpi * 0.05);
+                this.Left = screen.WorkingArea.Left + (int)(screen.WorkingArea.Width / dpi * 0.125);
+                SavePosition();
+            }
+
+            this.Top = Properties.Settings.Default.Top;
+            this.Left = Properties.Settings.Default.Left;
+            this.Height = Properties.Settings.Default.Height;
+            this.Width = Properties.Settings.Default.Width;
+
+            if (Properties.Settings.Default.Maximized)
+            {
+                WindowState = WindowState.Maximized;
+            }
 
             InitializeComponent();
 
@@ -73,8 +88,32 @@ namespace WorkspacesEditor
                 cancellationToken.Token);
         }
 
+        private void SavePosition()
+        {
+            if (WindowState == WindowState.Maximized)
+            {
+                // Use the RestoreBounds as the current values will be 0, 0 and the size of the screen
+                Properties.Settings.Default.Top = RestoreBounds.Top;
+                Properties.Settings.Default.Left = RestoreBounds.Left;
+                Properties.Settings.Default.Height = RestoreBounds.Height;
+                Properties.Settings.Default.Width = RestoreBounds.Width;
+                Properties.Settings.Default.Maximized = true;
+            }
+            else
+            {
+                Properties.Settings.Default.Top = this.Top;
+                Properties.Settings.Default.Left = this.Left;
+                Properties.Settings.Default.Height = this.Height;
+                Properties.Settings.Default.Width = this.Width;
+                Properties.Settings.Default.Maximized = false;
+            }
+
+            Properties.Settings.Default.Save();
+        }
+
         private void OnClosing(object sender, EventArgs e)
         {
+            SavePosition();
             cancellationToken.Dispose();
             App.Current.Shutdown();
         }
