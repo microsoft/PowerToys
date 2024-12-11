@@ -22,6 +22,9 @@ parameters:
   - name: useVSPreview
     type: boolean
     default: false
+  - name: usingLatestWebView2
+    type: boolean
+    default: false
 
 stages:
   # Allow manual builds to skip pre-check
@@ -66,3 +69,4 @@ stages:
             parameters:
               platform: ${{ platform }}
               configuration: Release
+              usingLatestWebView2: ${{ parameters.usingLatestWebView2 }}

@@ -41,6 +41,9 @@ parameters:
     type: boolean
     displayName: "Build Using Visual Studio Preview"
     default: false
+  - name: usingLatestWebView2
+    type: boolean
+    default: false
 
 extends:
   template: templates/pipeline-ci-build.yml
@@ -49,3 +52,4 @@ extends:
     enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
     runTests: ${{ parameters.runTests }}
     useVSPreview: ${{ parameters.useVSPreview }}
+    usingLatestWebView2: ${{ parameters.usingLatestWebView2 }}
