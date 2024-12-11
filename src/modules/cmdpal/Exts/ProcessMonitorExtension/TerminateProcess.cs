@@ -10,10 +10,12 @@ namespace ProcessMonitorExtension;
 internal sealed partial class TerminateProcess : InvokableCommand
 {
     private readonly ProcessItem _process;
+    private readonly ProcessListPage _owner;
 
-    public TerminateProcess(ProcessItem process)
+    public TerminateProcess(ProcessItem process, ProcessListPage owner)
     {
         _process = process;
+        _owner = owner;
         Icon = new("\ue74d");
         Name = "End task";
     }
@@ -22,6 +24,7 @@ internal sealed partial class TerminateProcess : InvokableCommand
     {
         var process = Process.GetProcessById(_process.ProcessId);
         process.Kill();
+        _owner.UpdateItems();
         return CommandResult.KeepOpen();
     }
 }

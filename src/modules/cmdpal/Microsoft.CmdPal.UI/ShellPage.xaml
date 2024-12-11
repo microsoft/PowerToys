@@ -7,10 +7,42 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:labs="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
     Background="Transparent"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <ResourceDictionary>
+            <converters:StringVisibilityConverter
+                x:Key="StringNotEmptyToVisibilityConverter"
+                EmptyValue="Collapsed"
+                NotEmptyValue="Visible" />
+            <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
+        </ResourceDictionary>
+    </Page.Resources>
+
     <Grid>
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+
+                <VisualState x:Name="DetailsCollapsed" />
+
+                <VisualState x:Name="DetailsVisible">
+                    <VisualState.StateTriggers>
+                        <StateTrigger IsActive="{x:Bind ViewModel.IsDetailsVisible, Mode=OneWay}"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="DetailsContent.Visibility" Value="Visible" />
+                        <Setter Target="DetailsColumn.Width" Value="2*" />
+                    </VisualState.Setters>
+                </VisualState>
+
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -20,17 +52,75 @@
         <controls:SearchBar
             x:Name="SearchBox"
             Grid.Row="0"
-            VerticalAlignment="Top" />
+            VerticalAlignment="Top"
+            CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
 
-        <Grid
+        <Grid x:Name="ContentGrid"
             Grid.Row="1"
             Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
             BorderThickness="0,1,0,1">
-            <Frame Name="RootFrame" IsNavigationStackEnabled="True" />
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*" />
+                <ColumnDefinition x:Name="DetailsColumn" Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Frame Name="RootFrame" 
+                   Grid.Column="0" 
+                   IsNavigationStackEnabled="True" />
+
+            <Grid 
+                x:Name="DetailsContent"
+                Grid.Column="1" 
+                Visibility="Collapsed"
+                Padding="8"
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1,0,0,0">
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Border x:Name="HeroImageBorder"
+                        Width="64" 
+                        Height="64"
+                        Visibility="{x:Bind ViewModel.Details.HasHeroImage, Mode=OneWay}" >
+                    <!-- LoadIconBehavior will magically fill this border up with an icon -->
+                    <Interactivity:Interaction.Behaviors>
+                        <local:LoadIconBehavior Source="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"/>
+                    </Interactivity:Interaction.Behaviors>
+                </Border>
+
+                <TextBlock 
+                    Grid.Row="1"
+                    HorizontalAlignment="Center"
+                    FontSize="20"
+                    TextWrapping="WrapWholeWords"
+                    Style="{StaticResource SubtitleTextBlockStyle}"
+                    Text="{x:Bind ViewModel.Details.Title, Mode=OneWay}" 
+                    Visibility="{x:Bind ViewModel.Details.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}"/>
+
+                <ScrollViewer Grid.Row="2" HorizontalAlignment="Stretch">
+                    <labs:MarkdownTextBlock 
+                        x:Name="DetailsMarkdown"
+                        Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}"
+                        Background="Transparent" >
+                        
+                    </labs:MarkdownTextBlock>
+                    
+                </ScrollViewer>
+            </Grid> <!--/DetailsContent-->
+            
         </Grid>
 
-
-        <controls:ActionBar Grid.Row="2" VerticalAlignment="Top" />
+        <controls:ActionBar
+            Grid.Row="2"
+            VerticalAlignment="Top"
+            CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
     </Grid>
+
 </Page>

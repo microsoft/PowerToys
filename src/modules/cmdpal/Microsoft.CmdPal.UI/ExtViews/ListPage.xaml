@@ -15,16 +15,49 @@
     mc:Ignorable="d">
 
     <Page.Resources>
+        <!--  TODO: Figure out what we want to do here for filtering/grouping and where  -->
         <!--  https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.data.collectionviewsource  -->
-        <CollectionViewSource
+        <!--<CollectionViewSource
             x:Name="ItemsCVS"
             IsSourceGrouped="True"
-            Source="{x:Bind ViewModel.Items, Mode=OneWay}" />
+            Source="{x:Bind ViewModel.Items, Mode=OneWay}" />-->
 
         <converters:StringVisibilityConverter
             x:Key="StringVisibilityConverter"
             EmptyValue="Collapsed"
             NotEmptyValue="Visible" />
+
+        <StackLayout
+            x:Name="HorizontalStackLayout"
+            Orientation="Horizontal"
+            Spacing="8" />
+
+        <DataTemplate x:Key="TagTemplate" x:DataType="viewmodels:TagViewModel">
+            <!--  TODO: Actually colorize the tags again -->
+            <StackPanel
+                Padding="4,2,4,2"
+                VerticalAlignment="Center"
+                BorderBrush="{ThemeResource TextBoxBorderThemeBrush}"
+                BorderThickness="1"
+                Orientation="Horizontal"
+                CornerRadius="4">
+                <Border x:Name="IconBorder"
+                        Width="12"
+                        Height="12"
+                        Margin="0,0,4,0"
+                        Visibility="{x:Bind HasIcon, Mode=OneWay}">
+                    <!-- LoadIconBehavior will magically fill this border up with an icon -->
+                    <Interactivity:Interaction.Behaviors>
+                        <local:LoadIconBehavior Source="{x:Bind Icon, Mode=OneWay}"/>
+                    </Interactivity:Interaction.Behaviors>
+                </Border>
+                    
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="12"
+                    Text="{x:Bind Text, Mode=OneWay}" />
+            </StackPanel>
+        </DataTemplate>
 
         <!--  https://learn.microsoft.com/windows/apps/design/controls/itemsview#specify-the-look-of-the-items  -->
         <DataTemplate x:Key="ListItemViewModelTemplate" x:DataType="viewmodels:ListItemViewModel">
@@ -38,14 +71,17 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <Viewbox
-                        Width="20"
-                        Height="20"
-                        VerticalAlignment="Center">
-                        <!--TODO: Icon
-                        <ContentControl Content="{x:Bind IcoElement, Mode=OneWay}" />
-                        -->
-                    </Viewbox>
+
+                    <Border x:Name="IconBorder"
+                            Grid.Column="0"
+                            Width="20"
+                            Height="20"
+                            Margin="4,0,4,0">
+                        <!-- LoadIconBehavior will magically fill this border up with an icon -->
+                        <Interactivity:Interaction.Behaviors>
+                            <local:LoadIconBehavior Source="{x:Bind Icon, Mode=OneWay}"/>
+                        </Interactivity:Interaction.Behaviors>
+                    </Border>
 
                     <StackPanel
                         Grid.Column="1"
@@ -69,18 +105,22 @@
                             TextWrapping="NoWrap"
                             Visibility="{x:Bind Subtitle, Mode=OneWay, Converter={StaticResource StringVisibilityConverter}}" />
                     </StackPanel>
-                    <!--  TODO: Add tags again  -->
-                    <!--<ItemsRepeater ItemTemplate="{StaticResource TagTemplate}"
+                    
+                    <ItemsRepeater ItemTemplate="{StaticResource TagTemplate}"
                        ItemsSource="{x:Bind Tags}"
                        Grid.Column="2"
                        Visibility="{x:Bind HasTags}"
-                       Layout="{StaticResource HorizontalStackLayout}" />-->
+                       Layout="{StaticResource HorizontalStackLayout}" />
                 </Grid>
             </ListViewItem>
         </DataTemplate>
     </Page.Resources>
 
     <Grid>
+        <ProgressBar
+            VerticalAlignment="Top"
+            IsIndeterminate="True"
+            Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
         <!--  not using Interactivity:Interaction.Behaviors due to wanting to do AoT  -->
         <!--
             sticking with ListView as ItemsView doesn't have grouping built-in, could investigate coordinating
@@ -92,9 +132,9 @@
                     x:Name="ItemsList"
                     IsItemClickEnabled="True"
                     ItemClick="ListView_ItemClick"
-                    SelectionChanged="ItemsList_SelectionChanged"
                     ItemTemplate="{StaticResource ListItemViewModelTemplate}"
-                    ItemsSource="{x:Bind ItemsCVS.View, Mode=OneWay}">
+                    ItemsSource="{x:Bind ViewModel.Items, Mode=OneWay}"
+                    SelectionChanged="ItemsList_SelectionChanged">
                     <ListView.ItemContainerTransitions>
                         <TransitionCollection />
                     </ListView.ItemContainerTransitions>
@@ -114,14 +154,20 @@
             </controls:Case>
 
             <controls:Case IsDefault="True" Value="Loading">
-                <ProgressRing
+                <!--<ProgressRing
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    IsIndeterminate="True" />
+                    IsIndeterminate="True" />-->
             </controls:Case>
-            
+
             <controls:Case Value="Error">
-                <TextBlock Text="Error loading List Page" />
+                <StackPanel Margin="16" Orientation="Vertical">
+                    <TextBlock
+                        FontSize="18"
+                        Foreground="{ThemeResource SystemErrorTextColor}"
+                        Text="Error on page" />
+                    <TextBlock IsTextSelectionEnabled="True" Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
+                </StackPanel>
             </controls:Case>
         </controls:SwitchPresenter>
     </Grid>

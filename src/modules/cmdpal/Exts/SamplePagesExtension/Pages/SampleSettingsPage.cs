@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
+using System.Reflection.Emit;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 
@@ -10,6 +12,15 @@ namespace SamplePagesExtension;
 internal sealed partial class SampleSettingsPage : FormPage
 {
     private readonly Settings _settings = new();
+
+    private readonly List<ChoiceSetSetting.Choice> _choices = new()
+    {
+        new ChoiceSetSetting.Choice("The first choice in the list is the default choice", "0"),
+        new ChoiceSetSetting.Choice("Choices have titles and values", "1"),
+        new ChoiceSetSetting.Choice("Title", "Value"),
+        new ChoiceSetSetting.Choice("The options are endless", "3"),
+        new ChoiceSetSetting.Choice("So many choices", "4"),
+    };
 
     public override IForm[] Forms()
     {
@@ -30,6 +41,11 @@ internal sealed partial class SampleSettingsPage : FormPage
             {
                 Label = "This is a text box",
                 Description = "For some string of text",
+            });
+        _settings.Add(new ChoiceSetSetting("choiceSetExample", _choices)
+            {
+                Label = "It also has a label",
+                Description = "Describe your choice set setting here",
             });
 
         _settings.SettingsChanged += SettingsChanged;

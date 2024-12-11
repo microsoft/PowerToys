@@ -23,6 +23,7 @@ public partial class MainListPage : DynamicListPage
 
     public MainListPage(IServiceProvider serviceProvider)
     {
+        Name = "Command Palette";
         _serviceProvider = serviceProvider;
 
         var tlcManager = _serviceProvider.GetService<TopLevelCommandManager>();

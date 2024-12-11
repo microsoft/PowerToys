@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
-using Windows.UI;
 
 namespace MastodonExtension;
 
@@ -24,17 +23,18 @@ internal sealed partial class MastodonExtensionPage : ListPage
     internal static readonly HttpClient Client = new();
     internal static readonly JsonSerializerOptions Options = new() { PropertyNameCaseInsensitive = true };
 
-    private readonly List<ListItem> _items = new();
+    private readonly List<ListItem> _items = [];
 
     public MastodonExtensionPage()
     {
         Icon = new("https://mastodon.social/packs/media/icons/android-chrome-36x36-4c61fdb42936428af85afdbf8c6a45a8.png");
         Name = "Mastodon";
         ShowDetails = true;
-        HasMore = true;
+        HasMoreItems = true;
+        IsLoading = true;
 
         // #6364ff
-        AccentColor = Color.FromArgb(255, 99, 100, 255);
+        AccentColor = ColorHelpers.FromRgb(99, 100, 255);
     }
 
     private void AddPosts(List<MastodonStatus> posts)
@@ -90,7 +90,7 @@ internal sealed partial class MastodonExtensionPage : ListPage
 
     public override void LoadMore()
     {
-        this.Loading = true;
+        this.IsLoading = true;
         ExtensionHost.LogMessage(new LogMessage() { Message = $"Loading 20 posts, starting with {_items.Count}..." });
         var postsAsync = FetchExplorePage(20, this._items.Count);
         postsAsync.ContinueWith((res) =>
@@ -99,15 +99,12 @@ internal sealed partial class MastodonExtensionPage : ListPage
             this.AddPosts(posts);
             ExtensionHost.LogMessage(new LogMessage() { Message = $"... got {posts.Count} new posts" });
 
-            this.Loading = false;
+            this.IsLoading = false;
             this.RaiseItemsChanged(this._items.Count);
         }).ConfigureAwait(false);
     }
 
-    public async Task<List<MastodonStatus>> FetchExplorePage()
-    {
-        return await FetchExplorePage(20, 0);
-    }
+    public async Task<List<MastodonStatus>> FetchExplorePage() => await FetchExplorePage(20, 0);
 
     public async Task<List<MastodonStatus>> FetchExplorePage(int limit, int offset)
     {
@@ -129,6 +126,8 @@ internal sealed partial class MastodonExtensionPage : ListPage
             Console.WriteLine($"An error occurred: {e.Message}");
         }
 
+        IsLoading = false;
+
         return statuses;
     }
 }
@@ -145,10 +144,7 @@ public partial class MastodonExtensionActionsProvider : CommandProvider
         new CommandItem(new MastodonExtensionPage()) { Subtitle = "Explore top posts on mastodon.social" },
     ];
 
-    public override ICommandItem[] TopLevelCommands()
-    {
-        return _actions;
-    }
+    public override ICommandItem[] TopLevelCommands() => _actions;
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]
@@ -177,10 +173,7 @@ public partial class MastodonPostForm : IForm
 
     public string StateJson() => throw new NotImplementedException();
 
-    public ICommandResult SubmitForm(string payload)
-    {
-        return CommandResult.Dismiss();
-    }
+    public ICommandResult SubmitForm(string payload) => CommandResult.Dismiss();
 
     public string TemplateJson()
     {
@@ -404,10 +397,7 @@ public class MastodonStatus
         }
     }
 
-    private static string ParseNodeToPlaintext(HtmlNode node)
-    {
-        return node.InnerText;
-    }
+    private static string ParseNodeToPlaintext(HtmlNode node) => node.InnerText;
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]

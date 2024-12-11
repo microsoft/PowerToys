@@ -105,6 +105,25 @@ extends:
                     move /Y "Microsoft.PowerToys.Telemetry.2.0.2\build\include\TelemetryBase.cs" "src\common\Telemetry\TelemetryBase.cs" || exit /b 1
                   displayName: Emplace telemetry files
 
+      - stage: Build_SDK
+        displayName: Build SDK
+        dependsOn: []
+        jobs:
+          - template: .pipelines/v2/templates/job-build-sdk.yml@self
+            parameters:
+              pool:
+                name: SHINE-INT-L
+                image: SHINE-VS17-Latest
+                os: windows
+              codeSign: true
+              signingIdentity:
+                serviceName: $(SigningServiceName)
+                appId: $(SigningAppId)
+                tenantId: $(SigningTenantId)
+                akvName: $(SigningAKVName)
+                authCertName: $(SigningAuthCertName)
+                signCertName: $(SigningSignCertName)
+
       - stage: Publish
         displayName: Publish
         dependsOn: [Build]

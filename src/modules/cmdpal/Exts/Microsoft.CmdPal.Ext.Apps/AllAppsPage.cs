@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
-using Windows.UI;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
@@ -20,9 +19,8 @@ public sealed partial class AllAppsPage : ListPage
         this.Name = "All Apps";
         this.Icon = new("\ue71d");
         this.ShowDetails = true;
-        this.Loading = true;
+        this.IsLoading = true;
         this.PlaceholderText = "Search installed apps...";
-        this.AccentColor = Color.FromArgb(255, 255, 102, 0);
     }
 
     public override IListItem[] GetItems()
@@ -30,7 +28,7 @@ public sealed partial class AllAppsPage : ListPage
         if (this.allAppsSection == null || allAppsSection.Length == 0)
         {
             var apps = GetPrograms();
-            this.Loading = false;
+            this.IsLoading = false;
             this.allAppsSection = apps
                             .Select((app) => new AppListItem(app))
                             .ToArray();
@@ -75,7 +73,7 @@ public sealed partial class AllAppsPage : ListPage
                     Name = app.Name,
                     Subtitle = app.Description,
                     IcoPath = app.FullPath, // similarly, this should be IcoPath, but :shrug:
-                    ExePath = app.FullPath,
+                    ExePath = app.LnkFilePath ?? app.FullPath,
                     DirPath = app.Location,
                 });
 

@@ -78,6 +78,7 @@
     <ProjectReference Include="..\Exts\Microsoft.CmdPal.Ext.Calc\Microsoft.CmdPal.Ext.Calc.csproj" />
     <ProjectReference Include="..\Exts\Microsoft.CmdPal.Ext.CmdPalSettings\Microsoft.CmdPal.Ext.Settings.csproj" />
     <ProjectReference Include="..\Exts\Microsoft.CmdPal.Ext.Registry\Microsoft.CmdPal.Ext.Registry.csproj" />
+    <ProjectReference Include="..\Exts\Microsoft.CmdPal.Ext.Shell\Microsoft.CmdPal.Ext.Shell.csproj" />
     <ProjectReference Include="..\Exts\Microsoft.CmdPal.Ext.WindowsServices\Microsoft.CmdPal.Ext.WindowsServices.csproj" />
     <ProjectReference Include="..\Exts\Microsoft.CmdPal.Ext.WindowsSettings\Microsoft.CmdPal.Ext.WindowsSettings.csproj" />
     <ProjectReference Include="..\Exts\Microsoft.CmdPal.Ext.WindowsTerminal\Microsoft.CmdPal.Ext.WindowsTerminal.csproj" />

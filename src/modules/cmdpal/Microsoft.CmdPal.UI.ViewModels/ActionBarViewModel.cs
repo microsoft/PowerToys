@@ -10,7 +10,8 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ActionBarViewModel : ObservableObject
+public partial class ActionBarViewModel : ObservableObject,
+    IRecipient<UpdateActionBarMessage>
 {
     public ListItemViewModel? SelectedItem
     {
@@ -23,29 +24,38 @@ public partial class ActionBarViewModel : ObservableObject
     }
 
     [ObservableProperty]
-    public partial string PrimaryActionName { get; set; } = string.Empty;
+    public partial CommandItemViewModel? PrimaryAction { get; set; }
 
     [ObservableProperty]
-    public partial string SecondaryActionName { get; set; } = string.Empty;
+    [NotifyPropertyChangedFor(nameof(HasSecondaryCommand))]
+    public partial CommandItemViewModel? SecondaryAction { get; set; }
+
+    public bool HasSecondaryCommand => SecondaryAction != null;
 
     [ObservableProperty]
     public partial bool ShouldShowContextMenu { get; set; } = false;
+
+    [ObservableProperty]
+    public partial PageViewModel? CurrentPage { get; set; }
 
     [ObservableProperty]
     public partial ObservableCollection<CommandContextItemViewModel> ContextActions { get; set; } = [];
 
     public ActionBarViewModel()
     {
+        WeakReferenceMessenger.Default.Register<UpdateActionBarMessage>(this);
     }
+
+    public void Receive(UpdateActionBarMessage message) => SelectedItem = message.ViewModel;
 
     private void SetSelectedItem(ListItemViewModel? value)
     {
         if (value != null)
         {
-            PrimaryActionName = value.Name;
-            SecondaryActionName = value.SecondaryCommandName;
+            PrimaryAction = value;
+            SecondaryAction = value.SecondaryCommand;
 
-            if (value.MoreCommands.Count > 0)
+            if (value.MoreCommands.Count > 1)
             {
                 ShouldShowContextMenu = true;
                 ContextActions = [.. value.AllCommands];
@@ -57,8 +67,8 @@ public partial class ActionBarViewModel : ObservableObject
         }
         else
         {
-            PrimaryActionName = string.Empty;
-            SecondaryActionName = string.Empty;
+            PrimaryAction = null;
+            SecondaryAction = null;
             ShouldShowContextMenu = false;
         }
     }

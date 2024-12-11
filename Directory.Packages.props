@@ -19,6 +19,9 @@
     <PackageVersion Include="CommunityToolkit.WinUI.Extensions" Version="8.2.241112-preview1" />
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
+    
+    <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock" Version=" 0.1.241129-build.1830" />
+
     <PackageVersion Include="ControlzEx" Version="6.0.0" />
     <PackageVersion Include="HelixToolkit" Version="2.24.0" />
     <PackageVersion Include="HelixToolkit.Core.Wpf" Version="2.24.0" />
@@ -30,6 +33,7 @@
     <PackageVersion Include="Markdig.Signed" Version="0.34.0" />
     <!-- Including MessagePack to force version, since it's used by StreamJsonRpc but contains vulnerabilities. After StreamJsonRpc updates the version of MessagePack, we can upgrade StreamJsonRpc instead. -->
     <PackageVersion Include="MessagePack" Version="2.5.187" />
+    <PackageVersion Include="Microsoft.CmdPal.Extensions.SDK" Version="0.0.1" />
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24508.2" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.16" />
@@ -39,7 +43,7 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
-    <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2739.15" />
+    <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
     <!-- Package Microsoft.Win32.SystemEvents added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Drawing.Common but the 8.0.1 version wasn't published to nuget. -->
     <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Windows.Compatibility" Version="9.0.0" />
@@ -51,7 +55,7 @@
 	-->
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.1.5" />
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.2428" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.6.241106002" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.6.241114003" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
     <PackageVersion Include="ModernWpfUI" Version="0.9.4" />
