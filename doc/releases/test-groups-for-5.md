@@ -50,8 +50,8 @@ Group 1:
 - Quick Accent
 - Hosts File Editor
 - GPO
+- Registry Preview
 - Peek
-- Advanced Paste
 - Workspaces
 - New+
 ```
@@ -121,5 +121,5 @@ Group 5:
 - File Explorer Add-ons
 - Quick Accent
 - Text Extractor
-- Registry Preview
+- Advanced Paste
 ```
