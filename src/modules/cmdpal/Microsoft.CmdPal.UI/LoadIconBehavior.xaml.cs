@@ -14,19 +14,15 @@ public partial class LoadIconBehavior : DependencyObject, IBehavior
 {
     private static readonly IconCacheService IconService = new(Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
 
-    public IconDataType Source
+    public IconDataType? Source
     {
-        get => (IconDataType)GetValue(SourceProperty);
-        set
-        {
-            SetValue(SourceProperty, value);
-            OnSourcePropertyChanged();
-        }
+        get => (IconDataType?)GetValue(SourceProperty);
+        set => SetValue(SourceProperty, value);
     }
 
     // Using a DependencyProperty as the backing store for Source.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty SourceProperty =
-        DependencyProperty.Register(nameof(Source), typeof(IconDataType), typeof(LoadIconBehavior), new PropertyMetadata(new IconDataType(string.Empty)));
+        DependencyProperty.Register(nameof(Source), typeof(IconDataType), typeof(LoadIconBehavior), new PropertyMetadata(null, OnSourcePropertyChanged));
 
     public DependencyObject? AssociatedObject { get; private set; }
 
@@ -34,12 +30,20 @@ public partial class LoadIconBehavior : DependencyObject, IBehavior
 
     public void Detach() => AssociatedObject = null;
 
-    public async void OnSourcePropertyChanged()
+    private static async void OnSourcePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        var icoSource = await IconService.GetIconSource(Source ?? new(string.Empty));
-
-        if (AssociatedObject is Border border)
+        if (d is LoadIconBehavior @this
+            && @this.AssociatedObject is Border border)
         {
+            var icoSource = await IconService.GetIconSource(@this.Source ?? new(string.Empty));
+
+            /* This causes a catastrophic failure...
+            if (border.Child != null)
+            {
+                VisualTreeHelper.DisconnectChildrenRecursive(border.Child);
+                border.Child = null;
+            }*/
+
             if (icoSource is FontIconSource fontIco)
             {
                 fontIco.FontSize = border.Width;
