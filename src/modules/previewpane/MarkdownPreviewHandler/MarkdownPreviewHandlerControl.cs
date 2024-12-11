@@ -67,7 +67,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
             get
             {
                 string codeBase = AppContext.BaseDirectory;
-
                 UriBuilder uri = new UriBuilder(codeBase);
                 string path = Uri.UnescapeDataString(uri.Path);
                 return Path.GetDirectoryName(path);
