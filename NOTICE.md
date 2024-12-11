@@ -1297,7 +1297,7 @@ EXHIBIT A -Mozilla Public License.
 ## NuGet Packages used by PowerToys
 
 - Appium.WebDriver 4.4.5
-- Azure.AI.OpenAI 1.0.0-beta.12
+- Azure.AI.OpenAI 1.0.0-beta.17
 - CommunityToolkit.Mvvm 8.2.2
 - CommunityToolkit.WinUI.Animations 8.0.240109
 - CommunityToolkit.WinUI.Collections 8.0.240109
@@ -1318,6 +1318,7 @@ EXHIBIT A -Mozilla Public License.
 - Mages 2.0.2
 - Markdig.Signed 0.34.0
 - MessagePack 2.5.187
+- Microsoft.Bcl.AsyncInterfaces 9.0.0
 - Microsoft.CodeAnalysis.NetAnalyzers 9.0.0
 - Microsoft.Data.Sqlite 9.0.0
 - Microsoft.Diagnostics.Tracing.TraceEvent 3.1.16
@@ -1327,6 +1328,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Extensions.Logging 9.0.0
 - Microsoft.Extensions.Logging.Abstractions 9.0.0
 - Microsoft.NET.ILLink.Tasks (A)
+- Microsoft.SemanticKernel 1.15.0
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
 - Microsoft.Web.WebView2 1.0.2739.15
 - Microsoft.Win32.SystemEvents 9.0.0
@@ -1342,6 +1344,7 @@ EXHIBIT A -Mozilla Public License.
 - MSTest 3.6.3
 - NLog.Extensions.Logging 5.3.8
 - NLog.Schema 5.2.8
+- OpenAI 2.0.0
 - ReverseMarkdown 4.1.0
 - ScipBe.Common.Office.OneNote 3.0.1
 - SharpCompress 0.37.2

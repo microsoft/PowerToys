@@ -55,6 +55,7 @@ namespace
     const wchar_t JSON_KEY_ADVANCED_PASTE_UI_HOTKEY[] = L"advanced-paste-ui-hotkey";
     const wchar_t JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY[] = L"paste-as-markdown-hotkey";
     const wchar_t JSON_KEY_PASTE_AS_JSON_HOTKEY[] = L"paste-as-json-hotkey";
+    const wchar_t JSON_KEY_IS_ADVANCED_AI_ENABLED[] = L"IsAdvancedAIEnabled";
     const wchar_t JSON_KEY_SHOW_CUSTOM_PREVIEW[] = L"ShowCustomPreview";
     const wchar_t JSON_KEY_VALUE[] = L"value";
 
@@ -99,6 +100,7 @@ private:
     using CustomAction = ActionData<int>;
     std::vector<CustomAction> m_custom_actions;
 
+    bool m_is_advanced_ai_enabled = false;
     bool m_preview_custom_format_output = true;
 
     Hotkey parse_single_hotkey(const wchar_t* keyName, const winrt::Windows::Data::Json::JsonObject& settingsObject)
@@ -268,9 +270,9 @@ private:
         }
     }
 
-    void parse_hotkeys(PowerToysSettings::PowerToyValues& settings)
+    void read_settings(PowerToysSettings::PowerToyValues& settings)
     {
-        auto settingsObject = settings.get_raw_json();
+        const auto settingsObject = settings.get_raw_json();
 
         // Migrate Paste As Plain text shortcut
         Hotkey old_paste_as_plain_hotkey;
@@ -350,6 +352,21 @@ private:
                         }
                     }
                 }
+            }
+        }
+
+        if (settingsObject.GetView().Size())
+        {
+            const auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+
+            if (propertiesObject.HasKey(JSON_KEY_IS_ADVANCED_AI_ENABLED))
+            {
+                m_is_advanced_ai_enabled = propertiesObject.GetNamedObject(JSON_KEY_IS_ADVANCED_AI_ENABLED).GetNamedBoolean(JSON_KEY_VALUE);
+            }
+
+            if (propertiesObject.HasKey(JSON_KEY_SHOW_CUSTOM_PREVIEW))
+            {
+                m_preview_custom_format_output = propertiesObject.GetNamedObject(JSON_KEY_SHOW_CUSTOM_PREVIEW).GetNamedBoolean(JSON_KEY_VALUE);
             }
         }
     }
@@ -441,13 +458,7 @@ private:
             PowerToysSettings::PowerToyValues settings =
                 PowerToysSettings::PowerToyValues::load_from_settings_file(get_key());
 
-            parse_hotkeys(settings);
-
-            auto settingsObject = settings.get_raw_json();
-            if (settingsObject.GetView().Size() && settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).HasKey(JSON_KEY_SHOW_CUSTOM_PREVIEW))
-            {
-                m_preview_custom_format_output = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SHOW_CUSTOM_PREVIEW).GetNamedBoolean(JSON_KEY_VALUE);
-            }
+            read_settings(settings);
         }
         catch (std::exception&)
         {
@@ -809,13 +820,7 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
-            parse_hotkeys(values);
-
-            const auto settingsObject = values.get_raw_json();
-            if (settingsObject.GetView().Size() && settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).HasKey(JSON_KEY_SHOW_CUSTOM_PREVIEW))
-            {
-                m_preview_custom_format_output = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SHOW_CUSTOM_PREVIEW).GetNamedBoolean(JSON_KEY_VALUE);
-            }
+            read_settings(values);
 
             std::unordered_map<std::wstring, Hotkey> additionalActionMap;
             for (const auto& action : m_additional_actions)
@@ -828,6 +833,7 @@ public:
                                                    m_advanced_paste_ui_hotkey,
                                                    m_paste_as_markdown_hotkey,
                                                    m_paste_as_json_hotkey,
+                                                   m_is_advanced_ai_enabled,
                                                    m_preview_custom_format_output,
                                                    additionalActionMap);
 
