@@ -4,7 +4,9 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -76,8 +78,7 @@ public partial class MarkdownPageViewModel : PageViewModel
         {
             Details = new(extensionDetails, PageContext);
             Details.InitializeProperties();
-            UpdateProperty(nameof(Details));
-            UpdateProperty(nameof(HasDetails));
+            UpdateDetails();
         }
 
         FetchContent();
@@ -101,10 +102,32 @@ public partial class MarkdownPageViewModel : PageViewModel
             case nameof(Details):
                 var extensionDetails = model.Details();
                 Details = extensionDetails != null ? new(extensionDetails, PageContext) : null;
-                UpdateProperty(nameof(Details));
+                UpdateDetails();
                 break;
         }
 
         UpdateProperty(propertyName);
+    }
+
+    private void UpdateDetails()
+    {
+        UpdateProperty(nameof(Details));
+        UpdateProperty(nameof(HasDetails));
+
+        Task.Factory.StartNew(
+            () =>
+            {
+                if (HasDetails)
+                {
+                    WeakReferenceMessenger.Default.Send<ShowDetailsMessage>(new(Details));
+                }
+                else
+                {
+                    WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+                }
+            },
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            PageContext.Scheduler);
     }
 }

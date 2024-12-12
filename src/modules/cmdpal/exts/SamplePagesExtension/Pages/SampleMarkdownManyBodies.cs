@@ -21,7 +21,7 @@ internal sealed partial class SampleMarkdownManyBodies : MarkdownPage
 On it you'll find multiple blocks of markdown content
 """,
 """
-# Here's another block
+## Here's another block
 
 _Maybe_ you could use this pattern for implementing a post with comments page.  
 """,

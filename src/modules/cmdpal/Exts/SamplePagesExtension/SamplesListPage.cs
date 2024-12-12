@@ -41,6 +41,11 @@ public partial class SamplesListPage : ListPage
            Title = "Markdown with multiple blocks",
            Subtitle = "A page with multiple blocks of rendered markdown",
        },
+       new ListItem(new SampleMarkdownDetails())
+       {
+           Title = "Markdown with details",
+           Subtitle = "A page with markdown and details",
+       },
 
        new ListItem(new SampleFormPage())
        {

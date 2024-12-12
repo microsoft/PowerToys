@@ -29,8 +29,8 @@ public partial class DetailsViewModel(IDetails _details, TaskScheduler Scheduler
             return;
         }
 
-        Title = model.Title;
-        Body = model.Body;
+        Title = model.Title ?? string.Empty;
+        Body = model.Body ?? string.Empty;
 
         UpdateProperty(nameof(Title));
         UpdateProperty(nameof(Body));
