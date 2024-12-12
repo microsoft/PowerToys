@@ -3,7 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Common.Extensions;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Input;
@@ -130,7 +133,17 @@ public sealed partial class MainWindow : Window,
 
     public void Receive(QuitMessage message) => Close();
 
-    private void MainWindow_Closed(object sender, WindowEventArgs args) => DisposeAcrylic();
+    private void MainWindow_Closed(object sender, WindowEventArgs args)
+    {
+        var serviceProvider = App.Current.Services;
+        var extensionService = serviceProvider.GetService<IExtensionService>()!;
+        extensionService.SignalStopExtensionsAsync();
+
+        // WinUI bug is causing a crash on shutdown when FailFastOnErrors is set to true (#51773592).
+        // Workaround by turning it off before shutdown.
+        App.Current.DebugSettings.FailFastOnErrors = false;
+        DisposeAcrylic();
+    }
 
     // Updates our window s.t. the top of the window is dragable.
     private void UpdateRegionsForCustomTitleBar()

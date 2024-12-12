@@ -24,7 +24,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
 
     public string Subtitle { get; private set; } = string.Empty;
 
-    public string IconUri { get; private set; } = string.Empty;
+    public IconDataType Icon { get; private set; } = new(string.Empty);
 
     public ExtensionObject<ICommand> Command { get; private set; } = new(null);
 
@@ -33,6 +33,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
     public bool HasMoreCommands => MoreCommands.Count > 0;
 
     public string SecondaryCommandName => HasMoreCommands ? MoreCommands[0].Name : string.Empty;
+
+    public CommandItemViewModel? SecondaryCommand => HasMoreCommands ? MoreCommands[0] : null;
 
     public List<CommandContextItemViewModel> AllCommands
     {
@@ -47,7 +49,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
                 Name = Name,
                 Title = Name,
                 Subtitle = Subtitle,
-                IconUri = IconUri,
+                Icon = Icon,
 
                 // TODO this probably should just be a CommandContextItemViewModel(CommandItemViewModel) ctor, or a copy ctor or whatever
             };
@@ -77,7 +79,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
         Name = model.Command?.Name ?? string.Empty;
         Title = model.Title;
         Subtitle = model.Subtitle;
-        IconUri = model.Icon.Icon;
+        Icon = model.Icon;
         MoreCommands = model.MoreCommands
             .Where(contextItem => contextItem is ICommandContextItem)
             .Select(contextItem => (contextItem as ICommandContextItem)!)
@@ -126,6 +128,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
                 break;
             case nameof(Subtitle):
                 this.Subtitle = model.Subtitle;
+                break;
+            case nameof(Icon):
+                this.Icon = model.Icon;
                 break;
 
                 // TODO! Icon
