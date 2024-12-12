@@ -6,6 +6,8 @@ using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Templating;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Windows.Data.Json;
+using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -41,5 +43,39 @@ public partial class FormViewModel(IForm _form, IPageContext context) : Extensio
 
         // TODO catch and replace with our error card
         UpdateProperty(nameof(Card));
+    }
+
+    public void HandleSubmit(IAdaptiveActionElement action, JsonObject inputs)
+    {
+        if (action is AdaptiveOpenUrlAction openUrlAction)
+        {
+            _ = Launcher.LaunchUriAsync(openUrlAction.Url);
+            return;
+        }
+
+        if (action is AdaptiveSubmitAction or AdaptiveExecuteAction)
+        {
+            // Get the data and inputs
+            // var data = submitAction.DataJson.Stringify();
+            var inputString = inputs.Stringify();
+
+            // _ = data;
+            _ = inputString;
+
+            try
+            {
+                var model = _formModel.Unsafe!;
+                if (model != null)
+                {
+                    var result = model.SubmitForm(inputString);
+
+                    // TODO Handle results
+                }
+            }
+            catch (Exception ex)
+            {
+                PageContext.ShowException(ex);
+            }
+        }
     }
 }

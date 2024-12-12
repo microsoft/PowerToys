@@ -113,7 +113,8 @@ public sealed partial class ShellPage :
             // else if markdown, forms, TODO
             else if (command is IInvokableCommand invokable)
             {
-                invokable.Invoke();
+                // TODO Handle results
+                _ = invokable.Invoke();
             }
         }
         catch (Exception)
