@@ -27,24 +27,12 @@ public sealed partial class ListPage : Page,
     public ListViewModel? ViewModel
     {
         get => (ListViewModel?)GetValue(ViewModelProperty);
-        set
-        {
-            if (ViewModel != null)
-            {
-                ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
-            }
-
-            SetValue(ViewModelProperty, value);
-            if (value != null)
-            {
-                value.PropertyChanged += ViewModel_PropertyChanged;
-            }
-        }
+        set => SetValue(ViewModelProperty, value);
     }
 
     // Using a DependencyProperty as the backing store for ViewModel.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty ViewModelProperty =
-        DependencyProperty.Register(nameof(ViewModel), typeof(ListViewModel), typeof(ListPage), new PropertyMetadata(null));
+        DependencyProperty.Register(nameof(ViewModel), typeof(ListViewModel), typeof(ListPage), new PropertyMetadata(null, OnViewModelChanged));
 
     public ViewModelLoadedState LoadedState
     {
@@ -176,6 +164,22 @@ public sealed partial class ListPage : Page,
         if (ItemsList.SelectedItem is ListItemViewModel item)
         {
             ViewModel?.InvokeItemCommand.Execute(item);
+        }
+    }
+
+    private static void OnViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is ListPage @this)
+        {
+            if (e.OldValue is ListViewModel old)
+            {
+                old.PropertyChanged -= @this.ViewModel_PropertyChanged;
+            }
+
+            if (e.NewValue is ListViewModel page)
+            {
+                page.PropertyChanged += @this.ViewModel_PropertyChanged;
+            }
         }
     }
 
