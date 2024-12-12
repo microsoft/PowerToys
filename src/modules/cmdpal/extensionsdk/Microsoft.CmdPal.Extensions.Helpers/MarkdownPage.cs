@@ -6,23 +6,21 @@ namespace Microsoft.CmdPal.Extensions.Helpers;
 
 public class MarkdownPage : Page, IMarkdownPage
 {
-    private ITag[] _tags = [];
+    private IDetails? _details;
 
-    public ITag[] Tags
+    public IDetails? Details
     {
-        get => _tags;
+        get => _details;
         set
         {
-            _tags = value;
-            OnPropertyChanged(nameof(Tags));
+            _details = value;
+            OnPropertyChanged(nameof(Details));
         }
     }
 
     public IContextItem[] Commands { get; set; } = [];
 
-    public virtual string[] Bodies() => throw new NotImplementedException();
+    public virtual string[] Bodies() => [];
 
-    public virtual IDetails Details() => throw new NotImplementedException();
-
-    // public IDetails Details { get => _Details; set { _Details = value; OnPropertyChanged(nameof(Details)); } }
+    IDetails? IMarkdownPage.Details() => Details;
 }

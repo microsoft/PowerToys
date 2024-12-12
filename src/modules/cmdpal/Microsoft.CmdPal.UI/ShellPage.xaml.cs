@@ -109,8 +109,18 @@ public sealed partial class ShellPage :
                     WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(pageViewModel));
                 });
             }
-
-            // else if markdown, forms, TODO
+            else if (command is IMarkdownPage markdownPage)
+            {
+                _ = DispatcherQueue.TryEnqueue(() =>
+                {
+                    // Also hide our details pane about here, if we had one
+                    HideDetails();
+                    var pageViewModel = new MarkdownPageViewModel(markdownPage, TaskScheduler.FromCurrentSynchronizationContext());
+                    RootFrame.Navigate(typeof(MarkdownPage), pageViewModel, _slideRightTransition);
+                    SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+                    WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(pageViewModel));
+                });
+            }
             else if (command is IInvokableCommand invokable)
             {
                 // TODO Handle results
