@@ -10,7 +10,7 @@ public partial class Page : Command, IPage
     private string _title = string.Empty;
     private OptionalColor _accentColor;
 
-    public bool IsLoading
+    public virtual bool IsLoading
     {
         get => _loading;
         set
@@ -20,17 +20,17 @@ public partial class Page : Command, IPage
         }
     }
 
-    public string Title
+    public virtual string Title
     {
         get => _title;
         set
         {
             _title = value;
-            OnPropertyChanged(nameof(Name));
+            OnPropertyChanged(nameof(Title));
         }
     }
 
-    public OptionalColor AccentColor
+    public virtual OptionalColor AccentColor
     {
         get => _accentColor;
         set

@@ -9,6 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:labs="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -84,11 +85,15 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <Border 
-                    Width="64" 
-                    Height="64" 
-                    Background="{ThemeResource AccentFillColorDefaultBrush}"
-                    CornerRadius="{StaticResource ControlCornerRadius}">
+                <Border x:Name="HeroImageBorder"
+                        x:Load="{x:Bind IsLoaded, Mode=OneWay}"
+                        Width="64" 
+                        Height="64"
+                        Visibility="{x:Bind ViewModel.Details.HasHeroImage, Mode=OneWay}" >
+                    <!-- LoadIconBehavior will magically fill this border up with an icon -->
+                    <Interactivity:Interaction.Behaviors>
+                        <local:LoadIconBehavior Source="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}" />
+                    </Interactivity:Interaction.Behaviors>
                 </Border>
 
                 <TextBlock 

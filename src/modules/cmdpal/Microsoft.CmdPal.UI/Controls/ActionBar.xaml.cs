@@ -29,11 +29,13 @@ public sealed partial class ActionBar : UserControl, ICurrentPageAware
         this.InitializeComponent();
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-agressively")]
     private void ActionListViewItem_KeyDown(object sender, KeyRoutedEventArgs e)
     {
         // TODO
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-agressively")]
     private void ActionListViewItem_Tapped(object sender, TappedRoutedEventArgs e)
     {
         MoreCommandsButton.Flyout.Hide();

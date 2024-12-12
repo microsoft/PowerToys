@@ -12,8 +12,6 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
 {
     private readonly ExtensionObject<ICommandItem> _commandItemModel = new(null);
 
-    protected TaskScheduler Scheduler { get; private set; }
-
     // These are properties that are "observable" from the extension object
     // itself, in the sense that they get raised by PropChanged events from the
     // extension. However, we don't want to actually make them
@@ -26,7 +24,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
 
     public string Subtitle { get; private set; } = string.Empty;
 
-    public string IconUri { get; private set; } = string.Empty;
+    public IconDataType Icon { get; private set; } = new(string.Empty);
 
     public ExtensionObject<ICommand> Command { get; private set; } = new(null);
 
@@ -36,6 +34,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
 
     public string SecondaryCommandName => HasMoreCommands ? MoreCommands[0].Name : string.Empty;
 
+    public CommandItemViewModel? SecondaryCommand => HasMoreCommands ? MoreCommands[0] : null;
+
     public List<CommandContextItemViewModel> AllCommands
     {
         get
@@ -44,12 +44,12 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
             var model = new CommandContextItem(command!)
             {
             };
-            CommandContextItemViewModel defaultCommand = new(model, Scheduler)
+            CommandContextItemViewModel defaultCommand = new(model, PageContext)
             {
                 Name = Name,
                 Title = Name,
                 Subtitle = Subtitle,
-                IconUri = IconUri,
+                Icon = Icon,
 
                 // TODO this probably should just be a CommandContextItemViewModel(CommandItemViewModel) ctor, or a copy ctor or whatever
             };
@@ -60,10 +60,10 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
         }
     }
 
-    public CommandItemViewModel(ExtensionObject<ICommandItem> item, TaskScheduler scheduler)
+    public CommandItemViewModel(ExtensionObject<ICommandItem> item, IPageContext errorContext)
+        : base(errorContext)
     {
         _commandItemModel = item;
-        Scheduler = scheduler;
     }
 
     //// Called from ListViewModel on background thread started in ListPage.xaml.cs
@@ -79,11 +79,11 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
         Name = model.Command?.Name ?? string.Empty;
         Title = model.Title;
         Subtitle = model.Subtitle;
-        IconUri = model.Icon.Icon;
+        Icon = model.Icon;
         MoreCommands = model.MoreCommands
             .Where(contextItem => contextItem is ICommandContextItem)
             .Select(contextItem => (contextItem as ICommandContextItem)!)
-            .Select(contextItem => new CommandContextItemViewModel(contextItem, Scheduler))
+            .Select(contextItem => new CommandContextItemViewModel(contextItem, PageContext))
             .ToList();
 
         // Here, we're already theoretically in the async context, so we can
@@ -104,9 +104,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
         {
             FetchProperty(args.PropertyName);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // TODO log? throw?
+            PageContext.ShowException(ex);
         }
     }
 
@@ -129,6 +129,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
             case nameof(Subtitle):
                 this.Subtitle = model.Subtitle;
                 break;
+            case nameof(Icon):
+                this.Icon = model.Icon;
+                break;
 
                 // TODO! Icon
                 // TODO! MoreCommands array, which needs to also raise HasMoreCommands
@@ -136,6 +139,4 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
 
         UpdateProperty(propertyName);
     }
-
-    protected void UpdateProperty(string propertyName) => Task.Factory.StartNew(() => { OnPropertyChanged(propertyName); }, CancellationToken.None, TaskCreationOptions.None, Scheduler);
 }

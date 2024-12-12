@@ -56,6 +56,7 @@ public sealed partial class ShellPage :
             HideDetails();
 
             RootFrame.GoBack();
+            HideDetails();
             RootFrame.ForwardStack.Clear();
             SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
         }

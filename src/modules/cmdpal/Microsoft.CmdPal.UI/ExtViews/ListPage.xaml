@@ -34,26 +34,29 @@
 
         <DataTemplate x:Key="TagTemplate" x:DataType="viewmodels:TagViewModel">
             <!--  TODO: Actually colorize the tags again -->
-            <Border
+            <StackPanel
                 Padding="4,2,4,2"
                 VerticalAlignment="Center"
                 BorderBrush="{ThemeResource TextBoxBorderThemeBrush}"
                 BorderThickness="1"
+                Orientation="Horizontal"
                 CornerRadius="4">
-                <StackPanel Orientation="Horizontal">
-                    <!-- -TODO: Icon
-                    <ContentControl
+                <Border x:Name="IconBorder"
                         Width="12"
                         Height="12"
                         Margin="0,0,4,0"
-                        Content="{x:Bind IcoElement, Mode=OneWay}"
-                        Visibility="{x:Bind HasIcon, Mode=OneWay}" /> -->
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        FontSize="12"
-                        Text="{x:Bind Text, Mode=OneWay}" />
-                </StackPanel>
-            </Border>
+                        Visibility="{x:Bind HasIcon, Mode=OneWay}">
+                    <!-- LoadIconBehavior will magically fill this border up with an icon -->
+                    <Interactivity:Interaction.Behaviors>
+                        <local:LoadIconBehavior Source="{x:Bind Icon, Mode=OneWay}"/>
+                    </Interactivity:Interaction.Behaviors>
+                </Border>
+                    
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="12"
+                    Text="{x:Bind Text, Mode=OneWay}" />
+            </StackPanel>
         </DataTemplate>
 
         <!--  https://learn.microsoft.com/windows/apps/design/controls/itemsview#specify-the-look-of-the-items  -->
@@ -68,14 +71,17 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <Viewbox
-                        Width="20"
-                        Height="20"
-                        VerticalAlignment="Center">
-                        <!--TODO: Icon
-                        <ContentControl Content="{x:Bind IcoElement, Mode=OneWay}" />
-                        -->
-                    </Viewbox>
+
+                    <Border x:Name="IconBorder"
+                            Grid.Column="0"
+                            Width="20"
+                            Height="20"
+                            Margin="4,0,4,0">
+                        <!-- LoadIconBehavior will magically fill this border up with an icon -->
+                        <Interactivity:Interaction.Behaviors>
+                            <local:LoadIconBehavior Source="{x:Bind Icon, Mode=OneWay}"/>
+                        </Interactivity:Interaction.Behaviors>
+                    </Border>
 
                     <StackPanel
                         Grid.Column="1"
