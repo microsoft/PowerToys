@@ -90,7 +90,9 @@ public partial class ListViewModel : PageViewModel
                 viewModel.InitializeProperties();
                 _itemCache.Add(viewModel); // TODO: Figure out when we clear/remove things from cache...
 
-                if (Filter == string.Empty || viewModel.MatchesFilter(Filter))
+                // We may already have items from the new items here.
+                if ((Filter == string.Empty || viewModel.MatchesFilter(Filter))
+                    && !Items.Contains(viewModel)) //// TODO: We should be smarter about the contains here somehow (also in OnFilterUpdated)
                 {
                     // Am I really allowed to modify that observable collection on a BG
                     // thread and have it just work in the UI??
