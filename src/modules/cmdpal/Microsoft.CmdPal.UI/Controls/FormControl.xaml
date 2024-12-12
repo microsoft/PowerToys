@@ -27,7 +27,8 @@
         CornerRadius="{StaticResource OverlayCornerRadius}"
         Margin="0,4,4,4"
         Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+        BorderThickness="1, 1, 1, 2">
         
     </Grid>
 </UserControl>

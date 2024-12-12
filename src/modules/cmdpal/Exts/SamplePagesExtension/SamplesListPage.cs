@@ -10,20 +10,10 @@ namespace SamplePagesExtension;
 public partial class SamplesListPage : ListPage
 {
     private readonly IListItem[] _commands = [
-       new ListItem(new SampleMarkdownPage())
-       {
-           Title = "Markdown Page Sample Command",
-           Subtitle = "Display a page of rendered markdown",
-       },
        new ListItem(new SampleListPage())
        {
            Title = "List Page Sample Command",
            Subtitle = "Display a list of items",
-       },
-       new ListItem(new SampleFormPage())
-       {
-           Title = "Form Page Sample Command",
-           Subtitle = "Define inputs to retrieve input from the user",
        },
        new ListItem(new SampleListPageWithDetails())
        {
@@ -40,11 +30,29 @@ public partial class SamplesListPage : ListPage
            Title = "Dynamic List Page Command",
            Subtitle = "Changes the list of items in response to the typed query",
        },
+
+       new ListItem(new SampleMarkdownPage())
+       {
+           Title = "Markdown Page Sample Command",
+           Subtitle = "Display a page of rendered markdown",
+       },
+       new ListItem(new SampleMarkdownManyBodies())
+       {
+           Title = "Markdown with multiple blocks",
+           Subtitle = "A page with multiple blocks of rendered markdown",
+       },
+
+       new ListItem(new SampleFormPage())
+       {
+           Title = "Form Page Sample Command",
+           Subtitle = "Define inputs to retrieve input from the user",
+       },
        new ListItem(new SampleSettingsPage())
        {
            Title = "Sample settings page",
            Subtitle = "A demo of the settings helpers",
        },
+
        new ListItem(new EvilSamplesPage())
        {
            Title = "Evil samples",

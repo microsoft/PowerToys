@@ -28,12 +28,25 @@
                     <ItemsControl  VerticalAlignment="Stretch" Margin="8" ItemsSource="{x:Bind ViewModel.Bodies, Mode=OneWay}">
                         <!-- or ListView or ItemsRepeater more likely... -->
                         <ItemsControl.ItemTemplate>
+
                             <DataTemplate x:DataType="x:String">
-                                <labs:MarkdownTextBlock
-                                    Text="{x:Bind}"
-                                    Config="{x:Bind local:MarkdownPage.MarkdownConfig}"
-                                    Background="Transparent" />
+
+                                <Grid 
+                                    x:Name="ContentGrid"
+                                    Padding="12, 8, 8, 8" 
+                                    CornerRadius="{StaticResource OverlayCornerRadius}"
+                                    Margin="0,4,4,4"
+                                    BorderThickness="1, 1, 1, 2"
+                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+
+                                    <labs:MarkdownTextBlock
+                                        Text="{x:Bind}"
+                                        Config="{x:Bind local:MarkdownPage.MarkdownConfig}"
+                                        Background="Transparent" />
+                                </Grid>
                             </DataTemplate>
+                            
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollView>
