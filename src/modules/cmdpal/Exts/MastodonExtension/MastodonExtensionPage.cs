@@ -201,7 +201,7 @@ public partial class MastodonPostForm : Form
                                 {
                                     "type": "Image",
                                     "url": "${author_avatar_url}",
-                                    "size": "Small",
+                                    "size": "Medium",
                                     "style": "Person"
                                 }
                             ]

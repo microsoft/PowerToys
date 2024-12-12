@@ -55,7 +55,7 @@ internal sealed partial class SampleForm : Form
         return json;
     }
 
-    public override string StateJson() => throw new NotImplementedException();
+    public override string StateJson() => "{}";
 
     public override CommandResult SubmitForm(string payload)
     {

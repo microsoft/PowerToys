@@ -56,7 +56,7 @@ internal sealed partial class AddBookmarkForm : Form
 
     public override string DataJson() => throw new NotImplementedException();
 
-    public override string StateJson() => throw new NotImplementedException();
+    public override string StateJson() => "{}";
 
     public override CommandResult SubmitForm(string payload)
     {

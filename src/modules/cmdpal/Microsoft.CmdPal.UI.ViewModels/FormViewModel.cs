@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Text.Json;
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Templating;
 using Microsoft.CmdPal.Extensions;
@@ -33,15 +34,36 @@ public partial class FormViewModel(IForm _form, IPageContext context) : Extensio
             return;
         }
 
-        TemplateJson = model.TemplateJson();
-        StateJson = model.StateJson();
-        DataJson = model.DataJson();
+        try
+        {
+            TemplateJson = model.TemplateJson();
+            StateJson = model.StateJson();
+            DataJson = model.DataJson();
 
-        AdaptiveCardTemplate template = new(TemplateJson);
-        var cardJson = template.Expand(DataJson);
-        Card = AdaptiveCard.FromJsonString(cardJson);
+            AdaptiveCardTemplate template = new(TemplateJson);
+            var cardJson = template.Expand(DataJson);
+            Card = AdaptiveCard.FromJsonString(cardJson);
+        }
+        catch (Exception e)
+        {
+            // If we fail to parse the card JSON, then display _our own card_
+            // with the exception
+            AdaptiveCardTemplate template = new(ErrorCardJson);
 
-        // TODO catch and replace with our error card
+            // todo: we could probably stick Card.Errrors in there too
+            var dataJson = $$"""
+{
+    "error_message": {{JsonSerializer.Serialize(e.Message)}},
+    "error_stack": {{JsonSerializer.Serialize(e.StackTrace)}},
+    "inner_exception": {{JsonSerializer.Serialize(e.InnerException?.Message)}},
+    "template_json": {{JsonSerializer.Serialize(TemplateJson)}},
+    "data_json": {{JsonSerializer.Serialize(DataJson)}}
+}
+""";
+            var cardJson = template.Expand(dataJson);
+            Card = AdaptiveCard.FromJsonString(cardJson);
+        }
+
         UpdateProperty(nameof(Card));
     }
 
@@ -78,4 +100,45 @@ public partial class FormViewModel(IForm _form, IPageContext context) : Extensio
             }
         }
     }
+
+    private static readonly string ErrorCardJson = """
+{
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.5",
+    "body": [
+        {
+            "type": "TextBlock",
+            "text": "Error parsing form from extension",
+            "wrap": true,
+            "style": "heading",
+            "size": "ExtraLarge",
+            "weight": "Bolder",
+            "color": "Attention"
+        },
+        {
+            "type": "TextBlock",
+            "wrap": true,
+            "text": "${error_message}",
+            "color": "Attention"
+        },
+        {
+            "type": "TextBlock",
+            "text": "${error_stack}",
+            "fontType": "Monospace"
+        },
+        {
+            "type": "TextBlock",
+            "wrap": true,
+            "text": "Inner exception:"
+        },
+        {
+            "type": "TextBlock",
+            "wrap": true,
+            "text": "${inner_exception}",
+            "color": "Attention"
+        }
+    ]
+}
+""";
 }
