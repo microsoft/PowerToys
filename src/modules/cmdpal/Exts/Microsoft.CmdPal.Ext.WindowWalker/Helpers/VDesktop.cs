@@ -23,7 +23,7 @@ public class VDesktop
     /// <summary>
     /// Gets or sets the name of the desktop
     /// </summary>
-    public string Name
+    public string? Name
     {
         get; set;
     }

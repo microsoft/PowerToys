@@ -22,7 +22,7 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
 
     public WindowWalkerListPage()
     {
-        Name = Resources.wox_plugin_windowwalker_plugin_name;
+        Name = Resources.windowwalker_name;
         Id = "com.microsoft.cmdpal.windowwalker";
     }
 
@@ -44,7 +44,7 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
         SearchController.Instance.UpdateSearchText(query);
         List<SearchResult> searchControllerResults = SearchController.Instance.SearchMatches;
 
-        return ResultHelper.GetResultList(searchControllerResults, !string.IsNullOrEmpty(query), string.Empty, string.Empty);
+        return ResultHelper.GetResultList(searchControllerResults, !string.IsNullOrEmpty(query), string.Empty, "\uE946");
     }
 
     public override IListItem[] GetItems()

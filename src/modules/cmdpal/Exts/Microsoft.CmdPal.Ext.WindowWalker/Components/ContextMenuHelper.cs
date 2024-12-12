@@ -5,11 +5,12 @@
 using System;
 using System.Collections.Generic;
 using System.Windows;
-using System.Windows.Input;
+using ABI.Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Ext.WindowWalker.Commands;
 using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CmdPal.Extensions.Helpers;
+using Windows.System;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Components;
 
@@ -26,8 +27,7 @@ internal sealed class ContextMenuHelper
         {
             new(new CloseWindowCommand(windowData))
             {
-                // AcceleratorKey = Key.F4,
-                // AcceleratorModifiers = ModifierKeys.Control,
+                RequestedShortcut = new(true, false, false, false, (int)VirtualKey.F4, 0),
             },
         };
 
@@ -36,7 +36,10 @@ internal sealed class ContextMenuHelper
         if (!windowData.Process.IsShellProcess && !(windowData.Process.IsUwpApp && string.Equals(windowData.Process.Name, "ApplicationFrameHost.exe", StringComparison.OrdinalIgnoreCase))
             && !(windowData.Process.IsFullAccessDenied && SettingsManager.Instance.HideKillProcessOnElevatedProcesses))
         {
-            contextMenu.Add(new CommandContextItem(new KillProcessCommand(windowData)));
+            contextMenu.Add(new CommandContextItem(new KillProcessCommand(windowData))
+            {
+                RequestedShortcut = new(true, false, false, false, (int)VirtualKey.Delete, 0),
+            });
         }
 
         return contextMenu;

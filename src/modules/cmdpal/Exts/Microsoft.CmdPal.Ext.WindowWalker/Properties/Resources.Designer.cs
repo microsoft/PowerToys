@@ -70,7 +70,7 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to Desktop {0}.
         /// </summary>
         public static string VirtualDesktopHelper_Desktop {
             get {
@@ -90,252 +90,270 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Close window.
         /// </summary>
-        public static string wox_plugin_windowwalker_Close {
+        public static string windowwalker_Close {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_Close", resourceCulture);
+                return ResourceManager.GetString("windowwalker_Close", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Desktop.
         /// </summary>
-        public static string wox_plugin_windowwalker_Desktop {
+        public static string windowwalker_Desktop {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_Desktop", resourceCulture);
+                return ResourceManager.GetString("windowwalker_Desktop", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Folder windows do not run in separate processes. (Click to open Explorer properties.).
         /// </summary>
-        public static string wox_plugin_windowwalker_ExplorerInfoSubTitle {
+        public static string windowwalker_ExplorerInfoSubTitle {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_ExplorerInfoSubTitle", resourceCulture);
+                return ResourceManager.GetString("windowwalker_ExplorerInfoSubTitle", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Info: Killing the Explorer process isn&apos;t possible..
         /// </summary>
-        public static string wox_plugin_windowwalker_ExplorerInfoTitle {
+        public static string windowwalker_ExplorerInfoTitle {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_ExplorerInfoTitle", resourceCulture);
+                return ResourceManager.GetString("windowwalker_ExplorerInfoTitle", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Kill process.
         /// </summary>
-        public static string wox_plugin_windowwalker_Kill {
+        public static string windowwalker_Kill {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_Kill", resourceCulture);
+                return ResourceManager.GetString("windowwalker_Kill", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Your are going to kill the following process:.
         /// </summary>
-        public static string wox_plugin_windowwalker_KillMessage {
+        public static string windowwalker_KillMessage {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_KillMessage", resourceCulture);
+                return ResourceManager.GetString("windowwalker_KillMessage", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Continue?.
         /// </summary>
-        public static string wox_plugin_windowwalker_KillMessageQuestion {
+        public static string windowwalker_KillMessageQuestion {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_KillMessageQuestion", resourceCulture);
+                return ResourceManager.GetString("windowwalker_KillMessageQuestion", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Kill process confirmation.
         /// </summary>
-        public static string wox_plugin_windowwalker_KillMessageTitle {
+        public static string windowwalker_KillMessageTitle {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_KillMessageTitle", resourceCulture);
+                return ResourceManager.GetString("windowwalker_KillMessageTitle", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Because this is an app process, all instances of the app will be killed. Continue?.
         /// </summary>
-        public static string wox_plugin_windowwalker_KillMessageUwp {
+        public static string windowwalker_KillMessageUwp {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_KillMessageUwp", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Not Responding.
-        /// </summary>
-        public static string wox_plugin_windowwalker_NotResponding {
-            get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_NotResponding", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No..
-        /// </summary>
-        public static string wox_plugin_windowwalker_Number {
-            get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_Number", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Switches between open windows.
-        /// </summary>
-        public static string wox_plugin_windowwalker_plugin_description {
-            get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_plugin_description", resourceCulture);
+                return ResourceManager.GetString("windowwalker_KillMessageUwp", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Window Walker.
         /// </summary>
-        public static string wox_plugin_windowwalker_plugin_name {
+        public static string windowwalker_name {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_plugin_name", resourceCulture);
+                return ResourceManager.GetString("windowwalker_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not Responding.
+        /// </summary>
+        public static string windowwalker_NotResponding {
+            get {
+                return ResourceManager.GetString("windowwalker_NotResponding", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No..
+        /// </summary>
+        public static string windowwalker_Number {
+            get {
+                return ResourceManager.GetString("windowwalker_Number", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to pid.
+        /// </summary>
+        public static string windowwalker_pid {
+            get {
+                return ResourceManager.GetString("windowwalker_pid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Switches between open windows.
+        /// </summary>
+        public static string windowwalker_plugin_description {
+            get {
+                return ResourceManager.GetString("windowwalker_plugin_description", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Process name.
         /// </summary>
-        public static string wox_plugin_windowwalker_Process {
+        public static string windowwalker_Process {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_Process", resourceCulture);
+                return ResourceManager.GetString("windowwalker_Process", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Process id.
         /// </summary>
-        public static string wox_plugin_windowwalker_ProcessId {
+        public static string windowwalker_ProcessId {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_ProcessId", resourceCulture);
+                return ResourceManager.GetString("windowwalker_ProcessId", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Running.
         /// </summary>
-        public static string wox_plugin_windowwalker_Running {
+        public static string windowwalker_Running {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_Running", resourceCulture);
+                return ResourceManager.GetString("windowwalker_Running", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Request confirmation when killing a process.
         /// </summary>
-        public static string wox_plugin_windowwalker_SettingConfirmKillProcess {
+        public static string windowwalker_SettingConfirmKillProcess {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_SettingConfirmKillProcess", resourceCulture);
+                return ResourceManager.GetString("windowwalker_SettingConfirmKillProcess", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Hide Explorer process information.
         /// </summary>
-        public static string wox_plugin_windowwalker_SettingExplorerSettingInfo {
+        public static string windowwalker_SettingExplorerSettingInfo {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_SettingExplorerSettingInfo", resourceCulture);
+                return ResourceManager.GetString("windowwalker_SettingExplorerSettingInfo", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This message is only shown when searching with a direct activation command..
+        ///   Looks up a localized string similar to This is an optional message that informs users about explorer behavior.
         /// </summary>
-        public static string wox_plugin_windowwalker_SettingExplorerSettingInfo_Description {
+        public static string windowwalker_SettingExplorerSettingInfo_Description {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_SettingExplorerSettingInfo_Description", resourceCulture);
+                return ResourceManager.GetString("windowwalker_SettingExplorerSettingInfo_Description", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Hide &quot;kill process&quot; button if additional permissions required.
         /// </summary>
-        public static string wox_plugin_windowwalker_SettingHideKillProcess {
+        public static string windowwalker_SettingHideKillProcess {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_SettingHideKillProcess", resourceCulture);
+                return ResourceManager.GetString("windowwalker_SettingHideKillProcess", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Kill process and its child processes.
         /// </summary>
-        public static string wox_plugin_windowwalker_SettingKillProcessTree {
+        public static string windowwalker_SettingKillProcessTree {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_SettingKillProcessTree", resourceCulture);
+                return ResourceManager.GetString("windowwalker_SettingKillProcessTree", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Be careful when activating this. Killing the whole process tree can lead to problematic application crashes..
         /// </summary>
-        public static string wox_plugin_windowwalker_SettingKillProcessTree_Description {
+        public static string windowwalker_SettingKillProcessTree_Description {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_SettingKillProcessTree_Description", resourceCulture);
+                return ResourceManager.GetString("windowwalker_SettingKillProcessTree_Description", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Stay open after closing windows and killing processes.
         /// </summary>
-        public static string wox_plugin_windowwalker_SettingOpenAfterKillAndClose {
+        public static string windowwalker_SettingOpenAfterKillAndClose {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_SettingOpenAfterKillAndClose", resourceCulture);
+                return ResourceManager.GetString("windowwalker_SettingOpenAfterKillAndClose", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to This feature won&apos;t work if the kill process confirmation is enabled..
         /// </summary>
-        public static string wox_plugin_windowwalker_SettingOpenAfterKillAndClose_Description {
+        public static string windowwalker_SettingOpenAfterKillAndClose_Description {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_SettingOpenAfterKillAndClose_Description", resourceCulture);
+                return ResourceManager.GetString("windowwalker_SettingOpenAfterKillAndClose_Description", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Show only results from visible desktop.
         /// </summary>
-        public static string wox_plugin_windowwalker_SettingResultsVisibleDesktop {
+        public static string windowwalker_SettingResultsVisibleDesktop {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_SettingResultsVisibleDesktop", resourceCulture);
+                return ResourceManager.GetString("windowwalker_SettingResultsVisibleDesktop", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show desktop name in the subtitle.
+        ///   Looks up a localized string similar to Settings.
         /// </summary>
-        public static string wox_plugin_windowwalker_SettingSubtitleDesktopName {
+        public static string windowwalker_settings_name {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_SettingSubtitleDesktopName", resourceCulture);
+                return ResourceManager.GetString("windowwalker_settings_name", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to This information is only shown in subtitle and tool tip, if you have at least two desktops..
         /// </summary>
-        public static string wox_plugin_windowwalker_SettingSubtitleDesktopName_Description {
+        public static string windowwalker_SettingSubtitleDesktopName_Description {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_SettingSubtitleDesktopName_Description", resourceCulture);
+                return ResourceManager.GetString("windowwalker_SettingSubtitleDesktopName_Description", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show process id in the subtitle.
+        ///   Looks up a localized string similar to Show desktop as a tag on the list item.
         /// </summary>
-        public static string wox_plugin_windowwalker_SettingSubtitlePid {
+        public static string windowwalker_SettingTagDesktopName {
             get {
-                return ResourceManager.GetString("wox_plugin_windowwalker_SettingSubtitlePid", resourceCulture);
+                return ResourceManager.GetString("windowwalker_SettingTagDesktopName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show process id as a tag on the list item.
+        /// </summary>
+        public static string windowwalker_SettingTagPid {
+            get {
+                return ResourceManager.GetString("windowwalker_SettingTagPid", resourceCulture);
             }
         }
     }

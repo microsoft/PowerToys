@@ -22,7 +22,7 @@ internal sealed partial class KillProcessCommand : InvokableCommand
     public KillProcessCommand(Window window)
     {
         Icon = new("\xE74D"); // Delete symbol
-        Name = $"{Resources.wox_plugin_windowwalker_Kill} (Ctrl+Delete)";
+        Name = $"{Resources.windowwalker_Kill}";
         _window = window;
     }
 
@@ -34,16 +34,18 @@ internal sealed partial class KillProcessCommand : InvokableCommand
     private static bool KillProcess(Window window)
     {
         // Validate process
-        if (!window.IsWindow || !window.Process.DoesExist || !window.Process.Name.Equals(WindowProcess.GetProcessNameFromProcessID(window.Process.ProcessID), StringComparison.Ordinal))
+        if (!window.IsWindow || !window.Process.DoesExist || string.IsNullOrEmpty(window.Process.Name) || !window.Process.Name.Equals(WindowProcess.GetProcessNameFromProcessID(window.Process.ProcessID), StringComparison.Ordinal))
         {
             ExtensionHost.LogMessage(new LogMessage() { Message = $"Can not kill process '{window.Process.Name}' ({window.Process.ProcessID}) of the window '{window.Title}' ({window.Hwnd}), because it doesn't exist." });
+
+            // TODO GH #86 -- need to figure out how to show status message once implemented on host
             return false;
         }
 
         // Request user confirmation
         if (SettingsManager.Instance.ConfirmKillProcess)
         {
-            // TODO GH #138 -- need to figure out how to confirm kill process? should this just be the same status thing... maybe not? Need message box?
+            // TODO GH #138, #153 -- need to figure out how to confirm kill process? should this just be the same status thing... maybe not? Need message box? Could be nested context menu.
             /*
             string messageBody = $"{Resources.wox_plugin_windowwalker_KillMessage}\n"
                 + $"{window.Process.Name} ({window.Process.ProcessID})\n\n"

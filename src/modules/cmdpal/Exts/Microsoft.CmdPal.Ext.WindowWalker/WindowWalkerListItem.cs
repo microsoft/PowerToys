@@ -15,11 +15,11 @@ namespace Microsoft.CmdPal.Ext.WindowWalker;
 
 internal sealed partial class WindowWalkerListItem : ListItem
 {
-    private readonly Window _window;
+    private readonly Window? _window;
 
-    public Window Window => _window;
+    public Window? Window => _window;
 
-    public WindowWalkerListItem(Window window)
+    public WindowWalkerListItem(Window? window)
         : base(new SwitchToWindowCommand(window))
     {
         _window = window;

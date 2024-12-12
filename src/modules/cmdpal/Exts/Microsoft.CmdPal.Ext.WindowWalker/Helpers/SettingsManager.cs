@@ -10,8 +10,6 @@ using System.Text.Json.Serialization;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CmdPal.Extensions.Helpers;
 
-#nullable enable
-
 namespace Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 
 public class SettingsManager
@@ -21,14 +19,53 @@ public class SettingsManager
 
     private static SettingsManager? instance;
 
-    private readonly ToggleSetting _resultsFromVisibleDesktopOnly = new(nameof(ResultsFromVisibleDesktopOnly), Resources.wox_plugin_windowwalker_SettingResultsVisibleDesktop, Resources.wox_plugin_windowwalker_SettingResultsVisibleDesktop, false);
-    private readonly ToggleSetting _subtitleShowPid = new(nameof(SubtitleShowPid), Resources.wox_plugin_windowwalker_SettingSubtitlePid, Resources.wox_plugin_windowwalker_SettingSubtitlePid, false);
-    private readonly ToggleSetting _subtitleShowDesktopName = new(nameof(SubtitleShowDesktopName), Resources.wox_plugin_windowwalker_SettingSubtitleDesktopName, Resources.wox_plugin_windowwalker_SettingSubtitleDesktopName_Description, true);
-    private readonly ToggleSetting _confirmKillProcess = new(nameof(ConfirmKillProcess), Resources.wox_plugin_windowwalker_SettingConfirmKillProcess, Resources.wox_plugin_windowwalker_SettingConfirmKillProcess, true);
-    private readonly ToggleSetting _killProcessTree = new(nameof(KillProcessTree), Resources.wox_plugin_windowwalker_SettingKillProcessTree, Resources.wox_plugin_windowwalker_SettingKillProcessTree_Description, false);
-    private readonly ToggleSetting _openAfterKillAndClose = new(nameof(OpenAfterKillAndClose), Resources.wox_plugin_windowwalker_SettingOpenAfterKillAndClose, Resources.wox_plugin_windowwalker_SettingOpenAfterKillAndClose_Description, false);
-    private readonly ToggleSetting _hideKillProcessOnElevatedProcesses = new(nameof(HideKillProcessOnElevatedProcesses), Resources.wox_plugin_windowwalker_SettingHideKillProcess, Resources.wox_plugin_windowwalker_SettingHideKillProcess, false);
-    private readonly ToggleSetting _hideExplorerSettingInfo = new(nameof(HideExplorerSettingInfo), Resources.wox_plugin_windowwalker_SettingExplorerSettingInfo, Resources.wox_plugin_windowwalker_SettingExplorerSettingInfo_Description, false);
+    private readonly ToggleSetting _resultsFromVisibleDesktopOnly = new(
+        nameof(ResultsFromVisibleDesktopOnly),
+        Resources.windowwalker_SettingResultsVisibleDesktop,
+        Resources.windowwalker_SettingResultsVisibleDesktop,
+        false);
+
+    private readonly ToggleSetting _subtitleShowPid = new(
+        nameof(SubtitleShowPid),
+        Resources.windowwalker_SettingTagPid,
+        Resources.windowwalker_SettingTagPid,
+        false);
+
+    private readonly ToggleSetting _subtitleShowDesktopName = new(
+        nameof(SubtitleShowDesktopName),
+        Resources.windowwalker_SettingTagDesktopName,
+        Resources.windowwalker_SettingSubtitleDesktopName_Description,
+        true);
+
+    private readonly ToggleSetting _confirmKillProcess = new(
+        nameof(ConfirmKillProcess),
+        Resources.windowwalker_SettingConfirmKillProcess,
+        Resources.windowwalker_SettingConfirmKillProcess,
+        true);
+
+    private readonly ToggleSetting _killProcessTree = new(
+        nameof(KillProcessTree),
+        Resources.windowwalker_SettingKillProcessTree,
+        Resources.windowwalker_SettingKillProcessTree_Description,
+        false);
+
+    private readonly ToggleSetting _openAfterKillAndClose = new(
+        nameof(OpenAfterKillAndClose),
+        Resources.windowwalker_SettingOpenAfterKillAndClose,
+        Resources.windowwalker_SettingOpenAfterKillAndClose_Description,
+        false);
+
+    private readonly ToggleSetting _hideKillProcessOnElevatedProcesses = new(
+        nameof(HideKillProcessOnElevatedProcesses),
+        Resources.windowwalker_SettingHideKillProcess,
+        Resources.windowwalker_SettingHideKillProcess,
+        false);
+
+    private readonly ToggleSetting _hideExplorerSettingInfo = new(
+        nameof(HideExplorerSettingInfo),
+        Resources.windowwalker_SettingExplorerSettingInfo,
+        Resources.windowwalker_SettingExplorerSettingInfo_Description,
+        false);
 
     public bool ResultsFromVisibleDesktopOnly => _resultsFromVisibleDesktopOnly.Value;
 

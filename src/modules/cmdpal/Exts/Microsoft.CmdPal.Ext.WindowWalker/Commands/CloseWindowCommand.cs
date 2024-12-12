@@ -21,7 +21,7 @@ internal sealed partial class CloseWindowCommand : InvokableCommand
     public CloseWindowCommand(Window window)
     {
         Icon = new("\xE8BB");
-        Name = $"{Resources.wox_plugin_windowwalker_Close} (Ctrl+F4)";
+        Name = $"{Resources.windowwalker_Close}";
         _window = window;
     }
 

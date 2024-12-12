@@ -34,7 +34,7 @@ public class VirtualDesktopHelper
     /// <summary>
     /// Instance of "Virtual Desktop Manager"
     /// </summary>
-    private readonly IVirtualDesktopManager _virtualDesktopManager;
+    private readonly IVirtualDesktopManager? _virtualDesktopManager;
 
     /// <summary>
     /// Internal settings to enable automatic update of desktop list.
@@ -93,10 +93,10 @@ public class VirtualDesktopHelper
         var registryExplorerVirtualDesktops = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops"; // Windows 11
 
         // List of all desktops
-        using RegistryKey virtualDesktopKey = Registry.CurrentUser.OpenSubKey(registryExplorerVirtualDesktops, false);
+        using RegistryKey? virtualDesktopKey = Registry.CurrentUser.OpenSubKey(registryExplorerVirtualDesktops, false);
         if (virtualDesktopKey != null)
         {
-            var allDeskValue = (byte[])virtualDesktopKey.GetValue("VirtualDesktopIDs", null);
+            var allDeskValue = (byte[]?)virtualDesktopKey.GetValue("VirtualDesktopIDs", null) ?? Array.Empty<byte>();
             if (allDeskValue != null)
             {
                 // We clear only, if we can read from registry. Otherwise we keep the existing values.
@@ -119,7 +119,7 @@ public class VirtualDesktopHelper
 
         // Guid for current desktop
         var virtualDesktopsKeyName = _isWindowsEleven ? registryExplorerVirtualDesktops : registrySessionVirtualDesktops;
-        using RegistryKey virtualDesktopsKey = Registry.CurrentUser.OpenSubKey(virtualDesktopsKeyName, false);
+        using RegistryKey? virtualDesktopsKey = Registry.CurrentUser.OpenSubKey(virtualDesktopsKeyName, false);
         if (virtualDesktopsKey != null)
         {
             var currentVirtualDesktopValue = virtualDesktopsKey.GetValue("CurrentVirtualDesktop", null);
@@ -261,7 +261,7 @@ public class VirtualDesktopHelper
         var defaultName = string.Format(System.Globalization.CultureInfo.InvariantCulture, VirtualDesktopHelperDesktop, GetDesktopNumber(desktop));
 
         var registryPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops\\Desktops\\{" + desktop.ToString().ToUpper(System.Globalization.CultureInfo.InvariantCulture) + "}";
-        using RegistryKey deskSubKey = Registry.CurrentUser.OpenSubKey(registryPath, false);
+        using RegistryKey? deskSubKey = Registry.CurrentUser.OpenSubKey(registryPath, false);
         var desktopName = deskSubKey?.GetValue("Name");
 
         return (desktopName != null) ? (string)desktopName : defaultName;

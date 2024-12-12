@@ -717,7 +717,7 @@ public struct WINDOWPLACEMENT : IEquatable<WINDOWPLACEMENT>
         return this == other;
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (obj is WINDOWPLACEMENT wp)
         {
@@ -837,7 +837,7 @@ public struct RECT : IEquatable<RECT>
         return other.Left == Left && other.Top == Top && other.Right == Right && other.Bottom == Bottom;
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (obj is RECT rect)
         {
@@ -895,7 +895,7 @@ public struct POINT : IEquatable<POINT>
         return new POINT(p.X, p.Y);
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (obj is POINT pt)
         {

@@ -25,7 +25,7 @@ internal sealed class OpenWindows
     /// <summary>
     /// PowerLauncher main executable
     /// </summary>
-    private static readonly string _powerLauncherExe = Path.GetFileName(Environment.ProcessPath);
+    private static readonly string? _powerLauncherExe = Path.GetFileName(Environment.ProcessPath);
 
     /// <summary>
     /// List of all the open windows
@@ -35,7 +35,7 @@ internal sealed class OpenWindows
     /// <summary>
     /// An instance of the class OpenWindows
     /// </summary>
-    private static OpenWindows instance;
+    private static OpenWindows? instance;
 
     /// <summary>
     /// Gets the list of all open windows
@@ -101,7 +101,8 @@ internal sealed class OpenWindows
     internal bool WindowEnumerationCallBack(IntPtr hwnd, IntPtr lParam)
     {
         var tokenHandle = GCHandle.FromIntPtr(lParam);
-        var cancellationToken = (CancellationToken)tokenHandle.Target;
+        var target = (CancellationToken?)tokenHandle.Target ?? CancellationToken.None;
+        var cancellationToken = target;
         if (cancellationToken.IsCancellationRequested)
         {
             // Stop enumeration

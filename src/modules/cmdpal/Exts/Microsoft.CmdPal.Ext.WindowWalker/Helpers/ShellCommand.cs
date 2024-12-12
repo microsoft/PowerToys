@@ -15,7 +15,7 @@ public static class ShellCommand
 
     private static bool containsSecurityWindow;
 
-    public static Process RunAsDifferentUser(ProcessStartInfo processStartInfo)
+    public static Process? RunAsDifferentUser(ProcessStartInfo processStartInfo)
     {
         ArgumentNullException.ThrowIfNull(processStartInfo);
 

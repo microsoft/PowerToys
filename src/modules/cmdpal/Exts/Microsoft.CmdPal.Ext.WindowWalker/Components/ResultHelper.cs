@@ -42,9 +42,9 @@ internal static class ResultHelper
             .Select(x => CreateResultFromSearchResult(x, icon))
             .ToList();
 
-        if (addExplorerInfo && isKeywordSearch && !SettingsManager.Instance.HideExplorerSettingInfo)
+        if (addExplorerInfo && !SettingsManager.Instance.HideExplorerSettingInfo)
         {
-            resultsList.Add(GetExplorerInfoResult(infoIcon));
+            resultsList.Insert(0, GetExplorerInfoResult(infoIcon));
         }
 
         return resultsList;
@@ -63,6 +63,7 @@ internal static class ResultHelper
             Title = searchResult.Result.Title,
             Icon = new(icon),
             Subtitle = GetSubtitle(searchResult.Result),
+            Tags = GetTags(searchResult.Result),
         };
         item.MoreCommands = ContextMenuHelper.GetContextMenuResults(item).ToArray();
 
@@ -81,33 +82,49 @@ internal static class ResultHelper
             return string.Empty;
         }
 
-        var subtitleText = Resources.wox_plugin_windowwalker_Running + ": " + window.Process.Name;
+        var subtitleText = Resources.windowwalker_Running + ": " + window.Process.Name;
+
+        return subtitleText;
+    }
+
+    private static Tag[] GetTags(Window window)
+    {
+        var tags = new List<Tag>();
+        if (!window.Process.IsResponding)
+        {
+            tags.Add(new Tag
+            {
+                Text = Resources.windowwalker_NotResponding,
+                Color = ColorHelpers.FromRgb(220, 20, 60),
+            });
+        }
 
         if (SettingsManager.Instance.SubtitleShowPid)
         {
-            subtitleText += $" ({window.Process.ProcessID})";
-        }
-
-        if (!window.Process.IsResponding)
-        {
-            subtitleText += $" [{Resources.wox_plugin_windowwalker_NotResponding}]";
+            tags.Add(new Tag
+            {
+                Text = $"{Resources.windowwalker_ProcessId}: {window.Process.ProcessID}",
+            });
         }
 
         if (SettingsManager.Instance.SubtitleShowDesktopName && WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.GetDesktopCount() > 1)
         {
-            subtitleText += $" - {Resources.wox_plugin_windowwalker_Desktop}: {window.Desktop.Name}";
+            tags.Add(new Tag
+            {
+                Text = $"{Resources.windowwalker_Desktop}: {window.Desktop.Name}",
+            });
         }
 
-        return subtitleText;
+        return tags.ToArray();
     }
 
     private static WindowWalkerListItem GetExplorerInfoResult(string iIcon)
     {
         return new WindowWalkerListItem(null)
         {
-            Title = Resources.wox_plugin_windowwalker_ExplorerInfoTitle,
+            Title = Resources.windowwalker_ExplorerInfoTitle,
             Icon = new(iIcon),
-            Subtitle = Resources.wox_plugin_windowwalker_ExplorerInfoSubTitle,
+            Subtitle = Resources.windowwalker_ExplorerInfoSubTitle,
             Command = new ExplorerInfoResultCommand(),
         };
     }

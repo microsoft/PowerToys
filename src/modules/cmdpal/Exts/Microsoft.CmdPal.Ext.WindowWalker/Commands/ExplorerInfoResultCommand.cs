@@ -22,7 +22,7 @@ internal sealed partial class ExplorerInfoResultCommand : InvokableCommand
     {
     }
 
-    public static bool OpenInShell(string path, string arguments = null, string workingDir = null, ShellRunAsType runAs = ShellRunAsType.None, bool runWithHiddenWindow = false)
+    public static bool OpenInShell(string path, string? arguments = null, string? workingDir = null, ShellRunAsType runAs = ShellRunAsType.None, bool runWithHiddenWindow = false)
     {
         using var process = new Process();
         process.StartInfo.FileName = path;

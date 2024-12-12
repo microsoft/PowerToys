@@ -24,12 +24,12 @@ internal sealed class SearchController
     /// <summary>
     /// Open window search results
     /// </summary>
-    private List<SearchResult> searchMatches;
+    private List<SearchResult>? searchMatches;
 
     /// <summary>
     /// Singleton pattern
     /// </summary>
-    private static SearchController instance;
+    private static SearchController? instance;
 
     /// <summary>
     /// Gets or sets the current search text
@@ -45,7 +45,7 @@ internal sealed class SearchController
     /// <summary>
     /// Gets the open window search results
     /// </summary>
-    internal List<SearchResult> SearchMatches => new List<SearchResult>(searchMatches).OrderByDescending(x => x.Score).ToList();
+    internal List<SearchResult> SearchMatches => new List<SearchResult>(searchMatches ?? new List<SearchResult>()).OrderByDescending(x => x.Score).ToList();
 
     /// <summary>
     /// Gets singleton Pattern
@@ -110,7 +110,7 @@ internal sealed class SearchController
         foreach (var window in openWindows)
         {
             var titleMatch = FuzzyMatching.FindBestFuzzyMatch(window.Title, searchStrings.SearchText);
-            var processMatch = FuzzyMatching.FindBestFuzzyMatch(window.Process.Name, searchStrings.SearchText);
+            var processMatch = FuzzyMatching.FindBestFuzzyMatch(window.Process.Name ?? string.Empty, searchStrings.SearchText);
 
             if ((titleMatch.Count != 0 || processMatch.Count != 0) && window.Title.Length != 0)
             {

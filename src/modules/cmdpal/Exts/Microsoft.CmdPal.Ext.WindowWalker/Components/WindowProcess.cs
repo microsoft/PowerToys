@@ -68,7 +68,7 @@ internal sealed class WindowProcess
     /// <summary>
     /// Gets the name of the process
     /// </summary>
-    internal string Name
+    internal string? Name
     {
         get; private set;
     }

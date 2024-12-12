@@ -16,9 +16,9 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Commands;
 
 internal sealed partial class SwitchToWindowCommand : InvokableCommand
 {
-    private readonly Window _window;
+    private readonly Window? _window;
 
-    public SwitchToWindowCommand(Window window)
+    public SwitchToWindowCommand(Window? window)
     {
         Name = Resources.window_walker_top_level_command_title;
         Icon = new(string.Empty);
@@ -27,6 +27,12 @@ internal sealed partial class SwitchToWindowCommand : InvokableCommand
 
     public override ICommandResult Invoke()
     {
+        if (_window is null)
+        {
+            ExtensionHost.LogMessage(new LogMessage() { Message = "Can not switch to the window, because it doesn't exist." });
+            return CommandResult.Dismiss();
+        }
+
         _window.SwitchToWindow();
 
         return CommandResult.Dismiss();

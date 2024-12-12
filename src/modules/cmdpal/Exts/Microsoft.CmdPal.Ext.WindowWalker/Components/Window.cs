@@ -155,7 +155,7 @@ internal sealed class Window
         //    to use ShowWindow for switching tabs in IE
         // 2) SetForegroundWindow fails on minimized windows
         // Using Ordinal since this is internal
-        if (processInfo.Name.ToUpperInvariant().Equals("IEXPLORE.EXE", StringComparison.Ordinal) || !Minimized)
+        if (processInfo.Name?.ToUpperInvariant().Equals("IEXPLORE.EXE", StringComparison.Ordinal) == true || !Minimized)
         {
             NativeMethods.SetForegroundWindow(Hwnd);
         }
@@ -195,7 +195,7 @@ internal sealed class Window
     public override string ToString()
     {
         // Using CurrentCulture since this is user facing
-        return Title + " (" + processInfo.Name.ToUpper(CultureInfo.CurrentCulture) + ")";
+        return Title + " (" + processInfo.Name?.ToUpper(CultureInfo.CurrentCulture) + ")";
     }
 
     /// <summary>

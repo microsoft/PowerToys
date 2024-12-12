@@ -52,6 +52,6 @@ public static class Win32Helpers
     /// <returns>A string containing the description.</returns>
     public static string MessageFromHResult(int hr)
     {
-        return Marshal.GetExceptionForHR(hr).Message;
+        return Marshal.GetExceptionForHR(hr)?.Message ?? string.Empty;
     }
 }
