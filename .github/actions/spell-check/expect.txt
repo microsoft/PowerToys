@@ -786,6 +786,7 @@ lhwnd
 LIBID
 licate
 lindex
+linkid
 LINKOVERLAY
 LINQTo
 listview
