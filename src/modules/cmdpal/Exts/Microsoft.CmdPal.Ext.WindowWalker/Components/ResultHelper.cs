@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CmdPal.Ext.WindowWalker.Commands;
-using Microsoft.CmdPal.Ext.WindowWalker.Components;
 using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CmdPal.Extensions.Helpers;
@@ -27,10 +26,10 @@ internal static class ResultHelper
     {
         if (searchControllerResults == null || searchControllerResults.Count == 0)
         {
-            return new List<WindowWalkerListItem>();
+            return [];
         }
 
-        List<WindowWalkerListItem> resultsList = new List<WindowWalkerListItem>(searchControllerResults.Count);
+        var resultsList = new List<WindowWalkerListItem>(searchControllerResults.Count);
         var addExplorerInfo = searchControllerResults.Any(x =>
             string.Equals(x.Result.Process.Name, "explorer.exe", StringComparison.OrdinalIgnoreCase) &&
             x.Result.Process.IsShellProcess);
@@ -77,7 +76,7 @@ internal static class ResultHelper
     /// <returns>String with the subtitle</returns>
     private static string GetSubtitle(Window window)
     {
-        if (window == null || !(window is Window))
+        if (window is null or not Window)
         {
             return string.Empty;
         }
@@ -95,7 +94,7 @@ internal static class ResultHelper
             tags.Add(new Tag
             {
                 Text = Resources.windowwalker_NotResponding,
-                Color = ColorHelpers.FromRgb(220, 20, 60),
+                Foreground = ColorHelpers.FromRgb(220, 20, 60),
             });
         }
 

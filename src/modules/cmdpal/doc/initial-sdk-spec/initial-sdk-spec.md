@@ -1275,7 +1275,8 @@ block, and the generator will pull this into the file first.   -->
 interface ITag {
     IconDataType Icon { get; };
     String Text { get; };
-    OptionalColor Color { get; };
+    OptionalColor Foreground { get; };
+    OptionalColor Background { get; };
     String ToolTip { get; };
     ICommand Command { get; };
 };
