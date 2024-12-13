@@ -38,7 +38,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
             // check for division by zero
             // We check if the string contains a slash followed by space (optional) and zero. Whereas the zero must not followed by dot or comma as this indicates a number with decimal digits. The zero must also not be followed by other digits.
-            if (new Regex("\\/\\s*0(?![,\\.0-9])").Match(input).Success)
+            if (new Regex("\\/\\s*0(?![,\\.0-9xX])").Match(input).Success)
             {
                 error = Properties.Resources.wox_plugin_calculator_division_by_zero;
                 return default;
