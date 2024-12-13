@@ -39,6 +39,7 @@ namespace PowerAccent.Core
         NL,
         NO,
         PI,
+        PIE,
         PL,
         PT,
         RO,
@@ -100,6 +101,7 @@ namespace PowerAccent.Core
                     Language.NL => GetDefaultLetterKeyNL(letter), // Dutch
                     Language.NO => GetDefaultLetterKeyNO(letter), // Norwegian
                     Language.PI => GetDefaultLetterKeyPI(letter), // Pinyin
+                    Language.PIE => GetDefaultLetterKeyPIE(letter), // Proto-Indo-European
                     Language.PL => GetDefaultLetterKeyPL(letter), // Polish
                     Language.PT => GetDefaultLetterKeyPT(letter), // Portuguese
                     Language.RO => GetDefaultLetterKeyRO(letter), // Romanian
@@ -156,6 +158,7 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeyNO(letter))
                 .Union(GetDefaultLetterKeyPI(letter))
                 .Union(GetDefaultLetterKeyPL(letter))
+                .Union(GetDefaultLetterKeyPIE(letter))
                 .Union(GetDefaultLetterKeyPT(letter))
                 .Union(GetDefaultLetterKeyRO(letter))
                 .Union(GetDefaultLetterKeySK(letter))
@@ -459,6 +462,16 @@ namespace PowerAccent.Core
                 LetterKey.VK_V => new[] { "ü", "ǖ", "ǘ", "ǚ", "ǜ" },
                 LetterKey.VK_Y => new[] { "¥" },
                 LetterKey.VK_Z => new[] { "ẑ" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
+        // Proto-Indo-European
+        private static string[] GetDefaultLetterKeyPIE(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_K => new[] { "ḱ" },
                 _ => Array.Empty<string>(),
             };
         }

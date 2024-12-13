@@ -3672,6 +3672,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Pinyin" xml:space="preserve">
     <value>Pinyin</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Proto_Indo_European" xml:space="preserve">
+    <value>Proto Indo European</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Polish" xml:space="preserve">
     <value>Polish</value>
   </data>
