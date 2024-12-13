@@ -136,7 +136,7 @@ In this release, we focused on new features, stability, and improvements.
 
 ### Mouse Jump
 
- - Allow customizing the appearance of the UI of the the Mouse Jump pop-up. Thanks [@mikeclayton](https://github.com/mikeclayton)!
+ - Allow customizing the appearance of the UI of the Mouse Jump pop-up. Thanks [@mikeclayton](https://github.com/mikeclayton)!
 
 ### New+
 
