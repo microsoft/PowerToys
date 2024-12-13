@@ -56,7 +56,7 @@ public sealed class TagViewModel
 
     internal Brush TextBrush => new SolidColorBrush(Foreground.A == 0 ? Windows.UI.Color.FromArgb(255, 255, 255, 255) : Foreground);
 
-    internal Brush BackgroundBrush => new SolidColorBrush(Background.A == 0 ? Background : Windows.UI.Color.FromArgb((byte)(Background.A / 4), Background.R, Background.G, Background.B));
+    internal Brush BackgroundBrush => new SolidColorBrush(Background);
 
     public TagViewModel(ITag tag)
     {
