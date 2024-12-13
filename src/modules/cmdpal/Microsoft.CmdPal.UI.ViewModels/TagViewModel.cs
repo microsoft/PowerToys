@@ -17,7 +17,9 @@ public partial class TagViewModel(ITag _tag, IPageContext context) : ExtensionOb
 
     public string Tooltip { get; private set; } = string.Empty;
 
-    public OptionalColor Color { get; private set; }
+    public OptionalColor Foreground { get; private set; }
+
+    public OptionalColor Background { get; private set; }
 
     public IconDataType Icon { get; private set; } = new(string.Empty);
 
@@ -35,12 +37,14 @@ public partial class TagViewModel(ITag _tag, IPageContext context) : ExtensionOb
 
         Command = new(model.Command);
         Text = model.Text;
-        Color = model.Color;
+        Foreground = model.Foreground;
+        Background = model.Background;
         Tooltip = model.ToolTip;
         Icon = model.Icon;
 
         UpdateProperty(nameof(Text));
-        UpdateProperty(nameof(Color));
+        UpdateProperty(nameof(Foreground));
+        UpdateProperty(nameof(Background));
         UpdateProperty(nameof(Tooltip));
         UpdateProperty(nameof(Icon));
     }

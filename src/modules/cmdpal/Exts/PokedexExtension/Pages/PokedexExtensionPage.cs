@@ -453,7 +453,7 @@ internal sealed partial class PokedexExtensionPage : ListPage
         return new ListItem(new PokemonPage(pokemon))
         {
             Subtitle = $"#{pokemon.Number}",
-            Tags = pokemon.Types.Select(t => new Tag() { Text = t, Color = GetColorForType(t) }).ToArray(),
+            Tags = pokemon.Types.Select(t => new Tag() { Text = t, Background = GetColorForType(t) }).ToArray(),
         };
     }
 
