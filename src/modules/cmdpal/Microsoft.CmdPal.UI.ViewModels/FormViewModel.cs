@@ -5,10 +5,11 @@
 using System.Text.Json;
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Templating;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Windows.Data.Json;
-using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -71,7 +72,7 @@ public partial class FormViewModel(IForm _form, IPageContext context) : Extensio
     {
         if (action is AdaptiveOpenUrlAction openUrlAction)
         {
-            _ = Launcher.LaunchUriAsync(openUrlAction.Url);
+            WeakReferenceMessenger.Default.Send<LaunchUriMessage>(new(openUrlAction.Url));
             return;
         }
 

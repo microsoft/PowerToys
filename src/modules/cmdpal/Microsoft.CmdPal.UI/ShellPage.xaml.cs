@@ -10,6 +10,7 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
+using Windows.System;
 
 namespace Microsoft.CmdPal.UI;
 
@@ -22,7 +23,8 @@ public sealed partial class ShellPage :
     IRecipient<NavigateToDetailsMessage>,
     IRecipient<PerformCommandMessage>,
     IRecipient<ShowDetailsMessage>,
-    IRecipient<HideDetailsMessage>
+    IRecipient<HideDetailsMessage>,
+    IRecipient<LaunchUriMessage>
 {
     private readonly DrillInNavigationTransitionInfo _drillInNavigationTransitionInfo = new();
 
@@ -43,6 +45,8 @@ public sealed partial class ShellPage :
 
         WeakReferenceMessenger.Default.Register<ShowDetailsMessage>(this);
         WeakReferenceMessenger.Default.Register<HideDetailsMessage>(this);
+
+        WeakReferenceMessenger.Default.Register<LaunchUriMessage>(this);
 
         RootFrame.Navigate(typeof(LoadingPage), ViewModel);
     }
@@ -145,4 +149,6 @@ public sealed partial class ShellPage :
     public void Receive(HideDetailsMessage message) => HideDetails();
 
     private void HideDetails() => ViewModel.IsDetailsVisible = false;
+
+    public void Receive(LaunchUriMessage message) => _ = Launcher.LaunchUriAsync(message.Uri);
 }

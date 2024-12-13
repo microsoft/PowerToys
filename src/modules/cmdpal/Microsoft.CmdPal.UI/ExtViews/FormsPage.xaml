@@ -37,12 +37,10 @@
             </controls:Case>
 
             <controls:Case IsDefault="True" Value="Loading">
-                <TextBlock Text="I am a loading form page" />
             </controls:Case>
             
             <controls:Case Value="Error">
                 <StackPanel Orientation="Vertical" Margin="16">
-                    <TextBlock Text="I am an error form page" />
                     <TextBlock Text="Error on page" FontSize="18" Foreground="{ThemeResource SystemErrorTextColor}" />
                     <TextBlock Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" IsTextSelectionEnabled="True"/>
                 </StackPanel>

@@ -6,7 +6,6 @@ using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml.Controls;
-using Windows.UI.ViewManagement;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
@@ -19,20 +18,17 @@ public sealed partial class FormControl : UserControl
 
     static FormControl()
     {
-        // yep this is the way to check if you're in light theme or dark.
-        // yep it's this dumb
-        var settings = new UISettings();
-        var foreground = settings.GetColorValue(UIColorType.Foreground);
-        var lightTheme = foreground.R < 128;
-        _renderer = new AdaptiveCardRenderer
-        {
-            HostConfig = lightTheme ? AdaptiveCardsConfig.Light : AdaptiveCardsConfig.Dark,
-        };
+        _renderer = new AdaptiveCardRenderer();
     }
 
     public FormControl()
     {
         this.InitializeComponent();
+        var lightTheme = ActualTheme == Microsoft.UI.Xaml.ElementTheme.Light;
+        _renderer.HostConfig = lightTheme ? AdaptiveCardsConfig.Light : AdaptiveCardsConfig.Dark;
+
+        // TODO in the future, we should handle ActualThemeChanged and replace
+        // our rendered card with one for that theme. But today is not that day
     }
 
     private void AttachViewModel(FormViewModel? vm)
