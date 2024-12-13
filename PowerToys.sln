@@ -707,6 +707,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NewPlus.ShellExtension.win1
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.Ext.Shell", "src\modules\cmdpal\Exts\Microsoft.CmdPal.Ext.Shell\Microsoft.CmdPal.Ext.Shell.csproj", "{C0CE3B5E-16D3-495D-B335-CA791B660162}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.Ext.WindowWalker", "src\modules\cmdpal\Exts\Microsoft.CmdPal.Ext.WindowWalker\Microsoft.CmdPal.Ext.WindowWalker.csproj", "{3A9A7297-92C4-4F16-B6F9-8D4AB652C86C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -3317,6 +3319,18 @@ Global
 		{0DB0F63A-D2F8-4DA3-A650-2D0B8724218E}.Release|x64.Build.0 = Release|x64
 		{0DB0F63A-D2F8-4DA3-A650-2D0B8724218E}.Release|x86.ActiveCfg = Release|x64
 		{0DB0F63A-D2F8-4DA3-A650-2D0B8724218E}.Release|x86.Build.0 = Release|x64
+		{3A9A7297-92C4-4F16-B6F9-8D4AB652C86C}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{3A9A7297-92C4-4F16-B6F9-8D4AB652C86C}.Debug|ARM64.Build.0 = Debug|ARM64
+		{3A9A7297-92C4-4F16-B6F9-8D4AB652C86C}.Debug|x64.ActiveCfg = Debug|x64
+		{3A9A7297-92C4-4F16-B6F9-8D4AB652C86C}.Debug|x64.Build.0 = Debug|x64
+		{3A9A7297-92C4-4F16-B6F9-8D4AB652C86C}.Debug|x86.ActiveCfg = Debug|x64
+		{3A9A7297-92C4-4F16-B6F9-8D4AB652C86C}.Debug|x86.Build.0 = Debug|x64
+		{3A9A7297-92C4-4F16-B6F9-8D4AB652C86C}.Release|ARM64.ActiveCfg = Release|ARM64
+		{3A9A7297-92C4-4F16-B6F9-8D4AB652C86C}.Release|ARM64.Build.0 = Release|ARM64
+		{3A9A7297-92C4-4F16-B6F9-8D4AB652C86C}.Release|x64.ActiveCfg = Release|x64
+		{3A9A7297-92C4-4F16-B6F9-8D4AB652C86C}.Release|x64.Build.0 = Release|x64
+		{3A9A7297-92C4-4F16-B6F9-8D4AB652C86C}.Release|x86.ActiveCfg = Release|x64
+		{3A9A7297-92C4-4F16-B6F9-8D4AB652C86C}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -3587,6 +3601,7 @@ Global
 		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {3846508C-77EB-4034-A702-F8BB263C4F79}
 		{89D0E199-B17A-418C-B2F8-7375B6708357} = {A2221D7E-55E7-4BEA-90D1-4F162D670BBF}
 		{0DB0F63A-D2F8-4DA3-A650-2D0B8724218E} = {CA716AE6-FE5C-40AC-BB8F-2C87912687AC}
+		{3A9A7297-92C4-4F16-B6F9-8D4AB652C86C} = {ECB8E0D1-7603-4E5C-AB10-D1E545E6F8E2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

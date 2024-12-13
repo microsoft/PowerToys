@@ -12,6 +12,7 @@ using Microsoft.CmdPal.Ext.Shell;
 using Microsoft.CmdPal.Ext.WindowsServices;
 using Microsoft.CmdPal.Ext.WindowsSettings;
 using Microsoft.CmdPal.Ext.WindowsTerminal;
+using Microsoft.CmdPal.Ext.WindowWalker;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 using Windows.Foundation;
@@ -63,6 +64,7 @@ public sealed class MainViewModel : IDisposable
         BuiltInCommands.Add(new RegistryCommandsProvider());
         BuiltInCommands.Add(new WindowsSettingsCommandsProvider());
         BuiltInCommands.Add(new ShellCommandsProvider());
+        BuiltInCommands.Add(new WindowWalkerCommandsProvider());
 
         ResetTopLevel();
 
@@ -162,5 +164,6 @@ public sealed class MainViewModel : IDisposable
         this.AddAlias(new CommandAlias("$", "com.microsoft.cmdpal.windowsSettings", true));
         this.AddAlias(new CommandAlias("=", "com.microsoft.cmdpal.calculator", true));
         this.AddAlias(new CommandAlias(">", "com.microsoft.cmdpal.shell", true));
+        this.AddAlias(new CommandAlias("<", "com.microsoft.cmdpal.windowwalker", true));
     }
 }
