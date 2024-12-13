@@ -3,11 +3,11 @@
     x:Class="Microsoft.CmdPal.UI.ListPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:Interactions="using:Microsoft.Xaml.Interactions.Core"
-    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
@@ -33,25 +33,23 @@
             Spacing="8" />
 
         <DataTemplate x:Key="TagTemplate" x:DataType="viewmodels:TagViewModel">
-            <!--  TODO: Actually colorize the tags again -->
+            <!--  TODO: Actually colorize the tags again  -->
             <StackPanel
                 Padding="4,2,4,2"
                 VerticalAlignment="Center"
                 BorderBrush="{ThemeResource TextBoxBorderThemeBrush}"
                 BorderThickness="1"
-                Orientation="Horizontal"
-                CornerRadius="4">
-                <Border x:Name="IconBorder"
-                        Width="12"
-                        Height="12"
-                        Margin="0,0,4,0"
-                        Visibility="{x:Bind HasIcon, Mode=OneWay}">
-                    <!-- LoadIconBehavior will magically fill this border up with an icon -->
-                    <Interactivity:Interaction.Behaviors>
-                        <local:LoadIconBehavior Source="{x:Bind Icon, Mode=OneWay}"/>
-                    </Interactivity:Interaction.Behaviors>
-                </Border>
-                    
+                CornerRadius="4"
+                Orientation="Horizontal">
+                <cpcontrols:IconBox
+                    x:Name="IconBorder"
+                    Width="12"
+                    Height="12"
+                    Margin="0,0,4,0"
+                    SourceKey="{x:Bind Icon, Mode=OneWay}"
+                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
+                    Visibility="{x:Bind HasIcon, Mode=OneWay}" />
+
                 <TextBlock
                     VerticalAlignment="Center"
                     FontSize="12"
@@ -72,16 +70,14 @@
                     </Grid.ColumnDefinitions>
 
 
-                    <Border x:Name="IconBorder"
-                            Grid.Column="0"
-                            Width="20"
-                            Height="20"
-                            Margin="4,0,4,0">
-                        <!-- LoadIconBehavior will magically fill this border up with an icon -->
-                        <Interactivity:Interaction.Behaviors>
-                            <local:LoadIconBehavior Source="{x:Bind Icon, Mode=OneWay}"/>
-                        </Interactivity:Interaction.Behaviors>
-                    </Border>
+                    <cpcontrols:IconBox
+                        x:Name="IconBorder"
+                        Grid.Column="0"
+                        Width="20"
+                        Height="20"
+                        Margin="4,0,4,0"
+                        SourceKey="{x:Bind Icon, Mode=OneWay}"
+                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
 
                     <StackPanel
                         Grid.Column="1"
@@ -105,12 +101,13 @@
                             TextWrapping="NoWrap"
                             Visibility="{x:Bind Subtitle, Mode=OneWay, Converter={StaticResource StringVisibilityConverter}}" />
                     </StackPanel>
-                    
-                    <ItemsRepeater ItemTemplate="{StaticResource TagTemplate}"
-                       ItemsSource="{x:Bind Tags}"
-                       Grid.Column="2"
-                       Visibility="{x:Bind HasTags}"
-                       Layout="{StaticResource HorizontalStackLayout}" />
+
+                    <ItemsRepeater
+                        Grid.Column="2"
+                        ItemTemplate="{StaticResource TagTemplate}"
+                        ItemsSource="{x:Bind Tags}"
+                        Layout="{StaticResource HorizontalStackLayout}"
+                        Visibility="{x:Bind HasTags}" />
                 </Grid>
             </ListViewItem>
         </DataTemplate>
