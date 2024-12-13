@@ -31,8 +31,8 @@ public partial class DetailsViewModel(IDetails _details, IPageContext context) :
             return;
         }
 
-        Title = model.Title;
-        Body = model.Body;
+        Title = model.Title ?? string.Empty;
+        Body = model.Body ?? string.Empty;
         HeroImage = model.HeroImage;
 
         UpdateProperty(nameof(Title));

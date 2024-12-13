@@ -148,7 +148,7 @@ public partial class MastodonExtensionActionsProvider : CommandProvider
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]
-public partial class MastodonPostForm : IForm
+public partial class MastodonPostForm : Form
 {
     private readonly MastodonStatus post;
 
@@ -157,7 +157,7 @@ public partial class MastodonPostForm : IForm
         this.post = post;
     }
 
-    public string DataJson()
+    public override string DataJson()
     {
         return $$"""
 {
@@ -171,11 +171,9 @@ public partial class MastodonPostForm : IForm
 """;
     }
 
-    public string StateJson() => throw new NotImplementedException();
+    public override ICommandResult SubmitForm(string payload) => CommandResult.Dismiss();
 
-    public ICommandResult SubmitForm(string payload) => CommandResult.Dismiss();
-
-    public string TemplateJson()
+    public override string TemplateJson()
     {
         var img_block = string.Empty;
         if (post.MediaAttachments.Count > 0)
@@ -203,7 +201,7 @@ public partial class MastodonPostForm : IForm
                                 {
                                     "type": "Image",
                                     "url": "${author_avatar_url}",
-                                    "size": "Small",
+                                    "size": "Medium",
                                     "style": "Person"
                                 }
                             ]

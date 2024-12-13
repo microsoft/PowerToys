@@ -2,9 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 
-public abstract partial class FormPage : Page, IFormPage
+namespace Microsoft.CmdPal.UI.ViewModels.Messages;
+
+public record LaunchUriMessage(Uri Uri)
 {
-    public abstract IForm[] Forms();
 }

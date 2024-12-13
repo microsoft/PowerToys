@@ -52,7 +52,6 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-
         <cpcontrols:IconBox
             x:Name="IconBorder"
             Width="20"
@@ -60,7 +59,7 @@
             Margin="12,0,0,0"
             x:Load="{x:Bind IsLoaded, Mode=OneWay}"
             CornerRadius="{StaticResource ControlCornerRadius}"
-            SourceKey="{x:Bind ViewModel.CurrentPage.Icon, Mode=OneWay}"
+            SourceKey="{x:Bind CurrentPageViewModel.Icon, Mode=OneWay}"
             SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
 
         <TextBlock
