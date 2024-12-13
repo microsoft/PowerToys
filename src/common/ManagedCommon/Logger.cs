@@ -15,16 +15,13 @@ namespace ManagedCommon
 {
     public static class Logger
     {
-        private static readonly Assembly Assembly = Assembly.GetExecutingAssembly();
-        private static readonly string Version = FileVersionInfo.GetVersionInfo(Path.Combine(System.AppContext.BaseDirectory, ApplicationName)).ProductVersion;
-
         private static readonly string Error = "Error";
         private static readonly string Warning = "Warning";
         private static readonly string Info = "Info";
         private static readonly string Debug = "Debug";
         private static readonly string TraceFlag = "Trace";
 
-        private static readonly string ApplicationName = "PowerToys.exe";
+        private static readonly string Version = GetVersion();
 
         /// <summary>
         /// Initializes the logger and sets the path for logging.
@@ -53,6 +50,25 @@ namespace ManagedCommon
             Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
 
             Trace.AutoFlush = true;
+        }
+
+        public static string GetVersion()
+        {
+            string applicationName = "PowerToys.exe";
+            try
+            {
+                var versionInfo = FileVersionInfo.GetVersionInfo(Path.Combine(System.AppContext.BaseDirectory, applicationName));
+                if (versionInfo != null)
+                {
+                    return versionInfo.ProductVersion;
+                }
+            }
+            catch (Exception)
+            {
+                return "0.0.0.1";
+            }
+
+            return "0.0.0.1";
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
