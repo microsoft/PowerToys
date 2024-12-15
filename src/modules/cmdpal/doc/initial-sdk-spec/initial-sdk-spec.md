@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2024-11-20
+last updated: 2024-12-15
 issue id: n/a
 ---
 
@@ -538,6 +538,7 @@ interface ICommand requires INotifyPropChanged{
 enum CommandResultKind {
     Dismiss,    // Reset the palette to the main page and dismiss
     GoHome,     // Go back to the main page, but keep it open
+    GoBack,     // Go back one level
     Hide,       // Keep this page open, but hide the palette. 
     KeepOpen,   // Do nothing.
     GoToPage,   // Go to another page. GoToPageArgs will tell you where.
@@ -616,6 +617,8 @@ Use cases for each `CommandResultKind`:
   * Ex: The "Add Quick Link" command is a form. After submitting the form, the
     user should be taken back to the main page, with the query cleared, leaving
     the window open.
+* `GoBack` - Navigate to the previous page, and keep it open. Useful for
+  submitting a form, then going back to the parent page of the form
 * `KeepOpen` - Do nothing. This leaves the palette in its current state, with the
   current page stack and query.
   * Note: if the action navigates to another application, DevPal's default
