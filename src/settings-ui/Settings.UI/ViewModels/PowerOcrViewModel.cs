@@ -57,7 +57,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _languageIndex = value;
                     if (_powerOcrSettings != null && _languageIndex < possibleOcrLanguages.Count && _languageIndex >= 0)
                     {
-                        _powerOcrSettings.Properties.PreferredLanguage = possibleOcrLanguages[_languageIndex].DisplayName;
+                        _powerOcrSettings.Properties.PreferredLanguage = possibleOcrLanguages[_languageIndex].NativeName;
                         NotifySettingsChanged();
                     }
 
@@ -186,7 +186,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     systemLanguageIndex = AvailableLanguages.Count;
                 }
 
-                AvailableLanguages.Add(language.NativeName);
+                AvailableLanguages.Add(EnsureStartUpper(language.NativeName));
             }
 
             // if the previously stored preferred language is not available (has been deleted or this is the first run with language preference)
@@ -263,6 +263,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        private string EnsureStartUpper(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return input;
+            }
+
+            var inputArray = input.ToCharArray();
+            inputArray[0] = char.ToUpper(inputArray[0], CultureInfo.CurrentCulture);
+            return new string(inputArray);
         }
     }
 }
