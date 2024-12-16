@@ -67,6 +67,12 @@ public class SettingsManager
         Resources.windowwalker_SettingExplorerSettingInfo_Description,
         false);
 
+    private readonly ToggleSetting _inMruOrder = new(
+        nameof(InMruOrder),
+        Resources.windowwalker_SettingInMruOrder,
+        Resources.windowwalker_SettingInMruOrder_Description,
+        true);
+
     public bool ResultsFromVisibleDesktopOnly => _resultsFromVisibleDesktopOnly.Value;
 
     public bool SubtitleShowPid => _subtitleShowPid.Value;
@@ -82,6 +88,8 @@ public class SettingsManager
     public bool HideKillProcessOnElevatedProcesses => _hideKillProcessOnElevatedProcesses.Value;
 
     public bool HideExplorerSettingInfo => _hideExplorerSettingInfo.Value;
+
+    public bool InMruOrder => _inMruOrder.Value;
 
     private static readonly JsonSerializerOptions _serializerOptions = new()
     {
@@ -113,6 +121,7 @@ public class SettingsManager
         _settings.Add(_openAfterKillAndClose);
         _settings.Add(_hideKillProcessOnElevatedProcesses);
         _settings.Add(_hideExplorerSettingInfo);
+        _settings.Add(_inMruOrder);
 
         // Load settings from file upon initialization
         LoadSettings();
@@ -127,10 +136,7 @@ public class SettingsManager
         }
     }
 
-    public Settings GetSettings()
-    {
-        return _settings;
-    }
+    public Settings GetSettings() => _settings;
 
     public void SaveSettings()
     {

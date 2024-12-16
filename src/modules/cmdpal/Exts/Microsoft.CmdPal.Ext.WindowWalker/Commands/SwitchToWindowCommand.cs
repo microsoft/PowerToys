@@ -2,11 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using Microsoft.CmdPal.Ext.WindowWalker.Components;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CmdPal.Extensions;
@@ -20,9 +16,23 @@ internal sealed partial class SwitchToWindowCommand : InvokableCommand
 
     public SwitchToWindowCommand(Window? window)
     {
-        Name = Resources.window_walker_top_level_command_title;
+        Name = Resources.switch_to_command_title;
         Icon = new(string.Empty);
         _window = window;
+        if (_window != null)
+        {
+            var p = Process.GetProcessById((int)_window.Process.ProcessID);
+            if (p != null)
+            {
+                try
+                {
+                    Icon = new(p.MainModule?.FileName);
+                }
+                catch
+                {
+                }
+            }
+        }
     }
 
     public override ICommandResult Invoke()

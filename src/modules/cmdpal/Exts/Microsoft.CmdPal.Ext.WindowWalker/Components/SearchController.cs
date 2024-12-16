@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Components;
 
@@ -45,7 +46,7 @@ internal sealed class SearchController
     /// <summary>
     /// Gets the open window search results
     /// </summary>
-    internal List<SearchResult> SearchMatches => new List<SearchResult>(searchMatches ?? new List<SearchResult>()).OrderByDescending(x => x.Score).ToList();
+    internal List<SearchResult> SearchMatches => new List<SearchResult>(searchMatches ?? []).OrderByDescending(x => x.Score).ToList();
 
     /// <summary>
     /// Gets singleton Pattern
@@ -85,16 +86,9 @@ internal sealed class SearchController
     {
         System.Diagnostics.Debug.Print("Syncing WindowSearch result with OpenWindows Model");
 
-        List<Window> snapshotOfOpenWindows = OpenWindows.Instance.Windows;
+        var snapshotOfOpenWindows = OpenWindows.Instance.Windows;
 
-        if (string.IsNullOrWhiteSpace(SearchText))
-        {
-            searchMatches = AllOpenWindows(snapshotOfOpenWindows);
-        }
-        else
-        {
-            searchMatches = FuzzySearchOpenWindows(snapshotOfOpenWindows);
-        }
+        searchMatches = string.IsNullOrWhiteSpace(SearchText) ? AllOpenWindows(snapshotOfOpenWindows) : FuzzySearchOpenWindows(snapshotOfOpenWindows);
     }
 
     /// <summary>
@@ -104,7 +98,7 @@ internal sealed class SearchController
     /// <returns>Returns search results</returns>
     private List<SearchResult> FuzzySearchOpenWindows(List<Window> openWindows)
     {
-        List<SearchResult> result = new List<SearchResult>();
+        List<SearchResult> result = [];
         var searchStrings = new SearchString(searchText, SearchResult.SearchType.Fuzzy);
 
         foreach (var window in openWindows)
@@ -130,7 +124,7 @@ internal sealed class SearchController
     /// <returns>Returns search results</returns>
     private List<SearchResult> AllOpenWindows(List<Window> openWindows)
     {
-        List<SearchResult> result = new List<SearchResult>();
+        List<SearchResult> result = [];
 
         foreach (var window in openWindows)
         {
@@ -140,7 +134,11 @@ internal sealed class SearchController
             }
         }
 
-        return result.OrderBy(w => w.Result.Title).ToList();
+        return SettingsManager.Instance.InMruOrder
+            ? result.ToList()
+            : result
+                .OrderBy(w => w.Result.Title)
+                .ToList();
     }
 
     /// <summary>

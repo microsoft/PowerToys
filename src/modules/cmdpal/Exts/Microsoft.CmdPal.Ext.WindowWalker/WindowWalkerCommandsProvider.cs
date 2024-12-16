@@ -13,7 +13,6 @@ namespace Microsoft.CmdPal.Ext.WindowWalker;
 public partial class WindowWalkerCommandsProvider : CommandProvider
 {
     private readonly CommandItem _windowWalkerPageItem;
-    private readonly SettingsManager _settingsManager = new();
 
     internal static readonly VirtualDesktopHelper VirtualDesktopHelperInstance = new();
 
@@ -22,7 +21,6 @@ public partial class WindowWalkerCommandsProvider : CommandProvider
         DisplayName = Resources.windowwalker_name;
         _windowWalkerPageItem = new CommandItem(new WindowWalkerListPage())
         {
-            Icon = new("\uE8B0"), // Window icon
             Title = Resources.window_walker_top_level_command_title,
             Subtitle = Resources.windowwalker_name,
             MoreCommands = [

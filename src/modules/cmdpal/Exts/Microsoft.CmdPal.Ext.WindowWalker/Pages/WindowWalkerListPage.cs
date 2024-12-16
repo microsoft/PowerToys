@@ -4,9 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.WindowWalker.Components;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CmdPal.Extensions;
@@ -22,14 +19,13 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
 
     public WindowWalkerListPage()
     {
+        Icon = new("\ue8f9"); // SwitchApps
         Name = Resources.windowwalker_name;
         Id = "com.microsoft.cmdpal.windowwalker";
     }
 
-    public override void UpdateSearchText(string oldSearch, string newSearch)
-    {
-       RaiseItemsChanged(0);
-    }
+    public override void UpdateSearchText(string oldSearch, string newSearch) =>
+        RaiseItemsChanged(0);
 
     public List<WindowWalkerListItem> Query(string query)
     {
@@ -42,15 +38,12 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
         WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.UpdateDesktopList();
         OpenWindows.Instance.UpdateOpenWindowsList(_cancellationTokenSource.Token);
         SearchController.Instance.UpdateSearchText(query);
-        List<SearchResult> searchControllerResults = SearchController.Instance.SearchMatches;
+        var searchControllerResults = SearchController.Instance.SearchMatches;
 
         return ResultHelper.GetResultList(searchControllerResults, !string.IsNullOrEmpty(query), string.Empty, "\uE946");
     }
 
-    public override IListItem[] GetItems()
-    {
-        return Query(SearchText).ToArray();
-    }
+    public override IListItem[] GetItems() => Query(SearchText).ToArray();
 
     public void Dispose()
     {
