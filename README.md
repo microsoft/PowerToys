@@ -148,7 +148,7 @@ In this release, we focused on new features, stability, and improvements.
 
  - Peek now checks local capabilities to decide what image formats Image Previewer is able to support. Thanks [@daverayment](https://github.com/daverayment)!
  - Fixed an issue causing the Code Files Previewer to not load correctly under certain conditions. Thanks [@daverayment](https://github.com/daverayment)!
- - Refactored, improved and fixed loggin when loading the user settings file. Thanks [@daverayment](https://github.com/daverayment)!
+ - Refactored, improved and fixed logging when loading the user settings file. Thanks [@daverayment](https://github.com/daverayment)!
 
 ### PowerToys Run
 
