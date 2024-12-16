@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "PokedexExtension (Package)": {
+      "commandName": "MsixPackage",
+      "doNotLaunchApp": true
+    },
+    "PokedexExtension (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

@@ -52,11 +52,15 @@ internal sealed partial class MastodonExtensionPage : ListPage
                     new Tag()
                     {
                         Icon = new("\ue734"), // FavoriteStar
+                        Background = ColorHelpers.FromRgb(255, 255, 0), // Yellow
+                        Foreground = ColorHelpers.FromRgb(64, 64, 0), // Dark Yellow
                         Text = p.Favorites.ToString(CultureInfo.CurrentCulture),
                     },
                     new Tag()
                     {
                         Icon = new("\ue8ee"), // RepeatAll
+                        Background = ColorHelpers.FromRgb(86, 58, 204), // Mastodon color
+                        Foreground = ColorHelpers.FromRgb(255, 255, 255), // White
                         Text = p.Boosts.ToString(CultureInfo.CurrentCulture),
                     },
                 ], // */

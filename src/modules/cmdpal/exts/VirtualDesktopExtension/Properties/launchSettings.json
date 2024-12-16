@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "VirtualDesktopExtension (Package)": {
+      "commandName": "MsixPackage",
+      "doNotLaunchApp": true
+    },
+    "VirtualDesktopExtension (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

@@ -33,10 +33,10 @@
             Spacing="8" />
 
         <DataTemplate x:Key="TagTemplate" x:DataType="viewmodels:TagViewModel">
-            <!--  TODO: Actually colorize the tags again  -->
             <StackPanel
                 Padding="4,2,4,2"
                 VerticalAlignment="Center"
+                Background="{x:Bind help:OptionalColorBrushCacheProvider.Convert(Background, x:False), Mode=OneWay}"
                 BorderBrush="{ThemeResource TextBoxBorderThemeBrush}"
                 BorderThickness="1"
                 CornerRadius="4"
@@ -46,6 +46,7 @@
                     Width="12"
                     Height="12"
                     Margin="0,0,4,0"
+                    Foreground="{x:Bind help:OptionalColorBrushCacheProvider.Convert(Foreground, x:True), Mode=OneWay}"
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
                     SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
                     Visibility="{x:Bind HasIcon, Mode=OneWay}" />
@@ -53,6 +54,7 @@
                 <TextBlock
                     VerticalAlignment="Center"
                     FontSize="12"
+                    Foreground="{x:Bind help:OptionalColorBrushCacheProvider.Convert(Foreground, x:True), Mode=OneWay}"
                     Text="{x:Bind Text, Mode=OneWay}" />
             </StackPanel>
         </DataTemplate>
