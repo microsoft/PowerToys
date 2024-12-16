@@ -130,7 +130,7 @@
                     IsItemClickEnabled="True"
                     ItemClick="ListView_ItemClick"
                     ItemTemplate="{StaticResource ListItemViewModelTemplate}"
-                    ItemsSource="{x:Bind ViewModel.Items, Mode=OneWay}"
+                    ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
                     SelectionChanged="ItemsList_SelectionChanged">
                     <ListView.ItemContainerTransitions>
                         <TransitionCollection />

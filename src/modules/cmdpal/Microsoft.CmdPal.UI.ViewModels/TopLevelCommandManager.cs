@@ -4,6 +4,7 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Extensions;
@@ -11,11 +12,14 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class TopLevelCommandManager(IServiceProvider _serviceProvider)
+public partial class TopLevelCommandManager(IServiceProvider _serviceProvider) : ObservableObject
 {
     private IEnumerable<ICommandProvider>? _builtInCommands;
 
     public ObservableCollection<TopLevelCommandWrapper> TopLevelCommands { get; set; } = [];
+
+    [ObservableProperty]
+    public partial bool IsLoading { get; private set; } = true;
 
     public async Task<bool> LoadBuiltinsAsync()
     {
@@ -65,6 +69,8 @@ public partial class TopLevelCommandManager(IServiceProvider _serviceProvider)
                 Debug.WriteLine(ex);
             }
         }
+
+        IsLoading = false;
 
         return true;
     }

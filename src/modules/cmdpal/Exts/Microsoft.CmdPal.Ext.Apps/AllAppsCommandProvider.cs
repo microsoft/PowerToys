@@ -9,18 +9,15 @@ namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 public partial class AllAppsCommandProvider : CommandProvider
 {
-    private readonly AllAppsPage _page = new();
+    public static readonly AllAppsPage Page = new();
 
     private readonly CommandItem _listItem;
 
     public AllAppsCommandProvider()
     {
         DisplayName = "All Apps";
-        _listItem = new(_page) { Subtitle = "Search installed apps" };
+        _listItem = new(Page) { Subtitle = "Search installed apps" };
     }
 
-    public override ICommandItem[] TopLevelCommands()
-    {
-        return [_listItem];
-    }
+    public override ICommandItem[] TopLevelCommands() => [_listItem];
 }

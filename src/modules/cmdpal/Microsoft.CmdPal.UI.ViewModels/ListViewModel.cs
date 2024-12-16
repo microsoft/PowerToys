@@ -7,23 +7,29 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class ListViewModel : PageViewModel
 {
-    private readonly HashSet<ListItemViewModel> _itemCache = [];
+    // private readonly HashSet<ListItemViewModel> _itemCache = [];
 
     // TODO: Do we want a base "ItemsPageViewModel" for anything that's going to have items?
 
     // Observable from MVVM Toolkit will auto create public properties that use INotifyPropertyChange change
     // https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/observablegroupedcollections for grouping support
     [ObservableProperty]
-    public partial ObservableCollection<ListItemViewModel> Items { get; set; } = [];
+    public partial ObservableCollection<ListItemViewModel> FilteredItems { get; set; } = [];
+
+    public ObservableCollection<ListItemViewModel> Items { get; set; } = [];
 
     private readonly ExtensionObject<IListPage> _model;
+
+    public event TypedEventHandler<ListViewModel, object>? ItemsUpdated;
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -31,11 +37,15 @@ public partial class ListViewModel : PageViewModel
 
     public string PlaceholderText { get => string.IsNullOrEmpty(field) ? "Type here to search..." : field; private set; } = string.Empty;
 
+    private bool _isDynamic;
+
     public ListViewModel(IListPage model, TaskScheduler scheduler)
         : base(model, scheduler)
     {
         _model = new(model);
     }
+
+    private void Model_ItemsChanged(object sender, ItemsChangedEventArgs args) => FetchItems();
 
     protected override void OnFilterUpdated(string filter)
     {
@@ -43,73 +53,142 @@ public partial class ListViewModel : PageViewModel
         //// and manage filtering below, but we should be smarter about this and understand caching and other requirements...
         //// Investigate if we re-use src\modules\cmdpal\extensionsdk\Microsoft.CmdPal.Extensions.Helpers\ListHelpers.cs InPlaceUpdateList and FilterList?
 
-        // Remove all items out right if we clear the filter, otherwise, recheck the items already displayed.
-        if (string.IsNullOrWhiteSpace(filter))
+        // Dynamic pages will handler their own filtering. They will tell us if
+        // something needs to change, by raising ItemsChanged.
+        if (_isDynamic)
         {
-            Items.Clear();
+            try
+            {
+                if (_model.Unsafe is IDynamicListPage dynamic)
+                {
+                    dynamic.SearchText = filter;
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowException(ex);
+            }
         }
         else
         {
-            // Remove any existing items which don't match the filter
-            for (var i = Items.Count - 1; i >= 0; i--)
-            {
-                if (!Items[i].MatchesFilter(filter))
-                {
-                    Items.RemoveAt(i);
-                }
-            }
-        }
-
-        // Add back any new items which do match the filter
-        foreach (var item in _itemCache)
-        {
-            if ((filter == string.Empty || item.MatchesFilter(filter))
-                && !Items.Contains(item)) //// TODO: We should be smarter here somehow
-            {
-                Items.Add(item);
-            }
+            // But for all normal pages, we should run our fuzzy match on them.
+            ApplyFilter();
+            ItemsUpdated?.Invoke(this, EventArgs.Empty);
         }
     }
-
-    private void Model_ItemsChanged(object sender, ItemsChangedEventArgs args) => FetchItems();
 
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
     private void FetchItems()
     {
         // TEMPORARY: just plop all the items into a single group
         // see 9806fe5d8 for the last commit that had this with sections
-        // TODO unsafe
         try
         {
             var newItems = _model.Unsafe!.GetItems();
 
+            // Collect all the items into new viewmodels
+            Collection<ListItemViewModel> newViewModels = [];
+
+            // TODO we can probably further optimize this by also keeping a
+            // HashSet of every ExtensionObject we currently have, and only
+            // building new viewmodels for the ones we haven't already built.
             foreach (var item in newItems)
             {
-                // TODO: When we fetch next page of items or refreshed items, we may need to check if we have an existing ViewModel in the cache?
                 ListItemViewModel viewModel = new(item, this);
                 viewModel.InitializeProperties();
-                _itemCache.Add(viewModel); // TODO: Figure out when we clear/remove things from cache...
-
-                // We may already have items from the new items here.
-                if ((Filter == string.Empty || viewModel.MatchesFilter(Filter))
-                    && !Items.Contains(viewModel)) //// TODO: We should be smarter about the contains here somehow (also in OnFilterUpdated)
-                {
-                    // Am I really allowed to modify that observable collection on a BG
-                    // thread and have it just work in the UI??
-                    Items.Add(viewModel);
-                }
+                newViewModels.Add(viewModel);
             }
+
+            // Now that we have new ViewModels for everything from the
+            // extension, smartly update our list of VMs
+            ListHelpers.InPlaceUpdateList(Items, newViewModels);
+
+            // TODO: Iterate over everything in Items, and prune items from the
+            // cache if we don't need them anymore
         }
         catch (Exception ex)
         {
             ShowException(ex);
             throw;
         }
+
+        Task.Factory.StartNew(
+            () =>
+            {
+                // Now that our Items contains everything we want, it's time for us to
+                // re-evaluate our Filter on those items.
+                if (!_isDynamic)
+                {
+                    // A static list? Great! Just run the filter.
+                    ApplyFilter();
+                }
+                else
+                {
+                    // A dynamic list? Even better! Just stick everything into
+                    // FilteredItems. The extension already did any filtering it cared about.
+                    ListHelpers.InPlaceUpdateList(FilteredItems, Items);
+                }
+
+                ItemsUpdated?.Invoke(this, EventArgs.Empty);
+            },
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            PageContext.Scheduler);
+    }
+
+    /// <summary>
+    /// Apply our current filter text to the list of items, and update
+    /// FilteredItems to match the results.
+    /// </summary>
+    private void ApplyFilter() => ListHelpers.InPlaceUpdateList(FilteredItems, FilterList(Items, Filter));
+
+    /// <summary>
+    /// Helper to generate a weighting for a given list item, based on title,
+    /// subtitle, etc. Largely a copy of the version in ListHelpers, but
+    /// operating on ViewModels instead of extension objects.
+    /// </summary>
+    private static int ScoreListItem(string query, CommandItemViewModel listItem)
+    {
+        if (string.IsNullOrEmpty(query))
+        {
+            return 1;
+        }
+
+        var nameMatch = StringMatcher.FuzzySearch(query, listItem.Title);
+        var descriptionMatch = StringMatcher.FuzzySearch(query, listItem.Subtitle);
+        return new[] { nameMatch.Score, (descriptionMatch.Score - 4) / 2, 0 }.Max();
+    }
+
+    private struct ScoredListItemViewModel
+    {
+        public int Score;
+        public ListItemViewModel ViewModel;
+    }
+
+    // Similarly stolen from ListHelpers.FilterList
+    public static IEnumerable<ListItemViewModel> FilterList(IEnumerable<ListItemViewModel> items, string query)
+    {
+        var scores = items
+            .Select(li => new ScoredListItemViewModel() { ViewModel = li, Score = ScoreListItem(query, li) })
+            .Where(score => score.Score > 0)
+            .OrderByDescending(score => score.Score);
+        return scores
+            .Select(score => score.ViewModel);
     }
 
     // InvokeItemCommand is what this will be in Xaml due to source generator
     [RelayCommand]
-    private void InvokeItem(ListItemViewModel item) => WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command));
+    private void InvokeItem(ListItemViewModel item) =>
+        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command));
+
+    [RelayCommand]
+    private void InvokeSecondaryCommand(ListItemViewModel item)
+    {
+        if (item.SecondaryCommand != null)
+        {
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.SecondaryCommand.Command));
+        }
+    }
 
     [RelayCommand]
     private void UpdateSelectedItem(ListItemViewModel item)
@@ -135,6 +214,8 @@ public partial class ListViewModel : PageViewModel
         {
             return; // throw?
         }
+
+        _isDynamic = listPage is IDynamicListPage;
 
         ShowDetails = listPage.ShowDetails;
         UpdateProperty(nameof(ShowDetails));
