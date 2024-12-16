@@ -17,7 +17,7 @@ To log into the production instance of OneFuzz with the CLI, you **must request 
 
 ## How to Fuzz .NET Code
 
-To set up and run fuzz testing on .NET code, follow the detailed guide available [here](https://eng.ms/docs/cloud-ai-platform/azure-edge-platform-aep/aep-security/epsf-edge-and-platform-security-fundamentals/the-onefuzz-service/onefuzz/howto/fuzzing-dotnet-code).
+To set up and run fuzz testing on .NET code, follow the detailed guide available [Fuzz .NET Code](https://eng.ms/docs/cloud-ai-platform/azure-edge-platform-aep/aep-security/epsf-edge-and-platform-security-fundamentals/the-onefuzz-service/onefuzz/howto/fuzzing-dotnet-code).
 
 ## Running a .NET Fuzz Target Locally
 
@@ -37,7 +37,7 @@ For more details on how to write and structure this file, see the [OneFuzzConfig
 
 ### OneFuzz Ingestion Preparation (OIP) Tool
 
-The OIP tool helps prepare data for ingestion and fuzz testing. Learn more about it [here](https://eng.ms/docs/cloud-ai-platform/azure-edge-platform-aep/aep-security/epsf-edge-and-platform-security-fundamentals/the-onefuzz-service/onefuzz/oip/onefuzzingestionpreparationtool).
+The OIP tool helps prepare data for ingestion and fuzz testing. Learn more about [OneFuzz Ingestion Preparation (OIP) Tool](https://eng.ms/docs/cloud-ai-platform/azure-edge-platform-aep/aep-security/epsf-edge-and-platform-security-fundamentals/the-onefuzz-service/onefuzz/oip/onefuzzingestionpreparationtool).
 
 ### OneFuzz CLI
 
