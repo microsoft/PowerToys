@@ -67,7 +67,7 @@ public sealed partial class ShellPage :
         else
         {
             // If we can't go back then we must be at the top and thus escape again should quit.
-            WeakReferenceMessenger.Default.Send<QuitMessage>();
+            WeakReferenceMessenger.Default.Send<DismissMessage>();
         }
     }
 

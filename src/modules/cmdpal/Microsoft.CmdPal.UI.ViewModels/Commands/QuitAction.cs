@@ -14,6 +14,9 @@ public partial class QuitAction : InvokableCommand, IFallbackHandler
     public QuitAction()
     {
         Icon = new("\uE711");
+
+        // TODO HACK: Just always make this command visible, because fallback commands aren't hooked up yet
+        Name = "Quit";
     }
 
     public override ICommandResult Invoke()
@@ -22,15 +25,5 @@ public partial class QuitAction : InvokableCommand, IFallbackHandler
         return CommandResult.KeepOpen();
     }
 
-    public void UpdateQuery(string query)
-    {
-        if (query.StartsWith('q'))
-        {
-            Name = "Quit";
-        }
-        else
-        {
-            Name = string.Empty;
-        }
-    }
+    public void UpdateQuery(string query) => Name = query.StartsWith('q') ? "Quit" : string.Empty;
 }

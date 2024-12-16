@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
     Closed="MainWindow_Closed"
+    Activated="MainWindow_Activated"
     mc:Ignorable="d">
 
     <local:ShellPage x:Name="RootShellPage"
