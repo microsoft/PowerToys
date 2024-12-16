@@ -2,46 +2,71 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Globalization;
 using System.Linq;
 
 using ManagedCommon;
 using Microsoft.Win32;
-using Wpf.Ui.Appearance;
 
 namespace PowerLauncher.Helper
 {
     public static class ThemeExtensions
     {
-        public static Theme ToTheme(this ApplicationTheme applicationTheme)
+        public static Theme GetCurrentTheme()
         {
-            return applicationTheme switch
+            // Check for high-contrast mode
+            Theme highContrastTheme = GetHighContrastBaseType();
+            if (highContrastTheme != Theme.Light)
             {
-                ApplicationTheme.Dark => Theme.Dark,
-                ApplicationTheme.Light => Theme.Light,
-                ApplicationTheme.HighContrast => GetHighContrastBaseType(),
-                _ => Theme.Light,
-            };
+                return highContrastTheme;
+            }
+
+            // Check if the system is using dark or light mode
+            return IsSystemDarkMode() ? Theme.Dark : Theme.Light;
         }
 
-        private static Theme GetHighContrastBaseType()
+        private static bool IsSystemDarkMode()
         {
-            string registryKey = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes";
-            string theme = (string)Registry.GetValue(registryKey, "CurrentTheme", string.Empty);
-            theme = theme.Split('\\').Last().Split('.').First().ToString();
+            const string registryKey = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
+            const string registryValue = "AppsUseLightTheme";
 
-            switch (theme)
+            // Retrieve the registry value, which is a DWORD (0 or 1)
+            object registryValueObj = Registry.GetValue(registryKey, registryValue, null);
+            if (registryValueObj != null)
             {
-                case "hc1":
-                    return Theme.HighContrastOne;
-                case "hc2":
-                    return Theme.HighContrastTwo;
-                case "hcwhite":
-                    return Theme.HighContrastWhite;
-                case "hcblack":
-                    return Theme.HighContrastBlack;
-                default:
-                    return Theme.HighContrastOne;
+                // 0 = Dark mode, 1 = Light mode
+                bool isLightMode = Convert.ToBoolean((int)registryValueObj, CultureInfo.InvariantCulture);
+                return !isLightMode; // Invert because 0 = Dark
             }
+            else
+            {
+                // Default to Light theme if the registry key is missing
+                return false; // Default to dark mode assumption
+            }
+        }
+
+        public static Theme GetHighContrastBaseType()
+        {
+            const string registryKey = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes";
+            const string registryValue = "CurrentTheme";
+
+            string themePath = (string)Registry.GetValue(registryKey, registryValue, string.Empty);
+            if (string.IsNullOrEmpty(themePath))
+            {
+                return Theme.Light; // Default to light theme if missing
+            }
+
+            string theme = themePath.Split('\\').Last().Split('.').First().ToLowerInvariant();
+
+            return theme switch
+            {
+                "hc1" => Theme.HighContrastOne,
+                "hc2" => Theme.HighContrastTwo,
+                "hcwhite" => Theme.HighContrastWhite,
+                "hcblack" => Theme.HighContrastBlack,
+                _ => Theme.Light,
+            };
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿<ui:FluentWindow
+﻿<Window
     x:Class="PowerLauncher.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,13 +6,11 @@
     xmlns:local="clr-namespace:PowerLauncher"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:p="clr-namespace:PowerLauncher.Properties"
-    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:vm="clr-namespace:PowerLauncher.ViewModel"
     Title="PowerToys Run"
     Width="640"
     MinHeight="0"
     d:DataContext="{d:DesignInstance vm:MainViewModel}"
-    ui:ExtendsContentIntoTitleBar="True"
     AllowDrop="True"
     Closed="OnClosed"
     Closing="OnClosing"
@@ -29,12 +27,7 @@
     WindowStartupLocation="Manual"
     WindowStyle="None"
     mc:Ignorable="d">
-
     <Grid x:Name="RootGrid" MouseDown="OnMouseDown">
-        <!--  We set the background here because the Acrylic can be too translucent / background too bright on Light theme  -->
-        <Grid.Background>
-            <SolidColorBrush Opacity="0.8" Color="{DynamicResource ApplicationBackgroundColor}" />
-        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -71,7 +64,6 @@
             <ListView
                 x:Name="pluginsHintsList"
                 Grid.Row="1"
-                Margin="16,0,0,0"
                 Background="Transparent"
                 BorderBrush="Transparent"
                 ItemContainerStyle="{StaticResource PluginsListViewItemStyle}"
@@ -138,12 +130,12 @@
             Visibility="{Binding Results.Visibility}" />
 
     </Grid>
-    <ui:FluentWindow.InputBindings>
+    <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding EscCommand}" />
         <KeyBinding Key="Enter" Command="{Binding OpenResultWithKeyboardCommand}" />
         <KeyBinding
             Key="F4"
             Command="{Binding IgnoreCommand}"
             Modifiers="Alt" />
-    </ui:FluentWindow.InputBindings>
-</ui:FluentWindow>
+    </Window.InputBindings>
+</Window>

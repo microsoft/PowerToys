@@ -325,6 +325,7 @@
                                 Padding="0"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Stretch"
+                                AutomationProperties.Name="{x:Bind Label}"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Click="DashboardListItemClick"
@@ -370,9 +371,11 @@
                                             </ToolTipService.ToolTip>
                                         </FontIcon>
                                         <ToggleSwitch
+                                            x:Uid="Enable_Module"
                                             Grid.Column="3"
                                             Margin="0,-2,0,0"
                                             HorizontalAlignment="Right"
+                                            AutomationProperties.HelpText="{x:Bind Label}"
                                             IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}"
                                             IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
                                             OffContent=""
@@ -383,6 +386,7 @@
                                     <ItemsControl
                                         Grid.Row="1"
                                         Margin="16,8,16,16"
+                                        IsTabStop="False"
                                         ItemTemplateSelector="{StaticResource ModuleItemTemplateSelector}"
                                         ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}"
                                         Visibility="{x:Bind IsEnabled, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
@@ -416,6 +420,7 @@
                                 Padding="0"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Stretch"
+                                AutomationProperties.Name="{x:Bind Label}"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Click="DashboardListItemClick"
@@ -458,9 +463,11 @@
                                             </ToolTipService.ToolTip>
                                         </FontIcon>
                                         <ToggleSwitch
+                                            x:Uid="Enable_Module"
                                             Grid.Column="3"
                                             Margin="0,-2,0,0"
                                             HorizontalAlignment="Right"
+                                            AutomationProperties.HelpText="{x:Bind Label}"
                                             IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}"
                                             IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
                                             OffContent=""
