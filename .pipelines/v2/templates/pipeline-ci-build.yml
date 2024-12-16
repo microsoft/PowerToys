@@ -22,7 +22,7 @@ parameters:
   - name: useVSPreview
     type: boolean
     default: false
-  - name: usingLatestWebView2
+  - name: useLatestWebView2
     type: boolean
     default: false
 
@@ -69,4 +69,4 @@ stages:
             parameters:
               platform: ${{ platform }}
               configuration: Release
-              usingLatestWebView2: ${{ parameters.usingLatestWebView2 }}
+              useLatestWebView2: ${{ parameters.useLatestWebView2 }}

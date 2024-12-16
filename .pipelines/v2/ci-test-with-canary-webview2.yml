@@ -28,7 +28,7 @@ parameters:
     type: boolean
     displayName: "Build Using Visual Studio Preview"
     default: false
-  - name: usingLatestWebView2
+  - name: useLatestWebView2
     type: boolean
     default: false
 
@@ -39,4 +39,4 @@ extends:
     enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
     runTests: ${{ parameters.runTests }}
     useVSPreview: ${{ parameters.useVSPreview }}
-    usingLatestWebView2: ${{ parameters.usingLatestWebView2 }}
+    useLatestWebView2: ${{ parameters.useLatestWebView2 }}
