@@ -16,6 +16,11 @@ public class ListHelpers
             return 1;
         }
 
+        if (string.IsNullOrEmpty(listItem.Title))
+        {
+            return 0;
+        }
+
         var nameMatch = StringMatcher.FuzzySearch(query, listItem.Title);
 
         // var locNameMatch = StringMatcher.FuzzySearch(query, NameLocalized);

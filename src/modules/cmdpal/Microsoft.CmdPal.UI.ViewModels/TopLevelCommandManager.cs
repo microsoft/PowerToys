@@ -40,7 +40,12 @@ public partial class TopLevelCommandManager(IServiceProvider _serviceProvider) :
         await commandProvider.LoadTopLevelCommands();
         foreach (var i in commandProvider.TopLevelItems)
         {
-            TopLevelCommands.Add(new(new(i)));
+            TopLevelCommands.Add(new(new(i), false));
+        }
+
+        foreach (var i in commandProvider.FallbackItems)
+        {
+            TopLevelCommands.Add(new(new(i), true));
         }
     }
 

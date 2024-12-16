@@ -19,6 +19,8 @@ public sealed class CommandProviderWrapper
 
     public ICommandItem[] TopLevelItems { get; private set; } = [];
 
+    public IFallbackCommandItem[] FallbackItems { get; private set; } = [];
+
     public CommandProviderWrapper(ICommandProvider provider)
     {
         _commandProvider = provider;
@@ -56,9 +58,16 @@ public sealed class CommandProviderWrapper
         var commands = await t.ConfigureAwait(false);
 
         // On a BG thread here
+        var fallbacks = _commandProvider.FallbackCommands();
+
         if (commands != null)
         {
             TopLevelItems = commands;
+        }
+
+        if (fallbacks != null)
+        {
+            FallbackItems = fallbacks;
         }
     }
 

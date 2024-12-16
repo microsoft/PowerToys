@@ -15,10 +15,7 @@ public partial class QuitCommandProvider : CommandProvider
 {
     private readonly QuitAction quitAction = new();
 
-    public override ICommandItem[] TopLevelCommands() =>
-
-        // HACK: fallback commands aren't wired up and we need to be able to exit
-        [new FallbackCommandItem(quitAction) { Subtitle = "Exit Command Palette" }];
+    public override ICommandItem[] TopLevelCommands() => [];
 
     public override IFallbackCommandItem[] FallbackCommands() =>
         [new FallbackCommandItem(quitAction) { Subtitle = "Exit Command Palette" }];

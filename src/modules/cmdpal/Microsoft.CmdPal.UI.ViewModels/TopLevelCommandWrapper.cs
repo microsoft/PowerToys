@@ -17,9 +17,13 @@ public partial class TopLevelCommandWrapper : ListItem
 {
     public ExtensionObject<ICommandItem> Model { get; }
 
-    public TopLevelCommandWrapper(ExtensionObject<ICommandItem> commandItem)
+    private readonly bool _isFallback;
+
+    public TopLevelCommandWrapper(ExtensionObject<ICommandItem> commandItem, bool isFallback)
         : base(commandItem.Unsafe?.Command ?? new NoOpCommand())
     {
+        _isFallback = isFallback;
+
         // TODO: In reality, we should do an async fetch when we're created
         // from an extension object. Probably have an
         // `static async Task<TopLevelCommandWrapper> FromExtension(ExtensionObject<ICommandItem>)`
@@ -38,10 +42,67 @@ public partial class TopLevelCommandWrapper : ListItem
             Subtitle = model.Subtitle;
             Icon = new(model.Icon.Icon);
             MoreCommands = model.MoreCommands;
+
+            model.PropChanged += Model_PropChanged;
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine(ex);
+        }
+    }
+
+    private void Model_PropChanged(object sender, PropChangedEventArgs args)
+    {
+        try
+        {
+            var propertyName = args.PropertyName;
+            var model = Model.Unsafe;
+            if (model == null)
+            {
+                return; // throw?
+            }
+
+            switch (propertyName)
+            {
+                case nameof(Title):
+                    this.Title = model.Title;
+                    break;
+                case nameof(Subtitle):
+                    this.Subtitle = model.Subtitle;
+                    break;
+                case nameof(Icon):
+                    var listIcon = model.Icon;
+                    Icon = model.Icon;
+                    break;
+
+                    // TODO! MoreCommands array, which needs to also raise HasMoreCommands
+            }
+        }
+        catch
+        {
+        }
+    }
+
+    public void TryUpdateFallbackText(string newQuery)
+    {
+        if (!_isFallback)
+        {
+            return;
+        }
+
+        try
+        {
+            _ = Task.Run(() =>
+            {
+                var model = Model.Unsafe;
+                if (model is IFallbackCommandItem fallback)
+                {
+                    fallback.FallbackHandler.UpdateQuery(newQuery);
+                }
+            });
+        }
+        catch (Exception)
+        {
         }
     }
 }

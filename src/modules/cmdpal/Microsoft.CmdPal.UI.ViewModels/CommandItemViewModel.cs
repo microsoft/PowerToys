@@ -133,7 +133,6 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
                 this.Icon = model.Icon;
                 break;
 
-                // TODO! Icon
                 // TODO! MoreCommands array, which needs to also raise HasMoreCommands
         }
 
