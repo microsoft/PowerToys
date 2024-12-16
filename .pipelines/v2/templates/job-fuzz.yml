@@ -9,6 +9,9 @@ parameters:
     type: string
     default: ""
 
+variables:
+  ArtifactName: build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}
+
 jobs:
   - job: OneFuzz
     pool:
@@ -23,7 +26,7 @@ jobs:
 
       - download: current
         displayName: Download artifacts
-        artifact: build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}
+        artifact: $(ArtifactName)
         patterns: |-
           **/tests/*.FuzzTests/**
 
@@ -31,5 +34,5 @@ jobs:
         inputs:
           onefuzzOSes: Windows
         env:
-          onefuzzDropDirectory: $(Pipeline.Workspace)\build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}\x64\Release\x64\Release\tests
+          onefuzzDropDirectory: $(Pipeline.Workspace)\$(ArtifactName)\x64\Release\x64\Release\tests
           SYSTEM_ACCESSTOKEN: $(System.AccessToken)
