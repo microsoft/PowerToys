@@ -17,6 +17,6 @@ namespace Awake.Core
         // Format of the build ID is: CODENAME_MMDDYYYY, where MMDDYYYY
         // is representative of the date when the last change was made before
         // the pull request is issued.
-        internal const string BuildId = "PROMETHEAN_09082024";
+        internal const string BuildId = "TILLSON_11272024";
     }
 }

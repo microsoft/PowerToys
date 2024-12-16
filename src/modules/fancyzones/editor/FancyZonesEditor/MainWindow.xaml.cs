@@ -226,7 +226,9 @@ namespace FancyZonesEditor
             }
 
             LayoutNameText.Text = defaultNamePrefix + " " + (++maxCustomIndex);
+
             GridLayoutRadioButton.IsChecked = true;
+            CanvasLayoutRadioButton.IsChecked = false;
             GridLayoutRadioButton.Focus();
             await NewLayoutDialog.ShowAsync();
         }

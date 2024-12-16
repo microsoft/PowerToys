@@ -142,6 +142,7 @@ boxmodel
 BPBF
 bpmf
 bpp
+Breadcrumb
 Browsable
 BROWSEINFO
 bsd
@@ -353,6 +354,7 @@ DEVMODEW
 DEVMON
 devpkey
 DEVSOURCE
+DGR
 DIALOGEX
 DIIRFLAG
 dimm
@@ -673,6 +675,7 @@ HWNDNEXT
 HWNDPARENT
 HWNDPREV
 hyjiacan
+IAI
 IBeam
 ICONERROR
 ICONLOCATION
@@ -1534,6 +1537,7 @@ SIZENS
 SIZENWSE
 sizeread
 SIZEWE
+SKEXP
 SKIPOWNPROCESS
 sku
 SLGP
@@ -1686,6 +1690,7 @@ THISCOMPONENT
 THotkey
 thumbcache
 TILEDWINDOW
+TILLSON
 timedate
 timediff
 timeunion
@@ -2002,3 +2007,5 @@ Zoomin
 zoomit
 ZOOMITX
 zzz
+
+

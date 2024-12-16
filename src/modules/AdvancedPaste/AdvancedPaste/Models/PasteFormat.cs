@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace AdvancedPaste.Models;
 
@@ -25,19 +24,21 @@ public sealed class PasteFormat
         IsEnabled = SupportsClipboardFormats(clipboardFormats) && (isAIServiceEnabled || !Metadata.RequiresAIService);
     }
 
-    public PasteFormat(PasteFormats format, ClipboardFormat clipboardFormats, bool isAIServiceEnabled, Func<string, string> resourceLoader)
-        : this(format, clipboardFormats, isAIServiceEnabled)
-    {
-        Name = Metadata.ResourceId == null ? string.Empty : resourceLoader(Metadata.ResourceId);
-        Prompt = string.Empty;
-    }
+    public static PasteFormat CreateStandardFormat(PasteFormats format, ClipboardFormat clipboardFormats, bool isAIServiceEnabled, Func<string, string> resourceLoader) =>
+        new(format, clipboardFormats, isAIServiceEnabled)
+        {
+            Name = MetadataDict[format].ResourceId == null ? string.Empty : resourceLoader(MetadataDict[format].ResourceId),
+            Prompt = string.Empty,
+            IsSavedQuery = false,
+        };
 
-    public PasteFormat(AdvancedPasteCustomAction customAction, ClipboardFormat clipboardFormats, bool isAIServiceEnabled)
-        : this(PasteFormats.Custom, clipboardFormats, isAIServiceEnabled)
-    {
-        Name = customAction.Name;
-        Prompt = customAction.Prompt;
-    }
+    public static PasteFormat CreateCustomAIFormat(PasteFormats format, string name, string prompt, bool isSavedQuery, ClipboardFormat clipboardFormats, bool isAIServiceEnabled) =>
+        new(format, clipboardFormats, isAIServiceEnabled)
+        {
+            Name = name,
+            Prompt = prompt,
+            IsSavedQuery = isSavedQuery,
+        };
 
     public PasteFormatMetadataAttribute Metadata => MetadataDict[Format];
 
@@ -49,6 +50,8 @@ public sealed class PasteFormat
 
     public string Prompt { get; private init; }
 
+    public bool IsSavedQuery { get; private init; }
+
     public bool IsEnabled { get; private init; }
 
     public double Opacity => IsEnabled ? 1 : 0.5;
@@ -59,5 +62,8 @@ public sealed class PasteFormat
 
     public string ShortcutText { get; set; } = string.Empty;
 
-    public bool SupportsClipboardFormats(ClipboardFormat clipboardFormats) => (clipboardFormats & Metadata.SupportedClipboardFormats) != ClipboardFormat.None;
+    public static bool SupportsClipboardFormats(PasteFormats format, ClipboardFormat clipboardFormats)
+        => (clipboardFormats & MetadataDict[format].SupportedClipboardFormats) != ClipboardFormat.None;
+
+    public bool SupportsClipboardFormats(ClipboardFormat clipboardFormats) => SupportsClipboardFormats(Format, clipboardFormats);
 }

@@ -2,10 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
-using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.ViewModels;
 using CommunityToolkit.Mvvm.Input;
@@ -40,7 +40,7 @@ namespace AdvancedPaste.Controls
 
         public object Footer
         {
-            get => (object)GetValue(FooterProperty);
+            get => GetValue(FooterProperty);
             set => SetValue(FooterProperty, value);
         }
 
@@ -50,27 +50,24 @@ namespace AdvancedPaste.Controls
 
             ViewModel = App.GetService<OptionsViewModel>();
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-            ViewModel.CustomActionActivated += ViewModel_CustomActionActivated;
+            ViewModel.PreviewRequested += ViewModel_PreviewRequested;
         }
 
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(ViewModel.Busy) || e.PropertyName == nameof(ViewModel.PasteOperationErrorText))
+            if (e.PropertyName == nameof(ViewModel.Busy) || e.PropertyName == nameof(ViewModel.PasteActionError))
             {
-                var state = ViewModel.Busy ? "LoadingState" : string.IsNullOrEmpty(ViewModel.PasteOperationErrorText) ? "DefaultState" : "ErrorState";
+                var state = ViewModel.Busy ? "LoadingState" : ViewModel.PasteActionError.HasText ? "ErrorState" : "DefaultState";
                 VisualStateManager.GoToState(this, state, true);
             }
         }
 
-        private void ViewModel_CustomActionActivated(object sender, CustomActionActivatedEventArgs e)
+        private void ViewModel_PreviewRequested(object sender, EventArgs e)
         {
             Logger.LogTrace();
 
-            if (!e.PasteResult)
-            {
-                PreviewGrid.Width = InputTxtBox.ActualWidth;
-                PreviewFlyout.ShowAt(InputTxtBox);
-            }
+            PreviewGrid.Width = InputTxtBox.ActualWidth;
+            PreviewFlyout.ShowAt(InputTxtBox);
         }
 
         private void Grid_Loaded(object sender, RoutedEventArgs e)
@@ -79,35 +76,19 @@ namespace AdvancedPaste.Controls
         }
 
         [RelayCommand]
-        private async Task GenerateCustomAsync() => await ViewModel.GenerateCustomFunctionAsync(PasteActionSource.PromptBox);
-
-        [RelayCommand]
-        private void Recall()
-        {
-            Logger.LogTrace();
-
-            InputTxtBox.IsEnabled = true;
-
-            var lastQuery = ViewModel.RecallPreviousCustomQuery();
-            if (lastQuery != null)
-            {
-                InputTxtBox.Text = lastQuery.Query;
-            }
-
-            ClipboardHelper.SetClipboardTextContent(lastQuery.ClipboardData);
-        }
+        private async Task GenerateCustomAIAsync() => await ViewModel.ExecuteCustomAIFormatFromCurrentQueryAsync(PasteActionSource.PromptBox);
 
         private async void InputTxtBox_KeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
         {
-            if (e.Key == Windows.System.VirtualKey.Enter && InputTxtBox.Text.Length > 0 && ViewModel.IsCustomAIEnabled)
+            if (e.Key == Windows.System.VirtualKey.Enter && InputTxtBox.Text.Length > 0 && ViewModel.IsCustomAIAvailable)
             {
-                await GenerateCustomAsync();
+                await GenerateCustomAIAsync();
             }
         }
 
-        private void PreviewPasteBtn_Click(object sender, RoutedEventArgs e)
+        private async void PreviewPasteBtn_Click(object sender, RoutedEventArgs e)
         {
-            ViewModel.PasteCustom();
+            await ViewModel.PasteCustomAsync();
         }
 
         private void ThumbUpDown_Click(object sender, RoutedEventArgs e)
