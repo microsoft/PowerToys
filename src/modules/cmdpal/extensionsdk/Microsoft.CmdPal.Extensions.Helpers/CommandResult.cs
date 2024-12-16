@@ -32,6 +32,24 @@ public class CommandResult : ICommandResult
         };
     }
 
+    public static CommandResult GoBack()
+    {
+        return new CommandResult()
+        {
+            _kind = CommandResultKind.GoBack,
+            _args = null,
+        };
+    }
+
+    public static CommandResult Hide()
+    {
+        return new CommandResult()
+        {
+            _kind = CommandResultKind.Hide,
+            _args = null,
+        };
+    }
+
     public static CommandResult KeepOpen()
     {
         return new CommandResult()

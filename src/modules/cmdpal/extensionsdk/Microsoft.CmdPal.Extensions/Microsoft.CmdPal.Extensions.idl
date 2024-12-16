@@ -68,6 +68,7 @@ namespace Microsoft.CmdPal.Extensions
     enum CommandResultKind {
         Dismiss,    // Reset the palette to the main page and dismiss
         GoHome,     // Go back to the main page, but keep it open
+        GoBack,     // Go back one level
         Hide,       // Keep this page open, but hide the palette. 
         KeepOpen,   // Do nothing.
         GoToPage,   // Go to another page. GoToPageArgs will tell you where.
