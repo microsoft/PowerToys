@@ -15,7 +15,7 @@ steps:
   inputs:
     filePath: '$(build.sourcesdirectory)\.pipelines\UpdateVersions.ps1'
     arguments: >
-      -versionNumber ${{ parameters.versionNumber }}
+      -winAppSdkVersionNumber ${{ parameters.versionNumber }}
       -useExperimentalVersion ${{ parameters.useExperimentalVersion }}
 
 - script: echo $(WinAppSDKVersion)

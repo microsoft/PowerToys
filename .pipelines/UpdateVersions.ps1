@@ -1,11 +1,39 @@
 Param(
-# Using the default value of 1.6 for versionNumber and useExperimentalVersion as false
-  #[Parameter(Mandatory=$False,Position=1)]
-  [string]$versionNumber = "1.6",
+  # Using the default value of 1.6 for winAppSdkVersionNumber and useExperimentalVersion as false
+  [Parameter(Mandatory=$False,Position=1)]
+  [string]$winAppSdkVersionNumber = "1.6",
 
-  #[Parameter(Mandatory=$False,Position=2)]
+  # When the pipeline calls the PS1 file, the passed parameters are converted to string type
+  [Parameter(Mandatory=$False,Position=2)]
   [string]$useExperimentalVersion = "false"
 )
+
+function Update-NugetConfig {
+    param (
+        [string]$filePath = "nuget.config"
+    )
+
+    Write-Host "Updating nuget.config file"
+    [xml]$xml = Get-Content -Path $filePath
+
+    # Add localpackages source into nuget.config
+    $packageSourcesNode = $xml.configuration.packageSources
+    $addNode = $xml.CreateElement("add")
+    $addNode.SetAttribute("key", "localpackages")
+    $addNode.SetAttribute("value", "localpackages")
+    $packageSourcesNode.AppendChild($addNode) | Out-Null
+
+    # Remove <packageSourceMapping> tag and its content
+    $packageSourceMappingNode = $xml.configuration.packageSourceMapping
+    if ($packageSourceMappingNode) {
+        $xml.configuration.RemoveChild($packageSourceMappingNode) | Out-Null
+    }
+
+    # print nuget.config after modification
+    $xml.OuterXml
+    # Save the modified nuget.config file
+    $xml.Save($filePath)
+}
 
 # Convert the string parameter to a boolean
 $_useExperimentalVersion = [System.Convert]::ToBoolean($useExperimentalVersion)
@@ -22,16 +50,16 @@ if ($_useExperimentalVersion) {
         -Source  $sourceLink `
         -Prerelease
     # Filter versions based on the specified version prefix
-    $escapedVersionNumber = [regex]::Escape($versionNumber)
+    $escapedVersionNumber = [regex]::Escape($winAppSdkVersionNumber)
     $filteredVersions = $nugetOutput | Where-Object { $_ -match "Microsoft.WindowsAppSDK $escapedVersionNumber\." }
     $latestVersions = $filteredVersions
 } else {
-    Write-Host "Fetching stable WindowsAppSDK versions for $versionNumber"
+    Write-Host "Fetching stable WindowsAppSDK versions for $winAppSdkVersionNumber"
     $nugetOutput = nuget list Microsoft.WindowsAppSDK `
         -Source $sourceLink `
         -AllVersions
     # Filter versions based on the specified version prefix
-    $escapedVersionNumber = [regex]::Escape($versionNumber)
+    $escapedVersionNumber = [regex]::Escape($winAppSdkVersionNumber)
     $filteredVersions = $nugetOutput | Where-Object { $_ -match "Microsoft.WindowsAppSDK $escapedVersionNumber\." }
     $latestVersions = $filteredVersions | Sort-Object { [version]($_ -split ' ')[1] } -Descending | Select-Object -First 1
 }
@@ -102,25 +130,4 @@ Get-ChildItem -Recurse *.csproj | ForEach-Object {
     }
 }
 
-# Load the nuget.config file
-Write-Host "Updating nuget.config file"
-$filePath = "nuget.config"
-[xml]$xml = Get-Content -Path $filePath
-
-# Add localpackages source into nuget.config
-$packageSourcesNode = $xml.configuration.packageSources
-$addNode = $xml.CreateElement("add")
-$addNode.SetAttribute("key", "localpackages")
-$addNode.SetAttribute("value", "localpackages")
-$packageSourcesNode.AppendChild($addNode) | Out-Null
-
-# Remove <packageSourceMapping> tag and its content
-$packageSourceMappingNode = $xml.configuration.packageSourceMapping
-if ($packageSourceMappingNode) {
-    $xml.configuration.RemoveChild($packageSourceMappingNode) | Out-Null
-}
-
-# print nuget.config after modification
-$xml.OuterXml
-# Save the modified nuget.config file
-$xml.Save($filePath)
+Update-NugetConfig
