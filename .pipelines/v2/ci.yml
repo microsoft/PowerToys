@@ -2,8 +2,8 @@ pr: none
 trigger: none
 
 schedules:
-  - cron: "0 0 * * *"
-    displayName: Daily fuzzing submission
+  - cron: "0 0 * * 5"
+    displayName: Weekly fuzzing submission
     branches:
       include:
         - main
