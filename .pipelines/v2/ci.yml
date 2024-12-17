@@ -1,51 +1,55 @@
-trigger:
-  batch: true
-  branches:
-    include:
-      - main
-      - stable
-#  paths:
-#    exclude:
-#      - doc/*
-#      - temp/*
-#      - tools/*
-#      - '**.md'
+pr: none
+trigger: none
 
-pr:
-  branches:
-    include:
-      - main
-      - stable
-#  paths:
-#    exclude:
-#      - '**.md'
-#      - doc
-
+schedules:
+  - cron: "0 0 * * *"
+    displayName: Daily fuzzing submission
+    branches:
+      include:
+        - main
+    always: true
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
 parameters:
-  - name: buildPlatforms
-    type: object
-    default:
-      - x64
-      - arm64
+  - name: platform
+    type: string
+    default: x64 # for fuzzing, we only use x64 for now
   - name: enableMsBuildCaching
     type: boolean
     displayName: "Enable MSBuild Caching"
     default: false
-  - name: runTests
-    type: boolean
-    displayName: "Run Tests"
-    default: true
   - name: useVSPreview
     type: boolean
     displayName: "Build Using Visual Studio Preview"
     default: false
 
-extends:
-  template: templates/pipeline-ci-build.yml
-  parameters:
-    buildPlatforms: ${{ parameters.buildPlatforms }}
-    enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
-    runTests: ${{ parameters.runTests }}
-    useVSPreview: ${{ parameters.useVSPreview }}
+stages:
+  - stage: Build_${{ parameters.platform }}
+    displayName: Build ${{ parameters.platform }}
+    jobs:
+      - template: templates/job-build-project.yml
+        parameters:
+          pool:
+            ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+              name: SHINE-INT-L
+            ${{ else }}:
+              name: SHINE-OSS-L
+            ${{ if eq(parameters.useVSPreview, true) }}:
+              demands: ImageOverride -equals SHINE-VS17-Preview
+          buildPlatforms:
+            - ${{ parameters.platform }}
+          buildConfigurations: [Release]
+          enablePackageCaching: true
+          enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+          runTests: true
+          useVSPreview: ${{ parameters.useVSPreview }}
+
+  - stage: OneFuzz
+    displayName: Fuzz ${{ parameters.platform }}
+    dependsOn:
+      - Build_${{parameters.platform}}
+    jobs:
+      - template: templates/job-fuzz.yml
+        parameters:
+          platform: ${{ parameters.platform }}
+          configuration: Release
