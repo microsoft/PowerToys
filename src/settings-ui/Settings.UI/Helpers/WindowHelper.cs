@@ -8,8 +8,6 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 
 using Microsoft.UI.Xaml;
-using WinRT.Interop;
-using static Common.UI.SettingsDeepLink;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
