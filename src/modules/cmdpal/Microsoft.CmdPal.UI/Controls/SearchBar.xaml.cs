@@ -59,7 +59,16 @@ public sealed partial class SearchBar : UserControl,
         WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
     }
 
-    private void ClearSearch() => this.FilterBox.Text = string.Empty;
+    public void ClearSearch()
+    {
+        Debug.WriteLine("Clear search");
+        this.FilterBox.Text = string.Empty;
+
+        if (CurrentPageViewModel != null)
+        {
+            CurrentPageViewModel.Filter = string.Empty;
+        }
+    }
 
     private void BackButton_Tapped(object sender, TappedRoutedEventArgs e) => WeakReferenceMessenger.Default.Send<NavigateBackMessage>();
 
@@ -116,7 +125,7 @@ public sealed partial class SearchBar : UserControl,
         }
         else if (e.Key == VirtualKey.Back)
         {
-            // hack
+            // hack TODO GH #245
             if (CurrentPageViewModel != null)
             {
                 CurrentPageViewModel.Filter = FilterBox.Text;
@@ -127,6 +136,21 @@ public sealed partial class SearchBar : UserControl,
     private void FilterBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         Debug.WriteLine($"FilterBox_TextChanged: {FilterBox.Text}");
+
+        // TERRIBLE HACK TODO GH #245
+        // There's weird wacky bugs with debounce currently. We're trying
+        // to get them ingested, but while we wait for the toolkit feeds to
+        // bubble, just manually send the first character, always
+        // (otherwise aliases just stop working)
+        if (FilterBox.Text.Length == 1)
+        {
+            if (CurrentPageViewModel != null)
+            {
+                CurrentPageViewModel.Filter = FilterBox.Text;
+            }
+
+            return;
+        }
 
         // TODO: We could encapsulate this in a Behavior if we wanted to bind to the Filter property.
         _debounceTimer.Debounce(

@@ -14,9 +14,6 @@ public partial class QuitAction : InvokableCommand, IFallbackHandler
     public QuitAction()
     {
         Icon = new("\uE711");
-
-        // TODO HACK: Just always make this command visible, because fallback commands aren't hooked up yet
-        Name = "Quit";
     }
 
     public override ICommandResult Invoke()

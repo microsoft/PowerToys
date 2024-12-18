@@ -70,6 +70,15 @@ public partial class MainListPage : DynamicListPage
         /* handle changes to the filter text here */
         Debug.WriteLine($"UpdateSearchText '{oldSearch}' -> '{newSearch}'");
 
+        if (!string.IsNullOrEmpty(SearchText))
+        {
+            var aliases = _serviceProvider.GetService<AliasManager>()!;
+            if (aliases.CheckAlias(newSearch))
+            {
+                return;
+            }
+        }
+
         foreach (var command in _commands)
         {
             command.TryUpdateFallbackText(newSearch);

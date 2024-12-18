@@ -19,6 +19,8 @@ public partial class TopLevelCommandWrapper : ListItem
 
     private readonly bool _isFallback;
 
+    public string Id { get; private set; } = string.Empty;
+
     public TopLevelCommandWrapper(ExtensionObject<ICommandItem> commandItem, bool isFallback)
         : base(commandItem.Unsafe?.Command ?? new NoOpCommand())
     {
@@ -37,6 +39,8 @@ public partial class TopLevelCommandWrapper : ListItem
             {
                 return;
             }
+
+            Id = model.Command?.Id ?? string.Empty;
 
             Title = model.Title;
             Subtitle = model.Subtitle;

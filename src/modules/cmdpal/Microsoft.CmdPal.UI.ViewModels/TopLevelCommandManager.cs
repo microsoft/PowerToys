@@ -79,4 +79,17 @@ public partial class TopLevelCommandManager(IServiceProvider _serviceProvider) :
 
         return true;
     }
+
+    public TopLevelCommandWrapper? LookupCommand(string id)
+    {
+        foreach (var command in TopLevelCommands)
+        {
+            if (command.Id == id)
+            {
+                return command;
+            }
+        }
+
+        return null;
+    }
 }
