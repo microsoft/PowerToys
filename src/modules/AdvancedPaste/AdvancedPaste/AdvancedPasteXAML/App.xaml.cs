@@ -263,7 +263,7 @@ namespace AdvancedPaste
                 if (disposing)
                 {
                     EtwTrace?.Dispose();
-                    window.Dispose();
+                    window?.Dispose();
                 }
 
                 disposedValue = true;
