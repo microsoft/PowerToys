@@ -40,6 +40,7 @@ namespace EnvironmentVariables
             var handle = this.GetWindowHandle();
             RegisterWindow(handle);
 
+            WindowHelpers.ForceTopBorder1PixelInset(handle);
             WindowHelpers.BringToForeground(handle);
 
             MainPage = App.GetService<EnvironmentVariablesMainPage>();
