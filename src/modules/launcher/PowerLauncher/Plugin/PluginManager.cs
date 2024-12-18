@@ -238,7 +238,8 @@ namespace PowerLauncher.Plugin
             }
             catch (Exception e)
             {
-                Log.Exception($"Exception for plugin <{pair.Metadata.Name}> when query <{query}>", e, MethodBase.GetCurrentMethod().DeclaringType);
+                // MethodBase.GetCurrentMethod() crashes for OneNote
+                Log.Exception($"Exception for plugin <{pair.Metadata.Name}> when query <{query}>", e, typeof(PluginManager));
 
                 return new List<Result>();
             }
