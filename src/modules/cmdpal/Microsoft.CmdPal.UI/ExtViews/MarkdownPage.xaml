@@ -12,7 +12,7 @@
     xmlns:cmdPalControls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
-    xmlns:labs="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -40,10 +40,13 @@
                                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
 
-                                    <labs:MarkdownTextBlock
+                                    <toolkit:MarkdownTextBlock 
                                         Text="{x:Bind}"
-                                        Config="{x:Bind local:MarkdownPage.MarkdownConfig}"
-                                        Background="Transparent" />
+                                        Background="Transparent"
+                                        Header3FontSize="12"
+                                        Header3FontWeight="Normal"
+                                        Header3Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        IsTextSelectionEnabled="True"/>
                                 </Grid>
                             </DataTemplate>
                             

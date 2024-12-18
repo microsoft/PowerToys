@@ -36,8 +36,6 @@ public sealed partial class ShellPage :
     {
         this.InitializeComponent();
 
-        DetailsMarkdown.Config = CommunityToolkit.Labs.WinUI.MarkdownTextBlock.MarkdownConfig.Default;
-
         // how we are doing navigation around
         WeakReferenceMessenger.Default.Register<NavigateBackMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigateToDetailsMessage>(this);

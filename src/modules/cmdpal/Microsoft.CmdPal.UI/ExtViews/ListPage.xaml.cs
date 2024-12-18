@@ -76,21 +76,25 @@ public sealed partial class ListPage : Page,
                         // TODO: Handle failure case
                         System.Diagnostics.Debug.WriteLine(lvm.InitializeCommand.ExecutionTask.Exception);
 
-                        _ = _queue.EnqueueAsync(() =>
+                        // TODO GH #239 switch back when using the new MD text block
+                        // _ = _queue.EnqueueAsync(() =>
+                        _queue.TryEnqueue(new(() =>
                         {
                             LoadedState = ViewModelLoadedState.Error;
-                        });
+                        }));
                     }
                     else
                     {
-                        _ = _queue.EnqueueAsync(() =>
+                        // TODO GH #239 switch back when using the new MD text block
+                        // _ = _queue.EnqueueAsync(() =>
+                        _queue.TryEnqueue(new(() =>
                         {
                             var result = (bool)lvm.InitializeCommand.ExecutionTask.GetResultOrDefault()!;
 
                             ViewModel = lvm;
                             WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(result ? lvm : null));
                             LoadedState = result ? ViewModelLoadedState.Loaded : ViewModelLoadedState.Error;
-                        });
+                        }));
                     }
                 });
             }

@@ -3,9 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Common;
-using CommunityToolkit.Labs.WinUI.MarkdownTextBlock;
 using CommunityToolkit.Mvvm.Messaging;
-using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Dispatching;
@@ -21,8 +19,6 @@ namespace Microsoft.CmdPal.UI;
 public sealed partial class MarkdownPage : Page
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
-
-    public static readonly MarkdownConfig MarkdownConfig = CommunityToolkit.Labs.WinUI.MarkdownTextBlock.MarkdownConfig.Default;
 
     public MarkdownPageViewModel? ViewModel
     {
@@ -76,21 +72,25 @@ public sealed partial class MarkdownPage : Page
                         // TODO: Handle failure case
                         System.Diagnostics.Debug.WriteLine(mdpvm.InitializeCommand.ExecutionTask.Exception);
 
-                        _ = _queue.EnqueueAsync(() =>
+                        // TODO GH #239 switch back when using the new MD text block
+                        // _ = _queue.EnqueueAsync(() =>
+                        _queue.TryEnqueue(new(() =>
                         {
                             LoadedState = ViewModelLoadedState.Error;
-                        });
+                        }));
                     }
                     else
                     {
-                        _ = _queue.EnqueueAsync(() =>
+                        // TODO GH #239 switch back when using the new MD text block
+                        // _ = _queue.EnqueueAsync(() =>
+                        _queue.TryEnqueue(new(() =>
                         {
                             var result = (bool)mdpvm.InitializeCommand.ExecutionTask.GetResultOrDefault()!;
 
                             ViewModel = mdpvm;
                             WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(result ? mdpvm : null));
                             LoadedState = result ? ViewModelLoadedState.Loaded : ViewModelLoadedState.Error;
-                        });
+                        }));
                     }
                 });
             }

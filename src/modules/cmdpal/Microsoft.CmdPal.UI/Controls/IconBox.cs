@@ -2,9 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using CommunityToolkit.Common.Deferred;
-using CommunityToolkit.WinUI;
-using CommunityToolkit.WinUI.Deferred;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -90,20 +87,22 @@ public partial class IconBox : ContentControl
             }
             else
             {
-                _ = @this._queue.EnqueueAsync(async () =>
+                // TODO GH #239 switch back when using the new MD text block
+                // _ = @this._queue.EnqueueAsync(() =>
+                @this._queue.TryEnqueue(new(() =>
                 {
                     var eventArgs = new SourceRequestedEventArgs(e.NewValue);
 
                     if (@this.SourceRequested != null)
                     {
-                        await @this.SourceRequested.InvokeAsync(@this, eventArgs);
+                        @this.SourceRequested.Invoke(@this, eventArgs);
 
                         if (eventArgs.Value != null)
                         {
                             @this.Source = eventArgs.Value;
                         }
                     }
-                });
+                }));
             }
         }
     }

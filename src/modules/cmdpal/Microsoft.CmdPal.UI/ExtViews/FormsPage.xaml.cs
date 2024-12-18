@@ -4,7 +4,6 @@
 
 using CommunityToolkit.Common;
 using CommunityToolkit.Mvvm.Messaging;
-using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Dispatching;
@@ -73,21 +72,25 @@ public sealed partial class FormsPage : Page
                         // TODO: Handle failure case
                         System.Diagnostics.Debug.WriteLine(fpvm.InitializeCommand.ExecutionTask.Exception);
 
-                        _ = _queue.EnqueueAsync(() =>
+                        // TODO GH #239 switch back when using the new MD text block
+                        // _ = _queue.EnqueueAsync(() =>
+                        _queue.TryEnqueue(new(() =>
                         {
                             LoadedState = ViewModelLoadedState.Error;
-                        });
+                        }));
                     }
                     else
                     {
-                        _ = _queue.EnqueueAsync(() =>
+                        // TODO GH #239 switch back when using the new MD text block
+                        // _ = _queue.EnqueueAsync(() =>
+                        _queue.TryEnqueue(new(() =>
                         {
                             var result = (bool)fpvm.InitializeCommand.ExecutionTask.GetResultOrDefault()!;
 
                             ViewModel = fpvm;
                             WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(result ? fpvm : null));
                             LoadedState = result ? ViewModelLoadedState.Loaded : ViewModelLoadedState.Error;
-                        });
+                        }));
                     }
                 });
             }

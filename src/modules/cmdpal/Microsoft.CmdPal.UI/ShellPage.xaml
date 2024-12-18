@@ -7,7 +7,7 @@
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
-    xmlns:labs="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="Transparent"
     mc:Ignorable="d">
@@ -105,11 +105,13 @@
                     Visibility="{x:Bind ViewModel.Details.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
 
                 <ScrollViewer Grid.Row="2" HorizontalAlignment="Stretch">
-                    <labs:MarkdownTextBlock
-                        x:Name="DetailsMarkdown"
+                    <toolkit:MarkdownTextBlock 
+                        Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}"
                         Background="Transparent"
-                        Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}" />
-
+                        Header3FontSize="12"
+                        Header3FontWeight="Normal"
+                        Header3Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        IsTextSelectionEnabled="True"/>
                 </ScrollViewer>
             </Grid>
             <!--  /DetailsContent  -->
