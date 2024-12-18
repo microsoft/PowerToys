@@ -27,7 +27,7 @@
     WindowStartupLocation="Manual"
     WindowStyle="None"
     mc:Ignorable="d">
-    <Border x:Name="MainBorder">
+    <Border x:Name="MainBorder" BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}">
         <Grid x:Name="RootGrid" MouseDown="OnMouseDown">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
