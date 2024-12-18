@@ -5,7 +5,7 @@ Param(
 
   # When the pipeline calls the PS1 file, the passed parameters are converted to string type
   [Parameter(Mandatory=$False,Position=2)]
-  [string]$useExperimentalVersion = "false"
+  [boolean]$useExperimentalVersion = $False
 )
 
 function Update-NugetConfig {
@@ -35,13 +35,10 @@ function Update-NugetConfig {
     $xml.Save($filePath)
 }
 
-# Convert the string parameter to a boolean
-$_useExperimentalVersion = [System.Convert]::ToBoolean($useExperimentalVersion)
-
 $sourceLink = "https://microsoft.pkgs.visualstudio.com/ProjectReunion/_packaging/Project.Reunion.nuget.internal/nuget/v3/index.json"
 
 # Execute nuget list and capture the output
-if ($_useExperimentalVersion) {
+if ($useExperimentalVersion) {
     # The nuget list for experimental versions will cost more time
     # So, we will not use -AllVersions to wast time
     # But it can only get the latest experimental version
