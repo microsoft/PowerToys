@@ -24,84 +24,82 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <cpcontrols:SearchBar
-            x:Name="SearchBox"
-            Grid.Row="0"
-            VerticalAlignment="Top"
-            CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
+        <Grid Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-        <Grid
-            x:Name="ContentGrid"
-            Grid.Row="1"
-            Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
-            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-            BorderThickness="0,1,0,1">
-
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*" />
-                <ColumnDefinition x:Name="DetailsColumn" Width="Auto" />
-            </Grid.ColumnDefinitions>
-
-            <Frame
-                Name="RootFrame"
-                Grid.Column="0"
-                IsNavigationStackEnabled="True" />
+            <cpcontrols:SearchBar
+                x:Name="SearchBox"
+                Grid.Row="0"
+                CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
 
             <Grid
-                x:Name="DetailsContent"
-                Grid.Column="1"
-                Padding="8"
-                Background="{ThemeResource LayerFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="1,0,0,0"
-                Visibility="Collapsed">
+                x:Name="ContentGrid"
+                Grid.Row="1"
+                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                BorderThickness="0,1,0,1">
 
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition x:Name="DetailsColumn" Width="Auto" />
+                </Grid.ColumnDefinitions>
 
-                <cpcontrols:IconBox
-                    x:Name="HeroImageBorder"
-                    Width="64"
-                    Height="64"
-                    SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
-                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
-                    Visibility="{x:Bind ViewModel.Details.HasHeroImage, Mode=OneWay}" />
+                <Frame
+                    Name="RootFrame"
+                    IsNavigationStackEnabled="True" />
 
-                <TextBlock
-                    Grid.Row="1"
-                    HorizontalAlignment="Center"
-                    FontSize="20"
-                    Style="{StaticResource SubtitleTextBlockStyle}"
-                    Text="{x:Bind ViewModel.Details.Title, Mode=OneWay}"
-                    TextWrapping="WrapWholeWords"
-                    Visibility="{x:Bind ViewModel.Details.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
+                <Grid
+                    x:Name="DetailsContent"
+                    Grid.Column="1"
+                    Padding="8"
+                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1,0,0,0"
+                    Visibility="Collapsed">
 
-                <ScrollViewer Grid.Row="2" HorizontalAlignment="Stretch">
-                    <toolkit:MarkdownTextBlock
-                        Background="Transparent"
-                        Header3FontSize="12"
-                        Header3FontWeight="Normal"
-                        Header3Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        IsTextSelectionEnabled="True"
-                        Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}" />
-                </ScrollViewer>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <cpcontrols:IconBox
+                        x:Name="HeroImageBorder"
+                        Width="64"
+                        Height="64"
+                        SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
+                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
+                        Visibility="{x:Bind ViewModel.Details.HasHeroImage, Mode=OneWay}" />
+
+                    <TextBlock
+                        Grid.Row="1"
+                        HorizontalAlignment="Center"
+                        FontSize="20"
+                        Style="{StaticResource SubtitleTextBlockStyle}"
+                        Text="{x:Bind ViewModel.Details.Title, Mode=OneWay}"
+                        TextWrapping="WrapWholeWords"
+                        Visibility="{x:Bind ViewModel.Details.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
+
+                    <ScrollViewer Grid.Row="2" HorizontalAlignment="Stretch">
+                        <toolkit:MarkdownTextBlock
+                            Background="Transparent"
+                            Header3FontSize="12"
+                            Header3FontWeight="Normal"
+                            Header3Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            IsTextSelectionEnabled="True"
+                            Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}" />
+                    </ScrollViewer>
+                </Grid>
+                <!--  /DetailsContent  -->
             </Grid>
-            <!--  /DetailsContent  -->
-
         </Grid>
-
-        <cpcontrols:ActionBar
-            Grid.Row="2"
-            VerticalAlignment="Top"
-            CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
+        <cpcontrols:ActionBar Grid.Row="1" CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
 
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>
@@ -121,5 +119,4 @@
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
     </Grid>
-
 </Page>

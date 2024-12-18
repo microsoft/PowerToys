@@ -46,8 +46,8 @@
     </UserControl.Resources>
 
     <Grid
-        MinHeight="56"
-        Padding="8"
+        MinHeight="40"
+        Padding="4"
         ColumnSpacing="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -57,9 +57,9 @@
 
         <cpcontrols:IconBox
             x:Name="IconBorder"
-            Width="20"
-            Height="20"
-            Margin="12,0,0,0"
+            Width="16"
+            Height="16"
+            Margin="8,0,0,0"
             x:Load="{x:Bind IsLoaded, Mode=OneWay}"
             CornerRadius="{StaticResource ControlCornerRadius}"
             SourceKey="{x:Bind CurrentPageViewModel.Icon, Mode=OneWay}"
@@ -75,69 +75,86 @@
             Grid.Column="2"
             HorizontalAlignment="Right"
             Orientation="Horizontal"
-            Spacing="6">
+            Spacing="4">
             <Button
                 x:Name="PrimaryButton"
-                Height="40"
-                Padding="8,4,8,4"
+                Padding="6,4,4,4"
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
+                Background="Transparent"
+                Style="{StaticResource SubtleButtonStyle}"
                 Tapped="PrimaryButton_Tapped"
                 Visibility="{x:Bind ViewModel.PrimaryAction.Name, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}">
 
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <cpcontrols:IconBox
-                        Width="16"
-                        Height="16"
-                        Margin="4,4,4,4"
-                        SourceKey="{x:Bind ViewModel.PrimaryAction.Icon, Mode=OneWay}"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
-
-                    <StackPanel Orientation="Vertical" Spacing="2">
-                        <TextBlock
-                            FontSize="12"
-                            Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="{x:Bind ViewModel.PrimaryAction.Name, Mode=OneWay}" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind ViewModel.PrimaryAction.Name, Mode=OneWay}" />
+                    <Border
+                        Padding="4"
+                        Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                        BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4">
                         <FontIcon
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             FontSize="10"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Glyph="&#xE751;" />
-                    </StackPanel>
+                    </Border>
                 </StackPanel>
             </Button>
             <Button
                 x:Name="SecondaryButton"
-                Height="40"
-                Padding="8,4,8,4"
+                Padding="6,4,4,4"
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
+                Style="{StaticResource SubtleButtonStyle}"
                 Tapped="SecondaryButton_Tapped"
                 Visibility="{x:Bind ViewModel.HasSecondaryCommand, Mode=OneWay}">
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <cpcontrols:IconBox
-                        Width="16"
-                        Height="16"
-                        Margin="4,4,4,4"
-                        SourceKey="{x:Bind ViewModel.SecondaryAction.Icon, Mode=OneWay}"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
 
-                    <StackPanel Orientation="Vertical" Spacing="1">
-                        <TextBlock
-                            FontSize="12"
-                            Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="{x:Bind ViewModel.SecondaryAction.Name, Mode=OneWay}" />
-                        <TextBlock
-                            FontSize="10"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="Ctrl + ↲" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind ViewModel.SecondaryAction.Name, Mode=OneWay}" />
+                    <StackPanel Orientation="Horizontal" Spacing="2">
+                        <Border
+                            Padding="4,2,4,2"
+                            VerticalAlignment="Center"
+                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                            <TextBlock
+                                CharacterSpacing="4"
+                                FontSize="10"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="Ctrl" />
+                        </Border>
+                        <Border
+                            Padding="4"
+                            VerticalAlignment="Center"
+                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                            <FontIcon
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                FontSize="10"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Glyph="&#xE751;" />
+                        </Border>
                     </StackPanel>
                 </StackPanel>
             </Button>
             <Button
                 x:Name="MoreCommandsButton"
-                Height="40"
+                Padding="4"
                 Content="{ui:FontIcon Glyph=&#xE712;,
                                       FontSize=16}"
+                Style="{StaticResource SubtleButtonStyle}"
                 Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}">
                 <Button.Flyout>
                     <Flyout Placement="TopEdgeAlignedRight">

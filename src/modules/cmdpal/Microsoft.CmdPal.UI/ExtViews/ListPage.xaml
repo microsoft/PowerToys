@@ -37,7 +37,6 @@
                 Padding="4,2,4,2"
                 VerticalAlignment="Center"
                 Background="{x:Bind help:OptionalColorBrushCacheProvider.Convert(Background, x:False), Mode=OneWay}"
-                BorderBrush="{ThemeResource TextBoxBorderThemeBrush}"
                 BorderThickness="1"
                 CornerRadius="4"
                 Orientation="Horizontal">
@@ -64,7 +63,7 @@
 
             <!--  TODO: collapse item if it's empty  -->
             <ListViewItem>
-                <Grid Padding="0,10,0,10" ColumnSpacing="12">
+                <Grid Padding="0,12,0,12" ColumnSpacing="12">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="28" />
                         <ColumnDefinition Width="*" />
@@ -88,6 +87,7 @@
                         Spacing="0">
                         <TextBlock
                             VerticalAlignment="Center"
+                            CharacterSpacing="12"
                             FontSize="14"
                             FontWeight="Medium"
                             Style="{StaticResource CaptionTextBlockStyle}"

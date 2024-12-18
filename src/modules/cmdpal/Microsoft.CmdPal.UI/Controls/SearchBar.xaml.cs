@@ -27,8 +27,6 @@ public sealed partial class SearchBar : UserControl,
     /// </summary>
     private readonly DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
 
-    public bool Nested { get; set; }
-
     public PageViewModel? CurrentPageViewModel
     {
         get => (PageViewModel?)GetValue(CurrentPageViewModelProperty);

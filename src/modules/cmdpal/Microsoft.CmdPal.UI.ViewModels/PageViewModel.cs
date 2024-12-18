@@ -21,6 +21,9 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     [ObservableProperty]
     public partial string ErrorMessage { get; private set; } = string.Empty;
 
+    [ObservableProperty]
+    public partial bool IsNested { get; set; } = true;
+
     // This is set from the SearchBar
     [ObservableProperty]
     public partial string Filter { get; set; } = string.Empty;
