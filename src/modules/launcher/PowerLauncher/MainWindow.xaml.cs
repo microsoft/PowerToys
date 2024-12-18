@@ -200,6 +200,11 @@ namespace PowerLauncher
                 DWM_WINDOW_CORNER_PREFERENCE preference = DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND;
                 DwmSetWindowAttribute(hWnd, attribute, ref preference, sizeof(uint));
             }
+            else
+            {
+                // On Windows10 ResizeMode="NoResize" removes the border so we add a new one.
+                MainBorder.BorderThickness = new System.Windows.Thickness(0.5);
+            }
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)

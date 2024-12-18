@@ -27,109 +27,111 @@
     WindowStartupLocation="Manual"
     WindowStyle="None"
     mc:Ignorable="d">
-    <Grid x:Name="RootGrid" MouseDown="OnMouseDown">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" MaxHeight="{Binding Results.MaxHeight}" />
-        </Grid.RowDefinitions>
-        <Border
-            x:Name="SearchBoxBorder"
-            Grid.Row="0"
-            Padding="12,4,12,3">
-            <local:LauncherControl x:Name="SearchBox" />
-        </Border>
-
-        <!--  Have to use a Grid instead of a StackPanel for scrolling to work?  -->
-        <Grid
-            x:Name="KeywordsOverviewGrid"
-            Grid.Row="1"
-            MaxHeight="{Binding Results.MaxHeight}"
-            Visibility="{Binding PluginsOverviewVisibility}">
+    <Border x:Name="MainBorder" BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}">
+        <Grid x:Name="RootGrid" MouseDown="OnMouseDown">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" MaxHeight="{Binding Results.MaxHeight}" />
             </Grid.RowDefinitions>
-            <Rectangle
-                Height="1"
-                VerticalAlignment="Top"
-                Fill="{DynamicResource DividerStrokeColorDefaultBrush}" />
-            <TextBlock
-                Margin="22,12,0,4"
-                FontWeight="SemiBold"
-                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                Style="{StaticResource CaptionTextBlockStyle}"
-                Text="{x:Static p:Resources.PluginKeywords}" />
+            <Border
+                x:Name="SearchBoxBorder"
+                Grid.Row="0"
+                Padding="12,4,12,3">
+                <local:LauncherControl x:Name="SearchBox" />
+            </Border>
 
-            <ListView
-                x:Name="pluginsHintsList"
+            <!--  Have to use a Grid instead of a StackPanel for scrolling to work?  -->
+            <Grid
+                x:Name="KeywordsOverviewGrid"
                 Grid.Row="1"
-                Background="Transparent"
-                BorderBrush="Transparent"
-                ItemContainerStyle="{StaticResource PluginsListViewItemStyle}"
-                ItemsSource="{Binding Plugins}"
-                PreviewMouseLeftButtonUp="PluginsHintsList_PreviewMouseLeftButtonUp"
-                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                ScrollViewer.VerticalScrollBarVisibility="Auto"
-                SelectedItem="{Binding SelectedPlugin, Mode=TwoWay}"
-                SelectionMode="Single">
-                <ListView.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <VirtualizingStackPanel
-                            Margin="16,0"
-                            IsVirtualizing="{TemplateBinding VirtualizingPanel.IsVirtualizing}"
-                            VirtualizationMode="{TemplateBinding VirtualizingPanel.VirtualizationMode}" />
-                    </ItemsPanelTemplate>
-                </ListView.ItemsPanel>
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Border
-                                Width="32"
-                                Height="32"
-                                Padding="2,0,2,0"
-                                Background="{DynamicResource ControlFillColorDefaultBrush}"
-                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                                BorderThickness="1"
-                                CornerRadius="4"
-                                ToolTipService.ToolTip="{Binding Metadata.ActionKeyword}">
+                MaxHeight="{Binding Results.MaxHeight}"
+                Visibility="{Binding PluginsOverviewVisibility}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Rectangle
+                    Height="1"
+                    VerticalAlignment="Top"
+                    Fill="{DynamicResource DividerStrokeColorDefaultBrush}" />
+                <TextBlock
+                    Margin="22,12,0,4"
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Static p:Resources.PluginKeywords}" />
+
+                <ListView
+                    x:Name="pluginsHintsList"
+                    Grid.Row="1"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    ItemContainerStyle="{StaticResource PluginsListViewItemStyle}"
+                    ItemsSource="{Binding Plugins}"
+                    PreviewMouseLeftButtonUp="PluginsHintsList_PreviewMouseLeftButtonUp"
+                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                    ScrollViewer.VerticalScrollBarVisibility="Auto"
+                    SelectedItem="{Binding SelectedPlugin, Mode=TwoWay}"
+                    SelectionMode="Single">
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel
+                                Margin="16,0"
+                                IsVirtualizing="{TemplateBinding VirtualizingPanel.IsVirtualizing}"
+                                VirtualizationMode="{TemplateBinding VirtualizingPanel.VirtualizationMode}" />
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border
+                                    Width="32"
+                                    Height="32"
+                                    Padding="2,0,2,0"
+                                    Background="{DynamicResource ControlFillColorDefaultBrush}"
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="4"
+                                    ToolTipService.ToolTip="{Binding Metadata.ActionKeyword}">
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontWeight="SemiBold"
+                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                        Text="{Binding Metadata.ActionKeyword}"
+                                        TextAlignment="Left"
+                                        TextTrimming="WordEllipsis" />
+                                </Border>
                                 <TextBlock
-                                    HorizontalAlignment="Center"
+                                    Grid.Column="1"
+                                    Margin="12,0,0,0"
                                     VerticalAlignment="Center"
-                                    FontWeight="SemiBold"
                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                    Text="{Binding Metadata.ActionKeyword}"
-                                    TextAlignment="Left"
-                                    TextTrimming="WordEllipsis" />
-                            </Border>
-                            <TextBlock
-                                Grid.Column="1"
-                                Margin="12,0,0,0"
-                                VerticalAlignment="Center"
-                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                Text="{Binding Plugin.Description}"
-                                TextTrimming="CharacterEllipsis"
-                                TextWrapping="Wrap" />
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
+                                    Text="{Binding Plugin.Description}"
+                                    TextTrimming="CharacterEllipsis"
+                                    TextWrapping="Wrap" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+
+            <local:ResultList
+                x:Name="ListBox"
+                Grid.Row="2"
+                VerticalAlignment="Stretch"
+                BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                BorderThickness="0,1,0,0"
+                PreviewMouseDown="ListBox_PreviewMouseDown"
+                Visibility="{Binding Results.Visibility}" />
+
         </Grid>
-
-        <local:ResultList
-            x:Name="ListBox"
-            Grid.Row="2"
-            VerticalAlignment="Stretch"
-            BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
-            BorderThickness="0,1,0,0"
-            PreviewMouseDown="ListBox_PreviewMouseDown"
-            Visibility="{Binding Results.Visibility}" />
-
-    </Grid>
+    </Border>
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding EscCommand}" />
         <KeyBinding Key="Enter" Command="{Binding OpenResultWithKeyboardCommand}" />
