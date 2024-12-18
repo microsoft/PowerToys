@@ -38,7 +38,7 @@ namespace AdvancedPaste.Helpers
         {
             try
             {
-                JsonDocument.Parse(text);
+                using JsonDocument doc = JsonDocument.Parse(text);
                 return true;
             }
             catch (Exception)
