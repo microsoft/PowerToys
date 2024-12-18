@@ -91,8 +91,7 @@ public partial class FormViewModel(IForm _form, IPageContext context) : Extensio
                 if (model != null)
                 {
                     var result = model.SubmitForm(inputString);
-
-                    // TODO Handle results
+                    WeakReferenceMessenger.Default.Send<HandleCommandResultMessage>(new(new(result)));
                 }
             }
             catch (Exception ex)

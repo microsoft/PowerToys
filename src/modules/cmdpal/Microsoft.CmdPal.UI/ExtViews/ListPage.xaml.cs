@@ -2,9 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using CommunityToolkit.Common;
 using CommunityToolkit.Mvvm.Messaging;
-using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Dispatching;
@@ -20,7 +20,8 @@ namespace Microsoft.CmdPal.UI;
 public sealed partial class ListPage : Page,
     IRecipient<NavigateNextCommand>,
     IRecipient<NavigatePreviousCommand>,
-    IRecipient<ActivateSelectedListItemMessage>
+    IRecipient<ActivateSelectedListItemMessage>,
+    IRecipient<ActivateSecondaryCommandMessage>
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
 
@@ -59,44 +60,7 @@ public sealed partial class ListPage : Page,
             {
                 ViewModel = null;
 
-                _ = Task.Run(async () =>
-                {
-                    // You know, this creates the situation where we wait for
-                    // both loading page properties, AND the items, before we
-                    // display anything.
-                    //
-                    // We almost need to do an async await on initialize, then
-                    // just a fire-and-forget on FetchItems.
-                    lvm.InitializeCommand.Execute(null);
-
-                    await lvm.InitializeCommand.ExecutionTask!;
-
-                    if (lvm.InitializeCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
-                    {
-                        // TODO: Handle failure case
-                        System.Diagnostics.Debug.WriteLine(lvm.InitializeCommand.ExecutionTask.Exception);
-
-                        // TODO GH #239 switch back when using the new MD text block
-                        // _ = _queue.EnqueueAsync(() =>
-                        _queue.TryEnqueue(new(() =>
-                        {
-                            LoadedState = ViewModelLoadedState.Error;
-                        }));
-                    }
-                    else
-                    {
-                        // TODO GH #239 switch back when using the new MD text block
-                        // _ = _queue.EnqueueAsync(() =>
-                        _queue.TryEnqueue(new(() =>
-                        {
-                            var result = (bool)lvm.InitializeCommand.ExecutionTask.GetResultOrDefault()!;
-
-                            ViewModel = lvm;
-                            WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(result ? lvm : null));
-                            LoadedState = result ? ViewModelLoadedState.Loaded : ViewModelLoadedState.Error;
-                        }));
-                    }
-                });
+                _ = Task.Run(async () => await InitializeViewmodel(lvm));
             }
             else
             {
@@ -106,12 +70,63 @@ public sealed partial class ListPage : Page,
             }
         }
 
+        if (e.NavigationMode == NavigationMode.Back)
+        {
+            // Upon navigating _back_ to this page, immediately select the
+            // first item in the list
+            ItemsList.SelectedIndex = 0;
+        }
+
         // RegisterAll isn't AOT compatible
         WeakReferenceMessenger.Default.Register<NavigateNextCommand>(this);
         WeakReferenceMessenger.Default.Register<NavigatePreviousCommand>(this);
         WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
+        WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
 
         base.OnNavigatedTo(e);
+    }
+
+    private async Task InitializeViewmodel(ListViewModel lvm)
+    {
+        // You know, this creates the situation where we wait for
+        // both loading page properties, AND the items, before we
+        // display anything.
+        //
+        // We almost need to do an async await on initialize, then
+        // just a fire-and-forget on FetchItems.
+        lvm.InitializeCommand.Execute(null);
+
+        await lvm.InitializeCommand.ExecutionTask!;
+
+        if (lvm.InitializeCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
+        {
+            // TODO: Handle failure case
+            System.Diagnostics.Debug.WriteLine(lvm.InitializeCommand.ExecutionTask.Exception);
+
+            // TODO GH #239 switch back when using the new MD text block
+            // _ = _queue.EnqueueAsync(() =>
+            _queue.TryEnqueue(new(() =>
+            {
+                LoadedState = ViewModelLoadedState.Error;
+            }));
+        }
+        else
+        {
+            // TODO GH #239 switch back when using the new MD text block
+            // _ = _queue.EnqueueAsync(() =>
+            _queue.TryEnqueue(new(() =>
+{
+    var result = (bool)lvm.InitializeCommand.ExecutionTask.GetResultOrDefault()!;
+
+    ViewModel = lvm;
+
+    WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(result ? lvm : null));
+    LoadedState = result ? ViewModelLoadedState.Loaded : ViewModelLoadedState.Error;
+
+    // Immediately select the first item in the list
+    ItemsList.SelectedIndex = 0;
+}));
+        }
     }
 
     protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
@@ -121,6 +136,7 @@ public sealed partial class ListPage : Page,
         WeakReferenceMessenger.Default.Unregister<NavigateNextCommand>(this);
         WeakReferenceMessenger.Default.Unregister<NavigatePreviousCommand>(this);
         WeakReferenceMessenger.Default.Unregister<ActivateSelectedListItemMessage>(this);
+        WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too agressive at pruning methods bound in XAML")]
@@ -135,10 +151,23 @@ public sealed partial class ListPage : Page,
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too agressive at pruning methods bound in XAML")]
     private void ItemsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        // Debug.WriteLine("ItemsList_SelectionChanged");
+        // Debug.WriteLine($"  +{e.AddedItems.Count} / -{e.RemovedItems.Count}");
+        // Debug.WriteLine($"  selected='{ItemsList.SelectedItem}'");
         if (ItemsList.SelectedItem is ListItemViewModel item)
         {
             ViewModel?.UpdateSelectedItemCommand.Execute(item);
         }
+
+        // There's mysterious behavior here, where the selection seemingly
+        // changes to _nothing_ when we're backspacing to a single charater.
+        // And at that point, seemingly the item that's getting removed is not
+        // a member of FilteredItems. Very bizarre.
+        //
+        // Might be able to fix in the future by stashing the removed item
+        // here, then in Page_ItemsUpdated trying to select that cached item if
+        // it's in the list (otherwise, clear the cache), but that seems
+        // aggressively bodgy for something that mostly just works today.
     }
 
     public void Receive(NavigateNextCommand message)
@@ -171,6 +200,14 @@ public sealed partial class ListPage : Page,
         }
     }
 
+    public void Receive(ActivateSecondaryCommandMessage message)
+    {
+        if (ItemsList.SelectedItem is ListItemViewModel item)
+        {
+            ViewModel?.InvokeSecondaryCommandCommand.Execute(item);
+        }
+    }
+
     private static void OnViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is ListPage @this)
@@ -178,12 +215,31 @@ public sealed partial class ListPage : Page,
             if (e.OldValue is ListViewModel old)
             {
                 old.PropertyChanged -= @this.ViewModel_PropertyChanged;
+                old.ItemsUpdated -= @this.Page_ItemsUpdated;
             }
 
             if (e.NewValue is ListViewModel page)
             {
                 page.PropertyChanged += @this.ViewModel_PropertyChanged;
+                page.ItemsUpdated += @this.Page_ItemsUpdated;
             }
+        }
+    }
+
+    // Called after we've finished updating the whole list for either a
+    // GetItems or a change in the filter.
+    private void Page_ItemsUpdated(ListViewModel sender, object args)
+    {
+        // If for some reason, we don't have a selected item, fix that.
+        //
+        // It's important to do this here, because once there's no selection
+        // (which can happen as the list updates) we won't get an
+        // ItemsList_SelectionChanged again to give us another chance to change
+        // the selection from null -> something. Better to just update the
+        // selection once, at the end of all the updating.
+        if (ItemsList.SelectedItem == null)
+        {
+            ItemsList.SelectedIndex = 0;
         }
     }
 
@@ -196,6 +252,10 @@ public sealed partial class ListPage : Page,
             {
                 LoadedState = ViewModelLoadedState.Error;
             }
+        }
+        else if (prop == nameof(ViewModel.FilteredItems))
+        {
+            Debug.WriteLine($"ViewModel.FilteredItems {ItemsList.SelectedItem}");
         }
     }
 }

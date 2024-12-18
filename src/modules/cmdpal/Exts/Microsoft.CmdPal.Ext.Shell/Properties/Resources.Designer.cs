@@ -160,6 +160,15 @@ namespace Microsoft.CmdPal.Ext.Shell.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Type tthe name of a command to run.
+        /// </summary>
+        public static string list_placeholder_text {
+            get {
+                return ResourceManager.GetString("list_placeholder_text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Run in Command Prompt (cmd.exe).
         /// </summary>
         public static string run_command_in_command_prompt {
@@ -250,7 +259,7 @@ namespace Microsoft.CmdPal.Ext.Shell.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Execute shell commands.
+        ///   Looks up a localized string similar to Run commands.
         /// </summary>
         public static string shell_command_name {
             get {

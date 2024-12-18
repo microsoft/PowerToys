@@ -176,12 +176,15 @@
     <value>All entries using the Windows Terminal force the Windows Terminal as the console host regardless of the system settings</value>
   </data>
   <data name="shell_command_name" xml:space="preserve">
-    <value>Execute shell commands</value>
+    <value>Run commands</value>
   </data>
   <data name="generic_run_command" xml:space="preserve">
     <value>Run</value>
   </data>
   <data name="settings_page_name" xml:space="preserve">
     <value>Settings</value>
+  </data>
+  <data name="list_placeholder_text" xml:space="preserve">
+    <value>Type the name of a command to run</value>
   </data>
 </root>

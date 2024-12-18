@@ -18,7 +18,9 @@ using VirtualKey = Windows.System.VirtualKey;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
-public sealed partial class SearchBar : UserControl, ICurrentPageAware
+public sealed partial class SearchBar : UserControl,
+    IRecipient<GoHomeMessage>,
+    ICurrentPageAware
 {
     /// <summary>
     /// Gets the <see cref="DispatcherQueueTimer"/> that we create to track keyboard input and throttle/debounce before we make queries.
@@ -44,15 +46,20 @@ public sealed partial class SearchBar : UserControl, ICurrentPageAware
         if (d is SearchBar @this
             && e.NewValue is PageViewModel page)
         {
-            // TODO: In some cases we probably want commands to clear a filter somewhere in the process, so we need to figure out when that is.
+            // TODO: In some cases we probably want commands to clear a filter
+            // somewhere in the process, so we need to figure out when that is.
             @this.FilterBox.Text = page.Filter;
+            @this.FilterBox.Select(@this.FilterBox.Text.Length, 0);
         }
     }
 
     public SearchBar()
     {
         this.InitializeComponent();
+        WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
     }
+
+    private void ClearSearch() => this.FilterBox.Text = string.Empty;
 
     private void BackButton_Tapped(object sender, TappedRoutedEventArgs e) => WeakReferenceMessenger.Default.Send<NavigateBackMessage>();
 
@@ -76,23 +83,22 @@ public sealed partial class SearchBar : UserControl, ICurrentPageAware
 
             e.Handled = true;
         }
+        else if (ctrlPressed && e.Key == VirtualKey.Enter)
+        {
+            // ctrl+enter
+            WeakReferenceMessenger.Default.Send<ActivateSecondaryCommandMessage>();
+            e.Handled = true;
+        }
         else if (e.Key == VirtualKey.Enter)
         {
             WeakReferenceMessenger.Default.Send<ActivateSelectedListItemMessage>();
-
             e.Handled = true;
-        } // ctrl+k
+        }
         else if (ctrlPressed && e.Key == VirtualKey.K)
         {
-            // TODO: ShowActionsMessage?
-            // Move code below to ActionBar
-            /*FlyoutShowOptions options = new FlyoutShowOptions
-            {
-                ShowMode = FlyoutShowMode.Standard,
-            };
-            MoreCommandsButton.Flyout.ShowAt(MoreCommandsButton, options);
-            ActionsDropdown.SelectedIndex = 0;
-            ActionsDropdown.Focus(FocusState.Programmatic);*/
+            // ctrl+k
+            WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>();
+            e.Handled = true;
         }
         else if (e.Key == VirtualKey.Escape)
         {
@@ -108,10 +114,20 @@ public sealed partial class SearchBar : UserControl, ICurrentPageAware
 
             e.Handled = true;
         }
+        else if (e.Key == VirtualKey.Back)
+        {
+            // hack
+            if (CurrentPageViewModel != null)
+            {
+                CurrentPageViewModel.Filter = FilterBox.Text;
+            }
+        }
     }
 
     private void FilterBox_TextChanged(object sender, TextChangedEventArgs e)
     {
+        Debug.WriteLine($"FilterBox_TextChanged: {FilterBox.Text}");
+
         // TODO: We could encapsulate this in a Behavior if we wanted to bind to the Filter property.
         _debounceTimer.Debounce(
             () =>
@@ -130,4 +146,6 @@ public sealed partial class SearchBar : UserControl, ICurrentPageAware
             //// If we're not already waiting, and this is blanking out or the first character type, we'll start filtering immediately instead to appear more responsive and either clear the filter to get back home faster or at least chop to the first starting letter.
             immediate: FilterBox.Text.Length <= 1);
     }
+
+    public void Receive(GoHomeMessage message) => ClearSearch();
 }

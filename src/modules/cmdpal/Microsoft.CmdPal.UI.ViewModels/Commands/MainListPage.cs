@@ -4,6 +4,7 @@
 
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
@@ -29,7 +30,8 @@ public partial class MainListPage : DynamicListPage
     public MainListPage(IServiceProvider serviceProvider)
     {
         Name = "Command Palette";
-
+        Icon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory.ToString(), "Assets\\StoreLogo.scale-200.png"));
+        ShowDetails = true;
         _serviceProvider = serviceProvider;
 
         var tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
@@ -66,6 +68,7 @@ public partial class MainListPage : DynamicListPage
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
         /* handle changes to the filter text here */
+        Debug.WriteLine($"UpdateSearchText '{oldSearch}' -> '{newSearch}'");
 
         foreach (var command in _commands)
         {

@@ -97,10 +97,7 @@ public partial class IconBox : ContentControl
                     {
                         @this.SourceRequested.Invoke(@this, eventArgs);
 
-                        if (eventArgs.Value != null)
-                        {
-                            @this.Source = eventArgs.Value;
-                        }
+                        @this.Source = eventArgs.Value;
                     }
                 }));
             }

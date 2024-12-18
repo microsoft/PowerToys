@@ -4,6 +4,9 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
-public record DismissMessage()
+/// <summary>
+/// Used to perform a list item's secondary command when the user presses ctrl+enter in the search box
+/// </summary>
+public record OpenContextMenuMessage
 {
 }

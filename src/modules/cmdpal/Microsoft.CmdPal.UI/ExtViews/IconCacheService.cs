@@ -20,15 +20,23 @@ public sealed class IconCacheService(DispatcherQueue dispatcherQueue)
 
     private async Task<IconSource?> IconToSource(IconDataType icon)
     {
-        if (!string.IsNullOrEmpty(icon.Icon))
+        // bodgy: apparently IconDataType, despite being a struct, doesn't get
+        // MarshalByValue'd into our process. What's even the point then?
+        try
         {
-            var source = IconPathConverter.IconSourceMUX(icon.Icon, false);
+            if (!string.IsNullOrEmpty(icon.Icon))
+            {
+                var source = IconPathConverter.IconSourceMUX(icon.Icon, false);
 
-            return source;
+                return source;
+            }
+            else if (icon.Data != null)
+            {
+                return await StreamToIconSource(icon.Data);
+            }
         }
-        else if (icon.Data != null)
+        catch
         {
-            return await StreamToIconSource(icon.Data);
         }
 
         return null;

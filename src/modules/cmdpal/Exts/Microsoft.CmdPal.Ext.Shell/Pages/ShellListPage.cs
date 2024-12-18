@@ -18,6 +18,7 @@ internal sealed partial class ShellListPage : DynamicListPage
         Icon = new("\uE756");
         Id = "com.microsoft.cmdpal.shell";
         Name = Resources.cmd_plugin_name;
+        PlaceholderText = Resources.list_placeholder_text;
         _helper = new(settingsManager);
     }
 

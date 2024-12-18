@@ -62,6 +62,6 @@ internal sealed partial class AppAction : InvokableCommand
     public override CommandResult Invoke()
     {
         _ = Launch();
-        return CommandResult.GoHome();
+        return CommandResult.Dismiss();
     }
 }

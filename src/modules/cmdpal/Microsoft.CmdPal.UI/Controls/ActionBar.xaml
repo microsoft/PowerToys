@@ -45,7 +45,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Padding="8" ColumnSpacing="8">
+    <Grid Padding="8" ColumnSpacing="8" MinHeight="56">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
@@ -78,10 +78,10 @@
                 Height="40"
                 Padding="8,4,8,4"
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
+                Tapped="PrimaryButton_Tapped"
                 Visibility="{x:Bind ViewModel.PrimaryAction.Name, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}">
 
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <!-- <FontIcon Glyph="&#xEA3A;" /> -->
                     <cpcontrols:IconBox
                         Width="16"
                         Height="16"
@@ -108,10 +108,9 @@
                 Height="40"
                 Padding="8,4,8,4"
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
+                Tapped="SecondaryButton_Tapped"
                 Visibility="{x:Bind ViewModel.HasSecondaryCommand, Mode=OneWay}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <!-- <FontIcon Glyph="&#xEA3A;" /> -->
-
                     <cpcontrols:IconBox
                         Width="16"
                         Height="16"

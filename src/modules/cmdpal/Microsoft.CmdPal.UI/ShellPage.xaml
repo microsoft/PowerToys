@@ -90,7 +90,6 @@
                     x:Name="HeroImageBorder"
                     Width="64"
                     Height="64"
-                    x:Load="{x:Bind IsLoaded, Mode=OneWay}"
                     SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
                     SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
                     Visibility="{x:Bind ViewModel.Details.HasHeroImage, Mode=OneWay}" />
