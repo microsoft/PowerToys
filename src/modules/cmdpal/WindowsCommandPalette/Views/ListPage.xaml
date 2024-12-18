@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="WindowsCommandPalette.Views.ListPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -99,11 +99,12 @@
                                 TextWrapping="NoWrap"
                                 Visibility="{x:Bind Subtitle, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
                         </StackPanel>
-                        <ItemsRepeater ItemTemplate="{StaticResource TagTemplate}"
-                                       ItemsSource="{x:Bind Tags}"
-                                       Grid.Column="2"
-                                       Visibility="{x:Bind HasTags}"
-                                       Layout="{StaticResource HorizontalStackLayout}" />
+                        <ItemsRepeater
+                            Grid.Column="2"
+                            ItemTemplate="{StaticResource TagTemplate}"
+                            ItemsSource="{x:Bind Tags}"
+                            Layout="{StaticResource HorizontalStackLayout}"
+                            Visibility="{x:Bind HasTags}" />
                     </Grid>
                 </ListViewItem>
             </DataTemplate>
@@ -227,8 +228,8 @@
                 FontSize="18"
                 KeyDown="FilterBox_KeyDown"
                 PlaceholderText="{x:Bind ViewModel.PlaceholderText, Mode=OneWay}"
-                Text="{x:Bind ViewModel.SearchText, Mode=TwoWay}"
                 Style="{StaticResource SearchTextBoxStyle}"
+                Text="{x:Bind ViewModel.SearchText, Mode=TwoWay}"
                 TextChanged="FilterBox_TextChanged" />
 
         </Grid>

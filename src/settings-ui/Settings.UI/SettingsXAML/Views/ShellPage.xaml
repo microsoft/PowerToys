@@ -120,6 +120,10 @@
                             helpers:NavHelper.NavigateTo="views:AwakePage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Awake.png}" />
                         <NavigationViewItem
+                            x:Uid="Shell_CmdPal"
+                            helpers:NavHelper.NavigateTo="views:CmdPalPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}" />
+                        <NavigationViewItem
                             x:Uid="Shell_ColorPicker"
                             helpers:NavHelper.NavigateTo="views:ColorPickerPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ColorPicker.png}" />

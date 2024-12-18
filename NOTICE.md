@@ -1296,22 +1296,27 @@ EXHIBIT A -Mozilla Public License.
 
 ## NuGet Packages used by PowerToys
 
+
+- AdaptiveCards.ObjectModel.WinUI3 2.0.0-beta
+- AdaptiveCards.Rendering.WinUI3 2.1.0-beta
+- AdaptiveCards.Templating 2.0.2
 - Appium.WebDriver 4.4.5
 - Azure.AI.OpenAI 1.0.0-beta.17
-- CommunityToolkit.Mvvm 8.2.2
-- CommunityToolkit.WinUI.Animations 8.0.240109
-- CommunityToolkit.WinUI.Collections 8.0.240109
-- CommunityToolkit.WinUI.Controls.Primitives 8.0.240109
-- CommunityToolkit.WinUI.Controls.Segmented 8.0.240109
-- CommunityToolkit.WinUI.Controls.SettingsControls 8.0.240109
-- CommunityToolkit.WinUI.Controls.Sizers 8.0.240109
-- CommunityToolkit.WinUI.Converters 8.0.240109
-- CommunityToolkit.WinUI.Extensions 8.0.240109
+- CommunityToolkit.Mvvm 8.4.0-preview2
+- CommunityToolkit.WinUI.Animations 8.2.241112-preview1
+- CommunityToolkit.WinUI.Collections 8.2.241112-preview1
+- CommunityToolkit.WinUI.Controls.Primitives 8.2.241112-preview1
+- CommunityToolkit.WinUI.Controls.Segmented 8.2.241112-preview1
+- CommunityToolkit.WinUI.Controls.SettingsControls 8.2.241112-preview1
+- CommunityToolkit.WinUI.Controls.Sizers 8.2.241112-preview1
+- CommunityToolkit.WinUI.Converters 8.2.241112-preview1
+- CommunityToolkit.WinUI.Extensions 8.2.241112-preview1
 - CommunityToolkit.WinUI.UI.Controls.DataGrid 7.1.2
 - CommunityToolkit.WinUI.UI.Controls.Markdown 7.1.2
 - ControlzEx 6.0.0
 - HelixToolkit 2.24.0
 - HelixToolkit.Core.Wpf 2.24.0
+- HtmlAgilityPack 1.11.71
 - hyjiacan.pinyin4net 4.1.1
 - Interop.Microsoft.Office.Interop.OneNote 1.1.0.2
 - LazyCache 2.4.0
@@ -1330,7 +1335,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.NET.ILLink.Tasks (A)
 - Microsoft.SemanticKernel 1.15.0
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
-- Microsoft.Web.WebView2 1.0.2739.15
+- Microsoft.Web.WebView2 1.0.2903.40
 - Microsoft.Win32.SystemEvents 9.0.0
 - Microsoft.Windows.Compatibility 9.0.0
 - Microsoft.Windows.CsWin32 0.2.46-beta
@@ -1362,11 +1367,14 @@ EXHIBIT A -Mozilla Public License.
 - System.IO.Abstractions 21.0.29
 - System.IO.Abstractions.TestingHelpers 21.0.29
 - System.Management 9.0.0
+- System.Net.Http 4.3.4
+- System.Private.Uri 4.3.2
 - System.Reactive 6.0.1
 - System.Runtime.Caching 9.0.0
 - System.ServiceProcess.ServiceController 9.0.0
 - System.Text.Encoding.CodePages 9.0.0
 - System.Text.Json 9.0.0
+- System.Text.RegularExpressions 4.3.1
 - UnicodeInformation 2.6.0
 - UnitsNet 5.56.0
 - UTF.Unknown 2.5.1

@@ -496,6 +496,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool cmdPal = true;
+
+        [JsonPropertyName("CmdPal")]
+        public bool CmdPal
+        {
+            get => cmdPal;
+            set
+            {
+                if (cmdPal != value)
+                {
+                    LogTelemetryEvent(value);
+                    cmdPal = value;
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();

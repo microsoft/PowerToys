@@ -21,7 +21,10 @@ $versionExceptions = @(
     "hyjiacan.py4n.dll",
     "Microsoft.WindowsAppRuntime.Release.Net.dll",
     "Microsoft.Windows.Widgets.Projection.dll",
-    "WinRT.Host.Shim.dll") -join '|';
+    "WinRT.Host.Shim.dll",
+    "Microsoft.Recognizers.Text.DataTypes.TimexExpression.dll",
+    "ObjectModelCsProjection.dll",
+    "RendererCsProjection.dll") -join '|';
 $nullVersionExceptions = @(
     "codicon.ttf",
     "e_sqlite3.dll",
@@ -42,7 +45,9 @@ $nullVersionExceptions = @(
     "PushNotificationsLongRunningTask.ProxyStub.dll",
     "WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll",
     "System.Diagnostics.EventLog.Messages.dll",
-    "Microsoft.Windows.Widgets.dll") -join '|';
+    "Microsoft.Windows.Widgets.dll",
+    "AdaptiveCards.ObjectModel.WinUI3.dll",
+    "AdaptiveCards.Rendering.WinUI3.dll") -join '|';
 $totalFailure = 0;
 
 Write-Host $DirPath;

@@ -1,55 +1,58 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.MarkdownPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Interactions="using:Microsoft.Xaml.Interactions.Core"
     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:cmdPalControls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.CmdPal.UI"
-    xmlns:cmdPalControls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
     xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
     <Grid>
-        <ProgressBar 
-            IsIndeterminate="True" 
+        <ProgressBar
             VerticalAlignment="Top"
+            IsIndeterminate="True"
             Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
 
         <controls:SwitchPresenter TargetType="local:ViewModelLoadedState" Value="{x:Bind LoadedState, Mode=OneWay}">
             <controls:Case Value="Loaded">
                 <ScrollView VerticalAlignment="Top" VerticalScrollMode="Enabled">
-                    <ItemsControl  VerticalAlignment="Stretch" Margin="8" ItemsSource="{x:Bind ViewModel.Bodies, Mode=OneWay}">
-                        <!-- or ListView or ItemsRepeater more likely... -->
+                    <ItemsControl
+                        Margin="8"
+                        VerticalAlignment="Stretch"
+                        ItemsSource="{x:Bind ViewModel.Bodies, Mode=OneWay}">
+                        <!--  or ListView or ItemsRepeater more likely...  -->
                         <ItemsControl.ItemTemplate>
 
                             <DataTemplate x:DataType="x:String">
 
-                                <Grid 
+                                <Grid
                                     x:Name="ContentGrid"
-                                    Padding="12, 8, 8, 8" 
-                                    CornerRadius="{StaticResource OverlayCornerRadius}"
                                     Margin="0,4,4,4"
-                                    BorderThickness="1, 1, 1, 2"
+                                    Padding="12,8,8,8"
                                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1,1,1,2"
+                                    CornerRadius="{StaticResource OverlayCornerRadius}">
 
-                                    <toolkit:MarkdownTextBlock 
-                                        Text="{x:Bind}"
+                                    <toolkit:MarkdownTextBlock
                                         Background="Transparent"
                                         Header3FontSize="12"
                                         Header3FontWeight="Normal"
                                         Header3Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        IsTextSelectionEnabled="True"/>
+                                        IsTextSelectionEnabled="True"
+                                        Text="{x:Bind}" />
                                 </Grid>
                             </DataTemplate>
-                            
+
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollView>
@@ -59,12 +62,15 @@
             <controls:Case IsDefault="True" Value="Loading">
                 <TextBlock Text="I am a loading form page" />
             </controls:Case>
-            
+
             <controls:Case Value="Error">
-                <StackPanel Orientation="Vertical" Margin="16">
+                <StackPanel Margin="16" Orientation="Vertical">
                     <TextBlock Text="I am an error form page" />
-                    <TextBlock Text="Error on page" FontSize="18" Foreground="{ThemeResource SystemErrorTextColor}" />
-                    <TextBlock Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" IsTextSelectionEnabled="True"/>
+                    <TextBlock
+                        FontSize="18"
+                        Foreground="{ThemeResource SystemErrorTextColor}"
+                        Text="Error on page" />
+                    <TextBlock IsTextSelectionEnabled="True" Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
                 </StackPanel>
             </controls:Case>
         </controls:SwitchPresenter>

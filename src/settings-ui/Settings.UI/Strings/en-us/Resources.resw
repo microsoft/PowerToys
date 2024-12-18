@@ -59,7 +59,10 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xsd:schema id="root"
+    xmlns=""
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
@@ -3966,7 +3969,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="AdvancedPaste_EnableAdvancedAI.Description" xml:space="preserve">
     <value>Add advanced capabilities when using 'Paste with AI' including the power to 'chain' multiple transformations together and work with images and files. This feature may consume more API credits when used.</value>
-  </data>  
+  </data>
   <data name="Oobe_AdvancedPaste.Description" xml:space="preserve">
     <value>Advanced Paste is a tool to put your clipboard content into any format you need, focused towards developer workflows. It can paste as plain text, markdown, or json directly with the UX or with a direct keystroke invoke. These are fully locally executed. In addition, it has an AI powered option that is 100% opt-in and requires an Open AI key. Note: this will replace the formatted text in your clipboard with the selected format.</value>
   </data>
@@ -4691,6 +4694,44 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Shell_TopLevelSystemTools.Content" xml:space="preserve">
     <value>System Tools</value>
+  </data>
+  <data name="CmdPal.ModuleTitle" xml:space="preserve">
+    <value>Command Palette</value>
+  </data>
+  <data name="CmdPal_ShortDescription" xml:space="preserve">
+    <value>A better quick launcher</value>
+  </data>
+  <data name="CmdPal_Enable_CmdPal.Header" xml:space="preserve">
+    <value>Install Command Palette</value>
+    <comment>"Command Palette" is the name of the utility.</comment>
+  </data>
+  <data name="CmdPal.ModuleDescription" xml:space="preserve">
+    <value>A better quick launcher that has additional capabilities without sacrificing performance.</value>
+  </data>
+  <data name="LearnMore_CmdPal.Text" xml:space="preserve">
+    <value>Learn more about Command Palette</value>
+    <comment>Command Palette is a product name, do not loc</comment>
+  </data>
+  <data name="Shell_CmdPal.Content" xml:space="preserve">
+    <value>Command Palette</value>
+    <comment>Product name: Navigation view item name for Command Palette</comment>
+  </data>
+  <data name="Oobe_CmdPal.Description" xml:space="preserve">
+    <value>Command Palette description is TBD.</value>
+    <comment>"Command Palette" is a product name</comment>
+  </data>
+  <data name="Oobe_CmdPal.Title" xml:space="preserve">
+    <value>Command Palette</value>
+    <comment>"Command Palette" is a product name</comment>
+  </data>
+  <data name="Oobe_CmdPal_HowToUse.Text" xml:space="preserve">
+    <value>Command Palette how to use text is TBD.</value>
+  </data>
+  <data name="CmdPal_UninstallButton.Content" xml:space="preserve">
+    <value>Uninstall</value>
+  </data>
+  <data name="CmdPal_InstallButton.Content" xml:space="preserve">
+    <value>Install</value>
   </data>
   <data name="Enable_Module.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Enable module</value>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.CmdPal.UI.Controls.ActionBar"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -45,7 +45,10 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Padding="8" ColumnSpacing="8" MinHeight="56">
+    <Grid
+        MinHeight="56"
+        Padding="8"
+        ColumnSpacing="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.CmdPal.UI.Controls.FormControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -21,14 +21,12 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid 
+    <Grid
         x:Name="ContentGrid"
-        Padding="12, 8, 8, 8" 
-        CornerRadius="{StaticResource OverlayCornerRadius}"
         Margin="0,4,4,4"
+        Padding="12,8,8,8"
         Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-        BorderThickness="1, 1, 1, 2">
-        
-    </Grid>
+        BorderThickness="1,1,1,2"
+        CornerRadius="{StaticResource OverlayCornerRadius}" />
 </UserControl>

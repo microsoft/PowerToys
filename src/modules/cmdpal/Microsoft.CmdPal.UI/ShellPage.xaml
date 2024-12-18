@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.ShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -7,8 +7,8 @@
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
-    xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -23,25 +23,6 @@
     </Page.Resources>
 
     <Grid>
-
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup>
-
-                <VisualState x:Name="DetailsCollapsed" />
-
-                <VisualState x:Name="DetailsVisible">
-                    <VisualState.StateTriggers>
-                        <StateTrigger IsActive="{x:Bind ViewModel.IsDetailsVisible, Mode=OneWay}" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="DetailsContent.Visibility" Value="Visible" />
-                        <Setter Target="DetailsColumn.Width" Value="2*" />
-                    </VisualState.Setters>
-                </VisualState>
-
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
-
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -104,13 +85,13 @@
                     Visibility="{x:Bind ViewModel.Details.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
 
                 <ScrollViewer Grid.Row="2" HorizontalAlignment="Stretch">
-                    <toolkit:MarkdownTextBlock 
-                        Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}"
+                    <toolkit:MarkdownTextBlock
                         Background="Transparent"
                         Header3FontSize="12"
                         Header3FontWeight="Normal"
                         Header3Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        IsTextSelectionEnabled="True"/>
+                        IsTextSelectionEnabled="True"
+                        Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}" />
                 </ScrollViewer>
             </Grid>
             <!--  /DetailsContent  -->
@@ -121,6 +102,24 @@
             Grid.Row="2"
             VerticalAlignment="Top"
             CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+
+                <VisualState x:Name="DetailsCollapsed" />
+
+                <VisualState x:Name="DetailsVisible">
+                    <VisualState.StateTriggers>
+                        <StateTrigger IsActive="{x:Bind ViewModel.IsDetailsVisible, Mode=OneWay}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="DetailsContent.Visibility" Value="Visible" />
+                        <Setter Target="DetailsColumn.Width" Value="2*" />
+                    </VisualState.Setters>
+                </VisualState>
+
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </Grid>
 
 </Page>

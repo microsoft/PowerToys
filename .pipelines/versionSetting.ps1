@@ -76,3 +76,12 @@ $newPlusContextMenuAppManifestReadFileLocation = $newPlusContextMenuAppManifestW
 $newPlusContextMenuAppManifest.Package.Identity.Version = $versionNumber + '.0'
 Write-Host "NewPlusContextMenu version" $newPlusContextMenuAppManifest.Package.Identity.Version
 $newPlusContextMenuAppManifest.Save($newPlusContextMenuAppManifestWriteFileLocation);
+
+# Set package version in Package.appxmanifest
+$cmdPalAppManifestWriteFileLocation = $PSScriptRoot + '/../src/modules/cmdpal/WindowsCommandPalette/Package.appxmanifest';
+$cmdPalAppManifestReadFileLocation = $cmdPalAppManifestWriteFileLocation;
+
+[XML]$cmdPalAppManifest = Get-Content $cmdPalAppManifestReadFileLocation
+$cmdPalAppManifest.Package.Identity.Version = $versionNumber + '.0'
+Write-Host "CmdPal Package version: " $cmdPalAppManifest.Package.Identity.Version
+$cmdPalAppManifest.Save($cmdPalAppManifestWriteFileLocation);

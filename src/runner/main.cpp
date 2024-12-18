@@ -163,6 +163,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.CropAndLockModuleInterface.dll",
             L"PowerToys.CmdNotFoundModuleInterface.dll",
             L"PowerToys.WorkspacesModuleInterface.dll",
+            L"PowerToys.CmdPalModuleInterface.dll",
         };
         const auto VCM_PATH = L"PowerToys.VideoConferenceModule.dll";
         if (const auto mf = LoadLibraryA("mf.dll"))

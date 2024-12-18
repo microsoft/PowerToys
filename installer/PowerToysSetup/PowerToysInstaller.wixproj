@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureNuGetPackageBuildImports" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureNuGetPackageBuildImports"
+  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\src\Version.props" Condition="Exists('..\..\src\Version.props')" />
   <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
   <PropertyGroup Condition="'$(Platform)' == 'x64'">
@@ -32,6 +33,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\AdvancedPaste.wxs.bk ..\..\..\AdvancedPaste.wxs
       call move /Y ..\..\..\Awake.wxs.bk ..\..\..\Awake.wxs
       call move /Y ..\..\..\BaseApplications.wxs.bk ..\..\..\BaseApplications.wxs
+      call move /Y ..\..\..\CmdPal.wxs.bk ..\..\..\CmdPal.wxs
       call move /Y ..\..\..\ColorPicker.wxs.bk ..\..\..\ColorPicker.wxs
       call move /Y ..\..\..\Core.wxs.bk ..\..\..\Core.wxs
       call move /Y ..\..\..\EnvironmentVariables.wxs.bk ..\..\..\EnvironmentVariables.wxs
@@ -55,7 +57,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\WinAppSDK.wxs.bk ..\..\..\WinAppSDK.wxs
       call move /Y ..\..\..\WinUI3Applications.wxs.bk ..\..\..\WinUI3Applications.wxs
       call move /Y ..\..\..\Workspaces.wxs.bk ..\..\..\Workspaces.wxs
-      </PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <Name>PowerToysInstaller</Name>
@@ -105,6 +107,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="AdvancedPaste.wxs" />
     <Compile Include="Awake.wxs" />
     <Compile Include="BaseApplications.wxs" />
+    <Compile Include="CmdPal.wxs" />
     <Compile Include="ColorPicker.wxs" />
     <Compile Include="EnvironmentVariables.wxs" />
     <Compile Include="FileExplorerPreview.wxs" />

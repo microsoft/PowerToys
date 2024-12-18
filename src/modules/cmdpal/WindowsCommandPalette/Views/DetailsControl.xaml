@@ -1,18 +1,21 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="WindowsCommandPalette.Views.DetailsControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:WindowsCommandPalette.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
-    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
     mc:Ignorable="d">
 
     <UserControl.Resources>
         <ResourceDictionary>
-            <converters:StringVisibilityConverter x:Key="StringNotEmptyToVisibilityConverter" EmptyValue="Collapsed" NotEmptyValue="Visible" />
+            <converters:StringVisibilityConverter
+                x:Key="StringNotEmptyToVisibilityConverter"
+                EmptyValue="Collapsed"
+                NotEmptyValue="Visible" />
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -25,11 +28,9 @@
         <Viewbox
             Width="64"
             Height="64"
-            Visibility="{x:Bind ViewModel.HeroImage.Icon, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}"
-            HorizontalAlignment="Center">
-            <ContentControl
-                Margin="4,0,8,0"
-                Content="{x:Bind ViewModel.IcoElement}" />
+            HorizontalAlignment="Center"
+            Visibility="{x:Bind ViewModel.HeroImage.Icon, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}">
+            <ContentControl Margin="4,0,8,0" Content="{x:Bind ViewModel.IcoElement}" />
         </Viewbox>
         <TextBlock
             Grid.Row="1"

@@ -63,6 +63,8 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="System.Drawing.Common" />
     <PackageReference Include="WinUIEx" />
+    <!-- This line forces the WebView2 version used by Windows App SDK to be the one we expect from Directory.Packages.props . -->
+    <PackageReference Include="Microsoft.Web.WebView2" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 

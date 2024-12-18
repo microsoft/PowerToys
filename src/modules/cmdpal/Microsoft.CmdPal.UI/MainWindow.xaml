@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Window
     x:Class="Microsoft.CmdPal.UI.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -7,10 +7,9 @@
     xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
-    Closed="MainWindow_Closed"
     Activated="MainWindow_Activated"
+    Closed="MainWindow_Closed"
     mc:Ignorable="d">
 
-    <local:ShellPage x:Name="RootShellPage"
-                     Margin="0, 12, 0, 0" />
+    <local:ShellPage x:Name="RootShellPage" Margin="0,12,0,0" />
 </Window>

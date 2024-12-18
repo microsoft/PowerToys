@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="WindowsCommandPalette.Views.FormPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -21,7 +21,7 @@
             <DataTemplate x:Key="CardTemplate" x:DataType="local:FormViewModel">
                 <Border
                     x:Name="DetailsContent"
-                    Margin="0, 4, 0, 4"
+                    Margin="0,4,0,4"
                     Padding="8"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
@@ -33,7 +33,7 @@
         </ResourceDictionary>
     </Page.Resources>
 
-    <Grid Padding="4, 4, 0, 0" RowSpacing="16">
+    <Grid Padding="4,4,0,0" RowSpacing="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -57,12 +57,13 @@
                 Text="{x:Bind ViewModel.Page.Name}" />
         </StackPanel>
 
-        <ListView x:Name="FormItems" 
-                  Grid.Row="1"
-                  VerticalAlignment="Stretch"
-                  HorizontalAlignment="Stretch"
-                  SelectionMode="None"
-                  ItemTemplate="{StaticResource CardTemplate}"
-                  ItemsSource="{x:Bind ViewModel.Forms, Mode=OneWay}"/>
+        <ListView
+            x:Name="FormItems"
+            Grid.Row="1"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            ItemTemplate="{StaticResource CardTemplate}"
+            ItemsSource="{x:Bind ViewModel.Forms, Mode=OneWay}"
+            SelectionMode="None" />
     </Grid>
 </Page>

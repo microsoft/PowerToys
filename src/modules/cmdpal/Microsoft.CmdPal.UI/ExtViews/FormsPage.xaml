@@ -1,34 +1,37 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.FormsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Interactions="using:Microsoft.Xaml.Interactions.Core"
     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:cmdPalControls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.CmdPal.UI"
-    xmlns:cmdPalControls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
     <Grid>
-        <ProgressBar 
-            IsIndeterminate="True" 
+        <ProgressBar
             VerticalAlignment="Top"
+            IsIndeterminate="True"
             Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
 
         <controls:SwitchPresenter TargetType="local:ViewModelLoadedState" Value="{x:Bind LoadedState, Mode=OneWay}">
             <controls:Case Value="Loaded">
                 <ScrollView VerticalAlignment="Top" VerticalScrollMode="Enabled">
-                    <ItemsControl  VerticalAlignment="Stretch" Margin="8" ItemsSource="{x:Bind ViewModel.Forms, Mode=OneWay}">
-                        <!-- or ListView or ItemsRepeater more likely... -->
+                    <ItemsControl
+                        Margin="8"
+                        VerticalAlignment="Stretch"
+                        ItemsSource="{x:Bind ViewModel.Forms, Mode=OneWay}">
+                        <!--  or ListView or ItemsRepeater more likely...  -->
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="viewmodels:FormViewModel">
-                                <cmdPalControls:FormControl ViewModel="{x:Bind}"/>
+                                <cmdPalControls:FormControl ViewModel="{x:Bind}" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -36,13 +39,15 @@
 
             </controls:Case>
 
-            <controls:Case IsDefault="True" Value="Loading">
-            </controls:Case>
-            
+            <controls:Case IsDefault="True" Value="Loading" />
+
             <controls:Case Value="Error">
-                <StackPanel Orientation="Vertical" Margin="16">
-                    <TextBlock Text="Error on page" FontSize="18" Foreground="{ThemeResource SystemErrorTextColor}" />
-                    <TextBlock Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" IsTextSelectionEnabled="True"/>
+                <StackPanel Margin="16" Orientation="Vertical">
+                    <TextBlock
+                        FontSize="18"
+                        Foreground="{ThemeResource SystemErrorTextColor}"
+                        Text="Error on page" />
+                    <TextBlock IsTextSelectionEnabled="True" Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
                 </StackPanel>
             </controls:Case>
         </controls:SwitchPresenter>

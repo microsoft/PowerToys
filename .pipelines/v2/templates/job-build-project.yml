@@ -87,6 +87,7 @@ jobs:
             ${{ else }}:
               OutputBuildPlatform: ${{ platform }}
   variables:
+    MakeAppxPath: 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x86\MakeAppx.exe'
     # Azure DevOps abhors a vacuum
     # If these are blank, expansion will fail later on... which will result in direct substitution of the variable *names*
     # later on. We'll just... set them to a single space and if we need to, check IsNullOrWhiteSpace.
@@ -228,88 +229,31 @@ jobs:
           batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_abstracted_utils_dll.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
-  - task: VSBuild@1
-    displayName: Create Hosts File Editor package
+  - task: CopyFiles@2
+    displayName: Stage SDK/build
     inputs:
-      solution: '**\HostsUILib.csproj'
-      vsVersion: 17.0
-      ${{ if eq(parameters.useVSPreview, true) }}:
-        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-hosts.binlog /p:NoWarn=NU5104
-      ${{ else }}:
-        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-hosts.binlog
-      configuration: $(BuildConfiguration)
-      msbuildArchitecture: x64
-      maximumCpuCount: true
-    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
-  - task: VSBuild@1
-    displayName: Create Environment Variables Editor package
-    inputs:
-      solution: '**\EnvironmentVariablesUILib.csproj'
-      vsVersion: 17.0
-      ${{ if eq(parameters.useVSPreview, true) }}:
-        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-env-var-editor.binlog /p:NoWarn=NU5104
-      ${{ else }}:
-        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-env-var-editor.binlog
-      configuration: $(BuildConfiguration)
-      msbuildArchitecture: x64
-      maximumCpuCount: true
-    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
-  - task: VSBuild@1
-    displayName: Create Registry Preview package
-    inputs:
-      solution: '**\RegistryPreviewUILib.csproj'
-      vsVersion: 17.0
-      ${{ if eq(parameters.useVSPreview, true) }}:
-        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-registry-preview.binlog /p:NoWarn=NU5104
-      ${{ else }}:
-        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-registry-preview.binlog
-      configuration: $(BuildConfiguration)
-      msbuildArchitecture: x64
-      maximumCpuCount: true
-    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      contents: |-
+        "**/cmdpal/extensionsdk/nuget/Microsoft.CmdPal.Extensions.SDK.props"
+        "**/cmdpal/extensionsdk/nuget/Microsoft.CmdPal.Extensions.SDK.targets"
+      flattenFolders: True
+      targetFolder: $(JobOutputDirectory)/sdk/build
 
   - task: CopyFiles@2
-    displayName: Stage NuGet packages
+    displayName: Stage SDK/lib
     inputs:
-      contents: "**/bin/Release/PowerToys*.nupkg"
+      contents: |-
+        "**/Microsoft.CmdPal.Extensions.Helpers/$(BuildPlatform)/release/WinUI3Apps/CmdPal/Microsoft.CmdPal.Extensions.Helpers.dll"
+        "**/Microsoft.CmdPal.Extensions.Helpers/$(BuildPlatform)/release/WinUI3Apps/CmdPal/Microsoft.CmdPal.Extensions.Helpers.deps.json"
       flattenFolders: True
-      targetFolder: $(JobOutputDirectory)/nupkg
+      targetFolder: $(JobOutputDirectory)/sdk/lib/net8.0-windows10.0.19041.0
 
-  - ${{ if eq(parameters.codeSign, true) }}:
-    - template: steps-esrp-signing.yml
-      parameters:
-        displayName: Sign NuGet packages
-        signingIdentity: ${{ parameters.signingIdentity }}
-        inputs:
-          FolderPath: $(JobOutputDirectory)/nupkg
-          Pattern: '*.nupkg'
-          UseMinimatch: true
-          signConfigType: inlineSignParams
-          inlineOperation: >-
-            [
-                {
-                    "KeyCode": "CP-401405",
-                    "OperationCode": "NuGetSign",
-                    "Parameters": {},
-                    "ToolName": "sign",
-                    "ToolVersion": "1.0"
-                },
-                {
-                    "KeyCode": "CP-401405",
-                    "OperationCode": "NuGetVerify",
-                    "Parameters": {},
-                    "ToolName": "sign",
-                    "ToolVersion": "1.0"
-                }
-            ]
+  - task: CopyFiles@2
+    displayName: Stage SDK/winmd
+    inputs:
+      contents: |-
+        "**/Microsoft.CmdPal.Extensions/$(BuildPlatform)/release/Microsoft.CmdPal.Extensions/Microsoft.CmdPal.Extensions.winmd"
+      flattenFolders: True
+      targetFolder: $(JobOutputDirectory)/sdk/winmd
 
   - task: VSBuild@1
     displayName: Build BugReportTool
@@ -395,7 +339,7 @@ jobs:
     displayName: HACK Copy core WebView2 ARM64 dll to output directory
     condition: eq(variables['BuildPlatform'],'arm64')
     inputs:
-      contents: packages/Microsoft.Web.WebView2.1.0.2739.15/runtimes/win-ARM64/native_uap/Microsoft.Web.WebView2.Core.dll
+      contents: packages/Microsoft.Web.WebView2.1.0.2903.40/runtimes/win-ARM64/native_uap/Microsoft.Web.WebView2.Core.dll
       targetFolder: $(Build.SourcesDirectory)/ARM64/Release/WinUI3Apps/
       flattenFolders: True
       OverWrite: True
@@ -444,6 +388,33 @@ jobs:
           !**\obj\**
 
   - ${{ if eq(parameters.codeSign, true) }}:
+    - pwsh: |-
+        $Package = (Get-ChildItem -Recurse -Filter "Microsoft.CmdPal.UI.Poc*.msix" | Select -First 1)
+        $PackageFilename = $Package.FullName
+        Write-Host "##vso[task.setvariable variable=CmdPalPackagePath]${PackageFilename}"
+      displayName: Locate the MSIX
+
+    - pwsh: |-
+        & "$(MakeAppxPath)" unpack /p "$(CmdPalPackagePath)" /d "$(JobOutputDirectory)/CmdPalPackageContents"
+      displayName: Unpack the MSIX for signing
+
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: Sign CmdPal MSIX content
+        signingIdentity: ${{ parameters.signingIdentity }}
+        inputs:
+          FolderPath: '$(JobOutputDirectory)/CmdPalPackageContents' # Video conf uses x86 and x64.
+          signType: batchSigning
+          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_cmdpal_msix_content.json'
+          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+    - pwsh: |-
+        $outDir = New-Item -Type Directory "$(JobOutputDirectory)/_appx" -ErrorAction:Ignore
+        $PackageFilename = Join-Path $outDir.FullName (Split-Path -Leaf "$(CmdPalPackagePath)")
+        & "$(MakeAppxPath)" pack /h SHA256 /o /p $PackageFilename /d "$(JobOutputDirectory)/CmdPalPackageContents"
+        Copy-Item -Force $PackageFilename "$(CmdPalPackagePath)"
+      displayName: Re-pack the new CmdPal package after signing
+
     - template: steps-esrp-signing.yml
       parameters:
         displayName: Sign Core PowerToys

@@ -66,7 +66,8 @@ namespace Microsoft.PowerToys.Settings.UI
 
         public bool ShowScoobe { get; set; }
 
-        public Type StartupPage { get; set; } = typeof(Views.DashboardPage);
+        // TODO GH #245 Revert this to Views.DashboardPage
+        public Type StartupPage { get; set; } = typeof(Views.GeneralPage);
 
         public static Action<string> IPCMessageReceivedCallback { get; set; }
 

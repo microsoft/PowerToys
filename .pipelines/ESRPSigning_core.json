@@ -218,7 +218,10 @@
                 "PowerToys.VideoConferenceProxyFilter_arm64.dll",
 
                 "WinUI3Apps\\PowerToys.Settings.dll",
-                "WinUI3Apps\\PowerToys.Settings.exe"
+                "WinUI3Apps\\PowerToys.Settings.exe",
+
+                "PowerToys.CmdPalModuleInterface.dll",
+                "*Microsoft.CmdPal.UI.Poc_*.msix"
             ],
             "SigningInfo": {
                 "Operations": [
