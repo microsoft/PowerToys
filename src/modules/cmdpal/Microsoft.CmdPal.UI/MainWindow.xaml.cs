@@ -65,7 +65,7 @@ public sealed partial class MainWindow : Window,
 
     private void RootShellPage_Loaded(object sender, RoutedEventArgs e) =>
 
-        // Now that our content has loaded, we can update our dragable regions
+        // Now that our content has loaded, we can update our draggable regions
         UpdateRegionsForCustomTitleBar();
 
     private void WindowSizeChanged(object sender, WindowSizeChangedEventArgs args) => UpdateRegionsForCustomTitleBar();
@@ -160,7 +160,7 @@ public sealed partial class MainWindow : Window,
         }
     }
 
-    // Updates our window s.t. the top of the window is dragable.
+    // Updates our window s.t. the top of the window is draggable.
     private void UpdateRegionsForCustomTitleBar()
     {
         // Specify the interactive regions of the title bar.
@@ -239,7 +239,7 @@ public sealed partial class MainWindow : Window,
 
     private void SetupHotkey()
     {
-        // For somee reason `.` is not in the VirtualKey enum. Whatever.
+        // For some reason `.` is not in the VirtualKey enum. Whatever.
         var vk = (VirtualKey)DOT_KEY;
         var modifiers = HOT_KEY_MODIFIERS.MOD_CONTROL | HOT_KEY_MODIFIERS.MOD_WIN;
         var success = PInvoke.RegisterHotKey(_hwnd, 0, modifiers, (uint)vk);

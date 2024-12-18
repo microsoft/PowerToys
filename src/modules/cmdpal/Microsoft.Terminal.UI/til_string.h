@@ -161,11 +161,11 @@ namespace til // Terminal Implementation Library. Also: "Today I Learned"
     {
         static constexpr unsigned long maximumValue = ULONG_MAX / 16;
 
-        // We don't have to test ptr for nullability, as we only access it under either condition:
+        // We don't have to test ptr for null value, as we only access it under either condition:
         // * str.length() > 0, for determining the base
         // * ptr != end, when parsing the characters; if ptr is null, length will be 0 and thus end == ptr
 #pragma warning(push)
-#pragma warning(disable : 26429) // Symbol 'ptr' is never tested for nullness, it can be marked as not_null
+#pragma warning(disable : 26429) // Symbol 'ptr' is never tested for null value, it can be marked as not_null
 #pragma warning(disable : 26481) // Don't use pointer arithmetic. Use span instead
         auto ptr = str.data();
         const auto end = ptr + str.length();
@@ -306,7 +306,7 @@ namespace til // Terminal Implementation Library. Also: "Today I Learned"
         }
 
 #pragma warning(push)
-#pragma warning(disable : 26429) // Symbol 'data1' is never tested for nullness, it can be marked as not_null
+#pragma warning(disable : 26429) // Symbol 'data1' is never tested for null, it can be marked as not_null
 #pragma warning(disable : 26481) // Don't use pointer arithmetic. Use span instead
         auto remaining = str1.size();
         auto data1 = str1.data();

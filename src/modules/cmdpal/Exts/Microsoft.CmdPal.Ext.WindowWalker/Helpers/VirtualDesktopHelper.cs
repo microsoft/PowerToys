@@ -85,7 +85,7 @@ public class VirtualDesktopHelper
     /// Method to update the list of Virtual Desktops from Registry
     /// The data in the registry are always up to date
     /// </summary>
-    /// <remarks>If we can not read from registry, we set the list/guid to empty values.</remarks>
+    /// <remarks>If we cannot read from registry, we set the list/guid to empty values.</remarks>
     public void UpdateDesktopList()
     {
         var userSessionId = Process.GetCurrentProcess().SessionId;

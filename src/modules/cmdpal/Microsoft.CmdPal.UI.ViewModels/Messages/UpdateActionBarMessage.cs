@@ -5,7 +5,7 @@
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
 /// <summary>
-/// Used to update the action bar at the bottom to refelct the commands for a list item
+/// Used to update the action bar at the bottom to reflect the commands for a list item
 /// </summary>
 public record UpdateActionBarMessage(ListItemViewModel? ViewModel)
 {

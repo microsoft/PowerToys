@@ -80,15 +80,15 @@ Result:
 
 Result:
 
-![paintin'](https://i.imgur.com/93XJSNh.png)
+![painting](https://i.imgur.com/93XJSNh.png)
 
 ### Links
 
-    [link](http://example.com)
+    [example](http://example.com)
     
 Result:
 
-[link](http://example.com)
+[example](http://example.com)
 
 ### Blockquotes
 

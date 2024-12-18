@@ -29,7 +29,7 @@ internal sealed partial class CloseWindowCommand : InvokableCommand
     {
         if (!_window.IsWindow)
         {
-            ExtensionHost.LogMessage(new LogMessage() { Message = $"Can not close the window '{_window.Title}' ({_window.Hwnd}), because it doesn't exist." });
+            ExtensionHost.LogMessage(new LogMessage() { Message = $"Cannot close the window '{_window.Title}' ({_window.Hwnd}), because it doesn't exist." });
         }
 
         _window.CloseThisWindow();

@@ -10,7 +10,7 @@ foreach ($item in $json.children) {
         # we only care about code fences with language 'csharp'
         if ($item.language -eq 'c#') {
             $code = $item.children.content
-            # Each line that starts with with `runtimeclass` or `interface` should be prefixed with the contract attribute
+            # Each line that starts with `runtimeclass` or `interface` should be prefixed with the contract attribute
             $code = $code -replace "(?m)^(runtimeclass|interface) ", "[contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]`n`$1 "
 
             # all the lines that start with `(whitespace)async (T)` should be translated to `IAsyncOperation<T>`
@@ -30,7 +30,7 @@ foreach ($item in $json.children) {
         # we only care about code fences with language 'csharp'
         if ($item.language -eq 'csharp') {
             $code = $item.children.content
-            # Each line that starts with with `runtimeclass` or `interface` should be prefixed with the contract attribute
+            # Each line that starts with `runtimeclass` or `interface` should be prefixed with the contract attribute
             $code = $code -replace "(?m)^(runtimeclass|interface) ", "[contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]`n`$1 "
 
             # all the lines that start with `(whitespace)async (T)` should be translated to `IAsyncOperation<T>`

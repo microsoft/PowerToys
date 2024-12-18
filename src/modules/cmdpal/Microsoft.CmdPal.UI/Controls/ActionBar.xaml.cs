@@ -54,7 +54,7 @@ public sealed partial class ActionBar : UserControl,
         ActionsDropdown.Focus(FocusState.Programmatic);
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-agressively")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
     private void ActionListViewItem_KeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (e.Handled)
@@ -78,7 +78,7 @@ public sealed partial class ActionBar : UserControl,
         }
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-agressively")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
     private void ActionListViewItem_Tapped(object sender, TappedRoutedEventArgs e)
     {
         MoreCommandsButton.Flyout.Hide();
@@ -96,11 +96,11 @@ public sealed partial class ActionBar : UserControl,
         }
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-agressively")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
     private void PrimaryButton_Tapped(object sender, TappedRoutedEventArgs e) =>
         WeakReferenceMessenger.Default.Send<ActivateSelectedListItemMessage>();
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-agressively")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
     private void SecondaryButton_Tapped(object sender, TappedRoutedEventArgs e) =>
         WeakReferenceMessenger.Default.Send<ActivateSecondaryCommandMessage>();
 }

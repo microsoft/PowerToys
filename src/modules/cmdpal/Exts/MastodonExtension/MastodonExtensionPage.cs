@@ -325,7 +325,7 @@ public class MastodonStatus
     [JsonPropertyName("account")]
     public MastodonAccount Account { get; set; }
 
-    [JsonPropertyName("favourites_count")]
+    [JsonPropertyName("favorites_count")]
     public int Favorites { get; set; }
 
     [JsonPropertyName("reblogs_count")]

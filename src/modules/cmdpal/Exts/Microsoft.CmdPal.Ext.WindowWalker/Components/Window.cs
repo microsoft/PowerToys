@@ -316,7 +316,7 @@ internal sealed class Window
                 }
                 else
                 {
-                    // For the dwm process we can not receive the name. This is no problem because the window isn't part of result list.
+                    // For the dwm process we cannot receive the name. This is no problem because the window isn't part of result list.
                     ExtensionHost.LogMessage(new LogMessage() { Message = $"Invalid process {processId} ({processName}) for window handle {hWindow}." });
                     _handlesToProcessCache.Add(hWindow, new WindowProcess(0, 0, string.Empty));
                 }

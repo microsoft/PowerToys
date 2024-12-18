@@ -39,7 +39,7 @@ internal sealed partial class SwitchToWindowCommand : InvokableCommand
     {
         if (_window is null)
         {
-            ExtensionHost.LogMessage(new LogMessage() { Message = "Can not switch to the window, because it doesn't exist." });
+            ExtensionHost.LogMessage(new LogMessage() { Message = "Cannot switch to the window, because it doesn't exist." });
             return CommandResult.Dismiss();
         }
 

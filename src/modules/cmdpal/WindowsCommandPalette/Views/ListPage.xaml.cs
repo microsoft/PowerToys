@@ -345,7 +345,7 @@ public sealed partial class ListPage : Microsoft.UI.Xaml.Controls.Page, INotifyP
         {
             if (FilterBox.Text.Length > 0)
             {
-                Debug.WriteLine("Clear seearch text");
+                Debug.WriteLine("Clear search text");
                 FilterBox.Text = string.Empty;
             }
             else

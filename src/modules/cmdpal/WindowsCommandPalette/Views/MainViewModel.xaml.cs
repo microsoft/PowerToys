@@ -127,7 +127,7 @@ public sealed class MainViewModel : IDisposable
 
     public bool CheckAlias(string searchText)
     {
-        // var foundAliias = searchText == "vd";
+        // var foundAlias = searchText == "vd";
         // var aliasTarget = "com.zadjii.VirtualDesktopsList";
         if (_aliases.TryGetValue(searchText, out var alias))
         {

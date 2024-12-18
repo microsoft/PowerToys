@@ -189,7 +189,7 @@ applications. However, there may be apps out there that (for whatever reason)
 still don't have a package identity. We need a way to allow these apps to
 register themselves as extensions.
 
-We can't just ask the COM catalog for all CLSIDs that implement the a particular
+We can't just ask the COM catalog for all CLSIDs that implement a particular
 COM interface, unfortunately. This means we'll need another well-known location
 in the registry for unpackaged apps to write their extension CLSID's into.
 
@@ -347,7 +347,7 @@ On a cold launch, DevPal will do the following:
      * Check if it's fresh or frozen. 
      * Call `TopLevelCommands`, and put all of them in the list
      * Create a extension cache entry for that app.
-     * If the provider is frozen: we can actually realease the
+     * If the provider is frozen: we can actually release the
        `ICommandProvider` instance at this point.
    * And of course, if we don't find all the packages we had cached, then delete
      entries for the missing ones. Those apps were uninstalled.
@@ -365,14 +365,14 @@ the background. When the user presses the global hotkey, or otherwise launches
 the app, we'll just activate our existing process. This is a "warm launch".
 
 On a warm launch, we already have all the stubs in memory. We're listening for
-package installs/unistalls already. So we're basically just in the post-step 5
+package installs/uninstalls already. So we're basically just in the post-step 5
 state already.
 
 ##### Loading commands from stub items
 
 <sup>_"reheating"_</sup>
 
-When the user activates a top-level "stub" list item (refering to a frozen
+When the user activates a top-level "stub" list item (referring to a frozen
 command), we need to quickly load that app and get the command for it.
 
 1. If this stub has already been reheated, just return out the `ICommand` we
@@ -513,7 +513,7 @@ in the `Microsoft.CmdPal.Extensions` namespace.
 > will be replaced with `IAsyncAction` for `async void` and `IAsyncOperation<T>`
 > for `async T`.
 >
-> `cs` code fences will be used for samples of what an extension implementaions
+> `cs` code fences will be used for samples of what an extension implementations
 > may look like.
 
 ### Commands
@@ -663,7 +663,7 @@ If a page returns a null or empty `Title`, DevPal will display the `Name` of the
 
 Pages have a `Loading` property which they can use to indicate to DevPal that
 the content is still loading. When `Loading` is `true`, DevPal will show an
-intederminate loading bar to the user. When `Loading` is `false`, DevPal will
+indeterminate loading bar to the user. When `Loading` is `false`, DevPal will
 hide the progress bar. This allows extensions which are displaying asynchronous
 content to indicate that something is happening in the background.
 
@@ -1375,7 +1375,7 @@ allow the user to interact with the rest of your extension. They can be simple
 actions, or they can be pages that the user can navigate to. 
 
 `TopLevelCommands` returns a list of `ICommandItem`s. These are basically just a
-simpler form of `IListItem`, shich can be displayed even as a stub (as described
+simpler form of `IListItem`, which can be displayed even as a stub (as described
 in [Caching](#caching)), before the extension process is loaded.
 
 #### Fallback commands
@@ -1467,7 +1467,7 @@ don't match any of the commands in the list.
 
 If an extension's own list page wants to implement a similar fallback mechanism
 - it's free to use `IDynamicListPage` to listen for changes to the query and
-have it's own ListItem it updates manually.
+have its own ListItem it updates manually.
 
 > [!IMPORTANT] 
 > If your extension has top-level `FallbackCommandItem`s, then
@@ -1981,7 +1981,7 @@ follow - these are not part of the current SDK spec.
 >
 > A thought: what if a action returns a `ActionResult.Entity`, then that takes
 > devpal back home, but leaves the entity in the query box. This would allow for
-> a Quicksilver-like "thing, do" flow. That command would pre-populate the
+> a Quicksilver-like "thing, do" flow. That command would prepopulate the
 > parameters. So we would then filter top-level commands based on things that can
 > accept the entity in the search box.
 >

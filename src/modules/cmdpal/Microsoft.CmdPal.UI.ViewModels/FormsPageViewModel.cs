@@ -72,7 +72,7 @@ public partial class FormsPageViewModel : PageViewModel
 
         // Do we really not have any here?
 
-        // Should `Forms` be observable? That was what ended up footgunning widgets in DevHome, so :shurg:
+        // Should `Forms` be observable? That was what ended up footgunning widgets in DevHome, so :shrug:
 
         // switch (propertyName)
         // {

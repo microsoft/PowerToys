@@ -94,7 +94,7 @@ foreach($file in $Files) {
   Set-Content -Path $file.FullName -Value $Content
 }
 
-# also renamve files with TemplateExtension in the name
+# also rename files with TemplateExtension in the name
 $Files = Get-ChildItem -Path $ExtensionRoot -Recurse -File -Filter "*TemplateExtension*"
 foreach($file in $Files) {
   $NewName = $file.Name -replace "TemplateExtension", $Name

@@ -54,10 +54,10 @@ public sealed partial class CalculatorListPage : DynamicListPage
 
         UpdateSearchText(string.Empty, string.Empty);
 
-        _saveAction.SaveRequested += HandeSave;
+        _saveAction.SaveRequested += HandleSave;
     }
 
-    private void HandeSave(object sender, object args)
+    private void HandleSave(object sender, object args)
     {
         var lastResult = _items[0].Title;
         if (!string.IsNullOrEmpty(lastResult))

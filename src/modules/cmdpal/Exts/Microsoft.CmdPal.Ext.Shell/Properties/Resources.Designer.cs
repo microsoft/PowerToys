@@ -160,7 +160,7 @@ namespace Microsoft.CmdPal.Ext.Shell.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Type tthe name of a command to run.
+        ///   Looks up a localized string similar to Type the name of a command to run.
         /// </summary>
         public static string list_placeholder_text {
             get {

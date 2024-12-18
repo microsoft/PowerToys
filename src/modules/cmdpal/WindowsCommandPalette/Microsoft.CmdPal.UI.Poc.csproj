@@ -52,7 +52,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
 
-    <!-- The following harcoded package versions are to work around security vulnerbilities in 4.3.0 -->
+    <!-- The following hardcoded package versions are to work around security vulnerabilities in 4.3.0 -->
     <PackageReference Include="System.Net.Http" />
     <PackageReference Include="System.Private.Uri" />
     <PackageReference Include="System.Text.RegularExpressions" />
