@@ -203,7 +203,6 @@ namespace PowerLauncher
             else
             {
                 // On Windows10 ResizeMode="NoResize" removes the border so we add a new one.
-                MainBorder.BorderBrush = System.Windows.Media.Brushes.Gray;
                 MainBorder.BorderThickness = new System.Windows.Thickness(0.5);
             }
         }
