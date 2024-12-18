@@ -203,7 +203,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Kills the process by it's id. If permissions are required, they will be requested.
+        /// Kills the process by its id. If permissions are required, they will be requested.
         /// </summary>
         /// <param name="killProcessTree">Kill process and sub processes.</param>
         internal void KillThisProcess(bool killProcessTree)

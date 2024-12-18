@@ -252,10 +252,10 @@ namespace Microsoft.Plugin.Program.Programs
             logoUri = LogoUriFromManifest(manifestApp);
 
             Enabled = true;
-            CanRunElevated = IfApplicationcanRunElevated();
+            CanRunElevated = IfApplicationCanRunElevated();
         }
 
-        private bool IfApplicationcanRunElevated()
+        private bool IfApplicationCanRunElevated()
         {
             if (EntryPoint == "Windows.FullTrustApplication")
             {

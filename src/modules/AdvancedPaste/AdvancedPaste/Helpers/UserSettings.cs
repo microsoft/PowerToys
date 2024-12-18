@@ -33,9 +33,9 @@ namespace AdvancedPaste.Settings
 
         public event EventHandler Changed;
 
-        public bool ShowCustomPreview { get; private set; }
+        public bool IsAdvancedAIEnabled { get; private set; }
 
-        public bool SendPasteKeyCombination { get; private set; }
+        public bool ShowCustomPreview { get; private set; }
 
         public bool CloseAfterLosingFocus { get; private set; }
 
@@ -43,12 +43,12 @@ namespace AdvancedPaste.Settings
 
         public IReadOnlyList<AdvancedPasteCustomAction> CustomActions => _customActions;
 
-        public UserSettings()
+        public UserSettings(IFileSystem fileSystem)
         {
-            _settingsUtils = new SettingsUtils();
+            _settingsUtils = new SettingsUtils(fileSystem);
 
+            IsAdvancedAIEnabled = false;
             ShowCustomPreview = true;
-            SendPasteKeyCombination = true;
             CloseAfterLosingFocus = false;
             _additionalActions = [];
             _customActions = [];
@@ -56,7 +56,7 @@ namespace AdvancedPaste.Settings
 
             LoadSettingsFromJson();
 
-            _watcher = Helper.GetFileWatcher(AdvancedPasteModuleName, "settings.json", OnSettingsFileChanged);
+            _watcher = Helper.GetFileWatcher(AdvancedPasteModuleName, "settings.json", OnSettingsFileChanged, fileSystem);
         }
 
         private void OnSettingsFileChanged()
@@ -98,8 +98,8 @@ namespace AdvancedPaste.Settings
                             {
                                 var properties = settings.Properties;
 
+                                IsAdvancedAIEnabled = properties.IsAdvancedAIEnabled;
                                 ShowCustomPreview = properties.ShowCustomPreview;
-                                SendPasteKeyCombination = properties.SendPasteKeyCombination;
                                 CloseAfterLosingFocus = properties.CloseAfterLosingFocus;
 
                                 var sourceAdditionalActions = properties.AdditionalActions;

@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -70,14 +71,19 @@ namespace AdvancedPaste
                 Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
             }
 
-            this.InitializeComponent();
+            InitializeComponent();
 
             Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory).ConfigureServices((context, services) =>
             {
+                services.AddSingleton<IFileSystem, FileSystem>();
                 services.AddSingleton<IUserSettings, UserSettings>();
-                services.AddSingleton<AICompletionsHelper>();
-                services.AddSingleton<OptionsViewModel>();
+                services.AddSingleton<IAICredentialsProvider, Services.OpenAI.VaultCredentialsProvider>();
+                services.AddSingleton<IPromptModerationService, Services.OpenAI.PromptModerationService>();
+                services.AddSingleton<ICustomTextTransformService, Services.OpenAI.CustomTextTransformService>();
+                services.AddSingleton<IKernelQueryCacheService, CustomActionKernelQueryCacheService>();
+                services.AddSingleton<IKernelService, Services.OpenAI.KernelService>();
                 services.AddSingleton<IPasteFormatExecutor, PasteFormatExecutor>();
+                services.AddSingleton<OptionsViewModel>();
             }).Build();
 
             viewModel = GetService<OptionsViewModel>();

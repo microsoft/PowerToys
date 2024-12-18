@@ -29,10 +29,7 @@ namespace WorkspacesEditor.Models
 
         public string Name
         {
-            get
-            {
-                return _name;
-            }
+            get => _name;
 
             set
             {
@@ -68,8 +65,7 @@ namespace WorkspacesEditor.Models
 
                 DateTime lastLaunchDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(LastLaunchedTime);
 
-                var now = DateTime.UtcNow.Ticks;
-                var ts = DateTime.UtcNow - lastLaunchDateTime;
+                TimeSpan ts = DateTime.UtcNow - lastLaunchDateTime;
                 double delta = Math.Abs(ts.TotalSeconds);
 
                 if (delta < 1 * MINUTE)
@@ -120,10 +116,7 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        public bool CanBeSaved
-        {
-            get => Name.Length > 0 && Applications.Count > 0;
-        }
+        public bool CanBeSaved => Name.Length > 0 && Applications.Count > 0;
 
         private bool _isRevertEnabled;
 
@@ -145,10 +138,7 @@ namespace WorkspacesEditor.Models
         [JsonIgnore]
         public bool IsPopupVisible
         {
-            get
-            {
-                return _isPopupVisible;
-            }
+            get => _isPopupVisible;
 
             set
             {
@@ -163,11 +153,11 @@ namespace WorkspacesEditor.Models
         {
             get
             {
-                List<object> applicationsListed = new List<object>();
+                List<object> applicationsListed = [];
                 ILookup<MonitorSetup, Application> apps = Applications.Where(x => !x.Minimized).ToLookup(x => x.MonitorSetup);
-                foreach (var appItem in apps.OrderBy(x => x.Key.MonitorDpiUnawareBounds.Left).ThenBy(x => x.Key.MonitorDpiUnawareBounds.Top))
+                foreach (IGrouping<MonitorSetup, Application> appItem in apps.OrderBy(x => x.Key.MonitorDpiUnawareBounds.Left).ThenBy(x => x.Key.MonitorDpiUnawareBounds.Top))
                 {
-                    MonitorHeaderRow headerRow = new MonitorHeaderRow { MonitorName = "Screen " + appItem.Key.MonitorNumber, SelectString = Properties.Resources.SelectAllAppsOnMonitor + " " + appItem.Key.MonitorInfo };
+                    MonitorHeaderRow headerRow = new() { MonitorName = "Screen " + appItem.Key.MonitorNumber, SelectString = Properties.Resources.SelectAllAppsOnMonitor + " " + appItem.Key.MonitorInfo };
                     applicationsListed.Add(headerRow);
                     foreach (Application app in appItem)
                     {
@@ -175,10 +165,10 @@ namespace WorkspacesEditor.Models
                     }
                 }
 
-                var minimizedApps = Applications.Where(x => x.Minimized);
+                IEnumerable<Application> minimizedApps = Applications.Where(x => x.Minimized);
                 if (minimizedApps.Any())
                 {
-                    MonitorHeaderRow headerRow = new MonitorHeaderRow { MonitorName = Properties.Resources.Minimized_Apps, SelectString = Properties.Resources.SelectAllMinimizedApps };
+                    MonitorHeaderRow headerRow = new() { MonitorName = Properties.Resources.Minimized_Apps, SelectString = Properties.Resources.SelectAllMinimizedApps };
                     applicationsListed.Add(headerRow);
                     foreach (Application app in minimizedApps)
                     {
@@ -219,17 +209,17 @@ namespace WorkspacesEditor.Models
 
             int screenIndex = 1;
 
-            Monitors = new List<MonitorSetup>();
-            foreach (var item in selectedProject.Monitors.OrderBy(x => x.MonitorDpiAwareBounds.Left).ThenBy(x => x.MonitorDpiAwareBounds.Top))
+            Monitors = [];
+            foreach (MonitorSetup item in selectedProject.Monitors.OrderBy(x => x.MonitorDpiAwareBounds.Left).ThenBy(x => x.MonitorDpiAwareBounds.Top))
             {
                 Monitors.Add(item);
                 screenIndex++;
             }
 
-            Applications = new List<Application>();
-            foreach (var item in selectedProject.Applications)
+            Applications = [];
+            foreach (Application item in selectedProject.Applications)
             {
-                Application newApp = new Application(item);
+                Application newApp = new(item);
                 newApp.Parent = this;
                 newApp.InitializationFinished();
                 Applications.Add(newApp);
@@ -244,14 +234,14 @@ namespace WorkspacesEditor.Models
             LastLaunchedTime = project.LastLaunchedTime;
             IsShortcutNeeded = project.IsShortcutNeeded;
             MoveExistingWindows = project.MoveExistingWindows;
-            Monitors = new List<MonitorSetup>() { };
-            Applications = new List<Models.Application> { };
+            Monitors = [];
+            Applications = [];
 
-            foreach (var app in project.Applications)
+            foreach (ProjectData.ApplicationWrapper app in project.Applications)
             {
-                Models.Application newApp = new Models.Application()
+                Models.Application newApp = new()
                 {
-                    Id = string.IsNullOrEmpty(app.Id) ? $"{{{Guid.NewGuid().ToString()}}}" : app.Id,
+                    Id = string.IsNullOrEmpty(app.Id) ? $"{{{Guid.NewGuid()}}}" : app.Id,
                     AppName = app.Application,
                     AppPath = app.ApplicationPath,
                     AppTitle = app.Title,
@@ -278,20 +268,17 @@ namespace WorkspacesEditor.Models
                 Applications.Add(newApp);
             }
 
-            foreach (var monitor in project.MonitorConfiguration)
+            foreach (ProjectData.MonitorConfigurationWrapper monitor in project.MonitorConfiguration)
             {
-                System.Windows.Rect dpiAware = new System.Windows.Rect(monitor.MonitorRectDpiAware.Left, monitor.MonitorRectDpiAware.Top, monitor.MonitorRectDpiAware.Width, monitor.MonitorRectDpiAware.Height);
-                System.Windows.Rect dpiUnaware = new System.Windows.Rect(monitor.MonitorRectDpiUnaware.Left, monitor.MonitorRectDpiUnaware.Top, monitor.MonitorRectDpiUnaware.Width, monitor.MonitorRectDpiUnaware.Height);
+                System.Windows.Rect dpiAware = new(monitor.MonitorRectDpiAware.Left, monitor.MonitorRectDpiAware.Top, monitor.MonitorRectDpiAware.Width, monitor.MonitorRectDpiAware.Height);
+                System.Windows.Rect dpiUnaware = new(monitor.MonitorRectDpiUnaware.Left, monitor.MonitorRectDpiUnaware.Top, monitor.MonitorRectDpiUnaware.Width, monitor.MonitorRectDpiUnaware.Height);
                 Monitors.Add(new MonitorSetup(monitor.Id, monitor.InstanceId, monitor.MonitorNumber, monitor.Dpi, dpiAware, dpiUnaware));
             }
         }
 
         public BitmapImage PreviewIcons
         {
-            get
-            {
-                return _previewIcons;
-            }
+            get => _previewIcons;
 
             set
             {
@@ -302,10 +289,7 @@ namespace WorkspacesEditor.Models
 
         public BitmapImage PreviewImage
         {
-            get
-            {
-                return _previewImage;
-            }
+            get => _previewImage;
 
             set
             {
@@ -316,10 +300,7 @@ namespace WorkspacesEditor.Models
 
         public double PreviewImageWidth
         {
-            get
-            {
-                return _previewImageWidth;
-            }
+            get => _previewImageWidth;
 
             set
             {
@@ -366,6 +347,7 @@ namespace WorkspacesEditor.Models
             Id = other.Id;
             Name = other.Name;
             IsRevertEnabled = true;
+            MoveExistingWindows = other.MoveExistingWindows;
         }
 
         internal void CloseExpanders()
@@ -378,13 +360,13 @@ namespace WorkspacesEditor.Models
 
         internal MonitorSetup GetMonitorForApp(Application app)
         {
-            var monitorSetup = Monitors.Where(x => x.MonitorNumber == app.MonitorNumber).FirstOrDefault();
+            MonitorSetup monitorSetup = Monitors.Where(x => x.MonitorNumber == app.MonitorNumber).FirstOrDefault();
             if (monitorSetup == null)
             {
                 // monitors changed: try to determine monitor id based on middle point
                 int middleX = app.Position.X + (app.Position.Width / 2);
                 int middleY = app.Position.Y + (app.Position.Height / 2);
-                var monitorCandidate = Monitors.Where(x =>
+                MonitorSetup monitorCandidate = Monitors.Where(x =>
                     (x.MonitorDpiUnawareBounds.Left < middleX) &&
                     (x.MonitorDpiUnawareBounds.Right > middleX) &&
                     (x.MonitorDpiUnawareBounds.Top < middleY) &&

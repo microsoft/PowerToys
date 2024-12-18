@@ -33,30 +33,23 @@ namespace AdvancedPaste.Helpers
         private static readonly Regex CsvRemoveStartAndEndQuotationMarksRegex = new Regex(@"^""(?=(""{2})+)|(?<=(""{2})+)""$");
         private static readonly Regex CsvReplaceDoubleQuotationMarksRegex = new Regex(@"""{2}");
 
-        internal static string ToJsonFromXmlOrCsv(DataPackageView clipboardData)
+        internal static async Task<string> ToJsonFromXmlOrCsvAsync(DataPackageView clipboardData)
         {
             Logger.LogTrace();
 
-            if (clipboardData == null || !clipboardData.Contains(StandardDataFormats.Text))
+            if (!clipboardData.Contains(StandardDataFormats.Text))
             {
                 Logger.LogWarning("Clipboard does not contain text data");
                 return string.Empty;
             }
 
-#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-            string text = Task.Run(async () =>
-            {
-                string plainText = await clipboardData.GetTextAsync() as string;
-                return plainText;
-            }).Result;
-#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
-
+            var text = await clipboardData.GetTextAsync();
             string jsonText = string.Empty;
 
             // Try convert XML
             try
             {
-                XmlDocument doc = new XmlDocument();
+                XmlDocument doc = new();
                 doc.LoadXml(text);
                 Logger.LogDebug("Converted from XML.");
                 jsonText = JsonConvert.SerializeXmlNode(doc, Newtonsoft.Json.Formatting.Indented);
