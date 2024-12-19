@@ -137,6 +137,11 @@ jobs:
   - template: steps-ensure-dotnet-version.yml
     parameters:
       sdk: true
+      version: '8.0'
+
+  - template: steps-ensure-dotnet-version.yml
+    parameters:
+      sdk: true
       version: '9.0'
 
   - ${{ if eq(parameters.runTests, true) }}:
