@@ -15,15 +15,7 @@ public sealed class PersistedCache : ISettingsConfig
 {
     public record class CacheItem(CacheKey CacheKey, CacheValue CacheValue);
 
-    private static readonly JsonSerializerOptions SerializerOptions = new()
-    {
-        Converters =
-        {
-            new JsonStringEnumConverter(),
-        },
-    };
-
-    public static PersistedCache FromJsonString(string json) => JsonSerializer.Deserialize<PersistedCache>(json, SerializerOptions);
+    public static PersistedCache FromJsonString(string json) => JsonSerializer.Deserialize<PersistedCache>(json, AdvancedPasteJsonSerializerContext.Default.PersistedCache);
 
     public string Version { get; init; }
 
@@ -31,7 +23,7 @@ public sealed class PersistedCache : ISettingsConfig
 
     public string GetModuleName() => Constants.AdvancedPasteModuleName;
 
-    public string ToJsonString() => JsonSerializer.Serialize(this, SerializerOptions);
+    public string ToJsonString() => JsonSerializer.Serialize(this, AdvancedPasteJsonSerializerContext.Default.PersistedCache);
 
     public override string ToString() => ToJsonString();
 
