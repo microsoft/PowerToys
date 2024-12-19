@@ -50,6 +50,7 @@ map<wstring, vector<wstring>> escapeInfo = {
 
 vector<wstring> filesToDelete = {
     L"AdvancedPaste\\lastQuery.json",
+    L"AdvancedPaste\\kernelQueryCache.json",
     L"PowerToys Run\\Cache",
     L"PowerRename\\replace-mru.json",
     L"PowerRename\\search-mru.json",

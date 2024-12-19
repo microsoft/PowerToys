@@ -24,6 +24,7 @@ AFeature
 AFFINETRANSFORM
 AFX
 AGGREGATABLE
+ahk
 AHybrid
 akv
 ALarger
@@ -127,6 +128,7 @@ boxmodel
 BPBF
 bpmf
 bpp
+Breadcrumb
 Browsable
 BROWSEINFO
 bsd
@@ -328,6 +330,7 @@ DEVMODEW
 DEVMON
 devpkey
 DEVSOURCE
+DGR
 DIIRFLAG
 dimm
 DISABLEASACTIONKEY
@@ -615,6 +618,7 @@ HWNDLAST
 HWNDNEXT
 HWNDPREV
 hyjiacan
+IAI
 IBeam
 ICONERROR
 ICONLOCATION
@@ -1406,6 +1410,7 @@ SIZENS
 SIZENWSE
 sizeread
 SIZEWE
+SKEXP
 SKIPOWNPROCESS
 sku
 SLGP
@@ -1840,3 +1845,5 @@ zonable
 zoneset
 Zoneszonabletester
 zzz
+localpackage
+winappsdk

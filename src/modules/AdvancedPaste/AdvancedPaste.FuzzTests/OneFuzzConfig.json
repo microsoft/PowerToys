@@ -1,0 +1,47 @@
+﻿{
+  "configVersion": 3,
+  "entries": [
+    {
+      "fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "dll": "AdvancedPaste.FuzzTests.dll",
+        "class": "AdvancedPaste.FuzzTests.FuzzTests",
+        "method": "FuzzToJsonFromXmlOrCsv",
+        "FuzzingTargetBinaries": [
+          "PowerToys.AdvancedPaste.dll"
+        ]
+      },
+      "adoTemplate": {
+        // supply the values appropriate to your
+        // project, where bugs will be filed 
+        "org": "microsoft",
+        "project": "OS",
+        "AssignedTo": "leilzh@microsoft.com",
+        "AreaPath": "OS\\Windows Client and Services\\WinPD\\DEEP-Developer Experience, Ecosystem and Partnerships\\SHINE\\PowerToys",
+        "IterationPath": "OS\\Future"
+      },
+      "jobNotificationEmail": "leilzh@microsoft.com",
+      "skip": false,
+      "rebootAfterSetup": false,
+      "oneFuzzJobs": [
+        // at least one job is required
+        {
+          "projectName": "AdvancedPaste",
+          "targetName": "AdvancedPaste-dotnet-fuzzer"
+        }
+      ],
+      "jobDependencies": [
+        // this should contain, at minimum,
+        // the DLL and PDB files
+        // you will need to add any other files required
+        // (globs are supported)
+        "AdvancedPaste.FuzzTests.dll",
+        "AdvancedPaste.FuzzTests.pdb",
+        "Microsoft.Windows.SDK.NET.dll",
+        "Newtonsoft.Json.dll",
+        "WinRT.Runtime.dll"
+      ],
+      "SdlWorkItemId": 49911822
+    }
+  ]
+}
