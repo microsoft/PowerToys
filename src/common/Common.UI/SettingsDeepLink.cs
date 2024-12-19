@@ -95,12 +95,13 @@ namespace Common.UI
                 if (mainExecutableIsOnTheParentFolder)
                 {
                     // Need to go into parent folder for PowerToys.exe. Likely a WinUI3 App SDK application.
-                    directoryPath = directoryPath + "\\..\\PowerToys.exe";
+                    directoryPath = Path.Combine(directoryPath, "..");
+                    directoryPath = Path.Combine(directoryPath, "PowerToys.exe");
                 }
                 else
                 {
                     // PowerToys.exe is in the same path as the application.
-                    directoryPath = directoryPath + "\\PowerToys.exe";
+                    directoryPath = Path.Combine(directoryPath, "PowerToys.exe");
                 }
 
                 Process.Start(new ProcessStartInfo(directoryPath) { Arguments = "--open-settings=" + SettingsWindowNameToString(window) });
