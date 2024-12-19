@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security;
+using System.Text.RegularExpressions;
 using Microsoft.Win32;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
@@ -222,10 +223,82 @@ public class Win32Program // : IProgram
         }
     }
 
+    private static readonly Regex InternetShortcutURLPrefixes = new(@"^steam:\/\/(rungameid|run|open)\/|^com\.epicgames\.launcher:\/\/apps\/", RegexOptions.Compiled);
+
     // This function filters Internet Shortcut programs
     private static Win32Program InternetShortcutProgram(string path)
     {
-        return InvalidProgram;
+        try
+        {
+            // We don't want to read the whole file if we don't need to
+            var lines = File.ReadLines(path);
+            var iconPath = string.Empty;
+            var urlPath = string.Empty;
+            var validApp = false;
+
+            const string urlPrefix = "URL=";
+            const string iconFilePrefix = "IconFile=";
+
+            foreach (var line in lines)
+            {
+                // Using OrdinalIgnoreCase since this is used internally
+                if (line.StartsWith(urlPrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    urlPath = line.Substring(urlPrefix.Length);
+
+                    if (!Uri.TryCreate(urlPath, UriKind.RelativeOrAbsolute, out var _))
+                    {
+                        // ProgramLogger.Warn("url could not be parsed", null, MethodBase.GetCurrentMethod().DeclaringType, urlPath);
+                        return InvalidProgram;
+                    }
+
+                    // To filter out only those steam shortcuts which have 'run' or 'rungameid' as the hostname
+                    if (InternetShortcutURLPrefixes.Match(urlPath).Success)
+                    {
+                        validApp = true;
+                    }
+                }
+                else if (line.StartsWith(iconFilePrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    iconPath = line.Substring(iconFilePrefix.Length);
+                }
+
+                // If we resolved an urlPath & and an iconPath quit reading the file
+                if (!string.IsNullOrEmpty(urlPath) && !string.IsNullOrEmpty(iconPath))
+                {
+                    break;
+                }
+            }
+
+            if (!validApp)
+            {
+                return InvalidProgram;
+            }
+
+            try
+            {
+                return new Win32Program
+                {
+                    Name = Path.GetFileNameWithoutExtension(path),
+                    ExecutableName = Path.GetFileName(path),
+                    IcoPath = iconPath,
+                    FullPath = urlPath,
+                    UniqueIdentifier = path,
+                    ParentDirectory = Directory.GetParent(path)?.FullName ?? string.Empty,
+                    Valid = true,
+                    Enabled = true,
+                    AppType = ApplicationType.InternetShortcutApplication,
+                };
+            }
+            catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
+            {
+                return InvalidProgram;
+            }
+        }
+        catch (Exception)
+        {
+            return InvalidProgram;
+        }
     }
 
     private static Win32Program LnkProgram(string path)
@@ -422,7 +495,7 @@ public class Win32Program // : IProgram
                     {
                         files.AddRange(Directory.EnumerateFiles(currentDirectory, $"*.{suffix}", SearchOption.TopDirectoryOnly));
                     }
-                    catch (DirectoryNotFoundException )
+                    catch (DirectoryNotFoundException)
                     {
                         // ProgramLogger.Warn("|The directory trying to load the program from does not exist", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
                     }
@@ -432,7 +505,7 @@ public class Win32Program // : IProgram
             {
                 // ProgramLogger.Warn($"|Permission denied when trying to load programs from {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
             }
-            catch (Exception )
+            catch (Exception)
             {
                 // ProgramLogger.Exception($"|An unexpected error occurred in the calling method ProgramPaths at {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
             }
@@ -460,7 +533,7 @@ public class Win32Program // : IProgram
             {
                 // ProgramLogger.Warn($"|Permission denied when trying to load programs from {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
             }
-            catch (Exception )
+            catch (Exception)
             {
                 // ProgramLogger.Exception($"|An unexpected error occurred in the calling method ProgramPaths at {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
             }
@@ -617,12 +690,9 @@ public class Win32Program // : IProgram
 
         public bool Equals(Win32Program? app1, Win32Program? app2)
         {
-            if (app1 == null && app2 == null)
-            {
-                return true;
-            }
-
-            return app1 != null
+            return app1 == null && app2 == null
+                ? true
+                : app1 != null
                    && app2 != null
                    && (app1.Name?.ToUpperInvariant(), app1.ExecutableName?.ToUpperInvariant(), app1.FullPath?.ToUpperInvariant())
                    .Equals((app2.Name?.ToUpperInvariant(), app2.ExecutableName?.ToUpperInvariant(), app2.FullPath?.ToUpperInvariant()));
@@ -682,7 +752,7 @@ public class Win32Program // : IProgram
             icoPath = ExpandEnvironmentVariables(redirectionPath);
             return true;
         }
-        catch (IOException )
+        catch (IOException)
         {
             // ProgramLogger.Warn($"|Error whilst retrieving the redirection path from app execution alias {program.FullPath}", e, MethodBase.GetCurrentMethod().DeclaringType, program.FullPath);
         }
@@ -746,7 +816,7 @@ public class Win32Program // : IProgram
 
             return DeduplicatePrograms(programs.Concat(runCommandPrograms).Where(program => program?.Valid == true));
         }
-        catch (Exception )
+        catch (Exception)
         {
             // ProgramLogger.Exception("An unexpected error occurred", e, MethodBase.GetCurrentMethod().DeclaringType, "Not available");
             return Array.Empty<Win32Program>();

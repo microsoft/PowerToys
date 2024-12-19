@@ -68,14 +68,18 @@ public sealed partial class AllAppsPage : ListPage
         var win32Results = win32s
             .Where((application) => application.Enabled /*&& application.Valid*/)
             .Select(app =>
-                new AppItem
+            {
+                return new AppItem
                 {
                     Name = app.Name,
                     Subtitle = app.Description,
-                    IcoPath = app.FullPath, // similarly, this should be IcoPath, but :shrug:
-                    ExePath = app.LnkFilePath ?? app.FullPath,
+                    IcoPath = app.AppType == Win32Program.ApplicationType.InternetShortcutApplication ?
+                       app.IcoPath :
+                       app.FullPath,
+                    ExePath = !string.IsNullOrEmpty(app.LnkFilePath) ? app.LnkFilePath : app.FullPath,
                     DirPath = app.Location,
-                });
+                };
+            });
 
         return uwpResults.Concat(win32Results).OrderBy(app => app.Name).ToList();
     }
