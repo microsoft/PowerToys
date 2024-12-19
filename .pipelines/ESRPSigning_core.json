@@ -221,7 +221,7 @@
                 "WinUI3Apps\\PowerToys.Settings.exe",
 
                 "PowerToys.CmdPalModuleInterface.dll",
-                "*Microsoft.CmdPal.UI.Poc_*.msix"
+                "*Microsoft.CmdPal.UI_*.msix"
             ],
             "SigningInfo": {
                 "Operations": [

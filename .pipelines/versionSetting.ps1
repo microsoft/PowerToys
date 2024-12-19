@@ -78,7 +78,7 @@ Write-Host "NewPlusContextMenu version" $newPlusContextMenuAppManifest.Package.I
 $newPlusContextMenuAppManifest.Save($newPlusContextMenuAppManifestWriteFileLocation);
 
 # Set package version in Package.appxmanifest
-$cmdPalAppManifestWriteFileLocation = $PSScriptRoot + '/../src/modules/cmdpal/WindowsCommandPalette/Package.appxmanifest';
+$cmdPalAppManifestWriteFileLocation = $PSScriptRoot + '/../src/modules/cmdpal/Microsoft.CmdPal.UI/Package.appxmanifest';
 $cmdPalAppManifestReadFileLocation = $cmdPalAppManifestWriteFileLocation;
 
 [XML]$cmdPalAppManifest = Get-Content $cmdPalAppManifestReadFileLocation

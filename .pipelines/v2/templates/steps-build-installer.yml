@@ -95,7 +95,7 @@ steps:
       $searchDir = "extractedMsi\File"
 
       # Define the regex pattern for MSIX files
-      $pattern = '^Microsoft.CmdPal.UI.Poc.*\.msix$'
+      $pattern = '^Microsoft.CmdPal.UI.*\.msix$'
 
       # Get all files in the directory and subdirectories
       $msixFile = Get-ChildItem -Path $searchDir -Recurse -File | Where-Object {

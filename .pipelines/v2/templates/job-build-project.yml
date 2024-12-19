@@ -389,7 +389,7 @@ jobs:
 
   - ${{ if eq(parameters.codeSign, true) }}:
     - pwsh: |-
-        $Package = (Get-ChildItem -Recurse -Filter "Microsoft.CmdPal.UI.Poc*.msix" | Select -First 1)
+        $Package = (Get-ChildItem -Recurse -Filter "Microsoft.CmdPal.UI_*.msix" | Select -First 1)
         $PackageFilename = $Package.FullName
         Write-Host "##vso[task.setvariable variable=CmdPalPackagePath]${PackageFilename}"
       displayName: Locate the MSIX
@@ -403,7 +403,7 @@ jobs:
         displayName: Sign CmdPal MSIX content
         signingIdentity: ${{ parameters.signingIdentity }}
         inputs:
-          FolderPath: '$(JobOutputDirectory)/CmdPalPackageContents' # Video conf uses x86 and x64.
+          FolderPath: '$(JobOutputDirectory)/CmdPalPackageContents'
           signType: batchSigning
           batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_cmdpal_msix_content.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'

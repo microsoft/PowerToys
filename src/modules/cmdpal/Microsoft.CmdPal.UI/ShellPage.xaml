@@ -50,9 +50,7 @@
                     <ColumnDefinition x:Name="DetailsColumn" Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <Frame
-                    Name="RootFrame"
-                    IsNavigationStackEnabled="True" />
+                <Frame Name="RootFrame" IsNavigationStackEnabled="True" />
 
                 <Grid
                     x:Name="DetailsContent"

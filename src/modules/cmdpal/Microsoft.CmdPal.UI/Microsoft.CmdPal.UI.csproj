@@ -15,7 +15,6 @@
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
   </PropertyGroup>
 
-
   <PropertyGroup>
     <!-- This lets us actually reference types from Microsoft.Terminal.UI -->
     <CsWinRTIncludes>Microsoft.Terminal.UI</CsWinRTIncludes>

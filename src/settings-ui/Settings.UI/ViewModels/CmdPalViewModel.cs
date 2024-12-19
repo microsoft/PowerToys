@@ -21,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class CmdPalViewModel : Observable
     {
-        private static readonly string PackageName = "Microsoft.CmdPal.POC";
+        private static readonly string PackageName = "Microsoft.CmdPal";
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _isEnabled;
