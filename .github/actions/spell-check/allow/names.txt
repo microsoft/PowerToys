@@ -65,6 +65,7 @@ Deondre
 DHowett
 ductdo
 Essey
+Feng
 ethanfangg
 ferraridavide
 frankychen
@@ -112,6 +113,7 @@ Markovic
 martinchrzan
 martinmoene
 Melman
+Mengyuan
 Mikhayelyan
 msft
 Mykhailo
@@ -124,11 +126,13 @@ oldnewthing
 onegreatworld
 palenshus
 pedrolamas
+Peiyao
 peteblois
 phoboslab
 Ponten
 Pooja
 Pylyp
+Qingpeng
 quachpas
 Quriz
 randyrants
@@ -160,13 +164,16 @@ Triet
 urnotdfs
 waaverecords
 Whuihuan
+Xiaofeng
 Xpg
+Yaqing
 yaqingmi
 ycv
 yeelam
 Yuniardi
 yuyoyuppe
 Zeol
+Zhao
 zhaopy536
 zhaoqpcn
 Zoltan
