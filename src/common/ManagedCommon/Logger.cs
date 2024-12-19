@@ -144,9 +144,25 @@ namespace ManagedCommon
 
         private static string GetCallerInfo(string memberName, string sourceFilePath, int sourceLineNumber)
         {
-            string fileName = Path.GetFileNameWithoutExtension(sourceFilePath);
+            string callerFileName = "Unknown";
 
-            return $"{fileName}::{memberName}::{sourceLineNumber}";
+            try
+            {
+                string fileNameWithoutEx = Path.GetFileNameWithoutExtension(sourceFilePath);
+                if (!string.IsNullOrEmpty(fileNameWithoutEx))
+                {
+                    callerFileName = fileNameWithoutEx;
+                }
+            }
+            catch (Exception)
+            {
+                callerFileName = "Unknown";
+#if DEBUG
+                throw;
+#endif
+            }
+
+            return $"{callerFileName}::{memberName}::{sourceLineNumber}";
         }
     }
 }
