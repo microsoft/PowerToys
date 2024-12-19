@@ -178,9 +178,36 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
             continue;
         }
 
-        pwaHelper.UpdatePwaApp(&data.value(), window);
+        auto appData = data.value();
 
-        if ((app.name == data.value().name || app.path == data.value().installPath) && (app.pwaAppId == data.value().pwaAppId))
+        // PWA apps
+        bool isEdge = appData.IsEdge();
+        bool isChrome = appData.IsChrome();
+        if (isEdge || isChrome)
+        {
+            auto windowAumid = pwaHelper.GetAUMIDFromWindow(window);
+            std::optional<std::wstring> pwaAppId{};
+
+            if (isEdge)
+            {
+                pwaAppId = pwaHelper.GetEdgeAppId(windowAumid);
+            }
+            else if (isChrome)
+            {
+                pwaAppId = pwaHelper.GetChromeAppId(windowAumid);
+            }
+
+            if (pwaAppId.has_value())
+            {
+                auto pwaName = pwaHelper.SearchPwaName(pwaAppId.value(), windowAumid);
+                Logger::info(L"Found {} PWA app with name {}, appId: {}", (isEdge ? L"Edge" : (isChrome ? L"Chrome" : L"unknown")), pwaName, pwaAppId.value());
+
+                appData.pwaAppId = pwaAppId.value();
+                appData.name = pwaName + L" (" + appData.name + L")";
+            }
+        }
+
+        if ((app.name == appData.name || app.path == appData.installPath) && (app.pwaAppId == appData.pwaAppId))
         {
             if (!appDataNearest.has_value())
             {
@@ -286,7 +313,11 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
     // process launching windows
     while (!m_launchingStatus.AllLaunched() && waitingTime < maxLaunchingWaitingTime)
     {
-        processWindows(false);
+        if (processWindows(false))
+        {
+            waitingTime = 0;
+        }
+
         std::this_thread::sleep_for(std::chrono::milliseconds(ms));
         waitingTime += ms;
     }
@@ -313,8 +344,9 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
     }
 }
 
-void WindowArranger::processWindows(bool processAll)
+bool WindowArranger::processWindows(bool processAll)
 {
+    bool processedAnyWindow = false;
     std::vector<HWND> windows = WindowEnumerator::Enumerate(WindowFilter::Filter);
 
     if (!processAll)
@@ -326,27 +358,29 @@ void WindowArranger::processWindows(bool processAll)
 
     for (HWND window : windows)
     {
-        processWindow(window);
+        processedAnyWindow |= processWindow(window);
     }
+
+    return processedAnyWindow;
 }
 
-void WindowArranger::processWindow(HWND window)
+bool WindowArranger::processWindow(HWND window)
 {
     if (m_launchingStatus.IsWindowProcessed(window))
     {
-        return;
+        return false;
     }
 
     RECT rect = WindowUtils::GetWindowRect(window);
     if (rect.right - rect.left <= 0 || rect.bottom - rect.top <= 0)
     {
-        return;
+        return false;
     }
 
     std::wstring processPath = get_process_path(window);
     if (processPath.empty())
     {
-        return;
+        return false;
     }
 
     DWORD pid{};
@@ -355,7 +389,7 @@ void WindowArranger::processWindow(HWND window)
     auto data = Utils::Apps::GetApp(processPath, pid, m_installedApps);
     if (!data.has_value())
     {
-        return;
+        return false;
     }
 
     const auto& apps = m_launchingStatus.Get();
@@ -368,7 +402,7 @@ void WindowArranger::processWindow(HWND window)
     if (iter == apps.end())
     {
         Logger::info(L"Skip {}", processPath);
-        return;
+        return false;
     }
 
     if (moveWindow(window, iter->first))
@@ -385,6 +419,7 @@ void WindowArranger::processWindow(HWND window)
     {
         sendUpdatedState(state.value());
     }
+    return true;
 }
 
 bool WindowArranger::moveWindow(HWND window, const WorkspacesData::WorkspacesProject::Application& app)

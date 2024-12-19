@@ -338,7 +338,7 @@ namespace Helpers
         return key;
     }
 
-    // Function to sort a vector of shortcuts based on it's size
+    // Function to sort a vector of shortcuts based on its size
     void SortShortcutVectorBasedOnSize(std::vector<Shortcut>& shortcutVector)
     {
         std::sort(shortcutVector.begin(), shortcutVector.end(), [](Shortcut first, Shortcut second) {

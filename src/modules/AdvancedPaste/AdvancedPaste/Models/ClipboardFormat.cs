@@ -14,5 +14,5 @@ public enum ClipboardFormat
     Html = 1 << 1,
     Audio = 1 << 2,
     Image = 1 << 3,
-    ImageFile = 1 << 4,
+    File = 1 << 4, // output only for now
 }

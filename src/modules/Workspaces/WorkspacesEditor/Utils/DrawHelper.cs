@@ -153,7 +153,8 @@ namespace WorkspacesEditor.Utils
             }
 
             using MemoryStream memory = new();
-            previewBitmap.Save(memory, ImageFormat.Png);
+            WorkspacesCsharpLibrary.DrawHelper.SaveBitmap(previewBitmap, memory);
+
             memory.Position = 0;
 
             BitmapImage bitmapImage = new();
@@ -311,7 +312,9 @@ namespace WorkspacesEditor.Utils
             }
 
             using MemoryStream memory = new();
-            previewBitmap.Save(memory, ImageFormat.Png);
+
+            WorkspacesCsharpLibrary.DrawHelper.SaveBitmap(previewBitmap, memory);
+
             memory.Position = 0;
 
             BitmapImage bitmapImage = new();

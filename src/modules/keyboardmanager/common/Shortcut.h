@@ -82,10 +82,10 @@ public:
     // Constructor to initialize Shortcut from single key
     Shortcut(const DWORD key);
 
-    // Constructor to initialize Shortcut from it's virtual key code string representation.
+    // Constructor to initialize Shortcut from its virtual key code string representation.
     Shortcut(const std::wstring& shortcutVK);
 
-    // Constructor to initialize Shortcut from it's virtual key code string representation.
+    // Constructor to initialize Shortcut from its virtual key code string representation.
     Shortcut(const std::wstring& shortcutVK, const DWORD _secondKeyOfChord);
 
     // Constructor to initialize shortcut from a list of keys
