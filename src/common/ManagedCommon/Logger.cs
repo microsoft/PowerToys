@@ -144,7 +144,7 @@ namespace ManagedCommon
 
         private static string GetCallerInfo(string memberName, string sourceFilePath, int sourceLineNumber)
         {
-            string fileName = Path.GetFileName(sourceFilePath);
+            string fileName = Path.GetFileNameWithoutExtension(sourceFilePath);
 
             return $"{fileName}::{memberName}::{sourceLineNumber}";
         }
