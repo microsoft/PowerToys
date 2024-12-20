@@ -754,7 +754,7 @@ lnks
 LOADFROMFILE
 LOBYTE
 LOCALDISPLAY
-LOCALPACKAGE
+localpackage
 LOCALSYSTEM
 LOCATIONCHANGE
 LOGFONT
@@ -1722,6 +1722,7 @@ WIC
 wifi
 wil
 winapi
+winappsdk
 wincodec
 Wincodecsdk
 wincolor
@@ -1846,5 +1847,3 @@ zonable
 zoneset
 Zoneszonabletester
 zzz
-localpackage
-winappsdk
