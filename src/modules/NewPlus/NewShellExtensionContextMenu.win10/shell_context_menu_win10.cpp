@@ -220,7 +220,7 @@ IFACEMETHODIMP shell_context_menu_win10::InvokeCommand(CMINVOKECOMMANDINFO* para
     if (HIWORD(params->lpVerb)!=0)
     {
         // Not a menu command. It's likely a string verb command from another menu.
-        // The logic to interpret lpVerb is explained here: https://learn.microsoft.com/en-us/previous-versions//bb776881(v=vs.85)?redirectedfrom=MSDN#invokecommand-method
+        // The logic to interpret lpVerb is explained here: https://learn.microsoft.com/en-us/previous-versions//bb776881(v=vs.85)#invokecommand-method
         return E_FAIL;
     }
 
