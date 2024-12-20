@@ -281,60 +281,62 @@
             IsPrimaryButtonEnabled="False"
             IsSecondaryButtonEnabled="True"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
-            <Grid RowSpacing="24">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Image Margin="-24,-24,-24,0" Source="{ThemeResource DialogHeaderImage}" />
-                <TextBlock
-                    Grid.Row="1"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    TextWrapping="Wrap">
-                    <Run x:Uid="AdvancedPaste_EnableAIDialog_Description" />
-                    <Hyperlink NavigateUri="https://openai.com/policies/terms-of-use" TabIndex="3">
-                        <Run x:Uid="TermsLink" />
-                    </Hyperlink>
-                    <Run x:Uid="AIFooterSeparator" Foreground="{ThemeResource TextFillColorSecondaryBrush}">|</Run>
-                    <Hyperlink NavigateUri="https://openai.com/policies/privacy-policy" TabIndex="3">
-                        <Run x:Uid="PrivacyLink" />
-                    </Hyperlink>
-                </TextBlock>
-
-                <StackPanel Grid.Row="2" Orientation="Vertical">
-                    <TextBlock x:Uid="AdvancedPaste_EnableAIDialog_ConfigureOpenAIKey" FontWeight="SemiBold" />
-                    <TextBlock Grid.Row="2" TextWrapping="Wrap">
-                        <Run x:Uid="AdvancedPaste_EnableAIDialog_LoginIntoText" />
-                        <Hyperlink NavigateUri="https://platform.openai.com/api-keys">
-                            <Run x:Uid="AdvancedPaste_EnableAIDialog_OpenAIApiKeysOverviewText" />
-                        </Hyperlink>
-                        <LineBreak />
-                        <Run x:Uid="AdvancedPaste_EnableAIDialog_CreateNewKeyText" />
-                        <LineBreak />
-                        <Run x:Uid="AdvancedPaste_EnableAIDialog_NoteAICreditsText" />
-                    </TextBlock>
-                </StackPanel>
-
-                <Grid Grid.Row="3" ColumnSpacing="8">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <Grid RowSpacing="24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Image Margin="-24,-24,-24,0" Source="{ThemeResource DialogHeaderImage}" />
                     <TextBlock
-                        x:Uid="AdvancedPaste_EnableAIDialogOpenAIApiKey"
-                        VerticalAlignment="Center"
-                        TextWrapping="Wrap" />
-                    <TextBox
-                        x:Name="AdvancedPaste_EnableAIDialogOpenAIApiKey"
-                        Grid.Column="1"
-                        MinWidth="248"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Stretch"
-                        TextChanged="AdvancedPaste_EnableAIDialogOpenAIApiKey_TextChanged" />
+                        Grid.Row="1"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap">
+                        <Run x:Uid="AdvancedPaste_EnableAIDialog_Description" />
+                        <Hyperlink NavigateUri="https://openai.com/policies/terms-of-use" TabIndex="3">
+                            <Run x:Uid="TermsLink" />
+                        </Hyperlink>
+                        <Run x:Uid="AIFooterSeparator" Foreground="{ThemeResource TextFillColorSecondaryBrush}">|</Run>
+                        <Hyperlink NavigateUri="https://openai.com/policies/privacy-policy" TabIndex="3">
+                            <Run x:Uid="PrivacyLink" />
+                        </Hyperlink>
+                    </TextBlock>
+
+                    <StackPanel Grid.Row="2" Orientation="Vertical">
+                        <TextBlock x:Uid="AdvancedPaste_EnableAIDialog_ConfigureOpenAIKey" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="2" TextWrapping="Wrap">
+                            <Run x:Uid="AdvancedPaste_EnableAIDialog_LoginIntoText" />
+                            <Hyperlink NavigateUri="https://platform.openai.com/api-keys">
+                                <Run x:Uid="AdvancedPaste_EnableAIDialog_OpenAIApiKeysOverviewText" />
+                            </Hyperlink>
+                            <LineBreak />
+                            <Run x:Uid="AdvancedPaste_EnableAIDialog_CreateNewKeyText" />
+                            <LineBreak />
+                            <Run x:Uid="AdvancedPaste_EnableAIDialog_NoteAICreditsText" />
+                        </TextBlock>
+                    </StackPanel>
+
+                    <Grid Grid.Row="3" ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            x:Uid="AdvancedPaste_EnableAIDialogOpenAIApiKey"
+                            VerticalAlignment="Center"
+                            TextWrapping="Wrap" />
+                        <TextBox
+                            x:Name="AdvancedPaste_EnableAIDialogOpenAIApiKey"
+                            Grid.Column="1"
+                            MinWidth="248"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            TextChanged="AdvancedPaste_EnableAIDialogOpenAIApiKey_TextChanged" />
+                    </Grid>
                 </Grid>
-            </Grid>
+            </ScrollViewer>
         </ContentDialog>
         <ContentDialog
             x:Name="CustomActionDialog"

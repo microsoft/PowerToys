@@ -8,6 +8,9 @@ parameters:
   - name: inputArtifactStem
     type: string
     default: ""
+  - name: useLatestWebView2
+    type: boolean
+    default: false
 
 jobs:
 - job: Test${{ parameters.platform }}${{ parameters.configuration }}
@@ -34,6 +37,29 @@ jobs:
     fetchDepth: 1
     fetchTags: false
 
+  - ${{ if eq(parameters.useLatestWebView2, true) }}:
+    - powershell: |
+        $edge_url = 'https://go.microsoft.com/fwlink/?linkid=2084649&Channel=Canary&language=en'
+        $timeout = New-TimeSpan -Minutes 6
+        $timeoutSeconds = [int]$timeout.TotalSeconds
+        $command = {
+            Invoke-WebRequest -Uri $using:edge_url -OutFile $(Pipeline.Workspace)\MicrosoftEdgeSetup.exe
+            Write-Host "##[command]Installing Canary channel of Microsoft Edge"
+            Start-Process $(Pipeline.Workspace)\MicrosoftEdgeSetup.exe -ArgumentList '/silent /install' -Wait
+        }
+
+        $job = Start-Job -ScriptBlock $command
+        Wait-Job $job -Timeout $timeoutSeconds
+        if ($job.State -eq "Running") {
+            Stop-Job $job
+            Write-Host "##[warning]The job was stopped because it exceeded the time limit."
+        }
+      displayName: "Install the latest MSEdge Canary"
+
+    - script: 
+        reg add "HKLM\Software\Policies\Microsoft\Edge\WebView2\ReleaseChannels" /v PowerToys.exe /t REG_SZ /d "3"
+      displayName: "Enable WebView2 Canary Channel"
+      
   - download: current
     displayName: Download artifacts
     artifact: build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}

@@ -740,6 +740,7 @@ LExit
 lhwnd
 LIBID
 lindex
+linkid
 LINKOVERLAY
 LINQTo
 listview
@@ -1845,5 +1846,5 @@ zonable
 zoneset
 Zoneszonabletester
 zzz
-
-
+localpackage
+winappsdk
