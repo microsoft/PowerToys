@@ -217,6 +217,12 @@ IFACEMETHODIMP shell_context_menu_win10::InvokeCommand(CMINVOKECOMMANDINFO* para
         return E_FAIL;
     }
 
+    if (HIWORD(params->lpVerb)!=0)
+    {
+        // Not a menu command. It's likely a string verb command from another menu.
+        return E_FAIL;
+    }
+
     // Get selected menu item (a template or the "Open templates" item)
     const auto selected_menu_item_index = LOWORD(params->lpVerb) - 1;
     if (selected_menu_item_index < 0)
