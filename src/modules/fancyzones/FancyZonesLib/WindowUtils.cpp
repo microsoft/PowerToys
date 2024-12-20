@@ -185,7 +185,7 @@ bool FancyZonesWindowUtils::IsExcludedByDefault(const HWND& hwnd, const std::wst
         return true;
     }
 
-    static std::vector<std::wstring> defaultExcludedApps = { NonLocalizable::PowerToysAppFZEditor, NonLocalizable::PowerToysWorkspacesEditor, NonLocalizable::CoreWindow, NonLocalizable::SearchUI };
+    static std::vector<std::wstring> defaultExcludedApps = { NonLocalizable::PowerToysAppFZEditor, NonLocalizable::CoreWindow, NonLocalizable::SearchUI };
     return (check_excluded_app(hwnd, processPath, defaultExcludedApps));
 }
 
