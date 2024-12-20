@@ -4,6 +4,8 @@
   <Import Project="..\..\Common.Dotnet.AotCompatibility.props" />
 
   <PropertyGroup>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>PowerToys.Common.UI</AssemblyName>
   </PropertyGroup>
 
