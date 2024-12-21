@@ -14,7 +14,7 @@ namespace Awake.Core
             ArgumentNullException.ThrowIfNull(target);
             ArgumentNullException.ThrowIfNull(source);
 
-            foreach (var element in source)
+            foreach (T? element in source)
             {
                 target.Add(element);
             }

@@ -25,7 +25,6 @@ using PowerToys.Interop;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Interfaces;
-using Wpf.Ui.Appearance;
 
 using CancellationToken = System.Threading.CancellationToken;
 using Image = Wox.Infrastructure.Image;
@@ -50,6 +49,31 @@ namespace PowerLauncher
         private Point _mouseDownPosition;
         private ResultViewModel _mouseDownResultViewModel;
 
+        // The enum flag for DwmSetWindowAttribute's second parameter, which tells the function what attribute to set.
+        public enum DWMWINDOWATTRIBUTE
+        {
+            DWMWA_WINDOW_CORNER_PREFERENCE = 33,
+        }
+
+        // The DWM_WINDOW_CORNER_PREFERENCE enum for DwmSetWindowAttribute's third parameter, which tells the function
+        // what value of the enum to set.
+        // Copied from dwmapi.h
+        public enum DWM_WINDOW_CORNER_PREFERENCE
+        {
+            DWMWCP_DEFAULT = 0,
+            DWMWCP_DONOTROUND = 1,
+            DWMWCP_ROUND = 2,
+            DWMWCP_ROUNDSMALL = 3,
+        }
+
+        // Import dwmapi.dll and define DwmSetWindowAttribute in C# corresponding to the native function.
+        [DllImport("dwmapi.dll", CharSet = CharSet.Unicode, PreserveSig = false)]
+        internal static extern void DwmSetWindowAttribute(
+            IntPtr hwnd,
+            DWMWINDOWATTRIBUTE attribute,
+            ref DWM_WINDOW_CORNER_PREFERENCE pvAttribute,
+            uint cbAttribute);
+
         public MainWindow(PowerToysRunSettings settings, MainViewModel mainVM, CancellationToken nativeWaiterCancelToken)
             : this()
         {
@@ -62,17 +86,6 @@ namespace PowerLauncher
             AppContext.SetSwitch("Switch.System.Windows.Controls.Grid.StarDefinitionsCanExceedAvailableSpace", true);
 
             InitializeComponent();
-
-            if (OSVersionHelper.IsWindows11())
-            {
-                WindowBackdropType = Wpf.Ui.Controls.WindowBackdropType.Acrylic;
-            }
-            else
-            {
-                WindowBackdropType = Wpf.Ui.Controls.WindowBackdropType.None;
-            }
-
-            SystemThemeWatcher.Watch(this, WindowBackdropType);
 
             _firstDeleteTimer.Elapsed += CheckForFirstDelete;
             _firstDeleteTimer.Interval = 1000;
@@ -179,6 +192,19 @@ namespace PowerLauncher
 
             // Call RegisterHotKey only after a window handle can be used, so that a global hotkey can be registered.
             _viewModel.RegisterHotkey(_hwndSource.Handle);
+            if (OSVersionHelper.IsWindows11())
+            {
+                // ResizeMode="NoResize" removes rounded corners. So force them to rounded.
+                IntPtr hWnd = new WindowInteropHelper(GetWindow(this)).EnsureHandle();
+                DWMWINDOWATTRIBUTE attribute = DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE;
+                DWM_WINDOW_CORNER_PREFERENCE preference = DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND;
+                DwmSetWindowAttribute(hWnd, attribute, ref preference, sizeof(uint));
+            }
+            else
+            {
+                // On Windows10 ResizeMode="NoResize" removes the border so we add a new one.
+                MainBorder.BorderThickness = new System.Windows.Thickness(0.5);
+            }
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
@@ -471,7 +497,7 @@ namespace PowerLauncher
 
         private void OnLocationChanged(object sender, EventArgs e)
         {
-            if (_settings.RememberLastLaunchLocation)
+            if (_settings != null && _settings.RememberLastLaunchLocation)
             {
                 _settings.WindowLeft = Left;
                 _settings.WindowTop = Top;
@@ -617,7 +643,7 @@ namespace PowerLauncher
                 catch (ArgumentOutOfRangeException ex)
                 {
                     // Due to virtualization being enabled for the listview, the layout system updates elements in a deferred manner using an algorithm that balances performance and concurrency.
-                    // Hence, there can be a situation where the element index that we want to scroll into view is out of range for it's parent control.
+                    // Hence, there can be a situation where the element index that we want to scroll into view is out of range for its parent control.
                     // To mitigate this we use the UpdateLayout function, which forces layout update to ensure that the parent element contains the latest properties.
                     // However, it has a performance impact and is therefore not called each time.
                     Log.Exception("The parent element layout is not updated yet", ex, GetType());

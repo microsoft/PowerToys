@@ -3,11 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-
-using ManagedCommon;
+using System.IO;
+using System.Windows;
+using System.Windows.Media;
+using Microsoft.Win32;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.UserSettings;
-using Wpf.Ui.Appearance;
 
 namespace PowerLauncher.Helper
 {
@@ -15,10 +16,10 @@ namespace PowerLauncher.Helper
     {
         private readonly PowerToysRunSettings _settings;
         private readonly MainWindow _mainWindow;
-        private Theme _currentTheme;
+        private ManagedCommon.Theme _currentTheme;
         private bool _disposed;
 
-        public Theme CurrentTheme => _currentTheme;
+        public ManagedCommon.Theme CurrentTheme => _currentTheme;
 
         public event Common.UI.ThemeChangedHandler ThemeChanged;
 
@@ -26,51 +27,112 @@ namespace PowerLauncher.Helper
         {
             _settings = settings;
             _mainWindow = mainWindow;
-            _currentTheme = ApplicationThemeManager.GetAppTheme().ToTheme();
-            SetTheme(false);
-
-            ApplicationThemeManager.Changed += ApplicationThemeManager_Changed;
+            UpdateTheme();
+            SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
         }
 
-        public void SetTheme(bool fromSettings)
+        private void OnUserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
         {
-            if (_settings.Theme == Theme.Light)
+            if (e.Category == UserPreferenceCategory.General)
             {
-                _currentTheme = Theme.Light;
-                _mainWindow?.Dispatcher.Invoke(() => ApplicationThemeManager.Apply(ApplicationTheme.Light, _mainWindow.WindowBackdropType));
+                // When switching from high contrast to dark mode we have to use UserPreferenceCategory.General otherwise it will crash when loading fluent.xaml
+                UpdateTheme();
             }
-            else if (_settings.Theme == Theme.Dark)
+            else if (e.Category == UserPreferenceCategory.Color)
             {
-                _currentTheme = Theme.Dark;
-                _mainWindow?.Dispatcher.Invoke(() => ApplicationThemeManager.Apply(ApplicationTheme.Dark, _mainWindow.WindowBackdropType));
+                // https://github.com/dotnet/wpf/issues/10043 When switching to high contrast we have to use UserPreferenceCategory.Color or it will crash due to fluent.xaml being already loaded.
+                if (_currentTheme is ManagedCommon.Theme.Dark or ManagedCommon.Theme.Light)
+                {
+                    UpdateTheme();
+                }
             }
-            else if (fromSettings)
+        }
+
+        private void SetSystemTheme(ManagedCommon.Theme theme)
+        {
+            _mainWindow.Background = Common.UI.OSVersionHelper.IsWindows11() is false ? SystemColors.WindowBrush : null;
+
+            _mainWindow.Resources.MergedDictionaries.Clear();
+            _mainWindow.Resources.MergedDictionaries.Add(new ResourceDictionary
             {
-                _mainWindow?.Dispatcher.Invoke(ApplicationThemeManager.ApplySystemTheme);
+                Source = new Uri("Styles/Styles.xaml", UriKind.Relative),
+            });
+            if (theme is ManagedCommon.Theme.Dark or ManagedCommon.Theme.Light)
+            {
+                string themeString = theme == ManagedCommon.Theme.Light ? "pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.Light.xaml"
+                    : "pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.Dark.xaml";
+                ResourceDictionary fluentThemeDictionary = new()
+                {
+                    Source = new Uri(themeString, UriKind.Absolute),
+                };
+                _mainWindow.Resources.MergedDictionaries.Add(fluentThemeDictionary);
+                if (!Common.UI.OSVersionHelper.IsWindows11())
+                {
+                    // Apply background only on Windows 10
+                    // Windows theme does not work properly for dark and light mode so right now set the background color manual.
+                    _mainWindow.Background = new SolidColorBrush
+                    {
+                        Color = theme is ManagedCommon.Theme.Dark ? (Color)ColorConverter.ConvertFromString("#202020") : (Color)ColorConverter.ConvertFromString("#fafafa"),
+                    };
+                }
+            }
+            else
+            {
+                _mainWindow.Resources.MergedDictionaries.Add(new ResourceDictionary
+                {
+                    Source = new Uri("Styles/FluentHC.xaml", UriKind.Relative),
+                });
+                string styleThemeString = theme switch
+                {
+                    ManagedCommon.Theme.Light => "Themes/Light.xaml",
+                    ManagedCommon.Theme.Dark => "Themes/Dark.xaml",
+                    ManagedCommon.Theme.HighContrastOne => "Themes/HighContrast1.xaml",
+                    ManagedCommon.Theme.HighContrastTwo => "Themes/HighContrast2.xaml",
+                    ManagedCommon.Theme.HighContrastWhite => "Themes/HighContrastWhite.xaml",
+                    _ => "Themes/HighContrastBlack.xaml",
+                };
+                _mainWindow.Resources.MergedDictionaries.Add(new ResourceDictionary
+                {
+                    Source = new Uri(styleThemeString, UriKind.Relative),
+                });
+                if (Common.UI.OSVersionHelper.IsWindows11())
+                {
+                    // Apply background only on Windows 11 to keep the same style as WPFUI
+                    _mainWindow.Background = new SolidColorBrush
+                    {
+                        Color = (Color)_mainWindow.FindResource("LauncherBackgroundColor"), // Use your DynamicResource key here
+                    };
+                }
             }
 
-            ImageLoader.UpdateIconPath(_currentTheme);
+            ImageLoader.UpdateIconPath(theme);
+            ThemeChanged?.Invoke(_currentTheme, theme);
+            _currentTheme = theme;
+        }
 
-            // oldTheme isn't used
-            ThemeChanged?.Invoke(_currentTheme, _currentTheme);
+        public void UpdateTheme()
+        {
+            ManagedCommon.Theme newTheme = _settings.Theme;
+            ManagedCommon.Theme theme = ThemeExtensions.GetHighContrastBaseType();
+            if (theme != ManagedCommon.Theme.Light)
+            {
+                newTheme = theme;
+            }
+            else if (_settings.Theme == ManagedCommon.Theme.System)
+            {
+                newTheme = ThemeExtensions.GetCurrentTheme();
+            }
+
+            _mainWindow.Dispatcher.Invoke(() =>
+            {
+                SetSystemTheme(newTheme);
+            });
         }
 
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
-        }
-
-        private void ApplicationThemeManager_Changed(ApplicationTheme currentApplicationTheme, System.Windows.Media.Color systemAccent)
-        {
-            var newTheme = currentApplicationTheme.ToTheme();
-            if (_currentTheme == newTheme)
-            {
-                return;
-            }
-
-            _currentTheme = newTheme;
-            SetTheme(false);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -82,7 +144,7 @@ namespace PowerLauncher.Helper
 
             if (disposing)
             {
-                ApplicationThemeManager.Changed -= ApplicationThemeManager_Changed;
+                SystemEvents.UserPreferenceChanged -= OnUserPreferenceChanged;
             }
 
             _disposed = true;

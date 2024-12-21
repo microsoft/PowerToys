@@ -40,19 +40,19 @@ We will be highlighting a cool utility each day for 24 days in December! To foll
 Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and click on `Assets` at the bottom to show the files available in the release. Please use the appropriate PowerToys installer that matches your machine's architecture and install scope. For most, it is `x64` and per-user.
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.87%22
-[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.86%22
-[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.86.0/PowerToysUserSetup-0.86.0-x64.exe
-[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.86.0/PowerToysUserSetup-0.86.0-arm64.exe
-[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.86.0/PowerToysSetup-0.86.0-x64.exe
-[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.86.0/PowerToysSetup-0.86.0-arm64.exe
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.88%22
+[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.87%22
+[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.87.0/PowerToysUserSetup-0.87.0-x64.exe
+[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.87.0/PowerToysUserSetup-0.87.0-arm64.exe
+[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.87.0/PowerToysSetup-0.87.0-x64.exe
+[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.87.0/PowerToysSetup-0.87.0-arm64.exe
 
 |  Description   | Filename | sha256 hash |
 |----------------|----------|-------------|
-| Per user - x64       | [PowerToysUserSetup-0.86.0-x64.exe][ptUserX64] | CFB9608B28B8FF12C9A7C9814A6EF981636EB5AB261DC278C28EC93FD959CCE2 |
-| Per user - ARM64     | [PowerToysUserSetup-0.86.0-arm64.exe][ptUserArm64] | 861CEDBFDCDA993D1D1056E3280319D5EA45D142CA3C737AB1FB4FABD651A5F5 |
-| Machine wide - x64   | [PowerToysSetup-0.86.0-x64.exe][ptMachineX64] | 857DE9DC5938D9602F82DFD6183DB5E6823B875A412AEC59B4BE93617E27E9CD |
-| Machine wide - ARM64 | [PowerToysSetup-0.86.0-arm64.exe][ptMachineArm64] | 6F37192534C195A02A80AAE1E449DF61C894C50763096A06195581801943FA31 |
+| Per user - x64       | [PowerToysUserSetup-0.87.0-x64.exe][ptUserX64] | A6549B8D78985CC995F091624D1A2B70907CAC8954334C1CAF61D26EBCF8A449 |
+| Per user - ARM64     | [PowerToysUserSetup-0.87.0-arm64.exe][ptUserArm64] | 3557D4F35AA52571334712A48F51D116F389FA8C43C6B27FE321A7525067E7AE |
+| Machine wide - x64   | [PowerToysSetup-0.87.0-x64.exe][ptMachineX64] | 600CDC7F9AC296AA8B554CA34A0C7EA2D9B1E7E8E41BD096840851B416E63A3C |
+| Machine wide - ARM64 | [PowerToysSetup-0.87.0-arm64.exe][ptMachineArm64] | 387B5BF1BD923BDA215D7DF1D82A197AE12CD91A71A73267768E26757F7A5FE6 |
 
 This is our preferred method.
 
@@ -98,103 +98,115 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.86 - October 2024 Update
+### 0.87 - December 2024 Update
 
 In this release, we focused on new features, stability, and improvements.
 
 **Highlights**
- 
- - Advanced Paste has new abilities: Image to text, and paste to file (text / png / html).
- - In settings, we've adjusted the left navigation to group the utilities. As the number of utilities shipped with PowerToys keeps growing, we felt this was a needed adjustment. Thanks everyone for your feedback!
- - Workspaces received many bug fixes, including the proper launching of many instances of the same application in the same workspace. Note, we are still actively looking at how to properly handle PWA detection.
- - We've added a diagnostic data (telemetry) opt-in option in the Settings General tab. As it is off-by-default, we encourage users to turn it on as that helps direct our development efforts and their journeys. More information about the data we collect can be found in the [PowerToys Data and Privacy documentation](https://aka.ms/powertoys-data-and-privacy-documentation) and what each event does.
 
-### General
-
- - Added a setting for diagnostic data (telemetry) opt-in (off by default, however, see above for why we encourage you to opt-in!) and user controls to view data.
- - Improved exception logging by adding the type of Exception and InnerException. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Advanced Paste has a new feature called "Advanced AI" that uses Semantic Kernel to allow setting up the orchestration of sequential clipboard transformations.
+ - Workspaces supports Progressive Web Applications.
+ - Workspaces has a new feature to move existing windows instead of creating new ones.
+ - Mouse Jump added new settings to allow customization of screens pop-up. Thanks [@mikeclayton](https://github.com/mikeclayton)!
+ - New+ now works on Windows 10. Thanks [@cgaarden](https://github.com/cgaarden)!
+ - Quick Accent allows selecting the character sets that should appear on the UI. Thanks [@Sirozha1337](https://github.com/Sirozha1337)!
 
 ### Advanced Paste
 
- - Added new built-in actions: Image to text, and paste txt, png or html as a file.
+ - Added a new optional feature allowing using AI to set up the orchestration of sequential clipboard transformations.
+
+### Awake
+
+ - Initialization, logging and tray icon setup improvements. Thanks [@dend](https://github.com/dend)!
+
+### File Explorer add-ons
+
+ - Preview Pane extensions now use the PerMonitorV2 DPI mode to fix errors on different scales. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+
+### Keyboard Manager.
+
+ - Added labels to the IME On, IME Off keys. Thanks [@kit494way](https://github.com/kit494way)!
+ - Fixed an issue that caused the Shift key to remain stuck if a numpad key was mapped to the Shift key.
+
+### Monaco Preview
+
+ - Added support for .ahk files to be shown as a plaintext file in Peek and File Explorer add-ons. Thanks [@daverayment](https://github.com/daverayment)!
+ - Added support for .ion files to be shown as a plaintext file in Peek and File Explorer add-ons. Thanks [@octastylos-pseudodipteros](https://github.com/octastylos-pseudodipteros)!
+ - Added support for syntax highlighting for .srt files in Peek and File Explorer add-ons. Thanks [@PesBandi](https://github.com/PesBandi)!
 
 ### Mouse Jump
 
- - Refactored the common classes into a separate project. Thanks [@mikeclayton](https://github.com/mikeclayton)!
- - Brought back the telemetry events that were deleted across previous refactoring efforts.
-
-### Mouse Without Borders
-
- - Refactored the Logger common classes. Thanks [@mikeclayton](https://github.com/mikeclayton)!
+ - Allow customizing the appearance of the UI of the Mouse Jump pop-up. Thanks [@mikeclayton](https://github.com/mikeclayton)!
 
 ### New+
 
- - Fixed the telemetry event for when the modules is enabled or disabled. (This was a hotfix for 0.85)
- - Fixed bug when creating folders or files that contain Unicode characters. Thanks [@cgaarden](https://github.com/cgaarden)!
- - Fixed bug when the name of a new folder collided with an already existing folder. Thanks [@cgaarden](https://github.com/cgaarden)!
- - Updated the New+ icons to the fluent style.
+ - Added support for Windows 10. Thanks [@cgaarden](https://github.com/cgaarden)!
+ - Fixed an issue causing the renaming of new files to not trigger some times. Thanks [@cgaarden](https://github.com/cgaarden)!
+ - Updated the New+ icons. Thanks [@niels9001](https://github.com/niels9001)!
 
 ### Peek
 
- - Folder preview enumeration of size and number of files is now more responsive and faster. Thanks [@daverayment](https://github.com/daverayment)!
+ - Peek now checks local capabilities to decide what image formats Image Previewer is able to support. Thanks [@daverayment](https://github.com/daverayment)!
+ - Fixed an issue causing the Code Files Previewer to not load correctly under certain conditions. Thanks [@daverayment](https://github.com/daverayment)!
+ - Refactored, improved and fixed logging when loading the user settings file. Thanks [@daverayment](https://github.com/daverayment)!
 
 ### PowerToys Run
 
- - Handled a culture not found error when checking for right-to-left languages.
- - Fixed the WebSearch plugin results title being trimmed in the UI. Thanks [@octastylos-pseudodipteros](https://github.com/octastylos-pseudodipteros)!
- - The Unit Converter plugin will now show more significant digits. Thanks [@PesBandi](https://github.com/PesBandi)!
- - Improved error handling when copying to the clipboard results in an error. Thanks [@PesBandi](https://github.com/PesBandi)!
+ - Added a scoring function for proper ordering of the WindowWalker plugin results. Thanks [@andbartol](https://github.com/andbartol)!
+ - Added UUIDv7 support to the ValueGenerator plugin. Thanks [@frederik-hoeft](https://github.com/frederik-hoeft)!
+ - The calculator plugin now allows scientific notation numbers with a lowercase 'e'. Thanks [@PesBandi](https://github.com/PesBandi)!
+ - Ported the UI from WPF-UI to .NET 9 WPF, to fix "Desktop composition is disabled" crashes.
 
 ### Quick Accent
 
- - Added support for the Serbian Cyrillic character set. Thanks [@Sirozha1337](https://github.com/Sirozha1337)!
+ - Added a setting to allow selecting which character sets to show. Thanks [@Sirozha1337](https://github.com/Sirozha1337)!
 
-### Registry Preview
+### Screen Ruler
 
- - Adopted the Monaco Editor as the UI text editor. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Added a Setting to also allow showing measurements in inches, centimeters or millimeters. Thanks [@Sophanatprime](https://github.com/Sophanatprime)!
 
 ### Settings
 
- - Fixed a crash when trying to access a non-existing templates folder from the New+ page. (This was a hotfix for 0.85)
- - Added a navigation tree to group utilities in the left navigation menu.
- - Sorted the list of languages in the language selection combo box in the General tab. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Fixed the state of the info bar about templates not being backed up to not close and react to the module's enabled state in the New+ page. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Fixed a crash caused by a dangling thread.
- - Clicking a notification about there being an update available should now correctly open the Settings application in the General tab.
- - Fixed a UI freeze when trying to access the Diagnostic Data Viewer files. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed an issue causing all the links to milestones in the "What's new?" OOBE page to point to the same milestone.
+ - Removed extra space from the Welcome page. Thanks [@agarwalishita](https://github.com/agarwalishita)!
+ - Updated left navigation bar icons. Thanks [@niels9001](https://github.com/niels9001)!
+ - Fixed accessibility issues in the dashboard page. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Workspaces
 
- - Fixed launching the incorrect workspace when launching many workspaces quickly through shortcuts. (This was a hotfix for 0.85)
- - Fixed launching many instances of the same application in a workspace.
- - Fixed a crash when a previously captured monitor ID no longer existed.
- - Fixed an issue causing the wrong coordinates to be saved for minimized applications.
- - Fixed an issue causing a crash when stress testing workspace launching.
- - Fixed application launching when UAC is off and every application always runs elevated.
+ - Added support for Progressive Web Applications to Workspaces.
+ - Implemented a feature to move existing windows instead of creating new ones.
+ - Fixed a crash when opening the workspaces editor that was caused by passing incorrect encoder parameters when saving Bitmap files.
+ - Workspaces editor position is now saved so that we can start it at the same position when we open it again.
+ - Fixed an issue causing many instances of the same application to be put in the same position instead of the intended position due to timer issues.
+ - Fixed detection of exact application version when many versions of the same application are installed.
 
 ### Documentation
 
- - Added HackMD plugin mention to thirdPartyRunPlugins.md. Thanks [@8LWXpg](https://github.com/8LWXpg)!
- - Added SSH plugin mention to thirdPartyRunPlugins.md. Thanks [@8LWXpg](https://github.com/8LWXpg)!
- - Added the [Data and Privacy documentation](https://github.com/microsoft/PowerToys/blob/main/DATA_AND_PRIVACY.md) to the repo.
+ - Improved language in CONTRIBUTE.md. Thanks [@sanskaarz](https://github.com/sanskaarz)!
+ - Added Bilibili plugin mention to thirdPartyRunPlugins.md. Thanks [@Whuihuan](https://github.com/Whuihuan)!
+ - Added CanIUse and TailwindCSS plugins mention to thirdPartyRunPlugins.md. Thanks [@skttl](https://github.com/skttl)!
+ - Added HttpStatusCodes plugin mention to thirdPartyRunPlugins.md. Thanks [@grzhan](https://github.com/grzhan)!
+ - Updated COMMUNITY.md with more contributors.
 
 ### Development
 
- - Fixed the CI precheck action to take into account the recent changes in CI actions.
- - Added the new Microsoft org issue types to the issue templates. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
- - Updated System.Text.Json to 8.0.5 and System.Runtime.Caching to 8.0.1 and related dependencies to the latest to address security reports. Thanks [@snickler](https://github.com/snickler)!
- - Updated WinAppSDK to 1.6.1 and CsWinRT to 2.1.5. Thanks [@snickler](https://github.com/snickler)!
- - Upgraded the WpfUI dependency to 3.0.5.
- - Updated MessagePack to 2.5.187 and StreamJsonRpc to 2.19.27 to address security reports.
- - Removed some of the hacks that are no longer needed that tried to force same dependency versions in .csproj files.
- - Removed the Markdown file exclusions from the conditions that trigger a full CI test.
- - CI fails again when there are XAML style errors in a PR.
- - Fixed CI actions that were not failing when one of the powershell scripts they tried to run was failing.
- - Fixed analyzer violations to allow fully building PowerToys on Visual Studio 17.12. Thanks [@snickler](https://github.com/snickler)!
+ - Upgraded to .NET 9. Thanks [@snickler](https://github.com/snickler)!
+ - Fixed building on Visual Studio 17.12.
+ - Upgraded the System.IO.Abstractions dependency to 21.0.29. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Upgraded the WindowsAppSDK dependency to 1.6.241114003. Thanks [@shuaiyuanxx](https://github.com/shuaiyuanxx)!
+ - Upgraded the MSTest dependency to 3.6.3. Thanks [@Youssef1313](https://github.com/Youssef1313)!
+ - Upgraded the check-spelling CI dependency to 0.0.24 and fixed related spell checking issues. Thanks [@jsoref](https://github.com/jsoref)!
+ - Removed duplicate names from the spellcheck allowed names file. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Improved logging of asynchronous methods call stacks when logging an error.
+ - Created a MSBuild props file to be imported by other projects to enable AOT support.
+ - Made the Peek utility source code AOT compatible.
+ - Updated .editorconfig rules to relax squiggly IDE errors in Visual Studio 17.12. Thanks [@snickler](https://github.com/snickler)!
+ - Moved Xaml.Styler from the root to the src folder.
 
-#### What is being planned for version 0.87
+#### What is being planned for version 0.88
 
-For [v0.87][github-next-release-work], we'll work on the items below:
+For [v0.88][github-next-release-work], we'll work on the items below:
 
  - Stability / bug fixes
  - New module: File Actions Menu

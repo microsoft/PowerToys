@@ -132,7 +132,7 @@ namespace WorkspacesCsharpLibrary.Models
 
                         using (var memory = new MemoryStream())
                         {
-                            previewBitmap.Save(memory, ImageFormat.Png);
+                            DrawHelper.SaveBitmap(previewBitmap, memory);
                             memory.Position = 0;
 
                             BitmapImage bitmapImage = new BitmapImage();

@@ -819,7 +819,7 @@
                     AutomationProperties.HelpText="{x:Static props:Resources.Layout_Grid_Description}"
                     AutomationProperties.Name="{x:Static props:Resources.Layout_Grid_Title}"
                     GroupName="LayoutTypeGroup"
-                    IsChecked="True"
+                    IsChecked="False"
                     Style="{StaticResource LayoutTypeRadioButtonStyle}">
                     <RadioButton.Content>
                         <Grid Width="420" Margin="4">
@@ -857,7 +857,7 @@
                     AutomationProperties.HelpText="{x:Static props:Resources.Layout_Canvas_Description}"
                     AutomationProperties.Name="{x:Static props:Resources.Layout_Canvas_Title}"
                     GroupName="LayoutTypeGroup"
-                    IsChecked="True"
+                    IsChecked="False"
                     Style="{StaticResource LayoutTypeRadioButtonStyle}">
                     <RadioButton.Content>
                         <Grid Width="420" Margin="4">
