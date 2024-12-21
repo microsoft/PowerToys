@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         internal string Label { get; set; }
 
         /// <summary>
-        /// Gets or sets an an alternative search tag that will be evaluated if label doesn't match. For example we like to show the era on searches for 'year' too.
+        /// Gets or sets an alternative search tag that will be evaluated if label doesn't match. For example we like to show the era on searches for 'year' too.
         /// </summary>
         internal string AlternativeSearchTag { get; set; }
 

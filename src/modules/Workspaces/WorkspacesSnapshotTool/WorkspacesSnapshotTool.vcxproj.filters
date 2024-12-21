@@ -24,9 +24,6 @@
     <ClInclude Include="resource.base.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PwaHelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -36,9 +33,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SnapshotUtils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PwaHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

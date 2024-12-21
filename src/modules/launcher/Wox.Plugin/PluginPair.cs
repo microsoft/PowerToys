@@ -223,7 +223,7 @@ namespace Wox.Plugin
         {
             if (Plugin == null)
             {
-                Log.Warn($"Can not initialize {Metadata.Name} plugin as it was not loaded", GetType());
+                Log.Warn($"Cannot initialize {Metadata.Name} plugin as it was not loaded", GetType());
                 return false;
             }
 

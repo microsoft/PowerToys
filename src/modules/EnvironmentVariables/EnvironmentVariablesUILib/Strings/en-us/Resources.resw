@@ -275,7 +275,7 @@
     <value>Add variable</value>
   </data>
   <data name="ProfileNotApplicableTitle" xml:space="preserve">
-    <value>Profile can not be applied.</value>
+    <value>Profile cannot be applied.</value>
   </data>
   <data name="StateProfileNotApplicableMsg" xml:space="preserve">
     <value>Variables or backup variables are invalid.</value>

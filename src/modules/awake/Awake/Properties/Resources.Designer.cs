@@ -259,6 +259,24 @@ namespace Awake.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Off.
+        /// </summary>
+        internal static string AWAKE_SCREEN_OFF {
+            get {
+                return ResourceManager.GetString("AWAKE_SCREEN_OFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to On.
+        /// </summary>
+        internal static string AWAKE_SCREEN_ON {
+            get {
+                return ResourceManager.GetString("AWAKE_SCREEN_ON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Expiring.
         /// </summary>
         internal static string AWAKE_TRAY_TEXT_EXPIRATION {
@@ -282,6 +300,15 @@ namespace Awake.Properties {
         internal static string AWAKE_TRAY_TEXT_OFF {
             get {
                 return ResourceManager.GetString("AWAKE_TRAY_TEXT_OFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bound to.
+        /// </summary>
+        internal static string AWAKE_TRAY_TEXT_PID_BINDING {
+            get {
+                return ResourceManager.GetString("AWAKE_TRAY_TEXT_PID_BINDING", resourceCulture);
             }
         }
         
