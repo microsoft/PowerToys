@@ -16,6 +16,7 @@ using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper;
 
 using Wox.Infrastructure;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
 {
@@ -79,11 +80,9 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
 
                                 hide = true;
                             }
-                            catch (Win32Exception)
+                            catch (Win32Exception ex)
                             {
-                                var name = $"Plugin: {_context.CurrentPluginMetadata.Name}";
-                                var msg = "Can't Open this file";
-                                _context.API.ShowMsg(name, msg, string.Empty);
+                                LogError("Can't Open this file", ex);
                                 hide = false;
                             }
 
@@ -127,11 +126,9 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
 
                                 hide = true;
                             }
-                            catch (Win32Exception)
+                            catch (Win32Exception ex)
                             {
-                                var name = $"Plugin: {_context.CurrentPluginMetadata.Name}";
-                                var msg = "Can't Open this file";
-                                _context.API.ShowMsg(name, msg, string.Empty);
+                                LogError("Can't Open this file", ex);
                                 hide = false;
                             }
 
@@ -201,14 +198,14 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                     acceleratorKey: Key.F,
                     acceleratorModifiers: ModifierKeys.Control | ModifierKeys.Shift,
                     action: () => OpenInExplorer(realPath)
-                )
+                ),
                 CreateContextMenuResult(
                     title: $"{Resources.OpenInConsole} (Ctrl+Shift+C)",
                     glyph: "\xE756", // Command Prompt
                     acceleratorKey: Key.C,
                     acceleratorModifiers: ModifierKeys.Control | ModifierKeys.Shift,
                     action: () => OpenInConsole(realPath)
-                ),
+                )
             };
         }
 
@@ -233,9 +230,9 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                 Clipboard.SetText(path);
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                ShowErrorMessage("Can't copy to clipboard");
+                LogError("Can't copy to clipboard", ex);
                 return false;
             }
         }
@@ -247,9 +244,9 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                 Helper.OpenInConsole(path);
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                ShowErrorMessage($"Unable to open the specified path in the console: {path}");
+                LogError($"Unable to open the specified path in the console: {path}", ex);
                 return false;
             }
         }
@@ -258,19 +255,26 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
         {
             if (!Helper.OpenInShell("explorer.exe", $"\"{path}\""))
             {
-                ShowErrorMessage($"Failed to open folder in Explorer at path: {path}");
+                LogError($"Failed to open folder in Explorer at path: {path}");
                 return false;
             }
 
             return true;
         }
 
-        private void ShowErrorMessage(string message)
+        public void LogError(string msg, Exception exception = null)
         {
-            var pluginName = $"Plugin: {_context.CurrentPluginMetadata.Name}";
-            _context.API.ShowMsg(pluginName, message, string.Empty);
-        }
+            string fullMessage = $"Plugin: {_context.CurrentPluginMetadata.Name}, Message: {msg}";
 
+            if (exception != null)
+            {
+                Log.Exception(fullMessage, exception, exception.GetType());
+            }
+            else
+            {
+                Log.Error(fullMessage, typeof(VSCodeWorkspaces.Main));
+            }
+        }
 
         public string GetTranslatedPluginTitle()
         {
