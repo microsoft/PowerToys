@@ -7,16 +7,19 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Windows;
 
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.Properties;
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.RemoteMachinesHelper;
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper;
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper;
+
+using Wox.Infrastructure;
 using Wox.Plugin;
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
 {
-    public class Main : IPlugin, IPluginI18n
+    public class Main : IPlugin, IPluginI18n, IContextMenu
     {
         private PluginInitContext _context;
 
@@ -173,6 +176,101 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
         {
             _context = context;
         }
+
+        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
+        {
+            if (selectedResult?.ContextData is not VSCodeWorkspace workspace)
+            {
+                return new List<ContextMenuResult>();
+            }
+
+            string realPath = SystemPath.RealPath(workspace.RelativePath);
+
+            return new List<ContextMenuResult>
+            {
+                CreateContextMenuResult(
+                    title: $"{Resources.CopyPath} (Ctrl+C)",
+                    glyph: "\xE8C8", // Copy
+                    acceleratorKey: Key.C,
+                    acceleratorModifiers: ModifierKeys.Control,
+                    action: () => CopyToClipboard(realPath)
+                ),
+                CreateContextMenuResult(
+                    title: $"{Resources.OpenInExplorer} (Ctrl+Shift+F)",
+                    glyph: "\xEC50", // File Explorer
+                    acceleratorKey: Key.F,
+                    acceleratorModifiers: ModifierKeys.Control | ModifierKeys.Shift,
+                    action: () => OpenInExplorer(realPath)
+                )
+                CreateContextMenuResult(
+                    title: $"{Resources.OpenInConsole} (Ctrl+Shift+C)",
+                    glyph: "\xE756", // Command Prompt
+                    acceleratorKey: Key.C,
+                    acceleratorModifiers: ModifierKeys.Control | ModifierKeys.Shift,
+                    action: () => OpenInConsole(realPath)
+                ),
+            };
+        }
+
+        private ContextMenuResult CreateContextMenuResult(string title, string glyph, Key acceleratorKey, ModifierKeys acceleratorModifiers, Func<bool> action)
+        {
+            return new ContextMenuResult
+            {
+                PluginName = Name,
+                Title = title,
+                Glyph = glyph,
+                FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
+                AcceleratorKey = acceleratorKey,
+                AcceleratorModifiers = acceleratorModifiers,
+                Action = context => action()
+            };
+        }
+
+        private bool CopyToClipboard(string path)
+        {
+            try
+            {
+                Clipboard.SetText(path);
+                return true;
+            }
+            catch (Exception)
+            {
+                ShowErrorMessage("Can't copy to clipboard");
+                return false;
+            }
+        }
+
+        private bool OpenInConsole(string path)
+        {
+            try
+            {
+                Helper.OpenInConsole(path);
+                return true;
+            }
+            catch (Exception)
+            {
+                ShowErrorMessage($"Unable to open the specified path in the console: {path}");
+                return false;
+            }
+        }
+
+        private bool OpenInExplorer(string path)
+        {
+            if (!Helper.OpenInShell("explorer.exe", $"\"{path}\""))
+            {
+                ShowErrorMessage($"Failed to open folder in Explorer at path: {path}");
+                return false;
+            }
+
+            return true;
+        }
+
+        private void ShowErrorMessage(string message)
+        {
+            var pluginName = $"Plugin: {_context.CurrentPluginMetadata.Name}";
+            _context.API.ShowMsg(pluginName, message, string.Empty);
+        }
+
 
         public string GetTranslatedPluginTitle()
         {
