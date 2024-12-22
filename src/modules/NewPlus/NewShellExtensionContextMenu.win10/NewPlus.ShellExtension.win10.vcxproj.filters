@@ -57,6 +57,12 @@
     <ClInclude Include="..\NewShellExtensionContextMenu\settings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\NewShellExtensionContextMenu\helpers_filesystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\NewShellExtensionContextMenu\helpers_variables.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -90,6 +96,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\NewShellExtensionContextMenu\new_utilities.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\powerrename\lib\Helpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

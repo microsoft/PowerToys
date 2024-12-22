@@ -23,6 +23,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_84_0" displayName="$(string.SUPPORTED_POWERTOYS_0_84_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_85_0" displayName="$(string.SUPPORTED_POWERTOYS_0_85_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_86_0" displayName="$(string.SUPPORTED_POWERTOYS_0_86_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_89_0" displayName="$(string.SUPPORTED_POWERTOYS_0_89_0)"/>
     </definitions>
   </supportedOn>
   <categories>
@@ -628,6 +629,16 @@
     <policy name="NewPlusHideTemplateFilenameExtension" class="Both" displayName="$(string.NewPlusHideTemplateFilenameExtension)" explainText="$(string.NewPlusHideTemplateFilenameExtensionDescription)" key="Software\Policies\PowerToys" valueName="NewPlusHideTemplateFilenameExtension">
       <parentCategory ref="NewPlus" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_85_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="NewPlusReplaceVariablesInTemplateFilenames" class="Both" displayName="$(string.NewPlusReplaceVariablesInTemplateFilenames)" explainText="$(string.NewPlusReplaceVariablesInTemplateFilenamesDescription)" key="Software\Policies\PowerToys" valueName="NewPlusReplaceVariablesInTemplateFilenames">
+      <parentCategory ref="NewPlus" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_89_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>
