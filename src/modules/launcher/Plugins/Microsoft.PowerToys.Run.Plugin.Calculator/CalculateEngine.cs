@@ -23,6 +23,13 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         public const int RoundingDigits = 10;
 
+        public enum TrigMode
+        {
+            Radians,
+            Degrees,
+            Gradians,
+        }
+
         /// <summary>
         /// Interpret
         /// </summary>
@@ -51,6 +58,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                         Replace("ln(", "log(", true, CultureInfo.CurrentCulture);
 
             input = CalculateHelper.FixHumanMultiplicationExpressions(input);
+
+            // Modify trig functions depending on angle unit setting
+            input = CalculateHelper.UpdateTrigFunctions(input, Main.GetTrigMode());
 
             var result = _magesEngine.Interpret(input);
 
