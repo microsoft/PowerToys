@@ -4555,6 +4555,42 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>This option is useful when using digits, spaces and dots at the beginning of filenames to control the display order of templates</value>
     <comment>Template filename starting digits settings toggle</comment>
   </data>
+  <data name="NewPlus_behavior.Header" xml:space="preserve">
+    <value>Behavior</value>
+    <comment>New+ behavior related settings label</comment>
+  </data>
+  <data name="NewPlus_Behaviour_Replace_Variables_Toggle.Header" xml:space="preserve">
+    <value>Replace variables in template filename</value>
+    <comment>New+ replace variables in template name behavior toggle</comment>
+  </data>
+  <data name="NewPlus_Behaviour_Replace_Variables_Learn_More.Content" xml:space="preserve">
+    <value>Learn more about supported variables</value>
+    <comment>New+ learn more about supported variables link</comment>
+  </data>
+  <data name="NewPlus_Behaviour_Replace_Variables_Info_Card_Title.Text" xml:space="preserve">
+    <value>Commonly used variables</value>
+    <comment>New+ commonly used variables header in the flyout info card</comment>
+  </data>   
+  <data name="NewPlus_Date_Variable_Description.Text" xml:space="preserve">
+    <value>COPY</value>
+    <comment>New+ description of the $DATE variable</comment>
+  </data>
+  <data name="NewPlus_Time_Variable_Description.Text" xml:space="preserve">
+    <value>COPY</value>
+    <comment>New+ description of the $TIME variable</comment>
+  </data>
+  <data name="NewPlus_YYYY_Variable_Description.Text" xml:space="preserve">
+    <value>COPY</value>
+    <comment>New+ description of the $YYYY variable</comment>
+  </data>
+  <data name="NewPlus_MM_Variable_Description.Text" xml:space="preserve">
+    <value>COPY</value>
+    <comment>New+ description of the $MM variable</comment>
+  </data>
+  <data name="NewPlus_DD_Variable_Description.Text" xml:space="preserve">
+    <value>COPY</value>
+    <comment>New+ description of the $DD variable</comment>
+  </data>
   <data name="NewPlus.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
     <comment>giving credit</comment>

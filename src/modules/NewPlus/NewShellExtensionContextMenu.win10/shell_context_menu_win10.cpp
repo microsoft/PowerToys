@@ -32,7 +32,7 @@ IFACEMETHODIMP shell_context_menu_win10::Initialize(PCIDLIST_ABSOLUTE, IDataObje
 IFACEMETHODIMP shell_context_menu_win10::QueryContextMenu(HMENU menu_handle, UINT menu_index, UINT menu_first_cmd_id, UINT, UINT menu_flags)
 {
     if (!NewSettingsInstance().GetEnabled() 
-            || package::IsWin11OrGreater()
+//cgaarden            || package::IsWin11OrGreater()
         )
     {
         return E_FAIL;
@@ -184,7 +184,10 @@ void shell_context_menu_win10::add_separator_to_context_menu(HMENU sub_menu_of_t
 void shell_context_menu_win10::add_template_item_to_context_menu(HMENU sub_menu_of_templates, int sub_menu_index, newplus::template_item* const template_item, int menu_id, int index)
 {
     wchar_t menu_name[256] = { 0 };
-    wcscpy_s(menu_name, ARRAYSIZE(menu_name), template_item->get_menu_title(!utilities::get_newplus_setting_hide_extension(), !utilities::get_newplus_setting_hide_starting_digits()).c_str());
+    wcscpy_s(menu_name, ARRAYSIZE(menu_name), template_item->get_menu_title(
+        !utilities::get_newplus_setting_hide_extension(), 
+        !utilities::get_newplus_setting_hide_starting_digits(), 
+        utilities::get_newplus_setting_resolve_variables()).c_str());
     MENUITEMINFO newplus_menu_item_template;
     newplus_menu_item_template.cbSize = sizeof(MENUITEMINFO);
     newplus_menu_item_template.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID | MIIM_DATA;

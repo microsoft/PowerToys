@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
@@ -70,14 +71,76 @@
                         IsOpen="{x:Bind ViewModel.IsHideFileExtSettingGPOConfigured, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsHideFileExtSettingGPOConfigured, Mode=OneWay}"
                         Severity="Informational">
-                        <!-- InfoBar.IconSource>
-                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                        </InfoBar.IconSource-->
                     </InfoBar>
                     <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_Starting_Digits_Toggle">
                         <ToggleSwitch x:Uid="HideStartingDigitsToggle" IsOn="{x:Bind ViewModel.HideStartingDigits, Mode=TwoWay}" />
                         <tkcontrols:SettingsCard.Description>
                             <TextBlock x:Uid="NewPlus_Hide_Starting_Digits_Description" />
+                        </tkcontrols:SettingsCard.Description>
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="NewPlus_behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <InfoBar
+                        x:Uid="GPO_SettingIsManaged"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.IsReplaceVariablesSettingGPOConfigured, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsReplaceVariablesSettingGPOConfigured, Mode=OneWay}"
+                        Severity="Informational">
+                    </InfoBar>
+                    <tkcontrols:SettingsCard x:Uid="NewPlus_Behaviour_Replace_Variables_Toggle">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <ToggleSwitch x:Uid="ReplaceVariablesToggle" IsOn="{x:Bind ViewModel.ReplaceVariables, Mode=TwoWay}" />
+                            <Button
+                        x:Uid="FileCreationButton"
+                        Width="28"
+                        Height="40"
+                        Margin="0,0,-4,0"
+                        Padding="0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        Content="&#xE946;"
+                        FontFamily="{ThemeResource SymbolThemeFontFamily}">
+                                <Button.Flyout>
+                                    <Flyout x:Name="VariableExamaplesFlyout" ShouldConstrainToRootBounds="False">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="80"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            
+                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="$DATE" />
+                                            <TextBlock Grid.Row="1" Grid.Column="1"><Run x:Uid="NewPlus_Date_Variable_Description"/></TextBlock>
+
+                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="$TIME" />
+                                            <TextBlock Grid.Row="2" Grid.Column="1"><Run x:Uid="NewPlus_Time_Variable_Description"/></TextBlock>
+
+                                            <TextBlock Grid.Row="3" Grid.Column="0" Text="$YYYY" />
+                                            <TextBlock Grid.Row="3" Grid.Column="1"><Run x:Uid="NewPlus_YYYY_Variable_Description"/></TextBlock>
+
+                                            <TextBlock Grid.Row="4" Grid.Column="0" Text="$MM" />
+                                            <TextBlock Grid.Row="4" Grid.Column="1"><Run x:Uid="NewPlus_MM_Variable_Description"/></TextBlock>
+
+                                            <TextBlock Grid.Row="5" Grid.Column="0" Text="$DD" />
+                                            <TextBlock Grid.Row="5" Grid.Column="1"><Run x:Uid="NewPlus_DD_Variable_Description"/></TextBlock>
+                                        </Grid>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
+                        </StackPanel>
+                        <tkcontrols:SettingsCard.Description>
+                            <StackPanel>
+                                <HyperlinkButton x:Uid="NewPlus_Behaviour_Replace_Variables_Learn_More" NavigateUri="https://aka.ms/PowerToysOverview_NewPlus" />
+                            </StackPanel>
                         </tkcontrols:SettingsCard.Description>
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
