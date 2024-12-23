@@ -143,23 +143,23 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
             results = results.Where(a => a.Title.Contains(query.Search, StringComparison.InvariantCultureIgnoreCase)).ToList();
 
             results.ForEach(x =>
-                    {
-                        if (x.Score == 0)
-                        {
-                            x.Score = 100;
-                        }
+            {
+                if (x.Score == 0)
+                {
+                    x.Score = 100;
+                }
 
-                        // intersect the title with the query
-                        var intersection = Convert.ToInt32(x.Title.ToLowerInvariant().Intersect(query.Search.ToLowerInvariant()).Count() * query.Search.Length);
-                        var differenceWithQuery = Convert.ToInt32((x.Title.Length - intersection) * query.Search.Length * 0.7);
-                        x.Score = x.Score - differenceWithQuery + intersection;
+                // intersect the title with the query
+                var intersection = Convert.ToInt32(x.Title.ToLowerInvariant().Intersect(query.Search.ToLowerInvariant()).Count() * query.Search.Length);
+                var differenceWithQuery = Convert.ToInt32((x.Title.Length - intersection) * query.Search.Length * 0.7);
+                x.Score = x.Score - differenceWithQuery + intersection;
 
-                        // if is a remote machine give it 12 extra points
-                        if (x.ContextData is VSCodeRemoteMachine)
-                        {
-                            x.Score = Convert.ToInt32(x.Score + (intersection * 2));
-                        }
-                    });
+                // if is a remote machine give it 12 extra points
+                if (x.ContextData is VSCodeRemoteMachine)
+                {
+                    x.Score = Convert.ToInt32(x.Score + (intersection * 2));
+                }
+            });
 
             results = results.OrderByDescending(x => x.Score).ToList();
             if (query.Search == string.Empty || query.Search.Replace(" ", string.Empty) == string.Empty)
@@ -191,22 +191,19 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                     glyph: "\xE8C8", // Copy
                     acceleratorKey: Key.C,
                     acceleratorModifiers: ModifierKeys.Control,
-                    action: () => CopyToClipboard(realPath)
-                ),
+                    action: () => CopyToClipboard(realPath)),
                 CreateContextMenuResult(
                     title: $"{Resources.OpenInExplorer} (Ctrl+Shift+F)",
                     glyph: "\xEC50", // File Explorer
                     acceleratorKey: Key.F,
                     acceleratorModifiers: ModifierKeys.Control | ModifierKeys.Shift,
-                    action: () => OpenInExplorer(realPath)
-                ),
+                    action: () => OpenInExplorer(realPath)),
                 CreateContextMenuResult(
                     title: $"{Resources.OpenInConsole} (Ctrl+Shift+C)",
                     glyph: "\xE756", // Command Prompt
                     acceleratorKey: Key.C,
                     acceleratorModifiers: ModifierKeys.Control | ModifierKeys.Shift,
-                    action: () => OpenInConsole(realPath)
-                ),
+                    action: () => OpenInConsole(realPath)),
             };
         }
 
