@@ -15,7 +15,6 @@
 namespace NonLocalizable
 {
     const wchar_t PowerToysAppFZEditor[] = L"POWERTOYS.FANCYZONESEDITOR.EXE";
-    const wchar_t PowerToysWorkspacesEditor[] = L"POWERTOYS.WORKSPACESEDITOR.EXE";
     const char SplashClassName[] = "MsoSplash";
     const wchar_t CoreWindow[] = L"Windows.UI.Core.CoreWindow";
     const wchar_t SearchUI[] = L"SearchUI.exe";
