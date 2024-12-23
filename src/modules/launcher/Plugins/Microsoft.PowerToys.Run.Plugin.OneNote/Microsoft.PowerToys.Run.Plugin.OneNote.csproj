@@ -34,13 +34,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Interop.Microsoft.Office.Interop.OneNote" />
     <PackageReference Include="LazyCache" />
     <PackageReference Include="Microsoft.Windows.CsWin32">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="ScipBe.Common.Office.OneNote" />
     <PackageReference Include="Odotocodot.OneNote.Linq" />
   </ItemGroup>
 

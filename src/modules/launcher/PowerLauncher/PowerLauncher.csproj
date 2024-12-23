@@ -46,13 +46,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Interop.Microsoft.Office.Interop.OneNote" />
     <PackageReference Include="Mages" />
     <PackageReference Include="LazyCache" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
-    <PackageReference Include="ScipBe.Common.Office.OneNote" />
     <PackageReference Include="Odotocodot.OneNote.Linq" />
     <PackageReference Include="System.Drawing.Common">
       <ExcludeAssets>runtime</ExcludeAssets>      <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
