@@ -64,13 +64,14 @@
                             Value="{x:Bind ViewModel.PixelTolerance, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <!--<tkcontrols:SettingsCard x:Uid="MeasureTool_UnitsOfMeasure" HeaderIcon="{ui:FontIcon Glyph=&#xECC6;}">
-                        <ComboBox SelectedIndex="{x:Bind Path=ViewModel.UnitsOfMeasure, Mode=TwoWay}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                    <tkcontrols:SettingsCard x:Uid="MeasureTool_UnitsOfMeasure" HeaderIcon="{ui:FontIcon Glyph=&#xECC6;}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.UnitsOfMeasure, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Pixels" />
                             <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Inches" />
                             <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Centimeters" />
+                            <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Millimeters" />
                         </ComboBox>
-                    </tkcontrols:SettingsCard>-->
+                    </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard x:Uid="MeasureTool_DrawFeetOnCross">
                         <ToggleSwitch x:Uid="MeasureTool_DrawFeetOnCross_ToggleSwitch" IsOn="{x:Bind ViewModel.DrawFeetOnCross, Mode=TwoWay}" />

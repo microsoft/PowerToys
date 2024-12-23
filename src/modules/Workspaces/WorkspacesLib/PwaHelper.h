@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include <WorkspacesLib/AppUtils.h>
 
 namespace Utils
@@ -7,23 +9,25 @@ namespace Utils
     class PwaHelper
     {
     public:
-        void UpdatePwaApp(Apps::AppData* appData, HWND window);
+        PwaHelper();
+        ~PwaHelper() = default;
 
+        std::wstring GetAUMIDFromWindow(HWND hWnd) const;
+
+        std::optional<std::wstring> GetEdgeAppId(const std::wstring& windowAumid) const;
+        std::optional<std::wstring> GetChromeAppId(const std::wstring& windowAumid) const;   
+        std::wstring SearchPwaName(const std::wstring& pwaAppId, const std::wstring& windowAumid) const;
+        
     private:
-        std::map<std::wstring, std::wstring> m_pwaAumidToAppId;
+        void InitAppIds(const std::wstring& browserDataFolder, const std::wstring& browserDirPrefix, const std::function<void(const std::wstring&)>& addingAppIdCallback);
+        void InitEdgeAppIds();
+        void InitChromeAppIds();
+
+        std::wstring GetAppIdFromCommandLineArgs(const std::wstring& commandLineArgs) const;
+        std::wstring GetAUMIDFromProcessId(DWORD processId) const;
+
+        std::map<std::wstring, std::wstring> m_edgeAppIds;
         std::vector<std::wstring> m_chromeAppIds;
         std::map<std::wstring, std::wstring> m_pwaAppIdsToAppNames;
-
-        void InitAumidToAppId();
-        void InitChromeAppIds();
-        std::optional<std::wstring> GetAppId_7(HWND hWnd) const;
-        std::optional<std::wstring> GetAppId_8(HWND hWnd) const;
-        std::wstring GetAppId(HWND hWnd) const;
-        std::optional<std::wstring> GetProcessId_7(DWORD dwProcessId) const;
-        std::optional<std::wstring> GetProcessId_8(DWORD dwProcessId) const;
-        std::wstring GetProcessId(DWORD dwProcessId) const;
-        std::optional<std::wstring> GetPwaAppId(const std::wstring& windowAumid) const;
-        std::wstring SearchPwaName(const std::wstring& pwaAppId, const std::wstring& windowAumid) const;
-        std::optional<std::wstring> SearchPwaAppId(const std::wstring& windowAumid) const;
     };
 }

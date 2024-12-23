@@ -3,11 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Threading.Tasks;
+
 using AdvancedPaste.Models;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace AdvancedPaste.Services;
 
 public interface IPasteFormatExecutor
 {
-    Task<string> ExecutePasteFormatAsync(PasteFormat pasteFormat, PasteActionSource source);
+    Task<DataPackage> ExecutePasteFormatAsync(PasteFormat pasteFormat, PasteActionSource source);
 }

@@ -31,7 +31,5 @@
     <Content Include="HelperFiles\sample.qoi">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Compile Include="..\STATestClassAttribute.cs" Link="STATestClassAttribute.cs" />
-    <Compile Include="..\STATestMethodAttribute.cs" Link="STATestMethodAttribute.cs" />
   </ItemGroup>
 </Project>

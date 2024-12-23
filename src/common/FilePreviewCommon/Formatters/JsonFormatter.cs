@@ -14,7 +14,6 @@ namespace Microsoft.PowerToys.FilePreviewCommon.Monaco.Formatters
 
         private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
         {
-            WriteIndented = true,
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         };
 
@@ -28,7 +27,8 @@ namespace Microsoft.PowerToys.FilePreviewCommon.Monaco.Formatters
 
             using (var jDocument = JsonDocument.Parse(value, new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip }))
             {
-                return JsonSerializer.Serialize(jDocument, _serializerOptions);
+                FilePreviewJsonSerializerContext context = new(_serializerOptions);
+                return JsonSerializer.Serialize(jDocument, context.JsonDocument);
             }
         }
     }

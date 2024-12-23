@@ -613,7 +613,7 @@ namespace KeyboardEventHandlers
 
                         if (!isAltRightKeyInvoked)
                         {
-                            // Set original shortcut key down state except the action key and the released modifier since the original action key may or may not be held down. If it is held down it will generate it's own key message
+                            // Set original shortcut key down state except the action key and the released modifier since the original action key may or may not be held down. If it is held down it will generate its own key message
                             Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut), data->lParam->vkCode);
                         }
                         else
@@ -637,7 +637,7 @@ namespace KeyboardEventHandlers
                         // Ensures that after releasing both the action key and AltGr, Ctrl does not remain falsely pressed.
                         if (!isAltRightKeyInvoked)
                         {
-                            // Set original shortcut key down state except the action key and the released modifier since the original action key may or may not be held down. If it is held down it will generate it's own key message
+                            // Set original shortcut key down state except the action key and the released modifier since the original action key may or may not be held down. If it is held down it will generate its own key message
                             Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, Shortcut(), data->lParam->vkCode);
                         }
                         else
@@ -1711,7 +1711,7 @@ namespace KeyboardEventHandlers
                 query_string = process_name;
                 it = state.appSpecificShortcutReMap.find(query_string);
 
-                // If no entry is found, search for the process name without it's file extension
+                // If no entry is found, search for the process name without its file extension
                 if (it == state.appSpecificShortcutReMap.end())
                 {
                     // Find index of the file extension

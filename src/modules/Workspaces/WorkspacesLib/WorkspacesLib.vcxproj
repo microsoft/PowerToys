@@ -33,6 +33,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AppUtils.h" />
+    <ClInclude Include="CommandLineArgsHelper.h" />
     <ClInclude Include="IPCHelper.h" />
     <ClInclude Include="JsonUtils.h" />
     <ClInclude Include="LaunchingStateEnum.h" />
@@ -40,12 +41,15 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="PwaHelper.h" />
     <ClInclude Include="Result.h" />
+    <ClInclude Include="StringUtils.h" />
     <ClInclude Include="utils.h" />
+    <ClInclude Include="WbemHelper.h" />
     <ClInclude Include="WorkspacesData.h" />
     <ClInclude Include="trace.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AppUtils.cpp" />
+    <ClCompile Include="CommandLineArgsHelper.cpp" />
     <ClCompile Include="IPCHelper.cpp" />
     <ClCompile Include="JsonUtils.cpp" />
     <ClCompile Include="LaunchingStatus.cpp" />
@@ -54,6 +58,7 @@
     </ClCompile>
     <ClCompile Include="PwaHelper.cpp" />
     <ClCompile Include="two_way_pipe_message_ipc.cpp" />
+    <ClCompile Include="WbemHelper.cpp" />
     <ClCompile Include="WorkspacesData.cpp" />
     <ClCompile Include="trace.cpp" />
   </ItemGroup>

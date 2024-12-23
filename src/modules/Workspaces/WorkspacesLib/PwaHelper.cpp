@@ -1,16 +1,24 @@
 #include "pch.h"
 #include "PwaHelper.h"
-#include "AppUtils.h"
-#include <ShlObj.h>
-#include <tlhelp32.h>
-#include <winternl.h>
-#include <initguid.h>
+
 #include <filesystem>
-#include <wil/result_macros.h>
+
+#include <appmodel.h>
+#include <shellapi.h>
+#include <ShlObj.h>
+#include <shobjidl.h>
+#include <tlhelp32.h>
+#include <wrl.h>
+#include <propkey.h>
+
+#include <wil/com.h>
+
 #include <common/logger/logger.h>
 #include <common/utils/winapi_error.h>
-#include <wil\com.h>
-#pragma comment(lib, "ntdll.lib")
+
+#include <WorkspacesLib/AppUtils.h>
+#include <WorkspacesLib/CommandLineArgsHelper.h>
+#include <WorkspacesLib/StringUtils.h>
 
 namespace Utils
 {
@@ -22,197 +30,29 @@ namespace Utils
         const std::wstring EdgeBase = L"Microsoft\\Edge\\User Data\\Default\\Web Applications";
         const std::wstring ChromeDirPrefix = L"_crx_";
         const std::wstring EdgeDirPrefix = L"_crx__";
+        const std::wstring IcoExtension = L".ico";
     }
 
-    // {c8900b66-a973-584b-8cae-355b7f55341b}
-    DEFINE_GUID(CLSID_StartMenuCacheAndAppResolver, 0x660b90c8, 0x73a9, 0x4b58, 0x8c, 0xae, 0x35, 0x5b, 0x7f, 0x55, 0x34, 0x1b);
-
-    // {46a6eeff-908e-4dc6-92a6-64be9177b41c}
-    DEFINE_GUID(IID_IAppResolver_7, 0x46a6eeff, 0x908e, 0x4dc6, 0x92, 0xa6, 0x64, 0xbe, 0x91, 0x77, 0xb4, 0x1c);
-
-    // {de25675a-72de-44b4-9373-05170450c140}
-    DEFINE_GUID(IID_IAppResolver_8, 0xde25675a, 0x72de, 0x44b4, 0x93, 0x73, 0x05, 0x17, 0x04, 0x50, 0xc1, 0x40);
-
-    struct IAppResolver_7 : public IUnknown
+    static const std::wstring& GetLocalAppDataFolder()
     {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE GetAppIDForShortcut() = 0;
-        virtual HRESULT STDMETHODCALLTYPE GetAppIDForWindow(HWND hWnd, WCHAR** pszAppId, void* pUnknown1, void* pUnknown2, void* pUnknown3) = 0;
-        virtual HRESULT STDMETHODCALLTYPE GetAppIDForProcess(DWORD dwProcessId, WCHAR** pszAppId, void* pUnknown1, void* pUnknown2, void* pUnknown3) = 0;
-    };
+        static std::wstring localFolder{};
 
-    struct IAppResolver_8 : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE GetAppIDForShortcut() = 0;
-        virtual HRESULT STDMETHODCALLTYPE GetAppIDForShortcutObject() = 0;
-        virtual HRESULT STDMETHODCALLTYPE GetAppIDForWindow(HWND hWnd, WCHAR** pszAppId, void* pUnknown1, void* pUnknown2, void* pUnknown3) = 0;
-        virtual HRESULT STDMETHODCALLTYPE GetAppIDForProcess(DWORD dwProcessId, WCHAR** pszAppId, void* pUnknown1, void* pUnknown2, void* pUnknown3) = 0;
-    };
-
-    std::optional<std::wstring> PwaHelper::GetAppId_7(HWND hWnd) const
-    {
-        HRESULT hr;
-        std::optional<std::wstring> result = std::nullopt;
-
-        wil::com_ptr<IAppResolver_7> appResolver;
-        hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_7, reinterpret_cast<void**>(appResolver.put()));
-        if (SUCCEEDED(hr))
+        if (localFolder.empty())
         {
-            wil::unique_cotaskmem_string pszAppId;
-            hr = appResolver->GetAppIDForWindow(hWnd, &pszAppId, NULL, NULL, NULL);
-            if (SUCCEEDED(hr))
+            wil::unique_cotaskmem_string folderPath;
+            HRESULT hres = SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &folderPath);
+            if (SUCCEEDED(hres))
             {
-                result = std::wstring(pszAppId.get());
-            }
-
-            appResolver->Release();
-        }
-
-        return result;
-    }
-
-    std::optional<std::wstring> PwaHelper::GetAppId_8(HWND hWnd) const
-    {
-        HRESULT hr;
-        std::optional<std::wstring> result = std::nullopt;
-
-        wil::com_ptr<IAppResolver_8> appResolver;
-        hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_8, reinterpret_cast<void**>(appResolver.put()));
-        if (SUCCEEDED(hr))
-        {
-            wil::unique_cotaskmem_string pszAppId;
-            hr = appResolver->GetAppIDForWindow(hWnd, &pszAppId, NULL, NULL, NULL);
-            if (SUCCEEDED(hr))
-            {
-                result = std::wstring(pszAppId.get());
-            }
-
-            appResolver->Release();
-        }
-
-        return result;
-    }
-
-    std::wstring PwaHelper::GetAppId(HWND hWnd) const
-    {
-        std::optional<std::wstring> result = GetAppId_8(hWnd);
-        if (result == std::nullopt)
-        {
-            result = GetAppId_7(hWnd);
-        }
-        return result.has_value() ? result.value() : L"";
-    }
-
-    std::optional<std::wstring> PwaHelper::GetProcessId_7(DWORD dwProcessId) const
-    {
-        HRESULT hr;
-        std::optional<std::wstring> result = std::nullopt;
-
-        wil::com_ptr<IAppResolver_7> appResolver;
-        hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_7, reinterpret_cast<void**>(appResolver.put()));
-        if (SUCCEEDED(hr))
-        {
-            wil::unique_cotaskmem_string pszAppId;
-            hr = appResolver->GetAppIDForProcess(dwProcessId, &pszAppId, NULL, NULL, NULL);
-            if (SUCCEEDED(hr))
-            {
-                result = std::wstring(pszAppId.get());
-            }
-
-            appResolver->Release();
-        }
-
-        return result;
-    }
-
-    std::optional<std::wstring> PwaHelper::GetProcessId_8(DWORD dwProcessId) const
-    {
-        HRESULT hr;
-        std::optional<std::wstring> result = std::nullopt;
-
-        wil::com_ptr<IAppResolver_8> appResolver;
-        hr = CoCreateInstance(CLSID_StartMenuCacheAndAppResolver, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER, IID_IAppResolver_8, reinterpret_cast<void**>(appResolver.put()));
-        if (SUCCEEDED(hr))
-        {
-            wil::unique_cotaskmem_string pszAppId;
-            hr = appResolver->GetAppIDForProcess(dwProcessId, &pszAppId, NULL, NULL, NULL);
-            if (SUCCEEDED(hr))
-            {
-                result = std::wstring(pszAppId.get());
-            }
-
-            appResolver->Release();
-        }
-
-        return result;
-    }
-
-    std::wstring PwaHelper::GetProcessId(DWORD dwProcessId) const
-    {
-        std::optional<std::wstring> result = GetProcessId_8(dwProcessId);
-        if (result == std::nullopt)
-        {
-            result = GetProcessId_7(dwProcessId);
-        }
-        return result.has_value() ? result.value() : L"";
-    }
-
-    std::wstring GetProcCommandLine(DWORD pid)
-    {
-        std::wstring commandLine;
-
-        // Open a handle to the process
-        const HANDLE process = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid);
-        if (process == NULL)
-        {
-            Logger::error(L"Failed to open the process, error: {}", get_last_error_or_default(GetLastError()));
-        }
-        else
-        {
-            // Get the address of the ProcessEnvironmentBlock
-            PROCESS_BASIC_INFORMATION pbi = {};
-            NTSTATUS status = NtQueryInformationProcess(process, ProcessBasicInformation, &pbi, sizeof(pbi), NULL);
-            if (status != STATUS_SUCCESS)
-            {
-                Logger::error(L"Failed to query the process, error: {}", status);
+                localFolder = folderPath.get();
             }
             else
             {
-                // Get the address of the process parameters in the ProcessEnvironmentBlock
-                PEB processEnvironmentBlock = {};
-                if (!ReadProcessMemory(process, pbi.PebBaseAddress, &processEnvironmentBlock, sizeof(processEnvironmentBlock), NULL))
-                {
-                    Logger::error(L"Failed to read the process ProcessEnvironmentBlock, error: {}", get_last_error_or_default(GetLastError()));
-                }
-                else
-                {
-                    // Get the command line arguments from the process parameters
-                    RTL_USER_PROCESS_PARAMETERS params = {};
-                    if (!ReadProcessMemory(process, processEnvironmentBlock.ProcessParameters, &params, sizeof(params), NULL))
-                    {
-                        Logger::error(L"Failed to read the process params, error: {}", get_last_error_or_default(GetLastError()));
-                    }
-                    else
-                    {
-                        UNICODE_STRING& commandLineArgs = params.CommandLine;
-                        std::vector<WCHAR> buffer(commandLineArgs.Length / sizeof(WCHAR));
-                        if (!ReadProcessMemory(process, commandLineArgs.Buffer, buffer.data(), commandLineArgs.Length, NULL))
-                        {
-                            Logger::error(L"Failed to read the process command line, error: {}", get_last_error_or_default(GetLastError()));
-                        }
-                        else
-                        {
-                            commandLine.assign(buffer.data(), buffer.size());
-                        }
-                    }
-                }
+                Logger::error(L"Failed to get the local app data folder path: {}", get_last_error_or_default(hres));
+                localFolder = L""; // Ensure it is explicitly set to empty on failure
             }
-
-            CloseHandle(process);
         }
-
-        return commandLine;
+        
+        return localFolder;
     }
 
     // Finds all PwaHelper.exe processes with the specified parent process ID
@@ -245,143 +85,116 @@ namespace Utils
         return pwaHelperProcessIds;
     }
 
-    void PwaHelper::InitAumidToAppId()
+    PwaHelper::PwaHelper()
     {
-        if (m_pwaAumidToAppId.size() > 0)
+        InitChromeAppIds();
+        InitEdgeAppIds();
+    }
+
+    void PwaHelper::InitAppIds(const std::wstring& browserDataFolder, const std::wstring& browserDirPrefix, const std::function<void(const std::wstring&)>& addingAppIdCallback)
+    {
+        std::filesystem::path folderPath(GetLocalAppDataFolder());
+        folderPath.append(browserDataFolder);
+        if (!std::filesystem::exists(folderPath))
         {
+            Logger::info(L"Edge base path does not exist: {}", folderPath.wstring());
             return;
         }
 
-        const auto pwaHelperProcessIds = FindPwaHelperProcessIds();
-        Logger::info(L"Found {} edge Pwa helper processes", pwaHelperProcessIds.size());
-        for (const auto subProcessID : pwaHelperProcessIds)
+        try
         {
-            std::wstring aumidID;
-            aumidID = GetProcessId(subProcessID);
-            std::wstring commandLineArg = GetProcCommandLine(subProcessID);
-            auto appIdIndexStart = commandLineArg.find(NonLocalizable::EdgeAppIdIdentifier);
-            if (appIdIndexStart != std::wstring::npos)
+            for (const auto& directory : std::filesystem::directory_iterator(folderPath))
             {
-                commandLineArg = commandLineArg.substr(appIdIndexStart + NonLocalizable::EdgeAppIdIdentifier.size());
-                auto appIdIndexEnd = commandLineArg.find(L" ");
-                if (appIdIndexEnd != std::wstring::npos)
+                if (!directory.is_directory())
                 {
-                    commandLineArg = commandLineArg.substr(0, appIdIndexEnd);
+                    continue;
                 }
-            }
-            std::wstring appId{ commandLineArg };
-            m_pwaAumidToAppId.insert(std::map<std::wstring, std::wstring>::value_type(aumidID, appId));
-            Logger::info(L"Found an edge Pwa helper process with AumidID {} and PwaAppId {}", aumidID, appId);
 
-            PWSTR path = NULL;
-            HRESULT hres = SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &path);
-            if (SUCCEEDED(hres))
-            {
-                std::filesystem::path fsPath(path);
-                fsPath /= NonLocalizable::EdgeBase;
-                for (const auto& directory : std::filesystem::directory_iterator(fsPath))
+                const std::wstring directoryName = directory.path().filename();
+                if (directoryName.find(browserDirPrefix) != 0)
                 {
-                    if (directory.is_directory())
+                    continue;
+                }
+
+                const std::wstring appId = directoryName.substr(browserDirPrefix.length());
+                if (addingAppIdCallback)
+                {
+                    addingAppIdCallback(appId);
+                }
+
+                for (const auto& filename : std::filesystem::directory_iterator(directory))
+                {
+                    if (!filename.is_directory())
                     {
-                        const std::filesystem::path directoryName = directory.path().filename();
-                        if (directoryName.wstring().find(NonLocalizable::EdgeDirPrefix) == 0)
+                        const std::filesystem::path filenameString = filename.path().filename();
+                        if (StringUtils::CaseInsensitiveEquals(filenameString.extension(), NonLocalizable::IcoExtension))
                         {
-                            const std::wstring appIdDir = directoryName.wstring().substr(NonLocalizable::EdgeDirPrefix.size());
-                            if (appIdDir == appId)
-                            {
-                                for (const auto& filename : std::filesystem::directory_iterator(directory))
-                                {
-                                    if (!filename.is_directory())
-                                    {
-                                        const std::filesystem::path filenameString = filename.path().filename();
-                                        if (filenameString.extension().wstring() == L".ico")
-                                        {
-                                            m_pwaAppIdsToAppNames.insert(std::map<std::wstring, std::wstring>::value_type(appId, filenameString.stem().wstring()));
-                                            Logger::info(L"Storing an edge Pwa app name {} for PwaAppId {}", filenameString.stem().wstring(), appId);
-                                        }
-                                    }
-                                }
-                            }
+                            const auto stem = filenameString.stem().wstring();
+                            m_pwaAppIdsToAppNames.insert({ appId, stem });
+                            Logger::info(L"Found an installed Pwa app {} with PwaAppId {}", stem, appId);
+                            break;
                         }
                     }
                 }
-                CoTaskMemFree(path);
             }
+        }
+        catch (std::exception& ex)
+        {
+            Logger::error("Failed to iterate over the directory: {}", ex.what());
         }
     }
 
-    std::optional<std::wstring> PwaHelper::GetPwaAppId(const std::wstring& windowAumid) const
+    void PwaHelper::InitEdgeAppIds()
     {
-        const auto pwaIndex = m_pwaAumidToAppId.find(windowAumid);
-        if (pwaIndex != m_pwaAumidToAppId.end())
+        if (!m_edgeAppIds.empty())
+        {
+            // already initialized
+            return;
+        }
+
+        CommandLineArgsHelper commandLineArgsHelper{};
+
+        const auto pwaHelperProcessIds = FindPwaHelperProcessIds();
+        Logger::info(L"Found {} edge Pwa helper processes", pwaHelperProcessIds.size());
+
+        for (const auto subProcessID : pwaHelperProcessIds)
+        {
+            std::wstring aumidID = GetAUMIDFromProcessId(subProcessID);
+            std::wstring commandLineArg = commandLineArgsHelper.GetCommandLineArgs(subProcessID);
+            std::wstring appId = GetAppIdFromCommandLineArgs(commandLineArg);
+
+            m_edgeAppIds.insert({ aumidID, appId });
+            Logger::info(L"Found an edge Pwa helper process with AumidID {} and PwaAppId {}", aumidID, appId);
+        }
+
+        InitAppIds(NonLocalizable::EdgeBase, NonLocalizable::EdgeDirPrefix, [&](const std::wstring&) {});
+    }
+
+    void PwaHelper::InitChromeAppIds()
+    {
+        if (!m_chromeAppIds.empty())
+        {
+            // already initialized
+            return;
+        }
+
+        InitAppIds(NonLocalizable::ChromeBase, NonLocalizable::ChromeDirPrefix, [&](const std::wstring& appId) {
+            m_chromeAppIds.push_back(appId);
+        });
+    }
+
+    std::optional<std::wstring> PwaHelper::GetEdgeAppId(const std::wstring& windowAumid) const
+    {
+        const auto pwaIndex = m_edgeAppIds.find(windowAumid);
+        if (pwaIndex != m_edgeAppIds.end())
         {
             return pwaIndex->second;
         }
 
         return std::nullopt;
-        ;
     }
-
-    std::wstring PwaHelper::SearchPwaName(const std::wstring& pwaAppId, const std::wstring& windowAumid) const
-    {
-        const auto index = m_pwaAppIdsToAppNames.find(pwaAppId);
-        if (index != m_pwaAppIdsToAppNames.end())
-        {
-            return index->second;
-        }
-
-        std::wstring nameFromAumid{ windowAumid };
-        const std::size_t delimiterPos = nameFromAumid.find(L"-");
-        if (delimiterPos != std::string::npos)
-        {
-            return nameFromAumid.substr(0, delimiterPos);
-        }
-
-        return nameFromAumid;
-    }
-
-    void PwaHelper::InitChromeAppIds()
-    {
-        if (m_chromeAppIds.size() > 0)
-        {
-            return;
-        }
-
-        PWSTR path = NULL;
-        HRESULT hres = SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &path);
-        if (SUCCEEDED(hres))
-        {
-            std::filesystem::path fsPath(path);
-            fsPath /= NonLocalizable::ChromeBase;
-            for (const auto& directory : std::filesystem::directory_iterator(fsPath))
-            {
-                if (directory.is_directory())
-                {
-                    const std::filesystem::path directoryName = directory.path().filename();
-                    if (directoryName.wstring().find(NonLocalizable::ChromeDirPrefix) == 0)
-                    {
-                        const std::wstring appId = directoryName.wstring().substr(NonLocalizable::ChromeDirPrefix.size());
-                        m_chromeAppIds.push_back(appId);
-                        for (const auto& filename : std::filesystem::directory_iterator(directory))
-                        {
-                            if (!filename.is_directory())
-                            {
-                                const std::filesystem::path filenameString = filename.path().filename();
-                                if (filenameString.extension().wstring() == L".ico")
-                                {
-                                    m_pwaAppIdsToAppNames.insert(std::map<std::wstring, std::wstring>::value_type(appId, filenameString.stem().wstring()));
-                                    Logger::info(L"Found an installed chrome Pwa app {} with PwaAppId {}", filenameString.stem().wstring(), appId);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            CoTaskMemFree(path);
-        }
-    }
-
-    std::optional<std::wstring> PwaHelper::SearchPwaAppId(const std::wstring& windowAumid) const
+    
+    std::optional<std::wstring> PwaHelper::GetChromeAppId(const std::wstring& windowAumid) const
     {
         const auto appIdIndexStart = windowAumid.find(NonLocalizable::ChromeAppIdIdentifier);
         if (appIdIndexStart != std::wstring::npos)
@@ -406,48 +219,122 @@ namespace Utils
         return std::nullopt;
     }
 
-    void PwaHelper::UpdatePwaApp(Utils::Apps::AppData* appData, HWND window)
+    std::wstring PwaHelper::SearchPwaName(const std::wstring& pwaAppId, const std::wstring& windowAumid) const
     {
-        std::optional<std::wstring> pwaAppId = std::nullopt;
-        std::wstring finalName = appData->name;
-        std::wstring pwaName = L"";
-        if (appData->IsEdge())
+        const auto index = m_pwaAppIdsToAppNames.find(pwaAppId);
+        if (index != m_pwaAppIdsToAppNames.end())
         {
-            InitAumidToAppId();
-
-            std::wstring windowAumid = GetAppId(window);
-
-            Logger::info(L"Found an edge window with aumid {}", windowAumid);
-
-            pwaAppId = GetPwaAppId(windowAumid);
-            if (pwaAppId.has_value())
-            {
-                Logger::info(L"The found edge window is a PWA app with appId {}", pwaAppId.value());
-                pwaName = SearchPwaName(pwaAppId.value(), windowAumid);
-                Logger::info(L"The found edge window is a PWA app with name {}", pwaName);
-                finalName = pwaName + L" (" + finalName + L")";
-            }
-            else
-            {
-                Logger::info(L"The found edge window does not contain a PWA app");
-            }
-        }
-        else if (appData->IsChrome())
-        {
-            InitChromeAppIds();
-
-            std::wstring windowAumid = GetAppId(window);
-            Logger::info(L"Found a chrome window with aumid {}", windowAumid);
-
-            pwaAppId = SearchPwaAppId(windowAumid);
-            if (pwaAppId.has_value())
-            {
-                pwaName = SearchPwaName(pwaAppId.value(), windowAumid);
-                finalName = pwaName + L" (" + finalName + L")";
-            }
+            return index->second;
         }
 
-        appData->name = finalName;
-        appData->pwaAppId = pwaAppId.has_value() ? pwaAppId.value() : L"";
+        std::wstring nameFromAumid{ windowAumid };
+        const std::size_t delimiterPos = nameFromAumid.find(L"-");
+        if (delimiterPos != std::string::npos)
+        {
+            return nameFromAumid.substr(0, delimiterPos);
+        }
+
+        return nameFromAumid;
+    }
+
+    std::wstring PwaHelper::GetAppIdFromCommandLineArgs(const std::wstring& commandLineArgs) const
+    {
+        auto result = commandLineArgs;
+
+        // remove the prefix
+        if (result.find(NonLocalizable::EdgeAppIdIdentifier) == 0)
+        {
+            result.erase(0, NonLocalizable::EdgeAppIdIdentifier.length());
+        }
+
+        // remove the suffix
+        auto appIdIndexEnd = result.find(L" ");
+        if (appIdIndexEnd != std::wstring::npos)
+        {
+            result = result.substr(0, appIdIndexEnd);
+        }
+
+        return result;
+    }
+
+    std::wstring PwaHelper::GetAUMIDFromWindow(HWND hwnd) const
+    {
+        std::wstring result{};
+        if (hwnd == NULL)
+        {
+            return result;
+        }
+
+        Microsoft::WRL::ComPtr<IPropertyStore> propertyStore;
+        HRESULT hr = SHGetPropertyStoreForWindow(hwnd, IID_PPV_ARGS(&propertyStore));
+        if (FAILED(hr))
+        {
+            return result;
+        }
+
+        PROPVARIANT propVariant;
+        PropVariantInit(&propVariant);
+
+        hr = propertyStore->GetValue(PKEY_AppUserModel_ID, &propVariant);
+        if (SUCCEEDED(hr) && propVariant.vt == VT_LPWSTR && propVariant.pwszVal != nullptr)
+        {
+            result = propVariant.pwszVal;
+        }
+
+        PropVariantClear(&propVariant);
+
+        Logger::info(L"Found a window with aumid {}", result);
+        return result;
+    }
+
+    std::wstring PwaHelper::GetAUMIDFromProcessId(DWORD processId) const
+    {
+        HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, processId);
+        if (hProcess == NULL)
+        {
+            Logger::error(L"Failed to open process handle. Error: {}", get_last_error_or_default(GetLastError()));
+            return {};
+        }
+
+        // Get the package full name for the process
+        UINT32 packageFullNameLength = 0;
+        LONG rc = GetPackageFullName(hProcess, &packageFullNameLength, nullptr);
+        if (rc != ERROR_INSUFFICIENT_BUFFER)
+        {
+            Logger::error(L"Failed to get package full name length. Error code: {}", rc);
+            CloseHandle(hProcess);
+            return {};
+        }
+
+        std::vector<wchar_t> packageFullName(packageFullNameLength);
+        rc = GetPackageFullName(hProcess, &packageFullNameLength, packageFullName.data());
+        if (rc != ERROR_SUCCESS)
+        {
+            Logger::error(L"Failed to get package full name. Error code: {}", rc);
+            CloseHandle(hProcess);
+            return {};
+        }
+
+        // Get the AUMID for the package
+        UINT32 appModelIdLength = 0;
+        rc = GetApplicationUserModelId(hProcess, &appModelIdLength, nullptr);
+        if (rc != ERROR_INSUFFICIENT_BUFFER)
+        {
+            Logger::error(L"Failed to get AppUserModelId length. Error code: {}", rc);
+            CloseHandle(hProcess);
+            return {};
+        }
+
+        std::vector<wchar_t> appModelId(appModelIdLength);
+        rc = GetApplicationUserModelId(hProcess, &appModelIdLength, appModelId.data());
+        if (rc != ERROR_SUCCESS)
+        {
+            Logger::error(L"Failed to get AppUserModelId. Error code: {}", rc);
+            CloseHandle(hProcess);
+            return {};
+        }
+
+        CloseHandle(hProcess);
+        return std::wstring(appModelId.data());
     }
 }

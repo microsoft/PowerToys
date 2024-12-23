@@ -29,10 +29,6 @@
     <ProjectReference Include="..\PdfThumbnailProvider\PdfThumbnailProvider.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\STATestClassAttribute.cs" Link="STATestClassAttribute.cs" />
-    <Compile Include="..\STATestMethodAttribute.cs" Link="STATestMethodAttribute.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="HelperFiles\sample.pdf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

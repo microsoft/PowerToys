@@ -23,17 +23,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             PasteAsJsonShortcut = new();
             CustomActions = new();
             AdditionalActions = new();
+            IsAdvancedAIEnabled = false;
             ShowCustomPreview = true;
-            SendPasteKeyCombination = true;
             CloseAfterLosingFocus = false;
         }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
-        public bool ShowCustomPreview { get; set; }
+        public bool IsAdvancedAIEnabled { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
-        [CmdConfigureIgnore]
-        public bool SendPasteKeyCombination { get; set; }
+        public bool ShowCustomPreview { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool CloseAfterLosingFocus { get; set; }
