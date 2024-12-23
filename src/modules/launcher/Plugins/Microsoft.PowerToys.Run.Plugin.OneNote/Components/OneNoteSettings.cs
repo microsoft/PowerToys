@@ -81,10 +81,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
             },
         };
 
-        public Control CreateSettingPanel()
-        {
-            throw new NotImplementedException();
-        }
+        public Control CreateSettingPanel() => throw new NotImplementedException();
 
         public void UpdateSettings(PowerLauncherPluginSettings? settings)
         {

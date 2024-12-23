@@ -6,7 +6,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
 {
     public class Keywords
     {
-        internal const string NotebookExplorerSeparator = "\\";
+        internal const string NotebookExplorerSeparator = @"\";
 
         internal const string NotebookExplorer = $"nb:{NotebookExplorerSeparator}";
 

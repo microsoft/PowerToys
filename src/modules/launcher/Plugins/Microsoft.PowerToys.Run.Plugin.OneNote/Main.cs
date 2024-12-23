@@ -7,7 +7,6 @@ using System.Windows.Controls;
 using Microsoft.PowerToys.Run.Plugin.OneNote.Components;
 using Microsoft.PowerToys.Run.Plugin.OneNote.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Odotocodot.OneNote.Linq;
 using Wox.Plugin;
 using Timer = System.Timers.Timer;
@@ -93,7 +92,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
         {
             if (_resultCreator is null)
             {
-                return new List<Result>();
+                return [];
             }
 
             if (!_oneNoteInstalled)
@@ -110,10 +109,10 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
             if (OneNoteApplication.HasComObject)
             {
                 ResetTimeout();
-                return _searchManager is null ? new List<Result>() : _searchManager.Query(query);
+                return _searchManager is null ? [] : _searchManager.Query(query);
             }
 
-            return new List<Result>();
+            return [];
         }
 
         /// <summary>
@@ -126,7 +125,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
         {
             if (_resultCreator is null)
             {
-                return new List<Result>();
+                return [];
             }
 
             if (!_oneNoteInstalled)
@@ -141,11 +140,11 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
 
             if (OneNoteApplication.HasComObject)
             {
-                return new List<Result>();
+                return [];
             }
 
             ResetTimeout();
-            return _searchManager is null ? new List<Result>() : _searchManager.Query(query);
+            return _searchManager is null ? [] : _searchManager.Query(query);
         }
 
         /// <summary>
@@ -173,7 +172,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
-            return _resultCreator is null ? new List<ContextMenuResult>() : _resultCreator.LoadContextMenu(selectedResult);
+            return _resultCreator is null ? [] : _resultCreator.LoadContextMenu(selectedResult);
         }
 
         public Control CreateSettingPanel() => throw new NotImplementedException();
@@ -203,4 +202,3 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
         }
     }
 }
-

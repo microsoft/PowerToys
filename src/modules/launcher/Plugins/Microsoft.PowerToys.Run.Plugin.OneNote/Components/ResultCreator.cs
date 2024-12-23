@@ -87,7 +87,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
         {
             if (_context.CurrentPluginMetadata.IsGlobal && !query.RawUserQuery.StartsWith(query.ActionKeyword, StringComparison.Ordinal))
             {
-                return new List<Result>();
+                return [];
             }
 
             return new List<Result>
@@ -482,7 +482,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                     "No matches found",
                     "Try searching something else, or syncing your notebooks.",
                     _iconProvider.Search)
-                : new List<Result>();
+                : [];
         }
 
         internal List<Result> InvalidQuery(bool show)
@@ -492,7 +492,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                     "Invalid query",
                     "The first character of the search must be a letter or a digit",
                     _iconProvider.Warning)
-                : new List<Result>();
+                : [];
         }
 
         internal List<Result> OneNoteNotInstalled()
