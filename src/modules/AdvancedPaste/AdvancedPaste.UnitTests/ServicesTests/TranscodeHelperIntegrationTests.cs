@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using AdvancedPaste.Helpers;
@@ -57,7 +58,7 @@ public sealed class TranscodeHelperIntegrationTests
         var inputPackage = await DataPackageHelpers.CreateFromFileAsync(inputPath);
         var inputProperties = await GetPropertiesAsync(await StorageFile.GetFileFromPathAsync(inputPath));
 
-        var outputPackage = await TransformHelpers.TransformAsync(format, inputPackage.GetView(), new NoOpProgress());
+        var outputPackage = await TransformHelpers.TransformAsync(format, inputPackage.GetView(), CancellationToken.None, new NoOpProgress());
 
         var outputItems = await outputPackage.GetView().GetStorageItemsAsync();
         Assert.AreEqual(1, outputItems.Count);

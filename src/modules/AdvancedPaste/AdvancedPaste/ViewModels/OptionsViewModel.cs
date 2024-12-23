@@ -8,6 +8,8 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 using AdvancedPaste.Helpers;
@@ -37,6 +39,8 @@ namespace AdvancedPaste.ViewModels
         private readonly IPasteFormatExecutor _pasteFormatExecutor;
         private readonly IAICredentialsProvider _aiCredentialsProvider;
 
+        private CancellationTokenSource _pasteActionCancellationTokenSource;
+
         public DataPackageView ClipboardData { get; set; }
 
         [ObservableProperty]
@@ -65,7 +69,7 @@ namespace AdvancedPaste.ViewModels
         private bool _pasteFormatsDirty;
 
         [ObservableProperty]
-        private bool _busy;
+        private bool _isBusy;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HasIndeterminateTransformProgress))]
@@ -89,7 +93,20 @@ namespace AdvancedPaste.ViewModels
 
         private PasteFormats CustomAIFormat => _userSettings.IsAdvancedAIEnabled ? PasteFormats.KernelQuery : PasteFormats.CustomTextTransformation;
 
-        private bool Visible => GetMainWindow()?.Visible is true;
+        private bool Visible
+        {
+            get
+            {
+                try
+                {
+                    return GetMainWindow()?.Visible is true;
+                }
+                catch (COMException)
+                {
+                    return false; // Window is closed
+                }
+            }
+        }
 
         public event EventHandler PreviewRequested;
 
@@ -220,12 +237,13 @@ namespace AdvancedPaste.ViewModels
         public void Dispose()
         {
             _clipboardTimer.Stop();
+            _pasteActionCancellationTokenSource?.Dispose();
             GC.SuppressFinalize(this);
         }
 
         public async Task ReadClipboardAsync()
         {
-            if (Busy)
+            if (IsBusy)
             {
                 return;
             }
@@ -330,6 +348,9 @@ namespace AdvancedPaste.ViewModels
         {
             await ClipboardHelper.TryCopyPasteAsync(package, HideWindow);
             Query = string.Empty;
+
+            // Delete any temp files created. A the delay is needed to ensure the file is not in use by the target application -
+            // for example, when pasting into Explorer, the paste operation will trigger a file copy.
             _ = Task.Run(() => package.GetView().TryCleanupAfterDelayAsync(TimeSpan.FromSeconds(30)));
         }
 
@@ -369,7 +390,7 @@ namespace AdvancedPaste.ViewModels
 
         internal async Task ExecutePasteFormatAsync(PasteFormat pasteFormat, PasteActionSource source)
         {
-            if (Busy)
+            if (IsBusy)
             {
                 Logger.LogWarning($"Execution of {pasteFormat.Format} from {source} suppressed as busy");
                 return;
@@ -384,7 +405,8 @@ namespace AdvancedPaste.ViewModels
             var elapsedWatch = Stopwatch.StartNew();
             Logger.LogDebug($"Started executing {pasteFormat.Format} from source {source}");
 
-            Busy = true;
+            IsBusy = true;
+            _pasteActionCancellationTokenSource = new();
             TransformProgress = double.NaN;
             PasteActionError = PasteActionError.None;
             Query = pasteFormat.Query;
@@ -392,9 +414,9 @@ namespace AdvancedPaste.ViewModels
             try
             {
                 // Minimum time to show busy spinner for AI actions when triggered by global keyboard shortcut.
-                var aiActionMinTaskTime = TimeSpan.FromSeconds(2);
+                var aiActionMinTaskTime = TimeSpan.FromSeconds(1.5);
                 var delayTask = (Visible && source == PasteActionSource.GlobalKeyboardShortcut) ? Task.Delay(aiActionMinTaskTime) : Task.CompletedTask;
-                var dataPackage = await _pasteFormatExecutor.ExecutePasteFormatAsync(pasteFormat, source, this);
+                var dataPackage = await _pasteFormatExecutor.ExecutePasteFormatAsync(pasteFormat, source, _pasteActionCancellationTokenSource.Token, this);
 
                 await delayTask;
 
@@ -418,7 +440,9 @@ namespace AdvancedPaste.ViewModels
                 PasteActionError = PasteActionError.FromException(ex);
             }
 
-            Busy = false;
+            IsBusy = false;
+            _pasteActionCancellationTokenSource?.Dispose();
+            _pasteActionCancellationTokenSource = null;
             elapsedWatch.Stop();
             Logger.LogDebug($"Finished executing {pasteFormat.Format} from source {source}; timeTakenMs={elapsedWatch.ElapsedMilliseconds}");
         }
@@ -493,7 +517,20 @@ namespace AdvancedPaste.ViewModels
             return IsAllowedByGPO && _aiCredentialsProvider.Refresh();
         }
 
-        public void Report(double value)
+        public async Task CancelPasteActionAsync()
+        {
+            if (_pasteActionCancellationTokenSource != null)
+            {
+                await _pasteActionCancellationTokenSource.CancelAsync();
+            }
+        }
+
+        void IProgress<double>.Report(double value)
+        {
+            ReportProgress(value);
+        }
+
+        private void ReportProgress(double value)
         {
             _dispatcherQueue.TryEnqueue(() =>
             {

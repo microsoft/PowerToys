@@ -135,6 +135,9 @@
   <data name="OpenAIApiKeyError" xml:space="preserve">
     <value>OpenAI request failed with status code: </value>
   </data>
+  <data name="PasteActionCanceled" xml:space="preserve">
+    <value>The paste operation was canceled</value>
+  </data>
   <data name="PasteError" xml:space="preserve">
     <value>An error occurred during the paste operation</value>
   </data>
@@ -204,6 +207,9 @@
   <data name="SendBtnToolTip.Text" xml:space="preserve">
     <value>Generate and paste data</value>
   </data>
+  <data name="CancelBtnToolTip.Text" xml:space="preserve">
+    <value>Cancel paste operation</value>
+  </data>
   <data name="RegenerateBtnToolTip.Text" xml:space="preserve">
     <value>Regenerate</value>
   </data>
@@ -212,6 +218,9 @@
   </data>
   <data name="SendButtonAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Generate and paste data</value>
+  </data>
+  <data name="CancelBtnAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Cancel paste operation</value>
   </data>
   <data name="SettingsBtn.Content" xml:space="preserve">
     <value>Open settings</value>

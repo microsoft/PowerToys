@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using ManagedCommon;
@@ -17,13 +18,13 @@ namespace AdvancedPaste.Helpers;
 
 internal static class TranscodeHelpers
 {
-    public static async Task<DataPackage> TranscodeToMp3Async(DataPackageView clipboardData, IProgress<double> progress) =>
-        await TranscodeMediaAsync(clipboardData, MediaEncodingProfile.CreateMp3(AudioEncodingQuality.High), ".mp3", progress);
+    public static async Task<DataPackage> TranscodeToMp3Async(DataPackageView clipboardData, CancellationToken cancellationToken, IProgress<double> progress) =>
+        await TranscodeMediaAsync(clipboardData, MediaEncodingProfile.CreateMp3(AudioEncodingQuality.High), ".mp3", cancellationToken, progress);
 
-    public static async Task<DataPackage> TranscodeToMp4Async(DataPackageView clipboardData, IProgress<double> progress) =>
-        await TranscodeMediaAsync(clipboardData, MediaEncodingProfile.CreateMp4(VideoEncodingQuality.HD1080p), ".mp4", progress);
+    public static async Task<DataPackage> TranscodeToMp4Async(DataPackageView clipboardData, CancellationToken cancellationToken, IProgress<double> progress) =>
+        await TranscodeMediaAsync(clipboardData, MediaEncodingProfile.CreateMp4(VideoEncodingQuality.HD1080p), ".mp4", cancellationToken, progress);
 
-    private static async Task<DataPackage> TranscodeMediaAsync(DataPackageView clipboardData, MediaEncodingProfile baseOutputProfile, string extension, IProgress<double> progress)
+    private static async Task<DataPackage> TranscodeMediaAsync(DataPackageView clipboardData, MediaEncodingProfile baseOutputProfile, string extension, CancellationToken cancellationToken, IProgress<double> progress)
     {
         Logger.LogTrace();
 
@@ -46,12 +47,12 @@ internal static class TranscodeHelpers
         Logger.LogDebug($"{nameof(outputProfile)}: {ProfileToString(outputProfile)}");
 #endif
 
-        var outputFolder = await Task.Run(() => Directory.CreateTempSubdirectory("PowerToys_AdvancedPaste_"));
+        var outputFolder = await Task.Run(() => Directory.CreateTempSubdirectory("PowerToys_AdvancedPaste_"), cancellationToken);
         var outputFileName = StringComparer.OrdinalIgnoreCase.Equals(Path.GetExtension(inputFile.Path), extension) ? inputFileNameWithoutExtension + "_1" : inputFileNameWithoutExtension;
         var outputFilePath = Path.Combine(outputFolder.FullName, Path.ChangeExtension(outputFileName, extension));
-        await File.WriteAllBytesAsync(outputFilePath, []); // TranscodeAsync seems to require the output file to exist
+        await File.WriteAllBytesAsync(outputFilePath, [], cancellationToken); // TranscodeAsync seems to require the output file to exist
 
-        await TranscodeMediaAsync(inputFile, await StorageFile.GetFileFromPathAsync(outputFilePath), outputProfile, progress);
+        await TranscodeMediaAsync(inputFile, await StorageFile.GetFileFromPathAsync(outputFilePath), outputProfile, cancellationToken, progress);
 
         return await DataPackageHelpers.CreateFromFileAsync(outputFilePath);
     }
@@ -127,7 +128,7 @@ internal static class TranscodeHelpers
         return outputProfile;
     }
 
-    private static async Task TranscodeMediaAsync(StorageFile inputFile, StorageFile outputFile, MediaEncodingProfile outputProfile, IProgress<double> progress)
+    private static async Task TranscodeMediaAsync(StorageFile inputFile, StorageFile outputFile, MediaEncodingProfile outputProfile, CancellationToken cancellationToken, IProgress<double> progress)
     {
         if (outputProfile.Video == null && outputProfile.Audio == null)
         {
@@ -141,9 +142,6 @@ internal static class TranscodeHelpers
             throw new InvalidOperationException($"Error transcoding; {nameof(prepareOp.FailureReason)}={prepareOp.FailureReason}");
         }
 
-        var transcodeOp = prepareOp.TranscodeAsync();
-        transcodeOp.Progress = (_, args) => progress.Report(args);
-
-        await transcodeOp;
+        await prepareOp.TranscodeAsync().AsTask(cancellationToken, progress);
     }
 }
