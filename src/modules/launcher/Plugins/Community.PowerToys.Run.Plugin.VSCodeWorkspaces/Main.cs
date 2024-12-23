@@ -206,7 +206,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                     acceleratorKey: Key.C,
                     acceleratorModifiers: ModifierKeys.Control | ModifierKeys.Shift,
                     action: () => OpenInConsole(realPath)
-                )
+                ),
             };
         }
 
@@ -220,7 +220,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                 FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                 AcceleratorKey = acceleratorKey,
                 AcceleratorModifiers = acceleratorModifiers,
-                Action = context => action()
+                Action = context => action(),
             };
         }
 
