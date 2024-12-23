@@ -69,10 +69,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Images\oneNote.dark.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\oneNote.light.png">
+    <None Update="Images\*.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
