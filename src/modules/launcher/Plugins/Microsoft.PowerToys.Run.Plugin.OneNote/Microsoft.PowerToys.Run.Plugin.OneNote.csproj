@@ -17,7 +17,7 @@
   <PropertyGroup>
     <NoWarn>8981</NoWarn>
   </PropertyGroup>
-	
+    
   <ItemGroup>
     <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj">
       <Private>false</Private>
@@ -41,6 +41,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="ScipBe.Common.Office.OneNote" />
+    <PackageReference Include="Odotocodot.OneNote.Linq" />
   </ItemGroup>
 
   <ItemGroup>

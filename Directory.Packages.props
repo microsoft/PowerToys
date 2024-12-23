@@ -92,6 +92,7 @@
     <PackageVersion Include="NLog" Version="5.2.8" />
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.3.8" />
     <PackageVersion Include="NLog.Schema" Version="5.2.8" />
+    <PackageVersion Include="Odotocodot.OneNote.Linq" Version="1.1.0" />
     <PackageVersion Include="OpenAI" Version="2.5.0" />
     <PackageVersion Include="ReverseMarkdown" Version="4.1.0" />
     <PackageVersion Include="RtfPipe" Version="2.0.7677.4303" />
