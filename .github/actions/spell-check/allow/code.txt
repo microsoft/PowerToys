@@ -78,7 +78,14 @@ sinclairinat
 stylecop
 uipi
 yinwang
-
+myaccess
+onmicrosoft
+aep
+epsf
+howto
+onefuzzconfig
+oip
+onefuzzingestionpreparationtool
 
 # KEYS
 
@@ -246,3 +253,12 @@ pwa
 
 AOT
 Aot
+
+# YML
+onefuzz
+
+# NameInCode
+leilzh
+
+#Tools
+OIP

@@ -56,6 +56,15 @@ parameters:
   - name: versionNumber
     type: string
     default: '0.0.1'
+  - name: useLatestWinAppSDK
+    type: boolean
+    default: false
+  - name: winAppSDKVersionNumber
+    type: string
+    default: 1.6
+  - name: useExperimentalVersion
+    type: boolean
+    default: false
   - name: csProjectsToPublish
     type: object
     default:
@@ -102,6 +111,10 @@ jobs:
     ${{ else }}:
       MSBuildMainBuildTargets: Build
     ${{ insert }}: ${{ parameters.variables }}
+    ${{ if eq(parameters.useLatestWinAppSDK, true) }}:
+      RestoreAdditionalProjectSourcesArg: '/p:RestoreAdditionalProjectSources="$(Build.SourcesDirectory)\localpackages\NugetPackages"'
+    ${{ else }}:
+      RestoreAdditionalProjectSourcesArg: ''
   displayName: Build
   timeoutInMinutes: 240
   cancelTimeoutInMinutes: 1
@@ -133,6 +146,11 @@ jobs:
     parameters:
       sdk: true
       version: '6.0'
+
+  - template: steps-ensure-dotnet-version.yml
+    parameters:
+      sdk: true
+      version: '8.0'
 
   - template: steps-ensure-dotnet-version.yml
     parameters:
@@ -177,8 +195,15 @@ jobs:
            "packages.config" | "$(Agent.OS)"
            "packages.config"
         path: packages
-
-  - template: .\steps-restore-nuget.yml
+  
+  - ${{ if eq(parameters.useLatestWinAppSDK, true)}}:
+    - template: .\steps-update-winappsdk-and-restore-nuget.yml
+      parameters:
+        versionNumber: ${{ parameters.winAppSDKVersionNumber }}
+        useExperimentalVersion: ${{ parameters.useExperimentalVersion }}
+  
+  - ${{ if eq(parameters.useLatestWinAppSDK, false)}}:
+    - template: .\steps-restore-nuget.yml
 
   - pwsh: |-
       & "$(build.sourcesdirectory)\.pipelines\verifyAndSetLatestVCToolsVersion.ps1"
@@ -209,6 +234,7 @@ jobs:
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
         /t:$(MSBuildMainBuildTargets)
+        $(RestoreAdditionalProjectSourcesArg)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
@@ -233,10 +259,11 @@ jobs:
     inputs:
       solution: '**\HostsUILib.csproj'
       vsVersion: 17.0
-      ${{ if eq(parameters.useVSPreview, true) }}:
-        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-hosts.binlog /p:NoWarn=NU5104
-      ${{ else }}:
-        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-hosts.binlog
+      msbuildArgs: >-
+        /p:CIBuild=true;NoBuild=true -t:pack
+        /bl:$(LogOutputDirectory)\build-hosts.binlog
+        /p:NoWarn=NU5104
+        $(RestoreAdditionalProjectSourcesArg)
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
@@ -249,10 +276,11 @@ jobs:
     inputs:
       solution: '**\EnvironmentVariablesUILib.csproj'
       vsVersion: 17.0
-      ${{ if eq(parameters.useVSPreview, true) }}:
-        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-env-var-editor.binlog /p:NoWarn=NU5104
-      ${{ else }}:
-        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-env-var-editor.binlog
+      msbuildArgs: >-
+        /p:CIBuild=true;NoBuild=true -t:pack
+        /bl:$(LogOutputDirectory)\build-env-var-editor.binlog
+        /p:NoWarn=NU5104
+        $(RestoreAdditionalProjectSourcesArg)
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
@@ -265,10 +293,11 @@ jobs:
     inputs:
       solution: '**\RegistryPreviewUILib.csproj'
       vsVersion: 17.0
-      ${{ if eq(parameters.useVSPreview, true) }}:
-        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-registry-preview.binlog /p:NoWarn=NU5104
-      ${{ else }}:
-        msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-registry-preview.binlog
+      msbuildArgs: >-
+        /p:CIBuild=true;NoBuild=true -t:pack
+        /bl:$(LogOutputDirectory)\build-registry-preview.binlog
+        /p:NoWarn=NU5104
+        $(RestoreAdditionalProjectSourcesArg)
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
@@ -323,6 +352,7 @@ jobs:
         /bl:$(LogOutputDirectory)\build-bug-report.binlog
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
+        $(RestoreAdditionalProjectSourcesArg)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
@@ -343,6 +373,7 @@ jobs:
         /bl:$(LogOutputDirectory)\build-webcam-report.binlog
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
+        $(RestoreAdditionalProjectSourcesArg)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
@@ -363,6 +394,7 @@ jobs:
         /bl:$(LogOutputDirectory)\build-styles-report.binlog
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
+        $(RestoreAdditionalProjectSourcesArg)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
@@ -385,6 +417,7 @@ jobs:
           /p:PowerToysRoot=$(Build.SourcesDirectory)
           /p:PublishProfile=InstallationPublishProfile.pubxml
           /bl:$(LogOutputDirectory)\publish-${{ join('_',split(project, '/')) }}.binlog
+          $(RestoreAdditionalProjectSourcesArg)
         platform: $(BuildPlatform)
         configuration: $(BuildConfiguration)
         msbuildArchitecture: x64
@@ -414,9 +447,11 @@ jobs:
       & '.pipelines/verifyPossibleAssetConflicts.ps1' -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)\WinUI3Apps'
     displayName: Audit WinAppSDK applications path asset conflicts
 
-  - pwsh: |-
-      & '.pipelines/verifyNoticeMdAgainstNugetPackages.ps1' -path '$(build.sourcesdirectory)\'
-    displayName: Verify NOTICE.md and NuGet packages match
+  # To streamline the pipeline and prevent errors, skip this step during compatibility tests with the latest WinAppSDK.
+  - ${{ if eq(parameters.useLatestWinAppSDK, false) }}:
+    - pwsh: |-
+        & '.pipelines/verifyNoticeMdAgainstNugetPackages.ps1' -path '$(build.sourcesdirectory)\'
+      displayName: Verify NOTICE.md and NuGet packages match
 
   - ${{ if eq(parameters.runTests, true) }}:
     # Publish test results which ran in MSBuild

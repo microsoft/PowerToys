@@ -156,8 +156,8 @@ namespace AdvancedPaste.Settings
             {
                 if (disposing)
                 {
-                    _cancellationTokenSource.Dispose();
-                    _watcher.Dispose();
+                    _cancellationTokenSource?.Dispose();
+                    _watcher?.Dispose();
                 }
 
                 _disposedValue = true;

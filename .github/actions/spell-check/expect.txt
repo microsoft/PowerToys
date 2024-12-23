@@ -24,6 +24,7 @@ AFeature
 AFFINETRANSFORM
 AFX
 AGGREGATABLE
+ahk
 AHybrid
 akv
 ALarger
@@ -739,6 +740,7 @@ LExit
 lhwnd
 LIBID
 lindex
+linkid
 LINKOVERLAY
 LINQTo
 listview
@@ -752,7 +754,7 @@ lnks
 LOADFROMFILE
 LOBYTE
 LOCALDISPLAY
-LOCALPACKAGE
+localpackage
 LOCALSYSTEM
 LOCATIONCHANGE
 LOGFONT
@@ -1720,6 +1722,7 @@ WIC
 wifi
 wil
 winapi
+winappsdk
 wincodec
 Wincodecsdk
 wincolor
@@ -1844,5 +1847,3 @@ zonable
 zoneset
 Zoneszonabletester
 zzz
-
-
