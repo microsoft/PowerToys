@@ -15,7 +15,7 @@ parameters:
 # Herein we replicate 90% of the meaningful logic in that task.
 steps:
 - pwsh: |-
-    curl.exe -J -L -O "https://dotss.net/v1/dotnet-install.ps1"
+    curl.exe -J -L -O "https://dot.net/v1/dotnet-install.ps1"
     if (-not (Test-Path dotnet-install.ps1)) {
       Write-Error "Failed to download dotnet-install.ps1"
       exit 1
