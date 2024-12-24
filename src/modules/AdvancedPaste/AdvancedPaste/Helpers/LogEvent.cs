@@ -4,17 +4,50 @@
 
 using System.Text.Json;
 using AdvancedPaste.Models.KernelQueryCache;
+using AdvancedPaste.Telemetry;
 
 namespace AdvancedPaste.Helpers
 {
     public class LogEvent
     {
-        public LogEvent(object message)
+        public LogEvent(bool cacheUsed, bool isSavedQuery, int promptTokens, int completionTokens, string modelName, string actionChain)
         {
-            this.message = message;
+            CacheUsed = cacheUsed;
+            IsSavedQuery = isSavedQuery;
+            PromptTokens = promptTokens;
+            CompletionTokens = completionTokens;
+            ModelName = modelName;
+            ActionChain = actionChain;
         }
 
-        private object message;
+        public LogEvent(AdvancedPasteSemanticKernelFormatEvent semanticKernalFormatEvent)
+        {
+            CacheUsed = semanticKernalFormatEvent.CacheUsed;
+            IsSavedQuery = semanticKernalFormatEvent.IsSavedQuery;
+            PromptTokens = semanticKernalFormatEvent.PromptTokens;
+            CompletionTokens = semanticKernalFormatEvent.CompletionTokens;
+            ModelName = semanticKernalFormatEvent.ModelName;
+            ActionChain = semanticKernalFormatEvent.ActionChain;
+        }
+
+        public LogEvent(AdvancedPasteGenerateCustomFormatEvent generateCustomFormatEvent)
+        {
+            PromptTokens = generateCustomFormatEvent.PromptTokens;
+            CompletionTokens = generateCustomFormatEvent.CompletionTokens;
+            ModelName = generateCustomFormatEvent.ModelName;
+        }
+
+        public bool IsSavedQuery { get; set; }
+
+        public bool CacheUsed { get; set; }
+
+        public int PromptTokens { get; set; }
+
+        public int CompletionTokens { get; set; }
+
+        public string ModelName { get; set; }
+
+        public string ActionChain { get; set; }
 
         public string ToJsonString() => JsonSerializer.Serialize(this, AdvancedPasteJsonSerializerContext.Default.PersistedCache);
     }

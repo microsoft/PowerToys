@@ -174,7 +174,7 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
     {
         AdvancedPasteSemanticKernelFormatEvent telemetryEvent = new(cacheUsed, isSavedQuery, usage.PromptTokens, usage.CompletionTokens, ModelName, AdvancedPasteSemanticKernelFormatEvent.FormatActionChain(actionChain));
         PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
-        var logEvent = new LogEvent(new { telemetryEvent.CacheUsed, telemetryEvent.IsSavedQuery, telemetryEvent.PromptTokens, telemetryEvent.CompletionTokens, telemetryEvent.ModelName, telemetryEvent.ActionChain });
+        var logEvent = new LogEvent(telemetryEvent);
         Logger.LogDebug($"{nameof(TransformClipboardAsync)} complete; {logEvent.ToJsonString()}");
     }
 

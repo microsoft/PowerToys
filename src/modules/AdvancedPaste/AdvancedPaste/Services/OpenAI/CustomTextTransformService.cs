@@ -85,8 +85,8 @@ Output:
             var usage = response.Usage;
             AdvancedPasteGenerateCustomFormatEvent telemetryEvent = new(usage.PromptTokens, usage.CompletionTokens, ModelName);
             PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
+            var logEvent = new LogEvent(telemetryEvent);
 
-            var logEvent = new LogEvent(new { telemetryEvent.PromptTokens, telemetryEvent.CompletionTokens, telemetryEvent.ModelName });
             Logger.LogDebug($"{nameof(TransformTextAsync)} complete; {logEvent.ToJsonString()}");
 
             return response.Choices[0].Text;
