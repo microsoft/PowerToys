@@ -162,7 +162,7 @@ namespace ManagedCommon
 #endif
             }
 
-            return $"{callerFileName}::{memberName}::{sourceLineNumber}";
+            return $"{callerFileName}::{memberName}";
         }
     }
 }
