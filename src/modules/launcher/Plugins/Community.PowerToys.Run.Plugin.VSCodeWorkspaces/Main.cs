@@ -83,7 +83,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                             }
                             catch (Win32Exception ex)
                             {
-                                LogError("Can't Open this file", ex);
+                                HandleError("Can't Open this file", ex, showMsg: true);
                                 hide = false;
                             }
 
@@ -129,7 +129,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                             }
                             catch (Win32Exception ex)
                             {
-                                LogError("Can't Open this file", ex);
+                                HandleError("Can't Open this file", ex, showMsg: true);
                                 hide = false;
                             }
 
@@ -186,38 +186,36 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
 
             return new List<ContextMenuResult>
             {
-                CreateContextMenuResult(
-                    title: $"{Resources.CopyPath} (Ctrl+C)",
-                    glyph: "\xE8C8", // Copy
-                    acceleratorKey: Key.C,
-                    acceleratorModifiers: ModifierKeys.Control,
-                    action: () => CopyToClipboard(realPath)),
-                CreateContextMenuResult(
-                    title: $"{Resources.OpenInExplorer} (Ctrl+Shift+F)",
-                    glyph: "\xEC50", // File Explorer
-                    acceleratorKey: Key.F,
-                    acceleratorModifiers: ModifierKeys.Control | ModifierKeys.Shift,
-                    action: () => OpenInExplorer(realPath)),
-                CreateContextMenuResult(
-                    title: $"{Resources.OpenInConsole} (Ctrl+Shift+C)",
-                    glyph: "\xE756", // Command Prompt
-                    acceleratorKey: Key.C,
-                    acceleratorModifiers: ModifierKeys.Control | ModifierKeys.Shift,
-                    action: () => OpenInConsole(realPath)),
-            };
-        }
-
-        private ContextMenuResult CreateContextMenuResult(string title, string glyph, Key acceleratorKey, ModifierKeys acceleratorModifiers, Func<bool> action)
-        {
-            return new ContextMenuResult
-            {
-                PluginName = Name,
-                Title = title,
-                Glyph = glyph,
-                FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
-                AcceleratorKey = acceleratorKey,
-                AcceleratorModifiers = acceleratorModifiers,
-                Action = context => action(),
+                new ContextMenuResult
+                {
+                    PluginName = Name,
+                    Title = $"{Resources.CopyPath} (Ctrl+C)",
+                    Glyph = "\xE8C8", // Copy
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
+                    AcceleratorKey = Key.C,
+                    AcceleratorModifiers = ModifierKeys.Control,
+                    Action = context => CopyToClipboard(realPath),
+                },
+                new ContextMenuResult
+                {
+                    PluginName = Name,
+                    Title = $"{Resources.OpenInExplorer} (Ctrl+Shift+F)",
+                    Glyph = "\xEC50", // File Explorer
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
+                    AcceleratorKey = Key.F,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                    Action = context => OpenInExplorer(realPath),
+                },
+                new ContextMenuResult
+                {
+                    PluginName = Name,
+                    Title = $"{Resources.OpenInConsole} (Ctrl+Shift+C)",
+                    Glyph = "\xE756", // Command Prompt
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
+                    AcceleratorKey = Key.C,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                    Action = context => OpenInConsole(realPath),
+                },
             };
         }
 
@@ -230,7 +228,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
             }
             catch (Exception ex)
             {
-                LogError("Can't copy to clipboard", ex);
+                HandleError("Can't copy to clipboard", ex, showMsg: true);
                 return false;
             }
         }
@@ -244,7 +242,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
             }
             catch (Exception ex)
             {
-                LogError($"Unable to open the specified path in the console: {path}", ex);
+                HandleError($"Unable to open the specified path in the console: {path}", ex, showMsg: true);
                 return false;
             }
         }
@@ -253,24 +251,29 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
         {
             if (!Helper.OpenInShell("explorer.exe", $"\"{path}\""))
             {
-                LogError($"Failed to open folder in Explorer at path: {path}");
+                HandleError($"Failed to open folder in Explorer at path: {path}", showMsg: true);
                 return false;
             }
 
             return true;
         }
 
-        public void LogError(string msg, Exception exception = null)
+        private void HandleError(string msg, Exception exception = null, bool showMsg = false)
         {
-            string fullMessage = $"Plugin: {_context.CurrentPluginMetadata.Name}, Message: {msg}";
-
             if (exception != null)
             {
-                Log.Exception(fullMessage, exception, exception.GetType());
+                Log.Exception(msg, exception, exception.GetType());
             }
             else
             {
-                Log.Error(fullMessage, typeof(VSCodeWorkspaces.Main));
+                Log.Error(msg, typeof(VSCodeWorkspaces.Main));
+            }
+
+            if (showMsg)
+            {
+                _context.API.ShowMsg(
+                    $"Plugin: {_context.CurrentPluginMetadata.Name}",
+                    msg);
             }
         }
 
