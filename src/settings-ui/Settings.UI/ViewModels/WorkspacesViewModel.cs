@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -15,7 +16,7 @@ using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class WorkspacesViewModel : Observable
+    public partial class WorkspacesViewModel : Observable
     {
         private ISettingsUtils SettingsUtils { get; set; }
 
@@ -131,7 +132,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             CultureInfo.InvariantCulture,
                             "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                             WorkspacesSettings.ModuleName,
-                            JsonSerializer.Serialize(Settings)));
+                            JsonSerializer.Serialize(Settings, SettingsUIJsonSerializerContext.Default.WorkspacesSettings)));
                 }
             }
         }

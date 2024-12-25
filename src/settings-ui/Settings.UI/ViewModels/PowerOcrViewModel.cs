@@ -12,6 +12,7 @@ using System.Timers;
 
 using Common.UI;
 using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -20,7 +21,7 @@ using Windows.Media.Ocr;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class PowerOcrViewModel : Observable, IDisposable
+    public partial class PowerOcrViewModel : Observable, IDisposable
     {
         private bool disposedValue;
 
@@ -237,7 +238,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                        CultureInfo.InvariantCulture,
                        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                        PowerOcrSettings.ModuleName,
-                       JsonSerializer.Serialize(_powerOcrSettings)));
+                       JsonSerializer.Serialize(_powerOcrSettings, SettingsUIJsonSerializerContext.Default.PowerOcrSettings)));
         }
 
         public void RefreshEnabledState()

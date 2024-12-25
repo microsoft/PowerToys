@@ -22,7 +22,7 @@ using Microsoft.PowerToys.Settings.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class KeyboardManagerViewModel : Observable
+    public partial class KeyboardManagerViewModel : Observable
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 

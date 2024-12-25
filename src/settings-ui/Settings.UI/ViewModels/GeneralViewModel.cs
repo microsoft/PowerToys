@@ -12,6 +12,7 @@ using System.IO.Abstractions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 
 using global::PowerToys.GPOWrapper;
@@ -26,7 +27,7 @@ using Microsoft.PowerToys.Telemetry;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class GeneralViewModel : Observable
+    public partial class GeneralViewModel : Observable
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -34,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ButtonClickCommand CheckForUpdatesEventHandler { get; set; }
 
-        public object ResourceLoader { get; set; }
+        public Windows.ApplicationModel.Resources.ResourceLoader ResourceLoader { get; set; }
 
         private Action HideBackupAndRestoreMessageAreaAction { get; set; }
 
@@ -70,7 +71,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private SettingsBackupAndRestoreUtils settingsBackupAndRestoreUtils = SettingsBackupAndRestoreUtils.Instance;
 
-        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, Action hideBackupAndRestoreMessageAreaAction = null, Action<int> doBackupAndRestoreDryRun = null, Func<Task<string>> pickSingleFolderDialog = null, object resourceLoader = null)
+        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, Action hideBackupAndRestoreMessageAreaAction = null, Action<int> doBackupAndRestoreDryRun = null, Func<Task<string>> pickSingleFolderDialog = null, Windows.ApplicationModel.Resources.ResourceLoader resourceLoader = null)
         {
             CheckForUpdatesEventHandler = new ButtonClickCommand(CheckForUpdatesClick);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
@@ -1051,11 +1052,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             if (ResourceLoader != null)
             {
-                var type = ResourceLoader.GetType();
-                MethodInfo methodInfo = type.GetMethod("GetString");
-                object classInstance = Activator.CreateInstance(type, null);
-                object[] parametersArray = new object[] { resource };
-                var result = (string)methodInfo.Invoke(ResourceLoader, parametersArray);
+                var result = ResourceLoader.GetString(resource);
                 if (string.IsNullOrEmpty(result))
                 {
                     return resource.ToUpperInvariant() + "!!!";
@@ -1105,7 +1102,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
             var dataToSend = customaction.ToString();
-            dataToSend = JsonSerializer.Serialize(new { action = new { general = new { action_name = "restart_maintain_elevation" } } });
+            dataToSend = JsonSerializer.Serialize(ActionMessage.Create("restart_maintain_elevation"), SettingsUIJsonSerializerContext.Default.ActionMessage);
             SendRestartAsAdminConfigMSG(dataToSend);
         }
 

@@ -20,9 +20,9 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
             try
             {
                 var json = File.ReadAllText(_placementPath);
-                var placement = JsonSerializer.Deserialize<WINDOWPLACEMENT>(json);
+                var placement = JsonSerializer.Deserialize<WINDOWPLACEMENT>(json, SettingsUIJsonSerializerContext.Default.WINDOWPLACEMENT);
 
-                placement.Length = Marshal.SizeOf(typeof(WINDOWPLACEMENT));
+                placement.Length = Marshal.SizeOf<WINDOWPLACEMENT>();
                 placement.Flags = 0;
                 placement.ShowCmd = (placement.ShowCmd == NativeMethods.SW_SHOWMAXIMIZED) ? NativeMethods.SW_SHOWMAXIMIZED : NativeMethods.SW_SHOWNORMAL;
                 return placement;
@@ -40,7 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
             _ = NativeMethods.GetWindowPlacement(handle, out var placement);
             try
             {
-                var json = JsonSerializer.Serialize(placement);
+                var json = JsonSerializer.Serialize(placement, SettingsUIJsonSerializerContext.Default.WINDOWPLACEMENT);
                 File.WriteAllText(_placementPath, json);
             }
             catch (Exception)

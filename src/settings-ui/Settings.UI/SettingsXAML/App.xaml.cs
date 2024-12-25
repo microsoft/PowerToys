@@ -167,7 +167,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
             try
             {
-                var requestedSettings = JsonSerializer.Deserialize<Dictionary<string, List<string>>>(File.ReadAllText(ipcFileName));
+                var requestedSettings = JsonSerializer.Deserialize<Dictionary<string, List<string>>>(File.ReadAllText(ipcFileName), SettingsUIJsonSerializerContext.Default.DictionaryStringListString);
                 File.WriteAllText(ipcFileName, GetSettingCommandLineCommand.Execute(requestedSettings));
             }
             catch (Exception ex)

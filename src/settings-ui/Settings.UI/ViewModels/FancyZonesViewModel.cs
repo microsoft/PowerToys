@@ -14,7 +14,7 @@ using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class FancyZonesViewModel : Observable
+    public partial class FancyZonesViewModel : Observable
     {
         private SettingsUtils SettingsUtils { get; set; }
 

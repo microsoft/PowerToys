@@ -29,7 +29,7 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class MouseWithoutBordersViewModel : Observable, IDisposable
+    public partial class MouseWithoutBordersViewModel : Observable, IDisposable
     {
         // These should be in the same order as the ComboBoxItems in MouseWithoutBordersPage.xaml switch machine shortcut options
         private readonly int[] _switchBetweenMachineShortcutOptions =
@@ -260,7 +260,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private static VisualStudio.Threading.AsyncSemaphore _ipcSemaphore = new VisualStudio.Threading.AsyncSemaphore(1);
 
-        private sealed class SyncHelper : IDisposable
+        private sealed partial class SyncHelper : IDisposable
         {
             public SyncHelper(NamedPipeClientStream stream)
             {
@@ -1083,7 +1083,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private IndexedObservableCollection<DeviceViewModel> machineMatrixString;
 
-        public class DeviceViewModel : Observable
+        public partial class DeviceViewModel : Observable
         {
             public string Name { get; set; }
 
@@ -1185,7 +1185,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         CultureInfo.InvariantCulture,
         "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
         MouseWithoutBordersSettings.ModuleName,
-        JsonSerializer.Serialize(Settings)));
+        JsonSerializer.Serialize(Settings, SettingsUIJsonSerializerContext.Default.MouseWithoutBordersSettings)));
         }
 
         public void NotifyUpdatedSettings()

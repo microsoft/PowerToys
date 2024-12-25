@@ -15,7 +15,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class PowerAccentViewModel : Observable
+    public partial class PowerAccentViewModel : Observable
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 

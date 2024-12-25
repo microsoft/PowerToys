@@ -29,22 +29,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
     public sealed partial class OobeWhatsNew : Page
     {
-        // Contains information for a release. Used to deserialize release JSON info from GitHub.
-        private sealed class PowerToysReleaseInfo
-        {
-            [JsonPropertyName("published_at")]
-            public DateTimeOffset PublishedDate { get; set; }
-
-            [JsonPropertyName("name")]
-            public string Name { get; set; }
-
-            [JsonPropertyName("tag_name")]
-            public string TagName { get; set; }
-
-            [JsonPropertyName("body")]
-            public string ReleaseNotes { get; set; }
-        }
-
         public OobePowerToysModule ViewModel { get; set; }
 
         public bool ShowDataDiagnosticsInfoBar => GetShowDataDiagnosticsInfoBar();
@@ -111,7 +95,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             // https://docs.github.com/rest/overview/resources-in-the-rest-api#user-agent-required
             getReleaseInfoClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "PowerToys");
             releaseNotesJSON = await getReleaseInfoClient.GetStringAsync("https://api.github.com/repos/microsoft/PowerToys/releases");
-            IList<PowerToysReleaseInfo> releases = JsonSerializer.Deserialize<IList<PowerToysReleaseInfo>>(releaseNotesJSON);
+            IList<PowerToysReleaseInfo> releases = JsonSerializer.Deserialize<IList<PowerToysReleaseInfo>>(releaseNotesJSON, SettingsUIJsonSerializerContext.Default.IListPowerToysReleaseInfo);
 
             // Get the latest releases
             var latestReleases = releases.OrderByDescending(release => release.PublishedDate).Take(5);

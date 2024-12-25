@@ -15,6 +15,7 @@ using System.Text.Json.Serialization;
 using System.Timers;
 
 using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -23,7 +24,7 @@ using Windows.Security.Credentials;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class AdvancedPasteViewModel : Observable, IDisposable
+    public partial class AdvancedPasteViewModel : Observable, IDisposable
     {
         private static readonly HashSet<string> WarnHotkeys = ["Ctrl + V", "Ctrl + Shift + V"];
 
@@ -387,7 +388,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     CultureInfo.InvariantCulture,
                     "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                     AdvancedPasteSettings.ModuleName,
-                    JsonSerializer.Serialize(_advancedPasteSettings)));
+                    JsonSerializer.Serialize(_advancedPasteSettings, SettingsUIJsonSerializerContext.Default.AdvancedPasteSettings)));
         }
 
         public void RefreshEnabledState()
