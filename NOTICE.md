@@ -1315,7 +1315,7 @@ EXHIBIT A -Mozilla Public License.
 - hyjiacan.pinyin4net 4.1.1
 - Interop.Microsoft.Office.Interop.OneNote 1.1.0.2
 - LazyCache 2.4.0
-- Mages 2.0.2
+- Mages 3.0.0
 - Markdig.Signed 0.34.0
 - MessagePack 2.5.187
 - Microsoft.Bcl.AsyncInterfaces 9.0.0
