@@ -12,7 +12,6 @@ properties:
       id: vsPackage
       directives:
         description: Install Visual Studio 2022 Professional (Any edition will work)
-        allowPrerelease: true
       settings:
         id: Microsoft.VisualStudio.2022.Professional
         source: winget

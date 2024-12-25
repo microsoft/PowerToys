@@ -181,6 +181,13 @@ Other contributors:
 - [@shuaiyuanxx](https://github.com/shuaiyuanxx) - Shawn Yuan - Dev
 - [@moooyo](https://github.com/moooyo) - Yu Leng - Dev
 - [@haoliuu](https://github.com/haoliuu) - Hao Liu - Dev
+- [@chenmy77](https://github.com/chenmy77) - Mengyuan Chen - Dev
+- [@chemwolf6922](https://github.com/chemwolf6922) - Feng Wang - Dev
+- [@yaqingmi](https://github.com/yaqingmi) - Yaqing Mi - Dev
+- [@zhaoqpcn](https://github.com/zhaoqpcn) - Qingpeng Zhao - Dev
+- [@urnotdfs](https://github.com/urnotdfs) - Xiaofeng Wang - Dev
+- [@zhaopy536](https://github.com/zhaopy536) - Peiyao Zhao - Dev
+- [@wang563681252](https://github.com/wang563681252) - Zhaopeng Wang - Dev
 
 # Former PowerToys core team members
 
