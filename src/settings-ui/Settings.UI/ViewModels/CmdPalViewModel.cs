@@ -140,27 +140,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public static string FindMsixFile(string directoryPath)
+        public static string[] FindMsixFile(string directoryPath)
         {
             if (string.IsNullOrWhiteSpace(directoryPath))
             {
                 Logger.LogError("Directory path cannot be null or empty.");
+                return [];
             }
 
             if (!Directory.Exists(directoryPath))
             {
                 Logger.LogError($"The directory '{directoryPath}' does not exist.");
+                return [];
             }
 
-            string pattern = @"^.+\.(msix|msixbundle)$";
+            string pattern = @"^.+\.(msix|appx|msixbundle)$";
             Regex regex = new(pattern, RegexOptions.IgnoreCase);
 
-            string matchedFile = string.Empty;
+            string[] matchedFile = [];
             try
             {
                 matchedFile = Directory.GetFiles(directoryPath, "*.*", SearchOption.AllDirectories)
                                             .Where(file => regex.IsMatch(Path.GetFileName(file)))
-                                            .ToArray().FirstOrDefault();
+                                            .ToArray();
             }
             catch (Exception ex)
             {
@@ -172,7 +174,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void InstallModule()
         {
-            string msixFilePath = FindMsixFile(AssemblyDirectory + "\\CmdPal\\");
+#if DEBUG
+            string archSubdir = "ARM64";
+            var arch = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture;
+            if (arch == System.Runtime.InteropServices.Architecture.X64)
+            {
+                archSubdir = "x64";
+            }
+
+            string msixFilePath = FindMsixFile(AssemblyDirectory + "\\CmdPal\\AppPackages\\Microsoft.CmdPal.UI_0.0.1.0_Debug_Test\\").FirstOrDefault();
+            string[] dependencies = FindMsixFile(AssemblyDirectory + "\\CmdPal\\AppPackages\\Microsoft.CmdPal.UI_0.0.1.0_Debug_Test\\Dependencies\\" + archSubdir + "\\");
+#else
+            string msixFilePath = FindMsixFile(AssemblyDirectory + "\\CmdPal\\").FirstOrDefault();
+            string[] dependencies = FindMsixFile(AssemblyDirectory + "\\CmdPal\\Dependencies\\");
+#endif
 
             if (string.IsNullOrWhiteSpace(msixFilePath))
             {
@@ -189,10 +204,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             try
             {
                 PackageManager packageManager = new();
+                DeploymentOptions options = DeploymentOptions.ForceApplicationShutdown;
+
                 System.Threading.Tasks.Task<DeploymentResult> deploymentResult = packageManager.AddPackageAsync(
                     new Uri(msixFilePath),
-                    null,
-                    DeploymentOptions.None).AsTask();
+                    dependencies.Select(dep => new Uri(dep)),
+                    options).AsTask();
 
                 deploymentResult.Wait();
 
