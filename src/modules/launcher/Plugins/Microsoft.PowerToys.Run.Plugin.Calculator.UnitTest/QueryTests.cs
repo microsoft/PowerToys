@@ -230,6 +230,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         public void RightAnswerForHumanMultiplicationExpressions(string typedString, double answer)
         {
             // Setup
+            typedString = typedString.Replace(".", CultureInfo.CurrentCulture.NumberFormat.CurrencyDecimalSeparator); // Fix te get correct results when tests are running on non-english systems.
             Query expectedQuery = new(typedString);
             Query expectedQueryWithKeyword = new("=" + typedString, "=");
 
