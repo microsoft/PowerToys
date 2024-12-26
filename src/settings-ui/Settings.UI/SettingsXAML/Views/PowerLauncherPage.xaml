@@ -694,7 +694,7 @@
                                                     Spacing="5">
                                                     <TextBlock Opacity="{x:Bind DisabledOpacity}" Style="{ThemeResource SecondaryTextStyle}">
                                                         <Run x:Uid="PowerLauncher_PluginVersion" />
-                                                        <Run FontWeight="SemiBold" Text="1.0.0" />
+                                                        <Run FontWeight="SemiBold" Text="{x:Bind Version}" />
                                                     </TextBlock>
                                                     <TextBlock
                                                         Opacity="{x:Bind DisabledOpacity}"
@@ -711,9 +711,9 @@
                                                     <HyperlinkButton
                                                         Margin="0"
                                                         Padding="0"
-                                                        NavigateUri="https://github.com/microsoft/PowerToys"
+                                                        NavigateUri="{x:Bind Website}"
                                                         Style="{StaticResource TextButtonStyle}"
-                                                        ToolTipService.ToolTip="https://github.com/microsoft/PowerToys">
+                                                        ToolTipService.ToolTip="{x:Bind Website}">
                                                         <TextBlock
                                                             x:Uid="PowerLauncher_PluginWebsite"
                                                             FontWeight="SemiBold"

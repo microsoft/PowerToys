@@ -46,7 +46,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string Description { get => settings.Description; }
 
+        public string Version { get => settings.Version;  }
+
         public string Author { get => settings.Author; }
+
+        public string Website { get => settings.Website; }
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledGpoRuleIsConfigured;
