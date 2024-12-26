@@ -688,10 +688,39 @@
                                                 MinHeight="0"
                                                 BorderThickness="0"
                                                 ContentAlignment="Right">
-                                                <TextBlock Opacity="{x:Bind DisabledOpacity}" Style="{ThemeResource SecondaryTextStyle}">
-                                                    <Run x:Uid="PowerLauncher_AuthoredBy" />
-                                                    <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
-                                                </TextBlock>
+                                                <StackPanel
+                                                    HorizontalAlignment="Right"
+                                                    Orientation="Horizontal"
+                                                    Spacing="5">
+                                                    <TextBlock Opacity="{x:Bind DisabledOpacity}" Style="{ThemeResource SecondaryTextStyle}">
+                                                        <Run x:Uid="PowerLauncher_PluginVersion" />
+                                                        <Run FontWeight="SemiBold" Text="1.0.0" />
+                                                    </TextBlock>
+                                                    <TextBlock
+                                                        Opacity="{x:Bind DisabledOpacity}"
+                                                        Style="{ThemeResource SecondaryTextStyle}"
+                                                        Text="&#x2022;" />
+                                                    <TextBlock Opacity="{x:Bind DisabledOpacity}" Style="{ThemeResource SecondaryTextStyle}">
+                                                        <Run x:Uid="PowerLauncher_AuthoredBy" />
+                                                        <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
+                                                    </TextBlock>
+                                                    <TextBlock
+                                                        Opacity="{x:Bind DisabledOpacity}"
+                                                        Style="{ThemeResource SecondaryTextStyle}"
+                                                        Text="&#x2022;" />
+                                                    <HyperlinkButton
+                                                        Margin="0"
+                                                        Padding="0"
+                                                        NavigateUri="https://github.com/microsoft/PowerToys"
+                                                        Style="{StaticResource TextButtonStyle}"
+                                                        ToolTipService.ToolTip="https://github.com/microsoft/PowerToys">
+                                                        <TextBlock
+                                                            x:Uid="PowerLauncher_PluginWebsite"
+                                                            FontWeight="SemiBold"
+                                                            Opacity="{x:Bind DisabledOpacity}"
+                                                            Style="{ThemeResource SecondaryTextStyle}" />
+                                                    </HyperlinkButton>
+                                                </StackPanel>
                                             </tkcontrols:SettingsCard>
                                         </tkcontrols:SettingsExpander.Items>
                                     </tkcontrols:SettingsExpander>
