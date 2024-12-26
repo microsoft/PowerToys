@@ -707,18 +707,20 @@
                                                     <TextBlock
                                                         Opacity="{x:Bind DisabledOpacity}"
                                                         Style="{ThemeResource SecondaryTextStyle}"
-                                                        Text="&#x2022;" />
+                                                        Text="&#x2022;"
+                                                        Visibility="{x:Bind HasWebsiteUri, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                     <HyperlinkButton
                                                         Margin="0"
                                                         Padding="0"
                                                         NavigateUri="{x:Bind Website}"
                                                         Style="{StaticResource TextButtonStyle}"
-                                                        ToolTipService.ToolTip="{x:Bind Website}">
+                                                        ToolTipService.ToolTip="{x:Bind Website}"
+                                                        Visibility="{x:Bind HasValidWebsiteUri, Converter={StaticResource BoolToVisibilityConverter}}">
                                                         <TextBlock
                                                             x:Uid="PowerLauncher_PluginWebsite"
                                                             FontWeight="SemiBold"
                                                             Opacity="{x:Bind DisabledOpacity}"
-                                                            Style="{ThemeResource SecondaryTextStyle}" />
+                                                            Style="{ThemeResource SecondaryLinkTextStyle}" />
                                                     </HyperlinkButton>
                                                 </StackPanel>
                                             </tkcontrols:SettingsCard>

@@ -52,6 +52,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string Website { get => settings.Website; }
 
+        public bool HasValidWebsiteUri { get => Uri.IsWellFormedUriString(settings.Website, UriKind.Absolute); }
+
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledGpoRuleIsConfigured;
 
