@@ -21,6 +21,8 @@ public partial class TopLevelCommandWrapper : ListItem
 
     public string Id { get; private set; } = string.Empty;
 
+    public bool IsFallback => _isFallback;
+
     public TopLevelCommandWrapper(ExtensionObject<ICommandItem> commandItem, bool isFallback)
         : base(commandItem.Unsafe?.Command ?? new NoOpCommand())
     {

@@ -109,7 +109,7 @@ public partial class MainListPage : DynamicListPage
         }
 
         // Produce a list of everything that matches the current filter.
-        _filteredItems = ListHelpers.FilterList(_filteredItems, SearchText);
+        _filteredItems = ListHelpers.FilterList<IListItem>(_filteredItems, SearchText, ScoreTopLevelItem);
         RaiseItemsChanged(_filteredItems.Count());
     }
 
@@ -130,5 +130,40 @@ public partial class MainListPage : DynamicListPage
             _appsLoading = false;
             IsLoading = ActuallyLoading();
         });
+    }
+
+    // Almost verbatim ListHelpers.ScoreListItem, but also accounting for the
+    // fact that we want fallback handlers down-weighted, so that they don't
+    // _always_ show up first.
+    private static int ScoreTopLevelItem(string query, IListItem topLevelOrAppItem)
+    {
+        if (string.IsNullOrEmpty(query))
+        {
+            return 1;
+        }
+
+        var title = topLevelOrAppItem.Title;
+        if (string.IsNullOrEmpty(title))
+        {
+            return 0;
+        }
+
+        var isFallback = false;
+        if (topLevelOrAppItem is TopLevelCommandWrapper toplevel)
+        {
+            isFallback = toplevel.IsFallback;
+        }
+
+        var nameMatch = StringMatcher.FuzzySearch(query, title);
+        var descriptionMatch = StringMatcher.FuzzySearch(query, topLevelOrAppItem.Subtitle);
+
+        var scores = new[]
+        {
+            nameMatch.Score,
+            (descriptionMatch.Score - 4) / 2,
+            isFallback ? 1 : 0, // Always give fallbacks a chance
+        };
+        var max = scores.Max();
+        return max / (isFallback ? 3 : 1); // but downweight them
     }
 }
