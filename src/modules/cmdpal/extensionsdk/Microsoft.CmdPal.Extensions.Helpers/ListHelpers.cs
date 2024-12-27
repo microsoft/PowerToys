@@ -11,7 +11,7 @@ public class ListHelpers
     // Generate a score for a list item.
     public static int ScoreListItem(string query, ICommandItem listItem)
     {
-        if (string.IsNullOrEmpty(query))
+        if (string.IsNullOrEmpty(query) || string.IsNullOrWhiteSpace(query))
         {
             return 1;
         }
