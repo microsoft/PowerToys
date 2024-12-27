@@ -188,6 +188,7 @@ Other contributors:
 - [@urnotdfs](https://github.com/urnotdfs) - Xiaofeng Wang - Dev
 - [@zhaopy536](https://github.com/zhaopy536) - Peiyao Zhao - Dev
 - [@wang563681252](https://github.com/wang563681252) - Zhaopeng Wang - Dev
+- [@vanzue](https://github.com/vanzue) - Kai Tao - Dev
 
 # Former PowerToys core team members
 
