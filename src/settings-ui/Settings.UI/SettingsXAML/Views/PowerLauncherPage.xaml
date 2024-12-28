@@ -708,7 +708,7 @@
                                                         Opacity="{x:Bind DisabledOpacity}"
                                                         Style="{ThemeResource SecondaryTextStyle}"
                                                         Text="&#x2022;"
-                                                        Visibility="{x:Bind HasWebsiteUri, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                        Visibility="{x:Bind HasValidWebsiteUri, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                     <HyperlinkButton
                                                         Margin="0"
                                                         Padding="0"
