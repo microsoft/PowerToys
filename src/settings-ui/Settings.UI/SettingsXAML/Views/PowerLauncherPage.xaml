@@ -697,6 +697,8 @@
                                                         <Run FontWeight="SemiBold" Text="{x:Bind Version}" />
                                                     </TextBlock>
                                                     <TextBlock
+                                                        AutomationProperties.Name=","
+                                                        IsTabStop="False"
                                                         Opacity="{x:Bind DisabledOpacity}"
                                                         Style="{ThemeResource SecondaryTextStyle}"
                                                         Text="&#x2022;" />
@@ -705,6 +707,8 @@
                                                         <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
                                                     </TextBlock>
                                                     <TextBlock
+                                                        AutomationProperties.Name=","
+                                                        IsTabStop="False"
                                                         Opacity="{x:Bind DisabledOpacity}"
                                                         Style="{ThemeResource SecondaryTextStyle}"
                                                         Text="&#x2022;"
