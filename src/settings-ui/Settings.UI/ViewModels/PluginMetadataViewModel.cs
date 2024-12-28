@@ -5,8 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
+
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
