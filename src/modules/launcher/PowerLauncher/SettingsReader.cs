@@ -252,7 +252,7 @@ namespace PowerLauncher
                 Id = x.Metadata.ID,
                 Name = x.Plugin == null ? x.Metadata.Name : x.Plugin.Name,
                 Description = x.Plugin?.Description,
-                Version = FileVersionInfo.GetVersionInfo(x.Metadata.ExecuteFilePath).ProductVersion,
+                Version = FileVersionInfo.GetVersionInfo(x.Metadata.ExecuteFilePath).FileVersion,
                 Author = x.Metadata.Author,
                 Website = x.Metadata.Website,
                 Disabled = x.Metadata.Disabled,
