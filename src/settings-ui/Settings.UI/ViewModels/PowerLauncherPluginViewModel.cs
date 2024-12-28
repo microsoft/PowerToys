@@ -180,13 +180,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 List<PluginMetadataViewModel> metadataList = new()
                 {
-                    { new PluginMetadataViewModel(settings.Version, PluginMetadataViewModel.PluginMetadataType.Version) },
-                    { new PluginMetadataViewModel(settings.Author, PluginMetadataViewModel.PluginMetadataType.Author) },
+                    { PluginMetadataViewModel.MetadataItem(settings.Version, PluginMetadataViewModel.PluginMetadataType.Version) },
+                    { PluginMetadataViewModel.ItemSeparator() },
+                    { PluginMetadataViewModel.MetadataItem(settings.Author, PluginMetadataViewModel.PluginMetadataType.Author) },
                 };
 
                 if (Uri.IsWellFormedUriString(settings.Website, UriKind.Absolute))
                 {
-                    metadataList.Add(new PluginMetadataViewModel(settings.Website, PluginMetadataViewModel.PluginMetadataType.Link));
+                    metadataList.Add(PluginMetadataViewModel.ItemSeparator());
+                    metadataList.Add(PluginMetadataViewModel.MetadataItem(settings.Website, PluginMetadataViewModel.PluginMetadataType.Link));
                 }
 
                 return metadataList;

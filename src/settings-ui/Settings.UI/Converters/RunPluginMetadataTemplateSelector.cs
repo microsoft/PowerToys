@@ -20,6 +20,11 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
         public DataTemplate MetadataWebsiteTemplate { get; set; }
 
         /// <summary>
+        /// Gets or sets a template for the separator between the items
+        /// </summary>
+        public DataTemplate MetadataSeparatorTemplate { get; set; }
+
+        /// <summary>
         /// Gets or sets an empty template used as fall back in case of malformed data
         /// </summary>
         public DataTemplate EmptyMetadataTemplate { get; set; }
@@ -33,6 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
                     PluginMetadataViewModel.PluginMetadataType.Version => MetadataVersionTemplate,
                     PluginMetadataViewModel.PluginMetadataType.Author => MetadataAuthorTemplate,
                     PluginMetadataViewModel.PluginMetadataType.Link => MetadataWebsiteTemplate,
+                    PluginMetadataViewModel.PluginMetadataType.ItemSeparator => MetadataSeparatorTemplate,
                     _ => EmptyMetadataTemplate,
                 };
             }

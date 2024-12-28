@@ -43,6 +43,7 @@
             x:Key="RunPluginMetadataTemplateSelector"
             EmptyMetadataTemplate="{StaticResource EmptyMetadataTemplate}"
             MetadataAuthorTemplate="{StaticResource MetadataAuthorTemplate}"
+            MetadataSeparatorTemplate="{StaticResource MetadataSeparatorTemplate}"
             MetadataVersionTemplate="{StaticResource MetadataVersionTemplate}"
             MetadataWebsiteTemplate="{StaticResource MetadataWebsiteTemplate}" />
 
@@ -320,30 +321,28 @@
         </DataTemplate>
 
         <DataTemplate x:Key="MetadataAuthorTemplate" x:DataType="ViewModels:PluginMetadataViewModel">
-            <StackPanel Orientation="Horizontal" Spacing="5">
-                <controls:MetadataDotSeparator />
-                <TextBlock Style="{ThemeResource SecondaryTextStyle}">
-                    <Run x:Uid="PowerLauncher_AuthoredBy" />
-                    <Run FontWeight="SemiBold" Text="{x:Bind Value}" />
-                </TextBlock>
-            </StackPanel>
+            <TextBlock Style="{ThemeResource SecondaryTextStyle}">
+                <Run x:Uid="PowerLauncher_AuthoredBy" />
+                <Run FontWeight="SemiBold" Text="{x:Bind Value}" />
+            </TextBlock>
         </DataTemplate>
 
         <DataTemplate x:Key="MetadataWebsiteTemplate" x:DataType="ViewModels:PluginMetadataViewModel">
-            <StackPanel Orientation="Horizontal" Spacing="5">
-                <controls:MetadataDotSeparator />
-                <HyperlinkButton
-                    Margin="0"
-                    Padding="0"
-                    NavigateUri="{x:Bind Value}"
-                    Style="{StaticResource TextButtonStyle}"
-                    ToolTipService.ToolTip="{x:Bind Value}">
-                    <TextBlock
-                        x:Uid="PowerLauncher_PluginWebsite"
-                        FontWeight="SemiBold"
-                        Style="{ThemeResource SecondaryLinkTextStyle}" />
-                </HyperlinkButton>
-            </StackPanel>
+            <HyperlinkButton
+                Margin="0"
+                Padding="0"
+                NavigateUri="{x:Bind Value}"
+                Style="{StaticResource TextButtonStyle}"
+                ToolTipService.ToolTip="{x:Bind Value}">
+                <TextBlock
+                    x:Uid="PowerLauncher_PluginWebsite"
+                    FontWeight="SemiBold"
+                    Style="{ThemeResource SecondaryLinkTextStyle}" />
+            </HyperlinkButton>
+        </DataTemplate>
+
+        <DataTemplate x:Key="MetadataSeparatorTemplate" x:DataType="ViewModels:PluginMetadataViewModel">
+            <controls:MetadataDotSeparator />
         </DataTemplate>
 
         <DataTemplate x:Key="EmptyMetadataTemplate" x:DataType="ViewModels:PluginMetadataViewModel">

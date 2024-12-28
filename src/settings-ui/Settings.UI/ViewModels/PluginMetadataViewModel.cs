@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class PluginMetadataViewModel : INotifyPropertyChanged
     {
-        public PluginMetadataViewModel(string value, PluginMetadataType type)
+        private PluginMetadataViewModel(string value, PluginMetadataType type)
         {
             _value = value;
             _type = type;
@@ -21,11 +21,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private string _value;
 
-        private PluginMetadataType _type;
-
         public string Value => _value;
 
+        private PluginMetadataType _type;
+
         public PluginMetadataType Type => _type;
+
+        // Do not user for item separator initialization.
+        public static PluginMetadataViewModel MetadataItem(string value, PluginMetadataType type)
+        {
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(value);
+            if (type == PluginMetadataType.ItemSeparator)
+            {
+                throw new ArgumentOutOfRangeException(nameof(type));
+            }
+
+            return new PluginMetadataViewModel(value, type);
+        }
+
+        public static PluginMetadataViewModel ItemSeparator()
+        {
+            return new PluginMetadataViewModel(string.Empty, PluginMetadataType.ItemSeparator);
+        }
 
         // Handle property changes
         public event PropertyChangedEventHandler PropertyChanged;
@@ -35,11 +52,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        // Type enum
         public enum PluginMetadataType
         {
             Version,
             Author,
             Link,
+            ItemSeparator,
         }
     }
 }
