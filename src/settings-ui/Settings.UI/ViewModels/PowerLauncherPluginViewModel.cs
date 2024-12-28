@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Windows.Media.Playback;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -46,7 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string Description { get => settings.Description; }
 
-        public string Version { get => settings.Version;  }
+        public string Version { get => settings.Version; }
 
         public string Author { get => settings.Author; }
 
@@ -173,6 +174,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
 
                 return _additionalOptions;
+            }
+        }
+
+        public IEnumerable<PluginMetadataViewModel> PluginMetadatItems
+        {
+            get
+            {
+                List<PluginMetadataViewModel> metadataList = new()
+                {
+                    { new PluginMetadataViewModel(settings.Version, PluginMetadataViewModel.PluginMetadataType.Version) },
+                    { new PluginMetadataViewModel(settings.Author, PluginMetadataViewModel.PluginMetadataType.Author) },
+                };
+
+                if (Uri.IsWellFormedUriString(settings.Website, UriKind.Absolute))
+                {
+                    metadataList.Add(new PluginMetadataViewModel(settings.Website, PluginMetadataViewModel.PluginMetadataType.Link));
+                }
+
+                return metadataList;
             }
         }
 
