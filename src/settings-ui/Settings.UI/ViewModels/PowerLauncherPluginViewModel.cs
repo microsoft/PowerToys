@@ -47,14 +47,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string Description { get => settings.Description; }
 
-        public string Version { get => settings.Version; }
-
-        public string Author { get => settings.Author; }
-
-        public string Website { get => settings.Website; }
-
-        public bool HasValidWebsiteUri { get => Uri.IsWellFormedUriString(settings.Website, UriKind.Absolute); }
-
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledGpoRuleIsConfigured;
 
@@ -177,7 +169,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public IEnumerable<PluginMetadataViewModel> PluginMetadatItems
+        /// <summary>
+        /// Note: The items oder in the array defines the order in the ui.
+        /// </summary>
+        public IEnumerable<PluginMetadataViewModel> PluginMetadataItems
         {
             get
             {

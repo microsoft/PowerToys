@@ -748,7 +748,7 @@
                                                 ContentAlignment="Right">
                                                 <ItemsRepeater
                                                     ItemTemplate="{StaticResource RunPluginMetadataTemplateSelector}"
-                                                    ItemsSource="{x:Bind Path=PluginMetadatItems, Mode=OneWay}"
+                                                    ItemsSource="{x:Bind Path=PluginMetadataItems, Mode=OneWay}"
                                                     Layout="{StaticResource PluginMetadataPresentationLayout}"
                                                     Opacity="{x:Bind DisabledOpacity}" />
                                             </tkcontrols:SettingsCard>
