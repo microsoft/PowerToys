@@ -321,11 +321,7 @@
 
         <DataTemplate x:Key="MetadataAuthorTemplate" x:DataType="ViewModels:PluginMetadataViewModel">
             <StackPanel Orientation="Horizontal" Spacing="5">
-                <TextBlock
-                    AutomationProperties.Name=","
-                    IsTabStop="False"
-                    Style="{ThemeResource SecondaryTextStyle}"
-                    Text="&#x2022;" />
+                <controls:MetadataDotSeparator />
                 <TextBlock Style="{ThemeResource SecondaryTextStyle}">
                     <Run x:Uid="PowerLauncher_AuthoredBy" />
                     <Run FontWeight="SemiBold" Text="{x:Bind Value}" />
@@ -335,11 +331,7 @@
 
         <DataTemplate x:Key="MetadataWebsiteTemplate" x:DataType="ViewModels:PluginMetadataViewModel">
             <StackPanel Orientation="Horizontal" Spacing="5">
-                <TextBlock
-                    AutomationProperties.Name=","
-                    IsTabStop="False"
-                    Style="{ThemeResource SecondaryTextStyle}"
-                    Text="&#x2022;" />
+                <controls:MetadataDotSeparator />
                 <HyperlinkButton
                     Margin="0"
                     Padding="0"
