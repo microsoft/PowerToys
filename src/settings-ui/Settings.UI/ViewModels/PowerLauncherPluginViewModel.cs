@@ -172,7 +172,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// Gets the list of metadata properties like version, author, website.
         /// </summary>
         /// <remarks>
-        /// The items oder in the array defines the order in the ui.
+        /// The items order in the array defines the order in the ui.
         /// </remarks>
         public IEnumerable<PluginMetadataViewModel> PluginMetadataItems
         {
