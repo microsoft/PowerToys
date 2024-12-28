@@ -737,7 +737,8 @@
                                             <tkcontrols:SettingsCard
                                                 MinHeight="0"
                                                 BorderThickness="0"
-                                                ContentAlignment="Right">
+                                                ContentAlignment="Right"
+                                                IsEnabled="{x:Bind Enabled, Mode=OneWay}">
                                                 <ItemsRepeater
                                                     ItemTemplate="{StaticResource RunPluginMetadataTemplateSelector}"
                                                     ItemsSource="{x:Bind Path=PluginMetadataItems, Mode=OneWay}"
