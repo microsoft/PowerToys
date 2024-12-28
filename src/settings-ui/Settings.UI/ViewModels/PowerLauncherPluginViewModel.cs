@@ -11,7 +11,6 @@ using System.Runtime.CompilerServices;
 
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Windows.Media.Playback;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -170,8 +169,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Note: The items oder in the array defines the order in the ui.
+        /// Gets the list of metadata properties like version, author, website.
         /// </summary>
+        /// <remarks>
+        /// The items oder in the array defines the order in the ui.
+        /// </remarks>
         public IEnumerable<PluginMetadataViewModel> PluginMetadataItems
         {
             get
