@@ -5,7 +5,7 @@
     <OutputType>Library</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\FileActionsMenuPlugins\$(FileActionsMenuPluginName)</OutputPath>
+    <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\FileActionsMenuPlugins\$(FileActionsMenuPluginName)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
@@ -21,7 +21,7 @@
 
   <!-- No idea why this is needed, but it makes it work -->
   <Target Name="FixWebView2" BeforeTargets="_CopyOutOfDateSourceItemsToOutputDirectory">
-    <Copy SourceFiles="..\..\..\..\..\$(Platform)\$(Configuration)\FileActionsMenu.Interfaces\runtimes\win-x64\native\WebView2Loader.dll"
-          DestinationFolder="..\..\..\..\..\$(Platform)\$(Configuration)\FileActionsMenu.Helpers\runtimes\win-x64\native" />
+    <Copy SourceFiles="..\..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\FileActionsMenu.Interfaces\runtimes\win-x64\native\WebView2Loader.dll"
+          DestinationFolder="..\..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\FileActionsMenu.Helpers\runtimes\win-x64\native" />
   </Target>
 </Project>

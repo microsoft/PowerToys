@@ -9,7 +9,7 @@
     <AssemblyDescription>PowerToys File Actions Menu</AssemblyDescription>
     <Description>PowerToys File Actions Menu</Description>
     <Nullable>enable</Nullable>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUi3Apps</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
