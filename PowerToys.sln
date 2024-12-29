@@ -298,8 +298,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Telemetry", "Telemetry", "{
 	ProjectSection(SolutionItems) = preProject
 		src\common\Telemetry\ProjectTelemetry.h = src\common\Telemetry\ProjectTelemetry.h
 		src\common\Telemetry\TelemetryBase.cs = src\common\Telemetry\TelemetryBase.cs
-		src\common\Telemetry\TraceLoggingDefines.h = src\common\Telemetry\TraceLoggingDefines.h
-    src\common\Telemetry\TraceBase.h = src\common\Telemetry\TraceBase.h
+		src\common\Telemetry\TraceBase.h = src\common\Telemetry\TraceBase.h
+	  src\common\Telemetry\TraceLoggingDefines.h = src\common\Telemetry\TraceLoggingDefines.h
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.UI", "src\common\Common.UI\Common.UI.csproj", "{C3A17DCA-217B-462C-BB0C-BE086AF80081}"
@@ -350,7 +350,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plu
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VideoConferenceShared", "src\modules\videoconference\VideoConferenceShared\VideoConferenceShared.vcxproj", "{459E0768-7EBD-4C41-BBA1-6DB3B3815E0A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VideoConferenceModule", "src\modules\videoconference\VideoConferenceModule\VideoConference.vcxproj", "{5ABA70DE-3A3F-41F6-A1F5-D1F74F54F9BB}
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VideoConferenceModule", "src\modules\videoconference\VideoConferenceModule\VideoConference.vcxproj", "{5ABA70DE-3A3F-41F6-A1F5-D1F74F54F9BB}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VideoConferenceProxyFilter", "src\modules\videoconference\VideoConferenceProxyFilter\VideoConferenceProxyFilter.vcxproj", "{AC2857B4-103D-4D6D-9740-926EBF785042}"
 	ProjectSection(ProjectDependencies) = postProject
