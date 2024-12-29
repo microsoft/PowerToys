@@ -37,7 +37,8 @@
             <Border
                 x:Name="SearchBoxBorder"
                 Grid.Row="0"
-                Padding="12,4,12,3">
+                Padding="12,4,12,3"
+                Background="Transparent">
                 <local:LauncherControl x:Name="SearchBox" />
             </Border>
 
