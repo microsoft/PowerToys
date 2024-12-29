@@ -2,6 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
+using Windows.ApplicationModel.DataTransfer;
+
 namespace RegistryPreviewUILib
 {
     /// <summary>
@@ -27,6 +31,20 @@ namespace RegistryPreviewUILib
             this.FullPath = fullPath;
             this.Image = image;
             this.ToolTipText = toolTipText;
+        }
+
+        public ICommand CopyToClipboardName_Click => new RelayCommand(CopyToClipboardName);
+
+        public ICommand CopyToClipboardKeyPath_Click => new RelayCommand(CopyToClipboardKeyPath);
+
+        private void CopyToClipboardName()
+        {
+            ClipboardHelper.CopyToClipboardAction(Name);
+        }
+
+        private void CopyToClipboardKeyPath()
+        {
+            ClipboardHelper.CopyToClipboardAction(FullPath);
         }
     }
 }

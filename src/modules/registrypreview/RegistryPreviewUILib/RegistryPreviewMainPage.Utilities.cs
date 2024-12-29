@@ -23,6 +23,7 @@ namespace RegistryPreviewUILib
     public sealed partial class RegistryPreviewMainPage : Page
     {
         private static SemaphoreSlim _dialogSemaphore = new(1);
+        private string lastKeyPath;
 
         public delegate void UpdateWindowTitleFunction(string title);
 
@@ -261,6 +262,7 @@ namespace RegistryPreviewUILib
                     registryLine = StripFirstAndLast(registryLine);
 
                     treeViewNode = AddTextToTree(registryLine, imageName);
+                    lastKeyPath = registryLine;
                 }
                 else if (registryLine.StartsWith('"') && registryLine.EndsWith("=-", StringComparison.InvariantCulture))
                 {
@@ -271,7 +273,7 @@ namespace RegistryPreviewUILib
                     registryLine = StripFirstAndLast(registryLine);
 
                     // Create a new listview item that will be used to display the delete value and store it
-                    registryValue = new RegistryValue(registryLine, string.Empty, string.Empty);
+                    registryValue = new RegistryValue(registryLine, string.Empty, string.Empty, lastKeyPath);
                     SetValueToolTip(registryValue);
 
                     // store the ListViewItem, if we have a valid Key to attach to
@@ -310,7 +312,7 @@ namespace RegistryPreviewUILib
                     value = value.Trim();
 
                     // Create a new listview item that will be used to display the value
-                    registryValue = new RegistryValue(name, "REG_SZ", string.Empty);
+                    registryValue = new RegistryValue(name, "REG_SZ", string.Empty, lastKeyPath);
 
                     // if the first character is a " then this is a string value, so find the last most " which will avoid comments
                     if (value.StartsWith('"'))
