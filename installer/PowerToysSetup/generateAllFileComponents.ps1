@@ -167,7 +167,7 @@ Generate-FileComponents -fileListName "EnvironmentVariablesAssetsFiles" -wxsFile
 #File Actions Menu
 ## Plugins
 ###Executable actions
-renerate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\FileActionsMenuPlugin\ExecutableActions\PowerToys.FileActionsMenu.Plugins.ExecutableActions.deps.json" -fileListName executableActionsComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs
+Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\FileActionsMenuPlugin\ExecutableActions\PowerToys.FileActionsMenu.Plugins.ExecutableActions.deps.json" -fileListName executableActionsComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs
 Generate-FileComponents -fileListName "executableActionsComponentFiles" -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs -regroot $registryroot
 ###File Content actions
 Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\FileActionsMenuPlugin\FileContentActions\PowerToys.FileActionsMenu.Plugins.FileContentActions.deps.json" -fileListName fileContentActionsComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs
