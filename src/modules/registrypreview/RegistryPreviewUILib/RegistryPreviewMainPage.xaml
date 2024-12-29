@@ -169,8 +169,8 @@
                             Spacing="8">
                             <StackPanel.ContextFlyout>
                                 <MenuFlyout>
-                                    <MenuFlyoutItem Command="{Binding Content.CopyToClipboardName_Click}" Text="Copy name" />
-                                    <MenuFlyoutItem Command="{Binding Content.CopyToClipboardKeyPath_Click}" Text="Copy full path" />
+                                    <MenuFlyoutItem x:Uid="ContextMenu_CopyName" Command="{Binding Content.CopyToClipboardName_Click}" />
+                                    <MenuFlyoutItem x:Uid="ContextMenu_CopyKeyPath" Command="{Binding Content.CopyToClipboardKeyPath_Click}" />
                                 </MenuFlyout>
                             </StackPanel.ContextFlyout>
                             <Image
@@ -216,10 +216,10 @@
                                     Spacing="8">
                                     <StackPanel.ContextFlyout>
                                         <MenuFlyout>
-                                            <MenuFlyoutItem Command="{Binding CopyToClipboardName_Click}" Text="Copy" />
+                                            <MenuFlyoutItem x:Uid="ContextMenu_CopyName" Command="{Binding CopyToClipboardName_Click}" />
                                             <MenuFlyoutSeparator />
-                                            <MenuFlyoutItem Command="{Binding CopyToClipboardEntry_Click}" Text="Copy value" />
-                                            <MenuFlyoutItem Command="{Binding CopyToClipboardWithPath_Click}" Text="Copy value with path" />
+                                            <MenuFlyoutItem x:Uid="ContextMenu_CopyValue" Command="{Binding CopyToClipboardEntry_Click}" />
+                                            <MenuFlyoutItem x:Uid="ContextMenu_CopyValueWithPath" Command="{Binding CopyToClipboardWithPath_Click}" />
                                         </MenuFlyout>
                                     </StackPanel.ContextFlyout>
                                     <Image
@@ -246,10 +246,10 @@
                                 <Setter Property="ContextFlyout">
                                     <Setter.Value>
                                         <MenuFlyout>
-                                            <MenuFlyoutItem Command="{Binding CopyToClipboardType_Click}" Text="Copy" />
+                                            <MenuFlyoutItem x:Uid="ContextMenu_CopyType" Command="{Binding CopyToClipboardType_Click}" />
                                             <MenuFlyoutSeparator />
-                                            <MenuFlyoutItem Command="{Binding CopyToClipboardEntry_Click}" Text="Copy value" />
-                                            <MenuFlyoutItem Command="{Binding CopyToClipboardWithPath_Click}" Text="Copy value with path" />
+                                            <MenuFlyoutItem x:Uid="ContextMenu_CopyValue" Command="{Binding CopyToClipboardEntry_Click}" />
+                                            <MenuFlyoutItem x:Uid="ContextMenu_CopyValueWithPath" Command="{Binding CopyToClipboardWithPath_Click}" />
                                         </MenuFlyout>
                                     </Setter.Value>
                                 </Setter>
@@ -266,10 +266,10 @@
                                 <Setter Property="ContextFlyout">
                                     <Setter.Value>
                                         <MenuFlyout>
-                                            <MenuFlyoutItem Command="{Binding CopyToClipboardData_Click}" Text="Copy" />
+                                            <MenuFlyoutItem x:Uid="ContextMenu_CopyData" Command="{Binding CopyToClipboardData_Click}" />
                                             <MenuFlyoutSeparator />
-                                            <MenuFlyoutItem Command="{Binding CopyToClipboardEntry_Click}" Text="Copy value" />
-                                            <MenuFlyoutItem Command="{Binding CopyToClipboardWithPath_Click}" Text="Copy value with path" />
+                                            <MenuFlyoutItem x:Uid="ContextMenu_CopyValue" Command="{Binding CopyToClipboardEntry_Click}" />
+                                            <MenuFlyoutItem x:Uid="ContextMenu_CopyValueWithPath" Command="{Binding CopyToClipboardWithPath_Click}" />
                                         </MenuFlyout>
                                     </Setter.Value>
                                 </Setter>
