@@ -331,6 +331,7 @@
             <HyperlinkButton
                 Margin="0"
                 Padding="0"
+                AutomationProperties.Name="{x:Bind Value}"
                 NavigateUri="{x:Bind Value}"
                 Style="{StaticResource TextButtonStyle}"
                 ToolTipService.ToolTip="{x:Bind Value}">
