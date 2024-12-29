@@ -38,6 +38,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _enabledGpoRuleConfiguration = (GpoRuleConfigured)settings.EnabledPolicyUiState;
             _enabledGpoRuleIsConfigured = _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+
+            _pluginMetadataList = GeneratePluginMetadataList(settings);
         }
 
         public string Id { get => settings.Id; }
@@ -48,6 +50,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledGpoRuleIsConfigured;
+
+        private List<PluginMetadataViewModel> _pluginMetadataList;
 
         public bool Disabled
         {
@@ -168,31 +172,30 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public IEnumerable<PluginMetadataViewModel> PluginMetadataItems => _pluginMetadataList;
+
         /// <summary>
-        /// Gets the list of metadata properties like version, author, website.
+        /// Generates the list of metadata properties like version, author, website from the plugin settings.
         /// </summary>
         /// <remarks>
-        /// The items order in the array defines the order in the ui.
+        /// The items order in the list defines the order in the ui.
         /// </remarks>
-        public IEnumerable<PluginMetadataViewModel> PluginMetadataItems
+        private static List<PluginMetadataViewModel> GeneratePluginMetadataList(PowerLauncherPluginSettings pluginSettings)
         {
-            get
-            {
-                List<PluginMetadataViewModel> metadataList = new()
+            List<PluginMetadataViewModel> metadataList = new()
                 {
-                    { PluginMetadataViewModel.MetadataItem(settings.Version, PluginMetadataViewModel.PluginMetadataType.Version) },
+                    { PluginMetadataViewModel.MetadataItem(pluginSettings.Version, PluginMetadataViewModel.PluginMetadataType.Version) },
                     { PluginMetadataViewModel.ItemSeparator() },
-                    { PluginMetadataViewModel.MetadataItem(settings.Author, PluginMetadataViewModel.PluginMetadataType.Author) },
+                    { PluginMetadataViewModel.MetadataItem(pluginSettings.Author, PluginMetadataViewModel.PluginMetadataType.Author) },
                 };
 
-                if (Uri.IsWellFormedUriString(settings.Website, UriKind.Absolute))
-                {
-                    metadataList.Add(PluginMetadataViewModel.ItemSeparator());
-                    metadataList.Add(PluginMetadataViewModel.MetadataItem(settings.Website, PluginMetadataViewModel.PluginMetadataType.Link));
-                }
-
-                return metadataList;
+            if (Uri.IsWellFormedUriString(pluginSettings.Website, UriKind.Absolute))
+            {
+                metadataList.Add(PluginMetadataViewModel.ItemSeparator());
+                metadataList.Add(PluginMetadataViewModel.MetadataItem(pluginSettings.Website, PluginMetadataViewModel.PluginMetadataType.Link));
             }
+
+            return metadataList;
         }
 
         public bool ShowAdditionalOptions
