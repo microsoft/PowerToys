@@ -4,21 +4,21 @@
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
   <?define executableActionsComponentFiles=?>
-  <?define executableActionsComponentFilesPath=$(var.BinDir)FileActionsMenuPlugins\ExecutableActions\?>
+  <?define executableActionsComponentFilesPath=$(var.BinDir)WinUI3Apps\FileActionsMenuPlugins\ExecutableActions\?>
   <?define fileContentActionsComponentFiles=?>
-  <?define fileContentActionsComponentFilesPath=$(var.BinDir)FileActionsMenuPlugins\FileContentActions\?>
+  <?define fileContentActionsComponentFilesPath=$(var.BinDir)WinUI3Apps\FileActionsMenuPlugins\FileContentActions\?>
   <?define filePropertiesComponentFiles=?>
-  <?define filePropertiesComponentFilesPath=$(var.BinDir)FileActionsMenuPlugins\FileProperties\?>
+  <?define filePropertiesComponentFilesPath=$(var.BinDir)WinUI3Apps\FileActionsMenuPlugins\FileProperties\?>
   <?define hashesComponentFiles=?>
-  <?define hashesComponentFilesPath=$(var.BinDir)FileActionsMenuPlugins\Hashes\?>
+  <?define hashesComponentFilesPath=$(var.BinDir)WinUI3Apps\FileActionsMenuPlugins\Hashes\?>
   <?define imageClipboardActionsComponentFiles=?>
-  <?define imageClipboardActionsComponentFilesPath=$(var.BinDir)FileActionsMenuPlugins\ImageClipboardActions\?>
+  <?define imageClipboardActionsComponentFilesPath=$(var.BinDir)WinUI3Apps\FileActionsMenuPlugins\ImageClipboardActions\?>
   <?define moveCopyActionsComponentFiles=?>
-  <?define moveCopyActionsComponentFilesPath=$(var.BinDir)FileActionsMenuPlugins\MoveCopyActions\?>
+  <?define moveCopyActionsComponentFilesPath=$(var.BinDir)WinUI3Apps\FileActionsMenuPlugins\MoveCopyActions\?>
   <?define pathCopyComponentFiles=?>
-  <?define pathCopyComponentFilesPath=$(var.BinDir)FileActionsMenuPlugins\PathCopy\?>
+  <?define pathCopyComponentFilesPath=$(var.BinDir)WinUI3Apps\FileActionsMenuPlugins\PathCopy\?>
   <?define powerToysComponentFiles=?>
-  <?define powerToysComponentFilesPath=$(var.BinDir)FileActionsMenuPlugins\PowerToys\?>
+  <?define powerToysComponentFilesPath=$(var.BinDir)WinUI3Apps\FileActionsMenuPlugins\PowerToys\?>
 
   <Fragment>
     <DirectoryRef Id="INSTALLFOLDER">

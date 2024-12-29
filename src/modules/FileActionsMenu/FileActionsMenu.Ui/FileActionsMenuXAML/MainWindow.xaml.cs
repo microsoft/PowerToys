@@ -44,7 +44,7 @@ namespace FileActionsMenu.Ui
 
             string[] ignoredDirectories = ["FileActionsMenu.Helpers", "FileActionsMenu.Interfaces", "runtimes", "Peek.Common", "PowerToys.FileActionsMenu.Plugins"];
 
-            string[] pluginPaths = Directory.EnumerateDirectories((Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new InvalidOperationException()) + "\\..\\FileActionsMenuPlugins").Where(folderName => !ignoredDirectories.Contains(Path.GetFileName(folderName))).ToArray();
+            string[] pluginPaths = Directory.EnumerateDirectories((Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new InvalidOperationException()) + "\\FileActionsMenuPlugins").Where(folderName => !ignoredDirectories.Contains(Path.GetFileName(folderName))).ToArray();
             foreach (string pluginPath in pluginPaths)
             {
                 try
