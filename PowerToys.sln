@@ -39,7 +39,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "fancyzones", "fancyzones", 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FancyZonesLib", "src\modules\fancyzones\FancyZonesLib\FancyZonesLib.vcxproj", "{F9C68EDF-AC74-4B77-9AF1-005D9C9F6A99}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTests", "src\modules\fancyzones\FancyZonesTests\UnitTests\UnitTests.vcxproj", "{9C6A7905-72D4-4BF5-B256-ABFDAEF68AE9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTests-FancyZones", "src\modules\fancyzones\FancyZonesTests\UnitTests\UnitTests.vcxproj", "{9C6A7905-72D4-4BF5-B256-ABFDAEF68AE9}"
 	ProjectSection(ProjectDependencies) = postProject
 		{F9C68EDF-AC74-4B77-9AF1-005D9C9F6A99} = {F9C68EDF-AC74-4B77-9AF1-005D9C9F6A99}
 	EndProjectSection
@@ -64,7 +64,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameTest", "src\modu
 		{51920F1F-C28C-4ADF-8660-4238766796C2} = {51920F1F-C28C-4ADF-8660-4238766796C2}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameLibUnitTests", "src\modules\powerrename\unittests\PowerRenameLibUnitTests.vcxproj", "{2151F984-E006-4A9F-92EF-C6DDE3DC8413}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameUnitTests", "src\modules\powerrename\unittests\PowerRenameLibUnitTests.vcxproj", "{2151F984-E006-4A9F-92EF-C6DDE3DC8413}"
 	ProjectSection(ProjectDependencies) = postProject
 		{51920F1F-C28C-4ADF-8660-4238766796C2} = {51920F1F-C28C-4ADF-8660-4238766796C2}
 		{B25AC7A5-FB9F-4789-B392-D5C85E948670} = {B25AC7A5-FB9F-4789-B392-D5C85E948670}
@@ -82,12 +82,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageResizerExt", "src\modu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageResizerUITest", "src\modules\imageresizer\tests\ImageResizerUITest.csproj", "{E0CC7526-D85E-43AC-844F-D5DF0D2F5AB8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ActionRunner", "src\ActionRunner\ActionRunner.vcxproj", "{D29DDD63-E2CF-4657-9FD5-2AEDE4257E5D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToys.ActionRunner", "src\ActionRunner\ActionRunner.vcxproj", "{D29DDD63-E2CF-4657-9FD5-2AEDE4257E5D}"
 	ProjectSection(ProjectDependencies) = postProject
 		{17DA04DF-E393-4397-9CF0-84DABE11032E} = {17DA04DF-E393-4397-9CF0-84DABE11032E}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "updating", "src\common\updating\updating.vcxproj", "{17DA04DF-E393-4397-9CF0-84DABE11032E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ApplicationUpdate", "src\common\updating\updating.vcxproj", "{17DA04DF-E393-4397-9CF0-84DABE11032E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "keyboardmanager", "keyboardmanager", "{38BDB927-829B-4C65-9CD9-93FB05D66D65}"
 EndProject
@@ -219,7 +219,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Folder.Uni
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTest-ColorPickerUI", "src\modules\colorPicker\UnitTest-ColorPickerUI\UnitTest-ColorPickerUI.csproj", "{090CD7B7-3B0C-4D1D-BC98-83EB5D799BC1}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logging", "src\logging\logging.vcxproj", "{7E1E3F13-2BD6-3F75-A6A7-873A2B55C60F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spdlog", "src\logging\logging.vcxproj", "{7E1E3F13-2BD6-3F75-A6A7-873A2B55C60F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.System", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.System\Microsoft.PowerToys.Run.Plugin.System.csproj", "{FD8EB419-FF9C-4D88-BB6F-BF6CED37747B}"
 EndProject
@@ -238,7 +238,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Interop.Tests", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "notifications", "notifications", "{D92131D6-7610-4D60-A7DB-1C169783F83B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "notifications", "src\common\notifications\notifications.vcxproj", "{1D5BE09D-78C0-4FD7-AF00-AE7C1AF7C525}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Notifications", "src\common\notifications\notifications.vcxproj", "{1D5BE09D-78C0-4FD7-AF00-AE7C1AF7C525}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BackgroundActivatorDLL", "src\common\notifications\BackgroundActivatorDLL\BackgroundActivatorDLL.vcxproj", "{031AC72E-FA28-4AB7-B690-6F7B9C28AA73}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -247,7 +247,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BackgroundActivatorDLL", "s
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BackgroundActivator", "src\common\notifications\BackgroundActivator\BackgroundActivator.vcxproj", "{0B593A6C-4143-4337-860E-DB5710FB87DB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "version", "src\common\version\version.vcxproj", "{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Version", "src\common\version\version.vcxproj", "{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "interop", "interop", "{5A7818A8-109C-4E1C-850D-1A654E234B0E}"
 EndProject
@@ -299,6 +299,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Telemetry", "Telemetry", "{
 		src\common\Telemetry\ProjectTelemetry.h = src\common\Telemetry\ProjectTelemetry.h
 		src\common\Telemetry\TelemetryBase.cs = src\common\Telemetry\TelemetryBase.cs
 		src\common\Telemetry\TraceLoggingDefines.h = src\common\Telemetry\TraceLoggingDefines.h
+    src\common\Telemetry\TraceBase.h = src\common\Telemetry\TraceBase.h
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.UI", "src\common\Common.UI\Common.UI.csproj", "{C3A17DCA-217B-462C-BB0C-BE086AF80081}"
@@ -349,7 +350,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plu
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VideoConferenceShared", "src\modules\videoconference\VideoConferenceShared\VideoConferenceShared.vcxproj", "{459E0768-7EBD-4C41-BBA1-6DB3B3815E0A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VideoConference", "src\modules\videoconference\VideoConferenceModule\VideoConference.vcxproj", "{5ABA70DE-3A3F-41F6-A1F5-D1F74F54F9BB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VideoConferenceModule", "src\modules\videoconference\VideoConferenceModule\VideoConference.vcxproj", "{5ABA70DE-3A3F-41F6-A1F5-D1F74F54F9BB}
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VideoConferenceProxyFilter", "src\modules\videoconference\VideoConferenceProxyFilter\VideoConferenceProxyFilter.vcxproj", "{AC2857B4-103D-4D6D-9740-926EBF785042}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -459,7 +460,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileLocksmithExt", "src\mod
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileLocksmithUI", "src\modules\FileLocksmith\FileLocksmithUI\FileLocksmithUI.csproj", "{E69B044A-2F8A-45AA-AD0B-256C59421807}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileLocksmithLibInterop", "src\modules\FileLocksmith\FileLocksmithLibInterop\FileLocksmithLibInterop.vcxproj", "{C604B37E-9D0E-4484-8778-E8B31B0E1B3A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToys.FileLocksmithLib.Interop", "src\modules\FileLocksmith\FileLocksmithLibInterop\FileLocksmithLibInterop.vcxproj", "{C604B37E-9D0E-4484-8778-E8B31B0E1B3A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GPOWrapper", "src\common\GPOWrapper\GPOWrapper.vcxproj", "{E599C30B-9DC8-4E5A-BF27-93D4CCEDE788}"
 EndProject
@@ -467,7 +468,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GPOWrapperProjection", "src
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Peek", "Peek", "{17B4FA70-001E-4D33-BBBB-0D142DBC2E20}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "peek", "src\modules\peek\peek\peek.vcxproj", "{A1425B53-3D61-4679-8623-E64A0D3D0A48}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Peek", "src\modules\peek\peek\peek.vcxproj", "{A1425B53-3D61-4679-8623-E64A0D3D0A48}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Peek.UI", "src\modules\peek\Peek.UI\Peek.UI.csproj", "{9D7A6DE0-7D27-424D-ABAE-41B2161F9A03}"
 EndProject
@@ -619,7 +620,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerToys.Settings.DSC.Sche
 		{020A7474-3601-4160-A159-D7B70B77B15F} = {020A7474-3601-4160-A159-D7B70B77B15F}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NewShellExtensionContextMenu", "src\modules\NewPlus\NewShellExtensionContextMenu\NewShellExtensionContextMenu.vcxproj", "{8ACB33D9-C95B-47D4-8363-9731EE0930A0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NewPlus.ShellExtension", "src\modules\NewPlus\NewShellExtensionContextMenu\NewShellExtensionContextMenu.vcxproj", "{8ACB33D9-C95B-47D4-8363-9731EE0930A0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "New+", "New+", "{CA716AE6-FE5C-40AC-BB8F-2C87912687AC}"
 EndProject

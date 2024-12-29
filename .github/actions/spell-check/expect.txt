@@ -1614,7 +1614,6 @@ uncompilable
 UNCPRIORITY
 UNDNAME
 UNICODETEXT
-Unisntaller
 uninstaller
 uninstantiated
 uniquifier
