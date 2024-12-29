@@ -555,19 +555,10 @@ namespace RegistryPreviewUILib
                                 var bytes = value.Split(',').Select(
                                     c => c.Length == 2 ? byte.Parse(c, NumberStyles.HexNumber, CultureInfo.InvariantCulture) : throw null).ToArray();
 
-                                if (registryValue.Type == "REG_MULTI_SZ")
-                                {
-                                    // Replace zeros (00,00) with spaces
-                                    for (int i = 0; i < bytes.Length; i += 2)
-                                    {
-                                        if (bytes[i] == 0 && bytes[i + 1] == 0)
-                                        {
-                                            bytes[i] = 0x20;
-                                        }
-                                    }
-                                }
-
                                 value = Encoding.Unicode.GetString(bytes);
+
+                                // Correctly format line breaks and remove trailing line breaks. (GitHub PowerToys #36629)
+                                value = value.Replace('\0', '\r').TrimEnd('\r');
                             }
                             catch
                             {
