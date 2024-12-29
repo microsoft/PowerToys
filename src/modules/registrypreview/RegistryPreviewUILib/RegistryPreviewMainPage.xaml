@@ -256,26 +256,33 @@
                             </Style>
                         </tk7controls:DataGridTextColumn.CellStyle>
                     </tk7controls:DataGridTextColumn>
-                    <tk7controls:DataGridTextColumn
+                    <tk7controls:DataGridTemplateColumn
                         x:Uid="ValueColumn"
                         Width="Auto"
-                        Binding="{Binding Value}"
-                        FontSize="{StaticResource CaptionTextBlockFontSize}">
-                        <tk7controls:DataGridTextColumn.CellStyle>
-                            <Style TargetType="tk7controls:DataGridCell">
-                                <Setter Property="ContextFlyout">
-                                    <Setter.Value>
+                        IsReadOnly="True">
+                        <tk7controls:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel
+                                    Margin="4"
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal">
+                                    <StackPanel.ContextFlyout>
                                         <MenuFlyout>
                                             <MenuFlyoutItem x:Uid="ContextMenu_CopyData" Command="{Binding CopyToClipboardData_Click}" />
                                             <MenuFlyoutSeparator />
                                             <MenuFlyoutItem x:Uid="ContextMenu_CopyValue" Command="{Binding CopyToClipboardEntry_Click}" />
                                             <MenuFlyoutItem x:Uid="ContextMenu_CopyValueWithPath" Command="{Binding CopyToClipboardWithPath_Click}" />
                                         </MenuFlyout>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </tk7controls:DataGridTextColumn.CellStyle>
-                    </tk7controls:DataGridTextColumn>
+                                    </StackPanel.ContextFlyout>
+                                    <TextBlock
+                                        IsTabStop="False"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                        Text="{Binding ValueOneLine}"
+                                        ToolTipService.ToolTip="{Binding Value}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </tk7controls:DataGridTemplateColumn.CellTemplate>
+                    </tk7controls:DataGridTemplateColumn>
                 </tk7controls:DataGrid.Columns>
             </tk7controls:DataGrid>
         </Border>

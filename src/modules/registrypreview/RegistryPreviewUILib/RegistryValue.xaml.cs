@@ -29,6 +29,8 @@ namespace RegistryPreviewUILib
 
         public string Value { get; set; }
 
+        public string ValueOneLine => Value.Replace('\r', ' ');
+
         public string ToolTipText { get; set; }
 
         public Uri ImageUri
