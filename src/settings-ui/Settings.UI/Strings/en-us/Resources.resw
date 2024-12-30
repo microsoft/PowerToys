@@ -4699,6 +4699,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Version</value>
   </data>
   <data name="PowerLauncher_PluginWebsite.Text" xml:space="preserve">
-    <value>Open website</value>
+    <value>Project website</value>
   </data>
 </root>

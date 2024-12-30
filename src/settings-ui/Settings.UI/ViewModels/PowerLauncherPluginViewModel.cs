@@ -49,9 +49,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string Description { get => settings.Description; }
 
-        public string Version { get; set; }
+        public string Version { get => settings.Version; }
 
-        public string Author { get; set; }
+        public string Author { get => settings.Author; }
 
         // Fallback value for the website in case the uri from json is not well formatted
         private const string WebsiteFallbackUri = "https://aka.ms/PowerToys";
