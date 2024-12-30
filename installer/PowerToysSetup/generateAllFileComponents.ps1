@@ -167,28 +167,28 @@ Generate-FileComponents -fileListName "EnvironmentVariablesAssetsFiles" -wxsFile
 #File Actions Menu
 ## Plugins
 ###Executable actions
-Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\FileActionsMenuPlugin\ExecutableActions\PowerToys.FileActionsMenu.Plugins.ExecutableActions.deps.json" -fileListName executableActionsComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs
+Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\FileActionsMenuPlugins\ExecutableActions\PowerToys.FileActionsMenu.Plugins.ExecutableActions.deps.json" -fileListName executableActionsComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs
 Generate-FileComponents -fileListName "executableActionsComponentFiles" -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs -regroot $registryroot
 ###File Content actions
-Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\FileActionsMenuPlugin\FileContentActions\PowerToys.FileActionsMenu.Plugins.FileContentActions.deps.json" -fileListName fileContentActionsComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs
+Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\FileActionsMenuPlugins\FileContentActions\PowerToys.FileActionsMenu.Plugins.FileContentActions.deps.json" -fileListName fileContentActionsComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs
 Generate-FileComponents -fileListName "fileContentActionsComponentFiles" -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs -regroot $registryroot
 ###File properties
-Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\FileActionsMenuPlugin\FileProperties\PowerToys.FileActionsMenu.Plugins.FileProperties.deps.json" -fileListName filePropertiesComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs
+Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\FileActionsMenuPlugins\FileProperties\PowerToys.FileActionsMenu.Plugins.FileProperties.deps.json" -fileListName filePropertiesComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs
 Generate-FileComponents -fileListName "filePropertiesComponentFiles" -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs -regroot $registryroot
 ###Hashes
-Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\FileActionsMenuPlugin\Hashes\PowerToys.FileActionsMenu.Plugins.Hashes.deps.json" -fileListName hashesComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs
+Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\FileActionsMenuPlugins\Hashes\PowerToys.FileActionsMenu.Plugins.Hashes.deps.json" -fileListName hashesComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs
 Generate-FileComponents -fileListName "hashesComponentFiles" -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs -regroot $registryroot
 ###Image Clipboard Actions
-Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\FileActionsMenuPlugin\ImageClipboardActions\PowerToys.FileActionsMenu.Plugins.ImageClipboardActions.deps.json" -fileListName imageClipboardActionsComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs
+Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\FileActionsMenuPlugins\ImageClipboardActions\PowerToys.FileActionsMenu.Plugins.ImageClipboardActions.deps.json" -fileListName imageClipboardActionsComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs
 Generate-FileComponents -fileListName "imageClipboardActionsComponentFiles" -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs -regroot $registryroot
 ###Move Copy actions
-Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\FileActionsMenuPlugin\MoveCopyActions\PowerToys.FileActionsMenu.Plugins.MoveCopyActions.deps.json" -fileListName moveCopyActionsComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs
+Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\FileActionsMenuPlugins\MoveCopyActions\PowerToys.FileActionsMenu.Plugins.MoveCopyActions.deps.json" -fileListName moveCopyActionsComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs
 Generate-FileComponents -fileListName "moveCopyActionsComponentFiles" -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs -regroot $registryroot
 ###Path copy
-Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\FileActionsMenuPlugin\PathCopy\PowerToys.FileActionsMenu.Plugins.PathCopy.deps.json" -fileListName pathCopyComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs
+Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\FileActionsMenuPlugins\PathCopy\PowerToys.FileActionsMenu.Plugins.PathCopy.deps.json" -fileListName pathCopyComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs
 Generate-FileComponents -fileListName "pathCopyComponentFiles" -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs -regroot $registryroot
 ###PowerToys
-Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\FileActionsMenuPlugin\PowerToys\PowerToys.FileActionsMenu.Plugins.PowerToys.deps.json" -fileListName powerToysComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs
+Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\FileActionsMenuPlugins\PowerToys\PowerToys.FileActionsMenu.Plugins.PowerToys.deps.json" -fileListName powerToysComponentFiles -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs
 Generate-FileComponents -fileListName "powerToysComponentFiles" -wxsFilePath $PSScriptRoot\FileActionsMenu.wxs -regroot $registryroot
 ## Plugins
 
