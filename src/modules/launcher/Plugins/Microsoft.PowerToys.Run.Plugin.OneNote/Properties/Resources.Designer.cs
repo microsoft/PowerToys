@@ -61,6 +61,222 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Create colored icons for notebooks and sections.
+        /// </summary>
+        internal static string CreateColoredIconsForNotebooksSections {
+            get {
+                return ResourceManager.GetString("CreateColoredIconsForNotebooksSections", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create notebook: &quot;{0}&quot;.
+        /// </summary>
+        internal static string CreateNotebook {
+            get {
+                return ResourceManager.GetString("CreateNotebook", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create page: &quot;{0}&quot;.
+        /// </summary>
+        internal static string CreatePage {
+            get {
+                return ResourceManager.GetString("CreatePage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create section: &quot;{0}&quot;.
+        /// </summary>
+        internal static string CreateSection {
+            get {
+                return ResourceManager.GetString("CreateSection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create section group: &quot;{0}&quot;.
+        /// </summary>
+        internal static string CreateSectionGroup {
+            get {
+                return ResourceManager.GetString("CreateSectionGroup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Display unread icon.
+        /// </summary>
+        internal static string DisplayUnreadIcon {
+            get {
+                return ResourceManager.GetString("DisplayUnreadIcon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indicate an item has unread changes with: •.
+        /// </summary>
+        internal static string DisplayUnreadIconDescription {
+            get {
+                return ResourceManager.GetString("DisplayUnreadIconDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid query.
+        /// </summary>
+        internal static string InvalidQuery {
+            get {
+                return ResourceManager.GetString("InvalidQuery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The first character of the search must be a letter or a digit.
+        /// </summary>
+        internal static string InvalidQueryDescription {
+            get {
+                return ResourceManager.GetString("InvalidQueryDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Location: {0}.
+        /// </summary>
+        internal static string Location {
+            get {
+                return ResourceManager.GetString("Location", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New quick note.
+        /// </summary>
+        internal static string NewQuickNote {
+            get {
+                return ResourceManager.GetString("NewQuickNote", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No items found. Type a valid name to create one.
+        /// </summary>
+        internal static string NoItemsFoundTypeValidName {
+            get {
+                return ResourceManager.GetString("NoItemsFoundTypeValidName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No matches found.
+        /// </summary>
+        internal static string NoMatchesFound {
+            get {
+                return ResourceManager.GetString("NoMatchesFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Try searching something else, or syncing your notebooks..
+        /// </summary>
+        internal static string NoMatchesFoundDescription {
+            get {
+                return ResourceManager.GetString("NoMatchesFoundDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Notebook names cannot contain: {0}.
+        /// </summary>
+        internal static string NotebookNamesCannotContain {
+            get {
+                return ResourceManager.GetString("NotebookNamesCannotContain", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OneNote COM object timeout.
+        /// </summary>
+        internal static string OneNoteComObjectTimeout {
+            get {
+                return ResourceManager.GetString("OneNoteComObjectTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The delay in milliseconds before the OneNote COM object is removed from memory after user input. Higher values reduce the chances needed for performing the slow action of getting the COM object, but keep the COM object in memory for longer..
+        /// </summary>
+        internal static string OneNoteComObjectTimeoutDescription {
+            get {
+                return ResourceManager.GetString("OneNoteComObjectTimeoutDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OneNote is not installed.
+        /// </summary>
+        internal static string OneNoteNotInstalled {
+            get {
+                return ResourceManager.GetString("OneNoteNotInstalled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please install OneNote to use this plugin.
+        /// </summary>
+        internal static string OneNoteNotInstalledDescription {
+            get {
+                return ResourceManager.GetString("OneNoteNotInstalledDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open and sync.
+        /// </summary>
+        internal static string OpenAndSync {
+            get {
+                return ResourceManager.GetString("OpenAndSync", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open in notebook explorer.
+        /// </summary>
+        internal static string OpenInNotebookExplorer {
+            get {
+                return ResourceManager.GetString("OpenInNotebookExplorer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open and sync notebooks.
+        /// </summary>
+        internal static string OpenSyncNotebooks {
+            get {
+                return ResourceManager.GetString("OpenSyncNotebooks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open &quot;{0}&quot; in OneNote.
+        /// </summary>
+        internal static string OpenXInOneNote {
+            get {
+                return ResourceManager.GetString("OpenXInOneNote", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path: {0}.
+        /// </summary>
+        internal static string Path {
+            get {
+                return ResourceManager.GetString("Path", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Searches your local OneNote notebooks. This plugin requires the OneNote desktop app which is included in Microsoft Office.
         /// </summary>
         internal static string PluginDescription {
@@ -75,6 +291,150 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Properties {
         internal static string PluginTitle {
             get {
                 return ResourceManager.GetString("PluginTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Now searching by title..
+        /// </summary>
+        internal static string SearchingByTitle {
+            get {
+                return ResourceManager.GetString("SearchingByTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Now searching by title in &quot;{0}&quot;.
+        /// </summary>
+        internal static string SearchingByTitleInX {
+            get {
+                return ResourceManager.GetString("SearchingByTitleInX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Now searching all pages in &quot;{0}&quot;.
+        /// </summary>
+        internal static string SearchingPagesInX {
+            get {
+                return ResourceManager.GetString("SearchingPagesInX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use &apos;{0}&apos; to search this item. Use &apos;{1}&apos; to search by title in this item.
+        /// </summary>
+        internal static string SearchInItemInfo {
+            get {
+                return ResourceManager.GetString("SearchInItemInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search OneNote pages.
+        /// </summary>
+        internal static string SearchOneNotePages {
+            get {
+                return ResourceManager.GetString("SearchOneNotePages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Section group names cannot contain: {0}.
+        /// </summary>
+        internal static string SectionGroupNamesCannotContain {
+            get {
+                return ResourceManager.GetString("SectionGroupNamesCannotContain", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Section names cannot contain: {0}.
+        /// </summary>
+        internal static string SectionNamesCannotContain {
+            get {
+                return ResourceManager.GetString("SectionNamesCannotContain", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show encrypted sections.
+        /// </summary>
+        internal static string ShowEncryptedSections {
+            get {
+                return ResourceManager.GetString("ShowEncryptedSections", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to When using &quot;{0}&quot; show encrypted sections, if the section has been unlocked, allow temporary access..
+        /// </summary>
+        internal static string ShowEncryptedSectionsDescription {
+            get {
+                return ResourceManager.GetString("ShowEncryptedSectionsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show recycle bin.
+        /// </summary>
+        internal static string ShowRecycleBin {
+            get {
+                return ResourceManager.GetString("ShowRecycleBin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to When using &quot;{0}&quot; show items that are in the recycle bin..
+        /// </summary>
+        internal static string ShowRecycleBinDescription {
+            get {
+                return ResourceManager.GetString("ShowRecycleBinDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to View notebook explorer.
+        /// </summary>
+        internal static string ViewNotebookExplorer {
+            get {
+                return ResourceManager.GetString("ViewNotebookExplorer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Type &quot;{0}&quot; or select this option to search by notebook structure.
+        /// </summary>
+        internal static string ViewNotebookExplorerDescription {
+            get {
+                return ResourceManager.GetString("ViewNotebookExplorerDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to View recent pages.
+        /// </summary>
+        internal static string ViewRecentPages {
+            get {
+                return ResourceManager.GetString("ViewRecentPages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Type &quot;{0}&quot; or select this option to see recently modified pages.
+        /// </summary>
+        internal static string ViewRecentPagesDescription {
+            get {
+                return ResourceManager.GetString("ViewRecentPagesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Visit the Microsoft Store.
+        /// </summary>
+        internal static string VisitMicrosoftStore {
+            get {
+                return ResourceManager.GetString("VisitMicrosoftStore", resourceCulture);
             }
         }
     }

@@ -123,4 +123,132 @@
   <data name="PluginDescription" xml:space="preserve">
     <value>Searches your local OneNote notebooks. This plugin requires the OneNote desktop app which is included in Microsoft Office</value>
   </data>
+  <data name="SearchingByTitle" xml:space="preserve">
+    <value>Now searching by title.</value>
+  </data>
+  <data name="OpenXInOneNote" xml:space="preserve">
+    <value>Open "{0}" in OneNote</value>
+  </data>
+  <data name="SearchingByTitleInX" xml:space="preserve">
+    <value>Now searching by title in "{0}"</value>
+  </data>
+  <data name="SearchingPagesInX" xml:space="preserve">
+    <value>Now searching all pages in "{0}"</value>
+  </data>
+  <data name="SearchInItemInfo" xml:space="preserve">
+    <value>Use '{0}' to search this item. Use '{1}' to search by title in this item</value>
+    <comment>0 and 1 are static keywords used by then plugin.</comment>
+  </data>
+  <data name="DisplayUnreadIcon" xml:space="preserve">
+    <value>Display unread icon</value>
+  </data>
+  <data name="DisplayUnreadIconDescription" xml:space="preserve">
+    <value>Indicate an item has unread changes with: •</value>
+  </data>
+  <data name="ShowEncryptedSections" xml:space="preserve">
+    <value>Show encrypted sections</value>
+  </data>
+  <data name="ShowEncryptedSectionsDescription" xml:space="preserve">
+    <value>When using "{0}" show encrypted sections, if the section has been unlocked, allow temporary access.</value>
+    <comment>0 is the NotebookExplorer static keyword</comment>
+  </data>
+  <data name="ShowRecycleBin" xml:space="preserve">
+    <value>Show recycle bin</value>
+  </data>
+  <data name="ShowRecycleBinDescription" xml:space="preserve">
+    <value>When using "{0}" show items that are in the recycle bin.</value>
+    <comment>0 is the NotebookExplorer static keyword</comment>
+  </data>
+  <data name="OneNoteComObjectTimeout" xml:space="preserve">
+    <value>OneNote COM object timeout</value>
+  </data>
+  <data name="OneNoteComObjectTimeoutDescription" xml:space="preserve">
+    <value>The delay in milliseconds before the OneNote COM object is removed from memory after user input. Higher values reduce the chances needed for performing the slow action of getting the COM object, but keep the COM object in memory for longer.</value>
+  </data>
+  <data name="CreateColoredIconsForNotebooksSections" xml:space="preserve">
+    <value>Create colored icons for notebooks and sections</value>
+  </data>
+  <data name="SearchOneNotePages" xml:space="preserve">
+    <value>Search OneNote pages</value>
+  </data>
+  <data name="ViewNotebookExplorer" xml:space="preserve">
+    <value>View notebook explorer</value>
+  </data>
+  <data name="ViewNotebookExplorerDescription" xml:space="preserve">
+    <value>Type "{0}" or select this option to search by notebook structure</value>
+    <comment>0 is the NotebookExplorer static keyword</comment>
+  </data>
+  <data name="ViewRecentPages" xml:space="preserve">
+    <value>View recent pages</value>
+  </data>
+  <data name="ViewRecentPagesDescription" xml:space="preserve">
+    <value>Type "{0}" or select this option to see recently modified pages</value>
+  </data>
+  <data name="NewQuickNote" xml:space="preserve">
+    <value>New quick note</value>
+  </data>
+  <data name="OpenSyncNotebooks" xml:space="preserve">
+    <value>Open and sync notebooks</value>
+  </data>
+  <data name="CreatePage" xml:space="preserve">
+    <value>Create page: "{0}"</value>
+    <comment>0 is a user typed name</comment>
+  </data>
+  <data name="Path" xml:space="preserve">
+    <value>Path: {0}</value>
+  </data>
+  <data name="CreateSection" xml:space="preserve">
+    <value>Create section: "{0}"</value>
+    <comment>0 is a user typed name</comment>
+  </data>
+  <data name="SectionNamesCannotContain" xml:space="preserve">
+    <value>Section names cannot contain: {0}</value>
+  </data>
+  <data name="CreateSectionGroup" xml:space="preserve">
+    <value>Create section group: "{0}"</value>
+    <comment>0 is a user typed name</comment>
+  </data>
+  <data name="SectionGroupNamesCannotContain" xml:space="preserve">
+    <value>Section group names cannot contain: {0}</value>
+  </data>
+  <data name="CreateNotebook" xml:space="preserve">
+    <value>Create notebook: "{0}"</value>
+    <comment>0 is a user typed name</comment>
+  </data>
+  <data name="Location" xml:space="preserve">
+    <value>Location: {0}</value>
+  </data>
+  <data name="NotebookNamesCannotContain" xml:space="preserve">
+    <value>Notebook names cannot contain: {0}</value>
+  </data>
+  <data name="OpenAndSync" xml:space="preserve">
+    <value>Open and sync</value>
+  </data>
+  <data name="OpenInNotebookExplorer" xml:space="preserve">
+    <value>Open in notebook explorer</value>
+  </data>
+  <data name="VisitMicrosoftStore" xml:space="preserve">
+    <value>Visit the Microsoft Store</value>
+  </data>
+  <data name="NoMatchesFound" xml:space="preserve">
+    <value>No matches found</value>
+  </data>
+  <data name="NoMatchesFoundDescription" xml:space="preserve">
+    <value>Try searching something else, or syncing your notebooks.</value>
+  </data>
+  <data name="InvalidQuery" xml:space="preserve">
+    <value>Invalid query</value>
+  </data>
+  <data name="InvalidQueryDescription" xml:space="preserve">
+    <value>The first character of the search must be a letter or a digit</value>
+  </data>
+  <data name="OneNoteNotInstalled" xml:space="preserve">
+    <value>OneNote is not installed</value>
+  </data>
+  <data name="OneNoteNotInstalledDescription" xml:space="preserve">
+    <value>Please install OneNote to use this plugin</value>
+  </data>
+  <data name="NoItemsFoundTypeValidName" xml:space="preserve">
+    <value>No items found. Type a valid name to create one</value>
+  </data>
 </root>

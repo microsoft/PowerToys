@@ -2,6 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
+using System.Text;
+using Microsoft.PowerToys.Run.Plugin.OneNote.Properties;
 using Odotocodot.OneNote.Linq;
 using Wox.Plugin;
 
@@ -13,6 +16,10 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
         {
             private readonly SearchManager _searchManager;
             private readonly ResultCreator _resultCreator;
+            private static readonly CompositeFormat OpenXInOneNote = CompositeFormat.Parse(Resources.OpenXInOneNote);
+            private static readonly CompositeFormat SearchingByTitleInX = CompositeFormat.Parse(Resources.SearchingByTitleInX);
+            private static readonly CompositeFormat SearchingPagesInX = CompositeFormat.Parse(Resources.SearchingPagesInX);
+            private static readonly CompositeFormat SearchInItemInfo = CompositeFormat.Parse(Resources.SearchInItemInfo);
 
             internal NotebookExplorer(SearchManager searchManager, ResultCreator resultCreator)
             {
@@ -70,16 +77,16 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                 if (parent != null)
                 {
                     var result = _resultCreator.CreateOneNoteItemResult(parent, false, score: 4000);
-                    result.Title = $"Open \"{parent.Name}\" in OneNote";
+                    result.Title = string.Format(CultureInfo.CurrentCulture, OpenXInOneNote, parent.Name);
                     result.SubTitle = lastSearch switch
                     {
                         string search when search.StartsWith(Keywords.TitleSearch, StringComparison.Ordinal)
-                            => $"Now search by title in \"{parent.Name}\"",
+                            => string.Format(CultureInfo.CurrentCulture, SearchingByTitleInX, parent.Name),
 
                         string search when search.StartsWith(Keywords.ScopedSearch, StringComparison.Ordinal)
-                            => $"Now searching all pages in \"{parent.Name}\"",
+                            => string.Format(CultureInfo.CurrentCulture, SearchingPagesInX, parent.Name),
 
-                        _ => $"Use \'{Keywords.ScopedSearch}\' to search this item. Use \'{Keywords.TitleSearch}\' to search by title in this item",
+                        _ => string.Format(CultureInfo.CurrentCulture, SearchInItemInfo, Keywords.ScopedSearch, Keywords.TitleSearch),
                     };
 
                     results.Add(result);

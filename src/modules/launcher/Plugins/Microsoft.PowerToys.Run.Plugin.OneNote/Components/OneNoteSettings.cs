@@ -2,7 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
+using System.Text;
 using System.Windows.Controls;
+using Microsoft.PowerToys.Run.Plugin.OneNote.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Plugin;
 
@@ -11,6 +14,8 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
     public class OneNoteSettings : ISettingProvider
     {
         private bool coloredIcons;
+        private static readonly CompositeFormat ShowEncryptedSectionsDescription = CompositeFormat.Parse(Resources.ShowEncryptedSectionsDescription);
+        private static readonly CompositeFormat ShowRecycleBinDescription = CompositeFormat.Parse(Resources.ShowRecycleBinDescription);
 
         internal bool ShowUnreadItems { get; private set; }
 
@@ -39,32 +44,32 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
             {
                 Key = nameof(ShowUnreadItems),
                 PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Checkbox,
-                DisplayLabel = string.Empty,
-                DisplayDescription = string.Empty,
+                DisplayLabel = Resources.DisplayUnreadIcon,
+                DisplayDescription = Resources.DisplayUnreadIconDescription,
                 Value = true,
             },
             new PluginAdditionalOption()
             {
                 Key = nameof(ShowEncryptedSections),
                 PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Checkbox,
-                DisplayLabel = string.Empty,
-                DisplayDescription = string.Empty,
+                DisplayLabel = Resources.ShowEncryptedSections,
+                DisplayDescription = string.Format(CultureInfo.CurrentCulture, ShowEncryptedSectionsDescription, Keywords.NotebookExplorer),
                 Value = true,
             },
             new PluginAdditionalOption()
             {
                 Key = nameof(ShowRecycleBins),
                 PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Checkbox,
-                DisplayLabel = string.Empty,
-                DisplayDescription = string.Empty,
+                DisplayLabel = Resources.ShowRecycleBin,
+                DisplayDescription = string.Format(CultureInfo.CurrentCulture, ShowRecycleBinDescription, Keywords.NotebookExplorer),
                 Value = true,
             },
             new PluginAdditionalOption()
             {
                 Key = nameof(ComObjectTimeout),
                 PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Numberbox,
-                DisplayLabel = "Test",
-                DisplayDescription = "Test",
+                DisplayLabel = Resources.OneNoteComObjectTimeout,
+                DisplayDescription = Resources.OneNoteComObjectTimeoutDescription,
                 NumberValue = 10000,
                 NumberBoxMin = 1000,
                 NumberBoxMax = 120000,
@@ -75,7 +80,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
             {
                 Key = nameof(ColoredIcons),
                 PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Checkbox,
-                DisplayLabel = string.Empty,
+                DisplayLabel = Resources.CreateColoredIconsForNotebooksSections,
                 DisplayDescription = string.Empty,
                 Value = true,
             },

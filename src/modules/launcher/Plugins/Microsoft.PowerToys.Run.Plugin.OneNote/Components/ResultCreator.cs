@@ -3,8 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Reflection;
+using System.Text;
 using System.Windows.Input;
+using Microsoft.PowerToys.Run.Plugin.OneNote.Properties;
 using Odotocodot.OneNote.Linq;
 using Wox.Infrastructure;
 using Wox.Plugin;
@@ -20,6 +23,18 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
 
         private const string PathSeparator = " > ";
         private static readonly string _oldSeparator = OneNoteApplication.RelativePathSeparator.ToString();
+
+        private static readonly CompositeFormat ViewNotebookExplorerDescription = CompositeFormat.Parse(Resources.ViewNotebookExplorerDescription);
+        private static readonly CompositeFormat ViewRecentPagesDescription = CompositeFormat.Parse(Resources.ViewRecentPagesDescription);
+        private static readonly CompositeFormat CreatePage = CompositeFormat.Parse(Resources.CreatePage);
+        private static readonly CompositeFormat CreateSection = CompositeFormat.Parse(Resources.CreateSection);
+        private static readonly CompositeFormat CreateSectionGroup = CompositeFormat.Parse(Resources.CreateSectionGroup);
+        private static readonly CompositeFormat CreateNotebook = CompositeFormat.Parse(Resources.CreateNotebook);
+        private static readonly CompositeFormat Location = CompositeFormat.Parse(Resources.Location);
+        private static readonly CompositeFormat Path = CompositeFormat.Parse(Resources.Path);
+        private static readonly CompositeFormat SectionNamesCannotContain = CompositeFormat.Parse(Resources.SectionNamesCannotContain);
+        private static readonly CompositeFormat SectionGroupNamesCannotContain = CompositeFormat.Parse(Resources.SectionGroupNamesCannotContain);
+        private static readonly CompositeFormat NotebookNamesCannotContain = CompositeFormat.Parse(Resources.NotebookNamesCannotContain);
 
         internal ResultCreator(PluginInitContext context, OneNoteSettings settings, IconProvider iconProvider)
         {
@@ -94,15 +109,14 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
             {
                 new Result
                 {
-                    Title = "Search OneNote pages",
-                    QueryTextDisplay = string.Empty,
+                    Title = Resources.SearchOneNotePages,
                     IcoPath = _iconProvider.Search,
                     Score = 5000,
                 },
                 new Result
                 {
-                    Title = "View notebook explorer",
-                    SubTitle = $"Type \"{Keywords.NotebookExplorer}\" or select this option to search by notebook structure ",
+                    Title = Resources.ViewNotebookExplorer,
+                    SubTitle = string.Format(CultureInfo.CurrentCulture, ViewNotebookExplorerDescription, Keywords.NotebookExplorer),
                     QueryTextDisplay = Keywords.NotebookExplorer,
                     IcoPath = _iconProvider.NotebookExplorer,
                     Score = 2000,
@@ -114,8 +128,8 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                 },
                 new Result
                 {
-                    Title = "See recent pages",
-                    SubTitle = $"Type \"{Keywords.RecentPages}\" or select this option to see recently modified pages",
+                    Title = Resources.ViewRecentPages,
+                    SubTitle = string.Format(CultureInfo.CurrentCulture, ViewRecentPagesDescription, Keywords.RecentPages),
                     QueryTextDisplay = Keywords.RecentPages,
                     IcoPath = _iconProvider.Recent,
                     Score = -1000,
@@ -127,7 +141,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                 },
                 new Result
                 {
-                    Title = "New quick note",
+                    Title = Resources.NewQuickNote,
                     IcoPath = _iconProvider.QuickNote,
                     Score = -4000,
                     Action = ResultAction(() =>
@@ -138,7 +152,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                 },
                 new Result
                 {
-                    Title = "Open and sync notebooks",
+                    Title = Resources.OpenSyncNotebooks,
                     IcoPath = _iconProvider.Sync,
                     Score = int.MinValue,
                     Action = ResultAction(() =>
@@ -189,7 +203,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                     if (section.Encrypted)
                     {
                         // potentially replace with glyphs if supported
-                        title += $" [Encrypted] {(section.Locked ? "[Locked]" : "[Unlocked]")}";
+                        title += $" [Encrypted] {(section.Locked ? "[Locked]" : "[Unlocked]")} \uE72E";
                     }
 
                     toolTip =
@@ -254,8 +268,8 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
             newPageName = newPageName.Trim();
             return new Result
             {
-                Title = $"Create page: \"{newPageName}\"",
-                SubTitle = $"Path: {GetNicePath(section)}{PathSeparator}{newPageName}",
+                Title = string.Format(CultureInfo.CurrentCulture, CreatePage, newPageName),
+                SubTitle = string.Format(CultureInfo.CurrentCulture, Path, GetNicePath(section) + PathSeparator + newPageName),
                 QueryTextDisplay = $"{GetQueryTextDisplay}{newPageName}",
                 IcoPath = _iconProvider.NewPage,
                 Action = ResultAction(() =>
@@ -273,10 +287,10 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
 
             return new Result
             {
-                Title = $"Create section: \"{newSectionName}\"",
+                Title = string.Format(CultureInfo.CurrentCulture, CreateSection, newSectionName),
                 SubTitle = validTitle
-                        ? $"Path: {GetNicePath(parent)}{PathSeparator}{newSectionName}"
-                        : $"Section names cannot contain: {string.Join(' ', OneNoteApplication.InvalidSectionChars)}",
+                        ? string.Format(CultureInfo.CurrentCulture, Path, GetNicePath(parent) + PathSeparator + newSectionName)
+                        : string.Format(CultureInfo.CurrentCulture, SectionNamesCannotContain, string.Join(' ', OneNoteApplication.InvalidSectionChars)),
                 QueryTextDisplay = $"{GetQueryTextDisplay}{newSectionName}",
                 IcoPath = _iconProvider.NewSection,
                 Action = ResultAction(() =>
@@ -311,10 +325,10 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
 
             return new Result
             {
-                Title = $"Create section group: \"{newSectionGroupName}\"",
+                Title = string.Format(CultureInfo.CurrentCulture, CreateSectionGroup, newSectionGroupName),
                 SubTitle = validTitle
-                    ? $"Path: {GetNicePath(parent)}{PathSeparator}{newSectionGroupName}"
-                    : $"Section group names cannot contain: {string.Join(' ', OneNoteApplication.InvalidSectionGroupChars)}",
+                    ? string.Format(CultureInfo.CurrentCulture, Path, GetNicePath(parent) + PathSeparator + newSectionGroupName)
+                    : string.Format(CultureInfo.CurrentCulture, SectionGroupNamesCannotContain, string.Join(' ', OneNoteApplication.InvalidSectionGroupChars)),
                 QueryTextDisplay = $"{GetQueryTextDisplay}{newSectionGroupName}",
                 IcoPath = _iconProvider.NewSectionGroup,
                 Action = ResultAction(() =>
@@ -349,10 +363,10 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
 
             return new Result
             {
-                Title = $"Create notebook: \"{newNotebookName}\"",
+                Title = string.Format(CultureInfo.CurrentCulture, CreateNotebook, newNotebookName),
                 SubTitle = validTitle
-                    ? $"Location: {OneNoteApplication.GetDefaultNotebookLocation()}"
-                    : $"Notebook names cannot contain: {string.Join(' ', OneNoteApplication.InvalidNotebookChars)}",
+                    ? string.Format(CultureInfo.CurrentCulture, Location, OneNoteApplication.GetDefaultNotebookLocation())
+                    : string.Format(CultureInfo.CurrentCulture, NotebookNamesCannotContain, string.Join(' ', OneNoteApplication.InvalidNotebookChars)),
                 QueryTextDisplay = $"{GetQueryTextDisplay}{newNotebookName}",
                 IcoPath = _iconProvider.NewNotebook,
                 Action = ResultAction(() =>
@@ -377,7 +391,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                 results.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = "Open and sync",
+                    Title = Resources.OpenAndSync,
                     Glyph = "\xE8A7",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.Enter,
@@ -395,7 +409,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                     results.Add(new ContextMenuResult
                     {
                         PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                        Title = "Open in notebook explorer",
+                        Title = Resources.OpenInNotebookExplorer,
                         Glyph = "\xEC50",
                         FontFamily = "Segoe MDL2 Assets",
                         AcceleratorKey = Key.Enter,
@@ -414,7 +428,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                 results.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = "Visit the Microsoft Store",
+                    Title = Resources.VisitMicrosoftStore,
                     Glyph = "\xE8A7",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.Enter,
@@ -446,14 +460,14 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                 case OneNoteNotebook:
                 case OneNoteSectionGroup:
                     // Can create section/section group
-                    results.Add(NoItemsInCollectionResult("section", _iconProvider.NewSection, "(unencrypted) section"));
-                    results.Add(NoItemsInCollectionResult("section group", _iconProvider.NewSectionGroup));
+                    results.Add(NoItemsInCollectionResult(Resources.CreateSection, _iconProvider.NewSection));
+                    results.Add(NoItemsInCollectionResult(Resources.CreateSectionGroup, _iconProvider.NewSectionGroup));
                     break;
                 case OneNoteSection section:
                     // Can create page
                     if (!section.Locked)
                     {
-                        results.Add(NoItemsInCollectionResult("page", _iconProvider.NewPage));
+                        results.Add(NoItemsInCollectionResult(Resources.CreatePage, _iconProvider.NewPage));
                     }
 
                     break;
@@ -463,24 +477,23 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
 
             return results;
 
-            static Result NoItemsInCollectionResult(string title, string iconPath, string? subTitle = null)
+            static Result NoItemsInCollectionResult(string title, string iconPath)
             {
                 return new Result
                 {
-                    Title = $"Create {title}: \"\"",
-                    SubTitle = $"No {subTitle ?? title}s found. Type a valid title to create one",
+                    Title = title,
+                    SubTitle = Resources.NoItemsFoundTypeValidName,
                     IcoPath = iconPath,
                 };
             }
         }
 
-        // TODO Localize
         internal List<Result> NoMatchesFound(bool show)
         {
             return show
                 ? SingleResult(
-                    "No matches found",
-                    "Try searching something else, or syncing your notebooks.",
+                    Resources.NoMatchesFound,
+                    Resources.NoMatchesFoundDescription,
                     _iconProvider.Search)
                 : [];
         }
@@ -489,8 +502,8 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
         {
             return show
                 ? SingleResult(
-                    "Invalid query",
-                    "The first character of the search must be a letter or a digit",
+                    Resources.InvalidQuery,
+                    Resources.InvalidQueryDescription,
                     _iconProvider.Warning)
                 : [];
         }
@@ -498,8 +511,8 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
         internal List<Result> OneNoteNotInstalled()
         {
             var results = SingleResult(
-                "OneNote is not installed",
-                "Please install OneNote to use this plugin",
+                Resources.OneNoteNotInstalled,
+                Resources.OneNoteNotInstalledDescription,
                 _iconProvider.Warning);
 
             results[0].ContextData = "https://apps.microsoft.com/store/detail/XPFFZHVGQWWLHB?ocid=pdpshare";
