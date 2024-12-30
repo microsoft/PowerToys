@@ -22,12 +22,12 @@ namespace AdvancedPaste.Helpers
 
         public LogEvent(AdvancedPasteSemanticKernelFormatEvent semanticKernelFormatEvent)
         {
-            CacheUsed = semanticKernalFormatEvent.CacheUsed;
-            IsSavedQuery = semanticKernalFormatEvent.IsSavedQuery;
-            PromptTokens = semanticKernalFormatEvent.PromptTokens;
-            CompletionTokens = semanticKernalFormatEvent.CompletionTokens;
-            ModelName = semanticKernalFormatEvent.ModelName;
-            ActionChain = semanticKernalFormatEvent.ActionChain;
+            CacheUsed = semanticKernelFormatEvent.CacheUsed;
+            IsSavedQuery = semanticKernelFormatEvent.IsSavedQuery;
+            PromptTokens = semanticKernelFormatEvent.PromptTokens;
+            CompletionTokens = semanticKernelFormatEvent.CompletionTokens;
+            ModelName = semanticKernelFormatEvent.ModelName;
+            ActionChain = semanticKernelFormatEvent.ActionChain;
         }
 
         public LogEvent(AdvancedPasteGenerateCustomFormatEvent generateCustomFormatEvent)
