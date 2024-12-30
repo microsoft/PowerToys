@@ -20,7 +20,7 @@ namespace AdvancedPaste.Helpers
             ActionChain = actionChain;
         }
 
-        public LogEvent(AdvancedPasteSemanticKernelFormatEvent semanticKernalFormatEvent)
+        public LogEvent(AdvancedPasteSemanticKernelFormatEvent semanticKernelFormatEvent)
         {
             CacheUsed = semanticKernalFormatEvent.CacheUsed;
             IsSavedQuery = semanticKernalFormatEvent.IsSavedQuery;
