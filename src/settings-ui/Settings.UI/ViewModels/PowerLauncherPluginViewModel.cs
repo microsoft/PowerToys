@@ -39,7 +39,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _enabledGpoRuleConfiguration = (GpoRuleConfigured)settings.EnabledPolicyUiState;
             _enabledGpoRuleIsConfigured = _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
 
-            _pluginMetadataList = GeneratePluginMetadataList(settings);
+            _hasValidWebsiteUri = Uri.IsWellFormedUriString(settings.Website, UriKind.Absolute);
+            _websiteUri = _hasValidWebsiteUri ? settings.Website : WebsiteFallbackUri;
         }
 
         public string Id { get => settings.Id; }
@@ -48,10 +49,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string Description { get => settings.Description; }
 
+        public string Version { get; set; }
+
+        public string Author { get; set; }
+
+        // Fallback value for the website in case the uri from json is not well formatted
+        private const string WebsiteFallbackUri = "https://aka.ms/PowerToys";
+        private string _websiteUri;
+        private bool _hasValidWebsiteUri;
+
+        public string WebsiteUri => _websiteUri;
+
+        public bool HasValidWebsiteUri => _hasValidWebsiteUri;
+
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledGpoRuleIsConfigured;
-
-        private List<PluginMetadataViewModel> _pluginMetadataList;
 
         public bool Disabled
         {
@@ -170,32 +182,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 return _additionalOptions;
             }
-        }
-
-        public IEnumerable<PluginMetadataViewModel> PluginMetadataItems => _pluginMetadataList;
-
-        /// <summary>
-        /// Generates the list of metadata properties like version, author, website from the plugin settings.
-        /// </summary>
-        /// <remarks>
-        /// The items order in the list defines the order in the ui.
-        /// </remarks>
-        private static List<PluginMetadataViewModel> GeneratePluginMetadataList(PowerLauncherPluginSettings pluginSettings)
-        {
-            List<PluginMetadataViewModel> metadataList = new()
-                {
-                    { PluginMetadataViewModel.MetadataItem(pluginSettings.Version, PluginMetadataViewModel.PluginMetadataType.Version) },
-                    { PluginMetadataViewModel.ItemSeparator() },
-                    { PluginMetadataViewModel.MetadataItem(pluginSettings.Author, PluginMetadataViewModel.PluginMetadataType.Author) },
-                };
-
-            if (Uri.IsWellFormedUriString(pluginSettings.Website, UriKind.Absolute))
-            {
-                metadataList.Add(PluginMetadataViewModel.ItemSeparator());
-                metadataList.Add(PluginMetadataViewModel.MetadataItem(pluginSettings.Website, PluginMetadataViewModel.PluginMetadataType.Link));
-            }
-
-            return metadataList;
         }
 
         public bool ShowAdditionalOptions

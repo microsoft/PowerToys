@@ -21,11 +21,6 @@
             <Setter Property="Fill" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
         </Style>
 
-        <StackLayout
-            x:Name="PluginMetadataPresentationLayout"
-            Orientation="Horizontal"
-            Spacing="5" />
-
         <converters:RunOptionTemplateSelector
             x:Key="RunOptionTemplateSelector"
             CheckBoxComboBoxTemplate="{StaticResource CheckBoxComboBoxTemplate}"
@@ -38,14 +33,6 @@
             MultilineTextBoxTemplate="{StaticResource MultilineTextBoxTemplate}"
             NumberBoxTemplate="{StaticResource NumberBoxTemplate}"
             TextboxTemplate="{StaticResource TextBoxTemplate}" />
-
-        <converters:RunPluginMetadataTemplateSelector
-            x:Key="RunPluginMetadataTemplateSelector"
-            EmptyMetadataTemplate="{StaticResource EmptyMetadataTemplate}"
-            MetadataAuthorTemplate="{StaticResource MetadataAuthorTemplate}"
-            MetadataSeparatorTemplate="{StaticResource MetadataSeparatorTemplate}"
-            MetadataVersionTemplate="{StaticResource MetadataVersionTemplate}"
-            MetadataWebsiteTemplate="{StaticResource MetadataWebsiteTemplate}" />
 
         <DataTemplate x:Key="CheckBoxTemplate" x:DataType="ViewModels:PluginAdditionalOptionViewModel">
             <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical">
@@ -311,43 +298,6 @@
 
         <DataTemplate x:Key="EmptyTemplate" x:DataType="ViewModels:PluginAdditionalOptionViewModel">
             <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical" />
-        </DataTemplate>
-
-        <DataTemplate x:Key="MetadataVersionTemplate" x:DataType="ViewModels:PluginMetadataViewModel">
-            <TextBlock Style="{ThemeResource SecondaryTextStyle}">
-                <Run x:Uid="PowerLauncher_PluginVersion" />
-                <Run FontWeight="SemiBold" Text="{x:Bind Value}" />
-            </TextBlock>
-        </DataTemplate>
-
-        <DataTemplate x:Key="MetadataAuthorTemplate" x:DataType="ViewModels:PluginMetadataViewModel">
-            <TextBlock Style="{ThemeResource SecondaryTextStyle}">
-                <Run x:Uid="PowerLauncher_AuthoredBy" />
-                <Run FontWeight="SemiBold" Text="{x:Bind Value}" />
-            </TextBlock>
-        </DataTemplate>
-
-        <DataTemplate x:Key="MetadataWebsiteTemplate" x:DataType="ViewModels:PluginMetadataViewModel">
-            <HyperlinkButton
-                Margin="0"
-                Padding="0"
-                AutomationProperties.Name="{x:Bind Value}"
-                NavigateUri="{x:Bind Value}"
-                Style="{StaticResource TextButtonStyle}"
-                ToolTipService.ToolTip="{x:Bind Value}">
-                <TextBlock
-                    x:Uid="PowerLauncher_PluginWebsite"
-                    FontWeight="SemiBold"
-                    Style="{ThemeResource SecondaryLinkTextStyle}" />
-            </HyperlinkButton>
-        </DataTemplate>
-
-        <DataTemplate x:Key="MetadataSeparatorTemplate" x:DataType="ViewModels:PluginMetadataViewModel">
-            <controls:MetadataDotSeparator />
-        </DataTemplate>
-
-        <DataTemplate x:Key="EmptyMetadataTemplate" x:DataType="ViewModels:PluginMetadataViewModel">
-            <StackPanel />
         </DataTemplate>
     </Page.Resources>
 
@@ -739,11 +689,44 @@
                                                 BorderThickness="0"
                                                 ContentAlignment="Right"
                                                 IsEnabled="{x:Bind Enabled, Mode=OneWay}">
-                                                <ItemsRepeater
-                                                    ItemTemplate="{StaticResource RunPluginMetadataTemplateSelector}"
-                                                    ItemsSource="{x:Bind Path=PluginMetadataItems, Mode=OneWay}"
-                                                    Layout="{StaticResource PluginMetadataPresentationLayout}"
-                                                    Opacity="{x:Bind DisabledOpacity}" />
+                                                <StackPanel
+                                                    HorizontalAlignment="Right"
+                                                    Orientation="Horizontal"
+                                                    Spacing="5">
+                                                    <TextBlock Opacity="{x:Bind DisabledOpacity}" Style="{ThemeResource SecondaryTextStyle}">
+                                                        <Run x:Uid="PowerLauncher_PluginVersion" />
+                                                        <Run FontWeight="SemiBold" Text="{x:Bind Version}" />
+                                                    </TextBlock>
+                                                    <TextBlock
+                                                        AutomationProperties.Name=","
+                                                        IsTabStop="False"
+                                                        Opacity="{x:Bind DisabledOpacity}"
+                                                        Style="{ThemeResource SecondaryTextStyle}"
+                                                        Text="|" />
+                                                    <TextBlock Opacity="{x:Bind DisabledOpacity}" Style="{ThemeResource SecondaryTextStyle}">
+                                                        <Run x:Uid="PowerLauncher_AuthoredBy" />
+                                                        <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
+                                                    </TextBlock>
+                                                    <TextBlock
+                                                        AutomationProperties.Name=","
+                                                        IsTabStop="False"
+                                                        Opacity="{x:Bind DisabledOpacity}"
+                                                        Style="{ThemeResource SecondaryTextStyle}"
+                                                        Text="|"
+                                                        Visibility="{x:Bind HasValidWebsiteUri, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                    <HyperlinkButton
+                                                        Margin="0"
+                                                        Padding="0"
+                                                        NavigateUri="{x:Bind WebsiteUri}"
+                                                        Opacity="{x:Bind DisabledOpacity}"
+                                                        Style="{StaticResource TextButtonStyle}"
+                                                        Visibility="{x:Bind HasValidWebsiteUri, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                        <TextBlock
+                                                            x:Uid="PowerLauncher_PluginWebsite"
+                                                            FontWeight="SemiBold"
+                                                            Style="{ThemeResource SecondaryLinkTextStyle}" />
+                                                    </HyperlinkButton>
+                                                </StackPanel>
                                             </tkcontrols:SettingsCard>
                                         </tkcontrols:SettingsExpander.Items>
                                     </tkcontrols:SettingsExpander>
