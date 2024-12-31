@@ -13,6 +13,7 @@ internal sealed partial class EvilSampleListPage : ListPage
     {
         Icon = new(string.Empty);
         Name = "Open";
+        Title = "Evil Sample Page";
     }
 
     public override IListItem[] GetItems()

@@ -3,11 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using CommunityToolkit.Common;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
-using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -23,8 +21,6 @@ public sealed partial class ListPage : Page,
     IRecipient<ActivateSelectedListItemMessage>,
     IRecipient<ActivateSecondaryCommandMessage>
 {
-    private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
-
     public ListViewModel? ViewModel
     {
         get => (ListViewModel?)GetValue(ViewModelProperty);
@@ -35,16 +31,6 @@ public sealed partial class ListPage : Page,
     public static readonly DependencyProperty ViewModelProperty =
         DependencyProperty.Register(nameof(ViewModel), typeof(ListViewModel), typeof(ListPage), new PropertyMetadata(null, OnViewModelChanged));
 
-    public ViewModelLoadedState LoadedState
-    {
-        get => (ViewModelLoadedState)GetValue(LoadedStateProperty);
-        set => SetValue(LoadedStateProperty, value);
-    }
-
-    // Using a DependencyProperty as the backing store for LoadedState.  This enables animation, styling, binding, etc...
-    public static readonly DependencyProperty LoadedStateProperty =
-        DependencyProperty.Register(nameof(LoadedState), typeof(ViewModelLoadedState), typeof(ListPage), new PropertyMetadata(ViewModelLoadedState.Loading));
-
     public ListPage()
     {
         this.InitializeComponent();
@@ -52,22 +38,9 @@ public sealed partial class ListPage : Page,
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
-        LoadedState = ViewModelLoadedState.Loading;
         if (e.Parameter is ListViewModel lvm)
         {
-            if (!lvm.IsInitialized
-                && lvm.InitializeCommand != null)
-            {
-                ViewModel = null;
-
-                _ = Task.Run(async () => await InitializeViewmodel(lvm));
-            }
-            else
-            {
-                ViewModel = lvm;
-                WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(lvm));
-                LoadedState = ViewModelLoadedState.Loaded;
-            }
+            ViewModel = lvm;
         }
 
         if (e.NavigationMode == NavigationMode.Back)
@@ -86,49 +59,6 @@ public sealed partial class ListPage : Page,
         base.OnNavigatedTo(e);
     }
 
-    private async Task InitializeViewmodel(ListViewModel lvm)
-    {
-        // You know, this creates the situation where we wait for
-        // both loading page properties, AND the items, before we
-        // display anything.
-        //
-        // We almost need to do an async await on initialize, then
-        // just a fire-and-forget on FetchItems.
-        lvm.InitializeCommand.Execute(null);
-
-        await lvm.InitializeCommand.ExecutionTask!;
-
-        if (lvm.InitializeCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
-        {
-            // TODO: Handle failure case
-            System.Diagnostics.Debug.WriteLine(lvm.InitializeCommand.ExecutionTask.Exception);
-
-            // TODO GH #239 switch back when using the new MD text block
-            // _ = _queue.EnqueueAsync(() =>
-            _queue.TryEnqueue(new(() =>
-            {
-                LoadedState = ViewModelLoadedState.Error;
-            }));
-        }
-        else
-        {
-            // TODO GH #239 switch back when using the new MD text block
-            // _ = _queue.EnqueueAsync(() =>
-            _queue.TryEnqueue(new(() =>
-{
-    var result = (bool)lvm.InitializeCommand.ExecutionTask.GetResultOrDefault()!;
-
-    ViewModel = lvm;
-
-    WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(result ? lvm : null));
-    LoadedState = result ? ViewModelLoadedState.Loaded : ViewModelLoadedState.Error;
-
-    // Immediately select the first item in the list
-    ItemsList.SelectedIndex = 0;
-}));
-        }
-    }
-
     protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
     {
         base.OnNavigatingFrom(e);
@@ -137,6 +67,9 @@ public sealed partial class ListPage : Page,
         WeakReferenceMessenger.Default.Unregister<NavigatePreviousCommand>(this);
         WeakReferenceMessenger.Default.Unregister<ActivateSelectedListItemMessage>(this);
         WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
+
+        // Clean-up event listeners
+        ViewModel = null;
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
@@ -246,23 +179,9 @@ public sealed partial class ListPage : Page,
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         var prop = e.PropertyName;
-        if (prop == nameof(ViewModel.ErrorMessage) && ViewModel != null)
-        {
-            if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
-            {
-                LoadedState = ViewModelLoadedState.Error;
-            }
-        }
-        else if (prop == nameof(ViewModel.FilteredItems))
+        if (prop == nameof(ViewModel.FilteredItems))
         {
             Debug.WriteLine($"ViewModel.FilteredItems {ItemsList.SelectedItem}");
         }
     }
-}
-
-public enum ViewModelLoadedState
-{
-    Loaded,
-    Loading,
-    Error,
 }

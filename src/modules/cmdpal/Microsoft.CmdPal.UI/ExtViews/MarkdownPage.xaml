@@ -16,63 +16,34 @@
     Background="Transparent"
     mc:Ignorable="d">
 
-    <Grid>
-        <ProgressBar
-            VerticalAlignment="Top"
-            IsIndeterminate="True"
-            Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
+    <ScrollView VerticalAlignment="Top" VerticalScrollMode="Enabled">
+        <ItemsControl
+            Margin="8"
+            VerticalAlignment="Stretch"
+            ItemsSource="{x:Bind ViewModel.Bodies, Mode=OneWay}">
+            <!--  or ListView or ItemsRepeater more likely...  -->
+            <ItemsControl.ItemTemplate>
 
-        <controls:SwitchPresenter TargetType="local:ViewModelLoadedState" Value="{x:Bind LoadedState, Mode=OneWay}">
-            <controls:Case Value="Loaded">
-                <ScrollView VerticalAlignment="Top" VerticalScrollMode="Enabled">
-                    <ItemsControl
-                        Margin="8"
-                        VerticalAlignment="Stretch"
-                        ItemsSource="{x:Bind ViewModel.Bodies, Mode=OneWay}">
-                        <!--  or ListView or ItemsRepeater more likely...  -->
-                        <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                    <Grid
+                        x:Name="ContentGrid"
+                        Margin="0,4,4,4"
+                        Padding="12,8,8,8"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1,1,1,2"
+                        CornerRadius="{StaticResource OverlayCornerRadius}">
+                        <toolkit:MarkdownTextBlock
+                            Background="Transparent"
+                            Header3FontSize="12"
+                            Header3FontWeight="Normal"
+                            Header3Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            IsTextSelectionEnabled="True"
+                            Text="{x:Bind}" />
+                    </Grid>
+                </DataTemplate>
 
-                            <DataTemplate x:DataType="x:String">
-
-                                <Grid
-                                    x:Name="ContentGrid"
-                                    Margin="0,4,4,4"
-                                    Padding="12,8,8,8"
-                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                    BorderThickness="1,1,1,2"
-                                    CornerRadius="{StaticResource OverlayCornerRadius}">
-
-                                    <toolkit:MarkdownTextBlock
-                                        Background="Transparent"
-                                        Header3FontSize="12"
-                                        Header3FontWeight="Normal"
-                                        Header3Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        IsTextSelectionEnabled="True"
-                                        Text="{x:Bind}" />
-                                </Grid>
-                            </DataTemplate>
-
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollView>
-
-            </controls:Case>
-
-            <controls:Case IsDefault="True" Value="Loading">
-                <TextBlock Text="I am a loading form page" />
-            </controls:Case>
-
-            <controls:Case Value="Error">
-                <StackPanel Margin="16" Orientation="Vertical">
-                    <TextBlock Text="I am an error form page" />
-                    <TextBlock
-                        FontSize="18"
-                        Foreground="{ThemeResource SystemErrorTextColor}"
-                        Text="Error on page" />
-                    <TextBlock IsTextSelectionEnabled="True" Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
-                </StackPanel>
-            </controls:Case>
-        </controls:SwitchPresenter>
-    </Grid>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </ScrollView>
 </Page>

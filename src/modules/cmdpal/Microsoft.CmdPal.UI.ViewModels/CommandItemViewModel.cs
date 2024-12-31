@@ -117,7 +117,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
         }
         catch (Exception ex)
         {
-            PageContext.ShowException(ex);
+            PageContext.ShowException(ex, _commandItemModel?.Unsafe?.Title);
         }
     }
 

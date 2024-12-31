@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using CommunityToolkit.Common;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -11,8 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ShellViewModel(IServiceProvider _serviceProvider) : ObservableObject,
-    IRecipient<NavigateToPageMessage>
+public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskScheduler _scheduler) : ObservableObject
 {
     [ObservableProperty]
     public partial bool IsLoaded { get; set; } = false;
@@ -29,8 +29,6 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider) : Observa
     [RelayCommand]
     public async Task<bool> LoadAsync()
     {
-        WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
-
         var tlcManager = _serviceProvider.GetService<TopLevelCommandManager>();
         await tlcManager!.LoadBuiltinsAsync();
         IsLoaded = true;
@@ -53,5 +51,66 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider) : Observa
         return true;
     }
 
-    public void Receive(NavigateToPageMessage message) => CurrentPage = message.Page;
+    public void LoadPageViewModel(PageViewModel viewModel)
+    {
+        // Note: We removed the general loading state, extensions sometimes use their `IsLoading`, but it's inconsistently implemented it seems.
+        // IsInitialized is our main indicator of the general overall state of loading props/items from a page we use for the progress bar
+        // This triggers that load generally with the InitializeCommand asynchronously when we navigate to a page.
+        // We could re-track the page loading status, if we need it more granularly below again, but between the initialized and error message, we can infer some status.
+        // We could also maybe move this thread offloading we do for loading into PageViewModel and better communicate between the two... a few different options.
+
+        ////LoadedState = ViewModelLoadedState.Loading;
+        if (!viewModel.IsInitialized
+            && viewModel.InitializeCommand != null)
+        {
+            _ = Task.Run(async () =>
+            {
+                // You know, this creates the situation where we wait for
+                // both loading page properties, AND the items, before we
+                // display anything.
+                //
+                // We almost need to do an async await on initialize, then
+                // just a fire-and-forget on FetchItems.
+                // RE: We do set the CurrentPage in ShellPage.xaml.cs as well, so, we kind of are doing two different things here.
+                // Definitely some more clean-up to do, but at least its centralized to one spot now.
+                viewModel.InitializeCommand.Execute(null);
+
+                await viewModel.InitializeCommand.ExecutionTask!;
+
+                if (viewModel.InitializeCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
+                {
+                    // TODO: Handle failure case
+                    System.Diagnostics.Debug.WriteLine(viewModel.InitializeCommand.ExecutionTask.Exception);
+
+                    // TODO GH #239 switch back when using the new MD text block
+                    // _ = _queue.EnqueueAsync(() =>
+                    /*_queue.TryEnqueue(new(() =>
+                    {
+                        LoadedState = ViewModelLoadedState.Error;
+                    }));*/
+                }
+                else
+                {
+                    // TODO GH #239 switch back when using the new MD text block
+                    // _ = _queue.EnqueueAsync(() =>
+                    _ = Task.Factory.StartNew(
+                        () =>
+                        {
+                            var result = (bool)viewModel.InitializeCommand.ExecutionTask.GetResultOrDefault()!;
+
+                            CurrentPage = result ? viewModel : null;
+                            ////LoadedState = result ? ViewModelLoadedState.Loaded : ViewModelLoadedState.Error;
+                        },
+                        CancellationToken.None,
+                        TaskCreationOptions.None,
+                        _scheduler);
+                }
+            });
+        }
+        else
+        {
+            CurrentPage = viewModel;
+            ////LoadedState = ViewModelLoadedState.Loaded;
+        }
+    }
 }

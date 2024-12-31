@@ -68,8 +68,6 @@ public sealed partial class SearchBar : UserControl,
         }
     }
 
-    private void BackButton_Tapped(object sender, TappedRoutedEventArgs e) => WeakReferenceMessenger.Default.Send<NavigateBackMessage>();
-
     private void FilterBox_KeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (e.Handled)

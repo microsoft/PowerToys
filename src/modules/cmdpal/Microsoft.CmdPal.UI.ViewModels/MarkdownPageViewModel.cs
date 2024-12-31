@@ -52,7 +52,7 @@ public partial class MarkdownPageViewModel : PageViewModel
         }
         catch (Exception ex)
         {
-            ShowException(ex);
+            ShowException(ex, _model?.Unsafe?.Name);
             throw;
         }
     }

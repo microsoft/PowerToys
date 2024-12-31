@@ -3,12 +3,14 @@
     x:Class="Microsoft.CmdPal.UI.ShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -19,6 +21,10 @@
                 EmptyValue="Collapsed"
                 NotEmptyValue="Visible" />
             <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
+            <converters:BoolToVisibilityConverter
+                x:Key="BoolToInvertedVisibilityConverter"
+                FalseValue="Visible"
+                TrueValue="Collapsed" />
         </ResourceDictionary>
     </Page.Resources>
 
@@ -32,12 +38,100 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <cpcontrols:SearchBar
-                x:Name="SearchBox"
-                Grid.Row="0"
-                CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
+            <!--  Back button and search box  -->
+            <Grid
+                Padding="0,12,0,12"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="44" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!--  Back button  -->
+                <FontIcon
+                    Margin="14,0,0,0"
+                    HorizontalAlignment="Center"
+                    ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
+                    AutomationProperties.AccessibilityView="Raw"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Glyph="&#xE721;"
+                    Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                    <animations:Implicit.ShowAnimations>
+                        <animations:OpacityAnimation
+                            From="0"
+                            To="1.0"
+                            Duration="0:0:0.340" />
+                        <animations:ScaleAnimation
+                            From="0.5"
+                            To="1"
+                            Duration="0:0:0.350" />
+                    </animations:Implicit.ShowAnimations>
+                    <animations:Implicit.HideAnimations>
+                        <animations:OpacityAnimation
+                            From="1.0"
+                            To="0"
+                            Duration="0:0:0.340" />
+                        <animations:ScaleAnimation
+                            From="1"
+                            To="0.5"
+                            Duration="0:0:0.350" />
+                    </animations:Implicit.HideAnimations>
+                </FontIcon>
+
+                <Button
+                    x:Name="BackButton"
+                    Margin="12,0,0,0"
+                    Padding="8"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
+                    Content="{ui:FontIcon Glyph=&#xE72B;,
+                                          FontSize=14}"
+                    FontSize="16"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Style="{StaticResource SubtleButtonStyle}"
+                    Tapped="BackButton_Tapped"
+                    ToolTipService.ToolTip="Back"
+                    Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay}">
+                    <animations:Implicit.ShowAnimations>
+                        <animations:OpacityAnimation
+                            From="0"
+                            To="1.0"
+                            Duration="0:0:0.340" />
+                        <animations:ScaleAnimation
+                            From="0.5"
+                            To="1"
+                            Duration="0:0:0.350" />
+                    </animations:Implicit.ShowAnimations>
+                    <animations:Implicit.HideAnimations>
+                        <animations:OpacityAnimation
+                            From="1.0"
+                            To="0"
+                            Duration="0:0:0.340" />
+                        <animations:ScaleAnimation
+                            From="1"
+                            To="0.5"
+                            Duration="0:0:0.350" />
+                    </animations:Implicit.HideAnimations>
+                </Button>
+
+                <!--  Search box  -->
+                <cpcontrols:SearchBar
+                    x:Name="SearchBox"
+                    Grid.Column="2"
+                    CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
+            </Grid>
+
+            <ProgressBar
+                Grid.ColumnSpan="2"
+                VerticalAlignment="Bottom"
+                IsIndeterminate="True"
+                Visibility="{x:Bind ViewModel.CurrentPage.IsInitialized, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}" />
 
             <Grid
                 x:Name="ContentGrid"
@@ -50,7 +144,10 @@
                     <ColumnDefinition x:Name="DetailsColumn" Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <Frame Name="RootFrame" IsNavigationStackEnabled="True" />
+                <Frame
+                    Name="RootFrame"
+                    IsNavigationStackEnabled="True"
+                    Navigated="RootFrame_Navigated" />
 
                 <Grid
                     x:Name="DetailsContent"
@@ -71,6 +168,7 @@
                         x:Name="HeroImageBorder"
                         Width="64"
                         Height="64"
+                        x:Load="{x:Bind IsLoaded, Mode=OneWay}"
                         SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
                         SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
                         Visibility="{x:Bind ViewModel.Details.HasHeroImage, Mode=OneWay}" />
@@ -96,7 +194,25 @@
                 </Grid>
                 <!--  /DetailsContent  -->
             </Grid>
+            <ScrollView
+                Grid.Row="2"
+                Grid.ColumnSpan="2"
+                MaxHeight="120"
+                Background="{ThemeResource SystemControlErrorBackgroundColor}"
+                BorderBrush="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                BorderThickness="0,1,0,1"
+                CornerRadius="0"
+                Visibility="{x:Bind ViewModel.CurrentPage.ErrorMessage, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}">
+                <TextBlock Margin="16,8,16,16" IsTextSelectionEnabled="True">
+                    <Run
+                        FontWeight="SemiBold"
+                        Foreground="{ThemeResource SystemErrorTextColor}"
+                        Text="Error(s) on page:" />
+                    <LineBreak /><Run Text="{x:Bind ViewModel.CurrentPage.ErrorMessage, Mode=OneWay}" />
+                </TextBlock>
+            </ScrollView>
         </Grid>
+
         <cpcontrols:ActionBar Grid.Row="1" CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
 
         <VisualStateManager.VisualStateGroups>

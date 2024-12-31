@@ -115,59 +115,27 @@
         </DataTemplate>
     </Page.Resources>
 
-    <Grid>
-        <ProgressBar
-            VerticalAlignment="Top"
-            IsIndeterminate="True"
-            Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
-        <!--  not using Interactivity:Interaction.Behaviors due to wanting to do AoT  -->
-        <!--
-            sticking with ListView as ItemsView doesn't have grouping built-in, could investigate coordinating
-            keyboards between them and using ItemsRepeater for group headers, though that wouldn't use CVS either
-        -->
-        <controls:SwitchPresenter TargetType="local:ViewModelLoadedState" Value="{x:Bind LoadedState, Mode=OneWay}">
-            <controls:Case Value="Loaded">
-                <ListView
-                    x:Name="ItemsList"
-                    IsItemClickEnabled="True"
-                    ItemClick="ListView_ItemClick"
-                    ItemTemplate="{StaticResource ListItemViewModelTemplate}"
-                    ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
-                    SelectionChanged="ItemsList_SelectionChanged">
-                    <ListView.ItemContainerTransitions>
-                        <TransitionCollection />
-                    </ListView.ItemContainerTransitions>
-                    <!--<ListView.GroupStyle>
-                        <GroupStyle HidesIfEmpty="True">
-                            <GroupStyle.HeaderTemplate>
-                                <DataTemplate>
-                                    <TextBlock
-                                        Margin="0,16,0,0"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{Binding Key, Mode=OneWay}" />
-                                </DataTemplate>
-                            </GroupStyle.HeaderTemplate>
-                        </GroupStyle>
-                    </ListView.GroupStyle>-->
-                </ListView>
-            </controls:Case>
-
-            <controls:Case IsDefault="True" Value="Loading">
-                <!--<ProgressRing
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    IsIndeterminate="True" />-->
-            </controls:Case>
-
-            <controls:Case Value="Error">
-                <StackPanel Margin="16" Orientation="Vertical">
-                    <TextBlock
-                        FontSize="18"
-                        Foreground="{ThemeResource SystemErrorTextColor}"
-                        Text="Error on page" />
-                    <TextBlock IsTextSelectionEnabled="True" Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
-                </StackPanel>
-            </controls:Case>
-        </controls:SwitchPresenter>
-    </Grid>
+    <ListView
+        x:Name="ItemsList"
+        IsItemClickEnabled="True"
+        ItemClick="ListView_ItemClick"
+        ItemTemplate="{StaticResource ListItemViewModelTemplate}"
+        ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
+        SelectionChanged="ItemsList_SelectionChanged">
+        <ListView.ItemContainerTransitions>
+            <TransitionCollection />
+        </ListView.ItemContainerTransitions>
+        <!--<ListView.GroupStyle>
+                    <GroupStyle HidesIfEmpty="True">
+                        <GroupStyle.HeaderTemplate>
+                            <DataTemplate>
+                                <TextBlock
+                                    Margin="0,16,0,0"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Text="{Binding Key, Mode=OneWay}" />
+                            </DataTemplate>
+                        </GroupStyle.HeaderTemplate>
+                    </GroupStyle>
+                </ListView.GroupStyle>-->
+    </ListView>
 </Page>
