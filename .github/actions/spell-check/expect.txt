@@ -205,6 +205,7 @@ coclass
 codereview
 Codespaces
 COINIT
+colid
 colorconv
 colorformat
 colorhistory
@@ -279,8 +280,12 @@ datareader
 datatracker
 dataversion
 Dayof
+DBID
 DBLCLKS
 DBLEPSILON
+DBPROP
+DBPROPIDSET
+DBPROPSET
 DCapture
 DCBA
 DCOM
@@ -490,6 +495,7 @@ flac
 flaticon
 flyouts
 FMask
+fmtid
 FOF
 FOFX
 FOLDERID
@@ -611,6 +617,7 @@ HREDRAW
 hres
 hresult
 hrgn
+HROW
 hsb
 HSCROLL
 hsi
@@ -914,6 +921,8 @@ mscorlib
 msdata
 MSDL
 MSGFLT
+MSIDXS
+MSIDXSPROP
 msiexec
 MSIFASTINSTALL
 MSIHANDLE
@@ -1057,6 +1066,7 @@ oldpath
 oldtheme
 oleaut
 OLECHAR
+openas
 opencode
 OPENFILENAME
 opensource
@@ -1183,6 +1193,8 @@ previouscamera
 PREVIOUSINSTALLFOLDER
 PREVIOUSVERSIONSINSTALLED
 prevpane
+prg
+prgh
 prgms
 pri
 PRINTCLIENT
@@ -1199,6 +1211,8 @@ programdata
 projectname
 PROPBAG
 PROPERTYKEY
+propkey
+Propset
 PROPVARIANT
 prvpane
 psapi
@@ -1310,6 +1324,7 @@ RGBQUAD
 rgbs
 rgelt
 rgf
+rgh
 rgn
 rgs
 RIDEV
@@ -1320,6 +1335,7 @@ RKey
 RNumber
 rop
 ROUNDSMALL
+ROWSETEXT
 rpcrt
 RRF
 rrr
@@ -1361,6 +1377,7 @@ searchterm
 searchtext
 SEARCHUI
 secpol
+SEEMASKINVOKEIDLIST
 SENDCHANGE
 sendvirtualinput
 seperators
@@ -1664,6 +1681,7 @@ uwp
 vabdq
 validmodulename
 valuegenerator
+VARENUM
 variantassignment
 vcamp
 vcdl
@@ -1744,6 +1762,7 @@ webpage
 websites
 wekyb
 wgpocpl
+WHEREID
 Wholegrain
 wic
 wifi
