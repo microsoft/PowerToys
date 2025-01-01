@@ -267,9 +267,8 @@ namespace PowerAccent.Core
             LetterKey.VK_H => new[] { "₴" },
             LetterKey.VK_K => new[] { "₭" },
             LetterKey.VK_L => new[] { "ł", "£" },
-            LetterKey.VK_M => new[] { "₼" },
             LetterKey.VK_N => new[] { "л" },
-            LetterKey.VK_O => new[] { "¤" },
+            LetterKey.VK_M => new[] { "₼" },
             LetterKey.VK_P => new[] { "£", "₽" },
             LetterKey.VK_R => new[] { "₹", "៛", "﷼" },
             LetterKey.VK_S => new[] { "$", "₪" },
@@ -280,14 +279,14 @@ namespace PowerAccent.Core
             LetterKey.VK_3 => new[]
             {
                     "฿", "в", "₿", "¢", "₡", "č", "₫", "€", "£", "ƒ",
-                    "₴", "₭", "ł", "₼", "л", "¤", "₽", "₹", "៛", "﷼",
-                    "$","₪", "₮", "₺", "₸", "₩", "¥", "z",
+                    "₴", "₭", "ł", "л", "₼", "₽", "₹", "៛", "﷼", "$",
+                    "₪", "₮", "₺", "₸", "₩", "¥", "z",
             }, // VK_3  is commonly used for the locale currency symbol
             LetterKey.VK_4 => new[]
             {
                     "฿", "в", "₿", "¢", "₡", "č", "₫", "€", "£", "ƒ",
-                    "₴", "₭", "ł", "₼", "л", "¤", "₽", "₹", "៛", "﷼",
-                    "$","₪", "₮", "₺", "₸", "₩", "¥", "z",
+                    "₴", "₭", "ł", "л", "₼", "₽", "₹", "៛", "﷼", "$",
+                    "₪", "₮", "₺", "₸", "₩", "¥", "z",
             }, // VK_4  is commonly used for the locale currency symbol
             _ => Array.Empty<string>(),
         };
