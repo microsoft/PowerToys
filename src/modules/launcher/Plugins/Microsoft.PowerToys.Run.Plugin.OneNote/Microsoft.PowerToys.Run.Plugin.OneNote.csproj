@@ -35,6 +35,7 @@
 
   <ItemGroup>
     <PackageReference Include="LazyCache" />
+    <PackageReference Include="Humanizer" />
     <PackageReference Include="Microsoft.Windows.CsWin32">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

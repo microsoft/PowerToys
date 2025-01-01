@@ -251,4 +251,13 @@
   <data name="NoItemsFoundTypeValidName" xml:space="preserve">
     <value>No items found. Type a valid name to create one</value>
   </data>
+  <data name="LastModified" xml:space="preserve">
+    <value>Last Modified: {0:F}</value>
+  </data>
+  <data name="Locked" xml:space="preserve">
+    <value>Locked</value>
+  </data>
+  <data name="Unlocked" xml:space="preserve">
+    <value>Unlocked</value>
+  </data>
 </root>

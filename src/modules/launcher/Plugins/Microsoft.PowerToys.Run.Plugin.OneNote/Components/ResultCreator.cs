@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Text;
 using System.Windows.Input;
+using Humanizer;
 using Microsoft.PowerToys.Run.Plugin.OneNote.Properties;
 using Odotocodot.OneNote.Linq;
 using Wox.Infrastructure;
@@ -32,6 +33,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
         private static readonly CompositeFormat CreateNotebook = CompositeFormat.Parse(Resources.CreateNotebook);
         private static readonly CompositeFormat Location = CompositeFormat.Parse(Resources.Location);
         private static readonly CompositeFormat Path = CompositeFormat.Parse(Resources.Path);
+        private static readonly CompositeFormat LastModified = CompositeFormat.Parse(Resources.LastModified);
         private static readonly CompositeFormat SectionNamesCannotContain = CompositeFormat.Parse(Resources.SectionNamesCannotContain);
         private static readonly CompositeFormat SectionGroupNamesCannotContain = CompositeFormat.Parse(Resources.SectionGroupNamesCannotContain);
         private static readonly CompositeFormat NotebookNamesCannotContain = CompositeFormat.Parse(Resources.NotebookNamesCannotContain);
@@ -48,55 +50,29 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
         private string GetTitle(IOneNoteItem item, List<int>? highlightData)
         {
             string title = item.Name;
-            if (item.IsUnread && _settings.ShowUnreadItems)
-            {
-                string unread = "\u2022  ";
-                title = title.Insert(0, unread);
 
-                if (highlightData != null)
-                {
-                    for (int i = 0; i < highlightData.Count; i++)
-                    {
-                        highlightData[i] += unread.Length;
-                    }
-                }
+            if (!item.IsUnread || !_settings.ShowUnreadItems)
+            {
+                return title;
+            }
+
+            const string unread = "\u2022  ";
+            title = title.Insert(0, unread);
+
+            if (highlightData == null)
+            {
+                return title;
+            }
+
+            for (int i = 0; i < highlightData.Count; i++)
+            {
+                highlightData[i] += unread.Length;
             }
 
             return title;
         }
 
         private string GetQueryTextDisplay(IOneNoteItem item) => $"{Keywords.NotebookExplorer}{GetNicePath(item, Keywords.NotebookExplorerSeparator)}{Keywords.NotebookExplorerSeparator}";
-
-        private static string GetLastEdited(TimeSpan diff)
-        {
-            string lastEdited = "Last edited ";
-            if (PluralCheck(diff.TotalDays, "day", ref lastEdited)
-             || PluralCheck(diff.TotalHours, "hour", ref lastEdited)
-             || PluralCheck(diff.TotalMinutes, "min", ref lastEdited)
-             || PluralCheck(diff.TotalSeconds, "sec", ref lastEdited))
-            {
-                return lastEdited;
-            }
-            else
-            {
-                return lastEdited += "Now.";
-            }
-
-            static bool PluralCheck(double totalTime, string timeType, ref string lastEdited)
-            {
-                var roundedTime = (int)Math.Round(totalTime);
-                if (roundedTime > 0)
-                {
-                    string plural = roundedTime == 1 ? string.Empty : "s";
-                    lastEdited += $"{roundedTime} {timeType}{plural} ago.";
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-        }
 
         internal List<Result> EmptyQuery(Query query)
         {
@@ -177,39 +153,24 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
         internal Result CreateOneNoteItemResult(IOneNoteItem item, bool actionIsAutoComplete, List<int>? highlightData = null, int score = 0)
         {
             string title = GetTitle(item, highlightData);
-            string toolTip = string.Empty;
             string subTitle = GetNicePath(item);
             string queryTextDisplay = GetQueryTextDisplay(item);
 
+            // TODO: Potential improvement would be to show the children of the OneNote item in its tooltip.
+            // E.g. for a notebook, it would display the number of section groups, sections and pages.
+            // Would require even more localisation.
+            // An example: https://github.com/Odotocodot/Flow.Launcher.Plugin.OneNote/blob/5f56aa81a19641197d4ea4a97dc22cf1aa21f5e6/Flow.Launcher.Plugin.OneNote/ResultCreator.cs#L145
             switch (item)
             {
                 case OneNoteNotebook notebook:
-                    toolTip =
-                        $"Last Modified:\t{notebook.LastModified:F}\n" +
-                        $"Sections:\t\t{notebook.Sections.Count()}\n" +
-                        $"Sections Groups:\t{notebook.SectionGroups.Count()}";
-
                     subTitle = string.Empty;
-                    break;
-                case OneNoteSectionGroup sectionGroup:
-                    toolTip =
-                        $"Path:\t\t{subTitle}\n" +
-                        $"Last Modified:\t{sectionGroup.LastModified:F}\n" +
-                        $"Sections:\t\t{sectionGroup.Sections.Count()}\n" +
-                        $"Sections Groups:\t{sectionGroup.SectionGroups.Count()}";
-
                     break;
                 case OneNoteSection section:
                     if (section.Encrypted)
                     {
-                        // potentially replace with glyphs if supported
-                        title += $" [Encrypted] {(section.Locked ? "[Locked]" : "[Unlocked]")} \uE72E";
+                        // potentially replace with glyphs when/if supported
+                        title += string.Format(CultureInfo.CurrentCulture, " [{0}]", section.Locked ? Resources.Locked : Resources.Unlocked);
                     }
-
-                    toolTip =
-                        $"Path:\t\t{subTitle}\n" +
-                        $"Last Modified:\t{section.LastModified}\n" +
-                        $"Pages:\t\t{section.Pages.Count()}";
 
                     break;
                 case OneNotePage page:
@@ -218,11 +179,13 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                     actionIsAutoComplete = false;
 
                     subTitle = subTitle[..^(page.Name.Length + PathSeparator.Length)];
-                    toolTip =
-                        $"Path:\t\t {subTitle} \n" +
-                        $"Created:\t\t{page.Created:F}\n" +
-                        $"Last Modified:\t{page.LastModified:F}";
                     break;
+            }
+
+            var toolTip = string.Format(CultureInfo.CurrentCulture, LastModified, item.LastModified);
+            if (item is not OneNoteNotebook)
+            {
+                toolTip = toolTip.Insert(0, string.Format(CultureInfo.CurrentCulture, Path, subTitle) + "\n");
             }
 
             return new Result
@@ -258,8 +221,8 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
         internal Result CreateRecentPageResult(OneNotePage page)
         {
             var result = CreateOneNoteItemResult(page, false, null);
-            result.SubTitle = $"{GetLastEdited(DateTime.Now - page.LastModified)}\t{result.SubTitle}";
-            result.IcoPath = _iconProvider.Page;
+            result.IcoPath = _iconProvider.Recent;
+            result.SubTitle = $"{page.LastModified.Humanize(culture: CultureInfo.CurrentCulture)} | {result.SubTitle}";
             return result;
         }
 

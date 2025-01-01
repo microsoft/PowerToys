@@ -48,6 +48,7 @@
   <ItemGroup>
     <PackageReference Include="Mages" />
     <PackageReference Include="LazyCache" />
+    <PackageReference Include="Humanizer" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
