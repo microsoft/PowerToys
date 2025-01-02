@@ -147,33 +147,35 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
 
             private void AddCreateNewOneNoteItemResults(string newItemName, IOneNoteItem? parent, List<Result> results)
             {
-                if (!results.Any(result => string.Equals(newItemName.Trim(), result.Title, StringComparison.OrdinalIgnoreCase)))
+                if (results.Any(result => string.Equals(newItemName.Trim(), result.Title, StringComparison.OrdinalIgnoreCase)))
                 {
-                    if (parent?.IsInRecycleBin() == true)
-                    {
-                        return;
-                    }
+                    return;
+                }
 
-                    switch (parent)
-                    {
-                        case null:
-                            results.Add(_resultCreator.CreateNewNotebookResult(newItemName));
-                            break;
-                        case OneNoteNotebook:
-                        case OneNoteSectionGroup:
-                            results.Add(_resultCreator.CreateNewSectionResult(newItemName, parent));
-                            results.Add(_resultCreator.CreateNewSectionGroupResult(newItemName, parent));
-                            break;
-                        case OneNoteSection section:
-                            if (!section.Locked)
-                            {
-                                results.Add(_resultCreator.CreateNewPageResult(newItemName, section));
-                            }
+                if (parent?.IsInRecycleBin() == true)
+                {
+                    return;
+                }
 
-                            break;
-                        default:
-                            break;
-                    }
+                switch (parent)
+                {
+                    case null:
+                        results.Add(_resultCreator.CreateNewNotebookResult(newItemName));
+                        break;
+                    case OneNoteNotebook:
+                    case OneNoteSectionGroup:
+                        results.Add(_resultCreator.CreateNewSectionResult(newItemName, parent));
+                        results.Add(_resultCreator.CreateNewSectionGroupResult(newItemName, parent));
+                        break;
+                    case OneNoteSection section:
+                        if (!section.Locked)
+                        {
+                            results.Add(_resultCreator.CreateNewPageResult(newItemName, section));
+                        }
+
+                        break;
+                    default:
+                        break;
                 }
             }
         }

@@ -60,9 +60,10 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
             }
 
             var results = OneNoteApplication.FindPages(query)
-                                            .Select(pg => _resultCreator.CreatePageResult(pg, query));
+                                            .Select(pg => _resultCreator.CreatePageResult(pg, query))
+                                            .ToList();
 
-            return results.Any() ? results.ToList() : _resultCreator.NoMatchesFound(showSingleResults);
+            return results.Count != 0 ? results : _resultCreator.NoMatchesFound(showSingleResults);
         }
 
         private List<Result> TitleSearch(string query, IOneNoteItem? parent, IEnumerable<IOneNoteItem> currentCollection)
