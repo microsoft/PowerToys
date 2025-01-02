@@ -8,6 +8,14 @@
 	<PropertyGroup>
 		<OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\Hosts.FuzzTests\</OutputPath>
 	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="OneFuzzConfig.json" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Content Include="OneFuzzConfig.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="MSTest" />
@@ -16,4 +24,7 @@
 	<ItemGroup>
 		<Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
 	</ItemGroup>
+	
+	
+	
 </Project>
