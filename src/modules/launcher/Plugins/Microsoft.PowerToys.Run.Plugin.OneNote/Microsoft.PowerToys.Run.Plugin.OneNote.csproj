@@ -34,7 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="LazyCache" />
     <PackageReference Include="Humanizer" />
     <PackageReference Include="Microsoft.Windows.CsWin32">
       <PrivateAssets>all</PrivateAssets>
