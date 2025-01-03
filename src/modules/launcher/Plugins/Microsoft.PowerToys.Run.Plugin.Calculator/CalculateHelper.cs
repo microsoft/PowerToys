@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             @"^(" +
             @"%|" +
             @"ceil\s*\(|floor\s*\(|exp\s*\(|max\s*\(|min\s*\(|abs\s*\(|log(?:2|10)?\s*\(|ln\s*\(|sqrt\s*\(|pow\s*\(|" +
-            @"factorial\s*\(|sign\s*\(|round\s*\(|rand\s*\(|" +
+            @"factorial\s*\(|sign\s*\(|round\s*\(|rand\s*\(\)|randi\s*\([^\)]|" +
             @"sin\s*\(|cos\s*\(|tan\s*\(|arcsin\s*\(|arccos\s*\(|arctan\s*\(|" +
             @"sinh\s*\(|cosh\s*\(|tanh\s*\(|arsinh\s*\(|arcosh\s*\(|artanh\s*\(|" +
             @"pi|" +
