@@ -692,7 +692,7 @@
                                                 <StackPanel
                                                     HorizontalAlignment="Right"
                                                     Orientation="Horizontal"
-                                                    Spacing="5">
+                                                    Spacing="4">
                                                     <TextBlock Opacity="{x:Bind DisabledOpacity}" Style="{ThemeResource SecondaryTextStyle}">
                                                         <Run x:Uid="PowerLauncher_PluginVersion" />
                                                         <Run FontWeight="SemiBold" Text="{x:Bind Version}" />
