@@ -192,6 +192,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("cos", false)]
         [DataRow("abs", false)]
         [DataRow("1+1.1e3", true)]
+        [DataRow("randi(8)", true)]
+        [DataRow("randi()", false)]
+        [DataRow("randi(0.5)", true)]
+        [DataRow("rand()", true)]
+        [DataRow("rand(0.5)", false)]
         public void InputValid_TestValid_WhenCalled(string input, bool valid)
         {
             // Act

@@ -38,9 +38,9 @@ IFACEMETHODIMP shell_context_menu_win10::QueryContextMenu(HMENU menu_handle, UIN
         return E_FAIL;
     }
 
-    if (menu_flags & CMF_DEFAULTONLY)
+    if (menu_flags & (CMF_DEFAULTONLY | CMF_VERBSONLY | CMF_OPTIMIZEFORINVOKE))
     {
-        return MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 0);
+        return E_UNEXPECTED;
     }
 
     try
@@ -214,6 +214,13 @@ IFACEMETHODIMP shell_context_menu_win10::InvokeCommand(CMINVOKECOMMANDINFO* para
 {
     if (!params)
     {
+        return E_FAIL;
+    }
+
+    if (HIWORD(params->lpVerb)!=0)
+    {
+        // Not a menu command. It's likely a string verb command from another menu.
+        // The logic to interpret lpVerb is explained here: https://learn.microsoft.com/en-us/previous-versions//bb776881(v=vs.85)#invokecommand-method
         return E_FAIL;
     }
 
