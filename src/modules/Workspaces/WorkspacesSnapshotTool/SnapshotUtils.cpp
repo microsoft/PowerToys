@@ -79,9 +79,9 @@ namespace SnapshotUtils
                     auto notificationUtil = std::make_unique<notifications::NotificationUtil>();
 
                     notificationUtil->WarnIfElevationIsRequired(GET_RESOURCE_STRING(IDS_PROJECTS),
-                                                             GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED),
-                                                             GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED_LEARN_MORE),
-                                                             GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED_DIALOG_DONT_SHOW_AGAIN));
+                                                                GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED),
+                                                                GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED_LEARN_MORE),
+                                                                GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED_DIALOG_DONT_SHOW_AGAIN));
                 }
 
                 continue;
