@@ -31,7 +31,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
         /// <summary>
         /// Brings OneNote to the foreground and restores it if minimized.
         /// </summary>
-        private static void ShowOneNote()
+        internal static void ShowOneNote()
         {
             using var process = Process.GetProcessesByName("onenote").FirstOrDefault();
             if (process?.MainWindowHandle != null)

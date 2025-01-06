@@ -151,15 +151,6 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Location: {0}.
-        /// </summary>
-        internal static string Location {
-            get {
-                return ResourceManager.GetString("Location", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Locked.
         /// </summary>
         internal static string Locked {

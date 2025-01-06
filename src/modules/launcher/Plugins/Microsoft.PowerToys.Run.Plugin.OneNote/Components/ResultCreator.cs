@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
@@ -31,7 +32,6 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
         private static readonly CompositeFormat CreateSection = CompositeFormat.Parse(Resources.CreateSection);
         private static readonly CompositeFormat CreateSectionGroup = CompositeFormat.Parse(Resources.CreateSectionGroup);
         private static readonly CompositeFormat CreateNotebook = CompositeFormat.Parse(Resources.CreateNotebook);
-        private static readonly CompositeFormat Location = CompositeFormat.Parse(Resources.Location);
         private static readonly CompositeFormat Path = CompositeFormat.Parse(Resources.Path);
         private static readonly CompositeFormat LastModified = CompositeFormat.Parse(Resources.LastModified);
         private static readonly CompositeFormat SectionNamesCannotContain = CompositeFormat.Parse(Resources.SectionNamesCannotContain);
@@ -72,7 +72,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
             return title;
         }
 
-        private string GetQueryTextDisplay(IOneNoteItem? parent)
+        private static string GetQueryTextDisplay(IOneNoteItem? parent)
         {
             return parent is null
                 ? $"{Keywords.NotebookExplorer}"
@@ -231,124 +231,84 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
             return result;
         }
 
-        internal Result CreateNewPageResult(string newPageName, OneNoteSection section)
+        private Result CreateNewOneNoteItemResult(string newItemName, IOneNoteItem? parent, CompositeFormat titleFormat, ImmutableArray<char> invalidCharacters, CompositeFormat subTitleFormat, string iconPath, Action createItemAction)
         {
-            newPageName = newPageName.Trim();
+            newItemName = newItemName.Trim();
+
+            bool validTitle = !string.IsNullOrWhiteSpace(newItemName) && !invalidCharacters.Any(newItemName.Contains);
+
+            string subTitle = parent == null
+                ? OneNoteApplication.GetDefaultNotebookLocation() + System.IO.Path.DirectorySeparatorChar + newItemName
+                : GetNicePath(parent) + PathSeparator + newItemName;
+
             return new Result
             {
-                Title = string.Format(CultureInfo.CurrentCulture, CreatePage, newPageName),
-                SubTitle = string.Format(CultureInfo.CurrentCulture, Path, GetNicePath(section) + PathSeparator + newPageName),
-                QueryTextDisplay = $"{GetQueryTextDisplay(section)}{newPageName}",
-                IcoPath = _iconProvider.NewPage,
+                Title = string.Format(CultureInfo.CurrentCulture, titleFormat, newItemName),
+                SubTitle = validTitle
+                    ? string.Format(CultureInfo.CurrentCulture, Path, subTitle)
+                    : string.Format(CultureInfo.CurrentCulture, subTitleFormat, string.Join(' ', invalidCharacters)),
+                QueryTextDisplay = $"{GetQueryTextDisplay(parent)}{newItemName}",
+                IcoPath = iconPath,
                 Action = ResultAction(() =>
                 {
-                    OneNoteApplication.CreatePage(section, newPageName, true);
+                    if (!validTitle)
+                    {
+                        return false;
+                    }
+
+                    createItemAction();
+
+                    OneNoteItemExtensions.ShowOneNote();
+                    _context.API.ChangeQuery($"{GetQueryTextDisplay(parent)}{newItemName}", true);
                     return true;
                 }),
             };
+        }
+
+        internal Result CreateNewPageResult(string newPageName, OneNoteSection section)
+        {
+            return CreateNewOneNoteItemResult(newPageName, section, CreatePage, [], SectionNamesCannotContain, _iconProvider.NewPage, () => OneNoteApplication.CreatePage(section, newPageName, true));
         }
 
         internal Result CreateNewSectionResult(string newSectionName, IOneNoteItem parent)
         {
-            newSectionName = newSectionName.Trim();
-            bool validTitle = OneNoteApplication.IsSectionNameValid(newSectionName);
-
-            return new Result
+            return CreateNewOneNoteItemResult(newSectionName, parent, CreateSection, OneNoteApplication.InvalidSectionChars, SectionNamesCannotContain, _iconProvider.NewSection, () =>
             {
-                Title = string.Format(CultureInfo.CurrentCulture, CreateSection, newSectionName),
-                SubTitle = validTitle
-                        ? string.Format(CultureInfo.CurrentCulture, Path, GetNicePath(parent) + PathSeparator + newSectionName)
-                        : string.Format(CultureInfo.CurrentCulture, SectionNamesCannotContain, string.Join(' ', OneNoteApplication.InvalidSectionChars)),
-                QueryTextDisplay = $"{GetQueryTextDisplay(parent)}{newSectionName}",
-                IcoPath = _iconProvider.NewSection,
-                Action = ResultAction(() =>
+                switch (parent)
                 {
-                    if (!validTitle)
-                    {
-                        return false;
-                    }
-
-                    switch (parent)
-                    {
-                        case OneNoteNotebook notebook:
-                            OneNoteApplication.CreateSection(notebook, newSectionName, true);
-                            break;
-                        case OneNoteSectionGroup sectionGroup:
-                            OneNoteApplication.CreateSection(sectionGroup, newSectionName, true);
-                            break;
-                        default:
-                            break;
-                    }
-
-                    _context.API.ChangeQuery(_context.CurrentPluginMetadata.ActionKeyword, true);
-                    return true;
-                }),
-            };
+                    case OneNoteNotebook notebook:
+                        OneNoteApplication.CreateSection(notebook, newSectionName, true);
+                        break;
+                    case OneNoteSectionGroup sectionGroup:
+                        OneNoteApplication.CreateSection(sectionGroup, newSectionName, true);
+                        break;
+                    default:
+                        break;
+                }
+            });
         }
 
         internal Result CreateNewSectionGroupResult(string newSectionGroupName, IOneNoteItem parent)
         {
-            newSectionGroupName = newSectionGroupName.Trim();
-            bool validTitle = OneNoteApplication.IsSectionGroupNameValid(newSectionGroupName);
-
-            return new Result
+            return CreateNewOneNoteItemResult(newSectionGroupName, parent, CreateSectionGroup, OneNoteApplication.InvalidSectionGroupChars, SectionGroupNamesCannotContain, _iconProvider.NewSectionGroup, () =>
             {
-                Title = string.Format(CultureInfo.CurrentCulture, CreateSectionGroup, newSectionGroupName),
-                SubTitle = validTitle
-                    ? string.Format(CultureInfo.CurrentCulture, Path, GetNicePath(parent) + PathSeparator + newSectionGroupName)
-                    : string.Format(CultureInfo.CurrentCulture, SectionGroupNamesCannotContain, string.Join(' ', OneNoteApplication.InvalidSectionGroupChars)),
-                QueryTextDisplay = $"{GetQueryTextDisplay(parent)}{newSectionGroupName}",
-                IcoPath = _iconProvider.NewSectionGroup,
-                Action = ResultAction(() =>
+                switch (parent)
                 {
-                    if (!validTitle)
-                    {
-                        return false;
-                    }
-
-                    switch (parent)
-                    {
-                        case OneNoteNotebook notebook:
-                            OneNoteApplication.CreateSectionGroup(notebook, newSectionGroupName, true);
-                            break;
-                        case OneNoteSectionGroup sectionGroup:
-                            OneNoteApplication.CreateSectionGroup(sectionGroup, newSectionGroupName, true);
-                            break;
-                        default:
-                            break;
-                    }
-
-                    _context.API.ChangeQuery(_context.CurrentPluginMetadata.ActionKeyword, true);
-                    return true;
-                }),
-            };
+                    case OneNoteNotebook notebook:
+                        OneNoteApplication.CreateSectionGroup(notebook, newSectionGroupName, true);
+                        break;
+                    case OneNoteSectionGroup sectionGroup:
+                        OneNoteApplication.CreateSectionGroup(sectionGroup, newSectionGroupName, true);
+                        break;
+                    default:
+                        break;
+                }
+            });
         }
 
         internal Result CreateNewNotebookResult(string newNotebookName)
         {
-            newNotebookName = newNotebookName.Trim();
-            bool validTitle = OneNoteApplication.IsNotebookNameValid(newNotebookName);
-
-            return new Result
-            {
-                Title = string.Format(CultureInfo.CurrentCulture, CreateNotebook, newNotebookName),
-                SubTitle = validTitle
-                    ? string.Format(CultureInfo.CurrentCulture, Location, OneNoteApplication.GetDefaultNotebookLocation())
-                    : string.Format(CultureInfo.CurrentCulture, NotebookNamesCannotContain, string.Join(' ', OneNoteApplication.InvalidNotebookChars)),
-                QueryTextDisplay = $"{GetQueryTextDisplay(null)}{newNotebookName}",
-                IcoPath = _iconProvider.NewNotebook,
-                Action = ResultAction(() =>
-                {
-                    if (!validTitle)
-                    {
-                        return false;
-                    }
-
-                    OneNoteApplication.CreateNotebook(newNotebookName, true);
-                    _context.API.ChangeQuery(_context.CurrentPluginMetadata.ActionKeyword, true);
-                    return true;
-                }),
-            };
+            return CreateNewOneNoteItemResult(newNotebookName, null, CreateNotebook, OneNoteApplication.InvalidNotebookChars, NotebookNamesCannotContain, _iconProvider.NewNotebook, () => OneNoteApplication.CreateNotebook(newNotebookName, true));
         }
 
         internal List<ContextMenuResult> LoadContextMenu(Result selectedResult)

@@ -215,9 +215,6 @@
     <value>Create notebook: "{0}"</value>
     <comment>0 is a user typed name</comment>
   </data>
-  <data name="Location" xml:space="preserve">
-    <value>Location: {0}</value>
-  </data>
   <data name="NotebookNamesCannotContain" xml:space="preserve">
     <value>Notebook names cannot contain: {0}</value>
   </data>
