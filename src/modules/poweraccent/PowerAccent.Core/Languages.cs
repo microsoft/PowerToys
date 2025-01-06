@@ -471,7 +471,15 @@ namespace PowerAccent.Core
         {
             return letter switch
             {
+                LetterKey.VK_A => new[] { "ā" },
+                LetterKey.VK_E => new[] { "ē" },
+                LetterKey.VK_O => new[] { "ō" },
                 LetterKey.VK_K => new[] { "ḱ" },
+                LetterKey.VK_G => new[] { "ǵ" },
+                LetterKey.VK_R => new[] { "r̥" },
+                LetterKey.VK_L => new[] { "l̥" },
+                LetterKey.VK_M => new[] { "m̥" },
+                LetterKey.VK_N => new[] { "n̥" },
                 _ => Array.Empty<string>(),
             };
         }
