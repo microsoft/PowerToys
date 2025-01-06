@@ -63,8 +63,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             this.QuickAccent_Language_Select.DeselectAll();
         }
 
+        private bool loadingLanguageListDontTriggerSelectionChanged;
+
         private void QuickAccent_SelectedLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (loadingLanguageListDontTriggerSelectionChanged)
+            {
+                return;
+            }
+
             var listView = sender as ListView;
 
             ViewModel.SelectedLanguageOptions = listView.SelectedItems
@@ -76,10 +83,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void QuickAccent_Language_Select_Loaded(object sender, RoutedEventArgs e)
         {
+            loadingLanguageListDontTriggerSelectionChanged = true;
             foreach (var languageOption in ViewModel.SelectedLanguageOptions)
             {
                 this.QuickAccent_Language_Select.SelectedItems.Add(languageOption);
             }
+
+            loadingLanguageListDontTriggerSelectionChanged = false;
         }
     }
 }
