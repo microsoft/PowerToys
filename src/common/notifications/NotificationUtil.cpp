@@ -18,9 +18,9 @@ namespace notifications
     NotificationUtil::NotificationUtil()
     {
         ReadSettings();
-        auto settingsfileName = PTSettingsHelper::get_powertoys_general_save_file_location();
+        auto settingsFileName = PTSettingsHelper::get_powertoys_general_save_file_location();
 
-        m_settingsFileWatcher = std::make_unique<FileWatcher>(settingsfileName, [this]() {
+        m_settingsFileWatcher = std::make_unique<FileWatcher>(settingsFileName, [this]() {
             ReadSettings();
         });
     }
