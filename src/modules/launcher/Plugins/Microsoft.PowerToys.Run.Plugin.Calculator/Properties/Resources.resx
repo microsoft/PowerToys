@@ -172,7 +172,7 @@
     <comment>Title text for trig unit mode.</comment>
   </data>
   <data name="wox_plugin_calculator_trig_unit_mode_description" xml:space="preserve">
-    <value>Specifies the angle unit to use for trigonometry operations.</value>
+    <value>Specifies the angle unit to use for trigonometry operations</value>
     <comment>Description text for trig mode setting.</comment>
   </data>
   <data name="wox_plugin_calculator_trig_unit_radians" xml:space="preserve">
