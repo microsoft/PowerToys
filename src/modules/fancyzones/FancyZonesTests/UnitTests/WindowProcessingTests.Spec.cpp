@@ -211,7 +211,7 @@ namespace FancyZonesUnitTests
         TEST_METHOD (LaunchedByWorkspaces)
         {
             HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, WS_TILEDWINDOW);
-            WorkspacesWindowProperties::StampWorkspacesLaunchedProperty(window);
+            WorkspacesWindowProperties::StampWorkspacesLaunchedProperty(window, L"");
 
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Processable, FancyZonesWindowProcessing::DefineWindowType(window));
             Assert::IsFalse(FancyZonesWindowProcessing::IsProcessableAutomatically(window));

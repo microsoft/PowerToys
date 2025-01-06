@@ -157,7 +157,10 @@ namespace SnapshotUtils
                 rect.bottom = monitorRect.top + monitorRect.height;
             }
 
+            std::wstring guid = Utils::Apps::GetGuidFromHwnd(window);
+
             WorkspacesData::WorkspacesProject::Application app{
+                .id = guid,
                 .name = appData.name,
                 .title = title,
                 .path = appData.installPath,

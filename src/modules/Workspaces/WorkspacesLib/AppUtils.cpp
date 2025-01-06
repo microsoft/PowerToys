@@ -34,6 +34,8 @@ namespace Utils
 
             constexpr const wchar_t* EdgeFilename = L"msedge.exe";
             constexpr const wchar_t* ChromeFilename = L"chrome.exe";
+
+            const wchar_t WorkspacesAppID[] = L"PowerToys_WorkspacesAppId";
         }
 
         AppList IterateAppsFolder()
@@ -398,5 +400,34 @@ namespace Utils
             return installPath.ends_with(NonLocalizable::ChromeFilename);
         }
 
+        const std::wstring GetGuidFromHwnd(HWND window)
+        {
+            const size_t workspacesAppIDLength = wcslen(NonLocalizable::WorkspacesAppID);
+            wchar_t* workspacesAppIDPart = new wchar_t[workspacesAppIDLength + 2];
+            std::memcpy(&workspacesAppIDPart[0], &NonLocalizable::WorkspacesAppID, workspacesAppIDLength * sizeof(wchar_t));
+            workspacesAppIDPart[workspacesAppIDLength + 1] = 0;
+            
+            uint16_t parts[8];
+            for (unsigned char partIndex = 0; partIndex < 8; partIndex++)
+            {
+                workspacesAppIDPart[workspacesAppIDLength] = '0' + partIndex;
+                auto rawData = GetPropW(window, workspacesAppIDPart);
+                if (rawData)
+                {
+                    memcpy(&parts[partIndex], &rawData, sizeof rawData);
+                }
+                else
+                {
+                    return L"";
+                }
+            }
+
+            GUID guid;
+            std::memcpy(&guid, &parts[0], sizeof(GUID));
+            WCHAR* guidString;
+            StringFromCLSID(guid, &guidString);
+            
+            return guidString;
+        }
     }
 }
