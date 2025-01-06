@@ -645,6 +645,7 @@ imageresizerinput
 imageresizersettings
 imagingdevices
 ime
+Indo
 inetcpl
 Infobar
 INFOEXAMPLE

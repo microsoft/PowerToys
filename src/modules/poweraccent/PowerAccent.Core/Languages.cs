@@ -39,6 +39,7 @@ namespace PowerAccent.Core
         NL,
         NO,
         PI,
+        PIE,
         PL,
         PT,
         RO,
@@ -100,6 +101,7 @@ namespace PowerAccent.Core
                     Language.NL => GetDefaultLetterKeyNL(letter), // Dutch
                     Language.NO => GetDefaultLetterKeyNO(letter), // Norwegian
                     Language.PI => GetDefaultLetterKeyPI(letter), // Pinyin
+                    Language.PIE => GetDefaultLetterKeyPIE(letter), // Proto-Indo-European
                     Language.PL => GetDefaultLetterKeyPL(letter), // Polish
                     Language.PT => GetDefaultLetterKeyPT(letter), // Portuguese
                     Language.RO => GetDefaultLetterKeyRO(letter), // Romanian
@@ -155,6 +157,7 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeyNL(letter))
                 .Union(GetDefaultLetterKeyNO(letter))
                 .Union(GetDefaultLetterKeyPI(letter))
+                .Union(GetDefaultLetterKeyPIE(letter))
                 .Union(GetDefaultLetterKeyPL(letter))
                 .Union(GetDefaultLetterKeyPT(letter))
                 .Union(GetDefaultLetterKeyRO(letter))
@@ -459,6 +462,24 @@ namespace PowerAccent.Core
                 LetterKey.VK_V => new[] { "ü", "ǖ", "ǘ", "ǚ", "ǜ" },
                 LetterKey.VK_Y => new[] { "¥" },
                 LetterKey.VK_Z => new[] { "ẑ" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
+        // Proto-Indo-European
+        private static string[] GetDefaultLetterKeyPIE(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_A => new[] { "ā" },
+                LetterKey.VK_E => new[] { "ē" },
+                LetterKey.VK_O => new[] { "ō" },
+                LetterKey.VK_K => new[] { "ḱ" },
+                LetterKey.VK_G => new[] { "ǵ" },
+                LetterKey.VK_R => new[] { "r̥" },
+                LetterKey.VK_L => new[] { "l̥" },
+                LetterKey.VK_M => new[] { "m̥" },
+                LetterKey.VK_N => new[] { "n̥" },
                 _ => Array.Empty<string>(),
             };
         }
