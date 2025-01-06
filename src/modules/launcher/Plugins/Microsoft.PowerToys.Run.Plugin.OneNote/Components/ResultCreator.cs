@@ -72,7 +72,12 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
             return title;
         }
 
-        private string GetQueryTextDisplay(IOneNoteItem item) => $"{Keywords.NotebookExplorer}{GetNicePath(item, Keywords.NotebookExplorerSeparator)}{Keywords.NotebookExplorerSeparator}";
+        private string GetQueryTextDisplay(IOneNoteItem? parent)
+        {
+            return parent is null
+                ? $"{Keywords.NotebookExplorer}"
+                : $"{Keywords.NotebookExplorer}{GetNicePath(parent, Keywords.NotebookExplorerSeparator)}{Keywords.NotebookExplorerSeparator}";
+        }
 
         internal List<Result> EmptyQuery(Query query)
         {
@@ -174,7 +179,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
 
                     break;
                 case OneNotePage page:
-                    queryTextDisplay = !actionIsAutoComplete ? string.Empty : queryTextDisplay[..^1];
+                    queryTextDisplay = !actionIsAutoComplete ? page.Name : queryTextDisplay[..^1];
 
                     actionIsAutoComplete = false;
 
@@ -233,7 +238,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
             {
                 Title = string.Format(CultureInfo.CurrentCulture, CreatePage, newPageName),
                 SubTitle = string.Format(CultureInfo.CurrentCulture, Path, GetNicePath(section) + PathSeparator + newPageName),
-                QueryTextDisplay = $"{GetQueryTextDisplay}{newPageName}",
+                QueryTextDisplay = $"{GetQueryTextDisplay(section)}{newPageName}",
                 IcoPath = _iconProvider.NewPage,
                 Action = ResultAction(() =>
                 {
@@ -254,7 +259,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                 SubTitle = validTitle
                         ? string.Format(CultureInfo.CurrentCulture, Path, GetNicePath(parent) + PathSeparator + newSectionName)
                         : string.Format(CultureInfo.CurrentCulture, SectionNamesCannotContain, string.Join(' ', OneNoteApplication.InvalidSectionChars)),
-                QueryTextDisplay = $"{GetQueryTextDisplay}{newSectionName}",
+                QueryTextDisplay = $"{GetQueryTextDisplay(parent)}{newSectionName}",
                 IcoPath = _iconProvider.NewSection,
                 Action = ResultAction(() =>
                 {
@@ -292,7 +297,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                 SubTitle = validTitle
                     ? string.Format(CultureInfo.CurrentCulture, Path, GetNicePath(parent) + PathSeparator + newSectionGroupName)
                     : string.Format(CultureInfo.CurrentCulture, SectionGroupNamesCannotContain, string.Join(' ', OneNoteApplication.InvalidSectionGroupChars)),
-                QueryTextDisplay = $"{GetQueryTextDisplay}{newSectionGroupName}",
+                QueryTextDisplay = $"{GetQueryTextDisplay(parent)}{newSectionGroupName}",
                 IcoPath = _iconProvider.NewSectionGroup,
                 Action = ResultAction(() =>
                 {
@@ -330,7 +335,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                 SubTitle = validTitle
                     ? string.Format(CultureInfo.CurrentCulture, Location, OneNoteApplication.GetDefaultNotebookLocation())
                     : string.Format(CultureInfo.CurrentCulture, NotebookNamesCannotContain, string.Join(' ', OneNoteApplication.InvalidNotebookChars)),
-                QueryTextDisplay = $"{GetQueryTextDisplay}{newNotebookName}",
+                QueryTextDisplay = $"{GetQueryTextDisplay(null)}{newNotebookName}",
                 IcoPath = _iconProvider.NewNotebook,
                 Action = ResultAction(() =>
                 {
@@ -426,13 +431,9 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                     results.Add(NoItemsInCollectionResult(Resources.CreateSection, _iconProvider.NewSection));
                     results.Add(NoItemsInCollectionResult(Resources.CreateSectionGroup, _iconProvider.NewSectionGroup));
                     break;
-                case OneNoteSection section:
+                case OneNoteSection section when !section.IsDeletedPages && !section.Locked:
                     // Can create page
-                    if (!section.Locked)
-                    {
-                        results.Add(NoItemsInCollectionResult(Resources.CreatePage, _iconProvider.NewPage));
-                    }
-
+                    results.Add(NoItemsInCollectionResult(Resources.CreatePage, _iconProvider.NewPage));
                     break;
                 default:
                     break;
@@ -440,11 +441,12 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
 
             return results;
 
-            static Result NoItemsInCollectionResult(string title, string iconPath)
+            Result NoItemsInCollectionResult(string title, string iconPath)
             {
                 return new Result
                 {
-                    Title = title,
+                    Title = string.Format(CultureInfo.CurrentCulture, title, string.Empty),
+                    QueryTextDisplay = $"{GetQueryTextDisplay(parent)}",
                     SubTitle = Resources.NoItemsFoundTypeValidName,
                     IcoPath = iconPath,
                 };

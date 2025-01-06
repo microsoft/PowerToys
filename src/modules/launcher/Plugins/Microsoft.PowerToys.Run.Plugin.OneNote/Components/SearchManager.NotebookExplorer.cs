@@ -167,12 +167,8 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                         results.Add(_resultCreator.CreateNewSectionResult(newItemName, parent));
                         results.Add(_resultCreator.CreateNewSectionGroupResult(newItemName, parent));
                         break;
-                    case OneNoteSection section:
-                        if (!section.Locked)
-                        {
-                            results.Add(_resultCreator.CreateNewPageResult(newItemName, section));
-                        }
-
+                    case OneNoteSection section when !section.Locked:
+                        results.Add(_resultCreator.CreateNewPageResult(newItemName, section));
                         break;
                     default:
                         break;
