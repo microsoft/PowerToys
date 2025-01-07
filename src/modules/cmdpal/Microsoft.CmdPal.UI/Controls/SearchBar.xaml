@@ -16,6 +16,8 @@
         VerticalContentAlignment="Stretch"
         KeyDown="FilterBox_KeyDown"
         PlaceholderText="Type here to search..."
+        PreviewKeyUp="FilterBox_PreviewKeyUp"
+        PreviewKeyDown="FilterBox_PreviewKeyDown"
         Style="{StaticResource SearchTextBoxStyle}"
         TextChanged="FilterBox_TextChanged" />
 
