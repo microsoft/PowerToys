@@ -21,6 +21,7 @@
 #define IDC_COLOR                       1006
 #define IDC_DRAW                        1007
 #define IDC_TITLE                       1008
+#define IDC_VERSION                     1008
 #define IDC_ZOOM                        1009
 #define IDC_DRAWING                     1010
 #define IDC_BREAK                       1011
@@ -91,6 +92,7 @@
 #define IDC_DEMOTYPE_STATIC1            1073
 #define IDC_DEMOTYPE_SLIDER2            1074
 #define IDC_DEMOTYPE_STATIC2            1074
+#define IDC_COPYRIGHT                   1075
 #define IDC_PEN_WIDTH                   1105
 #define IDC_TIMER                       1106
 #define IDC_SAVE                        40002
@@ -107,7 +109,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        118
 #define _APS_NEXT_COMMAND_VALUE         40013
-#define _APS_NEXT_CONTROL_VALUE         1075
+#define _APS_NEXT_CONTROL_VALUE         1076
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

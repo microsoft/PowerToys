@@ -59,6 +59,7 @@
 #include "VideoRecordingSession.h"
 #include "SelectRectangle.h"
 #include "DemoType.h"
+#include "versionhelper.h"
 
 // WIL
 #include <wil/com.h>

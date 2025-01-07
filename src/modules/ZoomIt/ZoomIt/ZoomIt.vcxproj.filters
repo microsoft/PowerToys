@@ -18,9 +18,6 @@
     <ClCompile Include="Zoomit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VideoRecordingSession.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CaptureFrameWait.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -37,6 +34,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DemoType.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VersionHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VideoRecordingSession.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\ZoomItModuleInterface\Trace.cpp">
@@ -77,6 +80,12 @@
     <ClInclude Include="DemoType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VersionHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VideoRecordingSession.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)..\ZoomItModuleInterface\Trace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -101,9 +110,6 @@
     </None>
     <None Include="hand.cur">
       <Filter>Resource Files</Filter>
-    </None>
-    <None Include="VideoRecordingSession.h">
-      <Filter>Header Files</Filter>
     </None>
     <None Include="CaptureFrameWait.h">
       <Filter>Header Files</Filter>

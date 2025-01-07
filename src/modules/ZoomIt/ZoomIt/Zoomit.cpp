@@ -57,13 +57,14 @@ COLORREF	g_CustomColors[16];
 #define DRAW_HOTKEY				1
 #define BREAK_HOTKEY			2
 #define LIVE_HOTKEY				3
-#define RECORD_HOTKEY			4
-#define RECORD_CROP_HOTKEY		5
-#define RECORD_WINDOW_HOTKEY	6
-#define SNIP_HOTKEY				7
-#define SNIP_SAVE_HOTKEY		8
-#define DEMOTYPE_HOTKEY			9
-#define DEMOTYPE_RESET_HOTKEY 	10
+#define LIVEDRAW_HOTKEY		    4
+#define RECORD_HOTKEY		    5
+#define RECORD_CROP_HOTKEY	    6
+#define RECORD_WINDOW_HOTKEY	    7
+#define SNIP_HOTKEY			    8
+#define SNIP_SAVE_HOTKEY		    9
+#define DEMOTYPE_HOTKEY		    10
+#define DEMOTYPE_RESET_HOTKEY    11
 
 #define ZOOM_PAGE	  0
 #define LIVE_PAGE	  1
@@ -315,6 +316,8 @@ void RestoreForeground()
         MoveWindow( g_hWndMain, 0, 0, 0, 0, FALSE );
         ShowWindow( g_hWndMain, SW_SHOWNA );
         ShowWindow( g_hWndMain, SW_HIDE );
+
+		OutputDebug(L"RESTORE FOREGROUND\n");
     }
 }
 
@@ -1873,6 +1876,7 @@ void UnregisterAllHotkeys( HWND hWnd )
 {
     UnregisterHotKey( hWnd, ZOOM_HOTKEY);
     UnregisterHotKey( hWnd, LIVE_HOTKEY);
+    UnregisterHotKey( hWnd, LIVEDRAW_HOTKEY);
     UnregisterHotKey( hWnd, DRAW_HOTKEY);
     UnregisterHotKey( hWnd, BREAK_HOTKEY);
     UnregisterHotKey( hWnd, RECORD_HOTKEY);
@@ -1892,7 +1896,10 @@ void UnregisterAllHotkeys( HWND hWnd )
 void RegisterAllHotkeys(HWND hWnd)
 {
     if (g_ToggleKey) 			RegisterHotKey(hWnd, ZOOM_HOTKEY, g_ToggleMod, g_ToggleKey & 0xFF);
-    if (g_LiveZoomToggleKey)	RegisterHotKey(hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF);
+    if (g_LiveZoomToggleKey) {
+        RegisterHotKey(hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF);
+        RegisterHotKey(hWnd, LIVEDRAW_HOTKEY, (g_LiveZoomToggleMod ^ MOD_SHIFT), g_LiveZoomToggleKey & 0xFF);
+    }
     if (g_DrawToggleKey) 		RegisterHotKey(hWnd, DRAW_HOTKEY, g_DrawToggleMod, g_DrawToggleKey & 0xFF);
     if (g_BreakToggleKey) 		RegisterHotKey(hWnd, BREAK_HOTKEY, g_BreakToggleMod, g_BreakToggleKey & 0xFF);
     if (g_DemoTypeToggleKey) {
@@ -1992,7 +1999,25 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         SetForegroundWindow( hDlg );
         SetActiveWindow( hDlg );
         SetWindowPos( hDlg, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE|SWP_NOMOVE|SWP_SHOWWINDOW ); 
+#if 1
+        // set verion info
+        TCHAR               filePath[MAX_PATH];
+        const TCHAR* verString;
 
+        GetModuleFileName(NULL, filePath, _countof(filePath));
+        DWORD               zero = 0;
+        DWORD               infoSize = GetFileVersionInfoSize(filePath, &zero);
+        void* versionInfo = malloc(infoSize);
+        GetFileVersionInfo(filePath, 0, infoSize, versionInfo);
+
+        verString = GetVersionString((VERSION_INFO*)versionInfo, _T("FileVersion"));
+        SetDlgItemText(hDlg, IDC_VERSION, (std::wstring(L"ZoomIt v") + verString).c_str());
+
+        verString = GetVersionString((VERSION_INFO*)versionInfo, _T("LegalCopyright"));
+        SetDlgItemText(hDlg, IDC_COPYRIGHT, verString);
+
+        free(versionInfo);
+#endif
         // Add tabs
         hTabCtrl = GetDlgItem( hDlg, IDC_TAB );
         OptionsAddTabs( hDlg, hTabCtrl );
@@ -2207,7 +2232,9 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 UnregisterAllHotkeys(GetParent( hDlg ));
                 break;
 
-            } else if(newLiveZoomToggleKey && !RegisterHotKey( GetParent( hDlg ), LIVE_HOTKEY, newLiveZoomToggleMod, newLiveZoomToggleKey & 0xFF )) {
+            } else if(newLiveZoomToggleKey && 
+                (!RegisterHotKey( GetParent( hDlg ), LIVE_HOTKEY, newLiveZoomToggleMod, newLiveZoomToggleKey & 0xFF ) ||
+                !RegisterHotKey(GetParent(hDlg), LIVEDRAW_HOTKEY, (newLiveZoomToggleMod ^ MOD_SHIFT), g_LiveZoomToggleKey & 0xFF))) {
 
                 MessageBox( hDlg, L"The specified live-zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.",
                     APPNAME, MB_ICONERROR );
@@ -2514,19 +2541,38 @@ void ClearTypingCursor( HDC hdcScreenCompat, HDC hdcScreenCursorCompat, RECT rc,
 // DrawTypingCursor
 //
 //----------------------------------------------------------------------------
-void DrawTypingCursor( HWND hWnd, POINT textPt, HDC hdcScreenCompat, HDC hdcScreenCursorCompat, RECT *rc )
+void DrawTypingCursor( HWND hWnd, POINT *textPt, HDC hdcScreenCompat,
+	HDC hdcScreenCursorCompat, RECT *rc, bool centerUnderSystemCursor = false )
 {
-    // Draw the typing cursor
-    rc->left = textPt.x;
-    rc->top = textPt.y;
-    TCHAR vKey = '|';
-    DrawText( hdcScreenCompat, static_cast<PTCHAR>(&vKey), 1, rc, DT_CALCRECT );
+	// Draw the typing cursor
+	rc->left = textPt->x;
+	rc->top = textPt->y;
+	TCHAR vKey = '|';
+	DrawText( hdcScreenCompat, (PTCHAR) &vKey, 1, rc, DT_CALCRECT );
 
-    BitBlt(hdcScreenCursorCompat, 0, 0, rc->right -rc->left, rc->bottom - rc->top,
-        hdcScreenCompat, rc->left, rc->top, SRCCOPY|CAPTUREBLT );
+	// Livedraw uses a layered window which means mouse messages pass through
+	//   to lower windows unless the system cursor is above a painted area.
+	// Centering the typing cursor directly under the system cursor allows
+	//   us to capture the mouse wheel input required to change font size.
+	if( centerUnderSystemCursor )
+	{
+		const LONG halfWidth  = static_cast<LONG>( (rc->right - rc->left) / 2 );
+		const LONG halfHeight = static_cast<LONG>( (rc->bottom - rc->top) / 2 );
 
-    DrawText( hdcScreenCompat, static_cast<PTCHAR>(&vKey), 1, rc, DT_LEFT );
-    InvalidateRect( hWnd, NULL, TRUE );
+		rc->left   -= halfWidth;
+		rc->right  -= halfWidth;
+		rc->top    -= halfHeight;
+		rc->bottom -= halfHeight;
+
+		textPt->x   = rc->left;
+		textPt->y   = rc->top;
+	}
+
+	BitBlt(hdcScreenCursorCompat, 0, 0, rc->right -rc->left, rc->bottom - rc->top,
+		hdcScreenCompat, rc->left, rc->top, SRCCOPY|CAPTUREBLT );
+
+	DrawText( hdcScreenCompat, (PTCHAR) &vKey, 1, rc, DT_LEFT );
+	InvalidateRect( hWnd, NULL, TRUE );
 }
 
 //----------------------------------------------------------------------------
@@ -2596,7 +2642,10 @@ void DrawArrow( HDC hdc, int x1, int y1, int x2, int y2, double length, double w
 
         Gdiplus::Graphics	dstGraphics(hdc);
 
-        dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+        if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
+        {
+            dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+        }
         Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
         Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
         pen.SetLineCap(Gdiplus::LineCapRound, Gdiplus::LineCapRound, Gdiplus::DashCapRound);
@@ -2656,7 +2705,10 @@ VOID DrawShape( DWORD Shape, HDC hDc, RECT *Rect, bool UseGdiPlus = false )
 
     Gdiplus::Graphics	dstGraphics(hDc);
 
-    dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+	if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
+	{
+		dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+	}
     Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
     Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
     pen.SetLineCap(Gdiplus::LineCapRound, Gdiplus::LineCapRound, Gdiplus::DashCapRound);
@@ -2907,7 +2959,10 @@ void DrawCursor( HDC hDcTarget, POINT pt, float ZoomLevel, int Width, int Height
     if( g_DrawPointer ) {
 
         Gdiplus::Graphics	dstGraphics(hDcTarget);
-        dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+        if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
+        {
+            dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+        }
         Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
         Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
 
@@ -2931,7 +2986,10 @@ void DrawCursor( HDC hDcTarget, POINT pt, float ZoomLevel, int Width, int Height
 
         OutputDebug(L"DrawHighlightedCursor: %d %d %d %d\n", pt.x, pt.y, g_PenWidth, g_PenWidth);
         Gdiplus::Graphics	dstGraphics(hDcTarget);
-        dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+        if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
+        {
+            dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+        }
         Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
         Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
         Gdiplus::GraphicsPath path;
@@ -2949,7 +3007,10 @@ void DrawCursor( HDC hDcTarget, POINT pt, float ZoomLevel, int Width, int Height
 
         Gdiplus::Graphics	dstGraphics(hDcTarget);
         {
-            dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+            if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
+            {
+                dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+            }
             Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
 
             Gdiplus::SolidBrush solidBrush(color);
@@ -3556,6 +3617,25 @@ void UpdateMonitorInfo( POINT point, MONITORINFO* monInfo )
 
 //----------------------------------------------------------------------------
 //
+// ShowMainWindow
+//
+//----------------------------------------------------------------------------
+void ShowMainWindow(HWND hWnd, const MONITORINFO& monInfo, int width, int height)
+{
+    // Show the window first
+    SetWindowPos(hWnd, HWND_TOPMOST, monInfo.rcMonitor.left, monInfo.rcMonitor.top,
+        width, height, SWP_SHOWWINDOW | SWP_NOCOPYBITS);
+
+    // Now invalidate and update the window
+    InvalidateRect(hWnd, NULL, TRUE);
+    UpdateWindow(hWnd);
+
+    SetForegroundWindow(hWnd);
+    SetActiveWindow(hWnd);
+}
+
+//----------------------------------------------------------------------------
+//
 // MainWndProc
 //
 //----------------------------------------------------------------------------
@@ -3701,7 +3781,9 @@ LRESULT APIENTRY MainWndProc(
                     APPNAME, MB_ICONERROR );
                 showOptions = TRUE;
 
-            } else if( g_LiveZoomToggleKey && !RegisterHotKey( hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF)) {
+            } else if( g_LiveZoomToggleKey && 
+                (!RegisterHotKey( hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF) ||
+                    !RegisterHotKey(hWnd, LIVEDRAW_HOTKEY, (g_LiveZoomToggleMod ^ MOD_SHIFT), g_LiveZoomToggleKey & 0xFF))) {
 
                 MessageBox( hWnd, L"The specified live-zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.",
                     APPNAME, MB_ICONERROR );
@@ -3789,6 +3871,35 @@ LRESULT APIENTRY MainWndProc(
             Sleep(250);
         }
         switch( wParam ) {
+        case LIVEDRAW_HOTKEY:
+        {
+            OutputDebug(L"LIVEDRAW_HOTKEY\n");
+            LONG_PTR exStyle = GetWindowLongPtr(hWnd, GWL_EXSTYLE);
+
+            if ((exStyle & WS_EX_LAYERED)) {
+                OutputDebug(L"Livedraw reactivate\n");
+
+                // Just focus on the window and re-enter drawing mode
+                SetFocus(hWnd);
+                SetForegroundWindow(hWnd);
+                SendMessage(hWnd, WM_LBUTTONDOWN, 0, MAKELPARAM(cursorPos.x, cursorPos.y));
+                SendMessage(hWnd, WM_MOUSEMOVE, 0, MAKELPARAM(cursorPos.x, cursorPos.y));
+                if( IsWindowVisible( g_hWndLiveZoom ) )
+                {
+                    SendMessage( g_hWndLiveZoom, WM_USER_MAGNIFY_CURSOR, FALSE, 0 );
+                }
+                break;
+            }
+            else {
+                OutputDebug(L"Livedraw create\n");
+
+                LONG_PTR exStyle = GetWindowLongPtr(hWnd, GWL_EXSTYLE);
+                SetWindowLongPtr(hWnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
+                SetLayeredWindowAttributes(hWnd, COLORREF(RGB(0, 0, 0)), 0, LWA_COLORKEY);
+                pMagSetWindowFilterList( g_hWndLiveZoomMag, MW_FILTERMODE_EXCLUDE, 0, nullptr );
+            }
+            [[fallthrough]];
+        }
         case DRAW_HOTKEY:
             //
             // Enter drawing mode without zoom
@@ -3797,6 +3908,7 @@ LRESULT APIENTRY MainWndProc(
                 Trace::ZoomItActivateDraw();
 
             if( !g_Zoomed ) {
+                OutputDebug(L"Livedraw: %d (%d)\n", wParam, (wParam == LIVEDRAW_HOTKEY));
 
 #if WINDOWS_CURSOR_RECORDING_WORKAROUND
                 if( IsWindowVisible( g_hWndLiveZoom ) && !g_LiveZoomLevelOne ) {
@@ -3804,19 +3916,43 @@ LRESULT APIENTRY MainWndProc(
                 if( IsWindowVisible( g_hWndLiveZoom )) {
 #endif
 
-                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, 0 );
+                    OutputDebug(L"   In Live zoom\n");
+                    SendMessage(hWnd, WM_HOTKEY, ZOOM_HOTKEY, wParam == LIVEDRAW_HOTKEY ? LIVEDRAW_ZOOM : 0);
 
                 } else {
-                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, 0 );
+                    OutputDebug(L"   Not in Live zoom\n");
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, wParam == LIVEDRAW_HOTKEY ? LIVEDRAW_ZOOM : 0 );
                     zoomLevel = zoomTelescopeTarget = 1;
                     SendMessage( hWnd, WM_LBUTTONDOWN, 0, MAKELPARAM( cursorPos.x, cursorPos.y ));
                 }
+                if(wParam == LIVEDRAW_HOTKEY) {
+
+                    SetLayeredWindowAttributes(hWnd, COLORREF(RGB(0, 0, 0)), 0, LWA_COLORKEY);
+                    SendMessage(hWnd, WM_KEYDOWN, 'K', LIVEDRAW_ZOOM);
+                    SetTimer(hWnd, 3, 10, NULL);
+                    SendMessage(hWnd, WM_MOUSEMOVE, 0, MAKELPARAM(cursorPos.x, cursorPos.y));
+                    ShowMainWindow(hWnd, monInfo, width, height);
+                    if( ( g_PenColor & 0xFFFFFF ) == COLOR_BLUR )
+                    {
+                        // Blur is not supported in LiveDraw
+                        g_PenColor = COLOR_RED;
+                    }
+                    // Highlight is not supported in LiveDraw
+                    g_PenColor |= 0xFF << 24;
+				}
             } 
             break;
 
         case SNIP_SAVE_HOTKEY:
         case SNIP_HOTKEY:
         {
+            // Block livezoom livedraw snip due to mirroring bug
+            if( IsWindowVisible( g_hWndLiveZoom )
+                && ( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
+            {
+                break;
+            }
+
             bool zoomed = true;
             if (g_StartedByPowerToys)
                 Trace::ZoomItActivateSnip();
@@ -3831,7 +3967,7 @@ LRESULT APIENTRY MainWndProc(
                 }
                 else
                 {
-                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, 0 );
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, LIVEDRAW_ZOOM);
                 }
                 zoomLevel = zoomTelescopeTarget = 1;
             }
@@ -3846,6 +3982,7 @@ LRESULT APIENTRY MainWndProc(
                     SendMessage( hWnd, WM_USER_EXIT_MODE, 0, 0 );
                 }
             }
+            ShowMainWindow(hWnd, monInfo, width, height);
 
             // Now copy crop or copy+save
             if( LOWORD( wParam ) == SNIP_SAVE_HOTKEY )
@@ -3876,9 +4013,18 @@ LRESULT APIENTRY MainWndProc(
             // exit zoom
             if( g_Zoomed )
             {
-                // Set wparam to 1 to exit without animation
-                OutputDebug(L"Exiting zoom after snip\n" );
-                SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, SHALLOW_DESTROY );
+                // If from livedraw, extra care is needed to destruct
+                if( GetWindowLong( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED )
+                {
+                    OutputDebug( L"Exiting livedraw after snip\n" );
+                    SendMessage( hWnd, WM_KEYDOWN, VK_ESCAPE, 0 );
+                }
+                else
+                {
+                    // Set wparam to 1 to exit without animation
+                    OutputDebug(L"Exiting zoom after snip\n" );
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, SHALLOW_DESTROY );
+                }
             }
             break;
         }
@@ -3939,11 +4085,22 @@ LRESULT APIENTRY MainWndProc(
             //
             // Live zoom
             //
+            OutputDebug(L"*** LIVE_HOTKEY\n");
+
+            // If LiveZoom and LiveDraw are active then exit both
+            if( g_Zoomed && IsWindowVisible( g_hWndLiveZoom ) && ( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
+            {
+                SendMessage( hWnd, WM_KEYDOWN, VK_ESCAPE, 0 );
+                PostMessage(hWnd, WM_HOTKEY, LIVE_HOTKEY, 0);
+                break;
+            }
+
             if( !g_Zoomed && !g_TimerActive && ( !g_fullScreenWorkaround || !g_RecordToggle ) ) {
                 if (g_StartedByPowerToys)
                     Trace::ZoomItActivateLiveZoom();
 
                 if( g_hWndLiveZoom == NULL ) {
+                    OutputDebug(L"Create LIVEZOOM\n");
                     g_hWndLiveZoom = CreateWindowEx( WS_EX_TOOLWINDOW | WS_EX_LAYERED | WS_EX_TRANSPARENT,
                         L"MagnifierClass", L"ZoomIt Live Zoom", 
                         WS_POPUP | WS_CLIPSIBLINGS,
@@ -3955,7 +4112,7 @@ LRESULT APIENTRY MainWndProc(
                 } else {
 #if WINDOWS_CURSOR_RECORDING_WORKAROUND
                     if( g_LiveZoomLevelOne ) {
-
+                        OutputDebug(L"livezoom level one\n");
                         SendMessage( g_hWndLiveZoom, WM_USER_SET_ZOOM, static_cast<WPARAM>(g_LiveZoomLevel), 0 );
                     }
                     else {
@@ -3966,13 +4123,13 @@ LRESULT APIENTRY MainWndProc(
 
                         if( g_RecordToggle )
                             g_LiveZoomLevel = g_ZoomLevels[g_SliderZoomLevel];
-
 #endif
                         // Unzoom
                         SendMessage( g_hWndLiveZoom, WM_KEYDOWN, VK_ESCAPE, 0 ); 
 
                     } else {
                     
+                        OutputDebug(L"Show livezoom\n");
                         ShowWindow( g_hWndLiveZoom, SW_SHOW );
                     }
 #if WINDOWS_CURSOR_RECORDING_WORKAROUND
@@ -4160,7 +4317,7 @@ LRESULT APIENTRY MainWndProc(
                 break;
             }
             
-            OutputDebug( L"Hotkey\n");
+            OutputDebug( L"ZOOM HOTKEY: %d\n", lParam);
             if( g_TimerActive ) {
 
                 //
@@ -4190,6 +4347,8 @@ LRESULT APIENTRY MainWndProc(
                 DeleteObject( hNegativeTimerFont );
                 DeleteDC( hdcScreen );
                 DeleteDC( hdcScreenCompat );
+                DeleteDC( hdcScreenSaveCompat );
+                DeleteDC( hdcScreenCursorCompat );
                 DeleteObject( hbmpCompat );
                 EnableDisableScreenSaver( TRUE );
                 EnableDisableOpacity( hWnd, FALSE );
@@ -4209,6 +4368,7 @@ LRESULT APIENTRY MainWndProc(
                     // Hide the cursor before capturing if in live zoom
                     if( g_hWndLiveZoom != nullptr )
                     {
+                        OutputDebug(L"Hide cursor\n");
                         SendMessage( g_hWndLiveZoom, WM_USER_MAGNIFY_CURSOR, FALSE, 0 );
                         SendMessage( g_hWndLiveZoom, WM_TIMER, 0, 0 );
                         SendMessage( g_hWndLiveZoom, WM_USER_MAGNIFY_CURSOR, FALSE, 0 );
@@ -4300,6 +4460,7 @@ LRESULT APIENTRY MainWndProc(
 
                     if( captured )
                     {
+                        OutputDebug(L"Captured screen\n");
                         auto bitmap = GetCurrentObject( hdcSource, OBJ_BITMAP );
                         DeleteObject( bitmap );
                         DeleteDC( hdcSource );
@@ -4319,11 +4480,11 @@ LRESULT APIENTRY MainWndProc(
                     g_ActiveWindow = GetForegroundWindow();
                     OutputDebug( L"active window: %x\n", PtrToLong(g_ActiveWindow) );
 
-                    RedrawWindow( hWnd, nullptr, nullptr, RDW_ALLCHILDREN | RDW_UPDATENOW );
-                    SetWindowPos( hWnd, HWND_TOPMOST, monInfo.rcMonitor.left, monInfo.rcMonitor.top, 
-                            width, height, SWP_SHOWWINDOW );
-                    SetForegroundWindow( hWnd );
-                    SetActiveWindow( hWnd );
+                    if( lParam != LIVEDRAW_ZOOM) {
+
+                        OutputDebug(L"Calling ShowMainWindow\n");
+                        ShowMainWindow(hWnd, monInfo, width, height);
+                    }
                 
                     // Start telescoping zoom. Lparam is non-zero if this
                     // was a real hotkey and not the message we send ourself to enter
@@ -4339,22 +4500,31 @@ LRESULT APIENTRY MainWndProc(
 #endif
 
                         // Enter drawing mode
+                        OutputDebug(L"Enter livezoom draw\n");
                         g_LiveZoomSourceRect = *reinterpret_cast<RECT *>(SendMessage( g_hWndLiveZoom, WM_USER_GET_SOURCE_RECT, 0, 0 ));
                         g_LiveZoomLevel = *reinterpret_cast<float*>(SendMessage(g_hWndLiveZoom, WM_USER_GET_ZOOM_LEVEL, 0, 0));
                         
                         // Set live zoom level to 1 in preparation of us being full screen static
                         zoomLevel = 1.0;
                         zoomTelescopeTarget = 1.0;
-                        g_ZoomOnLiveZoom = TRUE;
+                        if (lParam != LIVEDRAW_ZOOM) {
+
+                            g_ZoomOnLiveZoom = TRUE;
+                        }
 
                         UpdateWindow( hWnd ); // overwrites where cursor erased
                         if( lParam != SHALLOW_ZOOM )
                         {
                             // Put the drawing cursor where the magnified cursor was
-                            cursorPos = ScalePointInRects( cursorPos, g_LiveZoomSourceRect, monInfo.rcMonitor );
-                            SetCursorPos( cursorPos.x, cursorPos.y );
-                            UpdateWindow( hWnd ); // overwrites where cursor erased
-                            SendMessage( hWnd, WM_LBUTTONDOWN, 0, MAKELPARAM( cursorPos.x, cursorPos.y ));
+                            OutputDebug(L"Setting cursor\n");
+
+                            if (lParam != LIVEDRAW_ZOOM)
+                            {
+                                cursorPos = ScalePointInRects( cursorPos, g_LiveZoomSourceRect, monInfo.rcMonitor );
+                                SetCursorPos( cursorPos.x, cursorPos.y );
+                                UpdateWindow( hWnd ); // overwrites where cursor erased
+                                SendMessage( hWnd, WM_LBUTTONDOWN, 0, MAKELPARAM( cursorPos.x, cursorPos.y ));
+                            }
                         }
                         else
                         {
@@ -4365,9 +4535,14 @@ LRESULT APIENTRY MainWndProc(
                         {
                             g_SelectRectangle.UpdateOwner( hWnd );
                         }
-                        ShowWindow( g_hWndLiveZoom, SW_HIDE );
+                        if( lParam != LIVEDRAW_ZOOM ) {
 
-                    } else if( lParam != 0 ) {
+                            OutputDebug(L"Calling ShowMainWindow 2\n");
+
+                            ShowWindow( g_hWndLiveZoom, SW_HIDE );
+                        }
+
+                    } else if( lParam != 0 && lParam != LIVEDRAW_ZOOM ) {
 
                         zoomTelescopeStep = ZOOM_LEVEL_STEP_IN;
                         zoomTelescopeTarget = g_ZoomLevels[g_SliderZoomLevel];
@@ -4381,6 +4556,9 @@ LRESULT APIENTRY MainWndProc(
                 } else {
 
                     OutputDebug( L"Zoom off: don't animate=%d\n", lParam );
+                    // turn off livedraw
+                    SetLayeredWindowAttributes(hWnd, 0, 255, LWA_ALPHA);
+
                     if( lParam != SHALLOW_DESTROY && !g_ZoomOnLiveZoom && g_AnimateZoom &&
                         g_TelescopeZoomOut && zoomTelescopeTarget != 1 ) {
 
@@ -4459,8 +4637,13 @@ LRESULT APIENTRY MainWndProc(
     case WM_KILLFOCUS:
         if( ( g_RecordCropping == FALSE ) && g_Zoomed && !g_bSaveInProgress ) {
 
-            // Turn off zoom
-            PostMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, 0 );
+            // Turn off zoom if not in livedraw
+            DWORD layeringFlag;
+            GetLayeredWindowAttributes(hWnd, NULL, NULL, &layeringFlag);
+            if( !(layeringFlag & LWA_COLORKEY)) {
+
+                PostMessage(hWnd, WM_HOTKEY, ZOOM_HOTKEY, 0);
+            }
         }
         break;
 
@@ -4485,7 +4668,8 @@ LRESULT APIENTRY MainWndProc(
                     ResizePen( hWnd, hdcScreenCompat, hdcScreenCursorCompat, prevPt,
                         g_Tracing, &g_Drawing, g_LiveZoomLevel, TRUE, g_PenWidth + delta );
 
-                } else {
+                // Perform static zoom unless in livedraw
+                } else if( !( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) ) {
 
                     if( delta > 0 ) zoomIn = TRUE;
                     else {
@@ -4583,7 +4767,7 @@ LRESULT APIENTRY MainWndProc(
                     hTypingFont = CreateFontIndirect(&g_LogFont);
                     SelectObject(hdcScreenCompat, hTypingFont);
 
-                    DrawTypingCursor(hWnd, textPt, hdcScreenCompat, hdcScreenCursorCompat, &cursorRc);					
+                    DrawTypingCursor( hWnd, &textPt, hdcScreenCompat, hdcScreenCursorCompat, &cursorRc );
                 }
             }
         } else if( g_TimerActive && (breakTimeout > 0 || delta )) {
@@ -4669,7 +4853,7 @@ LRESULT APIENTRY MainWndProc(
             typedKeyList = newKey;
 
             // Draw the typing cursor
-            DrawTypingCursor( hWnd, textPt, hdcScreenCompat, hdcScreenCursorCompat, &cursorRc );
+            DrawTypingCursor( hWnd, &textPt, hdcScreenCompat, hdcScreenCursorCompat, &cursorRc );
             return FALSE;
         }
         break;
@@ -4726,7 +4910,8 @@ LRESULT APIENTRY MainWndProc(
             }
 
             // Draw the typing cursor
-            DrawTypingCursor( hWnd, textPt, hdcScreenCompat, hdcScreenCursorCompat, &cursorRc );
+            DrawTypingCursor( hWnd, &textPt, hdcScreenCompat, hdcScreenCursorCompat, &cursorRc, true );
+            prevPt = textPt;
         }
         break;
 
@@ -4764,7 +4949,7 @@ LRESULT APIENTRY MainWndProc(
                 textPt.y += rc.bottom - rc.top;
 
                 // Draw the typing cursor
-                DrawTypingCursor( hWnd, textPt, hdcScreenCompat, hdcScreenCursorCompat, &cursorRc );
+                DrawTypingCursor( hWnd, &textPt, hdcScreenCompat, hdcScreenCursorCompat, &cursorRc );
             } else if( wParam == VK_DELETE || wParam == VK_BACK ) {
 
                 P_TYPED_KEY	deletedKey = typedKeyList;
@@ -4803,7 +4988,6 @@ LRESULT APIENTRY MainWndProc(
                         if (g_BlankedScreen) {
 
                             BlankScreenArea(hdcScreenCompat, &rect, g_BlankedScreen);
-
                         }
                         else {
 
@@ -4824,7 +5008,7 @@ LRESULT APIENTRY MainWndProc(
                             SendMessage( hWnd, WM_MOUSEMOVE, 0, MAKELPARAM( prevPt.x, prevPt.y ) );
                         }
                     }
-                    DrawTypingCursor( hWnd, textPt, hdcScreenCompat, hdcScreenCursorCompat, &cursorRc );
+                    DrawTypingCursor( hWnd, &textPt, hdcScreenCompat, hdcScreenCursorCompat, &cursorRc );
                 }
             } 
             break;
@@ -4851,13 +5035,28 @@ LRESULT APIENTRY MainWndProc(
                 else if( wParam == 'Y' ) *penColor = COLOR_YELLOW;
                 else if( wParam == 'O' ) *penColor = COLOR_ORANGE;
                 else if( wParam == 'P' ) *penColor = COLOR_PINK;
-                else if( wParam == 'X' ) *penColor = COLOR_BLUR;
+                else if( wParam == 'X' )
+                {
+                    if( GetWindowLong( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED )
+                    {
+                        // Blur is not supported in LiveDraw
+                        break;
+                    }
+                    *penColor = COLOR_BLUR;
+                }
+
+                bool shift = GetKeyState( VK_SHIFT ) & 0x8000;
+                if( shift && ( GetWindowLong( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
+                {
+                    // Highlight is not supported in LiveDraw
+                    break;
+                }
+
                 reg.WriteRegSettings( RegSettings );
                 DeleteObject( hDrawingPen );
                 SetTextColor( hdcScreenCompat, *penColor );
 
                 // Highlight and blur level
-                bool shift = GetKeyState( VK_SHIFT ) & 0x8000;
                 if( shift && *penColor != COLOR_BLUR )
                 {
                     *penColor |= (g_AlphaBlend << 24);
@@ -4884,7 +5083,7 @@ LRESULT APIENTRY MainWndProc(
                 } else if( g_TypeMode != TypeModeOff ) {
 
                     ClearTypingCursor( hdcScreenCompat, hdcScreenCursorCompat, cursorRc, g_BlankedScreen );
-                    DrawTypingCursor( hWnd, textPt, hdcScreenCompat, hdcScreenCursorCompat, &cursorRc );
+                    DrawTypingCursor( hWnd, &textPt, hdcScreenCompat, hdcScreenCursorCompat, &cursorRc );
                     InvalidateRect( hWnd, NULL, FALSE );
                 }
             }
@@ -4922,6 +5121,13 @@ LRESULT APIENTRY MainWndProc(
 
         case 'W':
         case 'K':
+            // Block user-driven sketch pad in livedraw
+            if( lParam != LIVEDRAW_ZOOM
+                && ( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
+            {
+                break;
+            }
+
             // Don't allow screen blanking while we've got the typing cursor active
             // because we don't really handle going from white to black.
             if( g_Zoomed && (g_TypeMode == TypeModeOff)) {
@@ -4953,14 +5159,20 @@ LRESULT APIENTRY MainWndProc(
                 DeleteDrawUndoList( &drawUndoList );
                 g_HaveDrawn = FALSE;
                 OutputDebug(L"Erase\n");
-                BitBlt(hdcScreenCompat, 0, 0, bmp.bmWidth, 
-                    bmp.bmHeight, hdcScreenSaveCompat, 0, 0, SRCCOPY|CAPTUREBLT ); 
-                if( g_Drawing ) {
+                if(GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_LAYERED) {
+                    SendMessage(hWnd, WM_KEYDOWN, 'K', 0);
+                }
+                else {
+                    BitBlt(hdcScreenCompat, 0, 0, bmp.bmWidth,
+                        bmp.bmHeight, hdcScreenSaveCompat, 0, 0, SRCCOPY | CAPTUREBLT);
 
-                    OutputDebug(L"Erase: draw cursor\n");
-                    SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
-                    DrawCursor( hdcScreenCompat, prevPt, zoomLevel, width, height );
-                    g_HaveDrawn = TRUE;
+                    if (g_Drawing) {
+
+                        OutputDebug(L"Erase: draw cursor\n");
+                        SaveCursorArea(hdcScreenCursorCompat, hdcScreenCompat, prevPt);
+                        DrawCursor(hdcScreenCompat, prevPt, zoomLevel, width, height);
+                        g_HaveDrawn = TRUE;
+                    }
                 }
                 InvalidateRect( hWnd, NULL, FALSE );
                 g_BlankedScreen = FALSE;
@@ -5005,6 +5217,16 @@ LRESULT APIENTRY MainWndProc(
 
                 forcePenResize = TRUE;
                 PostMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, 0 );
+
+                // In case we were in livedraw
+                if( GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_LAYERED) {
+
+                    KillTimer(hWnd, 3);
+                    LONG_PTR exStyle = GetWindowLongPtr(hWnd, GWL_EXSTYLE);
+                    SetWindowLongPtr(hWnd, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
+                    pMagSetWindowFilterList( g_hWndLiveZoomMag, MW_FILTERMODE_EXCLUDE, 1, &hWnd );
+                    SendMessage( g_hWndLiveZoom, WM_USER_MAGNIFY_CURSOR, TRUE, 0 );
+                }
             }
             break;
         }
@@ -5015,6 +5237,11 @@ LRESULT APIENTRY MainWndProc(
         break;
 
     case WM_MOUSEMOVE:
+        OutputDebug(L"MOUSEMOVE: zoomed: %d drawing: %d tracing: %d\n",
+            g_Zoomed, g_Drawing, g_Tracing);
+
+        OutputDebug(L"Window vislble: %d Topmost: %d\n", IsWindowVisible(hWnd), GetWindowLong(hWnd, GWL_EXSTYLE)& WS_EX_TOPMOST);
+
         if( g_Zoomed && (g_TypeMode == TypeModeOff) && !g_bSaveInProgress ) {
 
             if( g_Drawing ) {
@@ -5022,14 +5249,14 @@ LRESULT APIENTRY MainWndProc(
                 POINT currentPt;
 
                 // Are we in pen mode on a tablet?
-                lParam = ScalePenPosition( zoomLevel, &monInfo, boundRc,
-                            message, lParam);	
+                lParam = ScalePenPosition( zoomLevel, &monInfo, boundRc, message, lParam);	
                 currentPt.x = LOWORD(lParam);
                 currentPt.y = HIWORD(lParam);
 
                 if(lParam == 0) {
 
-                    // Drop it 
+                    // Drop it
+                    OutputDebug(L"Mousemove: Dropping\n");
                     break;
 
                 } else if(g_DrawingShape) {
@@ -5113,9 +5340,14 @@ LRESULT APIENTRY MainWndProc(
                 }
                 else if (g_Tracing) {
 
+                    OutputDebug(L"Mousemove: Tracing\n");
+
                     g_HaveDrawn = TRUE;
                     Gdiplus::Graphics	dstGraphics(hdcScreenCompat);
-                    dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                    if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
+                    {
+                        dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                    }
                     Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
                     Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
                     pen.SetLineCap(Gdiplus::LineCapRound, Gdiplus::LineCapRound, Gdiplus::DashCapRound);
@@ -5247,6 +5479,8 @@ LRESULT APIENTRY MainWndProc(
 
                 } else {
 
+                    OutputDebug(L"Mousemove: Moving cursor\n");
+
                     // Restore area where cursor was previously
                     RestoreCursorArea( hdcScreenCompat, hdcScreenCursorCompat, prevPt );
                     
@@ -5268,6 +5502,16 @@ LRESULT APIENTRY MainWndProc(
                 }
                 prevPt = currentPt;
 
+                // In livedraw we an miss the mouse up
+                if( GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_LAYERED) {
+
+                    if((GetAsyncKeyState(VK_LBUTTON) & 0x8000) == 0) {
+
+                        OutputDebug(L"LIVEDRAW missed mouse up. Sending synthetic.\n");
+                        SendMessage(hWnd, WM_LBUTTONUP, wParam, lParam);
+                    }
+                }
+
             } else {
 
                 cursorPos.x = LOWORD( lParam );
@@ -5281,7 +5525,8 @@ LRESULT APIENTRY MainWndProc(
             textPt.y = prevPt.y = HIWORD( lParam );
 
             // Draw the typing cursor
-            DrawTypingCursor( hWnd, textPt, hdcScreenCompat, hdcScreenCursorCompat, &cursorRc );
+            DrawTypingCursor( hWnd, &textPt, hdcScreenCompat, hdcScreenCursorCompat, &cursorRc, true );
+            prevPt = textPt;
             InvalidateRect( hWnd, NULL, FALSE );
         }
 #if 0
@@ -5351,7 +5596,10 @@ LRESULT APIENTRY MainWndProc(
                 } else {
 
                     Gdiplus::Graphics	dstGraphics(hdcScreenCompat);
-                    dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                    if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
+                    {
+                        dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                    }
                     Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
                     Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
                     Gdiplus::GraphicsPath path;
@@ -5402,7 +5650,10 @@ LRESULT APIENTRY MainWndProc(
                     SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
 
                     Gdiplus::Graphics	dstGraphics(hdcScreenCursorCompat);
-                    dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                    if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
+                    {
+                        dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                    }
                     Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
                     Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
                     Gdiplus::GraphicsPath path;
@@ -5452,13 +5703,15 @@ LRESULT APIENTRY MainWndProc(
         return TRUE;
 
     case WM_LBUTTONUP:
-        if( g_Zoomed && g_Drawing && g_Tracing ) {
+        OutputDebug(L"LBUTTONUP: zoomed: %d drawing: %d tracing: %d\n", 
+            g_Zoomed, g_Drawing, g_Tracing);
 
-            OutputDebug(L"LBUTTONUP\n");
+        if( g_Zoomed && g_Drawing && g_Tracing ) {
 
             // Are we in pen mode on a tablet?
             lParam = ScalePenPosition( zoomLevel, &monInfo, boundRc,
                         message, lParam);
+            OutputDebug(L"LBUTTONUP: %d, %d\n", LOWORD(lParam), HIWORD(lParam));
             if (lParam == 0) {
 
                 // Drop it
@@ -5481,7 +5734,10 @@ LRESULT APIENTRY MainWndProc(
             if( !g_DrawingShape ) {
 
                 Gdiplus::Graphics	dstGraphics(hdcScreenCompat);
-                dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
+                {
+                    dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                }
                 Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
                 Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
                 Gdiplus::GraphicsPath path;
@@ -5683,6 +5939,15 @@ LRESULT APIENTRY MainWndProc(
                     // Ensure the cursor area is painted before returning
                     InvalidateRect( hWnd, NULL, FALSE );
                     UpdateWindow( hWnd );
+
+                    // Make the magnified cursor visible again if LiveDraw is on in LiveZoom
+                    if( GetWindowLong( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED )
+                    {
+                        if( IsWindowVisible( g_hWndLiveZoom ) )
+                        {
+                            SendMessage( g_hWndLiveZoom, WM_USER_MAGNIFY_CURSOR, TRUE, 0 );
+                        }
+                    }
                 }
                 if( zoomLevel != 1 )
                 {
@@ -5803,10 +6068,12 @@ LRESULT APIENTRY MainWndProc(
                 GetCursorPos(&local_savedCursorPos);
             }
 
-            int			saveWidth, saveHeight;
-            int			copyWidth, copyHeight;
-
-            GetZoomedTopLeftCoordinates(zoomLevel, &cursorPos, &x, width, &y, height);
+            HBITMAP     hInterimSaveBitmap;
+            HDC         hInterimSaveDc;
+            HBITMAP     hSaveBitmap;
+            HDC         hSaveDc;
+            int         copyX, copyY;
+            int         copyWidth, copyHeight;
 
             if ( LOWORD( wParam ) == IDC_SAVE_CROP )
             {
@@ -5824,20 +6091,45 @@ LRESULT APIENTRY MainWndProc(
                 auto copyRc = selectRectangle.SelectedRect();
                 selectRectangle.Stop();
                 g_RecordCropping = FALSE;
-                x = static_cast<int>(x + copyRc.left / zoomLevel);
-                y = static_cast<int>(y + copyRc.top / zoomLevel);
+                copyX = copyRc.left;
+                copyY = copyRc.top;
                 copyWidth = copyRc.right - copyRc.left;
                 copyHeight = copyRc.bottom - copyRc.top;
             }
             else
             {
+                copyX = 0;
+                copyY = 0;
                 copyWidth = width;
                 copyHeight = height;
             }
+            OutputDebug( L"***x: %d, y: %d, width: %d, height: %d\n", copyX, copyY, copyWidth, copyHeight );
 
             RECT oldClipRect{};
             GetClipCursor( &oldClipRect );
             ClipCursor( NULL );
+
+            // Capture the screen before displaying the save dialog
+            hInterimSaveDc = CreateCompatibleDC( hdcScreen );
+            hInterimSaveBitmap = CreateCompatibleBitmap( hdcScreen, copyWidth, copyHeight );
+            SelectObject( hInterimSaveDc, hInterimSaveBitmap );
+
+            hSaveDc = CreateCompatibleDC( hdcScreen );
+#if SCALE_HALFTONE
+            SetStretchBltMode( hInterimSaveDc, HALFTONE );
+            SetStretchBltMode( hSaveDc, HALFTONE );
+#else
+            SetStretchBltMode( hInterimSaveDc, COLORONCOLOR );
+            SetStretchBltMode( hSaveDc, COLORONCOLOR );
+#endif
+            StretchBlt( hInterimSaveDc,
+                        0, 0,
+                        copyWidth, copyHeight,
+                        hdcScreen,
+                        monInfo.rcMonitor.left + copyX,
+                        monInfo.rcMonitor.top + copyY,
+                        copyWidth, copyHeight,
+                        SRCCOPY|CAPTUREBLT );
 
             g_bSaveInProgress = true;
             memset( &openFileName, 0, sizeof(openFileName ));
@@ -5854,45 +6146,46 @@ LRESULT APIENTRY MainWndProc(
                                              "Actual size PNG\0*.png\0\0";
                                              //"Actual size BMP\0*.bmp\0\0";
             openFileName.lpstrFile			= filePath;
-            if( GetSaveFileName( &openFileName )) {
-
-                // Save the bitmap
-                HBITMAP		hSaveBitmap;
-                HDC			hSaveDc;
-
-                if( openFileName.nFilterIndex == 1 ) {
-
-                    saveWidth = copyWidth;
-                    saveHeight = copyHeight;
-
-                } else {
-
-                    saveWidth = static_cast<int>(copyWidth /zoomLevel);
-                    saveHeight = static_cast<int>(copyHeight /zoomLevel);
-                }
-                hSaveBitmap = CreateCompatibleBitmap( hdcScreenCompat, saveWidth, saveHeight );
-                hSaveDc = CreateCompatibleDC(hdcScreenCompat); 
-                SelectObject( hSaveDc, hSaveBitmap );
-#if SCALE_HALFTONE
-                SetStretchBltMode( hSaveDc, HALFTONE );
-#else
-                SetStretchBltMode( hSaveDc, COLORONCOLOR );
-#endif
-                StretchBlt( hSaveDc, 
-                        0, 0, 
-                        saveWidth, saveHeight, 
-                        hdcScreenCompat, 
-                        x, y, 
-                        static_cast<int>(copyWidth / zoomLevel), static_cast<int>(copyHeight/ zoomLevel),
-                        SRCCOPY|CAPTUREBLT ); 
-                
+            if( GetSaveFileName( &openFileName ) )
+            {
                 TCHAR targetFilePath[MAX_PATH];
                 _tcscpy( targetFilePath, filePath );
-                if( !_tcsrchr( targetFilePath, '.' )) _tcscat( targetFilePath, L".png" );
-                SavePng( targetFilePath, hSaveBitmap );
-                DeleteDC( hSaveDc );
+                if( !_tcsrchr( targetFilePath, '.' ) )
+                {
+                    _tcscat( targetFilePath, L".png" );
+                }
+
+                // Save image at screen size
+                if( openFileName.nFilterIndex == 1 )
+                {
+                    SavePng( targetFilePath, hInterimSaveBitmap );
+                }
+                // Save image scaled down to actual size
+                else
+                {
+                    int saveWidth = static_cast<int>( copyWidth / zoomLevel );
+                    int saveHeight = static_cast<int>( copyHeight / zoomLevel );
+
+                    hSaveBitmap = CreateCompatibleBitmap( hdcScreen, saveWidth, saveHeight );
+                    SelectObject( hSaveDc, hSaveBitmap );
+
+                    StretchBlt( hSaveDc,
+                                0, 0,
+                                saveWidth, saveHeight,
+                                hInterimSaveDc,
+                                0,
+                                0,
+                                copyWidth, copyHeight,
+                                SRCCOPY | CAPTUREBLT );
+				
+                    SavePng( targetFilePath, hSaveBitmap );
+                }
             }
             g_bSaveInProgress = false;
+
+            DeleteDC( hInterimSaveDc );
+            DeleteDC( hSaveDc );
+
             if( lParam != SHALLOW_ZOOM )
             {
                 SetCursorPos(local_savedCursorPos.x, local_savedCursorPos.y);
@@ -5905,9 +6198,9 @@ LRESULT APIENTRY MainWndProc(
         case IDC_COPY: {
             HBITMAP		hSaveBitmap;
             HDC			hSaveDc;
-            int			saveWidth, saveHeight;
+            int         copyX, copyY;
+            int         copyWidth, copyHeight;
 
-            GetZoomedTopLeftCoordinates(zoomLevel, &cursorPos, &x, width, &y, height);
             if( LOWORD( wParam ) == IDC_COPY_CROP )
             {
                 g_RecordCropping = TRUE;
@@ -5930,33 +6223,36 @@ LRESULT APIENTRY MainWndProc(
                 }
                 g_RecordCropping = FALSE;
 
-                x = static_cast<int>(x+ copyRc.left/zoomLevel);
-                y = static_cast<int>(y+ copyRc.top/zoomLevel);
-                saveWidth = copyRc.right - copyRc.left;
-                saveHeight = copyRc.bottom - copyRc.top;
+                copyX = copyRc.left;
+                copyY = copyRc.top;
+                copyWidth = copyRc.right - copyRc.left;
+                copyHeight = copyRc.bottom - copyRc.top;
             }
-            else {
-
-                saveWidth = width;
-                saveHeight = height;
+            else
+            {
+                copyX = 0;
+                copyY = 0;
+                copyWidth = width;
+                copyHeight = height;
             }
-            OutputDebug(L"***x: %d, y: %d, width: %d, height: %d\n", x, y, saveWidth, saveHeight);
+            OutputDebug( L"***x: %d, y: %d, width: %d, height: %d\n", copyX, copyY, copyWidth, copyHeight );
 
-            hSaveBitmap = CreateCompatibleBitmap( hdcScreenCompat, saveWidth, saveHeight );
-            hSaveDc = CreateCompatibleDC(hdcScreenCompat); 
+            hSaveBitmap = CreateCompatibleBitmap( hdcScreen, copyWidth, copyHeight );
+            hSaveDc = CreateCompatibleDC( hdcScreen );
             SelectObject( hSaveDc, hSaveBitmap );
 #if SCALE_HALFTONE
             SetStretchBltMode( hSaveDc, HALFTONE );
 #else
             SetStretchBltMode( hSaveDc, COLORONCOLOR );
 #endif
-            StretchBlt( hSaveDc, 
-                    0, 0, 
-                    saveWidth, saveHeight, 
-                    hdcScreenCompat, 
-                    x, y, 
-                    static_cast<int>(saveWidth/zoomLevel), static_cast<int>(saveHeight/zoomLevel),
-                    SRCCOPY|CAPTUREBLT ); 
+			StretchBlt( hSaveDc,
+                        0, 0,
+                        copyWidth, copyHeight,
+                        hdcScreen,
+                        monInfo.rcMonitor.left + copyX,
+                        monInfo.rcMonitor.top + copyY,
+                        copyWidth, copyHeight,
+                        SRCCOPY|CAPTUREBLT ); 
 
             if( OpenClipboard( hWnd )) {
             
@@ -5964,6 +6260,7 @@ LRESULT APIENTRY MainWndProc(
                 SetClipboardData( CF_BITMAP, hSaveBitmap );
                 CloseClipboard();
             }
+
             DeleteDC( hSaveDc );
             }
             break;
@@ -6183,7 +6480,6 @@ LRESULT APIENTRY MainWndProc(
                     cursorPos = ScalePointInRects( cursorPos, monInfo.rcMonitor, g_LiveZoomSourceRect );
                     SetCursorPos( cursorPos.x, cursorPos.y );
                     SendMessage(hWnd, WM_HOTKEY, LIVE_HOTKEY, 0);
-
                 }
                 else if( lParam != SHALLOW_ZOOM )
                 {
@@ -6235,6 +6531,22 @@ LRESULT APIENTRY MainWndProc(
                 ShowWindow( hWnd, SW_HIDE );
             }
             InvalidateRect( hWnd, NULL, FALSE );
+            break;
+
+        case 3:
+            POINT mousePos;
+            GetCursorPos(&mousePos);
+            if (mousePos.x != cursorPos.x || mousePos.y != cursorPos.y)
+            {
+                MONITORINFO monitorInfo = { sizeof(MONITORINFO) };
+                UpdateMonitorInfo(mousePos, &monitorInfo);
+
+                mousePos.x -= monitorInfo.rcMonitor.left;
+                mousePos.y -= monitorInfo.rcMonitor.top;
+
+                OutputDebug(L"RETRACKING MOUSE: x: %d y: %d\n", mousePos.x, mousePos.y);
+                SendMessage(hWnd, WM_MOUSEMOVE, 0, MAKELPARAM(mousePos.x, mousePos.y));
+            }
             break;
         }
         break;
@@ -6586,6 +6898,8 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
                 pSetLayeredWindowAttributes( hWnd, 0, 255, LWA_ALPHA );
                 SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0,
                     SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+                
+                OutputDebug(L"LIVEZOOM RECLAIM\n");
             }
 
             sourceRectWidth = lastSourceRect.right - lastSourceRect.left;
@@ -6706,6 +7020,7 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
             // Update source and zoom if necessary
             if( matrix.v[0][0] ) {
 
+                OutputDebug(L"LIVEZOOM update\n");
                 if( g_fullScreenWorkaround ) {
 
                     pMagSetFullscreenTransform(zoomLevel, sourceRect.left, sourceRect.top);

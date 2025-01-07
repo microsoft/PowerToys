@@ -90,7 +90,7 @@
       <AdditionalIncludeDirectories>$(InterPlatformDir)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
@@ -111,7 +111,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
@@ -133,7 +133,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <FixedBaseAddress>
@@ -154,7 +154,7 @@
       <AdditionalIncludeDirectories>$(InterPlatformDir)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -174,7 +174,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACUIAccess>true</UACUIAccess>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -195,7 +195,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACUIAccess>true</UACUIAccess>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -261,6 +261,22 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="VersionHelper.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="VideoRecordingSession.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Zoomit.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
@@ -280,6 +296,8 @@
     <ClInclude Include="SelectRectangle.h" />
     <ClInclude Include="Utility.h" />
     <ClInclude Include="DemoType.h" />
+    <ClInclude Include="VersionHelper.h" />
+    <ClInclude Include="VideoRecordingSession.h" />
     <ClInclude Include="ZoomIt.h" />
     <ClInclude Include="ZoomItSettings.h" />
   </ItemGroup>
@@ -308,15 +326,6 @@
     <None Include="cursor1.cur" />
     <None Include="hand.cur" />
     <None Include="packages.config" />
-    <None Include="VideoRecordingSession.h" />
-    <ClCompile Include="VideoRecordingSession.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="binres.rc">

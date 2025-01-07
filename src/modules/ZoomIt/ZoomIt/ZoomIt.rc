@@ -115,8 +115,8 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,166,306,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,223,306,50,14
-    LTEXT           "ZoomIt v8.01",IDC_TITLE,42,7,73,10
-    LTEXT           "Copyright � 2006-2024 Mark Russinovich",IDC_STATIC,42,17,166,8
+    LTEXT           "ZoomIt v9.0",IDC_VERSION,42,7,73,10
+    LTEXT           "Copyright � 2006-2024 Mark Russinovich",IDC_COPYRIGHT,42,17,166,8
     CONTROL         "<a HREF=""https://www.sysinternals.com"">Sysinternals - www.sysinternals.com</a>",IDC_LINK,
                     "SysLink",WS_TABSTOP,42,26,150,9
     ICON            "APPICON",IDC_STATIC,12,9,20,20
@@ -241,15 +241,16 @@ BEGIN
     CTEXT           "AaBbYyZz",1092,16,88,127,31,SS_NOPREFIX | NOT WS_VISIBLE
 END
 
-LIVEZOOM DIALOGEX 0, 0, 260, 108
+LIVEZOOM DIALOGEX 0, 0, 260, 134
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_LIVE_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,69,76,80,12
+    CONTROL         "",IDC_LIVE_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,69,108,80,12
     LTEXT           "LiveZoom mode is supported on Windows 7 and higher where window updates show while zoomed. ",IDC_STATIC,7,7,246,18
-    LTEXT           "LiveZoom Toggle:",IDC_STATIC,7,79,62,8
-    LTEXT           "To enter and exit LiveZoom, enter the hotkey specified below.",IDC_STATIC,7,63,218,13
-    LTEXT           "Note that in LiveZoom you must use Ctrl+Up and Ctrl+Down to control the zoom level. To enter drawing mode, use the standard zoom-without-draw hotkey and then escape to go back to LiveZoom.",IDC_STATIC,7,29,246,34
+    LTEXT           "LiveZoom Toggle:",IDC_STATIC,7,110,62,8
+    LTEXT           "To enter and exit LiveZoom, enter the hotkey specified below.",IDC_STATIC,7,94,218,13
+    LTEXT           "Note that in LiveZoom you must use Ctrl+Up and Ctrl+Down to control the zoom level. To enter drawing mode, use the standard zoom-without-draw hotkey and then escape to go back to LiveZoom.",IDC_STATIC,7,30,246,27
+    LTEXT           "Use LiveDraw to draw and annotate the live deskop. To activate LiveDraw, enter the hotkey with the Shift key in the opposite mode. You can remove LiveDraw annotations by activating LiveDraw and enter the escape key",IDC_STATIC,7,62,246,32
 END
 
 RECORD DIALOGEX 0, 0, 260, 169
@@ -367,7 +368,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 253
         TOPMARGIN, 7
-        BOTTOMMARGIN, 101
+        BOTTOMMARGIN, 127
     END
 
     "RECORD", DIALOG
