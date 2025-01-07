@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Windows.Foundation;
+
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
 public abstract partial class CommandProvider : ICommandProvider
@@ -19,6 +21,8 @@ public abstract partial class CommandProvider : ICommandProvider
     public string DisplayName { get => _displayName; protected set => _displayName = value; }
 
     public IconDataType Icon { get => _icon; protected set => _icon = value; }
+
+    public event TypedEventHandler<object, ItemsChangedEventArgs>? ItemsChanged;
 
     public abstract ICommandItem[] TopLevelCommands();
 
@@ -47,4 +51,15 @@ public abstract partial class CommandProvider : ICommandProvider
     }
 #pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
 
+    protected void RaiseItemsChanged(int totalItems)
+    {
+        try
+        {
+            // TODO #181 - This is the same thing that BaseObservable has to deal with.
+            ItemsChanged?.Invoke(this, new ItemsChangedEventArgs(totalItems));
+        }
+        catch
+        {
+        }
+    }
 }

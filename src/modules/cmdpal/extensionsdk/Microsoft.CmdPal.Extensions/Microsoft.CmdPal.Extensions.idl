@@ -311,7 +311,7 @@ namespace Microsoft.CmdPal.Extensions
     };
     
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
-    interface ICommandProvider requires Windows.Foundation.IClosable
+    interface ICommandProvider requires Windows.Foundation.IClosable, INotifyItemsChanged
     {
         String Id { get; };
         String DisplayName { get; };
