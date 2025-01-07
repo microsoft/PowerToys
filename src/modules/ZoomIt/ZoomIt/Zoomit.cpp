@@ -3893,7 +3893,7 @@ LRESULT APIENTRY MainWndProc(
             else {
                 OutputDebug(L"Livedraw create\n");
 
-                LONG_PTR exStyle = GetWindowLongPtr(hWnd, GWL_EXSTYLE);
+                exStyle = GetWindowLongPtr(hWnd, GWL_EXSTYLE);
                 SetWindowLongPtr(hWnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
                 SetLayeredWindowAttributes(hWnd, COLORREF(RGB(0, 0, 0)), 0, LWA_COLORKEY);
                 pMagSetWindowFilterList( g_hWndLiveZoomMag, MW_FILTERMODE_EXCLUDE, 0, nullptr );
