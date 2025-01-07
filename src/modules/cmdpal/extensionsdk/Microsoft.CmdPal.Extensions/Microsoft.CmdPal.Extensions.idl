@@ -264,6 +264,7 @@ namespace Microsoft.CmdPal.Extensions
         IFilters Filters { get; };
         IGridProperties GridProperties { get; };
         Boolean HasMoreItems { get; };
+        ICommandItem EmptyContent { get; };
     
         IListItem[] GetItems();     
         void LoadMore();

@@ -14,6 +14,7 @@ public class ListPage : Page, IListPage
     private bool _hasMore;
     private IFilters? _filters;
     private IGridProperties? _gridProperties;
+    private ICommandItem? _emptyContent;
 
     public event TypedEventHandler<object, ItemsChangedEventArgs>? ItemsChanged;
 
@@ -74,6 +75,16 @@ public class ListPage : Page, IListPage
         {
             _gridProperties = value;
             OnPropertyChanged(nameof(GridProperties));
+        }
+    }
+
+    public ICommandItem? EmptyContent
+    {
+        get => _emptyContent;
+        set
+        {
+            _emptyContent = value;
+            OnPropertyChanged(nameof(EmptyContent));
         }
     }
 
