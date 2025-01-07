@@ -94,7 +94,7 @@ typedef struct {
 
 #define SHALLOW_ZOOM    1
 #define SHALLOW_DESTROY 2
-#define LIVEDRAW_ZOOM   3
+#define LIVE_DRAW_ZOOM   3
 
 #define PEN_COLOR_HIGHLIGHT(Pencolor)	(Pencolor >> 24) != 0xFF
 

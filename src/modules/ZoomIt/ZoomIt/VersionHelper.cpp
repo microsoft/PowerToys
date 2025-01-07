@@ -11,7 +11,7 @@
 #include "pch.h"
 #include "VersionHelper.h"
 
-PTCHAR GetLanguageVersionString(PVERSION_INFO VersionInfo,
+PTCHAR GetLanguageVersionString(P_VERSION_INFO VersionInfo,
     LANGID LanguageId, WORD Charset,
     LPCTSTR VersionString)
 {
@@ -41,7 +41,7 @@ PTCHAR GetLanguageVersionString(PVERSION_INFO VersionInfo,
 // this is used when show banner in remote session before display eula from console which requires unicode for French
 // it's needed for multibyte app
 //
-PWCHAR GetLanguageVersionStringW(PVERSION_INFO VersionInfo,
+PWCHAR GetLanguageVersionStringW(P_VERSION_INFO VersionInfo,
     LANGID LanguageId, WORD Charset,
     LPCWSTR VersionString)
 {
@@ -73,12 +73,12 @@ PWCHAR GetLanguageVersionStringW(PVERSION_INFO VersionInfo,
 // Gets a version string.
 //
 //--------------------------------------------------------------------
-PTCHAR GetVersionString(PVERSION_INFO VersionInfo,
+PTCHAR GetVersionString(P_VERSION_INFO VersionInfo,
     LPCTSTR VersionString)
 {
     PTCHAR pszVerRetVal;
-    PVER_TRANSLATION pTranslation;
-    VER_TRANSLATION translation;
+    P_VERSION_TRANSLATION pTranslation;
+    VERSION_TRANSLATION translation;
     unsigned int length;
 
     //
@@ -103,12 +103,12 @@ PTCHAR GetVersionString(PVERSION_INFO VersionInfo,
 // this is used when show banner in remote session before display eula from console which requires unicode for French
 // it's needed for multibyte app
 //
-PWCHAR GetVersionStringW(PVERSION_INFO VersionInfo,
+PWCHAR GetVersionStringW(P_VERSION_INFO VersionInfo,
     LPCWSTR VersionString)
 {
     PWCHAR pszVerRetVal;
-    PVER_TRANSLATION pTranslation;
-    VER_TRANSLATION translation;
+    P_VERSION_TRANSLATION pTranslation;
+    VERSION_TRANSLATION translation;
     unsigned int length;
 
     //

@@ -22,7 +22,7 @@ typedef struct {
     WCHAR    szKey[16];
     WORD    Padding1;
     VS_FIXEDFILEINFO Value;
-} VERSION_INFO, *PVERSION_INFO;
+} VERSION_INFO, *P_VERSION_INFO;
 
 //
 // Version translation
@@ -30,19 +30,19 @@ typedef struct {
 typedef struct {
     WORD langID;            // language ID
     WORD charset;            // character set (code page)
-} VER_TRANSLATION, *PVER_TRANSLATION;
+} VERSION_TRANSLATION, *P_VERSION_TRANSLATION;
 
-PTCHAR GetVersionString(PVERSION_INFO VersionInfo, LPCTSTR VersionString);
+PTCHAR GetVersionString(P_VERSION_INFO VersionInfo, LPCTSTR VersionString);
 
-PTCHAR GetLanguageVersionString(PVERSION_INFO VersionInfo,
+PTCHAR GetLanguageVersionString(P_VERSION_INFO VersionInfo,
     LANGID LanguageId,
     WORD Charset,
     LPCTSTR VersionString);
 
-PWCHAR GetLanguageVersionStringW(PVERSION_INFO VersionInfo,
+PWCHAR GetLanguageVersionStringW(P_VERSION_INFO VersionInfo,
     LANGID LanguageId, WORD Charset,
     LPCWSTR VersionString);
 
-PWCHAR GetVersionStringW(PVERSION_INFO VersionInfo,
+PWCHAR GetVersionStringW(P_VERSION_INFO VersionInfo,
     LPCWSTR VersionString);
 

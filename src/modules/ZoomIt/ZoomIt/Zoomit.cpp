@@ -57,7 +57,7 @@ COLORREF	g_CustomColors[16];
 #define DRAW_HOTKEY				1
 #define BREAK_HOTKEY			2
 #define LIVE_HOTKEY				3
-#define LIVEDRAW_HOTKEY		    4
+#define LIVE_DRAW_HOTKEY		    4
 #define RECORD_HOTKEY		    5
 #define RECORD_CROP_HOTKEY	    6
 #define RECORD_WINDOW_HOTKEY	    7
@@ -1876,7 +1876,7 @@ void UnregisterAllHotkeys( HWND hWnd )
 {
     UnregisterHotKey( hWnd, ZOOM_HOTKEY);
     UnregisterHotKey( hWnd, LIVE_HOTKEY);
-    UnregisterHotKey( hWnd, LIVEDRAW_HOTKEY);
+    UnregisterHotKey( hWnd, LIVE_DRAW_HOTKEY);
     UnregisterHotKey( hWnd, DRAW_HOTKEY);
     UnregisterHotKey( hWnd, BREAK_HOTKEY);
     UnregisterHotKey( hWnd, RECORD_HOTKEY);
@@ -1898,7 +1898,7 @@ void RegisterAllHotkeys(HWND hWnd)
     if (g_ToggleKey) 			RegisterHotKey(hWnd, ZOOM_HOTKEY, g_ToggleMod, g_ToggleKey & 0xFF);
     if (g_LiveZoomToggleKey) {
         RegisterHotKey(hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF);
-        RegisterHotKey(hWnd, LIVEDRAW_HOTKEY, (g_LiveZoomToggleMod ^ MOD_SHIFT), g_LiveZoomToggleKey & 0xFF);
+        RegisterHotKey(hWnd, LIVE_DRAW_HOTKEY, (g_LiveZoomToggleMod ^ MOD_SHIFT), g_LiveZoomToggleKey & 0xFF);
     }
     if (g_DrawToggleKey) 		RegisterHotKey(hWnd, DRAW_HOTKEY, g_DrawToggleMod, g_DrawToggleKey & 0xFF);
     if (g_BreakToggleKey) 		RegisterHotKey(hWnd, BREAK_HOTKEY, g_BreakToggleMod, g_BreakToggleKey & 0xFF);
@@ -2000,7 +2000,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         SetActiveWindow( hDlg );
         SetWindowPos( hDlg, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE|SWP_NOMOVE|SWP_SHOWWINDOW ); 
 #if 1
-        // set verion info
+        // set version info
         TCHAR               filePath[MAX_PATH];
         const TCHAR* verString;
 
@@ -2234,7 +2234,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 
             } else if(newLiveZoomToggleKey && 
                 (!RegisterHotKey( GetParent( hDlg ), LIVE_HOTKEY, newLiveZoomToggleMod, newLiveZoomToggleKey & 0xFF ) ||
-                !RegisterHotKey(GetParent(hDlg), LIVEDRAW_HOTKEY, (newLiveZoomToggleMod ^ MOD_SHIFT), newLiveZoomToggleKey & 0xFF))) {
+                !RegisterHotKey(GetParent(hDlg), LIVE_DRAW_HOTKEY, (newLiveZoomToggleMod ^ MOD_SHIFT), newLiveZoomToggleKey & 0xFF))) {
 
                 MessageBox( hDlg, L"The specified live-zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.",
                     APPNAME, MB_ICONERROR );
@@ -2550,7 +2550,7 @@ void DrawTypingCursor( HWND hWnd, POINT *textPt, HDC hdcScreenCompat,
 	TCHAR vKey = '|';
 	DrawText( hdcScreenCompat, static_cast<PTCHAR>(&vKey), 1, rc, DT_CALCRECT );
 
-	// Livedraw uses a layered window which means mouse messages pass through
+	// LiveDraw uses a layered window which means mouse messages pass through
 	//   to lower windows unless the system cursor is above a painted area.
 	// Centering the typing cursor directly under the system cursor allows
 	//   us to capture the mouse wheel input required to change font size.
@@ -3783,7 +3783,7 @@ LRESULT APIENTRY MainWndProc(
 
             } else if( g_LiveZoomToggleKey && 
                 (!RegisterHotKey( hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF) ||
-                    !RegisterHotKey(hWnd, LIVEDRAW_HOTKEY, (g_LiveZoomToggleMod ^ MOD_SHIFT), g_LiveZoomToggleKey & 0xFF))) {
+                    !RegisterHotKey(hWnd, LIVE_DRAW_HOTKEY, (g_LiveZoomToggleMod ^ MOD_SHIFT), g_LiveZoomToggleKey & 0xFF))) {
 
                 MessageBox( hWnd, L"The specified live-zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.",
                     APPNAME, MB_ICONERROR );
@@ -3871,13 +3871,13 @@ LRESULT APIENTRY MainWndProc(
             Sleep(250);
         }
         switch( wParam ) {
-        case LIVEDRAW_HOTKEY:
+        case LIVE_DRAW_HOTKEY:
         {
-            OutputDebug(L"LIVEDRAW_HOTKEY\n");
+            OutputDebug(L"LIVE_DRAW_HOTKEY\n");
             LONG_PTR exStyle = GetWindowLongPtr(hWnd, GWL_EXSTYLE);
 
             if ((exStyle & WS_EX_LAYERED)) {
-                OutputDebug(L"Livedraw reactivate\n");
+                OutputDebug(L"LiveDraw reactivate\n");
 
                 // Just focus on the window and re-enter drawing mode
                 SetFocus(hWnd);
@@ -3891,7 +3891,7 @@ LRESULT APIENTRY MainWndProc(
                 break;
             }
             else {
-                OutputDebug(L"Livedraw create\n");
+                OutputDebug(L"LiveDraw create\n");
 
                 exStyle = GetWindowLongPtr(hWnd, GWL_EXSTYLE);
                 SetWindowLongPtr(hWnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
@@ -3908,7 +3908,7 @@ LRESULT APIENTRY MainWndProc(
                 Trace::ZoomItActivateDraw();
 
             if( !g_Zoomed ) {
-                OutputDebug(L"Livedraw: %d (%d)\n", wParam, (wParam == LIVEDRAW_HOTKEY));
+                OutputDebug(L"LiveDraw: %d (%d)\n", wParam, (wParam == LIVE_DRAW_HOTKEY));
 
 #if WINDOWS_CURSOR_RECORDING_WORKAROUND
                 if( IsWindowVisible( g_hWndLiveZoom ) && !g_LiveZoomLevelOne ) {
@@ -3917,18 +3917,18 @@ LRESULT APIENTRY MainWndProc(
 #endif
 
                     OutputDebug(L"   In Live zoom\n");
-                    SendMessage(hWnd, WM_HOTKEY, ZOOM_HOTKEY, wParam == LIVEDRAW_HOTKEY ? LIVEDRAW_ZOOM : 0);
+                    SendMessage(hWnd, WM_HOTKEY, ZOOM_HOTKEY, wParam == LIVE_DRAW_HOTKEY ? LIVE_DRAW_ZOOM : 0);
 
                 } else {
                     OutputDebug(L"   Not in Live zoom\n");
-                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, wParam == LIVEDRAW_HOTKEY ? LIVEDRAW_ZOOM : 0 );
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, wParam == LIVE_DRAW_HOTKEY ? LIVE_DRAW_ZOOM : 0 );
                     zoomLevel = zoomTelescopeTarget = 1;
                     SendMessage( hWnd, WM_LBUTTONDOWN, 0, MAKELPARAM( cursorPos.x, cursorPos.y ));
                 }
-                if(wParam == LIVEDRAW_HOTKEY) {
+                if(wParam == LIVE_DRAW_HOTKEY) {
 
                     SetLayeredWindowAttributes(hWnd, COLORREF(RGB(0, 0, 0)), 0, LWA_COLORKEY);
-                    SendMessage(hWnd, WM_KEYDOWN, 'K', LIVEDRAW_ZOOM);
+                    SendMessage(hWnd, WM_KEYDOWN, 'K', LIVE_DRAW_ZOOM);
                     SetTimer(hWnd, 3, 10, NULL);
                     SendMessage(hWnd, WM_MOUSEMOVE, 0, MAKELPARAM(cursorPos.x, cursorPos.y));
                     ShowMainWindow(hWnd, monInfo, width, height);
@@ -3946,7 +3946,7 @@ LRESULT APIENTRY MainWndProc(
         case SNIP_SAVE_HOTKEY:
         case SNIP_HOTKEY:
         {
-            // Block livezoom livedraw snip due to mirroring bug
+            // Block liveZoom liveDraw snip due to mirroring bug
             if( IsWindowVisible( g_hWndLiveZoom )
                 && ( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
             {
@@ -3967,7 +3967,7 @@ LRESULT APIENTRY MainWndProc(
                 }
                 else
                 {
-                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, LIVEDRAW_ZOOM);
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, LIVE_DRAW_ZOOM);
                 }
                 zoomLevel = zoomTelescopeTarget = 1;
             }
@@ -4013,10 +4013,10 @@ LRESULT APIENTRY MainWndProc(
             // exit zoom
             if( g_Zoomed )
             {
-                // If from livedraw, extra care is needed to destruct
+                // If from liveDraw, extra care is needed to destruct
                 if( GetWindowLong( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED )
                 {
-                    OutputDebug( L"Exiting livedraw after snip\n" );
+                    OutputDebug( L"Exiting liveDraw after snip\n" );
                     SendMessage( hWnd, WM_KEYDOWN, VK_ESCAPE, 0 );
                 }
                 else
@@ -4480,7 +4480,7 @@ LRESULT APIENTRY MainWndProc(
                     g_ActiveWindow = GetForegroundWindow();
                     OutputDebug( L"active window: %x\n", PtrToLong(g_ActiveWindow) );
 
-                    if( lParam != LIVEDRAW_ZOOM) {
+                    if( lParam != LIVE_DRAW_ZOOM) {
 
                         OutputDebug(L"Calling ShowMainWindow\n");
                         ShowMainWindow(hWnd, monInfo, width, height);
@@ -4507,7 +4507,7 @@ LRESULT APIENTRY MainWndProc(
                         // Set live zoom level to 1 in preparation of us being full screen static
                         zoomLevel = 1.0;
                         zoomTelescopeTarget = 1.0;
-                        if (lParam != LIVEDRAW_ZOOM) {
+                        if (lParam != LIVE_DRAW_ZOOM) {
 
                             g_ZoomOnLiveZoom = TRUE;
                         }
@@ -4518,7 +4518,7 @@ LRESULT APIENTRY MainWndProc(
                             // Put the drawing cursor where the magnified cursor was
                             OutputDebug(L"Setting cursor\n");
 
-                            if (lParam != LIVEDRAW_ZOOM)
+                            if (lParam != LIVE_DRAW_ZOOM)
                             {
                                 cursorPos = ScalePointInRects( cursorPos, g_LiveZoomSourceRect, monInfo.rcMonitor );
                                 SetCursorPos( cursorPos.x, cursorPos.y );
@@ -4535,14 +4535,14 @@ LRESULT APIENTRY MainWndProc(
                         {
                             g_SelectRectangle.UpdateOwner( hWnd );
                         }
-                        if( lParam != LIVEDRAW_ZOOM ) {
+                        if( lParam != LIVE_DRAW_ZOOM ) {
 
                             OutputDebug(L"Calling ShowMainWindow 2\n");
 
                             ShowWindow( g_hWndLiveZoom, SW_HIDE );
                         }
 
-                    } else if( lParam != 0 && lParam != LIVEDRAW_ZOOM ) {
+                    } else if( lParam != 0 && lParam != LIVE_DRAW_ZOOM ) {
 
                         zoomTelescopeStep = ZOOM_LEVEL_STEP_IN;
                         zoomTelescopeTarget = g_ZoomLevels[g_SliderZoomLevel];
@@ -4556,7 +4556,7 @@ LRESULT APIENTRY MainWndProc(
                 } else {
 
                     OutputDebug( L"Zoom off: don't animate=%d\n", lParam );
-                    // turn off livedraw
+                    // turn off liveDraw
                     SetLayeredWindowAttributes(hWnd, 0, 255, LWA_ALPHA);
 
                     if( lParam != SHALLOW_DESTROY && !g_ZoomOnLiveZoom && g_AnimateZoom &&
@@ -4637,7 +4637,7 @@ LRESULT APIENTRY MainWndProc(
     case WM_KILLFOCUS:
         if( ( g_RecordCropping == FALSE ) && g_Zoomed && !g_bSaveInProgress ) {
 
-            // Turn off zoom if not in livedraw
+            // Turn off zoom if not in liveDraw
             DWORD layeringFlag;
             GetLayeredWindowAttributes(hWnd, NULL, NULL, &layeringFlag);
             if( !(layeringFlag & LWA_COLORKEY)) {
@@ -4668,7 +4668,7 @@ LRESULT APIENTRY MainWndProc(
                     ResizePen( hWnd, hdcScreenCompat, hdcScreenCursorCompat, prevPt,
                         g_Tracing, &g_Drawing, g_LiveZoomLevel, TRUE, g_PenWidth + delta );
 
-                // Perform static zoom unless in livedraw
+                // Perform static zoom unless in liveDraw
                 } else if( !( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) ) {
 
                     if( delta > 0 ) zoomIn = TRUE;
@@ -5121,8 +5121,8 @@ LRESULT APIENTRY MainWndProc(
 
         case 'W':
         case 'K':
-            // Block user-driven sketch pad in livedraw
-            if( lParam != LIVEDRAW_ZOOM
+            // Block user-driven sketch pad in liveDraw
+            if( lParam != LIVE_DRAW_ZOOM
                 && ( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
             {
                 break;
@@ -5218,7 +5218,7 @@ LRESULT APIENTRY MainWndProc(
                 forcePenResize = TRUE;
                 PostMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, 0 );
 
-                // In case we were in livedraw
+                // In case we were in liveDraw
                 if( GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_LAYERED) {
 
                     KillTimer(hWnd, 3);
@@ -5240,7 +5240,7 @@ LRESULT APIENTRY MainWndProc(
         OutputDebug(L"MOUSEMOVE: zoomed: %d drawing: %d tracing: %d\n",
             g_Zoomed, g_Drawing, g_Tracing);
 
-        OutputDebug(L"Window vislble: %d Topmost: %d\n", IsWindowVisible(hWnd), GetWindowLong(hWnd, GWL_EXSTYLE)& WS_EX_TOPMOST);
+        OutputDebug(L"Window visible: %d Topmost: %d\n", IsWindowVisible(hWnd), GetWindowLong(hWnd, GWL_EXSTYLE)& WS_EX_TOPMOST);
 
         if( g_Zoomed && (g_TypeMode == TypeModeOff) && !g_bSaveInProgress ) {
 
@@ -5502,12 +5502,12 @@ LRESULT APIENTRY MainWndProc(
                 }
                 prevPt = currentPt;
 
-                // In livedraw we an miss the mouse up
+                // In liveDraw we an miss the mouse up
                 if( GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_LAYERED) {
 
                     if((GetAsyncKeyState(VK_LBUTTON) & 0x8000) == 0) {
 
-                        OutputDebug(L"LIVEDRAW missed mouse up. Sending synthetic.\n");
+                        OutputDebug(L"LIVE_DRAW missed mouse up. Sending synthetic.\n");
                         SendMessage(hWnd, WM_LBUTTONUP, wParam, lParam);
                     }
                 }
@@ -5999,7 +5999,7 @@ LRESULT APIENTRY MainWndProc(
         if (g_LiveZoomToggleKey)
         {
             if (!RegisterHotKey(hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF) ||
-                !RegisterHotKey(hWnd, LIVEDRAW_HOTKEY, g_LiveZoomToggleMod ^ MOD_SHIFT, g_LiveZoomToggleKey & 0xFF))
+                !RegisterHotKey(hWnd, LIVE_DRAW_HOTKEY, g_LiveZoomToggleMod ^ MOD_SHIFT, g_LiveZoomToggleKey & 0xFF))
             {
                 MessageBox(hWnd, L"The specified live-zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.", APPNAME, MB_ICONERROR);
                 showOptions = TRUE;

@@ -18,7 +18,7 @@ typedef struct {
 	WCHAR	szKey[16];
 	WORD	Padding1;
 	VS_FIXEDFILEINFO Value;
-} VERSION_INFO, * PVERSION_INFO;
+} VERSION_INFO, * P_VERSION_INFO;
 
 
 //
@@ -27,7 +27,7 @@ typedef struct {
 typedef struct {
 	WORD langID;			// language ID
 	WORD charset;			// character set (code page)
-} VER_TRANSLATION, * PVER_TRANSLATION;
+} VERSION_TRANSLATION, * P_VERSION_TRANSLATION;
 
 typedef VS_FIXEDFILEINFO* PVS_FIXEDFILEINFO;
 
