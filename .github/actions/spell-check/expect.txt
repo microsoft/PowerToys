@@ -25,6 +25,7 @@ AFeature
 AFFINETRANSFORM
 AFX
 AGGREGATABLE
+ahk
 AHybrid
 akv
 ALIGNRIGHT
@@ -706,6 +707,7 @@ imageresizersettings
 imagingdevices
 ime
 INCONTACT
+Indo
 inetcpl
 Infobar
 INFOEXAMPLE
@@ -807,6 +809,7 @@ LIBID
 LIMITSIZE
 LIMITTEXT
 lindex
+linkid
 LINKOVERLAY
 LINQTo
 listview
@@ -821,7 +824,7 @@ lnks
 LOADFROMFILE
 LOBYTE
 LOCALDISPLAY
-LOCALPACKAGE
+localpackage
 LOCALSYSTEM
 LOCATIONCHANGE
 LOGFONT
@@ -1323,6 +1326,7 @@ QUEUESYNC
 QUNS
 RAII
 RAlt
+randi
 Rasterize
 RAWINPUTDEVICE
 RAWINPUTHEADER
@@ -1879,6 +1883,7 @@ WIC
 wifi
 wil
 winapi
+winappsdk
 wincodec
 Wincodecsdk
 wincolor
@@ -2007,5 +2012,3 @@ Zoomin
 zoomit
 ZOOMITX
 zzz
-
-
