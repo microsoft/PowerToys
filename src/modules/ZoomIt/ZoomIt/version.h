@@ -29,7 +29,7 @@ typedef struct {
 	WORD charset;			// character set (code page)
 } VERSION_TRANSLATION, * P_VERSION_TRANSLATION;
 
-typedef VS_FIXEDFILEINFO* PVS_FIXEDFILEINFO;
+typedef VS_FIXEDFILEINFO* P_VS_FIXEDFILEINFO;
 
 #define FILEINFOSIG 0xFEEF04BD
 

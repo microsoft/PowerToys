@@ -4112,7 +4112,7 @@ LRESULT APIENTRY MainWndProc(
                 } else {
 #if WINDOWS_CURSOR_RECORDING_WORKAROUND
                     if( g_LiveZoomLevelOne ) {
-                        OutputDebug(L"livezoom level one\n");
+                        OutputDebug(L"liveZoom level one\n");
                         SendMessage( g_hWndLiveZoom, WM_USER_SET_ZOOM, static_cast<WPARAM>(g_LiveZoomLevel), 0 );
                     }
                     else {
@@ -4129,7 +4129,7 @@ LRESULT APIENTRY MainWndProc(
 
                     } else {
                     
-                        OutputDebug(L"Show livezoom\n");
+                        OutputDebug(L"Show liveZoom\n");
                         ShowWindow( g_hWndLiveZoom, SW_SHOW );
                     }
 #if WINDOWS_CURSOR_RECORDING_WORKAROUND
@@ -4500,7 +4500,7 @@ LRESULT APIENTRY MainWndProc(
 #endif
 
                         // Enter drawing mode
-                        OutputDebug(L"Enter livezoom draw\n");
+                        OutputDebug(L"Enter liveZoom draw\n");
                         g_LiveZoomSourceRect = *reinterpret_cast<RECT *>(SendMessage( g_hWndLiveZoom, WM_USER_GET_SOURCE_RECT, 0, 0 ));
                         g_LiveZoomLevel = *reinterpret_cast<float*>(SendMessage(g_hWndLiveZoom, WM_USER_GET_ZOOM_LEVEL, 0, 0));
                         
