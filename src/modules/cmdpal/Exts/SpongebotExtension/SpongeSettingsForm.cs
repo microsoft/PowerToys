@@ -52,10 +52,6 @@ internal sealed partial class SpongeSettingsForm : Form
         return json;
     }
 
-    public override string DataJson() => throw new NotImplementedException();
-
-    public override string StateJson() => "{}";
-
     public override CommandResult SubmitForm(string payload)
     {
         var formInput = JsonNode.Parse(payload);
