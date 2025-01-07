@@ -38,7 +38,7 @@
                             SourceKey="{x:Bind Icon, Mode=OneWay}"
                             SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
 
-                        <TextBlock Grid.Column="1" Text="{x:Bind Title}" />
+                        <TextBlock Grid.Column="1" Text="{x:Bind Title, Mode=OneWay}" />
                     </Grid>
                 </ListViewItem>
             </DataTemplate>

@@ -107,9 +107,9 @@
                     <ItemsRepeater
                         Grid.Column="2"
                         ItemTemplate="{StaticResource TagTemplate}"
-                        ItemsSource="{x:Bind Tags}"
+                        ItemsSource="{x:Bind Tags, Mode=OneWay}"
                         Layout="{StaticResource HorizontalStackLayout}"
-                        Visibility="{x:Bind HasTags}" />
+                        Visibility="{x:Bind HasTags, Mode=OneWay}" />
                 </Grid>
             </ListViewItem>
         </DataTemplate>
