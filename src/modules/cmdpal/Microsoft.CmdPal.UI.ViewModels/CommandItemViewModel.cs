@@ -42,8 +42,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
         get
         {
             List<CommandContextItemViewModel> l = _defaultCommandContextItem == null ?
-                [_defaultCommandContextItem] :
-                new();
+                new() :
+                [_defaultCommandContextItem];
 
             l.AddRange(MoreCommands);
             return l;
