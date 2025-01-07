@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using CommunityToolkit.Common;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.UI.ViewModels;
@@ -174,6 +173,12 @@ public sealed partial class ShellPage :
                         {
                             // Go back to the main page, but keep it open
                             GoHome();
+                            break;
+                        }
+
+                    case CommandResultKind.GoBack:
+                        {
+                            GoBack();
                             break;
                         }
 
