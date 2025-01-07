@@ -26,7 +26,7 @@ PTCHAR GetLanguageVersionString(PVERSION_INFO VersionInfo,
         VersionString);
 
     fFound = VerQueryValue(VersionInfo, szQueryStr,
-        (LPVOID *)&pszVerRetVal, &cbReturn);
+        reinterpret_cast<LPVOID *>(&pszVerRetVal), &cbReturn);
 
     if (!fFound) {
         return NULL;
@@ -56,7 +56,7 @@ PWCHAR GetLanguageVersionStringW(PVERSION_INFO VersionInfo,
         VersionString);
 
     fFound = VerQueryValueW(VersionInfo, szQueryStr,
-        (LPVOID *)&pszVerRetVal, &cbReturn);
+        reinterpret_cast<LPVOID *>(&pszVerRetVal), &cbReturn);
 
     if (!fFound) {
         return NULL;
@@ -88,7 +88,7 @@ PTCHAR GetVersionString(PVERSION_INFO VersionInfo,
     pTranslation = &translation;
     VerQueryValue(VersionInfo,
         _T("\\VarFileInfo\\Translation"),
-        (PVOID *)&pTranslation,
+        reinterpret_cast<PVOID *>(&pTranslation),
         &length);
 
     pszVerRetVal = GetLanguageVersionString(VersionInfo,
@@ -118,7 +118,7 @@ PWCHAR GetVersionStringW(PVERSION_INFO VersionInfo,
     pTranslation = &translation;
     VerQueryValueW(VersionInfo,
         L"\\VarFileInfo\\Translation",
-        (PVOID *)&pTranslation,
+        reinterpret_cast<PVOID *>(&pTranslation),
         &length);
 
     pszVerRetVal = GetLanguageVersionStringW(VersionInfo,

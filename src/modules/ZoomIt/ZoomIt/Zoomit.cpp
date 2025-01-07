@@ -2010,10 +2010,10 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         void* versionInfo = malloc(infoSize);
         GetFileVersionInfo(filePath, 0, infoSize, versionInfo);
 
-        verString = GetVersionString((VERSION_INFO*)versionInfo, _T("FileVersion"));
+        verString = GetVersionString(static_cast<VERSION_INFO*>(versionInfo), _T("FileVersion"));
         SetDlgItemText(hDlg, IDC_VERSION, (std::wstring(L"ZoomIt v") + verString).c_str());
 
-        verString = GetVersionString((VERSION_INFO*)versionInfo, _T("LegalCopyright"));
+        verString = GetVersionString(static_cast<VERSION_INFO*>(versionInfo), _T("LegalCopyright"));
         SetDlgItemText(hDlg, IDC_COPYRIGHT, verString);
 
         free(versionInfo);
@@ -2548,7 +2548,7 @@ void DrawTypingCursor( HWND hWnd, POINT *textPt, HDC hdcScreenCompat,
 	rc->left = textPt->x;
 	rc->top = textPt->y;
 	TCHAR vKey = '|';
-	DrawText( hdcScreenCompat, (PTCHAR) &vKey, 1, rc, DT_CALCRECT );
+	DrawText( hdcScreenCompat, static_cast<PTCHAR>(&vKey), 1, rc, DT_CALCRECT );
 
 	// Livedraw uses a layered window which means mouse messages pass through
 	//   to lower windows unless the system cursor is above a painted area.
@@ -2571,7 +2571,7 @@ void DrawTypingCursor( HWND hWnd, POINT *textPt, HDC hdcScreenCompat,
 	BitBlt(hdcScreenCursorCompat, 0, 0, rc->right -rc->left, rc->bottom - rc->top,
 		hdcScreenCompat, rc->left, rc->top, SRCCOPY|CAPTUREBLT );
 
-	DrawText( hdcScreenCompat, (PTCHAR) &vKey, 1, rc, DT_LEFT );
+	DrawText( hdcScreenCompat, static_cast<PTCHAR>(&vKey), 1, rc, DT_LEFT );
 	InvalidateRect( hWnd, NULL, TRUE );
 }
 
