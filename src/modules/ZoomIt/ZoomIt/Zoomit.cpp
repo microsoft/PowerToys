@@ -2234,7 +2234,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 
             } else if(newLiveZoomToggleKey && 
                 (!RegisterHotKey( GetParent( hDlg ), LIVE_HOTKEY, newLiveZoomToggleMod, newLiveZoomToggleKey & 0xFF ) ||
-                !RegisterHotKey(GetParent(hDlg), LIVEDRAW_HOTKEY, (newLiveZoomToggleMod ^ MOD_SHIFT), g_LiveZoomToggleKey & 0xFF))) {
+                !RegisterHotKey(GetParent(hDlg), LIVEDRAW_HOTKEY, (newLiveZoomToggleMod ^ MOD_SHIFT), newLiveZoomToggleKey & 0xFF))) {
 
                 MessageBox( hDlg, L"The specified live-zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.",
                     APPNAME, MB_ICONERROR );
