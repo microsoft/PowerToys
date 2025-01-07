@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 
@@ -37,24 +38,31 @@ public partial class MarkdownPageViewModel : PageViewModel
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
     private void FetchContent()
     {
+        List<string> newBodies = new();
         try
         {
             var newItems = _model.Unsafe!.Bodies();
 
-            Bodies.Clear();
-
             foreach (var item in newItems)
             {
-                Bodies.Add(item);
+                newBodies.Add(item);
             }
-
-            UpdateProperty(nameof(HasDetails));
         }
         catch (Exception ex)
         {
             ShowException(ex, _model?.Unsafe?.Name);
             throw;
         }
+
+        // Now, back to a UI thread to update the observable collection
+        Task.Factory.StartNew(
+        () =>
+        {
+            ListHelpers.InPlaceUpdateList(Bodies, newBodies);
+        },
+        CancellationToken.None,
+        TaskCreationOptions.None,
+        PageContext.Scheduler);
     }
 
     public override void InitializeProperties()
@@ -78,8 +86,9 @@ public partial class MarkdownPageViewModel : PageViewModel
         {
             Details = new(extensionDetails, PageContext);
             Details.InitializeProperties();
-            UpdateDetails();
         }
+
+        UpdateDetails();
 
         FetchContent();
     }

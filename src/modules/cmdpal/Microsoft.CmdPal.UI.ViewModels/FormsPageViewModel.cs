@@ -5,6 +5,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -27,17 +28,17 @@ public partial class FormsPageViewModel : PageViewModel
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
     private void FetchForms()
     {
+        var newForms = new List<FormViewModel>();
         try
         {
             var newItems = _model.Unsafe!.Forms();
-
-            Forms.Clear();
 
             foreach (var item in newItems)
             {
                 FormViewModel viewModel = new(item, this);
                 viewModel.InitializeProperties();
-                Forms.Add(viewModel);
+
+                newForms.Add(viewModel);
             }
         }
         catch (Exception ex)
@@ -45,6 +46,16 @@ public partial class FormsPageViewModel : PageViewModel
             ShowException(ex);
             throw;
         }
+
+        // Now, back to a UI thread to update the observable collection
+        Task.Factory.StartNew(
+            () =>
+            {
+                ListHelpers.InPlaceUpdateList(Forms, newForms);
+            },
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            PageContext.Scheduler);
     }
 
     public override void InitializeProperties()
