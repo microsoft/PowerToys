@@ -18,6 +18,7 @@ public partial class ShellCommandsProvider : CommandProvider
 
     public ShellCommandsProvider()
     {
+        Id = "Run";
         DisplayName = Resources.cmd_plugin_name;
         _fallbackItem = new FallbackExecuteItem(_settingsManager);
 

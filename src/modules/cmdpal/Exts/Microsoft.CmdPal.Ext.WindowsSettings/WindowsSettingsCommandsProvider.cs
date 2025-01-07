@@ -18,6 +18,7 @@ public partial class WindowsSettingsCommandsProvider : CommandProvider
 
     public WindowsSettingsCommandsProvider()
     {
+        Id = "Windows.Settings";
         DisplayName = $"Windows Settings";
 
         _windowsSettings = JsonSettingsListHelper.ReadAllPossibleSettings();

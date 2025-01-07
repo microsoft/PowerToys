@@ -11,6 +11,7 @@ public partial class RegistryCommandsProvider : CommandProvider
 {
     public RegistryCommandsProvider()
     {
+        Id = "Windows.Registry";
         DisplayName = $"Windows Registry";
     }
 

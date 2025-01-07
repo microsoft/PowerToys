@@ -1355,6 +1355,7 @@ interface IFallbackCommandItem requires ICommandItem {
 
 interface ICommandProvider requires Windows.Foundation.IClosable
 {
+    String Id { get; };
     String DisplayName { get; };
     IconDataType Icon { get; };
     ICommandSettings Settings { get; };
@@ -1377,6 +1378,13 @@ actions, or they can be pages that the user can navigate to.
 `TopLevelCommands` returns a list of `ICommandItem`s. These are basically just a
 simpler form of `IListItem`, which can be displayed even as a stub (as described
 in [Caching](#caching)), before the extension process is loaded.
+
+`Id` is only necessary to set if your extension implements multiple providers in
+the same package identity. This is an uncommon scenario which most developers
+shouldn't need to worry about. If you do set `Id`, it should be a stable string
+across package versions. DevPal will use this Id for tracking settings for each
+provider within a package. Changing this string will result in the user's
+settings for your extension being lost.  
 
 #### Fallback commands
 

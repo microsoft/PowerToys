@@ -18,6 +18,7 @@ public partial class BookmarksCommandProvider : CommandProvider
 
     public BookmarksCommandProvider()
     {
+        Id = "Bookmarks";
         DisplayName = "Bookmarks";
 
         _addNewCommand.AddedAction += AddNewCommand_AddedAction;

@@ -11,6 +11,7 @@ public partial class WindowsServicesCommandsProvider : CommandProvider
 {
     public WindowsServicesCommandsProvider()
     {
+        Id = "Windows.Services";
         DisplayName = $"Windows Services";
     }
 

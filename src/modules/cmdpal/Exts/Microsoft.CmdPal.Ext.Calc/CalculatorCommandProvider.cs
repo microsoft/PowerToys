@@ -18,6 +18,7 @@ public partial class CalculatorCommandProvider : CommandProvider
 
     public CalculatorCommandProvider()
     {
+        Id = "Calculator";
         DisplayName = "Calculator";
     }
 

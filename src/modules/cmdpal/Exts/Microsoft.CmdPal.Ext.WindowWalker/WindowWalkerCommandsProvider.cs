@@ -18,6 +18,7 @@ public partial class WindowWalkerCommandsProvider : CommandProvider
 
     public WindowWalkerCommandsProvider()
     {
+        Id = "WindowWalker";
         DisplayName = Resources.windowwalker_name;
         _windowWalkerPageItem = new CommandItem(new WindowWalkerListPage())
         {

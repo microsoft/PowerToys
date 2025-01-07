@@ -21,6 +21,7 @@ public partial class WindowsTerminalCommandsProvider : CommandProvider
 
     public WindowsTerminalCommandsProvider()
     {
+        Id = "WindowsTerminalProfiles";
         DisplayName = Resources.extension_name;
 
         _terminalCommand = new TerminalTopLevelCommandItem(_settingsManager);

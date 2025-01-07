@@ -7,7 +7,7 @@ using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
 /// <summary>
-/// Message which closes the application. Used by <see cref="QuitAction"/> via <see cref="QuitCommandProvider"/>.
+/// Message which closes the application. Used by <see cref="QuitAction"/> via <see cref="BuiltInsCommandProvider"/>.
 /// </summary>
 public record QuitMessage()
 {

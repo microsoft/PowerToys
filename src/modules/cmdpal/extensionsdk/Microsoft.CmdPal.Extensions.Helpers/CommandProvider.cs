@@ -6,11 +6,15 @@ namespace Microsoft.CmdPal.Extensions.Helpers;
 
 public abstract partial class CommandProvider : ICommandProvider
 {
+    private string _id = string.Empty;
+
     private string _displayName = string.Empty;
 
     private IconDataType _icon = new(string.Empty);
 
     private ICommandSettings? _settings;
+
+    public string Id { get => _id; protected set => _id = value; }
 
     public string DisplayName { get => _displayName; protected set => _displayName = value; }
 
