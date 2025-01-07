@@ -227,7 +227,7 @@
             <controls:PageLink x:Uid="LearnMore_ZoomIt" Link="https://aka.ms/PowerToysOverview_ZoomIt" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink Link="https://learn.microsoft.com/en-us/sysinternals/downloads/zoomit" Text="SysInternals ZoomIt by Mark Russinovich, Alex Mihaiuc, John Stephens" />
+            <controls:PageLink Link="https://learn.microsoft.com/en-us/sysinternals/downloads/zoomit" Text="Sysinternals Zoomit by Mark Russinovich, Alex Mihaiuc, John Stephens" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>
