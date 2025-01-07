@@ -75,9 +75,13 @@ public sealed partial class ListPage : Page,
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
     private void ListView_ItemClick(object sender, ItemClickEventArgs e)
     {
-        if (e.ClickedItem is ListItemViewModel item)
+        if (e.ClickedItem is ListItemViewModel item && item == ItemsList.SelectedItem)
         {
             ViewModel?.InvokeItemCommand.Execute(item);
+        }
+        else if (e.ClickedItem is ListItemViewModel item2)
+        {
+            ViewModel?.UpdateSelectedItemCommand.Execute(item2);
         }
     }
 
