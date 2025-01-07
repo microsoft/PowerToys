@@ -191,7 +191,7 @@ public sealed partial class SearchBar : UserControl,
                     CurrentPageViewModel.Filter = FilterBox.Text;
                 }
             },
-            //// Couldn't find a good recommendation/resource for value here. PT uses 50ms as default, so that is a reasonable default 
+            //// Couldn't find a good recommendation/resource for value here. PT uses 50ms as default, so that is a reasonable default
             //// This seems like a useful testing site for typing times: https://keyboardtester.info/keyboard-latency-test/
             //// i.e. if another keyboard press comes in within 50ms of the last, we'll wait before we fire off the request
             interval: TimeSpan.FromMilliseconds(50),
