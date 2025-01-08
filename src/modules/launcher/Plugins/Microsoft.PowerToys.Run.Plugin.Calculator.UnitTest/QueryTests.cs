@@ -41,6 +41,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("=5 / 0", "Expression contains division by zero")]
         [DataRow("10+(8*9)/0+7", "Expression contains division by zero")]
         [DataRow("10+(8*9)/0*7", "Expression contains division by zero")]
+        [DataRow("10+(8*9)/0x00", "Expression contains division by zero")]
+        [DataRow("10+(8*9)/0b0", "Expression contains division by zero")]
         public void ErrorResultOnInvalidKeywordQuery(string typedString, string expectedResult)
         {
             Query expectedQuery = new(typedString, "=");

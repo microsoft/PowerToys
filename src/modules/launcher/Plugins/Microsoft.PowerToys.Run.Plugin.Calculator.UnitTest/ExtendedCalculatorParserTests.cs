@@ -197,6 +197,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("randi(0.5)", true)]
         [DataRow("rand()", true)]
         [DataRow("rand(0.5)", false)]
+        [DataRow("0X78AD+0o123", true)]
+        [DataRow("0o9", false)]
         public void InputValid_TestValid_WhenCalled(string input, bool valid)
         {
             // Act
@@ -233,7 +235,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
                new object[] { "abs(-2)", 2M },
                new object[] { "abs(2)", 2M },
                new object[] { "0+(1*2)/(0+1)", 2M }, // Validate that division by "(0+1)" is not interpret as division by zero.
-               new object[] { "0+(1*2)/0.5", 4M }, // Validate that division by  number with decimal digits is not interpret as division by zero.
+               new object[] { "0+(1*2)/0.5", 4M }, // Validate that division by number with decimal digits is not interpret as division by zero.
+               new object[] { "0+(1*2)/0o004", 0.5M }, // Validate that division by an octal number with zeroes is not treated as division by zero.
            };
 
         [DataTestMethod]
