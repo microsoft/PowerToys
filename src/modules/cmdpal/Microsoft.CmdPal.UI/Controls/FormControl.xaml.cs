@@ -14,6 +14,12 @@ public sealed partial class FormControl : UserControl
     private static readonly AdaptiveCardRenderer _renderer;
     private FormViewModel? _viewModel;
 
+    // LOAD-BEARING: if you don't hang onto a reference to the RenderedAdaptiveCard
+    // then the GC might clean it up sometime, even while the card is in the UI
+    // tree. If this gets GC'd, then it'll revoke our Action handler, and the
+    // form will do seemingly nothing.
+    private RenderedAdaptiveCard? _renderedCard;
+
     public FormViewModel? ViewModel { get => _viewModel; set => AttachViewModel(value); }
 
     static FormControl()
@@ -71,10 +77,10 @@ public sealed partial class FormControl : UserControl
 
     private void DisplayCard(AdaptiveCardParseResult result)
     {
-        var rendered = _renderer.RenderAdaptiveCard(result.AdaptiveCard);
-        rendered.Action += Rendered_Action;
+        _renderedCard = _renderer.RenderAdaptiveCard(result.AdaptiveCard);
         ContentGrid.Children.Clear();
-        ContentGrid.Children.Add(rendered.FrameworkElement);
+        ContentGrid.Children.Add(_renderedCard.FrameworkElement);
+        _renderedCard.Action += Rendered_Action;
     }
 
     private void Rendered_Action(RenderedAdaptiveCard sender, AdaptiveActionEventArgs args) =>
