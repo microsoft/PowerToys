@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Media;
+using ManagedCommon;
 using Microsoft.Win32;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.UserSettings;
@@ -50,7 +51,7 @@ namespace PowerLauncher.Helper
 
         private void SetSystemTheme(ManagedCommon.Theme theme)
         {
-            _mainWindow.Background = Common.UI.OSVersionHelper.IsWindows11() is false ? SystemColors.WindowBrush : null;
+            _mainWindow.Background = OSVersionHelper.IsWindows11() is false ? SystemColors.WindowBrush : null;
 
             _mainWindow.Resources.MergedDictionaries.Clear();
             _mainWindow.Resources.MergedDictionaries.Add(new ResourceDictionary
@@ -66,7 +67,7 @@ namespace PowerLauncher.Helper
                     Source = new Uri(themeString, UriKind.Absolute),
                 };
                 _mainWindow.Resources.MergedDictionaries.Add(fluentThemeDictionary);
-                if (!Common.UI.OSVersionHelper.IsWindows11())
+                if (!OSVersionHelper.IsWindows11())
                 {
                     // Apply background only on Windows 10
                     // Windows theme does not work properly for dark and light mode so right now set the background color manual.
@@ -95,7 +96,7 @@ namespace PowerLauncher.Helper
                 {
                     Source = new Uri(styleThemeString, UriKind.Relative),
                 });
-                if (Common.UI.OSVersionHelper.IsWindows11())
+                if (OSVersionHelper.IsWindows11())
                 {
                     // Apply background only on Windows 11 to keep the same style as WPFUI
                     _mainWindow.Background = new SolidColorBrush

@@ -244,7 +244,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
                 // https://github.com/microsoft/microsoft-ui-xaml/issues/8948 - A window's top border incorrectly
                 // renders as black on Windows 10.
-                WindowHelpers.ForceTopBorder1PixelInset(WindowNative.GetWindowHandle(settingsWindow));
+                WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
             }
             else
             {
@@ -259,7 +259,7 @@ namespace Microsoft.PowerToys.Settings.UI
                     OobeWindow oobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.Overview);
                     oobeWindow.Activate();
                     oobeWindow.ExtendsContentIntoTitleBar = true;
-                    WindowHelpers.ForceTopBorder1PixelInset(WindowNative.GetWindowHandle(settingsWindow));
+                    WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
                     SetOobeWindow(oobeWindow);
                 }
                 else if (ShowScoobe)
@@ -268,7 +268,7 @@ namespace Microsoft.PowerToys.Settings.UI
                     OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew);
                     scoobeWindow.Activate();
                     scoobeWindow.ExtendsContentIntoTitleBar = true;
-                    WindowHelpers.ForceTopBorder1PixelInset(WindowNative.GetWindowHandle(settingsWindow));
+                    WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
                     SetOobeWindow(scoobeWindow);
                 }
                 else if (ShowFlyout)
@@ -316,7 +316,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 // Window is also needed to show MessageDialog
                 settingsWindow = new MainWindow();
                 settingsWindow.ExtendsContentIntoTitleBar = true;
-                WindowHelpers.ForceTopBorder1PixelInset(WindowNative.GetWindowHandle(settingsWindow));
+                WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
                 settingsWindow.Activate();
                 settingsWindow.NavigateToSection(StartupPage);
                 ShowMessageDialog("The application is running in Debug mode.", "DEBUG");

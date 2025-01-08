@@ -15,6 +15,7 @@ using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 
 using Common.UI;
+using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 using PowerLauncher.Helper;

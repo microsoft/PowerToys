@@ -22,7 +22,7 @@ namespace FileLocksmithUI
             SetTitleBar(AppTitleBar);
             Activated += MainWindow_Activated;
             AppWindow.SetIcon("Assets/FileLocksmith/Icon.ico");
-            WindowHelpers.ForceTopBorder1PixelInset(this.GetWindowHandle());
+            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());
 
             var loader = ResourceLoaderInstance.ResourceLoader;
             var title = isElevated ? loader.GetString("AppAdminTitle") : loader.GetString("AppTitle");

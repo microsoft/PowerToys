@@ -307,7 +307,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 // A custom title bar is required for full window theme and Mica support.
                 // https://docs.microsoft.com/windows/apps/develop/title-bar?tabs=winui3#full-customization
                 u.ExtendsContentIntoTitleBar = true;
-                WindowHelpers.ForceTopBorder1PixelInset(WindowNative.GetWindowHandle(u));
+                WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(u));
                 u.SetTitleBar(AppTitleBar);
             }
         }

@@ -49,7 +49,7 @@ namespace RegistryPreview
 
             // Extend the canvas to include the title bar so the app can support theming
             ExtendsContentIntoTitleBar = true;
-            WindowHelpers.ForceTopBorder1PixelInset(windowHandle);
+            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(windowHandle);
             SetTitleBar(titleBar);
 
             // if have settings, update the location of the window
