@@ -6,7 +6,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Json;
-
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.UI.Xaml;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
             try
             {
                 var json = File.ReadAllText(_placementPath);
-                var placement = JsonSerializer.Deserialize<WINDOWPLACEMENT>(json, SettingsUIJsonSerializerContext.Default.WINDOWPLACEMENT);
+                var placement = JsonSerializer.Deserialize<WINDOWPLACEMENT>(json, SourceGenerationContextContext.Default.WINDOWPLACEMENT);
 
                 placement.Length = Marshal.SizeOf<WINDOWPLACEMENT>();
                 placement.Flags = 0;
@@ -40,7 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
             _ = NativeMethods.GetWindowPlacement(handle, out var placement);
             try
             {
-                var json = JsonSerializer.Serialize(placement, SettingsUIJsonSerializerContext.Default.WINDOWPLACEMENT);
+                var json = JsonSerializer.Serialize(placement, SourceGenerationContextContext.Default.WINDOWPLACEMENT);
                 File.WriteAllText(_placementPath, json);
             }
             catch (Exception)

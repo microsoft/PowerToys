@@ -23,6 +23,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Telemetry;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -1102,7 +1103,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
             var dataToSend = customaction.ToString();
-            dataToSend = JsonSerializer.Serialize(ActionMessage.Create("restart_maintain_elevation"), SettingsUIJsonSerializerContext.Default.ActionMessage);
+            dataToSend = JsonSerializer.Serialize(ActionMessage.Create("restart_maintain_elevation"), SourceGenerationContextContext.Default.ActionMessage);
             SendRestartAsAdminConfigMSG(dataToSend);
         }
 

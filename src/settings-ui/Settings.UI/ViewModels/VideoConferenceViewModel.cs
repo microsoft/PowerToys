@@ -12,12 +12,12 @@ using System.Text.Json;
 using System.Threading.Tasks;
 
 using global::PowerToys.GPOWrapper;
-using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -567,7 +567,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         CultureInfo.InvariantCulture,
                         "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                         ModuleName,
-                        JsonSerializer.Serialize(Settings, SettingsUIJsonSerializerContext.Default.VideoConferenceSettings)));
+                        JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.VideoConferenceSettings)));
         }
 
         public void RefreshEnabledState()

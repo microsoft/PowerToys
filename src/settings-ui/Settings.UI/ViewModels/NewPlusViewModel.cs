@@ -14,12 +14,12 @@ using System.Windows;
 using Common.UI;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Windows.ApplicationModel.VoiceCommands;
 using Windows.System;
 
@@ -191,7 +191,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                        CultureInfo.InvariantCulture,
                        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                        ModuleName,
-                       JsonSerializer.Serialize(Settings, SettingsUIJsonSerializerContext.Default.NewPlusSettings)));
+                       JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.NewPlusSettings)));
         }
 
         private Func<string, int> SendConfigMSG { get; }

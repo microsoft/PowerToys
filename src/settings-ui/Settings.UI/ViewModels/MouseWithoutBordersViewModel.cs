@@ -21,6 +21,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
@@ -1185,7 +1186,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         CultureInfo.InvariantCulture,
         "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
         MouseWithoutBordersSettings.ModuleName,
-        JsonSerializer.Serialize(Settings, SettingsUIJsonSerializerContext.Default.MouseWithoutBordersSettings)));
+        JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.MouseWithoutBordersSettings)));
         }
 
         public void NotifyUpdatedSettings()

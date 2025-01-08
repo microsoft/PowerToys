@@ -8,9 +8,10 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 
-namespace Microsoft.PowerToys.Settings.UI.Helpers;
+namespace Microsoft.PowerToys.Settings.UI.SerializationContext;
 
 [JsonSerializable(typeof(WINDOWPLACEMENT))]
 [JsonSerializable(typeof(AdvancedPasteSettings))]
@@ -30,6 +31,6 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers;
 [JsonSerializable(typeof(WorkspacesSettings))]
 [JsonSerializable(typeof(IList<PowerToysReleaseInfo>))]
 [JsonSerializable(typeof(ActionMessage))]
-public sealed partial class SettingsUIJsonSerializerContext : JsonSerializerContext
+public sealed partial class SourceGenerationContextContext : JsonSerializerContext
 {
 }

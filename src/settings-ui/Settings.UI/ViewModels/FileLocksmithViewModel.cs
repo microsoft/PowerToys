@@ -7,10 +7,10 @@ using System.Globalization;
 using System.Text.Json;
 
 using global::PowerToys.GPOWrapper;
-using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -135,7 +135,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                        CultureInfo.InvariantCulture,
                        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                        FileLocksmithSettings.ModuleName,
-                       JsonSerializer.Serialize(Settings, SettingsUIJsonSerializerContext.Default.FileLocksmithSettings)));
+                       JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.FileLocksmithSettings)));
         }
 
         private Func<string, int> SendConfigMSG { get; }
