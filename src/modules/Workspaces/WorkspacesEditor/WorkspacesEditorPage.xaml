@@ -383,6 +383,12 @@
                 <CheckBox
                     Margin="20,0,0,0"
                     VerticalAlignment="Bottom"
+                    Content="{x:Static props:Resources.ShouldLaunchOnStartup}"
+                    FontSize="14"
+                    IsChecked="{Binding IsLaunchOnStartup, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <CheckBox
+                    Margin="20,0,0,0"
+                    VerticalAlignment="Bottom"
                     Content="{x:Static props:Resources.MoveIfExist}"
                     FontSize="14"
                     IsChecked="{Binding MoveExistingWindows, Mode=TwoWay}" />

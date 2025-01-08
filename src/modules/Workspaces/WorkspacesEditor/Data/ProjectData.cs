@@ -89,6 +89,8 @@ namespace WorkspacesEditor.Data
 
             public bool IsShortcutNeeded { get; set; }
 
+            public bool IsLaunchOnStartup { get; set; }
+
             public bool MoveExistingWindows { get; set; }
 
             public List<MonitorConfigurationWrapper> MonitorConfiguration { get; set; }

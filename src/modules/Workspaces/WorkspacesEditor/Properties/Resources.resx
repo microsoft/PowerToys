@@ -157,6 +157,9 @@
   <data name="CreateShortcut" xml:space="preserve">
     <value>Create desktop shortcut</value>
   </data>
+  <data name="ShouldLaunchOnStartup" xml:space="preserve">
+    <value>Launch on startup</value>
+  </data>
   <data name="Custom" xml:space="preserve">
     <value>Custom</value>
   </data>

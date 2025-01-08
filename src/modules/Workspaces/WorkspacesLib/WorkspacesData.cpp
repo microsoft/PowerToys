@@ -283,6 +283,7 @@ namespace WorkspacesData
             const static wchar_t* CreationTimeID = L"creation-time";
             const static wchar_t* LastLaunchedTimeID = L"last-launched-time";
             const static wchar_t* IsShortcutNeededID = L"is-shortcut-needed";
+            const static wchar_t* IsLaunchOnStartupID = L"is-Launch-on-startup";
             const static wchar_t* MoveExistingWindowsID = L"move-existing-windows";
             const static wchar_t* MonitorConfigurationID = L"monitor-configuration";
             const static wchar_t* AppsID = L"applications";
@@ -312,6 +313,7 @@ namespace WorkspacesData
                 json.SetNamedValue(NonLocalizable::LastLaunchedTimeID, json::value(static_cast<long>(data.lastLaunchedTime.value())));
             }
             json.SetNamedValue(NonLocalizable::IsShortcutNeededID, json::value(data.isShortcutNeeded));
+            json.SetNamedValue(NonLocalizable::IsLaunchOnStartupID, json::value(data.isLaunchOnStartup));
             json.SetNamedValue(NonLocalizable::MoveExistingWindowsID, json::value(data.moveExistingWindows));
             json.SetNamedValue(NonLocalizable::MonitorConfigurationID, monitorsArray);
             json.SetNamedValue(NonLocalizable::AppsID, appsArray);
@@ -336,6 +338,11 @@ namespace WorkspacesData
                 if (json.HasKey(NonLocalizable::IsShortcutNeededID))
                 {
                     result.isShortcutNeeded = json.GetNamedBoolean(NonLocalizable::IsShortcutNeededID);
+                }
+
+                if (json.HasKey(NonLocalizable::IsLaunchOnStartupID))
+                {
+                    result.isLaunchOnStartup = json.GetNamedBoolean(NonLocalizable::IsLaunchOnStartupID);
                 }
 
                 if (json.HasKey(NonLocalizable::MoveExistingWindowsID))

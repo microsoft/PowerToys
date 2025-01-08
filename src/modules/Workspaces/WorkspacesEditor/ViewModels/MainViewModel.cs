@@ -181,6 +181,7 @@ namespace WorkspacesEditor.ViewModels
 
             editedProject.Name = projectToSave.Name;
             editedProject.IsShortcutNeeded = projectToSave.IsShortcutNeeded;
+            editedProject.IsLaunchOnStartup = projectToSave.IsLaunchOnStartup;
             editedProject.MoveExistingWindows = projectToSave.MoveExistingWindows;
             editedProject.PreviewIcons = projectToSave.PreviewIcons;
             editedProject.PreviewImage = projectToSave.PreviewImage;
@@ -194,36 +195,52 @@ namespace WorkspacesEditor.ViewModels
 
         private void ApplyShortcut(Project project)
         {
-            string basePath = AppDomain.CurrentDomain.BaseDirectory;
-            string shortcutAddress = Path.Combine(FolderUtils.Desktop(), project.Name + ".lnk");
             string shortcutIconFilename = Path.Combine(FolderUtils.Temp(), project.Id + ".ico");
 
-            if (!project.IsShortcutNeeded)
+            if (!project.IsShortcutNeeded && !project.IsLaunchOnStartup)
             {
                 if (File.Exists(shortcutIconFilename))
                 {
                     File.Delete(shortcutIconFilename);
                 }
+            }
+            else
+            {
+                Bitmap icon = WorkspacesIcon.DrawIcon(WorkspacesIcon.IconTextFromProjectName(project.Name), App.ThemeManager.GetCurrentTheme());
+                WorkspacesIcon.SaveIcon(icon, shortcutIconFilename);
+            }
 
+            try
+            {
+                CreateShortcut(project, project.IsShortcutNeeded, FolderUtils.Desktop(), shortcutIconFilename);
+                CreateShortcut(project, project.IsLaunchOnStartup, FolderUtils.Startup(), shortcutIconFilename);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Shortcut creation error: {ex.Message}");
+            }
+        }
+
+        private void CreateShortcut(Project project, bool isNeeded, string shortcutFolder, string shortcutIconFilename)
+        {
+            string shortcutAddress = Path.Combine(shortcutFolder, project.Name + ".lnk");
+            if (!isNeeded)
+            {
                 if (File.Exists(shortcutAddress))
                 {
                     File.Delete(shortcutAddress);
                 }
-
-                return;
             }
-
-            Bitmap icon = WorkspacesIcon.DrawIcon(WorkspacesIcon.IconTextFromProjectName(project.Name), App.ThemeManager.GetCurrentTheme());
-            WorkspacesIcon.SaveIcon(icon, shortcutIconFilename);
-
-            try
+            else
             {
+                string basePath = AppDomain.CurrentDomain.BaseDirectory;
+
                 // Workaround to be able to create a shortcut with unicode filename
                 File.WriteAllBytes(shortcutAddress, Array.Empty<byte>());
 
                 // Create a ShellLinkObject that references the .lnk file
                 Shell32.Shell shell = new Shell32.Shell();
-                Shell32.Folder dir = shell.NameSpace(FolderUtils.Desktop());
+                Shell32.Folder dir = shell.NameSpace(shortcutFolder);
                 Shell32.FolderItem folderItem = dir.Items().Item($"{project.Name}.lnk");
                 Shell32.ShellLinkObject link = (Shell32.ShellLinkObject)folderItem.GetLink;
 
@@ -235,10 +252,6 @@ namespace WorkspacesEditor.ViewModels
                 link.SetIconLocation(shortcutIconFilename, 0);
 
                 link.Save(shortcutAddress);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Shortcut creation error: {ex.Message}");
             }
         }
 

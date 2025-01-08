@@ -45,6 +45,8 @@ namespace WorkspacesEditor.Models
 
         public bool IsShortcutNeeded { get; set; }
 
+        public bool IsLaunchOnStartup { get; set; }
+
         public bool MoveExistingWindows { get; set; }
 
         public string LastLaunched
@@ -205,6 +207,7 @@ namespace WorkspacesEditor.Models
             PreviewIcons = selectedProject.PreviewIcons;
             PreviewImage = selectedProject.PreviewImage;
             IsShortcutNeeded = selectedProject.IsShortcutNeeded;
+            IsLaunchOnStartup = selectedProject.IsLaunchOnStartup;
             MoveExistingWindows = selectedProject.MoveExistingWindows;
 
             int screenIndex = 1;
@@ -233,6 +236,7 @@ namespace WorkspacesEditor.Models
             CreationTime = project.CreationTime;
             LastLaunchedTime = project.LastLaunchedTime;
             IsShortcutNeeded = project.IsShortcutNeeded;
+            IsLaunchOnStartup = project.IsLaunchOnStartup;
             MoveExistingWindows = project.MoveExistingWindows;
             Monitors = [];
             Applications = [];
