@@ -5,9 +5,9 @@
 using System.Text.Json.Serialization;
 using static ManagedCommon.LanguageHelper;
 
-namespace ManagedCommon;
+namespace ManagedCommon.Serialization;
 
 [JsonSerializable(typeof(OutGoingLanguageSettings))]
-internal sealed partial class ManagedCommonJsonSerializerContext : JsonSerializerContext
+internal sealed partial class SourceGenerationContext : JsonSerializerContext
 {
 }
