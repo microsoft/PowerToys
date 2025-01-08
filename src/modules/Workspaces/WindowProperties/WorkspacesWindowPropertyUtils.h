@@ -26,9 +26,9 @@ namespace WorkspacesWindowProperties
         std::memcpy(&workspacesAppIDPart[0], &Properties::WorkspacesAppID, workspacesAppIDLength * sizeof(wchar_t));
         workspacesAppIDPart[workspacesAppIDLength + 1] = 0;
 
-        uint16_t parts[8];
+        uint64_t parts[2];
         std::memcpy(&parts[0], &guid, sizeof(GUID));
-        for (unsigned char partIndex = 0; partIndex < 8; partIndex++)
+        for (unsigned char partIndex = 0; partIndex < 2; partIndex++)
         {
             workspacesAppIDPart[workspacesAppIDLength] = '0' + partIndex;
             ::SetPropW(window, workspacesAppIDPart, reinterpret_cast<HANDLE>(parts[partIndex]));

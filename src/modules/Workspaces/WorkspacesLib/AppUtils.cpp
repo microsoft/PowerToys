@@ -407,14 +407,14 @@ namespace Utils
             std::memcpy(&workspacesAppIDPart[0], &NonLocalizable::WorkspacesAppID, workspacesAppIDLength * sizeof(wchar_t));
             workspacesAppIDPart[workspacesAppIDLength + 1] = 0;
             
-            uint16_t parts[8];
-            for (unsigned char partIndex = 0; partIndex < 8; partIndex++)
+            uint64_t parts[2];
+            for (unsigned char partIndex = 0; partIndex < 2; partIndex++)
             {
                 workspacesAppIDPart[workspacesAppIDLength] = '0' + partIndex;
-                auto rawData = GetPropW(window, workspacesAppIDPart);
+                HANDLE rawData = GetPropW(window, workspacesAppIDPart);
                 if (rawData)
                 {
-                    memcpy(&parts[partIndex], &rawData, sizeof rawData);
+                    parts[partIndex] = reinterpret_cast<uint64_t>(rawData);
                 }
                 else
                 {
