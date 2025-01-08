@@ -4,6 +4,7 @@
 
 using System.Text.Json;
 using AdvancedPaste.Models.KernelQueryCache;
+using AdvancedPaste.SerializationContext;
 using AdvancedPaste.Telemetry;
 
 namespace AdvancedPaste.Helpers
@@ -49,6 +50,6 @@ namespace AdvancedPaste.Helpers
 
         public string ActionChain { get; set; }
 
-        public string ToJsonString() => JsonSerializer.Serialize(this, AdvancedPasteJsonSerializerContext.Default.PersistedCache);
+        public string ToJsonString() => JsonSerializer.Serialize(this, SourceGenerationContext.Default.PersistedCache);
     }
 }

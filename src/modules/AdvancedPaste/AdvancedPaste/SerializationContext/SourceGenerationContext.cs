@@ -3,13 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
+using AdvancedPaste.Helpers;
 using AdvancedPaste.Models.KernelQueryCache;
 
-namespace AdvancedPaste.Helpers;
+namespace AdvancedPaste.SerializationContext;
 
 [JsonSerializable(typeof(PersistedCache))]
 [JsonSerializable(typeof(LogEvent))]
 [JsonSourceGenerationOptions(UseStringEnumConverter = true)]
-public sealed partial class AdvancedPasteJsonSerializerContext : JsonSerializerContext
+public sealed partial class SourceGenerationContext : JsonSerializerContext
 {
 }
