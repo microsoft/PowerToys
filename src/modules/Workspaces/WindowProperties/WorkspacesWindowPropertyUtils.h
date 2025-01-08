@@ -26,9 +26,12 @@ namespace WorkspacesWindowProperties
         std::memcpy(&workspacesAppIDPart[0], &Properties::WorkspacesAppID, workspacesAppIDLength * sizeof(wchar_t));
         workspacesAppIDPart[workspacesAppIDLength + 1] = 0;
 
-        uint64_t parts[2];
+        // the size of the HANDLE type can vary on different systems: 4 or 8 bytes. As we can set only a HANDLE as a property, we need more properties (2 or 4) to be able to store a GUID (16 bytes)
+        const int numberOfProperties = sizeof(GUID) / sizeof(HANDLE);
+
+        uint64_t parts[numberOfProperties];
         std::memcpy(&parts[0], &guid, sizeof(GUID));
-        for (unsigned char partIndex = 0; partIndex < 2; partIndex++)
+        for (unsigned char partIndex = 0; partIndex < numberOfProperties; partIndex++)
         {
             workspacesAppIDPart[workspacesAppIDLength] = '0' + partIndex;
             ::SetPropW(window, workspacesAppIDPart, reinterpret_cast<HANDLE>(parts[partIndex]));
