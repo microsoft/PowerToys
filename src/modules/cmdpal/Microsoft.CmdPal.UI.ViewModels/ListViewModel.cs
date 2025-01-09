@@ -95,8 +95,12 @@ public partial class ListViewModel : PageViewModel
             foreach (var item in newItems)
             {
                 ListItemViewModel viewModel = new(item, this);
-                viewModel.InitializeProperties();
-                newViewModels.Add(viewModel);
+
+                // If an item fails to load, silently ignore it.
+                if (viewModel.SafeInitializeProperties())
+                {
+                    newViewModels.Add(viewModel);
+                }
             }
 
             // Now that we have new ViewModels for everything from the
