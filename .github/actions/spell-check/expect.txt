@@ -221,7 +221,6 @@ CONFIGW
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
 CONOUT
-contentdialog
 contentfiles
 CONTEXTHELP
 CONTEXTMENUHANDLER
@@ -672,6 +671,7 @@ imagingdevices
 ime
 imgflip
 inbox
+Indo
 inetcpl
 Infobar
 INFOEXAMPLE
@@ -707,7 +707,6 @@ INVALIDINDEX
 invalidoperatioexception
 ipcmanager
 IPREVIEW
-ipreviewhandlervisualssetfont
 irprops
 isbi
 ISearch
@@ -770,6 +769,7 @@ lhwnd
 LIBID
 libraryincludes
 lindex
+linkid
 LINKOVERLAY
 LINQTo
 listview
@@ -783,7 +783,7 @@ LOADFROMFILE
 LOBYTE
 localappdata
 LOCALDISPLAY
-LOCALPACKAGE
+localpackage
 LOCALSYSTEM
 LOCATIONCHANGE
 LOGFONT
@@ -1048,7 +1048,6 @@ NResize
 nsunt
 NTAPI
 ntdll
-ntfs
 NTSTATUS
 NTZm
 nullonfailure
@@ -1083,7 +1082,6 @@ osvi
 OUTOFCONTEXT
 outpin
 Outptr
-outputtype
 outsettings
 OVERLAPPEDWINDOW
 overlaywindow
@@ -1211,7 +1209,6 @@ programdata
 projectname
 PROPBAG
 PROPERTYKEY
-propkey
 Propset
 PROPVARIANT
 prvpane
@@ -1258,6 +1255,7 @@ QUNS
 QXZ
 RAII
 RAlt
+randi
 Rasterization
 Rasterize
 RAWINPUTDEVICE
@@ -1768,6 +1766,7 @@ wic
 wifi
 wil
 winapi
+winappsdk
 wincolor
 windir
 WINDOWCREATED
@@ -1782,8 +1781,6 @@ windowssettings
 WINDOWSTYLES
 WINDOWSTYLESICON
 WINEVENT
-winexe
-winforms
 winget
 wingetcreate
 Winhook

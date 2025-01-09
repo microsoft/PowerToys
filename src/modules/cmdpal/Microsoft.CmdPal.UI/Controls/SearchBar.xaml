@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.CmdPal.UI.Controls.SearchBar"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -16,8 +16,8 @@
         VerticalContentAlignment="Stretch"
         KeyDown="FilterBox_KeyDown"
         PlaceholderText="Type here to search..."
-        PreviewKeyUp="FilterBox_PreviewKeyUp"
         PreviewKeyDown="FilterBox_PreviewKeyDown"
+        PreviewKeyUp="FilterBox_PreviewKeyUp"
         Style="{StaticResource SearchTextBoxStyle}"
         TextChanged="FilterBox_TextChanged" />
 

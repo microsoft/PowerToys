@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
@@ -33,6 +34,19 @@ namespace AdvancedPaste.Helpers
         private static readonly Regex CsvRemoveStartAndEndQuotationMarksRegex = new Regex(@"^""(?=(""{2})+)|(?<=(""{2})+)""$");
         private static readonly Regex CsvReplaceDoubleQuotationMarksRegex = new Regex(@"""{2}");
 
+        private static bool IsJson(string text)
+        {
+            try
+            {
+                _ = JsonDocument.Parse(text);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         internal static async Task<string> ToJsonFromXmlOrCsvAsync(DataPackageView clipboardData)
         {
             Logger.LogTrace();
@@ -45,6 +59,12 @@ namespace AdvancedPaste.Helpers
 
             var text = await clipboardData.GetTextAsync();
             string jsonText = string.Empty;
+
+            // If the text is already JSON, return it
+            if (IsJson(text))
+            {
+                return text;
+            }
 
             // Try convert XML
             try

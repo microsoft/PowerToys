@@ -101,6 +101,7 @@
 ^\Qsrc/modules/colorPicker/ColorPickerUI/Shaders/GridShader.cso\E$
 ^\Qsrc/modules/MouseUtils/MouseJump.Common/NativeMethods/User32/UI/WindowsAndMessaging/User32.SYSTEM_METRICS_INDEX.cs\E$
 ^\Qsrc/modules/MouseUtils/MouseJumpUI/MainForm.resx\E$
+^\Qsrc/modules/MouseUtils/MouseJump.Common/NativeMethods/User32/UI/WindowsAndMessaging/User32.SYSTEM_METRICS_INDEX.cs\E$
 ^\Qsrc/modules/MouseWithoutBorders/App/Form/frmAbout.cs\E$
 ^\Qsrc/modules/MouseWithoutBorders/App/Form/frmInputCallback.resx\E$
 ^\Qsrc/modules/MouseWithoutBorders/App/Form/frmLogon.resx\E$

@@ -3583,10 +3583,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Characters</value>
   </data>
   <data name="QuickAccent_SelectedLanguage.Header" xml:space="preserve">
-    <value>Choose a character set</value>
+    <value>Choose character sets</value>
   </data>
   <data name="QuickAccent_SelectedLanguage.Description" xml:space="preserve">
-    <value>Show only accented characters common to the selected set</value>
+    <value>Show only accented characters common to the selected sets</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_All.Content" xml:space="preserve">
     <value>All available</value>
@@ -3674,6 +3674,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_SelectedLanguage_Pinyin" xml:space="preserve">
     <value>Pinyin</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Proto_Indo_European" xml:space="preserve">
+    <value>Proto Indo European</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Polish" xml:space="preserve">
     <value>Polish</value>
@@ -4735,5 +4738,11 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Enable_Module.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Enable module</value>
+  </data>
+  <data name="PowerLauncher_PluginVersion.Text" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="PowerLauncher_PluginWebsite.Text" xml:space="preserve">
+    <value>Project website</value>
   </data>
 </root>

@@ -46,6 +46,8 @@ betsegaw
 bricelam
 bsky
 CCcat
+chenmy
+chemwolf
 Chinh
 chrdavis
 Chrzan
@@ -63,6 +65,7 @@ Deondre
 DHowett
 ductdo
 Essey
+Feng
 ethanfangg
 ferraridavide
 frankychen
@@ -79,6 +82,7 @@ Griese
 grzhan
 Guo
 hanselman
+haoliuu
 Harmath
 Heiko
 Hemmerlein
@@ -93,6 +97,7 @@ Jaswal
 jefflord
 Jordi
 jyuwono
+kai
 Kairu
 Kamra
 Kantarci
@@ -110,6 +115,7 @@ Markovic
 martinchrzan
 martinmoene
 Melman
+Mengyuan
 Mikhayelyan
 msft
 Mykhailo
@@ -122,11 +128,13 @@ oldnewthing
 onegreatworld
 palenshus
 pedrolamas
+Peiyao
 peteblois
 phoboslab
 Ponten
 Pooja
 Pylyp
+Qingpeng
 quachpas
 Quriz
 randyrants
@@ -155,14 +163,23 @@ Taras
 TBM
 tilovell
 Triet
+urnotdfs
 waaverecords
+wang
 Whuihuan
+Xiaofeng
 Xpg
+Yaqing
+yaqingmi
 ycv
 yeelam
 Yuniardi
 yuyoyuppe
 Zeol
+Zhao
+Zhaopeng
+zhaopy
+zhaoqpcn
 Zoltan
 Zykova
 

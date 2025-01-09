@@ -1302,7 +1302,8 @@ EXHIBIT A -Mozilla Public License.
 - AdaptiveCards.Templating 2.0.2
 - Appium.WebDriver 4.4.5
 - Azure.AI.OpenAI 1.0.0-beta.17
-- CommunityToolkit.Mvvm 8.4.0-preview2
+- CommunityToolkit.Common 8.4.0
+- CommunityToolkit.Mvvm 8.4.0
 - CommunityToolkit.WinUI.Animations 8.2.241112-preview1
 - CommunityToolkit.WinUI.Collections 8.2.241112-preview1
 - CommunityToolkit.WinUI.Controls.Primitives 8.2.241112-preview1
@@ -1320,7 +1321,7 @@ EXHIBIT A -Mozilla Public License.
 - hyjiacan.pinyin4net 4.1.1
 - Interop.Microsoft.Office.Interop.OneNote 1.1.0.2
 - LazyCache 2.4.0
-- Mages 2.0.2
+- Mages 3.0.0
 - Markdig.Signed 0.34.0
 - MessagePack 2.5.187
 - Microsoft.Bcl.AsyncInterfaces 9.0.0
