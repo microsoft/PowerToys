@@ -27,8 +27,9 @@ public partial class BookmarksCommandProvider : CommandProvider
 
     private void AddNewCommand_AddedAction(object sender, object? args)
     {
-        _addNewCommand.AddedAction += AddNewCommand_AddedAction;
         _commands.Clear();
+        LoadCommands();
+        RaiseItemsChanged(0);
     }
 
     private void LoadCommands()

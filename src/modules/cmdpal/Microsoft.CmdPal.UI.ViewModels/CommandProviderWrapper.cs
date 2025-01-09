@@ -4,6 +4,7 @@
 
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Extensions;
+using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -21,6 +22,8 @@ public sealed class CommandProviderWrapper
 
     public IFallbackCommandItem[] FallbackItems { get; private set; } = [];
 
+    public event TypedEventHandler<CommandProviderWrapper, ItemsChangedEventArgs>? CommandsChanged;
+
     public string Id { get; private set; } = string.Empty;
 
     public string DisplayName { get; private set; } = string.Empty;
@@ -34,6 +37,8 @@ public sealed class CommandProviderWrapper
     public CommandProviderWrapper(ICommandProvider provider)
     {
         _commandProvider = provider;
+        _commandProvider.ItemsChanged += CommandProvider_ItemsChanged;
+
         isValid = true;
         Id = provider.Id;
         DisplayName = provider.DisplayName;
@@ -56,6 +61,15 @@ public sealed class CommandProviderWrapper
         }
 
         _commandProvider = provider;
+
+        try
+        {
+            _commandProvider.ItemsChanged += CommandProvider_ItemsChanged;
+        }
+        catch
+        {
+        }
+
         isValid = true;
     }
 
@@ -106,4 +120,15 @@ public sealed class CommandProviderWrapper
     public override bool Equals(object? obj) => obj is CommandProviderWrapper wrapper && isValid == wrapper.isValid;
 
     public override int GetHashCode() => _commandProvider.GetHashCode();
+
+    private void CommandProvider_ItemsChanged(object sender, ItemsChangedEventArgs args)
+    {
+        // We don't want to handle this ourselves - we want the
+        // TopLevelCommandManager to know about this, so they can remove
+        // our old commands from their own list.
+        //
+        // In handling this, a call will be made to `LoadTopLevelCommands` to
+        // retrieve the new items.
+        this.CommandsChanged?.Invoke(this, args);
+    }
 }

@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -53,6 +54,88 @@ public partial class TopLevelCommandManager(IServiceProvider _serviceProvider) :
         {
             TopLevelCommands.Add(new(new(i), true));
         }
+
+        commandProvider.CommandsChanged += CommandProvider_CommandsChanged;
+    }
+
+    private void CommandProvider_CommandsChanged(CommandProviderWrapper sender, ItemsChangedEventArgs args)
+    {
+        // By all accounts, we're already on a background thread (the COM call
+        // to handle the event shouldn't be on the main thread.). But just to
+        // be sure we don't block the caller, hop off this thread
+        _ = Task.Run(async () => await UpdateCommandsForProvider(sender, args));
+    }
+
+    /// <summary>
+    /// Called when a command provider raises its ItemsChanged event. We'll
+    /// remove the old commands from the top-level list and try to put the new
+    /// ones in the same place in the list.
+    /// </summary>
+    /// <param name="sender">The provider who's commands changed</param>
+    /// <param name="args">the ItemsChangedEvent the provider raised</param>
+    /// <returns>an awaitable task</returns>
+    private async Task UpdateCommandsForProvider(CommandProviderWrapper sender, ItemsChangedEventArgs args)
+    {
+        // Work on a clone of the list, so that we can just do one atomic
+        // update to the actual observable list at the end
+        List<TopLevelCommandWrapper> clone = [.. TopLevelCommands];
+        List<TopLevelCommandWrapper> newItems = [];
+        var startIndex = -1;
+        var firstCommand = sender.TopLevelItems[0];
+        var commandsToRemove = sender.TopLevelItems.Length + sender.FallbackItems.Length;
+
+        // Tricky: all Commands from a single provider get added to the
+        // top-level list all together, in a row. So if we find just the first
+        // one, we can slice it out and insert the new ones there.
+        for (var i = 0; i < clone.Count; i++)
+        {
+            var wrapper = clone[i];
+            try
+            {
+                var thisCommand = wrapper.Model.Unsafe;
+                if (thisCommand != null)
+                {
+                    var isTheSame = thisCommand == firstCommand;
+                    if (isTheSame)
+                    {
+                        startIndex = i;
+                        break;
+                    }
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        // Fetch the new items
+        await sender.LoadTopLevelCommands();
+        foreach (var i in sender.TopLevelItems)
+        {
+            newItems.Add(new(new(i), false));
+        }
+
+        foreach (var i in sender.FallbackItems)
+        {
+            newItems.Add(new(new(i), true));
+        }
+
+        // Slice out the old commands
+        if (startIndex != -1)
+        {
+            clone.RemoveRange(startIndex, commandsToRemove);
+        }
+        else
+        {
+            // ... or, just stick them at the end (this is unexpected)
+            startIndex = clone.Count;
+        }
+
+        // add the new commands into the list at the place we found the old ones
+        clone.InsertRange(startIndex, newItems);
+
+        // now update the actual observable list with the new contents
+        ListHelpers.InPlaceUpdateList(TopLevelCommands, clone);
     }
 
     // Load commands from our extensions.
