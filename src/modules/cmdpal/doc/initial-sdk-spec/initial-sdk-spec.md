@@ -544,6 +544,13 @@ enum CommandResultKind {
     KeepOpen,   // Do nothing.
     GoToPage,   // Go to another page. GoToPageArgs will tell you where.
 };
+
+enum NavigationMode {
+    Push,   // Push the target page onto the navigation stack
+    GoBack, // Go back one page before navigating to the target page
+    GoHome, // Go back to the home page before navigating to the target page
+};
+
 [uuid("f9d6423b-bd5e-44bb-a204-2f5c77a72396")]
 interface ICommandResultArgs{};
 interface ICommandResult {
@@ -552,6 +559,7 @@ interface ICommandResult {
 }
 interface IGoToPageArgs requires ICommandResultArgs{
     String PageId { get; };
+    NavigationMode NavigationMode { get; };
 }
 
 // This is a "leaf" of the UI. This is something that can be "done" by the user.
