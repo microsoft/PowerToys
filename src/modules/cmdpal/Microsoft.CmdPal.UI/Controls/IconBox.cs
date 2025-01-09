@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.Extensions;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -98,6 +99,34 @@ public partial class IconBox : ContentControl
                         @this.SourceRequested.Invoke(@this, eventArgs);
 
                         @this.Source = eventArgs.Value;
+
+                        // Here's a little lesson in trickery:
+                        // Emoji are rendered just a bit bigger than Segoe Icons.
+                        // Just enough bigger that they get clipped if you put
+                        // them in a box at the same size.
+                        //
+                        // So, if the icon we get back was a font icon,
+                        // and the glyph for that icon is NOT in the range of
+                        // Segoe icons, then let's give the icon some extra space
+                        @this.Padding = new Thickness(0);
+
+                        if (eventArgs.Key is IconDataType iconData &&
+                            @this.Source is FontIconSource)
+                        {
+                            if (!string.IsNullOrEmpty(iconData.Icon) && iconData.Icon.Length <= 2)
+                            {
+                                var ch = iconData.Icon[0];
+
+                                // The range of MDL2 Icons isn't explicitly defined, but
+                                // we're using this based off the table on:
+                                // https://docs.microsoft.com/en-us/windows/uwp/design/style/segoe-ui-symbol-font
+                                var isMDL2Icon = ch >= '\uE700' && ch <= '\uF8FF';
+                                if (!isMDL2Icon)
+                                {
+                                    @this.Padding = new Thickness(-4);
+                                }
+                            }
+                        }
                     }
                 }));
             }

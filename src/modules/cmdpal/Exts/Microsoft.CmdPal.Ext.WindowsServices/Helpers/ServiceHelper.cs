@@ -7,12 +7,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
-using System.Resources;
 using System.ServiceProcess;
-using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.WindowsServices.Commands;
 using Microsoft.CmdPal.Ext.WindowsServices.Properties;
+using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.Win32;
 
@@ -47,7 +45,7 @@ public static class ServiceHelper
 
         return serviceList.Select(s =>
         {
-            ServiceResult serviceResult = new ServiceResult(s);
+            var serviceResult = new ServiceResult(s);
             ServiceCommand serviceAction;
             CommandContextItem[] moreCommands;
             if (serviceResult.IsRunning)
@@ -66,11 +64,25 @@ public static class ServiceHelper
                 ];
             }
 
+            IconDataType icon = new("\U0001f7e2"); // unicode LARGE GREEN CIRCLE
+            switch (s.Status)
+            {
+                case ServiceControllerStatus.Stopped:
+                    icon = new("\U0001F534"); // unicode LARGE RED CIRCLE
+                    break;
+                case ServiceControllerStatus.Running:
+                    break;
+                case ServiceControllerStatus.Paused:
+                    icon = new("\u23F8"); // unicode DOUBLE VERTICAL BAR, aka, "Pause"
+                    break;
+            }
+
             return new ListItem(serviceAction)
             {
                 Title = s.DisplayName,
                 Subtitle = ServiceHelper.GetResultSubTitle(s),
                 MoreCommands = moreCommands,
+                Icon = icon,
 
                 // TODO GH #78 we need to improve the icon story
                 // TODO GH #126 investigate tooltip story
@@ -183,17 +195,11 @@ public static class ServiceHelper
         {
             return Resources.wox_plugin_service_continue_pending;
         }
-        else if (status == ServiceControllerStatus.PausePending)
-        {
-            return Resources.wox_plugin_service_pause_pending;
-        }
-        else if (status == ServiceControllerStatus.Paused)
-        {
-            return Resources.wox_plugin_service_paused;
-        }
         else
         {
-            return status.ToString();
+            return status == ServiceControllerStatus.PausePending
+                ? Resources.wox_plugin_service_pause_pending
+                : status == ServiceControllerStatus.Paused ? Resources.wox_plugin_service_paused : status.ToString();
         }
     }
 
@@ -211,17 +217,11 @@ public static class ServiceHelper
         {
             return !IsDelayedStart(serviceName) ? Resources.wox_plugin_service_start_mode_automatic : Resources.wox_plugin_service_start_mode_automaticDelayed;
         }
-        else if (startMode == ServiceStartMode.Manual)
-        {
-            return Resources.wox_plugin_service_start_mode_manual;
-        }
-        else if (startMode == ServiceStartMode.Disabled)
-        {
-            return Resources.wox_plugin_service_start_mode_disabled;
-        }
         else
         {
-            return startMode.ToString();
+            return startMode == ServiceStartMode.Manual
+                ? Resources.wox_plugin_service_start_mode_manual
+                : startMode == ServiceStartMode.Disabled ? Resources.wox_plugin_service_start_mode_disabled : startMode.ToString();
         }
     }
 
@@ -231,17 +231,11 @@ public static class ServiceHelper
         {
             return Resources.wox_plugin_service_started_notification;
         }
-        else if (action == Action.Stop)
-        {
-            return Resources.wox_plugin_service_stopped_notification;
-        }
-        else if (action == Action.Restart)
-        {
-            return Resources.wox_plugin_service_restarted_notification;
-        }
         else
         {
-            return string.Empty;
+            return action == Action.Stop
+                ? Resources.wox_plugin_service_stopped_notification
+                : action == Action.Restart ? Resources.wox_plugin_service_restarted_notification : string.Empty;
         }
     }
 
@@ -251,17 +245,11 @@ public static class ServiceHelper
         {
             return Resources.wox_plugin_service_start_error_notification;
         }
-        else if (action == Action.Stop)
-        {
-            return Resources.wox_plugin_service_stop_error_notification;
-        }
-        else if (action == Action.Restart)
-        {
-            return Resources.wox_plugin_service_restart_error_notification;
-        }
         else
         {
-            return string.Empty;
+            return action == Action.Stop
+                ? Resources.wox_plugin_service_stop_error_notification
+                : action == Action.Restart ? Resources.wox_plugin_service_restart_error_notification : string.Empty;
         }
     }
 
