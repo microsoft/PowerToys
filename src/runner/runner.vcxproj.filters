@@ -45,9 +45,6 @@
     <ClCompile Include="bug_report.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="clean_video_conference.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -94,9 +91,6 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="bug_report.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="clean_video_conference.h">
       <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>

@@ -11,6 +11,7 @@
 #include "../../src/common/updating/installer.h"
 #include "../../src/common/version/version.h"
 #include "../../src/common/Telemetry/EtwTrace/EtwTrace.h"
+#include "../../src/common/utils/clean_video_conference.h"
 
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Foundation.h>
@@ -325,6 +326,19 @@ UINT __stdcall CheckGPOCA(MSIHANDLE hInstall)
 
 LExit:
     UINT er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+// We've deprecated Video Conference Mute. This Custom Action cleans up any stray registry entry for the driver dll.
+UINT __stdcall CleanVideoConferenceRegistryCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    hr = WcaInitialize(hInstall, "CleanVideoConferenceRegistry");
+    ExitOnFailure(hr, "Failed to initialize");
+    clean_video_conference();
+LExit:
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
     return WcaFinalize(er);
 }
 

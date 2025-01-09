@@ -3,6 +3,7 @@ LIBRARY "PowerToysSetupCustomActions"
 EXPORTS
 	LaunchPowerToysCA
 	CheckGPOCA
+	CleanVideoConferenceRegistryCA
 	ApplyModulesRegistryChangeSetsCA
 	DetectPrevInstallPathCA
 	RemoveScheduledTasksCA

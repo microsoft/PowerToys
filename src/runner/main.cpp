@@ -11,7 +11,6 @@
 #include "RestartManagement.h"
 #include "Generated files/resource.h"
 #include "settings_telemetry.h"
-#include "clean_video_conference.h"
 
 #include <common/comUtils/comUtils.h>
 #include <common/display/dpi_aware.h>
@@ -26,6 +25,7 @@
 #include <common/utils/os-detect.h>
 #include <common/utils/processApi.h>
 #include <common/utils/resources.h>
+#include <common/utils/clean_video_conference.h>
 
 #include "UpdateUtils.h"
 #include "ActionRunnerUtils.h"
@@ -136,6 +136,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
 
         // We deprecated a utility called Video Conference Mute, which registered itself as a video input device.
         // When running elevated, we try to clean up the device registrarion from previous installations.
+        // This is done here too because a user-scope installer won't be able to remove the driver registration due to lack of permissions.
         if (isProcessElevated)
         {
             clean_video_conference();

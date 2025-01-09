@@ -1,6 +1,6 @@
-#include "pch.h"
-#include "clean_video_conference.h"
+#pragma once
 
+// Video Conference Mute was a utility we deprecated. However, this required a manual user disable of the module to remove the camera registration, so we include the disable code here to be able to clean up.
 void clean_video_conference()
 {
     // 31AD75E9-8C3A-49C8-B9ED-5880D6B4A764 is the CLSID GUID for the 64 video conference mute driver.
