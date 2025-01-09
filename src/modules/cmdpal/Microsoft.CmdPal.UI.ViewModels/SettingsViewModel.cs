@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 

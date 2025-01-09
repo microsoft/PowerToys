@@ -2,90 +2,88 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-
 using PowerToys.Interop;
 
-namespace Microsoft.PowerToys.Settings.UI.Library
+namespace Microsoft.CmdPal.UI.Library;
+
+public delegate void KeyEvent(int key);
+
+public delegate bool IsActive();
+
+public delegate bool FilterAccessibleKeyboardEvents(int key, UIntPtr extraInfo);
+
+public class HotkeySettingsControlHook : IDisposable
 {
-    public delegate void KeyEvent(int key);
+    private const int WmKeyDown = 0x100;
+    private const int WmKeyUp = 0x101;
+    private const int WmSysKeyDown = 0x0104;
+    private const int WmSysKeyUp = 0x0105;
 
-    public delegate bool IsActive();
+    private readonly KeyboardHook _hook;
+    private readonly KeyEvent _keyDown;
+    private readonly KeyEvent _keyUp;
+    private readonly IsActive _isActive;
 
-    public delegate bool FilterAccessibleKeyboardEvents(int key, UIntPtr extraInfo);
+    private readonly FilterAccessibleKeyboardEvents _filterKeyboardEvent;
 
-    public class HotkeySettingsControlHook : IDisposable
+    private bool disposedValue;
+
+    public HotkeySettingsControlHook(KeyEvent keyDown, KeyEvent keyUp, IsActive isActive, FilterAccessibleKeyboardEvents filterAccessibleKeyboardEvents)
     {
-        private const int WmKeyDown = 0x100;
-        private const int WmKeyUp = 0x101;
-        private const int WmSysKeyDown = 0x0104;
-        private const int WmSysKeyUp = 0x0105;
+        _keyDown = keyDown;
+        _keyUp = keyUp;
+        _isActive = isActive;
+        _filterKeyboardEvent = filterAccessibleKeyboardEvents;
+        _hook = new KeyboardHook(HotkeySettingsHookCallback, IsActive, FilterKeyboardEvents);
+        _hook.Start();
+    }
 
-        private KeyboardHook _hook;
-        private KeyEvent _keyDown;
-        private KeyEvent _keyUp;
-        private IsActive _isActive;
-        private bool disposedValue;
+    private bool IsActive()
+    {
+        return _isActive();
+    }
 
-        private FilterAccessibleKeyboardEvents _filterKeyboardEvent;
-
-        public HotkeySettingsControlHook(KeyEvent keyDown, KeyEvent keyUp, IsActive isActive, FilterAccessibleKeyboardEvents filterAccessibleKeyboardEvents)
+    private void HotkeySettingsHookCallback(KeyboardEvent ev)
+    {
+        switch (ev.message)
         {
-            _keyDown = keyDown;
-            _keyUp = keyUp;
-            _isActive = isActive;
-            _filterKeyboardEvent = filterAccessibleKeyboardEvents;
-            _hook = new KeyboardHook(HotkeySettingsHookCallback, IsActive, FilterKeyboardEvents);
-            _hook.Start();
+            case WmKeyDown:
+            case WmSysKeyDown:
+                _keyDown(ev.key);
+                break;
+            case WmKeyUp:
+            case WmSysKeyUp:
+                _keyUp(ev.key);
+                break;
         }
+    }
 
-        private bool IsActive()
-        {
-            return _isActive();
-        }
-
-        private void HotkeySettingsHookCallback(KeyboardEvent ev)
-        {
-            switch (ev.message)
-            {
-                case WmKeyDown:
-                case WmSysKeyDown:
-                    _keyDown(ev.key);
-                    break;
-                case WmKeyUp:
-                case WmSysKeyUp:
-                    _keyUp(ev.key);
-                    break;
-            }
-        }
-
-        private bool FilterKeyboardEvents(KeyboardEvent ev)
-        {
+    private bool FilterKeyboardEvents(KeyboardEvent ev)
+    {
 #pragma warning disable CA2020 // Prevent from behavioral change
-            return _filterKeyboardEvent(ev.key, (UIntPtr)ev.dwExtraInfo);
+        return _filterKeyboardEvent(ev.key, (UIntPtr)ev.dwExtraInfo);
 #pragma warning restore CA2020 // Prevent from behavioral change
-        }
+    }
 
-        protected virtual void Dispose(bool disposing)
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposedValue)
         {
-            if (!disposedValue)
+            if (disposing)
             {
-                if (disposing)
-                {
-                    // Dispose the KeyboardHook object to terminate the hook threads
-                    _hook.Dispose();
-                }
-
-                disposedValue = true;
+                // Dispose the KeyboardHook object to terminate the hook threads
+                _hook.Dispose();
             }
-        }
 
-        public bool GetDisposedState() => disposedValue;
-
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            disposedValue = true;
         }
+    }
+
+    public bool GetDisposedState() => disposedValue;
+
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 }

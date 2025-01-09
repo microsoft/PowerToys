@@ -5,9 +5,8 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json.Serialization;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
-namespace Microsoft.PowerToys.Settings.UI.Library;
+namespace Microsoft.CmdPal.UI.ViewModels.Settings;
 
 public record HotkeySettings// : ICmdLineRepresentable
 {
@@ -217,7 +216,7 @@ public record HotkeySettings// : ICmdLineRepresentable
         // Alias
         else
         {
-            keyCode = (int)Utilities.Helper.GetKeyValue(key);
+            keyCode = (int)Helper.GetKeyValue(key);
             return keyCode != 0;
         }
     }

@@ -7,7 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
