@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Microsoft.PowerToys.Settings.UI.Controls
+namespace Microsoft.CmdPal.UI.Controls
 {
     public sealed partial class ShortcutWithTextLabelControl : UserControl
     {

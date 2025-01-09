@@ -10,7 +10,7 @@
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ptControls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:ptControls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
     xmlns:win="http://schemas.microsoft.com/winfx/2006/xaml/presentation"

@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
 using Windows.System;
 
-namespace Microsoft.PowerToys.Settings.UI.Controls;
+namespace Microsoft.CmdPal.UI.Controls;
 
 [TemplatePart(Name = KeyPresenter, Type = typeof(ContentPresenter))]
 [TemplateVisualState(Name = "Normal", GroupName = "CommonStates")]

@@ -12,7 +12,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Windows.System;
 
-namespace Microsoft.PowerToys.Settings.UI.Controls;
+namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class ShortcutControl : UserControl, IDisposable
 {
