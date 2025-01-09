@@ -356,7 +356,6 @@ namespace WorkspacesEditor.Models
                     var appBefore = sameAppBefore.FirstOrDefault();
                     app.CommandLineArguments = appBefore.CommandLineArguments;
                     app.IsElevated = appBefore.IsElevated;
-                    app.PwaAppId = appBefore.PwaAppId;
                 }
             }
         }

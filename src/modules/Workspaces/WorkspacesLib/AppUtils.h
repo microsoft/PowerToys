@@ -24,8 +24,6 @@ namespace Utils
         const std::wstring& GetCurrentFolder();
         const std::wstring& GetCurrentFolderUpper();
 
-        const std::wstring GetGuidFromHwnd(HWND window);
-
         AppList GetAppsList();
         std::optional<AppData> GetApp(const std::wstring& appPath, DWORD pid, const AppList& apps);
         std::optional<AppData> GetApp(HWND window, const AppList& apps);

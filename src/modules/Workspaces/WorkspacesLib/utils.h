@@ -9,6 +9,7 @@
 namespace NonLocalizable
 {
     const wchar_t restartedString[] = L"restarted";
+    const wchar_t needGUIDString[] = L"needGUID";
 }
 
 struct CommandLineArgs
@@ -16,12 +17,14 @@ struct CommandLineArgs
     std::wstring workspaceId;
     InvokePoint invokePoint;
     bool isRestarted;
+    bool isGuidNeeded;
 };
 
 CommandLineArgs split(std::wstring s, const std::wstring& delimiter)
 {
     CommandLineArgs cmdArgs{};
     cmdArgs.isRestarted = false;
+    cmdArgs.isGuidNeeded = false;
 
     size_t pos = 0;
     std::wstring token;
@@ -39,6 +42,10 @@ CommandLineArgs split(std::wstring s, const std::wstring& delimiter)
         if (token == NonLocalizable::restartedString)
         {
             cmdArgs.isRestarted = true;
+        }
+        else if (token == NonLocalizable::needGUIDString)
+        {
+            cmdArgs.isGuidNeeded = true;
         }
         else if (!cmdArgs.workspaceId.empty())
         {
