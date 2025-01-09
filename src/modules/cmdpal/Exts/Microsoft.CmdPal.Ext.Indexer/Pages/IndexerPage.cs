@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Indexer.Data;
@@ -18,7 +17,6 @@ namespace Microsoft.CmdPal.Ext.Indexer;
 
 internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 {
-    private readonly Lock _lockObject = new(); // Lock object for synchronization
     private readonly List<IListItem> _indexerListItems = [];
 
     private SearchQuery _searchQuery = new();
@@ -40,17 +38,29 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         {
             _ = Task.Run(() =>
             {
-                Logger.LogDebug($"Update {oldSearch} -> {newSearch}");
-                StartQuery(newSearch);
-                RaiseItemsChanged(0);
+                Query(newSearch);
+                LoadMore();
             });
         }
     }
 
-    public override IListItem[] GetItems() => DoGetItems();
+    public override IListItem[] GetItems() => [.._indexerListItems];
 
-    private void StartQuery(string query)
+    public override void LoadMore()
     {
+        IsLoading = true;
+        FetchItems(20);
+        IsLoading = false;
+        RaiseItemsChanged(_indexerListItems.Count);
+    }
+
+    private void Query(string query)
+    {
+        ++_queryCookie;
+        _indexerListItems.Clear();
+        _searchQuery.SearchResults.Clear();
+        _searchQuery.CancelOutstandingQueries();
+
         if (query == string.Empty)
         {
             return;
@@ -58,74 +68,40 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 
         Stopwatch stopwatch = new();
         stopwatch.Start();
-        Query(query);
+
+        _searchQuery.Execute(query, _queryCookie);
+
         stopwatch.Stop();
         Logger.LogDebug($"Query time: {stopwatch.ElapsedMilliseconds} ms, query: \"{query}\"");
     }
 
-    private IListItem[] DoGetItems()
+    private void FetchItems(int limit)
     {
-        if (string.IsNullOrEmpty(SearchText))
+        if (_searchQuery != null)
         {
-            return [];
-        }
-
-        Stopwatch stopwatch = new();
-        stopwatch.Start();
-
-        lock (_lockObject)
-        {
-            if (_searchQuery != null)
+            var cookie = _searchQuery.Cookie;
+            if (cookie == _queryCookie)
             {
-                var cookie = _searchQuery.Cookie;
-                if (cookie == _queryCookie)
+                var index = 0;
+                SearchResult result;
+
+                var hasMoreItems = _searchQuery.FetchRows(_indexerListItems.Count, limit);
+
+                while (!_searchQuery.SearchResults.IsEmpty && _searchQuery.SearchResults.TryDequeue(out result) && ++index <= limit)
                 {
-                    SearchResult result;
-                    while (!_searchQuery.SearchResults.IsEmpty && _searchQuery.SearchResults.TryDequeue(out result))
+                    _indexerListItems.Add(new IndexerListItem(new IndexerItem
                     {
-                        _indexerListItems.Add(new IndexerListItem(new IndexerItem
-                        {
-                            FileName = result.ItemDisplayName,
-                            FullPath = result.LaunchUri,
-                        })
-                        {
-                            Icon = new(result.IsFolder ? "\uE838" : "\uE8E5"),
-                        });
-                    }
+                        FileName = result.ItemDisplayName,
+                        FullPath = result.LaunchUri,
+                    })
+                    {
+                        Icon = new(result.IsFolder ? "\uE838" : "\uE8E5"),
+                    });
                 }
+
+                HasMoreItems = hasMoreItems;
             }
         }
-
-        stopwatch.Stop();
-        Logger.LogDebug($"Build ListItems: {stopwatch.ElapsedMilliseconds} ms, results: {_indexerListItems.Count}, query: \"{SearchText}\"");
-
-        return [.. _indexerListItems];
-    }
-
-    private uint Query(string searchText)
-    {
-        if (searchText == string.Empty)
-        {
-            return _queryCookie;
-        }
-
-        _queryCookie++;
-        lock (_lockObject)
-        {
-            _searchQuery.CancelOutstandingQueries();
-            _searchQuery.SearchResults.Clear();
-            _indexerListItems.Clear();
-
-            // Just forward on to the helper with the right callback for feeding us results
-            // Set up the binding for the items
-            _searchQuery.Execute(searchText, _queryCookie);
-        }
-
-        // unlock
-        // Wait for the query executed event
-        _searchQuery.WaitForQueryCompletedEvent();
-
-        return _queryCookie;
     }
 
     public void Dispose()

@@ -17,12 +17,11 @@ using Windows.Win32.UI.Shell.PropertiesSystem;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer;
 
-internal sealed class SearchQuery : IDisposable
+internal sealed partial class SearchQuery : IDisposable
 {
     private readonly Lock _lockObject = new(); // Lock object for synchronization
     private readonly DBPROPIDSET dbPropIdSet;
 
-    private const uint QueryTimerThreshold = 85;
     private uint reuseWhereID;
     private EventWaitHandle queryCompletedEvent;
     private Timer queryTpTimer;
@@ -100,21 +99,9 @@ internal sealed class SearchQuery : IDisposable
 
     public void Execute(string searchText, uint cookie)
     {
-        lock (_lockObject)
-        {
-            if (queryTpTimer != null)
-            {
-                // We cancel the outstanding query callback and queue a new one every time
-                queryTpTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                SearchText = searchText;
-                Cookie = cookie;
-
-                // Queue query
-                var fireTime = DateTime.UtcNow.AddMilliseconds(QueryTimerThreshold);
-                var dueTime = fireTime - DateTime.UtcNow;
-                queryTpTimer.Change(dueTime, Timeout.InfiniteTimeSpan);
-            }
-        }
+        SearchText = searchText;
+        Cookie = cookie;
+        ExecuteSyncInternal();
     }
 
     public static void QueryTimerCallback(object state)
@@ -147,7 +134,6 @@ internal sealed class SearchQuery : IDisposable
                 currentRowset = ExecuteCommand(queryStr);
 
                 SearchResults.Clear();
-                FetchRows();
             }
             catch (Exception ex)
             {
@@ -200,75 +186,66 @@ internal sealed class SearchQuery : IDisposable
         }
     }
 
-    private ulong FetchRows()
+    public bool FetchRows(int offset, int limit)
     {
         if (currentRowset == null)
         {
             Logger.LogError("No rowset to fetch rows from");
-            return 0;
+            return false;
         }
 
         if (currentRowset is not IGetRow getRow)
         {
             Logger.LogError("Rowset does not support IGetRow interface");
-            return 0;
+            return false;
         }
 
-        long batchSize = 5000; // Number of rows to fetch in each batch
-        ulong fetched = 0;
         uint rowCountReturned;
         var prghRows = IntPtr.Zero;
 
         try
         {
-            do
+            var res = currentRowset.GetNextRows(IntPtr.Zero, offset, limit, out rowCountReturned, out prghRows);
+            if (res < 0)
             {
-                var res = currentRowset.GetNextRows(IntPtr.Zero, 0, batchSize, out rowCountReturned, out prghRows);
-                if (res < 0)
-                {
-                    Logger.LogError($"Error fetching rows: {res}");
-                    break;
-                }
-
-                if (rowCountReturned == 0)
-                {
-                    // No more rows to fetch
-                    break;
-                }
-
-                // Marshal the row handles
-                var rowHandles = new IntPtr[rowCountReturned];
-                Marshal.Copy(prghRows, rowHandles, 0, (int)rowCountReturned);
-
-                for (var i = 0; i < rowCountReturned; i++)
-                {
-                    var rowHandle = Marshal.ReadIntPtr(prghRows, i * IntPtr.Size);
-                    if (!HandleRow(getRow, (nuint)rowHandle))
-                    {
-                        break;
-                    }
-                }
-
-                res = currentRowset.ReleaseRows(rowCountReturned, rowHandles, IntPtr.Zero, null, null);
-                if (res != 0)
-                {
-                    Logger.LogError($"Error releasing rows: {res}");
-                    break;
-                }
-
-                fetched += rowCountReturned;
-
-                Marshal.FreeCoTaskMem(prghRows);
-                prghRows = IntPtr.Zero;
+                Logger.LogError($"Error fetching rows: {res}");
+                return false;
             }
-            while (rowCountReturned > 0);
 
-            return fetched;
+            if (rowCountReturned == 0)
+            {
+                // No more rows to fetch
+                return false;
+            }
+
+            // Marshal the row handles
+            var rowHandles = new IntPtr[rowCountReturned];
+            Marshal.Copy(prghRows, rowHandles, 0, (int)rowCountReturned);
+
+            for (var i = 0; i < rowCountReturned; i++)
+            {
+                var rowHandle = Marshal.ReadIntPtr(prghRows, i * IntPtr.Size);
+                if (!HandleRow(getRow, (nuint)rowHandle))
+                {
+                    break;
+                }
+            }
+
+            res = currentRowset.ReleaseRows(rowCountReturned, rowHandles, IntPtr.Zero, null, null);
+            if (res != 0)
+            {
+                Logger.LogError($"Error releasing rows: {res}");
+            }
+
+            Marshal.FreeCoTaskMem(prghRows);
+            prghRows = IntPtr.Zero;
+
+            return true;
         }
         catch (Exception ex)
         {
             Logger.LogError("Error fetching rows", ex);
-            return 0;
+            return false;
         }
         finally
         {
