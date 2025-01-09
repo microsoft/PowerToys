@@ -135,7 +135,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         chdir_current_executable();
 
         // We deprecated a utility called Video Conference Mute, which registered itself as a video input device.
-        // When running elevated, we try to clean up the device registrarion from previous installations.
+        // When running elevated, we try to clean up the device registration from previous installations.
         // This is done here too because a user-scope installer won't be able to remove the driver registration due to lack of permissions.
         if (isProcessElevated)
         {
