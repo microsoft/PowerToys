@@ -6,13 +6,13 @@ namespace Microsoft.CmdPal.Extensions.Helpers;
 
 public partial class CommandItem : BaseObservable, ICommandItem
 {
-    private IconDataType? _icon;
+    private IconInfo? _icon;
     private string _title = string.Empty;
     private string _subtitle = string.Empty;
     private ICommand? _command;
     private IContextItem[] _moreCommands = [];
 
-    public IconDataType? Icon
+    public IconInfo? Icon
     {
         get => _icon ?? _command?.Icon;
         set

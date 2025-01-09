@@ -12,13 +12,13 @@ public sealed class TagViewModel
 {
     private readonly ITag _tag;
 
-    internal IconDataType Icon => _tag.Icon;
+    internal IconInfo Icon => _tag.Icon;
 
     internal string Text => _tag.Text;
 
-    public bool HasIcon => !string.IsNullOrEmpty(Icon?.Icon);
+    public bool HasIcon => !string.IsNullOrEmpty(Icon?.Dark?.Icon);
 
-    internal IconElement IcoElement => Microsoft.Terminal.UI.IconPathConverter.IconMUX(Icon?.Icon ?? string.Empty, 10);
+    internal IconElement IcoElement => Microsoft.Terminal.UI.IconPathConverter.IconMUX(Icon?.Dark?.Icon ?? string.Empty, 10);
 
     public Windows.UI.Color Foreground
     {

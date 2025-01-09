@@ -141,7 +141,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="IconDataType.h" />
+    <ClInclude Include="IconData.h" />
     <ClInclude Include="PropChangedEventArgs.h" />
     <ClInclude Include="ItemsChangedEventArgs.h" />
     <ClInclude Include="KeyChord.h" />
@@ -151,7 +151,7 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="IconDataType.cpp" />
+    <ClCompile Include="IconData.cpp" />
     <ClCompile Include="PropChangedEventArgs.cpp" />
     <ClCompile Include="ItemsChangedEventArgs.cpp" />
     <ClCompile Include="KeyChord.cpp" />

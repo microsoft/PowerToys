@@ -28,7 +28,7 @@ public sealed class CommandProviderWrapper
 
     public string DisplayName { get; private set; } = string.Empty;
 
-    public IconDataType Icon { get; private set; } = new(string.Empty);
+    public IconInfo Icon { get; private set; } = new(string.Empty);
 
     public string ProviderId => $"{extensionWrapper?.PackageFamilyName ?? string.Empty}/{Id}";
 

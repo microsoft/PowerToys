@@ -15,14 +15,23 @@ namespace Microsoft.CmdPal.Extensions
     };
 
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
-    runtimeclass IconDataType {
-        IconDataType(String iconString);
-        static IconDataType FromStream(Windows.Storage.Streams.IRandomAccessStreamReference stream);
+    runtimeclass IconData {
+        IconData(String iconString);
+        static IconData FromStream(Windows.Storage.Streams.IRandomAccessStreamReference stream);
 
         String Icon { get; };
         Windows.Storage.Streams.IRandomAccessStreamReference Data { get; };
     };
     
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    runtimeclass IconInfo {
+        IconInfo(String iconString);
+        IconInfo(IconData lightIcon, IconData darkIcon);
+
+        IconData Light { get; };
+        IconData Dark { get; };
+    };
+
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     runtimeclass KeyChord
     {
@@ -62,7 +71,7 @@ namespace Microsoft.CmdPal.Extensions
     interface ICommand requires INotifyPropChanged{
         String Name{ get; };
         String Id{ get; };
-        IconDataType Icon{ get; };
+        IconInfo Icon{ get; };
     }
     
     enum CommandResultKind {
@@ -114,7 +123,7 @@ namespace Microsoft.CmdPal.Extensions
     interface IFilter requires IFilterItem {
         String Id { get; };
         String Name { get; };
-        IconDataType Icon { get; };
+        IconInfo Icon { get; };
     }
     
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
@@ -139,7 +148,7 @@ namespace Microsoft.CmdPal.Extensions
     
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     interface ITag {
-        IconDataType Icon { get; };
+        IconInfo Icon { get; };
         String Text { get; };
         OptionalColor Foreground { get; };
         OptionalColor Background { get; };
@@ -157,7 +166,7 @@ namespace Microsoft.CmdPal.Extensions
     }
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     interface IDetails {
-        IconDataType HeroImage { get; };
+        IconInfo HeroImage { get; };
         String Title { get; };
         String Body { get; };
         IDetailsElement[] Metadata { get; };
@@ -234,7 +243,7 @@ namespace Microsoft.CmdPal.Extensions
     interface ICommandItem requires INotifyPropChanged {
         ICommand Command{ get; };
         IContextItem[] MoreCommands{ get; };
-        IconDataType Icon{ get; };
+        IconInfo Icon{ get; };
         String Title{ get; };
         String Subtitle{ get; };
     } 
@@ -323,7 +332,7 @@ namespace Microsoft.CmdPal.Extensions
     {
         String Id { get; };
         String DisplayName { get; };
-        IconDataType Icon { get; };
+        IconInfo Icon { get; };
         ICommandSettings Settings { get; };
         Boolean Frozen { get; };
     

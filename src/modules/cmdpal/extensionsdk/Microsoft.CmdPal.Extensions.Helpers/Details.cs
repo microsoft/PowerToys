@@ -6,12 +6,12 @@ namespace Microsoft.CmdPal.Extensions.Helpers;
 
 public class Details : BaseObservable, IDetails
 {
-    private IconDataType _heroImage = new(string.Empty);
+    private IconInfo _heroImage = new(string.Empty);
     private string _title = string.Empty;
     private string _body = string.Empty;
     private IDetailsElement[] _metadata = [];
 
-    public IconDataType HeroImage
+    public IconInfo HeroImage
     {
         get => _heroImage;
         set

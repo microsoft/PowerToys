@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.UI.ViewModels;
@@ -27,7 +28,8 @@ public sealed partial class ShellPage :
     IRecipient<HideDetailsMessage>,
     IRecipient<ClearSearchMessage>,
     IRecipient<HandleCommandResultMessage>,
-    IRecipient<LaunchUriMessage>
+    IRecipient<LaunchUriMessage>,
+    INotifyPropertyChanged
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
 
@@ -37,7 +39,8 @@ public sealed partial class ShellPage :
 
     public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
 
-    // private readonly SettingsViewModel _settingsViewModel;
+    public event PropertyChangedEventHandler? PropertyChanged;
+
     public ShellPage()
     {
         this.InitializeComponent();
@@ -229,6 +232,10 @@ public sealed partial class ShellPage :
     {
         ViewModel.Details = message.Details;
         ViewModel.IsDetailsVisible = true;
+
+        // Trigger a re-evaluation of whether we have a hero image based on
+        // the current theme
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
     }
 
     public void Receive(HideDetailsMessage message) => HideDetails();
@@ -283,6 +290,31 @@ public sealed partial class ShellPage :
             // Note, this shortcuts and fights a bit with our LoadPageViewModel above, but we want to better fast display and incrementally load anyway
             // We just need to reconcile our loading systems a bit more in the future.
             ViewModel.CurrentPage = page;
+        }
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether determines if the current Details have a HeroImage, given the theme
+    /// we're currently in. This needs to be evaluated in the view, because the
+    /// viewModel doesn't actually know what the current theme is.
+    /// </summary>
+    public bool HasHeroImage
+    {
+        get
+        {
+            var requestedTheme = ActualTheme;
+            var iconInfo = ViewModel.Details?.HeroImage;
+            var data = requestedTheme == Microsoft.UI.Xaml.ElementTheme.Dark ?
+                iconInfo?.Dark :
+                iconInfo?.Light;
+
+            // We have an icon, AND EITHER:
+            //      We have a string icon, OR
+            //      we have a data blob
+            var hasIcon = (data != null) &&
+                    (!string.IsNullOrEmpty(data.Icon) ||
+                    data.Data != null);
+            return hasIcon;
         }
     }
 }

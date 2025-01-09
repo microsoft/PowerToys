@@ -46,7 +46,7 @@ public partial class TopLevelCommandWrapper : ListItem
 
             Title = model.Title;
             Subtitle = model.Subtitle;
-            Icon = new(model.Icon.Icon);
+            Icon = model.Icon;
             MoreCommands = model.MoreCommands;
 
             model.PropChanged += Model_PropChanged;

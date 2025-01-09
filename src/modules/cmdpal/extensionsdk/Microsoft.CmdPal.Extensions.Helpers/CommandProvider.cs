@@ -12,7 +12,7 @@ public abstract partial class CommandProvider : ICommandProvider
 
     private string _displayName = string.Empty;
 
-    private IconDataType _icon = new(string.Empty);
+    private IconInfo _icon = new(string.Empty);
 
     private ICommandSettings? _settings;
 
@@ -20,7 +20,7 @@ public abstract partial class CommandProvider : ICommandProvider
 
     public string DisplayName { get => _displayName; protected set => _displayName = value; }
 
-    public IconDataType Icon { get => _icon; protected set => _icon = value; }
+    public IconInfo Icon { get => _icon; protected set => _icon = value; }
 
     public event TypedEventHandler<object, ItemsChangedEventArgs>? ItemsChanged;
 

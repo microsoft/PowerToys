@@ -8,7 +8,6 @@ using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
 using Microsoft.CmdPal.Ext.Indexer;
 using Microsoft.CmdPal.Ext.Registry;
-using Microsoft.CmdPal.Ext.Settings;
 using Microsoft.CmdPal.Ext.Shell;
 using Microsoft.CmdPal.Ext.WebSearch;
 using Microsoft.CmdPal.Ext.WindowsServices;
@@ -59,7 +58,6 @@ public sealed class MainViewModel : IDisposable
         BuiltInCommands.Add(new IndexerCommandsProvider());
         BuiltInCommands.Add(new BookmarksCommandProvider());
         BuiltInCommands.Add(new CalculatorCommandProvider());
-        BuiltInCommands.Add(new SettingsCommandProvider());
         BuiltInCommands.Add(_quitCommandProvider);
         BuiltInCommands.Add(_reloadCommandProvider);
         BuiltInCommands.Add(new WindowsTerminalCommandsProvider());

@@ -13,5 +13,5 @@ public sealed class ActionViewModel(ICommand cmd)
 
     internal bool CanInvoke => cmd is IInvokableCommand;
 
-    internal IconElement IcoElement => Microsoft.Terminal.UI.IconPathConverter.IconMUX(Command.Icon.Icon);
+    internal IconElement IcoElement => Microsoft.Terminal.UI.IconPathConverter.IconMUX(Command.Icon.Dark.Icon);
 }

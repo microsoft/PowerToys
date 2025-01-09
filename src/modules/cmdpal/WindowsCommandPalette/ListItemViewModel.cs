@@ -107,7 +107,7 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable, IEq
         this.ListItem = new(model);
         this.Title = model.Title;
         this.Subtitle = model.Subtitle;
-        this.Icon = model.Icon.Icon;
+        this.Icon = model.Icon.Dark.Icon;
         this.TextToSuggest = model.TextToSuggest;
 
         if (model.Tags != null)
@@ -151,7 +151,7 @@ public sealed class ListItemViewModel : INotifyPropertyChanged, IDisposable, IEq
                     BubbleXamlPropertyChanged(nameof(ContextActions));
                     break;
                 case nameof(Icon):
-                    this.Icon = item.Command.Icon.Icon;
+                    this.Icon = item.Command.Icon.Dark.Icon;
                     BubbleXamlPropertyChanged(nameof(IcoElement));
                     break;
                 case nameof(TextToSuggest):

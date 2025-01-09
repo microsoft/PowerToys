@@ -8,7 +8,7 @@ public class Tag : BaseObservable, ITag
 {
     private OptionalColor _foreground;
     private OptionalColor _background;
-    private IconDataType _icon = new(string.Empty);
+    private IconInfo _icon = new(string.Empty);
     private string _text = string.Empty;
     private string _toolTip = string.Empty;
     private ICommand? _command;
@@ -33,7 +33,7 @@ public class Tag : BaseObservable, ITag
         }
     }
 
-    public IconDataType Icon
+    public IconInfo Icon
     {
         get => _icon;
         set

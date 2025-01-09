@@ -13,14 +13,14 @@ namespace Microsoft.CmdPal.UI.ExtViews;
 
 public sealed class IconCacheService(DispatcherQueue dispatcherQueue)
 {
-    public Task<IconSource?> GetIconSource(IconDataType icon) =>
+    public Task<IconSource?> GetIconSource(IconData icon) =>
 
         // todo: actually implement a cache of some sort
         IconToSource(icon);
 
-    private async Task<IconSource?> IconToSource(IconDataType icon)
+    private async Task<IconSource?> IconToSource(IconData icon)
     {
-        // bodgy: apparently IconDataType, despite being a struct, doesn't get
+        // bodgy: apparently IconData, despite being a struct, doesn't get
         // MarshalByValue'd into our process. What's even the point then?
         try
         {

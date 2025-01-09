@@ -13,7 +13,7 @@ public partial class ProviderSettingsViewModel(CommandProviderWrapper _provider,
 
     public string ExtensionName => _provider.Extension?.ExtensionDisplayName ?? "Built-in";
 
-    public IconDataType Icon => _provider.Icon;
+    public IconInfo Icon => _provider.Icon;
 
     public bool IsEnabled
     {

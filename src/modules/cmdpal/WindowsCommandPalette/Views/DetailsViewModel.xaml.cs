@@ -13,7 +13,7 @@ public sealed class DetailsViewModel
 
     internal string Body { get; init; } = string.Empty;
 
-    internal IconDataType HeroImage { get; init; } = new(string.Empty);
+    internal IconData HeroImage { get; init; } = new(string.Empty);
 
     internal IconElement IcoElement => Microsoft.Terminal.UI.IconPathConverter.IconMUX(HeroImage.Icon);
 
@@ -21,6 +21,6 @@ public sealed class DetailsViewModel
     {
         this.Title = details.Title;
         this.Body = details.Body;
-        this.HeroImage = details.HeroImage ?? new(string.Empty);
+        this.HeroImage = details.HeroImage?.Dark ?? new(string.Empty);
     }
 }

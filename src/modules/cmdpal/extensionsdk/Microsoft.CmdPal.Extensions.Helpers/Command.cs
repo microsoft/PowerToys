@@ -8,7 +8,7 @@ public class Command : BaseObservable, ICommand
 {
     private string _name = string.Empty;
     private string _id = string.Empty;
-    private IconDataType _icon = new(string.Empty);
+    private IconInfo _icon = new(string.Empty);
 
     public string Name
     {
@@ -22,7 +22,7 @@ public class Command : BaseObservable, ICommand
 
     public string Id { get => _id; protected set => _id = value; }
 
-    public IconDataType Icon
+    public IconInfo Icon
     {
         get => _icon;
         set

@@ -6,7 +6,7 @@ namespace Microsoft.CmdPal.Extensions.Helpers;
 
 public class Filter : IFilter
 {
-    public IconDataType Icon => throw new NotImplementedException();
+    public IconInfo Icon => throw new NotImplementedException();
 
     public string Id => throw new NotImplementedException();
 

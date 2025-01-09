@@ -65,14 +65,23 @@ namespace Microsoft.CmdPal.Extensions
     };
 
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
-    runtimeclass IconDataType {
-        IconDataType(String iconString);
-        static IconDataType FromStream(Windows.Storage.Streams.IRandomAccessStreamReference stream);
+    runtimeclass IconData {
+        IconData(String iconString);
+        static IconData FromStream(Windows.Storage.Streams.IRandomAccessStreamReference stream);
 
         String Icon { get; };
         Windows.Storage.Streams.IRandomAccessStreamReference Data { get; };
     };
     
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    runtimeclass IconInfo {
+        IconInfo(String iconString);
+        IconInfo(IconData lightIcon, IconData darkIcon);
+
+        IconData Light { get; };
+        IconData Dark { get; };
+    };
+
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     runtimeclass KeyChord
     {

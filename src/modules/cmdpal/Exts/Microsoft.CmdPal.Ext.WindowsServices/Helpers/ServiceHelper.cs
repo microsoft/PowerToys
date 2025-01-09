@@ -64,7 +64,7 @@ public static class ServiceHelper
                 ];
             }
 
-            IconDataType icon = new("\U0001f7e2"); // unicode LARGE GREEN CIRCLE
+            IconInfo icon = new("\U0001f7e2"); // unicode LARGE GREEN CIRCLE
             switch (s.Status)
             {
                 case ServiceControllerStatus.Stopped:
@@ -191,15 +191,13 @@ public static class ServiceHelper
         {
             return Resources.wox_plugin_service_running;
         }
-        else if (status == ServiceControllerStatus.ContinuePending)
-        {
-            return Resources.wox_plugin_service_continue_pending;
-        }
         else
         {
-            return status == ServiceControllerStatus.PausePending
-                ? Resources.wox_plugin_service_pause_pending
-                : status == ServiceControllerStatus.Paused ? Resources.wox_plugin_service_paused : status.ToString();
+            return status == ServiceControllerStatus.ContinuePending
+                ? Resources.wox_plugin_service_continue_pending
+                : status == ServiceControllerStatus.PausePending
+                            ? Resources.wox_plugin_service_pause_pending
+                            : status == ServiceControllerStatus.Paused ? Resources.wox_plugin_service_paused : status.ToString();
         }
     }
 
@@ -213,44 +211,32 @@ public static class ServiceHelper
         {
             return Resources.wox_plugin_service_start_mode_system;
         }
-        else if (startMode == ServiceStartMode.Automatic)
-        {
-            return !IsDelayedStart(serviceName) ? Resources.wox_plugin_service_start_mode_automatic : Resources.wox_plugin_service_start_mode_automaticDelayed;
-        }
         else
         {
-            return startMode == ServiceStartMode.Manual
-                ? Resources.wox_plugin_service_start_mode_manual
-                : startMode == ServiceStartMode.Disabled ? Resources.wox_plugin_service_start_mode_disabled : startMode.ToString();
+            return startMode == ServiceStartMode.Automatic
+                ? !IsDelayedStart(serviceName) ? Resources.wox_plugin_service_start_mode_automatic : Resources.wox_plugin_service_start_mode_automaticDelayed
+                : startMode == ServiceStartMode.Manual
+                            ? Resources.wox_plugin_service_start_mode_manual
+                            : startMode == ServiceStartMode.Disabled ? Resources.wox_plugin_service_start_mode_disabled : startMode.ToString();
         }
     }
 
     private static string GetLocalizedMessage(Action action)
     {
-        if (action == Action.Start)
-        {
-            return Resources.wox_plugin_service_started_notification;
-        }
-        else
-        {
-            return action == Action.Stop
+        return action == Action.Start
+            ? Resources.wox_plugin_service_started_notification
+            : action == Action.Stop
                 ? Resources.wox_plugin_service_stopped_notification
                 : action == Action.Restart ? Resources.wox_plugin_service_restarted_notification : string.Empty;
-        }
     }
 
     private static string GetLocalizedErrorMessage(Action action)
     {
-        if (action == Action.Start)
-        {
-            return Resources.wox_plugin_service_start_error_notification;
-        }
-        else
-        {
-            return action == Action.Stop
+        return action == Action.Start
+            ? Resources.wox_plugin_service_start_error_notification
+            : action == Action.Stop
                 ? Resources.wox_plugin_service_stop_error_notification
                 : action == Action.Restart ? Resources.wox_plugin_service_restart_error_notification : string.Empty;
-        }
     }
 
     private static bool IsDelayedStart(string serviceName)
