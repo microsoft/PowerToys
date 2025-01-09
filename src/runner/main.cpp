@@ -11,6 +11,7 @@
 #include "RestartManagement.h"
 #include "Generated files/resource.h"
 #include "settings_telemetry.h"
+#include "clean_video_conference.h"
 
 #include <common/comUtils/comUtils.h>
 #include <common/display/dpi_aware.h>
@@ -132,6 +133,14 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         } }.detach();
 
         chdir_current_executable();
+
+        // We deprecated a utility called Video Conference Mute, which registered itself as a video input device.
+        // When running elevated, we try to clean up the device registrarion from previous installations.
+        if (isProcessElevated)
+        {
+            clean_video_conference();
+        }
+
         // Load PowerToys DLLs
 
         std::vector<std::wstring_view> knownModules = {
