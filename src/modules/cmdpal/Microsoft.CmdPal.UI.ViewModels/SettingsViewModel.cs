@@ -1,0 +1,73 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Collections.ObjectModel;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.PowerToys.Settings.UI.Library;
+
+namespace Microsoft.CmdPal.UI.ViewModels;
+
+public partial class SettingsViewModel : PageViewModel
+{
+    private readonly SettingsModel _settings;
+    private readonly IServiceProvider _serviceProvider;
+
+    public HotkeySettings? Hotkey
+    {
+        get => _settings.Hotkey;
+        set
+        {
+            _settings.Hotkey = value;
+            Save();
+        }
+    }
+
+    public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
+
+    public SettingsViewModel(SettingsModel settings, IServiceProvider serviceProvider, TaskScheduler scheduler)
+        : base(null, scheduler)
+    {
+        _settings = settings;
+        _serviceProvider = serviceProvider;
+
+        Icon = new("\uE713");
+        IsInitialized = true;
+        IsLoading = false;
+        Title = "Settings";
+
+        var activeProviders = GetCommandProviders();
+        var allProviderSettings = _settings.ProviderSettings;
+
+        foreach (var item in activeProviders)
+        {
+            if (!allProviderSettings.TryGetValue(item.ProviderId, out var value))
+            {
+                allProviderSettings[item.ProviderId] = new ProviderSettings(item);
+            }
+            else
+            {
+                value.Connect(item);
+            }
+
+            var providerSettings = allProviderSettings.TryGetValue(item.ProviderId, out var value2) ?
+                value2 :
+                new ProviderSettings(item);
+
+            var settingsModel = new ProviderSettingsViewModel(item, providerSettings);
+            CommandProviders.Add(settingsModel);
+        }
+    }
+
+    private IEnumerable<CommandProviderWrapper> GetCommandProviders()
+    {
+        var manager = _serviceProvider.GetService<TopLevelCommandManager>()!;
+        var allProviders = manager.CommandProviders;
+        return allProviders;
+    }
+
+    private void Save()
+    {
+        SettingsModel.SaveSettings(_settings);
+    }
+}

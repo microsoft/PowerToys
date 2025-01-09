@@ -13,10 +13,14 @@ namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 /// </summary>
 public partial class BuiltInsCommandProvider : CommandProvider
 {
+    private readonly OpenSettingsCommand openSettings = new();
     private readonly QuitAction quitAction = new();
     private readonly ReloadExtensionsAction reloadAction = new();
 
-    public override ICommandItem[] TopLevelCommands() => [];
+    public override ICommandItem[] TopLevelCommands() =>
+        [
+            new CommandItem(openSettings) { Subtitle = "Open Command Palette settings" }
+        ];
 
     public override IFallbackCommandItem[] FallbackCommands() =>
         [

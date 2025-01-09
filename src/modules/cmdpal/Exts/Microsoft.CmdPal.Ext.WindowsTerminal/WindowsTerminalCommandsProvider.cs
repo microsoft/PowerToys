@@ -4,8 +4,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
-using System.Runtime.Versioning;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Pages;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
@@ -23,9 +21,12 @@ public partial class WindowsTerminalCommandsProvider : CommandProvider
     {
         Id = "WindowsTerminalProfiles";
         DisplayName = Resources.extension_name;
+        Icon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory.ToString(), "Images\\WindowsTerminal.dark.png"));
 
-        _terminalCommand = new TerminalTopLevelCommandItem(_settingsManager);
-        _terminalCommand.MoreCommands = [new CommandContextItem(new SettingsPage(_settingsManager))];
+        _terminalCommand = new TerminalTopLevelCommandItem(_settingsManager)
+        {
+            MoreCommands = [new CommandContextItem(new SettingsPage(_settingsManager))],
+        };
     }
 
     public override ICommandItem[] TopLevelCommands()

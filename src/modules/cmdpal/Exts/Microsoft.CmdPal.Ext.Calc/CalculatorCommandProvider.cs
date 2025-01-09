@@ -20,6 +20,7 @@ public partial class CalculatorCommandProvider : CommandProvider
     {
         Id = "Calculator";
         DisplayName = "Calculator";
+        Icon = new("\ue8ef"); // Calculator
     }
 
     public override ICommandItem[] TopLevelCommands()

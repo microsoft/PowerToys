@@ -5,6 +5,7 @@ CoCreateInstance
 SetForegroundWindow
 IsIconic
 RegisterHotKey
+UnregisterHotKey
 SetWindowLongPtr
 CallWindowProc
 ShowWindow

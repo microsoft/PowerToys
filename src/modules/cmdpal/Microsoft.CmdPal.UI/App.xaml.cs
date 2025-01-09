@@ -8,7 +8,6 @@ using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
 using Microsoft.CmdPal.Ext.Indexer;
 using Microsoft.CmdPal.Ext.Registry;
-using Microsoft.CmdPal.Ext.Settings;
 using Microsoft.CmdPal.Ext.Shell;
 using Microsoft.CmdPal.Ext.WindowsServices;
 using Microsoft.CmdPal.Ext.WindowsSettings;
@@ -80,9 +79,8 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
         services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
         services.AddSingleton<ICommandProvider, IndexerCommandsProvider>();
-        services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
         services.AddSingleton<ICommandProvider, BuiltInsCommandProvider>();
-        services.AddSingleton<ICommandProvider, SettingsCommandProvider>();
+        services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
         services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
         services.AddSingleton<ICommandProvider, WindowsServicesCommandsProvider>();
         services.AddSingleton<ICommandProvider, RegistryCommandsProvider>();
@@ -92,6 +90,8 @@ public partial class App : Application
         // Models
         services.AddSingleton<TopLevelCommandManager>();
         services.AddSingleton<AliasManager>();
+        var sm = SettingsModel.LoadSettings();
+        services.AddSingleton(sm);
         services.AddSingleton<IExtensionService, ExtensionService>();
 
         // ViewModels

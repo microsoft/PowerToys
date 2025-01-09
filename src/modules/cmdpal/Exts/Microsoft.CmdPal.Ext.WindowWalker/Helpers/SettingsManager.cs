@@ -2,73 +2,70 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.IO;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 
-public class SettingsManager
+public class SettingsManager : JsonSettingsManager
 {
-    private readonly string _filePath;
-    private readonly Settings _settings = new();
+    private static readonly string _namespace = "windowWalker";
+
+    private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
 
     private static SettingsManager? instance;
 
     private readonly ToggleSetting _resultsFromVisibleDesktopOnly = new(
-        nameof(ResultsFromVisibleDesktopOnly),
+        Namespaced(nameof(ResultsFromVisibleDesktopOnly)),
         Resources.windowwalker_SettingResultsVisibleDesktop,
         Resources.windowwalker_SettingResultsVisibleDesktop,
         false);
 
     private readonly ToggleSetting _subtitleShowPid = new(
-        nameof(SubtitleShowPid),
+        Namespaced(nameof(SubtitleShowPid)),
         Resources.windowwalker_SettingTagPid,
         Resources.windowwalker_SettingTagPid,
         false);
 
     private readonly ToggleSetting _subtitleShowDesktopName = new(
-        nameof(SubtitleShowDesktopName),
+        Namespaced(nameof(SubtitleShowDesktopName)),
         Resources.windowwalker_SettingTagDesktopName,
         Resources.windowwalker_SettingSubtitleDesktopName_Description,
         true);
 
     private readonly ToggleSetting _confirmKillProcess = new(
-        nameof(ConfirmKillProcess),
+        Namespaced(nameof(ConfirmKillProcess)),
         Resources.windowwalker_SettingConfirmKillProcess,
         Resources.windowwalker_SettingConfirmKillProcess,
         true);
 
     private readonly ToggleSetting _killProcessTree = new(
-        nameof(KillProcessTree),
+        Namespaced(nameof(KillProcessTree)),
         Resources.windowwalker_SettingKillProcessTree,
         Resources.windowwalker_SettingKillProcessTree_Description,
         false);
 
     private readonly ToggleSetting _openAfterKillAndClose = new(
-        nameof(OpenAfterKillAndClose),
+        Namespaced(nameof(OpenAfterKillAndClose)),
         Resources.windowwalker_SettingOpenAfterKillAndClose,
         Resources.windowwalker_SettingOpenAfterKillAndClose_Description,
         false);
 
     private readonly ToggleSetting _hideKillProcessOnElevatedProcesses = new(
-        nameof(HideKillProcessOnElevatedProcesses),
+        Namespaced(nameof(HideKillProcessOnElevatedProcesses)),
         Resources.windowwalker_SettingHideKillProcess,
         Resources.windowwalker_SettingHideKillProcess,
         false);
 
     private readonly ToggleSetting _hideExplorerSettingInfo = new(
-        nameof(HideExplorerSettingInfo),
+        Namespaced(nameof(HideExplorerSettingInfo)),
         Resources.windowwalker_SettingExplorerSettingInfo,
         Resources.windowwalker_SettingExplorerSettingInfo_Description,
         false);
 
     private readonly ToggleSetting _inMruOrder = new(
-        nameof(InMruOrder),
+        Namespaced(nameof(InMruOrder)),
         Resources.windowwalker_SettingInMruOrder,
         Resources.windowwalker_SettingInMruOrder_Description,
         true);
@@ -91,12 +88,6 @@ public class SettingsManager
 
     public bool InMruOrder => _inMruOrder.Value;
 
-    private static readonly JsonSerializerOptions _serializerOptions = new()
-    {
-        WriteIndented = true,
-        Converters = { new JsonStringEnumConverter() },
-    };
-
     internal static string SettingsJsonPath()
     {
         // Get the path to our exe
@@ -106,22 +97,22 @@ public class SettingsManager
         var directory = Path.GetDirectoryName(path) ?? string.Empty;
 
         // now, the state is just next to the exe
-        return Path.Combine(directory, "window_walker_state.json");
+        return Path.Combine(directory, "settings.json");
     }
 
     public SettingsManager()
     {
-        _filePath = SettingsJsonPath();
+        FilePath = SettingsJsonPath();
 
-        _settings.Add(_resultsFromVisibleDesktopOnly);
-        _settings.Add(_subtitleShowPid);
-        _settings.Add(_subtitleShowDesktopName);
-        _settings.Add(_confirmKillProcess);
-        _settings.Add(_killProcessTree);
-        _settings.Add(_openAfterKillAndClose);
-        _settings.Add(_hideKillProcessOnElevatedProcesses);
-        _settings.Add(_hideExplorerSettingInfo);
-        _settings.Add(_inMruOrder);
+        Settings.Add(_resultsFromVisibleDesktopOnly);
+        Settings.Add(_subtitleShowPid);
+        Settings.Add(_subtitleShowDesktopName);
+        Settings.Add(_confirmKillProcess);
+        Settings.Add(_killProcessTree);
+        Settings.Add(_openAfterKillAndClose);
+        Settings.Add(_hideKillProcessOnElevatedProcesses);
+        Settings.Add(_hideExplorerSettingInfo);
+        Settings.Add(_inMruOrder);
 
         // Load settings from file upon initialization
         LoadSettings();
@@ -133,52 +124,6 @@ public class SettingsManager
         {
             instance ??= new SettingsManager();
             return instance;
-        }
-    }
-
-    public Settings GetSettings() => _settings;
-
-    public void SaveSettings()
-    {
-        try
-        {
-            // Serialize the main dictionary to JSON and save it to the file
-            var settingsJson = _settings.ToJson();
-
-            File.WriteAllText(_filePath, settingsJson);
-        }
-        catch (Exception ex)
-        {
-            ExtensionHost.LogMessage(new LogMessage() { Message = ex.ToString() });
-        }
-    }
-
-    public void LoadSettings()
-    {
-        if (!File.Exists(_filePath))
-        {
-            ExtensionHost.LogMessage(new LogMessage() { Message = "The provided settings file does not exist" });
-            return;
-        }
-
-        try
-        {
-            // Read the JSON content from the file
-            var jsonContent = File.ReadAllText(_filePath);
-
-            // Is it valid JSON?
-            if (JsonNode.Parse(jsonContent) is JsonObject savedSettings)
-            {
-                _settings.Update(jsonContent);
-            }
-            else
-            {
-                ExtensionHost.LogMessage(new LogMessage() { Message = "Failed to parse settings file as JsonObject." });
-            }
-        }
-        catch (Exception ex)
-        {
-            ExtensionHost.LogMessage(new LogMessage() { Message = ex.ToString() });
         }
     }
 }

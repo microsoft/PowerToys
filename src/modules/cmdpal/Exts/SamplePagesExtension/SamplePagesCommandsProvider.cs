@@ -12,6 +12,7 @@ public partial class SamplePagesCommandsProvider : CommandProvider
     public SamplePagesCommandsProvider()
     {
         DisplayName = "Sample Pages Commands";
+        Icon = new("\uE82D");
     }
 
     private readonly ICommandItem[] _commands = [

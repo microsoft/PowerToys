@@ -24,7 +24,10 @@ public partial class ActionBarViewModel : ObservableObject,
     }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasPrimaryCommand))]
     public partial CommandItemViewModel? PrimaryAction { get; set; }
+
+    public bool HasPrimaryCommand => PrimaryAction != null;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSecondaryCommand))]

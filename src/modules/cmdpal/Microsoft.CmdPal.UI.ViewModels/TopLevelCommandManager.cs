@@ -14,21 +14,27 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class TopLevelCommandManager(IServiceProvider _serviceProvider) : ObservableObject
 {
-    private IEnumerable<ICommandProvider>? _builtInCommands;
+    private readonly List<CommandProviderWrapper> _builtInCommands = [];
+    private readonly List<CommandProviderWrapper> _extensionCommandProviders = [];
 
     public ObservableCollection<TopLevelCommandWrapper> TopLevelCommands { get; set; } = [];
 
     [ObservableProperty]
     public partial bool IsLoading { get; private set; } = true;
 
+    public IEnumerable<CommandProviderWrapper> CommandProviders => _builtInCommands.Concat(_extensionCommandProviders);
+
     public async Task<bool> LoadBuiltinsAsync()
     {
+        _builtInCommands.Clear();
+
         // Load built-In commands first. These are all in-proc, and
         // owned by our ServiceProvider.
-        _builtInCommands = _serviceProvider.GetServices<ICommandProvider>();
-        foreach (var provider in _builtInCommands)
+        var builtInCommands = _serviceProvider.GetServices<ICommandProvider>();
+        foreach (var provider in builtInCommands)
         {
             CommandProviderWrapper wrapper = new(provider);
+            _builtInCommands.Add(wrapper);
             await LoadTopLevelCommandsFromProvider(wrapper);
         }
 
@@ -61,12 +67,14 @@ public partial class TopLevelCommandManager(IServiceProvider _serviceProvider) :
     {
         var extensionService = _serviceProvider.GetService<IExtensionService>()!;
         var extensions = await extensionService.GetInstalledExtensionsAsync();
+        _extensionCommandProviders.Clear();
         foreach (var extension in extensions)
         {
             try
             {
                 await extension.StartExtensionAsync();
                 CommandProviderWrapper wrapper = new(extension);
+                _extensionCommandProviders.Add(wrapper);
                 await LoadTopLevelCommandsFromProvider(wrapper);
             }
             catch (Exception ex)

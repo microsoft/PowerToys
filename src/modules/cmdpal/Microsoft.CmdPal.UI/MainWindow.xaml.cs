@@ -5,8 +5,10 @@
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Input;
@@ -14,7 +16,6 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Foundation;
 using Windows.Graphics;
-using Windows.System;
 using Windows.UI;
 using Windows.UI.WindowManagement;
 using Windows.Win32;
@@ -30,8 +31,9 @@ public sealed partial class MainWindow : Window,
     IRecipient<QuitMessage>
 {
     private readonly HWND _hwnd;
-    private WNDPROC? _hotkeyWndProc;
-    private WNDPROC? _originalWndProc;
+    private readonly WNDPROC? _hotkeyWndProc;
+    private readonly WNDPROC? _originalWndProc;
+    private readonly List<HotkeySettings> _hotkeys = new();
 
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
@@ -57,11 +59,20 @@ public sealed partial class MainWindow : Window,
         SizeChanged += WindowSizeChanged;
         RootShellPage.Loaded += RootShellPage_Loaded;
 
-        // This will prevent our window from appearing in alt+tab or the taskbar.
-        // You'll _need_ to use the hotkey to summon it.
-        SetupHotkey();
-        AppWindow.IsShownInSwitchers = System.Diagnostics.Debugger.IsAttached;
+        // LOAD BEARING: If you don't stick the pointer to HotKeyPrc into a
+        // member (and instead like, use a local), then the pointer we marshal
+        // into the WindowLongPtr will be useless after we leave this function,
+        // and our **WindProc will explode**.
+        _hotkeyWndProc = HotKeyPrc;
+        var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_hotkeyWndProc);
+        _originalWndProc = Marshal.GetDelegateForFunctionPointer<WNDPROC>(PInvoke.SetWindowLongPtr(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, hotKeyPrcPointer));
+
+        // Load our settings, and then also wire up a settings changed handler
+        HotReloadSettings();
+        App.Current.Services.GetService<SettingsModel>()!.SettingsChanged += SettingsChangedHandler;
     }
+
+    private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings();
 
     private void RootShellPage_Loaded(object sender, RoutedEventArgs e) =>
 
@@ -81,6 +92,17 @@ public sealed partial class MainWindow : Window,
             centeredPosition.Y = (displayArea.WorkArea.Height - AppWindow.Size.Height) / 2;
             AppWindow.Move(centeredPosition);
         }
+    }
+
+    private void HotReloadSettings()
+    {
+        var settings = App.Current.Services.GetService<SettingsModel>()!;
+
+        SetupHotkey(settings);
+
+        // This will prevent our window from appearing in alt+tab or the taskbar.
+        // You'll _need_ to use the hotkey to summon it.
+        AppWindow.IsShownInSwitchers = System.Diagnostics.Debugger.IsAttached;
     }
 
     // We want to use DesktopAcrylicKind.Thin and custom colors as this is the default material
@@ -237,20 +259,33 @@ public sealed partial class MainWindow : Window,
     private const uint WM_HOTKEY = 0x0312;
 #pragma warning restore SA1310 // Field names should not contain underscore
 
-    private void SetupHotkey()
+    private void UnregisterHotkeys()
     {
-        // For some reason `.` is not in the VirtualKey enum. Whatever.
-        var vk = (VirtualKey)DOT_KEY;
-        var modifiers = HOT_KEY_MODIFIERS.MOD_CONTROL | HOT_KEY_MODIFIERS.MOD_WIN;
-        var success = PInvoke.RegisterHotKey(_hwnd, 0, modifiers, (uint)vk);
+        while (_hotkeys.Count > 0)
+        {
+            PInvoke.UnregisterHotKey(_hwnd, _hotkeys.Count - 1);
+            _hotkeys.RemoveAt(_hotkeys.Count - 1);
+        }
+    }
 
-        // LOAD BEARING: If you don't stick the pointer to HotKeyPrc into a
-        // member (and instead like, use a local), then the pointer we marshal
-        // into the WindowLongPtr will be useless after we leave this function,
-        // and our **WindProc will explode**.
-        _hotkeyWndProc = HotKeyPrc;
-        var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_hotkeyWndProc);
-        _originalWndProc = Marshal.GetDelegateForFunctionPointer<WNDPROC>(PInvoke.SetWindowLongPtr(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, hotKeyPrcPointer));
+    private void SetupHotkey(SettingsModel settings)
+    {
+        UnregisterHotkeys();
+
+        var globalHotkey = settings.Hotkey;
+        if (globalHotkey != null)
+        {
+            var vk = globalHotkey.Code;
+            var modifiers =
+                (globalHotkey.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
+                (globalHotkey.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
+                (globalHotkey.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
+                (globalHotkey.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
+                ;
+
+            var success = PInvoke.RegisterHotKey(_hwnd, 0, modifiers, (uint)vk);
+            _hotkeys.Add(globalHotkey);
+        }
     }
 
     private LRESULT HotKeyPrc(
@@ -261,6 +296,9 @@ public sealed partial class MainWindow : Window,
     {
         if (uMsg == WM_HOTKEY)
         {
+            // Note to future us: the wParam will have the index of the hotkey we registered.
+            // We can use that in the future to differentiate the hotkeys we've pressed
+            // so that we can bind hotkeys to individual commands
             if (!this.Visible)
             {
                 Summon();

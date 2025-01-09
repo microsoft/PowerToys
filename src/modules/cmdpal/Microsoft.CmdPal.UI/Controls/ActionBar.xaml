@@ -83,7 +83,7 @@
                 Background="Transparent"
                 Style="{StaticResource SubtleButtonStyle}"
                 Tapped="PrimaryButton_Tapped"
-                Visibility="{x:Bind ViewModel.PrimaryAction.Name, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}">
+                Visibility="{x:Bind ViewModel.HasPrimaryCommand, Mode=OneWay}">
 
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock
