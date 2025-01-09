@@ -73,7 +73,6 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Settings.wxs"" ""$(ProjectDir)..\PowerToysSetup\Settings.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\ShortcutGuide.wxs"" ""$(ProjectDir)..\PowerToysSetup\ShortcutGuide.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Tools.wxs"" ""$(ProjectDir)..\PowerToysSetup\Tools.wxs.bk""""
-      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\VideoConference.wxs"" ""$(ProjectDir)..\PowerToysSetup\VideoConference.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\WinAppSDK.wxs"" ""$(ProjectDir)..\PowerToysSetup\WinAppSDK.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\WinUI3Applications.wxs"" ""$(ProjectDir)..\PowerToysSetup\WinUI3Applications.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Workspaces.wxs"" ""$(ProjectDir)..\PowerToysSetup\Workspaces.wxs.bk""""

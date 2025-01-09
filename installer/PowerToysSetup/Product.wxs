@@ -69,7 +69,6 @@
       <ComponentGroupRef Id="RunComponentGroup" />
       <ComponentGroupRef Id="SettingsComponentGroup" />
       <ComponentGroupRef Id="ShortcutGuideComponentGroup" />
-      <ComponentGroupRef Id="VideoConferenceComponentGroup" />
       <ComponentGroupRef Id="MouseWithoutBordersComponentGroup" />
       <ComponentGroupRef Id="EnvironmentVariablesComponentGroup" />
       <ComponentGroupRef Id="AdvancedPasteComponentGroup" />

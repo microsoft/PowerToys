@@ -499,16 +499,6 @@ jobs:
           batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_DSC.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
-    - template: steps-esrp-signing.yml
-      parameters:
-        displayName: Sign x86 DirectShow VCM
-        signingIdentity: ${{ parameters.signingIdentity }}
-        inputs:
-          FolderPath: 'x86/$(BuildConfiguration)' # Video conf uses x86 and x64.
-          signType: batchSigning
-          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_vcm.json'
-          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
-
   - template: steps-build-installer.yml
     parameters:
       codeSign: ${{ parameters.codeSign }}

@@ -15,12 +15,9 @@ EXPORTS
 	TelemetryLogRepairCancelCA
 	TelemetryLogRepairFailCA
 	TerminateProcessesCA
-	CertifyVirtualCameraDriverCA
-	InstallVirtualCameraDriverCA
 	InstallEmbeddedMSIXCA
 	InstallDSCModuleCA
 	UnApplyModulesRegistryChangeSetsCA
-	UninstallVirtualCameraDriverCA
 	UnRegisterContextMenuPackagesCA
 	UninstallEmbeddedMSIXCA
 	UninstallDSCModuleCA

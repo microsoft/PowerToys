@@ -164,12 +164,6 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.CmdNotFoundModuleInterface.dll",
             L"PowerToys.WorkspacesModuleInterface.dll",
         };
-        const auto VCM_PATH = L"PowerToys.VideoConferenceModule.dll";
-        if (const auto mf = LoadLibraryA("mf.dll"))
-        {
-            FreeLibrary(mf);
-            knownModules.emplace_back(VCM_PATH);
-        }
 
         for (auto moduleSubdir : knownModules)
         {
