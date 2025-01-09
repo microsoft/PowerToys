@@ -283,7 +283,7 @@ namespace WorkspacesData
             const static wchar_t* CreationTimeID = L"creation-time";
             const static wchar_t* LastLaunchedTimeID = L"last-launched-time";
             const static wchar_t* IsShortcutNeededID = L"is-shortcut-needed";
-            const static wchar_t* IsLaunchOnStartupID = L"is-Launch-on-startup";
+            const static wchar_t* IsLaunchOnStartupID = L"is-launch-on-startup";
             const static wchar_t* MoveExistingWindowsID = L"move-existing-windows";
             const static wchar_t* MonitorConfigurationID = L"monitor-configuration";
             const static wchar_t* AppsID = L"applications";
