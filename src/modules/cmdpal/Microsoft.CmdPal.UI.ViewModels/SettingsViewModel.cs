@@ -33,7 +33,7 @@ public partial class SettingsViewModel : PageViewModel
 
         Icon = new("\uE713");
         IsInitialized = true;
-        IsLoading = false;
+        ModelIsLoading = false;
         Title = "Settings";
 
         var activeProviders = GetCommandProviders();

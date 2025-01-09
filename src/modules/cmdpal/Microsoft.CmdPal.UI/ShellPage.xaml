@@ -131,7 +131,7 @@
                 Grid.ColumnSpan="2"
                 VerticalAlignment="Bottom"
                 IsIndeterminate="True"
-                Visibility="{x:Bind ViewModel.CurrentPage.IsInitialized, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}" />
+                Visibility="{x:Bind ViewModel.CurrentPage.IsLoading, Mode=OneWay}" />
 
             <Grid
                 x:Name="ContentGrid"

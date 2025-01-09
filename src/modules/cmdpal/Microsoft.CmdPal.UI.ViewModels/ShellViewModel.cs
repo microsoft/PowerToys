@@ -24,7 +24,7 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
     public partial bool IsDetailsVisible { get; set; }
 
     [ObservableProperty]
-    public partial PageViewModel? CurrentPage { get; set; }
+    public partial PageViewModel CurrentPage { get; set; } = new LoadingPageViewModel(null, _scheduler);
 
     [RelayCommand]
     public async Task<bool> LoadAsync()
@@ -98,7 +98,7 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
                         {
                             var result = (bool)viewModel.InitializeCommand.ExecutionTask.GetResultOrDefault()!;
 
-                            CurrentPage = result ? viewModel : null;
+                            CurrentPage = viewModel; // result ? viewModel : null;
                             ////LoadedState = result ? ViewModelLoadedState.Loaded : ViewModelLoadedState.Error;
                         },
                         CancellationToken.None,
