@@ -15,7 +15,7 @@ public partial class BuiltInsCommandProvider : CommandProvider
 {
     private readonly OpenSettingsCommand openSettings = new();
     private readonly QuitAction quitAction = new();
-    private readonly ReloadExtensionsAction reloadAction = new();
+    private readonly FallbackReloadItem _fallbackReloadItem = new();
 
     public override ICommandItem[] TopLevelCommands() =>
         [
@@ -25,7 +25,7 @@ public partial class BuiltInsCommandProvider : CommandProvider
     public override IFallbackCommandItem[] FallbackCommands() =>
         [
             new FallbackCommandItem(quitAction) { Subtitle = "Exit Command Palette" },
-            new FallbackCommandItem(reloadAction) { Subtitle = "Reload Command Palette extensions" },
+            _fallbackReloadItem,
         ];
 
     public BuiltInsCommandProvider()

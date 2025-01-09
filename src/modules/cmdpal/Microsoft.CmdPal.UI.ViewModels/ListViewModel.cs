@@ -57,17 +57,22 @@ public partial class ListViewModel : PageViewModel
         // something needs to change, by raising ItemsChanged.
         if (_isDynamic)
         {
-            try
+            // We're getting called on the UI thread.
+            // Hop off to a BG thread to update the extension.
+            _ = Task.Run(() =>
             {
-                if (_model.Unsafe is IDynamicListPage dynamic)
+                try
                 {
-                    dynamic.SearchText = filter;
+                    if (_model.Unsafe is IDynamicListPage dynamic)
+                    {
+                        dynamic.SearchText = filter;
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                ShowException(ex, _model?.Unsafe?.Name);
-            }
+                catch (Exception ex)
+                {
+                    ShowException(ex, _model?.Unsafe?.Name);
+                }
+            });
         }
         else
         {

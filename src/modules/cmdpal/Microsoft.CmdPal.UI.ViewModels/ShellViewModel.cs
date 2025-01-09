@@ -37,10 +37,11 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
         var page = new MainListPage(_serviceProvider);
         WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new(page!)));
 
-        // After loading built-ins, and starting navigation, kick off a thread to load extensions.
-        tlcManager.LoadExtensionsCommand.Execute(null);
         _ = Task.Run(async () =>
         {
+            // After loading built-ins, and starting navigation, kick off a thread to load extensions.
+            tlcManager.LoadExtensionsCommand.Execute(null);
+
             await tlcManager.LoadExtensionsCommand.ExecutionTask!;
             if (tlcManager.LoadExtensionsCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
             {

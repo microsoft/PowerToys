@@ -6,17 +6,30 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class TopLevelCommandManager(IServiceProvider _serviceProvider) : ObservableObject
+public partial class TopLevelCommandManager : ObservableObject,
+    IRecipient<ReloadCommandsMessage>
 {
+    private readonly IServiceProvider _serviceProvider;
+    private readonly TaskScheduler _taskScheduler;
+
     private readonly List<CommandProviderWrapper> _builtInCommands = [];
     private readonly List<CommandProviderWrapper> _extensionCommandProviders = [];
+
+    public TopLevelCommandManager(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+        _taskScheduler = _serviceProvider.GetService<TaskScheduler>()!;
+        WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
+    }
 
     public ObservableCollection<TopLevelCommandWrapper> TopLevelCommands { get; set; } = [];
 
@@ -42,18 +55,26 @@ public partial class TopLevelCommandManager(IServiceProvider _serviceProvider) :
         return true;
     }
 
+    // May be called from a background thread
     private async Task LoadTopLevelCommandsFromProvider(CommandProviderWrapper commandProvider)
     {
         await commandProvider.LoadTopLevelCommands();
-        foreach (var i in commandProvider.TopLevelItems)
-        {
-            TopLevelCommands.Add(new(new(i), false));
-        }
+        await Task.Factory.StartNew(
+            () =>
+            {
+                foreach (var i in commandProvider.TopLevelItems)
+                {
+                    TopLevelCommands.Add(new(new(i), false));
+                }
 
-        foreach (var i in commandProvider.FallbackItems)
-        {
-            TopLevelCommands.Add(new(new(i), true));
-        }
+                foreach (var i in commandProvider.FallbackItems)
+                {
+                    TopLevelCommands.Add(new(new(i), true));
+                }
+            },
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            _taskScheduler);
 
         commandProvider.CommandsChanged += CommandProvider_CommandsChanged;
     }
@@ -138,7 +159,17 @@ public partial class TopLevelCommandManager(IServiceProvider _serviceProvider) :
         ListHelpers.InPlaceUpdateList(TopLevelCommands, clone);
     }
 
-    // Load commands from our extensions.
+    public async Task ReloadAllCommandsAsync()
+    {
+        IsLoading = true;
+        var extensionService = _serviceProvider.GetService<IExtensionService>()!;
+        await extensionService.SignalStopExtensionsAsync();
+        TopLevelCommands.Clear();
+        await LoadBuiltinsAsync();
+        _ = Task.Run(LoadExtensionsAsync);
+    }
+
+    // Load commands from our extensions. Called on a background thread.
     // Currently, this
     // * queries the package catalog,
     // * starts all the extensions,
@@ -183,4 +214,7 @@ public partial class TopLevelCommandManager(IServiceProvider _serviceProvider) :
 
         return null;
     }
+
+    public void Receive(ReloadCommandsMessage message) =>
+        ReloadAllCommandsAsync().ConfigureAwait(false);
 }
