@@ -189,6 +189,7 @@ BVID
 cmdow
 Controlz
 cortana
+dlnilsson
 fancymouse
 firefox
 gpt

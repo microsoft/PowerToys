@@ -86,6 +86,9 @@ howto
 onefuzzconfig
 oip
 onefuzzingestionpreparationtool
+OTP
+Yubi
+Yubico
 
 # KEYS
 
