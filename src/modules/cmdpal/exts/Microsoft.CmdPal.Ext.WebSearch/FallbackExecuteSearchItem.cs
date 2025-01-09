@@ -1,0 +1,32 @@
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Globalization;
+using System.Text;
+using Microsoft.CmdPal.Ext.WebSearch.Helpers;
+using Microsoft.CmdPal.Extensions.Helpers;
+using BrowserInfo = Wox.Plugin.Common.DefaultBrowserInfo;
+
+namespace Microsoft.CmdPal.Ext.WebSearch.Commands;
+
+internal sealed partial class FallbackExecuteSearchItem : FallbackCommandItem
+{
+    private readonly SearchWebCommand _executeItem;
+    private static readonly CompositeFormat PluginOpen = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open);
+
+    public FallbackExecuteSearchItem(SettingsManager settings)
+        : base(new SearchWebCommand(string.Empty, settings))
+    {
+        _executeItem = (SearchWebCommand)this.Command!;
+        Title = string.Empty;
+        Subtitle = string.Format(CultureInfo.CurrentCulture, PluginOpen, BrowserInfo.Name ?? BrowserInfo.MSEdgeName);
+        Icon = new("\uF6FA"); // WebSearch icon
+    }
+
+    public override void UpdateQuery(string query)
+    {
+        _executeItem.Arguments = query;
+        Title = string.IsNullOrEmpty(query) ? string.Empty : query;
+    }
+}
