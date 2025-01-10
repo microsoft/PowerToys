@@ -181,6 +181,7 @@
 
                 "WinUI3Apps\\PowerToys.NewPlus.ShellExtension.dll",
                 "WinUI3Apps\\NewPlusPackage.msix",
+                "WinUI3Apps\\PowerToys.NewPlus.ShellExtension.win10.dll",
 
                 "PowerAccent.Core.dll",
                 "PowerToys.PowerAccent.dll",
@@ -326,6 +327,7 @@
                 "WinUI3Apps\\TestableIO.System.IO.Abstractions.dll",
                 "TestableIO.System.IO.Abstractions.Wrappers.dll",
                 "WinUI3Apps\\TestableIO.System.IO.Abstractions.Wrappers.dll",
+                "WinUI3Apps\\OpenAI.dll",
                 "ColorCode.Core.dll", 
                 "ColorCode.UWP.dll",
                 "UnitsNet.dll",

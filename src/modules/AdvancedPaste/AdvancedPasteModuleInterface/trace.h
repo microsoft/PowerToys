@@ -20,6 +20,7 @@ public:
                                          const PowertoyModuleIface::Hotkey& advancedPasteUIHotkey,
                                          const PowertoyModuleIface::Hotkey& pasteMarkdownHotkey,
                                          const PowertoyModuleIface::Hotkey& pasteJsonHotkey,
+                                         const bool is_advanced_ai_enabled,
                                          const bool preview_custom_format_output,
                                          const std::unordered_map<std::wstring, PowertoyModuleIface::Hotkey>& additionalActionsHotkeys) noexcept;
 };

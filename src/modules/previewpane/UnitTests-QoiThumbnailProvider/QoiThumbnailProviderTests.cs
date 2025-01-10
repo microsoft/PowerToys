@@ -4,7 +4,6 @@
 
 using System.Drawing;
 
-using Microsoft.PowerToys.STATestExtension;
 using Microsoft.PowerToys.ThumbnailHandler.Qoi;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

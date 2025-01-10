@@ -9,14 +9,14 @@ namespace MouseJump.Common.Models.Styles;
 /// </summary>
 public sealed class BorderStyle
 {
-    public static readonly BorderStyle Empty = new(Color.Transparent, 0, 0);
+    public static readonly BorderStyle Empty = new(null, 0, 0);
 
-    public BorderStyle(Color color, decimal all, decimal depth)
+    public BorderStyle(Color? color, decimal all, decimal depth)
         : this(color, all, all, all, all, depth)
     {
     }
 
-    public BorderStyle(Color color, decimal left, decimal top, decimal right, decimal bottom, decimal depth)
+    public BorderStyle(Color? color, decimal left, decimal top, decimal right, decimal bottom, decimal depth)
     {
         this.Color = color;
         this.Left = left;
@@ -26,7 +26,7 @@ public sealed class BorderStyle
         this.Depth = depth;
     }
 
-    public Color Color
+    public Color? Color
     {
         get;
     }

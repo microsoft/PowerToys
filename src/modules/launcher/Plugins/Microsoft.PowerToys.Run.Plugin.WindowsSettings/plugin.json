@@ -6,7 +6,7 @@
   "Author": "TobiasSekan",
   "Version": "1.0.0",
   "Language": "csharp",
-  "Website": "https://aka.ms/powertoys",
+  "Website": "https://aka.ms/PowerToys",
   "ExecuteFileName": "Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll",
   "IcoPathDark": "Images\\WindowsSettings.dark.png",
   "IcoPathLight": "Images\\WindowsSettings.light.png"

@@ -46,8 +46,14 @@ $totalList = $projFiles | ForEach-Object -Parallel {
 
         foreach($p in $temp) 
         {
+            # ignore "Auto-referenced" string in the output
+            if ($p -match "Auto-referenced") {
+                continue
+            }
+
             # breaking item down to usable array and getting 1 and 2, see below of a sample output
             #    > PACKAGE      VERSION            VERSION
+            # if a package is Auto-referenced, "(A)" will appear in position 1 instead of a version number.
 
             $p = -split $p
             $p = $p[1, 2]

@@ -195,12 +195,12 @@ namespace AdvancedPaste.Pages
                 PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteClipboardItemClicked());
                 if (!string.IsNullOrEmpty(item.Content))
                 {
-                    ClipboardHelper.SetClipboardTextContent(item.Content);
+                    ClipboardHelper.SetTextContent(item.Content);
                 }
                 else if (item.Image is not null)
                 {
                     RandomAccessStreamReference image = await item.Item.Content.GetBitmapAsync();
-                    ClipboardHelper.SetClipboardImageContent(image);
+                    ClipboardHelper.SetImageContent(image);
                 }
             }
         }

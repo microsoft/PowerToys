@@ -6,6 +6,7 @@ using System;
 
 namespace AdvancedPaste.Models;
 
-public sealed class PasteActionException(string message) : Exception(message)
+public class PasteActionException(string message, Exception innerException, string aiServiceMessage = null) : Exception(message, innerException)
 {
+    public string AIServiceMessage { get; } = aiServiceMessage;
 }
