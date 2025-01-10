@@ -26,6 +26,7 @@ enum class ESettingsWindowNames
     EnvironmentVariables,
     AdvancedPaste,
     NewPlus,
+    CmdPal,
 };
 
 std::string ESettingsWindowNames_to_string(ESettingsWindowNames value);

@@ -19,6 +19,7 @@ EXPORTS
 	InstallVirtualCameraDriverCA
 	InstallEmbeddedMSIXCA
 	InstallDSCModuleCA
+	InstallCmdPalPackageCA
 	UnApplyModulesRegistryChangeSetsCA
 	UninstallVirtualCameraDriverCA
 	UnRegisterContextMenuPackagesCA

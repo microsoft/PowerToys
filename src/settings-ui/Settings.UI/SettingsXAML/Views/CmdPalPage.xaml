@@ -13,41 +13,18 @@
     <controls:SettingsPageControl x:Uid="CmdPal" ModuleImageSource="ms-appx:///Assets/Settings/Modules/CmdPal.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <tkcontrols:SettingsCard
+                    x:Uid="CmdPal_Enable_CmdPal"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}"
+                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
-
-                <tkcontrols:SettingsCard
-                    x:Uid="CmdPal_Enable_CmdPal"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}"
-                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <tkcontrols:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IsCmdPalInstalled, Mode=OneWay}">
-                        <tkcontrols:Case Value="True">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <TextBlock
-                                    x:Uid="InstalledLabel"
-                                    VerticalAlignment="Center"
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                <FontIcon
-                                    Margin="0,0,4,0"
-                                    VerticalAlignment="Center"
-                                    AutomationProperties.AccessibilityView="Raw"
-                                    Foreground="{ThemeResource SystemFillColorSuccessBrush}"
-                                    Glyph="&#xEC61;" />
-                                <HyperlinkButton x:Uid="CmdPal_UninstallButton" Command="{x:Bind ViewModel.UninstallModuleEventHandler}" />
-                            </StackPanel>
-                        </tkcontrols:Case>
-                        <tkcontrols:Case Value="False">
-                            <Button
-                                x:Uid="CmdPal_InstallButton"
-                                Command="{x:Bind ViewModel.InstallModuleEventHandler}"
-                                Style="{StaticResource AccentButtonStyle}" />
-                        </tkcontrols:Case>
-                    </tkcontrols:SwitchPresenter>
-                </tkcontrols:SettingsCard>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 

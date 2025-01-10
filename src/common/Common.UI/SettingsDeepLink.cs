@@ -32,6 +32,7 @@ namespace Common.UI
             Dashboard,
             AdvancedPaste,
             Workspaces,
+            CmdPal,
         }
 
         private static string SettingsWindowNameToString(SettingsWindow value)
@@ -80,6 +81,8 @@ namespace Common.UI
                     return "AdvancedPaste";
                 case SettingsWindow.Workspaces:
                     return "Workspaces";
+                case SettingsWindow.CmdPal:
+                    return "CmdPal";
                 default:
                     {
                         return string.Empty;

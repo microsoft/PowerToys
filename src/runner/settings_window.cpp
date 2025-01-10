@@ -696,6 +696,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "AdvancedPaste";
     case ESettingsWindowNames::NewPlus:
         return "NewPlus";
+    case ESettingsWindowNames::CmdPal:
+        return "CmdPal";
     default:
     {
         Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
@@ -794,6 +796,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "NewPlus")
     {
         return ESettingsWindowNames::NewPlus;
+    }
+    else if (value == "CmdPal")
+    {
+        return ESettingsWindowNames::CmdPal;
     }
     else
     {

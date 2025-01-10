@@ -7,6 +7,10 @@
 #ifndef PCH_H
 #define PCH_H
 
-#include "string"
+#include <string>
+
+#include <winrt/Windows.ApplicationModel.Core.h>
+#include <winrt/Windows.Foundation.Collections.h>
+#include <winrt/Windows.System.h>
 
 #endif //PCH_H
