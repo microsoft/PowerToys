@@ -73,6 +73,7 @@ namespace Peek.UI
                 if (IsNewSingleSelectedItem(foregroundWindowHandle))
                 {
                     Initialize(foregroundWindowHandle);
+                    Activate(); // Brings existing window into focus in case it was previously minimized
                 }
                 else
                 {
