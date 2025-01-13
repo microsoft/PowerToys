@@ -40,7 +40,7 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
         SearchController.Instance.UpdateSearchText(query);
         var searchControllerResults = SearchController.Instance.SearchMatches;
 
-        return ResultHelper.GetResultList(searchControllerResults, !string.IsNullOrEmpty(query), string.Empty, "\uE946");
+        return ResultHelper.GetResultList(searchControllerResults, !string.IsNullOrEmpty(query), "\uE946");
     }
 
     public override IListItem[] GetItems() => Query(SearchText).ToArray();

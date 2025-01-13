@@ -22,7 +22,7 @@ internal static class ResultHelper
     /// <param name="searchControllerResults">List with all search controller matches</param>
     /// <param name="icon">The path to the result icon</param>
     /// <returns>List of results</returns>
-    internal static List<WindowWalkerListItem> GetResultList(List<SearchResult> searchControllerResults, bool isKeywordSearch, string icon, string infoIcon)
+    internal static List<WindowWalkerListItem> GetResultList(List<SearchResult> searchControllerResults, bool isKeywordSearch, string infoIcon)
     {
         if (searchControllerResults == null || searchControllerResults.Count == 0)
         {
@@ -38,7 +38,7 @@ internal static class ResultHelper
         // Using parallel processing if the operation is CPU-bound and the list is large.
         resultsList = searchControllerResults
             .AsParallel()
-            .Select(x => CreateResultFromSearchResult(x, icon))
+            .Select(x => CreateResultFromSearchResult(x))
             .ToList();
 
         if (addExplorerInfo && !SettingsManager.Instance.HideExplorerSettingInfo)
@@ -55,12 +55,11 @@ internal static class ResultHelper
     /// <param name="searchResult">The SearchResult object to convert.</param>
     /// <param name="icon">The path to the icon that should be used for the Result.</param>
     /// <returns>A Result object populated with data from the SearchResult.</returns>
-    private static WindowWalkerListItem CreateResultFromSearchResult(SearchResult searchResult, string icon)
+    private static WindowWalkerListItem CreateResultFromSearchResult(SearchResult searchResult)
     {
         var item = new WindowWalkerListItem(searchResult.Result)
         {
             Title = searchResult.Result.Title,
-            Icon = new(icon),
             Subtitle = GetSubtitle(searchResult.Result),
             Tags = GetTags(searchResult.Result),
         };

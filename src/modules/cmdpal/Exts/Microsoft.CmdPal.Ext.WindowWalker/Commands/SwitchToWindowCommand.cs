@@ -17,7 +17,6 @@ internal sealed partial class SwitchToWindowCommand : InvokableCommand
     public SwitchToWindowCommand(Window? window)
     {
         Name = Resources.switch_to_command_title;
-        Icon = new(string.Empty);
         _window = window;
         if (_window != null)
         {
@@ -26,7 +25,8 @@ internal sealed partial class SwitchToWindowCommand : InvokableCommand
             {
                 try
                 {
-                    Icon = new(p.MainModule?.FileName);
+                    var processFileName = p.MainModule?.FileName;
+                    Icon = new(processFileName);
                 }
                 catch
                 {
