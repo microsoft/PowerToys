@@ -91,7 +91,7 @@ namespace WorkspacesEditor
 
         private bool IsEditorInsideVisibleArea()
         {
-            System.Windows.Forms.Screen[] allScreens = System.Windows.Forms.Screen.AllScreens;
+            System.Windows.Forms.Screen[] allScreens = MonitorHelper.GetDpiUnawareScreens();
             Rectangle commonBounds = allScreens[0].Bounds;
             for (int screenIndex = 1; screenIndex < allScreens.Length; screenIndex++)
             {
