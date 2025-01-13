@@ -1,5 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="CmdPal.Branding.props" />
+  
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <RootNamespace>Microsoft.CmdPal.UI</RootNamespace>
@@ -9,7 +11,9 @@
     <EnableMsixTooling>true</EnableMsixTooling>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal</OutputPath>
+    
+    <!-- OutputPath is set in CmdPal.Branding.props  -->
+
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
@@ -26,7 +30,6 @@
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
   </PropertyGroup>
 
-
   <ItemGroup>
     <None Remove="Controls\ActionBar.xaml" />
     <None Remove="Controls\SearchBar.xaml" />
@@ -39,16 +42,7 @@
     <None Remove="Styles\TextBox.xaml" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="Assets\SplashScreen.scale-200.png" />
-    <Content Include="Assets\LockScreenLogo.scale-200.png" />
-    <Content Include="Assets\Square150x150Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Content Include="Assets\StoreLogo.png" />
-    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
@@ -60,7 +54,6 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
-    <Manifest Include="$(ApplicationManifest)" />
 
     <PackageReference Include="Microsoft.Windows.CsWin32">
       <PrivateAssets>all</PrivateAssets>
@@ -75,6 +68,13 @@
 
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="System.Text.Json" />
+    
+    <!-- LOAD BEARING: GeneratePathProperty=true on BOTH the AC dependencies. Don't forget the AdaptiveCardsWorkaround below -->
+    <PackageReference Include="AdaptiveCards.ObjectModel.WinUI3" GeneratePathProperty="true" />
+    <PackageReference Include="AdaptiveCards.Rendering.WinUI3" GeneratePathProperty="True" />
+    <PackageReference Include="AdaptiveCards.Templating" />
+
+    <PackageReference Include="HtmlAgilityPack" />
   </ItemGroup>
 
   <!--
@@ -110,13 +110,6 @@
       <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
     </ProjectReference>
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
-
-    <!-- LOAD BEARING: GeneratePathProperty=true on BOTH the AC dependencies. Don't forget the AdaptiveCardsWorkaround below -->
-    <PackageReference Include="AdaptiveCards.ObjectModel.WinUI3" GeneratePathProperty="true" />
-    <PackageReference Include="AdaptiveCards.Rendering.WinUI3" GeneratePathProperty="True" />
-    <PackageReference Include="AdaptiveCards.Templating" />
-
-    <PackageReference Include="HtmlAgilityPack" />
   </ItemGroup>
 
   <ItemGroup>
@@ -146,20 +139,6 @@
     </Page>
   </ItemGroup>
 
-  <!-- <ItemGroup>
-    <Compile Update="Strings\Resources.Designer.cs">
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-    </Compile>
-  </ItemGroup> -->
-  <!-- <ItemGroup> -->
-    <!-- <EmbeddedResource Update="Strings\en-us\Resources.resx"> -->
-      <!-- <LastGenOutput>Resources.Designer.cs</LastGenOutput> -->
-      <!-- <Generator>PublicResXFileCodeGenerator</Generator> -->
-    <!-- </EmbeddedResource> -->
-  <!-- </ItemGroup> -->
-
   <!--
     Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution
     Explorer "Package and Publish" context menu entry to be enabled for this project even if
@@ -171,7 +150,8 @@
 
 
   <!-- <AdaptiveCardsWorkaround> -->
-  <!-- Workaround for Adaptive Cards not supporting correct RIDs when using .NET 8 -->
+  <!-- Workaround for Adaptive Cards not supporting correct RIDs when using .NET 8.
+       Don't forget GeneratePathProperty on the AdaptiveCards PackageReference's above -->
   <PropertyGroup>
     <AdaptiveCardsNative>runtimes\win10-$(Platform)\native</AdaptiveCardsNative>
   </PropertyGroup>
