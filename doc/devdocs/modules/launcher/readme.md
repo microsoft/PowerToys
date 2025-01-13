@@ -14,7 +14,6 @@
     - [Program](/doc/devdocs/modules/launcher/plugins/program.md)
     - [Registry](/doc/devdocs/modules/launcher/plugins/registry.md)
     - [Shell](/doc/devdocs/modules/launcher/plugins/shell.md)
-    - [System](/doc/devdocs/modules/launcher/plugins/system.md)
     - [Time and Date](/doc/devdocs/modules/launcher/plugins/timedate.md)
     - [Unit Converter](/doc/devdocs/modules/launcher/plugins/community.unitconverter.md)
     - [Uri](/doc/devdocs/modules/launcher/plugins/uri.md)
