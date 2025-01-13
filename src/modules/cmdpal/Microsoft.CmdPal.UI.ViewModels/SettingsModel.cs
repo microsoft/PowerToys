@@ -23,6 +23,8 @@ public partial class SettingsModel : ObservableObject
     // SETTINGS HERE
     public HotkeySettings? Hotkey { get; set; } = new HotkeySettings(true, true, false, false, 0xBE);
 
+    public bool ShowAppDetails { get; set; }
+
     public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = [];
 
     // END SETTINGS

@@ -23,6 +23,16 @@ public partial class SettingsViewModel : PageViewModel
         }
     }
 
+    public bool ShowAppDetails
+    {
+        get => _settings.ShowAppDetails;
+        set
+        {
+            _settings.ShowAppDetails = value;
+            Save();
+        }
+    }
+
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
 
     public SettingsViewModel(SettingsModel settings, IServiceProvider serviceProvider, TaskScheduler scheduler)

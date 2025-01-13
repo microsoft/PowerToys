@@ -64,6 +64,13 @@
                     HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                     <ptControls:ShortcutControl HotkeySettings="{x:Bind ViewModel.Hotkey, Mode=TwoWay}" />
                 </controls:SettingsCard>
+                
+                <controls:SettingsCard
+                    Description="Controls if app details are automatically expanded or not"
+                    Header="Show app details"
+                    HeaderIcon="{ui:FontIcon Glyph=&#xE8A0;}">
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.ShowAppDetails, Mode=TwoWay}" />
+                </controls:SettingsCard>
 
                 <TextBlock x:Uid="ExtensionSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 

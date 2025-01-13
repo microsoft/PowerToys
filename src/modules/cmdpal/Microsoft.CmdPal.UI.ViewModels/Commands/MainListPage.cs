@@ -34,7 +34,6 @@ public partial class MainListPage : DynamicListPage,
     {
         Name = "Command Palette";
         Icon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory.ToString(), "Assets\\StoreLogo.scale-200.png"));
-        ShowDetails = true;
         _serviceProvider = serviceProvider;
 
         var tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
@@ -45,6 +44,10 @@ public partial class MainListPage : DynamicListPage,
         _commands.CollectionChanged += Commands_CollectionChanged;
 
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
+
+        var settings = _serviceProvider.GetService<SettingsModel>()!;
+        settings.SettingsChanged += SettingsChangedHandler;
+        HotReloadSettings(settings);
 
         IsLoading = true;
     }
@@ -179,5 +182,15 @@ public partial class MainListPage : DynamicListPage,
     public void Receive(ClearSearchMessage message)
     {
         SearchText = string.Empty;
+    }
+
+    private void SettingsChangedHandler(SettingsModel sender, object? args)
+    {
+        HotReloadSettings(sender);
+    }
+
+    private void HotReloadSettings(SettingsModel settings)
+    {
+        ShowDetails = settings.ShowAppDetails;
     }
 }
