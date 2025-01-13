@@ -48,7 +48,8 @@ namespace Peek.UI
             ViewModel = Application.Current.GetService<MainWindowViewModel>();
 
             TitleBarControl.SetTitleBarToWindow(this);
-            AppWindow.TitleBar.ExtendsContentIntoTitleBar = true;
+            ExtendsContentIntoTitleBar = true;
+            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());
             AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
             AppWindow.SetIcon("Assets/Peek/Icon.ico");
 
