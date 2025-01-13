@@ -193,10 +193,11 @@ public sealed partial class MainWindow : Window,
         // (resizing, dragging) don't apply in this space.
         var transform = RootShellPage.TransformToVisual(null);
 
-        // Reserve 24px of space at the top for dragging.
+        // Reserve 16px of space at the top for dragging.
+        var topHeight = 16;
         var bounds = transform.TransformBounds(new Rect(
             0,
-            24,
+            topHeight,
             RootShellPage.ActualWidth,
             RootShellPage.ActualHeight));
         var contentRect = GetRect(bounds, scaleAdjustment);
@@ -209,7 +210,7 @@ public sealed partial class MainWindow : Window,
         _ = RootShellPage.ActualHeight;
         var dragSides = new RectInt32[]
         {
-            GetRect(new Rect(0, 0, w, 24), scaleAdjustment), // the top, 24 tall
+            GetRect(new Rect(0, 0, w, topHeight), scaleAdjustment), // the top, {topHeight=16} tall
         };
         nonClientInputSrc.SetRegionRects(NonClientRegionKind.Caption, dragSides);
     }
