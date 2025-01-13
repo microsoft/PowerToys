@@ -12,9 +12,9 @@ namespace AdvancedPaste.Settings
 {
     public interface IUserSettings
     {
-        public bool ShowCustomPreview { get; }
+        public bool IsAdvancedAIEnabled { get; }
 
-        public bool SendPasteKeyCombination { get; }
+        public bool ShowCustomPreview { get; }
 
         public bool CloseAfterLosingFocus { get; }
 

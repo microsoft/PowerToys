@@ -1,23 +1,19 @@
 # See https://github.com/check-spelling/check-spelling/wiki/Configuration-Examples:-excludes
 (?:^|/)(?i)COPYRIGHT
 (?:^|/)(?i)LICEN[CS]E
+(?:^|/)(?i)third[-_]?party/
 (?:^|/)3rdparty/
-(?:^|/)src/Monaco/customLanguages/
-(?:^|/)src/Monaco/generateLanguagesJson.html
-(?:^|/)src/Monaco/index.html
-(?:^|/)src/Monaco/monaco_languages.json
-(?:^|/)src/Monaco/monacoSpecialLanguages.js
+(?:^|/)generated/
 (?:^|/)go\.sum$
-(?:^|/)monacoSRC/
 (?:^|/)package(?:-lock|)\.json$
 (?:^|/)Pipfile$
 (?:^|/)power-rename-ui-flags$
 (?:^|/)pyproject.toml
-(?:^|/)requirements(?:-dev|-doc|-test|)\.txt$
 (?:^|/)sample\.qoi$
-(?:^|/)timezones\.json$
 (?:^|/)vendor/
 (?:^|/)WindowsSettings\.json$
+(?:^|/|\b)requirements(?:-dev|-doc|-test|)\.txt$
+(?:|$^ 92.31% - excluded 12/13)/editor/[^/]+$
 /images/launcher/[^/]+$
 /TestFiles/
 [^/]\.gcode$
@@ -28,11 +24,10 @@
 \.avi$
 \.bmp$
 \.bz2$
-\.cer$
+\.cert?$|\.crt$
 \.class$
 \.coveragerc$
 \.crl$
-\.crt$
 \.csr$
 \.dll$
 \.docx?$
@@ -97,19 +92,19 @@
 ^\.gitmodules$
 ^\Q.github/workflows/spelling2.yml\E$
 ^\Q.pipelines/ESRPSigning_core.json\E$
-^\Q.pipelines/sdl.gdnbaselines\E$
-^\Qinstaller/PowerToysSetup/Settings.wxs\E$
-^\Qsrc/Monaco/monaco_languages.json\E$
+^\Qdoc/devdocs/localization.md\E$
 ^\Qsrc/common/ManagedCommon/ColorFormatHelper.cs\E$
 ^\Qsrc/common/notifications/BackgroundActivatorDLL/cpp.hint\E$
 ^\Qsrc/modules/colorPicker/ColorPickerUI/Assets/ColorPicker/colorPicker.cur\E$
 ^\Qsrc/modules/colorPicker/ColorPickerUI/Shaders/GridShader.cso\E$
 ^\Qsrc/modules/MouseUtils/MouseJumpUI/MainForm.resx\E$
-^\Qsrc/modules/MouseUtils/MouseJumpUI/NativeMethods/User32/UI/WindowsAndMessaging/User32.SYSTEM_METRICS_INDEX.cs\E$
+^\Qsrc/modules/MouseUtils/MouseJump.Common/NativeMethods/User32/UI/WindowsAndMessaging/User32.SYSTEM_METRICS_INDEX.cs\E$
 ^\Qsrc/modules/MouseWithoutBorders/App/Form/frmAbout.cs\E$
 ^\Qsrc/modules/MouseWithoutBorders/App/Form/frmInputCallback.resx\E$
 ^\Qsrc/modules/MouseWithoutBorders/App/Form/frmLogon.resx\E$
 ^\Qsrc/modules/MouseWithoutBorders/App/Form/frmMatrix.resx\E$
+^\Qsrc/modules/MouseWithoutBorders/App/Form/frmMessage.resx\E$
+^\Qsrc/modules/MouseWithoutBorders/App/Form/frmMouseCursor.resx\E$
 ^\Qsrc/modules/MouseWithoutBorders/App/Form/frmScreen.resx\E$
 ^\Qsrc/modules/MouseWithoutBorders/ModuleInterface/generateSecurityDescriptor.h\E$
 ^\Qsrc/modules/peek/Peek.Common/NativeMethods.txt\E$
@@ -122,6 +117,7 @@
 ^src/modules/MouseWithoutBorders/App/Form/.*\.Designer\.cs$
 ^src/modules/MouseWithoutBorders/App/Form/.*\.resx$
 ^src/modules/MouseWithoutBorders/App/Helper/.*\.resx$
-^src/modules/previewpane/UnitTests-MarkdownPreviewHandler/HelperFiles/MarkdownWithHTMLImageTag.txt$
+^src/modules/previewpane/UnitTests-MarkdownPreviewHandler/HelperFiles/MarkdownWithHTMLImageTag\.txt$
+^src/Monaco/
 ^tools/Verification scripts/Check preview handler registration\.ps1$
 ignore$

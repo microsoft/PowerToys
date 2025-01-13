@@ -196,7 +196,7 @@ namespace RegistryPreviewUILib
                 return false;
             }
 
-            // REG files have to start with one of two headers and it's case insensitive
+            // REG files have to start with one of two headers and it's case-insensitive
             registryLine = registryLines[0];
             registryLine = registryLine.ToLowerInvariant();
 
@@ -232,7 +232,7 @@ namespace RegistryPreviewUILib
                 }
                 else if (registryLine.StartsWith("@=", StringComparison.InvariantCulture))
                 {
-                    // This is the a Value called "(Default)" so we tweak the line for the UX
+                    // This is the Value called "(Default)" so we tweak the line for the UX
                     registryLine = registryLine.Replace("@=", "\"(Default)\"=");
                 }
 

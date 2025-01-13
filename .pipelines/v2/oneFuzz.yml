@@ -1,0 +1,55 @@
+pr: none
+trigger: none
+
+schedules:
+  - cron: "0 0 * * 1"
+    displayName: Weekly fuzzing submission
+    branches:
+      include:
+        - main
+    always: true
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+
+parameters:
+  - name: platform
+    type: string
+    default: x64 # for fuzzing, we only use x64 for now
+  - name: enableMsBuildCaching
+    type: boolean
+    displayName: "Enable MSBuild Caching"
+    default: false
+  - name: useVSPreview
+    type: boolean
+    displayName: "Build Using Visual Studio Preview"
+    default: false
+
+stages:
+  - stage: Build_${{ parameters.platform }}
+    displayName: Build ${{ parameters.platform }}
+    jobs:
+      - template: templates/job-build-project.yml
+        parameters:
+          pool:
+            ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+              name: SHINE-INT-L
+            ${{ else }}:
+              name: SHINE-OSS-L
+            ${{ if eq(parameters.useVSPreview, true) }}:
+              demands: ImageOverride -equals SHINE-VS17-Preview
+          buildPlatforms:
+            - ${{ parameters.platform }}
+          buildConfigurations: [Release]
+          enablePackageCaching: true
+          enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+          runTests: true
+          useVSPreview: ${{ parameters.useVSPreview }}
+
+  - stage: OneFuzz
+    displayName: Fuzz ${{ parameters.platform }}
+    dependsOn:
+      - Build_${{parameters.platform}}
+    jobs:
+      - template: templates/job-fuzz.yml
+        parameters:
+          platform: ${{ parameters.platform }}
+          configuration: Release

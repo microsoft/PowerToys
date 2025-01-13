@@ -130,9 +130,9 @@ namespace AdvancedPaste.Pages
             }
         }
 
-        private async void ListView_Button_Click(object sender, RoutedEventArgs e)
+        private async void PasteFormat_ItemClick(object sender, ItemClickEventArgs e)
         {
-            if (sender is Button { DataContext: PasteFormat format })
+            if (e.ClickedItem is PasteFormat format)
             {
                 await ViewModel.ExecutePasteFormatAsync(format, PasteActionSource.ContextMenu);
             }
@@ -195,12 +195,12 @@ namespace AdvancedPaste.Pages
                 PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteClipboardItemClicked());
                 if (!string.IsNullOrEmpty(item.Content))
                 {
-                    ClipboardHelper.SetClipboardTextContent(item.Content);
+                    ClipboardHelper.SetTextContent(item.Content);
                 }
                 else if (item.Image is not null)
                 {
                     RandomAccessStreamReference image = await item.Item.Content.GetBitmapAsync();
-                    ClipboardHelper.SetClipboardImageContent(image);
+                    ClipboardHelper.SetImageContent(image);
                 }
             }
         }

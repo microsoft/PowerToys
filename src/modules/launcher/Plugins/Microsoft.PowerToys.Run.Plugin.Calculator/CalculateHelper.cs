@@ -15,13 +15,13 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             @"^(" +
             @"%|" +
             @"ceil\s*\(|floor\s*\(|exp\s*\(|max\s*\(|min\s*\(|abs\s*\(|log(?:2|10)?\s*\(|ln\s*\(|sqrt\s*\(|pow\s*\(|" +
-            @"factorial\s*\(|sign\s*\(|round\s*\(|rand\s*\(|" +
+            @"factorial\s*\(|sign\s*\(|round\s*\(|rand\s*\(\)|randi\s*\([^\)]|" +
             @"sin\s*\(|cos\s*\(|tan\s*\(|arcsin\s*\(|arccos\s*\(|arctan\s*\(|" +
             @"sinh\s*\(|cosh\s*\(|tanh\s*\(|arsinh\s*\(|arcosh\s*\(|artanh\s*\(|" +
             @"pi|" +
             @"==|~=|&&|\|\||" +
-            @"((-?(\d+(\.\d*)?)|-?(\.\d+))[E](-?\d+))|" + /* expression from CheckScientificNotation between parenthesis */
-            @"e|[0-9]|0x[0-9a-fA-F]+|0b[01]+|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]]" +
+            @"((-?(\d+(\.\d*)?)|-?(\.\d+))[Ee](-?\d+))|" + /* expression from CheckScientificNotation between parenthesis */
+            @"e|[0-9]|0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO][0-7]+|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]]" +
             @")+$",
             RegexOptions.Compiled);
 
@@ -73,11 +73,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
              * (-?(\d+({0}\d*)?)|-?({0}\d+)): Used to capture one of two types:
              * -?(\d+({0}\d*)?): Captures a decimal number starting with a number (e.g. "-1.23")
              * -?({0}\d+): Captures a decimal number without leading number (e.g. ".23")
-             * E: Captures capital 'E'
+             * e: Captures 'e' or 'E'
              * (-?\d+): Captures an integer number (e.g. "-1" or "23")
              */
-            var p = @"(-?(\d+(\.\d*)?)|-?(\.\d+))E(-?\d+)";
-            return Regex.Replace(input, p, "($1 * 10^($5))");
+            var p = @"(-?(\d+(\.\d*)?)|-?(\.\d+))e(-?\d+)";
+            return Regex.Replace(input, p, "($1 * 10^($5))", RegexOptions.IgnoreCase);
         }
 
         /*

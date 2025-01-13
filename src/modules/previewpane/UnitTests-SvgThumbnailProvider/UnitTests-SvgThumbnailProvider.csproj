@@ -33,12 +33,6 @@
     <ProjectReference Include="..\Common\PreviewHandlerCommon.csproj" />
     <ProjectReference Include="..\SvgThumbnailProvider\SvgThumbnailProvider.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\STATestClassAttribute.cs"
-      Link="STATestClassAttribute.cs" />
-    <Compile Include="..\STATestMethodAttribute.cs"
-      Link="STATestMethodAttribute.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <Content Include="HelperFiles\*.svg">
