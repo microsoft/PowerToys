@@ -14,7 +14,7 @@ using PowerToys.PowerAccentKeyboardService;
 
 namespace PowerAccent.Core;
 
-public class PowerAccent : IDisposable
+public partial class PowerAccent : IDisposable
 {
     private readonly SettingsService _settingService;
 
