@@ -7,7 +7,7 @@
   "Author": "IHorvalds",
   "Version": "1.0.0",
   "Language": "csharp",
-  "Website": "https://github/com/IHorvalds",
+  "Website": "https://aka.ms/PowerToys",
   "IcoPathDark": "Images\\ValueGenerator.dark.png",
   "IcoPathLight": "Images\\ValueGenerator.light.png",
   "ExecuteFileName": "Community.PowerToys.Run.Plugin.ValueGenerator.dll"

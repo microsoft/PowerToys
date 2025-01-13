@@ -1,0 +1,42 @@
+trigger: none
+pr: none
+schedules:
+  - cron: "0 0 * * *" # every day at midnight
+    displayName: "Daily midnight Build"
+    branches:
+      include:
+        - main
+    always: false # only run if there's code changes!
+
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+
+parameters:
+  - name: buildPlatforms
+    type: object
+    default:
+      - x64
+      - arm64
+  - name: enableMsBuildCaching
+    type: boolean
+    displayName: "Enable MSBuild Caching"
+    default: false
+  - name: runTests
+    type: boolean
+    displayName: "Run Tests"
+    default: true
+  - name: useVSPreview
+    type: boolean
+    displayName: "Build Using Visual Studio Preview"
+    default: false
+  - name: useLatestWebView2
+    type: boolean
+    default: false
+
+extends:
+  template: templates/pipeline-ci-build.yml
+  parameters:
+    buildPlatforms: ${{ parameters.buildPlatforms }}
+    enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+    runTests: ${{ parameters.runTests }}
+    useVSPreview: ${{ parameters.useVSPreview }}
+    useLatestWebView2: ${{ parameters.useLatestWebView2 }}

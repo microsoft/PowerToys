@@ -645,6 +645,7 @@ imageresizerinput
 imageresizersettings
 imagingdevices
 ime
+Indo
 inetcpl
 Infobar
 INFOEXAMPLE
@@ -740,6 +741,7 @@ LExit
 lhwnd
 LIBID
 lindex
+linkid
 LINKOVERLAY
 LINQTo
 listview
@@ -753,7 +755,7 @@ lnks
 LOADFROMFILE
 LOBYTE
 LOCALDISPLAY
-LOCALPACKAGE
+localpackage
 LOCALSYSTEM
 LOCATIONCHANGE
 LOGFONT
@@ -1212,6 +1214,7 @@ QUEUESYNC
 QUNS
 RAII
 RAlt
+randi
 Rasterize
 RAWINPUTDEVICE
 RAWINPUTHEADER
@@ -1721,6 +1724,7 @@ WIC
 wifi
 wil
 winapi
+winappsdk
 wincodec
 Wincodecsdk
 wincolor
@@ -1845,5 +1849,3 @@ zonable
 zoneset
 Zoneszonabletester
 zzz
-
-

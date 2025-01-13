@@ -32,9 +32,9 @@ steps:
     TDBuildServiceConnection: $(TouchdownServiceConnection)
     authType: SubjectNameIssuer
     resourceFilePath: |
-     **\Resources.resx
-     **\Resource.resx
-     **\Resources.resw
+     src\**\Resources.resx
+     src\**\Resource.resx
+     src\**\Resources.resw
     outputDirectoryRoot: LocOutput
     appendRelativeDir: true
     pseudoSetting: Included

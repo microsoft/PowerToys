@@ -21,7 +21,7 @@ using Microsoft.Win32;
 
 namespace HostsUILib.Helpers
 {
-    public class HostsService : IHostsService, IDisposable
+    public partial class HostsService : IHostsService, IDisposable
     {
         private const string _backupSuffix = $"_PowerToysBackup_";
         private const int _defaultBufferSize = 4096; // From System.IO.File source code
