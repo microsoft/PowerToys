@@ -4405,6 +4405,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Peek_SourceCode_WrapText.Content" xml:space="preserve">
     <value>Wrap text</value>
   </data>
+  <data name="Peek_SourceCode_Minimap.Content" xml:space="preserve">
+    <value>Show minimap</value>
+  </data>
   <data name="ShowPluginsOverview_All.Content" xml:space="preserve">
     <value>All</value>
   </data>
@@ -4450,6 +4453,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Peek_SourceCode_StickyScroll.Content" xml:space="preserve">
     <value>Enable sticky scroll</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Monaco_Minimap.Content" xml:space="preserve">
+    <value>Show minimap</value>
   </data>
   <data name="PrivacyLink.Text" xml:space="preserve">
     <value>OpenAI Privacy</value>
