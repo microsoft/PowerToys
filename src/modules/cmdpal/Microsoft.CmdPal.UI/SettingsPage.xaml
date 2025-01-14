@@ -64,7 +64,7 @@
                     HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                     <ptControls:ShortcutControl HotkeySettings="{x:Bind ViewModel.Hotkey, Mode=TwoWay}" />
                 </controls:SettingsCard>
-                
+
                 <controls:SettingsCard
                     Description="Controls if app details are automatically expanded or not"
                     Header="Show app details"
