@@ -31,6 +31,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("spotlight_color")]
         public StringProperty SpotlightColor { get; set; }
 
+        [JsonPropertyName("spotlight_opacity")]
+        public IntProperty SpotlightOpacity { get; set; }
+
         [JsonPropertyName("overlay_opacity")]
         public IntProperty OverlayOpacity { get; set; }
 
@@ -62,7 +65,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ActivationShortcut = DefaultActivationShortcut;
             DoNotActivateOnGameMode = new BoolProperty(true);
             BackgroundColor = new StringProperty("#000000");
-            SpotlightColor = new StringProperty("#FFFFFF");
+            SpotlightColor = new StringProperty("#FFFFFFFF");
             OverlayOpacity = new IntProperty(50);
             SpotlightRadius = new IntProperty(100);
             AnimationDurationMs = new IntProperty(500);
