@@ -241,7 +241,15 @@ void OutputDebug(const TCHAR* format, ...)
     TCHAR	msg[1024];
     va_list	va;
 
+#ifdef _MSC_VER
+// For some reason, ARM64 Debug builds causes an analyzer error on va_start: "error C26492: Don't use const_cast to cast away const or volatile (type.3)."
+#pragma warning(push)
+#pragma warning(disable : 26492)
+#endif
     va_start(va, format);
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
     _vstprintf_s(msg, format, va);
     va_end(va);
 
