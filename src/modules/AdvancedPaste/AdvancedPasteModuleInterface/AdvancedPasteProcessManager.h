@@ -30,7 +30,7 @@ private:
     void send_named_pipe_message(const std::wstring& message_type, const std::wstring& message_arg = L"");
 
     OnThreadExecutor m_thread_executor; // all internal operations are done on background thread with task queue
-    std::atomic<bool> m_enabled = false; // writen on main thread, read on background thread
+    std::atomic<bool> m_enabled = false; // written on main thread, read on background thread
     HANDLE m_hProcess = 0;
     std::unique_ptr<CAtlFile> m_write_pipe;
 };
