@@ -31,9 +31,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("spotlight_color")]
         public StringProperty SpotlightColor { get; set; }
 
-        [JsonPropertyName("spotlight_opacity")]
-        public IntProperty SpotlightOpacity { get; set; }
-
         [JsonPropertyName("overlay_opacity")]
         public IntProperty OverlayOpacity { get; set; }
 

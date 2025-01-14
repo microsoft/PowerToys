@@ -714,7 +714,7 @@ private:
         m_backdrop.RelativeSizeAdjustment({ 1.0f, 1.0f }); // fill the parent
         m_backdrop.Brush(m_compositor.CreateColorBrush(m_backgroundColor));
         layer.Children().InsertAtTop(m_backdrop);
-
+        
         m_circleGeometry = m_compositor.CreateEllipseGeometry(); // radius set via expression animation
         m_circleShape = m_compositor.CreateSpriteShape(m_circleGeometry);
         m_circleShape.FillBrush(m_compositor.CreateColorBrush(m_spotlightColor));
@@ -722,9 +722,13 @@ private:
         m_spotlight = m_compositor.CreateShapeVisual();
         m_spotlight.Size({ m_sonarRadiusFloat * 2 * m_sonarZoomFactor, m_sonarRadiusFloat * 2 * m_sonarZoomFactor });
         m_spotlight.AnchorPoint({ 0.5f, 0.5f });
+        m_spotlight.Opacity(m_spotlightColor.A);
         m_spotlight.Shapes().Append(m_circleShape);
-
         layer.Children().InsertAtTop(m_spotlight);
+
+        // auto clip = m_compositor.CreateGeometricClip(m_circleShape.Geometry());
+        // layer.Clip(clip);
+        // m_backdrop.Clip(clip);
 
         // Implicitly animate the alpha.
         m_animation = m_compositor.CreateScalarKeyFrameAnimation();
@@ -816,6 +820,7 @@ public:
                     m_circleShape.FillBrush().as<winrt::CompositionColorBrush>().Color(m_spotlightColor);
                     m_circleShape.Offset({ m_sonarRadiusFloat * m_sonarZoomFactor, m_sonarRadiusFloat * m_sonarZoomFactor });
                     m_spotlight.Size({ m_sonarRadiusFloat * 2 * m_sonarZoomFactor, m_sonarRadiusFloat * 2 * m_sonarZoomFactor });
+                    m_spotlight.Opacity(m_spotlightColor.A);
                     m_animation.Duration(std::chrono::milliseconds{ m_fadeDuration });
                     m_circleGeometry.StopAnimation(L"Radius");
 

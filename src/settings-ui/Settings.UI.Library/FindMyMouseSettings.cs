@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Globalization;
 using System.Text.Json.Serialization;
 
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -33,13 +32,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             if (Version == "1.0")
             {
-                string opacity = string.Format(CultureInfo.InvariantCulture, "{0:X2}", Properties.SpotlightOpacity.Value * 255 / 100);
                 if (Properties.ActivationMethod.Value == 1)
                 {
                     Properties.ActivationMethod = new IntProperty(2);
                 }
 
-                Properties.SpotlightColor = new StringProperty(string.Concat("#", opacity, Properties.SpotlightColor.Value.ToString().Substring(1, 6)));
                 Version = "1.1";
                 return true;
             }

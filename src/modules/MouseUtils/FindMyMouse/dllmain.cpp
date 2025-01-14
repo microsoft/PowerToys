@@ -18,7 +18,6 @@ namespace
     const wchar_t JSON_KEY_DO_NOT_ACTIVATE_ON_GAME_MODE[] = L"do_not_activate_on_game_mode";
     const wchar_t JSON_KEY_BACKGROUND_COLOR[] = L"background_color";
     const wchar_t JSON_KEY_SPOTLIGHT_COLOR[] = L"spotlight_color";
-    const wchar_t JSON_KEY_SPOTLIGHT_OPACITY[] = L"spotlight_opacity";
     const wchar_t JSON_KEY_OVERLAY_OPACITY[] = L"overlay_opacity";
     const wchar_t JSON_KEY_SPOTLIGHT_RADIUS[] = L"spotlight_radius";
     const wchar_t JSON_KEY_ANIMATION_DURATION_MS[] = L"animation_duration_ms";
@@ -277,31 +276,11 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         }
         try
         {
-            // Parse opacity
-            uint8_t opacity = 166;
-            try
-            {
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SPOTLIGHT_OPACITY);
-                int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
-                if (value >= 0)
-                {
-                    opacity = value * 255 / 100;
-                }
-                else
-                {
-                    throw std::runtime_error("Invalid Opacity value");
-                }
-            }
-            catch (...)
-            {
-                Logger::warn("Failed to initialize Opacity from settings. Will use default value");
-            }
-
             // Parse spotlight color
             auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SPOTLIGHT_COLOR);
             auto spotlightColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
 
-            uint8_t a = opacity, r, g, b;
+            uint8_t a, r, g, b;
             if (!checkValidARGB(spotlightColor, &a, &r, &g, &b))
             {
                 Logger::error("Spotlight color RGB value is invalid. Will use default value");
