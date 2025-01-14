@@ -437,7 +437,7 @@ namespace WorkspacesEditor.ViewModels
             Process process = new Process();
             process.StartInfo = new ProcessStartInfo(@".\PowerToys.WorkspacesSnapshotTool.exe");
             process.StartInfo.CreateNoWindow = true;
-            process.StartInfo.Arguments = isExistingProjectLaunched ? "needGUID" : string.Empty;
+            process.StartInfo.Arguments = isExistingProjectLaunched ? $"{(int)InvokePoint.LaunchAndEdit}" : string.Empty;
 
             try
             {

@@ -56,7 +56,8 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
     Logger::trace(L"Creating workspace {}:{}", project.name, project.id);
 
     project.monitors = MonitorUtils::IdentifyMonitors();
-    project.apps = SnapshotUtils::GetApps(cmdArgs.isGuidNeeded, [&](HWND window) -> unsigned int {
+    bool guidIsNeeded = cmdArgs.invokePoint == InvokePoint::LaunchAndEdit;
+    project.apps = SnapshotUtils::GetApps(guidIsNeeded, [&](HWND window) -> unsigned int {
         auto windowMonitor = MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY);
         unsigned int monitorNumber = 0;
         for (const auto& monitor : project.monitors)
