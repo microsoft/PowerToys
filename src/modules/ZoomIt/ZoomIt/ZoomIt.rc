@@ -1,7 +1,10 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
-#include "../../../common/version/version.h"
+
+// Included from $(MSBuildThisFileDirectory)..\..\..\common\version
+// so that it works with the standalone ZoomIt build too.
+#include "version.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
