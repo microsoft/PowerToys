@@ -15,6 +15,8 @@
 #include "Utility.h"
 #include "WindowsVersions.h"
 #include "ZoomItSettings.h"
+
+#ifdef __ZOOMIT_POWERTOYS__
 #include <common/interop/shared_constants.h>
 #include <common/utils/ProcessWaiter.h>
 #include <common/utils/process_path.h>
@@ -25,6 +27,7 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/gpo.h>
+#endif // __ZOOMIT_POWERTOYS__
 
 namespace winrt
 {
@@ -336,10 +339,12 @@ VOID ErrorDialog( HWND hParent, PCTSTR message, DWORD _Error )
                     MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                     reinterpret_cast<LPTSTR>(&lpMsgBuf), 0, NULL );
     _stprintf( errmsg, L"%s: %s", message, lpMsgBuf );
-    if (g_StartedByPowerToys)
+#ifdef __ZOOMIT_POWERTOYS__
+    if( g_StartedByPowerToys )
     {
-        Logger::error(errmsg);
+        Logger::error( errmsg );
     }
+#endif // __ZOOMIT_POWERTOYS__
     MessageBox( hParent, errmsg, APPNAME, MB_OK|MB_ICONERROR);
 }
 
@@ -352,16 +357,22 @@ VOID ErrorDialogString( HWND hParent, PCTSTR Message, const wchar_t *_Error )
 {
     TCHAR	errmsg[1024];
 
-    _stprintf( errmsg, L"%s: %s", Message, _Error );
+    _stprintf_s( errmsg, _countof( errmsg ), L"%s: %s", Message, _Error );
     if( hParent == g_hWndMain )
-        EnsureForeground();
-    if (g_StartedByPowerToys)
     {
-        Logger::error(errmsg);
+        EnsureForeground();
     }
+#ifdef __ZOOMIT_POWERTOYS__
+    if( g_StartedByPowerToys )
+    {
+        Logger::error( errmsg );
+    }
+#endif // __ZOOMIT_POWERTOYS__
     MessageBox(hParent, errmsg, APPNAME, MB_OK | MB_ICONERROR);
     if( hParent == g_hWndMain )
+    {
         RestoreForeground();
+    }
 }
 
 
@@ -980,8 +991,8 @@ Gdiplus::Bitmap* DrawBitmapLine(Gdiplus::Rect lineBounds, POINT p1, POINT p2, Gd
     Gdiplus::Graphics lineGraphics(lineBitmap);
 
     // Draw the line on the temporary bitmap
-    lineGraphics.DrawLine(pen, p1.x - lineBounds.X, p1.y - lineBounds.Y,
-        p2.x - lineBounds.X, p2.y - lineBounds.Y);
+    lineGraphics.DrawLine(pen, static_cast<INT>(p1.x - lineBounds.X), static_cast<INT>(p1.y - lineBounds.Y),
+        static_cast<INT>(p2.x - lineBounds.X), static_cast<INT>(p2.y - lineBounds.Y));
 
     return lineBitmap;
 }
@@ -2977,7 +2988,7 @@ void DrawCursor( HDC hDcTarget, POINT pt, float ZoomLevel, int Width, int Height
         path.AddLine(static_cast<INT>(rc.left) - 2, static_cast<INT>(rc.top) - 1, rc.left + (rc.right - rc.left) / 2, rc.top - 1);
         path.AddLine(static_cast<INT>(rc.left) - 1, static_cast<INT>(rc.top) - 2, rc.left - 1, rc.top + (rc.bottom - rc.top) / 2);
         path.AddLine(static_cast<INT>(rc.left) - 1, static_cast<INT>(rc.top) - 2, rc.left - 1, rc.top + (rc.bottom - rc.top) / 2);
-        path.AddLine(static_cast<INT>(rc.left) + (rc.right - rc.left) / 2, rc.top - 1, rc.left - 1, rc.top + (rc.bottom - rc.top) / 2);
+        path.AddLine(static_cast<INT>(rc.left + (rc.right - rc.left) / 2), rc.top - 1, rc.left - 1, rc.top + (rc.bottom - rc.top) / 2);
         pen.SetLineJoin(Gdiplus::LineJoinRound);
         dstGraphics.DrawPath(&pen, &path);
         OutputDebug(L"DrawPointer: %d %d %d %d\n", rc.left, rc.top, rc.right, rc.bottom);
@@ -2995,11 +3006,11 @@ void DrawCursor( HDC hDcTarget, POINT pt, float ZoomLevel, int Width, int Height
         Gdiplus::GraphicsPath path;
         path.StartFigure();
         pen.SetLineJoin(Gdiplus::LineJoinRound);
-        path.AddLine(pt.x - CURSOR_ARM_LENGTH, pt.y, pt.x + CURSOR_ARM_LENGTH, pt.y);
+        path.AddLine(static_cast<INT>(pt.x - CURSOR_ARM_LENGTH), pt.y, pt.x + CURSOR_ARM_LENGTH, pt.y);
         path.CloseFigure();
         path.StartFigure();
         pen.SetLineJoin(Gdiplus::LineJoinRound);
-        path.AddLine(pt.x, pt.y - CURSOR_ARM_LENGTH, pt.x, pt.y + CURSOR_ARM_LENGTH);
+        path.AddLine(static_cast<INT>(pt.x), pt.y - CURSOR_ARM_LENGTH, pt.x, pt.y + CURSOR_ARM_LENGTH);
         path.CloseFigure();
         dstGraphics.DrawPath(&pen, &path);
 
@@ -3576,44 +3587,46 @@ void UpdateMonitorInfo( POINT point, MONITORINFO* monInfo )
     }
 }
 
-    HRESULT OpenPowerToysSettingsApp()
+#ifdef __ZOOMIT_POWERTOYS__
+HRESULT OpenPowerToysSettingsApp()
+{
+    std::wstring path = get_module_folderpath(g_hInstance);
+    path += L"\\PowerToys.exe";
+
+    std::wstring openSettings = L"--open-settings=ZoomIt";
+
+    std::wstring full_command_path = path + L" " + openSettings;
+
+    STARTUPINFO startupInfo;
+    ZeroMemory(&startupInfo, sizeof(STARTUPINFO));
+    startupInfo.cb = sizeof(STARTUPINFO);
+    startupInfo.wShowWindow = SW_SHOWNORMAL;
+
+    PROCESS_INFORMATION processInformation;
+
+    CreateProcess(
+        path.c_str(),
+        full_command_path.data(),
+        NULL,
+        NULL,
+        TRUE,
+        0,
+        NULL,
+        NULL,
+        &startupInfo,
+        &processInformation);
+
+    if (!CloseHandle(processInformation.hProcess))
     {
-        std::wstring path = get_module_folderpath(g_hInstance);
-        path += L"\\PowerToys.exe";
-
-        std::wstring openSettings = L"--open-settings=ZoomIt";
-
-        std::wstring full_command_path = path + L" " + openSettings;
-
-        STARTUPINFO startupInfo;
-        ZeroMemory(&startupInfo, sizeof(STARTUPINFO));
-        startupInfo.cb = sizeof(STARTUPINFO);
-        startupInfo.wShowWindow = SW_SHOWNORMAL;
-
-        PROCESS_INFORMATION processInformation;
-
-        CreateProcess(
-            path.c_str(),
-            full_command_path.data(),
-            NULL,
-            NULL,
-            TRUE,
-            0,
-            NULL,
-            NULL,
-            &startupInfo,
-            &processInformation);
-
-        if (!CloseHandle(processInformation.hProcess))
-        {
-            return HRESULT_FROM_WIN32(GetLastError());
-        }
-        if (!CloseHandle(processInformation.hThread))
-        {
-            return HRESULT_FROM_WIN32(GetLastError());
-        }
-        return S_OK;
+        return HRESULT_FROM_WIN32(GetLastError());
     }
+    if (!CloseHandle(processInformation.hThread))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+    return S_OK;
+}
+#endif // __ZOOMIT_POWERTOYS__
 
 //----------------------------------------------------------------------------
 //
@@ -3904,8 +3917,12 @@ LRESULT APIENTRY MainWndProc(
             //
             // Enter drawing mode without zoom
             //
-            if (g_StartedByPowerToys)
+#ifdef __ZOOMIT_POWERTOYS__
+            if( g_StartedByPowerToys )
+            {
                 Trace::ZoomItActivateDraw();
+            }
+#endif // __ZOOMIT_POWERTOYS__
 
             if( !g_Zoomed ) {
                 OutputDebug(L"LiveDraw: %d (%d)\n", wParam, (wParam == LIVE_DRAW_HOTKEY));
@@ -3954,8 +3971,12 @@ LRESULT APIENTRY MainWndProc(
             }
 
             bool zoomed = true;
-            if (g_StartedByPowerToys)
+#ifdef __ZOOMIT_POWERTOYS__
+            if( g_StartedByPowerToys )
+            {
                 Trace::ZoomItActivateSnip();
+            }
+#endif // __ZOOMIT_POWERTOYS__
 
             // First, static zoom
             if( !g_Zoomed )
@@ -4074,8 +4095,12 @@ LRESULT APIENTRY MainWndProc(
                 MessageBox( hWnd, L"Unrecognized DemoType file content", APPNAME, MB_OK );
                 break;
             default:
-                if (g_StartedByPowerToys)
+#ifdef __ZOOMIT_POWERTOYS__
+                if( g_StartedByPowerToys )
+                {
                     Trace::ZoomItActivateDemoType();
+                }
+#endif // __ZOOMIT_POWERTOYS__
                 break;
             }
             break;
@@ -4096,8 +4121,12 @@ LRESULT APIENTRY MainWndProc(
             }
 
             if( !g_Zoomed && !g_TimerActive && ( !g_fullScreenWorkaround || !g_RecordToggle ) ) {
-                if (g_StartedByPowerToys)
+#ifdef __ZOOMIT_POWERTOYS__
+                if( g_StartedByPowerToys )
+                {
                     Trace::ZoomItActivateLiveZoom();
+                }
+#endif // __ZOOMIT_POWERTOYS__
 
                 if( g_hWndLiveZoom == NULL ) {
                     OutputDebug(L"Create LIVEZOOM\n");
@@ -4294,8 +4323,12 @@ LRESULT APIENTRY MainWndProc(
             if( g_RecordToggle == FALSE )
             {
                 g_RecordToggle = TRUE;
-                if (g_StartedByPowerToys)
+#ifdef __ZOOMIT_POWERTOYS__
+                if( g_StartedByPowerToys )
+                {
                     Trace::ZoomItActivateRecord();
+                }
+#endif // __ZOOMIT_POWERTOYS__
 
                 StartRecordingAsync( hWnd, &cropRc, hWndRecord );
             }
@@ -4362,8 +4395,12 @@ LRESULT APIENTRY MainWndProc(
                     g_DrawingShape = FALSE;
                     OutputDebug( L"Zoom on\n");
 
-                    if(g_StartedByPowerToys)
+#ifdef __ZOOMIT_POWERTOYS__
+                    if( g_StartedByPowerToys )
+                    {
                         Trace::ZoomItActivateZoom();
+                    }
+#endif // __ZOOMIT_POWERTOYS__
 
                     // Hide the cursor before capturing if in live zoom
                     if( g_hWndLiveZoom != nullptr )
@@ -5604,7 +5641,7 @@ LRESULT APIENTRY MainWndProc(
                     Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
                     Gdiplus::GraphicsPath path;
                     pen.SetLineJoin(Gdiplus::LineJoinRound);
-                    path.AddLine(prevPt.x, prevPt.y, prevPt.x, prevPt.y);
+                    path.AddLine(static_cast<INT>(prevPt.x), prevPt.y, prevPt.x, prevPt.y);
                     dstGraphics.DrawPath(&pen, &path);
                 }
                 g_Tracing = TRUE;
@@ -5658,7 +5695,7 @@ LRESULT APIENTRY MainWndProc(
                     Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
                     Gdiplus::GraphicsPath path;
                     pen.SetLineJoin(Gdiplus::LineJoinRound);
-                    path.AddLine(prevPt.x, prevPt.y, prevPt.x, prevPt.y);
+                    path.AddLine(static_cast<INT>(prevPt.x), prevPt.y, prevPt.x, prevPt.y);
                     dstGraphics.DrawPath(&pen, &path);
                 }
                 InvalidateRect( hWnd, NULL, FALSE );
@@ -6281,9 +6318,12 @@ LRESULT APIENTRY MainWndProc(
         case IDC_OPTIONS:
             // Don't show win32 forms options if started by PowerToys.
             // Show the PowerToys Settings application instead.
-            if (g_StartedByPowerToys)
+
+            if( g_StartedByPowerToys )
             {
+#ifdef __ZOOMIT_POWERTOYS__
                 OpenPowerToysSettingsApp();
+#endif // __ZOOMIT_POWERTOYS__
             }
             else
             {
@@ -6376,8 +6416,12 @@ LRESULT APIENTRY MainWndProc(
             activeBreakShowDesktop = g_BreakShowDesktop;
 
             g_TimerActive = TRUE;
-            if (g_StartedByPowerToys)
+#ifdef __ZOOMIT_POWERTOYS__
+            if( g_StartedByPowerToys )
+            {
                 Trace::ZoomItActivateBreak();
+            }
+#endif // __ZOOMIT_POWERTOYS__
 
             breakTimeout = g_BreakTimeout * 60 + 1;
 
@@ -7360,10 +7404,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 {
     MSG					msg; 	
     HACCEL				hAccel;
-    Shared::Trace::ETWTrace* trace = nullptr;
 
     if( !ShowEula( APPNAME, NULL, NULL )) return 1;
 
+#ifdef __ZOOMIT_POWERTOYS__
+    Shared::Trace::ETWTrace* trace = nullptr;
     std::wstring pid = std::wstring(lpCmdLine); // The PowerToys pid is the argument to the process.
     auto mainThreadId = GetCurrentThreadId();
     if (!pid.empty())
@@ -7398,6 +7443,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
             PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
         });
     }
+#endif // __ZOOMIT_POWERTOYS__
 
 
 #ifndef _WIN64
@@ -7533,12 +7579,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     g_hWndMain = InitInstance(hInstance, nCmdShow);
     if (!g_hWndMain )
         return FALSE;
-    
+
+#ifdef __ZOOMIT_POWERTOYS__
     HANDLE m_reload_settings_event_handle = NULL;
     HANDLE m_exit_event_handle = NULL;
     std::thread m_event_triggers_thread;
 
-    if (g_StartedByPowerToys) {
+    if( g_StartedByPowerToys ) {
         // Start a thread to listen to PowerToys Events.
         m_reload_settings_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_REFRESH_SETTINGS_EVENT);
         m_exit_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_EXIT_EVENT);
@@ -7586,6 +7633,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
             }
         });
     }
+#endif // __ZOOMIT_POWERTOYS__
 
     /* Acquire and dispatch messages until a WM_QUIT message is received. */
     while (GetMessage(&msg,	NULL, 0, 0 ))  {
@@ -7597,7 +7645,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     int retCode = (int) msg.wParam;
 
     g_running = FALSE;
- 
+
+#ifdef __ZOOMIT_POWERTOYS__
     if(g_StartedByPowerToys)
     {
         if (trace!=nullptr) {
@@ -7611,6 +7660,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         CloseHandle(m_exit_event_handle);
         m_event_triggers_thread.join();
     }
+#endif // __ZOOMIT_POWERTOYS__
 
     return retCode;
 }

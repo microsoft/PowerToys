@@ -79,7 +79,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>_UNICODE;UNICODE;WINVER=0x602;NDEBUG;_WIN32_WINNT=0x602;_WIN32_WINDOWS=0x501;WIN32;_WINDOWS;MSVC6=1;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__ZOOMIT_POWERTOYS__;_UNICODE;UNICODE;WINVER=0x602;NDEBUG;_WIN32_WINNT=0x602;_WIN32_WINDOWS=0x501;WIN32;_WINDOWS;MSVC6=1;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -87,7 +87,7 @@
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;_M_IX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
-      <AdditionalIncludeDirectories>$(InterPlatformDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\..\common\version;$(InterPlatformDir)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -101,7 +101,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>_UNICODE;UNICODE;WINVER=0x602;NDEBUG;_WIN32_WINNT=0x602;_WIN32_WINDOWS=0x501;WIN32;_WINDOWS;MSVC6=1;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__ZOOMIT_POWERTOYS__;_UNICODE;UNICODE;WINVER=0x602;NDEBUG;_WIN32_WINNT=0x602;_WIN32_WINDOWS=0x501;WIN32;_WINDOWS;MSVC6=1;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -109,6 +109,7 @@
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;_M_X64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\..\common\version</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -123,7 +124,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>_UNICODE;UNICODE;WINVER=0x602;NDEBUG;_WIN32_WINNT=0x602;_WIN32_WINDOWS=0x501;WIN32;_WINDOWS;MSVC6=1;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__ZOOMIT_POWERTOYS__;_UNICODE;UNICODE;WINVER=0x602;NDEBUG;_WIN32_WINNT=0x602;_WIN32_WINDOWS=0x501;WIN32;_WINDOWS;MSVC6=1;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -131,6 +132,7 @@
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;_M_ARM64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\..\common\version</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -144,14 +146,14 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_UNICODE;UNICODE;WINVER=0x0602;_DEBUG;_WIN32_WINNT=0x602.MSVC6;_WIN32_WINDOWS=0x600;WIN32;_WINDOWS;_WIN32_WINNT=0x602;MSVC6=1;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__ZOOMIT_POWERTOYS__;_UNICODE;UNICODE;WINVER=0x0602;_DEBUG;_WIN32_WINNT=0x602.MSVC6;_WIN32_WINDOWS=0x600;WIN32;_WINDOWS;_WIN32_WINNT=0x602;MSVC6=1;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;_M_IX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
-      <AdditionalIncludeDirectories>$(InterPlatformDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\..\common\version;$(InterPlatformDir)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -165,13 +167,14 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_UNICODE;UNICODE;WINVER=0x0602;_DEBUG;_WIN32_WINNT=0x602.MSVC6;_WIN32_WINDOWS=0x600;WIN32;_WINDOWS;_WIN32_WINNT=0x602;MSVC6=1;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__ZOOMIT_POWERTOYS__;_UNICODE;UNICODE;WINVER=0x0602;_DEBUG;_WIN32_WINNT=0x602.MSVC6;_WIN32_WINDOWS=0x600;WIN32;_WINDOWS;_WIN32_WINNT=0x602;MSVC6=1;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;_M_X64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\..\common\version</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -186,13 +189,14 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_UNICODE;UNICODE;WINVER=0x0602;_DEBUG;_WIN32_WINNT=0x602.MSVC6;_WIN32_WINDOWS=0x600;WIN32;_WINDOWS;_WIN32_WINNT=0x602;MSVC6=1;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__ZOOMIT_POWERTOYS__;_UNICODE;UNICODE;WINVER=0x0602;_DEBUG;_WIN32_WINNT=0x602.MSVC6;_WIN32_WINDOWS=0x600;WIN32;_WINDOWS;_WIN32_WINNT=0x602;MSVC6=1;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;_M_ARM64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\..\common\version</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
