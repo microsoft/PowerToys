@@ -6,6 +6,9 @@
 // so that it works with the standalone ZoomIt build too.
 #include "version.h"
 
+// Included from $(MSBuildThisFileDirectory)PowerToys, for PowerToys strings.
+#include "branding.h"
+
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -94,7 +97,7 @@ BEGIN
             VALUE "InternalName", INTERNAL_NAME
             VALUE "LegalCopyright", COPYRIGHT_NOTE
             VALUE "OriginalFilename", ORIGINAL_FILENAME
-            VALUE "ProductName", "PowerToys Sysinternals ZoomIt"
+            VALUE "ProductName", ZOOMIT_PRODUCT_NAME
             VALUE "ProductVersion", PRODUCT_VERSION_STRING
         END
     END
