@@ -2,9 +2,12 @@
 //
 #include "resource.h"
 
-// Included from $(MSBuildThisFileDirectory)..\..\..\common\version
-// so that it works with the standalone ZoomIt build too.
+// version.h and branding.h are different in the Sysinternals repository,
+// keep the includes as such, here.
+// From $(MSBuildThisFileDirectory)..\..\..\common\version
 #include "version.h"
+// From $(MSBuildThisFileDirectory)PowerToys
+#include "branding.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -94,7 +97,7 @@ BEGIN
             VALUE "InternalName", INTERNAL_NAME
             VALUE "LegalCopyright", COPYRIGHT_NOTE
             VALUE "OriginalFilename", ORIGINAL_FILENAME
-            VALUE "ProductName", "PowerToys Sysinternals ZoomIt"
+            VALUE "ProductName", ZOOMIT_PRODUCT_NAME
             VALUE "ProductVersion", PRODUCT_VERSION_STRING
         END
     END
