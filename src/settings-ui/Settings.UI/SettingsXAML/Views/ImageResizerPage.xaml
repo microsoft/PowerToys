@@ -18,6 +18,7 @@
         <converters:ImageResizerFitToIntConverter x:Key="ImageResizerFitToIntConverter" />
         <converters:ImageResizerUnitToStringConverter x:Key="ImageResizerUnitToStringConverter" />
         <converters:ImageResizerUnitToIntConverter x:Key="ImageResizerUnitToIntConverter" />
+        <converters:ImageSizeToHelpTextConverter x:Key="ImageSizeToHelpTextConverter" />
         <toolkitconverters:BoolToObjectConverter
             x:Key="BoolToComboBoxIndexConverter"
             FalseValue="1"
@@ -103,6 +104,7 @@
                                             x:Uid="EditButton"
                                             Width="40"
                                             Height="36"
+                                            AutomationProperties.HelpText="{x:Bind Self, Mode=OneWay, Converter={StaticResource ImageSizeToHelpTextConverter}}"
                                             Content="&#xE70F;"
                                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                             Style="{StaticResource SubtleButtonStyle}">
@@ -164,6 +166,7 @@
                                             x:Uid="RemoveButton"
                                             Width="40"
                                             Height="36"
+                                            AutomationProperties.HelpText="{x:Bind Self, Mode=OneWay, Converter={StaticResource ImageSizeToHelpTextConverter}}"
                                             Click="DeleteCustomSize"
                                             CommandParameter="{Binding Id}"
                                             Content="&#xE74D;"

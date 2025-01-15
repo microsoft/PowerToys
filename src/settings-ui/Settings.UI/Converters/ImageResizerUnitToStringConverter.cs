@@ -5,6 +5,7 @@
 using System;
 using System.Globalization;
 
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml.Data;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
@@ -13,19 +14,15 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            var toLower = false;
-            if ((string)parameter == "ToLower")
-            {
-                toLower = true;
-            }
+            bool toLower = (string)parameter == "ToLower";
 
             string targetValue = string.Empty;
-            switch (value)
+            switch (value is ResizeUnit enumValue ? enumValue : value is int intValue ? (ResizeUnit)intValue : default)
             {
-                case 0: targetValue = Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Unit_Centimeter"); break;
-                case 1: targetValue = Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Unit_Inch"); break;
-                case 2: targetValue = Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Unit_Percent"); break;
-                case 3: targetValue = Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Unit_Pixel"); break;
+                case ResizeUnit.Centimeter: targetValue = Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Unit_Centimeter"); break;
+                case ResizeUnit.Inch: targetValue = Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Unit_Inch"); break;
+                case ResizeUnit.Percent: targetValue = Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Unit_Percent"); break;
+                case ResizeUnit.Pixel: targetValue = Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Unit_Pixel"); break;
             }
 
             if (toLower)

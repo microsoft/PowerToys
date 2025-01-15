@@ -49,6 +49,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private double _width;
         private ResizeUnit _unit;
 
+        [JsonIgnore]
+        public ImageSize Self { get => this; } // needed for data binding; change-notification raised when any property changes
+
         public int Id
         {
             get
@@ -62,6 +65,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     _id = value;
                     OnPropertyChanged();
+                    OnPropertyChanged(nameof(Self));
                 }
             }
         }
@@ -110,6 +114,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     _name = value;
                     OnPropertyChanged();
+                    OnPropertyChanged(nameof(Self));
                 }
             }
         }
@@ -130,6 +135,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(ExtraBoxOpacity));
                     OnPropertyChanged(nameof(EnableEtraBoxes));
+                    OnPropertyChanged(nameof(Self));
                 }
             }
         }
@@ -159,6 +165,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     _width = newWidth;
                     OnPropertyChanged();
+                    OnPropertyChanged(nameof(Self));
                 }
             }
         }
@@ -188,6 +195,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     _height = newHeight;
                     OnPropertyChanged();
+                    OnPropertyChanged(nameof(Self));
                 }
             }
         }
@@ -208,6 +216,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(ExtraBoxOpacity));
                     OnPropertyChanged(nameof(EnableEtraBoxes));
+                    OnPropertyChanged(nameof(Self));
                 }
             }
         }
