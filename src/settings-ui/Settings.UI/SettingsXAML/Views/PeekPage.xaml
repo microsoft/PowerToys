@@ -66,6 +66,9 @@
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                                 <CheckBox x:Uid="Peek_SourceCode_StickyScroll" IsChecked="{x:Bind ViewModel.SourceCodeStickyScroll, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                                <CheckBox x:Uid="Peek_SourceCode_Minimap" IsChecked="{x:Bind ViewModel.SourceCodeMinimap, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>

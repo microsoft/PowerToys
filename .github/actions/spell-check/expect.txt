@@ -661,7 +661,6 @@ iid
 Iindex
 Ijwhost
 IKs
-iljxck
 IMAGEHLP
 IMAGERESIZERCONTEXTMENU
 IMAGERESIZEREXT
@@ -756,7 +755,6 @@ lastcodeanalysissucceeded
 Lastdevice
 LASTEXITCODE
 LAYOUTRTL
-lcb
 LCIDTo
 Lclean
 Ldone
