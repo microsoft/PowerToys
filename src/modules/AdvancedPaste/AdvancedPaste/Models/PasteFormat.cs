@@ -54,7 +54,7 @@ public sealed class PasteFormat
 
     public bool IsEnabled { get; private init; }
 
-    public double Opacity => IsEnabled ? 1 : 0.5;
+    public string AccessibleName => $"{Name} ({ShortcutText})";
 
     public string ToolTip => string.IsNullOrEmpty(Prompt) ? $"{Name} ({ShortcutText})" : Prompt;
 

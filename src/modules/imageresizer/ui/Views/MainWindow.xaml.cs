@@ -7,9 +7,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Common.UI;
 using ImageResizer.ViewModels;
+using ManagedCommon;
 using Microsoft.Win32;
 using Wpf.Ui.Controls;
 
