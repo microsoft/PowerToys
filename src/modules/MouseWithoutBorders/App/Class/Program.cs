@@ -378,6 +378,8 @@ namespace MouseWithoutBorders.Class
 
         private static void InputCallbackThread()
         {
+            using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
             Common.InputCallbackThreadID = Thread.CurrentThread.ManagedThreadId;
             while (!Common.InitDone)
             {

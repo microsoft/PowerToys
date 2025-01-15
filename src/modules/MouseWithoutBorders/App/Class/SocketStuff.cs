@@ -679,6 +679,8 @@ namespace MouseWithoutBorders.Class
 
         private void TCPServerThread(object param)
         {
+            using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
             try
             {
                 TcpListener server = param as TcpListener;
@@ -1547,6 +1549,8 @@ namespace MouseWithoutBorders.Class
 
         private static void AcceptConnectionAndSendClipboardData(object param)
         {
+            using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
             TcpListener server = param as TcpListener;
 
             do
