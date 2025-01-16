@@ -212,7 +212,12 @@ namespace AdvancedPaste.ViewModels
 
             void UpdateFormats(ObservableCollection<PasteFormat> collection, IEnumerable<PasteFormat> pasteFormats)
             {
-                collection.Clear();
+                // Hack: Clear collection via repeated RemoveAt to avoid this crash, which seems to occasionally occur when using Clear:
+                // https://github.com/microsoft/microsoft-ui-xaml/issues/8684
+                while (collection.Count > 0)
+                {
+                    collection.RemoveAt(collection.Count - 1);
+                }
 
                 foreach (var format in FilterAndSort(pasteFormats))
                 {
