@@ -13,6 +13,8 @@ namespace newplus
     {
     public:
         template_folder(const std::filesystem::path newplus_template_folder);
+        ~template_folder();
+
         void rescan_template_folder();
 
         std::filesystem::path template_folder_path;

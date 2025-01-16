@@ -47,7 +47,7 @@ registerAdditionalNewLanguage("id", [".fileExtension"], idDefinition(), monaco)
 
   * The id can be anything. Recommended is one of the file extensions. For example "php" or "reg".
 
-4. In case you wish to add a custom color for a token, you can do so by adding the following line to [`customTokenColors.js`](/src/Monaco/customTokenColors.js):
+4. In case you wish to add a custom color for a token, you can do so by adding the following line to [`customTokenThemeRules.js`](/src/Monaco/customTokenThemeRules.js):
 ```javascript
 {token: 'token-name', foreground: 'ff0000'}
 ```

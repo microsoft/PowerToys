@@ -418,7 +418,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             InitializeEnabledValue();
             InitializePolicyValues();
 
-            // MouseWithoutBorders settings may be changed by the logic in the utility as machines connect. We need to get a fresh version everytime instead of using a repository.
+            // MouseWithoutBorders settings may be changed by the logic in the utility as machines connect. We need to get a fresh version every time instead of using a repository.
             MouseWithoutBordersSettings moduleSettings;
             moduleSettings = SettingsUtils.GetSettingsOrDefault<MouseWithoutBordersSettings>("MouseWithoutBorders");
 

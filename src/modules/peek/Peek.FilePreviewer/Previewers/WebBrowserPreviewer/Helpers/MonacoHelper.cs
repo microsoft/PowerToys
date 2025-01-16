@@ -20,10 +20,11 @@ namespace Peek.FilePreviewer.Previewers
 
         public static HashSet<string> GetExtensions()
         {
-            HashSet<string> set = new HashSet<string>();
+            HashSet<string> set = [];
+
             try
             {
-                JsonDocument languageListDocument = Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.GetLanguages();
+                using JsonDocument languageListDocument = Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.GetLanguages();
                 JsonElement languageList = languageListDocument.RootElement.GetProperty("list");
                 foreach (JsonElement e in languageList.EnumerateArray())
                 {

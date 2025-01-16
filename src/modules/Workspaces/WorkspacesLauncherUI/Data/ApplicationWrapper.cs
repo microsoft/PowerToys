@@ -16,6 +16,8 @@ namespace WorkspacesLauncherUI.Data
 
         public string AppUserModelId { get; set; }
 
+        public string PwaAppId { get; set; }
+
         public string CommandLineArguments { get; set; }
 
         public bool IsElevated { get; set; }
