@@ -13,5 +13,7 @@ namespace Peek.FilePreviewer.Models
         public int SourceCodeFontSize { get; }
 
         public bool SourceCodeStickyScroll { get; }
+
+        public bool SourceCodeMinimap { get; }
     }
 }

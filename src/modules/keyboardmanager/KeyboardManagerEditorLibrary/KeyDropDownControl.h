@@ -115,4 +115,6 @@ public:
 
     // Get number of selected keys. Do not count -1 and 0 values as they stand for Not selected and None
     static int GetNumberOfSelectedKeys(std::vector<int32_t> keys);
+
+    bool exactMatch = false;
 };
