@@ -716,19 +716,32 @@ private:
         layer.Children().InsertAtTop(m_backdrop);
         
         m_circleGeometry = m_compositor.CreateEllipseGeometry(); // radius set via expression animation
+        m_circleGeometry.Radius({ m_sonarRadiusFloat * m_sonarZoomFactor, m_sonarRadiusFloat * m_sonarZoomFactor });
+        
         m_circleShape = m_compositor.CreateSpriteShape(m_circleGeometry);
         m_circleShape.FillBrush(m_compositor.CreateColorBrush(m_spotlightColor));
         m_circleShape.Offset({ m_sonarRadiusFloat * m_sonarZoomFactor, m_sonarRadiusFloat * m_sonarZoomFactor });
+        
         m_spotlight = m_compositor.CreateShapeVisual();
         m_spotlight.Size({ m_sonarRadiusFloat * 2 * m_sonarZoomFactor, m_sonarRadiusFloat * 2 * m_sonarZoomFactor });
         m_spotlight.AnchorPoint({ 0.5f, 0.5f });
         m_spotlight.Opacity(m_spotlightColor.A);
         m_spotlight.Shapes().Append(m_circleShape);
-        layer.Children().InsertAtTop(m_spotlight);
 
-        // auto clip = m_compositor.CreateGeometricClip(m_circleShape.Geometry());
+        // auto maskBrush = m_compositor.CreateMaskBrush();
+        // maskBrush.Source(m_compositor.CreateColorBrush(winrt::Windows::UI::Colors::Black()));
+        // maskBrush.Mask(m_circleShape.FillBrush());
+        
+        // auto clipGeometry = m_compositor.CreateEllipseGeometry();
+        // clipGeometry.Center(m_circleShape.Offset());
+        // clipGeometry.Radius(m_spotlight.Size());
+        auto clip = m_compositor.CreateGeometricClip(m_circleGeometry);
         // layer.Clip(clip);
-        // m_backdrop.Clip(clip);
+        m_backdrop.Clip(clip);
+
+        // m_backdrop.Brush(maskBrush);
+
+        layer.Children().InsertAtTop(m_spotlight);
 
         // Implicitly animate the alpha.
         m_animation = m_compositor.CreateScalarKeyFrameAnimation();
