@@ -647,6 +647,7 @@ imageresizerinput
 imageresizersettings
 imagingdevices
 ime
+Indo
 inetcpl
 Infobar
 INFOEXAMPLE
@@ -1219,6 +1220,7 @@ QUEUESYNC
 QUNS
 RAII
 RAlt
+randi
 Rasterize
 RAWINPUTDEVICE
 RAWINPUTHEADER

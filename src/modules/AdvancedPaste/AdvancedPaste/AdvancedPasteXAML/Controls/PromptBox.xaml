@@ -410,6 +410,7 @@
                                         Spacing="2">
                                         <Button
                                             Padding="4"
+                                            AutomationProperties.LabeledBy="{x:Bind ThumbsUpFeedback}"
                                             Click="ThumbUpDown_Click"
                                             CommandParameter="True"
                                             Content="{ui:FontIcon Glyph=&#xE8E1;,
@@ -417,11 +418,12 @@
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                             Style="{StaticResource SubtleButtonStyle}">
                                             <ToolTipService.ToolTip>
-                                                <TextBlock x:Uid="ThumbsUpFeedback" />
+                                                <TextBlock x:Name="ThumbsUpFeedback" x:Uid="ThumbsUpFeedback" />
                                             </ToolTipService.ToolTip>
                                         </Button>
                                         <Button
                                             Padding="4"
+                                            AutomationProperties.LabeledBy="{x:Bind ThumbsDownFeedback}"
                                             Click="ThumbUpDown_Click"
                                             CommandParameter="False"
                                             Content="{ui:FontIcon Glyph=&#xE8E0;,
@@ -429,7 +431,7 @@
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                             Style="{StaticResource SubtleButtonStyle}">
                                             <ToolTipService.ToolTip>
-                                                <TextBlock x:Uid="ThumbsDownFeedback" />
+                                                <TextBlock x:Name="ThumbsDownFeedback" x:Uid="ThumbsDownFeedback" />
                                             </ToolTipService.ToolTip>
                                         </Button>
                                     </StackPanel>
@@ -537,6 +539,7 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
+                        AutomationProperties.HelpText="{x:Bind ViewModel.CustomAIUnavailableErrorText, Mode=OneWay}"
                         Command="{x:Bind GenerateCustomAICommand}"
                         Content="{ui:FontIcon Glyph=&#xE724;,
                                               FontSize=16}"
