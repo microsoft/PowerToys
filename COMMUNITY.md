@@ -16,12 +16,12 @@ Christian contributed New+ utility
 CleanCodeDeveloper helped do massive amounts of code stability and image resizer work.
 
 ### [@plante-msft](https://github.com/plante-msft) - Connor Plante
-Connor was the creator of Workspaces and helped create the PowerToys Run v2
+Connor was the creator of Workspaces and helped create PowerToys Run v2
 
 ### [@damienleroy](https://github.com/damienleroy) - [Damien Leroy](https://www.linkedin.com/in/Damien-Leroy-b2734416a/)
 Damien has helped out by developing and contributing the Quick Accent utility.
 
-### [@daverayment ](https://github.com/daverayment ) - [David Rayment](https://www.linkedin.com/in/david-rayment-168b5251/)
+### [@daverayment ](https://github.com/daverayment) - [David Rayment](https://www.linkedin.com/in/david-rayment-168b5251/)
 Dave has helped improve the experience inside of Peek by adding in new features and fixing bugs.
 
 ### [@davidegiacometti](https://github.com/davidegiacometti) - [Davide Giacometti](https://www.linkedin.com/in/davidegiacometti/)
@@ -46,7 +46,7 @@ Jeff added in multiple new features into Keyboard manager, such as key chord sup
 Joe has helped triaging, discussing, issues as well as fixing bugs and building features for Text Extractor.
 
 ### [@joadoumie](https://github.com/joadoumie) - Jordi Adoumie
-Jordi helped innovate amazing new features into Advanced Paste and helped create the PowerToys Run v2
+Jordi helped innovate amazing new features into Advanced Paste and helped create PowerToys Run v2
   
 ### [@jsoref](https://github.com/jsoref) - [Josh Soref](https://check-spelling.dev/)
 Helping keep our spelling correct :)
