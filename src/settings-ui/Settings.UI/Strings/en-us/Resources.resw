@@ -121,10 +121,6 @@
     <value>Inspired by Rooler</value>
     <comment>Rooler is a name of the tool.</comment>
   </data>
-  <data name="Shell_VideoConference.Content" xml:space="preserve">
-    <value>Video Conference Mute</value>
-    <comment>Navigation view item name for Video Conference</comment>
-  </data>
   <data name="Shell_MeasureTool.Content" xml:space="preserve">
     <value>Screen Ruler</value>
     <comment>Product name: Navigation view item name for Screen Ruler</comment>
@@ -482,132 +478,6 @@
   <data name="MouseWithoutBorders_Switch2AllPcShortcut_Ctrl3.Content" xml:space="preserve">
     <value>Ctrl three times</value>
     <comment>This is the Ctrl keyboard key</comment>
-  </data>
-  <data name="VideoConference_Enable.Header" xml:space="preserve">
-    <value>Enable Video Conference Mute</value>
-  </data>
-  <data name="VideoConference.ModuleDescription" xml:space="preserve">
-    <value>Video Conference Mute is a quick and easy way to do a global "mute" of both your microphone and webcam. Disabling this module or closing PowerToys will unmute the microphone and camera.</value>
-  </data>
-  <data name="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
-    <value>Mute camera &amp; microphone</value>
-  </data>
-  <data name="VideoConference_MicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
-    <value>Mute microphone</value>
-  </data>
-  <data name="VideoConference_MicrophonePushToTalkHotkeyControl_Header.Header" xml:space="preserve">
-    <value>Push to talk</value>
-  </data>
-  <data name="VideoConference_CameraMuteHotkeyControl_Header.Header" xml:space="preserve">
-    <value>Mute camera</value>
-  </data>
-  <data name="VideoConference_SelectedCamera.Header" xml:space="preserve">
-    <value>Selected camera</value>
-  </data>
-  <data name="VideoConference_SelectedMicrophone.Header" xml:space="preserve">
-    <value>Selected microphone</value>
-  </data>
-  <data name="VideoConference_PushToReverse.Header" xml:space="preserve">
-    <value>Push to reverse</value>
-  </data>
-  <data name="VideoConference_PushToReverse.Description" xml:space="preserve">
-    <value>If enabled, allows both push to talk and push to mute, depending on microphone state</value>
-  </data>
-  <data name="VideoConference_CameraOverlayImagePathHeader.Header" xml:space="preserve">
-    <value>Image displayed when camera is muted</value>
-  </data>
-  <data name="VideoConference_ToolbarPosition.Header" xml:space="preserve">
-    <value>Toolbar position</value>
-  </data>
-  <data name="VideoConference_ToolbarPosition_TopCenter.Content" xml:space="preserve">
-    <value>Top center</value>
-  </data>
-  <data name="VideoConference_ToolbarPosition_TopLeftCorner.Content" xml:space="preserve">
-    <value>Top left corner</value>
-  </data>
-  <data name="VideoConference_ToolbarPosition_TopRightCorner.Content" xml:space="preserve">
-    <value>Top right corner</value>
-  </data>
-  <data name="VideoConference_ToolbarPosition_BottomLeftCorner.Content" xml:space="preserve">
-    <value>Bottom left corner</value>
-  </data>
-  <data name="VideoConference_ToolbarPosition_BottomCenter.Content" xml:space="preserve">
-    <value>Bottom center</value>
-  </data>
-  <data name="VideoConference_ToolbarPosition_BottomRightCorner.Content" xml:space="preserve">
-    <value>Bottom right corner</value>
-  </data>
-  <data name="VideoConference_ToolbarMonitor.Header" xml:space="preserve">
-    <value>Show toolbar on</value>
-  </data>
-  <data name="VideoConference_ToolbarMonitor_Main.Content" xml:space="preserve">
-    <value>Main monitor</value>
-  </data>
-  <data name="VideoConference_ToolbarMonitor_UnderCursor.Content" xml:space="preserve">
-    <value>Monitor under cursor</value>
-  </data>
-  <data name="VideoConference_ToolbarMonitor_ActiveWindow.Content" xml:space="preserve">
-    <value>Active window monitor</value>
-  </data>
-  <data name="VideoConference_ToolbarMonitor_All.Content" xml:space="preserve">
-    <value>All monitors</value>
-  </data>
-  <data name="VideoConference_ToolbarHide.Header" xml:space="preserve">
-    <value>Hide toolbar</value>
-  </data>
-  <data name="VideoConference_ToolbarHideMuted.Content" xml:space="preserve">
-    <value>When both camera and microphone are muted</value>
-  </data>
-  <data name="VideoConference_ToolbarHideNever.Content" xml:space="preserve">
-    <value>Never</value>
-  </data>
-  <data name="VideoConference_ToolbarHideUnmuted.Content" xml:space="preserve">
-    <value>When both camera and microphone are unmuted</value>
-  </data>
-  <data name="VideoConference_ToolbarHideTimeout.Content" xml:space="preserve">
-    <value>After timeout</value>
-  </data>
-  <data name="VideoConference.ModuleTitle" xml:space="preserve">
-    <value>Video Conference Mute</value>
-  </data>
-  <data name="VideoConference_Camera.Header" xml:space="preserve">
-    <value>Camera</value>
-  </data>
-  <data name="VideoConference_Camera.Description" xml:space="preserve">
-    <value>To use this feature, make sure to select PowerToys VideoConference Mute as your camera source in your apps.</value>
-  </data>
-  <data name="VideoConference_Microphone.Header" xml:space="preserve">
-    <value>Microphone</value>
-  </data>
-  <data name="VideoConference_Toolbar.Header" xml:space="preserve">
-    <value>Toolbar</value>
-  </data>
-  <data name="VideoConference_Behavior.Header" xml:space="preserve">
-    <value>Behavior</value>
-  </data>
-  <data name="VideoConference_StartupAction.Header" xml:space="preserve">
-    <value>Startup action</value>
-  </data>
-  <data name="VideoConference_StartupActionNothing.Content" xml:space="preserve">
-    <value>Nothing</value>
-  </data>
-  <data name="VideoConference_StartupActionUnmute.Content" xml:space="preserve">
-    <value>Unmute</value>
-  </data>
-  <data name="VideoConference_StartupActionMute.Content" xml:space="preserve">
-    <value>Mute</value>
-  </data>
-  <data name="VideoConference_Shortcuts.Header" xml:space="preserve">
-    <value>Shortcuts</value>
-  </data>
-  <data name="VideoConference_CameraOverlayImageAlt.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Camera overlay image preview</value>
-  </data>
-  <data name="VideoConference_CameraOverlayImageBrowse.Content" xml:space="preserve">
-    <value>Browse</value>
-  </data>
-  <data name="VideoConference_CameraOverlayImageClear.Content" xml:space="preserve">
-    <value>Clear</value>
   </data>
   <data name="Shell_General.Content" xml:space="preserve">
     <value>General</value>
@@ -2128,9 +1998,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Oobe_ShortcutGuide.Description" xml:space="preserve">
     <value>Shortcut Guide presents the user with a listing of available shortcuts for the current state of the desktop.</value>
   </data>
-  <data name="Oobe_VideoConference.Description" xml:space="preserve">
-    <value>Video Conference Mute allows users to quickly mute the microphone and turn off the camera while on a conference call with a single keystroke, regardless of what application has focus on your computer.</value>
-  </data>
   <data name="Oobe_MouseUtils.Description" xml:space="preserve">
     <value>A collection of utilities to enhance your mouse.</value>
     <comment>Mouse as in the hardware peripheral</comment>
@@ -2275,18 +2142,6 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_TipsAndTricks.Text" xml:space="preserve">
     <value>Tips &amp; tricks</value>
   </data>
-  <data name="Oobe_VideoConference_ToggleMicVid.Text" xml:space="preserve">
-    <value>to toggle both your microphone and video</value>
-  </data>
-  <data name="Oobe_VideoConference_ToggleMic.Text" xml:space="preserve">
-    <value>to toggle your microphone</value>
-  </data>
-  <data name="Oobe_VideoConference_PushToTalkMic.Text" xml:space="preserve">
-    <value>to toggle your microphone until key release</value>
-  </data>
-  <data name="Oobe_VideoConference_ToggleVid.Text" xml:space="preserve">
-    <value>to toggle your video</value>
-  </data>
   <data name="Oobe_MeasureTool_Activation.Text" xml:space="preserve">
     <value>to bring up the Screen Ruler command bar.</value>
   </data>
@@ -2334,10 +2189,6 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_ShortcutGuide.Title" xml:space="preserve">
     <value>Shortcut Guide</value>
-    <comment>Do not localize this string</comment>
-  </data>
-  <data name="Oobe_VideoConference.Title" xml:space="preserve">
-    <value>Video Conference Mute</value>
     <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_Overview.Title" xml:space="preserve">
@@ -2610,10 +2461,6 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="LearnMore_ShortcutGuide.Text" xml:space="preserve">
     <value>Learn more about Shortcut Guide</value>
     <comment>Shortcut Guide is a product name, do not loc</comment>
-  </data>
-  <data name="LearnMore_VCM.Text" xml:space="preserve">
-    <value>Learn more about Video Conference Mute</value>
-    <comment>Video Conference Mute is a product name, do not loc</comment>
   </data>
   <data name="Oobe_FileExplorer.Title" xml:space="preserve">
     <value>File Explorer add-ons</value>
@@ -2954,17 +2801,8 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="FancyZones_Zone_Appearance.Header" xml:space="preserve">
     <value>Zone appearance</value>
   </data>
-  <data name="VideoConference_DeprecationWarning.Title" xml:space="preserve">
-    <value>VCM is moving into legacy mode (maintenance only).</value>
-  </data>
-  <data name="VideoConference_DeprecationWarningButton.Content" xml:space="preserve">
-    <value>Learn more</value>
-  </data>
   <data name="LearnMore.Content" xml:space="preserve">
     <value>Learn more</value>
-  </data>
-  <data name="VideoConference_RunAsAdminRequired.Title" xml:space="preserve">
-    <value>You need to run as administrator to modify these settings.</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE.Header" xml:space="preserve">
     <value>Geometric Code</value>
