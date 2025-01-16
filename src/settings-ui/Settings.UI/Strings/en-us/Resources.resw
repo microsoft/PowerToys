@@ -1299,10 +1299,6 @@
   <data name="ImageResizer_Size.Header" xml:space="preserve">
     <value>Unit</value>
   </data>
-  <data name="RemoveButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Remove</value>
-    <comment>Removes a user defined setting group for Image Resizer</comment>
-  </data>
   <data name="RemoveItem.Text" xml:space="preserve">
     <value>Delete</value>
   </data>
@@ -2501,11 +2497,44 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="ImageResizer_Unit_Pixel" xml:space="preserve">
     <value>Pixels</value>
   </data>
-  <data name="EditButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="ImageResizer_EditButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Edit</value>
   </data>
   <data name="ImageResizer_EditSize.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Edit size</value>
+  </data>
+  <data name="ImageResizer_Presets.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>ImageResizer presets</value>
+  </data>
+  <data name="ImageResizer_AddSizeButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Add a new preset</value>
+  </data>
+  <data name="ImageResizer_RemoveButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="ImageResizer_EditButton_Accessibility_Name" xml:space="preserve">
+    <value>Edit the {0} preset</value>
+    <comment>Expands to the AutomationProperties.Name value for the Edit button.</comment>
+  </data>
+  <data name="ImageResizer_RemoveButton_Accessibility_Name" xml:space="preserve">
+    <value>Remove the {0} preset</value>
+    <comment>Expands to the AutomationProperties.Name value for the Remove button.</comment>
+  </data>
+  <data name="ImageResizer_EditButton_Accessibility_Description" xml:space="preserve">
+    <value>Edits the {0} preset, which {1} {2} by {3} {4}</value>
+    <comment>Expands to the AutomationProperties.FullDescription value for the Edit button.</comment>
+  </data>
+  <data name="ImageResizer_EditButton_Accessibility_DescriptionPercent" xml:space="preserve">
+    <value>Edits the {0} preset, which {1} {2} percent</value>
+    <comment>Expands to the AutomationProperties.FullDescription value for the Edit button for non-stretch percent-based presets.</comment>
+  </data>
+  <data name="ImageResizer_RemoveButton_Accessibility_Description" xml:space="preserve">
+    <value>Removes the {0} preset, which {1} {2} by {3} {4}</value>
+    <comment>Expands to the AutomationProperties.FullDescription value for the Remove button.</comment>
+  </data>
+  <data name="ImageResizer_RemoveButton_Accessibility_DescriptionPercent" xml:space="preserve">
+    <value>Removes the {0} preset, which {1} {2} percent</value>
+    <comment>Expands to the AutomationProperties.FullDescription value for the Remove button for non-stretch percent-based presets.</comment>
   </data>
   <data name="No" xml:space="preserve">
     <value>No</value>
