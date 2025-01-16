@@ -173,6 +173,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.CropAndLockModuleInterface.dll",
             L"PowerToys.CmdNotFoundModuleInterface.dll",
             L"PowerToys.WorkspacesModuleInterface.dll",
+            L"PowerToys.ZoomItModuleInterface.dll",
         };
 
         for (auto moduleSubdir : knownModules)

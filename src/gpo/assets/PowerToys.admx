@@ -23,6 +23,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_84_0" displayName="$(string.SUPPORTED_POWERTOYS_0_84_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_85_0" displayName="$(string.SUPPORTED_POWERTOYS_0_85_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_86_0" displayName="$(string.SUPPORTED_POWERTOYS_0_86_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_88_0" displayName="$(string.SUPPORTED_POWERTOYS_0_88_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1)"/>
     </definitions>
   </supportedOn>
@@ -447,6 +448,16 @@
     <policy name="ConfigureEnabledUtilityVideoConferenceMute" class="Both" displayName="$(string.ConfigureEnabledUtilityVideoConferenceMute)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityVideoConferenceMute">
       <parentCategory ref="DeprecatedPolicies" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityZoomIt" class="Both" displayName="$(string.ConfigureEnabledUtilityZoomIt)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityZoomIt">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_88_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>

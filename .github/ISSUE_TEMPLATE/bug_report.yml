@@ -79,6 +79,7 @@ body:
       - TextExtractor
       - Workspaces
       - Welcome / PowerToys Tour window
+      - ZoomIt
   validations:
     required: true
 

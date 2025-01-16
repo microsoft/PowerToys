@@ -139,6 +139,10 @@
                             x:Uid="Shell_TextExtractor"
                             helpers:NavHelper.NavigateTo="views:PowerOcrPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExtractor.png}" />
+                        <NavigationViewItem
+                            x:Uid="Shell_ZoomIt"
+                            helpers:NavHelper.NavigateTo="views:ZoomItPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}" />
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
 

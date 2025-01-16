@@ -211,6 +211,10 @@
                 "PowerToys.ShortcutGuide.exe",
                 "PowerToys.ShortcutGuideModuleInterface.dll",
 
+                "PowerToys.ZoomIt.exe",
+                "PowerToys.ZoomItModuleInterface.dll",
+                "PowerToys.ZoomItSettingsInterop.dll",
+
                 "WinUI3Apps\\PowerToys.Settings.dll",
                 "WinUI3Apps\\PowerToys.Settings.exe"
             ],
