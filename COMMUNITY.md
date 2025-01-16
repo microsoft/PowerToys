@@ -15,6 +15,9 @@ Christian contributed New+ utility
 ### [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)
 CleanCodeDeveloper helped do massive amounts of code stability and image resizer work.
 
+### [@plante-msft](https://github.com/plante-msft) - Connor Plante
+Connor was the creator of Workspaces and helped create the PowerToys Run v2
+
 ### [@damienleroy](https://github.com/damienleroy) - [Damien Leroy](https://www.linkedin.com/in/Damien-Leroy-b2734416a/)
 Damien has helped out by developing and contributing the Quick Accent utility.
 
@@ -23,6 +26,9 @@ Dave has helped improve the experience inside of Peek by adding in new features 
 
 ### [@davidegiacometti](https://github.com/davidegiacometti) - [Davide Giacometti](https://www.linkedin.com/in/davidegiacometti/)
 Davide has helped fix multiple bugs, added new utilities, features, as well as help us with the ARM64 effort by porting applications to .NET Core.
+
+### [@ethanfangg](https://github.com/ethanfangg) - Ethan Fang
+Ethan helped run PowerToys and worked on improving and prototyping out next generation PowerToys
 
 ### [@franky920920](https://github.com/franky920920) - [Franky Chen](https://frankychen.net)
 Franky has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes to PowerToys.
@@ -39,6 +45,9 @@ Jeff added in multiple new features into Keyboard manager, such as key chord sup
 ### [@TheJoeFin](https://github.com/TheJoeFin) - [Joe Finney](https://joefinapps.com)
 Joe has helped triaging, discussing, issues as well as fixing bugs and building features for Text Extractor.
 
+### [@joadoumie](https://github.com/joadoumie) - Jordi Adoumie
+Jordi helped innovate amazing new features into Advanced Paste and helped create the PowerToys Run v2
+  
 ### [@jsoref](https://github.com/jsoref) - [Josh Soref](https://check-spelling.dev/)
 Helping keep our spelling correct :)
 
