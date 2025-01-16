@@ -164,10 +164,7 @@ Other contributors:
 
 - [@crutkas](https://github.com/crutkas/) - Clint Rutkas - Lead
 - [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon - Lead
-- [@ethanfangg](https://github.com/ethanfangg) - Ethan Fang - Product Manager
-- [@plante-msft](https://github.com/plante-msft) - Connor Plante - Product Manager
 - [@nguyen-dows](https://github.com/nguyen-dows) - Christopher Nguyen - Product Manager
-- [@joadoumie](https://github.com/joadoumie) - Jordi Adoumie - Product Manager
 - [@jaimecbernardo](https://github.com/jaimecbernardo) - Jaime Bernardo - Dev lead
 - [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev lead
 - [@yeelam-gordon](https://github.com/yeelam-gordon) - Gordon Lam - Dev lead
@@ -193,6 +190,9 @@ Other contributors:
 # Former PowerToys core team members
 
 - [@indierawk2k2](https://github.com/indierawk2k2) - Mike Harsh - Product Manager
+- [@ethanfangg](https://github.com/ethanfangg) - Ethan Fang - Product Manager
+- [@plante-msft](https://github.com/plante-msft) - Connor Plante - Product Manager
+- [@joadoumie](https://github.com/joadoumie) - Jordi Adoumie - Product Manager
 - [@enricogior](https://github.com/enricogior) - Enrico Giordani - Dev Lead
 - [@bzoz](https://github.com/bzoz) - Bartosz Sosnowski - Dev
 - [@ivan100sic](https://github.com/ivan100sic) - Ivan Stošić - Dev
