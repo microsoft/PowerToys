@@ -9,6 +9,7 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using PowerAccent.Core.SerializationContext;
 using PowerToys.PowerAccentKeyboardService;
 
 namespace PowerAccent.Core.Services;
@@ -29,11 +30,6 @@ public class SettingsService
         _watcher = Helper.GetFileWatcher(PowerAccentModuleName, "settings.json", () => { ReadSettings(); });
     }
 
-    private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
-    {
-        WriteIndented = true,
-    };
-
     private void ReadSettings()
     {
         // TODO this IO call should by Async, update GetFileWatcher helper to support async
@@ -46,9 +42,8 @@ public class SettingsService
                     {
                         Logger.LogInfo("QuickAccent settings.json was missing, creating a new one");
                         var defaultSettings = new PowerAccentSettings();
-                        var options = _serializerOptions;
 
-                        _settingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), PowerAccentModuleName);
+                        _settingsUtils.SaveSettings(JsonSerializer.Serialize(this, SourceGenerationContext.Default.SettingsService), PowerAccentModuleName);
                     }
 
                     var settings = _settingsUtils.GetSettingsOrDefault<PowerAccentSettings>(PowerAccentModuleName);
@@ -66,7 +61,10 @@ public class SettingsService
                         ExcludedApps = settings.Properties.ExcludedApps.Value;
                         _keyboardListener.UpdateExcludedApps(ExcludedApps);
 
-                        SelectedLang = Enum.TryParse(settings.Properties.SelectedLang.Value, out Language selectedLangValue) ? selectedLangValue : Language.ALL;
+                        SelectedLang = settings.Properties.SelectedLang.Value
+                            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(lang => Enum.TryParse(lang, out Language selectedLangValue) ? selectedLangValue : Language.SPECIAL)
+                            .ToArray();
 
                         switch (settings.Properties.ToolbarPosition.Value)
                         {
@@ -187,9 +185,9 @@ public class SettingsService
         }
     }
 
-    private Language _selectedLang;
+    private Language[] _selectedLang;
 
-    public Language SelectedLang
+    public Language[] SelectedLang
     {
         get
         {

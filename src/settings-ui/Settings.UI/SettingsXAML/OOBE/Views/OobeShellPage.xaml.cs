@@ -6,12 +6,13 @@ using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
 
-using global::PowerToys.GPOWrapper;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using WinRT.Interop;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
@@ -173,12 +174,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 IsNew = false,
             });
 
-            Modules.Insert((int)PowerToysModules.VideoConference, new OobePowerToysModule()
-            {
-                ModuleName = "VideoConference",
-                IsNew = false,
-            });
-
             Modules.Insert((int)PowerToysModules.MeasureTool, new OobePowerToysModule()
             {
                 ModuleName = "MeasureTool",
@@ -285,7 +280,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "FileExplorer": NavigationFrame.Navigate(typeof(OobeFileExplorer)); break;
                     case "ShortcutGuide": NavigationFrame.Navigate(typeof(OobeShortcutGuide)); break;
                     case "TextExtractor": NavigationFrame.Navigate(typeof(OobePowerOCR)); break;
-                    case "VideoConference": NavigationFrame.Navigate(typeof(OobeVideoConference)); break;
                     case "MouseUtils": NavigationFrame.Navigate(typeof(OobeMouseUtils)); break;
                     case "MouseWithoutBorders": NavigationFrame.Navigate(typeof(OobeMouseWithoutBorders)); break;
                     case "MeasureTool": NavigationFrame.Navigate(typeof(OobeMeasureTool)); break;
@@ -306,6 +300,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 // A custom title bar is required for full window theme and Mica support.
                 // https://docs.microsoft.com/windows/apps/develop/title-bar?tabs=winui3#full-customization
                 u.ExtendsContentIntoTitleBar = true;
+                WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(u));
                 u.SetTitleBar(AppTitleBar);
             }
         }

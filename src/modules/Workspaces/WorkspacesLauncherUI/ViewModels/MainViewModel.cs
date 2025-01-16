@@ -9,8 +9,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 
 using ManagedCommon;
+using WorkspacesCsharpLibrary;
 using WorkspacesLauncherUI.Data;
 using WorkspacesLauncherUI.Models;
+using WorkspacesLauncherUI.Utils;
 
 namespace WorkspacesLauncherUI.ViewModels
 {
@@ -20,6 +22,7 @@ namespace WorkspacesLauncherUI.ViewModels
 
         private StatusWindow _snapshotWindow;
         private int launcherProcessID;
+        private PwaHelper _pwaHelper;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -30,6 +33,8 @@ namespace WorkspacesLauncherUI.ViewModels
 
         public MainViewModel()
         {
+            _pwaHelper = new PwaHelper();
+
             // receive IPC Message
             App.IPCMessageReceivedCallback = (string msg) =>
             {
@@ -54,7 +59,11 @@ namespace WorkspacesLauncherUI.ViewModels
             {
                 appLaunchingList.Add(new AppLaunching()
                 {
-                    Application = app.Application,
+                    Name = app.Application.Application,
+                    AppPath = app.Application.ApplicationPath,
+                    PackagedName = app.Application.PackageFullName,
+                    Aumid = app.Application.AppUserModelId,
+                    PwaAppId = app.Application.PwaAppId,
                     LaunchState = app.State,
                 });
             }

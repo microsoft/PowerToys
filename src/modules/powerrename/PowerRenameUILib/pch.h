@@ -3,10 +3,10 @@
 #define NOMINMAX
 
 #include <windows.h>
-#include <unknwn.h>
+#include <Unknwn.h>
 #include <restrictederrorinfo.h>
 #include <hstring.h>
-#include <unknwn.h>
+#include <Unknwn.h>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime

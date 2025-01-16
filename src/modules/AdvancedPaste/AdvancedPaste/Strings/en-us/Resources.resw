@@ -123,9 +123,6 @@
   <data name="ClipboardEmptyWarning" xml:space="preserve">
     <value>Clipboard does not contain any usable formats</value>
   </data>
-  <data name="ClipboardDataNotTextWarning" xml:space="preserve">
-    <value>Clipboard data is not text</value>
-  </data>  
   <data name="OpenAINotConfigured" xml:space="preserve">
     <value>To custom with AI is not enabled</value>
   </data>
@@ -140,9 +137,21 @@
   </data>
   <data name="PasteError" xml:space="preserve">
     <value>An error occurred during the paste operation</value>
-  </data>  
+  </data>
+  <data name="PasteActionModerated" xml:space="preserve">
+    <value>The paste operation was moderated due to sensitive content. Please try another query.</value>
+  </data>
   <data name="ClipboardHistoryButton.Text" xml:space="preserve">
     <value>Clipboard history</value>
+  </data>
+  <data name="ClipboardHistoryButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Clipboard history</value>
+  </data>
+  <data name="ClipboardHistoryImage" xml:space="preserve">
+    <value>Image data</value>
+  </data>
+  <data name="ClipboardHistoryItemMoreOptionsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>More options</value>
   </data>
   <data name="ClipboardHistoryItemDeleteButton.Text" xml:space="preserve">
     <value>Delete</value>
@@ -213,6 +222,9 @@
   <data name="SettingsBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Open settings</value>
   </data>
+  <data name="AIErrorMessage.Header" xml:space="preserve">
+    <value>The AI assistant provided the following message:</value>
+  </data>
   <data name="ThumbsDownFeedback.Text" xml:space="preserve">
     <value>Thumbs down feedback</value>
   </data>
@@ -248,5 +260,5 @@
   </data>
   <data name="PasteAsFile_FilePrefix" xml:space="preserve">
     <value>PowerToys_Paste_</value>
-  </data>  
+  </data>
 </root>

@@ -6,7 +6,6 @@
     xmlns:local="clr-namespace:PowerLauncher"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:p="clr-namespace:PowerLauncher.Properties"
-    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     d:DesignHeight="300"
     d:DesignWidth="720"
     mc:Ignorable="d">
@@ -40,7 +39,7 @@
                                         <Setter Property="Foreground" Value="Transparent" />
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding Path=Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
-                                                <Setter Property="Foreground" Value="{DynamicResource TextPlaceholderColorBrush}" />
+                                                <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForeground}" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -115,11 +114,14 @@
             x:FieldModifier="public"
             Canvas.ZIndex="-1"
             FontSize="{DynamicResource TitleFontSize}"
-            Foreground="{DynamicResource TextPlaceholderColorBrush}" />
-        <ui:SymbolIcon
+            Foreground="{DynamicResource TextControlPlaceholderForeground}" />
+        <TextBlock
+            Grid.Column="0"
+            Margin="10,7,0,0"
             AutomationProperties.Name="{x:Static p:Resources.SearchIcon}"
+            FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
             FontSize="20"
-            Foreground="{DynamicResource TextPlaceholderColorBrush}"
-            Symbol="Search12" />
+            Foreground="{DynamicResource TextControlPlaceholderForeground}"
+            Text="&#xE094;" />
     </Grid>
 </UserControl>

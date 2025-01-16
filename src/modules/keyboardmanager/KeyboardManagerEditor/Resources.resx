@@ -275,6 +275,9 @@
   <data name="Type_HoldSpace" xml:space="preserve">
     <value>Hold Space to toggle allow chord</value>
   </data>
+  <data name="Type_HoldBackSpace" xml:space="preserve">
+    <value>Hold BackSpace to toggle exact match</value>
+  </data>
   <data name="Type_HoldEnter" xml:space="preserve">
     <value>Hold Enter to continue</value>
   </data>
@@ -286,6 +289,9 @@
   </data>
   <data name="EditShortcuts_Allow_Chords" xml:space="preserve">
     <value>Allow chords</value>
+  </data>
+  <data name="EditShortcuts_Exact_Match" xml:space="preserve">
+    <value>Exact Match</value>
   </data>
   <data name="EditShortcuts_Path_To_Program" xml:space="preserve">
     <value>Path to program</value>
@@ -430,7 +436,7 @@
     <comment>Row as in horizontal rows in a table, and columns</comment>
   </data>
   <data name="ERRORMESSAGE_DISABLEASACTIONKEY" xml:space="preserve">
-    <value>Disable can not be an action or a modifier key</value>
+    <value>Disable cannot be an action or a modifier key</value>
     <comment>Key on a keyboard</comment>
   </data>
   <data name="EditShortcuts_SourceHeader" xml:space="preserve">

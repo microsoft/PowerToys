@@ -50,7 +50,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             if (settings == null)
             {
-                throw new ArgumentException("settings argument can not be null");
+                throw new ArgumentException("settings argument cannot be null");
             }
 
             this.settings = settings;

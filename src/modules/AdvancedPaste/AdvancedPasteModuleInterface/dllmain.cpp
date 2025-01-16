@@ -2,6 +2,7 @@
 #include "pch.h"
 
 #include "AdvancedPasteConstants.h"
+#include "AdvancedPasteProcessManager.h"
 #include <interface/powertoy_module_interface.h>
 #include "trace.h"
 #include "Generated Files/resource.h"
@@ -16,8 +17,6 @@
 #include <common/utils/gpo.h>
 
 #include <winrt/Windows.Security.Credentials.h>
-#include <atlfile.h>
-#include <atlstr.h>
 #include <vector>
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
@@ -55,6 +54,7 @@ namespace
     const wchar_t JSON_KEY_ADVANCED_PASTE_UI_HOTKEY[] = L"advanced-paste-ui-hotkey";
     const wchar_t JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY[] = L"paste-as-markdown-hotkey";
     const wchar_t JSON_KEY_PASTE_AS_JSON_HOTKEY[] = L"paste-as-json-hotkey";
+    const wchar_t JSON_KEY_IS_ADVANCED_AI_ENABLED[] = L"IsAdvancedAIEnabled";
     const wchar_t JSON_KEY_SHOW_CUSTOM_PREVIEW[] = L"ShowCustomPreview";
     const wchar_t JSON_KEY_VALUE[] = L"value";
 
@@ -65,19 +65,14 @@ namespace
 class AdvancedPaste : public PowertoyModuleIface
 {
 private:
+    
+    AdvancedPasteProcessManager m_process_manager;
     bool m_enabled = false;
 
     std::wstring app_name;
 
     //contains the non localized key of the powertoy
     std::wstring app_key;
-
-    HANDLE m_hProcess;
-
-    std::unique_ptr<CAtlFile> m_write_pipe;
-
-    // Time to wait for process to close after sending WM_CLOSE signal
-    static const constexpr int MAX_WAIT_MILLISEC = 10000;
 
     static const constexpr int NUM_DEFAULT_HOTKEYS = 4;
 
@@ -99,6 +94,7 @@ private:
     using CustomAction = ActionData<int>;
     std::vector<CustomAction> m_custom_actions;
 
+    bool m_is_advanced_ai_enabled = false;
     bool m_preview_custom_format_output = true;
 
     Hotkey parse_single_hotkey(const wchar_t* keyName, const winrt::Windows::Data::Json::JsonObject& settingsObject)
@@ -157,7 +153,7 @@ private:
         }
         catch (const winrt::hresult_error& ex)
         {
-            // Looks like the only way to access the PasswordVault is through the an API that throws an exception in case the resource doesn't exist.
+            // Looks like the only way to access the PasswordVault is through an API that throws an exception in case the resource doesn't exist.
             // If the debugger breaks here, just continue.
             // If you want to disable breaking here in a more permanent way, just add a condition in Visual Studio's Exception Settings to not break on win::hresult_error, but that might make you not hit other exceptions you might want to catch.
             if (ex.code() == HRESULT_FROM_WIN32(ERROR_NOT_FOUND))
@@ -268,9 +264,9 @@ private:
         }
     }
 
-    void parse_hotkeys(PowerToysSettings::PowerToyValues& settings)
+    void read_settings(PowerToysSettings::PowerToyValues& settings)
     {
-        auto settingsObject = settings.get_raw_json();
+        const auto settingsObject = settings.get_raw_json();
 
         // Migrate Paste As Plain text shortcut
         Hotkey old_paste_as_plain_hotkey;
@@ -352,83 +348,20 @@ private:
                 }
             }
         }
-    }
 
-    bool is_process_running() const
-    {
-        return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
-    }
-
-    void launch_process(const std::wstring& pipe_name)
-    {
-        Logger::trace(L"Starting AdvancedPaste process");
-        const unsigned long powertoys_pid = GetCurrentProcessId();
-
-        const auto executable_args = std::format(L"{} {}", std::to_wstring(powertoys_pid), pipe_name);
-
-        SHELLEXECUTEINFOW sei{ sizeof(sei) };
-        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-        sei.lpFile = L"WinUI3Apps\\PowerToys.AdvancedPaste.exe";
-        sei.nShow = SW_SHOWNORMAL;
-        sei.lpParameters = executable_args.data();
-        if (ShellExecuteExW(&sei))
+        if (settingsObject.GetView().Size())
         {
-            Logger::trace("Successfully started the Advanced Paste process");
-        }
-        else
-        {
-            Logger::error(L"AdvancedPaste failed to start. {}", get_last_error_or_default(GetLastError()));
-        }
+            const auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
 
-        TerminateProcess(m_hProcess, 1);
-        m_hProcess = sei.hProcess;
-    }
+            if (propertiesObject.HasKey(JSON_KEY_IS_ADVANCED_AI_ENABLED))
+            {
+                m_is_advanced_ai_enabled = propertiesObject.GetNamedObject(JSON_KEY_IS_ADVANCED_AI_ENABLED).GetNamedBoolean(JSON_KEY_VALUE);
+            }
 
-    std::optional<std::wstring> get_pipe_name(const std::wstring& prefix) const
-    {
-        UUID temp_uuid;
-        wchar_t* uuid_chars = nullptr;
-        if (UuidCreate(&temp_uuid) == RPC_S_UUID_NO_ADDRESS)
-        {
-            const auto val = get_last_error_message(GetLastError());
-            Logger::error(L"UuidCreate cannot create guid. {}", val.has_value() ? val.value() : L"");
-            return std::nullopt;
-        }
-        else if (UuidToString(&temp_uuid, reinterpret_cast<RPC_WSTR*>(&uuid_chars)) != RPC_S_OK)
-        {
-            const auto val = get_last_error_message(GetLastError());
-            Logger::error(L"UuidToString cannot convert to string. {}", val.has_value() ? val.value() : L"");
-            return std::nullopt;
-        }
-
-        const auto pipe_name = std::format(L"{}{}", prefix, std::wstring(uuid_chars));
-        RpcStringFree(reinterpret_cast<RPC_WSTR*>(&uuid_chars));
-
-        return pipe_name;
-    }
-
-    void launch_process_and_named_pipe()
-    {
-        const auto pipe_name = get_pipe_name(L"powertoys_advanced_paste_");
-
-        if (!pipe_name)
-        {
-            return;
-        }
-
-        std::thread create_pipe_thread ([&]{ start_named_pipe_server(pipe_name.value()); });
-        launch_process(pipe_name.value());
-        create_pipe_thread.join();
-    }
-
-    void send_named_pipe_message(const std::wstring& message_type, const std::wstring& message_arg = L"")
-    {
-        if (m_write_pipe)
-        {
-            const auto message = message_arg.empty() ? std::format(L"{}\r\n", message_type) : std::format(L"{} {}\r\n", message_type, message_arg);
-
-            const CString file_name(message.c_str());
-            m_write_pipe->Write(file_name, file_name.GetLength() * sizeof(TCHAR));
+            if (propertiesObject.HasKey(JSON_KEY_SHOW_CUSTOM_PREVIEW))
+            {
+                m_preview_custom_format_output = propertiesObject.GetNamedObject(JSON_KEY_SHOW_CUSTOM_PREVIEW).GetNamedBoolean(JSON_KEY_VALUE);
+            }
         }
     }
 
@@ -441,13 +374,7 @@ private:
             PowerToysSettings::PowerToyValues settings =
                 PowerToysSettings::PowerToyValues::load_from_settings_file(get_key());
 
-            parse_hotkeys(settings);
-
-            auto settingsObject = settings.get_raw_json();
-            if (settingsObject.GetView().Size() && settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).HasKey(JSON_KEY_SHOW_CUSTOM_PREVIEW))
-            {
-                m_preview_custom_format_output = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SHOW_CUSTOM_PREVIEW).GetNamedBoolean(JSON_KEY_VALUE);
-            }
+            read_settings(settings);
         }
         catch (std::exception&)
         {
@@ -680,66 +607,6 @@ private:
         }
     }
 
-    void bring_process_to_front()
-    {
-        auto enum_windows = [](HWND hwnd, LPARAM param) -> BOOL {
-            HANDLE process_handle = reinterpret_cast<HANDLE>(param);
-            DWORD window_process_id = 0;
-
-            GetWindowThreadProcessId(hwnd, &window_process_id);
-            if (GetProcessId(process_handle) == window_process_id)
-            {
-                SetForegroundWindow(hwnd);
-                return FALSE;
-            }
-            return TRUE;
-        };
-
-        EnumWindows(enum_windows, (LPARAM)m_hProcess);
-    }
-
-    HRESULT start_named_pipe_server(const std::wstring& pipe_name)
-    {
-        const constexpr DWORD BUFSIZE = 4096 * 4;
-
-        const auto full_pipe_name = std::format(L"\\\\.\\pipe\\{}", pipe_name);
-
-        const auto hPipe = CreateNamedPipe(
-                full_pipe_name.c_str(),     // pipe name
-                PIPE_ACCESS_OUTBOUND,       // write access
-                PIPE_TYPE_MESSAGE |         // message type pipe
-                    PIPE_READMODE_MESSAGE | // message-read mode
-                    PIPE_WAIT,              // blocking mode
-                1,                          // max. instances
-                BUFSIZE,                    // output buffer size
-                0,                          // input buffer size
-                0,                          // client time-out
-                NULL);                      // default security attribute
-
-        if (hPipe == NULL || hPipe == INVALID_HANDLE_VALUE)
-        {
-            return E_FAIL;
-        }
-
-        // This call blocks until a client process connects to the pipe
-        BOOL connected = ConnectNamedPipe(hPipe, NULL);
-        if (!connected)
-        {
-            if (GetLastError() == ERROR_PIPE_CONNECTED)
-            {
-                return S_OK;
-            }
-            else
-            {
-                CloseHandle(hPipe);
-            }
-            return E_FAIL;
-        }
-
-        m_write_pipe = std::make_unique<CAtlFile>(hPipe);
-        return S_OK;
-    }
-
 public:
     AdvancedPaste()
     {
@@ -809,13 +676,7 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
-            parse_hotkeys(values);
-
-            const auto settingsObject = values.get_raw_json();
-            if (settingsObject.GetView().Size() && settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).HasKey(JSON_KEY_SHOW_CUSTOM_PREVIEW))
-            {
-                m_preview_custom_format_output = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SHOW_CUSTOM_PREVIEW).GetNamedBoolean(JSON_KEY_VALUE);
-            }
+            read_settings(values);
 
             std::unordered_map<std::wstring, Hotkey> additionalActionMap;
             for (const auto& action : m_additional_actions)
@@ -828,6 +689,7 @@ public:
                                                    m_advanced_paste_ui_hotkey,
                                                    m_paste_as_markdown_hotkey,
                                                    m_paste_as_json_hotkey,
+                                                   m_is_advanced_ai_enabled,
                                                    m_preview_custom_format_output,
                                                    additionalActionMap);
 
@@ -848,28 +710,19 @@ public:
         Logger::trace("AdvancedPaste::enable()");
         Trace::AdvancedPaste_Enable(true);
         m_enabled = true;
-
-        launch_process_and_named_pipe();
+        m_process_manager.start();
     };
 
     void Disable(bool traceEvent)
     {
         if (m_enabled)
         {
-            send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_TERMINATE_APP_MESSAGE);
-            WaitForSingleObject(m_hProcess, 1500);
-
-            m_write_pipe = nullptr;
-
-            TerminateProcess(m_hProcess, 1);
+            m_process_manager.stop();
 
             if (traceEvent)
             {
                 Trace::AdvancedPaste_Enable(false);
             }
-
-            CloseHandle(m_hProcess);
-            m_hProcess = 0;
         }
 
         m_enabled = false;
@@ -886,11 +739,7 @@ public:
         Logger::trace(L"AdvancedPaste hotkey pressed");
         if (m_enabled)
         {
-            if (!is_process_running())
-            {
-                Logger::trace(L"Launching new process");
-                launch_process_and_named_pipe();
-            }
+            m_process_manager.start();
 
             // hotkeyId in same order as set by get_hotkeys
             if (hotkeyId == 0)
@@ -911,22 +760,22 @@ public:
             { // m_advanced_paste_ui_hotkey
                 Logger::trace(L"Setting start up event");
 
-                bring_process_to_front();
-                send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_MESSAGE);
+                m_process_manager.bring_to_front();
+                m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_MESSAGE);
                 Trace::AdvancedPaste_Invoked(L"AdvancedPasteUI");
                 return true;
             }
             if (hotkeyId == 2)
             { // m_paste_as_markdown_hotkey
                 Logger::trace(L"Starting paste as markdown directly");
-                send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_MARKDOWN_MESSAGE);
+                m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_MARKDOWN_MESSAGE);
                 Trace::AdvancedPaste_Invoked(L"MarkdownDirect");
                 return true;
             }
             if (hotkeyId == 3)
             { // m_paste_as_json_hotkey
                 Logger::trace(L"Starting paste as json directly");
-                send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_JSON_MESSAGE);
+                m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_JSON_MESSAGE);
                 Trace::AdvancedPaste_Invoked(L"JsonDirect");
                 return true;
             }
@@ -941,7 +790,7 @@ public:
 
                 Trace::AdvancedPaste_Invoked(std::format(L"{}Direct", kebab_to_pascal_case(id)));
 
-                send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_ADDITIONAL_ACTION_MESSAGE, id);
+                m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_ADDITIONAL_ACTION_MESSAGE, id);
                 return true;
             }
 
@@ -952,7 +801,7 @@ public:
 
                 Logger::trace(L"Starting custom action id={}", id);
 
-                send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_CUSTOM_ACTION_MESSAGE, std::to_wstring(id));
+                m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_CUSTOM_ACTION_MESSAGE, std::to_wstring(id));
                 Trace::AdvancedPaste_Invoked(L"CustomActionDirect");
                 return true;
             }

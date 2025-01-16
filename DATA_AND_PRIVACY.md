@@ -67,6 +67,10 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.TrayFlyoutModuleRunEvent</td>
     <td>Logs when a utility from the tray flyout menu is run.</td>
   </tr>
+  <tr>
+    <td>Microsoft.PowerToys.Uninstall_Success</td>
+    <td>Logs when PowerToys is successfully uninstalled (who would do such a thing!).</td>
+  </tr>
 </table>
 
 ### OOBE (Out-of-box experience)
@@ -139,6 +143,10 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.AdvancedPasteInAppKeyboardShortcutEvent</td>
     <td>Triggered when a keyboard shortcut is used within the Advanced Paste interface.</td>
   </tr>  
+  <tr>
+    <td>Microsoft.PowerToys.AdvancedPasteSemanticKernelFormatEvent</td>
+    <td>Triggered when Advanced Paste leverages the Semantic Kernel.</td>
+  </tr> 
 </table>
 
 ### Always on Top
@@ -930,26 +938,6 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.PowerOCRInvokedEvent</td>
     <td>Triggered when Text Extractor is invoked.</td>
-  </tr>
-</table>
-
-### Video Conference Mute
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.VideoConference_CameraMuted</td>
-    <td>Triggered when the camera is turned off by Video Conference Mute.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.VideoConference_EnableVideoConference</td>
-    <td>Occurs when Video Conference Mute is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.VideoConference_MicrophoneMuted</td>
-    <td>Occurs when the microphone is muted by Video Conference Mute.</td>
   </tr>
 </table>
 

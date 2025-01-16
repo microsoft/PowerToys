@@ -33,6 +33,7 @@ using Timer = System.Windows.Forms.Timer;
 [module: SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed", Scope = "member", Target = "MouseWithoutBorders.frmMatrix.#Dispose(System.Boolean)", MessageId = "logoBitmap", Justification = "Dotnet port with style preservation")]
 [module: SuppressMessage("Microsoft.Mobility", "CA1601:DoNotUseTimersThatPreventPowerStateChanges", Scope = "member", Target = "MouseWithoutBorders.frmMatrix.#frmMatrix_Shown(System.Object,System.EventArgs)", Justification = "Dotnet port with style preservation")]
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.frmMatrix.#PaintMyLogo()", Justification = "Dotnet port with style preservation")]
+[module: SuppressMessage("Style", "IDE1006:Naming Styles", Scope = "member", Target = "~M:MouseWithoutBorders.FrmMatrix.M_EnabledChanged(System.Object,System.EventArgs)", Justification = "Dotnet port with style preservation")]
 
 namespace MouseWithoutBorders
 {

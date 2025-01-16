@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
@@ -33,30 +34,42 @@ namespace AdvancedPaste.Helpers
         private static readonly Regex CsvRemoveStartAndEndQuotationMarksRegex = new Regex(@"^""(?=(""{2})+)|(?<=(""{2})+)""$");
         private static readonly Regex CsvReplaceDoubleQuotationMarksRegex = new Regex(@"""{2}");
 
-        internal static string ToJsonFromXmlOrCsv(DataPackageView clipboardData)
+        private static bool IsJson(string text)
+        {
+            try
+            {
+                _ = JsonDocument.Parse(text);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        internal static async Task<string> ToJsonFromXmlOrCsvAsync(DataPackageView clipboardData)
         {
             Logger.LogTrace();
 
-            if (clipboardData == null || !clipboardData.Contains(StandardDataFormats.Text))
+            if (!clipboardData.Contains(StandardDataFormats.Text))
             {
                 Logger.LogWarning("Clipboard does not contain text data");
                 return string.Empty;
             }
 
-#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-            string text = Task.Run(async () =>
-            {
-                string plainText = await clipboardData.GetTextAsync() as string;
-                return plainText;
-            }).Result;
-#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
-
+            var text = await clipboardData.GetTextAsync();
             string jsonText = string.Empty;
+
+            // If the text is already JSON, return it
+            if (IsJson(text))
+            {
+                return text;
+            }
 
             // Try convert XML
             try
             {
-                XmlDocument doc = new XmlDocument();
+                XmlDocument doc = new();
                 doc.LoadXml(text);
                 Logger.LogDebug("Converted from XML.");
                 jsonText = JsonConvert.SerializeXmlNode(doc, Newtonsoft.Json.Formatting.Indented);
