@@ -176,6 +176,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.CropAndLock => GetModuleItemsCropAndLock(),
                 ModuleType.EnvironmentVariables => GetModuleItemsEnvironmentVariables(),
                 ModuleType.FancyZones => GetModuleItemsFancyZones(),
+                ModuleType.PowerPreview => GetModuleItemsPowerPreview(),
                 ModuleType.FileLocksmith => GetModuleItemsFileLocksmith(),
                 ModuleType.FindMyMouse => GetModuleItemsFindMyMouse(),
                 ModuleType.Hosts => GetModuleItemsHosts(),
@@ -517,6 +518,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleTextItem() { Label = resourceLoader.GetString("NewPlus_Product_Description/Description") },
+            };
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsPowerPreview()
+        {
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleTextItem() { Label = resourceLoader.GetString("FileExplorerPreview_ShortDescription") },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }

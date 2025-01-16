@@ -10,6 +10,7 @@
       <string id="InstallerUpdates">Installer and Updates</string>
       <string id="PowerToysRun">PowerToys Run</string>
       <string id="AdvancedPaste">Advanced Paste</string>
+      <string id="FileExplorerAddOns">File Explorer add-ons</string>
       <string id="MouseWithoutBorders">Mouse Without Borders</string>
       <string id="GeneralSettings">General settings</string>
       <string id="NewPlus">New+</string>
@@ -51,15 +52,13 @@ If you don't configure this setting, users are able to enable or disable the uti
 
 This policy has a higher priority than the policy "Configure global utility enabled state" and overrides it.
 </string>
-      <string id="ConfigureEnabledUtilityDescriptionPDFPreviewHandler">(Note: There have been reports of incompatibility between the PDF Preview Handler and Outlook)
+      <string id="ConfigureEnabledUtilityDescriptionFileExplorerPreview">This policy configures the enabled state for a PowerToys utility.
 
-This policy configures the enabled state for a PowerToys utility.
+If you enable this setting, the utility will be always enabled and the user won't be able to disable it. They can still disable individual add-ons.
 
-If you enable this setting, the utility will be always enabled and the user won't be able to disable it.
+If you disable this setting, the utility will be always disabled and the user won't be able to enable it or any individual add-ons.
 
-If you disable this setting, the utility will be always disabled and the user won't be able to enable it.
-
-If you don't configure this setting, users are able to enable or disable the utility.
+If you don't configure this setting, users are able to enable or disable the utility and any individual add-ons.
 
 This policy has a higher priority than the policy "Configure global utility enabled state" and overrides it.
 </string>
@@ -140,6 +139,28 @@ If you enable or don't configure this policy, the user takes control over the en
 
 If you disable this policy, the user won't be able to enable Enable paste with AI Advanced Paste setting and use Advanced Paste AI prompt nor set up the Open AI key in PowerToys Settings.
 </string>
+      <string id="ConfigureEnabledFileExplorerAddOnDescription">This policy configures the enabled state for a File Explorer add-on.
+
+If you enable this setting, the add-on will be always enabled and the user won't be able to disable it.
+
+If you disable this setting, the add-on will be always disabled and the user won't be able to enable it.
+
+If you don't configure this setting, users are able to enable or disable the add-on.
+
+Note: If you disable the policy "File Explorer add-ons: Configure enabled state" all File Explorer Add-ons are disabled.
+</string>
+      <string id="ConfigureEnabledFileExplorerAddOnDescriptionPDFPreviewHandler">(Note: There have been reports of incompatibility between the PDF Preview Handler and Outlook)
+
+This policy configures the enabled state for a File Explorer add-on.
+
+If you enable this setting, the add-on will be always enabled and the user won't be able to disable it.
+
+If you disable this setting, the add-on will be always disabled and the user won't be able to enable it.
+
+If you don't configure this setting, users are able to enable or disable the add-on.
+
+Note: If you disable the policy "File Explorer add-ons: Configure enabled state" all File Explorer Add-ons are disabled.
+</string>
       <string id="MwbClipboardSharingEnabledDescription">This policy configures if the user can share the clipboard between machines.
 
 If you enable or don't configure this policy, the user takes control over the clipboard sharing setting.
@@ -217,6 +238,7 @@ If you don't configure this policy, the user takes control over the setting and 
       <string id="ConfigureEnabledUtilityEnvironmentVariables">Environment Variables: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFancyZones">FancyZones: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileLocksmith">File Locksmith: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerPreview">File Explorer add-ons: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerSVGPreview">SVG file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerMarkdownPreview">Markdown file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerMonacoPreview">Source code file preview: Configure enabled state</string>
@@ -226,6 +248,8 @@ If you don't configure this policy, the user takes control over the setting and 
       <string id="ConfigureEnabledUtilityFileExplorerPDFThumbnails">PDF file thumbnail: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerGcodeThumbnails">Gcode file thumbnail: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerSTLThumbnails">STL file thumbnail: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerQOIPreview">QOI file preview: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerQOIThumbnails">QOI file thumbnail: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityHostsFileEditor">Hosts file editor: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityImageResizer">Image Resizer: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityKeyboardManager">Keyboard Manager: Configure enabled state</string>
@@ -253,8 +277,6 @@ If you don't configure this policy, the user takes control over the setting and 
       <string id="AllowExperimentation">Allow Experimentation</string>
       <string id="PowerToysRunAllPluginsEnabledState">Configure enabled state for all plugins</string>
       <string id="PowerToysRunIndividualPluginEnabledState">Configure enabled state for individual plugins</string>
-      <string id="ConfigureEnabledUtilityFileExplorerQOIPreview">QOI file preview: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityFileExplorerQOIThumbnails">QOI file thumbnail: Configure enabled state</string>
       <string id="AllowPowerToysAdvancedPasteOnlineAIModels">Allow using online AI models</string>
       <string id="MwbClipboardSharingEnabled">Clipboard sharing enabled</string>
       <string id="MwbFileTransferEnabled">File transfer enabled</string>
