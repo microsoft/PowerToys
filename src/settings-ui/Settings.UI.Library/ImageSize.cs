@@ -8,6 +8,8 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using Settings.UI.Library.Attributes;
+
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class ImageSize : INotifyPropertyChanged
@@ -50,6 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private ResizeUnit _unit;
 
         [JsonIgnore]
+        [CmdConfigureIgnore]
         public ImageSize Self { get => this; } // needed for data binding; change-notification raised when any property changes
 
         public int Id
