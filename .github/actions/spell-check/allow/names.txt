@@ -23,7 +23,6 @@ registrypreview
 rooler
 scoobe
 shortcutguide
-videoconference
 
 
 # USERS

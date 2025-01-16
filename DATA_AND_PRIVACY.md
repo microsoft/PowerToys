@@ -941,26 +941,6 @@ _If you want to find diagnostic data events in the source code, these two links 
   </tr>
 </table>
 
-### Video Conference Mute
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.VideoConference_CameraMuted</td>
-    <td>Triggered when the camera is turned off by Video Conference Mute.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.VideoConference_EnableVideoConference</td>
-    <td>Occurs when Video Conference Mute is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.VideoConference_MicrophoneMuted</td>
-    <td>Occurs when the microphone is muted by Video Conference Mute.</td>
-  </tr>
-</table>
-
 ### Workspaces
 <table style="width:100%">
   <tr>
