@@ -23,7 +23,6 @@ registrypreview
 rooler
 scoobe
 shortcutguide
-videoconference
 
 
 # USERS
@@ -96,6 +95,7 @@ Jaswal
 jefflord
 Jordi
 jyuwono
+kai
 Kairu
 Kamra
 Kantarci

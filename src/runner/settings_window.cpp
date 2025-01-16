@@ -674,8 +674,6 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "FileExplorer";
     case ESettingsWindowNames::ShortcutGuide:
         return "ShortcutGuide";
-    case ESettingsWindowNames::VideoConference:
-        return "VideoConference";
     case ESettingsWindowNames::Hosts:
         return "Hosts";
     case ESettingsWindowNames::MeasureTool:
@@ -750,10 +748,6 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "ShortcutGuide")
     {
         return ESettingsWindowNames::ShortcutGuide;
-    }
-    else if (value == "VideoConference")
-    {
-        return ESettingsWindowNames::VideoConference;
     }
     else if (value == "Hosts")
     {

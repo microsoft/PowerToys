@@ -342,12 +342,22 @@ namespace WorkspacesEditor.Models
             return new Rectangle((int)minX, (int)minY, (int)(maxX - minX), (int)(maxY - minY));
         }
 
-        public void UpdateAfterLaunchAndEdit(Project other)
+        public void UpdateAfterLaunchAndEdit(Project projectBeforeLaunch)
         {
-            Id = other.Id;
-            Name = other.Name;
+            Id = projectBeforeLaunch.Id;
+            Name = projectBeforeLaunch.Name;
             IsRevertEnabled = true;
-            MoveExistingWindows = other.MoveExistingWindows;
+            MoveExistingWindows = projectBeforeLaunch.MoveExistingWindows;
+            foreach (Application app in Applications)
+            {
+                var sameAppBefore = projectBeforeLaunch.Applications.Where(x => x.Id.Equals(app.Id, StringComparison.OrdinalIgnoreCase));
+                if (sameAppBefore.Any())
+                {
+                    var appBefore = sameAppBefore.FirstOrDefault();
+                    app.CommandLineArguments = appBefore.CommandLineArguments;
+                    app.IsElevated = appBefore.IsElevated;
+                }
+            }
         }
 
         internal void CloseExpanders()

@@ -645,6 +645,7 @@ imageresizerinput
 imageresizersettings
 imagingdevices
 ime
+Indo
 inetcpl
 Infobar
 INFOEXAMPLE
@@ -768,6 +769,7 @@ LOWORD
 lparam
 LPBITMAPINFOHEADER
 LPCITEMIDLIST
+LPCLSID
 lpcmi
 LPCMINVOKECOMMANDINFO
 LPCREATESTRUCT
@@ -1183,7 +1185,7 @@ psrm
 psrree
 pstatstg
 pstm
-pstr
+PStr
 pstream
 pstrm
 PSYSTEM
@@ -1213,6 +1215,7 @@ QUEUESYNC
 QUNS
 RAII
 RAlt
+randi
 Rasterize
 RAWINPUTDEVICE
 RAWINPUTHEADER
@@ -1645,7 +1648,6 @@ vcamp
 vcdl
 vcgtq
 VCINSTALLDIR
-vcm
 Vcpkg
 VCRT
 vcruntime
@@ -1664,7 +1666,6 @@ vget
 vgetq
 vid
 VIDCAP
-videoconferencevirtualdriver
 VIDEOINFOHEADER
 viewmodel
 vih
