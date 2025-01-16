@@ -82,6 +82,7 @@ namespace AdvancedPaste
             };
 
             WindowHelpers.BringToForeground(this.GetWindowHandle());
+            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());
         }
 
         private void OnActivated(object sender, WindowActivatedEventArgs args)

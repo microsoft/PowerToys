@@ -41,6 +41,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("=5 / 0", "Expression contains division by zero")]
         [DataRow("10+(8*9)/0+7", "Expression contains division by zero")]
         [DataRow("10+(8*9)/0*7", "Expression contains division by zero")]
+        [DataRow("10+(8*9)/0x00", "Expression contains division by zero")]
+        [DataRow("10+(8*9)/0b0", "Expression contains division by zero")]
         public void ErrorResultOnInvalidKeywordQuery(string typedString, string expectedResult)
         {
             Query expectedQuery = new(typedString, "=");
@@ -230,6 +232,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         public void RightAnswerForHumanMultiplicationExpressions(string typedString, double answer)
         {
             // Setup
+            typedString = typedString.Replace(".", CultureInfo.CurrentCulture.NumberFormat.CurrencyDecimalSeparator); // Workaround to get correct results when the tests are running on a non-english systems.
             Query expectedQuery = new(typedString);
             Query expectedQueryWithKeyword = new("=" + typedString, "=");
 

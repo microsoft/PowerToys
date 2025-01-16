@@ -3589,10 +3589,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Characters</value>
   </data>
   <data name="QuickAccent_SelectedLanguage.Header" xml:space="preserve">
-    <value>Choose a character set</value>
+    <value>Choose character sets</value>
   </data>
   <data name="QuickAccent_SelectedLanguage.Description" xml:space="preserve">
-    <value>Show only accented characters common to the selected set</value>
+    <value>Show only accented characters common to the selected sets</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_All.Content" xml:space="preserve">
     <value>All available</value>
@@ -3680,6 +3680,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_SelectedLanguage_Pinyin" xml:space="preserve">
     <value>Pinyin</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Proto_Indo_European" xml:space="preserve">
+    <value>Proto Indo European</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Polish" xml:space="preserve">
     <value>Polish</value>
@@ -3975,7 +3978,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="AdvancedPaste_EnableAdvancedAI.Description" xml:space="preserve">
     <value>Add advanced capabilities when using 'Paste with AI' including the power to 'chain' multiple transformations together and work with images and files. This feature may consume more API credits when used.</value>
-  </data>  
+  </data>
   <data name="Oobe_AdvancedPaste.Description" xml:space="preserve">
     <value>Advanced Paste is a tool to put your clipboard content into any format you need, focused towards developer workflows. It can paste as plain text, markdown, or json directly with the UX or with a direct keystroke invoke. These are fully locally executed. In addition, it has an AI powered option that is 100% opt-in and requires an Open AI key. Note: this will replace the formatted text in your clipboard with the selected format.</value>
   </data>
@@ -4411,6 +4414,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Peek_SourceCode_WrapText.Content" xml:space="preserve">
     <value>Wrap text</value>
   </data>
+  <data name="Peek_SourceCode_Minimap.Content" xml:space="preserve">
+    <value>Show minimap</value>
+  </data>
   <data name="ShowPluginsOverview_All.Content" xml:space="preserve">
     <value>All</value>
   </data>
@@ -4456,6 +4462,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Peek_SourceCode_StickyScroll.Content" xml:space="preserve">
     <value>Enable sticky scroll</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Monaco_Minimap.Content" xml:space="preserve">
+    <value>Show minimap</value>
   </data>
   <data name="PrivacyLink.Text" xml:space="preserve">
     <value>OpenAI Privacy</value>
@@ -4703,5 +4712,11 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Enable_Module.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Enable module</value>
+  </data>
+  <data name="PowerLauncher_PluginVersion.Text" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="PowerLauncher_PluginWebsite.Text" xml:space="preserve">
+    <value>Project website</value>
   </data>
 </root>

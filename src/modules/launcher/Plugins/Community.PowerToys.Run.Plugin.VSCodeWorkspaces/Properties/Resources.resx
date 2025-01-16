@@ -151,4 +151,13 @@
     <value>Project Folder</value>
     <comment>It refers to the Visual Studio Code Project Folders</comment>
   </data>
+  <data name="CopyPath" xml:space="preserve">
+    <value>Copy path</value>
+  </data>
+  <data name="OpenInConsole" xml:space="preserve">
+    <value>Open in console</value>
+  </data>
+  <data name="OpenInExplorer" xml:space="preserve">
+    <value>Open in Explorer</value>
+  </data>
 </root>
