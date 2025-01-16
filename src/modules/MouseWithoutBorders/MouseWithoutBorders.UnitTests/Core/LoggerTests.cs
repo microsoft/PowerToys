@@ -38,11 +38,6 @@ public static class LoggerTests
         */
 
         [TestMethod]
-        [Ignore(
-            "This test relies on internal details of the dotnet platform and is sensitive to " +
-            "the specific version of dotnet being used. As a result it's likely to fail if the " +
-            "\"expected\" result was generated with a different version to the version used to " +
-            "run the test, so we're going to ignore it in the CI build process.")]
         public void PrivateDumpShouldGenerateExpectedOutput()
         {
             static string NormalizeLog(string log)
@@ -62,6 +57,7 @@ public static class LoggerTests
                     "lastJump = ",
                     "lastStartServiceTime = ",
                     "InitialIV = ",
+                    "--_budget = ",
                 };
                 for (var i = 0; i < lines.Length; i++)
                 {
@@ -89,6 +85,10 @@ public static class LoggerTests
                     "------[13] = 0",
                     "------[14] = 0",
                     "------[15] = 0",
+                    "------[16] = 0",
+                    "------[17] = 0",
+                    "------[18] = 0",
+                    "------[19] = 0",
                 };
                 lines = lines.Where(line => !removeLines.Contains(line)).ToArray();
 
