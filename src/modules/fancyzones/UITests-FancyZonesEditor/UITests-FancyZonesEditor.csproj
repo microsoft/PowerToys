@@ -18,7 +18,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Appium.WebDriver" />
     <PackageReference Include="MSTest" />
     <PackageReference Include="System.IO.Abstractions" />
   </ItemGroup>
@@ -28,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\UITestAPI\UITestAPI.csproj" />
     <ProjectReference Include="..\FancyZonesEditorCommon\FancyZonesEditorCommon.csproj" />
   </ItemGroup>
 </Project>

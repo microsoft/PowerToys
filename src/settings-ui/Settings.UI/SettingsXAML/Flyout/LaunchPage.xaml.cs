@@ -35,6 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
         {
             FlyoutMenuButton selectedModuleBtn = sender as FlyoutMenuButton;
             bool moduleRun = true;
+            Logger.LogInfo(((ModuleType)selectedModuleBtn.Tag).ToString() + "_ModuleButton_Click");
 
             // Closing manually the flyout to workaround focus gain problems
             App.GetFlyoutWindow()?.Hide();

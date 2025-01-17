@@ -3,63 +3,48 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 
-using Microsoft.FancyZonesEditor.UITests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 
-namespace Microsoft.FancyZonesEditor.UnitTests.Utils
+namespace Microsoft.UITests.API
 {
-    public class FancyZonesEditorSession
+    public class UITestAPI
     {
         protected const string WindowsApplicationDriverUrl = "http://127.0.0.1:4723";
-        private const string FancyZonesEditorPath = @"\..\..\..\PowerToys.FancyZonesEditor.exe";
 
-        private static FancyZonesEditorFiles? _files;
+        public WindowsDriver<WindowsElement>? Session { get; private set; }
 
-        public static FancyZonesEditorFiles Files
+        public WindowsElement? MainEditorWindow { get; private set; }
+
+        private static Process? appDriver;
+
+        public UITestAPI()
         {
-            get
-            {
-                if (_files == null)
-                {
-                    _files = new FancyZonesEditorFiles();
-                }
-
-                return _files;
-            }
         }
 
-        public WindowsDriver<WindowsElement>? Session { get; }
-
-        public WindowsElement? MainEditorWindow { get; }
-
-        public FancyZonesEditorSession(TestContext testContext)
+        [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
+        public void Init(string exePath)
         {
-            try
-            {
-                // Launch FancyZonesEditor
-                string? path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                path += FancyZonesEditorPath;
+            string winAppDriverPath = "C:\\Program Files (x86)\\Windows Application Driver\\WinAppDriver.exe";
+            appDriver = Process.Start(winAppDriverPath);
 
-                AppiumOptions opts = new AppiumOptions();
-                opts.AddAdditionalCapability("app", path);
-                Session = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), opts);
-            }
-            catch (Exception ex)
-            {
-                testContext.WriteLine(ex.Message);
-            }
+            // Launch Exe
+            string? path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            path += exePath;
+
+            AppiumOptions opts = new AppiumOptions();
+            opts.AddAdditionalCapability("app", path);
+            Session = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), opts);
 
             Assert.IsNotNull(Session, "Session not initialized");
-
-            testContext.WriteLine("Session: " + Session.SessionId.ToString());
-            testContext.WriteLine("Title: " + Session.Title);
 
             // Set implicit timeout to make element search to retry every 500 ms
             Session.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
@@ -93,6 +78,49 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
                 Session.Quit();
                 Session.Dispose();
             }
+
+            try
+            {
+                appDriver?.Kill();
+            }
+            catch
+            {
+            }
+        }
+
+        private WindowsElement? GetElement(string elementName)
+        {
+            var listItem = Session?.FindElementByName(elementName);
+            Assert.IsNotNull(listItem, "ElementName " + elementName + " not found");
+            return listItem;
+        }
+
+        public WindowsElement? NewOpenContextMenu(string elementName)
+        {
+            RightClick_Element(elementName);
+            var menu = Session?.FindElementByClassName("ContextMenu");
+            Assert.IsNotNull(menu, "Context menu not found");
+            return menu;
+        }
+
+        public void Click_Element(string elementName)
+        {
+            var element = GetElement(elementName);
+            Actions actions = new Actions(Session);
+            actions.MoveToElement(element);
+            actions.MoveByOffset(30, 30);
+            actions.Click();
+            actions.Build().Perform();
+        }
+
+        public void RightClick_Element(string elementName)
+        {
+            var element = GetElement(elementName);
+            Actions actions = new Actions(Session);
+            actions.MoveToElement(element);
+            actions.MoveByOffset(30, 30);
+            actions.ContextClick();
+            actions.Build().Perform();
         }
 
         private WindowsElement? GetLayout(string layoutName)
