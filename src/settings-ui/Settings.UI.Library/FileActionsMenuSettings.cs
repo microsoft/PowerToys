@@ -10,7 +10,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class FileActionsMenuSettings : BasePTModuleSettings, ISettingsConfig
     {
-        public const string ModuleName = "File Actions Menu";
+        public const string ModuleName = "FileActionsMenu";
         public const string ModuleVersion = "1";
 
         [JsonPropertyName("properties")]

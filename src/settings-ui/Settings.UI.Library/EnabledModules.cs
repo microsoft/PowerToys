@@ -41,7 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         private bool fileActionsMenu = true;
 
-        [JsonPropertyName("File Actions Menu")]
+        [JsonPropertyName("FileActionsMenu")]
         public bool FileActionsMenu
         {
             get => fileActionsMenu;
