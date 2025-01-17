@@ -251,6 +251,16 @@ public sealed partial class MainWindow : Window,
     {
         WeakReferenceMessenger.Default.Send<HotkeySummonMessage>();
 
+        // Remember, IsIconic == "minimized", which is entirely different state
+        // from "show/hide"
+        // If we're currently minimized, restore us first, before we reveal
+        // our window. Otherwise we'd just be showing a minimized window -
+        // which would remain not visible to the user.
+        if (PInvoke.IsIconic(_hwnd))
+        {
+            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
+        }
+
         PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOW);
         PInvoke.SetForegroundWindow(_hwnd);
         PInvoke.SetActiveWindow(_hwnd);
