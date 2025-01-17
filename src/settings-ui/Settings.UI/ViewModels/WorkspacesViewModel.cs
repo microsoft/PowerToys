@@ -3,11 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using AllExperiments;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -56,12 +54,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void LaunchEditor()
         {
-            string filePath = @"C:\example.txt";
-            DateTime currentTime = DateTime.Now;
-            string formattedTime = currentTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
-            string[] lines = { formattedTime, "LaunchEditor" };
-            File.WriteAllLines(filePath, lines);
-
             // send message to launch the editor;
             SendConfigMSG("{\"action\":{\"Workspaces\":{\"action_name\":\"LaunchEditor\", \"value\":\"\"}}}");
         }
