@@ -25,7 +25,8 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 
     public IndexerPage()
     {
-        Icon = new("\ue729");
+        Id = "com.microsoft.indexer.fileSearch";
+        Icon = new("\uEC50");
         Name = Resources.Indexer_Title;
         PlaceholderText = Resources.Indexer_PlaceholderText;
 
@@ -44,7 +45,7 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         }
     }
 
-    public override IListItem[] GetItems() => [.._indexerListItems];
+    public override IListItem[] GetItems() => [.. _indexerListItems];
 
     public override void LoadMore()
     {

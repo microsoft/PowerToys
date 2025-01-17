@@ -59,25 +59,27 @@ public partial class TopLevelCommandManager : ObservableObject,
     private async Task LoadTopLevelCommandsFromProvider(CommandProviderWrapper commandProvider)
     {
         await commandProvider.LoadTopLevelCommands();
+
+        var makeAndAdd = (ICommandItem? i, bool fallback) =>
+        {
+            TopLevelCommandItemWrapper wrapper = new(new(i), fallback, _serviceProvider)
+            {
+                ExtensionHost = commandProvider.ExtensionHost,
+            };
+            TopLevelCommands.Add(wrapper);
+        };
+
         await Task.Factory.StartNew(
             () =>
             {
                 foreach (var i in commandProvider.TopLevelItems)
                 {
-                    TopLevelCommandItemWrapper wrapper = new(new(i), false)
-                    {
-                        ExtensionHost = commandProvider.ExtensionHost,
-                    };
-                    TopLevelCommands.Add(wrapper);
+                    makeAndAdd(i, false);
                 }
 
                 foreach (var i in commandProvider.FallbackItems)
                 {
-                    TopLevelCommandItemWrapper wrapper = new(new(i), true)
-                    {
-                        ExtensionHost = commandProvider.ExtensionHost,
-                    };
-                    TopLevelCommands.Add(wrapper);
+                    makeAndAdd(i, true);
                 }
             },
             CancellationToken.None,
@@ -141,12 +143,12 @@ public partial class TopLevelCommandManager : ObservableObject,
         await sender.LoadTopLevelCommands();
         foreach (var i in sender.TopLevelItems)
         {
-            newItems.Add(new(new(i), false));
+            newItems.Add(new(new(i), false, _serviceProvider));
         }
 
         foreach (var i in sender.FallbackItems)
         {
-            newItems.Add(new(new(i), true));
+            newItems.Add(new(new(i), true, _serviceProvider));
         }
 
         // Slice out the old commands

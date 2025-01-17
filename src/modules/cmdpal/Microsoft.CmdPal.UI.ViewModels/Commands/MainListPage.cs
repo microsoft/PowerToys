@@ -161,9 +161,14 @@ public partial class MainListPage : DynamicListPage,
         }
 
         var isFallback = false;
+        var isAlias = false;
         if (topLevelOrAppItem is TopLevelCommandItemWrapper toplevel)
         {
             isFallback = toplevel.IsFallback;
+            if (toplevel.Alias is string alias)
+            {
+                isAlias = alias == query;
+            }
         }
 
         var nameMatch = StringMatcher.FuzzySearch(query, title);
@@ -176,7 +181,9 @@ public partial class MainListPage : DynamicListPage,
             isFallback ? 1 : 0, // Always give fallbacks a chance
         };
         var max = scores.Max();
-        return max / (isFallback ? 3 : 1); // but downweight them
+        var finalScore = (max / (isFallback ? 3 : 1))
+            + (isAlias ? 9001 : 0);
+        return finalScore; // but downweight them
     }
 
     public void Receive(ClearSearchMessage message)

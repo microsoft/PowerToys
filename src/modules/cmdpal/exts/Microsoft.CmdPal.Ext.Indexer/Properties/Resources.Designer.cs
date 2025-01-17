@@ -124,7 +124,7 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Search indexed files.
+        ///   Looks up a localized string similar to Search files on this device.
         /// </summary>
         internal static string Indexer_Subtitle {
             get {
@@ -133,7 +133,7 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Indexer.
+        ///   Looks up a localized string similar to Search files.
         /// </summary>
         internal static string Indexer_Title {
             get {
@@ -142,7 +142,7 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Indexer commands.
+        ///   Looks up a localized string similar to Indexer file search commands.
         /// </summary>
         internal static string IndexerCommandsProvider_DisplayName {
             get {

@@ -5,6 +5,7 @@
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -15,20 +16,27 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 /// </summary>
 public partial class TopLevelCommandItemWrapper : ListItem
 {
+    private readonly IServiceProvider _serviceProvider;
+
     public ExtensionObject<ICommandItem> Model { get; }
 
     public bool IsFallback { get; private set; }
 
     public string Id { get; private set; } = string.Empty;
 
-    // public override ICommand? Command { get => base.Command; set => base.Command = value; }
     private readonly TopLevelCommandWrapper _topLevelCommand;
+
+    public string? Alias { get; private set; }
 
     public CommandPaletteHost? ExtensionHost { get => _topLevelCommand.ExtensionHost; set => _topLevelCommand.ExtensionHost = value; }
 
-    public TopLevelCommandItemWrapper(ExtensionObject<ICommandItem> commandItem, bool isFallback)
+    public TopLevelCommandItemWrapper(
+        ExtensionObject<ICommandItem> commandItem,
+        bool isFallback,
+        IServiceProvider serviceProvider)
         : base(new TopLevelCommandWrapper(commandItem.Unsafe?.Command ?? new NoOpCommand()))
     {
+        _serviceProvider = serviceProvider;
         _topLevelCommand = (TopLevelCommandWrapper)this.Command!;
 
         IsFallback = isFallback;
@@ -62,6 +70,17 @@ public partial class TopLevelCommandItemWrapper : ListItem
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine(ex);
+        }
+
+        // Add tags for the alias, if we have one.
+        var aliases = _serviceProvider.GetService<AliasManager>();
+        if (aliases != null)
+        {
+            Alias = aliases.KeysFromId(Id);
+            if (Alias is string keys)
+            {
+                this.Tags = [new Tag() { Text = keys }];
+            }
         }
     }
 
