@@ -15,7 +15,7 @@
     Loaded="ShellPage_Loaded"
     mc:Ignorable="d">
 
-  <i:Interaction.Behaviors>
+    <i:Interaction.Behaviors>
         <ic:EventTriggerBehavior EventName="Loaded">
             <ic:InvokeCommandAction Command="{x:Bind ViewModel.LoadedCommand}" />
         </ic:EventTriggerBehavior>
@@ -110,6 +110,9 @@
                     x:Uid="Shell_TopLevelSystemTools"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/SystemTools.png}"
                     SelectsOnInvoked="False">
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                    </NavigationViewItem.InfoBadge>
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
                             x:Uid="Shell_AdvancedPaste"
@@ -142,7 +145,11 @@
                         <NavigationViewItem
                             x:Uid="Shell_ZoomIt"
                             helpers:NavHelper.NavigateTo="views:ZoomItPage"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}" />
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}">
+                            <NavigationViewItem.InfoBadge>
+                                <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                            </NavigationViewItem.InfoBadge>
+                        </NavigationViewItem>
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
 
@@ -151,11 +158,7 @@
                     x:Uid="Shell_TopLevelWindowsAndLayouts "
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/WindowingAndLayouts.png}"
                     SelectsOnInvoked="False">
-          <NavigationViewItem.InfoBadge>
-            <InfoBadge Style="{StaticResource NewInfoBadge}" />
-          </NavigationViewItem.InfoBadge>
-
-          <NavigationViewItem.MenuItems>
+                    <NavigationViewItem.MenuItems>
             <NavigationViewItem
                             x:Uid="Shell_AlwaysOnTop"
                             helpers:NavHelper.NavigateTo="views:AlwaysOnTopPage"
@@ -168,15 +171,11 @@
                             x:Uid="Shell_FancyZones"
                             helpers:NavHelper.NavigateTo="views:FancyZonesPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FancyZones.png}" />
-            <NavigationViewItem
+                        <NavigationViewItem
               x:Uid="Shell_Workspaces"
                                         helpers:NavHelper.NavigateTo="views:WorkspacesPage"
-                                        Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}">
-              <NavigationViewItem.InfoBadge>
-                <InfoBadge Style="{StaticResource NewInfoBadge}" />
-              </NavigationViewItem.InfoBadge>
-            </NavigationViewItem>
-          </NavigationViewItem.MenuItems> 
+                                        Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}"/>
+                    </NavigationViewItem.MenuItems> 
         </NavigationViewItem>
 
                 <!--  Input / Output  -->
