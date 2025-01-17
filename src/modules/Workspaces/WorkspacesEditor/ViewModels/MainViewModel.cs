@@ -40,6 +40,7 @@ namespace WorkspacesEditor.ViewModels
         private Timer lastUpdatedTimer;
         private WorkspacesSettings settings;
         private PwaHelper _pwaHelper;
+        private bool _isExistingProjectLaunched;
 
         public ObservableCollection<Project> Workspaces { get; set; } = new ObservableCollection<Project>();
 
@@ -256,12 +257,12 @@ namespace WorkspacesEditor.ViewModels
         {
             CancelSnapshot();
 
-            await Task.Run(() => RunSnapshotTool());
+            await Task.Run(() => RunSnapshotTool(_isExistingProjectLaunched));
 
             Project project = _workspacesEditorIO.ParseTempProject();
             if (project != null)
             {
-                if (editedProject != null)
+                if (_isExistingProjectLaunched)
                 {
                     project.UpdateAfterLaunchAndEdit(projectBeforeLaunch);
                     project.EditorWindowTitle = Properties.Resources.EditWorkspace;
@@ -431,15 +432,12 @@ namespace WorkspacesEditor.ViewModels
             }
         }
 
-        private void RunSnapshotTool(string filename = null)
+        private void RunSnapshotTool(bool isExistingProjectLaunched)
         {
             Process process = new Process();
             process.StartInfo = new ProcessStartInfo(@".\PowerToys.WorkspacesSnapshotTool.exe");
             process.StartInfo.CreateNoWindow = true;
-            if (!string.IsNullOrEmpty(filename))
-            {
-                process.StartInfo.Arguments = filename;
-            }
+            process.StartInfo.Arguments = isExistingProjectLaunched ? $"{(int)InvokePoint.LaunchAndEdit}" : string.Empty;
 
             try
             {
@@ -484,6 +482,7 @@ namespace WorkspacesEditor.ViewModels
 
         internal void EnterSnapshotMode(bool isExistingProjectLaunched)
         {
+            _isExistingProjectLaunched = isExistingProjectLaunched;
             _mainWindow.WindowState = System.Windows.WindowState.Minimized;
             _overlayWindows.Clear();
             foreach (var screen in MonitorHelper.GetDpiUnawareScreens())

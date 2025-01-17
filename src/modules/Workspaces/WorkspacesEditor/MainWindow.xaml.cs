@@ -3,10 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Drawing;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Interop;
-
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using WorkspacesEditor.Utils;
@@ -30,9 +31,9 @@ namespace WorkspacesEditor
             MainViewModel = mainViewModel;
             mainViewModel.SetMainWindow(this);
 
-            if (Properties.Settings.Default.Height == -1)
+            if (Properties.Settings.Default.Height == -1 || !IsEditorInsideVisibleArea())
             {
-                // This is the very first time the window is created. Place it on the screen center
+                // This is the very first time the window is created or it would be placed outside the visible area (monitor rearrangement). Place it on the screen center
                 WindowInteropHelper windowInteropHelper = new WindowInteropHelper(this);
                 System.Windows.Forms.Screen screen = System.Windows.Forms.Screen.FromHandle(windowInteropHelper.Handle);
                 double dpi = MonitorHelper.GetScreenDpiFromScreen(screen);
@@ -86,6 +87,20 @@ namespace WorkspacesEditor
                 },
                 Application.Current.Dispatcher,
                 cancellationToken.Token);
+        }
+
+        private bool IsEditorInsideVisibleArea()
+        {
+            System.Windows.Forms.Screen[] allScreens = MonitorHelper.GetDpiUnawareScreens();
+            Rectangle commonBounds = allScreens[0].Bounds;
+            for (int screenIndex = 1; screenIndex < allScreens.Length; screenIndex++)
+            {
+                Rectangle rectangle = allScreens[screenIndex].Bounds;
+                commonBounds = Rectangle.Union(rectangle, commonBounds);
+            }
+
+            Rectangle editorBounds = new Rectangle((int)Properties.Settings.Default.Left, (int)Properties.Settings.Default.Top, (int)Properties.Settings.Default.Width, (int)Properties.Settings.Default.Height);
+            return editorBounds.IntersectsWith(commonBounds);
         }
 
         private void SavePosition()

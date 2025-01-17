@@ -6,7 +6,7 @@
   "Author": "betadele",
   "Version": "1.0.0",
   "Language": "csharp",
-  "Website": "https://www.windowwalker.com/",
+  "Website": "https://aka.ms/PowerToys",
   "ExecuteFileName": "Microsoft.Plugin.WindowWalker.dll",
   "IcoPathDark": "Images\\windowwalker.dark.png",
   "IcoPathLight": "Images\\windowwalker.light.png"
