@@ -480,6 +480,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool zoomIt;
+
+        [JsonPropertyName("ZoomIt")]
+        public bool ZoomIt
+        {
+            get => zoomIt;
+            set
+            {
+                if (zoomIt != value)
+                {
+                    LogTelemetryEvent(value);
+                    zoomIt = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();
