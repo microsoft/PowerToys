@@ -26,14 +26,6 @@ using MouseWithoutBorders.Core;
 
 namespace MouseWithoutBorders
 {
-    internal class MyRectangle
-    {
-        internal int Left;
-        internal int Top;
-        internal int Right;
-        internal int Bottom;
-    }
-
     internal partial class Common
     {
         private static readonly Lock McMatrixLock = new();
