@@ -231,3 +231,7 @@ _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
 
 # ignore long runs of a single character:
 \b([A-Za-z])\g{-1}{3,}\b
+
+# ZoomIt menu items with accelerator keys
+E&xit
+St&yle

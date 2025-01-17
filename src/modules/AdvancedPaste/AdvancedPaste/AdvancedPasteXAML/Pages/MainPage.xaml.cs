@@ -130,9 +130,9 @@ namespace AdvancedPaste.Pages
             }
         }
 
-        private async void ListView_Button_Click(object sender, RoutedEventArgs e)
+        private async void PasteFormat_ItemClick(object sender, ItemClickEventArgs e)
         {
-            if (sender is Button { DataContext: PasteFormat format })
+            if (e.ClickedItem is PasteFormat format)
             {
                 await ViewModel.ExecutePasteFormatAsync(format, PasteActionSource.ContextMenu);
             }

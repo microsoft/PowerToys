@@ -62,6 +62,7 @@ public static class LoggerTests
                     "lastJump = ",
                     "lastStartServiceTime = ",
                     "InitialIV = ",
+                    "--_budget = ",
                 };
                 for (var i = 0; i < lines.Length; i++)
                 {
@@ -89,6 +90,10 @@ public static class LoggerTests
                     "------[13] = 0",
                     "------[14] = 0",
                     "------[15] = 0",
+                    "------[16] = 0",
+                    "------[17] = 0",
+                    "------[18] = 0",
+                    "------[19] = 0",
                 };
                 lines = lines.Where(line => !removeLines.Contains(line)).ToArray();
 
@@ -113,8 +118,10 @@ public static class LoggerTests
             var sb = new StringBuilder(1000000);
             _ = Logger.PrivateDump(sb, Logger.AllLogs, "[Program logs]\r\n===============\r\n", 0, settingsDumpObjectsLevel, false);
             _ = Logger.PrivateDump(sb, new Common(), "[Other Logs]\r\n===============\r\n", 0, settingsDumpObjectsLevel, false);
-            sb.AppendLine("[Logger Logs]\r\n===============");
+            sb.AppendLine("[Logger]\r\n===============");
             Logger.DumpType(sb, typeof(Logger), 0, settingsDumpObjectsLevel);
+            sb.AppendLine("[Receiver]\r\n===============");
+            Logger.DumpType(sb, typeof(Receiver), 0, settingsDumpObjectsLevel);
             var actual = sb.ToString();
 
             expected = NormalizeLog(expected);
@@ -145,8 +152,6 @@ public static class LoggerTests
                     {
                         message.AppendLine(CultureInfo.InvariantCulture, $"[{j}]: {expectedLines[j]}:");
                     }
-
-                    var x = new ConcurrentDictionary<string, string>(-1, 16);
 
                     Assert.Fail(message.ToString());
                 }

@@ -1,6 +1,6 @@
 # Microsoft PowerToys
 
-![Hero image for Microsoft PowerToys](doc/images/overview/PT_holiday_hero_image.png)
+![Hero image for Microsoft PowerToys](doc/images/overview/PT_hero_image.png)
 
 [How to use PowerToys][usingPowerToys-docs-link] | [Downloads & Release notes][github-release-link] | [Contributing to PowerToys](#contributing) | [What's Happening](#whats-happening) | [Roadmap](#powertoys-roadmap)
 
@@ -18,13 +18,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 | [New+](https://aka.ms/PowerToysOverview_NewPlus) | [Peek](https://aka.ms/PowerToysOverview_Peek) | [Paste as Plain Text](https://aka.ms/PowerToysOverview_PastePlain) |
 | [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) | [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) | [Quick Accent](https://aka.ms/PowerToysOverview_QuickAccent) |
 | [Registry Preview](https://aka.ms/PowerToysOverview_RegistryPreview) | [Screen Ruler](https://aka.ms/PowerToysOverview_ScreenRuler) | [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) |
-| [Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) | [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) | [Workspaces](https://aka.ms/PowerToysOverview_Workspaces) |
-
-## 🎁⭐ PowerToys Advent calendar ⭐🎁
-
-We will be highlighting a cool utility each day for 24 days in December! To follow along, check out these threads:
-- https://bsky.app/profile/kaylacinnamon.bsky.social/post/3lcb7iljxck2o
-- https://x.com/cinnamon_msft/status/1863284610773246257
+| [Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) | [Workspaces](https://aka.ms/PowerToysOverview_Workspaces) | [ZoomIt](https://aka.ms/PowerToysOverview_PowerToysOverview_ZoomIt) |
 
 ## Installing and running Microsoft PowerToys
 
@@ -232,6 +226,5 @@ The application logs basic diagnostic data (telemetry). For more information on 
 [winget-link]: https://github.com/microsoft/winget-cli#installing-the-client
 [roadmap]: https://github.com/microsoft/PowerToys/wiki/Roadmap
 [privacy-link]: http://go.microsoft.com/fwlink/?LinkId=521839
-[vidConfOverview]: https://aka.ms/PowerToysOverview_VideoConference
 [loc-bug]: https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=&template=translation_issue.md&title=
 [usingPowerToys-docs-link]: https://aka.ms/powertoys-docs

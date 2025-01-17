@@ -29,7 +29,6 @@
 | PowerToysOverview_PowerRename | https://learn.microsoft.com/windows/powertoys/powerrename |
 | PowerToysOverview_PowerToysRun | https://learn.microsoft.com/windows/powertoys/run |
 | PowerToysOverview_ShortcutGuide | https://learn.microsoft.com/windows/powertoys/shortcut-guide |
-| PowerToysOverview_VideoConference | https://learn.microsoft.com/windows/powertoys/video-conference-mute |
 | powerToysPowerLauncherImageSmall | https://github.com/microsoft/PowerToys/wiki/images/overview/PowerLauncher_small.png |
 | powerToysPowerLauncherSettingImage | https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/overview/PowerLauncher_large.png |
 | powerToysPowerPreviewImageSmall | https://github.com/microsoft/PowerToys/wiki/images/overview/PowerPreview_small.png |
@@ -42,6 +41,4 @@
 | powerToysRequestFeature | https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=&template=feature_request.md&title= |
 | powerToysShortcutGuideImageSmall | https://github.com/microsoft/PowerToys/wiki/images/overview/ShortcutGuide_small.png |
 | powerToysShortcutGuideSettingImage | https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/overview/ShortcutGuide_large.png |
-| powerToysVideoConferenceImageSmall | https://github.com/microsoft/PowerToys/wiki/images/overview/VideoConference_small.png |
-| powerToysVideoConferenceSettingImage | https://github.com/microsoft/PowerToys/wiki/images/overview/VideoConference_large.png |
 | powertoyswiki | https://github.com/microsoft/PowerToys/wiki |
