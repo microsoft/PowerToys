@@ -94,7 +94,11 @@ public sealed partial class ListPage : Page,
         // Debug.WriteLine($"  selected='{ItemsList.SelectedItem}'");
         if (ItemsList.SelectedItem is ListItemViewModel item)
         {
-            ViewModel?.UpdateSelectedItemCommand.Execute(item);
+            var vm = ViewModel;
+            _ = Task.Run(() =>
+            {
+                vm?.UpdateSelectedItemCommand.Execute(item);
+            });
         }
 
         // There's mysterious behavior here, where the selection seemingly
@@ -114,7 +118,7 @@ public sealed partial class ListPage : Page,
         // prevent the crash.
         if (ItemsList.SelectedItem != null)
         {
-            ItemsList.SmoothScrollIntoViewWithItemAsync(ItemsList.SelectedItem);
+            ItemsList.ScrollIntoView(ItemsList.SelectedItem);
         }
     }
 
