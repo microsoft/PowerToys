@@ -12,6 +12,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
+using MouseWithoutBorders.Core;
+
 namespace MouseWithoutBorders.Class
 {
     /// <summary>

@@ -4,6 +4,8 @@
 
 using System;
 
+using MouseWithoutBorders.Core;
+
 namespace MouseWithoutBorders.Class
 {
     internal static class MachinePoolHelpers
