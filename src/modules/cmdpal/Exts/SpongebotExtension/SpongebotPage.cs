@@ -90,11 +90,8 @@ public partial class SpongebotPage : MarkdownPage, IFallbackHandler
 
     internal static string StateJsonPath()
     {
-        // Get the path to our exe
-        var path = System.Reflection.Assembly.GetExecutingAssembly().Location;
-
-        // Get the directory of the exe
-        var directory = Path.GetDirectoryName(path) ?? string.Empty;
+        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
+        Directory.CreateDirectory(directory);
 
         // now, the state is just next to the exe
         return Path.Combine(directory, "state.json");

@@ -3,3 +3,6 @@ GetCurrentThread
 OpenThreadToken
 GetPackageFamilyNameFromToken
 CoRevertToSelf
+SHGetKnownFolderPath
+KNOWN_FOLDER_FLAG
+GetCurrentPackageId

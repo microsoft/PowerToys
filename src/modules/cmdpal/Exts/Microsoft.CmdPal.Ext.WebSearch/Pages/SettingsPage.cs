@@ -24,7 +24,7 @@ internal sealed partial class SettingsPage : FormPage
     {
         Name = Resources.settings_page_name;
         Icon = new("\uE713"); // Settings icon
-        _settings = settingsManager.GetSettings();
+        _settings = settingsManager.Settings;
         _settingsManager = settingsManager;
 
         _settings.SettingsChanged += SettingsChanged;

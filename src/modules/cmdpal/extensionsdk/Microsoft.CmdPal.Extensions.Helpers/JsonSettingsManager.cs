@@ -22,12 +22,7 @@ public abstract class JsonSettingsManager
         Converters = { new JsonStringEnumConverter() },
     };
 
-    public Settings GetSettings()
-    {
-        return _settings;
-    }
-
-    public void LoadSettings()
+    public virtual void LoadSettings()
     {
         if (string.IsNullOrEmpty(FilePath))
         {
@@ -62,7 +57,7 @@ public abstract class JsonSettingsManager
         }
     }
 
-    public void SaveSettings()
+    public virtual void SaveSettings()
     {
         if (string.IsNullOrEmpty(FilePath))
         {

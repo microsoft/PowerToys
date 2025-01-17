@@ -8,20 +8,21 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using Microsoft.CmdPal.Ext.WebSearch.Commands;
 using Microsoft.CmdPal.Ext.WebSearch.Properties;
 using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.WebSearch.Helpers;
 
-public class SettingsManager
+public class SettingsManager : JsonSettingsManager
 {
-    private readonly string _filePath;
     private readonly string _historyPath;
-    private readonly Microsoft.CmdPal.Extensions.Helpers.Settings _settings = new();
 
-    private readonly List<ChoiceSetSetting.Choice> _choices = new()
+    private static readonly string _namespace = "websearch";
+
+    private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
+
+    private static readonly List<ChoiceSetSetting.Choice> _choices = new()
     {
         new ChoiceSetSetting.Choice(Resources.history_none, Resources.history_none),
         new ChoiceSetSetting.Choice(Resources.history_1, Resources.history_1),
@@ -30,8 +31,17 @@ public class SettingsManager
         new ChoiceSetSetting.Choice(Resources.history_20, Resources.history_20),
     };
 
-    private readonly ToggleSetting _globalIfURI = new(nameof(GlobalIfURI), Resources.plugin_global_if_uri, Resources.plugin_global_if_uri, false);
-    private readonly ChoiceSetSetting _showHistory;
+    private readonly ToggleSetting _globalIfURI = new(
+        Namespaced(nameof(GlobalIfURI)),
+        Resources.plugin_global_if_uri,
+        Resources.plugin_global_if_uri,
+        false);
+
+    private readonly ChoiceSetSetting _showHistory = new(
+        Namespaced(nameof(ShowHistory)),
+        Resources.plugin_show_history,
+        Resources.plugin_show_history,
+        _choices);
 
     public bool GlobalIfURI => _globalIfURI.Value;
 
@@ -39,23 +49,17 @@ public class SettingsManager
 
     internal static string SettingsJsonPath()
     {
-        // Get the path to our exe
-        var path = System.Reflection.Assembly.GetExecutingAssembly().Location;
-
-        // Get the directory of the exe
-        var directory = Path.GetDirectoryName(path) ?? string.Empty;
+        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
+        Directory.CreateDirectory(directory);
 
         // now, the state is just next to the exe
-        return Path.Combine(directory, "websearch_state.json");
+        return Path.Combine(directory, "settings.json");
     }
 
     internal static string HistoryStateJsonPath()
     {
-        // Get the path to our exe
-        var path = System.Reflection.Assembly.GetExecutingAssembly().Location;
-
-        // Get the directory of the exe
-        var directory = Path.GetDirectoryName(path) ?? string.Empty;
+        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
+        Directory.CreateDirectory(directory);
 
         // now, the state is just next to the exe
         return Path.Combine(directory, "websearch_history.json");
@@ -142,12 +146,11 @@ public class SettingsManager
 
     public SettingsManager()
     {
-        _filePath = SettingsJsonPath();
+        FilePath = SettingsJsonPath();
         _historyPath = HistoryStateJsonPath();
-        _showHistory = new(nameof(ShowHistory), Resources.plugin_show_history, Resources.plugin_show_history, _choices);
 
-        _settings.Add(_globalIfURI);
-        _settings.Add(_showHistory);
+        Settings.Add(_globalIfURI);
+        Settings.Add(_showHistory);
 
         // Load settings from file upon initialization
         LoadSettings();
@@ -178,17 +181,11 @@ public class SettingsManager
         }
     }
 
-    public Microsoft.CmdPal.Extensions.Helpers.Settings GetSettings() => _settings;
-
-    public void SaveSettings()
+    public override void SaveSettings()
     {
+        base.SaveSettings();
         try
         {
-            // Serialize the main dictionary to JSON and save it to the file
-            var settingsJson = _settings.ToJson();
-
-            File.WriteAllText(_filePath, settingsJson);
-
             if (ShowHistory == Resources.history_none)
             {
                 ClearHistory();
@@ -212,35 +209,6 @@ public class SettingsManager
                         File.WriteAllText(_historyPath, trimmedHistoryJson);
                     }
                 }
-            }
-        }
-        catch (Exception ex)
-        {
-            ExtensionHost.LogMessage(new LogMessage() { Message = ex.ToString() });
-        }
-    }
-
-    public void LoadSettings()
-    {
-        if (!File.Exists(_filePath))
-        {
-            ExtensionHost.LogMessage(new LogMessage() { Message = "The provided settings file does not exist" });
-            return;
-        }
-
-        try
-        {
-            // Read the JSON content from the file
-            var jsonContent = File.ReadAllText(_filePath);
-
-            // Is it valid JSON?
-            if (JsonNode.Parse(jsonContent) is JsonObject savedSettings)
-            {
-                _settings.Update(jsonContent);
-            }
-            else
-            {
-                ExtensionHost.LogMessage(new LogMessage() { Message = "Failed to parse settings file as JsonObject." });
             }
         }
         catch (Exception ex)

@@ -25,7 +25,7 @@ internal sealed partial class SettingsPage : FormPage
         Name = Resources.windowwalker_settings_name;
         Icon = new("\uE713"); // Settings icon
         _settingsManager = SettingsManager.Instance;
-        _settings = _settingsManager.GetSettings();
+        _settings = _settingsManager.Settings;
 
         _settings.SettingsChanged += SettingsChanged;
     }

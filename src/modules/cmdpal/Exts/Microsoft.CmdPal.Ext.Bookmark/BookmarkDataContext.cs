@@ -8,7 +8,6 @@ namespace Microsoft.CmdPal.Ext.Bookmarks;
 
 [JsonSerializable(typeof(BookmarkData))]
 [JsonSerializable(typeof(string))]
-[JsonSerializable(typeof(string))]
 internal sealed partial class BookmarkDataContext : JsonSerializerContext
 {
 }
