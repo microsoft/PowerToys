@@ -129,7 +129,7 @@ internal static class Receiver
                     bool nonElevated = Common.RunWithNoAdminRight && false;
                     if (nonElevated && Setting.Values.OneWayControlMode && package.Md.dwFlags != Common.WM_MOUSEMOVE)
                     {
-                        if (!Common.IsDropping)
+                        if (!DragDrop.IsDropping)
                         {
                             if (package.Md.dwFlags is Common.WM_LBUTTONDOWN or Common.WM_RBUTTONDOWN)
                             {
@@ -138,7 +138,7 @@ internal static class Receiver
                         }
                         else if (package.Md.dwFlags is Common.WM_LBUTTONUP or Common.WM_RBUTTONUP)
                         {
-                            Common.IsDropping = false;
+                            DragDrop.IsDropping = false;
                         }
 
                         return;
@@ -188,8 +188,8 @@ internal static class Receiver
                     CustomCursor.ShowFakeMouseCursor(Common.LastX, Common.LastY);
                 }
 
-                Common.DragDropStep01(package.Md.dwFlags);
-                Common.DragDropStep09(package.Md.dwFlags);
+                DragDrop.DragDropStep01(package.Md.dwFlags);
+                DragDrop.DragDropStep09(package.Md.dwFlags);
                 break;
 
             case PackageType.NextMachine:
@@ -204,7 +204,7 @@ internal static class Receiver
 
             case PackageType.ExplorerDragDrop:
                 Common.PackageReceived.ExplorerDragDrop++;
-                Common.DragDropStep03(package);
+                DragDrop.DragDropStep03(package);
                 break;
 
             case PackageType.Heartbeat:
@@ -345,17 +345,17 @@ internal static class Receiver
 
             case PackageType.ClipboardDragDrop:
                 Common.PackageReceived.ClipboardDragDrop++;
-                Common.DragDropStep08(package);
+                DragDrop.DragDropStep08(package);
                 break;
 
             case PackageType.ClipboardDragDropOperation:
                 Common.PackageReceived.ClipboardDragDrop++;
-                Common.DragDropStep08_2(package);
+                DragDrop.DragDropStep08_2(package);
                 break;
 
             case PackageType.ClipboardDragDropEnd:
                 Common.PackageReceived.ClipboardDragDropEnd++;
-                Common.DragDropStep12();
+                DragDrop.DragDropStep12();
                 break;
 
             case PackageType.ClipboardText:

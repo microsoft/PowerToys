@@ -606,7 +606,7 @@ namespace MouseWithoutBorders
 
         private void FrmScreen_MouseMove(object sender, MouseEventArgs e)
         {
-            if (!Common.IsDropping)
+            if (!Core.DragDrop.IsDropping)
             {
                 if (Cursor != dotCur)
                 {
@@ -819,7 +819,7 @@ namespace MouseWithoutBorders
 
                 case NativeMethods.WM_CHECK_EXPLORER_DRAG_DROP:
                     Logger.LogDebug("Got WM_CHECK_EXPLORER_DRAG_DROP!");
-                    Common.DragDropStep04();
+                    Core.DragDrop.DragDropStep04();
                     break;
 
                 case NativeMethods.WM_QUIT:

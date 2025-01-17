@@ -59,8 +59,8 @@ internal static class DragDrop
 
     internal static bool IsDragging
     {
-        get => Common.isDragging;
-        set => Common.isDragging = value;
+        get => DragDrop.isDragging;
+        set => DragDrop.isDragging = value;
     }
 
     internal static void DragDropStep01(int wParam)
@@ -70,34 +70,34 @@ internal static class DragDrop
             return;
         }
 
-        if (wParam == WM_LBUTTONDOWN)
+        if (wParam == Common.WM_LBUTTONDOWN)
         {
             MouseDown = true;
             DragMachine = MachineStuff.desMachineID;
             MachineStuff.dropMachineID = ID.NONE;
             Logger.LogDebug("DragDropStep01: MouseDown");
         }
-        else if (wParam == WM_LBUTTONUP)
+        else if (wParam == Common.WM_LBUTTONUP)
         {
             MouseDown = false;
             Logger.LogDebug("DragDropStep01: MouseUp");
         }
 
-        if (wParam == WM_RBUTTONUP && IsDropping)
+        if (wParam == Common.WM_RBUTTONUP && IsDropping)
         {
             IsDropping = false;
-            LastIDWithClipboardData = ID.NONE;
+            Common.LastIDWithClipboardData = ID.NONE;
         }
     }
 
     internal static void DragDropStep02()
     {
-        if (MachineStuff.desMachineID == MachineID)
+        if (MachineStuff.desMachineID == Common.MachineID)
         {
             Logger.LogDebug("DragDropStep02: SendCheckExplorerDragDrop sent to myself");
-            DoSomethingInUIThread(() =>
+            Common.DoSomethingInUIThread(() =>
             {
-                _ = NativeMethods.PostMessage(MainForm.Handle, NativeMethods.WM_CHECK_EXPLORER_DRAG_DROP, (IntPtr)0, (IntPtr)0);
+                _ = NativeMethods.PostMessage(Common.MainForm.Handle, NativeMethods.WM_CHECK_EXPLORER_DRAG_DROP, (IntPtr)0, (IntPtr)0);
             });
         }
         else
@@ -109,21 +109,21 @@ internal static class DragDrop
 
     internal static void DragDropStep03(DATA package)
     {
-        if (RunOnLogonDesktop || RunOnScrSaverDesktop)
+        if (Common.RunOnLogonDesktop || Common.RunOnScrSaverDesktop)
         {
             return;
         }
 
-        if (package.Des == MachineID || package.Des == ID.ALL)
+        if (package.Des == Common.MachineID || package.Des == ID.ALL)
         {
             Logger.LogDebug("DragDropStep03: ExplorerDragDrop Received.");
             MachineStuff.dropMachineID = package.Src; // Drop machine is the machine that sent ExplorerDragDrop
             if (MouseDown || IsDropping)
             {
                 Logger.LogDebug("DragDropStep03: Mouse is down, check if dragging...sending WM_CHECK_EXPLORER_DRAG_DROP to myself...");
-                DoSomethingInUIThread(() =>
+                Common.DoSomethingInUIThread(() =>
                 {
-                    _ = NativeMethods.PostMessage(MainForm.Handle, NativeMethods.WM_CHECK_EXPLORER_DRAG_DROP, (IntPtr)0, (IntPtr)0);
+                    _ = NativeMethods.PostMessage(Common.MainForm.Handle, NativeMethods.WM_CHECK_EXPLORER_DRAG_DROP, (IntPtr)0, (IntPtr)0);
                 });
             }
         }
@@ -140,8 +140,8 @@ internal static class DragDrop
             {
                 _ = Interlocked.Exchange(ref dragDropStep05ExCalledByIpc, 0);
 
-                MainForm.Hide();
-                MainFormVisible = false;
+                Common.MainForm.Hide();
+                Common.MainFormVisible = false;
 
                 Point p = default;
 
@@ -185,7 +185,7 @@ internal static class DragDrop
 
         _ = Interlocked.Exchange(ref dragDropStep05ExCalledByIpc, 1);
 
-        if (RunOnLogonDesktop || RunOnScrSaverDesktop)
+        if (Common.RunOnLogonDesktop || Common.RunOnScrSaverDesktop)
         {
             return;
         }
@@ -207,12 +207,12 @@ internal static class DragDrop
 
                     DragDropStep06();
                     Logger.LogDebug("DragDropStep05: File dragging: " + dragFileName);
-                    _ = NativeMethods.PostMessage(MainForm.Handle, NativeMethods.WM_HIDE_DD_HELPER, (IntPtr)1, (IntPtr)0);
+                    _ = NativeMethods.PostMessage(Common.MainForm.Handle, NativeMethods.WM_HIDE_DD_HELPER, (IntPtr)1, (IntPtr)0);
                 }
                 else
                 {
                     Logger.LogDebug("DragDropStep05: File not found: [" + dragFileName + "]");
-                    _ = NativeMethods.PostMessage(MainForm.Handle, NativeMethods.WM_HIDE_DD_HELPER, (IntPtr)0, (IntPtr)0);
+                    _ = NativeMethods.PostMessage(Common.MainForm.Handle, NativeMethods.WM_HIDE_DD_HELPER, (IntPtr)0, (IntPtr)0);
                 }
 
                 Logger.LogDebug("DragDropStep05: WM_HIDE_DDHelper sent");
@@ -222,7 +222,7 @@ internal static class DragDrop
         {
             Logger.LogDebug("DragDropStep05: IsDropping == true, change drop machine...");
             IsDropping = false;
-            MainFormVisible = true; // WM_HIDE_DRAG_DROP
+            Common.MainFormVisible = true; // WM_HIDE_DRAG_DROP
             SendDropBegin(); // To dropMachineID set in DragDropStep03
         }
 
@@ -245,25 +245,25 @@ internal static class DragDrop
 
     internal static void DragDropStep08_2(DATA package)
     {
-        if (package.Des == MachineID && !RunOnLogonDesktop && !RunOnScrSaverDesktop)
+        if (package.Des == Common.MachineID && !Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
         {
             IsDropping = true;
-            MachineStuff.dropMachineID = MachineID;
+            MachineStuff.dropMachineID = Common.MachineID;
             Logger.LogDebug("DragDropStep08_2: ClipboardDragDropOperation Received. IsDropping set");
         }
     }
 
     internal static void DragDropStep09(int wParam)
     {
-        if (wParam == WM_MOUSEMOVE && IsDropping)
+        if (wParam == Common.WM_MOUSEMOVE && IsDropping)
         {
             // Show/Move form
-            DoSomethingInUIThread(() =>
+            Common.DoSomethingInUIThread(() =>
             {
-                _ = NativeMethods.PostMessage(MainForm.Handle, NativeMethods.WM_SHOW_DRAG_DROP, (IntPtr)0, (IntPtr)0);
+                _ = NativeMethods.PostMessage(Common.MainForm.Handle, NativeMethods.WM_SHOW_DRAG_DROP, (IntPtr)0, (IntPtr)0);
             });
         }
-        else if (wParam == WM_LBUTTONUP && (IsDropping || IsDragging))
+        else if (wParam == Common.WM_LBUTTONUP && (IsDropping || IsDragging))
         {
             if (IsDropping)
             {
@@ -273,7 +273,7 @@ internal static class DragDrop
             else
             {
                 IsDragging = false;
-                LastIDWithClipboardData = ID.NONE;
+                Common.LastIDWithClipboardData = ID.NONE;
             }
         }
     }
@@ -283,15 +283,15 @@ internal static class DragDrop
         Logger.LogDebug("DragDropStep10: Hide the form and get data...");
         IsDropping = false;
         IsDragging = false;
-        LastIDWithClipboardData = ID.NONE;
+        Common.LastIDWithClipboardData = ID.NONE;
 
-        DoSomethingInUIThread(() =>
+        Common.DoSomethingInUIThread(() =>
         {
-            _ = NativeMethods.PostMessage(MainForm.Handle, NativeMethods.WM_HIDE_DRAG_DROP, (IntPtr)0, (IntPtr)0);
+            _ = NativeMethods.PostMessage(Common.MainForm.Handle, NativeMethods.WM_HIDE_DRAG_DROP, (IntPtr)0, (IntPtr)0);
         });
 
         PowerToysTelemetry.Log.WriteEvent(new MouseWithoutBorders.Telemetry.MouseWithoutBordersDragAndDropEvent());
-        GetRemoteClipboard("desktop");
+        Common.GetRemoteClipboard("desktop");
     }
 
     internal static void DragDropStep11()
@@ -301,8 +301,8 @@ internal static class DragDrop
         IsDropping = false;
         IsDragging = false;
         DragMachine = (ID)1;
-        LastIDWithClipboardData = ID.NONE;
-        LastDragDropFile = null;
+        Common.LastIDWithClipboardData = ID.NONE;
+        Common.LastDragDropFile = null;
         MouseDown = false;
     }
 
@@ -310,11 +310,11 @@ internal static class DragDrop
     {
         Logger.LogDebug("DragDropStep12: ClipboardDragDropEnd received");
         IsDropping = false;
-        LastIDWithClipboardData = ID.NONE;
+        Common.LastIDWithClipboardData = ID.NONE;
 
-        DoSomethingInUIThread(() =>
+        Common.DoSomethingInUIThread(() =>
         {
-            _ = NativeMethods.PostMessage(MainForm.Handle, NativeMethods.WM_HIDE_DRAG_DROP, (IntPtr)0, (IntPtr)0);
+            _ = NativeMethods.PostMessage(Common.MainForm.Handle, NativeMethods.WM_HIDE_DRAG_DROP, (IntPtr)0, (IntPtr)0);
         });
     }
 
@@ -332,18 +332,18 @@ internal static class DragDrop
         package.Src = MachineStuff.newDesMachineID;
 
         package.Des = MachineStuff.desMachineID;
-        package.MachineName = MachineName;
+        package.MachineName = Common.MachineName;
 
-        SkSend(package, null, false);
+        Common.SkSend(package, null, false);
     }
 
-    private static void ChangeDropMachine()
+    internal static void ChangeDropMachine()
     {
         // desMachineID = current drop machine
         // newDesMachineID = new drop machine
 
         // 1. Cancelling dropping in current drop machine
-        if (MachineStuff.dropMachineID == MachineID)
+        if (MachineStuff.dropMachineID == Common.MachineID)
         {
             // Drag/Drop coming through me
             IsDropping = false;
@@ -356,7 +356,7 @@ internal static class DragDrop
 
         // 2. SendClipboardBeatDragDrop to new drop machine
         // new drop machine is not me
-        if (MachineStuff.newDesMachineID != MachineID)
+        if (MachineStuff.newDesMachineID != Common.MachineID)
         {
             MachineStuff.dropMachineID = MachineStuff.newDesMachineID;
             SendDropBegin();
@@ -371,20 +371,20 @@ internal static class DragDrop
 
     internal static void SendClipboardBeatDragDrop()
     {
-        SendPackage(ID.ALL, PackageType.ClipboardDragDrop);
+        Common.SendPackage(ID.ALL, PackageType.ClipboardDragDrop);
     }
 
     internal static void SendDropBegin()
     {
         Logger.LogDebug("SendDropBegin...");
-        SendPackage(MachineStuff.dropMachineID, PackageType.ClipboardDragDropOperation);
+        Common.SendPackage(MachineStuff.dropMachineID, PackageType.ClipboardDragDropOperation);
     }
 
     internal static void SendClipboardBeatDragDropEnd()
     {
-        if (MachineStuff.desMachineID != MachineID)
+        if (MachineStuff.desMachineID != Common.MachineID)
         {
-            SendPackage(MachineStuff.desMachineID, PackageType.ClipboardDragDropEnd);
+            Common.SendPackage(MachineStuff.desMachineID, PackageType.ClipboardDragDropEnd);
         }
     }
 
@@ -393,14 +393,14 @@ internal static class DragDrop
 
     internal static ID DragMachine
     {
-        get => Common.dragMachine;
-        set => Common.dragMachine = value;
+        get => DragDrop.dragMachine;
+        set => DragDrop.dragMachine = value;
     }
 
     internal static bool IsDropping
     {
-        get => Common.isDropping;
-        set => Common.isDropping = value;
+        get => DragDrop.isDropping;
+        set => DragDrop.isDropping = value;
     }
 
     internal static bool MouseDown { get; set; }

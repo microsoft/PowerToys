@@ -1611,9 +1611,9 @@ namespace MouseWithoutBorders.Class
             {
                 string remoteEndPoint = s.RemoteEndPoint.ToString();
                 Logger.LogDebug("SendClipboardData: Request accepted: " + s.LocalEndPoint.ToString() + "/" + remoteEndPoint);
-                Common.IsDropping = false;
-                Common.IsDragging = false;
-                Common.DragMachine = (ID)1;
+                DragDrop.IsDropping = false;
+                DragDrop.IsDragging = false;
+                DragDrop.DragMachine = (ID)1;
 
                 bool clientPushData = true;
                 ClipboardPostAction postAction = ClipboardPostAction.Other;

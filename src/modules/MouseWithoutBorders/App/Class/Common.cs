@@ -665,7 +665,7 @@ namespace MouseWithoutBorders
         {
             Common.DoSomethingInUIThread(() =>
             {
-                if (!MouseDown && Common.SendMessageToHelper(0x401, IntPtr.Zero, IntPtr.Zero) > 0)
+                if (!DragDrop.MouseDown && Common.SendMessageToHelper(0x401, IntPtr.Zero, IntPtr.Zero) > 0)
                 {
                     Common.MMSleep(0.2);
                     InputSimulation.SendKey(new KEYBDDATA() { wVk = (int)VK.SNAPSHOT });

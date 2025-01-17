@@ -221,7 +221,7 @@ namespace MouseWithoutBorders.Class
                 rv = SendInputEx(mouse_input);
             });
 
-            if (Common.MainFormVisible && !Common.IsDropping)
+            if (Common.MainFormVisible && !DragDrop.IsDropping)
             {
                 Common.MainFormDot();
             }

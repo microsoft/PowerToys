@@ -181,23 +181,23 @@ namespace MouseWithoutBorders
                 _ = EvSwitch.Set();
 
                 // PostMessage(mainForm.Handle, WM_SWITCH, IntPtr.Zero, IntPtr.Zero);
-                if (newDesMachineID != DragMachine)
+                if (newDesMachineID != DragDrop.DragMachine)
                 {
-                    if (!IsDragging && !IsDropping)
+                    if (!DragDrop.IsDragging && !DragDrop.IsDropping)
                     {
-                        if (MouseDown && !RunOnLogonDesktop && !RunOnScrSaverDesktop)
+                        if (DragDrop.MouseDown && !RunOnLogonDesktop && !RunOnScrSaverDesktop)
                         {
-                            DragDropStep02();
+                            DragDrop.DragDropStep02();
                         }
                     }
-                    else if (DragMachine != (ID)1)
+                    else if (DragDrop.DragMachine != (ID)1)
                     {
-                        ChangeDropMachine();
+                        DragDrop.ChangeDropMachine();
                     }
                 }
                 else
                 {
-                    DragDropStep11();
+                    DragDrop.DragDropStep11();
                 }
 
                 // Change des machine
