@@ -214,6 +214,15 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Search open windows....
+        /// </summary>
+        public static string windowwalker_PlaceholderText {
+            get {
+                return ResourceManager.GetString("windowwalker_PlaceholderText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Switches between open windows.
         /// </summary>
         public static string windowwalker_plugin_description {

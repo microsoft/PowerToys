@@ -15,7 +15,7 @@
         VerticalAlignment="Stretch"
         VerticalContentAlignment="Stretch"
         KeyDown="FilterBox_KeyDown"
-        PlaceholderText="Type here to search..."
+        PlaceholderText="{x:Bind CurrentPageViewModel.PlaceholderText, Mode=OneWay}"
         PreviewKeyDown="FilterBox_PreviewKeyDown"
         PreviewKeyUp="FilterBox_PreviewKeyUp"
         Style="{StaticResource SearchTextBoxStyle}"

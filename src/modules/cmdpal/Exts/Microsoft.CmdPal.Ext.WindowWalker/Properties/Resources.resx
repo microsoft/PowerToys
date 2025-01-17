@@ -229,4 +229,7 @@
   <data name="windowwalker_pid" xml:space="preserve">
     <value>pid</value>
   </data>
+  <data name="windowwalker_PlaceholderText" xml:space="preserve">
+    <value>Search open windows...</value>
+  </data>
 </root>

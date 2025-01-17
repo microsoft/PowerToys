@@ -43,14 +43,23 @@ public sealed partial class SearchBar : UserControl,
     private static void OnCurrentPageViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         //// TODO: If the Debounce timer hasn't fired, we may want to store the current Filter in the OldValue/prior VM, but we don't want that to go actually do work...
+        var @this = (SearchBar)d;
 
-        if (d is SearchBar @this
+        if (@this != null
+            && e.OldValue is PageViewModel old)
+        {
+            old.PropertyChanged -= @this.Page_PropertyChanged;
+        }
+
+        if (@this != null
             && e.NewValue is PageViewModel page)
         {
             // TODO: In some cases we probably want commands to clear a filter
             // somewhere in the process, so we need to figure out when that is.
             @this.FilterBox.Text = page.Filter;
             @this.FilterBox.Select(@this.FilterBox.Text.Length, 0);
+
+            page.PropertyChanged += @this.Page_PropertyChanged;
         }
     }
 
@@ -213,4 +222,19 @@ public sealed partial class SearchBar : UserControl,
     }
 
     public void Receive(GoHomeMessage message) => ClearSearch();
+
+    // Used to handle the case when a ListPage's `SearchText` may have changed
+    private void Page_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        var property = e.PropertyName;
+        var list = CurrentPageViewModel as ListViewModel;
+        if (list != null &&
+            property == nameof(ListViewModel.SearchText))
+        {
+            FilterBox.Text = list.SearchText;
+
+            // Move the cursor to the end of the input
+            FilterBox.Select(FilterBox.Text.Length, 0);
+        }
+    }
 }

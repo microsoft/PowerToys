@@ -35,7 +35,11 @@ public partial class ListViewModel : PageViewModel
     // cannot be marked [ObservableProperty]
     public bool ShowDetails { get; private set; }
 
-    public string PlaceholderText { get => string.IsNullOrEmpty(field) ? "Type here to search..." : field; private set; } = string.Empty;
+    public string ModelPlaceholderText { get => string.IsNullOrEmpty(field) ? "Type here to search..." : field; private set; } = string.Empty;
+
+    public override string PlaceholderText { get => ModelPlaceholderText; }
+
+    public string SearchText { get; private set; } = string.Empty;
 
     private bool _isDynamic;
 
@@ -241,8 +245,12 @@ public partial class ListViewModel : PageViewModel
 
         ShowDetails = listPage.ShowDetails;
         UpdateProperty(nameof(ShowDetails));
-        PlaceholderText = listPage.PlaceholderText;
+
+        ModelPlaceholderText = listPage.PlaceholderText;
         UpdateProperty(nameof(PlaceholderText));
+
+        SearchText = listPage.SearchText;
+        UpdateProperty(nameof(SearchText));
 
         FetchItems();
         listPage.ItemsChanged += Model_ItemsChanged;
@@ -264,7 +272,10 @@ public partial class ListViewModel : PageViewModel
                 this.ShowDetails = model.ShowDetails;
                 break;
             case nameof(PlaceholderText):
-                this.PlaceholderText = model.PlaceholderText;
+                this.ModelPlaceholderText = model.PlaceholderText;
+                break;
+            case nameof(SearchText):
+                this.SearchText = model.SearchText;
                 break;
         }
 
