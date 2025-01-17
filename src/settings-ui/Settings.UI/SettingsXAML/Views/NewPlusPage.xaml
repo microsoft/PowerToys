@@ -16,14 +16,6 @@
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
                 Orientation="Vertical"
                 Spacing="2">
-                <InfoBar
-                    x:Uid="NewPlus_NoWindows10SupportWarning"
-                    Margin="0,0,0,25"
-                    IsClosable="False"
-                    IsOpen="{x:Bind ViewModel.IsWin10OrLower, Mode=OneWay}"
-                    IsTabStop="{x:Bind ViewModel.IsWin10OrLower, Mode=OneWay}"
-                    Severity="Warning" />
-
                 <tkcontrols:SettingsCard
                     x:Uid="NewPlus_Enable_Toggle"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}"
