@@ -12,6 +12,7 @@ using System.Threading;
 using System.Windows.Forms;
 
 using Microsoft.PowerToys.Telemetry;
+using MouseWithoutBorders.Class;
 
 // <summary>
 //     Machine setup/switching implementation.
@@ -21,11 +22,9 @@ using Microsoft.PowerToys.Telemetry;
 //     2009-... modified by Truong Do (TruongDo).
 //     2023- Included in PowerToys.
 // </history>
-using MouseWithoutBorders.Class;
-
 namespace MouseWithoutBorders.Core;
 
-internal partial class MachineStuff
+internal static class MachineStuff
 {
     private static readonly Lock McMatrixLock = new();
 
