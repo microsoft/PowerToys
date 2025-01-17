@@ -226,7 +226,7 @@ internal static class DragDrop
         MouseDown = false;
     }
 
-    internal static void DragDropStep06()
+    private static void DragDropStep06()
     {
         IsDragging = true;
         Logger.LogDebug("DragDropStep06: SendClipboardBeatDragDrop");
@@ -275,7 +275,7 @@ internal static class DragDrop
         }
     }
 
-    internal static void DragDropStep10()
+    private static void DragDropStep10()
     {
         Logger.LogDebug("DragDropStep10: Hide the form and get data...");
         IsDropping = false;
@@ -315,7 +315,7 @@ internal static class DragDrop
         });
     }
 
-    internal static void SendCheckExplorerDragDrop()
+    private static void SendCheckExplorerDragDrop()
     {
         DATA package = new();
         package.Type = PackageType.ExplorerDragDrop;
@@ -366,18 +366,18 @@ internal static class DragDrop
         }
     }
 
-    internal static void SendClipboardBeatDragDrop()
+    private static void SendClipboardBeatDragDrop()
     {
         Common.SendPackage(ID.ALL, PackageType.ClipboardDragDrop);
     }
 
-    internal static void SendDropBegin()
+    private static void SendDropBegin()
     {
         Logger.LogDebug("SendDropBegin...");
         Common.SendPackage(MachineStuff.dropMachineID, PackageType.ClipboardDragDropOperation);
     }
 
-    internal static void SendClipboardBeatDragDropEnd()
+    private static void SendClipboardBeatDragDropEnd()
     {
         if (MachineStuff.desMachineID != Common.MachineID)
         {
