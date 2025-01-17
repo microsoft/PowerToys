@@ -66,7 +66,7 @@
                     <ptControls:ShortcutControl HotkeySettings="{x:Bind ViewModel.Hotkey, Mode=TwoWay}" />
 
                     <controls:SettingsExpander.Items>
-                        <controls:SettingsCard 
+                        <controls:SettingsCard
                             Description="If enabled, the Command Palette will return to the home page when activated"
                             Header="Go home when activated"
                             HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
@@ -74,7 +74,7 @@
                         </controls:SettingsCard>
                     </controls:SettingsExpander.Items>
                 </controls:SettingsExpander>
-                
+
                 <controls:SettingsCard
                     Description="Controls if app details are automatically expanded or not"
                     Header="Show app details"
