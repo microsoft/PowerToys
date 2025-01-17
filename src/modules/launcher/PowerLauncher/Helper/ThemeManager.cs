@@ -36,16 +36,7 @@ namespace PowerLauncher.Helper
         {
             if (e.Category == UserPreferenceCategory.General)
             {
-                // When switching from high contrast to dark mode we have to use UserPreferenceCategory.General otherwise it will crash when loading fluent.xaml
                 UpdateTheme();
-            }
-            else if (e.Category == UserPreferenceCategory.Color)
-            {
-                // https://github.com/dotnet/wpf/issues/10043 When switching to high contrast we have to use UserPreferenceCategory.Color or it will crash due to fluent.xaml being already loaded.
-                if (_currentTheme is ManagedCommon.Theme.Dark or ManagedCommon.Theme.Light)
-                {
-                    UpdateTheme();
-                }
             }
         }
 
@@ -53,20 +44,12 @@ namespace PowerLauncher.Helper
         {
             _mainWindow.Background = OSVersionHelper.IsWindows11() is false ? SystemColors.WindowBrush : null;
 
-            _mainWindow.Resources.MergedDictionaries.Clear();
-            _mainWindow.Resources.MergedDictionaries.Add(new ResourceDictionary
-            {
-                Source = new Uri("Styles/Styles.xaml", UriKind.Relative),
-            });
+            // Need to disable WPF0001 since setting Application.Current.ThemeMode is experimental
+            // https://learn.microsoft.com/en-us/dotnet/desktop/wpf/whats-new/net90#set-in-code
+#pragma warning disable WPF0001
+            Application.Current.ThemeMode = theme is ManagedCommon.Theme.Light ? ThemeMode.Light : ThemeMode.Dark;
             if (theme is ManagedCommon.Theme.Dark or ManagedCommon.Theme.Light)
             {
-                string themeString = theme == ManagedCommon.Theme.Light ? "pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.Light.xaml"
-                    : "pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.Dark.xaml";
-                ResourceDictionary fluentThemeDictionary = new()
-                {
-                    Source = new Uri(themeString, UriKind.Absolute),
-                };
-                _mainWindow.Resources.MergedDictionaries.Add(fluentThemeDictionary);
                 if (!OSVersionHelper.IsWindows11())
                 {
                     // Apply background only on Windows 10
@@ -79,10 +62,6 @@ namespace PowerLauncher.Helper
             }
             else
             {
-                _mainWindow.Resources.MergedDictionaries.Add(new ResourceDictionary
-                {
-                    Source = new Uri("Styles/FluentHC.xaml", UriKind.Relative),
-                });
                 string styleThemeString = theme switch
                 {
                     ManagedCommon.Theme.Light => "Themes/Light.xaml",
@@ -92,10 +71,15 @@ namespace PowerLauncher.Helper
                     ManagedCommon.Theme.HighContrastWhite => "Themes/HighContrastWhite.xaml",
                     _ => "Themes/HighContrastBlack.xaml",
                 };
+                _mainWindow.Resources.MergedDictionaries.Clear();
                 _mainWindow.Resources.MergedDictionaries.Add(new ResourceDictionary
                 {
                     Source = new Uri(styleThemeString, UriKind.Relative),
                 });
+                ResourceDictionary test = new ResourceDictionary
+                {
+                    Source = new Uri(styleThemeString, UriKind.Relative),
+                };
                 if (OSVersionHelper.IsWindows11())
                 {
                     // Apply background only on Windows 11 to keep the same style as WPFUI
