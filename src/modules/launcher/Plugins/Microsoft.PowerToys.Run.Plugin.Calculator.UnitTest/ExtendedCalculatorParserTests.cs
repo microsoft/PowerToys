@@ -279,5 +279,67 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.IsNotNull(result);
             Assert.AreEqual(expectedResult, result.Result);
         }
+
+        [DataTestMethod]
+        [DataRow("sin(90)", "sin((pi / 180) * (90))")]
+        [DataRow("arcsin(0.5)", "(180 / pi) * (arcsin(0.5))")]
+        [DataRow("sin(sin(30))", "sin((pi / 180) * (sin((pi / 180) * (30))))")]
+        [DataRow("cos(tan(45))", "cos((pi / 180) * (tan((pi / 180) * (45))))")]
+        [DataRow("arctan(sin(30))", "(180 / pi) * (arctan(sin((pi / 180) * (30))))")]
+        [DataRow("sin(cos(tan(30)))", "sin((pi / 180) * (cos((pi / 180) * (tan((pi / 180) * (30))))))")]
+        [DataRow("sin(arcsin(0.5))", "sin((pi / 180) * ((180 / pi) * (arcsin(0.5))))")]
+        [DataRow("sin(30) + cos(60)", "sin((pi / 180) * (30)) + cos((pi / 180) * (60))")]
+        [DataRow("sin(30 + 15)", "sin((pi / 180) * (30 + 15))")]
+        [DataRow("sin(45) * cos(45) - tan(30)", "sin((pi / 180) * (45)) * cos((pi / 180) * (45)) - tan((pi / 180) * (30))")]
+        [DataRow("arcsin(arccos(0.5))", "(180 / pi) * (arcsin((180 / pi) * (arccos(0.5))))")]
+        [DataRow("sin(sin(sin(30)))", "sin((pi / 180) * (sin((pi / 180) * (sin((pi / 180) * (30))))))")]
+        [DataRow("log(10)", "log(10)")]
+        [DataRow("sin(30) + pi", "sin((pi / 180) * (30)) + pi")]
+        [DataRow("sin(-30)", "sin((pi / 180) * (-30))")]
+        [DataRow("sin((30))", "sin((pi / 180) * ((30)))")]
+        [DataRow("arcsin(1) * 2", "(180 / pi) * (arcsin(1)) * 2")]
+        [DataRow("cos(1/2)", "cos((pi / 180) * (1/2))")]
+        [DataRow("sin ( 90 )", "sin ((pi / 180) * ( 90 ))")]
+        [DataRow("cos(arcsin(sin(45)))", "cos((pi / 180) * ((180 / pi) * (arcsin(sin((pi / 180) * (45))))))")]
+        public void UpdateTrigFunctions_Degrees(string input, string expectedResult)
+        {
+            // Call UpdateTrigFunctions in degrees mode
+            string result = CalculateHelper.UpdateTrigFunctions(input, CalculateEngine.TrigMode.Degrees);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(expectedResult, result);
+        }
+
+        [DataTestMethod]
+        [DataRow("sin(90)", "sin((pi / 200) * (90))")]
+        [DataRow("arcsin(0.5)", "(200 / pi) * (arcsin(0.5))")]
+        [DataRow("sin(sin(30))", "sin((pi / 200) * (sin((pi / 200) * (30))))")]
+        [DataRow("cos(tan(45))", "cos((pi / 200) * (tan((pi / 200) * (45))))")]
+        [DataRow("arctan(sin(30))", "(200 / pi) * (arctan(sin((pi / 200) * (30))))")]
+        [DataRow("sin(cos(tan(30)))", "sin((pi / 200) * (cos((pi / 200) * (tan((pi / 200) * (30))))))")]
+        [DataRow("sin(arcsin(0.5))", "sin((pi / 200) * ((200 / pi) * (arcsin(0.5))))")]
+        [DataRow("sin(30) + cos(60)", "sin((pi / 200) * (30)) + cos((pi / 200) * (60))")]
+        [DataRow("sin(30 + 15)", "sin((pi / 200) * (30 + 15))")]
+        [DataRow("sin(45) * cos(45) - tan(30)", "sin((pi / 200) * (45)) * cos((pi / 200) * (45)) - tan((pi / 200) * (30))")]
+        [DataRow("arcsin(arccos(0.5))", "(200 / pi) * (arcsin((200 / pi) * (arccos(0.5))))")]
+        [DataRow("sin(sin(sin(30)))", "sin((pi / 200) * (sin((pi / 200) * (sin((pi / 200) * (30))))))")]
+        [DataRow("log(10)", "log(10)")]
+        [DataRow("sin(30) + pi", "sin((pi / 200) * (30)) + pi")]
+        [DataRow("sin(-30)", "sin((pi / 200) * (-30))")]
+        [DataRow("sin((30))", "sin((pi / 200) * ((30)))")]
+        [DataRow("arcsin(1) * 2", "(200 / pi) * (arcsin(1)) * 2")]
+        [DataRow("cos(1/2)", "cos((pi / 200) * (1/2))")]
+        [DataRow("sin ( 90 )", "sin ((pi / 200) * ( 90 ))")]
+        [DataRow("cos(arcsin(sin(45)))", "cos((pi / 200) * ((200 / pi) * (arcsin(sin((pi / 200) * (45))))))")]
+        public void UpdateTrigFunctions_Gradians(string input, string expectedResult)
+        {
+            // Call UpdateTrigFunctions in gradians mode
+            string result = CalculateHelper.UpdateTrigFunctions(input, CalculateEngine.TrigMode.Gradians);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(expectedResult, result);
+        }
     }
 }

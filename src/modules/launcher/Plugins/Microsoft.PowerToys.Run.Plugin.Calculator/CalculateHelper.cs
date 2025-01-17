@@ -25,6 +25,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             @")+$",
             RegexOptions.Compiled);
 
+        private const string DegToRad = "(pi / 180) * ";
+        private const string GradToRad = "(pi / 200) * ";
+        private const string RadToDeg = "(180 / pi) * ";
+        private const string RadToGrad = "(200 / pi) * ";
+
         public static bool InputValid(string input)
         {
             if (string.IsNullOrWhiteSpace(input))
@@ -203,6 +208,87 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             while (output != input);
 
             return output;
+        }
+
+        // Gets the index of the closing bracket of a function
+        private static int FindClosingBracketIndex(string input, int start)
+        {
+            int bracketCount = 0;    // Set count to zero
+            for (int i = start; i < input.Length; i++)
+            {
+                if (input[i] == '(')
+                {
+                    bracketCount++;
+                }
+                else if (input[i] == ')')
+                {
+                    bracketCount--;
+                    if (bracketCount == 0)
+                    {
+                        return i;
+                    }
+                }
+            }
+
+            return -1;  // Unmatched brackets
+        }
+
+        private static string ModifyTrigFunction(string input, string function, string modification)
+        {
+            // Get the RegEx pattern to match, depending on whether the function is inverse or normal
+            string pattern = function.StartsWith("arc", StringComparison.Ordinal) ? string.Empty : @"(?<!c)";
+            pattern += $@"{function}\s*\(";
+
+            int index = 0;    // Index for match to ensure that the same match is not found twice
+
+            Regex regex = new Regex(pattern);
+            Match match;
+
+            while ((match = regex.Match(input, index)).Success)
+            {
+                index = match.Index + match.Groups[0].Length + modification.Length;    // Get the next index to look from for further matches
+
+                int endIndex = FindClosingBracketIndex(input, match.Index + match.Groups[0].Length - 1);    // Find the index of the closing bracket of the function
+
+                // If no valid bracket index was found, try the next match
+                if (endIndex == -1)
+                {
+                    continue;
+                }
+
+                string argument = input.Substring(match.Index + match.Groups[0].Length, endIndex - (match.Index + match.Groups[0].Length));  // Extract the argument between the brackets
+                string replaced = function.StartsWith("arc", StringComparison.Ordinal) ? $"{modification}({match.Groups[0].Value}{argument}))" : $"{match.Groups[0].Value}{modification}({argument}))";  // The string to substitute in, handles differing formats of inverse functions
+
+                input = input.Remove(match.Index, endIndex - match.Index + 1);    // Remove the match from the input
+                input = input.Insert(match.Index, replaced);    // Substitute with the new string
+            }
+
+            return input;
+        }
+
+        public static string UpdateTrigFunctions(string input, CalculateEngine.TrigMode mode)
+        {
+            string modifiedInput = input;
+            if (mode == CalculateEngine.TrigMode.Degrees)
+            {
+                modifiedInput = ModifyTrigFunction(modifiedInput, "sin", DegToRad);
+                modifiedInput = ModifyTrigFunction(modifiedInput, "cos", DegToRad);
+                modifiedInput = ModifyTrigFunction(modifiedInput, "tan", DegToRad);
+                modifiedInput = ModifyTrigFunction(modifiedInput, "arcsin", RadToDeg);
+                modifiedInput = ModifyTrigFunction(modifiedInput, "arccos", RadToDeg);
+                modifiedInput = ModifyTrigFunction(modifiedInput, "arctan", RadToDeg);
+            }
+            else if (mode == CalculateEngine.TrigMode.Gradians)
+            {
+                modifiedInput = ModifyTrigFunction(modifiedInput, "sin", GradToRad);
+                modifiedInput = ModifyTrigFunction(modifiedInput, "cos", GradToRad);
+                modifiedInput = ModifyTrigFunction(modifiedInput, "tan", GradToRad);
+                modifiedInput = ModifyTrigFunction(modifiedInput, "arcsin", RadToGrad);
+                modifiedInput = ModifyTrigFunction(modifiedInput, "arccos", RadToGrad);
+                modifiedInput = ModifyTrigFunction(modifiedInput, "arctan", RadToGrad);
+            }
+
+            return modifiedInput;
         }
     }
 }
