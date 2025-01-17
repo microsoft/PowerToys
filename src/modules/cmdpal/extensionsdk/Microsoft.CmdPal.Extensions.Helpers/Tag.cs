@@ -72,4 +72,13 @@ public class Tag : BaseObservable, ITag
             OnPropertyChanged(nameof(Command));
         }
     }
+
+    public Tag()
+    {
+    }
+
+    public Tag(string text)
+    {
+        _text = text;
+    }
 }
