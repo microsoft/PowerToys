@@ -249,6 +249,8 @@ public sealed partial class MainWindow : Window,
 
     public void Summon()
     {
+        WeakReferenceMessenger.Default.Send<HotkeySummonMessage>();
+
         PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOW);
         PInvoke.SetForegroundWindow(_hwnd);
         PInvoke.SetActiveWindow(_hwnd);

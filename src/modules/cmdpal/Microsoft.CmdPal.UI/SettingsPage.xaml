@@ -58,13 +58,23 @@
 
                 <TextBlock x:Uid="CmdPalSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
-                <controls:SettingsCard
+                <controls:SettingsExpander
                     Description="This key will open the Command Palette"
                     Header="Activation key"
-                    HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                    IsExpanded="True">
                     <ptControls:ShortcutControl HotkeySettings="{x:Bind ViewModel.Hotkey, Mode=TwoWay}" />
-                </controls:SettingsCard>
 
+                    <controls:SettingsExpander.Items>
+                        <controls:SettingsCard 
+                            Description="If enabled, the Command Palette will return to the home page when activated"
+                            Header="Go home when activated"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.HotkeyGoesHome, Mode=TwoWay}" />
+                        </controls:SettingsCard>
+                    </controls:SettingsExpander.Items>
+                </controls:SettingsExpander>
+                
                 <controls:SettingsCard
                     Description="Controls if app details are automatically expanded or not"
                     Header="Show app details"

@@ -33,6 +33,16 @@ public partial class SettingsViewModel : PageViewModel
         }
     }
 
+    public bool HotkeyGoesHome
+    {
+        get => _settings.HotkeyGoesHome;
+        set
+        {
+            _settings.HotkeyGoesHome = value;
+            Save();
+        }
+    }
+
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
 
     public SettingsViewModel(SettingsModel settings, IServiceProvider serviceProvider, TaskScheduler scheduler)

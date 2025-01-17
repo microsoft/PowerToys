@@ -4,6 +4,6 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
-public record ClearSearchMessage()
+public record HotkeySummonMessage()
 {
 }

@@ -26,6 +26,8 @@ public partial class SettingsModel : ObservableObject
 
     public bool ShowAppDetails { get; set; }
 
+    public bool HotkeyGoesHome { get; set; }
+
     public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = [];
 
     // END SETTINGS
