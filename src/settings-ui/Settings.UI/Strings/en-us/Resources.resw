@@ -2514,27 +2514,11 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="ImageResizer_EditButton_Accessibility_Name" xml:space="preserve">
     <value>Edit the {0} preset</value>
-    <comment>Expands to the AutomationProperties.Name value for the Edit button.</comment>
+    <comment>Expands to the AutomationProperties.Name value for the Edit button. Example: "Edit the Small preset".</comment>
   </data>
   <data name="ImageResizer_RemoveButton_Accessibility_Name" xml:space="preserve">
     <value>Remove the {0} preset</value>
-    <comment>Expands to the AutomationProperties.Name value for the Remove button.</comment>
-  </data>
-  <data name="ImageResizer_EditButton_Accessibility_Description" xml:space="preserve">
-    <value>Edits the {0} preset, which {1} {2} by {3} {4}</value>
-    <comment>Expands to the AutomationProperties.FullDescription value for the Edit button.</comment>
-  </data>
-  <data name="ImageResizer_EditButton_Accessibility_DescriptionPercent" xml:space="preserve">
-    <value>Edits the {0} preset, which {1} {2} percent</value>
-    <comment>Expands to the AutomationProperties.FullDescription value for the Edit button for non-stretch percent-based presets.</comment>
-  </data>
-  <data name="ImageResizer_RemoveButton_Accessibility_Description" xml:space="preserve">
-    <value>Removes the {0} preset, which {1} {2} by {3} {4}</value>
-    <comment>Expands to the AutomationProperties.FullDescription value for the Remove button.</comment>
-  </data>
-  <data name="ImageResizer_RemoveButton_Accessibility_DescriptionPercent" xml:space="preserve">
-    <value>Removes the {0} preset, which {1} {2} percent</value>
-    <comment>Expands to the AutomationProperties.FullDescription value for the Remove button for non-stretch percent-based presets.</comment>
+    <comment>Expands to the AutomationProperties.Name value for the Remove button. Example: "Remove the Large preset".</comment>
   </data>
   <data name="No" xml:space="preserve">
     <value>No</value>

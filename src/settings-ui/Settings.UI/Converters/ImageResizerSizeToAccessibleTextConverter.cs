@@ -14,21 +14,19 @@ namespace Microsoft.PowerToys.Settings.UI.Converters;
 /// <summary>
 /// Creates accessibility text for controls related to <see cref="ImageSize"/> properties.
 /// </summary>
-/// <example>"Edit the Small preset"</example>
-/// <example>"Edits the Large preset, which fits within 1920 by 1080 pixels"</example>"
+/// <example>(Name) "Edit the Small preset"</example>
+/// <example>(Description) "Large - fits within 1920 by 1080 pixels"</example>"
 public sealed partial class ImageResizerSizeToAccessibleTextConverter : IValueConverter
 {
+    private const char TimesGlyph = '\u00D7';   // Unicode "MULTIPLICATION SIGN"
+
     /// <summary>
     /// Maps the supplied accessibility identifier to the format string of the localized accessible text.
     /// </summary>
     private static readonly Dictionary<string, string> AccessibilityFormats = new()
     {
-        { "EditName", Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_EditButton_Accessibility_Name") },
-        { "RemoveName", Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_RemoveButton_Accessibility_Name") },
-        { "EditDescription", Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_EditButton_Accessibility_Description") },
-        { "RemoveDescription", Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_RemoveButton_Accessibility_Description") },
-        { "EditDescriptionPercent", Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_EditButton_Accessibility_DescriptionPercent") },
-        { "RemoveDescriptionPercent", Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_RemoveButton_Accessibility_DescriptionPercent") },
+        { "Edit", Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_EditButton_Accessibility_Name") },
+        { "Remove", Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_RemoveButton_Accessibility_Name") },
     };
 
     private readonly ImageResizerFitToStringConverter _fitConverter = new();
@@ -39,7 +37,7 @@ public sealed partial class ImageResizerSizeToAccessibleTextConverter : IValueCo
         return (value, parameter) switch
         {
             (string presetName, string nameId) => FormatNameText(presetName, nameId),
-            (ImageSize preset, string descriptionId) => FormatDescriptionText(preset, descriptionId),
+            (ImageSize preset, string _) => FormatDescriptionText(preset),
             _ => DependencyProperty.UnsetValue,
         };
     }
@@ -51,23 +49,19 @@ public sealed partial class ImageResizerSizeToAccessibleTextConverter : IValueCo
             DependencyProperty.UnsetValue;
     }
 
-    private object FormatDescriptionText(ImageSize preset, string descriptionId)
+    private object FormatDescriptionText(ImageSize preset)
     {
-        string lookupKey = preset.IsHeightUsed ? descriptionId : descriptionId + "Percent";
-
-        if (!AccessibilityFormats.TryGetValue(lookupKey, out string format))
+        if (preset == null)
         {
             return DependencyProperty.UnsetValue;
         }
 
-        string fitText = (_fitConverter.Convert(preset.Fit, typeof(string), null, null) as string).ToLower(CultureInfo.CurrentCulture);
+        string fitText = _fitConverter.Convert(preset.Fit, typeof(string), null, null) as string;
         string unitText = _unitConverter.Convert(preset.Unit, typeof(string), null, null) as string;
 
-        var parameters = preset.IsHeightUsed ?
-            new object[] { preset.Name, fitText, preset.Width, preset.Height, unitText } :
-            new object[] { preset.Name, fitText, preset.Width };
-
-        return string.Format(CultureInfo.CurrentCulture, format, parameters);
+        return preset.IsHeightUsed ?
+            $"{preset.Name} - {fitText} {preset.Width} {TimesGlyph} {preset.Height} {unitText}" :
+            $"{preset.Name} - {fitText} {preset.Width} {unitText}";
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)

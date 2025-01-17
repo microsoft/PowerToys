@@ -110,11 +110,11 @@
                                             AutomationProperties.Name="{x:Bind Name,
                                                 Mode=OneWay,
                                                 Converter={StaticResource ImageResizerSizeToAccessibleTextConverter},
-                                                ConverterParameter='EditName'}"
+                                                ConverterParameter='Edit'}"
                                             AutomationProperties.FullDescription="{x:Bind AccessibleTextHelper,
                                                 Mode=OneWay,
                                                 Converter={StaticResource ImageResizerSizeToAccessibleTextConverter},
-                                                ConverterParameter='EditDescription'}">
+                                                ConverterParameter='Edit'}">
                                             <ToolTipService.ToolTip>
                                                 <TextBlock x:Uid="EditTooltip" />
                                             </ToolTipService.ToolTip>
@@ -180,11 +180,11 @@
                                             AutomationProperties.Name="{x:Bind Name,
                                                 Mode=OneWay,
                                                 Converter={StaticResource ImageResizerSizeToAccessibleTextConverter},
-                                                ConverterParameter='RemoveName'}"
+                                                ConverterParameter='Remove'}"
                                             AutomationProperties.FullDescription="{x:Bind AccessibleTextHelper,
                                                 Mode=OneWay,
                                                 Converter={StaticResource ImageResizerSizeToAccessibleTextConverter},
-                                                ConverterParameter='RemoveDescription'}">
+                                                ConverterParameter='Remove'}">
                                             <ToolTipService.ToolTip>
                                                 <TextBlock x:Uid="RemoveTooltip" />
                                             </ToolTipService.ToolTip>

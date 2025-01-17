@@ -23,15 +23,15 @@ public partial class ImageResizerViewModel : Observable
     private static readonly string DefaultPresetNamePrefix =
         Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_DefaultSize_NewSizePrefix");
 
-    private static readonly Dictionary<int, string> EncoderGuids = new()
-    {
-        { 0, "1b7cfaf4-713f-473c-bbcd-6137425faeaf" },  // PNG Encoder
-        { 1, "0af1d87e-fcfe-4188-bdeb-a7906471cbe3" },  // Bitmap Encoder
-        { 2, "19e4a5aa-5662-4fc5-a0c0-1758028e1057" },  // JPEG Encoder
-        { 3, "163bcc30-e2e9-4f0b-961d-a3e9fdb788a3" },  // TIFF Encoder
-        { 4, "57a37caa-367a-4540-916b-f183c5093a4b" },  // TIFF Encoder
-        { 5, "1f8a5601-7d4d-4cbd-9c82-1bc8d4eeb9a5" },  // GIF Encoder
-    };
+    private static readonly List<string> EncoderGuids =
+    [
+        "1b7cfaf4-713f-473c-bbcd-6137425faeaf",  // PNG Encoder
+        "0af1d87e-fcfe-4188-bdeb-a7906471cbe3",  // Bitmap Encoder
+        "19e4a5aa-5662-4fc5-a0c0-1758028e1057",  // JPEG Encoder
+        "163bcc30-e2e9-4f0b-961d-a3e9fdb788a3",  // TIFF Encoder
+        "57a37caa-367a-4540-916b-f183c5093a4b",  // TIFF Encoder
+        "1f8a5601-7d4d-4cbd-9c82-1bc8d4eeb9a5",  // GIF Encoder
+    ];
 
     /// <summary>
     /// Used to skip saving settings to file during initialization.
@@ -296,6 +296,15 @@ public partial class ImageResizerViewModel : Observable
 
     public string EncoderGuid => GetEncoderGuid(_encoderGuidId);
 
+    public static string GetEncoderGuid(int index) =>
+        index < 0 || index >= EncoderGuids.Count ? throw new ArgumentOutOfRangeException(nameof(index)) : EncoderGuids[index];
+
+    public static int GetEncoderIndex(string encoderGuid)
+    {
+        int index = EncoderGuids.IndexOf(encoderGuid);
+        return index == -1 ? throw new ArgumentException("Encoder GUID not found.", nameof(encoderGuid)) : index;
+    }
+
     public void AddImageSize(string namePrefix = "")
     {
         if (string.IsNullOrEmpty(namePrefix))
@@ -323,14 +332,6 @@ public partial class ImageResizerViewModel : Observable
         Settings.Properties.ImageresizerSizes = new ImageResizerSizes(Sizes);
         _settingsUtils.SaveSettings(Settings.Properties.ImageresizerSizes.ToJsonString(), ModuleName, "sizes.json");
         _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
-    }
-
-    public static string GetEncoderGuid(int value) => EncoderGuids.TryGetValue(value, out var encoderGuid) ? encoderGuid : null;
-
-    public static int GetEncoderIndex(string value)
-    {
-        var result = EncoderGuids.FirstOrDefault(x => x.Value == value);
-        return result.Equals(default(KeyValuePair<int, string>)) ? -1 : result.Key;
     }
 
     public void SizePropertyChanged(object sender, PropertyChangedEventArgs e)
