@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Converters;
 /// Creates accessibility text for controls related to <see cref="ImageSize"/> properties.
 /// </summary>
 /// <example>(Name) "Edit the Small preset"</example>
-/// <example>(Description) "Large - fits within 1920 by 1080 pixels"</example>"
+/// <example>(FullDescription) "Large - Fits within 1920 × 1080 pixels"</example>"
 public sealed partial class ImageResizerSizeToAccessibleTextConverter : IValueConverter
 {
     private const char TimesGlyph = '\u00D7';   // Unicode "MULTIPLICATION SIGN"
