@@ -10,6 +10,7 @@ using System.Threading;
 using System.Windows.Forms;
 
 using Microsoft.PowerToys.Telemetry;
+using MouseWithoutBorders.Class;
 
 // <summary>
 //     Drag/Drop implementation.
@@ -19,10 +20,6 @@ using Microsoft.PowerToys.Telemetry;
 //     2009-... modified by Truong Do (TruongDo).
 //     2023- Included in PowerToys.
 // </history>
-using MouseWithoutBorders.Class;
-
-using Thread = MouseWithoutBorders.Core.Thread;
-
 namespace MouseWithoutBorders.Core;
 
 /* Common.DragDrop.cs
