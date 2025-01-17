@@ -4,6 +4,8 @@
 
 using System;
 
+using MouseWithoutBorders.Core;
+
 namespace MouseWithoutBorders
 {
     public partial class SetupPage5 : SettingsFormPage
@@ -16,8 +18,8 @@ namespace MouseWithoutBorders
         private void DoneButtonClick(object sender, EventArgs e)
         {
             // SendNextPage(new SettingsPage1());
-            Common.CloseSetupForm();
-            Common.ShowMachineMatrix();
+            MachineStuff.CloseSetupForm();
+            MachineStuff.ShowMachineMatrix();
         }
     }
 }

@@ -74,8 +74,8 @@ namespace MouseWithoutBorders
             if (wParam == WM_LBUTTONDOWN)
             {
                 MouseDown = true;
-                DragMachine = desMachineID;
-                dropMachineID = ID.NONE;
+                DragMachine = MachineStuff.desMachineID;
+                MachineStuff.dropMachineID = ID.NONE;
                 Logger.LogDebug("DragDropStep01: MouseDown");
             }
             else if (wParam == WM_LBUTTONUP)
@@ -93,7 +93,7 @@ namespace MouseWithoutBorders
 
         internal static void DragDropStep02()
         {
-            if (desMachineID == MachineID)
+            if (MachineStuff.desMachineID == MachineID)
             {
                 Logger.LogDebug("DragDropStep02: SendCheckExplorerDragDrop sent to myself");
                 DoSomethingInUIThread(() =>
@@ -118,7 +118,7 @@ namespace MouseWithoutBorders
             if (package.Des == MachineID || package.Des == ID.ALL)
             {
                 Logger.LogDebug("DragDropStep03: ExplorerDragDrop Received.");
-                dropMachineID = package.Src; // Drop machine is the machine that sent ExplorerDragDrop
+                MachineStuff.dropMachineID = package.Src; // Drop machine is the machine that sent ExplorerDragDrop
                 if (MouseDown || IsDropping)
                 {
                     Logger.LogDebug("DragDropStep03: Mouse is down, check if dragging...sending WM_CHECK_EXPLORER_DRAG_DROP to myself...");
@@ -201,9 +201,9 @@ namespace MouseWithoutBorders
                         /*
                          * possibleDropMachineID is used as desID sent in DragDropStep06();
                          * */
-                        if (dropMachineID == ID.NONE)
+                        if (MachineStuff.dropMachineID == ID.NONE)
                         {
-                            dropMachineID = newDesMachineID;
+                            MachineStuff.dropMachineID = MachineStuff.newDesMachineID;
                         }
 
                         DragDropStep06();
@@ -249,7 +249,7 @@ namespace MouseWithoutBorders
             if (package.Des == MachineID && !RunOnLogonDesktop && !RunOnScrSaverDesktop)
             {
                 IsDropping = true;
-                dropMachineID = MachineID;
+                MachineStuff.dropMachineID = MachineID;
                 Logger.LogDebug("DragDropStep08_2: ClipboardDragDropOperation Received. IsDropping set");
             }
         }
@@ -330,9 +330,9 @@ namespace MouseWithoutBorders
              * new des machine since the previous des machine will get this and set
              * to possibleDropMachineID in DragDropStep3()
              * */
-            package.Src = newDesMachineID;
+            package.Src = MachineStuff.newDesMachineID;
 
-            package.Des = desMachineID;
+            package.Des = MachineStuff.desMachineID;
             package.MachineName = MachineName;
 
             SkSend(package, null, false);
@@ -344,7 +344,7 @@ namespace MouseWithoutBorders
             // newDesMachineID = new drop machine
 
             // 1. Cancelling dropping in current drop machine
-            if (dropMachineID == MachineID)
+            if (MachineStuff.dropMachineID == MachineID)
             {
                 // Drag/Drop coming through me
                 IsDropping = false;
@@ -357,9 +357,9 @@ namespace MouseWithoutBorders
 
             // 2. SendClipboardBeatDragDrop to new drop machine
             // new drop machine is not me
-            if (newDesMachineID != MachineID)
+            if (MachineStuff.newDesMachineID != MachineID)
             {
-                dropMachineID = newDesMachineID;
+                MachineStuff.dropMachineID = MachineStuff.newDesMachineID;
                 SendDropBegin();
             }
 
@@ -378,14 +378,14 @@ namespace MouseWithoutBorders
         internal static void SendDropBegin()
         {
             Logger.LogDebug("SendDropBegin...");
-            SendPackage(dropMachineID, PackageType.ClipboardDragDropOperation);
+            SendPackage(MachineStuff.dropMachineID, PackageType.ClipboardDragDropOperation);
         }
 
         internal static void SendClipboardBeatDragDropEnd()
         {
-            if (desMachineID != MachineID)
+            if (MachineStuff.desMachineID != MachineID)
             {
-                SendPackage(desMachineID, PackageType.ClipboardDragDropEnd);
+                SendPackage(MachineStuff.desMachineID, PackageType.ClipboardDragDropEnd);
             }
         }
 

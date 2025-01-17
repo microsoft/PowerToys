@@ -39,15 +39,14 @@ internal partial class MachineStuff
     internal static ID desMachineID;
 #pragma warning restore SA1307
     internal static string DesMachineName = string.Empty;
-    private static ID newDesMachineID;
 #pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
+    internal static ID newDesMachineID;
     internal static ID newDesMachineIdEx;
+    internal static ID dropMachineID;
+    internal static long lastJump = Common.GetTick();
+    internal static MyRectangle desktopBounds = new();
+    internal static MyRectangle primaryScreenBounds = new();
 #pragma warning restore SA1307
-    private static ID dropMachineID;
-
-    private static long lastJump = Common.GetTick();
-    private static MyRectangle desktopBounds = new();
-    private static MyRectangle primaryScreenBounds = new();
     private static MachinePool _machinePool;
 
     internal static MachinePool MachinePool
@@ -59,17 +58,17 @@ internal partial class MachineStuff
         }
     }
 
-    internal static MyRectangle PrimaryScreenBounds => Common.primaryScreenBounds;
+    internal static MyRectangle PrimaryScreenBounds => MachineStuff.primaryScreenBounds;
 
     internal static MouseLocation SwitchLocation = new();
 
     internal static ID NewDesMachineID
     {
-        get => Common.newDesMachineID;
-        set => Common.newDesMachineID = value;
+        get => MachineStuff.newDesMachineID;
+        set => MachineStuff.newDesMachineID = value;
     }
 
-    internal static MyRectangle DesktopBounds => Common.desktopBounds;
+    internal static MyRectangle DesktopBounds => MachineStuff.desktopBounds;
 
 #if OLD_VERSION
     static bool MoveToMyNeighbourIfNeeded(int x, int y)
@@ -205,24 +204,24 @@ internal partial class MachineStuff
 
         if (Math.Abs(x) > 10)
         {
-            LastX = x;
+            Common.LastX = x;
         }
 
         if (Math.Abs(y) > 10)
         {
-            LastY = y;
+            Common.LastY = y;
         }
 
-        if ((GetTick() - lastJump < 100) || desMachineID == ID.ALL)
+        if ((Common.GetTick() - lastJump < 100) || desMachineID == ID.ALL)
         {
             return Point.Empty;
         }
 
         if (Setting.Values.BlockMouseAtCorners)
         {
-            lock (SensitivePoints)
+            lock (Common.SensitivePoints)
             {
-                foreach (Point p in SensitivePoints)
+                foreach (Point p in Common.SensitivePoints)
                 {
                     if (Math.Abs(p.X - x) < 100 && Math.Abs(p.Y - y) < 100)
                     {
@@ -235,7 +234,7 @@ internal partial class MachineStuff
         /* If Mouse is moving in the controller machine and this method is called by the controller machine.
          * Or if Mouse is moving in the controlled machine and this method is called by the controlled machine and Setting.Values.MoveMouseRelative.
          * */
-        if (desMachineID == MachineID)
+        if (desMachineID == Common.MachineID)
         {
             if (x < desktopBounds.Left + SKIP_PIXELS)
             {
@@ -383,7 +382,7 @@ internal partial class MachineStuff
 
             if (!Setting.Values.MoveMouseRelatively)
             {
-                if (newDesMachineIdEx == MachineID)
+                if (newDesMachineIdEx == Common.MachineID)
                 {
                     /* Switching back to the controller machine, we need to scale up to the desktopBounds from primaryScreenBounds (sine !Setting.Values.MoveMouseRelatively).
                      * primaryScreenBounds => 65535 => desktopBounds, so that the Mouse position is mapped to the right position when the controller machine has multiple monitors.
@@ -392,7 +391,7 @@ internal partial class MachineStuff
                 }
                 else
                 {
-                    if (desMachineID == MachineID)
+                    if (desMachineID == Common.MachineID)
                     {
                         /* Switching FROM the controller machine, since Mouse was not bounded/locked to the primary screen,
                          * Mouse position can just be mapped from desktopBounds to desktopBounds
@@ -521,9 +520,9 @@ internal partial class MachineStuff
             Logger.LogDebug("Move Left");
 
             return !Setting.Values.MoveMouseRelatively
-                ? newDesMachineIdEx == MachineID
+                ? newDesMachineIdEx == Common.MachineID
                     ? ConvertToUniversalValue(new Point(primaryScreenBounds.Right - JUMP_PIXELS, y), primaryScreenBounds)
-                    : desMachineID == MachineID
+                    : desMachineID == Common.MachineID
                         ? ConvertToUniversalValue(new Point(desktopBounds.Right - JUMP_PIXELS, y), desktopBounds)
                         : ConvertToUniversalValue(new Point(primaryScreenBounds.Right - JUMP_PIXELS, y), primaryScreenBounds)
                 : ConvertToUniversalValue(new Point(desktopBounds.Right - JUMP_PIXELS, y), desktopBounds);
@@ -590,9 +589,9 @@ internal partial class MachineStuff
             Logger.LogDebug("Move Up");
 
             return !Setting.Values.MoveMouseRelatively
-                ? newDesMachineIdEx == MachineID
+                ? newDesMachineIdEx == Common.MachineID
                     ? ConvertToUniversalValue(new Point(x, primaryScreenBounds.Bottom - JUMP_PIXELS), primaryScreenBounds)
-                    : desMachineID == MachineID
+                    : desMachineID == Common.MachineID
                         ? ConvertToUniversalValue(new Point(x, desktopBounds.Bottom - JUMP_PIXELS), desktopBounds)
                         : ConvertToUniversalValue(new Point(x, primaryScreenBounds.Bottom - JUMP_PIXELS), primaryScreenBounds)
                 : ConvertToUniversalValue(new Point(x, desktopBounds.Bottom - JUMP_PIXELS), desktopBounds);
@@ -660,9 +659,9 @@ internal partial class MachineStuff
             Logger.LogDebug("Move Down");
 
             return !Setting.Values.MoveMouseRelatively
-                ? newDesMachineIdEx == MachineID
+                ? newDesMachineIdEx == Common.MachineID
                     ? ConvertToUniversalValue(new Point(x, primaryScreenBounds.Top + JUMP_PIXELS), primaryScreenBounds)
-                    : desMachineID == MachineID
+                    : desMachineID == Common.MachineID
                         ? ConvertToUniversalValue(new Point(x, desktopBounds.Top + JUMP_PIXELS), desktopBounds)
                         : ConvertToUniversalValue(new Point(x, primaryScreenBounds.Top + JUMP_PIXELS), primaryScreenBounds)
                 : ConvertToUniversalValue(new Point(x, desktopBounds.Top + JUMP_PIXELS), desktopBounds);
@@ -676,7 +675,7 @@ internal partial class MachineStuff
         bool rv = false;
 
         // Here we are removing a dead machine by IP.
-        foreach (MachineInf inf in Common.MachinePool.ListAllMachines())
+        foreach (MachineInf inf in MachineStuff.MachinePool.ListAllMachines())
         {
             if (inf.Id == ip)
             {
@@ -699,12 +698,12 @@ internal partial class MachineStuff
         // for now assume it changed.
         // Common.MachinePool.ResetIPAddressesForDeadMachines();
         // DoSomethingInUIThread(UpdateMenu);
-        Common.UpdateMachinePoolStringSetting();
+        MachineStuff.UpdateMachinePoolStringSetting();
 
         // Make sure MachinePool still holds this machine.
-        if (Common.MachinePool.LearnMachine(MachineName))
+        if (MachineStuff.MachinePool.LearnMachine(Common.MachineName))
         {
-            _ = Common.MachinePool.TryUpdateMachineID(MachineName, MachineID, false);
+            _ = MachineStuff.MachinePool.TryUpdateMachineID(Common.MachineName, Common.MachineID, false);
         }
     }
 
@@ -721,15 +720,15 @@ internal partial class MachineStuff
         // 3) logging
         // 4) updating some variables - desMachineID/newDesMachineID
         // 5) return the matched name (trimmed) - only in the event of a match
-        if (Common.MachinePool.TryFindMachineByName(name, out MachineInf machineInfo))
+        if (MachineStuff.MachinePool.TryFindMachineByName(name, out MachineInf machineInfo))
         {
-            _ = Common.MachinePool.TryUpdateMachineID(machineInfo.Name, machineInfo.Id, true);
+            _ = MachineStuff.MachinePool.TryUpdateMachineID(machineInfo.Name, machineInfo.Id, true);
 
-            _ = Common.MachinePool.TryUpdateMachineID(machineInfo.Name, package.Src, true);
+            _ = MachineStuff.MachinePool.TryUpdateMachineID(machineInfo.Name, package.Src, true);
 
             if (machineInfo.Name.Equals(DesMachineName, StringComparison.OrdinalIgnoreCase))
             {
-                Logger.LogDebug("AddToMachinePool: Des ID updated: " + DesMachineID.ToString() + "/" + package.Src.ToString());
+                Logger.LogDebug("AddToMachinePool: Des ID updated: " + Common.DesMachineID.ToString() + "/" + package.Src.ToString());
                 newDesMachineID = desMachineID = package.Src;
             }
 
@@ -737,9 +736,9 @@ internal partial class MachineStuff
         }
         else
         {
-            if (Common.MachinePool.LearnMachine(name))
+            if (MachineStuff.MachinePool.LearnMachine(name))
             {
-                _ = Common.MachinePool.TryUpdateMachineID(name, package.Src, true);
+                _ = MachineStuff.MachinePool.TryUpdateMachineID(name, package.Src, true);
             }
             else
             {
@@ -751,13 +750,13 @@ internal partial class MachineStuff
         // if (machineCount != saved)
         {
             // DoSomethingInUIThread(UpdateMenu);
-            Common.UpdateMachinePoolStringSetting();
+            MachineStuff.UpdateMachinePoolStringSetting();
         }
 
         // NOTE(yuyoyuppe): automatically active "bidirectional" control between the machines.
-        string[] st = new string[Common.MAX_MACHINE];
+        string[] st = new string[MachineStuff.MAX_MACHINE];
         Array.Fill(st, string.Empty);
-        var machines = Common.MachinePool.ListAllMachines();
+        var machines = MachineStuff.MachinePool.ListAllMachines();
         for (int i = 0; i < machines.Count; ++i)
         {
             if (machines[i].Id != ID.NONE && machines[i].Id != ID.ALL)
@@ -766,9 +765,9 @@ internal partial class MachineStuff
             }
         }
 
-        Common.MachineMatrix = st;
+        MachineStuff.MachineMatrix = st;
         Common.ReopenSockets(true);
-        Common.SendMachineMatrix();
+        MachineStuff.SendMachineMatrix();
 
         Logger.LogDebug("Machine added: " + name + "/" + package.Src.ToString());
         UpdateClientSockets("AddToMachinePool");
@@ -778,15 +777,15 @@ internal partial class MachineStuff
     internal static void UpdateClientSockets(string logHeader)
     {
         Logger.LogDebug("UpdateClientSockets: " + logHeader);
-        Sk?.UpdateTCPClients();
+        Common.Sk?.UpdateTCPClients();
     }
 
     private static SettingsForm settings;
 
     internal static SettingsForm Settings
     {
-        get => Common.settings;
-        set => Common.settings = value;
+        get => MachineStuff.settings;
+        set => MachineStuff.settings = value;
     }
 
     internal static void ShowSetupForm(bool reopenSockets = false)
@@ -851,27 +850,27 @@ internal partial class MachineStuff
 #else
         if (Setting.Values.FirstRun && !Common.AtLeastOneSocketConnected())
         {
-            Common.ShowSetupForm();
+            MachineStuff.ShowSetupForm();
         }
         else
         {
             PowerToysTelemetry.Log.WriteEvent(new MouseWithoutBorders.Telemetry.MouseWithoutBordersOldUIOpenedEvent());
 
-            if (MatrixForm == null)
+            if (Common.MatrixForm == null)
             {
-                MatrixForm = new FrmMatrix();
-                MatrixForm.Show();
+                Common.MatrixForm = new FrmMatrix();
+                Common.MatrixForm.Show();
 
-                if (MainForm != null)
+                if (Common.MainForm != null)
                 {
-                    MainForm.NotifyIcon.Visible = false;
-                    MainForm.NotifyIcon.Visible = Setting.Values.ShowOriginalUI;
+                    Common.MainForm.NotifyIcon.Visible = false;
+                    Common.MainForm.NotifyIcon.Visible = Setting.Values.ShowOriginalUI;
                 }
             }
             else
             {
-                MatrixForm.WindowState = FormWindowState.Normal;
-                MatrixForm.Activate();
+                Common.MatrixForm.WindowState = FormWindowState.Normal;
+                Common.MatrixForm.Activate();
             }
         }
 #endif
@@ -923,10 +922,10 @@ internal partial class MachineStuff
                 }
             }
 
-            DoSomethingInUIThread(() =>
+            Common.DoSomethingInUIThread(() =>
             {
-                MainForm.ChangeIcon(-1);
-                MainForm.UpdateNotifyIcon();
+                Common.MainForm.ChangeIcon(-1);
+                Common.MainForm.UpdateNotifyIcon();
             });
         }
     }
@@ -936,7 +935,7 @@ internal partial class MachineStuff
         get
         {
             bool twoRow = !Setting.Values.MatrixOneRow;
-            string[] connectedMachines = twoRow ? MachineMatrix : MachineMatrix.Select(m => IsConnectedTo(IdFromName(m)) ? m : string.Empty).ToArray();
+            string[] connectedMachines = twoRow ? MachineMatrix : MachineMatrix.Select(m => Common.IsConnectedTo(IdFromName(m)) ? m : string.Empty).ToArray();
             Logger.LogDebug($"Matrix: {string.Join(",", MachineMatrix)}, Connected: {string.Join(",", connectedMachines)}");
 
             return connectedMachines;
@@ -945,7 +944,7 @@ internal partial class MachineStuff
 
     internal static void UpdateMachinePoolStringSetting()
     {
-        Setting.Values.MachinePoolString = Common.MachinePool.SerializedAsString();
+        Setting.Values.MachinePoolString = MachineStuff.MachinePool.SerializedAsString();
     }
 
     internal static void SendMachineMatrix()
@@ -968,7 +967,7 @@ internal partial class MachineStuff
             package.Src = (ID)(i + 1);
             package.Des = ID.ALL;
 
-            SkSend(package, null, false);
+            Common.SkSend(package, null, false);
 
             Logger.LogDebug($"matrixIncludedMachine sent: [{i + 1}]:[{MachineMatrix[i]}]");
         }
@@ -1006,23 +1005,23 @@ internal partial class MachineStuff
 
     internal static void SwitchToMachine(string name)
     {
-        ID id = Common.MachinePool.ResolveID(name);
+        ID id = MachineStuff.MachinePool.ResolveID(name);
 
         if (id != ID.NONE)
         {
             // Ask current machine to hide the Mouse cursor
-            if (desMachineID != MachineID)
+            if (desMachineID != Common.MachineID)
             {
-                SendPackage(desMachineID, PackageType.HideMouse);
+                Common.SendPackage(desMachineID, PackageType.HideMouse);
             }
 
-            NewDesMachineID = DesMachineID = id;
-            SwitchLocation.X = XY_BY_PIXEL + primaryScreenBounds.Left + ((primaryScreenBounds.Right - primaryScreenBounds.Left) / 2);
-            SwitchLocation.Y = XY_BY_PIXEL + primaryScreenBounds.Top + ((primaryScreenBounds.Bottom - primaryScreenBounds.Top) / 2);
+            NewDesMachineID = Common.DesMachineID = id;
+            SwitchLocation.X = Common.XY_BY_PIXEL + primaryScreenBounds.Left + ((primaryScreenBounds.Right - primaryScreenBounds.Left) / 2);
+            SwitchLocation.Y = Common.XY_BY_PIXEL + primaryScreenBounds.Top + ((primaryScreenBounds.Bottom - primaryScreenBounds.Top) / 2);
             SwitchLocation.ResetCount();
             Common.UpdateMultipleModeIconAndMenu();
-            HideMouseCursor(false);
-            _ = EvSwitch.Set();
+            Common.HideMouseCursor(false);
+            _ = Common.EvSwitch.Set();
         }
     }
 
@@ -1031,19 +1030,19 @@ internal partial class MachineStuff
         if (multipleMode)
         {
             PowerToysTelemetry.Log.WriteEvent(new MouseWithoutBorders.Telemetry.MouseWithoutBordersMultipleModeEvent());
-            NewDesMachineID = DesMachineID = ID.ALL;
+            NewDesMachineID = Common.DesMachineID = ID.ALL;
         }
         else
         {
-            NewDesMachineID = DesMachineID = MachineID;
+            NewDesMachineID = Common.DesMachineID = Common.MachineID;
         }
 
         if (centerScreen)
         {
-            MoveMouseToCenter();
+            Common.MoveMouseToCenter();
         }
 
-        ReleaseAllKeys();
+        Common.ReleaseAllKeys();
 
         Common.UpdateMultipleModeIconAndMenu();
     }
@@ -1060,28 +1059,30 @@ internal partial class MachineStuff
         return false;
     }
 
-    private static EventWaitHandle oneInstanceCheck;
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
+    internal static EventWaitHandle oneInstanceCheck;
+#pragma warning restore SA1307
 
     internal static void AssertOneInstancePerDesktopSession()
     {
-        string eventName = $"Global\\{Application.ProductName}-{FrmAbout.AssemblyVersion}-{GetMyDesktop()}-{CurrentProcess.SessionId}";
+        string eventName = $"Global\\{Application.ProductName}-{FrmAbout.AssemblyVersion}-{Common.GetMyDesktop()}-{Common.CurrentProcess.SessionId}";
         oneInstanceCheck = new EventWaitHandle(false, EventResetMode.ManualReset, eventName, out bool created);
 
         if (!created)
         {
             Logger.TelemetryLogTrace($"Second instance found: {eventName}.", SeverityLevel.Warning, true);
-            CurrentProcess.KillProcess(true);
+            Common.CurrentProcess.KillProcess(true);
         }
     }
 
     internal static ID IdFromName(string name)
     {
-        return Common.MachinePool.ResolveID(name);
+        return MachineStuff.MachinePool.ResolveID(name);
     }
 
     internal static string NameFromID(ID id)
     {
-        foreach (MachineInf inf in Common.MachinePool.TryFindMachineByID(id))
+        foreach (MachineInf inf in MachineStuff.MachinePool.TryFindMachineByID(id))
         {
             if (!string.IsNullOrEmpty(inf.Name))
             {
@@ -1112,8 +1113,8 @@ internal partial class MachineStuff
 
     internal static void ClearComputerMatrix()
     {
-        Common.MachineMatrix = new string[Common.MAX_MACHINE] { Common.MachineName.Trim(), string.Empty, string.Empty, string.Empty };
-        Common.MachinePool.Initialize(new string[] { Common.MachineName });
-        Common.UpdateMachinePoolStringSetting();
+        MachineStuff.MachineMatrix = new string[MachineStuff.MAX_MACHINE] { Common.MachineName.Trim(), string.Empty, string.Empty, string.Empty };
+        MachineStuff.MachinePool.Initialize(new string[] { Common.MachineName });
+        MachineStuff.UpdateMachinePoolStringSetting();
     }
 }

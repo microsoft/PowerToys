@@ -188,7 +188,7 @@ namespace MouseWithoutBorders.Class
             {
                 if (Common.DesMachineID != Common.MachineID)
                 {
-                    Common.SwitchToMultipleMode(false, true);
+                    MachineStuff.SwitchToMultipleMode(false, true);
                 }
 
                 if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
@@ -253,7 +253,7 @@ namespace MouseWithoutBorders.Class
             {
                 if (Setting.Values.LastX == Common.JUST_GOT_BACK_FROM_SCREEN_SAVER)
                 {
-                    Common.NewDesMachineID = Common.DesMachineID = Common.MachineID;
+                    MachineStuff.NewDesMachineID = Common.DesMachineID = Common.MachineID;
                 }
                 else
                 {
@@ -263,11 +263,11 @@ namespace MouseWithoutBorders.Class
 
                     if (Common.RunOnLogonDesktop && Setting.Values.DesMachineID == (uint)ID.ALL)
                     {
-                        Common.SwitchToMultipleMode(true, false);
+                        MachineStuff.SwitchToMultipleMode(true, false);
                     }
                     else
                     {
-                        Common.SwitchToMultipleMode(false, false);
+                        MachineStuff.SwitchToMultipleMode(false, false);
                     }
                 }
             }
@@ -796,11 +796,11 @@ namespace MouseWithoutBorders.Class
 
             try
             {
-                if (Common.MachineMatrix != null)
+                if (MachineStuff.MachineMatrix != null)
                 {
-                    Logger.LogDebug("MachineMatrix = " + string.Join(", ", Common.MachineMatrix));
+                    Logger.LogDebug("MachineMatrix = " + string.Join(", ", MachineStuff.MachineMatrix));
 
-                    foreach (string st in Common.MachineMatrix)
+                    foreach (string st in MachineStuff.MachineMatrix)
                     {
                         string machineName = st.Trim();
                         if (!string.IsNullOrEmpty(machineName) &&
@@ -949,7 +949,7 @@ namespace MouseWithoutBorders.Class
 
                 UpdateTcpSockets(dummyTcp, SocketStatus.NA);
 
-                if (!Common.InMachineMatrix(machineName))
+                if (!MachineStuff.InMachineMatrix(machineName))
                 {
                     // While Resolving from name to IP, user may have changed the machine name and clicked on Apply.
                     return;
@@ -1433,19 +1433,19 @@ namespace MouseWithoutBorders.Class
 
                                     Common.SendHeartBeat(initial: true);
 
-                                    if (Common.MachinePool.TryFindMachineByName(remoteMachine, out MachineInf machineInfo))
+                                    if (MachineStuff.MachinePool.TryFindMachineByName(remoteMachine, out MachineInf machineInfo))
                                     {
                                         Logger.LogDebug("Machine updated: " + remoteMachine + "/" + remoteID.ToString());
 
-                                        if (machineInfo.Name.Equals(Common.DesMachineName, StringComparison.OrdinalIgnoreCase))
+                                        if (machineInfo.Name.Equals(MachineStuff.DesMachineName, StringComparison.OrdinalIgnoreCase))
                                         {
                                             Logger.LogDebug("Des ID updated: " + Common.DesMachineID.ToString() +
                                                 "/" + remoteID.ToString());
-                                            Common.NewDesMachineID = Common.DesMachineID = remoteID;
+                                            MachineStuff.NewDesMachineID = Common.DesMachineID = remoteID;
                                         }
 
-                                        _ = Common.MachinePool.TryUpdateMachineID(remoteMachine, remoteID, true);
-                                        Common.UpdateMachinePoolStringSetting();
+                                        _ = MachineStuff.MachinePool.TryUpdateMachineID(remoteMachine, remoteID, true);
+                                        MachineStuff.UpdateMachinePoolStringSetting();
                                     }
                                     else
                                     {
@@ -1459,7 +1459,7 @@ namespace MouseWithoutBorders.Class
 
                                     if (!isClient)
                                     {
-                                        Common.UpdateClientSockets("MainTCPRoutine");
+                                        MachineStuff.UpdateClientSockets("MainTCPRoutine");
                                     }
                                 }
                                 else
@@ -1543,7 +1543,7 @@ namespace MouseWithoutBorders.Class
 
             if (remoteID != ID.NONE)
             {
-                _ = Common.RemoveDeadMachines(remoteID);
+                _ = MachineStuff.RemoveDeadMachines(remoteID);
             }
         }
 
@@ -2040,7 +2040,7 @@ namespace MouseWithoutBorders.Class
 
                                 if (string.IsNullOrEmpty(tcp.MachineName) || tcp.MachineName.Contains('.') || tcp.MachineName.Contains(':'))
                                 {
-                                    tcp.MachineName = Common.NameFromID((ID)tcp.MachineId);
+                                    tcp.MachineName = MachineStuff.NameFromID((ID)tcp.MachineId);
                                 }
 
                                 if (string.IsNullOrEmpty(tcp.MachineName) || tcp.MachineName.Contains('.') || tcp.MachineName.Contains(':'))

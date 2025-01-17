@@ -102,7 +102,7 @@ namespace MouseWithoutBorders.Class
                         if (!Enumerable.SequenceEqual(last_properties.MachineMatrixString, _settings.Properties.MachineMatrixString))
                         {
                             _properties.MachineMatrixString = _settings.Properties.MachineMatrixString;
-                            Common.MachineMatrix = null; // Forces read next time it's needed.
+                            MachineStuff.MachineMatrix = null; // Forces read next time it's needed.
                             shouldSendMachineMatrix = true;
                         }
 
@@ -123,7 +123,7 @@ namespace MouseWithoutBorders.Class
 
                         if (shouldSendMachineMatrix)
                         {
-                            Common.SendMachineMatrix();
+                            MachineStuff.SendMachineMatrix();
                             shouldSaveNewSettingsValues = true;
                         }
 

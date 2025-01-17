@@ -120,9 +120,9 @@ internal static class Receiver
 
                 if (package.Des == Common.MachineID || package.Des == ID.ALL)
                 {
-                    if (Common.desMachineID != Common.MachineID)
+                    if (MachineStuff.desMachineID != Common.MachineID)
                     {
-                        Common.NewDesMachineID = Common.DesMachineID = Common.MachineID;
+                        MachineStuff.NewDesMachineID = Common.DesMachineID = Common.MachineID;
                     }
 
                     // NOTE(@yuyoyuppe): disabled to drop elevation requirement
@@ -153,7 +153,7 @@ internal static class Receiver
                                 package.Md.Y < 0 ? package.Md.Y + Common.MOVE_MOUSE_RELATIVE : package.Md.Y - Common.MOVE_MOUSE_RELATIVE);
                             _ = NativeMethods.GetCursorPos(ref lastXY);
 
-                            Point p = Common.MoveToMyNeighbourIfNeeded(lastXY.X, lastXY.Y, Common.MachineID);
+                            Point p = MachineStuff.MoveToMyNeighbourIfNeeded(lastXY.X, lastXY.Y, Common.MachineID);
 
                             if (!p.IsEmpty)
                             {
@@ -162,11 +162,11 @@ internal static class Receiver
                                 Logger.LogDebug(string.Format(
                                     CultureInfo.CurrentCulture,
                                     "***** Controlled Machine: newDesMachineIdEx set = [{0}]. Mouse is now at ({1},{2})",
-                                    Common.newDesMachineIdEx,
+                                    MachineStuff.newDesMachineIdEx,
                                     lastXY.X,
                                     lastXY.Y));
 
-                                Common.SendNextMachine(package.Src, Common.newDesMachineIdEx, p);
+                                Common.SendNextMachine(package.Src, MachineStuff.newDesMachineIdEx, p);
                             }
                         }
                         else
@@ -219,12 +219,12 @@ internal static class Receiver
                     Common.SendPackage(ID.ALL, PackageType.Heartbeat_ex_l2);
                 }
 
-                string desMachine = Common.AddToMachinePool(package);
+                string desMachine = MachineStuff.AddToMachinePool(package);
 
                 if (Setting.Values.FirstRun && !string.IsNullOrEmpty(desMachine))
                 {
                     Common.UpdateSetupMachineMatrix(desMachine);
-                    Common.UpdateClientSockets("UpdateSetupMachineMatrix");
+                    MachineStuff.UpdateClientSockets("UpdateSetupMachineMatrix");
                 }
 
                 break;
@@ -244,14 +244,14 @@ internal static class Receiver
 
             case PackageType.Awake:
                 Common.PackageReceived.Heartbeat++;
-                _ = Common.AddToMachinePool(package);
+                _ = MachineStuff.AddToMachinePool(package);
                 Common.HumanBeingDetected();
                 break;
 
             case PackageType.Hello:
                 Common.PackageReceived.Hello++;
                 Common.SendHeartBeat();
-                string newMachine = Common.AddToMachinePool(package);
+                string newMachine = MachineStuff.AddToMachinePool(package);
                 if (Setting.Values.MachineMatrixString == null)
                 {
                     string tip = newMachine + " saying Hello!";
@@ -391,7 +391,7 @@ internal static class Receiver
                 if ((package.Type & PackageType.Matrix) == PackageType.Matrix)
                 {
                     Common.PackageReceived.Matrix++;
-                    Common.UpdateMachineMatrix(package);
+                    MachineStuff.UpdateMachineMatrix(package);
                     break;
                 }
                 else
@@ -406,7 +406,7 @@ internal static class Receiver
     internal static void GetNameOfMachineWithClipboardData(DATA package)
     {
         Common.LastIDWithClipboardData = package.Src;
-        List<MachineInf> matchingMachines = Common.MachinePool.TryFindMachineByID(Common.LastIDWithClipboardData);
+        List<MachineInf> matchingMachines = MachineStuff.MachinePool.TryFindMachineByID(Common.LastIDWithClipboardData);
         if (matchingMachines.Count >= 1)
         {
             Common.LastMachineWithClipboardData = matchingMachines[0].Name.Trim();
