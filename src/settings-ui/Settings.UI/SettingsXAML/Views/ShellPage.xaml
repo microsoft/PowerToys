@@ -174,8 +174,8 @@
                         <NavigationViewItem
                             x:Uid="Shell_Workspaces"
                             helpers:NavHelper.NavigateTo="views:WorkspacesPage"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}"/>
-                    </NavigationViewItem.MenuItems> 
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}" />
+                    </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
 
                 <!--  Input / Output  -->
