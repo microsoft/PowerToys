@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UITests;
 using Microsoft.FancyZonesEditor.UITests.Utils;
-using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.UITests.API;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
