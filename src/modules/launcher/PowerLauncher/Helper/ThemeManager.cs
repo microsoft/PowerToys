@@ -43,6 +43,9 @@ namespace PowerLauncher.Helper
         private void SetSystemTheme(ManagedCommon.Theme theme)
         {
             _mainWindow.Background = OSVersionHelper.IsWindows11() is false ? SystemColors.WindowBrush : null;
+
+            // Need to disable WPF0001 since settings Application.Current.ThemeMode is experimental
+            // https://learn.microsoft.com/en-us/dotnet/desktop/wpf/whats-new/net90?view=netdesktop-9.0#set-in-code
 #pragma warning disable WPF0001
             Application.Current.ThemeMode = theme is ManagedCommon.Theme.Light ? ThemeMode.Light : ThemeMode.Dark;
             if (theme is ManagedCommon.Theme.Dark or ManagedCommon.Theme.Light)
