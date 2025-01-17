@@ -239,3 +239,7 @@ CRC(32|64)(Decimal|Hex)
 # WSL paths
 
 \/mnt\/.*
+
+# ZoomIt menu items with accelerator keys
+E&xit
+St&yle
