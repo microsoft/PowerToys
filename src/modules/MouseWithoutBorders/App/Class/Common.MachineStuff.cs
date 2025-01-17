@@ -26,13 +26,6 @@ using MouseWithoutBorders.Core;
 
 namespace MouseWithoutBorders
 {
-    internal struct MachineInf
-    {
-        internal string Name;
-        internal ID Id;
-        internal long Time;
-    }
-
     internal class MyRectangle
     {
         internal int Left;
