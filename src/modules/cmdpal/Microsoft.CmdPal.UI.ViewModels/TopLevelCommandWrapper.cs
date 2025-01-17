@@ -3,58 +3,42 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-/// <summary>
-/// Abstraction of a top-level command. Currently owns just a live ICommandItem
-/// from an extension (or in-proc command provider), but in the future will
-/// also support stub top-level items.
-/// </summary>
-public partial class TopLevelCommandWrapper : ListItem
+public partial class TopLevelCommandWrapper : ICommand
 {
-    public ExtensionObject<ICommandItem> Model { get; }
+    private readonly ExtensionObject<ICommand> _command;
 
-    private readonly bool _isFallback;
+    public event TypedEventHandler<object, PropChangedEventArgs>? PropChanged;
+
+    public string Name { get; private set; } = string.Empty;
 
     public string Id { get; private set; } = string.Empty;
 
-    public bool IsFallback => _isFallback;
+    public IconInfo Icon { get; private set; } = new(null);
 
-    public TopLevelCommandWrapper(ExtensionObject<ICommandItem> commandItem, bool isFallback)
-        : base(commandItem.Unsafe?.Command ?? new NoOpCommand())
+    public ICommand Command => _command.Unsafe!;
+
+    public CommandPaletteHost? ExtensionHost { get; set; }
+
+    public TopLevelCommandWrapper(ICommand command)
     {
-        _isFallback = isFallback;
+        _command = new(command);
+    }
 
-        // TODO: In reality, we should do an async fetch when we're created
-        // from an extension object. Probably have an
-        // `static async Task<TopLevelCommandWrapper> FromExtension(ExtensionObject<ICommandItem>)`
-        // or a
-        // `async Task PromoteStub(ExtensionObject<ICommandItem>)`
-        Model = commandItem;
-        try
-        {
-            var model = Model.Unsafe;
-            if (model == null)
-            {
-                return;
-            }
+    public void UnsafeInitializeProperties()
+    {
+        var model = _command.Unsafe!;
 
-            Id = model.Command?.Id ?? string.Empty;
+        Name = model.Name;
+        Id = model.Id;
+        Icon = model.Icon;
 
-            Title = model.Title;
-            Subtitle = model.Subtitle;
-            Icon = model.Icon;
-            MoreCommands = model.MoreCommands;
-
-            model.PropChanged += Model_PropChanged;
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine(ex);
-        }
+        model.PropChanged += Model_PropChanged;
+        model.PropChanged += this.PropChanged;
     }
 
     private void Model_PropChanged(object sender, PropChangedEventArgs args)
@@ -62,7 +46,7 @@ public partial class TopLevelCommandWrapper : ListItem
         try
         {
             var propertyName = args.PropertyName;
-            var model = Model.Unsafe;
+            var model = _command.Unsafe;
             if (model == null)
             {
                 return; // throw?
@@ -70,44 +54,18 @@ public partial class TopLevelCommandWrapper : ListItem
 
             switch (propertyName)
             {
-                case nameof(Title):
-                    this.Title = model.Title;
-                    break;
-                case nameof(Subtitle):
-                    this.Subtitle = model.Subtitle;
+                case nameof(Name):
+                    this.Name = model.Name;
                     break;
                 case nameof(Icon):
                     var listIcon = model.Icon;
                     Icon = model.Icon;
                     break;
-
-                    // TODO! MoreCommands array, which needs to also raise HasMoreCommands
             }
+
+            PropChanged?.Invoke(this, args);
         }
         catch
-        {
-        }
-    }
-
-    // This is only ever called on a background thread, by
-    // MainListPage::UpdateSearchText, which is already running in the
-    // background. So x-proc calls we do in here are okay.
-    public void TryUpdateFallbackText(string newQuery)
-    {
-        if (!_isFallback)
-        {
-            return;
-        }
-
-        try
-        {
-            var model = Model.Unsafe;
-            if (model is IFallbackCommandItem fallback)
-            {
-                fallback.FallbackHandler.UpdateQuery(newQuery);
-            }
-        }
-        catch (Exception)
         {
         }
     }

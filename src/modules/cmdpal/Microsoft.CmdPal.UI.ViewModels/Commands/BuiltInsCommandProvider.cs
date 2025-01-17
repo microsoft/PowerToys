@@ -16,16 +16,18 @@ public partial class BuiltInsCommandProvider : CommandProvider
     private readonly OpenSettingsCommand openSettings = new();
     private readonly QuitAction quitAction = new();
     private readonly FallbackReloadItem _fallbackReloadItem = new();
+    private readonly FallbackLogItem _fallbackLogItem = new();
 
     public override ICommandItem[] TopLevelCommands() =>
         [
-            new CommandItem(openSettings) { Subtitle = "Open Command Palette settings" }
+            new CommandItem(openSettings) { Subtitle = "Open Command Palette settings" },
         ];
 
     public override IFallbackCommandItem[] FallbackCommands() =>
         [
             new FallbackCommandItem(quitAction) { Subtitle = "Exit Command Palette" },
             _fallbackReloadItem,
+            _fallbackLogItem,
         ];
 
     public BuiltInsCommandProvider()

@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
+    xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -20,11 +21,16 @@
                 x:Key="StringNotEmptyToVisibilityConverter"
                 EmptyValue="Collapsed"
                 NotEmptyValue="Visible" />
+
             <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
+
+            <cmdpalUI:MessageStateToSeverityConverter x:Key="MessageStateToSeverityConverter" />
+
             <converters:BoolToVisibilityConverter
                 x:Key="BoolToInvertedVisibilityConverter"
                 FalseValue="Visible"
                 TrueValue="Collapsed" />
+
         </ResourceDictionary>
     </Page.Resources>
 
@@ -211,6 +217,31 @@
                 </TextBlock>
             </ScrollView>
         </Grid>
+
+        <!--
+            Horrifying: You may ask yourself - why is there a Background on this InfoBar?
+            
+            Well, as it turns out, the Informational InfoBar has a transparent
+            background. It just cannot be bothered. So, we need to manually give
+            it one to actually obscure the text beneath it. And you can't just give
+            the InfoBar itself a Background, because then the other Severity's
+            won't get colorized.
+            
+            See https://github.com/microsoft/microsoft-ui-xaml/issues/5741
+        -->
+        <StackPanel
+            Grid.Row="0"
+            Margin="16,8,16,8"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Bottom"
+            Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+            CornerRadius="{ThemeResource ControlCornerRadius}">
+            <InfoBar
+                CornerRadius="{ThemeResource ControlCornerRadius}"
+                IsOpen="{x:Bind ViewModel.CurrentPage.HasStatusMessage, Mode=OneWay}"
+                Message="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.Message, Mode=OneWay}"
+                Severity="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.State, Mode=OneWay, Converter={StaticResource MessageStateToSeverityConverter}}" />
+        </StackPanel>
 
         <cpcontrols:ActionBar Grid.Row="1" CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
 

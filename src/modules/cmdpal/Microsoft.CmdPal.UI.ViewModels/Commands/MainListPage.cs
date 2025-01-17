@@ -23,7 +23,7 @@ public partial class MainListPage : DynamicListPage,
 {
     private readonly IServiceProvider _serviceProvider;
 
-    private readonly ObservableCollection<TopLevelCommandWrapper> _commands;
+    private readonly ObservableCollection<TopLevelCommandItemWrapper> _commands;
 
     private IEnumerable<IListItem>? _filteredItems;
 
@@ -161,7 +161,7 @@ public partial class MainListPage : DynamicListPage,
         }
 
         var isFallback = false;
-        if (topLevelOrAppItem is TopLevelCommandWrapper toplevel)
+        if (topLevelOrAppItem is TopLevelCommandItemWrapper toplevel)
         {
             isFallback = toplevel.IsFallback;
         }

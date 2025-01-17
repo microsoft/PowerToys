@@ -15,13 +15,18 @@ public class ExtensionHost
         _host = host;
     }
 
+    /// <summary>
+    /// Fire-and-forget a log message to the Command Palette host app. Since
+    /// the host is in another process, we do this in a try/catch in a
+    /// background thread, as to not block the calling thread, nor explode if
+    /// the host app is gone.
+    /// </summary>
+    /// <param name="message">The log message to send</param>
     public static void LogMessage(ILogMessage message)
     {
-        // TODO this feels like bad async
         if (Host != null)
         {
-            // really just fire-and-forget
-            new Task(async () =>
+            _ = Task.Run(async () =>
             {
                 try
                 {
@@ -30,7 +35,30 @@ public class ExtensionHost
                 catch (Exception)
                 {
                 }
-            }).Start();
+            });
+        }
+    }
+
+    public static void LogMessage(string message)
+    {
+        var logMessage = new LogMessage() { Message = message };
+        LogMessage(logMessage);
+    }
+
+    public static void ShowStatus(IStatusMessage message)
+    {
+        if (Host != null)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Host.ShowStatus(message);
+                }
+                catch (Exception)
+                {
+                }
+            });
         }
     }
 }

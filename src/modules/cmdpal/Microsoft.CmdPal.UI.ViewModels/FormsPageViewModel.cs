@@ -19,8 +19,8 @@ public partial class FormsPageViewModel : PageViewModel
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
-    public FormsPageViewModel(IFormPage model, TaskScheduler scheduler)
-        : base(model, scheduler)
+    public FormsPageViewModel(IFormPage model, TaskScheduler scheduler, CommandPaletteHost host)
+        : base(model, scheduler, host)
     {
         _model = new(model);
     }

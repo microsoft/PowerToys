@@ -31,7 +31,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
     }
 
-    public ObservableCollection<TopLevelCommandWrapper> TopLevelCommands { get; set; } = [];
+    public ObservableCollection<TopLevelCommandItemWrapper> TopLevelCommands { get; set; } = [];
 
     [ObservableProperty]
     public partial bool IsLoading { get; private set; } = true;
@@ -64,12 +64,20 @@ public partial class TopLevelCommandManager : ObservableObject,
             {
                 foreach (var i in commandProvider.TopLevelItems)
                 {
-                    TopLevelCommands.Add(new(new(i), false));
+                    TopLevelCommandItemWrapper wrapper = new(new(i), false)
+                    {
+                        ExtensionHost = commandProvider.ExtensionHost,
+                    };
+                    TopLevelCommands.Add(wrapper);
                 }
 
                 foreach (var i in commandProvider.FallbackItems)
                 {
-                    TopLevelCommands.Add(new(new(i), true));
+                    TopLevelCommandItemWrapper wrapper = new(new(i), true)
+                    {
+                        ExtensionHost = commandProvider.ExtensionHost,
+                    };
+                    TopLevelCommands.Add(wrapper);
                 }
             },
             CancellationToken.None,
@@ -99,8 +107,8 @@ public partial class TopLevelCommandManager : ObservableObject,
     {
         // Work on a clone of the list, so that we can just do one atomic
         // update to the actual observable list at the end
-        List<TopLevelCommandWrapper> clone = [.. TopLevelCommands];
-        List<TopLevelCommandWrapper> newItems = [];
+        List<TopLevelCommandItemWrapper> clone = [.. TopLevelCommands];
+        List<TopLevelCommandItemWrapper> newItems = [];
         var startIndex = -1;
         var firstCommand = sender.TopLevelItems[0];
         var commandsToRemove = sender.TopLevelItems.Length + sender.FallbackItems.Length;
@@ -202,7 +210,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         return true;
     }
 
-    public TopLevelCommandWrapper? LookupCommand(string id)
+    public TopLevelCommandItemWrapper? LookupCommand(string id)
     {
         foreach (var command in TopLevelCommands)
         {

@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -14,7 +16,7 @@ public sealed class CommandProviderWrapper
 
     private readonly bool isValid;
 
-    private readonly ICommandProvider _commandProvider;
+    private readonly ExtensionObject<ICommandProvider> _commandProvider;
 
     private readonly IExtensionWrapper? extensionWrapper;
 
@@ -22,22 +24,31 @@ public sealed class CommandProviderWrapper
 
     public IFallbackCommandItem[] FallbackItems { get; private set; } = [];
 
+    public string DisplayName { get; private set; } = string.Empty;
+
+    public IExtensionWrapper? Extension => extensionWrapper;
+
+    public CommandPaletteHost ExtensionHost { get; private set; }
+
     public event TypedEventHandler<CommandProviderWrapper, ItemsChangedEventArgs>? CommandsChanged;
 
     public string Id { get; private set; } = string.Empty;
-
-    public string DisplayName { get; private set; } = string.Empty;
 
     public IconInfoViewModel Icon { get; private set; } = new(null);
 
     public string ProviderId => $"{extensionWrapper?.PackageFamilyName ?? string.Empty}/{Id}";
 
-    public IExtensionWrapper? Extension => extensionWrapper;
-
     public CommandProviderWrapper(ICommandProvider provider)
     {
-        _commandProvider = provider;
-        _commandProvider.ItemsChanged += CommandProvider_ItemsChanged;
+        // This ctor is only used for in-proc builtin commands. So the Unsafe!
+        // calls are pretty dang safe actually.
+        _commandProvider = new(provider);
+
+        // Hook the extension back into us
+        ExtensionHost = CommandPaletteHost.Instance;
+        _commandProvider.Unsafe!.InitializeWithHost(ExtensionHost);
+
+        _commandProvider.Unsafe!.ItemsChanged += CommandProvider_ItemsChanged;
 
         isValid = true;
         Id = provider.Id;
@@ -49,6 +60,7 @@ public sealed class CommandProviderWrapper
     public CommandProviderWrapper(IExtensionWrapper extension)
     {
         extensionWrapper = extension;
+        ExtensionHost = new CommandPaletteHost(extension);
         if (!extensionWrapper.IsRunning())
         {
             throw new ArgumentException("You forgot to start the extension. This is a coding error - make sure to call StartExtensionAsync");
@@ -61,14 +73,25 @@ public sealed class CommandProviderWrapper
             throw new ArgumentException("extension didn't actually implement ICommandProvider");
         }
 
-        _commandProvider = provider;
+        _commandProvider = new(provider);
 
         try
         {
-            _commandProvider.ItemsChanged += CommandProvider_ItemsChanged;
+            var model = _commandProvider.Unsafe!;
+
+            // Hook the extension back into us
+            model.InitializeWithHost(ExtensionHost);
+            model.ItemsChanged += CommandProvider_ItemsChanged;
+
+            DisplayName = model.DisplayName;
+
+            isValid = true;
         }
-        catch
+        catch (Exception e)
         {
+            Debug.WriteLine("Failed to initialize CommandProvider for extension.");
+            Debug.WriteLine($"Extension was {extensionWrapper!.PackageFamilyName}");
+            Debug.WriteLine(e);
         }
 
         isValid = true;
@@ -81,17 +104,31 @@ public sealed class CommandProviderWrapper
             return;
         }
 
-        var t = new Task<ICommandItem[]>(_commandProvider.TopLevelCommands);
-        t.Start();
-        var commands = await t.ConfigureAwait(false);
+        ICommandItem[]? commands = null;
+        IFallbackCommandItem[]? fallbacks = null;
 
-        // On a BG thread here
-        var fallbacks = _commandProvider.FallbackCommands();
+        try
+        {
+            var model = _commandProvider.Unsafe!;
 
-        Id = _commandProvider.Id;
-        DisplayName = _commandProvider.DisplayName;
-        Icon = new(_commandProvider.Icon);
-        Icon.InitializeProperties();
+            var t = new Task<ICommandItem[]>(model.TopLevelCommands);
+            t.Start();
+            commands = await t.ConfigureAwait(false);
+
+            // On a BG thread here
+            fallbacks = model.FallbackCommands();
+
+            Id = model.Id;
+            DisplayName = model.DisplayName;
+            Icon = new(model.Icon);
+            Icon.InitializeProperties();
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine("Failed to load commands from extension");
+            Debug.WriteLine($"Extension was {extensionWrapper!.PackageFamilyName}");
+            Debug.WriteLine(e);
+        }
 
         if (commands != null)
         {

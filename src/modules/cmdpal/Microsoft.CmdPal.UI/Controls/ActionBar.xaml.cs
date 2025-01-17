@@ -103,4 +103,14 @@ public sealed partial class ActionBar : UserControl,
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
     private void SecondaryButton_Tapped(object sender, TappedRoutedEventArgs e) =>
         WeakReferenceMessenger.Default.Send<ActivateSecondaryCommandMessage>();
+
+    private void PageIcon_Tapped(object sender, TappedRoutedEventArgs e)
+    {
+        if (CurrentPageViewModel?.StatusMessages.Count > 0)
+        {
+            StatusMessagesFlyout.ShowAt(
+                placementTarget: IconRoot,
+                showOptions: new FlyoutShowOptions() { ShowMode = FlyoutShowMode.Standard });
+        }
+    }
 }

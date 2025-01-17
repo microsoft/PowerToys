@@ -6,6 +6,7 @@ using System.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -20,8 +21,7 @@ namespace Microsoft.CmdPal.UI;
 /// <summary>
 /// An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
-public sealed partial class ShellPage :
-    Page,
+public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<NavigateBackMessage>,
     IRecipient<PerformCommandMessage>,
     IRecipient<OpenSettingsMessage>,
@@ -91,9 +91,24 @@ public sealed partial class ShellPage :
         // Or the command may be a stub. Future us problem.
         try
         {
-            // This could be navigation to another page or invoking of a command, those are our two main branches of logic here.
-            // For different pages, we may construct different view models and navigate to the central frame to different pages,
-            // Otherwise the logic is mostly the same, outside the main page.
+            var host = ViewModel.CurrentPage?.ExtensionHost ?? CommandPaletteHost.Instance;
+
+            if (command is TopLevelCommandWrapper wrapper)
+            {
+                var tlc = wrapper;
+                command = wrapper.Command;
+                host = tlc.ExtensionHost != null ? tlc.ExtensionHost! : host;
+#if DEBUG
+                if (tlc.ExtensionHost?.Extension != null)
+                {
+                    host.ProcessLogMessage(new LogMessage()
+                    {
+                        Message = $"Activated top-level command from {tlc.ExtensionHost.Extension.ExtensionDisplayName}",
+                    });
+                }
+#endif
+            }
+
             if (command is IPage page)
             {
                 _ = _queue.TryEnqueue(() =>
@@ -106,12 +121,12 @@ public sealed partial class ShellPage :
                     // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
                     PageViewModel pageViewModel = page switch
                     {
-                        IListPage listPage => new ListViewModel(listPage, _mainTaskScheduler)
+                        IListPage listPage => new ListViewModel(listPage, _mainTaskScheduler, host)
                         {
                             IsNested = !isMainPage,
                         },
-                        IFormPage formsPage => new FormsPageViewModel(formsPage, _mainTaskScheduler),
-                        IMarkdownPage markdownPage => new MarkdownPageViewModel(markdownPage, _mainTaskScheduler),
+                        IFormPage formsPage => new FormsPageViewModel(formsPage, _mainTaskScheduler, host),
+                        IMarkdownPage markdownPage => new MarkdownPageViewModel(markdownPage, _mainTaskScheduler, host),
                         _ => throw new NotSupportedException(),
                     };
 

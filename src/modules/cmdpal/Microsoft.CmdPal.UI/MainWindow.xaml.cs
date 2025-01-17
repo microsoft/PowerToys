@@ -43,6 +43,7 @@ public sealed partial class MainWindow : Window,
         InitializeComponent();
 
         _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
+        CommandPaletteHost.Instance.SetHostHwnd((ulong)_hwnd.Value);
 
         PositionCentered();
         SetAcrylic();

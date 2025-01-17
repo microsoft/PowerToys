@@ -19,17 +19,22 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject
     {
         var t = new Task(() =>
         {
-            try
-            {
-                InitializeProperties();
-            }
-            catch (Exception ex)
-            {
-                PageContext.ShowException(ex);
-            }
+            SafeInitializePropertiesSynchronous();
         });
         t.Start();
         await t;
+    }
+
+    public void SafeInitializePropertiesSynchronous()
+    {
+        try
+        {
+            InitializeProperties();
+        }
+        catch (Exception ex)
+        {
+            PageContext.ShowException(ex);
+        }
     }
 
     public abstract void InitializeProperties();

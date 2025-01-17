@@ -43,7 +43,7 @@ public partial class CommandItem : BaseObservable, ICommandItem
         }
     }
 
-    public ICommand? Command
+    public virtual ICommand? Command
     {
         get => _command;
         set

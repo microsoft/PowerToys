@@ -29,8 +29,8 @@ public partial class MarkdownPageViewModel : PageViewModel
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
-    public MarkdownPageViewModel(IMarkdownPage model, TaskScheduler scheduler)
-        : base(model, scheduler)
+    public MarkdownPageViewModel(IMarkdownPage model, TaskScheduler scheduler, CommandPaletteHost host)
+        : base(model, scheduler, host)
     {
         _model = new(model);
     }

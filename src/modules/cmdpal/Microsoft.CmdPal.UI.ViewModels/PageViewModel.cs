@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.CmdPal.Extensions;
@@ -31,6 +32,17 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     [ObservableProperty]
     public partial string Filter { get; set; } = string.Empty;
 
+    [ObservableProperty]
+    public partial CommandPaletteHost ExtensionHost { get; private set; }
+
+    public bool HasStatusMessage => MostRecentStatusMessage != null;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasStatusMessage))]
+    public partial StatusMessageViewModel? MostRecentStatusMessage { get; private set; } = null;
+
+    public ObservableCollection<StatusMessageViewModel> StatusMessages => ExtensionHost.StatusMessages;
+
     // These are properties that are "observable" from the extension object
     // itself, in the sense that they get raised by PropChanged events from the
     // extension. However, we don't want to actually make them
@@ -47,13 +59,35 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     public IconInfoViewModel Icon { get; protected set; }
 
-    public PageViewModel(IPage? model, TaskScheduler scheduler)
+    public PageViewModel(IPage? model, TaskScheduler scheduler, CommandPaletteHost extensionHost)
         : base(null)
     {
         _pageModel = new(model);
         Scheduler = scheduler;
         PageContext = this;
+        ExtensionHost = extensionHost;
         Icon = new(null);
+
+        ExtensionHost.StatusMessages.CollectionChanged += StatusMessages_CollectionChanged;
+        UpdateHasStatusMessage();
+    }
+
+    private void StatusMessages_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        UpdateHasStatusMessage();
+    }
+
+    private void UpdateHasStatusMessage()
+    {
+        if (ExtensionHost.StatusMessages.Any())
+        {
+            var last = ExtensionHost.StatusMessages.Last();
+            MostRecentStatusMessage = last;
+        }
+        else
+        {
+            MostRecentStatusMessage = null;
+        }
     }
 
     //// Run on background thread from ListPage.xaml.cs

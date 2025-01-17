@@ -29,7 +29,8 @@ internal sealed partial class SampleListPage : ListPage
                             Text = "Sample Tag",
                         }
                 ],
-            }
+            },
+            new ListItem(new SendMessageCommand()) { Title = "I send messages" },
         ];
     }
 }

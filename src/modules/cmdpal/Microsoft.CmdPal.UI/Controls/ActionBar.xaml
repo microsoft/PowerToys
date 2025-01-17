@@ -21,6 +21,13 @@
                 EmptyValue="Collapsed"
                 NotEmptyValue="Visible" />
 
+            <cmdpalUI:MessageStateToSeverityConverter x:Key="MessageStateToSeverityConverter" />
+
+            <StackLayout
+                x:Name="VerticalStackLayout"
+                Orientation="Vertical"
+                Spacing="4" />
+
             <!--  Template for actions in the mode actions dropdown button  -->
             <DataTemplate x:Key="ContextMenuViewModelTemplate" x:DataType="viewmodels:CommandContextItemViewModel">
                 <ListViewItem KeyDown="ActionListViewItem_KeyDown" Tapped="ActionListViewItem_Tapped">
@@ -55,15 +62,49 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <cpcontrols:IconBox
-            x:Name="IconBorder"
-            Width="16"
-            Height="16"
+        <Grid
+            x:Name="IconRoot"
             Margin="8,0,0,0"
-            x:Load="{x:Bind IsLoaded, Mode=OneWay}"
-            CornerRadius="{StaticResource ControlCornerRadius}"
-            SourceKey="{x:Bind CurrentPageViewModel.Icon, Mode=OneWay}"
-            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+            Tapped="PageIcon_Tapped">
+
+            <cpcontrols:IconBox
+                x:Name="IconBorder"
+                Width="16"
+                Height="16"
+                x:Load="{x:Bind IsLoaded, Mode=OneWay}"
+                CornerRadius="{StaticResource ControlCornerRadius}"
+                SourceKey="{x:Bind CurrentPageViewModel.Icon, Mode=OneWay}"
+                SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+            <InfoBadge Visibility="{x:Bind CurrentPageViewModel.HasStatusMessage, Mode=OneWay}" Value="{x:Bind CurrentPageViewModel.StatusMessages.Count, Mode=OneWay}" />
+            <Grid.ContextFlyout>
+                <Flyout x:Name="StatusMessagesFlyout" Placement="TopEdgeAlignedLeft">
+                    <ItemsRepeater
+                        x:Name="MessagesDropdown"
+                        Margin="-8"
+                        ItemsSource="{x:Bind CurrentPageViewModel.StatusMessages, Mode=OneWay}"
+                        Layout="{StaticResource VerticalStackLayout}">
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="viewmodels:StatusMessageViewModel">
+                                <StackPanel
+                                    Grid.Row="0"
+                                    Margin="0"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Bottom"
+                                    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                                    CornerRadius="0">
+                                    <InfoBar
+                                        CornerRadius="{ThemeResource ControlCornerRadius}"
+                                        IsClosable="False"
+                                        IsOpen="True"
+                                        Message="{x:Bind Message, Mode=OneWay}"
+                                        Severity="{x:Bind State, Mode=OneWay, Converter={StaticResource MessageStateToSeverityConverter}}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+                </Flyout>
+            </Grid.ContextFlyout>
+        </Grid>
 
         <TextBlock
             Grid.Column="1"

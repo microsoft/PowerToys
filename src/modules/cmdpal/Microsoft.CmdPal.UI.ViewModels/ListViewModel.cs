@@ -39,8 +39,8 @@ public partial class ListViewModel : PageViewModel
 
     private bool _isDynamic;
 
-    public ListViewModel(IListPage model, TaskScheduler scheduler)
-        : base(model, scheduler)
+    public ListViewModel(IListPage model, TaskScheduler scheduler, CommandPaletteHost host)
+        : base(model, scheduler, host)
     {
         _model = new(model);
     }
