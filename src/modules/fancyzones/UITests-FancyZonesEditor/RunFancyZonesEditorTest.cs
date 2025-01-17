@@ -6,7 +6,9 @@ using System.Collections.Generic;
 
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UITests;
+using Microsoft.FancyZonesEditor.UITests.Utils;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
+using Microsoft.UITests.API;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace UITests_FancyZonesEditor
@@ -14,8 +16,21 @@ namespace UITests_FancyZonesEditor
     [TestClass]
     public class RunFancyZonesEditorTest
     {
-        private static FancyZonesEditorSession? _session;
+        private const string FancyZonesEditorPath = @"\..\..\..\PowerToys.FancyZonesEditor.exe";
+        private static FancyZonesEditorFiles? _files;
+        private static UITestAPI? _uITestAPI;
+
         private static TestContext? _context;
+
+        [AssemblyInitialize]
+        public static void SetupAll(TestContext context)
+        {
+        }
+
+        [AssemblyCleanup]
+        public static void CleanupAll()
+        {
+        }
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
@@ -48,7 +63,8 @@ namespace UITests_FancyZonesEditor
                     },
                 },
             };
-            FancyZonesEditorSession.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
+            _files = new FancyZonesEditorFiles();
+            _files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
 
             LayoutTemplates layoutTemplates = new LayoutTemplates();
             LayoutTemplates.TemplateLayoutsListWrapper templateLayoutsListWrapper = new LayoutTemplates.TemplateLayoutsListWrapper
@@ -98,81 +114,89 @@ namespace UITests_FancyZonesEditor
                     },
                 },
             };
-            FancyZonesEditorSession.Files.LayoutTemplatesIOHelper.WriteData(layoutTemplates.Serialize(templateLayoutsListWrapper));
+            _files.LayoutTemplatesIOHelper.WriteData(layoutTemplates.Serialize(templateLayoutsListWrapper));
 
             CustomLayouts customLayouts = new CustomLayouts();
             CustomLayouts.CustomLayoutListWrapper customLayoutListWrapper = new CustomLayouts.CustomLayoutListWrapper
             {
                 CustomLayouts = new List<CustomLayouts.CustomLayoutWrapper> { },
             };
-            FancyZonesEditorSession.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
+            _files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
 
             DefaultLayouts defaultLayouts = new DefaultLayouts();
             DefaultLayouts.DefaultLayoutsListWrapper defaultLayoutsListWrapper = new DefaultLayouts.DefaultLayoutsListWrapper
             {
                 DefaultLayouts = new List<DefaultLayouts.DefaultLayoutWrapper> { },
             };
-            FancyZonesEditorSession.Files.DefaultLayoutsIOHelper.WriteData(defaultLayouts.Serialize(defaultLayoutsListWrapper));
+            _files.DefaultLayoutsIOHelper.WriteData(defaultLayouts.Serialize(defaultLayoutsListWrapper));
 
             LayoutHotkeys layoutHotkeys = new LayoutHotkeys();
             LayoutHotkeys.LayoutHotkeysWrapper layoutHotkeysWrapper = new LayoutHotkeys.LayoutHotkeysWrapper
             {
                 LayoutHotkeys = new List<LayoutHotkeys.LayoutHotkeyWrapper> { },
             };
-            FancyZonesEditorSession.Files.LayoutHotkeysIOHelper.WriteData(layoutHotkeys.Serialize(layoutHotkeysWrapper));
+            _files.LayoutHotkeysIOHelper.WriteData(layoutHotkeys.Serialize(layoutHotkeysWrapper));
 
             AppliedLayouts appliedLayouts = new AppliedLayouts();
             AppliedLayouts.AppliedLayoutsListWrapper appliedLayoutsWrapper = new AppliedLayouts.AppliedLayoutsListWrapper
             {
                 AppliedLayouts = new List<AppliedLayouts.AppliedLayoutWrapper> { },
             };
-            FancyZonesEditorSession.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
+            _files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            FancyZonesEditorSession.Files.Restore();
-            _context = null;
+            if (_files != null)
+            {
+                _files.Restore();
+            }
         }
 
         [TestInitialize]
         public void TestInitialize()
         {
-            _session = new FancyZonesEditorSession(_context!);
+            _uITestAPI = new UITestAPI();
+            _uITestAPI.Init(FancyZonesEditorPath);
         }
 
         [TestCleanup]
         public void TestCleanup()
         {
-            _session?.Close(_context!);
+            if (_uITestAPI != null && _context != null)
+            {
+                _uITestAPI.Close(_context);
+            }
+
+            _context = null;
         }
 
         [TestMethod]
         public void OpenEditorWindow() // verify the session is initialized
         {
-            Assert.IsNotNull(_session?.Session);
+            Assert.IsNotNull(_uITestAPI);
         }
 
         [TestMethod]
         public void OpenNewLayoutDialog() // verify the new layout dialog is opened
         {
-            _session?.Click_CreateNewLayout();
-            Assert.IsNotNull(_session?.Session?.FindElementsByName("Choose layout type")); // check the pane header
+            _uITestAPI?.Click_CreateNewLayout();
+            Assert.IsNotNull(_uITestAPI?.Session?.FindElementsByName("Choose layout type")); // check the pane header
         }
 
         [TestMethod]
         public void OpenEditLayoutDialog() // verify the edit layout dialog is opened
         {
-            _session?.Click_EditLayout(TestConstants.TemplateLayoutNames[Constants.TemplateLayout.Grid]);
-            Assert.IsNotNull(_session?.Session?.FindElementByAccessibilityId("EditLayoutDialogTitle")); // check the pane header
-            Assert.IsNotNull(_session?.Session?.FindElementsByName("Edit 'Grid'")); // verify it's opened for the correct layout
+            _uITestAPI?.Click_EditLayout(TestConstants.TemplateLayoutNames[Constants.TemplateLayout.Grid]);
+            Assert.IsNotNull(_uITestAPI?.Session?.FindElementByAccessibilityId("EditLayoutDialogTitle")); // check the pane header
+            Assert.IsNotNull(_uITestAPI?.Session?.FindElementsByName("Edit 'Grid'")); // verify it's opened for the correct layout
         }
 
         [TestMethod]
         public void OpenContextMenu() // verify the context menu is opened
         {
-            Assert.IsNotNull(_session?.OpenContextMenu(TestConstants.TemplateLayoutNames[Constants.TemplateLayout.Columns]));
+            Assert.IsNotNull(_uITestAPI?.OpenContextMenu(TestConstants.TemplateLayoutNames[Constants.TemplateLayout.Columns]));
         }
     }
 }
