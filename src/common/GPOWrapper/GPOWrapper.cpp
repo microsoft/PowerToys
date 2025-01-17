@@ -128,6 +128,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredAdvancedPasteEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredZoomItEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredZoomItEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredMouseWithoutBordersEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMouseWithoutBordersEnabledValue());

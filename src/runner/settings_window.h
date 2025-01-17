@@ -25,6 +25,7 @@ enum class ESettingsWindowNames
     EnvironmentVariables,
     AdvancedPaste,
     NewPlus,
+    ZoomIt,
 };
 
 std::string ESettingsWindowNames_to_string(ESettingsWindowNames value);
