@@ -6,7 +6,6 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
@@ -29,7 +28,7 @@ internal static class MachineStuff
     private static readonly Lock McMatrixLock = new();
 
     internal const byte MAX_MACHINE = 4;
-    internal const byte MAX_SOCKET = MAX_MACHINE * 2;
+    private const byte MAX_SOCKET = MAX_MACHINE * 2;
     internal const long HEARTBEAT_TIMEOUT = 1500000; // 30 Mins
     private const int SKIP_PIXELS = 1;
     private const int JUMP_PIXELS = 2;
@@ -37,7 +36,9 @@ internal static class MachineStuff
 #pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
     internal static ID desMachineID;
 #pragma warning restore SA1307
+#pragma warning disable SA1306 // Field should begin with a lower-case letter
     internal static string DesMachineName = string.Empty;
+#pragma warning restore SA1306
 #pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
     internal static ID newDesMachineID;
     internal static ID newDesMachineIdEx;
@@ -59,7 +60,9 @@ internal static class MachineStuff
 
     internal static MyRectangle PrimaryScreenBounds => MachineStuff.primaryScreenBounds;
 
+#pragma warning disable SA1306 // Field should begin with a lower-case letter
     internal static MouseLocation SwitchLocation = new();
+#pragma warning restore SA1306
 
     internal static ID NewDesMachineID
     {
