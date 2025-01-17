@@ -120,6 +120,10 @@ public static class LoggerTests
             _ = Logger.PrivateDump(sb, new Common(), "[Other Logs]\r\n===============\r\n", 0, settingsDumpObjectsLevel, false);
             sb.AppendLine("[Logger]\r\n===============");
             Logger.DumpType(sb, typeof(Logger), 0, settingsDumpObjectsLevel);
+            sb.AppendLine("[DragDrop]\r\n===============");
+            Logger.DumpType(sb, typeof(DragDrop), 0, settingsDumpObjectsLevel);
+            sb.AppendLine("[MachineStuff]\r\n===============");
+            Logger.DumpType(sb, typeof(MachineStuff), 0, settingsDumpObjectsLevel);
             sb.AppendLine("[Receiver]\r\n===============");
             Logger.DumpType(sb, typeof(Receiver), 0, settingsDumpObjectsLevel);
             var actual = sb.ToString();
