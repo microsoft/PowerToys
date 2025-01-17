@@ -45,7 +45,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     // `IsLoading` property as a combo of this value and `IsInitialized`
     public bool ModelIsLoading { get; protected set; } = true;
 
-    public IconInfo Icon { get; protected set; } = new(string.Empty);
+    public IconInfoViewModel Icon { get; protected set; }
 
     public PageViewModel(IPage? model, TaskScheduler scheduler)
         : base(null)
@@ -53,6 +53,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         _pageModel = new(model);
         Scheduler = scheduler;
         PageContext = this;
+        Icon = new(null);
     }
 
     //// Run on background thread from ListPage.xaml.cs
@@ -98,7 +99,8 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         Name = page.Name;
         ModelIsLoading = page.IsLoading;
         Title = page.Title;
-        Icon = page.Icon;
+        Icon = new(page.Icon);
+        Icon.InitializeProperties();
 
         // Let the UI know about our initial properties too.
         UpdateProperty(nameof(Name));
@@ -153,7 +155,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
                 UpdateProperty(nameof(ModelIsLoading));
                 break;
             case nameof(Icon):
-                this.Icon = model.Icon;
+                this.Icon = new(model.Icon);
                 break;
         }
 

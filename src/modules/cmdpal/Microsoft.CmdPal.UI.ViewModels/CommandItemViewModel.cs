@@ -25,7 +25,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
 
     public string Subtitle { get; private set; } = string.Empty;
 
-    public IconInfo Icon { get; private set; } = new(string.Empty);
+    public IconInfoViewModel Icon { get; private set; }// = new(string.Empty);
 
     public ExtensionObject<ICommand> Command { get; private set; } = new(null);
 
@@ -54,6 +54,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
         : base(errorContext)
     {
         _commandItemModel = item;
+        Icon = new(null);
     }
 
     //// Called from ListViewModel on background thread started in ListPage.xaml.cs
@@ -81,7 +82,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
         Subtitle = model.Subtitle;
 
         var listIcon = model.Icon;
-        Icon = listIcon ?? Command.Unsafe!.Icon;
+        var iconInfo = listIcon ?? Command.Unsafe!.Icon;
+        Icon = new(iconInfo);
+        Icon.InitializeProperties();
 
         var more = model.MoreCommands;
         if (more != null)
@@ -130,7 +133,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
             Title = "Error";
             Subtitle = "Item failed to load";
             MoreCommands = [];
-            Icon = new("❌");
+            Icon = new(new("❌")); // new("❌");
+            Icon.InitializeProperties();
         }
 
         return false;
@@ -169,7 +173,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
                 break;
             case nameof(Icon):
                 var listIcon = model.Icon;
-                Icon = listIcon != null ? listIcon : Command.Unsafe!.Icon;
+                var iconInfo = listIcon != null ? listIcon : Command.Unsafe!.Icon;
+                Icon = new(iconInfo);
+                Icon.InitializeProperties();
                 break;
 
                 // TODO! MoreCommands array, which needs to also raise HasMoreCommands

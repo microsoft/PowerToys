@@ -303,18 +303,8 @@ public sealed partial class ShellPage :
         get
         {
             var requestedTheme = ActualTheme;
-            var iconInfo = ViewModel.Details?.HeroImage;
-            var data = requestedTheme == Microsoft.UI.Xaml.ElementTheme.Dark ?
-                iconInfo?.Dark :
-                iconInfo?.Light;
-
-            // We have an icon, AND EITHER:
-            //      We have a string icon, OR
-            //      we have a data blob
-            var hasIcon = (data != null) &&
-                    (!string.IsNullOrEmpty(data.Icon) ||
-                    data.Data != null);
-            return hasIcon;
+            var iconInfoVM = ViewModel.Details?.HeroImage;
+            return iconInfoVM?.HasIcon(requestedTheme == Microsoft.UI.Xaml.ElementTheme.Light) ?? false;
         }
     }
 }

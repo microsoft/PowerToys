@@ -2,9 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.ExtViews;
+using Microsoft.CmdPal.UI.ViewModels;
 
 namespace Microsoft.CmdPal.UI.Helpers;
 
@@ -24,7 +24,7 @@ public static partial class IconCacheProvider
             return;
         }
 
-        if (args.Key is IconData iconData)
+        if (args.Key is IconDataViewModel iconData)
         {
             var deferral = args.GetDeferral();
 
@@ -32,7 +32,7 @@ public static partial class IconCacheProvider
 
             deferral.Complete();
         }
-        else if (args.Key is IconInfo iconInfo)
+        else if (args.Key is IconInfoViewModel iconInfo)
         {
             var deferral = args.GetDeferral();
 

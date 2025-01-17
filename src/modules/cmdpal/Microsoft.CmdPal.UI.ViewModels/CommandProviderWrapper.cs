@@ -28,7 +28,7 @@ public sealed class CommandProviderWrapper
 
     public string DisplayName { get; private set; } = string.Empty;
 
-    public IconInfo Icon { get; private set; } = new(string.Empty);
+    public IconInfoViewModel Icon { get; private set; } = new(null);
 
     public string ProviderId => $"{extensionWrapper?.PackageFamilyName ?? string.Empty}/{Id}";
 
@@ -42,7 +42,8 @@ public sealed class CommandProviderWrapper
         isValid = true;
         Id = provider.Id;
         DisplayName = provider.DisplayName;
-        Icon = provider.Icon;
+        Icon = new(provider.Icon);
+        Icon.InitializeProperties();
     }
 
     public CommandProviderWrapper(IExtensionWrapper extension)
@@ -89,7 +90,8 @@ public sealed class CommandProviderWrapper
 
         Id = _commandProvider.Id;
         DisplayName = _commandProvider.DisplayName;
-        Icon = _commandProvider.Icon;
+        Icon = new(_commandProvider.Icon);
+        Icon.InitializeProperties();
 
         if (commands != null)
         {

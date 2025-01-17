@@ -2,7 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Extensions;
+using System.Diagnostics;
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.Terminal.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
@@ -13,12 +14,12 @@ namespace Microsoft.CmdPal.UI.ExtViews;
 
 public sealed class IconCacheService(DispatcherQueue dispatcherQueue)
 {
-    public Task<IconSource?> GetIconSource(IconData icon) =>
+    public Task<IconSource?> GetIconSource(IconDataViewModel icon) =>
 
         // todo: actually implement a cache of some sort
         IconToSource(icon);
 
-    private async Task<IconSource?> IconToSource(IconData icon)
+    private async Task<IconSource?> IconToSource(IconDataViewModel icon)
     {
         // bodgy: apparently IconData, despite being a struct, doesn't get
         // MarshalByValue'd into our process. What's even the point then?
@@ -32,7 +33,14 @@ public sealed class IconCacheService(DispatcherQueue dispatcherQueue)
             }
             else if (icon.Data != null)
             {
-                return await StreamToIconSource(icon.Data);
+                try
+                {
+                    return await StreamToIconSource(icon.Data.Unsafe!);
+                }
+                catch
+                {
+                    Debug.WriteLine("Failed to load icon from stream");
+                }
             }
         }
         catch
