@@ -33,29 +33,12 @@
             Spacing="8" />
 
         <DataTemplate x:Key="TagTemplate" x:DataType="viewmodels:TagViewModel">
-            <StackPanel
-                Padding="4,2,4,2"
-                VerticalAlignment="Center"
-                Background="{x:Bind help:OptionalColorBrushCacheProvider.Convert(Background, x:False), Mode=OneWay}"
-                BorderThickness="1"
-                CornerRadius="4"
-                Orientation="Horizontal">
-                <cpcontrols:IconBox
-                    x:Name="IconBorder"
-                    Width="12"
-                    Height="12"
-                    Margin="0,0,4,0"
-                    Foreground="{x:Bind help:OptionalColorBrushCacheProvider.Convert(Foreground, x:True), Mode=OneWay}"
-                    SourceKey="{x:Bind Icon, Mode=OneWay}"
-                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
-                    Visibility="{x:Bind HasIcon, Mode=OneWay}" />
-
-                <TextBlock
-                    VerticalAlignment="Center"
-                    FontSize="12"
-                    Foreground="{x:Bind help:OptionalColorBrushCacheProvider.Convert(Foreground, x:True), Mode=OneWay}"
-                    Text="{x:Bind Text, Mode=OneWay}" />
-            </StackPanel>
+            <cpcontrols:Tag
+                BackgroundColor="{x:Bind Background, Mode=OneWay}"
+                ForegroundColor="{x:Bind Foreground, Mode=OneWay}"
+                Icon="{x:Bind Icon, Mode=OneWay}"
+                Text="{x:Bind Text, Mode=OneWay}"
+                ToolTipService.ToolTip="{x:Bind ToolTip, Mode=OneWay}" />
         </DataTemplate>
 
         <!--  https://learn.microsoft.com/windows/apps/design/controls/itemsview#specify-the-look-of-the-items  -->
@@ -69,7 +52,6 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-
 
                     <cpcontrols:IconBox
                         x:Name="IconBorder"

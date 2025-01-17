@@ -11,8 +11,7 @@
                 <!--  Other merged dictionaries here  -->
                 <ResourceDictionary Source="Styles/Button.xaml" />
                 <ResourceDictionary Source="Styles/TextBox.xaml" />
-                <ResourceDictionary Source="Controls/Tag/Tag.xaml" />
-
+                <ResourceDictionary Source="Controls/Tag.xaml" />
                 <ResourceDictionary Source="Controls/KeyVisual/KeyVisual.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <!--  Other app resources here  -->

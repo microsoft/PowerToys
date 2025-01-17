@@ -13,15 +13,11 @@ public static partial class OptionalColorBrushCacheProvider
 {
     private static readonly Dictionary<OptionalColor, SolidColorBrush> _brushCache = [];
 
-    //// TODO: Not sure how best to make this configurable or provide a themed resource here... (mostly due to shortcomings of x:Bind/MarkupExtension, need to file many bugs)
-    private static readonly SolidColorBrush _defaultBackgroundBrush = new(Colors.Black);
-    private static readonly SolidColorBrush _defaultForegroundBrush = new(Colors.White);
-
-    public static SolidColorBrush? Convert(OptionalColor color, bool isForeground)
+    public static SolidColorBrush? Convert(OptionalColor color)
     {
         if (!color.HasValue)
         {
-            return isForeground ? _defaultForegroundBrush : _defaultBackgroundBrush;
+            return null;
         }
 
         if (!_brushCache.TryGetValue(color, out var brush))

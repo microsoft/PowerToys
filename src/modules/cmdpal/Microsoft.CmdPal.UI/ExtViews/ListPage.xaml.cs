@@ -4,6 +4,7 @@
 
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Xaml;
@@ -105,6 +106,16 @@ public sealed partial class ListPage : Page,
         // here, then in Page_ItemsUpdated trying to select that cached item if
         // it's in the list (otherwise, clear the cache), but that seems
         // aggressively bodgy for something that mostly just works today.
+
+        // When the selection changes, _smooth_ scroll to it.
+        // If you use ListView.ScrollIntoView() by itself, then this will
+        // intermittently _crash_ if an item has tags. The WCT extension
+        // though, to smooth scroll instead, slows things down just enough to
+        // prevent the crash.
+        if (ItemsList.SelectedItem != null)
+        {
+            ItemsList.SmoothScrollIntoViewWithItemAsync(ItemsList.SelectedItem);
+        }
     }
 
     public void Receive(NavigateNextCommand message)
@@ -116,7 +127,6 @@ public sealed partial class ListPage : Page,
         if (ItemsList.SelectedIndex < ItemsList.Items.Count - 1)
         {
             ItemsList.SelectedIndex++;
-            ItemsList.ScrollIntoView(ItemsList.SelectedItem);
         }
     }
 
@@ -125,7 +135,6 @@ public sealed partial class ListPage : Page,
         if (ItemsList.SelectedIndex > 0)
         {
             ItemsList.SelectedIndex--;
-            ItemsList.ScrollIntoView(ItemsList.SelectedItem);
         }
     }
 
