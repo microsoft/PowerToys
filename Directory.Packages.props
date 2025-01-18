@@ -33,7 +33,7 @@
     <PackageVersion Include="HtmlAgilityPack" Version="1.12.3" />
     <PackageVersion Include="Humanizer" Version="2.14.1" />
     <PackageVersion Include="hyjiacan.pinyin4net" Version="4.1.1" />
-    <PackageVersion Include="Mages" Version="2.0.2" />
+    <PackageVersion Include="Mages" Version="3.0.0" />
     <PackageVersion Include="Markdig.Signed" Version="0.34.0" />
     <!-- Including MessagePack to force version, since it's used by StreamJsonRpc but contains vulnerabilities. After StreamJsonRpc updates the version of MessagePack, we can upgrade StreamJsonRpc instead. -->
     <PackageVersion Include="MessagePack" Version="3.1.3" />
