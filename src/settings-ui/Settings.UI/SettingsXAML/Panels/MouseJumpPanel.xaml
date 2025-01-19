@@ -35,7 +35,11 @@
             IsClosable="False"
             IsOpen="{x:Bind ViewModel.IsJumpEnabledGpoConfigured, Mode=OneWay}"
             IsTabStop="{x:Bind ViewModel.IsJumpEnabledGpoConfigured, Mode=OneWay}"
-            Severity="Informational" />
+            Severity="Informational">
+            <InfoBar.IconSource>
+                <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+            </InfoBar.IconSource>
+        </InfoBar>
 
         <tkcontrols:SettingsCard
             x:Uid="MouseUtils_MouseJump_ActivationShortcut"

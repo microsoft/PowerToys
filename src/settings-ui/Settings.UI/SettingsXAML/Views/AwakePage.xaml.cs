@@ -164,7 +164,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 // Get the enabled state from GPO.
                 ViewModel.IsEnabledGpoConfigured = true;
-                ViewModel.IsEnabled = enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                ViewModel.EnabledGPOConfiguration = enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
             }
             else
             {
