@@ -22,6 +22,13 @@
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/ZoomIt.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <InfoBar
+                    x:Uid="ZoomIt_SimultaneousStandaloneZoomItWarning"
+                    Margin="0,0,0,25"
+                    IsClosable="False"
+                    IsOpen="True"
+                    IsTabStop="True"
+                    Severity="Warning" />
                 <tkcontrols:SettingsCard
                     x:Uid="ZoomIt_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}"
@@ -33,13 +40,11 @@
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    Severity="Informational" />
-                <InfoBar
-                    x:Uid="ZoomIt_SimultaneousStandaloneZoomItWarning"
-                    IsClosable="False"
-                    IsOpen="True"
-                    IsTabStop="True"
-                    Severity="Informational" />
+                    Severity="Informational">
+                    <InfoBar.IconSource>
+                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                    </InfoBar.IconSource>
+                </InfoBar>
                 <controls:SettingsGroup x:Uid="ZoomIt_BehaviorGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Toggle_ShowTrayIcon">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.ShowTrayIcon, Mode=TwoWay}" />
@@ -177,11 +182,8 @@
                                 IsEnabled="{x:Bind ViewModel.BreakShowBackgroundFile, Mode=OneWay}">
                                 <Button x:Uid="ZoomIt_Break_BackgroundFile_BrowseButton" Command="{x:Bind ViewModel.SelectBreakBackgroundFileCommand, Mode=OneWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="ZoomIt_Break_BackgroundStretch">
-                                <ToggleSwitch
-                                    x:Uid="ToggleSwitch"
-                                    IsEnabled="{x:Bind ViewModel.BreakShowBackgroundFile, Mode=OneWay}"
-                                    IsOn="{x:Bind ViewModel.BreakBackgroundStretch, Mode=TwoWay}" />
+                            <tkcontrols:SettingsCard x:Uid="ZoomIt_Break_BackgroundStretch" IsEnabled="{x:Bind ViewModel.BreakShowBackgroundFile, Mode=OneWay}">
+                                <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.BreakBackgroundStretch, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>

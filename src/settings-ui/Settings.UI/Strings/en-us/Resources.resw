@@ -4277,6 +4277,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="GPO_SomeSettingsAreManaged.Title" xml:space="preserve">
     <value>Some settings are managed by your organization.</value>
   </data>
+  <data name="GPO_AdvancedPasteAi_SettingIsManaged.Title" xml:space="preserve">
+    <value>AI features are managed by your organization.</value>
+  </data>
   <data name="GPO_SettingIsManaged_ToolTip.Text" xml:space="preserve">
     <value>This setting is managed by your organization.</value>
   </data>
@@ -4339,6 +4342,14 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AdvancedPaste_CloseAfterLosingFocus.Header" xml:space="preserve">
     <value>Automatically close the AdvancedPaste window after it loses focus</value>
     <comment>AdvancedPaste is a product name, do not loc</comment>
+  </data>
+  <data name="GPO_CommandNotFound_ForceDisabled.Title" xml:space="preserve">
+    <value>The Command Not Found module is disabled by your organization.</value>
+    <comment>"Command Not Found" is a product name</comment>
+  </data>
+  <data name="GPO_CommandNotFound_ForceEnabled.Title" xml:space="preserve">
+    <value>The Command Not Found module is enabled by your organization.</value>
+    <comment>"Command Not Found" is a product name</comment>
   </data>
   <data name="NewPlus.ModuleTitle" xml:space="preserve">
     <value>New+</value>
