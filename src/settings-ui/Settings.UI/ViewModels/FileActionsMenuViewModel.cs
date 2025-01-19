@@ -42,7 +42,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            _fileActionsMenuEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredSvgPreviewEnabledValue();
+            _fileActionsMenuEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredFileActionsMenuEnabledValue();
             if (_fileActionsMenuEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _fileActionsMenuEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
                 // Get the enabled state from GPO.

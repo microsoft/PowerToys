@@ -19,6 +19,17 @@
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFileActionsMenuEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.FileActionsMenuIsEnabled}" />
                 </tkcontrols:SettingsCard>
+                <InfoBar
+                    x:Uid="GPO_SettingIsManaged"
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.IsFileActionsMenuEnabledGpoConfigured, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.IsFileActionsMenuEnabledGpoConfigured, Mode=OneWay}"
+                    Severity="Informational">
+                    <InfoBar.IconSource>
+                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                    </InfoBar.IconSource>
+                </InfoBar>
+
                 <tkcontrols:SettingsCard
                     x:Uid="Activation_Shortcut"
                     HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
