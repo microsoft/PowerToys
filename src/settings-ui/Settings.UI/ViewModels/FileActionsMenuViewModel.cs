@@ -15,6 +15,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         private const string ModuleName = FileActionsMenuSettings.ModuleName;
 
+        private GeneralSettings GeneralSettingsConfig { get; set; }
+
         private FileActionsMenuSettings Settings { get; set; }
 
         private Func<string, int> SendConfigMSG { get; }
@@ -32,6 +34,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // To obtain the PowerPreview settings if it exists.
             // If the file does not exist, to create a new one and return the default settings configurations.
             ArgumentNullException.ThrowIfNull(moduleSettingsRepository);
+
+            GeneralSettingsConfig = generalSettingsRepository.SettingsConfig;
 
             Settings = moduleSettingsRepository.SettingsConfig;
 
@@ -72,6 +76,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _fileActionsMenuIsEnabled = value;
                     Settings.Properties.EnableFileActionsMenu = value;
+
+                    GeneralSettingsConfig.Enabled.FileActionsMenu = value;
+
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+                    SendConfigMSG(outgoing.ToString());
+
                     RaisePropertyChanged();
                 }
             }
@@ -85,7 +95,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _fileActionsMenuShortcut)
                 {
                     _fileActionsMenuShortcut = value ?? Settings.Properties.DefaultFileActionsMenuShortcut;
-                    Settings.Properties.FileActionsMenuShortcut = value;
+                    Settings.Properties.FileActionsMenuShortcut = _fileActionsMenuShortcut;
                     RaisePropertyChanged();
                 }
             }

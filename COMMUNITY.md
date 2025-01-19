@@ -15,14 +15,20 @@ Christian contributed New+ utility
 ### [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)
 CleanCodeDeveloper helped do massive amounts of code stability and image resizer work.
 
+### [@plante-msft](https://github.com/plante-msft) - Connor Plante
+Connor was the creator of Workspaces and helped create PowerToys Run v2
+
 ### [@damienleroy](https://github.com/damienleroy) - [Damien Leroy](https://www.linkedin.com/in/Damien-Leroy-b2734416a/)
 Damien has helped out by developing and contributing the Quick Accent utility.
 
-### [@daverayment ](https://github.com/daverayment ) - [David Rayment](https://www.linkedin.com/in/david-rayment-168b5251/)
+### [@daverayment ](https://github.com/daverayment) - [David Rayment](https://www.linkedin.com/in/david-rayment-168b5251/)
 Dave has helped improve the experience inside of Peek by adding in new features and fixing bugs.
 
 ### [@davidegiacometti](https://github.com/davidegiacometti) - [Davide Giacometti](https://www.linkedin.com/in/davidegiacometti/)
 Davide has helped fix multiple bugs, added new utilities, features, as well as help us with the ARM64 effort by porting applications to .NET Core.
+
+### [@ethanfangg](https://github.com/ethanfangg) - Ethan Fang
+Ethan helped run PowerToys and worked on improving and prototyping out next generation PowerToys
 
 ### [@franky920920](https://github.com/franky920920) - [Franky Chen](https://frankychen.net)
 Franky has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes to PowerToys.
@@ -39,6 +45,9 @@ Jeff added in multiple new features into Keyboard manager, such as key chord sup
 ### [@TheJoeFin](https://github.com/TheJoeFin) - [Joe Finney](https://joefinapps.com)
 Joe has helped triaging, discussing, issues as well as fixing bugs and building features for Text Extractor.
 
+### [@joadoumie](https://github.com/joadoumie) - Jordi Adoumie
+Jordi helped innovate amazing new features into Advanced Paste and helped create PowerToys Run v2
+  
 ### [@jsoref](https://github.com/jsoref) - [Josh Soref](https://check-spelling.dev/)
 Helping keep our spelling correct :)
 
@@ -121,6 +130,8 @@ Find My Mouse is based on Raymond Chen's SuperSonar.
 
 Crop And Lock is based on the original work of Robert Mikhayelyan, with Program Manager support from [@kevinguo305](https://github.com/kevinguo305) - Kevin Guo.
 
+ZoomIt's Video Recording Session code is based on Robert Mikhayelyan's https://github.com/robmikh/capturevideosample code.
+
 ### Microsoft InVEST team
 
 This amazing team helped PowerToys develop PowerToys Run and Keyboard manager as well as update our Settings to v2.  @alekhyareddy28, @arjunbalgovind, @jyuwono @laviusmotileng-ms, @ryanbodrug-microsoft, @saahmedm, @somil55, @traies, @udit3333
@@ -160,14 +171,19 @@ Other contributors:
   * Paul Schmitt - WWL
   * And many other Users!
 
+## ZoomIt original contributors
+
+ZoomIt source code was originally implemented by [Sysinternals](https://sysinternals.com):
+
+- [@markrussinovich](https://github.com/markrussinovich) - Mark Russinovich
+- [@foxmsft](https://github.com/foxmsft) - Alex Mihaiuc
+- [@johnstep](https://github.com/johnstep) - John Stephens
+
 ## PowerToys core team
 
 - [@crutkas](https://github.com/crutkas/) - Clint Rutkas - Lead
 - [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon - Lead
-- [@ethanfangg](https://github.com/ethanfangg) - Ethan Fang - Product Manager
-- [@plante-msft](https://github.com/plante-msft) - Connor Plante - Product Manager
 - [@nguyen-dows](https://github.com/nguyen-dows) - Christopher Nguyen - Product Manager
-- [@joadoumie](https://github.com/joadoumie) - Jordi Adoumie - Product Manager
 - [@jaimecbernardo](https://github.com/jaimecbernardo) - Jaime Bernardo - Dev lead
 - [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev lead
 - [@yeelam-gordon](https://github.com/yeelam-gordon) - Gordon Lam - Dev lead
@@ -193,6 +209,9 @@ Other contributors:
 # Former PowerToys core team members
 
 - [@indierawk2k2](https://github.com/indierawk2k2) - Mike Harsh - Product Manager
+- [@ethanfangg](https://github.com/ethanfangg) - Ethan Fang - Product Manager
+- [@plante-msft](https://github.com/plante-msft) - Connor Plante - Product Manager
+- [@joadoumie](https://github.com/joadoumie) - Jordi Adoumie - Product Manager
 - [@enricogior](https://github.com/enricogior) - Enrico Giordani - Dev Lead
 - [@bzoz](https://github.com/bzoz) - Bartosz Sosnowski - Dev
 - [@ivan100sic](https://github.com/ivan100sic) - Ivan Stošić - Dev

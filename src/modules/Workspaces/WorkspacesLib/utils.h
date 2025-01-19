@@ -40,23 +40,23 @@ CommandLineArgs split(std::wstring s, const std::wstring& delimiter)
         {
             cmdArgs.isRestarted = true;
         }
-        else if (!cmdArgs.workspaceId.empty())
-        {
-            try
-            {
-                auto invokePoint = static_cast<InvokePoint>(std::stoi(token));
-                cmdArgs.invokePoint = invokePoint;
-            }
-            catch (std::exception)
-            {
-            }
-        }
         else
         {
             auto guid = GuidFromString(token);
             if (guid.has_value())
             {
                 cmdArgs.workspaceId = token;
+            }
+            else
+            {
+                try
+                {
+                    auto invokePoint = static_cast<InvokePoint>(std::stoi(token));
+                    cmdArgs.invokePoint = invokePoint;
+                }
+                catch (std::exception)
+                {
+                }
             }
         }
     }

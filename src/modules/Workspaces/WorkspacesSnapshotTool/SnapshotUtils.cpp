@@ -10,6 +10,7 @@
 
 #include <WorkspacesLib/AppUtils.h>
 #include <WorkspacesLib/PwaHelper.h>
+#include <WindowProperties/WorkspacesWindowPropertyUtils.h>
 
 #pragma comment(lib, "ntdll.lib")
 
@@ -38,7 +39,7 @@ namespace SnapshotUtils
         return false;
     }
 
-    std::vector<WorkspacesData::WorkspacesProject::Application> GetApps(const std::function<unsigned int(HWND)> getMonitorNumberFromWindowHandle, const std::function<WorkspacesData::WorkspacesProject::Monitor::MonitorRect(unsigned int)> getMonitorRect)
+    std::vector<WorkspacesData::WorkspacesProject::Application> GetApps(bool isGuidNeeded, const std::function<unsigned int(HWND)> getMonitorNumberFromWindowHandle, const std::function<WorkspacesData::WorkspacesProject::Monitor::MonitorRect(unsigned int)> getMonitorRect)
     {
         Utils::PwaHelper pwaHelper{};
         std::vector<WorkspacesData::WorkspacesProject::Application> apps{};
@@ -157,7 +158,10 @@ namespace SnapshotUtils
                 rect.bottom = monitorRect.top + monitorRect.height;
             }
 
+            std::wstring guid = isGuidNeeded ? WorkspacesWindowProperties::GetGuidFromHwnd(window) : L"";
+
             WorkspacesData::WorkspacesProject::Application app{
+                .id = guid,
                 .name = appData.name,
                 .title = title,
                 .path = appData.installPath,

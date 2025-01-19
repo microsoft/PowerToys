@@ -21,7 +21,7 @@
   <?define powerToysComponentFilesPath=$(var.BinDir)WinUI3Apps\FileActionsMenuPlugins\PowerToys\?>
 
   <Fragment>
-    <DirectoryRef Id="INSTALLFOLDER">
+    <DirectoryRef Id="WinUI3AppsInstallFolder">
       <Directory Id="FileActionsMenuPluginsFolder" Name="FileActionsMenuPlugins">
         <Directory Id="ExecutableActionsFolder" Name="ExecutableActions" />
         <Directory Id="FileContentActionsFolder" Name="FileContentActions" />

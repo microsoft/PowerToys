@@ -17,7 +17,6 @@
                 "PowerToys.FilePreviewCommon.dll",
                 "PowerToys.Interop.dll",
                 "Tools\\PowerToys.BugReportTool.exe",
-                "WebcamReportTool\\PowerToys.WebcamReportTool.exe",
                 "StylesReportTool\\PowerToys.StylesReportTool.exe",
                 "Telemetry.dll",
                 "PowerToys.ManagedTelemetry.dll",
@@ -110,6 +109,7 @@
                 "FileLocksmithContextMenuPackage.msix",
 
                 "WinUI3Apps\\Peek.Common.dll",
+                "WinUI3Apps\\Peek.Helpers.dll",
                 "WinUI3Apps\\Peek.FilePreviewer.dll",
                 "WinUI3Apps\\Powertoys.Peek.UI.dll",
                 "WinUI3Apps\\Powertoys.Peek.UI.exe",
@@ -226,10 +226,9 @@
                 "PowerToys.ShortcutGuide.exe",
                 "PowerToys.ShortcutGuideModuleInterface.dll",
 
-                "PowerToys.VideoConferenceModule.dll",
-                "PowerToys.VideoConferenceProxyFilter_x86.dll",
-                "PowerToys.VideoConferenceProxyFilter_x64.dll",
-                "PowerToys.VideoConferenceProxyFilter_arm64.dll",
+                "PowerToys.ZoomIt.exe",
+                "PowerToys.ZoomItModuleInterface.dll",
+                "PowerToys.ZoomItSettingsInterop.dll",
 
                 "WinUI3Apps\\PowerToys.Settings.dll",
                 "WinUI3Apps\\PowerToys.Settings.exe"
@@ -346,7 +345,12 @@
                 "ColorCode.UWP.dll",
                 "UnitsNet.dll",
                 "UtfUnknown.dll",
-                "Wpf.Ui.dll"
+                "Wpf.Ui.dll",
+                "WinUI3Apps\\Microsoft.WindowsAPICodePack.Core.dll",
+                "WinUI3Apps\\Microsoft.WindowsAPICodePack.ExtendedLinguisticServices.dll",
+                "WinUI3Apps\\Microsoft.WindowsAPICodePack.Sensors.dll",
+                "WinUI3Apps\\Microsoft.WindowsAPICodePack.Shell.dll",
+                "WinUI3Apps\\Microsoft.WindowsAPICodePack.ShellExtensions.dll"
             ],
             "SigningInfo": {
                 "Operations": [
