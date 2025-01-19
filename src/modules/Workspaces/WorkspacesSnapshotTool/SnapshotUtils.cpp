@@ -3,6 +3,7 @@
 
 #include <common/utils/elevation.h>
 #include <common/utils/process_path.h>
+#include <common/utils/resources.h>
 #include <common/notifications/NotificationUtil.h>
 
 #include <workspaces-common/WindowEnumerator.h>
@@ -11,6 +12,8 @@
 #include <WorkspacesLib/AppUtils.h>
 #include <WorkspacesLib/PwaHelper.h>
 #include <WindowProperties/WorkspacesWindowPropertyUtils.h>
+
+#include "Generated Files/resource.h"
 
 #pragma comment(lib, "ntdll.lib")
 
@@ -74,10 +77,12 @@ namespace SnapshotUtils
                 // Notify the user that running as admin is required to process elevated windows.
                 if (!is_process_elevated() && IsProcessElevated(pid))
                 {
-                    notifications::WarnIfElevationIsRequired(GET_RESOURCE_STRING(IDS_PROJECTS),
-                                                             GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED),
-                                                             GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED_LEARN_MORE),
-                                                             GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED_DIALOG_DONT_SHOW_AGAIN));
+                    auto notificationUtil = std::make_unique<notifications::NotificationUtil>();
+
+                    notificationUtil->WarnIfElevationIsRequired(GET_RESOURCE_STRING(IDS_PROJECTS),
+                                                                GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED),
+                                                                GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED_LEARN_MORE),
+                                                                GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED_DIALOG_DONT_SHOW_AGAIN));
                 }
 
                 continue;
