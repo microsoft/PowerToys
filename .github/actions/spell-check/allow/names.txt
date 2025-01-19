@@ -193,6 +193,7 @@ capturevideosample
 cmdow
 Controlz
 cortana
+dlnilsson
 fancymouse
 firefox
 gpt
