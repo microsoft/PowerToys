@@ -22,6 +22,8 @@ using Microsoft.PowerToys.Telemetry;
 using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Core;
 
+using Thread = MouseWithoutBorders.Core.Thread;
+
 namespace MouseWithoutBorders
 {
     /* Common.DragDrop.cs
@@ -238,7 +240,7 @@ namespace MouseWithoutBorders
 
         internal static void DragDropStep08(DATA package)
         {
-            GetNameOfMachineWithClipboardData(package);
+            Receiver.GetNameOfMachineWithClipboardData(package);
             Logger.LogDebug("DragDropStep08: ClipboardDragDrop Received. machine with drag file was set");
         }
 

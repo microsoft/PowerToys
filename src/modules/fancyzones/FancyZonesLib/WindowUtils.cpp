@@ -15,7 +15,6 @@
 namespace NonLocalizable
 {
     const wchar_t PowerToysAppFZEditor[] = L"POWERTOYS.FANCYZONESEDITOR.EXE";
-    const wchar_t PowerToysWorkspacesEditor[] = L"POWERTOYS.WORKSPACESEDITOR.EXE";
     const char SplashClassName[] = "MsoSplash";
     const wchar_t CoreWindow[] = L"Windows.UI.Core.CoreWindow";
     const wchar_t SearchUI[] = L"SearchUI.exe";
@@ -185,7 +184,7 @@ bool FancyZonesWindowUtils::IsExcludedByDefault(const HWND& hwnd, const std::wst
         return true;
     }
 
-    static std::vector<std::wstring> defaultExcludedApps = { NonLocalizable::PowerToysAppFZEditor, NonLocalizable::PowerToysWorkspacesEditor, NonLocalizable::CoreWindow, NonLocalizable::SearchUI };
+    static std::vector<std::wstring> defaultExcludedApps = { NonLocalizable::PowerToysAppFZEditor, NonLocalizable::CoreWindow, NonLocalizable::SearchUI };
     return (check_excluded_app(hwnd, processPath, defaultExcludedApps));
 }
 

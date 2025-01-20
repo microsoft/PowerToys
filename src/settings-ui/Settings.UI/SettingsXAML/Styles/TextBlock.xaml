@@ -19,6 +19,11 @@
         <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
     </Style>
 
+    <x:Double x:Key="SecondaryLinkFontSize">12</x:Double>
+    <Style x:Key="SecondaryLinkTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource SecondaryTextFontSize}" />
+    </Style>
+
     <x:Double x:Key="HeaderTextFontSize">12</x:Double>
     <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="{StaticResource HeaderTextFontSize}" />
