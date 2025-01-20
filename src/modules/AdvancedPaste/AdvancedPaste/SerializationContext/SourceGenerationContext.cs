@@ -9,7 +9,7 @@ using AdvancedPaste.Models.KernelQueryCache;
 namespace AdvancedPaste.SerializationContext;
 
 [JsonSerializable(typeof(PersistedCache))]
-[JsonSerializable(typeof(LogEvent))]
+[JsonSerializable(typeof(AIServiceFormatEvent))]
 [JsonSourceGenerationOptions(UseStringEnumConverter = true)]
 public sealed partial class SourceGenerationContext : JsonSerializerContext
 {

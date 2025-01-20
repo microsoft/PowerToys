@@ -9,19 +9,9 @@ using AdvancedPaste.Telemetry;
 
 namespace AdvancedPaste.Helpers
 {
-    public class LogEvent
+    public class AIServiceFormatEvent
     {
-        public LogEvent(bool cacheUsed, bool isSavedQuery, int promptTokens, int completionTokens, string modelName, string actionChain)
-        {
-            CacheUsed = cacheUsed;
-            IsSavedQuery = isSavedQuery;
-            PromptTokens = promptTokens;
-            CompletionTokens = completionTokens;
-            ModelName = modelName;
-            ActionChain = actionChain;
-        }
-
-        public LogEvent(AdvancedPasteSemanticKernelFormatEvent semanticKernelFormatEvent)
+        public AIServiceFormatEvent(AdvancedPasteSemanticKernelFormatEvent semanticKernelFormatEvent)
         {
             CacheUsed = semanticKernelFormatEvent.CacheUsed;
             IsSavedQuery = semanticKernelFormatEvent.IsSavedQuery;
@@ -31,7 +21,7 @@ namespace AdvancedPaste.Helpers
             ActionChain = semanticKernelFormatEvent.ActionChain;
         }
 
-        public LogEvent(AdvancedPasteGenerateCustomFormatEvent generateCustomFormatEvent)
+        public AIServiceFormatEvent(AdvancedPasteGenerateCustomFormatEvent generateCustomFormatEvent)
         {
             PromptTokens = generateCustomFormatEvent.PromptTokens;
             CompletionTokens = generateCustomFormatEvent.CompletionTokens;
@@ -50,6 +40,6 @@ namespace AdvancedPaste.Helpers
 
         public string ActionChain { get; set; }
 
-        public string ToJsonString() => JsonSerializer.Serialize(this, SourceGenerationContext.Default.PersistedCache);
+        public string ToJsonString() => JsonSerializer.Serialize(this, SourceGenerationContext.Default.AIServiceFormatEvent);
     }
 }
