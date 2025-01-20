@@ -144,6 +144,15 @@
   <data name="ClipboardHistoryButton.Text" xml:space="preserve">
     <value>Clipboard history</value>
   </data>
+  <data name="ClipboardHistoryButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Clipboard history</value>
+  </data>
+  <data name="ClipboardHistoryImage" xml:space="preserve">
+    <value>Image data</value>
+  </data>
+  <data name="ClipboardHistoryItemMoreOptionsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>More options</value>
+  </data>
   <data name="ClipboardHistoryItemDeleteButton.Text" xml:space="preserve">
     <value>Delete</value>
   </data>

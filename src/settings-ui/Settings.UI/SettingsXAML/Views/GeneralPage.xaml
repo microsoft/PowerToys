@@ -63,7 +63,11 @@
                                 IsClosable="False"
                                 IsOpen="{x:Bind ViewModel.SomeUpdateSettingsAreGpoManaged, Mode=OneWay}"
                                 IsTabStop="{x:Bind ViewModel.SomeUpdateSettingsAreGpoManaged, Mode=OneWay}"
-                                Severity="Informational" />
+                                Severity="Informational">
+                                <InfoBar.IconSource>
+                                    <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                                </InfoBar.IconSource>
+                            </InfoBar>
                         </tkcontrols:SettingsExpander.ItemsHeader>
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard
@@ -379,7 +383,11 @@
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay}"
-                        Severity="Informational" />
+                        Severity="Informational">
+                        <InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource>
+                    </InfoBar>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="General_DiagnosticsAndFeedback" Visibility="Visible">
                     <StackPanel>
@@ -393,17 +401,24 @@
                             IsEnabled="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                             <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableDataDiagnostics, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
+                        <InfoBar
+                            x:Uid="GPO_SettingIsManaged"
+                            IsClosable="False"
+                            IsOpen="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}"
+                            IsTabStop="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}"
+                            Severity="Informational">
+                            <InfoBar.IconSource>
+                                <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                            </InfoBar.IconSource>
+                        </InfoBar>
                         <tkcontrols:SettingsExpander
                             x:Uid="GeneralPage_ViewDiagnosticData"
                             HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}"
                             IsEnabled="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
                             IsExpanded="True">
                             <tkcontrols:SettingsExpander.Items>
-                                <tkcontrols:SettingsCard x:Uid="GeneralPage_EnableViewDiagnosticData">
-                                    <ToggleSwitch
-                                        x:Uid="ToggleSwitch"
-                                        IsEnabled="{x:Bind ViewModel.EnableDataDiagnostics, Mode=TwoWay}"
-                                        IsOn="{x:Bind ViewModel.EnableViewDataDiagnostics, Mode=TwoWay}" />
+                                <tkcontrols:SettingsCard x:Uid="GeneralPage_EnableViewDiagnosticData" IsEnabled="{x:Bind ViewModel.EnableDataDiagnostics, Mode=TwoWay}">
+                                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableViewDataDiagnostics, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard
                                     x:Uid="GeneralPage_ViewDiagnosticDataViewer"
@@ -422,12 +437,6 @@
                                 <Button x:Uid="GeneralPage_ViewDiagnosticDataViewerInfoButton" Click="Click_ViewDiagnosticDataViewerRestart" />
                             </InfoBar.ActionButton>
                         </InfoBar>
-                        <InfoBar
-                            x:Uid="GPO_SettingIsManaged"
-                            IsClosable="False"
-                            IsOpen="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}"
-                            IsTabStop="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}"
-                            Severity="Informational" />
 
                     </StackPanel>
                 </controls:SettingsGroup>

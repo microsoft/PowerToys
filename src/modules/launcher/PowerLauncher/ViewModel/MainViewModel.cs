@@ -466,7 +466,7 @@ namespace PowerLauncher.ViewModel
                         // Don't trigger telemetry on cold boot. Must have been loaded at least once.
                         if (value == Visibility.Visible)
                         {
-                            PowerToysTelemetry.Log.WriteEvent(new LauncherShowEvent());
+                            PowerToysTelemetry.Log.WriteEvent(new LauncherShowEvent(_settings.Hotkey));
                         }
                         else
                         {

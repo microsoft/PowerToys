@@ -25,6 +25,7 @@
 #include <common/utils/os-detect.h>
 #include <common/utils/processApi.h>
 #include <common/utils/resources.h>
+#include <common/utils/clean_video_conference.h>
 
 #include "UpdateUtils.h"
 #include "ActionRunnerUtils.h"
@@ -132,6 +133,15 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         } }.detach();
 
         chdir_current_executable();
+
+        // We deprecated a utility called Video Conference Mute, which registered itself as a video input device.
+        // When running elevated, we try to clean up the device registration from previous installations.
+        // This is done here too because a user-scope installer won't be able to remove the driver registration due to lack of permissions.
+        if (isProcessElevated)
+        {
+            clean_video_conference();
+        }
+
         // Load PowerToys DLLs
 
         std::vector<std::wstring_view> knownModules = {
@@ -163,13 +173,8 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.CropAndLockModuleInterface.dll",
             L"PowerToys.CmdNotFoundModuleInterface.dll",
             L"PowerToys.WorkspacesModuleInterface.dll",
+            L"PowerToys.ZoomItModuleInterface.dll",
         };
-        const auto VCM_PATH = L"PowerToys.VideoConferenceModule.dll";
-        if (const auto mf = LoadLibraryA("mf.dll"))
-        {
-            FreeLibrary(mf);
-            knownModules.emplace_back(VCM_PATH);
-        }
 
         for (auto moduleSubdir : knownModules)
         {

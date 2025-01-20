@@ -55,6 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             new PowerAccentLanguageModel("MI", "QuickAccent_SelectedLanguage_Maori", LanguageGroup),
             new PowerAccentLanguageModel("NO", "QuickAccent_SelectedLanguage_Norwegian", LanguageGroup),
             new PowerAccentLanguageModel("PI", "QuickAccent_SelectedLanguage_Pinyin", LanguageGroup),
+            new PowerAccentLanguageModel("PIE", "QuickAccent_SelectedLanguage_Proto_Indo_European", LanguageGroup),
             new PowerAccentLanguageModel("PL", "QuickAccent_SelectedLanguage_Polish", LanguageGroup),
             new PowerAccentLanguageModel("PT", "QuickAccent_SelectedLanguage_Portuguese", LanguageGroup),
             new PowerAccentLanguageModel("RO", "QuickAccent_SelectedLanguage_Romanian", LanguageGroup),
@@ -114,6 +115,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 SelectedLanguageOptions = _powerAccentSettings.Properties.SelectedLang.Value.Split(',')
                    .Select(l => Languages.Find(lang => lang.LanguageCode == l))
+                   .Where(l => l != null) // Wrongly typed languages will appear as null after find. We want to remove those to avoid crashes.
                    .ToArray();
             }
             else if (_powerAccentSettings.Properties.SelectedLang.Value.Contains("ALL"))

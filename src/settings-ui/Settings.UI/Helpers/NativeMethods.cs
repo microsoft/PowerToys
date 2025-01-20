@@ -48,6 +48,12 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         [DllImport("Comdlg32.dll", CharSet = CharSet.Unicode)]
         internal static extern bool GetOpenFileName([In, Out] OpenFileName openFileName);
 
+        [DllImport("comdlg32.dll", CharSet = CharSet.Auto, EntryPoint = "ChooseFont", SetLastError = true)]
+        internal static extern bool ChooseFont(IntPtr lpChooseFont);
+
+        [DllImport("comdlg32.dll", SetLastError = true)]
+        internal static extern int CommDlgExtendedError();
+
 #pragma warning disable CA1401 // P/Invokes should not be visible
         [DllImport("user32.dll")]
         public static extern bool ShowWindow(System.IntPtr hWnd, int nCmdShow);

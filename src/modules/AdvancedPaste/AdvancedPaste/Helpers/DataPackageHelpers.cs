@@ -18,7 +18,7 @@ namespace AdvancedPaste.Helpers;
 
 internal static class DataPackageHelpers
 {
-    private static readonly HashSet<string> ImageFileTypes = new(StringComparer.InvariantCultureIgnoreCase) { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".ico", ".svg" };
+    private static readonly Lazy<HashSet<string>> ImageFileTypes = new(GetImageFileTypes());
 
     private static readonly (string DataFormat, ClipboardFormat ClipboardFormat)[] DataFormats =
     [
@@ -57,7 +57,7 @@ internal static class DataPackageHelpers
             {
                 availableFormats |= ClipboardFormat.File;
 
-                if (ImageFileTypes.Contains(file.FileType))
+                if (ImageFileTypes.Value.Contains(file.FileType))
                 {
                     availableFormats |= ClipboardFormat.Image;
                 }
@@ -148,4 +148,9 @@ internal static class DataPackageHelpers
 
         return null;
     }
+
+    private static HashSet<string> GetImageFileTypes() =>
+               BitmapDecoder.GetDecoderInformationEnumerator()
+                            .SelectMany(di => di.FileExtensions)
+                            .ToHashSet(StringComparer.InvariantCultureIgnoreCase);
 }

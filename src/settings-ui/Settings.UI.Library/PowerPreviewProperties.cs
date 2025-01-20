@@ -155,6 +155,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool monacoPreviewMinimap;
+
+        [JsonPropertyName("monaco-previewer-minimap")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool MonacoPreviewMinimap
+        {
+            get => monacoPreviewMinimap;
+            set
+            {
+                if (value != monacoPreviewMinimap)
+                {
+                    LogTelemetryEvent(value);
+                    monacoPreviewMinimap = value;
+                }
+            }
+        }
+
         private bool enablePdfPreview;
 
         [JsonPropertyName("pdf-previewer-toggle-setting")]

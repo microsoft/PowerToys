@@ -53,7 +53,7 @@ namespace powertoys_gpo {
     const std::wstring POLICY_CONFIGURE_ENABLED_SHORTCUT_GUIDE = L"ConfigureEnabledUtilityShortcutGuide";
     const std::wstring POLICY_CONFIGURE_ENABLED_TEXT_EXTRACTOR = L"ConfigureEnabledUtilityTextExtractor";
     const std::wstring POLICY_CONFIGURE_ENABLED_ADVANCED_PASTE = L"ConfigureEnabledUtilityAdvancedPaste";
-    const std::wstring POLICY_CONFIGURE_ENABLED_VIDEO_CONFERENCE_MUTE = L"ConfigureEnabledUtilityVideoConferenceMute";
+    const std::wstring POLICY_CONFIGURE_ENABLED_ZOOM_IT = L"ConfigureEnabledUtilityZoomIt";
     const std::wstring POLICY_CONFIGURE_ENABLED_REGISTRY_PREVIEW = L"ConfigureEnabledUtilityRegistryPreview";
     const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_WITHOUT_BORDERS = L"ConfigureEnabledUtilityMouseWithoutBorders";
     const std::wstring POLICY_CONFIGURE_ENABLED_PEEK = L"ConfigureEnabledUtilityPeek";
@@ -414,9 +414,9 @@ namespace powertoys_gpo {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_WORKSPACES);
     }
 
-    inline gpo_rule_configured_t getConfiguredVideoConferenceMuteEnabledValue()
+    inline gpo_rule_configured_t getConfiguredZoomItEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_VIDEO_CONFERENCE_MUTE);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_ZOOM_IT);
     }
 
     inline gpo_rule_configured_t getConfiguredMouseWithoutBordersEnabledValue()

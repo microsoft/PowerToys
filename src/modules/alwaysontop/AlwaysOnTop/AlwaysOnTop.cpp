@@ -9,7 +9,6 @@
 #include <common/utils/process_path.h>
 
 #include <common/utils/elevation.h>
-#include <common/notifications/NotificationUtil.h>
 #include <Generated Files/resource.h>
 
 #include <interop/shared_constants.h>
@@ -36,7 +35,8 @@ AlwaysOnTop::AlwaysOnTop(bool useLLKH, DWORD mainThreadId) :
     SettingsObserver({SettingId::FrameEnabled, SettingId::Hotkey, SettingId::ExcludeApps}),
     m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase)),
     m_useCentralizedLLKH(useLLKH),
-    m_mainThreadId(mainThreadId)
+    m_mainThreadId(mainThreadId),
+    m_notificationUtil(std::make_unique<notifications::NotificationUtil>())
 {
     s_instance = this;
     DPIAware::EnableDPIAwarenessForThisProcess();
@@ -64,6 +64,7 @@ AlwaysOnTop::AlwaysOnTop(bool useLLKH, DWORD mainThreadId) :
 AlwaysOnTop::~AlwaysOnTop()
 {
     m_running = false;
+    m_notificationUtil.reset();
 
     if (m_hPinEvent)
     {
@@ -509,7 +510,10 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     {
         if (!is_process_elevated() && IsProcessOfWindowElevated(data->hwnd))
         {
-            notifications::WarnIfElevationIsRequired(GET_RESOURCE_STRING(IDS_ALWAYSONTOP), GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED), GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED_LEARN_MORE), GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED_DIALOG_DONT_SHOW_AGAIN));
+            m_notificationUtil->WarnIfElevationIsRequired(GET_RESOURCE_STRING(IDS_ALWAYSONTOP),
+                                                          GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED),
+                                                          GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED_LEARN_MORE),
+                                                          GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED_DIALOG_DONT_SHOW_AGAIN));
         }
         RefreshBorders();
     }
