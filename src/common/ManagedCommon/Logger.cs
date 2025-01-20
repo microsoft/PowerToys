@@ -22,7 +22,15 @@ namespace ManagedCommon
         private static readonly string TraceFlag = "Trace";
 
         private static readonly Assembly Assembly = Assembly.GetExecutingAssembly();
+
+        /*
+         * Please pay more attention!
+         * If you want to publish it with Native AOT enabled (or publish as a single file).
+         * You need to find another way to remove Assembly.Location usage.
+         */
+#pragma warning disable IL3000 // Avoid accessing Assembly file path when publishing as a single file
         private static readonly string Version = FileVersionInfo.GetVersionInfo(Assembly.Location).ProductVersion;
+#pragma warning restore IL3000 // Avoid accessing Assembly file path when publishing as a single file
 
         /// <summary>
         /// Initializes the logger and sets the path for logging.
