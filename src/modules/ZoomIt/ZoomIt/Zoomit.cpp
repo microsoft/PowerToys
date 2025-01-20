@@ -7416,18 +7416,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     if( !ShowEula( APPNAME, NULL, NULL )) return 1;
 
 #ifdef __ZOOMIT_POWERTOYS__
+    if (powertoys_gpo::getConfiguredZoomItEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
+    {
+        Logger::warn(L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+        return 1;
+    }
+
     Shared::Trace::ETWTrace* trace = nullptr;
     std::wstring pid = std::wstring(lpCmdLine); // The PowerToys pid is the argument to the process.
     auto mainThreadId = GetCurrentThreadId();
     if (!pid.empty())
     {
         g_StartedByPowerToys = TRUE;
-
-        if (powertoys_gpo::getConfiguredZoomItEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
-        {
-            Logger::warn(L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
-            return 1;
-        }
 
         trace = new Shared::Trace::ETWTrace();
         Trace::RegisterProvider();
