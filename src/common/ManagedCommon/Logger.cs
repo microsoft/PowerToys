@@ -21,7 +21,8 @@ namespace ManagedCommon
         private static readonly string Debug = "Debug";
         private static readonly string TraceFlag = "Trace";
 
-        private static readonly string Version = GetVersion();
+        private static readonly Assembly Assembly = Assembly.GetExecutingAssembly();
+        private static readonly string Version = FileVersionInfo.GetVersionInfo(Assembly.Location).ProductVersion;
 
         /// <summary>
         /// Initializes the logger and sets the path for logging.
@@ -52,32 +53,11 @@ namespace ManagedCommon
             Trace.AutoFlush = true;
         }
 
-        public static string GetVersion()
-        {
-            string applicationName = "PowerToys.exe";
-            try
-            {
-                var versionInfo = FileVersionInfo.GetVersionInfo(Path.Combine(System.AppContext.BaseDirectory, applicationName));
-                if (versionInfo != null)
-                {
-                    return versionInfo.ProductVersion;
-                }
-            }
-            catch (Exception)
-            {
-                return "0.0.0.1";
-            }
-
-            return "0.0.0.1";
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void LogError(string message, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
         {
             Log(message, Error, memberName, sourceFilePath, sourceLineNumber);
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void LogError(string message, Exception ex, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
         {
             if (ex == null)
@@ -105,31 +85,26 @@ namespace ManagedCommon
             }
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void LogWarning(string message, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
         {
             Log(message, Warning, memberName, sourceFilePath, sourceLineNumber);
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void LogInfo(string message, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
         {
             Log(message, Info, memberName, sourceFilePath, sourceLineNumber);
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void LogDebug(string message, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
         {
             Log(message, Debug, memberName, sourceFilePath, sourceLineNumber);
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void LogTrace([System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
         {
             Log(string.Empty, TraceFlag, memberName, sourceFilePath, sourceLineNumber);
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
         private static void Log(string message, string type, string memberName, string sourceFilePath, int sourceLineNumber)
         {
             Trace.WriteLine("[" + DateTime.Now.TimeOfDay + "] [" + type + "] " + GetCallerInfo(memberName, sourceFilePath, sourceLineNumber));
