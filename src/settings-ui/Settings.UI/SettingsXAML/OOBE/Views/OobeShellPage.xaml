@@ -102,6 +102,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileExplorerPreview.png}"
                     Tag="FileExplorer" />
                 <NavigationViewItem
+                    Content="FlowPointer"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FlowPointer.png}"
+                    Tag="FlowPointer" />
+                <NavigationViewItem
                     x:Uid="Shell_Hosts"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Hosts.png}"
                     Tag="Hosts" />

@@ -1,0 +1,26 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.OOBE.Views.OobeFlowPointer"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <controls:OOBEPageControl
+        Title="FlowPointer"
+        Description="FlowPointer enables Windows control with a single switch, using vertical and horizontal lines to pinpoint and click targets, ensuring precise navigation for all users."
+        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/FlowPointer.png">
+        <controls:OOBEPageControl.PageContent>
+            <StackPanel Orientation="Vertical" Spacing="12">
+                <controls:ShortcutWithTextLabelControl x:Name="HotkeyControl" Text="to activate FlowPointer" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button x:Uid="OOBE_Settings" />
+                    <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_Peek" Style="{StaticResource TextButtonStyle}">
+                        <TextBlock Text="Learn more about FlowPointer" TextWrapping="Wrap" />
+                    </HyperlinkButton>
+                </StackPanel>
+            </StackPanel>
+        </controls:OOBEPageControl.PageContent>
+    </controls:OOBEPageControl>
+</Page>

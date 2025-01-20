@@ -20,8 +20,10 @@
     <ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Assets\Settings\Icons\FlowPointer.png" />
     <None Remove="Assets\Settings\Modules\APDialog.dark.png" />
     <None Remove="Assets\Settings\Modules\APDialog.light.png" />
+    <None Remove="Assets\Settings\Modules\OOBE\FlowPointer.png" />
   </ItemGroup>
   <ItemGroup>
     <Page Remove="SettingsXAML\App.xaml" />

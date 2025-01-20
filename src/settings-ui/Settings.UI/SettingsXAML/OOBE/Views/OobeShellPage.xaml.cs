@@ -123,6 +123,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "FileExplorer",
                 IsNew = false,
             });
+            Modules.Insert((int)PowerToysModules.FileExplorer, new OobePowerToysModule()
+            {
+                ModuleName = "FlowPointer",
+                IsNew = false,
+            });
             Modules.Insert((int)PowerToysModules.ImageResizer, new OobePowerToysModule()
             {
                 ModuleName = "ImageResizer",
@@ -284,6 +289,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "PowerRename": NavigationFrame.Navigate(typeof(OobePowerRename)); break;
                     case "QuickAccent": NavigationFrame.Navigate(typeof(OobePowerAccent)); break;
                     case "FileExplorer": NavigationFrame.Navigate(typeof(OobeFileExplorer)); break;
+                    case "FlowPointer": NavigationFrame.Navigate(typeof(OobeFlowPointer)); break;
                     case "ShortcutGuide": NavigationFrame.Navigate(typeof(OobeShortcutGuide)); break;
                     case "TextExtractor": NavigationFrame.Navigate(typeof(OobePowerOCR)); break;
                     case "MouseUtils": NavigationFrame.Navigate(typeof(OobeMouseUtils)); break;

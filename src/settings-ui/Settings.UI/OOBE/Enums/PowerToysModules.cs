@@ -17,6 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         FancyZones,
         FileLocksmith,
         FileExplorer,
+        FlowPointer,
         ImageResizer,
         KBM,
         MouseUtils,

@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-
+using System.Collections.Generic;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -46,7 +46,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             DataContext = ViewModel;
             InitializeComponent();
-
+            shortcutControl.HotkeySettings = new HotkeySettings() { Win = true, Code = 78 };
             this.MouseUtils_MouseJump_Panel.ViewModel = ViewModel;
         }
 
