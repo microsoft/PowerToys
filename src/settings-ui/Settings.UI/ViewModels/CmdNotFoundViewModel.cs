@@ -39,7 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return AppContext.BaseDirectory;
+                return Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory);
             }
         }
 
