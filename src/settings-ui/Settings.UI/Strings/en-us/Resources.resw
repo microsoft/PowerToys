@@ -1107,7 +1107,7 @@
     <value>Backup &amp; restore</value>
   </data>
   <data name="General_SettingsBackupAndRestore.Header" xml:space="preserve">
-    <value>Backup and restore your settings</value>
+    <value>Back up and restore your settings</value>
   </data>
   <data name="General_SettingsBackupAndRestore.Description" xml:space="preserve">
     <value>PowerToys will restart automatically if needed</value>
