@@ -131,7 +131,7 @@ _mm_(?!dd)\w+
 
 # hit-count: 4 file-count: 4
 # microsoft
-\b(?:https?://|)(?:(?:(?:blogs|download\.visualstudio|developer|docs|msdn2?|research)\.|)microsoft|blogs\.msdn)\.co(?:m|\.\w\w)/[-_a-zA-Z0-9()=./%]*
+\b(?:https?://|)(?:(?:(?:blogs|download\.visualstudio|developer|docs|learn|msdn2?|research)\.|)microsoft|blogs\.msdn)\.co(?:m|\.\w\w)/[-_a-zA-Z0-9()=./%#]*
 
 aka\.ms/[a-zA-Z0-9]+
 
@@ -231,3 +231,7 @@ _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
 
 # ignore long runs of a single character:
 \b([A-Za-z])\g{-1}{3,}\b
+
+# ZoomIt menu items with accelerator keys
+E&xit
+St&yle

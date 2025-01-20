@@ -51,7 +51,6 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\Settings.wxs.bk ..\..\..\Settings.wxs
       call move /Y ..\..\..\ShortcutGuide.wxs.bk ..\..\..\ShortcutGuide.wxs
       call move /Y ..\..\..\Tools.wxs.bk ..\..\..\Tools.wxs
-      call move /Y ..\..\..\VideoConference.wxs.bk ..\..\..\VideoConference.wxs
       call move /Y ..\..\..\WinAppSDK.wxs.bk ..\..\..\WinAppSDK.wxs
       call move /Y ..\..\..\WinUI3Applications.wxs.bk ..\..\..\WinUI3Applications.wxs
       call move /Y ..\..\..\Workspaces.wxs.bk ..\..\..\Workspaces.wxs
@@ -119,7 +118,6 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="Settings.wxs" />
     <Compile Include="ShortcutGuide.wxs" />
     <Compile Include="Tools.wxs" />
-    <Compile Include="VideoConference.wxs" />
     <Compile Include="MouseWithoutBorders.wxs" />
     <Compile Include="WinUI3Applications.wxs" />
     <Compile Include="MonacoSRC.wxs" />

@@ -5,7 +5,7 @@
 using System;
 
 using ColorPicker.Helpers;
-using Common.UI;
+using ManagedCommon;
 using Wpf.Ui.Controls;
 
 namespace ColorPicker

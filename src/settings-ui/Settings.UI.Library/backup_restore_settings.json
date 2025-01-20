@@ -5,7 +5,8 @@
     "*settings.json",
     "*FancyZones\\custom-layouts.json",
     "*FancyZones\\layout-hotkeys.json",
-    "*FancyZones\\layout-templates.json"
+    "*FancyZones\\layout-templates.json",
+    "*Workspaces\\workspaces.json"
   ],
   "IgnoreFiles": [
     "*PowerToys\\log_settings.json",

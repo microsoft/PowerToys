@@ -27,6 +27,9 @@ using MouseWithoutBorders.Core;
 #endif
 
 using SystemClipboard = System.Windows.Forms.Clipboard;
+#if !MM_HELPER
+using Thread = MouseWithoutBorders.Core.Thread;
+#endif
 
 namespace MouseWithoutBorders
 {

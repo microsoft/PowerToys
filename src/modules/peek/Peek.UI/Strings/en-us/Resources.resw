@@ -326,4 +326,7 @@
     <value>Toggle text wrapping</value>
     <comment>Toggle whether text in pane is word-wrapped</comment>
   </data>
+  <data name="ContextMenu_ToggleMinimap" xml:space="preserve">
+    <value>Toggle minimap</value>
+  </data>
 </root>

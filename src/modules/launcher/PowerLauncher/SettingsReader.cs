@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -251,7 +252,9 @@ namespace PowerLauncher
                 Id = x.Metadata.ID,
                 Name = x.Plugin == null ? x.Metadata.Name : x.Plugin.Name,
                 Description = x.Plugin?.Description,
+                Version = FileVersionInfo.GetVersionInfo(x.Metadata.ExecuteFilePath).FileVersion,
                 Author = x.Metadata.Author,
+                Website = x.Metadata.Website,
                 Disabled = x.Metadata.Disabled,
                 IsGlobal = x.Metadata.IsGlobal,
                 ActionKeyword = x.Metadata.ActionKeyword,
@@ -281,7 +284,9 @@ namespace PowerLauncher
                     var enabledPolicyState = GPOWrapper.GetRunPluginEnabledValue(id);
                     plugin.Name = name;
                     plugin.Description = value.Description;
+                    plugin.Version = value.Version;
                     plugin.Author = value.Author;
+                    plugin.Website = value.Website;
                     plugin.IconPathDark = value.IconPathDark;
                     plugin.IconPathLight = value.IconPathLight;
                     plugin.EnabledPolicyUiState = (int)enabledPolicyState;

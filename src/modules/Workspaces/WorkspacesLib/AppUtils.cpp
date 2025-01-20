@@ -397,6 +397,5 @@ namespace Utils
         {
             return installPath.ends_with(NonLocalizable::ChromeFilename);
         }
-
     }
 }

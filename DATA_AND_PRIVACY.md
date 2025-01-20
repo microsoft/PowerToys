@@ -941,26 +941,6 @@ _If you want to find diagnostic data events in the source code, these two links 
   </tr>
 </table>
 
-### Video Conference Mute
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.VideoConference_CameraMuted</td>
-    <td>Triggered when the camera is turned off by Video Conference Mute.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.VideoConference_EnableVideoConference</td>
-    <td>Occurs when Video Conference Mute is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.VideoConference_MicrophoneMuted</td>
-    <td>Occurs when the microphone is muted by Video Conference Mute.</td>
-  </tr>
-</table>
-
 ### Workspaces
 <table style="width:100%">
   <tr>
@@ -994,6 +974,50 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.Workspaces_Settings</td>
     <td>Logs changes to workspaces settings.</td>
+  </tr>
+</table>
+
+### ZoomIt
+<table style="width:100%">
+  <tr>
+    <th>Event Name</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.ZoomIt_EnableZoomIt</td>
+    <td>Triggered when ZoomIt is enabled/disabled.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.ZoomIt_Started</td>
+    <td>Triggered when the ZoomIt process starts.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.ZoomIt_ActivateBreak</td>
+    <td>Triggered when the Break mode is entered.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.ZoomIt_ActivateDraw</td>
+    <td>Triggered when the Draw mode is entered.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.ZoomIt_ActivateZoom</td>
+    <td>Triggered when the Zoom mode is entered.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.ZoomIt_ActivateLiveZoom</td>
+    <td>Triggered when the Live Zoom mode is entered.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.ZoomIt_ActivateDemoType</td>
+    <td>Triggered when the DemoType mode is entered.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.ZoomIt_ActivateRecord</td>
+    <td>Triggered when the Record mode is entered.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.ZoomIt_ActivateSnip</td>
+    <td>Triggered when the Snip mode is entered.</td>
   </tr>
 </table>
 

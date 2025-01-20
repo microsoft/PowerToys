@@ -316,7 +316,11 @@
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    Severity="Informational" />
+                    Severity="Informational">
+                    <InfoBar.IconSource>
+                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                    </InfoBar.IconSource>
+                </InfoBar>
 
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
@@ -565,7 +569,11 @@
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.ShowPluginsAreGpoManagedInfo, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.ShowPluginsAreGpoManagedInfo, Mode=OneWay}"
-                        Severity="Informational" />
+                        Severity="Informational">
+                        <InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource>
+                    </InfoBar>
                     <InfoBar
                         x:Uid="Run_AllPluginsDisabled"
                         IsClosable="False"
@@ -687,11 +695,46 @@
                                             <tkcontrols:SettingsCard
                                                 MinHeight="0"
                                                 BorderThickness="0"
-                                                ContentAlignment="Right">
-                                                <TextBlock Opacity="{x:Bind DisabledOpacity}" Style="{ThemeResource SecondaryTextStyle}">
-                                                    <Run x:Uid="PowerLauncher_AuthoredBy" />
-                                                    <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
-                                                </TextBlock>
+                                                ContentAlignment="Right"
+                                                IsEnabled="{x:Bind Enabled, Mode=OneWay}">
+                                                <StackPanel
+                                                    HorizontalAlignment="Right"
+                                                    Orientation="Horizontal"
+                                                    Spacing="4">
+                                                    <TextBlock Opacity="{x:Bind DisabledOpacity}" Style="{ThemeResource SecondaryTextStyle}">
+                                                        <Run x:Uid="PowerLauncher_PluginVersion" />
+                                                        <Run FontWeight="SemiBold" Text="{x:Bind Version}" />
+                                                    </TextBlock>
+                                                    <TextBlock
+                                                        AutomationProperties.Name=","
+                                                        IsTabStop="False"
+                                                        Opacity="{x:Bind DisabledOpacity}"
+                                                        Style="{ThemeResource SecondaryTextStyle}"
+                                                        Text="|" />
+                                                    <TextBlock Opacity="{x:Bind DisabledOpacity}" Style="{ThemeResource SecondaryTextStyle}">
+                                                        <Run x:Uid="PowerLauncher_AuthoredBy" />
+                                                        <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
+                                                    </TextBlock>
+                                                    <TextBlock
+                                                        AutomationProperties.Name=","
+                                                        IsTabStop="False"
+                                                        Opacity="{x:Bind DisabledOpacity}"
+                                                        Style="{ThemeResource SecondaryTextStyle}"
+                                                        Text="|"
+                                                        Visibility="{x:Bind HasValidWebsiteUri, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                    <HyperlinkButton
+                                                        Margin="0"
+                                                        Padding="0"
+                                                        NavigateUri="{x:Bind WebsiteUri}"
+                                                        Opacity="{x:Bind DisabledOpacity}"
+                                                        Style="{StaticResource TextButtonStyle}"
+                                                        Visibility="{x:Bind HasValidWebsiteUri, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                        <TextBlock
+                                                            x:Uid="PowerLauncher_PluginWebsite"
+                                                            FontWeight="SemiBold"
+                                                            Style="{ThemeResource SecondaryLinkTextStyle}" />
+                                                    </HyperlinkButton>
+                                                </StackPanel>
                                             </tkcontrols:SettingsCard>
                                         </tkcontrols:SettingsExpander.Items>
                                     </tkcontrols:SettingsExpander>

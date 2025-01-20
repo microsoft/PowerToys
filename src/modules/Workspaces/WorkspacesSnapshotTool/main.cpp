@@ -13,6 +13,7 @@
 #include <common/utils/gpo.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/UnhandledExceptionHandler.h>
+#include <WorkspacesLib/utils.h>
 
 const std::wstring moduleName = L"Workspaces\\WorkspacesSnapshotTool";
 const std::wstring internalPath = L"";
@@ -46,13 +47,17 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
         return -1;
     }
 
+    std::wstring cmdLineStr{ GetCommandLineW() };
+    auto cmdArgs = split(cmdLineStr, L" ");
+
     // create new project
     time_t creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     WorkspacesData::WorkspacesProject project{ .id = CreateGuidString(), .creationTime = creationTime };
     Logger::trace(L"Creating workspace {}:{}", project.name, project.id);
 
     project.monitors = MonitorUtils::IdentifyMonitors();
-    project.apps = SnapshotUtils::GetApps([&](HWND window) -> unsigned int {
+    bool isGuidNeeded = cmdArgs.invokePoint == InvokePoint::LaunchAndEdit;
+    project.apps = SnapshotUtils::GetApps(isGuidNeeded, [&](HWND window) -> unsigned int {
         auto windowMonitor = MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY);
         unsigned int monitorNumber = 0;
         for (const auto& monitor : project.monitors)
