@@ -10,7 +10,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Principal;
-using System.Threading;
 using System.Windows.Forms;
 
 // <summary>
@@ -73,7 +72,7 @@ namespace MouseWithoutBorders
 
         private static void HelperThread()
         {
-            using var asyncFlowControl = ExecutionContext.SuppressFlow();
+            using var asyncFlowControl = System.Threading.ExecutionContext.SuppressFlow();
 
             try
             {
