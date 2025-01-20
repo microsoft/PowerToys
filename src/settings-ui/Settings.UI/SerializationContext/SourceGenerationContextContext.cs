@@ -27,7 +27,6 @@ namespace Microsoft.PowerToys.Settings.UI.SerializationContext;
 [JsonSerializable(typeof(PowerLauncherSettings))]
 [JsonSerializable(typeof(PowerOcrSettings))]
 [JsonSerializable(typeof(RegistryPreviewSettings))]
-[JsonSerializable(typeof(VideoConferenceSettings))]
 [JsonSerializable(typeof(WorkspacesSettings))]
 [JsonSerializable(typeof(IList<PowerToysReleaseInfo>))]
 [JsonSerializable(typeof(ActionMessage))]
