@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.13" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.15" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <policyNamespaces>
     <target prefix="powertoys" namespace="Microsoft.Policies.PowerToys" />
   </policyNamespaces>
-  <resources minRequiredRevision="1.14"/><!-- Last changed with PowerToys v0.86.0 -->
+  <resources minRequiredRevision="1.15"/><!-- Last changed with PowerToys v0.88.0 -->
   <supportedOn>
     <definitions>
       <definition name="SUPPORTED_POWERTOYS_0_64_0" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0)"/>
@@ -23,6 +23,8 @@
       <definition name="SUPPORTED_POWERTOYS_0_84_0" displayName="$(string.SUPPORTED_POWERTOYS_0_84_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_85_0" displayName="$(string.SUPPORTED_POWERTOYS_0_85_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_86_0" displayName="$(string.SUPPORTED_POWERTOYS_0_86_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_88_0" displayName="$(string.SUPPORTED_POWERTOYS_0_88_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1)"/>
     </definitions>
   </supportedOn>
   <categories>
@@ -43,6 +45,9 @@
       <parentCategory ref="PowerToys" />
     </category>
     <category name="NewPlus" displayName="$(string.NewPlus)">
+      <parentCategory ref="PowerToys" />
+    </category>
+    <category name="DeprecatedPolicies" displayName="$(string.DeprecatedPolicies)">
       <parentCategory ref="PowerToys" />
     </category>
   </categories>
@@ -441,8 +446,18 @@
       </disabledValue>
     </policy>
     <policy name="ConfigureEnabledUtilityVideoConferenceMute" class="Both" displayName="$(string.ConfigureEnabledUtilityVideoConferenceMute)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityVideoConferenceMute">
+      <parentCategory ref="DeprecatedPolicies" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityZoomIt" class="Both" displayName="$(string.ConfigureEnabledUtilityZoomIt)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityZoomIt">
       <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_88_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>

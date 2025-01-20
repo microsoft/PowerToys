@@ -23,7 +23,6 @@ registrypreview
 rooler
 scoobe
 shortcutguide
-videoconference
 
 
 # USERS
@@ -34,6 +33,7 @@ Adoumie
 Advaith
 alekhyareddy
 Aleks
+amihaiuc
 angularsen
 Anirudha
 arjunbalgovind
@@ -46,6 +46,8 @@ betsegaw
 bricelam
 bsky
 CCcat
+chenmy
+chemwolf
 Chinh
 chrdavis
 Chrzan
@@ -63,8 +65,10 @@ Deondre
 DHowett
 ductdo
 Essey
+Feng
 ethanfangg
 ferraridavide
+foxmsft
 frankychen
 Gaarden
 gaardmark
@@ -78,6 +82,7 @@ gordon
 grzhan
 Guo
 hanselman
+haoliuu
 Harmath
 Heiko
 Hemmerlein
@@ -92,6 +97,7 @@ Jaswal
 jefflord
 Jordi
 jyuwono
+kai
 Kairu
 Kamra
 Kantarci
@@ -109,6 +115,8 @@ Markovic
 martinchrzan
 martinmoene
 Melman
+Mengyuan
+Mihaiuc
 Mikhayelyan
 msft
 Mykhailo
@@ -121,11 +129,13 @@ oldnewthing
 onegreatworld
 palenshus
 pedrolamas
+Peiyao
 peteblois
 phoboslab
 Ponten
 Pooja
 Pylyp
+Qingpeng
 quachpas
 Quriz
 randyrants
@@ -134,6 +144,7 @@ ricardosantos
 riri
 ritchielawrence
 robmikh
+Russinovich
 Rutkas
 ryanbodrug
 saahmedm
@@ -154,14 +165,23 @@ Taras
 TBM
 tilovell
 Triet
+urnotdfs
 waaverecords
+wang
 Whuihuan
+Xiaofeng
 Xpg
+Yaqing
+yaqingmi
 ycv
 yeelam
 Yuniardi
 yuyoyuppe
 Zeol
+Zhao
+Zhaopeng
+zhaopy
+zhaoqpcn
 Zoltan
 Zykova
 
@@ -169,9 +189,11 @@ Zykova
 
 Bilibili
 BVID
+capturevideosample
 cmdow
 Controlz
 cortana
+dlnilsson
 fancymouse
 firefox
 gpt

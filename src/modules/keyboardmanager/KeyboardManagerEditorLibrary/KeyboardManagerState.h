@@ -90,6 +90,8 @@ namespace KBMEditor
         // flag to set if we want to allow building a chord
         bool AllowChord = false;
 
+        bool exactMatch = false;
+
         // Stores the keyboard layout
         LayoutMap keyboardMap;
 
