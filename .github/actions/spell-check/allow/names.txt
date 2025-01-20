@@ -23,7 +23,6 @@ registrypreview
 rooler
 scoobe
 shortcutguide
-videoconference
 
 
 # USERS
@@ -34,6 +33,7 @@ Adoumie
 Advaith
 alekhyareddy
 Aleks
+amihaiuc
 angularsen
 Anirudha
 arjunbalgovind
@@ -68,6 +68,7 @@ Essey
 Feng
 ethanfangg
 ferraridavide
+foxmsft
 frankychen
 Gaarden
 gaardmark
@@ -115,6 +116,7 @@ martinchrzan
 martinmoene
 Melman
 Mengyuan
+Mihaiuc
 Mikhayelyan
 msft
 Mykhailo
@@ -142,6 +144,7 @@ ricardosantos
 riri
 ritchielawrence
 robmikh
+Russinovich
 Rutkas
 ryanbodrug
 saahmedm
@@ -186,9 +189,11 @@ Zykova
 
 Bilibili
 BVID
+capturevideosample
 cmdow
 Controlz
 cortana
+dlnilsson
 fancymouse
 firefox
 gpt

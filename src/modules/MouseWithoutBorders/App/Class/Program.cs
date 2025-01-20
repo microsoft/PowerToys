@@ -35,6 +35,7 @@ using Newtonsoft.Json;
 using StreamJsonRpc;
 
 using Logger = MouseWithoutBorders.Core.Logger;
+using Thread = MouseWithoutBorders.Core.Thread;
 
 [module: SuppressMessage("Microsoft.MSInternal", "CA904:DeclareTypesInMicrosoftOrSystemNamespace", Scope = "namespace", Target = "MouseWithoutBorders", Justification = "Dotnet port with style preservation")]
 [module: SuppressMessage("Microsoft.Design", "CA1014:MarkAssembliesWithClsCompliant", Justification = "Dotnet port with style preservation")]
