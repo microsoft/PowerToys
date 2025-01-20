@@ -6,7 +6,7 @@
         "$type": "libfuzzerDotNet",
         "dll": "Hosts.FuzzTests.dll",
         "class": "Hosts.FuzzTests.FuzzTests",
-        "method": "FuzzTargetMethod",
+        "method": "FuzzValidIPv4",
         "FuzzingTargetBinaries": [
           "PowerToys.Hosts.dll"
         ]

@@ -1,18 +1,21 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
+using System;
+using HostsUILib.Helpers;
 
 namespace Hosts.FuzzTests
 {
     public class FuzzTests
     {
-        public static void FuzzTargetMethod(ReadOnlySpan<byte> input)
+        public static void FuzzValidIPv4(ReadOnlySpan<byte> input)
         {
             try
             {
-                // … use input parameter in code under test …
-                //
-                // TargetMethod(…);
+                string address = System.Text.Encoding.UTF8.GetString(input);
+                bool isValid = ValidationHelper.ValidIPv4(address);
+
+                // Console.WriteLine($"Input:{address}, ValidIPv4:{isValid}");
             }
             catch (Exception ex) when (ex is ArgumentException)
             {

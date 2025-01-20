@@ -1,20 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+		<TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
+	
 	<PropertyGroup>
 		<OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\Hosts.FuzzTests\</OutputPath>
 	</PropertyGroup>
+	
 	<ItemGroup>
-	  <None Remove="OneFuzzConfig.json" />
-	</ItemGroup>
-	<ItemGroup>
-	  <Content Include="OneFuzzConfig.json">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
+	  <Compile Include="..\HostsUILib\Consts.cs" Link="Consts.cs" />
+	  <Compile Include="..\HostsUILib\Helpers\ValidationHelper.cs" Link="ValidationHelper.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -24,7 +22,11 @@
 	<ItemGroup>
 		<Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
 	</ItemGroup>
-	
-	
+
+	<ItemGroup>
+		<Content Include="OneFuzzConfig.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 	
 </Project>
