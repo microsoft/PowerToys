@@ -441,7 +441,6 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "FileExplorer": return typeof(PowerPreviewPage);
                 case "ShortcutGuide": return typeof(ShortcutGuidePage);
                 case "PowerOcr": return typeof(PowerOcrPage);
-                case "VideoConference": return typeof(VideoConferencePage);
                 case "MeasureTool": return typeof(MeasureToolPage);
                 case "Hosts": return typeof(HostsPage);
                 case "RegistryPreview": return typeof(RegistryPreviewPage);
@@ -451,6 +450,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "NewPlus": return typeof(NewPlusPage);
                 case "Workspaces": return typeof(WorkspacesPage);
                 case "CmdPal": return typeof(CmdPalPage);
+                case "ZoomIt": return typeof(ZoomItPage);
                 default:
                     // Fallback to Dashboard
                     Debug.Assert(false, "Unexpected SettingsWindow argument value");

@@ -240,3 +240,7 @@ _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
 
 # Process Process (typename varname)
 Process Process
+
+# ZoomIt menu items with accelerator keys
+E&xit
+St&yle

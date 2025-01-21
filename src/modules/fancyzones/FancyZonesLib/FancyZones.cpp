@@ -7,6 +7,7 @@
 #include <common/utils/EventWaiter.h>
 #include <common/utils/winapi_error.h>
 #include <common/SettingsAPI/FileWatcher.h>
+#include <common/notifications/NotificationUtil.h>
 
 #include <FancyZonesLib/DraggingState.h>
 #include <FancyZonesLib/EditorParameters.h>
@@ -185,6 +186,8 @@ private:
 
     EventWaiter m_toggleEditorEventWaiter;
 
+    std::unique_ptr<notifications::NotificationUtil> m_notificationUtil;
+
     // If non-recoverable error occurs, trigger disabling of entire FancyZones.
     static std::function<void()> disableModuleCallback;
 
@@ -266,6 +269,8 @@ FancyZones::Run() noexcept
         }
     });
 
+    m_notificationUtil = std::make_unique<notifications::NotificationUtil>();
+
     SyncVirtualDesktops();
 
     // id format of applied-layouts and app-zone-history was changed in 0.60
@@ -288,6 +293,8 @@ FancyZones::Destroy() noexcept
         m_window = nullptr;
     }
 
+    m_notificationUtil.reset();
+
     CoUninitialize();
 }
 
@@ -302,7 +309,7 @@ FancyZones::VirtualDesktopChanged() noexcept
 
 void FancyZones::MoveSizeStart(HWND window, HMONITOR monitor)
 {
-    m_windowMouseSnapper = WindowMouseSnap::Create(window, m_workAreaConfiguration.GetAllWorkAreas());
+    m_windowMouseSnapper = WindowMouseSnap::Create(window, m_workAreaConfiguration.GetAllWorkAreas(), m_notificationUtil.get());
     if (m_windowMouseSnapper)
     {
         if (FancyZonesSettings::settings().spanZonesAcrossMonitors)

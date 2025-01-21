@@ -16,6 +16,7 @@
 (?:|$^ 92.31% - excluded 12/13)/editor/[^/]+$
 /images/launcher/[^/]+$
 /TestFiles/
+[^/]\.cur$
 [^/]\.gcode$
 [^/]\.rgs$
 \.a$
@@ -122,5 +123,6 @@
 ^src/modules/MouseWithoutBorders/App/Helper/.*\.resx$
 ^src/modules/previewpane/UnitTests-MarkdownPreviewHandler/HelperFiles/MarkdownWithHTMLImageTag\.txt$
 ^src/Monaco/
+^src/common/sysinternals/Eula/
 ^tools/Verification scripts/Check preview handler registration\.ps1$
 ignore$

@@ -33,5 +33,6 @@ namespace ManagedCommon
         ShortcutGuide,
         PowerOCR,
         Workspaces,
+        ZoomIt,
     }
 }

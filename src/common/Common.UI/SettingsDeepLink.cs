@@ -22,7 +22,6 @@ namespace Common.UI
             PowerRename,
             FileExplorer,
             ShortcutGuide,
-            VideoConference,
             Hosts,
             MeasureTool,
             PowerOCR,
@@ -33,6 +32,7 @@ namespace Common.UI
             AdvancedPaste,
             Workspaces,
             CmdPal,
+            ZoomIt,
         }
 
         private static string SettingsWindowNameToString(SettingsWindow value)
@@ -61,8 +61,6 @@ namespace Common.UI
                     return "FileExplorer";
                 case SettingsWindow.ShortcutGuide:
                     return "ShortcutGuide";
-                case SettingsWindow.VideoConference:
-                    return "VideoConference";
                 case SettingsWindow.Hosts:
                     return "Hosts";
                 case SettingsWindow.MeasureTool:
@@ -83,6 +81,8 @@ namespace Common.UI
                     return "Workspaces";
                 case SettingsWindow.CmdPal:
                     return "CmdPal";
+                case SettingsWindow.ZoomIt:
+                    return "ZoomIt";
                 default:
                     {
                         return string.Empty;

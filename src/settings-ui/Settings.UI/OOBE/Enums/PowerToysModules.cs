@@ -28,12 +28,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         QuickAccent,
         ShortcutGuide,
         TextExtractor,
-        VideoConference,
         MeasureTool,
         Hosts,
         Workspaces,
         WhatsNew,
         RegistryPreview,
         NewPlus,
+        ZoomIt,
     }
 }
