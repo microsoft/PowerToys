@@ -204,11 +204,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileManagement.png}"
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
-                        <NavigationViewItem x:Uid="Shell_FileActionsMenu" helpers:NavHelper.NavigateTo="views:FileActionsMenuPage">
-                            <NavigationViewItem.Icon>
-                                <FontIcon Glyph="&#xe8b7;" />
-                            </NavigationViewItem.Icon>
-                        </NavigationViewItem>
+                        <NavigationViewItem
+                            x:Uid="Shell_FileActionsMenu"
+                            helpers:NavHelper.NavigateTo="views:FileActionsMenuPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileActionsMenu.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_PowerPreview"
                             helpers:NavHelper.NavigateTo="views:PowerPreviewPage"

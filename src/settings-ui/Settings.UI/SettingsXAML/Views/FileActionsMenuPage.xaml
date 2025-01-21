@@ -29,14 +29,14 @@
                         <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
                     </InfoBar.IconSource>
                 </InfoBar>
-
-                <tkcontrols:SettingsCard
-                    x:Uid="Activation_Shortcut"
-                    HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
-                    IsEnabled="{x:Bind ViewModel.FileActionsMenuIsEnabled, Mode=OneWay}">
-                    <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.FileActionsMenuShortcut, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
-
+                <controls:SettingsGroup x:Uid="ActivationHeader" IsEnabled="{x:Bind ViewModel.FileActionsMenuIsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        x:Uid="Activation_Shortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsEnabled="{x:Bind ViewModel.FileActionsMenuIsEnabled, Mode=OneWay}">
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.FileActionsMenuShortcut, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 
