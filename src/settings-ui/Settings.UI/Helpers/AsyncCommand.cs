@@ -11,7 +11,7 @@ using System.Windows.Input;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
-    internal sealed class AsyncCommand : ICommand
+    internal sealed partial class AsyncCommand : ICommand
     {
         private readonly Func<Task> _execute;
         private readonly Func<bool> _canExecute;

@@ -11,10 +11,11 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class RegistryPreviewViewModel : Observable
+    public partial class RegistryPreviewViewModel : Observable
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -121,7 +122,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                        CultureInfo.InvariantCulture,
                        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                        RegistryPreviewSettings.ModuleName,
-                       JsonSerializer.Serialize(_settings)));
+                       JsonSerializer.Serialize(_settings, SourceGenerationContextContext.Default.RegistryPreviewSettings)));
         }
     }
 }

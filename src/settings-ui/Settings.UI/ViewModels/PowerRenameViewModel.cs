@@ -14,7 +14,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class PowerRenameViewModel : Observable
+    public partial class PowerRenameViewModel : Observable
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 

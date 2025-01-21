@@ -11,7 +11,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class AwakeViewModel : Observable
+    public partial class AwakeViewModel : Observable
     {
         public AwakeViewModel()
         {

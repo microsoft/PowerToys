@@ -19,7 +19,7 @@ using Windows.System;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class ShellViewModel : Observable
+    public partial class ShellViewModel : Observable
     {
         private readonly KeyboardAccelerator altLeftKeyboardAccelerator = BuildKeyboardAccelerator(VirtualKey.Left, VirtualKeyModifiers.Menu);
 

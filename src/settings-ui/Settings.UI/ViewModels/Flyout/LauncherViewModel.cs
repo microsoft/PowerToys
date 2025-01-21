@@ -15,7 +15,7 @@ using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class LauncherViewModel : Observable
+    public partial class LauncherViewModel : Observable
     {
         public bool IsUpdateAvailable { get; set; }
 

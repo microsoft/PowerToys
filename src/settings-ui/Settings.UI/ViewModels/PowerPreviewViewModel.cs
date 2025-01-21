@@ -13,7 +13,7 @@ using Settings.UI.Library.Enumerations;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class PowerPreviewViewModel : Observable
+    public partial class PowerPreviewViewModel : Observable
     {
         private const string ModuleName = PowerPreviewSettings.ModuleName;
 

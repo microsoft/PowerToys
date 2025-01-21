@@ -16,7 +16,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class ImageResizerViewModel : Observable
+    public partial class ImageResizerViewModel : Observable
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 

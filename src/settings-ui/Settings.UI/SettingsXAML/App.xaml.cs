@@ -14,6 +14,7 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
@@ -167,7 +168,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
             try
             {
-                var requestedSettings = JsonSerializer.Deserialize<Dictionary<string, List<string>>>(File.ReadAllText(ipcFileName));
+                var requestedSettings = JsonSerializer.Deserialize<Dictionary<string, List<string>>>(File.ReadAllText(ipcFileName), SourceGenerationContextContext.Default.DictionaryStringListString);
                 File.WriteAllText(ipcFileName, GetSettingCommandLineCommand.Execute(requestedSettings));
             }
             catch (Exception ex)

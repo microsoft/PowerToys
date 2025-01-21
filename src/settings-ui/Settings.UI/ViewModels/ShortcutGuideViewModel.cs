@@ -12,7 +12,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class ShortcutGuideViewModel : Observable
+    public partial class ShortcutGuideViewModel : Observable
     {
         private ISettingsUtils SettingsUtils { get; set; }
 

@@ -14,7 +14,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class PowerLauncherPluginViewModel : INotifyPropertyChanged
+    public partial class PowerLauncherPluginViewModel : INotifyPropertyChanged
     {
         private readonly PowerLauncherPluginSettings settings;
         private readonly Func<bool> isDark;
