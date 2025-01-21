@@ -83,9 +83,7 @@
             <Border
                 x:Name="MonitorItem"
                 Width="{Binding DisplayWidth}"
-                Height="{Binding DisplayHeight}"
-                AutomationProperties.HelpText="{Binding Index}"
-                AutomationProperties.Name="{x:Static props:Resources.Monitor}">
+                Height="{Binding DisplayHeight}">
                 <Border.ToolTip>
                     <ToolTip>
                         <StackPanel>
