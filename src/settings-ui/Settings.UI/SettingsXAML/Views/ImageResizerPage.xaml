@@ -18,6 +18,7 @@
         <converters:ImageResizerFitToIntConverter x:Key="ImageResizerFitToIntConverter" />
         <converters:ImageResizerUnitToStringConverter x:Key="ImageResizerUnitToStringConverter" />
         <converters:ImageResizerUnitToIntConverter x:Key="ImageResizerUnitToIntConverter" />
+        <converters:ImageResizerSizeToAccessibleTextConverter x:Key="ImageResizerSizeToAccessibleTextConverter" />
         <toolkitconverters:BoolToObjectConverter
             x:Key="BoolToComboBoxIndexConverter"
             FalseValue="1"
@@ -38,7 +39,11 @@
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    Severity="Informational" />
+                    Severity="Informational">
+                    <InfoBar.IconSource>
+                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                    </InfoBar.IconSource>
+                </InfoBar>
 
                 <controls:SettingsGroup x:Uid="ImageResizer_CustomSizes" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="ImageResizer_Presets" HeaderIcon="{ui:FontIcon Glyph=&#xE792;}">
@@ -81,13 +86,13 @@
                                                 FontSize="10"
                                                 Style="{ThemeResource SecondaryTextStyle}"
                                                 Text="&#xE947;"
-                                                Visibility="{x:Bind EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                Visibility="{x:Bind IsHeightUsed, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                             <TextBlock
                                                 Margin="0,0,4,0"
                                                 FontWeight="SemiBold"
                                                 Style="{ThemeResource SecondaryTextStyle}"
                                                 Text="{x:Bind Height, Mode=OneWay}"
-                                                Visibility="{x:Bind EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                Visibility="{x:Bind IsHeightUsed, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                             <TextBlock
                                                 Margin="0,0,4,0"
                                                 Style="{ThemeResource SecondaryTextStyle}"
@@ -100,12 +105,20 @@
                                         Orientation="Horizontal"
                                         Spacing="8">
                                         <Button
-                                            x:Uid="EditButton"
+                                            x:Uid="ImageResizer_EditButton"
                                             Width="40"
                                             Height="36"
                                             Content="&#xE70F;"
                                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                            Style="{StaticResource SubtleButtonStyle}">
+                                            Style="{StaticResource SubtleButtonStyle}"
+                                            AutomationProperties.Name="{x:Bind Name,
+                                                Mode=OneWay,
+                                                Converter={StaticResource ImageResizerSizeToAccessibleTextConverter},
+                                                ConverterParameter='Edit'}"
+                                            AutomationProperties.FullDescription="{x:Bind AccessibleTextHelper,
+                                                Mode=OneWay,
+                                                Converter={StaticResource ImageResizerSizeToAccessibleTextConverter},
+                                                ConverterParameter='Edit'}">
                                             <ToolTipService.ToolTip>
                                                 <TextBlock x:Uid="EditTooltip" />
                                             </ToolTipService.ToolTip>
@@ -141,10 +154,10 @@
                                                                 Width="116"
                                                                 Minimum="0"
                                                                 SpinButtonPlacementMode="Compact"
-                                                                Visibility="{x:Bind EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                                Visibility="{x:Bind IsHeightUsed, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                                                                 Value="{x:Bind Height, Mode=TwoWay}" />
-
                                                         </StackPanel>
+
                                                         <ComboBox
                                                             x:Uid="ImageResizer_Size"
                                                             Width="240"
@@ -160,15 +173,22 @@
                                         </Button>
 
                                         <Button
-                                            x:Name="RemoveButton"
-                                            x:Uid="RemoveButton"
+                                            x:Uid="ImageResizer_RemoveButton"
                                             Width="40"
                                             Height="36"
                                             Click="DeleteCustomSize"
                                             CommandParameter="{Binding Id}"
                                             Content="&#xE74D;"
                                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                            Style="{StaticResource SubtleButtonStyle}">
+                                            Style="{StaticResource SubtleButtonStyle}"
+                                            AutomationProperties.Name="{x:Bind Name,
+                                                Mode=OneWay,
+                                                Converter={StaticResource ImageResizerSizeToAccessibleTextConverter},
+                                                ConverterParameter='Remove'}"
+                                            AutomationProperties.FullDescription="{x:Bind AccessibleTextHelper,
+                                                Mode=OneWay,
+                                                Converter={StaticResource ImageResizerSizeToAccessibleTextConverter},
+                                                ConverterParameter='Remove'}">
                                             <ToolTipService.ToolTip>
                                                 <TextBlock x:Uid="RemoveTooltip" />
                                             </ToolTipService.ToolTip>

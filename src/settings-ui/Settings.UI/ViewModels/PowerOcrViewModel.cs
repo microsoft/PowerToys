@@ -264,6 +264,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             GC.SuppressFinalize(this);
         }
 
+        public string SnippingToolInfoBarMargin
+        {
+            // Workaround for wrong StackPanel behavior: On hidden controls the margin is still reserved.
+            get => IsWin11OrGreater ? "0,0,0,25" : "0,0,0,0";
+        }
+
         private string EnsureStartUpper(string input)
         {
             if (string.IsNullOrEmpty(input))
