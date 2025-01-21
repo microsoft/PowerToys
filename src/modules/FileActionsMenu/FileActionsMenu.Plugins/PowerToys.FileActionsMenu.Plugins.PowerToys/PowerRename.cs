@@ -39,7 +39,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PowerToys
             return Task.CompletedTask;
         }
 
-        [DllImport("\\..\\..\\WinUI3Apps\\PowerToys.PowerRenameContextMenu.dll", CharSet = CharSet.Unicode)]
+        [DllImport("\\..\\..\\PowerToys.PowerRenameContextMenu.dll", CharSet = CharSet.Unicode)]
         public static extern int RunPowerRename(IShellItemArray psiItemArray);
 
         [DllImport("shell32.dll", CharSet = CharSet.Unicode, PreserveSig = false)]
