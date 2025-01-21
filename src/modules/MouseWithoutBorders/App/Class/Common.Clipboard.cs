@@ -262,6 +262,8 @@ namespace MouseWithoutBorders
 
             new Task(() =>
             {
+                using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
                 System.Threading.Thread thread = Thread.CurrentThread;
                 thread.Name = $"{nameof(SendClipboardDataUsingTCP)}.{thread.ManagedThreadId}";
                 Thread.UpdateThreads(thread);
@@ -386,6 +388,8 @@ namespace MouseWithoutBorders
 
                 new Task(() =>
                 {
+                    using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
                     System.Threading.Thread thread = Thread.CurrentThread;
                     thread.Name = $"{nameof(ConnectAndGetData)}.{thread.ManagedThreadId}";
                     Thread.UpdateThreads(thread);

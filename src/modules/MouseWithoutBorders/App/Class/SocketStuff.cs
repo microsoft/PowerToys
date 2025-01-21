@@ -770,6 +770,8 @@ namespace MouseWithoutBorders.Class
         {
             void ServerThread()
             {
+                using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
                 try
                 {
                     // Receiving packages
@@ -878,6 +880,8 @@ namespace MouseWithoutBorders.Class
         {
             void ClientThread(object obj)
             {
+                using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
                 IPHostEntry host;
                 bool useName2IP = false;
                 List<IPAddress> validAddresses = new();
@@ -1119,6 +1123,8 @@ namespace MouseWithoutBorders.Class
         {
             void NewTcpClient()
             {
+                using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
                 TcpClient tcpClient = null;
 
                 try
@@ -1594,6 +1600,8 @@ namespace MouseWithoutBorders.Class
                     {
                         new Task(() =>
                         {
+                            using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
                             System.Threading.Thread thread = Thread.CurrentThread;
                             thread.Name = $"{nameof(SendOrReceiveClipboardData)}.{thread.ManagedThreadId}";
                             Thread.UpdateThreads(thread);
