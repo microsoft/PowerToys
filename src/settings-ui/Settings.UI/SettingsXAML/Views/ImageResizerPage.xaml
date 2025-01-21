@@ -108,17 +108,11 @@
                                             x:Uid="ImageResizer_EditButton"
                                             Width="40"
                                             Height="36"
+                                            AutomationProperties.FullDescription="{x:Bind AccessibleTextHelper, Mode=OneWay, Converter={StaticResource ImageResizerSizeToAccessibleTextConverter}, ConverterParameter='Edit'}"
+                                            AutomationProperties.Name="{x:Bind Name, Mode=OneWay, Converter={StaticResource ImageResizerSizeToAccessibleTextConverter}, ConverterParameter='Edit'}"
                                             Content="&#xE70F;"
                                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                            Style="{StaticResource SubtleButtonStyle}"
-                                            AutomationProperties.Name="{x:Bind Name,
-                                                Mode=OneWay,
-                                                Converter={StaticResource ImageResizerSizeToAccessibleTextConverter},
-                                                ConverterParameter='Edit'}"
-                                            AutomationProperties.FullDescription="{x:Bind AccessibleTextHelper,
-                                                Mode=OneWay,
-                                                Converter={StaticResource ImageResizerSizeToAccessibleTextConverter},
-                                                ConverterParameter='Edit'}">
+                                            Style="{StaticResource SubtleButtonStyle}">
                                             <ToolTipService.ToolTip>
                                                 <TextBlock x:Uid="EditTooltip" />
                                             </ToolTipService.ToolTip>
@@ -176,19 +170,13 @@
                                             x:Uid="ImageResizer_RemoveButton"
                                             Width="40"
                                             Height="36"
+                                            AutomationProperties.FullDescription="{x:Bind AccessibleTextHelper, Mode=OneWay, Converter={StaticResource ImageResizerSizeToAccessibleTextConverter}, ConverterParameter='Remove'}"
+                                            AutomationProperties.Name="{x:Bind Name, Mode=OneWay, Converter={StaticResource ImageResizerSizeToAccessibleTextConverter}, ConverterParameter='Remove'}"
                                             Click="DeleteCustomSize"
                                             CommandParameter="{Binding Id}"
                                             Content="&#xE74D;"
                                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                            Style="{StaticResource SubtleButtonStyle}"
-                                            AutomationProperties.Name="{x:Bind Name,
-                                                Mode=OneWay,
-                                                Converter={StaticResource ImageResizerSizeToAccessibleTextConverter},
-                                                ConverterParameter='Remove'}"
-                                            AutomationProperties.FullDescription="{x:Bind AccessibleTextHelper,
-                                                Mode=OneWay,
-                                                Converter={StaticResource ImageResizerSizeToAccessibleTextConverter},
-                                                ConverterParameter='Remove'}">
+                                            Style="{StaticResource SubtleButtonStyle}">
                                             <ToolTipService.ToolTip>
                                                 <TextBlock x:Uid="RemoveTooltip" />
                                             </ToolTipService.ToolTip>
