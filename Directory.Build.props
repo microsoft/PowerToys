@@ -17,6 +17,10 @@
     <NuGetAuditMode>direct</NuGetAuditMode>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>    <!-- Don't add source revision hash to the product version of binaries. -->
     <PlatformTarget>$(Platform)</PlatformTarget>
+
+    <!-- Enable Microsoft.Testing.Platform -->
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <TestingPlatformDotNetTestSupport>true</TestingPlatformDotNetTestSupport>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
