@@ -146,6 +146,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool ConfirmFileDelete
+        {
+            get => _peekSettings.Properties.ConfirmFileDelete.Value;
+            set
+            {
+                if (_peekSettings.Properties.ConfirmFileDelete.Value != value)
+                {
+                    _peekSettings.Properties.ConfirmFileDelete.Value = value;
+                    OnPropertyChanged(nameof(ConfirmFileDelete));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool SourceCodeWrapText
         {
             get => _peekPreviewSettings.SourceCodeWrapText.Value;

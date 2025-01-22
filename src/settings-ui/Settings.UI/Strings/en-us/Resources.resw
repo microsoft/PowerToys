@@ -3024,6 +3024,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Automatically close the Peek window after it loses focus</value>
     <comment>Peek is a product name, do not loc</comment>
   </data>
+  <data name="Peek_ConfirmFileDelete.Header" xml:space="preserve">
+    <value>Ask for confirmation before deleting files</value>
+  </data>
+  <data name="Peek_ConfirmFileDelete.Description" xml:space="preserve">
+    <value>When enabled, you will be prompted to confirm before moving files to the Recycle Bin.</value>
+  </data>
   <data name="FancyZones_DisableRoundCornersOnWindowSnap.Content" xml:space="preserve">
     <value>Disable round corners when window is snapped</value>
   </data>
