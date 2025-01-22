@@ -515,16 +515,6 @@ Mouse Jump:
     - [ ] Unplug additional monitors and confirm that Mouse Jump still works correctly.
     - [ ] Disable Mouse Jump and verify that the module is not activated when you press the activation shortcut.
 
-## VCM
- - [ ] Check "Hide toolbar when both camera and microphone are unmuted" and verify that it works
- - [ ] Uncheck it, mute the microphone with the hotkey and make sure the toolbar doesn't hide after a timeout
- - [ ] Go to some video conference application settings, e.g. meet.google.com, Microsoft Teams, Skype. "Select PowerToys VideoConference Mute" camera as an active device and try to mute it with a hotkey
- - [ ] Go to Control Panel -> Sound -> Recording -> select default mic -> open its properties -> Levels.  Now mute the microphone with a corresponding hotkey and verify that mute icon on the right side of volume slider reflects its muted status.
- - [ ] Go to Control Panel -> Sound -> Recording -> select default mic -> open its properties -> Levels.  Now press and release push-to-talk hotkey and verify that mute icon on the right side of volume slider reflects the actions.
- - [ ] Verify that changing "toolbar position" setting works 
- - [ ] Select an overlay image and verify that muting camera now shows the image instead of black screen. (Don't forget to restart the application which uses the camera).
- - [ ] Try to select an overlay image when PT process is elevated.
-
 ## Awake
  - [ ] Try out the features and see if they work, no list at this time.
 
