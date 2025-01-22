@@ -55,11 +55,11 @@ namespace Peek.UI.Native
         /// <summary>
         /// Shell File Operations structure. Used for file deletion.
         /// </summary>
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         internal struct SHFILEOPSTRUCT
         {
             public IntPtr hwnd;
-            public int wFunc;
+            public uint wFunc;
             public string pFrom;
             public string pTo;
             public ushort fFlags;
@@ -68,23 +68,31 @@ namespace Peek.UI.Native
             public string lpszProgressTitle;
         }
 
-        [DllImport("shell32.dll", CharSet = CharSet.Auto)]
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
         internal static extern int SHFileOperation(ref SHFILEOPSTRUCT fileOp);
 
         /// <summary>
         /// File delete operation.
         /// </summary>
-        internal const int FO_DELETE = 0x0003;
+        internal const uint FO_DELETE = 0x0003;
 
         /// <summary>
         /// Send to Recycle Bin flag.
         /// </summary>
-        internal const int FOF_ALLOWUNDO = 0x0040;
+        internal const ushort FOF_ALLOWUNDO = 0x0040;
 
         /// <summary>
-        /// Do not request user confirmation for file delete flag.
+        /// Do not request user confirmation for file deletes.
         /// </summary>
-        internal const int FOF_NO_CONFIRMATION = 0x0010;
+        internal const ushort FOF_NO_CONFIRMATION = 0x0010;
+
+        /// <summary>
+        /// Warn if a file cannot be recycled and would instead be permanently deleted. (Partially
+        /// overrides FOF_NO_CONFIRMATION.) This can be tested by attempting to delete a file on a
+        /// FAT volume, e.g. a USB key.
+        /// </summary>
+        /// <remarks>FOF_WANTNUKEWARNING in shellapi.h./remarks>
+        internal const ushort FOF_WANT_NUKE_WARNING = 0x4000;
 
         /// <summary>
         /// Common error codes when calling SHFileOperation to delete a file.
@@ -99,5 +107,24 @@ namespace Peek.UI.Native
             { 32, "The process cannot access the file because it is being used by another process." },
             { 33, "The process cannot access the file because another process has locked a portion of the file." },
         };
+
+        /// <summary>
+        /// Shell Change Notify. Used to inform shell listeners after we've completed a file
+        /// operation like Delete or Move.
+        /// </summary>
+        [DllImport("shell32.dll", CharSet = CharSet.Auto)]
+        internal static extern void SHChangeNotify(uint wEventId, uint uFlags, IntPtr dwItem1, IntPtr dwItem2);
+
+        /// <summary>
+        /// File System Notification Flag, indicating that the operation was a file deletion.
+        /// </summary>
+        /// <remarks>See ShlObj_core.h for constant definitions.</remarks>
+        internal const uint SHCNE_DELETE = 0x00000004;
+
+        /// <summary>
+        /// Indicates that SHChangeNotify's dwItem1 and (optionally) dwItem2 parameters will
+        /// contain string paths.
+        /// </summary>
+        internal const uint SHCNF_PATH = 0x0001;
     }
 }

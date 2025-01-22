@@ -4,12 +4,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.UI.Helpers;
@@ -63,6 +66,9 @@ namespace Peek.UI
             WindowTitle = value != null
                 ? ReadableStringHelper.FormatResourceString("WindowTitle", value.Name)
                 : _defaultWindowTitle;
+
+            DeleteConfirmationDialogMessage =
+                ReadableStringHelper.FormatResourceString("DeleteConfirmationDialog_Message", value?.Name ?? string.Empty);
         }
 
         [ObservableProperty]
@@ -71,6 +77,9 @@ namespace Peek.UI
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(DisplayItemCount))]
         private NeighboringItems? _items;
+
+        [ObservableProperty]
+        private string _deleteConfirmationDialogMessage = string.Empty;
 
         /// <summary>
         /// The number of items selected and available to preview. Decreases as the user deletes
@@ -196,12 +205,18 @@ namespace Peek.UI
         /// <summary>
         /// Sends the current item to the Recycle Bin.
         /// </summary>
-        public void DeleteItem()
+        /// <param name="skipConfirmationChecked">The IsChecked property of the "Don't ask me
+        /// again" checkbox on the delete confirmation dialog.</param>
+        public void DeleteItem(bool? skipConfirmationChecked)
         {
             if (CurrentItem == null)
             {
                 return;
             }
+
+            bool skipConfirmation = skipConfirmationChecked ?? false;
+            bool shouldShowConfirmation = !skipConfirmation;
+            Application.Current.GetService<IUserSettings>().ConfirmFileDelete = shouldShowConfirmation;
 
             var item = CurrentItem;
 
@@ -240,16 +255,63 @@ namespace Peek.UI
             Navigate(_navigationDirection, isAfterDelete: true);
         }
 
+        /// <summary>
+        /// Delete a file and refresh any shell listeners.
+        /// </summary>
+        /// <param name="item">The item to delete.</param>
+        /// <param name="permanent">Set to false (the default) to send the file to the Recycle Bin,
+        /// if possible. Set to true to permanently delete the item.</param>
+        /// <returns>The result of the file operation call. A non-zero result indicates failure.
+        /// </returns>
         private int DeleteFile(IFileSystemItem item, bool permanent = false)
         {
+            // We handle delete confirmations with our own dialog, so it is not required here.
+            ushort flags = FOF_NO_CONFIRMATION;
+
+            if (!permanent)
+            {
+                // Move to the Recycle Bin and warn about permanent deletes.
+                flags |= (ushort)(FOF_ALLOWUNDO | FOF_WANT_NUKE_WARNING);
+            }
+
             SHFILEOPSTRUCT fileOp = new()
             {
                 wFunc = FO_DELETE,
-                pFrom = item.Path + "\0\0",
-                fFlags = (ushort)(FOF_NO_CONFIRMATION | (permanent ? 0 : FOF_ALLOWUNDO)),
+                pFrom = item.Path + "\0\0", // Path arguments must be double null-terminated.
+                fFlags = flags,
             };
 
-            return SHFileOperation(ref fileOp);
+            int result = SHFileOperation(ref fileOp);
+            if (result == 0)
+            {
+                SendDeleteChangeNotification(item.Path);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Informs shell listeners like Explorer windows that a delete operation has occurred.
+        /// </summary>
+        /// <param name="path">Full path to the file which was deleted.</param>
+        private void SendDeleteChangeNotification(string path)
+        {
+            IntPtr pathPtr = Marshal.StringToHGlobalUni(path);
+            try
+            {
+                if (pathPtr == IntPtr.Zero)
+                {
+                    Logger.LogError("Could not allocate memory for path string.");
+                }
+                else
+                {
+                    SHChangeNotify(SHCNE_DELETE, SHCNF_PATH, pathPtr, IntPtr.Zero);
+                }
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(pathPtr);
+            }
         }
 
         private static bool IsFilePath(string path)

@@ -18,7 +18,7 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid KeyboardAcceleratorPlacementMode="Hidden">
+    <Grid Name="MainGrid" KeyboardAcceleratorPlacementMode="Hidden">
         <Grid.KeyboardAccelerators>
             <KeyboardAccelerator Key="Left" Invoked="PreviousNavigationInvoked" />
             <KeyboardAccelerator Key="Up" Invoked="PreviousNavigationInvoked" />
@@ -62,5 +62,15 @@
             IsOpen="{x:Bind ViewModel.IsErrorVisible, Mode=TwoWay}"
             Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
             Severity="Error" />
+
+        <ContentDialog
+            x:Name="DeleteConfirmationDialog"
+            x:Uid="DeleteConfirmationDialog"
+            DefaultButton="Close">
+            <StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Spacing="12">
+                <TextBlock TextWrapping="Wrap" Text="{x:Bind ViewModel.DeleteConfirmationDialogMessage, Mode=OneWay}" />
+                <CheckBox x:Name="DeleteDontAskCheckbox" x:Uid="DeleteConfirmationDialog_DontAskCheckbox" />
+            </StackPanel>
+        </ContentDialog>
     </Grid>
 </winuiex:WindowEx>

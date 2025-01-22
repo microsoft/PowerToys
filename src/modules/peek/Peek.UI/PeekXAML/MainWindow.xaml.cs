@@ -3,12 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-
+using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Peek.Common.Constants;
 using Peek.Common.Extensions;
@@ -29,6 +30,18 @@ namespace Peek.UI
         public MainWindowViewModel ViewModel { get; }
 
         private readonly ThemeListener? themeListener;
+
+        // Used to work around a focus visual issue when the delete confirmation dialog is
+        // triggered by a key event.
+        private readonly Thickness _zeroThickness = new(0);
+        private Thickness _defaultFocusPrimaryThickness = new(2);
+        private Thickness _defaultFocusSecondaryThickness = new(2);
+
+        /// <summary>
+        /// Whether the delete confirmation dialog is currently open. Used to ensure only one
+        /// dialog is open at a time.
+        /// </summary>
+        private bool _isDeleteInProgress;
 
         public MainWindow()
         {
@@ -56,12 +69,85 @@ namespace Peek.UI
             AppWindow.Closing += AppWindow_Closing;
         }
 
-        private void Content_KeyUp(object sender, KeyRoutedEventArgs e)
+        private async void Content_KeyUp(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == Windows.System.VirtualKey.Delete)
             {
-                this.ViewModel.DeleteItem();
+                await DeleteItem();
             }
+
+            // Restore the default focus visual. The Space key is excluded as that is used to toggle
+            // the checkbox when it has focus.
+            if (e.Key != Windows.System.VirtualKey.Space)
+            {
+                RestoreFocusThickness();
+            }
+        }
+
+        private async Task DeleteItem()
+        {
+            if (ViewModel.CurrentItem == null || _isDeleteInProgress)
+            {
+                return;
+            }
+
+            try
+            {
+                _isDeleteInProgress = true;
+
+                if (Application.Current.GetService<IUserSettings>().ConfirmFileDelete)
+                {
+                    if (await ShowDeleteConfirmationDialogAsync() == ContentDialogResult.Primary)
+                    {
+                        // Delete after asking for confirmation. Persist the "Don't ask again" choice if set.
+                        ViewModel.DeleteItem(DeleteDontAskCheckbox.IsChecked);
+                    }
+                }
+                else
+                {
+                    // Delete without confirmation.
+                    ViewModel.DeleteItem(true);
+                }
+            }
+            finally
+            {
+                _isDeleteInProgress = false;
+            }
+        }
+
+        private async Task<ContentDialogResult> ShowDeleteConfirmationDialogAsync()
+        {
+            DeleteDontAskCheckbox.IsChecked = false;
+
+            CacheFocusThickness();
+
+            // Hide the default focus visual. This prevents its initial display when the dialog is
+            // opened via a keyboard event.
+            DeleteDontAskCheckbox.FocusVisualPrimaryThickness = _zeroThickness;
+            DeleteDontAskCheckbox.FocusVisualSecondaryThickness = _zeroThickness;
+
+            DeleteConfirmationDialog.XamlRoot = Content.XamlRoot;
+
+            return await DeleteConfirmationDialog.ShowAsync();
+        }
+
+        /// <summary>
+        /// Save the current focus visual thickness. This will be restored when the user interacts
+        /// with the dialog, e.g. by using Tab.
+        /// </summary>
+        private void CacheFocusThickness()
+        {
+            CheckBox hiddenCheckBox = new() { Visibility = Visibility.Collapsed };
+            MainGrid.Children.Add(hiddenCheckBox);
+            _defaultFocusPrimaryThickness = hiddenCheckBox.FocusVisualPrimaryThickness;
+            _defaultFocusSecondaryThickness = hiddenCheckBox.FocusVisualSecondaryThickness;
+            MainGrid.Children.Remove(hiddenCheckBox);
+        }
+
+        private void RestoreFocusThickness()
+        {
+            DeleteDontAskCheckbox.FocusVisualPrimaryThickness = _defaultFocusPrimaryThickness;
+            DeleteDontAskCheckbox.FocusVisualSecondaryThickness = _defaultFocusSecondaryThickness;
         }
 
         /// <summary>
