@@ -16,7 +16,6 @@ All:
 - Shortcut Guide
 - OOBE
 - Mouse Utils
-- VCM
 - AlwaysOnTop
 - Screen Ruler
 - Quick Accent
@@ -34,17 +33,36 @@ All:
 - Advanced Paste
 - Workspaces
 - New+
+- ZoomIt
 ```
 
 ```
 Group 1:
+- Keyboard Manager
+- PowerRename
+- PowerToys Run
+- Shortcut Guide
+- OOBE
+- Mouse Utils
+- AlwaysOnTop
+- Hosts File Editor
+- File Locksmith
+- Registry Preview
+- Peek
+- MWB
+- Environment Variables
+- DSC
+- ZoomIt
+```
+
+```
+Group 2:
 - Localization
 - General
 - Color Picker
 - Image Resizer
 - Keyboard Manager
 - Shortcut Guide
-- VCM
 - AlwaysOnTop
 - Screen Ruler
 - Quick Accent
@@ -54,10 +72,11 @@ Group 1:
 - Peek
 - Workspaces
 - New+
+- ZoomIt
 ```
 
 ```
-Group 2:
+Group 3:
 - Image Resizer
 - PowerRename
 - PowerToys Run
@@ -73,25 +92,6 @@ Group 2:
 - Command Not Found
 - Advanced Paste
 - New+
-```
-
-```
-Group 3:
-- Keyboard Manager
-- PowerRename
-- PowerToys Run
-- Shortcut Guide
-- OOBE
-- Mouse Utils
-- VCM
-- AlwaysOnTop
-- Hosts File Editor
-- File Locksmith
-- Registry Preview
-- Peek
-- MWB
-- Environment Variables
-- DSC
 ```
 
 ```
