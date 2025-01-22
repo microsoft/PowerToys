@@ -205,10 +205,13 @@
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
+                            x:Uid="Shell_FileActionsMenu"
+                            helpers:NavHelper.NavigateTo="views:FileActionsMenuPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileActionsMenu.png}" />
+                        <NavigationViewItem
                             x:Uid="Shell_PowerPreview"
                             helpers:NavHelper.NavigateTo="views:PowerPreviewPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileExplorerPreview.png}" />
-                        <!--  File Explorer Thumbnails  -->
                         <NavigationViewItem
                             x:Uid="Shell_FileLocksmith"
                             helpers:NavHelper.NavigateTo="views:FileLocksmithPage"

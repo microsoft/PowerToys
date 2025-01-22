@@ -50,6 +50,7 @@ APeriod
 apidl
 APIENTRY
 APIIs
+apng
 Apm
 APPBARDATA
 APPEXECLINK
@@ -170,6 +171,8 @@ CENTERALIGN
 certlm
 certmgr
 cfp
+CEscaped
+cguid
 CHANGECBCHAIN
 changecursor
 CHILDACTIVATE
@@ -727,6 +730,8 @@ jpe
 jpnime
 Jsons
 jsonval
+junja
+jxl
 jxr
 keybd
 KEYBDDATA
@@ -1154,6 +1159,8 @@ PINDIR
 pinfo
 pinvoke
 pipename
+pjp
+pjpeg
 PKBDLLHOOKSTRUCT
 plib
 ploc
@@ -1184,6 +1191,7 @@ pprm
 pproc
 ppshv
 ppsi
+ppsia
 ppsid
 ppsrm
 ppsrree
@@ -1329,6 +1337,7 @@ rgbs
 rgelt
 rgf
 rgn
+rgpidl
 rgs
 RIDEV
 RIGHTSCROLLBAR
@@ -1677,6 +1686,9 @@ UNCPRIORITY
 UNDNAME
 unhiding
 UNICODETEXT
+uninstaller
+uninstantiated
+uniquifier
 Uniquifies
 unitconverter
 unittests
@@ -1768,6 +1780,7 @@ vswhere
 Vtbl
 WANTMAPPINGHANDLE
 WANTPALM
+Wagnerp
 wbem
 WBounds
 Wca

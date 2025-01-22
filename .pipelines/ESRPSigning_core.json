@@ -109,6 +109,7 @@
                 "FileLocksmithContextMenuPackage.msix",
 
                 "WinUI3Apps\\Peek.Common.dll",
+                "WinUI3Apps\\Peek.Helpers.dll",
                 "WinUI3Apps\\Peek.FilePreviewer.dll",
                 "WinUI3Apps\\Powertoys.Peek.UI.dll",
                 "WinUI3Apps\\Powertoys.Peek.UI.exe",
@@ -156,6 +157,20 @@
                 "RunPlugins\\ValueGenerator\\Community.PowerToys.Run.Plugin.ValueGenerator.dll",
                 "RunPlugins\\WebSearch\\Community.PowerToys.Run.Plugin.WebSearch.dll",
                 "RunPlugins\\WindowsTerminal\\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll",
+
+                "WinUI3Apps\\PowerToys.FileActionsMenu.dll",
+                "WinUI3Apps\\FileActionsMenu.Helpers.dll",
+                "WinUI3Apps\\FileActionsMenu.Interfaces.dll",
+                "WinUI3Apps\\PowerToys.FileActionsMenu.Ui.exe",
+                "WinUI3Apps\\PowerToys.FileActionsMenu.Ui.dll",
+                "WinUI3Apps\\FileActionsMenuPlugins\\ExecutableActions\\PowerToys.FileActionsMenu.Plugins.ExecutableActions.dll",
+                "WinUI3Apps\\FileActionsMenuPlugins\\FileContentActions\\PowerToys.FileActionsMenu.Plugins.FileContentActions.dll",
+                "WinUI3Apps\\FileActionsMenuPlugins\\FileProperties\\PowerToys.FileActionsMenu.Plugins.FileProperties.dll",
+                "WinUI3Apps\\FileActionsMenuPlugins\\Hashes\\PowerToys.FileActionsMenu.Plugins.Hashes.dll",
+                "WinUI3Apps\\FileActionsMenuPlugins\\ImageClipboardActions\\PowerToys.FileActionsMenu.Plugins.ImageClipboardActions.dll",
+                "WinUI3Apps\\FileActionsMenuPlugins\\MoveCopyActions\\PowerToys.FileActionsMenu.Plugins.MoveCopyActions.dll",
+                "WinUI3Apps\\FileActionsMenuPlugins\\PathCopy\\PowerToys.FileActionsMenu.Plugins.PathCopy.dll",
+                "WinUI3Apps\\FileActionsMenuPlugins\\PowerToys\\PowerToys.FileActionsMenu.Plugins.PowerToys.dll",
                 
                 "WinUI3Apps\\PowerToys.MeasureToolModuleInterface.dll",
                 "WinUI3Apps\\PowerToys.MeasureToolCore.dll",
@@ -330,7 +345,12 @@
                 "ColorCode.UWP.dll",
                 "UnitsNet.dll",
                 "UtfUnknown.dll",
-                "Wpf.Ui.dll"
+                "Wpf.Ui.dll",
+                "WinUI3Apps\\Microsoft.WindowsAPICodePack.Core.dll",
+                "WinUI3Apps\\Microsoft.WindowsAPICodePack.ExtendedLinguisticServices.dll",
+                "WinUI3Apps\\Microsoft.WindowsAPICodePack.Sensors.dll",
+                "WinUI3Apps\\Microsoft.WindowsAPICodePack.Shell.dll",
+                "WinUI3Apps\\Microsoft.WindowsAPICodePack.ShellExtensions.dll"
             ],
             "SigningInfo": {
                 "Operations": [
