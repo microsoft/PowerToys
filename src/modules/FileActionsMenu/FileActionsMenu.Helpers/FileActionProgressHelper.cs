@@ -27,6 +27,7 @@ namespace FileActionsMenu.Helpers
         private readonly TaskDialog _taskDialog;
         private readonly string _actionName;
         private TaskDialog? _conflictTaskDialog;
+        private Action _onCancel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FileActionProgressHelper"/> class.
@@ -38,6 +39,7 @@ namespace FileActionsMenu.Helpers
         public FileActionProgressHelper(string actionName, int count, Action onCancel)
         {
             _actionName = actionName;
+            _onCancel = onCancel;
 
             Application.EnableVisualStyles();
             _progressBar = new()
@@ -64,7 +66,7 @@ namespace FileActionsMenu.Helpers
 
             cancelButton.Click += (sender, e) =>
             {
-                onCancel();
+                _onCancel();
                 _taskDialog.Close();
                 _conflictTaskDialog?.Close();
                 _conflictTaskDialog = null;
@@ -72,7 +74,7 @@ namespace FileActionsMenu.Helpers
 
             _taskDialog.Closing += (sender, e) =>
             {
-                onCancel();
+                _onCancel();
                 _conflictTaskDialog?.Close();
                 _conflictTaskDialog = null;
             };
@@ -187,6 +189,7 @@ namespace FileActionsMenu.Helpers
             };
             cancelButton.Click += (sender, e) =>
             {
+                _onCancel();
                 taskCompletionSource.SetResult();
                 _taskDialog.Close(Microsoft.WindowsAPICodePack.Dialogs.TaskDialogResult.Cancel);
                 _conflictTaskDialog?.Close();

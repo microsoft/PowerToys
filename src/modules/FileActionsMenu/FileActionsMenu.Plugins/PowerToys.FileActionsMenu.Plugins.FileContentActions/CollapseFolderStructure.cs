@@ -38,12 +38,15 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
             FileActionProgressHelper fileActionProgressHelper = new(ResourceHelper.GetResource("File_Content_Actions.CollapseFolder.Title"), numberOfFiles, () => { cancelled = true; });
 
+            Dictionary<string, string> ops = new Dictionary<string, string>();
+
+            // prepare operations
             int i = 0;
             foreach (string file in Directory.EnumerateFiles(SelectedItems[0], "*", SearchOption.AllDirectories))
             {
                 if (cancelled)
                 {
-                    break;
+                    return;
                 }
 
                 fileActionProgressHelper.UpdateProgress(i, Path.GetFileName(file));
@@ -56,20 +59,28 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
                 if (File.Exists(Path.Combine(SelectedItems[0], Path.GetFileName(file))))
                 {
-                    await fileActionProgressHelper.Conflict(file, () => { File.Move(file, Path.Combine(SelectedItems[0], Path.GetFileName(file)), true); }, () => { });
+                    await fileActionProgressHelper.Conflict(file, () => { ops.Add(file, Path.Combine(SelectedItems[0], Path.GetFileName(file))); }, () => { });
                 }
                 else
                 {
-                    File.Move(file, Path.Combine(SelectedItems[0], Path.GetFileName(file)));
+                    ops.Add(file, Path.Combine(SelectedItems[0], Path.GetFileName(file)));
                 }
+            }
+
+            if (cancelled)
+            {
+                return;
+            }
+
+            // do the work
+            foreach (var op in ops)
+            {
+                File.Move(op.Key, op.Value, true);
             }
 
             foreach (string directory in Directory.GetDirectories(SelectedItems[0]))
             {
-                if (CountFilesInDirectory(directory) == 0)
-                {
-                    Directory.Delete(directory);
-                }
+                Directory.Delete(directory, true);
             }
         }
 

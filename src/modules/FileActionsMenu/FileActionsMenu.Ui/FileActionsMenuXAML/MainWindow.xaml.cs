@@ -259,9 +259,11 @@ namespace FileActionsMenu.Ui
             {
                 Task closeAction = action.Execute(sender, e);
 
-                Close();
+                this.SetWindowOpacity(0);
 
                 await closeAction;
+
+                Close();
 
                 Environment.Exit(0);
             }
