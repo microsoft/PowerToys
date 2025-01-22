@@ -53,7 +53,7 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
                 }
                 else
                 {
-                    File.Move(SelectedItems[0], dialog.FileName);
+                    File.Copy(SelectedItems[0], dialog.FileName);
                 }
 
                 dialog.Dispose();
