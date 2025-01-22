@@ -31,9 +31,8 @@ namespace Microsoft.UITests.API
         }
 
         [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
-        public void Init(string exePath)
+        public void Init(string exePath, string winAppDriverPath = "C:\\Program Files (x86)\\Windows Application Driver\\WinAppDriver.exe")
         {
-            string winAppDriverPath = "C:\\Program Files (x86)\\Windows Application Driver\\WinAppDriver.exe";
             appDriver = Process.Start(winAppDriverPath);
 
             // Launch Exe
