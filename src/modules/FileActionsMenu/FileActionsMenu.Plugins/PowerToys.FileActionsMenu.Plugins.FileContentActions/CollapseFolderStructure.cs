@@ -80,7 +80,10 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
             foreach (string directory in Directory.GetDirectories(SelectedItems[0]))
             {
-                Directory.Delete(directory, true);
+                if (CountFilesInDirectory(directory) == 0)
+                {
+                    Directory.Delete(directory, true);
+                }
             }
         }
 
