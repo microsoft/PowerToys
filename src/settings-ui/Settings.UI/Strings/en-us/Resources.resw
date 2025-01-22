@@ -879,7 +879,7 @@
     <value>Location</value>
   </data>
   <data name="General_SettingsBackupAndRestore_ButtonBackup.Content" xml:space="preserve">
-    <value>Backup</value>
+    <value>Back up</value>
   </data>
   <data name="General_SettingsBackupInfo_FileNameHeader.Text" xml:space="preserve">
     <value>File name:</value>
@@ -1104,10 +1104,10 @@
     <value>Appearance &amp; behavior</value>
   </data>
   <data name="General_SettingsBackupAndRestoreTitle.Header" xml:space="preserve">
-    <value>Backup &amp; restore</value>
+    <value>Back up &amp; restore</value>
   </data>
   <data name="General_SettingsBackupAndRestore.Header" xml:space="preserve">
-    <value>Backup and restore your settings</value>
+    <value>Back up and restore your settings</value>
   </data>
   <data name="General_SettingsBackupAndRestore.Description" xml:space="preserve">
     <value>PowerToys will restart automatically if needed</value>
@@ -1168,10 +1168,6 @@
   </data>
   <data name="ImageResizer_Size.Header" xml:space="preserve">
     <value>Unit</value>
-  </data>
-  <data name="RemoveButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Remove</value>
-    <comment>Removes a user defined setting group for Image Resizer</comment>
   </data>
   <data name="RemoveItem.Text" xml:space="preserve">
     <value>Delete</value>
@@ -2352,11 +2348,28 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="ImageResizer_Unit_Pixel" xml:space="preserve">
     <value>Pixels</value>
   </data>
-  <data name="EditButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="ImageResizer_EditButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Edit</value>
   </data>
   <data name="ImageResizer_EditSize.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Edit size</value>
+  </data>
+  <data name="ImageResizer_Presets.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>ImageResizer presets</value>
+  </data>
+  <data name="ImageResizer_AddSizeButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Add a new preset</value>
+  </data>
+  <data name="ImageResizer_RemoveButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="ImageResizer_EditButton_Accessibility_Name" xml:space="preserve">
+    <value>Edit the {0} preset</value>
+    <comment>Expands to the AutomationProperties.Name value for the Edit button. Example: "Edit the Small preset".</comment>
+  </data>
+  <data name="ImageResizer_RemoveButton_Accessibility_Name" xml:space="preserve">
+    <value>Remove the {0} preset</value>
+    <comment>Expands to the AutomationProperties.Name value for the Remove button. Example: "Remove the Large preset".</comment>
   </data>
   <data name="No" xml:space="preserve">
     <value>No</value>
@@ -3330,7 +3343,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>There was an error in the settings format. Please check the settings file:</value>
   </data>
   <data name="General_SettingsBackupAndRestore_BackupComplete" xml:space="preserve">
-    <value>Backup completed.</value>
+    <value>Back up completed.</value>
   </data>
   <data name="General_SettingsBackupAndRestore_NoBackupSyncPath" xml:space="preserve">
     <value>No backup location selected.</value>
@@ -4375,7 +4388,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Localize product name in accordance with Windows New</comment>
   </data>
   <data name="NewPlus_TemplatesNotBackupAndRestoreWarning.Title" xml:space="preserve">
-    <value>PowerToys "Backup and Restore" feature doesn't take templates into account at this moment. If you use that feature, templates will have to be copied manually.</value>
+    <value>PowerToys "Back up and Restore" feature doesn't take templates into account at this moment. If you use that feature, templates will have to be copied manually.</value>
   </data>
   <data name="NewPlus_Templates.Header" xml:space="preserve">
     <value>Templates</value>
