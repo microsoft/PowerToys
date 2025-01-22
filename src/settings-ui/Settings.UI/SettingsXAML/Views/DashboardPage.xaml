@@ -12,7 +12,8 @@
     xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     AutomationProperties.LandmarkType="Main"
     DataContext="DashboardViewModel"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    x:Name="MainWindow1">
 
     <Page.Resources>
         <DataTemplate x:Key="KeyVisualTemplate">

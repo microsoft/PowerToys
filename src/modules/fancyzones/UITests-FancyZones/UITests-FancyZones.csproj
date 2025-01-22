@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\UITestAPI\UITestAPI.csproj" />
     <Folder Include="Properties\" />
   </ItemGroup>
 </Project>
