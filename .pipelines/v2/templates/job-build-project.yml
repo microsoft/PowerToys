@@ -106,6 +106,10 @@ jobs:
     JobOutputArtifactName: build-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
+    ${{ if eq(parameters.runTests, true) }}:
+      MSBuildMainBuildTargets: Build;Test
+    ${{ else }}:
+      MSBuildMainBuildTargets: Build
     ${{ insert }}: ${{ parameters.variables }}
     ${{ if eq(parameters.useLatestWinAppSDK, true) }}:
       RestoreAdditionalProjectSourcesArg: '/p:RestoreAdditionalProjectSources="$(Build.SourcesDirectory)\localpackages\NugetPackages"'
@@ -152,6 +156,10 @@ jobs:
     parameters:
       sdk: true
       version: '9.0'
+
+  - ${{ if eq(parameters.runTests, true) }}:
+    - task: VisualStudioTestPlatformInstaller@1
+      displayName: Ensure VSTest Platform
 
   - pwsh: |-
       & '.pipelines/applyXamlStyling.ps1' -Passive
@@ -203,6 +211,9 @@ jobs:
   - ${{ parameters.beforeBuildSteps }}
 
   - task: VSBuild@1
+    ${{ if eq(parameters.runTests, true) }}:
+      displayName: Build and Test PowerToys main project
+    ${{ else }}:
       displayName: Build PowerToys main project
     inputs:
       solution: 'PowerToys.sln'
@@ -214,6 +225,7 @@ jobs:
         /bl:$(LogOutputDirectory)\build-0-main.binlog
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
+        /t:$(MSBuildMainBuildTargets)
         $(RestoreAdditionalProjectSourcesArg)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
@@ -222,10 +234,6 @@ jobs:
     ${{ if eq(parameters.enableMsBuildCaching, true) }}:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
-  - pwsh: |
-      dotnet test PowerToys.sln --no-build -- --report-trx
-    displayName: Test PowerToys main project
 
   - task: VSBuild@1
     displayName: Build BugReportTool
