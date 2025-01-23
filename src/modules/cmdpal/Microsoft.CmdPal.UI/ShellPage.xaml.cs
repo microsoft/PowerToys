@@ -290,16 +290,20 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     public void Receive(HotkeySummonMessage message)
     {
         var settings = App.Current.Services.GetService<SettingsModel>()!;
-        if (settings.HotkeyGoesHome)
-        {
-            GoHome(false);
-        }
-        else if (settings.HighlightSearchOnActivate)
-        {
-            SearchBox.SelectSearch();
-        }
 
-        WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+        _ = DispatcherQueue.TryEnqueue(() =>
+        {
+            if (settings.HotkeyGoesHome)
+            {
+                GoHome(false);
+            }
+            else if (settings.HighlightSearchOnActivate)
+            {
+                SearchBox.SelectSearch();
+            }
+
+            WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+        });
     }
 
     private void GoBack(bool withAnimation = true)
