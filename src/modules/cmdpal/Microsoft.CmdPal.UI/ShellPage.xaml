@@ -240,7 +240,18 @@
                 CornerRadius="{ThemeResource ControlCornerRadius}"
                 IsOpen="{x:Bind ViewModel.CurrentPage.HasStatusMessage, Mode=OneWay}"
                 Message="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.Message, Mode=OneWay}"
-                Severity="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.State, Mode=OneWay, Converter={StaticResource MessageStateToSeverityConverter}}" />
+                Severity="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.State, Mode=OneWay, Converter={StaticResource MessageStateToSeverityConverter}}">
+
+                <InfoBar.Content>
+                    <ProgressBar 
+                        Visibility="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.HasProgress, Mode=OneWay}"
+                        IsIndeterminate="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.Progress.IsIndeterminate, Mode=OneWay}"
+                        Value="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.Progress.ProgressValue, Mode=OneWay}"
+                        Margin="0,-20,0,0"
+                    />
+                    <!--Margin="0,0,0,6" MaxWidth="200"/>-->
+                </InfoBar.Content>
+            </InfoBar>
         </StackPanel>
 
         <cpcontrols:ActionBar Grid.Row="1" CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />

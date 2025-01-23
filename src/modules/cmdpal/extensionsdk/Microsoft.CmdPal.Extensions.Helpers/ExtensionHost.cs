@@ -6,14 +6,9 @@ namespace Microsoft.CmdPal.Extensions.Helpers;
 
 public class ExtensionHost
 {
-    private static IExtensionHost? _host;
+    public static IExtensionHost? Host { get; private set; }
 
-    public static IExtensionHost? Host => _host;
-
-    public static void Initialize(IExtensionHost host)
-    {
-        _host = host;
-    }
+    public static void Initialize(IExtensionHost host) => Host = host;
 
     /// <summary>
     /// Fire-and-forget a log message to the Command Palette host app. Since
@@ -54,6 +49,23 @@ public class ExtensionHost
                 try
                 {
                     await Host.ShowStatus(message);
+                }
+                catch (Exception)
+                {
+                }
+            });
+        }
+    }
+
+    public static void HideStatus(IStatusMessage message)
+    {
+        if (Host != null)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Host.HideStatus(message);
                 }
                 catch (Exception)
                 {

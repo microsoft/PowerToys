@@ -18,19 +18,15 @@ public sealed partial class CommandPaletteHost : IExtensionHost
 
     private static readonly GlobalLogPageContext _globalLogPageContext = new();
 
-    private ulong _hostHwnd;
-
-    public ulong HostingHwnd => _hostHwnd;
+    public ulong HostingHwnd { get; private set; }
 
     public string LanguageOverride => string.Empty;
 
-    public static ObservableCollection<LogMessageViewModel> LogMessages { get; } = new();
+    public static ObservableCollection<LogMessageViewModel> LogMessages { get; } = [];
 
-    public ObservableCollection<StatusMessageViewModel> StatusMessages { get; } = new();
+    public ObservableCollection<StatusMessageViewModel> StatusMessages { get; } = [];
 
-    private readonly IExtensionWrapper? _source;
-
-    public IExtensionWrapper? Extension => _source;
+    public IExtensionWrapper? Extension { get; }
 
     private CommandPaletteHost()
     {
@@ -38,11 +34,16 @@ public sealed partial class CommandPaletteHost : IExtensionHost
 
     public CommandPaletteHost(IExtensionWrapper source)
     {
-        _source = source;
+        Extension = source;
     }
 
-    public IAsyncAction ShowStatus(IStatusMessage message)
+    public IAsyncAction ShowStatus(IStatusMessage? message)
     {
+        if (message == null)
+        {
+            return Task.CompletedTask.AsAsyncAction();
+        }
+
         Debug.WriteLine(message.Message);
 
         _ = Task.Run(() =>
@@ -53,13 +54,27 @@ public sealed partial class CommandPaletteHost : IExtensionHost
         return Task.CompletedTask.AsAsyncAction();
     }
 
-    public IAsyncAction HideStatus(IStatusMessage message)
+    public IAsyncAction HideStatus(IStatusMessage? message)
     {
+        if (message == null)
+        {
+            return Task.CompletedTask.AsAsyncAction();
+        }
+
+        _ = Task.Run(() =>
+        {
+            ProcessHideStatusMessage(message);
+        });
         return Task.CompletedTask.AsAsyncAction();
     }
 
-    public IAsyncAction LogMessage(ILogMessage message)
+    public IAsyncAction LogMessage(ILogMessage? message)
     {
+        if (message == null)
+        {
+            return Task.CompletedTask.AsAsyncAction();
+        }
+
         Debug.WriteLine(message.Message);
 
         _ = Task.Run(() =>
@@ -77,9 +92,9 @@ public sealed partial class CommandPaletteHost : IExtensionHost
         var vm = new LogMessageViewModel(message, _globalLogPageContext);
         vm.SafeInitializePropertiesSynchronous();
 
-        if (_source != null)
+        if (Extension != null)
         {
-            vm.ExtensionPfn = _source.PackageFamilyName;
+            vm.ExtensionPfn = Extension.PackageFamilyName;
         }
 
         Task.Factory.StartNew(
@@ -94,12 +109,28 @@ public sealed partial class CommandPaletteHost : IExtensionHost
 
     public void ProcessStatusMessage(IStatusMessage message)
     {
+        // If this message is already in the list of messages, just bring it to the top
+        var oldVm = StatusMessages.Where(messageVM => messageVM.Model.Unsafe == message).FirstOrDefault();
+        if (oldVm != null)
+        {
+            Task.Factory.StartNew(
+                () =>
+                {
+                    StatusMessages.Remove(oldVm);
+                    StatusMessages.Add(oldVm);
+                },
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                _globalLogPageContext.Scheduler);
+            return;
+        }
+
         var vm = new StatusMessageViewModel(message, _globalLogPageContext);
         vm.SafeInitializePropertiesSynchronous();
 
-        if (_source != null)
+        if (Extension != null)
         {
-            vm.ExtensionPfn = _source.PackageFamilyName;
+            vm.ExtensionPfn = Extension.PackageFamilyName;
         }
 
         Task.Factory.StartNew(
@@ -112,8 +143,27 @@ public sealed partial class CommandPaletteHost : IExtensionHost
             _globalLogPageContext.Scheduler);
     }
 
-    public void SetHostHwnd(ulong hostHwnd)
+    public void ProcessHideStatusMessage(IStatusMessage message)
     {
-        _hostHwnd = hostHwnd;
+        Task.Factory.StartNew(
+            () =>
+            {
+                try
+                {
+                    var vm = StatusMessages.Where(messageVM => messageVM.Model.Unsafe == message).FirstOrDefault();
+                    if (vm != null)
+                    {
+                        StatusMessages.Remove(vm);
+                    }
+                }
+                catch
+                {
+                }
+            },
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            _globalLogPageContext.Scheduler);
     }
+
+    public void SetHostHwnd(ulong hostHwnd) => HostingHwnd = hostHwnd;
 }

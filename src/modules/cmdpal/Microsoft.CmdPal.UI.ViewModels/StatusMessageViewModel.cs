@@ -9,7 +9,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class StatusMessageViewModel : ExtensionObjectViewModel
 {
-    private readonly ExtensionObject<IStatusMessage> _model;
+    public ExtensionObject<IStatusMessage> Model { get; }
 
     public string Message { get; private set; } = string.Empty;
 
@@ -17,15 +17,21 @@ public partial class StatusMessageViewModel : ExtensionObjectViewModel
 
     public string ExtensionPfn { get; set; } = string.Empty;
 
+    public ProgressViewModel? Progress { get; private set; }
+
+    public bool HasProgress => Progress != null;
+
+    // public bool IsIndeterminate => Progress != null && Progress.IsIndeterminate;
+    // public double ProgressValue => (Progress?.ProgressPercent ?? 0) / 100.0;
     public StatusMessageViewModel(IStatusMessage message, IPageContext context)
         : base(context)
     {
-        _model = new(message);
+        Model = new(message);
     }
 
     public override void InitializeProperties()
     {
-        var model = _model.Unsafe;
+        var model = Model.Unsafe;
         if (model == null)
         {
             return; // throw?
@@ -33,6 +39,13 @@ public partial class StatusMessageViewModel : ExtensionObjectViewModel
 
         Message = model.Message;
         State = model.State;
+        var modelProgress = model.Progress;
+        if (modelProgress != null)
+        {
+            Progress = new(modelProgress, this.PageContext);
+            Progress.InitializeProperties();
+            UpdateProperty(nameof(HasProgress));
+        }
 
         model.PropChanged += Model_PropChanged;
     }
@@ -51,7 +64,7 @@ public partial class StatusMessageViewModel : ExtensionObjectViewModel
 
     protected virtual void FetchProperty(string propertyName)
     {
-        var model = this._model.Unsafe;
+        var model = this.Model.Unsafe;
         if (model == null)
         {
             return; // throw?
@@ -64,6 +77,20 @@ public partial class StatusMessageViewModel : ExtensionObjectViewModel
                 break;
             case nameof(State):
                 this.State = model.State;
+                break;
+            case nameof(Progress):
+                var modelProgress = model.Progress;
+                if (modelProgress != null)
+                {
+                    Progress = new(modelProgress, this.PageContext);
+                    Progress.InitializeProperties();
+                }
+                else
+                {
+                    Progress = null;
+                }
+
+                UpdateProperty(nameof(HasProgress));
                 break;
         }
 

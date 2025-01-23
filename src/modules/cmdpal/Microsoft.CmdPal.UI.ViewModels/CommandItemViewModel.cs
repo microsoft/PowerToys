@@ -162,6 +162,12 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
 
         switch (propertyName)
         {
+            case nameof(Command):
+                this.Command = new(model.Command);
+                Name = model.Command?.Name ?? string.Empty;
+                UpdateProperty(nameof(Name));
+
+                break;
             case nameof(Name):
                 this.Name = model.Command?.Name ?? string.Empty;
                 break;
