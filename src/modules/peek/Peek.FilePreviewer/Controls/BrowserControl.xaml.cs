@@ -231,10 +231,11 @@ namespace Peek.FilePreviewer.Controls
                 // When using Monaco, we show menu items that call the appropriate JS functions -
                 // WebView2 isn't able to show a "Copy" menu item of its own.
                 return [
-                           CreateCommandMenuItem("ContextMenu_Copy", "runCopyCommand"),
-                           new Separator(),
-                           CreateCommandMenuItem("ContextMenu_ToggleTextWrapping", "runToggleTextWrapCommand"),
-                       ];
+                    CreateCommandMenuItem("ContextMenu_Copy", "runCopyCommand"),
+                    new Separator(),
+                    CreateCommandMenuItem("ContextMenu_ToggleTextWrapping", "runToggleTextWrapCommand"),
+                    CreateCommandMenuItem("ContextMenu_ToggleMinimap", "runToggleMinimap")
+                ];
             }
             else
             {

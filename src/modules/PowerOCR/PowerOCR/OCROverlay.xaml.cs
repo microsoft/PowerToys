@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -76,7 +77,7 @@ public partial class OCROverlay : Window
         if (string.IsNullOrEmpty(selectedLanguageName))
         {
             selectedLanguage = ImageMethods.GetOCRLanguage();
-            selectedLanguageName = selectedLanguage?.DisplayName;
+            selectedLanguageName = selectedLanguage?.NativeName;
         }
 
         List<Language> possibleOcrLanguages = OcrEngine.AvailableRecognizerLanguages.ToList();
@@ -85,10 +86,10 @@ public partial class OCROverlay : Window
 
         foreach (Language language in possibleOcrLanguages)
         {
-            MenuItem menuItem = new() { Header = language.NativeName, Tag = language, IsCheckable = true };
-            menuItem.IsChecked = language.DisplayName.Equals(selectedLanguageName, StringComparison.Ordinal);
-            LanguagesComboBox.Items.Add(language);
-            if (language.DisplayName.Equals(selectedLanguageName, StringComparison.Ordinal))
+            MenuItem menuItem = new() { Header = EnsureStartUpper(language.NativeName), Tag = language, IsCheckable = true };
+            menuItem.IsChecked = language.NativeName.Equals(selectedLanguageName, StringComparison.OrdinalIgnoreCase);
+            LanguagesComboBox.Items.Add(new ComboBoxItem { Content = EnsureStartUpper(language.NativeName), Tag = language });
+            if (language.NativeName.Equals(selectedLanguageName, StringComparison.OrdinalIgnoreCase))
             {
                 selectedLanguage = language;
                 LanguagesComboBox.SelectedIndex = count;
@@ -358,7 +359,12 @@ public partial class OCROverlay : Window
 
         // TODO: Set the preferred language based upon what was chosen here
         int selection = languageComboBox.SelectedIndex;
-        selectedLanguage = languageComboBox.SelectedItem as Language;
+        selectedLanguage = (languageComboBox.SelectedItem as ComboBoxItem)?.Tag as Language;
+
+        if (selectedLanguage == null)
+        {
+            return;
+        }
 
         Logger.LogError($"Changed language to {selectedLanguage?.LanguageTag}");
 
@@ -498,5 +504,17 @@ public partial class OCROverlay : Window
     public System.Drawing.Rectangle GetScreenRectangle()
     {
         return screenRectangle;
+    }
+
+    private string EnsureStartUpper(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+        {
+            return input;
+        }
+
+        var inputArray = input.ToCharArray();
+        inputArray[0] = char.ToUpper(inputArray[0], CultureInfo.CurrentCulture);
+        return new string(inputArray);
     }
 }

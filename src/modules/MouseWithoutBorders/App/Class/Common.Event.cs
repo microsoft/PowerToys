@@ -21,6 +21,8 @@ using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Core;
 using MouseWithoutBorders.Form;
 
+using Thread = MouseWithoutBorders.Core.Thread;
+
 namespace MouseWithoutBorders
 {
     internal partial class Common
@@ -145,7 +147,7 @@ namespace MouseWithoutBorders
             }
         }
 
-        private static bool IsSwitchingByMouseEnabled()
+        internal static bool IsSwitchingByMouseEnabled()
         {
             return (EasyMouseOption)Setting.Values.EasyMouse == EasyMouseOption.Enable || InputHook.EasyMouseKeyDown;
         }
