@@ -33,7 +33,7 @@ private:
 
     void RefreshEnabledState();
     void InitializeWithDefaultSettings();
-    std::wstring GetTemplateLocationDefaultPath();
+    std::wstring GetTemplateLocationDefaultPath() const;
 
     void Reload();
     void ParseJson();

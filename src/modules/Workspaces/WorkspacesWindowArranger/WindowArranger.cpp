@@ -460,6 +460,7 @@ bool WindowArranger::moveWindow(HWND window, const WorkspacesData::WorkspacesPro
     if (PlacementHelper::SizeWindowToRect(window, currentMonitor, launchMinimized, launchMaximized, rect))
     {
         WorkspacesWindowProperties::StampWorkspacesLaunchedProperty(window);
+        WorkspacesWindowProperties::StampWorkspacesGuidProperty(window, app.id);
         Logger::trace(L"Placed {} to ({},{}) [{}x{}]", app.name, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
         return true;
     }

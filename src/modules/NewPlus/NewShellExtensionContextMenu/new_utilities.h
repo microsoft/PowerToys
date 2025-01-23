@@ -319,6 +319,21 @@ namespace newplus::utilities
         }
     }
 
+    inline void update_last_write_time(const std::filesystem::path path)
+    {
+        const std::filesystem::file_time_type now = std::filesystem::file_time_type::clock::now();
+
+        std::filesystem::last_write_time(path, now);
+        
+        if (std::filesystem::is_directory(path))
+        {
+            for (const auto& entry : std::filesystem::recursive_directory_iterator(path))
+            {
+                std::filesystem::last_write_time(entry.path(), now);
+            }
+        }
+    }
+
     inline HRESULT copy_template(const template_item* template_entry, const ComPtr<IUnknown> site_of_folder)
     {
         HRESULT hr = S_OK;
@@ -349,7 +364,7 @@ namespace newplus::utilities
             // Get initial resolved name
             target_fullpath /= target_name;
 
-            // Expand variables in path
+            // Expand variables in name of the target path
             if (utilities::get_newplus_setting_resolve_variables())
             {
                 target_fullpath = helpers::variables::resolve_variables_in_path(target_fullpath);
@@ -360,6 +375,15 @@ namespace newplus::utilities
 
             // Finally copy file/folder/subfolders
             std::filesystem::path target_final_fullpath = template_entry->copy_object_to(GetActiveWindow(), target_fullpath);
+
+            // Resolve variables and rename files in newly copied folders and subfolders and files
+            if (utilities::get_newplus_setting_resolve_variables() && helpers::filesystem::is_directory(target_final_fullpath))
+            {
+                helpers::variables::resolve_variables_in_filename_and_rename_files(target_final_fullpath);
+            }
+
+            // Touch all files and set last modified to "now"
+            update_last_write_time(target_final_fullpath);
 
             // Consider copy completed. If we do tracing after enter_rename_mode, then rename mode won't consistently work
             trace.UpdateState(true);

@@ -18,7 +18,7 @@ namespace AdvancedPaste.Helpers
 
             internal static int Size
             {
-                get { return Marshal.SizeOf(typeof(INPUT)); }
+                get { return Marshal.SizeOf<INPUT>(); }
             }
         }
 

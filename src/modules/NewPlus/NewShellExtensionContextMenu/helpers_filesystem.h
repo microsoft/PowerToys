@@ -39,12 +39,18 @@ namespace newplus::helpers::filesystem
     inline std::wstring make_unique_path_name(const std::wstring& initial_path)
     {
         std::filesystem::path folder_path(initial_path);
+        std::filesystem::path path_based_on(initial_path);
 
         int counter = 1;
 
         while (std::filesystem::exists(folder_path))
         {
-            folder_path = initial_path + L" (" + std::to_wstring(counter) + L")";
+            std::wstring new_filename = path_based_on.stem().wstring() + L" (" + std::to_wstring(counter) + L")";
+            if (path_based_on.has_extension())
+            {
+                new_filename += path_based_on.extension().wstring();
+            }
+            folder_path = path_based_on.parent_path() / new_filename;
             counter++;
         }
 

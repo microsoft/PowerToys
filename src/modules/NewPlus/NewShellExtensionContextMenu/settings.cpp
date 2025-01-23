@@ -172,17 +172,14 @@ bool NewSettings::GetEnabled()
 
 bool NewSettings::GetHideFileExtension() const
 {
-    auto gpoSetting = powertoys_gpo::getConfiguredNewPlusHideTemplateFilenameExtensionValue();
-    if (gpoSetting == powertoys_gpo::gpo_rule_configured_enabled)
-    {
-        return true;
-    }
+    const auto gpoSetting = powertoys_gpo::getConfiguredNewPlusHideTemplateFilenameExtensionValue();
+
     if (gpoSetting == powertoys_gpo::gpo_rule_configured_disabled)
     {
         return false;
     }
 
-    return new_settings.hide_file_extension;
+    return true;
 }
 
 void NewSettings::SetHideFileExtension(const bool hide_file_extension)
@@ -204,16 +201,12 @@ bool NewSettings::GetReplaceVariables() const
 {
     const auto gpoSetting = powertoys_gpo::getConfiguredNewPlusReplaceVariablesValue();
 
-    if (gpoSetting == powertoys_gpo::gpo_rule_configured_enabled)
-    {
-        return true;
-    }
     if (gpoSetting == powertoys_gpo::gpo_rule_configured_disabled)
     {
         return false;
     }
 
-    return new_settings.replace_variables;
+    return true;
 }
 
 void NewSettings::SetReplaceVariables(const bool replace_variables)
@@ -223,6 +216,11 @@ void NewSettings::SetReplaceVariables(const bool replace_variables)
 
 std::wstring NewSettings::GetTemplateLocation() const
 {
+    if (new_settings.template_location.empty())
+    {
+        return GetTemplateLocationDefaultPath();
+    }
+
     return new_settings.template_location;
 }
 
@@ -231,7 +229,7 @@ void NewSettings::SetTemplateLocation(const std::wstring template_location)
     new_settings.template_location = template_location;
 }
 
-std::wstring NewSettings::GetTemplateLocationDefaultPath()
+std::wstring NewSettings::GetTemplateLocationDefaultPath() const
 {
     static const std::wstring default_template_sub_folder_name =
         GET_RESOURCE_STRING_FALLBACK(

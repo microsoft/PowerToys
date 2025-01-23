@@ -32,22 +32,22 @@ IFACEMETHODIMP shell_context_menu_win10::Initialize(PCIDLIST_ABSOLUTE, IDataObje
 IFACEMETHODIMP shell_context_menu_win10::QueryContextMenu(HMENU menu_handle, UINT menu_index, UINT menu_first_cmd_id, UINT, UINT menu_flags)
 {
     if (!NewSettingsInstance().GetEnabled() 
-//cgaarden            || package::IsWin11OrGreater()
+        || package::IsWin11OrGreater()
         )
     {
         return E_FAIL;
     }
 
-    if (menu_flags & CMF_DEFAULTONLY)
+    if (menu_flags & (CMF_DEFAULTONLY | CMF_VERBSONLY | CMF_OPTIMIZEFORINVOKE))
     {
-        return MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 0);
+        return E_UNEXPECTED;
     }
 
     try
     {
         // Create the initial context popup menu containing the list of templates and open templates action
         int menu_id = menu_first_cmd_id;
-        MENUITEMINFO newplus_main_context_menu_item;
+        MENUITEMINFO newplus_main_context_menu_item = { 0 };
         HMENU sub_menu_of_templates = CreatePopupMenu();
         int sub_menu_index = 0;
 
@@ -142,7 +142,7 @@ void shell_context_menu_win10::add_open_templates_to_context_menu(HMENU sub_menu
     wchar_t menu_name_open[256] = { 0 };
     wcscpy_s(menu_name_open, ARRAYSIZE(menu_name_open), localized_context_menu_item_open_templates.c_str());
     const auto open_folder_item = Make<template_folder_context_menu_item>(template_folder_root);
-    MENUITEMINFO newplus_menu_item_open_templates;
+    MENUITEMINFO newplus_menu_item_open_templates = { 0 };
     newplus_menu_item_open_templates.cbSize = sizeof(MENUITEMINFO);
     newplus_menu_item_open_templates.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
     newplus_menu_item_open_templates.wID = menu_id;
@@ -174,7 +174,7 @@ void shell_context_menu_win10::add_open_templates_to_context_menu(HMENU sub_menu
 
 void shell_context_menu_win10::add_separator_to_context_menu(HMENU sub_menu_of_templates, int sub_menu_index)
 {
-    MENUITEMINFO menu_item_separator;
+    MENUITEMINFO menu_item_separator = { 0 };
     menu_item_separator.cbSize = sizeof(MENUITEMINFO);
     menu_item_separator.fMask = MIIM_FTYPE;
     menu_item_separator.fType = MFT_SEPARATOR;
@@ -188,7 +188,7 @@ void shell_context_menu_win10::add_template_item_to_context_menu(HMENU sub_menu_
         !utilities::get_newplus_setting_hide_extension(), 
         !utilities::get_newplus_setting_hide_starting_digits(), 
         utilities::get_newplus_setting_resolve_variables()).c_str());
-    MENUITEMINFO newplus_menu_item_template;
+    MENUITEMINFO newplus_menu_item_template = { 0 };
     newplus_menu_item_template.cbSize = sizeof(MENUITEMINFO);
     newplus_menu_item_template.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID | MIIM_DATA;
     newplus_menu_item_template.wID = menu_id;
@@ -217,6 +217,13 @@ IFACEMETHODIMP shell_context_menu_win10::InvokeCommand(CMINVOKECOMMANDINFO* para
 {
     if (!params)
     {
+        return E_FAIL;
+    }
+
+    if (HIWORD(params->lpVerb)!=0)
+    {
+        // Not a menu command. It's likely a string verb command from another menu.
+        // The logic to interpret lpVerb is explained here: https://learn.microsoft.com/en-us/previous-versions//bb776881(v=vs.85)#invokecommand-method
         return E_FAIL;
     }
 
