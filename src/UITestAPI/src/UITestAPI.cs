@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -112,7 +113,15 @@ namespace Microsoft.UITests.API
         private WindowsElement? GetElement(string elementName, string? appName = null)
         {
             WindowsDriver<WindowsElement>? session = GetSession(appName);
-            var listItem = session?.FindElementByName(elementName);
+            var item = session?.FindElementByName(elementName);
+            Assert.IsNotNull(item, "ElementName " + elementName + " not found");
+            return item;
+        }
+
+        private ReadOnlyCollection<WindowsElement> GetElements(string elementName, string? appName = null)
+        {
+            WindowsDriver<WindowsElement>? session = GetSession(appName);
+            var listItem = session?.FindElementsByName(elementName);
             Assert.IsNotNull(listItem, "ElementName " + elementName + " not found");
             return listItem;
         }
@@ -132,9 +141,45 @@ namespace Microsoft.UITests.API
             var element = GetElement(elementName);
             Actions actions = new Actions(session);
             actions.MoveToElement(element);
-            actions.MoveByOffset(30, 30);
             actions.Click();
             actions.Build().Perform();
+        }
+
+        public void Click_Elements(string elementName, string? appName = null)
+        {
+            WindowsDriver<WindowsElement>? session = GetSession(appName);
+            var elements = GetElements(elementName);
+            Actions actions = new Actions(session);
+            foreach (var element in elements)
+            {
+                actions.MoveToElement(element);
+
+                actions.MoveByOffset(5, 5);
+                actions.Click();
+                actions.Build().Perform();
+            }
+        }
+
+        public void Click_Element(string elementName, string helpText, string? appName = null)
+        {
+            WindowsDriver<WindowsElement>? session = GetSession(appName);
+            var elements = GetElements(elementName);
+            Actions actions = new Actions(session);
+            bool buttonClicked = false;
+            foreach (var element in elements)
+            {
+                if (element.GetAttribute("HelpText") == helpText)
+                {
+                    actions.MoveToElement(element);
+                    actions.Click();
+                    actions.Build().Perform();
+                    actions.MoveByOffset(5, 5);
+                    buttonClicked = true;
+                    break;
+                }
+            }
+
+            Assert.IsTrue(buttonClicked, $"No button with elementName '{elementName}' and HelpText '{helpText}' was found.");
         }
 
         public void RightClick_Element(string elementName, string? appName = null)
