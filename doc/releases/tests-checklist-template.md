@@ -928,7 +928,7 @@ Mouse Jump:
  * Test the base modes through a shortcuts:
    - [ ] Press the Zoom Toggle Hotkey and verify ZoomIt zooms in on the mouse. You can exit Zoom by pressing Escape or the Hotkey again.
    - [ ] Press the Live Zoom Toggle Hotkey and verify ZoomIt zooms in on the mouse, while the screen still updates instead of showing a still image. You can exit Live Zoom by pressing the Hotkey again.
-   - [ ] Press the Draw without Zoom Hotkey and verify you can draw. You can leave this mode by pressing the hotkey again.
+   - [ ] Press the Draw without Zoom Hotkey and verify you can draw. You can leave this mode by pressing the Escape.
    - [ ] Select a text file as the Input file for Demo Type, focus notepad and press the Demo Type hotkey. It should start typing the text file. You can exit Demo Type by pressing Escape.
    - [ ] Press the Start Break Timer Hotkey and verify it starts the Timer. You can exit by pressing Escape.
    - [ ] Press the Record Toggle Hotkey to start recording a screen. Press the Record Toggle Hotkey again to exit the mode and save the recording to a file.
