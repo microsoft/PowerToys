@@ -28,6 +28,12 @@ public partial class SettingsModel : ObservableObject
 
     public bool HotkeyGoesHome { get; set; }
 
+    public bool BackspaceGoesBack { get; set; }
+
+    public bool SingleClickActivates { get; set; }
+
+    public bool HighlightSearchOnActivate { get; set; } = true;
+
     public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = [];
 
     // END SETTINGS

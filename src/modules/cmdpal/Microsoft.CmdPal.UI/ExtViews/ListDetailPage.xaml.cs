@@ -32,6 +32,6 @@ public sealed partial class ListDetailPage : Page
 
     private void Button_Click(object sender, RoutedEventArgs e)
     {
-        WeakReferenceMessenger.Default.Send<NavigateBackMessage>();
+        WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
     }
 }

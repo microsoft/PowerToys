@@ -12,7 +12,6 @@ using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
@@ -68,14 +67,23 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(NavigateBackMessage message)
     {
+        var settings = App.Current.Services.GetService<SettingsModel>()!;
+
         if (RootFrame.CanGoBack)
         {
-            GoBack();
+            if (!message.FromBackspace ||
+                settings.BackspaceGoesBack)
+            {
+                GoBack();
+            }
         }
         else
         {
-            // If we can't go back then we must be at the top and thus escape again should quit.
-            WeakReferenceMessenger.Default.Send<DismissMessage>();
+            if (!message.FromBackspace)
+            {
+                // If we can't go back then we must be at the top and thus escape again should quit.
+                WeakReferenceMessenger.Default.Send<DismissMessage>();
+            }
         }
     }
 
@@ -286,8 +294,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         {
             GoHome(false);
         }
+        else if (settings.HighlightSearchOnActivate)
+        {
+            SearchBox.SelectSearch();
+        }
 
-        SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+        WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
     }
 
     private void GoBack(bool withAnimation = true)
@@ -327,7 +339,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Send<GoHomeMessage>();
     }
 
-    private void BackButton_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e) => WeakReferenceMessenger.Default.Send<NavigateBackMessage>();
+    private void BackButton_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e) => WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
 
     private void RootFrame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
     {

@@ -4,6 +4,6 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
-public record NavigateBackMessage(bool FromBackspace = false)
+public record FocusSearchBoxMessage()
 {
 }

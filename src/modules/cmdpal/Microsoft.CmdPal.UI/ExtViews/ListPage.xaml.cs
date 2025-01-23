@@ -4,9 +4,9 @@
 
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
-using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -76,13 +76,18 @@ public sealed partial class ListPage : Page,
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
     private void ListView_ItemClick(object sender, ItemClickEventArgs e)
     {
-        if (e.ClickedItem is ListItemViewModel item && item == ItemsList.SelectedItem)
+        if (e.ClickedItem is ListItemViewModel item)
         {
-            ViewModel?.InvokeItemCommand.Execute(item);
-        }
-        else if (e.ClickedItem is ListItemViewModel item2)
-        {
-            ViewModel?.UpdateSelectedItemCommand.Execute(item2);
+            var settings = App.Current.Services.GetService<SettingsModel>()!;
+            if (settings.SingleClickActivates)
+            {
+                ViewModel?.InvokeItemCommand.Execute(item);
+            }
+            else
+            {
+                ViewModel?.UpdateSelectedItemCommand.Execute(item);
+                WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+            }
         }
     }
 
@@ -119,6 +124,19 @@ public sealed partial class ListPage : Page,
         if (ItemsList.SelectedItem != null)
         {
             ItemsList.ScrollIntoView(ItemsList.SelectedItem);
+        }
+    }
+
+    private void ListViewItem_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
+    {
+        if (sender is ListViewItem viewItem &&
+            this.ItemsList.ItemFromContainer(viewItem) is ListItemViewModel vm)
+        {
+            var settings = App.Current.Services.GetService<SettingsModel>()!;
+            if (!settings.SingleClickActivates)
+            {
+                ViewModel?.InvokeItemCommand.Execute(vm);
+            }
         }
     }
 
