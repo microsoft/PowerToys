@@ -6023,6 +6023,12 @@ LRESULT APIENTRY MainWndProc(
         // Apply tray icon setting
         EnableDisableTrayIcon(hWnd, g_ShowTrayIcon);
 
+        // This is also called by ZoomIt when it starts and loads the Settings. Opacity is added after loading from registry, so we use the same pattern.
+        if ((g_PenColor >> 24) == 0)
+        {
+            g_PenColor |= 0xFF << 24;
+        }
+
         // Apply hotkey settings
         UnregisterAllHotkeys(hWnd);
         g_ToggleMod = GetKeyMod(g_ToggleKey);

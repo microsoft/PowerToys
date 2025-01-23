@@ -105,9 +105,12 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
                     }
                     else if (special_semantics->second == SPECIAL_SEMANTICS_COLOR)
                     {
-                        // PowerToys settings likes colors as #FFFFFF strings.
+                        /* PowerToys settings likes colors as #FFFFFF strings.
+                        But currently these Settings are internal state for ZoomIt, not something that we really need to send Settings.
+                        Code is kept here as a reference if a future color Setting ends up being configured.
                         hstring s = winrt::to_hstring(std::format("#{:02x}{:02x}{:02x}", value & 0xFF, (value >> 8) & 0xFF, (value >> 16) & 0xFF));
                         _settings.add_property(curSetting->ValueName, s);
+                        */
                     }
                 }
                 break;
@@ -211,6 +214,9 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
                     }
                     else if (special_semantics->second == SPECIAL_SEMANTICS_COLOR)
                     {
+                        /* PowerToys settings likes colors as #FFFFFF strings.
+                        But currently these Settings are internal state for ZoomIt, not something that we really need to save from Settings.
+                        Code is kept here as a reference if a future color Setting ends up being configured.
                         auto possibleValue = valuesFromSettings.get_string_value(curSetting->ValueName);
                         if (possibleValue.has_value())
                         {
@@ -219,8 +225,8 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
                             {
                                 *static_cast<PDWORD>(curSetting->Setting) = RGB(r, g, b);
                             }
-
                         }
+                        */
                     }
                 }
                 break;
