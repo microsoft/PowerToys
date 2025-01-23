@@ -13,7 +13,7 @@
     AutomationProperties.LandmarkType="Main"
     DataContext="DashboardViewModel"
     mc:Ignorable="d"
-    x:Name="MainWindow1">
+    x:Name="DashboardMainWindow">
 
     <Page.Resources>
         <DataTemplate x:Key="KeyVisualTemplate">

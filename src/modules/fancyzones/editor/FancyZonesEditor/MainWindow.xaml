@@ -12,7 +12,7 @@
     xmlns:props="clr-namespace:FancyZonesEditor.Properties"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    x:Name="MainWindow1"
+    x:Name="FancyZoneMainWindow"
     Title="{x:Static props:Resources.Fancy_Zones_Editor_App_Title}"
     MinWidth="360"
     ui:TitleBar.Background="{DynamicResource TertiaryBackgroundBrush}"
