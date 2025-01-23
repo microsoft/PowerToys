@@ -10,7 +10,7 @@
     </ItemGroup>
     <WriteLinesToFile File="Generated Files\version_gen.h" Lines="@(HeaderLines)" Overwrite="true" Encoding="Unicode" WriteOnlyWhenDifferent="true" />
   </Target>
-  <!-- Needed for .\src\modules\videoconference\VideoConferenceProxyFilter\build_vcm_x86.cmd -->
+  <!-- Project Configurations needed for building Tools -->
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>

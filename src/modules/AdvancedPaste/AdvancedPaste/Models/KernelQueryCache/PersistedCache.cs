@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using AdvancedPaste.Helpers;
+using AdvancedPaste.SerializationContext;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace AdvancedPaste.Models.KernelQueryCache;
@@ -15,15 +16,7 @@ public sealed class PersistedCache : ISettingsConfig
 {
     public record class CacheItem(CacheKey CacheKey, CacheValue CacheValue);
 
-    private static readonly JsonSerializerOptions SerializerOptions = new()
-    {
-        Converters =
-        {
-            new JsonStringEnumConverter(),
-        },
-    };
-
-    public static PersistedCache FromJsonString(string json) => JsonSerializer.Deserialize<PersistedCache>(json, SerializerOptions);
+    public static PersistedCache FromJsonString(string json) => JsonSerializer.Deserialize<PersistedCache>(json, SourceGenerationContext.Default.PersistedCache);
 
     public string Version { get; init; }
 
@@ -31,7 +24,7 @@ public sealed class PersistedCache : ISettingsConfig
 
     public string GetModuleName() => Constants.AdvancedPasteModuleName;
 
-    public string ToJsonString() => JsonSerializer.Serialize(this, SerializerOptions);
+    public string ToJsonString() => JsonSerializer.Serialize(this, SourceGenerationContext.Default.PersistedCache);
 
     public override string ToString() => ToJsonString();
 

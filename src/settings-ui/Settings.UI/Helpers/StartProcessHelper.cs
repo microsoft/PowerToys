@@ -3,8 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-
-using Common.UI;
+using ManagedCommon;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {

@@ -38,7 +38,11 @@ namespace Microsoft.PowerToys.FilePreviewCommon
         {
             string baseDirectory = AppContext.BaseDirectory ?? string.Empty;
 
+            // AppContext.BaseDirectory returns a stray \\ so we want to remove that.
+            baseDirectory = Path.TrimEndingDirectorySeparator(baseDirectory);
+
             // If the executable is within "WinUI3Apps", correct the path first.
+            // The idea of GetFileName here is getting the last directory in the path.
             if (Path.GetFileName(baseDirectory) == "WinUI3Apps")
             {
                 baseDirectory = Path.Combine(baseDirectory, "..");

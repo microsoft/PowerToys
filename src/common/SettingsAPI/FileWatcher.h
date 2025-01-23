@@ -9,6 +9,9 @@
 #include <string>
 #include <functional>
 
+#include <wil/resource.h>
+#include <wil/filesystem.h>
+
 class FileWatcher
 {
     std::wstring m_path;

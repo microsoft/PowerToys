@@ -74,6 +74,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = moduleType,
                 Label = resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType)),
+                IsNew = moduleType == ModuleType.ZoomIt,
                 IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
@@ -195,6 +196,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.ShortcutGuide => GetModuleItemsShortcutGuide(),
                 ModuleType.PowerOCR => GetModuleItemsPowerOCR(),
                 ModuleType.NewPlus => GetModuleItemsNewPlus(),
+                ModuleType.ZoomIt => GetModuleItemsZoomIt(),
                 _ => new ObservableCollection<DashboardModuleItem>(), // never called, all values listed above
             };
         }
@@ -517,6 +519,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleTextItem() { Label = resourceLoader.GetString("NewPlus_Product_Description/Description") },
+            };
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsZoomIt()
+        {
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleTextItem() { Label = resourceLoader.GetString("ZoomIt_ShortDescription") },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
