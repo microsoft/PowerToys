@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
-    x:Class="Microsoft.CmdPal.UI.ShellPage"
+    x:Class="Microsoft.CmdPal.UI.Pages.ShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
@@ -243,13 +243,12 @@
                 Severity="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.State, Mode=OneWay, Converter={StaticResource MessageStateToSeverityConverter}}">
 
                 <InfoBar.Content>
-                    <ProgressBar 
-                        Visibility="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.HasProgress, Mode=OneWay}"
-                        IsIndeterminate="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.Progress.IsIndeterminate, Mode=OneWay}"
-                        Value="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.Progress.ProgressValue, Mode=OneWay}"
+                    <ProgressBar
                         Margin="0,-20,0,0"
-                    />
-                    <!--Margin="0,0,0,6" MaxWidth="200"/>-->
+                        IsIndeterminate="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.Progress.IsIndeterminate, Mode=OneWay}"
+                        Visibility="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.HasProgress, Mode=OneWay}"
+                        Value="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.Progress.ProgressValue, Mode=OneWay}" />
+                    <!--  Margin="0,0,0,6" MaxWidth="200"/>  -->
                 </InfoBar.Content>
             </InfoBar>
         </StackPanel>
