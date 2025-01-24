@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using Microsoft.FancyZones.UnitTests.Utils;
 using Microsoft.UITests.API;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -86,8 +87,10 @@ namespace UITests_FancyZones
             }
 
             Assert.IsNotNull(mUITestAPI);
+            mUITestAPI.Click_Element("Launch layout editor");
 
-            mUITestAPI.LuanchApp("PowerToys.FancyZonesEditor", "FancyZones Editor");
+            Thread.Sleep(5000);
+            mUITestAPI.LaunchApp("PowerToys.FancyZonesEditor", "FancyZones Layout");
             mUITestAPI?.Click_CreateNewLayout();
         }
     }

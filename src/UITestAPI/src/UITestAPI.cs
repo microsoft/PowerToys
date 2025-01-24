@@ -76,9 +76,9 @@ namespace Microsoft.UITests.API
         }
 
         // Take control of an application that already exists
-        public void LuanchApp(string appName, string windowName)
+        public void LaunchApp(string appName, string windowName)
         {
-            UIManager.LuanchApp(appName, windowName);
+            UIManager.LaunchApp(appName, windowName);
         }
 
         // Use the name to switch the current driver
@@ -180,6 +180,58 @@ namespace Microsoft.UITests.API
             }
 
             Assert.IsTrue(buttonClicked, $"No button with elementName '{elementName}' and HelpText '{helpText}' was found.");
+        }
+
+        public void Enable_Module_from_Dashboard(string moduleName, string? appName = null)
+        {
+            WindowsDriver<WindowsElement>? session = GetSession(appName);
+            var elements = GetElements("Enable module");
+            Actions actions = new Actions(session);
+            bool buttonFound = false;
+            foreach (var element in elements)
+            {
+                if (element.GetAttribute("HelpText") == moduleName)
+                {
+                    if (element.GetAttribute("Toggle.ToggleState") == "0")
+                    {
+                        actions.MoveToElement(element);
+                        actions.Click();
+                        actions.Build().Perform();
+                        actions.MoveByOffset(5, 5);
+                    }
+
+                    buttonFound = true;
+                    break;
+                }
+            }
+
+            Assert.IsTrue(buttonFound, $"No button with elementName '{moduleName}' and HelpText '{moduleName}' was found.");
+        }
+
+        public void Disable_Module_from_Dashboard(string moduleName, string? appName = null)
+        {
+            WindowsDriver<WindowsElement>? session = GetSession(appName);
+            var elements = GetElements("Enable module");
+            Actions actions = new Actions(session);
+            bool buttonFound = false;
+            foreach (var element in elements)
+            {
+                if (element.GetAttribute("HelpText") == moduleName)
+                {
+                    if (element.GetAttribute("Toggle.ToggleState") == "1")
+                    {
+                        actions.MoveToElement(element);
+                        actions.Click();
+                        actions.Build().Perform();
+                        actions.MoveByOffset(5, 5);
+                    }
+
+                    buttonFound = true;
+                    break;
+                }
+            }
+
+            Assert.IsTrue(buttonFound, $"No button with elementName '{moduleName}' and HelpText '{moduleName}' was found.");
         }
 
         public void RightClick_Element(string elementName, string? appName = null)

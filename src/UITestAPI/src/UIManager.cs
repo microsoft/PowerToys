@@ -76,12 +76,16 @@ namespace Microsoft.UITests.API
             winDriver.Session = session;
             winDriver.AppName = appName;
             winDriver.WindowName = windowName;
-            mWindowList.Push(winDriver);
+            if (CurrentDriver.Session != null)
+            {
+                mWindowList.Push(CurrentDriver);
+            }
+
             CurrentDriver = winDriver;
         }
 
         // Take control of an application that already exists
-        public void LuanchApp(string appName, string windowName)
+        public void LaunchApp(string appName, string windowName)
         {
             if (Root != null)
             {
@@ -103,7 +107,11 @@ namespace Microsoft.UITests.API
                 winDriver.Session = appSession;
                 winDriver.AppName = appName;
                 winDriver.WindowName = windowName;
-                mWindowList.Push(winDriver);
+                if (CurrentDriver.Session != null)
+                {
+                    mWindowList.Push(CurrentDriver);
+                }
+
                 CurrentDriver = winDriver;
             }
             else
@@ -158,6 +166,7 @@ namespace Microsoft.UITests.API
                 }
 
                 CurrentDriver = mWindowList.Pop();
+                return;
             }
 
             while (mWindowList.Count > 0)
