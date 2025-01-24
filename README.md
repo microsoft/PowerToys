@@ -226,6 +226,7 @@ For [v0.89][github-next-release-work], we'll work on the items below:
 
  - Stability / bug fixes
  - New module: File Actions Menu
+ - PowerToys Run v2 development work
 
 ## PowerToys Community
 
