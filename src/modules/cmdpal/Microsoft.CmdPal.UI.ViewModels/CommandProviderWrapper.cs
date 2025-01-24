@@ -45,7 +45,7 @@ public sealed class CommandProviderWrapper
         _commandProvider = new(provider);
 
         // Hook the extension back into us
-        ExtensionHost = CommandPaletteHost.Instance;
+        ExtensionHost = new CommandPaletteHost(provider);
         _commandProvider.Unsafe!.InitializeWithHost(ExtensionHost);
 
         _commandProvider.Unsafe!.ItemsChanged += CommandProvider_ItemsChanged;

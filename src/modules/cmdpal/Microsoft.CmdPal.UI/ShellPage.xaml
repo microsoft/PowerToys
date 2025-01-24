@@ -12,6 +12,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -26,10 +27,40 @@
 
             <cmdpalUI:MessageStateToSeverityConverter x:Key="MessageStateToSeverityConverter" />
 
+            <cmdpalUI:DetailsDataTemplateSelector
+                x:Key="DetailsDataTemplateSelector"
+                LinkTemplate="{StaticResource DetailsLinkTemplate}"
+                SeparatorTemplate="{StaticResource DetailsSeparatorTemplate}"
+                TagTemplate="{StaticResource DetailsTagsTemplate}" />
+
             <converters:BoolToVisibilityConverter
                 x:Key="BoolToInvertedVisibilityConverter"
                 FalseValue="Visible"
                 TrueValue="Collapsed" />
+
+
+            <DataTemplate x:Key="DetailsLinkTemplate" x:DataType="viewModels:DetailsLinkViewModel">
+                <StackPanel Margin="0,8,0,0" Orientation="Vertical">
+                    <TextBlock
+                        FontWeight="Bold"
+                        IsTextSelectionEnabled="True"
+                        Text="{x:Bind Key, Mode=OneWay}" />
+                    <TextBlock
+                        IsTextSelectionEnabled="True"
+                        Text="{x:Bind Text, Mode=OneWay}"
+                        Visibility="{x:Bind IsText, Mode=OneWay}" />
+                    <HyperlinkButton
+                        Content="{x:Bind Text, Mode=OneWay}"
+                        NavigateUri="{x:Bind Link, Mode=OneWay}"
+                        Visibility="{x:Bind IsLink, Mode=OneWay}" />
+                </StackPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="DetailsSeparatorTemplate" x:DataType="viewModels:DetailsSeparatorViewModel">
+                <TextBlock Text="{x:Bind Key, Mode=OneWay}" />
+            </DataTemplate>
+            <DataTemplate x:Key="DetailsTagsTemplate" x:DataType="viewModels:DetailsTagsViewModel">
+                <TextBlock Text="{x:Bind Key, Mode=OneWay}" />
+            </DataTemplate>
 
         </ResourceDictionary>
     </Page.Resources>
@@ -155,48 +186,58 @@
                     IsNavigationStackEnabled="True"
                     Navigated="RootFrame_Navigated" />
 
-                <Grid
+                <ScrollViewer
                     x:Name="DetailsContent"
                     Grid.Column="1"
                     Padding="8"
+                    HorizontalAlignment="Stretch"
                     Background="{ThemeResource LayerFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1,0,0,0"
                     Visibility="Collapsed">
+                    <Grid>
 
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
 
-                    <cpcontrols:IconBox
-                        x:Name="HeroImageBorder"
-                        Width="64"
-                        Height="64"
-                        SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
-                        Visibility="{x:Bind HasHeroImage, Mode=OneWay}" />
+                        <cpcontrols:IconBox
+                            x:Name="HeroImageBorder"
+                            MinWidth="64"
+                            MinHeight="64"
+                            MaxHeight="128"
+                            HorizontalAlignment="Center"
+                            SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
+                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
+                            Visibility="{x:Bind HasHeroImage, Mode=OneWay}" />
 
-                    <TextBlock
-                        Grid.Row="1"
-                        HorizontalAlignment="Center"
-                        FontSize="20"
-                        Style="{StaticResource SubtitleTextBlockStyle}"
-                        Text="{x:Bind ViewModel.Details.Title, Mode=OneWay}"
-                        TextWrapping="WrapWholeWords"
-                        Visibility="{x:Bind ViewModel.Details.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
+                        <TextBlock
+                            Grid.Row="1"
+                            HorizontalAlignment="Center"
+                            FontSize="20"
+                            Style="{StaticResource SubtitleTextBlockStyle}"
+                            Text="{x:Bind ViewModel.Details.Title, Mode=OneWay}"
+                            TextWrapping="WrapWholeWords"
+                            Visibility="{x:Bind ViewModel.Details.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
 
-                    <ScrollViewer Grid.Row="2" HorizontalAlignment="Stretch">
                         <toolkit:MarkdownTextBlock
+                            Grid.Row="2"
                             Background="Transparent"
                             Header3FontSize="12"
                             Header3FontWeight="Normal"
                             Header3Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             IsTextSelectionEnabled="True"
                             Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}" />
-                    </ScrollViewer>
-                </Grid>
+
+                        <ItemsRepeater
+                            Grid.Row="3"
+                            ItemTemplate="{StaticResource DetailsDataTemplateSelector}"
+                            ItemsSource="{x:Bind ViewModel.Details.Metadata, Mode=OneWay}" />
+                    </Grid>
+                </ScrollViewer>
                 <!--  /DetailsContent  -->
             </Grid>
             <ScrollView
@@ -243,13 +284,12 @@
                 Severity="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.State, Mode=OneWay, Converter={StaticResource MessageStateToSeverityConverter}}">
 
                 <InfoBar.Content>
-                    <ProgressBar 
-                        Visibility="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.HasProgress, Mode=OneWay}"
-                        IsIndeterminate="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.Progress.IsIndeterminate, Mode=OneWay}"
-                        Value="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.Progress.ProgressValue, Mode=OneWay}"
+                    <ProgressBar
                         Margin="0,-20,0,0"
-                    />
-                    <!--Margin="0,0,0,6" MaxWidth="200"/>-->
+                        IsIndeterminate="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.Progress.IsIndeterminate, Mode=OneWay}"
+                        Visibility="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.HasProgress, Mode=OneWay}"
+                        Value="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.Progress.ProgressValue, Mode=OneWay}" />
+                    <!--  Margin="0,0,0,6" MaxWidth="200"/>  -->
                 </InfoBar.Content>
             </InfoBar>
         </StackPanel>

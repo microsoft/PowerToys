@@ -14,6 +14,7 @@ using Microsoft.CmdPal.Ext.WindowsServices;
 using Microsoft.CmdPal.Ext.WindowsSettings;
 using Microsoft.CmdPal.Ext.WindowsTerminal;
 using Microsoft.CmdPal.Ext.WindowWalker;
+using Microsoft.CmdPal.Ext.WinGet;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
@@ -82,12 +83,13 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, IndexerCommandsProvider>();
         services.AddSingleton<ICommandProvider, BuiltInsCommandProvider>();
         services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
-        services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
-        services.AddSingleton<ICommandProvider, WindowsServicesCommandsProvider>();
-        services.AddSingleton<ICommandProvider, RegistryCommandsProvider>();
         services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
-        services.AddSingleton<ICommandProvider, WindowsSettingsCommandsProvider>();
         services.AddSingleton<ICommandProvider, WebSearchCommandsProvider>();
+        services.AddSingleton<ICommandProvider, WinGetExtensionCommandsProvider>();
+        services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
+        services.AddSingleton<ICommandProvider, WindowsSettingsCommandsProvider>();
+        services.AddSingleton<ICommandProvider, RegistryCommandsProvider>();
+        services.AddSingleton<ICommandProvider, WindowsServicesCommandsProvider>();
 
         // Models
         services.AddSingleton<TopLevelCommandManager>();

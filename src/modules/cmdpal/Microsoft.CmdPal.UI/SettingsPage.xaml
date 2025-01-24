@@ -72,14 +72,12 @@
                             HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
                             <ToggleSwitch IsOn="{x:Bind ViewModel.HotkeyGoesHome, Mode=TwoWay}" />
                         </controls:SettingsCard>
-                        <controls:SettingsCard
-                            Description="When enabled, the previous search text will be selected when the app is opened"
-                            Header="Highlight search on activate">
+                        <controls:SettingsCard Description="When enabled, the previous search text will be selected when the app is opened" Header="Highlight search on activate">
                             <ToggleSwitch IsOn="{x:Bind ViewModel.HighlightSearchOnActivate, Mode=TwoWay}" />
                         </controls:SettingsCard>
                     </controls:SettingsExpander.Items>
                 </controls:SettingsExpander>
-                
+
                 <controls:SettingsCard
                     Description="Controls if app details are automatically expanded or not"
                     Header="Show app details"
@@ -93,7 +91,7 @@
                     HeaderIcon="{ui:FontIcon Glyph=&#xE750;}">
                     <ToggleSwitch IsOn="{x:Bind ViewModel.BackspaceGoesBack, Mode=TwoWay}" />
                 </controls:SettingsCard>
-                
+
                 <controls:SettingsCard
                     Description="When enabled, single click activates list items. When disabled, single click selects and double click activates."
                     Header="Single-click activates"

@@ -40,7 +40,7 @@ public abstract partial class CommandProvider : ICommandProvider
 
     public bool Frozen { get; protected set; } = true;
 
-    public void InitializeWithHost(IExtensionHost host)
+    public virtual void InitializeWithHost(IExtensionHost host)
     {
         ExtensionHost.Initialize(host);
     }

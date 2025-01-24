@@ -15,11 +15,13 @@ public partial class DetailsViewModel(IDetails _details, IPageContext context) :
     // cannot be marked [ObservableProperty]
     public IconInfoViewModel HeroImage { get; private set; } = new(null);
 
-    // TODO: Metadata is an array of IDetailsElement,
-    // where IDetailsElement = {IDetailsTags, IDetailsLink, IDetailsSeparator}
     public string Title { get; private set; } = string.Empty;
 
     public string Body { get; private set; } = string.Empty;
+
+    // Metadata is an array of IDetailsElement,
+    //   where IDetailsElement = {IDetailsTags, IDetailsLink, IDetailsSeparator}
+    public List<DetailsElementViewModel> Metadata { get; private set; } = [];
 
     public override void InitializeProperties()
     {
@@ -37,5 +39,25 @@ public partial class DetailsViewModel(IDetails _details, IPageContext context) :
         UpdateProperty(nameof(Title));
         UpdateProperty(nameof(Body));
         UpdateProperty(nameof(HeroImage));
+
+        var meta = model.Metadata;
+        if (meta != null)
+        {
+            foreach (var element in meta)
+            {
+                DetailsElementViewModel? vm = element.Data switch
+                {
+                    IDetailsSeparator => new DetailsSeparatorViewModel(element, this.PageContext),
+                    IDetailsLink => new DetailsLinkViewModel(element, this.PageContext),
+                    IDetailsTags => new DetailsTagsViewModel(element, this.PageContext),
+                    _ => null,
+                };
+                if (vm != null)
+                {
+                    vm.InitializeProperties();
+                    Metadata.Add(vm);
+                }
+            }
+        }
     }
 }

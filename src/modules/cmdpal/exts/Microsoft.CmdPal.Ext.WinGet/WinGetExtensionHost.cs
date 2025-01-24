@@ -2,11 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.CmdPal.Extensions.Helpers;
+namespace Microsoft.CmdPal.Ext.WinGet;
 
-public class DetailsLink : IDetailsLink
+public partial class WinGetExtensionHost
 {
-    public Uri? Link { get; set; }
-
-    public string Text { get; set; } = string.Empty;
+    internal static ExtensionHostInstance Instance { get; } = new();
 }

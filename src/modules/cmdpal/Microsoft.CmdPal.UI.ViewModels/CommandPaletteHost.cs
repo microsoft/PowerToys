@@ -28,6 +28,8 @@ public sealed partial class CommandPaletteHost : IExtensionHost
 
     public IExtensionWrapper? Extension { get; }
 
+    private readonly ICommandProvider? _builtInProvider;
+
     private CommandPaletteHost()
     {
     }
@@ -35,6 +37,11 @@ public sealed partial class CommandPaletteHost : IExtensionHost
     public CommandPaletteHost(IExtensionWrapper source)
     {
         Extension = source;
+    }
+
+    public CommandPaletteHost(ICommandProvider builtInProvider)
+    {
+        _builtInProvider = builtInProvider;
     }
 
     public IAsyncAction ShowStatus(IStatusMessage? message)
