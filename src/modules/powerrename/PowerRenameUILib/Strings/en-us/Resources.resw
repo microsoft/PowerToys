@@ -123,8 +123,17 @@
   <data name="RegExCheatSheet_Title.Text" xml:space="preserve">
     <value>RegEx help</value>
   </data>
+  <data name="RegExCheatSheet_StartOfString" xml:space="preserve">
+    <value>Start of the string</value>
+  </data>
+  <data name="RegExCheatSheet_EndOfString" xml:space="preserve">
+    <value>End of the string</value>
+  </data>
   <data name="RegExCheatSheet_MatchAny" xml:space="preserve">
     <value>Matches any character</value>
+  </data>
+  <data name="RegExCheatSheet_MatchAnyOrNone" xml:space="preserve">
+    <value>Matches zero or more of any character</value>
   </data>
   <data name="RegExCheatSheet_MatchDigit" xml:space="preserve">
     <value>Any digit, short for [0-9]</value>
@@ -133,7 +142,7 @@
     <value>A non-digit, short for [^0-9]</value>
   </data>
   <data name="RegExCheatSheet_MatchNonWS" xml:space="preserve">
-    <value>A non-whitespace character, short for [^\\s]</value>
+    <value>A non-whitespace character, short for [^\s]</value>
   </data>
   <data name="RegExCheatSheet_MatchWordChar" xml:space="preserve">
     <value>A word character, short for [a-zA-Z_0-9]</value>
