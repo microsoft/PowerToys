@@ -76,9 +76,9 @@ namespace Microsoft.UITests.API
         }
 
         // Take control of an application that already exists
-        public void LuanchApp(string appName, string windowName)
+        public void LaunchApp(string appName, string windowName)
         {
-            UIManager.LuanchApp(appName, windowName);
+            UIManager.LaunchApp(appName, windowName);
         }
 
         // Use the name to switch the current driver
