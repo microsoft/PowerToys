@@ -214,7 +214,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
             var internalSearchTask = Task.Run(() => catalog.FindPackages(opts), ct);
             var searchResults = await internalSearchTask;
 
-            // TOOD more error handling like this:
+            // TODO more error handling like this:
             if (searchResults.Status != FindPackagesResultStatus.Ok)
             {
                 _errorMessage.Message = $"Unexpected error: {searchResults.Status}";

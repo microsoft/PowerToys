@@ -7,6 +7,7 @@ using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using Windows.ApplicationModel;
 
 namespace Microsoft.CmdPal.UI;
 
@@ -43,5 +44,14 @@ public sealed partial class SettingsPage : Page
         }
 
         base.OnNavigatedTo(e);
+    }
+
+    public string ApplicationVersion
+    {
+        get
+        {
+            var version = Package.Current.Id.Version;
+            return $"Version {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+        }
     }
 }

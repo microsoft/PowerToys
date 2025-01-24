@@ -196,18 +196,20 @@
                     <TextBlock
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         IsTextSelectionEnabled="True"
-                        Text="Version 0.0.1" />
+                        Text="{x:Bind ApplicationVersion}" />
                     <controls:SettingsExpander.Items>
                         <controls:SettingsCard HorizontalContentAlignment="Left" ContentAlignment="Left">
                             <StackPanel Margin="-12,0,0,0" Orientation="Vertical">
-                                <HyperlinkButton Content="Link 1" />
-                                <HyperlinkButton Content="Link 2" />
-                                <HyperlinkButton Content="Link 3" />
+                                <HyperlinkButton Content="View GitHub Repo" NavigateUri="https://github.com/zadjii-msft/PowerToys" />
+                                <HyperlinkButton Content="Extension SDK docs" NavigateUri="https://github.com/zadjii-msft/PowerToys/blob/main/src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md" />
                             </StackPanel>
                         </controls:SettingsCard>
                     </controls:SettingsExpander.Items>
                 </controls:SettingsExpander>
-                <HyperlinkButton Margin="0,8,0,0" Content="Send feedback" />
+                <HyperlinkButton
+                    Margin="0,8,0,0"
+                    Content="Send feedback"
+                    NavigateUri="https://github.com/zadjii-msft/PowerToys/issues/new" />
             </StackPanel>
         </Grid>
     </ScrollViewer>
