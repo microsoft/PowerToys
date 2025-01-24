@@ -82,18 +82,7 @@ jobs:
       inputs:
         displaySettings: 'optimal'
 
-  - task: VSTest@3
-    displayName: Run UI Tests
-    inputs:
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      testSelector: 'testAssemblies'
-      searchFolder: '$(Pipeline.Workspace)\build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}'
-      vsTestVersion: 'toolsInstaller'
-      uiTests: true
-      rerunFailedTests: true
-      testAssemblyVer2: |
-        **\UITests-FancyZones.dll
-        **\UITests-FancyZonesEditor.dll
-        !**\obj\**
-        !**\ref\**
+  - script: 
+      dotnet test $(Build.SourcesDirectory)\src\modules\fancyzones\UITests-FancyZones\UITests-FancyZones.csproj --no-build -c $(BuildConfiguration) -p:Platform=$(BuildPlatform)
+      dotnet test $(Build.SourcesDirectory)\src\modules\fancyzones\UITests-FancyZonesEditor\UITests-FancyZonesEditor.csproj --no-build -c $(BuildConfiguration) -p:Platform=$(BuildPlatform)
+    displayName: "Run UI Tests"

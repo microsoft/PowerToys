@@ -20,6 +20,7 @@
 
     <!-- Enable Microsoft.Testing.Platform -->
     <EnableMSTestRunner>true</EnableMSTestRunner>
+    <TestingPlatformCaptureOutput>false</TestingPlatformCaptureOutput>
     <TestingPlatformDotNetTestSupport>true</TestingPlatformDotNetTestSupport>
   </PropertyGroup>
 
@@ -48,6 +49,33 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+
+  <!-- Add ability to run tests via "msbuild /t:Test" using the RunVSTest SDK -->
+  <!-- This is only needed for C++, as we use Microsoft.Testing.Platform for C# -->
+  <!--
+    Workaround an MSBuild bug where Microsoft.Common.Test.targets is missing from the Arm64 installation.
+    See: https://github.com/dotnet/msbuild/pull/9984
+    NB 1: This means that using "/t:Test" is not supported for Arm64 builds and tests will need to be run in an alternate way,
+          eg running tests in VS or invoking vstest.console directly.
+    NB 2: <Sdk> elements do not support conditions, so this is also being worked around.
+          Once the change referenced above is fixed, the ImportGroup below can be replaced with:
+            <Sdk Name="Microsoft.Build.RunVSTest" Version="1.0.319" />
+  -->
+  <ImportGroup Condition="'$(PROCESSOR_ARCHITECTURE)' != 'ARM64' AND '$(Language)' == 'C++'">
+    <Import Project="Sdk.props" Sdk="Microsoft.Build.RunVSTest" Version="1.0.319" />
+    <Import Project="Sdk.targets" Sdk="Microsoft.Build.RunVSTest" Version="1.0.319" />
+  </ImportGroup>
+  <PropertyGroup Condition="'$(Language)' == 'C++'">
+    <VSTestLogger>trx</VSTestLogger>
+    <!--
+      RunVSTest by default uses %VSINSTALLDIR%\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe,
+      but some of the CI scenarios don't define %VSINSTALLDIR%, so be explicit about where to look for vstest.
+      Note: $(VsInstallRoot) is a built-in MSBuild property, so should always be defined.
+    -->
+    <VSTestToolPath>$(VsInstallRoot)\Common7\IDE\CommonExtensions\Microsoft\TestWindow</VSTestToolPath>
+    <!-- No arm64 agents to run the tests. -->
+    <RunVSTest Condition="'$(Platform)' == 'ARM64'">false</RunVSTest>
+  </PropertyGroup>
 
   <!-- MSBuildCache -->
   <PropertyGroup>
