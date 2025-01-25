@@ -35,6 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             openFileName.Title = title;
             openFileName.FilterIndex = initialFilter;
             openFileName.DefExt = null;
+            openFileName.Flags = (int)OpenFileNameFlags.OFN_NOCHANGEDIR; // OFN_NOCHANGEDIR flag is needed, because otherwise GetOpenFileName overwrites the process working directory.
             IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
             openFileName.Hwnd = windowHandle;
 
