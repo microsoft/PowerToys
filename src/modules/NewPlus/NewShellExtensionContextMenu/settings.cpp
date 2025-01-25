@@ -216,11 +216,6 @@ void NewSettings::SetReplaceVariables(const bool replace_variables)
 
 std::wstring NewSettings::GetTemplateLocation() const
 {
-    if (new_settings.template_location.empty())
-    {
-        return GetTemplateLocationDefaultPath();
-    }
-
     return new_settings.template_location;
 }
 

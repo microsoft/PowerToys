@@ -4435,8 +4435,8 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>New+ replace variables in template filename behavior toggle</comment>
   </data>
   <data name="NewPlus_Behaviour_Replace_Variables_Learn_More.Content" xml:space="preserve">
-    <value>Discover variables and examples</value>
-    <comment>New+ discover variables and examples link</comment>
+    <value>Learn more about supported variables and see examples</value>
+    <comment>New+ help link to learn more about supported variables and see examples</comment>
   </data>
   <data name="NewPlus_Behaviour_Replace_Variables_Info_Card_Title.Text" xml:space="preserve">
     <value>Commonly used variables</value>
