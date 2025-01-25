@@ -103,7 +103,7 @@
                                 Content="&#xE946;"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}">
                                 <Button.Flyout>
-                                    <Flyout x:Name="VariableExamaplesFlyout" ShouldConstrainToRootBounds="False">
+                                    <Flyout x:Name="VariableExamplesFlyout" ShouldConstrainToRootBounds="False">
                                         <Grid>
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto"/>
