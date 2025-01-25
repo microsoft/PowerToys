@@ -26,10 +26,10 @@ namespace newplus::helpers::variables
 
     inline std::wstring resolve_date_time_variables(const std::wstring& string)
     {
-        SYSTEMTIME now = { 0 };
-        GetSystemTime(&now);
+        SYSTEMTIME local_now = { 0 };
+        GetLocalTime(&local_now);
         wchar_t resolved_filename[MAX_PATH] = { 0 };
-        GetDatedFileName(resolved_filename, ARRAYSIZE(resolved_filename), string.c_str(), now);
+        GetDatedFileName(resolved_filename, ARRAYSIZE(resolved_filename), string.c_str(), local_now);
 
         return resolved_filename;
     }
