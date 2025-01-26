@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -26,6 +27,12 @@ namespace KeyboardManagerEditorUI
     /// </summary>
     public sealed partial class MainWindow : Window
     {
+        // [DllImport("KeyboardManagerLibraryDLL.dll", CallingConvention = CallingConvention.Cdecl)]
+        // private static extern int Add();
+        // [LibraryImport("KeyboardManagerLibraryDLL.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
+        [DllImport("KeyboardManagerLibraryDLL.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int Add();
+
         public MainWindow()
         {
             this.InitializeComponent();
@@ -33,7 +40,9 @@ namespace KeyboardManagerEditorUI
 
         private void MyButton_Click(object sender, RoutedEventArgs e)
         {
-            myButton.Content = "Clicked";
+            // Call the C++ function to display it in the button content
+            int result = Add();
+            myButton.Content = result;
         }
     }
 }
