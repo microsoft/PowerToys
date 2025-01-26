@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
-
+using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
@@ -16,29 +16,40 @@ using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 using static Microsoft.UITests.API.APPManager;
+using static Microsoft.UITests.API.ModuleConfigData;
 
 namespace Microsoft.UITests.API
 {
     public class UITestAPI
     {
+        protected const string PowerToysPath = @"\..\..\..\WinUI3Apps\PowerToys.Settings.exe";
+
+        public Dictionary<PowerToysModule, ModuleConfigData> ModuleConfig { get; private set; }
+
         public APPManager APPManager { get; private set; }
 
         private static Process? appDriver;
 
         public UITestAPI()
         {
+            ModuleConfig = new Dictionary<PowerToysModule, ModuleConfigData>();
+            ModuleConfig[PowerToysModule.Fancyzone] = new ModuleConfigData("Fancyzone", "FancyZones Layout");
+            ModuleConfig[PowerToysModule.KeyboardManagerKeys] = new ModuleConfigData("KeyboardManagerKeys", "Remap keys");
+            ModuleConfig[PowerToysModule.KeyboardManagerShortcuts] = new ModuleConfigData("KeyboardManagerShortcuts", "Remap shortcuts");
+            ModuleConfig[PowerToysModule.Hosts] = new ModuleConfigData("Hosts", "Hosts File Editor");
+
             APPManager = new APPManager();
         }
 
         [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
-        public void Init(string appName, string exePath, string windowName, string winAppDriverPath = "C:\\Program Files (x86)\\Windows Application Driver\\WinAppDriver.exe")
+        public void Init(string winAppDriverPath = "C:\\Program Files (x86)\\Windows Application Driver\\WinAppDriver.exe")
         {
             appDriver = Process.Start(winAppDriverPath);
 
             // Launch Exe
             string? path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            path += exePath;
-            APPManager.StartExe(appName, windowName, path);
+            path += PowerToysPath;
+            APPManager.StartExe("PowerToys", "PowerToys Settings", path);
 
             var session = APPManager.GetCurrentWindow();
             Assert.IsNotNull(session, "Session not initialized");
@@ -76,68 +87,68 @@ namespace Microsoft.UITests.API
         }
 
         // Take control of an application that already exists
-        public void LaunchModule(string appName, string windowName)
+        public void LaunchModule(PowerToysModule module)
         {
-            APPManager.LaunchModule(appName, windowName);
+            APPManager.LaunchModule(ModuleConfig[module].ModuleName, ModuleConfig[module].WindowName);
         }
 
         // Use the name to switch the current driver
-        public void SwitchApp(string appName)
+        public void SwitchModule(PowerToysModule module)
         {
-            APPManager.SwitchApp(appName);
+            APPManager.SwitchApp(ModuleConfig[module].ModuleName);
         }
 
-        public void CloseApp(string appName)
+        public void CloseModule(PowerToysModule module)
         {
-            APPManager.CloseApp(appName);
+            APPManager.CloseApp(ModuleConfig[module].ModuleName);
         }
 
-        public WindowsDriver<WindowsElement>? GetWindowInList(string appName)
+        public WindowsDriver<WindowsElement>? GetWindowInList(PowerToysModule module)
         {
-            return APPManager.GetWindowInList(appName);
+            return APPManager.GetWindowInList(ModuleConfig[module].ModuleName);
         }
 
-        public WindowsDriver<WindowsElement>? GetSession(string? appName = null)
+        public WindowsDriver<WindowsElement>? GetSession(PowerToysModule module = PowerToysModule.None)
         {
-            if (appName == null)
+            if (module == PowerToysModule.None)
             {
                 return APPManager.GetCurrentWindow();
             }
             else
             {
-                return APPManager.GetWindowInList(appName);
+                return APPManager.GetWindowInList(ModuleConfig[module].ModuleName);
             }
         }
 
         // ===================================Control API================================================
-        private WindowsElement? GetElement(string elementName, string? appName = null)
+        private WindowsElement? GetElement(string elementName, PowerToysModule module = PowerToysModule.None)
         {
-            WindowsDriver<WindowsElement>? session = GetSession(appName);
+            WindowsDriver<WindowsElement>? session = GetSession(module);
             var item = session?.FindElementByName(elementName);
             Assert.IsNotNull(item, "ElementName " + elementName + " not found");
             return item;
         }
 
-        private ReadOnlyCollection<WindowsElement> GetElements(string elementName, string? appName = null)
+        private ReadOnlyCollection<WindowsElement> GetElements(string elementName, PowerToysModule module = PowerToysModule.None)
         {
-            WindowsDriver<WindowsElement>? session = GetSession(appName);
+            WindowsDriver<WindowsElement>? session = GetSession(module);
             var listItem = session?.FindElementsByName(elementName);
             Assert.IsNotNull(listItem, "ElementName " + elementName + " not found");
             return listItem;
         }
 
-        public WindowsElement? NewOpenContextMenu(string elementName, string? appName = null)
+        public WindowsElement? NewOpenContextMenu(string elementName, PowerToysModule module = PowerToysModule.None)
         {
-            WindowsDriver<WindowsElement>? session = GetSession(appName);
+            WindowsDriver<WindowsElement>? session = GetSession(module);
             RightClick_Element(elementName);
             var menu = session?.FindElementByClassName("ContextMenu");
             Assert.IsNotNull(menu, "Context menu not found");
             return menu;
         }
 
-        public void Click_Element(string elementName, string? appName = null)
+        public void Click_Element(string elementName, PowerToysModule module = PowerToysModule.None)
         {
-            WindowsDriver<WindowsElement>? session = GetSession(appName);
+            WindowsDriver<WindowsElement>? session = GetSession(module);
             var element = GetElement(elementName);
             Actions actions = new Actions(session);
             actions.MoveToElement(element);
@@ -145,9 +156,9 @@ namespace Microsoft.UITests.API
             actions.Build().Perform();
         }
 
-        public void Click_Elements(string elementName, string? appName = null)
+        public void Click_Elements(string elementName, PowerToysModule module = PowerToysModule.None)
         {
-            WindowsDriver<WindowsElement>? session = GetSession(appName);
+            WindowsDriver<WindowsElement>? session = GetSession(module);
             var elements = GetElements(elementName);
             Actions actions = new Actions(session);
             foreach (var element in elements)
@@ -160,9 +171,9 @@ namespace Microsoft.UITests.API
             }
         }
 
-        public void Click_Element(string elementName, string helpText, string? appName = null)
+        public void Click_Element(string elementName, string helpText, PowerToysModule module = PowerToysModule.None)
         {
-            WindowsDriver<WindowsElement>? session = GetSession(appName);
+            WindowsDriver<WindowsElement>? session = GetSession(module);
             var elements = GetElements(elementName);
             Actions actions = new Actions(session);
             bool buttonClicked = false;
@@ -182,9 +193,9 @@ namespace Microsoft.UITests.API
             Assert.IsTrue(buttonClicked, $"No button with elementName '{elementName}' and HelpText '{helpText}' was found.");
         }
 
-        public void Enable_Module_from_Dashboard(string moduleName, string? appName = null)
+        public void Enable_Module_from_Dashboard(string moduleName, PowerToysModule module = PowerToysModule.None)
         {
-            WindowsDriver<WindowsElement>? session = GetSession(appName);
+            WindowsDriver<WindowsElement>? session = GetSession(module);
             var elements = GetElements("Enable module");
             Actions actions = new Actions(session);
             bool buttonFound = false;
@@ -208,9 +219,9 @@ namespace Microsoft.UITests.API
             Assert.IsTrue(buttonFound, $"No button with elementName '{moduleName}' and HelpText '{moduleName}' was found.");
         }
 
-        public void Disable_Module_from_Dashboard(string moduleName, string? appName = null)
+        public void Disable_Module_from_Dashboard(string moduleName, PowerToysModule module = PowerToysModule.None)
         {
-            WindowsDriver<WindowsElement>? session = GetSession(appName);
+            WindowsDriver<WindowsElement>? session = GetSession(module);
             var elements = GetElements("Enable module");
             Actions actions = new Actions(session);
             bool buttonFound = false;
@@ -234,9 +245,9 @@ namespace Microsoft.UITests.API
             Assert.IsTrue(buttonFound, $"No button with elementName '{moduleName}' and HelpText '{moduleName}' was found.");
         }
 
-        public void RightClick_Element(string elementName, string? appName = null)
+        public void RightClick_Element(string elementName, PowerToysModule module = PowerToysModule.None)
         {
-            WindowsDriver<WindowsElement>? session = GetSession(appName);
+            WindowsDriver<WindowsElement>? session = GetSession(module);
             var element = GetElement(elementName);
             Actions actions = new Actions(session);
             actions.MoveToElement(element);
@@ -245,43 +256,43 @@ namespace Microsoft.UITests.API
             actions.Build().Perform();
         }
 
-        private WindowsElement? GetLayout(string layoutName, string? appName = null)
+        private WindowsElement? GetLayout(string layoutName, PowerToysModule module = PowerToysModule.None)
         {
-            WindowsDriver<WindowsElement>? session = GetSession(appName);
+            WindowsDriver<WindowsElement>? session = GetSession(module);
             var listItem = session?.FindElementByName(layoutName);
             Assert.IsNotNull(listItem, "Layout " + layoutName + " not found");
             return listItem;
         }
 
-        public WindowsElement? OpenContextMenu(string layoutName, string? appName = null)
+        public WindowsElement? OpenContextMenu(string layoutName, PowerToysModule module = PowerToysModule.None)
         {
-            WindowsDriver<WindowsElement>? session = GetSession(appName);
+            WindowsDriver<WindowsElement>? session = GetSession(module);
             RightClick_Layout(layoutName);
             var menu = session?.FindElementByClassName("ContextMenu");
             Assert.IsNotNull(menu, "Context menu not found");
             return menu;
         }
 
-        public void Click_CreateNewLayout(string? appName = null)
+        public void Click_CreateNewLayout(PowerToysModule module = PowerToysModule.None)
         {
-            WindowsDriver<WindowsElement>? session = GetSession(appName);
+            WindowsDriver<WindowsElement>? session = GetSession(module);
             var button = session?.FindElementByAccessibilityId("NewLayoutButton");
             Assert.IsNotNull(button, "Create new layout button not found");
             button?.Click();
         }
 
-        public void Click_EditLayout(string layoutName, string? appName = null)
+        public void Click_EditLayout(string layoutName, PowerToysModule module = PowerToysModule.None)
         {
-            var layout = GetLayout(layoutName, appName);
+            var layout = GetLayout(layoutName, module);
             var editButton = layout?.FindElementByAccessibilityId("EditLayoutButton");
             Assert.IsNotNull(editButton, "Edit button not found");
             editButton.Click();
         }
 
-        public void RightClick_Layout(string layoutName, string? appName = null)
+        public void RightClick_Layout(string layoutName, PowerToysModule module = PowerToysModule.None)
         {
-            WindowsDriver<WindowsElement>? session = GetSession(appName);
-            var layout = GetLayout(layoutName, appName);
+            WindowsDriver<WindowsElement>? session = GetSession(module);
+            var layout = GetLayout(layoutName, module);
             Actions actions = new Actions(session);
             actions.MoveToElement(layout);
             actions.MoveByOffset(30, 30);

@@ -16,7 +16,6 @@ namespace UITests_FancyZones
     [TestClass]
     public class RunFancyZonesTest
     {
-        private const string PowerToysPath = @"\..\..\..\WinUI3Apps\PowerToys.Settings.exe";
         private static UITestAPI? mUITestAPI;
 
         private static TestContext? _context;
@@ -35,7 +34,7 @@ namespace UITests_FancyZones
         public void TestInitialize()
         {
             mUITestAPI = new UITestAPI();
-            mUITestAPI.Init("PowerToys.Settings", PowerToysPath, "PowerToys.Settings");
+            mUITestAPI.Init();
         }
 
         [TestCleanup]
@@ -88,9 +87,8 @@ namespace UITests_FancyZones
 
             Assert.IsNotNull(mUITestAPI);
             mUITestAPI.Click_Element("Launch layout editor");
-
-            Thread.Sleep(5000);
-            mUITestAPI.LaunchModule("PowerToys.FancyZonesEditor", "FancyZones Layout");
+            Thread.Sleep(4000);
+            mUITestAPI.LaunchModule(PowerToysModule.Fancyzone);
             mUITestAPI?.Click_CreateNewLayout();
         }
     }

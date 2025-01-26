@@ -35,7 +35,7 @@ namespace UITests_KeyboardManager
         public static void ClassInitialize(TestContext testContext)
         {
             mUITestAPI = new UITestAPI();
-            mUITestAPI.Init("PowerToys.Settings", PowerToysSettingsPath, "PowerToys.Settings");
+            mUITestAPI.Init();
             Debug.WriteLine("ClassInitialize executed");
         }
 
@@ -72,10 +72,10 @@ namespace UITests_KeyboardManager
             mUITestAPI.Enable_Module_from_Dashboard("Keyboard Manager");
             mUITestAPI.Click_Element("Remap a key");
             Thread.Sleep(5000);
-            mUITestAPI.LaunchModule("PowerToys.KeyboardManagerEditor", "Remap keys");
+            mUITestAPI.LaunchModule(PowerToysModule.KeyboardManagerKeys);
             mUITestAPI.Click_Element("Add key remapping");
             mUITestAPI.Click_Element("Cancel");
-            mUITestAPI.CloseApp("PowerToys.KeyboardManagerEditor");
+            mUITestAPI.CloseModule(PowerToysModule.KeyboardManagerKeys);
             mUITestAPI.Disable_Module_from_Dashboard("Keyboard Manager");
         }
     }

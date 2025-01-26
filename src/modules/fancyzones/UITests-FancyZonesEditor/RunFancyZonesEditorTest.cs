@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Threading;
 
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UITests;
@@ -15,7 +16,6 @@ namespace UITests_FancyZonesEditor
     [TestClass]
     public class RunFancyZonesEditorTest
     {
-        private const string FancyZonesEditorPath = @"\..\..\..\PowerToys.FancyZonesEditor.exe";
         private static FancyZonesEditorFiles? _files;
         private static UITestAPI? mUITestAPI;
 
@@ -142,6 +142,14 @@ namespace UITests_FancyZonesEditor
                 AppliedLayouts = new List<AppliedLayouts.AppliedLayoutWrapper> { },
             };
             _files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
+
+            // Start Powertoys
+            mUITestAPI = new UITestAPI();
+            mUITestAPI.Init();
+            Assert.IsNotNull(mUITestAPI);
+            mUITestAPI.Click_Element("Launch layout editor");
+            Thread.Sleep(4000);
+            mUITestAPI.LaunchModule(PowerToysModule.Fancyzone);
         }
 
         [ClassCleanup]
@@ -151,24 +159,23 @@ namespace UITests_FancyZonesEditor
             {
                 _files.Restore();
             }
-        }
 
-        [TestInitialize]
-        public void TestInitialize()
-        {
-            mUITestAPI = new UITestAPI();
-            mUITestAPI.Init("PowerToys.FancyZonesEditor", FancyZonesEditorPath, "PowerToys.FancyZonesEditor");
-        }
-
-        [TestCleanup]
-        public void TestCleanup()
-        {
             if (mUITestAPI != null && _context != null)
             {
                 mUITestAPI.Close(_context);
             }
 
             _context = null;
+        }
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+        }
+
+        [TestCleanup]
+        public void TestCleanup()
+        {
         }
 
         [TestMethod]
