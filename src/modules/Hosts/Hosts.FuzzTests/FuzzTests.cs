@@ -15,15 +15,9 @@ namespace Hosts.FuzzTests
             {
                 string address = System.Text.Encoding.UTF8.GetString(input);
                 bool isValid = ValidationHelper.ValidIPv4(address);
-
-                // Console.WriteLine($"Input:{address}, ValidIPv4:{isValid}");
             }
             catch (Exception ex) when (ex is OutOfMemoryException)
             {
-                // This is an example. It's important to filter out any *expected* exceptions from our code here.
-                // However, catching all exceptions is considered an anti-pattern because it may suppress legitimate
-                // issues, such as a NullReferenceException thrown by our code. In this case, we still re-throw
-                // the exception, as the ToJsonFromXmlOrCsvAsync method is not expected to throw any exceptions.
                 throw;
             }
         }
@@ -35,15 +29,9 @@ namespace Hosts.FuzzTests
             {
                 string address = System.Text.Encoding.UTF8.GetString(input);
                 bool isValid = ValidationHelper.ValidIPv6(address);
-
-                // Console.WriteLine($"Input:{address}, ValidIPv6:{isValid}");
             }
             catch (Exception ex) when (ex is OutOfMemoryException)
             {
-                // This is an example. It's important to filter out any *expected* exceptions from our code here.
-                // However, catching all exceptions is considered an anti-pattern because it may suppress legitimate
-                // issues, such as a NullReferenceException thrown by our code. In this case, we still re-throw
-                // the exception, as the ToJsonFromXmlOrCsvAsync method is not expected to throw any exceptions.
                 throw;
             }
         }
@@ -55,8 +43,6 @@ namespace Hosts.FuzzTests
             {
                 string hosts = System.Text.Encoding.UTF8.GetString(input);
                 bool isValid = ValidationHelper.ValidHosts(hosts, true);
-
-                // Console.WriteLine($"Input:{hosts}, ValidHosts:{isValid}");
             }
             catch (Exception ex) when (ex is OutOfMemoryException)
             {
