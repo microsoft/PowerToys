@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 using System;
 using HostsUILib.Helpers;
-// using HostsUILib.HostsService;
 
 namespace Hosts.FuzzTests
 {
@@ -19,7 +18,7 @@ namespace Hosts.FuzzTests
 
                 // Console.WriteLine($"Input:{address}, ValidIPv4:{isValid}");
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is OutOfMemoryException)
             {
                 // This is an example. It's important to filter out any *expected* exceptions from our code here.
                 // However, catching all exceptions is considered an anti-pattern because it may suppress legitimate
@@ -29,7 +28,7 @@ namespace Hosts.FuzzTests
             }
         }
 
-        //Case2: fuzzing method for ValidIPv6       
+        // Case2: fuzzing method for ValidIPv6
         public static void FuzzValidIPv6(ReadOnlySpan<byte> input)
         {
             try
@@ -39,7 +38,7 @@ namespace Hosts.FuzzTests
 
                 // Console.WriteLine($"Input:{address}, ValidIPv6:{isValid}");
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is OutOfMemoryException)
             {
                 // This is an example. It's important to filter out any *expected* exceptions from our code here.
                 // However, catching all exceptions is considered an anti-pattern because it may suppress legitimate
@@ -48,6 +47,7 @@ namespace Hosts.FuzzTests
                 throw;
             }
         }
+
         // Case3: fuzzing method for ValidHosts
         public static void FuzzValidHosts(ReadOnlySpan<byte> input)
         {
@@ -68,16 +68,12 @@ namespace Hosts.FuzzTests
             }
         }
 
-        //
-        // public static void FuzzWriteAsync(ReadOnlySpan<byte> input) 
+        // public static void FuzzWriteAsync(ReadOnlySpan<byte> input)
         // {
         //     var additionalLines = System.Text.Encoding.UTF8.GetString(input);
         //     var entries = new List<Entry>();
         //     entries.Add(new Entry(0, System.Text.Encoding.UTF8.GetString(input)));
         //     HostsService.WriteAsync(additionalLines, entries).Wait();
-
-
-        // }
-
+        //     }
     }
 }
