@@ -15,19 +15,19 @@ using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
-using static Microsoft.UITests.API.UIManager;
+using static Microsoft.UITests.API.APPManager;
 
 namespace Microsoft.UITests.API
 {
     public class UITestAPI
     {
-        public UIManager UIManager { get; private set; }
+        public APPManager APPManager { get; private set; }
 
         private static Process? appDriver;
 
         public UITestAPI()
         {
-            UIManager = new UIManager();
+            APPManager = new APPManager();
         }
 
         [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
@@ -38,9 +38,9 @@ namespace Microsoft.UITests.API
             // Launch Exe
             string? path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             path += exePath;
-            UIManager.StartApp(appName, windowName, path);
+            APPManager.StartExe(appName, windowName, path);
 
-            var session = UIManager.GetCurrentWindow();
+            var session = APPManager.GetCurrentWindow();
             Assert.IsNotNull(session, "Session not initialized");
 
             // Set implicit timeout to make element search to retry every 500 ms
@@ -49,7 +49,7 @@ namespace Microsoft.UITests.API
 
         public void Close(TestContext testContext)
         {
-            var session = UIManager.GetCurrentWindow();
+            var session = APPManager.GetCurrentWindow();
 
             // Close the session
             if (session != null)
@@ -67,45 +67,45 @@ namespace Microsoft.UITests.API
             }
         }
 
-        // ===================================UIManager API================================================
+        // ===================================APPManager API================================================
 
         // Create a new application and take control of it
-        public void StartApp(string appName, string windowName, string appPath)
+        public void StartExe(string appName, string windowName, string appPath)
         {
-            UIManager.StartApp(appName, windowName, appPath);
+            APPManager.StartExe(appName, windowName, appPath);
         }
 
         // Take control of an application that already exists
-        public void LaunchApp(string appName, string windowName)
+        public void LaunchModule(string appName, string windowName)
         {
-            UIManager.LaunchApp(appName, windowName);
+            APPManager.LaunchModule(appName, windowName);
         }
 
         // Use the name to switch the current driver
         public void SwitchApp(string appName)
         {
-            UIManager.SwitchApp(appName);
+            APPManager.SwitchApp(appName);
         }
 
         public void CloseApp(string appName)
         {
-            UIManager.CloseApp(appName);
+            APPManager.CloseApp(appName);
         }
 
         public WindowsDriver<WindowsElement>? GetWindowInList(string appName)
         {
-            return UIManager.GetWindowInList(appName);
+            return APPManager.GetWindowInList(appName);
         }
 
         public WindowsDriver<WindowsElement>? GetSession(string? appName = null)
         {
             if (appName == null)
             {
-                return UIManager.GetCurrentWindow();
+                return APPManager.GetCurrentWindow();
             }
             else
             {
-                return UIManager.GetWindowInList(appName);
+                return APPManager.GetWindowInList(appName);
             }
         }
 

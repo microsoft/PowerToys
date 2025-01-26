@@ -17,7 +17,7 @@ using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext
 
 namespace Microsoft.UITests.API
 {
-    public class UIManager
+    public class APPManager
     {
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
@@ -49,7 +49,7 @@ namespace Microsoft.UITests.API
 
         private Stack<WinDriver> mWindowListTemp = new Stack<WinDriver>();
 
-        public UIManager()
+        public APPManager()
         {
             if (mWindowList == null)
             {
@@ -67,7 +67,7 @@ namespace Microsoft.UITests.API
         }
 
         // Create a new application and take control of it
-        public void StartApp(string appName, string windowName, string appPath)
+        public void StartExe(string appName, string windowName, string appPath)
         {
             AppiumOptions opts = new AppiumOptions();
             opts.AddAdditionalCapability("app", appPath);
@@ -85,7 +85,7 @@ namespace Microsoft.UITests.API
         }
 
         // Take control of an application that already exists
-        public void LaunchApp(string appName, string windowName)
+        public void LaunchModule(string appName, string windowName)
         {
             if (Root != null)
             {
