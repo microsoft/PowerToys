@@ -203,5 +203,50 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
                 return ResourceManager.GetString("wox_plugin_calculator_replace_input_description", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Degrees.
+        /// </summary>
+        public static string wox_plugin_calculator_trig_unit_degrees {
+            get {
+                return ResourceManager.GetString("wox_plugin_calculator_trig_unit_degrees", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Gradians.
+        /// </summary>
+        public static string wox_plugin_calculator_trig_unit_gradians {
+            get {
+                return ResourceManager.GetString("wox_plugin_calculator_trig_unit_gradians", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Trigonometry Unit.
+        /// </summary>
+        public static string wox_plugin_calculator_trig_unit_mode {
+            get {
+                return ResourceManager.GetString("wox_plugin_calculator_trig_unit_mode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies the angle unit to use for trigonometry operations..
+        /// </summary>
+        public static string wox_plugin_calculator_trig_unit_mode_description {
+            get {
+                return ResourceManager.GetString("wox_plugin_calculator_trig_unit_mode_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Radians.
+        /// </summary>
+        public static string wox_plugin_calculator_trig_unit_radians {
+            get {
+                return ResourceManager.GetString("wox_plugin_calculator_trig_unit_radians", resourceCulture);
+            }
+        }
     }
 }

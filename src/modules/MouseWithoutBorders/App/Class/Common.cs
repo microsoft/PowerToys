@@ -32,6 +32,8 @@ using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Core;
 using MouseWithoutBorders.Exceptions;
 
+using Thread = MouseWithoutBorders.Core.Thread;
+
 // Log is enough
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.Common.#CheckClipboard()", Justification = "Dotnet port with style preservation")]
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.Common.#CheckForDesktopSwitchEvent(System.Boolean)", Justification = "Dotnet port with style preservation")]
@@ -88,8 +90,10 @@ namespace MouseWithoutBorders
         private static FrmInputCallback inputCallbackForm;
         private static FrmAbout aboutForm;
         private static Thread helper;
-        private static int screenWidth;
-        private static int screenHeight;
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
+        internal static int screenWidth;
+        internal static int screenHeight;
+#pragma warning restore SA1307
         private static int lastX;
         private static int lastY;
 
@@ -552,7 +556,7 @@ namespace MouseWithoutBorders
             lastRealInputEventCount = Common.RealInputEventCount;
         }
 
-        private static void HumanBeingDetected()
+        internal static void HumanBeingDetected()
         {
             if (lastInputEventCount == Common.InputEventCount)
             {
@@ -613,7 +617,7 @@ namespace MouseWithoutBorders
             SendPackage(ID.ALL, PackageType.Clipboard);
         }
 
-        private static void ProcessByeByeMessage(DATA package)
+        internal static void ProcessByeByeMessage(DATA package)
         {
             if (package.Src == desMachineID)
             {
