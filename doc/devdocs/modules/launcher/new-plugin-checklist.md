@@ -3,8 +3,9 @@
 - [ ] The plugin is a project under `modules\launcher\Plugins`
 - [ ] Microsoft plugin project name pattern: `Microsoft.PowerToys.Run.Plugin.{PluginName}`
 - [ ] Community plugin project name pattern: `Community.PowerToys.Run.Plugin.{PluginName}`
-- [ ] The plugin target framework should be `net8.0-windows`
+- [ ] The plugin target framework should be `net9.0-windows10.0.22621.0`
 - [ ] If the plugin uses any 3rd party dependencies the project file should import `DynamicPlugin.props`
+- [ ] 3rd party dependencies must be compatible with .NET 9
 - [ ] The plugin has to contain a `plugin.json` file of the following format in its root folder:
 
 ```json
@@ -35,7 +36,6 @@ public static string PluginID => "xxxxxxx"; // The part xxxxxxx stands for the p
 - [ ] Plugin's output code and assets have to be included in the installer [`Product.wxs`](/installer/PowerToysSetup/Product.wxs)
 - [ ] Test the plugin with a local build. Build the installer, install, check that the plugin works as expected
 - [ ] All plugin's binaries have to be included in the signed build [`pipeline.user.windows.yml`](/.pipelines/pipeline.user.windows.yml)
-- [ ] The plugin target framework has to be net8.0-windows. All dependencies should be compatible with .NET 8.
 
 Some localization steps can only be done after the first pass by the localization team to provide the localized resources.
 In the PR that adds a new plugin, reference a new issue to track the work for fully enabling localization for the new plugin.
