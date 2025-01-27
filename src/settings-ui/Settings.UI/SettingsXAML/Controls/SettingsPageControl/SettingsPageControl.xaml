@@ -110,6 +110,7 @@
                     x:Name="SecondaryLinksPanel"
                     Grid.Row="2"
                     MaxWidth="{StaticResource PageMaxWidth}"
+                    AutomationProperties.Name="{x:Bind SecondaryLinksHeader}"
                     Orientation="Vertical"
                     Visibility="{x:Bind SecondaryLinks.Count, Converter={StaticResource doubleToVisibilityConverter}}">
                     <TextBlock
