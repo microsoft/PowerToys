@@ -11,7 +11,7 @@ using Microsoft.Win32;
 
 namespace Common.UI
 {
-    public class ThemeManager : IDisposable
+    public partial class ThemeManager : IDisposable
     {
         private readonly Application _app;
         private const string LightTheme = "Light.Accent1";
