@@ -17,7 +17,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
-namespace Microsoft.CmdPal.UI;
+namespace Microsoft.CmdPal.UI.Pages;
 
 /// <summary>
 /// An empty page that can be used on its own or navigated to within a Frame.
@@ -249,11 +249,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // Also hide our details pane about here, if we had one
             HideDetails();
 
-            var settings = App.Current.Services.GetService<SettingsModel>()!;
-            var settingsViewModel = new SettingsViewModel(settings, App.Current.Services, _mainTaskScheduler);
-            RootFrame.Navigate(typeof(SettingsPage), settingsViewModel, _slideRightTransition);
-
-            ViewModel.CurrentPage = settingsViewModel;
+            var settingsWindow = new SettingsWindow();
+            settingsWindow.Activate();
 
             WeakReferenceMessenger.Default.Send<UpdateActionBarMessage>(new(null));
         });

@@ -21,7 +21,7 @@ public sealed partial class ShortcutDialogContentControl : UserControl
         set { SetValue(KeysProperty, value); }
     }
 
-    public static readonly DependencyProperty KeysProperty = DependencyProperty.Register("Keys", typeof(List<object>), typeof(SettingsPage), new PropertyMetadata(default(string)));
+    public static readonly DependencyProperty KeysProperty = DependencyProperty.Register("Keys", typeof(List<object>), typeof(ShortcutDialogContentControl), new PropertyMetadata(default(string)));
 
     public bool IsError
     {

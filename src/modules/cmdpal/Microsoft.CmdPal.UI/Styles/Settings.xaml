@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.MergedDictionaries>
+        <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+        <!--  Other merged dictionaries here  -->
+    </ResourceDictionary.MergedDictionaries>
+
+    <x:Double x:Key="SettingsCardSpacing">4</x:Double>
+
+    <!--  Style (inc. the correct spacing) of a section header  -->
+    <Style
+        x:Key="SettingsSectionHeaderTextBlockStyle"
+        BasedOn="{StaticResource BodyStrongTextBlockStyle}"
+        TargetType="TextBlock">
+        <Style.Setters>
+            <Setter Property="Margin" Value="1,30,0,6" />
+        </Style.Setters>
+    </Style>
+
+    <StackLayout
+        x:Name="VerticalStackLayout"
+        Orientation="Vertical"
+        Spacing="{StaticResource SettingsCardSpacing}" />
+
+</ResourceDictionary>

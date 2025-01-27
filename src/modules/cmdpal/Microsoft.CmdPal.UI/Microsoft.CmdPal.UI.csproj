@@ -39,9 +39,12 @@
     <None Remove="ListDetailPage.xaml" />
     <None Remove="LoadingPage.xaml" />
     <None Remove="MainPage.xaml" />
+    <None Remove="Pages\Settings\ExtensionsPage.xaml" />
+    <None Remove="Pages\Settings\GeneralPage.xaml" />
+    <None Remove="SettingsWindow.xaml" />
     <None Remove="ShellPage.xaml" />
-    <None Remove="SettingsPage.xaml" />
     <None Remove="Styles\Button.xaml" />
+    <None Remove="Styles\Settings.xaml" />
     <None Remove="Styles\TextBox.xaml" />
   </ItemGroup>
 
@@ -129,9 +132,6 @@
     <Page Update="MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Update="SettingsPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Update="Controls\SearchBar.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -162,6 +162,26 @@
   <ItemGroup>
     <Content Include="$(PkgAdaptiveCards_ObjectModel_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.ObjectModel.WinUI3.dll" Link="AdaptiveCards.ObjectModel.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="$(PkgAdaptiveCards_Rendering_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.Rendering.WinUI3.dll" Link="AdaptiveCards.Rendering.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Styles\Settings.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\Settings\ExtensionsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="SettingsWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\Settings\GeneralPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <!-- </AdaptiveCardsWorkaround> -->
 
