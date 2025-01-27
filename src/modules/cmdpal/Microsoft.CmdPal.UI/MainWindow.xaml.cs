@@ -35,7 +35,7 @@ public sealed partial class MainWindow : Window,
     private readonly HWND _hwnd;
     private readonly WNDPROC? _hotkeyWndProc;
     private readonly WNDPROC? _originalWndProc;
-    private readonly List<HotkeySettings> _hotkeys = new();
+    private readonly List<HotkeySettings> _hotkeys = [];
 
     // Stylistically, window messages are WM_*
 #pragma warning disable SA1310 // Field names should not contain underscore
@@ -93,6 +93,9 @@ public sealed partial class MainWindow : Window,
         // Load our settings, and then also wire up a settings changed handler
         HotReloadSettings();
         App.Current.Services.GetService<SettingsModel>()!.SettingsChanged += SettingsChangedHandler;
+
+        // Make sure that we update the acrylic theme when the OS theme changes
+        RootShellPage.ActualThemeChanged += (s, e) => UpdateAcrylic();
     }
 
     private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings();
