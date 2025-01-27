@@ -11,6 +11,10 @@ public partial class DetailsTagsViewModel(
     IDetailsElement _detailsElement,
     IPageContext context) : DetailsElementViewModel(_detailsElement, context)
 {
+    public List<TagViewModel> Tags { get; private set; } = [];
+
+    public bool HasTags => Tags.Count > 0;
+
     private readonly ExtensionObject<IDetailsTags> _dataModel =
         new(_detailsElement.Data as IDetailsTags);
 
@@ -23,6 +27,16 @@ public partial class DetailsTagsViewModel(
             return;
         }
 
-        // TODO!
+        Tags = model
+            .Tags?
+            .Select(t =>
+        {
+            var vm = new TagViewModel(t, PageContext);
+            vm.InitializeProperties();
+            return vm;
+        })
+            .ToList() ?? [];
+        UpdateProperty(nameof(HasTags));
+        UpdateProperty(nameof(Tags));
     }
 }

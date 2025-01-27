@@ -33,6 +33,11 @@ public partial class DetailsLinkViewModel(
 
         Text = model.Text ?? string.Empty;
         Link = model.Link;
+        if (string.IsNullOrEmpty(Text) && Link != null)
+        {
+            Text = Link.ToString();
+        }
+
         UpdateProperty(nameof(Text));
         UpdateProperty(nameof(Link));
         UpdateProperty(nameof(IsLink));

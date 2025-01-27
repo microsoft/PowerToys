@@ -4,9 +4,6 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public partial class DetailsLink : IDetailsLink
+public partial class DetailsSeparator : IDetailsSeparator
 {
-    public Uri? Link { get; set; }
-
-    public string Text { get; set; } = string.Empty;
 }

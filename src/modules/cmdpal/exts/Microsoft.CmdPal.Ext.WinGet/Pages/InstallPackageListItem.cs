@@ -35,6 +35,7 @@ public partial class InstallPackageListItem : ListItem
         var metadata = version.GetCatalogPackageMetadata();
         if (metadata != null)
         {
+            var description = string.IsNullOrEmpty(metadata.Description) ? metadata.ShortDescription : metadata.Description;
             var detailsBody = $"""
 ## {metadata.Publisher}
 
@@ -69,9 +70,14 @@ public partial class InstallPackageListItem : ListItem
         Dictionary<string, (string, string)> simpleData = new()
         {
             { "Author", (metadata.Author, string.Empty) },
+            { "Publisher", (metadata.Publisher, metadata.PublisherUrl) },
             { "Copyright", (metadata.Copyright, metadata.CopyrightUrl) },
             { "License", (metadata.License, metadata.LicenseUrl) },
-            { "Publisher", (metadata.Publisher, metadata.PublisherUrl) },
+            { "Release Notes", (metadata.ReleaseNotes, string.Empty) },
+
+            // The link to the release notes will only show up if there is an
+            // actual URL for the release notes
+            { "View Release Notes", (string.IsNullOrEmpty(metadata.ReleaseNotesUrl) ? string.Empty : "View online", metadata.ReleaseNotesUrl) },
             { "Publisher Support", (string.Empty, metadata.PublisherSupportUrl) },
         };
         var docs = metadata.Documentations.ToArray();
@@ -102,6 +108,16 @@ public partial class InstallPackageListItem : ListItem
                 };
                 detailsElements.Add(pair);
             }
+        }
+
+        if (metadata.Tags.Any())
+        {
+            var pair = new DetailsElement()
+            {
+                Key = "Tags",
+                Data = new DetailsTags() { Tags = metadata.Tags.Select(t => new Tag(t)).ToArray() },
+            };
+            detailsElements.Add(pair);
         }
 
         return detailsElements;

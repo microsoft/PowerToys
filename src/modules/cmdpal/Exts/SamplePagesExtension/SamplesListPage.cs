@@ -17,7 +17,7 @@ public partial class SamplesListPage : ListPage
        },
        new ListItem(new SampleListPageWithDetails())
        {
-           Title = "List Page With Details Sample Command",
+           Title = "List Page With Details",
            Subtitle = "A list of items, each with additional details to display",
        },
        new ListItem(new SampleUpdatingItemsPage())
