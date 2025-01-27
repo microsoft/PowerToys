@@ -10,7 +10,7 @@
     <OutputType>Exe</OutputType>
     
     <!-- This is a UI test, so don't run as part of the Test target -->
-    <TestingPlatformDisableCustomTestTarget>false</TestingPlatformDisableCustomTestTarget>
+    <TestingPlatformDisableCustomTestTarget>true</TestingPlatformDisableCustomTestTarget>
   </PropertyGroup>
 
   <PropertyGroup>
