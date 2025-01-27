@@ -123,7 +123,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                     outputBuilder.Append(
                         decimal.TryParse(token, NumberStyles.Number, cultureFrom, out number)
                         ? (new string('0', leadingZeroCount) + number.ToString(cultureTo))
-                        : token);
+                        : token.Replace(cultureFrom.TextInfo.ListSeparator, cultureTo.TextInfo.ListSeparator));
                 }
             }
 
