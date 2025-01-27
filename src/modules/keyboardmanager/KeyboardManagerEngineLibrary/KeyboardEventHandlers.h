@@ -84,4 +84,10 @@ namespace KeyboardEventHandlers
 
     // Function to ensure Ctrl/Shift/Alt modifier key state is not detected as pressed down by applications which detect keys at a lower level than hooks when it is remapped for scenarios where its required
     void ResetIfModifierKeyForLowerLevelKeyHandlers(KeyboardManagerInput::InputInterface& ii, DWORD key, DWORD target);
+
+    // Function to check previous modifier key with state
+    bool CheckPreviousModifierKey(const ShortcutRemapTable::iterator it, State& state);
+
+    // Function to set previous modifier key to state
+    void SetPreviousModifierKey(const ShortcutRemapTable::iterator it, const DWORD key, State& state);
 };
