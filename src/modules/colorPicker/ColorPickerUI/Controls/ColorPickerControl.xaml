@@ -6,7 +6,6 @@
     xmlns:helpers="clr-namespace:ColorPicker.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:p="clr-namespace:ColorPicker.Properties"
-    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     AutomationProperties.Name="{x:Static p:Resources.Color_Palette}"
     FocusManager.IsFocusScope="True"
     KeyboardNavigation.TabNavigation="Once"
@@ -218,19 +217,20 @@
                     Margin="24,0,0,0"
                     Closed="DetailsFlyout_Closed"
                     Opened="DetailsFlyout_Opened"
+                    AllowsTransparency="True"
                     StaysOpen="False"
                     Placement="Top">
                     <Border
                         CornerRadius="10"
                         Padding="15">
                         <Border.Background>
-                            <SolidColorBrush Color="{StaticResource ApplicationBackgroundColor}" />
+                            <SolidColorBrush Color="{DynamicResource ApplicationBackgroundColor}" />
                         </Border.Background>
                         <Grid x:Name="detailsGrid" KeyboardNavigation.TabNavigation="Contained">
-                        <Grid.Background>
-                            <SolidColorBrush Color="{StaticResource ApplicationBackgroundColor}" />
-                        </Grid.Background>
-                        <Grid.ColumnDefinitions>
+                            <Grid.Background>
+                                <SolidColorBrush Color="{DynamicResource ApplicationBackgroundColor}" />
+                            </Grid.Background>
+                            <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="44" />
                             <ColumnDefinition Width="86" />
                             <ColumnDefinition Width="86" />
@@ -375,7 +375,7 @@
                             Grid.ColumnSpan="4"
                             Margin="0,32,0,0"
                             HorizontalAlignment="Stretch"
-                            Background="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"
+                            Background="{DynamicResource PrimaryBrush}"
                             AutomationProperties.Name="{x:Static p:Resources.Select}"
                             Click="OKButton_Click"
                             Content="{x:Static p:Resources.Select}" />

@@ -6,7 +6,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:p="clr-namespace:ColorPicker.Properties"
-    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     x:Name="colorEditorControl"
     mc:Ignorable="d">
     <Grid>
@@ -30,7 +29,6 @@
         ToolTipService.ToolTip="{x:Static p:Resources.Pick_color}">
 
                 <StackPanel Orientation="Horizontal">
-                    <!-- Replace WpfUI's SymbolIcon with a TextBlock using Segoe MDL2 Assets: -->
                     <TextBlock
                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
                         Text="&#xef3c;"/>

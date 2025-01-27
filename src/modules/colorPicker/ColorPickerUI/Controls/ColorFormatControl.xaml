@@ -6,7 +6,6 @@
     xmlns:local="clr-namespace:ColorPicker"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:p="clr-namespace:ColorPicker.Properties"
-    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     mc:Ignorable="d">
     <UserControl.Resources>
         <Style x:Key="ReadonlyTextBoxStyle" TargetType="{x:Type TextBox}">
@@ -128,7 +127,10 @@
         Height="48"
         Margin="0,0,0,8"
         HorizontalAlignment="Stretch"
-        BorderThickness="1">
+        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+        BorderThickness="1"
+        CornerRadius="{DynamicResource ControlCornerRadius}">
         <Grid Margin="12,0,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="48" />

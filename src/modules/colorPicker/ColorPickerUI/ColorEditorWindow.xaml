@@ -7,10 +7,9 @@
     xmlns:e="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:p="clr-namespace:ColorPicker.Properties"
-    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Width="440"
     Height="380"
-
+ 
     AutomationProperties.Name="{x:Static p:Resources.cp_editor}"
     ResizeMode="NoResize"
     Topmost="True"
