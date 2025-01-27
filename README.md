@@ -92,7 +92,7 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.88 - January 2024 Update
+### 0.88 - January 2025 Update
 
 In this release, we focused on new features, stability, and improvements.
 
