@@ -61,7 +61,7 @@
                     Width="40"
                     Height="40"
                     Background="Transparent">
-                    <ui:SymbolIcon Symbol="Dismiss20" />
+                    Text="&#xE094;" />
                 </Button>
             </Border>
         </Grid>

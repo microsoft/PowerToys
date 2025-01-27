@@ -1,4 +1,4 @@
-﻿<ui:FluentWindow
+﻿<Window
     x:Class="ColorPicker.ColorEditorWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -10,13 +10,10 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Width="440"
     Height="380"
-    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
-    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+
     AutomationProperties.Name="{x:Static p:Resources.cp_editor}"
-    ExtendsContentIntoTitleBar="True"
     ResizeMode="NoResize"
     Topmost="True"
-    WindowCornerPreference="Default"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
     <e:Interaction.Behaviors>
@@ -27,21 +24,9 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <ui:TitleBar
-            x:Name="TitleBar"
-            Title="{x:Static p:Resources.CP_Title}"
-            Grid.Row="0"
-            Height="32"
-            Padding="16,0,16,0"
-            ShowMaximize="False"
-            ShowMinimize="False">
-            <ui:TitleBar.Icon>
-                <ui:ImageIcon Source="pack://application:,,,/Assets/ColorPicker/icon.ico" />
-            </ui:TitleBar.Icon>
-        </ui:TitleBar>
         <ContentPresenter
             x:Name="contentPresenter"
             Grid.Row="1"
             Content="{Binding Content}" />
     </Grid>
-</ui:FluentWindow>
+</Window>

@@ -213,13 +213,23 @@
                 Style="{DynamicResource ColorShadeButtonStyle}"
                 ToolTipService.ToolTip="{x:Static p:Resources.Selected_color_tooltip}">
 
-                <ui:Flyout
+                <Popup
                     x:Name="DetailsFlyout"
                     Margin="24,0,0,0"
                     Closed="DetailsFlyout_Closed"
                     Opened="DetailsFlyout_Opened"
+                    StaysOpen="False"
                     Placement="Top">
-                    <Grid x:Name="detailsGrid" KeyboardNavigation.TabNavigation="Contained">
+                    <Border
+                        CornerRadius="10"
+                        Padding="15">
+                        <Border.Background>
+                            <SolidColorBrush Color="{StaticResource ApplicationBackgroundColor}" />
+                        </Border.Background>
+                        <Grid x:Name="detailsGrid" KeyboardNavigation.TabNavigation="Contained">
+                        <Grid.Background>
+                            <SolidColorBrush Color="{StaticResource ApplicationBackgroundColor}" />
+                        </Grid.Background>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="44" />
                             <ColumnDefinition Width="86" />
@@ -317,38 +327,27 @@
                             Text="RGB"
                             TextAlignment="Center" />
 
-                        <ui:NumberBox
-                            x:Name="RNumberBox"
-                            Grid.Row="6"
-                            Grid.Column="1"
-                            AutomationProperties.Name="{x:Static p:Resources.Red_value}"
-                            Maximum="255"
-                            Minimum="0"
-                            SpinButtonPlacementMode="Compact"
-                            TextBoxBase.TextChanged="RGBNumberBox_TextChanged" />
-
-                        <ui:NumberBox
-                            x:Name="GNumberBox"
-                            Grid.Row="6"
-                            Grid.Column="2"
-                            Margin="4,0,0,0"
-                            AutomationProperties.Name="{x:Static p:Resources.Green_value}"
-                            Maximum="255"
-                            Minimum="0"
-                            SpinButtonPlacementMode="Compact"
-                            TextBoxBase.TextChanged="RGBNumberBox_TextChanged" />
-
-                        <ui:NumberBox
-                            x:Name="BNumberBox"
-                            Grid.Row="6"
-                            Grid.Column="3"
-                            Margin="4,0,0,0"
-                            AutomationProperties.Name="{x:Static p:Resources.Blue_value}"
-                            Maximum="255"
-                            Minimum="0"
-                            SpinButtonPlacementMode="Compact"
-                            TextBoxBase.TextChanged="RGBNumberBox_TextChanged" />
-
+                            <TextBox
+                                x:Name="RNumberBox"
+                                Grid.Row="6"
+                                Grid.Column="1"
+                                AutomationProperties.Name="{x:Static p:Resources.Red_value}"
+                                TextBoxBase.TextChanged="RGBNumberBox_TextChanged" />
+                            <TextBox
+                                x:Name="GNumberBox"
+                                Grid.Row="6"
+                                Grid.Column="2"
+                                Margin="4,0,0,0"
+                                AutomationProperties.Name="{x:Static p:Resources.Green_value}"
+                                TextBoxBase.TextChanged="RGBNumberBox_TextChanged" />
+                            <TextBox
+                                x:Name="BNumberBox"
+                                Grid.Row="6"
+                                Grid.Column="3"
+                                Margin="4,0,0,0"
+                                AutomationProperties.Name="{x:Static p:Resources.Blue_value}"
+                                TextBoxBase.TextChanged="RGBNumberBox_TextChanged" />
+                      
                         <TextBlock
                             Grid.Row="8"
                             Width="38"
@@ -370,18 +369,20 @@
                             TextChanged="HexCode_TextChanged"
                             TextWrapping="Wrap" />
 
-                        <ui:Button
+                        <Button
                             x:Name="OKButton"
                             Grid.Row="9"
                             Grid.ColumnSpan="4"
                             Margin="0,32,0,0"
                             HorizontalAlignment="Stretch"
-                            Appearance="Primary"
+                            Background="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"
                             AutomationProperties.Name="{x:Static p:Resources.Select}"
                             Click="OKButton_Click"
                             Content="{x:Static p:Resources.Select}" />
-                    </Grid>
-                </ui:Flyout>
+    
+                        </Grid>
+                    </Border>
+                </Popup>
             </Button>
 
 
