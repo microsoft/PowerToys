@@ -114,6 +114,8 @@ MakeAppx.exe pack /d . /p $(OutDir)NewPlusPackage.msix /nv</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="dll_main.h" />
+    <ClInclude Include="helpers_filesystem.h" />
+    <ClInclude Include="helpers_variables.h" />
     <ClInclude Include="shell_context_menu.h" />
     <ClInclude Include="shell_context_sub_menu.h" />
     <ClInclude Include="shell_context_sub_menu_item.h" />
@@ -128,6 +130,7 @@ MakeAppx.exe pack /d . /p $(OutDir)NewPlusPackage.msix /nv</Command>
     <ClInclude Include="template_item.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\powerrename\lib\Helpers.cpp" />
     <ClCompile Include="new_utilities.cpp" />
     <ClCompile Include="shell_context_menu.cpp" />
     <ClCompile Include="shell_context_sub_menu.cpp" />

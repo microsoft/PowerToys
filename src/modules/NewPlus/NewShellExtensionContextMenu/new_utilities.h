@@ -9,6 +9,7 @@
 #include "settings.h"
 #include "template_item.h"
 #include "trace.h"
+#include "helpers_variables.h"
 
 #pragma comment(lib, "Shlwapi.lib")
 
@@ -72,43 +73,12 @@ namespace newplus::utilities
         return hIcon;
     }
 
-    inline bool is_hidden(const std::filesystem::path path)
-    {
-        const std::filesystem::path::string_type name = path.filename();
-        if (name == constants::non_localizable::desktop_ini_filename)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    inline bool is_directory(const std::filesystem::path path)
-    {
-        const auto entry = std::filesystem::directory_entry(path);
-        return entry.is_directory();
-    }
-
     inline bool wstring_same_when_comparing_ignore_case(std::wstring stringA, std::wstring stringB)
     {
         transform(stringA.begin(), stringA.end(), stringA.begin(), towupper);
         transform(stringB.begin(), stringB.end(), stringB.begin(), towupper);
 
         return (stringA == stringB);
-    }
-
-    inline void process_pending_window_messages(HWND window_handle = NULL)
-    {
-        if (window_handle == NULL)
-        {
-            window_handle = GetActiveWindow();
-        }
-
-        MSG current_message;
-        while (PeekMessage(&current_message, window_handle, NULL, NULL, PM_REMOVE))
-        {
-            DispatchMessage(&current_message);
-        }
     }
 
     inline std::wstring get_new_template_folder_location()
@@ -126,6 +96,11 @@ namespace newplus::utilities
         return NewSettingsInstance().GetHideStartingDigits();
     }
 
+    inline bool get_newplus_setting_resolve_variables()
+    {
+        return NewSettingsInstance().GetReplaceVariables();
+    }
+    
     inline void create_folder_if_not_exist(const std::filesystem::path path)
     {
         std::filesystem::create_directory(path);
@@ -259,6 +234,7 @@ namespace newplus::utilities
             {
                 ComPtr<IWebBrowserApp> web_browser_app;
                 VARIANT v;
+                VariantInit(&v);
                 V_VT(&v) = VT_I4;
                 V_I4(&v) = i;
                 hr = shell_windows->Item(v, &shell_window);
@@ -382,14 +358,29 @@ namespace newplus::utilities
             std::filesystem::path source_fullpath = template_entry->path;
             std::filesystem::path target_fullpath = std::wstring(target_path_name);
 
-            // Only append name to target if source is not a directory
-            if (!utilities::is_directory(source_fullpath))
+            // Get target name without starting digits as appropriate
+            const std::wstring target_name = template_entry->get_target_filename(!utilities::get_newplus_setting_hide_starting_digits());
+
+            // Get initial resolved name
+            target_fullpath /= target_name;
+
+            // Expand variables in name of the target path
+            if (utilities::get_newplus_setting_resolve_variables())
             {
-                target_fullpath.append(template_entry->get_target_filename(!utilities::get_newplus_setting_hide_starting_digits()));
+                target_fullpath = helpers::variables::resolve_variables_in_path(target_fullpath);
             }
 
-            // Copy file and determine final filename
+            // See if our target already exist, and if so then generate a unique name
+            target_fullpath = helpers::filesystem::make_unique_path_name(target_fullpath);
+
+            // Finally copy file/folder/subfolders
             std::filesystem::path target_final_fullpath = template_entry->copy_object_to(GetActiveWindow(), target_fullpath);
+
+            // Resolve variables and rename files in newly copied folders and subfolders and files
+            if (utilities::get_newplus_setting_resolve_variables() && helpers::filesystem::is_directory(target_final_fullpath))
+            {
+                helpers::variables::resolve_variables_in_filename_and_rename_files(target_final_fullpath);
+            }
 
             // Touch all files and set last modified to "now"
             update_last_write_time(target_final_fullpath);
