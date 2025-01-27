@@ -91,8 +91,8 @@ namespace Peek.UI.Native
         /// overrides FOF_NO_CONFIRMATION.) This can be tested by attempting to delete a file on a
         /// FAT volume, e.g. a USB key.
         /// </summary>
-        /// <remarks>FOF_WANTNUKEWARNING in shellapi.h./remarks>
-        internal const ushort FOF_WANT_NUKE_WARNING = 0x4000;
+        /// <remarks>Declared in shellapi.h./remarks>
+        internal const ushort FOF_WANTNUKEWARNING = 0x4000;
 
         /// <summary>
         /// Common error codes when calling SHFileOperation to delete a file.

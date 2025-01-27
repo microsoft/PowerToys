@@ -271,7 +271,7 @@ namespace Peek.UI
             if (!permanent)
             {
                 // Move to the Recycle Bin and warn about permanent deletes.
-                flags |= (ushort)(FOF_ALLOWUNDO | FOF_WANT_NUKE_WARNING);
+                flags |= (ushort)(FOF_ALLOWUNDO | FOF_WANTNUKEWARNING);
             }
 
             SHFILEOPSTRUCT fileOp = new()
