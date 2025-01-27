@@ -27,7 +27,7 @@
         // at least one job is required
         {
           "projectName": "Hosts",
-          "targetName": "Hosts-dotnet-fuzzer"
+          "targetName": "Hosts-dotnet-fuzzer-Ipv4"
         }
       ],
       "jobDependencies": [
@@ -69,7 +69,7 @@
         // at least one job is required
         {
           "projectName": "Hosts",
-          "targetName": "Hosts-dotnet-fuzzer"
+          "targetName": "Hosts-dotnet-fuzzer-Ipv6"
         }
       ],
       "jobDependencies": [
@@ -111,7 +111,7 @@
         // at least one job is required
         {
           "projectName": "Hosts",
-          "targetName": "Hosts-dotnet-fuzzer"
+          "targetName": "Hosts-dotnet-fuzzer-hosts"
         }
       ],
       "jobDependencies": [
@@ -129,3 +129,7 @@
     }
   ]
 }
+
+
+
+
