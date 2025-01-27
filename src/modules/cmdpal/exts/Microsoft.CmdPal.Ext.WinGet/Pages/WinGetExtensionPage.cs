@@ -182,7 +182,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         {
             var tagFilter = WinGetStatics.WinGetFactory.CreatePackageMatchFilter();
             tagFilter.Field = Microsoft.Management.Deployment.PackageMatchField.Tag;
-            tagFilter.Value = query;
+            tagFilter.Value = _tag;
             tagFilter.Option = PackageFieldMatchOption.ContainsCaseInsensitive;
 
             opts.Filters.Add(tagFilter);

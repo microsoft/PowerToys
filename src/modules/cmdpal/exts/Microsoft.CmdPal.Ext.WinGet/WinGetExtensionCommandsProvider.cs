@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.IO;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 
@@ -21,13 +23,20 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
     private readonly ICommandItem[] _commands = [
         new ListItem(new WinGetExtensionPage()),
 
-        // new ListItem(
-        //    new Microsoft.CmdPal.Ext.WinGetPage("command-line") { Title = "tag:command-line" })
-        // {
-        //    Title = "Search for command-line packages",
-        // },
+         new ListItem(
+            new WinGetExtensionPage("windows-commandpalette-extension") { Title = "Install Extensions" })
+         {
+            Title = "Install Command Palette extensions",
+            Subtitle = "Search for extensions on WinGet",
+            Icon = new("\uEA86"), // Puzzle
+         },
 
-        // new ListItem(new InstalledPackagesPage())
+        new ListItem(
+            new OpenUrlCommand("ms-windows-store://assoc/?Tags=AppExtension-com.microsoft.windows.commandpalette"))
+         {
+            Title = "Search for extensions on the Store",
+            Icon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory.ToString(), "Assets\\ms-store.png")),
+         },
     ];
 
     public override ICommandItem[] TopLevelCommands() => _commands;
