@@ -172,7 +172,7 @@ In this release, we focused on new features, stability, and improvements.
 
  - Made the Advanced Paste paste OpenAI configuration modal scrollable.
  - Fixed the text on the Quick Accent page to refer to "character sets" instead of "character set". Thanks [@PesBandi](https://github.com/PesBandi)!
- - Added the plugin version and website to the PowerToys Run plugin settings. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Added the plugin's dll file version and website to the PowerToys Run plugin settings. Thanks [@htcfreek](https://github.com/htcfreek)!
  - Added the Workspaces file to the list of files that gets backed up by the Back up / Restore functionality.
  - Fixed an issue causing some of the selected character sets to be unselected when opening the character set expander in the Quick Accent page.
  - Improved GPO logic, icons, info bar layout and enabled state of all modules settings pages. Thanks [@htcfreek](https://github.com/htcfreek)!
