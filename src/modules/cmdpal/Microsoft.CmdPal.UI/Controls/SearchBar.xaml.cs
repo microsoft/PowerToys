@@ -240,10 +240,16 @@ public sealed partial class SearchBar : UserControl,
         if (CurrentPageViewModel is ListViewModel list &&
             property == nameof(ListViewModel.SearchText))
         {
-            FilterBox.Text = list.SearchText;
+            // Only if the text actually changed...
+            // (sometimes this triggers on a round-trip of the SearchText)
+            if (FilterBox.Text != list.SearchText)
+            {
+                // ... Update our displayed text, and...
+                FilterBox.Text = list.SearchText;
 
-            // Move the cursor to the end of the input
-            FilterBox.Select(FilterBox.Text.Length, 0);
+                // ... Move the cursor to the end of the input
+                FilterBox.Select(FilterBox.Text.Length, 0);
+            }
         }
     }
 
