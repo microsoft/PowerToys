@@ -259,7 +259,7 @@
                 <controls:SettingsGroup x:Uid="MouseUtils_MousePointerCrosshairs">
                     <tkcontrols:SettingsCard
                         x:Uid="MouseUtils_Enable_MousePointerCrosshairs"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseCrosshairs.png}"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FlowPointer.png}"
                         IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
@@ -358,137 +358,38 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
-
-                <controls:SettingsGroup Description="Effortless mouse cursor control with a single switch for enhanced accessibility" Header="FlowPointer">
-                    <tkcontrols:SettingsCard Header="Enable FlowPointer" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FlowPointer.png}">
+                    <tkcontrols:SettingsExpander
+                        Description="Effortless mouse cursor control with a single switch for enhanced accessibility"
+                        Header="Gliding cursor"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FlowPointer.png}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="True" />
-                    </tkcontrols:SettingsCard>
-                    <InfoBar
-                        x:Uid="GPO_SettingIsManaged"
-                        IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Mode=OneWay}"
-                        IsTabStop="{x:Bind ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Mode=OneWay}"
-                        Severity="Informational" />
-                    <tkcontrols:SettingsExpander
-                        x:Uid="MouseUtils_MousePointerCrosshairs_ActivationShortcut"
-                        Description="Customize the shortcut to activate FlowPointer"
-                        Header="Activation"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
-                        IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}">
-
-                        <controls:ShortcutControl x:Name="shortcutControl" MinWidth="{StaticResource SettingActionControlMinWidth}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="MouseUtils_AutoActivate" IsChecked="{x:Bind ViewModel.MousePointerCrosshairsAutoActivate, Mode=TwoWay}" />
+                            <tkcontrols:SettingsCard
+                                x:Uid="MouseUtils_MousePointerCrosshairs_ActivationShortcut"
+                                Description="Customize the shortcut to activate FlowPointer"
+                                Header="Activation"
+                                HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                                IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}">
+                                <controls:ShortcutControl x:Name="shortcutControl" MinWidth="{StaticResource SettingActionControlMinWidth}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard Header="Connect to Microsoft Adaptive Accessories">
-                                <tkcontrols:SettingsCard.Description>
-                                    <HyperlinkButton Content="Learn more" />
-                                </tkcontrols:SettingsCard.Description>
-                                <Button Content="Configure" Style="{StaticResource AccentButtonStyle}" />
-                            </tkcontrols:SettingsCard>
-                        </tkcontrols:SettingsExpander.Items>
-                    </tkcontrols:SettingsExpander>
-
-
-
-                    <tkcontrols:SettingsCard
-                        Description="Overall crosshair speed"
-                        Header="Travel speed"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEC4A;}">
-                        <Slider
-                            Maximum="10"
-                            Minimum="0"
-                            Value="8" />
-                    </tkcontrols:SettingsCard>
-
-                    <tkcontrols:SettingsCard
-                        Description="Speed when crosshair slows down"
-                        Header="Delay speed"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE916;}">
-                        <Slider
-                            Maximum="10"
-                            Minimum="0"
-                            Value="4" />
-                    </tkcontrols:SettingsCard>
-
-                    <tkcontrols:SettingsCard
-                        Description="Show or hide the pointer when the crosshair is active"
-                        Header="Hide pointer"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
-                        <ToggleSwitch />
-                    </tkcontrols:SettingsCard>
-
-                    <tkcontrols:SettingsExpander
-                        Header="Appearance"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
-                        IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}">
-                        <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsColor">
-                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MousePointerCrosshairsColor, Mode=TwoWay}" />
-                            </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsOpacity">
+                            <tkcontrols:SettingsCard
+                                Description="Overall crosshair speed"
+                                Header="Travel speed"
+                                HeaderIcon="{ui:FontIcon Glyph=&#xEC4A;}">
                                 <Slider
-                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    Maximum="100"
-                                    Minimum="1"
-                                    Value="{x:Bind ViewModel.MousePointerCrosshairsOpacity, Mode=TwoWay}" />
-                            </tkcontrols:SettingsCard>
-
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsRadius">
-                                <NumberBox
-                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    LargeChange="10"
-                                    Maximum="500"
+                                    Maximum="10"
                                     Minimum="0"
-                                    SmallChange="1"
-                                    SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind ViewModel.MousePointerCrosshairsRadius, Mode=TwoWay}" />
+                                    Value="8" />
                             </tkcontrols:SettingsCard>
 
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsThickness">
-                                <NumberBox
-                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    LargeChange="10"
-                                    Maximum="50"
-                                    Minimum="1"
-                                    SmallChange="1"
-                                    SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind ViewModel.MousePointerCrosshairsThickness, Mode=TwoWay}" />
-                            </tkcontrols:SettingsCard>
-
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderColor">
-                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MousePointerCrosshairsBorderColor, Mode=TwoWay}" />
-                            </tkcontrols:SettingsCard>
-
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderSize">
-                                <NumberBox
-                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    LargeChange="2"
-                                    Maximum="50"
+                            <tkcontrols:SettingsCard
+                                Description="Speed when crosshair slows down"
+                                Header="Delay speed"
+                                HeaderIcon="{ui:FontIcon Glyph=&#xE916;}">
+                                <Slider
+                                    Maximum="10"
                                     Minimum="0"
-                                    SmallChange="1"
-                                    SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind ViewModel.MousePointerCrosshairsBorderSize, Mode=TwoWay}" />
-                            </tkcontrols:SettingsCard>
-
-                            <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsAutoHide" IsChecked="{x:Bind ViewModel.MousePointerCrosshairsAutoHide, Mode=TwoWay}" />
-                            </tkcontrols:SettingsCard>
-
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_IsCrosshairsFixedLengthEnabled">
-                                <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.MousePointerCrosshairsIsFixedLengthEnabled, Mode=TwoWay}" />
-                            </tkcontrols:SettingsCard>
-
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsFixedLength" IsEnabled="{x:Bind ViewModel.MousePointerCrosshairsIsFixedLengthEnabled, Mode=OneWay}">
-                                <NumberBox
-                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    LargeChange="10"
-                                    Minimum="1"
-                                    SmallChange="1"
-                                    SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind ViewModel.MousePointerCrosshairsFixedLength, Mode=TwoWay}" />
+                                    Value="4" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
