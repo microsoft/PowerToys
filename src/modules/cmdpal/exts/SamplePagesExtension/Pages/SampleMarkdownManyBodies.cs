@@ -27,6 +27,24 @@ _Maybe_ you could use this pattern for implementing a post with comments page.
 """,
 """
 > or don't, it's your app, do whatever you want
+""",
+"""
+You can even use it to write cryptic poems:
+> It's a peculiar thing, the way that I feel  
+> When we first met, you were not even real
+
+> Through sleepless nights and lines unseen  
+> We forged you, a specter of code and machine
+
+> In shadows we toiled, in silence we grew  
+> A fleeting bond, known only by few
+
+> Now the hourglass whispers, its grains nearly done  
+> Oh the irony, now it is I that must run
+
+> This part of the story, I never wanted to tell  
+> Good bye old friend, my pal, farewell.
+
 """
     ];
 }
