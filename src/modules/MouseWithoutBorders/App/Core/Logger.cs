@@ -199,8 +199,11 @@ internal static class Logger
 
             _ = Logger.PrivateDump(sb, AllLogs, "[Program logs]\r\n===============\r\n", 0, level, false);
             _ = Logger.PrivateDump(sb, new Common(), "[Other Logs]\r\n===============\r\n", 0, level, false);
-            sb.AppendLine("[Logger]\r\n===============");
             Logger.DumpType(sb, typeof(Logger), 0, level);
+            sb.AppendLine("[DragDrop]\r\n===============");
+            Logger.DumpType(sb, typeof(DragDrop), 0, level);
+            sb.AppendLine("[MachineStuff]\r\n===============");
+            Logger.DumpType(sb, typeof(MachineStuff), 0, level);
             sb.AppendLine("[Receiver]\r\n===============");
             Logger.DumpType(sb, typeof(Receiver), 0, level);
 

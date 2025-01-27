@@ -4,6 +4,8 @@
 
 using System;
 
+using MouseWithoutBorders.Core;
+
 namespace MouseWithoutBorders.Class
 {
     internal static class MachinePoolHelpers
@@ -20,20 +22,20 @@ namespace MouseWithoutBorders.Class
 
             string[] st = s.Split(Comma);
 
-            if (st.Length < Common.MAX_MACHINE)
+            if (st.Length < MachineStuff.MAX_MACHINE)
             {
                 throw new ArgumentException("Not enough elements in encoded MachinePool string");
             }
 
-            MachineInf[] rv = new MachineInf[Common.MAX_MACHINE];
-            for (int i = 0; i < Common.MAX_MACHINE; i++)
+            MachineInf[] rv = new MachineInf[MachineStuff.MAX_MACHINE];
+            for (int i = 0; i < MachineStuff.MAX_MACHINE; i++)
             {
                 string[] mc = st[i].Split(Colon);
                 if (mc.Length == 2)
                 {
                     rv[i].Name = mc[0];
                     rv[i].Id = uint.TryParse(mc[1], out uint ip) ? (ID)ip : ID.NONE;
-                    rv[i].Time = rv[i].Id == ID.NONE ? Common.GetTick() - Common.HEARTBEAT_TIMEOUT : Common.GetTick();
+                    rv[i].Time = rv[i].Id == ID.NONE ? Common.GetTick() - MachineStuff.HEARTBEAT_TIMEOUT : Common.GetTick();
                 }
             }
 

@@ -112,7 +112,7 @@ namespace MouseWithoutBorders
         internal const int JUST_GOT_BACK_FROM_SCREEN_SAVER = 9999;
 
         internal const int NETWORK_STREAM_BUF_SIZE = 1024 * 1024;
-        private static readonly EventWaitHandle EvSwitch = new(false, EventResetMode.AutoReset);
+        internal static readonly EventWaitHandle EvSwitch = new(false, EventResetMode.AutoReset);
         private static Point lastPos;
         private static int switchCount;
         private static long lastReconnectByHotKeyTime;
@@ -236,12 +236,12 @@ namespace MouseWithoutBorders
 
         internal static ID DesMachineID
         {
-            get => Common.desMachineID;
+            get => MachineStuff.desMachineID;
 
             set
             {
-                Common.desMachineID = value;
-                Common.DesMachineName = Common.NameFromID(Common.desMachineID);
+                MachineStuff.desMachineID = value;
+                MachineStuff.DesMachineName = MachineStuff.NameFromID(MachineStuff.desMachineID);
             }
         }
 
@@ -351,7 +351,7 @@ namespace MouseWithoutBorders
                     Logger.TelemetryLogTrace($"[{actionName}] took more than {(long)timeout.TotalSeconds}, restarting the process.", SeverityLevel.Warning, true);
 
                     string desktop = Common.GetMyDesktop();
-                    oneInstanceCheck?.Close();
+                    MachineStuff.oneInstanceCheck?.Close();
                     _ = Process.Start(Application.ExecutablePath, desktop);
                     Logger.LogDebug($"Started on desktop {desktop}");
 
@@ -619,12 +619,12 @@ namespace MouseWithoutBorders
 
         internal static void ProcessByeByeMessage(DATA package)
         {
-            if (package.Src == desMachineID)
+            if (package.Src == MachineStuff.desMachineID)
             {
-                SwitchToMachine(MachineName.Trim());
+                MachineStuff.SwitchToMachine(MachineName.Trim());
             }
 
-            _ = RemoveDeadMachines(package.Src);
+            _ = MachineStuff.RemoveDeadMachines(package.Src);
         }
 
         internal static long GetTick() // ms
@@ -644,12 +644,12 @@ namespace MouseWithoutBorders
             try
             {
                 string fileName = GetMyStorageDir() + @"ScreenCaptureByMouseWithoutBorders.png";
-                int w = desktopBounds.Right - desktopBounds.Left;
-                int h = desktopBounds.Bottom - desktopBounds.Top;
+                int w = MachineStuff.desktopBounds.Right - MachineStuff.desktopBounds.Left;
+                int h = MachineStuff.desktopBounds.Bottom - MachineStuff.desktopBounds.Top;
                 Bitmap bm = new(w, h);
                 Graphics g = Graphics.FromImage(bm);
                 Size s = new(w, h);
-                g.CopyFromScreen(desktopBounds.Left, desktopBounds.Top, 0, 0, s);
+                g.CopyFromScreen(MachineStuff.desktopBounds.Left, MachineStuff.desktopBounds.Top, 0, 0, s);
                 bm.Save(fileName, ImageFormat.Png);
                 bm.Dispose();
                 return fileName;
@@ -665,7 +665,7 @@ namespace MouseWithoutBorders
         {
             Common.DoSomethingInUIThread(() =>
             {
-                if (!MouseDown && Common.SendMessageToHelper(0x401, IntPtr.Zero, IntPtr.Zero) > 0)
+                if (!DragDrop.MouseDown && Common.SendMessageToHelper(0x401, IntPtr.Zero, IntPtr.Zero) > 0)
                 {
                     Common.MMSleep(0.2);
                     InputSimulation.SendKey(new KEYBDDATA() { wVk = (int)VK.SNAPSHOT });
@@ -675,10 +675,10 @@ namespace MouseWithoutBorders
 
                     _ = NativeMethods.MoveWindow(
                         (IntPtr)NativeMethods.FindWindow(null, Common.HELPER_FORM_TEXT),
-                        Common.DesktopBounds.Left,
-                        Common.DesktopBounds.Top,
-                        Common.DesktopBounds.Right - Common.DesktopBounds.Left,
-                        Common.DesktopBounds.Bottom - Common.DesktopBounds.Top,
+                        MachineStuff.DesktopBounds.Left,
+                        MachineStuff.DesktopBounds.Top,
+                        MachineStuff.DesktopBounds.Right - MachineStuff.DesktopBounds.Left,
+                        MachineStuff.DesktopBounds.Bottom - MachineStuff.DesktopBounds.Top,
                         false);
 
                     _ = Common.SendMessageToHelper(0x406, IntPtr.Zero, IntPtr.Zero, false);
@@ -729,7 +729,7 @@ namespace MouseWithoutBorders
             }
             else
             {
-                ID id = Common.MachinePool.ResolveID(machine);
+                ID id = MachineStuff.MachinePool.ResolveID(machine);
                 if (id != ID.NONE)
                 {
                     SendPackage(id, PackageType.ClipboardCapture);
@@ -753,7 +753,7 @@ namespace MouseWithoutBorders
                 {
                     if (Setting.Values.FirstRun)
                     {
-                        Common.Settings?.ShowTip(icon, tip, timeOutInMilliseconds);
+                        MachineStuff.Settings?.ShowTip(icon, tip, timeOutInMilliseconds);
                     }
 
                     Common.MatrixForm?.ShowTip(icon, tip, timeOutInMilliseconds);
@@ -882,7 +882,7 @@ namespace MouseWithoutBorders
 
             if (updateClientSockets)
             {
-                UpdateClientSockets(nameof(IsConnectedTo));
+                MachineStuff.UpdateClientSockets(nameof(IsConnectedTo));
             }
 
             return false;
@@ -921,7 +921,7 @@ namespace MouseWithoutBorders
                         {
                             if (t != null && t.BackingSocket != null && (t.Status == SocketStatus.Connected || (t.Status == SocketStatus.Handshaking && includeHandShakingSockets)))
                             {
-                                if (t.MachineId == (uint)data.Des || (data.Des == ID.ALL && t.MachineId != exceptDes && InMachineMatrix(t.MachineName)))
+                                if (t.MachineId == (uint)data.Des || (data.Des == ID.ALL && t.MachineId != exceptDes && MachineStuff.InMachineMatrix(t.MachineName)))
                                 {
                                     try
                                     {
@@ -952,20 +952,20 @@ namespace MouseWithoutBorders
                     {
                         Logger.LogDebug("********** No active connection found for the remote machine! **********" + data.Des.ToString());
 
-                        if (data.Des == ID.NONE || RemoveDeadMachines(data.Des))
+                        if (data.Des == ID.NONE || MachineStuff.RemoveDeadMachines(data.Des))
                         {
                             // SwitchToMachine(MachineName.Trim());
-                            NewDesMachineID = DesMachineID = MachineID;
-                            SwitchLocation.X = XY_BY_PIXEL + myLastX;
-                            SwitchLocation.Y = XY_BY_PIXEL + myLastY;
-                            SwitchLocation.ResetCount();
+                            MachineStuff.NewDesMachineID = DesMachineID = MachineID;
+                            MachineStuff.SwitchLocation.X = XY_BY_PIXEL + myLastX;
+                            MachineStuff.SwitchLocation.Y = XY_BY_PIXEL + myLastY;
+                            MachineStuff.SwitchLocation.ResetCount();
                             EvSwitch.Set();
                         }
                     }
 
                     if (updateClientSockets)
                     {
-                        UpdateClientSockets("SkSend");
+                        MachineStuff.UpdateClientSockets("SkSend");
                     }
                 }
                 catch (Exception e)
@@ -1203,7 +1203,7 @@ namespace MouseWithoutBorders
         {
             int machineCt = 0;
 
-            foreach (string m in Common.MachineMatrix)
+            foreach (string m in MachineStuff.MachineMatrix)
             {
                 if (!string.IsNullOrEmpty(m.Trim()))
                 {
@@ -1211,15 +1211,15 @@ namespace MouseWithoutBorders
                 }
             }
 
-            if (machineCt < 2 && Common.Settings != null && (Common.Settings.GetCurrentPage() is SetupPage1 || Common.Settings.GetCurrentPage() is SetupPage2b))
+            if (machineCt < 2 && MachineStuff.Settings != null && (MachineStuff.Settings.GetCurrentPage() is SetupPage1 || MachineStuff.Settings.GetCurrentPage() is SetupPage2b))
             {
-                Common.MachineMatrix = new string[Common.MAX_MACHINE] { Common.MachineName.Trim(), desMachine, string.Empty, string.Empty };
-                Logger.LogDebug("UpdateSetupMachineMatrix: " + string.Join(",", Common.MachineMatrix));
+                MachineStuff.MachineMatrix = new string[MachineStuff.MAX_MACHINE] { Common.MachineName.Trim(), desMachine, string.Empty, string.Empty };
+                Logger.LogDebug("UpdateSetupMachineMatrix: " + string.Join(",", MachineStuff.MachineMatrix));
 
                 Common.DoSomethingInUIThread(
                     () =>
                     {
-                        Common.Settings.SetControlPage(new SetupPage4());
+                        MachineStuff.Settings.SetControlPage(new SetupPage4());
                     },
                     true);
             }
@@ -1255,7 +1255,7 @@ namespace MouseWithoutBorders
                         SocketStuff.ClearBadIPs();
                     }
 
-                    UpdateClientSockets("ReopenSockets");
+                    MachineStuff.UpdateClientSockets("ReopenSockets");
                 }
             },
                 true);
@@ -1473,17 +1473,17 @@ namespace MouseWithoutBorders
         {
             Logger.LogDebug("+++++ MoveMouseToCenter");
             InputSimulation.MoveMouse(
-                Common.PrimaryScreenBounds.Left + ((Common.PrimaryScreenBounds.Right - Common.PrimaryScreenBounds.Left) / 2),
-                Common.PrimaryScreenBounds.Top + ((Common.PrimaryScreenBounds.Bottom - Common.PrimaryScreenBounds.Top) / 2));
+                MachineStuff.PrimaryScreenBounds.Left + ((MachineStuff.PrimaryScreenBounds.Right - MachineStuff.PrimaryScreenBounds.Left) / 2),
+                MachineStuff.PrimaryScreenBounds.Top + ((MachineStuff.PrimaryScreenBounds.Bottom - MachineStuff.PrimaryScreenBounds.Top) / 2));
         }
 
         internal static void HideMouseCursor(bool byHideMouseMessage)
         {
             Common.LastPos = new Point(
-                Common.PrimaryScreenBounds.Left + ((Common.PrimaryScreenBounds.Right - Common.PrimaryScreenBounds.Left) / 2),
-                Setting.Values.HideMouse ? 4 : Common.PrimaryScreenBounds.Top + ((Common.PrimaryScreenBounds.Bottom - Common.PrimaryScreenBounds.Top) / 2));
+                MachineStuff.PrimaryScreenBounds.Left + ((MachineStuff.PrimaryScreenBounds.Right - MachineStuff.PrimaryScreenBounds.Left) / 2),
+                Setting.Values.HideMouse ? 4 : MachineStuff.PrimaryScreenBounds.Top + ((MachineStuff.PrimaryScreenBounds.Bottom - MachineStuff.PrimaryScreenBounds.Top) / 2));
 
-            if ((desMachineID != MachineID && desMachineID != ID.ALL) || byHideMouseMessage)
+            if ((MachineStuff.desMachineID != MachineID && MachineStuff.desMachineID != ID.ALL) || byHideMouseMessage)
             {
                 _ = NativeMethods.SetCursorPos(Common.LastPos.X, Common.LastPos.Y);
                 _ = NativeMethods.GetCursorPos(ref Common.lastPos);

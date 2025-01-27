@@ -222,10 +222,10 @@ namespace MouseWithoutBorders.Class
                 {
                     Common.RealInputEventCount++;
 
-                    if (Common.NewDesMachineID == Common.MachineID || Common.NewDesMachineID == ID.ALL)
+                    if (MachineStuff.NewDesMachineID == Common.MachineID || MachineStuff.NewDesMachineID == ID.ALL)
                     {
                         local = true;
-                        if (Common.MainFormVisible && !Common.IsDropping)
+                        if (Common.MainFormVisible && !DragDrop.IsDropping)
                         {
                             Common.MainFormDot();
                         }
@@ -265,19 +265,19 @@ namespace MouseWithoutBorders.Class
                         }
                         else
                         {
-                            if (Common.SwitchLocation.Count > 0 && Common.NewDesMachineID != Common.MachineID && Common.NewDesMachineID != ID.ALL)
+                            if (MachineStuff.SwitchLocation.Count > 0 && MachineStuff.NewDesMachineID != Common.MachineID && MachineStuff.NewDesMachineID != ID.ALL)
                             {
-                                Common.SwitchLocation.Count--;
+                                MachineStuff.SwitchLocation.Count--;
 
-                                if (Common.SwitchLocation.X > Common.XY_BY_PIXEL - 100000 || Common.SwitchLocation.Y > Common.XY_BY_PIXEL - 100000)
+                                if (MachineStuff.SwitchLocation.X > Common.XY_BY_PIXEL - 100000 || MachineStuff.SwitchLocation.Y > Common.XY_BY_PIXEL - 100000)
                                 {
-                                    hookCallbackMouseData.X = Common.SwitchLocation.X - Common.XY_BY_PIXEL;
-                                    hookCallbackMouseData.Y = Common.SwitchLocation.Y - Common.XY_BY_PIXEL;
+                                    hookCallbackMouseData.X = MachineStuff.SwitchLocation.X - Common.XY_BY_PIXEL;
+                                    hookCallbackMouseData.Y = MachineStuff.SwitchLocation.Y - Common.XY_BY_PIXEL;
                                 }
                                 else
                                 {
-                                    hookCallbackMouseData.X = (Common.SwitchLocation.X * Common.ScreenWidth / 65535) + Common.PrimaryScreenBounds.Left;
-                                    hookCallbackMouseData.Y = (Common.SwitchLocation.Y * Common.ScreenHeight / 65535) + Common.PrimaryScreenBounds.Top;
+                                    hookCallbackMouseData.X = (MachineStuff.SwitchLocation.X * Common.ScreenWidth / 65535) + MachineStuff.PrimaryScreenBounds.Left;
+                                    hookCallbackMouseData.Y = (MachineStuff.SwitchLocation.Y * Common.ScreenHeight / 65535) + MachineStuff.PrimaryScreenBounds.Top;
                                 }
 
                                 Common.HideMouseCursor(false);
@@ -290,22 +290,22 @@ namespace MouseWithoutBorders.Class
                                 hookCallbackMouseData.X += dx;
                                 hookCallbackMouseData.Y += dy;
 
-                                if (hookCallbackMouseData.X < Common.PrimaryScreenBounds.Left)
+                                if (hookCallbackMouseData.X < MachineStuff.PrimaryScreenBounds.Left)
                                 {
-                                    hookCallbackMouseData.X = Common.PrimaryScreenBounds.Left - 1;
+                                    hookCallbackMouseData.X = MachineStuff.PrimaryScreenBounds.Left - 1;
                                 }
-                                else if (hookCallbackMouseData.X > Common.PrimaryScreenBounds.Right)
+                                else if (hookCallbackMouseData.X > MachineStuff.PrimaryScreenBounds.Right)
                                 {
-                                    hookCallbackMouseData.X = Common.PrimaryScreenBounds.Right + 1;
+                                    hookCallbackMouseData.X = MachineStuff.PrimaryScreenBounds.Right + 1;
                                 }
 
-                                if (hookCallbackMouseData.Y < Common.PrimaryScreenBounds.Top)
+                                if (hookCallbackMouseData.Y < MachineStuff.PrimaryScreenBounds.Top)
                                 {
-                                    hookCallbackMouseData.Y = Common.PrimaryScreenBounds.Top - 1;
+                                    hookCallbackMouseData.Y = MachineStuff.PrimaryScreenBounds.Top - 1;
                                 }
-                                else if (hookCallbackMouseData.Y > Common.PrimaryScreenBounds.Bottom)
+                                else if (hookCallbackMouseData.Y > MachineStuff.PrimaryScreenBounds.Bottom)
                                 {
-                                    hookCallbackMouseData.Y = Common.PrimaryScreenBounds.Bottom + 1;
+                                    hookCallbackMouseData.Y = MachineStuff.PrimaryScreenBounds.Bottom + 1;
                                 }
 
                                 dx += dx < 0 ? -Common.MOVE_MOUSE_RELATIVE : Common.MOVE_MOUSE_RELATIVE;
@@ -315,8 +315,8 @@ namespace MouseWithoutBorders.Class
 
                         MouseEvent(hookCallbackMouseData, dx, dy);
 
-                        Common.DragDropStep01(wParam);
-                        Common.DragDropStep09(wParam);
+                        DragDrop.DragDropStep01(wParam);
+                        DragDrop.DragDropStep09(wParam);
                     }
 
                     if (local)
@@ -432,7 +432,7 @@ namespace MouseWithoutBorders.Class
 
                             if (Common.DesMachineID != ID.ALL)
                             {
-                                Common.SwitchToMachine(Common.MachineName.Trim());
+                                MachineStuff.SwitchToMachine(Common.MachineName.Trim());
                             }
 
                             /*
@@ -518,7 +518,7 @@ namespace MouseWithoutBorders.Class
             if (Common.HotkeyMatched(vkCode, winDown, CtrlDown, altDown, shiftDown, Setting.Values.HotKeySwitch2AllPC))
             {
                 ResetLastSwitchKeys();
-                Common.SwitchToMultipleMode(Common.DesMachineID != ID.ALL, true);
+                MachineStuff.SwitchToMultipleMode(Common.DesMachineID != ID.ALL, true);
             }
 
             if (Common.HotkeyMatched(vkCode, winDown, CtrlDown, altDown, shiftDown, Setting.Values.HotKeyToggleEasyMouse))
@@ -543,7 +543,7 @@ namespace MouseWithoutBorders.Class
                 {
                     if (Common.GetTick() - lastHotKeyLockMachine < 500)
                     {
-                        Common.SwitchToMultipleMode(true, true);
+                        MachineStuff.SwitchToMultipleMode(true, true);
 
                         var codes = GetVkCodesList(Setting.Values.HotKeyLockMachine);
 
@@ -561,7 +561,7 @@ namespace MouseWithoutBorders.Class
                             KeyboardEvent(hookCallbackKeybdData);
                         }
 
-                        Common.SwitchToMultipleMode(false, true);
+                        MachineStuff.SwitchToMultipleMode(false, true);
 
                         _ = NativeMethods.LockWorkStation();
                     }
@@ -625,9 +625,9 @@ namespace MouseWithoutBorders.Class
 
         private static bool Switch2(int index)
         {
-            if (Common.MachineMatrix != null && Common.MachineMatrix.Length > index)
+            if (MachineStuff.MachineMatrix != null && MachineStuff.MachineMatrix.Length > index)
             {
-                string mcName = Common.MachineMatrix[index].Trim();
+                string mcName = MachineStuff.MachineMatrix[index].Trim();
                 if (!string.IsNullOrEmpty(mcName))
                 {
                     // Common.DoSomethingInUIThread(delegate()
@@ -636,7 +636,7 @@ namespace MouseWithoutBorders.Class
                     }
 
                     // );
-                    Common.SwitchToMachine(mcName);
+                    MachineStuff.SwitchToMachine(mcName);
 
                     if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
                     {
