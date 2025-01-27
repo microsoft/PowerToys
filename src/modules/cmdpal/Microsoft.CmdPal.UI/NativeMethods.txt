@@ -18,3 +18,14 @@ SHCreateStreamOnFileEx
 CoAllowSetForegroundWindow
 SHCreateStreamOnFileEx
 SHLoadIndirectString
+
+Shell_NotifyIcon
+LoadIcon
+WM_USER
+WM_WINDOWPOSCHANGING
+RegisterWindowMessageW
+GetModuleHandleW
+ExtractIconEx
+WM_RBUTTONUP
+WM_LBUTTONUP
+WM_LBUTTONDBLCLK

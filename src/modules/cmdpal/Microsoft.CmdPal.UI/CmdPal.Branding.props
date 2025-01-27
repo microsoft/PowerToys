@@ -20,6 +20,20 @@
     <CmdPalAssetSuffix Condition="'$(CommandPaletteBranding)'=='' or '$(CommandPaletteBranding)'=='Dev'">Dev</CmdPalAssetSuffix>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(CommandPaletteBranding)'=='Release'">
+    <ApplicationIcon>Stable\Dev\icon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CommandPaletteBranding)'=='Preview'">
+    <ApplicationIcon>Stable\Dev\icon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CommandPaletteBranding)'=='Canary'">
+    <ApplicationIcon>Stable\Dev\icon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CommandPaletteBranding)'=='' or '$(CommandPaletteBranding)'=='Dev'">
+    <ApplicationIcon>Assets\Dev\icon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+
   <ItemGroup>
     <!-- Images -->
     <Content Include="$(SolutionDir)\src\modules\cmdpal\Microsoft.CmdPal.UI\Assets\$(CmdPalAssetSuffix)\**\*">

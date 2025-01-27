@@ -22,6 +22,7 @@ using Windows.UI.WindowManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
+using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
 
@@ -36,6 +37,20 @@ public sealed partial class MainWindow : Window,
     private readonly WNDPROC? _originalWndProc;
     private readonly List<HotkeySettings> _hotkeys = new();
 
+    // Stylistically, window messages are WM_*
+#pragma warning disable SA1310 // Field names should not contain underscore
+#pragma warning disable SA1306 // Field names should begin with lower-case letter
+    private const uint MY_NOTIFY_ID = 1000;
+    private const uint WM_TRAY_ICON = PInvoke.WM_USER + 1;
+    private readonly uint WM_TASKBAR_RESTART;
+#pragma warning restore SA1306 // Field names should begin with lower-case letter
+#pragma warning restore SA1310 // Field names should not contain underscore
+
+    // Notification Area ("Tray") icon data
+    private NOTIFYICONDATAW? _trayIconData;
+    private bool _createdIcon;
+    private DestroyIconSafeHandle? _largeIcon;
+
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
 
@@ -45,6 +60,11 @@ public sealed partial class MainWindow : Window,
 
         _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
         CommandPaletteHost.Instance.SetHostHwnd((ulong)_hwnd.Value);
+
+        // TaskbarCreated is the message that's broadcast when explorer.exe
+        // restarts. We need to know when that happens to be able to bring our
+        // notification area icon back
+        WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
 
         PositionCentered();
         SetAcrylic();
@@ -68,6 +88,7 @@ public sealed partial class MainWindow : Window,
         _hotkeyWndProc = HotKeyPrc;
         var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_hotkeyWndProc);
         _originalWndProc = Marshal.GetDelegateForFunctionPointer<WNDPROC>(PInvoke.SetWindowLongPtr(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, hotKeyPrcPointer));
+        AddNotificationIcon();
 
         // Load our settings, and then also wire up a settings changed handler
         HotReloadSettings();
@@ -167,6 +188,8 @@ public sealed partial class MainWindow : Window,
         var serviceProvider = App.Current.Services;
         var extensionService = serviceProvider.GetService<IExtensionService>()!;
         extensionService.SignalStopExtensionsAsync();
+
+        RemoveNotificationIcon();
 
         // WinUI bug is causing a crash on shutdown when FailFastOnErrors is set to true (#51773592).
         // Workaround by turning it off before shutdown.
@@ -309,23 +332,113 @@ public sealed partial class MainWindow : Window,
         WPARAM wParam,
         LPARAM lParam)
     {
-        if (uMsg == WM_HOTKEY)
+        switch (uMsg)
         {
-            // Note to future us: the wParam will have the index of the hotkey we registered.
-            // We can use that in the future to differentiate the hotkeys we've pressed
-            // so that we can bind hotkeys to individual commands
-            if (!this.Visible)
-            {
-                Summon();
-            }
-            else
-            {
-                PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_HIDE);
-            }
+            case WM_HOTKEY:
+                {
+                    // Note to future us: the wParam will have the index of the hotkey we registered.
+                    // We can use that in the future to differentiate the hotkeys we've pressed
+                    // so that we can bind hotkeys to individual commands
+                    if (!this.Visible)
+                    {
+                        Summon();
+                    }
+                    else
+                    {
+                        PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+                    }
 
-            return (LRESULT)IntPtr.Zero;
+                    return (LRESULT)IntPtr.Zero;
+                }
+
+            // Shell_NotifyIcon can fail when we invoke it during the time explorer.exe isn't present/ready to handle it.
+            // We'll also never receive WM_TASKBAR_RESTART message if the first call to Shell_NotifyIcon failed, so we use
+            // WM_WINDOWPOSCHANGING which is always received on explorer startup sequence.
+            case PInvoke.WM_WINDOWPOSCHANGING:
+                {
+                    if (!_createdIcon)
+                    {
+                        AddNotificationIcon();
+                    }
+                }
+
+                break;
+            default:
+                // WM_TASKBAR_RESTART isn't a compile-time constant, so we can't
+                // use it in a case label
+                if (uMsg == WM_TASKBAR_RESTART)
+                {
+                    // Handle the case where explorer.exe restarts.
+                    // Even if we created it before, do it again
+                    AddNotificationIcon();
+                }
+                else if (uMsg == WM_TRAY_ICON)
+                {
+                    switch ((uint)lParam.Value)
+                    {
+                        case PInvoke.WM_RBUTTONUP:
+                        case PInvoke.WM_LBUTTONUP:
+                        case PInvoke.WM_LBUTTONDBLCLK:
+                            Summon();
+                            break;
+                    }
+                }
+
+                break;
         }
 
         return PInvoke.CallWindowProc(_originalWndProc, hwnd, uMsg, wParam, lParam);
+    }
+
+    private void AddNotificationIcon()
+    {
+        // We only need to build the tray data once.
+        if (_trayIconData == null)
+        {
+            // We need to stash this handle, so it doesn't clean itself up. If
+            // explorer restarts, we'll come back through here, and we don't
+            // really need to re-load the icon in that case. We can just use
+            // the handle from the first time.
+            _largeIcon = GetAppIconHandle();
+            _trayIconData = new NOTIFYICONDATAW()
+            {
+                cbSize = (uint)Marshal.SizeOf(typeof(NOTIFYICONDATAW)),
+                hWnd = _hwnd,
+                uID = MY_NOTIFY_ID,
+                uFlags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP,
+                uCallbackMessage = WM_TRAY_ICON,
+                hIcon = (HICON)_largeIcon.DangerousGetHandle(),
+                szTip = "Windows Command Palette",
+            };
+        }
+
+        var d = (NOTIFYICONDATAW)_trayIconData;
+
+        // Add the notification icon
+        if (PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_ADD, in d))
+        {
+            _createdIcon = true;
+        }
+    }
+
+    private void RemoveNotificationIcon()
+    {
+        if (_trayIconData != null && _createdIcon)
+        {
+            var d = (NOTIFYICONDATAW)_trayIconData;
+            if (PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, in d))
+            {
+                _createdIcon = false;
+            }
+        }
+    }
+
+    private DestroyIconSafeHandle GetAppIconHandle()
+    {
+        var exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+        DestroyIconSafeHandle largeIcon;
+        DestroyIconSafeHandle smallIcon;
+        PInvoke.ExtractIconEx(exePath, 0, out largeIcon, out smallIcon, 1);
+        return largeIcon;
     }
 }
