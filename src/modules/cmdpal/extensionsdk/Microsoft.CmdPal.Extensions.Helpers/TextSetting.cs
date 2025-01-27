@@ -9,6 +9,10 @@ namespace Microsoft.CmdPal.Extensions.Helpers;
 
 public class TextSetting : Setting<string>
 {
+    public bool Multiline { get; set; }
+
+    public string Placeholder { get; set; } = string.Empty;
+
     private TextSetting()
         : base()
     {
@@ -36,6 +40,8 @@ public class TextSetting : Setting<string>
             { "value", Value ?? string.Empty },
             { "isRequired", IsRequired },
             { "errorMessage", ErrorMessage },
+            { "isMultiline", Multiline },
+            { "placeholder", Placeholder },
         };
     }
 
