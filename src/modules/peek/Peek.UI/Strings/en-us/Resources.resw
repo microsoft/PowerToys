@@ -369,7 +369,7 @@
   <data name="DeleteConfirmationDialog_Message.Text" xml:space="preserve">
     <value>Are you sure you want to delete this file?</value>
   </data>
-  <data name="DeleteConfirmationDialog_DontAskCheckbox.Content" xml:space="preserve">
+  <data name="DeleteConfirmationDialog_DontWarnCheckbox.Content" xml:space="preserve">
     <value>Don't show this warning again</value>
   </data>
 </root>

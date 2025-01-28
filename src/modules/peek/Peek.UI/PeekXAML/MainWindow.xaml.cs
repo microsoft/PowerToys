@@ -86,8 +86,8 @@ namespace Peek.UI
                 {
                     if (await ShowDeleteConfirmationDialogAsync() == ContentDialogResult.Primary)
                     {
-                        // Delete after asking for confirmation. Persist the "Don't ask again" choice if set.
-                        ViewModel.DeleteItem(DeleteDontAskCheckbox.IsChecked, this.GetWindowHandle());
+                        // Delete after asking for confirmation. Persist the "Don't warn again" choice if set.
+                        ViewModel.DeleteItem(DeleteDontWarnCheckbox.IsChecked, this.GetWindowHandle());
                     }
                 }
                 else
@@ -104,8 +104,7 @@ namespace Peek.UI
 
         private async Task<ContentDialogResult> ShowDeleteConfirmationDialogAsync()
         {
-            DeleteDontAskCheckbox.IsChecked = false;
-
+            DeleteDontWarnCheckbox.IsChecked = false;
             DeleteConfirmationDialog.XamlRoot = Content.XamlRoot;
 
             return await DeleteConfirmationDialog.ShowAsync();

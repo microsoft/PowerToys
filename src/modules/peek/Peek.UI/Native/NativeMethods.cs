@@ -95,6 +95,11 @@ namespace Peek.UI.Native
         internal const ushort FOF_WANTNUKEWARNING = 0x4000;
 
         /// <summary>
+        /// The user cancelled the delete operation. Not classified as an error for our purposes.
+        /// </summary>
+        internal const int ERROR_CANCELLED = 1223;
+
+        /// <summary>
         /// Common error codes when calling SHFileOperation to delete a file.
         /// </summary>
         /// <remarks>See winerror.h for full list.</remarks>

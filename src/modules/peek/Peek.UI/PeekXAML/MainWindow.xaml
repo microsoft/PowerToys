@@ -69,7 +69,7 @@
             DefaultButton="Close">
             <StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Spacing="12">
                 <TextBlock x:Uid="DeleteConfirmationDialog_Message" TextWrapping="Wrap" />
-                <CheckBox x:Name="DeleteDontAskCheckbox" x:Uid="DeleteConfirmationDialog_DontAskCheckbox" />
+                <CheckBox x:Name="DeleteDontWarnCheckbox" x:Uid="DeleteConfirmationDialog_DontWarnCheckbox" />
             </StackPanel>
         </ContentDialog>
     </Grid>

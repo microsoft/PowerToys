@@ -226,24 +226,36 @@ namespace Peek.UI
             OnPropertyChanged(nameof(DisplayItemCount));
 
             // Attempt the deletion then navigate to the next file.
-            DispatcherQueue.GetForCurrentThread().TryEnqueue(() =>
+            DispatcherQueue.GetForCurrentThread().TryEnqueue(async () =>
             {
-                Task.Delay(DeleteDelayMs);
+                await Task.Delay(DeleteDelayMs);
                 int result = DeleteFile(item, hwnd);
 
-                if (result != 0)
+                if (result == 0)
                 {
-                    // On failure, log the error, show a message in the UI, and reinstate the
-                    // deleted file if it still exists.
-                    DeleteErrorMessageHelper.LogError(result);
-                    ShowDeleteError(item.Name, result);
+                    // Success.
+                    return;
+                }
 
-                    if (File.Exists(item.Path))
+                if (result == ERROR_CANCELLED)
+                {
+                    if (Path.GetPathRoot(item.Path) is string root)
                     {
-                        _deletedItemIndexes.Remove(index);
-                        OnPropertyChanged(nameof(DisplayItemCount));
+                        var driveInfo = new DriveInfo(root);
+                        Logger.LogInfo($"User cancelled deletion of \"{item.Name}\" on " +
+                            $"{driveInfo.DriveType} drive.");
                     }
                 }
+                else
+                {
+                    // For failures other than user cancellation, log the error and show a message
+                    // in the UI.
+                    DeleteErrorMessageHelper.LogError(result);
+                    ShowDeleteError(item.Name, result);
+                }
+
+                // For all errors, reinstate the deleted file if it still exists.
+                ReinstateDeletedFile(item, index);
             });
 
             Navigate(_navigationDirection, isAfterDelete: true);
@@ -276,6 +288,15 @@ namespace Peek.UI
             }
 
             return result;
+        }
+
+        private void ReinstateDeletedFile(IFileSystemItem item, int index)
+        {
+            if (File.Exists(item.Path))
+            {
+                _deletedItemIndexes.Remove(index);
+                OnPropertyChanged(nameof(DisplayItemCount));
+            }
         }
 
         /// <summary>
