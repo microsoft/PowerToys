@@ -358,18 +358,18 @@
     <comment>The prefix added to all file delete failure messages. {0} is replaced with the name of the file</comment>
   </data>
   <data name="DeleteConfirmationDialog.Title" xml:space="preserve">
-    <value>Delete file</value>
+    <value>Delete file?</value>
   </data>
   <data name="DeleteConfirmationDialog.PrimaryButtonText" xml:space="preserve">
-    <value>Move to Recycle Bin</value>
+    <value>Delete</value>
   </data>
   <data name="DeleteConfirmationDialog.CloseButtonText" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="DeleteConfirmationDialog_Message" xml:space="preserve">
-    <value>Are you sure you want to move "{0}" to the Recycle Bin?</value>
+  <data name="DeleteConfirmationDialog_Message.Text" xml:space="preserve">
+    <value>Are you sure you want to delete this file?</value>
   </data>
   <data name="DeleteConfirmationDialog_DontAskCheckbox.Content" xml:space="preserve">
-    <value>Don't ask me again</value>
+    <value>Don't show this warning again</value>
   </data>
 </root>

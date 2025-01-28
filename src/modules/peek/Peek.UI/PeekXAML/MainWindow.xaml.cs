@@ -31,12 +31,6 @@ namespace Peek.UI
 
         private readonly ThemeListener? themeListener;
 
-        // Used to work around a focus visual issue when the delete confirmation dialog is
-        // triggered by a key event.
-        private readonly Thickness _zeroThickness = new(0);
-        private Thickness _defaultFocusPrimaryThickness = new(2);
-        private Thickness _defaultFocusSecondaryThickness = new(2);
-
         /// <summary>
         /// Whether the delete confirmation dialog is currently open. Used to ensure only one
         /// dialog is open at a time.
@@ -75,13 +69,6 @@ namespace Peek.UI
             {
                 await DeleteItem();
             }
-
-            // Restore the default focus visual. The Space key is excluded as that is used to toggle
-            // the checkbox when it has focus.
-            if (e.Key != Windows.System.VirtualKey.Space)
-            {
-                RestoreFocusThickness();
-            }
         }
 
         private async Task DeleteItem()
@@ -119,35 +106,9 @@ namespace Peek.UI
         {
             DeleteDontAskCheckbox.IsChecked = false;
 
-            CacheFocusThickness();
-
-            // Hide the default focus visual. This prevents its initial display when the dialog is
-            // opened via a keyboard event.
-            DeleteDontAskCheckbox.FocusVisualPrimaryThickness = _zeroThickness;
-            DeleteDontAskCheckbox.FocusVisualSecondaryThickness = _zeroThickness;
-
             DeleteConfirmationDialog.XamlRoot = Content.XamlRoot;
 
             return await DeleteConfirmationDialog.ShowAsync();
-        }
-
-        /// <summary>
-        /// Save the current focus visual thickness. This will be restored when the user interacts
-        /// with the dialog, e.g. by using Tab.
-        /// </summary>
-        private void CacheFocusThickness()
-        {
-            CheckBox hiddenCheckBox = new() { Visibility = Visibility.Collapsed };
-            MainGrid.Children.Add(hiddenCheckBox);
-            _defaultFocusPrimaryThickness = hiddenCheckBox.FocusVisualPrimaryThickness;
-            _defaultFocusSecondaryThickness = hiddenCheckBox.FocusVisualSecondaryThickness;
-            MainGrid.Children.Remove(hiddenCheckBox);
-        }
-
-        private void RestoreFocusThickness()
-        {
-            DeleteDontAskCheckbox.FocusVisualPrimaryThickness = _defaultFocusPrimaryThickness;
-            DeleteDontAskCheckbox.FocusVisualSecondaryThickness = _defaultFocusSecondaryThickness;
         }
 
         /// <summary>
@@ -160,6 +121,11 @@ namespace Peek.UI
                 Activate();
                 Initialize(foregroundWindowHandle);
                 return;
+            }
+
+            if (DeleteConfirmationDialog.Visibility == Visibility.Visible)
+            {
+                DeleteConfirmationDialog.Hide();
             }
 
             if (AppWindow.IsVisible)

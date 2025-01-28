@@ -68,7 +68,7 @@
             x:Uid="DeleteConfirmationDialog"
             DefaultButton="Close">
             <StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Spacing="12">
-                <TextBlock TextWrapping="Wrap" Text="{x:Bind ViewModel.DeleteConfirmationDialogMessage, Mode=OneWay}" />
+                <TextBlock x:Uid="DeleteConfirmationDialog_Message" TextWrapping="Wrap" />
                 <CheckBox x:Name="DeleteDontAskCheckbox" x:Uid="DeleteConfirmationDialog_DontAskCheckbox" />
             </StackPanel>
         </ContentDialog>

@@ -66,9 +66,6 @@ namespace Peek.UI
             WindowTitle = value != null
                 ? ReadableStringHelper.FormatResourceString("WindowTitle", value.Name)
                 : _defaultWindowTitle;
-
-            DeleteConfirmationDialogMessage =
-                ReadableStringHelper.FormatResourceString("DeleteConfirmationDialog_Message", value?.Name ?? string.Empty);
         }
 
         [ObservableProperty]
@@ -77,9 +74,6 @@ namespace Peek.UI
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(DisplayItemCount))]
         private NeighboringItems? _items;
-
-        [ObservableProperty]
-        private string _deleteConfirmationDialogMessage = string.Empty;
 
         /// <summary>
         /// The number of items selected and available to preview. Decreases as the user deletes
