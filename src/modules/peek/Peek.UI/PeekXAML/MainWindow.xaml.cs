@@ -100,13 +100,13 @@ namespace Peek.UI
                     if (await ShowDeleteConfirmationDialogAsync() == ContentDialogResult.Primary)
                     {
                         // Delete after asking for confirmation. Persist the "Don't ask again" choice if set.
-                        ViewModel.DeleteItem(DeleteDontAskCheckbox.IsChecked);
+                        ViewModel.DeleteItem(DeleteDontAskCheckbox.IsChecked, this.GetWindowHandle());
                     }
                 }
                 else
                 {
                     // Delete without confirmation.
-                    ViewModel.DeleteItem(true);
+                    ViewModel.DeleteItem(true, this.GetWindowHandle());
                 }
             }
             finally

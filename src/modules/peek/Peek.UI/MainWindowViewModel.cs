@@ -207,7 +207,7 @@ namespace Peek.UI
         /// </summary>
         /// <param name="skipConfirmationChecked">The IsChecked property of the "Don't ask me
         /// again" checkbox on the delete confirmation dialog.</param>
-        public void DeleteItem(bool? skipConfirmationChecked)
+        public void DeleteItem(bool? skipConfirmationChecked, nint hwnd)
         {
             if (CurrentItem == null)
             {
@@ -235,7 +235,7 @@ namespace Peek.UI
             DispatcherQueue.GetForCurrentThread().TryEnqueue(() =>
             {
                 Task.Delay(DeleteDelayMs);
-                int result = DeleteFile(item);
+                int result = DeleteFile(item, hwnd);
 
                 if (result != 0)
                 {
@@ -256,29 +256,23 @@ namespace Peek.UI
         }
 
         /// <summary>
-        /// Delete a file and refresh any shell listeners.
+        /// Delete a file by moving it to the Recycle Bin. Refresh any shell listeners.
         /// </summary>
         /// <param name="item">The item to delete.</param>
-        /// <param name="permanent">Set to false (the default) to send the file to the Recycle Bin,
-        /// if possible. Set to true to permanently delete the item.</param>
+        /// <param name="hwnd">The handle of the main window.</param>
         /// <returns>The result of the file operation call. A non-zero result indicates failure.
         /// </returns>
-        private int DeleteFile(IFileSystemItem item, bool permanent = false)
+        private int DeleteFile(IFileSystemItem item, nint hwnd)
         {
-            // We handle delete confirmations with our own dialog, so it is not required here.
-            ushort flags = FOF_NO_CONFIRMATION;
-
-            if (!permanent)
-            {
-                // Move to the Recycle Bin and warn about permanent deletes.
-                flags |= (ushort)(FOF_ALLOWUNDO | FOF_WANTNUKEWARNING);
-            }
+            // Move to the Recycle Bin and warn about permanent deletes.
+            var flags = (ushort)(FOF_ALLOWUNDO | FOF_WANTNUKEWARNING);
 
             SHFILEOPSTRUCT fileOp = new()
             {
                 wFunc = FO_DELETE,
                 pFrom = item.Path + "\0\0", // Path arguments must be double null-terminated.
                 fFlags = flags,
+                hwnd = hwnd,
             };
 
             int result = SHFileOperation(ref fileOp);
