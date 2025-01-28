@@ -24,11 +24,10 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
         new ListItem(new WinGetExtensionPage()),
 
          new ListItem(
-            new WinGetExtensionPage("windows-commandpalette-extension") { Title = "Install Extensions" })
+            new WinGetExtensionPage(WinGetExtensionPage.ExtensionsTag) { Title = "Install Extensions" })
          {
             Title = "Install Command Palette extensions",
             Subtitle = "Search for extensions on WinGet",
-            Icon = new("\uEA86"), // Puzzle
          },
 
         new ListItem(
@@ -41,8 +40,5 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
 
     public override ICommandItem[] TopLevelCommands() => _commands;
 
-    public override void InitializeWithHost(IExtensionHost host)
-    {
-        WinGetExtensionHost.Instance.Initialize(host);
-    }
+    public override void InitializeWithHost(IExtensionHost host) => WinGetExtensionHost.Instance.Initialize(host);
 }

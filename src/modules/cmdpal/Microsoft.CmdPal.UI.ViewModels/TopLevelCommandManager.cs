@@ -66,7 +66,10 @@ public partial class TopLevelCommandManager : ObservableObject,
             {
                 ExtensionHost = commandProvider.ExtensionHost,
             };
-            TopLevelCommands.Add(wrapper);
+            lock (TopLevelCommands)
+            {
+                TopLevelCommands.Add(wrapper);
+            }
         };
 
         await Task.Factory.StartNew(
@@ -174,7 +177,11 @@ public partial class TopLevelCommandManager : ObservableObject,
         IsLoading = true;
         var extensionService = _serviceProvider.GetService<IExtensionService>()!;
         await extensionService.SignalStopExtensionsAsync();
-        TopLevelCommands.Clear();
+        lock (TopLevelCommands)
+        {
+            TopLevelCommands.Clear();
+        }
+
         await LoadBuiltinsAsync();
         _ = Task.Run(LoadExtensionsAsync);
     }
@@ -190,13 +197,47 @@ public partial class TopLevelCommandManager : ObservableObject,
     public async Task<bool> LoadExtensionsAsync()
     {
         var extensionService = _serviceProvider.GetService<IExtensionService>()!;
+
+        extensionService.OnExtensionAdded -= ExtensionService_OnExtensionAdded;
+        extensionService.OnExtensionRemoved -= ExtensionService_OnExtensionRemoved;
+
         var extensions = await extensionService.GetInstalledExtensionsAsync();
         _extensionCommandProviders.Clear();
+        if (extensions != null)
+        {
+            await StartExtensionsAndGetCommands(extensions);
+        }
+
+        extensionService.OnExtensionAdded += ExtensionService_OnExtensionAdded;
+        extensionService.OnExtensionRemoved += ExtensionService_OnExtensionRemoved;
+
+        IsLoading = false;
+
+        return true;
+    }
+
+    private void ExtensionService_OnExtensionAdded(IExtensionService sender, IEnumerable<IExtensionWrapper> extensions)
+    {
+        // When we get an extension install event, hop off to a BG thread
+        _ = Task.Run(async () =>
+        {
+            // for each newly installed extension, start it and get commands
+            // from it. One single package might have more than one
+            // IExtensionWrapper in it.
+            await StartExtensionsAndGetCommands(extensions);
+        });
+    }
+
+    private async Task StartExtensionsAndGetCommands(IEnumerable<IExtensionWrapper> extensions)
+    {
         foreach (var extension in extensions)
         {
             try
             {
+                // start it ...
                 await extension.StartExtensionAsync();
+
+                // ... and fetch the command provider from it.
                 CommandProviderWrapper wrapper = new(extension);
                 _extensionCommandProviders.Add(wrapper);
                 await LoadTopLevelCommandsFromProvider(wrapper);
@@ -206,19 +247,64 @@ public partial class TopLevelCommandManager : ObservableObject,
                 Debug.WriteLine(ex);
             }
         }
+    }
 
-        IsLoading = false;
+    private void ExtensionService_OnExtensionRemoved(IExtensionService sender, IEnumerable<IExtensionWrapper> extensions)
+    {
+        // When we get an extension uninstall event, hop off to a BG thread
+        _ = Task.Run(
+            async () =>
+            {
+                // Then find all the top-level commands that belonged to that extension
+                List<TopLevelCommandItemWrapper> commandsToRemove = [];
+                lock (TopLevelCommands)
+                {
+                    foreach (var extension in extensions)
+                    {
+                        foreach (var command in TopLevelCommands)
+                        {
+                            var host = command.ExtensionHost;
+                            if (host?.Extension == extension)
+                            {
+                                commandsToRemove.Add(command);
+                            }
+                        }
+                    }
+                }
 
-        return true;
+                // Then back on the UI thread (remember, TopLevelCommands is
+                // Observable, so you can't touch it on the BG thread)...
+                await Task.Factory.StartNew(
+                () =>
+                {
+                    // ... remove all the deleted commands.
+                    lock (TopLevelCommands)
+                    {
+                        if (commandsToRemove.Count != 0)
+                        {
+                            foreach (var deleted in commandsToRemove)
+                            {
+                                TopLevelCommands.Remove(deleted);
+                            }
+                        }
+                    }
+                },
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                _taskScheduler);
+            });
     }
 
     public TopLevelCommandItemWrapper? LookupCommand(string id)
     {
-        foreach (var command in TopLevelCommands)
+        lock (TopLevelCommands)
         {
-            if (command.Id == id)
+            foreach (var command in TopLevelCommands)
             {
-                return command;
+                if (command.Id == id)
+                {
+                    return command;
+                }
             }
         }
 

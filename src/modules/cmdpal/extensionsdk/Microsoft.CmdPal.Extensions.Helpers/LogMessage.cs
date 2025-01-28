@@ -29,4 +29,9 @@ public partial class LogMessage : BaseObservable, ILogMessage
             OnPropertyChanged(nameof(State));
         }
     }
+
+    public LogMessage(string message = "")
+    {
+        _message = message;
+    }
 }

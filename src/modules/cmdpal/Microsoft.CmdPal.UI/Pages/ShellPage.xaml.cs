@@ -6,14 +6,11 @@ using System.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
@@ -111,15 +108,10 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 var tlc = wrapper;
                 command = wrapper.Command;
                 host = tlc.ExtensionHost != null ? tlc.ExtensionHost! : host;
-#if DEBUG
                 if (tlc.ExtensionHost?.Extension != null)
                 {
-                    host.ProcessLogMessage(new LogMessage()
-                    {
-                        Message = $"Activated top-level command from {tlc.ExtensionHost.Extension.ExtensionDisplayName}",
-                    });
+                    host.DebugLog($"Activated top-level command from {tlc.ExtensionHost.Extension.ExtensionDisplayName}");
                 }
-#endif
             }
 
             if (command is IPage page)

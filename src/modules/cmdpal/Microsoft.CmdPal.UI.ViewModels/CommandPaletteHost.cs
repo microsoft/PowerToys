@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Extensions;
+using Microsoft.CmdPal.Extensions.Helpers;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -173,4 +174,11 @@ public sealed partial class CommandPaletteHost : IExtensionHost
     }
 
     public void SetHostHwnd(ulong hostHwnd) => HostingHwnd = hostHwnd;
+
+    public void DebugLog(string message)
+    {
+#if DEBUG
+        this.ProcessLogMessage(new LogMessage(message));
+#endif
+    }
 }

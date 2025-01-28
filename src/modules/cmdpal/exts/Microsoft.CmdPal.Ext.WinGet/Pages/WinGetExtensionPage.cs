@@ -32,11 +32,15 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
     public static IconInfo WinGetIcon { get; } = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory.ToString(), "Assets\\AppList.scale-100.png"));
 
+    public static IconInfo ExtensionsIcon { get; } = new("\uEA86"); // Puzzle
+
+    public static string ExtensionsTag => "windows-commandpalette-extension";
+
     private readonly StatusMessage _errorMessage = new() { State = MessageState.Error };
 
     public WinGetExtensionPage(string tag = "")
     {
-        Icon = WinGetIcon;
+        Icon = tag == ExtensionsTag ? ExtensionsIcon : WinGetIcon;
         Name = "Search Winget";
         _tag = tag;
         ShowDetails = true;
