@@ -17,6 +17,11 @@
     <NuGetAuditMode>direct</NuGetAuditMode>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>    <!-- Don't add source revision hash to the product version of binaries. -->
     <PlatformTarget>$(Platform)</PlatformTarget>
+
+    <!-- Enable Microsoft.Testing.Platform -->
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <TestingPlatformCaptureOutput>false</TestingPlatformCaptureOutput>
+    <TestingPlatformDotNetTestSupport>true</TestingPlatformDotNetTestSupport>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
@@ -45,7 +50,8 @@
     </PackageReference>
   </ItemGroup>
 
-  <!-- Add ability to run tests via "msbuild /t:Test" -->
+  <!-- Add ability to run tests via "msbuild /t:Test" using the RunVSTest SDK -->
+  <!-- This is only needed for C++, as we use Microsoft.Testing.Platform for C# -->
   <!--
     Workaround an MSBuild bug where Microsoft.Common.Test.targets is missing from the Arm64 installation.
     See: https://github.com/dotnet/msbuild/pull/9984
@@ -55,11 +61,11 @@
           Once the change referenced above is fixed, the ImportGroup below can be replaced with:
             <Sdk Name="Microsoft.Build.RunVSTest" Version="1.0.319" />
   -->
-  <ImportGroup Condition="'$(PROCESSOR_ARCHITECTURE)' != 'ARM64'">
+  <ImportGroup Condition="'$(PROCESSOR_ARCHITECTURE)' != 'ARM64' AND '$(Language)' == 'C++'">
     <Import Project="Sdk.props" Sdk="Microsoft.Build.RunVSTest" Version="1.0.319" />
     <Import Project="Sdk.targets" Sdk="Microsoft.Build.RunVSTest" Version="1.0.319" />
   </ImportGroup>
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(Language)' == 'C++'">
     <VSTestLogger>trx</VSTestLogger>
     <!--
       RunVSTest by default uses %VSINSTALLDIR%\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe,
