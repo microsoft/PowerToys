@@ -18,7 +18,8 @@ namespace Microsoft.CmdPal.UI.ViewModels.MainPage;
 /// TODO: Need to think about how we structure/interop for the page -> section -> item between the main setup, the extensions, and our viewmodels.
 /// </summary>
 public partial class MainListPage : DynamicListPage,
-    IRecipient<ClearSearchMessage>
+    IRecipient<ClearSearchMessage>,
+    IRecipient<UpdateFallbackItemsMessage>
 {
     private readonly IServiceProvider _serviceProvider;
 
@@ -39,6 +40,7 @@ public partial class MainListPage : DynamicListPage,
         _tlcManager.TopLevelCommands.CollectionChanged += Commands_CollectionChanged;
 
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
+        WeakReferenceMessenger.Default.Register<UpdateFallbackItemsMessage>(this);
 
         var settings = _serviceProvider.GetService<SettingsModel>()!;
         settings.SettingsChanged += SettingsChangedHandler;
@@ -195,18 +197,11 @@ public partial class MainListPage : DynamicListPage,
         return finalScore; // but downweight them
     }
 
-    public void Receive(ClearSearchMessage message)
-    {
-        SearchText = string.Empty;
-    }
+    public void Receive(ClearSearchMessage message) => SearchText = string.Empty;
 
-    private void SettingsChangedHandler(SettingsModel sender, object? args)
-    {
-        HotReloadSettings(sender);
-    }
+    public void Receive(UpdateFallbackItemsMessage message) => RaiseItemsChanged(_tlcManager.TopLevelCommands.Count);
 
-    private void HotReloadSettings(SettingsModel settings)
-    {
-        ShowDetails = settings.ShowAppDetails;
-    }
+    private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings(sender);
+
+    private void HotReloadSettings(SettingsModel settings) => ShowDetails = settings.ShowAppDetails;
 }
