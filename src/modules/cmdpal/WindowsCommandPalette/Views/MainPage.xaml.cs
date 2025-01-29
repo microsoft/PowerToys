@@ -35,11 +35,13 @@ public sealed partial class MainPage : Microsoft.UI.Xaml.Controls.Page
         // LoadAllCommands().Wait();
         LoadBuiltinCommandsAsync().Wait();
 
+        /* OnExtensionsChanged no longer exist
         var extensionService = Application.Current.GetService<IExtensionService>();
         if (extensionService != null)
         {
             extensionService.OnExtensionsChanged += ExtensionService_OnExtensionsChanged;
         }
+        */
 
         _ = LoadExtensions();
 

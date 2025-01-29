@@ -9,6 +9,7 @@ using Microsoft.CmdPal.Extensions;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.AppExtensions;
+using Windows.Foundation;
 using Windows.Foundation.Collections;
 using WindowsCommandPalette.Models;
 
@@ -17,6 +18,12 @@ namespace WindowsCommandPalette.Services;
 public class ExtensionService : IExtensionService, IDisposable
 {
     public event EventHandler OnExtensionsChanged = (_, _) => { };
+
+#pragma warning disable CS0067 // Never used
+    public event TypedEventHandler<IExtensionService, IEnumerable<IExtensionWrapper>>? OnExtensionAdded;
+
+    public event TypedEventHandler<IExtensionService, IEnumerable<IExtensionWrapper>>? OnExtensionRemoved;
+#pragma warning restore
 
     private static readonly PackageCatalog _catalog = PackageCatalog.OpenForCurrentUser();
     private static readonly object _lock = new();
