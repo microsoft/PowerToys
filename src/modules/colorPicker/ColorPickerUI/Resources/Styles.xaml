@@ -10,9 +10,7 @@
     <converters:ColorToStringConverter x:Key="colorToStringConverter" />
     <converters:NumberToVisibilityConverter x:Key="numberToVisibilityConverter" />
     <converters:NumberToInvertedVisibilityConverter x:Key="numberToInvertedVisibilityConverter" />
-    
-    <SolidColorBrush x:Key="PrimaryBrush" Color="#FF00CC6A" />
-    
+
     <Style x:Key="SubtleButtonStyle" TargetType="{x:Type Button}">
         <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
