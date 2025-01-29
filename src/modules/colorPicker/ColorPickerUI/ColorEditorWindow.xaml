@@ -9,7 +9,7 @@
     xmlns:p="clr-namespace:ColorPicker.Properties"
     Width="440"
     Height="380"
- 
+    Title="{x:Static p:Resources.CP_Title}"
     AutomationProperties.Name="{x:Static p:Resources.cp_editor}"
     ResizeMode="NoResize"
     Topmost="True"

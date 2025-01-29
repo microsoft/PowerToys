@@ -356,14 +356,19 @@ namespace ColorPicker.Controls
             (sender as System.Windows.Controls.TextBox).SelectAll();
         }
 
+        private void TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = !System.Text.RegularExpressions.Regex.IsMatch(e.Text, "^[0-9]+$");
+        }
+
         private void RGBNumberBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (!_ignoreRGBChanges)
             {
                 var numberBox = sender as TextBox;
-                byte r = GetValueFromNumberBox(RNumberBox);
-                byte g = GetValueFromNumberBox(GNumberBox);
-                byte b = GetValueFromNumberBox(BNumberBox);
+                byte r = numberBox.Name == "RNumberBox" ? GetValueFromNumberBox(numberBox, _currentColor.R) : _currentColor.R;
+                byte g = numberBox.Name == "GNumberBox" ? GetValueFromNumberBox(numberBox, _currentColor.G) : _currentColor.G;
+                byte b = numberBox.Name == "BNumberBox" ? GetValueFromNumberBox(numberBox, _currentColor.B) : _currentColor.B;
 
                 _ignoreRGBChanges = true;
                 SetColorFromTextBoxes(System.Drawing.Color.FromArgb(r, g, b));
@@ -377,7 +382,7 @@ namespace ColorPicker.Controls
         /// </summary>
         /// <param name="numberBox">numberBox control which value we want to get</param>
         /// <returns>Validated value as per numberbox conditions, if content is invalid it returns previous value</returns>
-        private static byte GetValueFromNumberBox(TextBox numberBox)
+        private static byte GetValueFromNumberBox(TextBox numberBox, byte previousValue)
         {
             int minimum = 0;
             int maximum = 255;
@@ -394,7 +399,7 @@ namespace ColorPicker.Controls
             }
 
             // not valid input, return previous value
-            return 0;
+            return previousValue;
         }
 
         public static double? ParseDouble(string text)

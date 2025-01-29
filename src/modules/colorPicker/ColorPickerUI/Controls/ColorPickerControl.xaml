@@ -329,6 +329,7 @@
                                 Grid.Row="6"
                                 Grid.Column="1"
                                 AutomationProperties.Name="{x:Static p:Resources.Red_value}"
+                                PreviewTextInput="TextBox_PreviewTextInput"
                                 TextBoxBase.TextChanged="RGBNumberBox_TextChanged" />
                             <TextBox
                                 x:Name="GNumberBox"
@@ -336,6 +337,7 @@
                                 Grid.Column="2"
                                 Margin="4,0,0,0"
                                 AutomationProperties.Name="{x:Static p:Resources.Green_value}"
+                                PreviewTextInput="TextBox_PreviewTextInput"
                                 TextBoxBase.TextChanged="RGBNumberBox_TextChanged" />
                             <TextBox
                                 x:Name="BNumberBox"
@@ -343,6 +345,7 @@
                                 Grid.Column="3"
                                 Margin="4,0,0,0"
                                 AutomationProperties.Name="{x:Static p:Resources.Blue_value}"
+                                PreviewTextInput="TextBox_PreviewTextInput"
                                 TextBoxBase.TextChanged="RGBNumberBox_TextChanged" />
                       
                         <TextBlock
