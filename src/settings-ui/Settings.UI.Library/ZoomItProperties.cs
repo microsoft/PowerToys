@@ -44,12 +44,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public KeyboardKeysProperty SnipToggleKey { get; set; }
 
-        public StringProperty PenColor { get; set; }
-
-        public IntProperty PenWidth { get; set; }
-
-        public StringProperty BreakPenColor { get; set; }
-
         public KeyboardKeysProperty BreakTimerKey { get; set; }
 
         public StringProperty Font { get; set; }
@@ -80,23 +74,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public BoolProperty BreakShowDesktop { get; set; }
 
-        public BoolProperty BreakOnSecondary { get; set; }
-
-        public IntProperty FontScale { get; set; }
-
         public BoolProperty ShowExpiredTime { get; set; }
 
         public BoolProperty ShowTrayIcon { get; set; }
 
         public BoolProperty AnimnateZoom { get; set; }
 
-        public BoolProperty TelescopeZoomOut { get; set; }
-
-        public BoolProperty SnapToGrid { get; set; }
-
         public IntProperty ZoominSliderLevel { get; set; }
-
-        public IntProperty RecordFrameRate { get; set; }
 
         public IntProperty RecordScaling { get; set; }
 

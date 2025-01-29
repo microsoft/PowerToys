@@ -65,6 +65,7 @@ namespace
 class AdvancedPaste : public PowertoyModuleIface
 {
 private:
+    
     AdvancedPasteProcessManager m_process_manager;
     bool m_enabled = false;
 
