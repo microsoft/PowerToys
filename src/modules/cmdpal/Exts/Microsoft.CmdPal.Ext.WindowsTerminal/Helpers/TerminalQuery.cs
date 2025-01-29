@@ -23,6 +23,7 @@ public class TerminalQuery : ITerminalQuery
     {
         "Microsoft.WindowsTerminal",
         "Microsoft.WindowsTerminalPreview",
+        "Microsoft.WindowsTerminalCanary",
     }.AsReadOnly();
 
     private IEnumerable<TerminalPackage> Terminals => GetTerminals();

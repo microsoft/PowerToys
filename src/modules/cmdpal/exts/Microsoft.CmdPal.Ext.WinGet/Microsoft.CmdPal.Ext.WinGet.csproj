@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-     <ProjectReference Include="..\..\extensionsdk\Microsoft.CmdPal.Extensions.Helpers\Microsoft.CmdPal.Extensions.Helpers.csproj" /> 
+     <ProjectReference Include="..\..\extensionsdk\Microsoft.CmdPal.Extensions.Helpers\Microsoft.CmdPal.Extensions.Helpers.csproj" />
   </ItemGroup>
 
   <!--
@@ -41,8 +41,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <CsWinRTInputs Include="$(TargetDir)\Microsoft.Management.Deployment.winmd" />
-    <Content Include="$(TargetDir)\Microsoft.Management.Deployment.winmd" Link="Microsoft.Management.Deployment.winmd" CopyToOutputDirectory="PreserveNewest" />
+    <CsWinRTInputs Include="$(PkgMicrosoft_WindowsPackageManager_ComInterop)\lib\uap10.0\Microsoft.Management.Deployment.winmd" />
+
+    <!-- Before v1.10 of this package, it wasn't in the uap10.0 dir  -->
+    <Content Include="$(PkgMicrosoft_WindowsPackageManager_ComInterop)\lib\uap10.0\Microsoft.Management.Deployment.winmd" Link="Microsoft.Management.Deployment.winmd" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWin32">
@@ -55,11 +57,6 @@
       <IncludeAssets>none</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-
-  <Target Name="CopyWinmdToTargetDir" BeforeTargets="BeforeBuild">
-    <!-- Before v1.10 of this package, it wasn't in the uap10.0 dir  -->
-    <Copy SourceFiles="$(PkgMicrosoft_WindowsPackageManager_ComInterop)\lib\uap10.0\Microsoft.Management.Deployment.winmd" DestinationFolder="$(TargetDir)" />
-  </Target>
 
   <!--
     Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution

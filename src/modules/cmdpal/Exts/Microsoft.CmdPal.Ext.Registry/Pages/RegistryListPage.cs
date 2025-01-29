@@ -14,21 +14,20 @@ namespace Microsoft.CmdPal.Ext.Registry;
 
 internal sealed partial class RegistryListPage : DynamicListPage
 {
-    private readonly string _defaultIconPath;
+    public static IconInfo RegistryIcon { get; } = new("\uE74C"); // OEM
 
     public RegistryListPage()
     {
-        Icon = new("\uE74C"); // OEM
+        Icon = RegistryIcon;
         Name = "Windows Registry";
         Id = "com.microsoft.cmdpal.registry";
-        _defaultIconPath = "Images/reg.light.png";
     }
 
     public List<ListItem> Query(string query)
     {
         if (query is null)
         {
-            return new List<ListItem>(0);
+            return [];
         }
 
         var searchForValueName = QueryHelper.GetQueryParts(query, out var queryKey, out var queryValueName);
@@ -37,7 +36,7 @@ internal sealed partial class RegistryListPage : DynamicListPage
         if (baseKeyList is null)
         {
             // no base key found
-            return ResultHelper.GetResultList(RegistryHelper.GetAllBaseKeys(), _defaultIconPath);
+            return ResultHelper.GetResultList(RegistryHelper.GetAllBaseKeys());
         }
         else if (baseKeyList.Count() == 1)
         {
@@ -47,25 +46,19 @@ internal sealed partial class RegistryListPage : DynamicListPage
             // when only one sub-key was found and a user search for values ("\\")
             // show the filtered list of values of one sub-key
             return searchForValueName && list.Count == 1
-                ? ResultHelper.GetValuesFromKey(list.First().Key, _defaultIconPath, queryValueName)
-                : ResultHelper.GetResultList(list, _defaultIconPath);
+                ? ResultHelper.GetValuesFromKey(list.First().Key, queryValueName)
+                : ResultHelper.GetResultList(list);
         }
         else if (baseKeyList.Count() > 1)
         {
             // more than one base key was found -> show results
-            return ResultHelper.GetResultList(baseKeyList.Select(found => new RegistryEntry(found)), _defaultIconPath);
+            return ResultHelper.GetResultList(baseKeyList.Select(found => new RegistryEntry(found)));
         }
 
-        return new List<ListItem>();
+        return [];
     }
 
-    public override void UpdateSearchText(string oldSearch, string newSearch)
-    {
-        RaiseItemsChanged(0);
-    }
+    public override void UpdateSearchText(string oldSearch, string newSearch) => RaiseItemsChanged(0);
 
-    public override IListItem[] GetItems()
-    {
-        return Query(SearchText).ToArray();
-    }
+    public override IListItem[] GetItems() => Query(SearchText).ToArray();
 }

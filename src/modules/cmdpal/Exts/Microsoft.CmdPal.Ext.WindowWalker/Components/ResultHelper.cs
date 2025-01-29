@@ -20,9 +20,8 @@ internal static class ResultHelper
     /// Returns a list of all results for the query.
     /// </summary>
     /// <param name="searchControllerResults">List with all search controller matches</param>
-    /// <param name="icon">The path to the result icon</param>
     /// <returns>List of results</returns>
-    internal static List<WindowWalkerListItem> GetResultList(List<SearchResult> searchControllerResults, bool isKeywordSearch, string infoIcon)
+    internal static List<WindowWalkerListItem> GetResultList(List<SearchResult> searchControllerResults, bool isKeywordSearch)
     {
         if (searchControllerResults == null || searchControllerResults.Count == 0)
         {
@@ -43,7 +42,7 @@ internal static class ResultHelper
 
         if (addExplorerInfo && !SettingsManager.Instance.HideExplorerSettingInfo)
         {
-            resultsList.Insert(0, GetExplorerInfoResult(infoIcon));
+            resultsList.Insert(0, GetExplorerInfoResult());
         }
 
         return resultsList;
@@ -53,7 +52,6 @@ internal static class ResultHelper
     /// Creates a Result object from a given SearchResult.
     /// </summary>
     /// <param name="searchResult">The SearchResult object to convert.</param>
-    /// <param name="icon">The path to the icon that should be used for the Result.</param>
     /// <returns>A Result object populated with data from the SearchResult.</returns>
     private static WindowWalkerListItem CreateResultFromSearchResult(SearchResult searchResult)
     {
@@ -75,7 +73,7 @@ internal static class ResultHelper
     /// <returns>String with the subtitle</returns>
     private static string GetSubtitle(Window window)
     {
-        if (window is null or not Window)
+        if (window is null or null)
         {
             return string.Empty;
         }
@@ -116,12 +114,12 @@ internal static class ResultHelper
         return tags.ToArray();
     }
 
-    private static WindowWalkerListItem GetExplorerInfoResult(string iIcon)
+    private static WindowWalkerListItem GetExplorerInfoResult()
     {
         return new WindowWalkerListItem(null)
         {
             Title = Resources.windowwalker_ExplorerInfoTitle,
-            Icon = new(iIcon),
+            Icon = new("\uE946"), // Info
             Subtitle = Resources.windowwalker_ExplorerInfoSubTitle,
             Command = new ExplorerInfoResultCommand(),
         };

@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="CmdPal.pre.props" />
   <Import Project="CmdPal.Branding.props" />
-  
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <RootNamespace>Microsoft.CmdPal.UI</RootNamespace>
@@ -11,7 +12,7 @@
     <EnableMsixTooling>true</EnableMsixTooling>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    
+
     <!-- OutputPath is set in CmdPal.Branding.props  -->
 
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -48,7 +49,7 @@
     <None Remove="Styles\TextBox.xaml" />
   </ItemGroup>
 
-  
+
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
@@ -74,7 +75,7 @@
 
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="System.Text.Json" />
-    
+
     <!-- LOAD BEARING: GeneratePathProperty=true on BOTH the AC dependencies. Don't forget the AdaptiveCardsWorkaround below -->
     <PackageReference Include="AdaptiveCards.ObjectModel.WinUI3" GeneratePathProperty="true" />
     <PackageReference Include="AdaptiveCards.Rendering.WinUI3" GeneratePathProperty="True" />
@@ -116,7 +117,7 @@
       <Private>True</Private>
       <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <!-- <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" /> -->
   </ItemGroup>
 
   <ItemGroup>

@@ -25,9 +25,8 @@ internal static class ResultHelper
     /// Return a list with <see cref="Result"/>s, based on the given list
     /// </summary>
     /// <param name="list">The original result list to convert</param>
-    /// <param name="iconPath">The path to the icon of each entry</param>
     /// <returns>A list with <see cref="Result"/></returns>
-    internal static List<ListItem> GetResultList(in IEnumerable<RegistryEntry> list, in string iconPath)
+    internal static List<ListItem> GetResultList(in IEnumerable<RegistryEntry> list)
     {
         var resultList = new List<ListItem>();
 
@@ -35,18 +34,18 @@ internal static class ResultHelper
         {
             var result = new ListItem(new OpenKeyInEditorCommand(entry))
             {
-                Icon = new(iconPath),
+                Icon = RegistryListPage.RegistryIcon,
                 MoreCommands = ContextMenuHelper.GetContextMenu(entry).ToArray(),
             };
 
-            if (entry.Exception is null && !(entry.Key is null))
+            if (entry.Exception is null && entry.Key is not null)
             {
                 // when key contains keys or fields
                 result.TextToSuggest = entry.Key.Name;
                 result.Subtitle = RegistryHelper.GetSummary(entry.Key);
                 result.Title = GetTruncatedText(entry.Key.Name, MaxTextLength.MaximumTitleLengthWithTwoSymbols);
             }
-            else if (entry.Key is null && !(entry.Exception is null))
+            else if (entry.Key is null && entry.Exception is not null)
             {
                 // on error (e.g access denied)
                 result.TextToSuggest = entry.KeyPath;
@@ -68,12 +67,12 @@ internal static class ResultHelper
     }
 
 #pragma warning disable CS8632
-    internal static List<ListItem> GetValuesFromKey(in RegistryKey? key, in string iconPath, string searchValue = "")
+    internal static List<ListItem> GetValuesFromKey(in RegistryKey? key, string searchValue = "")
     {
 #pragma warning restore CS8632
         if (key is null)
         {
-            return new List<ListItem>(0);
+            return [];
         }
 
         var valueList = new List<KeyValuePair<string, object>>(key.ValueCount);
@@ -101,7 +100,7 @@ internal static class ResultHelper
 
                 resultList.Add(new ListItem(new OpenKeyInEditorCommand(registryEntry))
                 {
-                    Icon = new(iconPath),
+                    Icon = RegistryListPage.RegistryIcon,
                     Subtitle = GetTruncatedText(valueException.Message, MaxTextLength.MaximumSubTitleLengthWithThreeSymbols, TruncateSide.OnlyFromRight),
                     Title = GetTruncatedText(key.Name, MaxTextLength.MaximumTitleLengthWithThreeSymbols),
                     MoreCommands = ContextMenuHelper.GetContextMenu(registryEntry).ToArray(),
@@ -130,7 +129,7 @@ internal static class ResultHelper
 
                 resultList.Add(new ListItem(new OpenKeyInEditorCommand(registryEntry))
                 {
-                    Icon = new(iconPath),
+                    Icon = RegistryListPage.RegistryIcon,
                     Subtitle = GetTruncatedText(GetSubTileForRegistryValue(key, valueEntry), MaxTextLength.MaximumSubTitleLengthWithThreeSymbols, TruncateSide.OnlyFromRight),
                     Title = GetTruncatedText(valueName, MaxTextLength.MaximumTitleLengthWithThreeSymbols),
                     MoreCommands = ContextMenuHelper.GetContextMenu(registryEntry).ToArray(),
@@ -145,7 +144,7 @@ internal static class ResultHelper
 
             resultList.Add(new ListItem(new OpenKeyInEditorCommand(registryEntry))
             {
-                Icon = new(iconPath),
+                Icon = RegistryListPage.RegistryIcon,
                 Subtitle = GetTruncatedText(exception.Message, MaxTextLength.MaximumSubTitleLengthWithThreeSymbols, TruncateSide.OnlyFromRight),
                 Title = GetTruncatedText(key.Name, MaxTextLength.MaximumTitleLengthWithThreeSymbols),
             });

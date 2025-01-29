@@ -14,7 +14,7 @@ internal sealed partial class ServicesListPage : DynamicListPage
 {
     public ServicesListPage()
     {
-        Icon = new("%windir%\\system32\\filemgmt.dll");
+        Icon = WindowsServicesCommandsProvider.ServicesIcon;
         Name = "Windows Services";
     }
 

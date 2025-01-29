@@ -17,11 +17,15 @@ public partial class WindowsTerminalCommandsProvider : CommandProvider
     private readonly TerminalTopLevelCommandItem _terminalCommand;
     private readonly SettingsManager _settingsManager = new();
 
+    public static IconInfo TerminalIcon { get; } = new(
+        new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory.ToString(), "Assets\\WindowsTerminal.light.png")),
+        new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory.ToString(), "Assets\\WindowsTerminal.dark.png")));
+
     public WindowsTerminalCommandsProvider()
     {
         Id = "WindowsTerminalProfiles";
         DisplayName = Resources.extension_name;
-        Icon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory.ToString(), "Images\\WindowsTerminal.dark.png"));
+        Icon = TerminalIcon;
 
         _terminalCommand = new TerminalTopLevelCommandItem(_settingsManager)
         {
@@ -29,8 +33,5 @@ public partial class WindowsTerminalCommandsProvider : CommandProvider
         };
     }
 
-    public override ICommandItem[] TopLevelCommands()
-    {
-        return [_terminalCommand];
-    }
+    public override ICommandItem[] TopLevelCommands() => [_terminalCommand];
 }
