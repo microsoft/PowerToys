@@ -50,6 +50,13 @@
     </PackageReference>
   </ItemGroup>
 
+  <!-- In CI, we build and test with `/t:Build;Test` -->
+  <!-- So, for non-test projects, we want the target to be there and it's basically doing nothing -->
+  <!-- For C# test projects, Microsoft.Testing.Platform should inject Test target here: -->
+  <!-- https://github.com/microsoft/testfx/blob/5ad21909704db501f58f27d4a7ec241edd761af5/src/Platform/Microsoft.Testing.Platform.MSBuild/buildMultiTargeting/Microsoft.Testing.Platform.MSBuild.targets#L270-L273 -->
+  <!-- For C++ test projects, the RunVSTest SDK will do its job -->
+  <Target Name="Test" />
+
   <!-- Add ability to run tests via "msbuild /t:Test" using the RunVSTest SDK -->
   <!-- This is only needed for C++, as we use Microsoft.Testing.Platform for C# -->
   <!--
@@ -61,11 +68,11 @@
           Once the change referenced above is fixed, the ImportGroup below can be replaced with:
             <Sdk Name="Microsoft.Build.RunVSTest" Version="1.0.319" />
   -->
-  <ImportGroup Condition="'$(PROCESSOR_ARCHITECTURE)' != 'ARM64' AND '$(Language)' == 'C++'">
+  <ImportGroup Condition="'$(PROCESSOR_ARCHITECTURE)' != 'ARM64' AND ('$(Language)' == 'C++' OR '$(MSBuildProjectExtension)' == '.vcxproj')">
     <Import Project="Sdk.props" Sdk="Microsoft.Build.RunVSTest" Version="1.0.319" />
     <Import Project="Sdk.targets" Sdk="Microsoft.Build.RunVSTest" Version="1.0.319" />
   </ImportGroup>
-  <PropertyGroup Condition="'$(Language)' == 'C++'">
+  <PropertyGroup Condition="'$(Language)' == 'C++' OR '$(MSBuildProjectExtension)' == '.vcxproj'">
     <VSTestLogger>trx</VSTestLogger>
     <!--
       RunVSTest by default uses %VSINSTALLDIR%\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe,
