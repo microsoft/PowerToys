@@ -26,7 +26,11 @@
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.SomePreviewPaneEnabledGposConfigured, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.SomePreviewPaneEnabledGposConfigured, Mode=OneWay}"
-                        Severity="Informational" />
+                        Severity="Informational">
+                        <InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource>
+                    </InfoBar>
 
                     <tkcontrols:SettingsExpander
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG"
@@ -171,7 +175,11 @@
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.SomeThumbnailEnabledGposConfigured, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.SomeThumbnailEnabledGposConfigured, Mode=OneWay}"
-                        Severity="Informational" />
+                        Severity="Informational">
+                        <InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource>
+                    </InfoBar>
 
                     <tkcontrols:SettingsCard
                         x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_SVG"

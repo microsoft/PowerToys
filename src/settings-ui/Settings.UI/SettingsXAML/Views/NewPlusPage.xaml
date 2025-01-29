@@ -22,13 +22,16 @@
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
-
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    Severity="Informational" />
+                    Severity="Informational">
+                    <InfoBar.IconSource>
+                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                    </InfoBar.IconSource>
+                </InfoBar>
 
                 <controls:SettingsGroup x:Uid="NewPlus_Templates" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
@@ -70,9 +73,9 @@
                         IsOpen="{x:Bind ViewModel.IsHideFileExtSettingGPOConfigured, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsHideFileExtSettingGPOConfigured, Mode=OneWay}"
                         Severity="Informational">
-                        <!-- InfoBar.IconSource>
+                        <InfoBar.IconSource>
                             <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                        </InfoBar.IconSource-->
+                        </InfoBar.IconSource>
                     </InfoBar>
                     <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_Starting_Digits_Toggle">
                         <ToggleSwitch x:Uid="HideStartingDigitsToggle" IsOn="{x:Bind ViewModel.HideStartingDigits, Mode=TwoWay}" />

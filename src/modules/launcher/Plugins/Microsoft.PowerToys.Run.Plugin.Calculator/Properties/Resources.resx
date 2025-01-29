@@ -167,4 +167,24 @@
   <data name="wox_plugin_calculator_replace_input_description" xml:space="preserve">
     <value>When using direct activation, appending '=' to the expression will replace the input with the calculated result (e.g. '=5*3-2=' will change the query to '=13').</value>
   </data>
+  <data name="wox_plugin_calculator_trig_unit_mode" xml:space="preserve">
+    <value>Trigonometry Unit</value>
+    <comment>Title text for trig unit mode.</comment>
+  </data>
+  <data name="wox_plugin_calculator_trig_unit_mode_description" xml:space="preserve">
+    <value>Specifies the angle unit to use for trigonometry operations</value>
+    <comment>Description text for trig mode setting.</comment>
+  </data>
+  <data name="wox_plugin_calculator_trig_unit_radians" xml:space="preserve">
+    <value>Radians</value>
+    <comment>Text for angle unit.</comment>
+  </data>
+  <data name="wox_plugin_calculator_trig_unit_degrees" xml:space="preserve">
+    <value>Degrees</value>
+    <comment>Text to use for angle unit.</comment>
+  </data>
+  <data name="wox_plugin_calculator_trig_unit_gradians" xml:space="preserve">
+    <value>Gradians</value>
+    <comment>Text for angle unit.</comment>
+  </data>
 </root>
