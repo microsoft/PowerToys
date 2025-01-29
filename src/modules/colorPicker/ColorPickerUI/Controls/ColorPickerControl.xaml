@@ -222,20 +222,17 @@
                     Placement="Top">
                     <Border
                         CornerRadius="10"
+                        BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+                        BorderThickness="1"
+                        Background="{DynamicResource ApplicationBackgroundBrush}"
                         Padding="15">
-                        <Border.Background>
-                            <SolidColorBrush Color="{DynamicResource ApplicationBackgroundColor}" />
-                        </Border.Background>
                         <Grid x:Name="detailsGrid" KeyboardNavigation.TabNavigation="Contained">
-                            <Grid.Background>
-                                <SolidColorBrush Color="{DynamicResource ApplicationBackgroundColor}" />
-                            </Grid.Background>
                             <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="44" />
                             <ColumnDefinition Width="86" />
                             <ColumnDefinition Width="86" />
                             <ColumnDefinition Width="86" />
-                        </Grid.ColumnDefinitions>
+                            </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="8" />
