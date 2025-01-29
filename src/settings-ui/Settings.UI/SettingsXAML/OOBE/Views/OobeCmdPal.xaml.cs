@@ -11,14 +11,14 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
-    public sealed partial class OobeZoomIt : Page
+    public sealed partial class OobeCmdPal : Page
     {
         public OobePowerToysModule ViewModel { get; set; }
 
-        public OobeZoomIt()
+        public OobeCmdPal()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.ZoomIt]);
+            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.CmdPal]);
             DataContext = ViewModel;
         }
 
@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         {
             if (OobeShellPage.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(ZoomItPage));
+                OobeShellPage.OpenMainWindowCallback(typeof(CmdPalPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();
