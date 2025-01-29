@@ -205,13 +205,6 @@ jobs:
     - template: .\steps-restore-nuget.yml
 
   - pwsh: |-
-      & "$(build.sourcesdirectory)\.pipelines\verifyAndSetLatestVCToolsVersion.ps1"
-    displayName: Work around DD-1541167 (VCToolsVersion)
-    ${{ if eq(parameters.useVSPreview, true) }}:
-      env:
-        VCWhereExtraVersionTarget: '-prerelease'
-
-  - pwsh: |-
       & "$(build.sourcesdirectory)\.pipelines\installWiX.ps1"
     displayName: Download and install WiX 3.14 development build
 
