@@ -174,9 +174,8 @@ namespace PTSettingsHelper
             return;
         }
 
-        const bool value = enabled;
-        const size_t buf_size = sizeof(bool);
-        if (RegSetValueExW(key, DataDiagnosticsRegValueName, 0, REG_QWORD, reinterpret_cast<const BYTE*>(&value), buf_size) != ERROR_SUCCESS)
+        const DWORD value = enabled ? 1 : 0;
+        if (RegSetValueExW(key, DataDiagnosticsRegValueName, 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value)) != ERROR_SUCCESS)
         {
             RegCloseKey(key);
             return;

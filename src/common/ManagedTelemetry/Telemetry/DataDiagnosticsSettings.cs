@@ -20,14 +20,14 @@ namespace Microsoft.PowerToys.Telemetry
             try
             {
                 registryValue = Registry.GetValue(DataDiagnosticsRegistryKey, DataDiagnosticsRegistryValueName, 0);
+
+                if (registryValue is not null)
+                {
+                    return (int)registryValue == 1 ? true : false;
+                }
             }
             catch
             {
-            }
-
-            if (registryValue is not null)
-            {
-                return (int)registryValue == 1 ? true : false;
             }
 
             return false;
