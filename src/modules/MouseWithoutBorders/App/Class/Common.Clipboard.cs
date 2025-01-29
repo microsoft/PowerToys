@@ -262,6 +262,10 @@ namespace MouseWithoutBorders
 
             new Task(() =>
             {
+                // SuppressFlow fixes an issue on service mode, where the helper process can't get enough permissions to be started again.
+                // More details can be found on: https://github.com/microsoft/PowerToys/pull/36892
+                using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
                 System.Threading.Thread thread = Thread.CurrentThread;
                 thread.Name = $"{nameof(SendClipboardDataUsingTCP)}.{thread.ManagedThreadId}";
                 Thread.UpdateThreads(thread);
@@ -386,6 +390,10 @@ namespace MouseWithoutBorders
 
                 new Task(() =>
                 {
+                    // SuppressFlow fixes an issue on service mode, where the helper process can't get enough permissions to be started again.
+                    // More details can be found on: https://github.com/microsoft/PowerToys/pull/36892
+                    using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
                     System.Threading.Thread thread = Thread.CurrentThread;
                     thread.Name = $"{nameof(ConnectAndGetData)}.{thread.ManagedThreadId}";
                     Thread.UpdateThreads(thread);

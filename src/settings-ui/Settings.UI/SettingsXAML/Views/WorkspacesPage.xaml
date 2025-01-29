@@ -26,7 +26,11 @@
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    Severity="Informational" />
+                    Severity="Informational">
+                    <InfoBar.IconSource>
+                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                    </InfoBar.IconSource>
+                </InfoBar>
                 <controls:SettingsGroup x:Uid="Workspaces_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
 
                     <tkcontrols:SettingsCard x:Uid="Workspaces_ActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
