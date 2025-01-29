@@ -153,7 +153,9 @@ public partial class InstallPackageCommand : InvokableCommand
                 {
                     downloadText += $"{FormatBytes(progress.BytesDownloaded)} of {FormatBytes(progress.BytesRequired)}";
                     _installBanner.Progress ??= new ProgressState() { IsIndeterminate = false };
-                    ((ProgressState)_installBanner.Progress).ProgressPercent = (uint)(progress.BytesDownloaded / progress.BytesRequired * 100);
+                    var downloaded = (float)progress.BytesDownloaded / (float)progress.BytesRequired;
+                    var percent = downloaded * 100.0f;
+                    ((ProgressState)_installBanner.Progress).ProgressPercent = (uint)percent;
                     _installBanner.Message = downloadText;
                 }
 

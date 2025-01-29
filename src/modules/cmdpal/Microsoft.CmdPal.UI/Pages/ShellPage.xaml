@@ -329,7 +329,7 @@
                         Margin="0,-20,0,0"
                         IsIndeterminate="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.Progress.IsIndeterminate, Mode=OneWay}"
                         Visibility="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.HasProgress, Mode=OneWay}"
-                        Value="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.Progress.ProgressValue, Mode=OneWay}" />
+                        Value="{x:Bind ViewModel.CurrentPage.MostRecentStatusMessage.Progress.ProgressPercent, Mode=OneWay}" />
                     <!--  Margin="0,0,0,6" MaxWidth="200"/>  -->
                 </InfoBar.Content>
             </InfoBar>

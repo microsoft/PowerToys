@@ -37,9 +37,8 @@ public partial class InstallPackageListItem : ListItem
         {
             var description = string.IsNullOrEmpty(metadata.Description) ? metadata.ShortDescription : metadata.Description;
             var detailsBody = $"""
-## {metadata.Publisher}
 
-{metadata.Description}
+{description}
 """;
             IconInfo heroIcon = new(string.Empty);
             var icons = metadata.Icons;
@@ -64,7 +63,7 @@ public partial class InstallPackageListItem : ListItem
 
     private List<IDetailsElement> GetDetailsMetadata(CatalogPackageMetadata metadata)
     {
-        List<IDetailsElement> detailsElements = new();
+        List<IDetailsElement> detailsElements = [];
 
         // key -> {text, url}
         Dictionary<string, (string, string)> simpleData = new()

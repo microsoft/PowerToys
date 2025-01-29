@@ -15,8 +15,6 @@ public partial class ProgressViewModel : ExtensionObjectViewModel
 
     public uint ProgressPercent { get; private set; }
 
-    public double ProgressValue => ProgressPercent / 100.0;
-
     public ProgressViewModel(IProgressState progress, IPageContext context)
         : base(context)
     {
@@ -64,7 +62,6 @@ public partial class ProgressViewModel : ExtensionObjectViewModel
                 break;
             case nameof(ProgressPercent):
                 this.ProgressPercent = model.ProgressPercent;
-                UpdateProperty(nameof(ProgressValue));
                 break;
         }
 
