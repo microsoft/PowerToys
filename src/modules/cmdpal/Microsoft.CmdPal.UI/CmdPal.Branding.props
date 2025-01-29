@@ -9,13 +9,13 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(CommandPaletteBranding)'=='Release'">
-    <ApplicationIcon>Stable\Dev\icon.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\Stable\icon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition="'$(CommandPaletteBranding)'=='Preview'">
-    <ApplicationIcon>Stable\Dev\icon.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\Stable\icon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition="'$(CommandPaletteBranding)'=='Canary'">
-    <ApplicationIcon>Stable\Dev\icon.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\Stable\icon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition="'$(CommandPaletteBranding)'=='' or '$(CommandPaletteBranding)'=='Dev'">
     <ApplicationIcon>Assets\Dev\icon.ico</ApplicationIcon>
