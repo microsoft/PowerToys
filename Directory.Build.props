@@ -22,6 +22,9 @@
     <EnableMSTestRunner>true</EnableMSTestRunner>
     <TestingPlatformCaptureOutput>false</TestingPlatformCaptureOutput>
     <TestingPlatformDotNetTestSupport>true</TestingPlatformDotNetTestSupport>
+
+    <!-- No arm64 agents to run the tests. -->
+    <TestingPlatformDisableCustomTestTarget Condition="'$(Platform)' == 'ARM64'">true</TestingPlatformDisableCustomTestTarget>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
