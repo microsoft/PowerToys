@@ -23,7 +23,7 @@ steps:
       exit 1
     }
     $NEW_DOTNET_ROOT = "$(Agent.ToolsDirectory)\dotnet"
-    & ./dotnet-install.ps1 -Channel "${{parameters.version}}" -Architecture ${{parameters.platform}} -InstallDir $NEW_DOTNET_ROOT
+    & ./dotnet-install.ps1 -Channel "${{parameters.version}}" -InstallDir $NEW_DOTNET_ROOT
     Write-Host "##vso[task.setvariable variable=DOTNET_ROOT]${NEW_DOTNET_ROOT}"
     Write-Host "##vso[task.prependpath]${NEW_DOTNET_ROOT}"
     Remove-Item dotnet-install.ps1 -ErrorAction:Ignore

@@ -146,19 +146,16 @@ jobs:
     parameters:
       sdk: true
       version: '6.0'
-      platform: $(BuildPlatform)
 
   - template: steps-ensure-dotnet-version.yml
     parameters:
       sdk: true
       version: '8.0'
-      platform: $(BuildPlatform)
 
   - template: steps-ensure-dotnet-version.yml
     parameters:
       sdk: true
       version: '9.0'
-      platform: $(BuildPlatform)
 
   - ${{ if eq(parameters.runTests, true) }}:
     - task: VisualStudioTestPlatformInstaller@1
