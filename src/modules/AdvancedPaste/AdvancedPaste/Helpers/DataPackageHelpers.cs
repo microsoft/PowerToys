@@ -22,18 +22,20 @@ namespace AdvancedPaste.Helpers;
 
 internal static class DataPackageHelpers
 {
-    private static readonly Lazy<HashSet<string>> ImageFileTypes = new(GetImageFileTypes());
-
-    private static readonly Lazy<HashSet<string>> AudioFileTypes = new(GetMediaFileTypes("audio"));
-
-    private static readonly Lazy<HashSet<string>> VideoFileTypes = new(GetMediaFileTypes("video"));
-
     private static readonly (string DataFormat, ClipboardFormat ClipboardFormat)[] DataFormats =
     [
         (StandardDataFormats.Text, ClipboardFormat.Text),
         (StandardDataFormats.Html, ClipboardFormat.Html),
         (StandardDataFormats.Bitmap, ClipboardFormat.Image),
     ];
+
+    private static readonly Lazy<(ClipboardFormat Format, HashSet<string> FileTypes)[]> SupportedFileTypes =
+        new(() =>
+        [
+            (ClipboardFormat.Image, GetImageFileTypes()),
+            (ClipboardFormat.Audio, GetMediaFileTypes("audio")),
+            (ClipboardFormat.Video, GetMediaFileTypes("video")),
+        ]);
 
     internal static DataPackage CreateFromText(string text)
     {
@@ -65,19 +67,12 @@ internal static class DataPackageHelpers
             {
                 availableFormats |= ClipboardFormat.File;
 
-                if (ImageFileTypes.Value.Contains(file.FileType))
+                foreach (var (format, fileTypes) in SupportedFileTypes.Value)
                 {
-                    availableFormats |= ClipboardFormat.Image;
-                }
-
-                if (AudioFileTypes.Value.Contains(file.FileType))
-                {
-                    availableFormats |= ClipboardFormat.Audio;
-                }
-
-                if (VideoFileTypes.Value.Contains(file.FileType))
-                {
-                    availableFormats |= ClipboardFormat.Video;
+                    if (fileTypes.Contains(file.FileType))
+                    {
+                        availableFormats |= format;
+                    }
                 }
             }
         }
@@ -228,7 +223,7 @@ internal static class DataPackageHelpers
 
     private static HashSet<string> GetMediaFileTypes(string mediaKind)
     {
-        static string AssocQueryStringValue(NativeMethods.AssocStr assocStr, string extension)
+        static string AssocQueryString(NativeMethods.AssocStr assocStr, string extension)
         {
             uint pcchOut = 0;
 
@@ -242,8 +237,8 @@ internal static class DataPackageHelpers
         var comparison = StringComparison.OrdinalIgnoreCase;
         var extensions = from extension in Registry.ClassesRoot.GetSubKeyNames()
                          where extension.StartsWith('.')
-                         where AssocQueryStringValue(NativeMethods.AssocStr.PerceivedType, extension).Equals(mediaKind, comparison) ||
-                               AssocQueryStringValue(NativeMethods.AssocStr.ContentType, extension).StartsWith($"{mediaKind}/", comparison)
+                         where AssocQueryString(NativeMethods.AssocStr.PerceivedType, extension).Equals(mediaKind, comparison) ||
+                               AssocQueryString(NativeMethods.AssocStr.ContentType, extension).StartsWith($"{mediaKind}/", comparison)
                          select extension;
 
         return extensions.ToHashSet(StringComparer.InvariantCultureIgnoreCase);

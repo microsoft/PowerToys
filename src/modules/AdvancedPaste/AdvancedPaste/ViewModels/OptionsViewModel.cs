@@ -103,7 +103,7 @@ namespace AdvancedPaste.ViewModels
                 }
                 catch (COMException)
                 {
-                    return false; // Window is closed
+                    return false; // window is closed
                 }
             }
         }
@@ -354,8 +354,8 @@ namespace AdvancedPaste.ViewModels
             await ClipboardHelper.TryCopyPasteAsync(package, HideWindow);
             Query = string.Empty;
 
-            // Delete any temp files created. A the delay is needed to ensure the file is not in use by the target application -
-            // for example, when pasting into Explorer, the paste operation will trigger a file copy.
+            // Delete any temp files created. A delay is needed to ensure the file is not in use by the target application -
+            // for example, when pasting onto File Explorer, the paste operation will trigger a file copy.
             _ = Task.Run(() => package.GetView().TryCleanupAfterDelayAsync(TimeSpan.FromSeconds(30)));
         }
 

@@ -101,7 +101,7 @@ public enum PasteFormats
         CanPreview = false,
         SupportedClipboardFormats = ClipboardFormat.Video,
         IPCKey = AdvancedPasteTranscodeAction.PropertyNames.TranscodeToMp4,
-        KernelFunctionDescription = "Takes a video file in the clipboard and transcodes it to MP4.")]
+        KernelFunctionDescription = "Takes a video file in the clipboard and transcodes it to MP4 (H.264/AAC).")]
     TranscodeToMp4,
 
     [PasteFormatMetadata(
