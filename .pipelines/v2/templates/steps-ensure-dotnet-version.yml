@@ -5,8 +5,6 @@ parameters:
 - name: sdk
   type: boolean
   default: false
-- name: platform
-  type: string
 
 # You might be wondering, "Why didn't they use UseDotNet?"
 # Azure Pipelines is practically unmaintained, that's why.
