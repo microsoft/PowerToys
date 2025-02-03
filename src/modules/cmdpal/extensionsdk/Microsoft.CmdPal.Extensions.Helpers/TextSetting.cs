@@ -7,7 +7,7 @@ using System.Text.Json.Nodes;
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class TextSetting : Setting<string>
+public partial class TextSetting : Setting<string>
 {
     public bool Multiline { get; set; }
 
@@ -45,10 +45,7 @@ public class TextSetting : Setting<string>
         };
     }
 
-    public static TextSetting LoadFromJson(JsonObject jsonObject)
-    {
-        return new TextSetting() { Value = jsonObject["value"]?.GetValue<string>() ?? string.Empty };
-    }
+    public static TextSetting LoadFromJson(JsonObject jsonObject) => new() { Value = jsonObject["value"]?.GetValue<string>() ?? string.Empty };
 
     public override void Update(JsonObject payload)
     {
@@ -59,8 +56,5 @@ public class TextSetting : Setting<string>
         }
     }
 
-    public override string ToState()
-    {
-        return $"\"{Key}\": {JsonSerializer.Serialize(Value)}";
-    }
+    public override string ToState() => $"\"{Key}\": {JsonSerializer.Serialize(Value, JsonSerializationContext.Default.String)}";
 }

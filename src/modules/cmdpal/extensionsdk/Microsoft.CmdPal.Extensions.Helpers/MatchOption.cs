@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class MatchOption
+public partial class MatchOption
 {
     /// <summary>
     /// Gets or sets prefix of match char, use for highlight

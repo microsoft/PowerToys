@@ -4,7 +4,7 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class ExtensionHost
+public partial class ExtensionHost
 {
     public static IExtensionHost? Host { get; private set; }
 

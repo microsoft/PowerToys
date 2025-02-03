@@ -10,7 +10,7 @@ namespace Microsoft.CmdPal.Extensions.Helpers;
 
 public sealed class ChoiceSetSetting : Setting<string>
 {
-    public sealed class Choice
+    public partial class Choice
     {
         [JsonPropertyName("value")]
         public string Value { get; set; }
@@ -30,7 +30,7 @@ public sealed class ChoiceSetSetting : Setting<string>
     private ChoiceSetSetting()
         : base()
     {
-        Choices = new();
+        Choices = [];
     }
 
     public ChoiceSetSetting(string key, List<Choice> choices)
@@ -60,10 +60,7 @@ public sealed class ChoiceSetSetting : Setting<string>
         };
     }
 
-    public static ChoiceSetSetting LoadFromJson(JsonObject jsonObject)
-    {
-        return new ChoiceSetSetting() { Value = jsonObject["value"]?.GetValue<string>() ?? string.Empty };
-    }
+    public static ChoiceSetSetting LoadFromJson(JsonObject jsonObject) => new() { Value = jsonObject["value"]?.GetValue<string>() ?? string.Empty };
 
     public override void Update(JsonObject payload)
     {
@@ -74,8 +71,5 @@ public sealed class ChoiceSetSetting : Setting<string>
         }
     }
 
-    public override string ToState()
-    {
-        return $"\"{Key}\": {JsonSerializer.Serialize(Value)}";
-    }
+    public override string ToState() => $"\"{Key}\": {JsonSerializer.Serialize(Value, JsonSerializationContext.Default.String)}";
 }

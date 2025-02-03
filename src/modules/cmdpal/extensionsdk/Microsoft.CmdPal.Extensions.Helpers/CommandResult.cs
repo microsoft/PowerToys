@@ -4,7 +4,7 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class CommandResult : ICommandResult
+public partial class CommandResult : ICommandResult
 {
     public ICommandResultArgs? Args { get; private set; }
 

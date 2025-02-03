@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class StringMatcher
+public partial class StringMatcher
 {
     private readonly MatchOption _defaultMatchOption = new();
 

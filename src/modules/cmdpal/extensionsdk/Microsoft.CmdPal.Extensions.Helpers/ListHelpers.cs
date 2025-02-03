@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class ListHelpers
+public partial class ListHelpers
 {
     // Generate a score for a list item.
     public static int ScoreListItem(string query, ICommandItem listItem)

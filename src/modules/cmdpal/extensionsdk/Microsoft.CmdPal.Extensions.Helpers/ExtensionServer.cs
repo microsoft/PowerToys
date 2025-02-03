@@ -4,12 +4,15 @@
 
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Microsoft.CmdPal.Extensions;
 
-public sealed class ExtensionServer : IDisposable
+public sealed partial class ExtensionServer : IDisposable
 {
-    private readonly HashSet<int> registrationCookies = new();
+    private readonly HashSet<int> registrationCookies = [];
+    private ExtensionInstanceManager? _extensionInstanceManager;
+    private ComWrappers? _comWrappers;
 
     public void RegisterExtension<T>(Func<T> createExtension, bool restrictToMicrosoftExtensionHosts = false)
         where T : IExtension
@@ -21,9 +24,15 @@ public sealed class ExtensionServer : IDisposable
 
         int cookie;
         var clsid = typeof(T).GUID;
+        var wrappedCallback = () => (IExtension)createExtension();
+        _extensionInstanceManager ??= new ExtensionInstanceManager(wrappedCallback, restrictToMicrosoftExtensionHosts, typeof(T).GUID);
+        _comWrappers ??= new StrategyBasedComWrappers();
+
+        var f = _comWrappers.GetOrCreateComInterfaceForObject(_extensionInstanceManager, CreateComInterfaceFlags.None);
+
         var hr = Ole32.CoRegisterClassObject(
             ref clsid,
-            new ExtensionInstanceManager<T>(createExtension, restrictToMicrosoftExtensionHosts),
+            f,
             Ole32.CLSCTX_LOCAL_SERVER,
             Ole32.REGCLS_MULTIPLEUSE | Ole32.REGCLS_SUSPENDED,
             out cookie);
@@ -45,14 +54,12 @@ public sealed class ExtensionServer : IDisposable
     }
 
 #pragma warning disable CA1822 // Mark members as static
-    public void Run()
-#pragma warning restore CA1822 // Mark members as static
-    {
+    public void Run() =>
+
         // TODO : We need to handle lifetime management of the server.
         // For details around ref counting and locking of out-of-proc COM servers, see
         // https://docs.microsoft.com/windows/win32/com/out-of-process-server-implementation-helpers
         Console.ReadLine();
-    }
 
     public void Dispose()
     {
@@ -81,7 +88,7 @@ public sealed class ExtensionServer : IDisposable
 
         // https://docs.microsoft.com/windows/win32/api/combaseapi/nf-combaseapi-coregisterclassobject
         [DllImport(nameof(Ole32))]
-        public static extern int CoRegisterClassObject(ref Guid guid, [MarshalAs(UnmanagedType.IUnknown)] object obj, int context, int flags, out int register);
+        public static extern int CoRegisterClassObject(ref Guid guid, IntPtr obj, int context, int flags, out int register);
 
         // https://docs.microsoft.com/windows/win32/api/combaseapi/nf-combaseapi-coresumeclassobjects
         [DllImport(nameof(Ole32))]

@@ -9,13 +9,11 @@ namespace Microsoft.CmdPal.Extensions.Helpers;
 
 public abstract class Setting<T> : ISettingsForm
 {
-    private readonly string _key;
-
     private static readonly JsonSerializerOptions _jsonSerializerOptions = new() { WriteIndented = true };
 
     public T? Value { get; set; }
 
-    public string Key => _key;
+    public string Key { get; }
 
     public bool IsRequired { get; set; }
 
@@ -28,18 +26,18 @@ public abstract class Setting<T> : ISettingsForm
     protected Setting()
     {
         Value = default;
-        _key = string.Empty;
+        Key = string.Empty;
     }
 
     public Setting(string key, T defaultValue)
     {
-        _key = key;
+        Key = key;
         Value = defaultValue;
     }
 
     public Setting(string key, string label, string description, T defaultValue)
     {
-        _key = key;
+        Key = key;
         Value = defaultValue;
         Label = label;
         Description = description;
@@ -47,15 +45,12 @@ public abstract class Setting<T> : ISettingsForm
 
     public abstract Dictionary<string, object> ToDictionary();
 
-    public string ToDataIdentifier()
-    {
-        return $"\"{_key}\": \"{_key}\"";
-    }
+    public string ToDataIdentifier() => $"\"{Key}\": \"{Key}\"";
 
     public string ToForm()
     {
-        var bodyJson = JsonSerializer.Serialize(ToDictionary(), _jsonSerializerOptions);
-        var dataJson = $"\"{_key}\": \"{_key}\"";
+        var bodyJson = JsonSerializer.Serialize(ToDictionary(), JsonSerializationContext.Default.Dictionary);
+        var dataJson = $"\"{Key}\": \"{Key}\"";
 
         var json = $$"""
 {

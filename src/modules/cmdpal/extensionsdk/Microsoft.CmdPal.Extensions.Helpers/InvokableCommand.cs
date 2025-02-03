@@ -4,7 +4,7 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public abstract class InvokableCommand : Command, IInvokableCommand
+public abstract partial class InvokableCommand : Command, IInvokableCommand
 {
     public virtual ICommandResult Invoke() => CommandResult.KeepOpen();
 

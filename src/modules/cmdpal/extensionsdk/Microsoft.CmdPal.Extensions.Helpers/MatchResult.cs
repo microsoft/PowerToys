@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class MatchResult
+public partial class MatchResult
 {
     public MatchResult(bool success, SearchPrecisionScore searchPrecision)
     {

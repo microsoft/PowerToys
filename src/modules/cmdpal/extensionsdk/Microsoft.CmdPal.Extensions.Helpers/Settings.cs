@@ -10,20 +10,14 @@ namespace Microsoft.CmdPal.Extensions.Helpers;
 
 public sealed class Settings
 {
-    private readonly Dictionary<string, object> _settings = new();
+    private readonly Dictionary<string, object> _settings = [];
     private static readonly JsonSerializerOptions _jsonSerializerOptions = new() { WriteIndented = true };
 
     public event TypedEventHandler<object, Settings>? SettingsChanged;
 
-    public void Add<T>(Setting<T> s)
-    {
-        _settings.Add(s.Key, s);
-    }
+    public void Add<T>(Setting<T> s) => _settings.Add(s.Key, s);
 
-    public T? GetSetting<T>(string key)
-    {
-        return _settings[key] is Setting<T> s ? s.Value : default;
-    }
+    public T? GetSetting<T>(string key) => _settings[key] is Setting<T> s ? s.Value : default;
 
     public bool TryGetSetting<T>(string key, out T? val)
     {
@@ -51,7 +45,8 @@ public sealed class Settings
             .Select(s => s!);
 
         var bodies = string.Join(",", settings
-            .Select(s => JsonSerializer.Serialize(s.ToDictionary(), _jsonSerializerOptions)));
+            .Select(s => JsonSerializer.Serialize(s.ToDictionary(), JsonSerializationContext.Default.Dictionary)));
+
         var datas = string.Join(",", settings.Select(s => s.ToDataIdentifier()));
 
         var json = $$"""
@@ -88,10 +83,7 @@ public sealed class Settings
         return $"{{\n{content}\n}}";
     }
 
-    public IForm[] ToForms()
-    {
-        return [new SettingsForm(this)];
-    }
+    public IForm[] ToForms() => [new SettingsForm(this)];
 
     public void Update(string data)
     {

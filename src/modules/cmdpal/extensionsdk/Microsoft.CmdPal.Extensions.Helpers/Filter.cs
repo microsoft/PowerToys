@@ -4,7 +4,7 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class Filter : IFilter
+public partial class Filter : IFilter
 {
     public IconInfo Icon => throw new NotImplementedException();
 

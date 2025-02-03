@@ -13,6 +13,6 @@ public partial class SelfImmolateCommand : InvokableCommand
     public override ICommandResult Invoke()
     {
         Process.GetCurrentProcess().Kill();
-        return CommandResult.GoHome();
+        return CommandResult.KeepOpen();
     }
 }

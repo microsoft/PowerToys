@@ -147,7 +147,7 @@ internal sealed partial class PostForm : FormContent
 """;
         DataJson = $$"""
 {
-    "postBody": {{JsonSerializer.Serialize(postBody)}},
+    "postBody": {{JsonSerializer.Serialize(postBody, JsonSerializationContext.Default.String)}},
     "replyCard": {
         "title": "Reply",
         "idPrefix": "reply",

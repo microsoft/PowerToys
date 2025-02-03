@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using WinRT;
@@ -10,8 +11,8 @@ using WinRT;
 namespace Microsoft.CmdPal.Extensions;
 
 [ComVisible(true)]
-internal sealed class ExtensionInstanceManager<T> : IClassFactory
-    where T : IExtension
+[GeneratedComClass]
+internal sealed partial class ExtensionInstanceManager : IClassFactory
 {
 #pragma warning disable SA1310 // Field names should not contain underscore
 
@@ -29,19 +30,22 @@ internal sealed class ExtensionInstanceManager<T> : IClassFactory
 
 #pragma warning restore SA1310 // Field names should not contain underscore
 
-    private readonly Func<T> _createExtension;
+    private readonly Func<IExtension> _createExtension;
 
     private readonly bool _restrictToMicrosoftExtensionHosts;
 
-    public ExtensionInstanceManager(Func<T> createExtension, bool restrictToMicrosoftExtensionHosts)
+    private readonly Guid _clsid;
+
+    public ExtensionInstanceManager(Func<IExtension> createExtension, bool restrictToMicrosoftExtensionHosts, Guid clsid)
     {
         _createExtension = createExtension;
         _restrictToMicrosoftExtensionHosts = restrictToMicrosoftExtensionHosts;
+        _clsid = clsid;
     }
 
     public void CreateInstance(
         [MarshalAs(UnmanagedType.Interface)] object pUnkOuter,
-        ref Guid riid,
+        Guid riid,
         out IntPtr ppvObject)
     {
         if (_restrictToMicrosoftExtensionHosts && !IsMicrosoftExtensionHost())
@@ -56,10 +60,12 @@ internal sealed class ExtensionInstanceManager<T> : IClassFactory
             Marshal.ThrowExceptionForHR(CLASS_E_NOAGGREGATION);
         }
 
-        if (riid == typeof(T).GUID || riid == IID_IUnknown)
+        if (riid == _clsid || riid == IID_IUnknown)
         {
             // Create the instance of the .NET object
-            ppvObject = MarshalInspectable<object>.FromManaged(_createExtension());
+            var managed = _createExtension();
+            var ins = MarshalInspectable<object>.FromManaged(managed);
+            ppvObject = ins;
         }
         else
         {
@@ -101,35 +107,22 @@ internal sealed class ExtensionInstanceManager<T> : IClassFactory
         }
 
         var valueStr = new string(value);
-        switch (valueStr)
+        return valueStr switch
         {
-            case "Microsoft.Windows.CmdPal_8wekyb3d8bbwe\0":
-            case "Microsoft.Windows.CmdPal.Canary_8wekyb3d8bbwe\0":
-            case "Microsoft.Windows.CmdPal.Dev_8wekyb3d8bbwe\0":
-            case "Microsoft.Windows.DevHome_8wekyb3d8bbwe\0":
-            case "Microsoft.Windows.DevHome.Canary_8wekyb3d8bbwe\0":
-            case "Microsoft.Windows.DevHome.Dev_8wekyb3d8bbwe\0":
-            case "Microsoft.WindowsTerminal\0":
-            case "Microsoft.WindowsTerminal_8wekyb3d8bbwe\0":
-            case "WindowsTerminalDev_8wekyb3d8bbwe\0":
-            case "Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\0":
-                return true;
-            default:
-                return false;
-        }
+            "Microsoft.Windows.CmdPal_8wekyb3d8bbwe\0" or "Microsoft.Windows.CmdPal.Canary_8wekyb3d8bbwe\0" or "Microsoft.Windows.CmdPal.Dev_8wekyb3d8bbwe\0" or "Microsoft.Windows.DevHome_8wekyb3d8bbwe\0" or "Microsoft.Windows.DevHome.Canary_8wekyb3d8bbwe\0" or "Microsoft.Windows.DevHome.Dev_8wekyb3d8bbwe\0" or "Microsoft.WindowsTerminal\0" or "Microsoft.WindowsTerminal_8wekyb3d8bbwe\0" or "WindowsTerminalDev_8wekyb3d8bbwe\0" or "Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\0" => true,
+            _ => false,
+        };
     }
 }
 
 // https://docs.microsoft.com/windows/win32/api/unknwn/nn-unknwn-iclassfactory
-[ComImport]
-[ComVisible(false)]
+[GeneratedComInterface]
 [Guid("00000001-0000-0000-C000-000000000046")]
-[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-internal interface IClassFactory
+internal partial interface IClassFactory
 {
     void CreateInstance(
         [MarshalAs(UnmanagedType.Interface)] object pUnkOuter,
-        ref Guid riid,
+        Guid riid,
         out IntPtr ppvObject);
 
     void LockServer([MarshalAs(UnmanagedType.Bool)] bool fLock);

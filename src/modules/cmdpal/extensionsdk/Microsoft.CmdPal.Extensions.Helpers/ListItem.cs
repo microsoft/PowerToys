@@ -4,7 +4,7 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class ListItem : CommandItem, IListItem
+public partial class ListItem : CommandItem, IListItem
 {
     private ITag[] _tags = [];
     private IDetails? _details;

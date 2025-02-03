@@ -6,7 +6,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class ListPage : Page, IListPage
+public partial class ListPage : Page, IListPage
 {
     private string _placeholderText = string.Empty;
     private string _searchText = string.Empty;

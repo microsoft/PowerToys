@@ -10,7 +10,7 @@ namespace Microsoft.CmdPal.Extensions.Helpers;
 // asynchronously, so as to not block the extension app while it's being
 // processed in the host app.
 // (also consider this for ItemsChanged in ListPage)
-public class BaseObservable : INotifyPropChanged
+public partial class BaseObservable : INotifyPropChanged
 {
     public event TypedEventHandler<object, PropChangedEventArgs>? PropChanged;
 

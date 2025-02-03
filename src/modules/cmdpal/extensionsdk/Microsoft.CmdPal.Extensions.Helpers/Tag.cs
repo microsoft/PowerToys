@@ -4,7 +4,7 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class Tag : BaseObservable, ITag
+public partial class Tag : BaseObservable, ITag
 {
     private OptionalColor _foreground;
     private OptionalColor _background;

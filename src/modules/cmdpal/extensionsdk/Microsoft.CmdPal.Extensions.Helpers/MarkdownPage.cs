@@ -4,7 +4,7 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class MarkdownPage : Page, IMarkdownPage
+public partial class MarkdownPage : Page, IMarkdownPage
 {
     private IDetails? _details;
 

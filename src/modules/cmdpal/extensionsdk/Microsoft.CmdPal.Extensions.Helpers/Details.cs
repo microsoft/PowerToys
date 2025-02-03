@@ -4,7 +4,7 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class Details : BaseObservable, IDetails
+public partial class Details : BaseObservable, IDetails
 {
     private IconInfo _heroImage = new(string.Empty);
     private string _title = string.Empty;

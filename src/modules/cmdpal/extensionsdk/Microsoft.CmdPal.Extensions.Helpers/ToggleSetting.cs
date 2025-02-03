@@ -32,16 +32,13 @@ public sealed class ToggleSetting : Setting<bool>
             { "title", Label },
             { "id", Key },
             { "label", Description },
-            { "value", JsonSerializer.Serialize(Value) },
+            { "value", JsonSerializer.Serialize(Value, JsonSerializationContext.Default.Boolean) },
             { "isRequired", IsRequired },
             { "errorMessage", ErrorMessage },
         };
     }
 
-    public static ToggleSetting LoadFromJson(JsonObject jsonObject)
-    {
-        return new ToggleSetting() { Value = jsonObject["value"]?.GetValue<bool>() ?? false };
-    }
+    public static ToggleSetting LoadFromJson(JsonObject jsonObject) => new() { Value = jsonObject["value"]?.GetValue<bool>() ?? false };
 
     public override void Update(JsonObject payload)
     {
