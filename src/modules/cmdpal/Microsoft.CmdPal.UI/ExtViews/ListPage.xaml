@@ -35,6 +35,7 @@
         <DataTemplate x:Key="TagTemplate" x:DataType="viewmodels:TagViewModel">
             <cpcontrols:Tag
                 BackgroundColor="{x:Bind Background, Mode=OneWay}"
+                FontSize="12"
                 ForegroundColor="{x:Bind Foreground, Mode=OneWay}"
                 Icon="{x:Bind Icon, Mode=OneWay}"
                 Text="{x:Bind Text, Mode=OneWay}"
@@ -59,6 +60,7 @@
                         Width="20"
                         Height="20"
                         Margin="4,0,4,0"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         SourceKey="{x:Bind Icon, Mode=OneWay}"
                         SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
 
@@ -66,19 +68,18 @@
                         Grid.Column="1"
                         VerticalAlignment="Center"
                         Orientation="Vertical"
-                        Spacing="0">
+                        Spacing="1">
                         <TextBlock
                             VerticalAlignment="Center"
                             CharacterSpacing="12"
                             FontSize="14"
-                            FontWeight="Medium"
-                            Style="{StaticResource CaptionTextBlockStyle}"
+                            FontWeight="SemiBold"
                             Text="{x:Bind Title, Mode=OneWay}"
                             TextTrimming="CharacterEllipsis"
                             TextWrapping="NoWrap" />
                         <TextBlock
                             VerticalAlignment="Center"
-                            Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Style="{StaticResource CaptionTextBlockStyle}"
                             Text="{x:Bind Subtitle, Mode=OneWay}"
                             TextTrimming="CharacterEllipsis"

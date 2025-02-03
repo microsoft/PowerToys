@@ -18,9 +18,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Update="Assets\AppList.scale-100">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Remove="Assets\WinGet.png" />
+    <None Remove="Assets\WinGet.svg" />
   </ItemGroup>
 
   <ItemGroup>

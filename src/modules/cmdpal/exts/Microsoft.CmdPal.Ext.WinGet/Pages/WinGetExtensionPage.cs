@@ -30,7 +30,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
     private IEnumerable<CatalogPackage>? _results;
 
-    public static IconInfo WinGetIcon { get; } = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory.ToString(), "Assets\\AppList.scale-100.png"));
+    public static IconInfo WinGetIcon { get; } = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory.ToString(), "Assets\\WinGet.png"));
 
     public static IconInfo ExtensionsIcon { get; } = new("\uEA86"); // Puzzle
 

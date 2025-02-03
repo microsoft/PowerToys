@@ -48,19 +48,20 @@
             </DataTemplate>
 
             <DataTemplate x:Key="DetailsLinkTemplate" x:DataType="viewModels:DetailsLinkViewModel">
-                <StackPanel Margin="0,8,0,0" Orientation="Vertical">
+                <StackPanel Orientation="Vertical">
                     <TextBlock
-                        FontWeight="Bold"
+                        FontWeight="SemiBold"
                         IsTextSelectionEnabled="True"
                         Text="{x:Bind Key, Mode=OneWay}"
                         TextWrapping="WrapWholeWords" />
                     <TextBlock
-                        Margin="8,8,0,0"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         IsTextSelectionEnabled="True"
                         Text="{x:Bind Text, Mode=OneWay}"
                         TextWrapping="WrapWholeWords"
                         Visibility="{x:Bind IsText, Mode=OneWay}" />
                     <HyperlinkButton
+                        Padding="0"
                         Content="{x:Bind Text, Mode=OneWay}"
                         NavigateUri="{x:Bind Link, Mode=OneWay}"
                         Visibility="{x:Bind IsLink, Mode=OneWay}" />
@@ -74,7 +75,7 @@
                         BorderThickness="0,0,0,2">
                         <TextBlock
                             Margin="-8,0,0,8"
-                            FontWeight="Bold"
+                            FontWeight="SemiBold"
                             IsTextSelectionEnabled="True"
                             Text="{x:Bind Key, Mode=OneWay}"
                             TextWrapping="WrapWholeWords" />
@@ -82,15 +83,14 @@
                 </StackPanel>
             </DataTemplate>
             <DataTemplate x:Key="DetailsTagsTemplate" x:DataType="viewModels:DetailsTagsViewModel">
-                <StackPanel Margin="0,8,0,0" Orientation="Vertical">
+                <StackPanel Orientation="Vertical" Spacing="4">
                     <TextBlock
-                        FontWeight="Bold"
+                        FontWeight="SemiBold"
                         IsTextSelectionEnabled="True"
                         Text="{x:Bind Key, Mode=OneWay}"
                         TextWrapping="WrapWholeWords" />
                     <ItemsRepeater
                         Grid.Column="2"
-                        Margin="8,8,0,0"
                         ItemTemplate="{StaticResource TagTemplate}"
                         ItemsSource="{x:Bind Tags, Mode=OneWay}"
                         Visibility="{x:Bind HasTags, Mode=OneWay}">
@@ -98,11 +98,8 @@
                             <toolkit:WrapLayout HorizontalSpacing="8" VerticalSpacing="8" />
                         </ItemsRepeater.Layout>
                     </ItemsRepeater>
-
                 </StackPanel>
-
             </DataTemplate>
-
         </ResourceDictionary>
     </Page.Resources>
 
@@ -125,91 +122,153 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="44" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
                 <!--  Back button  -->
-                <FontIcon
-                    Margin="14,0,0,0"
-                    HorizontalAlignment="Center"
-                    ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
-                    AutomationProperties.AccessibilityView="Raw"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Glyph="&#xE721;"
-                    Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
-                    <animations:Implicit.ShowAnimations>
-                        <animations:OpacityAnimation
-                            From="0"
-                            To="1.0"
-                            Duration="0:0:0.340" />
-                        <animations:ScaleAnimation
-                            From="0.5"
-                            To="1"
-                            Duration="0:0:0.350" />
-                    </animations:Implicit.ShowAnimations>
-                    <animations:Implicit.HideAnimations>
-                        <animations:OpacityAnimation
-                            From="1.0"
-                            To="0"
-                            Duration="0:0:0.340" />
-                        <animations:ScaleAnimation
-                            From="1"
-                            To="0.5"
-                            Duration="0:0:0.350" />
-                    </animations:Implicit.HideAnimations>
-                </FontIcon>
-
-                <Button
-                    x:Name="BackButton"
-                    Margin="12,0,0,0"
-                    Padding="8"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
-                    Content="{ui:FontIcon Glyph=&#xE72B;,
-                                          FontSize=14}"
-                    FontSize="16"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Style="{StaticResource SubtleButtonStyle}"
-                    Tapped="BackButton_Tapped"
-                    ToolTipService.ToolTip="Back"
-                    Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay}">
-                    <animations:Implicit.ShowAnimations>
-                        <animations:OpacityAnimation
-                            From="0"
-                            To="1.0"
-                            Duration="0:0:0.340" />
-                        <animations:ScaleAnimation
-                            From="0.5"
-                            To="1"
-                            Duration="0:0:0.350" />
-                    </animations:Implicit.ShowAnimations>
-                    <animations:Implicit.HideAnimations>
-                        <animations:OpacityAnimation
-                            From="1.0"
-                            To="0"
-                            Duration="0:0:0.340" />
-                        <animations:ScaleAnimation
-                            From="1"
-                            To="0.5"
-                            Duration="0:0:0.350" />
-                    </animations:Implicit.HideAnimations>
-                </Button>
-
-                <!--  Search box  -->
-                <cpcontrols:SearchBar
-                    x:Name="SearchBox"
-                    Grid.Column="2"
-                    CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
+                <StackPanel Orientation="Horizontal">
+                    <FontIcon
+                        Margin="20,0,4,0"
+                        HorizontalAlignment="Center"
+                        ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
+                        AutomationProperties.AccessibilityView="Raw"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Glyph="&#xE721;"
+                        Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                        <animations:Implicit.ShowAnimations>
+                            <animations:OpacityAnimation
+                                From="0"
+                                To="1.0"
+                                Duration="0:0:0.340" />
+                            <animations:ScaleAnimation
+                                From="0.5"
+                                To="1"
+                                Duration="0:0:0.350" />
+                        </animations:Implicit.ShowAnimations>
+                        <animations:Implicit.HideAnimations>
+                            <animations:OpacityAnimation
+                                From="1.0"
+                                To="0"
+                                Duration="0:0:0.240" />
+                            <animations:ScaleAnimation
+                                From="1"
+                                To="0.5"
+                                Duration="0:0:0.350" />
+                        </animations:Implicit.HideAnimations>
+                    </FontIcon>
+                    <Button
+                        x:Name="BackButton"
+                        Margin="4,0,4,0"
+                        Padding="4"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
+                        Content="{ui:FontIcon Glyph=&#xE76B;,
+                                              FontSize=14}"
+                        FontSize="16"
+                        Style="{StaticResource SubtleButtonStyle}"
+                        Tapped="BackButton_Tapped"
+                        ToolTipService.ToolTip="Back"
+                        Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay}">
+                        <animations:Implicit.ShowAnimations>
+                            <animations:OpacityAnimation
+                                From="0"
+                                To="1.0"
+                                Duration="0:0:0.340" />
+                            <animations:ScaleAnimation
+                                From="0.5"
+                                To="1"
+                                Duration="0:0:0.350" />
+                            <animations:TranslationAnimation
+                                From="16,0,0"
+                                To="0,0,0"
+                                Duration="0:0:0.350" />
+                        </animations:Implicit.ShowAnimations>
+                        <animations:Implicit.HideAnimations>
+                            <animations:OpacityAnimation
+                                From="1.0"
+                                To="0"
+                                Duration="0:0:0.340" />
+                            <animations:ScaleAnimation
+                                From="1"
+                                To="0.5"
+                                Duration="0:0:0.350" />
+                            <animations:TranslationAnimation
+                                From="0,0,0"
+                                To="16,0,0"
+                                Duration="0:0:0.350" />
+                        </animations:Implicit.HideAnimations>
+                    </Button>
+                    <cpcontrols:IconBox
+                        Grid.Column="1"
+                        Width="20"
+                        Margin="4,0,4,0"
+                        VerticalAlignment="Center"
+                        ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        SourceKey="{x:Bind ViewModel.CurrentPage.Icon, Mode=OneWay}"
+                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
+                        Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay}">
+                        <animations:Implicit.ShowAnimations>
+                            <animations:OpacityAnimation
+                                From="0"
+                                To="1.0"
+                                Duration="0:0:0.450" />
+                            <animations:ScaleAnimation
+                                From="0.8"
+                                To="1"
+                                Duration="0:0:0.500" />
+                            <animations:TranslationAnimation
+                                From="8,0,0"
+                                To="0,0,0"
+                                Duration="0:0:0.400" />
+                        </animations:Implicit.ShowAnimations>
+                        <animations:Implicit.HideAnimations>
+                            <animations:OpacityAnimation
+                                From="1.0"
+                                To="0"
+                                Duration="0:0:0.340" />
+                           <animations:ScaleAnimation
+                                From="1"
+                                To="0.8"
+                                Duration="0:0:0.350" />
+                            <animations:TranslationAnimation
+                                From="0,0,0"
+                                To="8,0,0"
+                                Duration="0:0:0.350" />
+                        </animations:Implicit.HideAnimations>
+                    </cpcontrols:IconBox>
+                </StackPanel>
+                <!--  Search box: wrapped in a grid to enable RepositionThemeTransitions  -->
+                <Grid Grid.Column="1" HorizontalAlignment="Stretch">
+                    <cpcontrols:SearchBar x:Name="SearchBox" CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
+                    <Grid.Transitions>
+                        <TransitionCollection>
+                            <RepositionThemeTransition />
+                        </TransitionCollection>
+                    </Grid.Transitions>
+                </Grid>
             </Grid>
 
             <ProgressBar
                 Grid.ColumnSpan="2"
                 VerticalAlignment="Bottom"
                 IsIndeterminate="True"
-                Visibility="{x:Bind ViewModel.CurrentPage.IsLoading, Mode=OneWay}" />
+                Visibility="{x:Bind ViewModel.CurrentPage.IsLoading, Mode=OneWay}">
+                <animations:Implicit.ShowAnimations>
+                    <animations:OpacityAnimation
+                        From="0"
+                        To="1.0"
+                        Duration="0:0:0.340" />
+                </animations:Implicit.ShowAnimations>
+                <animations:Implicit.HideAnimations>
+                    <animations:OpacityAnimation
+                        From="1.0"
+                        To="0"
+                        Duration="0:0:0.340" />
+                </animations:Implicit.HideAnimations>
+            </ProgressBar>
 
             <Grid
                 x:Name="ContentGrid"
@@ -230,14 +289,13 @@
                 <ScrollViewer
                     x:Name="DetailsContent"
                     Grid.Column="1"
-                    Padding="8"
+                    Padding="12"
                     HorizontalAlignment="Stretch"
                     Background="{ThemeResource LayerFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1,0,0,0"
                     Visibility="Collapsed">
                     <Grid>
-
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -258,7 +316,6 @@
                         <TextBlock
                             Grid.Row="1"
                             HorizontalAlignment="Center"
-                            FontSize="20"
                             Style="{StaticResource SubtitleTextBlockStyle}"
                             Text="{x:Bind ViewModel.Details.Title, Mode=OneWay}"
                             TextWrapping="WrapWholeWords"
@@ -266,6 +323,7 @@
 
                         <toolkit:MarkdownTextBlock
                             Grid.Row="2"
+                            Margin="0,12,0,24"
                             Background="Transparent"
                             Header3FontSize="12"
                             Header3FontWeight="Normal"
@@ -276,7 +334,11 @@
                         <ItemsRepeater
                             Grid.Row="3"
                             ItemTemplate="{StaticResource DetailsDataTemplateSelector}"
-                            ItemsSource="{x:Bind ViewModel.Details.Metadata, Mode=OneWay}" />
+                            ItemsSource="{x:Bind ViewModel.Details.Metadata, Mode=OneWay}">
+                            <ItemsRepeater.Layout>
+                                <StackLayout Spacing="8" />
+                            </ItemsRepeater.Layout>
+                        </ItemsRepeater>
                     </Grid>
                 </ScrollViewer>
                 <!--  /DetailsContent  -->
@@ -339,9 +401,7 @@
 
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>
-
                 <VisualState x:Name="DetailsCollapsed" />
-
                 <VisualState x:Name="DetailsVisible">
                     <VisualState.StateTriggers>
                         <StateTrigger IsActive="{x:Bind ViewModel.IsDetailsVisible, Mode=OneWay}" />
@@ -351,7 +411,6 @@
                         <Setter Target="DetailsColumn.Width" Value="2*" />
                     </VisualState.Setters>
                 </VisualState>
-
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
     </Grid>
