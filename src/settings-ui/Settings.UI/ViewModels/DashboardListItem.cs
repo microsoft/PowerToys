@@ -20,6 +20,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string Label { get; set; }
 
+        public bool IsNew { get; set; }
+
         public string Icon { get; set; }
 
         public string ToolTip { get; set; }

@@ -348,17 +348,28 @@
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <Image Width="20" Margin="0,0,0,0">
+                                        <Image
+                                            Grid.Column="0"
+                                            Width="20"
+                                            Margin="0,0,0,0">
                                             <Image.Source>
                                                 <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
                                             </Image.Source>
                                         </Image>
-                                        <TextBlock
+                                        <StackPanel
                                             Grid.Column="1"
                                             VerticalAlignment="Center"
-                                            FontWeight="SemiBold"
-                                            Text="{x:Bind Label, Mode=OneWay}"
-                                            TextTrimming="CharacterEllipsis" />
+                                            Orientation="Horizontal">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                FontWeight="SemiBold"
+                                                Text="{x:Bind Label, Mode=OneWay}"
+                                                TextTrimming="CharacterEllipsis" />
+                                            <InfoBadge
+                                                Margin="4,0,0,0"
+                                                Style="{StaticResource NewInfoBadge}"
+                                                Visibility="{x:Bind IsNew, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+                                        </StackPanel>
                                         <FontIcon
                                             Grid.Column="2"
                                             Width="20"
@@ -440,17 +451,25 @@
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <Image Width="20">
+                                        <Image Grid.Column="0" Width="20">
                                             <Image.Source>
                                                 <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
                                             </Image.Source>
                                         </Image>
-                                        <TextBlock
+                                        <StackPanel
                                             Grid.Column="1"
                                             VerticalAlignment="Center"
-                                            FontWeight="SemiBold"
-                                            Text="{x:Bind Label, Mode=OneWay}"
-                                            TextTrimming="CharacterEllipsis" />
+                                            Orientation="Horizontal">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                FontWeight="SemiBold"
+                                                Text="{x:Bind Label, Mode=OneWay}"
+                                                TextTrimming="CharacterEllipsis" />
+                                            <InfoBadge
+                                                Margin="4,0,0,0"
+                                                Style="{StaticResource NewInfoBadge}"
+                                                Visibility="{x:Bind IsNew, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+                                        </StackPanel>
                                         <FontIcon
                                             Grid.Column="2"
                                             Width="20"

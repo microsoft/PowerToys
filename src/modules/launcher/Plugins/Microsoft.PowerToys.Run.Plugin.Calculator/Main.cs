@@ -13,6 +13,7 @@ using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.Calculator.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.PowerToys.Run.Plugin.Calculator
 {
@@ -212,8 +213,18 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 var optionReplaceInput = settings.AdditionalOptions.FirstOrDefault(x => x.Key == ReplaceInput);
                 replaceInput = optionReplaceInput?.Value ?? replaceInput;
 
-                var optionTrigMode = settings.AdditionalOptions.FirstOrDefault(x => x.Key == TrigMode);
-                trigMode = (CalculateEngine.TrigMode)int.Parse(optionTrigMode.ComboBoxValue.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
+                try
+                {
+                    var optionTrigMode = settings.AdditionalOptions.FirstOrDefault(x => x.Key == TrigMode);
+                    if (optionTrigMode != null)
+                    {
+                        trigMode = (CalculateEngine.TrigMode)int.Parse(optionTrigMode.ComboBoxValue.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Exception("Error while trying to load Trigonometry Mode setting: {ex.Message}", ex, GetType());
+                }
             }
 
             _inputUseEnglishFormat = inputUseEnglishFormat;
