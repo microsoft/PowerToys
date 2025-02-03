@@ -12,7 +12,7 @@ using Microsoft.CmdPal.Ext.WebSearch.Helpers;
 using Microsoft.CmdPal.Ext.WebSearch.Properties;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
-using BrowserInfo = Wox.Plugin.Common.DefaultBrowserInfo;
+using BrowserInfo = Microsoft.CmdPal.Ext.WebSearch.Helpers.DefaultBrowserInfo;
 
 namespace Microsoft.CmdPal.Ext.WebSearch.Pages;
 

@@ -30,7 +30,6 @@
 
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\common\Common.UI\Common.UI.csproj" />
     <ProjectReference Include="..\..\extensionsdk\Microsoft.CmdPal.Extensions.Helpers\Microsoft.CmdPal.Extensions.Helpers.csproj" />
   </ItemGroup>
 

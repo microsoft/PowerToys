@@ -6,8 +6,8 @@ using System;
 using Microsoft.CmdPal.Ext.WebSearch.Helpers;
 using Microsoft.CmdPal.Ext.WebSearch.Properties;
 using Microsoft.CmdPal.Extensions.Helpers;
-using Wox.Infrastructure;
-using BrowserInfo = Wox.Plugin.Common.DefaultBrowserInfo;
+
+using BrowserInfo = Microsoft.CmdPal.Ext.WebSearch.Helpers.DefaultBrowserInfo;
 
 namespace Microsoft.CmdPal.Ext.WebSearch.Commands;
 
@@ -28,7 +28,7 @@ internal sealed partial class SearchWebCommand : InvokableCommand
 
     public override CommandResult Invoke()
     {
-        if (!Helper.OpenCommandInShell(BrowserInfo.Path, BrowserInfo.ArgumentsPattern, $"? {Arguments}"))
+        if (!ShellHelpers.OpenCommandInShell(BrowserInfo.Path, BrowserInfo.ArgumentsPattern, $"? {Arguments}"))
         {
             // TODO GH# 138 --> actually display feedback from the extension somewhere.
             return CommandResult.KeepOpen();

@@ -30,7 +30,7 @@
 
     <ProjectReference Include="..\Exts\Microsoft.CmdPal.Ext.Apps\Microsoft.CmdPal.Ext.Apps.csproj" />
 
-    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
 
   </ItemGroup>
 
