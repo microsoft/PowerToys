@@ -78,5 +78,6 @@ public partial class ActionBarViewModel : ObservableObject,
 
     // InvokeItemCommand is what this will be in Xaml due to source generator
     [RelayCommand]
-    private void InvokeItem(CommandContextItemViewModel item) => WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command));
+    private void InvokeItem(CommandContextItemViewModel item) =>
+        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command, item.Model));
 }

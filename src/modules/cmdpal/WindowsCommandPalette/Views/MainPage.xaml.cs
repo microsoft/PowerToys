@@ -48,10 +48,7 @@ public sealed partial class MainPage : Microsoft.UI.Xaml.Controls.Page
         RootFrame.Navigate(typeof(ListPage), rootListVm, new DrillInNavigationTransitionInfo());
     }
 
-    private void ExtensionService_OnExtensionsChanged(object? sender, EventArgs e)
-    {
-        _ = LoadAllCommands();
-    }
+    private void ExtensionService_OnExtensionsChanged(object? sender, EventArgs e) => _ = LoadAllCommands();
 
     private void HackyBadClearFilter()
     {
@@ -116,7 +113,7 @@ public sealed partial class MainPage : Microsoft.UI.Xaml.Controls.Page
         TryAllowForeground(command);
         if (command is IInvokableCommand invokable)
         {
-            HandleResult(invokable.Invoke());
+            HandleResult(invokable.Invoke(null));
             return;
         }
         else if (command is IListPage listPage)
@@ -236,10 +233,7 @@ public sealed partial class MainPage : Microsoft.UI.Xaml.Controls.Page
         }
     }
 
-    private void RequestGoHomeHandler(object sender, object args)
-    {
-        DoGoHome();
-    }
+    private void RequestGoHomeHandler(object sender, object args) => DoGoHome();
 
     private void DoGoHome()
     {
@@ -254,10 +248,7 @@ public sealed partial class MainPage : Microsoft.UI.Xaml.Controls.Page
         }
     }
 
-    private void AppendLog(string message)
-    {
-        _log += message + "\n";
-    }
+    private void AppendLog(string message) => _log += message + "\n";
 
     private async Task LoadExtensions()
     {

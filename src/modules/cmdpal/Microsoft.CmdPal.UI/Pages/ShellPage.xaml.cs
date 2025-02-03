@@ -132,6 +132,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                         },
                         IFormPage formsPage => new FormsPageViewModel(formsPage, _mainTaskScheduler, host),
                         IMarkdownPage markdownPage => new MarkdownPageViewModel(markdownPage, _mainTaskScheduler, host),
+                        IContentPage contentPage => new ContentPageViewModel(contentPage, _mainTaskScheduler, host),
                         _ => throw new NotSupportedException(),
                     };
 
@@ -145,6 +146,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                             IListPage => typeof(ListPage),
                             IFormPage => typeof(FormsPage),
                             IMarkdownPage => typeof(MarkdownPage),
+                            IContentPage => typeof(ContentPage),
                             _ => throw new NotSupportedException(),
                         },
                         pageViewModel,
@@ -165,8 +167,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             }
             else if (command is IInvokableCommand invokable)
             {
-                // TODO Handle results
-                var result = invokable.Invoke();
+                var result = invokable.Invoke(message.Context);
                 HandleCommandResult(result);
             }
         }

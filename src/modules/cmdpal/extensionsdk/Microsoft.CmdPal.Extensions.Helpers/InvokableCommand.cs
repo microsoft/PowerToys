@@ -4,7 +4,9 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public class InvokableCommand : Command, IInvokableCommand
+public abstract class InvokableCommand : Command, IInvokableCommand
 {
-    public virtual ICommandResult Invoke() => throw new NotImplementedException();
+    public virtual ICommandResult Invoke() => CommandResult.KeepOpen();
+
+    public virtual ICommandResult Invoke(object? sender) => Invoke();
 }

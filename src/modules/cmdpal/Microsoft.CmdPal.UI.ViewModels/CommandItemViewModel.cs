@@ -179,12 +179,13 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
                 break;
             case nameof(Icon):
                 var listIcon = model.Icon;
-                var iconInfo = listIcon != null ? listIcon : Command.Unsafe!.Icon;
+                var iconInfo = listIcon ?? Command.Unsafe!.Icon;
                 Icon = new(iconInfo);
                 Icon.InitializeProperties();
                 break;
 
-                // TODO! MoreCommands array, which needs to also raise HasMoreCommands
+                // TODO GH #360 - make MoreCommands observable
+                // which needs to also raise HasMoreCommands
         }
 
         UpdateProperty(propertyName);

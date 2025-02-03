@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2025-01-08
+last updated: 2025-02-03
 issue id: n/a
 ---
 
@@ -57,9 +57,12 @@ functionality.
         - [Filtering the list](#filtering-the-list)
       - [Markdown Pages](#markdown-pages)
       - [Form Pages](#form-pages)
+      - [Content Pages](#content-pages)
+        - [Markdown Content](#markdown-content)
+        - [Form Content](#form-content)
     - [Other types](#other-types)
       - [`ContextItem`s](#contextitems)
-      - [Icons - `IconInfo` and `IconData`](#icons---iconinfo-and-icondatatype)
+      - [Icons - `IconInfo` and `IconData`](#icons---iconinfo-and-icondata)
       - [`OptionalColor`](#optionalcolor)
       - [`Details`](#details)
       - [`INotifyPropChanged`](#inotifypropchanged)
@@ -80,6 +83,8 @@ functionality.
     - [URI activation](#uri-activation)
     - [Custom "empty list" messages](#custom-empty-list-messages)
   - [Footnotes](#footnotes)
+    - [Generating the `.idl`](#generating-the-idl)
+    - [Adding APIs](#adding-apis)
 
 
 ## Background
@@ -256,7 +261,7 @@ commands won't change over time. These extensions can be cached to save
 resources.
 
 Command providers can opt out of this behavior by setting `Frozen=false` in
-their extension. We'll call these extensions "**fresh, never frozen**". 
+their extension. We'll call these extensions "**fresh, never frozen**".
 
 As some examples:
 * The "Hacker News" extension, only has a single top-level action. Once we load
@@ -265,7 +270,7 @@ As some examples:
 * Similarly for something like the GitHub extension - it's got multiple
   top-level commands (My issues, Issue search, Repo search, etc), but these
   top-level commands never change. This is a **frozen** extension.
-* The "Quick Links" extension has a dynamic list of top-level actions. 
+* The "Quick Links" extension has a dynamic list of top-level actions.
   This is a **fresh** extension.[^3]
 * The "Media Controls" extension only has a single top-level action, but it
   needs to be running to be able to update it's title and icon. So we can't just
@@ -311,18 +316,18 @@ The structure of the data DevPal caches will look something like the following:
 ```
 
 In this data you can see:
-* We cache some basic info about each extension we've seen. This includes 
-  * the Package Family Name (a unique identifier per-app package), 
-  * the COM CLSID for that extension, 
+* We cache some basic info about each extension we've seen. This includes
+  * the Package Family Name (a unique identifier per-app package),
+  * the COM CLSID for that extension,
   * the display name for that extension,
-  * and if that extension is frozen or not. 
+  * and if that extension is frozen or not.
 * We also cache the list of top-level commands for that extension. We'll store
   the basic amount of info we need to recreate that command in the top-level
   list.
 
 On a cold launch, DevPal will do the following:
 
-1. SLOW: First we start up WASDK and XAML. Unavoidable cost. 
+1. SLOW: First we start up WASDK and XAML. Unavoidable cost.
 2. FAST: We load builtin extensions. These are just extensions in DLLs, so
    there's nothing to it.
 3. FAST: We load our cache of extensions from disk, and note which are frozen vs fresh
@@ -342,10 +347,10 @@ On a cold launch, DevPal will do the following:
 5. SLOW: We open the package catalog for more commands
    * Extensions that we've seen before in our cache:
      * If it's fresh, we'll start it, and fill in commands from `TopLevelCommands` into the palette
-     * If it's frozen, we'll leave it be. We've already got stubs for it. 
-   * Extensions we've never seen before: 
+     * If it's frozen, we'll leave it be. We've already got stubs for it.
+   * Extensions we've never seen before:
      * Start it up.
-     * Check if it's fresh or frozen. 
+     * Check if it's fresh or frozen.
      * Call `TopLevelCommands`, and put all of them in the list
      * Create a extension cache entry for that app.
      * If the provider is frozen: we can actually release the
@@ -355,9 +360,9 @@ On a cold launch, DevPal will do the following:
 6. We start a package catalog change watcher to be notified by the OS for
    changes to the list of installed extensions
 
-After 1, we can display the UI. It won't have any commands though, so maybe we should wait. 
+After 1, we can display the UI. It won't have any commands though, so maybe we should wait.
 After 2, we'd have some commands, but nothing from extensions
-After 4, the palette is ready to be used, with all the frozen extension commands. This is probably good enough for most use cases. 
+After 4, the palette is ready to be used, with all the frozen extension commands. This is probably good enough for most use cases.
 
 Most of the time, when the user "launches" devPal, we won't run through this
 whole process. The slowest part of startup is standing up WASDK and WinUI. After
@@ -383,7 +388,7 @@ command), we need to quickly load that app and get the command for it.
 3. Check if the extension is already in the warm extension cache. If it is, we
    recently reheated a command from this provider. We can skip step 4 and go
    straight to step 5
-4. Use the CLSID from the cache to `CoCreateInstance` this extension, and get its `ICommandProvider`.  
+4. Use the CLSID from the cache to `CoCreateInstance` this extension, and get its `ICommandProvider`.
    * If that fails: display an error message.
 5. Try to load the command from the provider. This is done in two steps:
    1. If the cached command had an `id`, try to look up the command with
@@ -393,7 +398,7 @@ command), we need to quickly load that app and get the command for it.
       null): all `TopLevelItems` on that `CommandProvider`.
       * Search through all the returned commands with the same `id` or
         `icon/title/subtitle/name`, and return that one.
-6. If we found the command from the provider, navigate to it or invoke it. 
+6. If we found the command from the provider, navigate to it or invoke it.
 
 ##### Microwaved commands
 
@@ -409,7 +414,7 @@ keep warm at a given time. We'll probably also want to offer an option like
 the memory usage as much.
 
 > [WARNING!]
-> 
+>
 > If your command provider returns a `IFallbackCommandItem`s from
 > `FallbackCommands`, and that provider is marked `frozen`, DevPal will always
 > treat your provider as "fresh". Otherwise, devpal wouldn't be able to call
@@ -428,7 +433,7 @@ that limit of recent commands, we'll release our reference to the COM object for
 that extension, and re-mark commands from it as "stubs". Upon the release of
 that reference, the extension is free to clean itself up. For extensions that
 use the helpers library, they can override  `CommandProvider.Dispose` to do
-cleanup in there.  
+cleanup in there.
 
 ## Installing extensions
 
@@ -490,7 +495,7 @@ anything that a 1p built-in can do.
 The SDK for DevPal is split into two namespaces:
 * `Microsoft.Windows.Run` - This namespace contains the interfaces that
   developers will implement to create extensions for DevPal.
-* `Microsoft.Windows.Run.Extensions` - This namespace contains helper classes
+* `Microsoft.CmdPal.Extensions.Helpers` - This namespace contains helper classes
   that developers can use to make creating extensions easier.
 
 The first is highly abstract, and gives developers total control over the
@@ -540,9 +545,11 @@ enum CommandResultKind {
     Dismiss,    // Reset the palette to the main page and dismiss
     GoHome,     // Go back to the main page, but keep it open
     GoBack,     // Go back one level
-    Hide,       // Keep this page open, but hide the palette. 
+    Hide,       // Keep this page open, but hide the palette.
     KeepOpen,   // Do nothing.
     GoToPage,   // Go to another page. GoToPageArgs will tell you where.
+    ShowToast,  // Display a transient message to the user
+    Confirm,    // Display a confirmation dialog
 };
 
 enum NavigationMode {
@@ -561,13 +568,24 @@ interface IGoToPageArgs requires ICommandResultArgs{
     String PageId { get; };
     NavigationMode NavigationMode { get; };
 }
+interface IToastArgs requires ICommandResultArgs{
+    String Message { get; };
+    ICommandResult Result { get; };
+}
+interface IConfirmationArgs requires ICommandResultArgs{
+    String Title { get; };
+    String Description { get; };
+    ICommand PrimaryCommand { get; };
+    Boolean IsPrimaryCommandCritical { get; };
+}
 
 // This is a "leaf" of the UI. This is something that can be "done" by the user.
 // * A ListPage
 // * the MoreCommands flyout of for a ListItem or a MarkdownPage
 interface IInvokableCommand requires ICommand {
-    ICommandResult Invoke();
+    ICommandResult Invoke(Object sender);
 }
+
 ```
 
 If a developer wants to add a simple action to DevPal, they can create a
@@ -577,7 +595,7 @@ method will be called when the user selects the action in DevPal.
 As a simple example[^1]:
 
 ```cs
-class HackerNewsAction : Microsoft.Windows.Run.Extensions.InvokableCommand {
+class HackerNewsAction : Microsoft.CmdPal.Extensions.Helpers.InvokableCommand {
     public class HackerNewsAction()
     {
         Name = "Hacker News";
@@ -602,6 +620,31 @@ ahead to [Pages](#Pages) for more information on the different types of pages.
 The `Id` property is optional. This can be set but the extension author to
 support more efficient command lookup in
 [`ICommandProvider.GetCommand()`, below](#getcommand).
+
+When `Invoke` is called, the host app will pass in a `sender` object that
+represents the context of where that command was invoked from. This can be
+different types depending on where the command is being used:
+
+* `TopLevelCommands` (and fallbacks)
+  * Sender is the `ICommandItem` for the top-level command that was invoked
+* `IListPage.GetItems`
+  * Sender is the `IListItem` for the list item selected for that command
+* `ICommandItem.MoreCommands` (context menus)
+  * Sender is the `IListItem` which the command was attached to for a list page, or
+  * the `ICommandItem` of the top-level command (if this is a context item on a top level command)
+* `IContentPage.Commands`
+  * Sender is the `IContentPage` itself
+
+The helpers library also exposes a `Invoke()` method on `InvokableCommand` which
+takes no parameters, as a convenience for developers who don't need the `sender`
+object.
+
+Using the `sender` parameter can be useful for big lists of items where the
+actionable information for each item is practically the same. Consider a big
+list of links. An extension developer can implement this as a single
+`IInvokableCommand` that opens a URL based on the `sender` object passed in.
+Then each list item would store the URL to open and the title of the link. This
+creates less overhead for the extension and host to communicate.
 
 #### Results
 
@@ -638,9 +681,29 @@ Use cases for each `CommandResultKind`:
     stay in its current state.
 * `GoToPage` - Navigate to a different page in DevPal. The `GoToPageArgs`
   will specify which page to navigate to.
-  * [TODO!]: Do we actually need this, now that all the commands can be pages?
-    * Does this satisfy "I want to pop the stack, but then push something else
-      onto the stack"? Versus the default which is just "add this to the stack"?
+  * `Push`: The new page gets added to the current navigation stack. Going back
+    from the requested page will take you to the current page.
+  * `GoBack`: Go back one level, then navigate to the page. Going back from the
+    requested page will take you to the page before the current page.
+  * `GoHome`: Clear the back stack, then navigate to the page. Going back from
+    the requested page will take you to the home page (the L0).
+* `ShowToast` - Display a transient desktop-level message to the user. This is
+  especially useful for displaying confirmation that an action took place, when
+  the palette will be closed. Consider the `CopyTextCommand` in the helpers -
+  this command will show a toast with the text "Copied to clipboard", then
+  dismiss the palette.
+  * Once the message is displayed, the palette will then react to the `Result`.
+    In the helpers library, the `ToastArgs`'s default `Result` value is
+    `Dismiss`.
+  * Only one toast can be displayed at a time. If a new toast is requested
+    before the previous one is dismissed, the new toast will replace the old
+    one. This includes if the `Result` of one `IToastArgs` is another
+    `IToastArgs`.
+* `Confirm`: Display a confirmation dialog to the user. This is useful for
+  actions that are destructive or irreversible. The `ConfirmationArgs` will
+  specify the title, and description for the dialog. The primary button of the
+  dialog will activate the `Command`. If `IsPrimaryCommandCritical` is `true`,
+  the primary button will be red, indicating that it is a destructive action.
 
 ### Pages
 
@@ -654,7 +717,7 @@ information that the host application will then use to render the page.
 interface IPage requires ICommand {
     String Title { get; };
     Boolean IsLoading { get; };
-    
+
     OptionalColor AccentColor { get; };
 }
 ```
@@ -663,9 +726,8 @@ When a user selects an action that implements `IPage`, DevPal will navigate
 to that page, pushing it onto the UI stack.
 
 Pages can be one of several types, each detailed below:
-* [List](#List)
-* [Markdown](#Markdown)
-* [Form](#Form)
+* [List](#List-Pages)
+* [Content](#Content-Pages)
 
 If a page returns a null or empty `Title`, DevPal will display the `Name` of the
 `ICommand` instead.
@@ -706,7 +768,7 @@ Lists can be either "static" or "dynamic":
     results - it's the extension's responsibility to filter them.
     * Ex: The GitHub extension may want to allow the user to type `is:issue
       is:open`, then return a list of open issues, without string matching on
-      the text. 
+      the text.
 
 
 ```csharp
@@ -719,7 +781,7 @@ interface ICommandItem requires INotifyPropChanged {
     IconInfo Icon{ get; };
     String Title{ get; };
     String Subtitle{ get; };
-} 
+}
 
 interface ICommandContextItem requires ICommandItem, IContextItem {
     Boolean IsCritical { get; }; // READ: "make this red"
@@ -741,7 +803,7 @@ interface IGridProperties  {
 }
 
 interface IListPage requires IPage, INotifyItemsChanged {
-    // DevPal will be responsible for filtering the list of items, unless the 
+    // DevPal will be responsible for filtering the list of items, unless the
     // class implements IDynamicListPage
     String SearchText { get; };
     String PlaceholderText { get; };
@@ -751,7 +813,7 @@ interface IListPage requires IPage, INotifyItemsChanged {
     Boolean HasMoreItems { get; };
     ICommandItem EmptyContent { get; };
 
-    IListItem[] GetItems();     
+    IListItem[] GetItems();
     void LoadMore();
 }
 
@@ -767,7 +829,7 @@ Lists are comprised of a collection of `IListItems`.
 
 ![Another mockup of the elements of a list item](./list-elements-mock-002.png)
 
-> NOTE: The above diagram is from before Nov 2024. It doesn't properly include the relationship between `ICommandItems` and list items.   
+> NOTE: The above diagram is from before Nov 2024. It doesn't properly include the relationship between `ICommandItems` and list items.
 > A more up-to-date explainer of the elements of the UI can be found in
 > ["Rendering of ICommandItems in Lists and Menus"](#rendering-of-icommanditems-in-lists-and-menus)
 
@@ -787,13 +849,13 @@ the commands for the currently selected item.
 The elements of a ListPage (`IListItem`s) and the context menu
 (`ICommandContextItem`) both share the same base type. Basically, they're both a
 list of things which have:
-* A `ICommand` to invoke or navigate to. 
-* a `Title` which might replace their `Command`'s `Name`, 
-* an `Icon` which might replace their `Command`'s `Icon`, 
+* A `ICommand` to invoke or navigate to.
+* a `Title` which might replace their `Command`'s `Name`,
+* an `Icon` which might replace their `Command`'s `Icon`,
 * A `Subtitle`, which is visible on the list, and a _tooltip_ for a context menu
 * They might also have `MoreCommands`:
-  * For a `IListItem`, this is the context menu. 
-  * For a ContextItem in the context menu, this creates a sub-context menu. 
+  * For a `IListItem`, this is the context menu.
+  * For a ContextItem in the context menu, this creates a sub-context menu.
 
 For more details on the structure of the `MoreCommands` property, see the
 [`ContextItem`s](#contextitems) section below.
@@ -917,21 +979,21 @@ class NewsPost {
     string Poster;
     int Points;
 }
-class LinkAction(NewsPost post) : Microsoft.Windows.Run.Extensions.InvokableCommand {
+class LinkAction(NewsPost post) : Microsoft.CmdPal.Extensions.Helpers.InvokableCommand {
     public string Name => "Open link";
-    public ActionResult Invoke() {
+    public CommandResult Invoke() {
         Process.Start(new ProcessStartInfo(post.Url) { UseShellExecute = true });
-        return ActionResult.KeepOpen;
+        return CommandResult.KeepOpen;
     }
 }
-class CommentAction(NewsPost post) : Microsoft.Windows.Run.Extensions.InvokableCommand {
+class CommentAction(NewsPost post) : Microsoft.CmdPal.Extensions.Helpers.InvokableCommand {
     public string Name => "Open comments";
-    public ActionResult Invoke() {
+    public CommandResult Invoke() {
         Process.Start(new ProcessStartInfo(post.CommentsUrl) { UseShellExecute = true });
-        return ActionResult.KeepOpen;
+        return CommandResult.KeepOpen;
     }
 }
-class NewsListItem(NewsPost post) : Microsoft.Windows.Run.Extensions.ListItem {
+class NewsListItem(NewsPost post) : Microsoft.CmdPal.Extensions.Helpers.ListItem {
     public string Title => post.Title;
     public string Subtitle => post.Poster;
     public IContextItem[] Commands => [
@@ -940,7 +1002,7 @@ class NewsListItem(NewsPost post) : Microsoft.Windows.Run.Extensions.ListItem {
     ];
     public ITag[] Tags => [ new Tag(){ Text=post.Points } ];
 }
-class HackerNewsPage: Microsoft.Windows.Run.Extensions.ListPage {
+class HackerNewsPage: Microsoft.CmdPal.Extensions.Helpers.ListPage {
     public bool Loading => true;
     IListItem[] GetItems() {
         List<NewsItem> items = /* do some RSS feed stuff */;
@@ -987,16 +1049,16 @@ Here's a breakdown of how a dynamic list responds to the CmdPal. In this
 example, we'll use a hypothetical GitHub issue search extension, which allows
 the user to type a query and get a list of issues back.
 
-1. CmdPal loads the `ListPage` from the extension. 
+1. CmdPal loads the `ListPage` from the extension.
 2. It is a `IDynamicListPage`, so the command palette knows not to do any
    host-side filtering.
-3. CmdPal reads the `SearchText` from the ListPage 
+3. CmdPal reads the `SearchText` from the ListPage
    - it returns `is:issue is:open` as initial text
-4. CmdPal reads the `HasMoreItems` from the ListPage 
+4. CmdPal reads the `HasMoreItems` from the ListPage
    - it returns `true`
-5. CmdPal calls `GetItems()` 
-   - the extension returns the first 25 items that match the query. 
-6. User scrolls the page to the bottom 
+5. CmdPal calls `GetItems()`
+   - the extension returns the first 25 items that match the query.
+6. User scrolls the page to the bottom
    - CmdPal calls `GetMore` on the ListPage, to let it know it should start
      fetching more results
 7. The extension raises a `ItemsChanged(40)`, to indicate that it now has 40 items
@@ -1089,7 +1151,7 @@ applied to top-level `IListItem`s:
 * We won't display any context menu commands for these entries
 * We won't display the Details for these entries (nor the context action to show
   details)
-* Icons which are a `IRandomAccessStream` will not work as expected. 
+* Icons which are a `IRandomAccessStream` will not work as expected.
 * If you create a top-level `IListItem` that implements `IFallbackHandler`,
   DevPal will treat your `ICommandProvider` as fresh, never frozen, regardless
   of the value of `Frozen` you set.
@@ -1100,12 +1162,6 @@ on nested pages will all work exactly as expected. -->
 
 #### Markdown Pages
 
-This is a page that displays a block of markdown text. This is useful for
-showing a lot of information in a small space. Markdown provides a rich set of
-simple formatting options.
-
-![](./markdown-mock.png)
-
 ```csharp
 interface IMarkdownPage requires IPage {
     String[] Bodies(); // TODO! should this be an IBody, so we can make it observable?
@@ -1114,75 +1170,8 @@ interface IMarkdownPage requires IPage {
 }
 ```
 
-A markdown page may also have a `Details` property, which will be displayed in
-the same way as the details for a list item. This is useful for showing
-additional information about the page, like a description, a preview of a file,
-or a link to more information.
-
-Similar to the `List` page, the `Commands` property is a list of commands that the
-user can take on the page. These are the commands that will be shown in the "More
-actions" flyout. Unlike the `List` page, the `Commands` property is not
-associated with any specific item on the page, rather, these commands are global
-to the page itself.
-
-An example markdown page for an issue on GitHub:
-
-```cs
-class GitHubIssue {
-    string Title;
-    string Url;
-    string Body;
-    string Author;
-    string[] Tags;
-    string[] AssignedTo;
-}
-class OpenLinkAction(GitHubIssue issue) : Microsoft.Windows.Run.Extensions.InvokableCommand {
-    public string Name => "Open";
-    public ActionResult Invoke() {
-        Process.Start(new ProcessStartInfo(issue.Url) { UseShellExecute = true });
-        return ActionResult.KeepOpen;
-    }
-}
-class GithubIssuePage(GithubIssue issue): Microsoft.Windows.Run.Extensions.MarkdownPage {
-    public bool Loading => true;
-    public string Body() {
-        issue.Body = /* fetch the body from the API */;
-        this.IsLoading = false;
-        return issue.Body;
-    }
-    public IContextItem[] Commands => [ new CommandContextItem(new OpenLinkAction(issue)) ];
-    public IDetails Details() {
-        return new Details(){
-            Title = "",
-            Body = "",
-            Metadata = [
-                new Microsoft.Windows.Run.Extensions.DetailsTags(){
-                    Key = "Author",
-                    Tags = new(){ new Tag(){ Text = issue.Author } }
-                },
-                new Microsoft.Windows.Run.Extensions.DetailsTags(){
-                    Key = "Assigned To",
-                    Tags = issue.AssignedTo.Select((user) => new Tag(){ Text = user }).ToArray()
-                },
-                new Microsoft.Windows.Run.Extensions.DetailsTags(){
-                    Key = "Tags",
-                    Tags = issue.Tags.Select((tag) => new Tag(){ Text = tag }).ToArray()
-                }
-            ]
-        };
-    }
-}
-```
-
 #### Form Pages
 
-A form page allows the user to input data to the extension. This is useful for
-actions that might require additional information from the user. For example:
-imagine a "Send Teams message" action. This action might require the user to
-input the message they want to send, and give the user a dropdown to pick the
-chat to send the message to.
-
-![](./form-page-prototype.png)
 
 ```csharp
 
@@ -1197,7 +1186,120 @@ interface IFormPage requires IPage {
 }
 ```
 
-Form pages are powered by [Adaptive Cards](https://adaptivecards.io/). This
+
+#### Content Pages
+
+Content pages are used for extensions that want to display richer content than
+just a list of commands to the user. These pages are useful for displaying
+things like documents and forms. You can mix and match different types of
+content on a single page, and even nest content within other content.
+
+```csharp
+[uuid("b64def0f-8911-4afa-8f8f-042bd778d088")]
+interface IContent requires INotifyPropChanged {
+}
+
+interface IFormContent requires IContent {
+    String TemplateJson { get; };
+    String DataJson { get; };
+    String StateJson { get; };
+    ICommandResult SubmitForm(String payload);
+}
+
+interface IMarkdownContent requires IContent {
+    String Body { get; };
+}
+
+interface ITreeContent requires IContent, INotifyItemsChanged {
+    IContent RootContent { get; };
+    IContent[] GetChildren();
+}
+
+interface IContentPage requires IPage, INotifyItemsChanged {
+    IContent[] GetContent();
+    IDetails Details { get; };
+    IContextItem[] Commands { get; };
+}
+```
+
+Content pages may also have a `Details` property, which will be displayed in
+the same way as the details for a list item. This is useful for showing
+additional information about the page, like a description, a preview of a file,
+or a link to more information.
+
+Similar to the `List` page, the `Commands` property is a list of commands that the
+user can take on the page. These are the commands that will be shown in the "More
+actions" flyout. Unlike the `List` page, the `Commands` property is not
+associated with any specific item on the page, rather, these commands are global
+to the page itself.
+
+##### Markdown Content
+
+This is a block of content that displays text formatted with Markdown. This is
+useful for showing a lot of information in a small space. Markdown provides a
+rich set of simple formatting options.
+
+![](./markdown-mock.png)
+
+
+An example markdown page for an issue on GitHub:
+
+```cs
+class GitHubIssue {
+    string Title;
+    string Url;
+    string Body;
+    string Author;
+    string[] Tags;
+    string[] AssignedTo;
+}
+class GithubIssuePage: Microsoft.CmdPal.Extensions.Helpers.ContentPage {
+    private readonly MarkdownContent issueBody;
+    public GithubIssuePage(GithubIssue issue)
+    {
+        Commands = [ new CommandContextItem(new Microsoft.CmdPal.Extensions.Helpers.OpenUrlCommand(issue.Url)) ];
+        Details = new Details(){
+            Title = "",
+            Body = "",
+            Metadata = [
+                new Microsoft.CmdPal.Extensions.Helpers.DetailsTags(){
+                    Key = "Author",
+                    Tags = [new Tag(issue.Author)]
+                },
+                new Microsoft.CmdPal.Extensions.Helpers.DetailsTags(){
+                    Key = "Assigned To",
+                    Tags = issue.AssignedTo.Select((user) => new Tag(user)).ToArray()
+                },
+                new Microsoft.CmdPal.Extensions.Helpers.DetailsTags(){
+                    Key = "Tags",
+                    Tags = issue.Tags.Select((tag) => new Tag(tag)).ToArray()
+                }
+            ]
+        };
+
+        issueBody = new MarkdownContent(issue.Body);
+    }
+
+    public override IContent[] GetContent() => [issueBody];
+}
+```
+
+> [!NOTE]
+> A real GitHub extension would likely load the issue body asynchronously. In
+> that case, the page could start a background thread to fetch the content, then
+> raise the ItemsChanged to signal the host to retrieve the new `IContent`.
+
+##### Form Content
+
+Forms allow the user to input data to the extension. This is useful for
+actions that might require additional information from the user. For example:
+imagine a "Send Teams message" action. This action might require the user to
+input the message they want to send, and give the user a dropdown to pick the
+chat to send the message to.
+
+![](./form-page-prototype.png)
+
+Form content is powered by [Adaptive Cards](https://adaptivecards.io/). This
 allows extension developers a rich set of controls to use in their forms. Each
 page can have as many forms as it needs. These forms will be displayed to the
 user as separate "cards", in the order they are returned by the extension.
@@ -1209,7 +1311,6 @@ When the user submits the form, the `SubmitForm` method will be called with the
 JSON payload of the form. The extension is responsible for parsing this payload
 and acting on it.
 
-[TODO!discussion]: Do we want to stick the `Actions` on this page type too? Or does that not make sense?
 
 ### Other types
 
@@ -1288,7 +1389,7 @@ struct OptionalColor
 We also define `OptionalColor` as a helper struct here. Yes, this is also just
 an `IReference<Color>`. However, `IReference` has some weird ownership semantics
 that just make it a pain for something as simple as "maybe this color doesn't
-have a value set". 
+have a value set".
 
 #### `Details`
 
@@ -1317,7 +1418,6 @@ interface ITag {
     OptionalColor Foreground { get; };
     OptionalColor Background { get; };
     String ToolTip { get; };
-    ICommand Command { get; };
 };
 
 [uuid("6a6dd345-37a3-4a1e-914d-4f658a4d583d")]
@@ -1338,6 +1438,9 @@ interface IDetailsTags requires IDetailsData {
 interface IDetailsLink requires IDetailsData {
     Windows.Foundation.Uri Link { get; };
     String Text { get; };
+}
+interface IDetailsCommand requires IDetailsData {
+    ICommand Command { get; };
 }
 [uuid("58070392-02bb-4e89-9beb-47ceb8c3d741")]
 interface IDetailsSeparator requires IDetailsData {}
@@ -1378,7 +1481,7 @@ This is the interface that an extension must implement to provide commands to De
 
 ```csharp
 interface ICommandSettings {
-    IFormPage SettingsPage { get; };
+    IContentPage SettingsPage { get; };
 };
 
 interface IFallbackHandler {
@@ -1409,7 +1512,7 @@ interface ICommandProvider requires Windows.Foundation.IClosable, INotifyItemsCh
 `TopLevelCommands` is the method that DevPal will call to get the list of actions
 that should be shown when the user opens DevPal. These are the commands that will
 allow the user to interact with the rest of your extension. They can be simple
-actions, or they can be pages that the user can navigate to. 
+actions, or they can be pages that the user can navigate to.
 
 `TopLevelCommands` returns a list of `ICommandItem`s. These are basically just a
 simpler form of `IListItem`, which can be displayed even as a stub (as described
@@ -1421,14 +1524,14 @@ something like an extension that might require the user to login before
 accessing certain pages within the extension. Command Providers which are
 `Frozen=true` can also use this event to change their list of cached commands,
 since the only time an extension can raise this event is when it's already
-running. 
+running.
 
 `Id` is only necessary to set if your extension implements multiple providers in
 the same package identity. This is an uncommon scenario which most developers
 shouldn't need to worry about. If you do set `Id`, it should be a stable string
 across package versions. DevPal will use this Id for tracking settings for each
 provider within a package. Changing this string will result in the user's
-settings for your extension being lost.  
+settings for your extension being lost.
 
 #### Fallback commands
 
@@ -1462,7 +1565,7 @@ As an example, here's how a developer might implement a fallback action that
 changes its name to be mOcKiNgCaSe.
 
 ```cs
-public class SpongebotPage : Microsoft.Windows.Run.Extensions.MarkdownPage, IFallbackHandler
+public class SpongebotPage : Microsoft.CmdPal.Extensions.Helpers.MarkdownPage, IFallbackHandler
 {
     // Name, Icon, IPropertyChanged: all those are defined in the MarkdownPage base class
     public SpongebotPage()
@@ -1496,7 +1599,7 @@ internal sealed class SpongebotCommandsProvider : CommandProvider
 {
     public ICommandItem[] TopLevelCommands() => [];
     public IFallbackCommandItem[] FallbackCommands()
-    {        
+    {
         var spongebotPage = new SpongebotPage();
         var listItem = new FallbackCommandItem(spongebotPage);
         // ^ The FallbackCommandItem ctor will automatically set its FallbackHandler to the
@@ -1506,7 +1609,7 @@ internal sealed class SpongebotCommandsProvider : CommandProvider
 }
 ```
 
-`Microsoft.Windows.Run.Extensions.FallbackCommandItem` in the SDK helpers will automatically set
+`Microsoft.CmdPal.Extensions.Helpers.FallbackCommandItem` in the SDK helpers will automatically set
 the `FallbackHandler` property on the `IFallbackCommandItem` to the `Command` it's
 initialized with, if that command implements `IFallbackHandler`. This allows the
 action to directly update itself in response to the query. You may also specify
@@ -1521,7 +1624,7 @@ If an extension's own list page wants to implement a similar fallback mechanism
 - it's free to use `IDynamicListPage` to listen for changes to the query and
 have its own ListItem it updates manually.
 
-> [!IMPORTANT] 
+> [!IMPORTANT]
 > If your extension has top-level `FallbackCommandItem`s, then
 > DevPal will treat your `ICommandProvider` as fresh, never frozen, regardless
 of the value of `Frozen` you set.
@@ -1536,7 +1639,7 @@ that command.
 For command providers that have multiple top-level commands, this can be a
 helpful short-circuit. The extension won't need to construct instances of all
 the `IListItem`s for all its top-level commands. Instead, the extension can just
-instantiate the requested one.  
+instantiate the requested one.
 
 ##### Settings
 
@@ -1585,7 +1688,7 @@ We'll provide default implementations for the following interfaces:
 This will allow developers to quickly create extensions without having to worry
 about implementing every part of the interface. You can see that reference
 implementation in
-`extensionsdk\Microsoft.Windows.Run.Extensions.Lib\DefaultClasses.cs`.
+`extensionsdk\Microsoft.CmdPal.Extensions.Helpers.Lib\DefaultClasses.cs`.
 
 In addition to the default implementations we provide for the interfaces above,
 we should provide a set of helper classes that make it easier for developers to
@@ -1594,7 +1697,7 @@ write extensions.
 For example, we should have something like:
 
 ```cs
-class OpenUrlAction(string targetUrl, ActionResult result) : Microsoft.Windows.Run.Extensions.InvokableCommand {
+class OpenUrlAction(string targetUrl, CommandResult result) : Microsoft.CmdPal.Extensions.Helpers.InvokableCommand {
     public OpenUrlAction()
     {
         Name = "Open";
@@ -1612,7 +1715,7 @@ that no longer do we need to add additional classes for the actions. We just use
 the helper:
 
 ```cs
-class NewsListItem : Microsoft.Windows.Run.Extensions.ListItem {
+class NewsListItem : Microsoft.CmdPal.Extensions.Helpers.ListItem {
     private NewsPost _post;
     public NewsListItem(NewsPost post)
     {
@@ -1629,7 +1732,7 @@ class NewsListItem : Microsoft.Windows.Run.Extensions.ListItem {
     ];
     public ITag[] Tags => [ new Tag(){ Text=post.Poster, new Tag(){ Text=post.Points } } ];
 }
-class HackerNewsPage: Microsoft.Windows.Run.Extensions.ListPage {
+class HackerNewsPage: Microsoft.CmdPal.Extensions.Helpers.ListPage {
     public HackerNewsPage()
     {
         Loading = true;
@@ -1678,7 +1781,7 @@ class MyAppSettings {
     public Helpers.Settings Settings => _settings;
 
     public MyAppSettings() {
-        // Define the structure of your settings here. 
+        // Define the structure of your settings here.
         var onOffSetting = new Helpers.ToggleSetting("onOff", "Enable feature", "This feature will do something cool", true);
         var textSetting = new Helpers.TextSetting("whatever", "Text setting", "This is a text setting", "Default text");
         _settings.Add(onOffSetting);
@@ -1695,11 +1798,11 @@ class MyAppSettings {
         /* You can save the settings to the file here */
         var mySettingsFilePath = /* whatever */;
         string mySettingsJson = mySettings.Settings.GetState();
-        // Or you could raise a event to indicate to the rest of your app that settings have changed. 
+        // Or you could raise a event to indicate to the rest of your app that settings have changed.
     }
 }
 
-class MySettingsPage : Microsoft.Windows.Run.Extensions.FormPage 
+class MySettingsPage : Microsoft.CmdPal.Extensions.Helpers.FormPage
 {
     private readonly MyAppSettings mySettings;
     public MySettingsPage(MyAppSettings s) {
@@ -1707,26 +1810,26 @@ class MySettingsPage : Microsoft.Windows.Run.Extensions.FormPage
         mySettings.Settings.SettingsChanged += SettingsChanged;
     }
     public override IForm[] Forms() {
-        // If you haven't already: 
+        // If you haven't already:
         mySettings.Settings.LoadSavedData();
         return mySettings.Settings.ToForms();
     }
-    
+
     private void SettingsChanged(object sender, Settings args)
     {
         /* Do something with the new settings here */
         var onOff = _settings.GetSetting<bool>("onOff");
         ExtensionHost.LogMessage(new LogMessage() { Message = $"MySettingsPage: Changed the value of onOff to {onOff}" });
 
-        // Possibly even: 
+        // Possibly even:
         mySettings.SaveSettings();
     }
 }
 
 // elsewhere in your app:
 
-MyAppSettings instance = /* Up to you how you want to pass this around. 
-                            Singleton, dependency injection, whatever. */ 
+MyAppSettings instance = /* Up to you how you want to pass this around.
+                            Singleton, dependency injection, whatever. */
 var onOff = instance.Settings.Get("onOff");
 
 ```
@@ -1738,7 +1841,7 @@ var onOff = instance.Settings.Get("onOff");
 <img src="./grid-actions-mock.png" height="300px" /> <img src="./grid-status-loading-mock.png" height="300px" /> <img src="./grid-status-success-mock.png" height="300px" />
 
 Extensions will want to be able to communicate feedback to the user, based on
-what's going on inside the extension. 
+what's going on inside the extension.
 
 Consider a `winget` extension that allows the user to search for and install
 packages. When the user starts an install, the extension should be able to show
@@ -1831,20 +1934,20 @@ When displaying a command context menu item:
 * The text is `ICommandItem.Title ?? ICommandItem.Command.Name`
 * The tooltip is `ICommandItem.Subtitle`
 
-When displaying a `IListItem`'s default `Command` as a context item, we'll make a new 
+When displaying a `IListItem`'s default `Command` as a context item, we'll make a new
 ```cs
-ICommandContextItem(){ 
+ICommandContextItem(){
     Command = ICommandItem.Command,
     MoreCommands = null,
-    Icon = Command.Icon, // use icon from command, not list item 
+    Icon = Command.Icon, // use icon from command, not list item
     Title = Command.Name, // Use command's name, not list item
     Subtitle = IListItem.Title, // Use the title of the list item as the tooltip on the context menu
     IsCritical = false,
 }
 ```
 
-If a `ICommandItem` in a context menu has `MoreCommands`, then activating it will open a submenu with those items. 
-If a `ICommandItem` in a context menu has `MoreCommands` AND a non-null `Command`, then activating it will open a submenu with the `Command` first (following the same rules above for building a context item from a default `Command`), followed by the items in `MoreCommands`. 
+If a `ICommandItem` in a context menu has `MoreCommands`, then activating it will open a submenu with those items.
+If a `ICommandItem` in a context menu has `MoreCommands` AND a non-null `Command`, then activating it will open a submenu with the `Command` first (following the same rules above for building a context item from a default `Command`), followed by the items in `MoreCommands`.
 
 When displaying a page:
 * The title will be `IPage.Title ?? ICommand.Name`
@@ -1875,7 +1978,7 @@ classDiagram
 
     IInvokableCommand --|> ICommand
     class IInvokableCommand  {
-        ICommandResult Invoke()
+        ICommandResult Invoke(object context)
     }
 
     class IForm {
@@ -2028,7 +2131,7 @@ I had originally started to spec this out as:
 ```cs
 interface IInvokableCommandWithParameters requires ICommand {
     ActionParameters Parameters { get; };
-    ActionResult InvokeWithArgs(ActionArguments args);
+    CommandResult InvokeWithArgs(ActionArguments args);
 }
 ```
 
@@ -2042,7 +2145,7 @@ follow - these are not part of the current SDK spec.
 
 > [!NOTE]
 >
-> A thought: what if a action returns a `ActionResult.Entity`, then that takes
+> A thought: what if a action returns a `CommandResult.Entity`, then that takes
 > devpal back home, but leaves the entity in the query box. This would allow for
 > a Quicksilver-like "thing, do" flow. That command would prepopulate the
 > parameters. So we would then filter top-level commands based on things that can
@@ -2050,7 +2153,7 @@ follow - these are not part of the current SDK spec.
 >
 > For example: The user uses the "Search for file" list page. They find the file
 > they're looking for. That file's ListItem has a context item "With
-> {filename}..." that then returns a `ActionResult.Entity` with the file entity.
+> {filename}..." that then returns a `CommandResult.Entity` with the file entity.
 > The user is taken back to the main page, and a file picker badge (with that
 > filename) is at the top of the search box. In that state, the only commands
 > now shown are ones that can accept a File entity. This could be things like
@@ -2101,6 +2204,8 @@ Is that just a `Details` object? A markdown body?
 
 ## Footnotes
 
+### Generating the `.idl`
+
 The `.idl` for this SDK can be generated directly from this file. To do so, run the following command:
 
 ```ps1
@@ -2112,8 +2217,15 @@ The `.idl` for this SDK can be generated directly from this file. To do so, run 
 Or, to generate straight to the place I'm consuming it from:
 
 ```ps1
-.\doc\initial-sdk-spec\generate-interface.ps1 > .\extensionsdk\Microsoft.CmdPal.Extensions\Microsoft.Windows.Run.Extensions.idl
+.\doc\initial-sdk-spec\generate-interface.ps1 > .\extensionsdk\Microsoft.CmdPal.Extensions\Microsoft.CmdPal.Extensions.Helpers.idl
 ```
+
+### Adding APIs
+
+Almost all of the SDK defined here is in terms of interfaces. Unfortunately,
+this prevents us from being able to use `[contract]` attributes to add to the
+interfaces. We'll instead need to rely on the tried-and-true method of adding a
+`IFoo2` when we want to add methods to `IFoo`.
 
 [^1]: In this example, as in other places, I've referenced a
     `Microsoft.DevPal.Extensions.InvokableCommand` class, as the base for that action.

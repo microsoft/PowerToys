@@ -6,38 +6,36 @@ namespace Microsoft.CmdPal.Extensions.Helpers;
 
 public partial class StatusMessage : BaseObservable, IStatusMessage
 {
-    private MessageState _messageState = MessageState.Info;
-
-    private string _message = string.Empty;
-
-    private IProgressState? _progressState;
-
     public string Message
     {
-        get => _message;
+        get;
         set
         {
-            _message = value;
+            field = value;
             OnPropertyChanged(nameof(Message));
         }
     }
 
+= string.Empty;
+
     public MessageState State
     {
-        get => _messageState;
+        get;
         set
         {
-            _messageState = value;
+            field = value;
             OnPropertyChanged(nameof(State));
         }
     }
 
+= MessageState.Info;
+
     public IProgressState? Progress
     {
-        get => _progressState;
+        get;
         set
         {
-            _progressState = value;
+            field = value;
             OnPropertyChanged(nameof(Progress));
         }
     }

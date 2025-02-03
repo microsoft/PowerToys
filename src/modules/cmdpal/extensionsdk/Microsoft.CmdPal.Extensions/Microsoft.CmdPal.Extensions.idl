@@ -22,7 +22,7 @@ namespace Microsoft.CmdPal.Extensions
         String Icon { get; };
         Windows.Storage.Streams.IRandomAccessStreamReference Data { get; };
     };
-    
+
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     runtimeclass IconInfo {
         IconInfo(String iconString);
@@ -78,9 +78,11 @@ namespace Microsoft.CmdPal.Extensions
         Dismiss,    // Reset the palette to the main page and dismiss
         GoHome,     // Go back to the main page, but keep it open
         GoBack,     // Go back one level
-        Hide,       // Keep this page open, but hide the palette. 
+        Hide,       // Keep this page open, but hide the palette.
         KeepOpen,   // Do nothing.
         GoToPage,   // Go to another page. GoToPageArgs will tell you where.
+        ShowToast,  // Display a transient message to the user
+        Confirm,    // Display a confirmation dialog
     };
     
     enum NavigationMode {
@@ -102,14 +104,27 @@ namespace Microsoft.CmdPal.Extensions
         String PageId { get; };
         NavigationMode NavigationMode { get; };
     }
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    interface IToastArgs requires ICommandResultArgs{
+        String Message { get; };
+        ICommandResult Result { get; };
+    }
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    interface IConfirmationArgs requires ICommandResultArgs{
+        String Title { get; };
+        String Description { get; };
+        ICommand PrimaryCommand { get; };
+        Boolean IsPrimaryCommandCritical { get; };
+    }
     
     // This is a "leaf" of the UI. This is something that can be "done" by the user.
     // * A ListPage
     // * the MoreCommands flyout of for a ListItem or a MarkdownPage
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     interface IInvokableCommand requires ICommand {
-        ICommandResult Invoke();
+        ICommandResult Invoke(Object sender);
     }
+    
     
     [uuid("ef5db50c-d26b-4aee-9343-9f98739ab411")]
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
@@ -153,7 +168,6 @@ namespace Microsoft.CmdPal.Extensions
         OptionalColor Foreground { get; };
         OptionalColor Background { get; };
         String ToolTip { get; };
-        ICommand Command { get; };
     };
     
     [uuid("6a6dd345-37a3-4a1e-914d-4f658a4d583d")]
@@ -179,6 +193,10 @@ namespace Microsoft.CmdPal.Extensions
     interface IDetailsLink requires IDetailsData {
         Windows.Foundation.Uri Link { get; };
         String Text { get; };
+    }
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    interface IDetailsCommand requires IDetailsData {
+        ICommand Command { get; };
     }
     [uuid("58070392-02bb-4e89-9beb-47ceb8c3d741")]
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
@@ -231,7 +249,7 @@ namespace Microsoft.CmdPal.Extensions
     interface IPage requires ICommand {
         String Title { get; };
         Boolean IsLoading { get; };
-        
+    
         OptionalColor AccentColor { get; };
     }
     
@@ -246,7 +264,7 @@ namespace Microsoft.CmdPal.Extensions
         IconInfo Icon{ get; };
         String Title{ get; };
         String Subtitle{ get; };
-    } 
+    }
     
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     interface ICommandContextItem requires ICommandItem, IContextItem {
@@ -273,7 +291,7 @@ namespace Microsoft.CmdPal.Extensions
     
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     interface IListPage requires IPage, INotifyItemsChanged {
-        // DevPal will be responsible for filtering the list of items, unless the 
+        // DevPal will be responsible for filtering the list of items, unless the
         // class implements IDynamicListPage
         String SearchText { get; };
         String PlaceholderText { get; };
@@ -283,7 +301,7 @@ namespace Microsoft.CmdPal.Extensions
         Boolean HasMoreItems { get; };
         ICommandItem EmptyContent { get; };
     
-        IListItem[] GetItems();     
+        IListItem[] GetItems();
         void LoadMore();
     }
     
@@ -312,9 +330,40 @@ namespace Microsoft.CmdPal.Extensions
         IForm[] Forms();
     }
     
+    [uuid("b64def0f-8911-4afa-8f8f-042bd778d088")]
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    interface IContent requires INotifyPropChanged {
+    }
+    
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    interface IFormContent requires IContent {
+        String TemplateJson { get; };
+        String DataJson { get; };
+        String StateJson { get; };
+        ICommandResult SubmitForm(String payload);
+    }
+    
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    interface IMarkdownContent requires IContent {
+        String Body { get; };
+    }
+    
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    interface ITreeContent requires IContent, INotifyItemsChanged {
+        IContent RootContent { get; };
+        IContent[] GetChildren();
+    }
+    
+    [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
+    interface IContentPage requires IPage, INotifyItemsChanged {
+        IContent[] GetContent();
+        IDetails Details { get; };
+        IContextItem[] Commands { get; };
+    }
+    
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]
     interface ICommandSettings {
-        IFormPage SettingsPage { get; };
+        IContentPage SettingsPage { get; };
     };
     
     [contract(Microsoft.CmdPal.Extensions.ExtensionsContract, 1)]

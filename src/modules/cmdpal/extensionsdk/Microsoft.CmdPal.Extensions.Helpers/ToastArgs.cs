@@ -4,9 +4,9 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public partial class GoToPageArgs : IGoToPageArgs
+public partial class ToastArgs : IToastArgs
 {
-    public required string PageId { get; set; }
+    public string? Message { get; set; }
 
-    public NavigationMode NavigationMode { get; set; } = NavigationMode.Push;
+    public ICommandResult? Result { get; set; } = CommandResult.Dismiss();
 }

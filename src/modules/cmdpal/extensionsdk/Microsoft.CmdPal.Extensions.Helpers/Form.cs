@@ -4,7 +4,7 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public abstract class Form : IForm
+public abstract partial class Form : IForm
 {
     public virtual string Data { get; set; } = string.Empty;
 

@@ -3,14 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace PokedexExtension;
 
-[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]
-[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "This is sample code")]
 public class Pokemon
 {
     public int Number { get; set; }
@@ -21,6 +20,8 @@ public class Pokemon
 
     public string IconUrl => $"https://serebii.net/pokedex-sv/icon/new/{Number:D3}.png";
 
+    public string SerebiiUrl => $"https://serebii.net/pokedex-sv/{Number:D3}.shtml";
+
     public Pokemon(int number, string name, List<string> types)
     {
         Number = number;
@@ -29,17 +30,42 @@ public class Pokemon
     }
 }
 
-[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]
-internal sealed partial class PokemonPage : NoOpCommand
+internal sealed partial class OpenPokemonCommand : InvokableCommand
 {
-    public PokemonPage(Pokemon pokemon)
+    public OpenPokemonCommand()
     {
-        Name = pokemon.Name;
-        Icon = new(pokemon.IconUrl);
+        Name = "Open";
+    }
+
+    public override ICommandResult Invoke(object sender)
+    {
+        if (sender is PokemonListItem item)
+        {
+            var pokemon = item.Pokemon;
+            Process.Start(new ProcessStartInfo(pokemon.SerebiiUrl) { UseShellExecute = true });
+        }
+
+        return CommandResult.KeepOpen();
     }
 }
 
-[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]
+internal sealed partial class PokemonListItem : ListItem
+{
+    private static readonly OpenPokemonCommand _command = new();
+
+    public Pokemon Pokemon { get; private set; }
+
+    public PokemonListItem(Pokemon p)
+        : base(_command)
+    {
+        Pokemon = p;
+        Title = Pokemon.Name;
+        Icon = new(Pokemon.IconUrl);
+        Subtitle = $"#{Pokemon.Number}";
+        Tags = Pokemon.Types.Select(t => new Tag() { Text = t, Background = PokedexExtensionPage.GetColorForType(t) }).ToArray();
+    }
+}
+
 internal sealed partial class PokedexExtensionPage : ListPage
 {
     private readonly List<Pokemon> _kanto =
@@ -448,14 +474,7 @@ internal sealed partial class PokedexExtensionPage : ListPage
 
     public override IListItem[] GetItems() => _kanto.AsEnumerable().Concat(_johto.AsEnumerable()).Concat(_hoenn.AsEnumerable()).Select(GetPokemonListItem).ToArray();
 
-    private static ListItem GetPokemonListItem(Pokemon pokemon)
-    {
-        return new ListItem(new PokemonPage(pokemon))
-        {
-            Subtitle = $"#{pokemon.Number}",
-            Tags = pokemon.Types.Select(t => new Tag() { Text = t, Background = GetColorForType(t) }).ToArray(),
-        };
-    }
+    private static ListItem GetPokemonListItem(Pokemon pokemon) => new PokemonListItem(pokemon);
 
     // Dictionary mapping Pokémon types to their corresponding colors
     private static readonly Dictionary<string, OptionalColor> TypeColors = new()

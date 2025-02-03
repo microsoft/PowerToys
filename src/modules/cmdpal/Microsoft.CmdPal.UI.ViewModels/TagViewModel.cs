@@ -33,7 +33,6 @@ public partial class TagViewModel(ITag _tag, IPageContext context) : ExtensionOb
             return;
         }
 
-        Command = new(model.Command);
         Text = model.Text;
         Foreground = model.Foreground;
         Background = model.Background;

@@ -13,30 +13,30 @@ namespace Microsoft.CmdPal.UI;
 /// <summary>
 /// An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
-public sealed partial class MarkdownPage : Page
+public sealed partial class ContentPage : Page
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
 
-    public MarkdownPageViewModel? ViewModel
+    public ContentPageViewModel? ViewModel
     {
-        get => (MarkdownPageViewModel?)GetValue(ViewModelProperty);
+        get => (ContentPageViewModel?)GetValue(ViewModelProperty);
         set => SetValue(ViewModelProperty, value);
     }
 
     // Using a DependencyProperty as the backing store for ViewModel.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty ViewModelProperty =
-        DependencyProperty.Register(nameof(ViewModel), typeof(MarkdownPageViewModel), typeof(FormsPage), new PropertyMetadata(null));
+        DependencyProperty.Register(nameof(ViewModel), typeof(ContentPageViewModel), typeof(FormsPage), new PropertyMetadata(null));
 
-    public MarkdownPage()
+    public ContentPage()
     {
         this.InitializeComponent();
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
-        if (e.Parameter is MarkdownPageViewModel mdpvm)
+        if (e.Parameter is ContentPageViewModel vm)
         {
-            ViewModel = mdpvm;
+            ViewModel = vm;
         }
 
         base.OnNavigatedTo(e);

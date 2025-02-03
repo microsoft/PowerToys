@@ -4,9 +4,7 @@
 
 namespace Microsoft.CmdPal.Extensions.Helpers;
 
-public partial class GoToPageArgs : IGoToPageArgs
+public partial class DetailsCommand : IDetailsCommand
 {
-    public required string PageId { get; set; }
-
-    public NavigationMode NavigationMode { get; set; } = NavigationMode.Push;
+    public ICommand? Command { get; set; }
 }

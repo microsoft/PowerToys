@@ -12,7 +12,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class ListItemViewModel(IListItem model, IPageContext context)
     : CommandItemViewModel(new(model), context)
 {
-    private readonly ExtensionObject<IListItem> _listItemModel = new(model);
+    public ExtensionObject<IListItem> Model { get; } = new(model);
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -33,7 +33,7 @@ public partial class ListItemViewModel(IListItem model, IPageContext context)
     {
         base.InitializeProperties();
 
-        var li = _listItemModel.Unsafe;
+        var li = Model.Unsafe;
         if (li == null)
         {
             return; // throw?
@@ -67,7 +67,7 @@ public partial class ListItemViewModel(IListItem model, IPageContext context)
     {
         base.FetchProperty(propertyName);
 
-        var model = this._listItemModel.Unsafe;
+        var model = this.Model.Unsafe;
         if (model == null)
         {
             return; // throw?
@@ -108,7 +108,7 @@ public partial class ListItemViewModel(IListItem model, IPageContext context)
 
     public override string ToString() => $"{Name} ListItemViewModel";
 
-    public override bool Equals(object? obj) => obj is ListItemViewModel vm && vm._listItemModel.Equals(this._listItemModel);
+    public override bool Equals(object? obj) => obj is ListItemViewModel vm && vm.Model.Equals(this.Model);
 
-    public override int GetHashCode() => _listItemModel.GetHashCode();
+    public override int GetHashCode() => Model.GetHashCode();
 }

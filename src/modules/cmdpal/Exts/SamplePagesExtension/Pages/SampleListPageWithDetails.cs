@@ -12,8 +12,8 @@ internal sealed partial class SampleListPageWithDetails : ListPage
 {
     public SampleListPageWithDetails()
     {
-        Icon = new(string.Empty);
-        Name = "Sample List Page with Details";
+        Icon = new("\uE8A0");
+        Name = Title = "Sample List Page with Details";
         this.ShowDetails = true;
     }
 

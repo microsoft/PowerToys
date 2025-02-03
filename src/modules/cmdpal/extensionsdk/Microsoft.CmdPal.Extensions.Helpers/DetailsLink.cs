@@ -9,4 +9,23 @@ public partial class DetailsLink : IDetailsLink
     public Uri? Link { get; set; }
 
     public string Text { get; set; } = string.Empty;
+
+    public DetailsLink()
+    {
+    }
+
+    public DetailsLink(string url)
+        : this(url, url)
+    {
+    }
+
+    public DetailsLink(string url, string text)
+    {
+        if (Uri.TryCreate(url, default(UriCreationOptions), out var newUri))
+        {
+            Link = newUri;
+        }
+
+        Text = text;
+    }
 }
