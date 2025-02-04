@@ -173,7 +173,6 @@
                 <Button.Content>
                     <TextBlock
                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                        FontSize="20"
                         Text="&#xE8C8;" />
                 </Button.Content>
             </Button>

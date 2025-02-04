@@ -22,24 +22,25 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Button Height="36"
-        VerticalAlignment="Top"
-        AutomationProperties.Name="{x:Static p:Resources.Pick_color}"
-        Command="{Binding OpenColorPickerCommand}"
-        TabIndex="0"
-        ToolTipService.ToolTip="{x:Static p:Resources.Pick_color}">
+                    VerticalAlignment="Top"
+                    AutomationProperties.Name="{x:Static p:Resources.Pick_color}"
+                    Command="{Binding OpenColorPickerCommand}"
+                    TabIndex="0"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Pick_color}">
 
                 <StackPanel Orientation="Horizontal">
                     <TextBlock
-                        FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                        Text="&#xef3c;"/>
-        
-        <!-- The label text -->
-        <TextBlock Margin="8,0,0,0"
-                   Text="{x:Static p:Resources.New_Label}"
-                   VerticalAlignment="Center" />
-    </StackPanel>
-            </Button>
+                            Margin="0,4,0,0"
+                            FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                            Text="&#xef3c;"/>
 
+                    <!-- The label text -->
+                    <TextBlock Margin="8,0,0,0"
+                            Text="{x:Static p:Resources.New_Label}"
+                            VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+            
             <ListView
                 x:Name="HistoryColors"
                 Grid.Column="1"
@@ -278,8 +279,9 @@
             Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToInvertedVisibilityConverter}}">
             <TextBlock 
                 FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                FontSize="40"
-                Text="&#xE74D;" />
+                HorizontalAlignment="Center"
+                FontSize="36"
+                Text="&#xEF3C;" />
             <TextBlock
                 Margin="24,16,24,16"
                 HorizontalAlignment="Center"
