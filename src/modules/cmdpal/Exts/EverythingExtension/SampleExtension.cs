@@ -16,7 +16,7 @@ public sealed partial class SampleExtension : IExtension, IDisposable
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
 
-    private readonly EverythingExtensionActionsProvider _provider = new();
+    private readonly EverythingExtensionCommandsProvider _provider = new();
 
     public SampleExtension(ManualResetEvent extensionDisposedEvent)
     {

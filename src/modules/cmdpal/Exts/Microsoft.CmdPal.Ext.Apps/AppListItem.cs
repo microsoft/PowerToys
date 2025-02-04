@@ -14,7 +14,7 @@ internal sealed partial class AppListItem : ListItem
     private static readonly IconInfo _openPathIcon = new("\ue838");
 
     public AppListItem(AppItem app)
-        : base(new AppAction(app))
+        : base(new AppCommand(app))
     {
         _app = app;
         Title = app.Name;
@@ -33,7 +33,7 @@ internal sealed partial class AppListItem : ListItem
             // Win32 exe or other non UWP app
             MoreCommands = [
                 new CommandContextItem(
-                    new OpenPathAction(app.DirPath)
+                    new OpenPathCommand(app.DirPath)
                     {
                         Name = "Open location",
                         Icon = _openPathIcon,

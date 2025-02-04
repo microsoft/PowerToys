@@ -10,8 +10,8 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ActionBarViewModel : ObservableObject,
-    IRecipient<UpdateActionBarMessage>
+public partial class CommandBarViewModel : ObservableObject,
+    IRecipient<UpdateCommandBarMessage>
 {
     public ListItemViewModel? SelectedItem
     {
@@ -25,15 +25,15 @@ public partial class ActionBarViewModel : ObservableObject,
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasPrimaryCommand))]
-    public partial CommandItemViewModel? PrimaryAction { get; set; }
+    public partial CommandItemViewModel? PrimaryCommand { get; set; }
 
-    public bool HasPrimaryCommand => PrimaryAction != null && PrimaryAction.ShouldBeVisible;
+    public bool HasPrimaryCommand => PrimaryCommand != null && PrimaryCommand.ShouldBeVisible;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSecondaryCommand))]
-    public partial CommandItemViewModel? SecondaryAction { get; set; }
+    public partial CommandItemViewModel? SecondaryCommand { get; set; }
 
-    public bool HasSecondaryCommand => SecondaryAction != null;
+    public bool HasSecondaryCommand => SecondaryCommand != null;
 
     [ObservableProperty]
     public partial bool ShouldShowContextMenu { get; set; } = false;
@@ -42,26 +42,26 @@ public partial class ActionBarViewModel : ObservableObject,
     public partial PageViewModel? CurrentPage { get; set; }
 
     [ObservableProperty]
-    public partial ObservableCollection<CommandContextItemViewModel> ContextActions { get; set; } = [];
+    public partial ObservableCollection<CommandContextItemViewModel> ContextCommands { get; set; } = [];
 
-    public ActionBarViewModel()
+    public CommandBarViewModel()
     {
-        WeakReferenceMessenger.Default.Register<UpdateActionBarMessage>(this);
+        WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
     }
 
-    public void Receive(UpdateActionBarMessage message) => SelectedItem = message.ViewModel;
+    public void Receive(UpdateCommandBarMessage message) => SelectedItem = message.ViewModel;
 
     private void SetSelectedItem(ListItemViewModel? value)
     {
         if (value != null)
         {
-            PrimaryAction = value;
-            SecondaryAction = value.SecondaryCommand;
+            PrimaryCommand = value;
+            SecondaryCommand = value.SecondaryCommand;
 
             if (value.MoreCommands.Count > 1)
             {
                 ShouldShowContextMenu = true;
-                ContextActions = [.. value.AllCommands];
+                ContextCommands = [.. value.AllCommands];
             }
             else
             {
@@ -70,8 +70,8 @@ public partial class ActionBarViewModel : ObservableObject,
         }
         else
         {
-            PrimaryAction = null;
-            SecondaryAction = null;
+            PrimaryCommand = null;
+            SecondaryCommand = null;
             ShouldShowContextMenu = false;
         }
     }

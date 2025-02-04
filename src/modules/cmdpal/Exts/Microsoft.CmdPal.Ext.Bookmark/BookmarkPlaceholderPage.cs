@@ -16,7 +16,7 @@ internal sealed partial class BookmarkPlaceholderPage : FormPage
     public BookmarkPlaceholderPage(string name, string url, string type)
     {
         Name = name;
-        Icon = new(UrlAction.IconFromUrl(url, type));
+        Icon = new(UrlCommand.IconFromUrl(url, type));
         _bookmarkPlaceholder = new BookmarkPlaceholderForm(name, url, type);
     }
 }

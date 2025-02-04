@@ -8,19 +8,19 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace MediaControlsExtension;
 
-public partial class MediaActionsProvider : CommandProvider
+public partial class MediaCommandsProvider : CommandProvider
 {
-    public MediaActionsProvider()
+    public MediaCommandsProvider()
     {
-        DisplayName = "Media controls actions";
+        DisplayName = "Media controls commands";
     }
 
-    private readonly CommandItem[] _actions = [
+    private readonly CommandItem[] _commands = [
         new MediaListItem()
     ];
 
     public override CommandItem[] TopLevelCommands()
     {
-        return _actions;
+        return _commands;
     }
 }

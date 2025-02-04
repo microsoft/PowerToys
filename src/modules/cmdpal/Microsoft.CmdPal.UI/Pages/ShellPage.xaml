@@ -229,7 +229,7 @@
                                 From="1.0"
                                 To="0"
                                 Duration="0:0:0.340" />
-                           <animations:ScaleAnimation
+                            <animations:ScaleAnimation
                                 From="1"
                                 To="0.8"
                                 Duration="0:0:0.350" />
@@ -397,7 +397,7 @@
             </InfoBar>
         </StackPanel>
 
-        <cpcontrols:ActionBar Grid.Row="1" CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
+        <cpcontrols:CommandBar Grid.Row="1" CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
 
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>

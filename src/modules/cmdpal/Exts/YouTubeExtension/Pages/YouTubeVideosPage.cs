@@ -9,11 +9,11 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
-using YouTubeExtension.Actions;
+using YouTubeExtension.Commands;
+using YouTubeExtension.Helper;
 
 namespace YouTubeExtension.Pages;
 
@@ -26,23 +26,17 @@ internal sealed partial class YouTubeVideosPage : DynamicListPage
         this.ShowDetails = true;
     }
 
-    public override void UpdateSearchText(string oldSearch, string newSearch)
-    {
-        RaiseItemsChanged(0); // 0 is bodgy
-    }
+    public override void UpdateSearchText(string oldSearch, string newSearch) => RaiseItemsChanged(0); // 0 is bodgy
 
-    public override IListItem[] GetItems()
-    {
-        return DoGetItems(SearchText).GetAwaiter().GetResult(); // Fetch and await the task synchronously
-    }
+    public override IListItem[] GetItems() => DoGetItems(SearchText).GetAwaiter().GetResult(); // Fetch and await the task synchronously
 
     private async Task<IListItem[]> DoGetItems(string query)
     {
         // Fetch YouTube videos based on the query
-        List<YouTubeVideo> items = await GetYouTubeVideos(query);
+        var items = await GetYouTubeVideos(query);
 
         // Create a section and populate it with the video results
-        var section = items.Select(video => new ListItem(new OpenVideoLinkAction(video.Link))
+        var section = items.Select(video => new ListItem(new OpenVideoLinkCommand(video.Link))
         {
             Title = video.Title,
             Subtitle = $"{video.Channel}",
@@ -58,7 +52,7 @@ internal sealed partial class YouTubeVideosPage : DynamicListPage
                                }
                         ],
             MoreCommands = [
-                    new CommandContextItem(new OpenChannelLinkAction(video.ChannelUrl)),
+                    new CommandContextItem(new OpenChannelLinkCommand(video.ChannelUrl)),
                     new CommandContextItem(new YouTubeVideoInfoMarkdownPage(video)),
                     new CommandContextItem(new YouTubeAPIPage()),
                 ],
@@ -76,7 +70,7 @@ internal sealed partial class YouTubeVideosPage : DynamicListPage
 
         var videos = new List<YouTubeVideo>();
 
-        using HttpClient client = new HttpClient();
+        using var client = new HttpClient();
         {
             try
             {

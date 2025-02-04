@@ -9,7 +9,7 @@ using Microsoft.CmdPal.Extensions.Helpers;
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 // NOTE this is pretty close to what we'd put in the SDK
-internal sealed partial class OpenPathAction(string target) : InvokableCommand
+internal sealed partial class OpenPathCommand(string target) : InvokableCommand
 {
     private readonly string _target = target;
 

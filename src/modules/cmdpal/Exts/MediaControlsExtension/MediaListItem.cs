@@ -14,14 +14,14 @@ internal sealed partial class MediaListItem : CommandItem
     private GlobalSystemMediaTransportControlsSession _mediaSession;
 
     public MediaListItem()
-        : base(new TogglePlayMediaAction())
+        : base(new TogglePlayMediaCommand())
     {
         var task = GlobalSystemMediaTransportControlsSessionManager.RequestAsync().AsTask();
         task.ContinueWith(async t =>
         {
             var manager = t.Result;
             _mediaSession = manager.GetCurrentSession();
-            ((TogglePlayMediaAction)this.Command).MediaSession = _mediaSession;
+            ((TogglePlayMediaCommand)this.Command).MediaSession = _mediaSession;
 
             _mediaSession.MediaPropertiesChanged += MediaSession_MediaPropertiesChanged;
             _mediaSession.PlaybackInfoChanged += MediaSession_PlaybackInfoChanged;
@@ -40,7 +40,7 @@ internal sealed partial class MediaListItem : CommandItem
 
         if (properties == null)
         {
-            var a = (TogglePlayMediaAction)this.Command;
+            var a = (TogglePlayMediaCommand)this.Command;
             a.Icon = new(string.Empty);
             a.Name = "No media playing";
 
@@ -50,11 +50,11 @@ internal sealed partial class MediaListItem : CommandItem
         this.Title = properties.Title;
 
         // hack
-        ((TogglePlayMediaAction)this.Command).Name = this.Title;
+        ((TogglePlayMediaCommand)this.Command).Name = this.Title;
         this.Subtitle = properties.Artist;
         var status = _mediaSession.GetPlaybackInfo().PlaybackStatus;
 
-        var internalAction = (TogglePlayMediaAction)this.Command;
+        var internalAction = (TogglePlayMediaCommand)this.Command;
         if (status == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused)
         {
             internalAction.Icon = new("\ue768"); // play
@@ -67,8 +67,8 @@ internal sealed partial class MediaListItem : CommandItem
         }
 
         MoreCommands = [
-            new CommandContextItem(new PrevNextTrackAction(true, _mediaSession)),
-            new CommandContextItem(new PrevNextTrackAction(false, _mediaSession))
+            new CommandContextItem(new PrevNextTrackCommand(true, _mediaSession)),
+            new CommandContextItem(new PrevNextTrackCommand(false, _mediaSession))
         ];
     }
 

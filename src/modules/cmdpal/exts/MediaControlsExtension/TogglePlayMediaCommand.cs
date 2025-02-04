@@ -7,11 +7,11 @@ using Windows.Media.Control;
 
 namespace MediaControlsExtension;
 
-public sealed partial class TogglePlayMediaAction : InvokableCommand
+public sealed partial class TogglePlayMediaCommand : InvokableCommand
 {
     public GlobalSystemMediaTransportControlsSession MediaSession { get; set; }
 
-    public TogglePlayMediaAction()
+    public TogglePlayMediaCommand()
     {
         Name = "No media playing";
         Icon = new(string.Empty);

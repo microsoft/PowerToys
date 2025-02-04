@@ -9,9 +9,9 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 
 namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 
-public partial class QuitAction : InvokableCommand, IFallbackHandler
+public partial class QuitCommand : InvokableCommand, IFallbackHandler
 {
-    public QuitAction()
+    public QuitCommand()
     {
         Icon = new("\uE711");
     }

@@ -9,9 +9,9 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 
 namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 
-public partial class ReloadExtensionsAction : InvokableCommand
+public partial class ReloadExtensionsCommand : InvokableCommand
 {
-    public ReloadExtensionsAction()
+    public ReloadExtensionsCommand()
     {
         Icon = new("\uE72C"); // Refresh icon
     }

@@ -137,18 +137,18 @@ internal sealed partial class MastodonExtensionPage : ListPage
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]
-public partial class MastodonExtensionActionsProvider : CommandProvider
+public partial class MastodonExtensionCommandsProvider : CommandProvider
 {
-    public MastodonExtensionActionsProvider()
+    public MastodonExtensionCommandsProvider()
     {
         DisplayName = "Mastodon extension for cmdpal Commands";
     }
 
-    private readonly ICommandItem[] _actions = [
+    private readonly ICommandItem[] _commands = [
         new CommandItem(new MastodonExtensionPage()) { Subtitle = "Explore top posts on mastodon.social" },
     ];
 
-    public override ICommandItem[] TopLevelCommands() => _actions;
+    public override ICommandItem[] TopLevelCommands() => _commands;
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]

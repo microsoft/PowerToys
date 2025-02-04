@@ -21,7 +21,7 @@ public static class ServiceHelper
     public static IEnumerable<ListItem> Search(string search)
     {
         var services = ServiceController.GetServices().OrderBy(s => s.DisplayName);
-        IEnumerable<ServiceController> serviceList = new List<ServiceController>();
+        IEnumerable<ServiceController> serviceList = [];
 
         if (search.StartsWith(Resources.wox_plugin_service_status + ":", StringComparison.CurrentCultureIgnoreCase))
         {
@@ -46,11 +46,11 @@ public static class ServiceHelper
         return serviceList.Select(s =>
         {
             var serviceResult = new ServiceResult(s);
-            ServiceCommand serviceAction;
+            ServiceCommand serviceCommand;
             CommandContextItem[] moreCommands;
             if (serviceResult.IsRunning)
             {
-                serviceAction = new ServiceCommand(serviceResult, Action.Stop);
+                serviceCommand = new ServiceCommand(serviceResult, Action.Stop);
                 moreCommands = [
                     new CommandContextItem(new RestartServiceCommand(serviceResult)),
                     new CommandContextItem(new OpenServicesCommand(serviceResult)),
@@ -58,7 +58,7 @@ public static class ServiceHelper
             }
             else
             {
-                serviceAction = new ServiceCommand(serviceResult, Action.Start);
+                serviceCommand = new ServiceCommand(serviceResult, Action.Start);
                 moreCommands = [
                     new CommandContextItem(new OpenServicesCommand(serviceResult)),
                 ];
@@ -77,7 +77,7 @@ public static class ServiceHelper
                     break;
             }
 
-            return new ListItem(serviceAction)
+            return new ListItem(serviceCommand)
             {
                 Title = s.DisplayName,
                 Subtitle = ServiceHelper.GetResultSubTitle(s),
@@ -239,8 +239,5 @@ public static class ServiceHelper
                 : action == Action.Restart ? Resources.wox_plugin_service_restart_error_notification : string.Empty;
     }
 
-    private static bool IsDelayedStart(string serviceName)
-    {
-        return (int?)Registry.LocalMachine.OpenSubKey(@"System\CurrentControlSet\Services\" + serviceName, false)?.GetValue("DelayedAutostart", 0, RegistryValueOptions.None) == 1;
-    }
+    private static bool IsDelayedStart(string serviceName) => (int?)Registry.LocalMachine.OpenSubKey(@"System\CurrentControlSet\Services\" + serviceName, false)?.GetValue("DelayedAutostart", 0, RegistryValueOptions.None) == 1;
 }

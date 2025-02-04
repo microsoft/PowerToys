@@ -216,7 +216,7 @@ public partial class ListViewModel : PageViewModel
         Task.Factory.StartNew(
            () =>
            {
-               WeakReferenceMessenger.Default.Send<UpdateActionBarMessage>(new(item));
+               WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(item));
 
                if (ShowDetails && item.HasDetails)
                {

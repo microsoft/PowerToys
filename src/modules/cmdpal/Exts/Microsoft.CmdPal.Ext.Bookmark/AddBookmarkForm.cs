@@ -12,7 +12,7 @@ namespace Microsoft.CmdPal.Ext.Bookmarks;
 
 internal sealed partial class AddBookmarkForm : Form
 {
-    internal event TypedEventHandler<object, object?>? AddedAction;
+    internal event TypedEventHandler<object, object?>? AddedCommand;
 
     public override string TemplateJson()
     {
@@ -103,7 +103,7 @@ internal sealed partial class AddBookmarkForm : Form
 
         Bookmarks.WriteToFile(jsonPath, data);
 
-        AddedAction?.Invoke(this, null);
+        AddedCommand?.Invoke(this, null);
         return CommandResult.GoHome();
     }
 }

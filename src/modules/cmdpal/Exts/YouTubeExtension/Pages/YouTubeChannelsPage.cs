@@ -11,7 +11,8 @@ using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
-using YouTubeExtension.Actions;
+using YouTubeExtension.Commands;
+using YouTubeExtension.Helper;
 
 namespace YouTubeExtension.Pages;
 
@@ -40,7 +41,7 @@ internal sealed partial class YouTubeChannelsPage : DynamicListPage
         var items = await GetYouTubeChannels(query);
 
         // Create a section and populate it with the channel results
-        var section = items.Select(channel => new ListItem(new OpenChannelLinkAction(channel.ChannelUrl))
+        var section = items.Select(channel => new ListItem(new OpenChannelLinkCommand(channel.ChannelUrl))
         {
             Title = channel.Name,
             Subtitle = $"{channel.SubscriberCount} subscribers",

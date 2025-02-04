@@ -10,12 +10,12 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 
 /// <summary>
-/// Built-in Provider for a top-level command which can quit the application. Invokes the <see cref="QuitAction"/>, which sends a <see cref="QuitMessage"/>.
+/// Built-in Provider for a top-level command which can quit the application. Invokes the <see cref="QuitCommand"/>, which sends a <see cref="QuitMessage"/>.
 /// </summary>
 public partial class BuiltInsCommandProvider : CommandProvider
 {
     private readonly OpenSettingsCommand openSettings = new();
-    private readonly QuitAction quitAction = new();
+    private readonly QuitCommand quitCommand = new();
     private readonly FallbackReloadItem _fallbackReloadItem = new();
     private readonly FallbackLogItem _fallbackLogItem = new();
 
@@ -26,7 +26,7 @@ public partial class BuiltInsCommandProvider : CommandProvider
 
     public override IFallbackCommandItem[] FallbackCommands() =>
         [
-            new FallbackCommandItem(quitAction) { Subtitle = "Exit Command Palette" },
+            new FallbackCommandItem(quitCommand) { Subtitle = "Exit Command Palette" },
             _fallbackReloadItem,
             _fallbackLogItem,
         ];

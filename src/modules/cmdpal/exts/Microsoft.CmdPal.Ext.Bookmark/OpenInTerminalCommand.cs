@@ -8,11 +8,11 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
-internal sealed partial class OpenInTerminalAction : InvokableCommand
+internal sealed partial class OpenInTerminalCommand : InvokableCommand
 {
     private readonly string _folder;
 
-    public OpenInTerminalAction(string folder)
+    public OpenInTerminalCommand(string folder)
     {
         Name = "Open in Terminal";
         _folder = folder;

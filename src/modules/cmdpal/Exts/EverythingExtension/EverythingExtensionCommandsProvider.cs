@@ -12,9 +12,9 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace EverythingExtension;
 
-public partial class EverythingExtensionActionsProvider : CommandProvider
+public partial class EverythingExtensionCommandsProvider : CommandProvider
 {
-    public EverythingExtensionActionsProvider()
+    public EverythingExtensionCommandsProvider()
     {
         DisplayName = "Everything extension for cmdpal";
     }

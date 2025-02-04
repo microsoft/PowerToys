@@ -8,12 +8,12 @@ using Windows.Media.Control;
 
 namespace MediaControlsExtension;
 
-internal sealed partial class PrevNextTrackAction : InvokableCommand
+internal sealed partial class PrevNextTrackCommand : InvokableCommand
 {
     private readonly GlobalSystemMediaTransportControlsSession _mediaSession;
     private readonly bool _previous;
 
-    public PrevNextTrackAction(bool previous, GlobalSystemMediaTransportControlsSession s)
+    public PrevNextTrackCommand(bool previous, GlobalSystemMediaTransportControlsSession s)
     {
         _mediaSession = s;
         _previous = previous;

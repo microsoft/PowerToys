@@ -14,11 +14,11 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
-public sealed partial class ActionBar : UserControl,
+public sealed partial class CommandBar : UserControl,
     IRecipient<OpenContextMenuMessage>,
     ICurrentPageAware
 {
-    public ActionBarViewModel ViewModel { get; set; } = new();
+    public CommandBarViewModel ViewModel { get; set; } = new();
 
     public PageViewModel? CurrentPageViewModel
     {
@@ -28,9 +28,9 @@ public sealed partial class ActionBar : UserControl,
 
     // Using a DependencyProperty as the backing store for CurrentPage.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty CurrentPageViewModelProperty =
-        DependencyProperty.Register(nameof(CurrentPageViewModel), typeof(PageViewModel), typeof(ActionBar), new PropertyMetadata(null));
+        DependencyProperty.Register(nameof(CurrentPageViewModel), typeof(PageViewModel), typeof(CommandBar), new PropertyMetadata(null));
 
-    public ActionBar()
+    public CommandBar()
     {
         this.InitializeComponent();
 
@@ -50,12 +50,12 @@ public sealed partial class ActionBar : UserControl,
             ShowMode = FlyoutShowMode.Standard,
         };
         MoreCommandsButton.Flyout.ShowAt(MoreCommandsButton, options);
-        ActionsDropdown.SelectedIndex = 0;
-        ActionsDropdown.Focus(FocusState.Programmatic);
+        CommandsDropdown.SelectedIndex = 0;
+        CommandsDropdown.Focus(FocusState.Programmatic);
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
-    private void ActionListViewItem_KeyDown(object sender, KeyRoutedEventArgs e)
+    private void CommandListViewItem_KeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (e.Handled)
         {
@@ -79,7 +79,7 @@ public sealed partial class ActionBar : UserControl,
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
-    private void ActionListViewItem_Tapped(object sender, TappedRoutedEventArgs e)
+    private void CommandListViewItem_Tapped(object sender, TappedRoutedEventArgs e)
     {
         MoreCommandsButton.Flyout.Hide();
 

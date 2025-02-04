@@ -7,9 +7,9 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace PokedexExtension;
 
-public partial class PokedexExtensionActionsProvider : CommandProvider
+public partial class PokedexExtensionCommandsProvider : CommandProvider
 {
-    public PokedexExtensionActionsProvider()
+    public PokedexExtensionCommandsProvider()
     {
         DisplayName = "Pocket Monsters for the Command Palette";
     }

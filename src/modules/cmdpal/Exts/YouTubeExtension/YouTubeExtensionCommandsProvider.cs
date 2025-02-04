@@ -12,14 +12,14 @@ using System.Threading.Tasks;
 using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
 using Windows.UI.ApplicationSettings;
-using YouTubeExtension.Actions;
+using YouTubeExtension.Helper;
 using YouTubeExtension.Pages;
 
 namespace YouTubeExtension;
 
-public partial class YouTubeExtensionActionsProvider : CommandProvider
+public partial class YouTubeExtensionCommandsProvider : CommandProvider
 {
-    public YouTubeExtensionActionsProvider()
+    public YouTubeExtensionCommandsProvider()
     {
         DisplayName = "YouTube";
     }

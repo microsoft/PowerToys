@@ -88,7 +88,7 @@ internal sealed partial class BookmarkPlaceholderForm : Form
 
         try
         {
-            Uri? uri = UrlAction.GetUri(target);
+            Uri? uri = UrlCommand.GetUri(target);
             if (uri != null)
             {
                 _ = Launcher.LaunchUriAsync(uri);

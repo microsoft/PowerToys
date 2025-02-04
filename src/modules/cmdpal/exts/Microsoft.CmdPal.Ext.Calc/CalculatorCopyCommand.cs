@@ -8,12 +8,12 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.CmdPal.Ext.Calc;
 
-public partial class CalculatorAction : InvokableCommand
+public partial class CalculatorCopyCommand : InvokableCommand
 {
     private bool _success;
     private string _result = string.Empty;
 
-    public CalculatorAction()
+    public CalculatorCopyCommand()
     {
         Icon = new("\ue8ef");
     }

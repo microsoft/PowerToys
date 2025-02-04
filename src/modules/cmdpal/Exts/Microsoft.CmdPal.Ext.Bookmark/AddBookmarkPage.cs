@@ -12,10 +12,10 @@ internal sealed partial class AddBookmarkPage : FormPage
 {
     private readonly AddBookmarkForm _addBookmark = new();
 
-    internal event TypedEventHandler<object, object?>? AddedAction
+    internal event TypedEventHandler<object, object?>? AddedCommand
     {
-        add => _addBookmark.AddedAction += value;
-        remove => _addBookmark.AddedAction -= value;
+        add => _addBookmark.AddedCommand += value;
+        remove => _addBookmark.AddedCommand -= value;
     }
 
     public override IForm[] Forms() => [_addBookmark];

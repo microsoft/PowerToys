@@ -8,11 +8,11 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
-internal sealed partial class AppAction : InvokableCommand
+internal sealed partial class AppCommand : InvokableCommand
 {
     private readonly AppItem _app;
 
-    internal AppAction(AppItem app)
+    internal AppCommand(AppItem app)
     {
         _app = app;
 

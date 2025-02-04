@@ -12,9 +12,9 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace VirtualDesktopExtension;
 
-public partial class VirtualDesktopExtensionActionsProvider : CommandProvider
+public partial class VirtualDesktopExtensionCommandsProvider : CommandProvider
 {
-    public VirtualDesktopExtensionActionsProvider()
+    public VirtualDesktopExtensionCommandsProvider()
     {
         DisplayName = "Virtual Desktop Manager for Command Palette Commands";
     }

@@ -23,15 +23,12 @@ public partial class CalculatorCommandProvider : CommandProvider
         Icon = new("\ue8ef"); // Calculator
     }
 
-    public override ICommandItem[] TopLevelCommands()
-    {
-        return [_listItem];
-    }
+    public override ICommandItem[] TopLevelCommands() => [_listItem];
 }
 
 // todo
 // list page, dynamic
-// first SaveAction, title=result, subtitle=query, more:copy to clipboard
+// first SaveCommand, title=result, subtitle=query, more:copy to clipboard
 //  - when you save, insert into list at spot 1
 //  - also on save, change searchtext to result
 // rest:
@@ -39,8 +36,8 @@ public partial class CalculatorCommandProvider : CommandProvider
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]
 public sealed partial class CalculatorListPage : DynamicListPage
 {
-    private readonly List<ListItem> _items = new();
-    private readonly SaveAction _saveAction = new();
+    private readonly List<ListItem> _items = [];
+    private readonly SaveCommand _saveCommand = new();
 
     public CalculatorListPage()
     {
@@ -49,14 +46,14 @@ public sealed partial class CalculatorListPage : DynamicListPage
         PlaceholderText = "Type an equation...";
         Id = "com.microsoft.cmdpal.calculator";
 
-        _items.Add(new(_saveAction)
+        _items.Add(new(_saveCommand)
         {
             MoreCommands = [new CommandContextItem(new CopyTextCommand(string.Empty))],
         });
 
         UpdateSearchText(string.Empty, string.Empty);
 
-        _saveAction.SaveRequested += HandleSave;
+        _saveCommand.SaveRequested += HandleSave;
     }
 
     private void HandleSave(object sender, object args)
@@ -107,18 +104,15 @@ public sealed partial class CalculatorListPage : DynamicListPage
         }
     }
 
-    public override IListItem[] GetItems()
-    {
-        return _items.ToArray();
-    }
+    public override IListItem[] GetItems() => _items.ToArray();
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]
-public sealed partial class SaveAction : InvokableCommand
+public sealed partial class SaveCommand : InvokableCommand
 {
     public event TypedEventHandler<object, object> SaveRequested;
 
-    public SaveAction()
+    public SaveCommand()
     {
         Name = "Save";
     }

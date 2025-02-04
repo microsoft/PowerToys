@@ -12,7 +12,7 @@ namespace Microsoft.CmdPal.Ext.Calc;
 public partial class CalculatorTopLevelListItem : CommandItem, IFallbackHandler
 {
     public CalculatorTopLevelListItem()
-        : base(new CalculatorAction())
+        : base(new CalculatorCopyCommand())
     {
         // In the case of the calculator, the ListItem itself is the fallback
         // handler so that it can update its Title and Subtitle accordingly.
@@ -49,13 +49,13 @@ public partial class CalculatorTopLevelListItem : CommandItem, IFallbackHandler
         {
             var result = new DataTable().Compute(equation, null);
             var resultString = result.ToString() ?? string.Empty;
-            ((CalculatorAction)Command).SetResult(resultString, true);
+            ((CalculatorCopyCommand)Command).SetResult(resultString, true);
 
             return resultString;
         }
         catch (Exception e)
         {
-            ((CalculatorAction)Command).SetResult(string.Empty, false);
+            ((CalculatorCopyCommand)Command).SetResult(string.Empty, false);
 
             return $"Error: {e.Message}";
         }

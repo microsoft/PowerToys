@@ -42,7 +42,6 @@
   <ItemGroup>
     <Folder Include="Data\" />
     <Folder Include="Forms\" />
-    <Folder Include="Commands\" />
   </ItemGroup>
 
   <!--

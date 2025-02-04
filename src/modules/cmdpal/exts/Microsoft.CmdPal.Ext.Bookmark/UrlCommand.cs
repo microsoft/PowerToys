@@ -8,7 +8,7 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
-public partial class UrlAction : InvokableCommand
+public partial class UrlCommand : InvokableCommand
 {
     private bool IsContainsPlaceholder => _url.Contains('{') && _url.Contains('}');
 
@@ -18,7 +18,7 @@ public partial class UrlAction : InvokableCommand
 
     private readonly string _url;
 
-    public UrlAction(string name, string url, string type)
+    public UrlCommand(string name, string url, string type)
     {
         _url = url;
         Icon = new(IconFromUrl(_url, type));

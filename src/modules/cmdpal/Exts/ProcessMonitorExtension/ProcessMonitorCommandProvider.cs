@@ -14,7 +14,7 @@ internal sealed partial class ProcessMonitorCommandProvider : CommandProvider
         DisplayName = "Process Monitor Commands";
     }
 
-    private readonly ICommandItem[] _actions = [
+    private readonly ICommandItem[] _commands = [
         new CommandItem(new ProcessListPage())
         {
             Title = "Process Manager",
@@ -24,6 +24,6 @@ internal sealed partial class ProcessMonitorCommandProvider : CommandProvider
 
     public override ICommandItem[] TopLevelCommands()
     {
-        return _actions;
+        return _commands;
     }
 }

@@ -22,10 +22,10 @@ public partial class BookmarksCommandProvider : CommandProvider
         DisplayName = "Bookmarks";
         Icon = new("\uE718"); // Pin
 
-        _addNewCommand.AddedAction += AddNewCommand_AddedAction;
+        _addNewCommand.AddedCommand += AddNewCommand_AddedCommand;
     }
 
-    private void AddNewCommand_AddedAction(object sender, object? args)
+    private void AddNewCommand_AddedCommand(object sender, object? args)
     {
         _commands.Clear();
         LoadCommands();
@@ -65,7 +65,9 @@ public partial class BookmarksCommandProvider : CommandProvider
                             var url = urlToken.ToString();
                             var type = typeToken.ToString();
 
-                            collected.Add((url.Contains('{') && url.Contains('}')) ? new BookmarkPlaceholderPage(name, url, type) : new UrlAction(name, url, type));
+                            collected.Add((url.Contains('{') && url.Contains('}')) ?
+                                new BookmarkPlaceholderPage(name, url, type) :
+                                new UrlCommand(name, url, type));
                         }
                     }
                 }
@@ -88,21 +90,21 @@ public partial class BookmarksCommandProvider : CommandProvider
             LoadCommands();
         }
 
-        return _commands.Select(action =>
+        return _commands.Select(command =>
         {
-            var listItem = new CommandItem(action);
+            var listItem = new CommandItem(command);
 
-            // Add actions for folder types
-            if (action is UrlAction urlAction)
+            // Add commands for folder types
+            if (command is UrlCommand urlCommand)
             {
-                if (urlAction.Type == "folder")
+                if (urlCommand.Type == "folder")
                 {
                     listItem.MoreCommands = [
-                        new CommandContextItem(new OpenInTerminalAction(urlAction.Url))
+                        new CommandContextItem(new OpenInTerminalCommand(urlCommand.Url))
                     ];
                 }
 
-                listItem.Subtitle = urlAction.Url;
+                listItem.Subtitle = urlCommand.Url;
             }
 
             return listItem;

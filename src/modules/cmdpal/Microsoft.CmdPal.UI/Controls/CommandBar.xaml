@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
-    x:Class="Microsoft.CmdPal.UI.Controls.ActionBar"
+    x:Class="Microsoft.CmdPal.UI.Controls.CommandBar"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
@@ -30,7 +30,7 @@
 
             <!--  Template for actions in the mode actions dropdown button  -->
             <DataTemplate x:Key="ContextMenuViewModelTemplate" x:DataType="viewmodels:CommandContextItemViewModel">
-                <ListViewItem KeyDown="ActionListViewItem_KeyDown" Tapped="ActionListViewItem_Tapped">
+                <ListViewItem KeyDown="CommandListViewItem_KeyDown" Tapped="CommandListViewItem_Tapped">
                     <Grid ColumnSpacing="8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="20" />
@@ -130,7 +130,7 @@
                     <TextBlock
                         VerticalAlignment="Center"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{x:Bind ViewModel.PrimaryAction.Name, Mode=OneWay}" />
+                        Text="{x:Bind ViewModel.PrimaryCommand.Name, Mode=OneWay}" />
                     <Border
                         Padding="4"
                         Background="{ThemeResource SubtleFillColorSecondaryBrush}"
@@ -158,7 +158,7 @@
                     <TextBlock
                         VerticalAlignment="Center"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{x:Bind ViewModel.SecondaryAction.Name, Mode=OneWay}" />
+                        Text="{x:Bind ViewModel.SecondaryCommand.Name, Mode=OneWay}" />
                     <StackPanel Orientation="Horizontal" Spacing="2">
                         <Border
                             Padding="4,2,4,2"
@@ -200,10 +200,10 @@
                 <Button.Flyout>
                     <Flyout Placement="TopEdgeAlignedRight">
                         <ListView
-                            x:Name="ActionsDropdown"
+                            x:Name="CommandsDropdown"
                             Margin="-12"
                             ItemTemplate="{StaticResource ContextMenuViewModelTemplate}"
-                            ItemsSource="{x:Bind ViewModel.ContextActions, Mode=OneWay}">
+                            ItemsSource="{x:Bind ViewModel.ContextCommands, Mode=OneWay}">
                             <ListView.ItemContainerTransitions>
                                 <TransitionCollection />
                             </ListView.ItemContainerTransitions>

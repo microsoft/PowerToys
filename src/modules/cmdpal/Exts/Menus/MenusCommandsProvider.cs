@@ -15,9 +15,9 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Menus;
 
-public partial class MenusActionsProvider : CommandProvider
+public partial class MenusCommandsProvider : CommandProvider
 {
-    public MenusActionsProvider()
+    public MenusCommandsProvider()
     {
         DisplayName = $"Menus from the open windows";
     }

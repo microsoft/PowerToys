@@ -245,7 +245,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             var settingsWindow = new SettingsWindow();
             settingsWindow.Activate();
 
-            WeakReferenceMessenger.Default.Send<UpdateActionBarMessage>(new(null));
+            WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
         });
     }
 

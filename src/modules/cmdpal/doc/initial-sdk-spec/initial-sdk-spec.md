@@ -10,7 +10,7 @@ issue id: n/a
 _aka "DevPal", "PT Run v2", "DevSearch", "Windows Command Palette", this thing has many names. I'll use "DevPal" throughout the doc_
 
 > [NOTE!]
-> Are you here to just see what the SDK looks like? Skip to the [Actions
+> Are you here to just see what the SDK looks like? Skip to the [Commands
 > SDK details](#commands-sdk-details) section.
 
 ## Abstract
@@ -152,7 +152,7 @@ In the simplest case, extensions for Dev Pal can register themselves using their
                         <CreateInstance ClassId="<Extension CLSID Here>" />
                     </Activation>
                     <SupportedInterfaces>
-                        <Actions />
+                        <Commands />
                     </SupportedInterfaces>
                 </CmdPalProvider>
             </uap3:Properties>
@@ -174,7 +174,7 @@ Notable elements:
   that DevPal will instantiate to interact with your extension. Also, you
   specify which interfaces you support.
 
-Currently, only `Actions` is supported. If we need to add more
+Currently, only `Commands` is supported. If we need to add more
 in the future, we can add them to the `SupportedInterfaces` element.
 
 This is all exactly the same as the Dev Home Extension model, with a different
@@ -229,10 +229,10 @@ list.
 
 When DevPal launches, it will enumerate all the extensions it knows about, and
 create the `IExtension` object for each one. DevPal will then get the
-`ICommandProvider` for apps that register as `Actions` providers in
+`ICommandProvider` for apps that register as `Commands` providers in
 `SupportedInterfaces`. Extension apps should have that COM object served
 quickly, for performance. That is the first object that DevPal needs, to load
-the top-level list of actions.
+the top-level list of commands.
 
 These commands will be loaded asynchronously, and the UI will be updated as they
 are loaded on a cold launch. Subsequent launches will have devpal already
@@ -264,15 +264,15 @@ Command providers can opt out of this behavior by setting `Frozen=false` in
 their extension. We'll call these extensions "**fresh, never frozen**".
 
 As some examples:
-* The "Hacker News" extension, only has a single top-level action. Once we load
+* The "Hacker News" extension, only has a single top-level command. Once we load
   that once, we don't need to `CreateProcess` just to find that command title.
   This is a **frozen** extension.
 * Similarly for something like the GitHub extension - it's got multiple
   top-level commands (My issues, Issue search, Repo search, etc), but these
   top-level commands never change. This is a **frozen** extension.
-* The "Quick Links" extension has a dynamic list of top-level actions.
+* The "Quick Links" extension has a dynamic list of top-level commands.
   This is a **fresh** extension.[^3]
-* The "Media Controls" extension only has a single top-level action, but it
+* The "Media Controls" extension only has a single top-level command, but it
   needs to be running to be able to update it's title and icon. So we can't just
   cache the state of it. This is a **fresh** extension.
 * Similarly, any top-level `IFallbackHandler` need to be running to get
@@ -588,15 +588,15 @@ interface IInvokableCommand requires ICommand {
 
 ```
 
-If a developer wants to add a simple action to DevPal, they can create a
+If a developer wants to add a simple command to DevPal, they can create a
 class that implements `ICommand`, and implement the `Invoke` method. This
-method will be called when the user selects the action in DevPal.
+method will be called when the user selects the command in DevPal.
 
 As a simple example[^1]:
 
 ```cs
-class HackerNewsAction : Microsoft.CmdPal.Extensions.Helpers.InvokableCommand {
-    public class HackerNewsAction()
+class HackerNewsPage : Microsoft.CmdPal.Extensions.Helpers.InvokableCommand {
+    public class HackerNewsPage()
     {
         Name = "Hacker News";
         Icon = "https://news.ycombinator.com/favicon.ico";
@@ -609,12 +609,12 @@ class HackerNewsAction : Microsoft.CmdPal.Extensions.Helpers.InvokableCommand {
 }
 ```
 
-This will create a single action in DevPal that, when selected, will open
+This will create a single command in DevPal that, when selected, will open
 Hacker News in the user's default web browser.
 
 Commands can also be `Page`s, which represent additional "nested" pages within
-DevPal. When the user selects an action that implements `IPage`, DevPal will
-navigate to a page for that action, rather than calling `Invoke` on it. Skip
+DevPal. When the user selects an command that implements `IPage`, DevPal will
+navigate to a page for that command, rather than calling `Invoke` on it. Skip
 ahead to [Pages](#Pages) for more information on the different types of pages.
 
 The `Id` property is optional. This can be set but the extension author to
@@ -708,7 +708,7 @@ Use cases for each `CommandResultKind`:
 ### Pages
 
 Pages represent individual views in the application. They are the primary unit
-of navigation and interaction. Developers can author `Action`s as a page to
+of navigation and interaction. Developers can author `Command`s as a page to
 provide an additional page of functionality within the application. They are not
 wholly responsible for their own rendering. Rather, they provide bits of
 information that the host application will then use to render the page.
@@ -867,13 +867,13 @@ previous track context commands to the list of items:
 internal sealed class MediaListItem : ListItem
 {
     // Theis is an example of a ListItem that displays the currently track
-    // This TogglePlayMediaAction is the default action when the user selects the item.
-    public MediaListItem() : base(new TogglePlayMediaAction())
+    // This TogglePlayMediaCommand is the default action when the user selects the item.
+    public MediaListItem() : base(new TogglePlayMediaCommand())
     {
         // These two commands make up the "More commands" flyout for the item.
         this.MoreCommands = [
-            new CommandContextItem(new PrevNextTrackAction(true)),
-            new CommandContextItem(new PrevNextTrackAction(false))
+            new CommandContextItem(new PrevNextTrackCommand(true)),
+            new CommandContextItem(new PrevNextTrackCommand(false))
         ];
 
         GlobalSystemMediaTransportControlsSessionManager.RequestAsync().AsTask().ContinueWith(async (task) => {
@@ -886,9 +886,9 @@ internal sealed class MediaListItem : ListItem
 
     }
 }
-internal sealed class TogglePlayMediaAction : InvokableCommand
+internal sealed class TogglePlayMediaCommand : InvokableCommand
 {
-    public TogglePlayMediaAction()
+    public TogglePlayMediaCommand()
     {
         Name = "Play";
         Icon = new("\ue768"); //play
@@ -900,7 +900,7 @@ internal sealed class TogglePlayMediaAction : InvokableCommand
         return new ICommandResult(CommandResultKind.KeepOpen);
     }
 }
-// And a similar InvokableCommand for the PrevNextTrackAction
+// And a similar InvokableCommand for the PrevNextTrackCommand
 ```
 
 List items may also have an optional `Section` provided as a string. When
@@ -979,14 +979,14 @@ class NewsPost {
     string Poster;
     int Points;
 }
-class LinkAction(NewsPost post) : Microsoft.CmdPal.Extensions.Helpers.InvokableCommand {
+class LinkCommand(NewsPost post) : Microsoft.CmdPal.Extensions.Helpers.InvokableCommand {
     public string Name => "Open link";
     public CommandResult Invoke() {
         Process.Start(new ProcessStartInfo(post.Url) { UseShellExecute = true });
         return CommandResult.KeepOpen;
     }
 }
-class CommentAction(NewsPost post) : Microsoft.CmdPal.Extensions.Helpers.InvokableCommand {
+class CommentCommand(NewsPost post) : Microsoft.CmdPal.Extensions.Helpers.InvokableCommand {
     public string Name => "Open comments";
     public CommandResult Invoke() {
         Process.Start(new ProcessStartInfo(post.CommentsUrl) { UseShellExecute = true });
@@ -997,8 +997,8 @@ class NewsListItem(NewsPost post) : Microsoft.CmdPal.Extensions.Helpers.ListItem
     public string Title => post.Title;
     public string Subtitle => post.Poster;
     public IContextItem[] Commands => [
-        new CommandContextItem(new LinkAction(post)),
-        new CommandContextItem(new CommentAction(post))
+        new CommandContextItem(new LinkCommand(post)),
+        new CommandContextItem(new CommentCommand(post))
     ];
     public ITag[] Tags => [ new Tag(){ Text=post.Points } ];
 }
@@ -1579,7 +1579,7 @@ public class SpongebotPage : Microsoft.CmdPal.Extensions.Helpers.MarkdownPage, I
         } else {
             this.Name = ConvertToAlternatingCase(query);
         }
-        return Task.CompletedTask.AsAsyncAction();
+        return Task.CompletedTask.AsAsyncCommand();
     }
     static string ConvertToAlternatingCase(string input) {
         StringBuilder sb = new StringBuilder();
@@ -1697,8 +1697,8 @@ write extensions.
 For example, we should have something like:
 
 ```cs
-class OpenUrlAction(string targetUrl, CommandResult result) : Microsoft.CmdPal.Extensions.Helpers.InvokableCommand {
-    public OpenUrlAction()
+class OpenUrlCommand(string targetUrl, CommandResult result) : Microsoft.CmdPal.Extensions.Helpers.InvokableCommand {
+    public OpenUrlCommand()
     {
         Name = "Open";
         Icon = new("\uE8A7"); // OpenInNewWindow
@@ -1724,8 +1724,8 @@ class NewsListItem : Microsoft.CmdPal.Extensions.Helpers.ListItem {
         Subtitle = post.Url;
     }
     public IContextItem[] Commands => [
-        new CommandContextItem(new OpenUrlAction(post.Url, CommandResult.KeepOpen)),
-        new CommandContextItem(new OpenUrlAction(post.CommentsUrl, CommandResult.KeepOpen){
+        new CommandContextItem(new OpenUrlCommand(post.Url, CommandResult.KeepOpen)),
+        new CommandContextItem(new OpenUrlCommand(post.CommentsUrl, CommandResult.KeepOpen){
             Name = "Open comments",
             Icon = "\uE8F2" // ChatBubbles
         })

@@ -5,7 +5,7 @@
 using System.IO;
 using Microsoft.CmdPal.Extensions.Helpers;
 
-namespace YouTubeExtension.Actions;
+namespace YouTubeExtension.Helper;
 
 internal sealed class YouTubeHelper
 {

@@ -7,10 +7,8 @@ using System.IO;
 using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using System.Xml.Linq;
-using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Extensions.Helpers;
-using YouTubeExtension.Actions;
+using YouTubeExtension.Helper;
 
 namespace YouTubeExtension.Pages;
 

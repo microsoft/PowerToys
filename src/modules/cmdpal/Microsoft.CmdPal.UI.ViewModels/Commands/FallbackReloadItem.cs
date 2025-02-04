@@ -8,19 +8,19 @@ namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 
 internal sealed partial class FallbackReloadItem : FallbackCommandItem
 {
-    private readonly ReloadExtensionsAction _reloadAction;
+    private readonly ReloadExtensionsCommand _reloadCommand;
 
     public FallbackReloadItem()
-        : base(new ReloadExtensionsAction())
+        : base(new ReloadExtensionsCommand())
     {
-        _reloadAction = (ReloadExtensionsAction)Command!;
+        _reloadCommand = (ReloadExtensionsCommand)Command!;
         Title = string.Empty;
         Subtitle = "Reload Command Palette extensions";
     }
 
     public override void UpdateQuery(string query)
     {
-        _reloadAction.Name = query.StartsWith('r') ? "Reload" : string.Empty;
-        Title = _reloadAction.Name;
+        _reloadCommand.Name = query.StartsWith('r') ? "Reload" : string.Empty;
+        Title = _reloadCommand.Name;
     }
 }

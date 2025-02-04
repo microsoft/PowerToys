@@ -12,9 +12,9 @@ using Microsoft.CmdPal.Extensions.Helpers;
 
 namespace TemplateExtension;
 
-public partial class TemplateExtensionActionsProvider : CommandProvider
+public partial class TemplateExtensionCommandsProvider : CommandProvider
 {
-    public TemplateExtensionActionsProvider()
+    public TemplateExtensionCommandsProvider()
     {
         DisplayName = "TemplateDisplayName Commands";
     }
