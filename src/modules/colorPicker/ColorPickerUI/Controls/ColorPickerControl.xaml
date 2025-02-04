@@ -370,15 +370,15 @@
                             TextWrapping="Wrap" />
                             
                             <Button
-                            x:Name="OKButton"
-                            Grid.Row="9"
-                            Grid.ColumnSpan="4"
-                            Margin="0,32,0,0"
-                            HorizontalAlignment="Stretch"
-                            Style="{StaticResource AccentButtonStyle}"
-                            AutomationProperties.Name="{x:Static p:Resources.Select}"
-                            Click="OKButton_Click"
-                            Content="{x:Static p:Resources.Select}" />
+                                x:Name="OKButton"
+                                Grid.Row="9"
+                                Grid.ColumnSpan="4"
+                                Margin="0,32,0,0"
+                                HorizontalAlignment="Stretch"
+                                Style="{StaticResource AccentButtonStyle}"
+                                AutomationProperties.Name="{x:Static p:Resources.Select}"
+                                Click="OKButton_Click"
+                                Content="{x:Static p:Resources.Select}" />
     
                         </Grid>
                     </Border>
