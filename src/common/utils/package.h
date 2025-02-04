@@ -89,7 +89,6 @@ namespace package {
                 auto errorCode = deploymentOperation.ErrorCode();
                 auto errorText = deploymentResult.ErrorText();
 
-
                 Logger::error(L"Register {} package failed. ErrorCode: {}, ErrorText: {}", sparsePkgPath, std::to_wstring(errorCode), errorText);
                 return false;
             }
