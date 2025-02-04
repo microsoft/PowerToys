@@ -27,6 +27,8 @@ public partial class InstallPackageCommand : InvokableCommand
 
     public static IconInfo DownloadIcon { get; } = new("\uE896"); // Download
 
+    public static IconInfo DeleteIcon { get; } = new("\uE74D"); // Delete
+
     public event EventHandler<InstallPackageCommand>? InstallStateChanged;
 
     public InstallPackageCommand(CatalogPackage package, bool isInstalled)

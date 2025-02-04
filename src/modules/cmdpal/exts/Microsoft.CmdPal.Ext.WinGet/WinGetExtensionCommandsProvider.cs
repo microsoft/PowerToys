@@ -41,4 +41,6 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
     public override ICommandItem[] TopLevelCommands() => _commands;
 
     public override void InitializeWithHost(IExtensionHost host) => WinGetExtensionHost.Instance.Initialize(host);
+
+    public void SetAllLookup(Func<string, ICommandItem?> callback) => WinGetStatics.AppSearchCallback = callback;
 }

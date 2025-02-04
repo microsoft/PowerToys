@@ -31,6 +31,8 @@ internal static class WinGetStatics
 
     private static readonly StatusMessage _errorMessage = new() { State = MessageState.Error };
 
+    public static Func<string, ICommandItem?>? AppSearchCallback { get; set; }
+
     static WinGetStatics()
     {
         WinGetFactory = new WindowsPackageManagerStandardFactory();

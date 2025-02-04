@@ -47,7 +47,7 @@ internal sealed class Program
         else
         {
             isRedirect = true;
-            _ = keyInstance.RedirectActivationToAsync(args);
+            keyInstance.RedirectActivationToAsync(args).AsTask().ConfigureAwait(false);
         }
 
         return isRedirect;
@@ -55,9 +55,6 @@ internal sealed class Program
 
     private static void OnActivated(object? sender, AppActivationArguments args)
     {
-        var kind = args.Kind;
-        _ = kind;
-
         // If we already have a form, display the message now.
         // Otherwise, add it to the collection for displaying later.
         if (App.Current is App thisApp)

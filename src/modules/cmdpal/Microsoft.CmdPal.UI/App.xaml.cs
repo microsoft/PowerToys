@@ -77,7 +77,11 @@ public partial class App : Application
         services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
 
         // Built-in Commands. Order matters - this is the order they'll be presented by default.
-        services.AddSingleton<ICommandProvider, AllAppsCommandProvider>();
+        var allApps = new AllAppsCommandProvider();
+        var winget = new WinGetExtensionCommandsProvider();
+        var callback = allApps.LookupApp;
+        winget.SetAllLookup(callback);
+        services.AddSingleton<ICommandProvider>(allApps);
         services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
         services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
         services.AddSingleton<ICommandProvider, IndexerCommandsProvider>();
@@ -85,7 +89,7 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
         services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
         services.AddSingleton<ICommandProvider, WebSearchCommandsProvider>();
-        services.AddSingleton<ICommandProvider, WinGetExtensionCommandsProvider>();
+        services.AddSingleton<ICommandProvider>(winget);
         services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
         services.AddSingleton<ICommandProvider, WindowsSettingsCommandsProvider>();
         services.AddSingleton<ICommandProvider, RegistryCommandsProvider>();

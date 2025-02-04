@@ -33,9 +33,11 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
 
     public bool HasMoreCommands => MoreCommands.Count > 0;
 
-    public string SecondaryCommandName => HasMoreCommands ? MoreCommands[0].Name : string.Empty;
+    public string SecondaryCommandName => SecondaryCommand?.Name ?? string.Empty;
 
     public CommandItemViewModel? SecondaryCommand => HasMoreCommands ? MoreCommands[0] : null;
+
+    public bool ShouldBeVisible => !string.IsNullOrEmpty(Name);
 
     public List<CommandContextItemViewModel> AllCommands
     {

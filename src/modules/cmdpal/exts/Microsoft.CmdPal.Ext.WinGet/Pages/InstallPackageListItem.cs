@@ -85,6 +85,7 @@ public partial class InstallPackageListItem : ListItem
             simpleData.Add(item.DocumentLabel, (string.Empty, item.DocumentUrl));
         }
 
+        var options = default(UriCreationOptions);
         foreach (var kv in simpleData)
         {
             var text = string.IsNullOrEmpty(kv.Value.Item1) ? kv.Value.Item2 : kv.Value.Item1;
@@ -92,13 +93,7 @@ public partial class InstallPackageListItem : ListItem
             if (!string.IsNullOrEmpty(text))
             {
                 Uri? uri = null;
-                try
-                {
-                    uri = new Uri(target);
-                }
-                catch (System.UriFormatException)
-                {
-                }
+                Uri.TryCreate(target, options, out uri);
 
                 var pair = new DetailsElement()
                 {
@@ -126,10 +121,42 @@ public partial class InstallPackageListItem : ListItem
     {
         var status = await _package.CheckInstalledStatusAsync();
         var isInstalled = _package.InstalledVersion != null;
+
+        // might be an uninstall command
+        var installCommand = new InstallPackageCommand(_package, isInstalled);
+
+        if (isInstalled)
+        {
+            this.Icon = InstallPackageCommand.CompletedIcon;
+            this.Command = new NoOpCommand();
+            List<IContextItem> contextMenu = [];
+            var uninstallContextItem = new CommandContextItem(installCommand)
+            {
+                IsCritical = true,
+                Icon = InstallPackageCommand.DeleteIcon,
+            };
+
+            if (WinGetStatics.AppSearchCallback != null)
+            {
+                var callback = WinGetStatics.AppSearchCallback;
+                var installedApp = callback(_package.DefaultInstallVersion.DisplayName);
+                if (installedApp != null)
+                {
+                    this.Command = installedApp.Command;
+                    contextMenu = [.. installedApp.MoreCommands];
+                }
+            }
+
+            contextMenu.Add(uninstallContextItem);
+            this.MoreCommands = contextMenu.ToArray();
+            return;
+        }
+
+        // didn't find the app
         _installCommand = new InstallPackageCommand(_package, isInstalled);
         this.Command = _installCommand;
-        Icon = _installCommand.Icon;
 
+        Icon = _installCommand.Icon;
         _installCommand.InstallStateChanged += InstallStateChangedHandler;
     }
 
