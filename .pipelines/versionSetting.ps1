@@ -5,7 +5,10 @@ Param(
 
   [Parameter(Mandatory=$True,Position=2)]
   [AllowEmptyString()]
-  [string]$DevEnvironment = "Local"
+  [string]$DevEnvironment = "Local",
+
+  [Parameter(Mandatory=$True,Position=3)]
+  [string]$cmdPalVersionNumber = "0.0.1"
 )
 
 Write-Host $PSScriptRoot
@@ -38,7 +41,7 @@ $verPropReadFileLocation = $verPropWriteFileLocation;
 $verProps.Project.PropertyGroup.Version = $versionNumber;
 $verProps.Project.PropertyGroup.DevEnvironment = $DevEnvironment;
 
-Write-Host "xml" $verProps.Project.PropertyGroup.Version 
+Write-Host "xml" $verProps.Project.PropertyGroup.Version
 $verProps.Save($verPropWriteFileLocation);
 
 # Set PowerRenameContextMenu package version in AppManifest.xml
@@ -82,6 +85,6 @@ $cmdPalAppManifestWriteFileLocation = $PSScriptRoot + '/../src/modules/cmdpal/Mi
 $cmdPalAppManifestReadFileLocation = $cmdPalAppManifestWriteFileLocation;
 
 [XML]$cmdPalAppManifest = Get-Content $cmdPalAppManifestReadFileLocation
-$cmdPalAppManifest.Package.Identity.Version = $versionNumber + '.0'
+$cmdPalAppManifest.Package.Identity.Version = $cmdPalVersionNumber + '.0'
 Write-Host "CmdPal Package version: " $cmdPalAppManifest.Package.Identity.Version
 $cmdPalAppManifest.Save($cmdPalAppManifestWriteFileLocation);

@@ -77,7 +77,7 @@ if (($BuildStep -ieq "all") -Or ($BuildStep -ieq "pack")) {
     if ($config -eq "release")
     {
       New-Item -ItemType Directory -Force -Path "$PSScriptRoot\..\_build"
-      & $nugetPath pack (Join-Path $PSScriptRoot "Microsoft.CommandPalette.Extensions.nuspec") -Version $VersionOfSDK -OutputDirectory "$PSScriptRoot\..\_build"
+      & $nugetPath pack (Join-Path $PSScriptRoot "Microsoft.CommandPalette.Extensions.SDK.nuspec") -Version $VersionOfSDK -OutputDirectory "$PSScriptRoot\..\_build"
     } else {
       Write-Host @"
 WARNING: You are currently building as '$config' configuration.
