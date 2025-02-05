@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Media.Control;
 
 namespace MediaControlsExtension;
@@ -14,7 +14,7 @@ public sealed partial class TogglePlayMediaCommand : InvokableCommand
     public TogglePlayMediaCommand()
     {
         Name = "No media playing";
-        Icon = new(string.Empty);
+        Icon = new IconInfo(string.Empty);
     }
 
     public override CommandResult Invoke()

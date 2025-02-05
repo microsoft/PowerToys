@@ -12,7 +12,7 @@ using System.Text;
 using Microsoft.CmdPal.Ext.WindowsSettings.Commands;
 using Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
 using Microsoft.CmdPal.Ext.WindowsSettings.Properties;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WindowsSettings;
 
@@ -32,7 +32,7 @@ internal static class ResultHelper
         {
             var result = new ListItem(new OpenSettingsCommand(entry))
             {
-                Icon = new(iconPath),
+                Icon = new IconInfo(iconPath),
                 Subtitle = entry.JoinedFullSettingsPath,
                 Title = entry.Name,
                 MoreCommands = ContextMenuHelper.GetContextMenu(entry).ToArray(),

@@ -4,6 +4,7 @@
 
 using System.Collections.ObjectModel;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -81,7 +82,7 @@ public partial class SettingsViewModel : PageViewModel
         _settings = settings;
         _serviceProvider = serviceProvider;
 
-        Icon = new(new("\uE713"));
+        Icon = new(new IconInfo("\uE713"));
         Icon.InitializeProperties();
         IsInitialized = true;
         ModelIsLoading = false;

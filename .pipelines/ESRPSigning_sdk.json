@@ -4,8 +4,8 @@
     "SignBatches": [
         {
             "MatchedPath": [
-                "Microsoft.CmdPal.Extensions.dll",
-                "Microsoft.CmdPal.Extensions.Helpers.dll"
+                "Microsoft.CommandPalette.Extensions.dll",
+                "Microsoft.CommandPalette.Extensions.Toolkit.dll"
             ],
             "SigningInfo": {
                 "Operations": [

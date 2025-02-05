@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata minClientVersion="2.5">
-    <id>Microsoft.CmdPal.Extensions.SDK</id>
+    <id>Microsoft.CommandPalette.Extensions</id>
     <version>0.0.0</version>
     <title>Command Palette SDK</title>
     <authors>Microsoft</authors>
@@ -21,15 +21,15 @@
   </metadata>
   <files>
     <!-- TODO : Add NOTICE.txt and LICENSE files -->
-    <file src="Microsoft.CmdPal.Extensions.SDK.props" target="build\"/>
-    <file src="Microsoft.CmdPal.Extensions.SDK.targets" target="build\"/>
+    <file src="Microsoft.CommandPalette.Extensions.SDK.props" target="build\"/>
+    <file src="Microsoft.CommandPalette.Extensions.SDK.targets" target="build\"/>
     <!-- AnyCPU Managed dlls from SDK.Lib project -->
-    <file src="..\Microsoft.CmdPal.Extensions.Helpers\x64\release\Microsoft.CmdPal.Extensions.Helpers\Microsoft.CmdPal.Extensions.Helpers.dll" target="lib\net8.0-windows10.0.19041.0\"/>
-    <file src="..\Microsoft.CmdPal.Extensions.Helpers\x64\release\Microsoft.CmdPal.Extensions.Helpers\Microsoft.CmdPal.Extensions.Helpers.deps.json" target="lib\net8.0-windows10.0.19041.0\"/>
+    <file src="..\Microsoft.CommandPalette.Extensions.Toolkit\x64\release\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.dll" target="lib\net8.0-windows10.0.19041.0\"/>
+    <file src="..\Microsoft.CommandPalette.Extensions.Toolkit\x64\release\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.deps.json" target="lib\net8.0-windows10.0.19041.0\"/>
     <!-- Native dlls and winmd from SDK cpp project -->
-    <file src="..\Microsoft.CmdPal.Extensions\x64\release\Microsoft.CmdPal.Extensions\Microsoft.CmdPal.Extensions.dll" target="runtimes\win-x64\native\"/>
-    <file src="..\Microsoft.CmdPal.Extensions\arm64\release\Microsoft.CmdPal.Extensions\Microsoft.CmdPal.Extensions.dll" target="runtimes\win-arm64\native\"/>
+    <file src="..\Microsoft.CommandPalette.Extensions\x64\release\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.dll" target="runtimes\win-x64\native\"/>
+    <file src="..\Microsoft.CommandPalette.Extensions\arm64\release\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.dll" target="runtimes\win-arm64\native\"/>
     <!-- Not putting in the following the lib folder because we don't want plugin project to directly reference the winmd -->
-    <file src="..\Microsoft.CmdPal.Extensions\x64\release\Microsoft.CmdPal.Extensions\Microsoft.CmdPal.Extensions.winmd" target="winmd\"/>
+    <file src="..\Microsoft.CommandPalette.Extensions\x64\release\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.winmd" target="winmd\"/>
   </files>
 </package>

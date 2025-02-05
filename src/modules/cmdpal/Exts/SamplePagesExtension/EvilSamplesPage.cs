@@ -4,8 +4,8 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SamplePagesExtension;
 
@@ -67,7 +67,7 @@ public partial class EvilSamplesPage : ListPage
     public EvilSamplesPage()
     {
         Name = "Evil Samples";
-        Icon = new("👿"); // Info
+        Icon = new IconInfo("👿"); // Info
     }
 
     public override IListItem[] GetItems() => _commands;
@@ -94,7 +94,7 @@ internal sealed partial class ExplodeOnPropChange : ListPage
 
     public ExplodeOnPropChange()
     {
-        Icon = new(string.Empty);
+        Icon = new IconInfo(string.Empty);
         Name = "Open";
     }
 

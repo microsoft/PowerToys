@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Media.Control;
 
 namespace MediaControlsExtension;
@@ -21,12 +21,12 @@ internal sealed partial class PrevNextTrackCommand : InvokableCommand
         if (previous)
         {
             Name = "Previous track";
-            Icon = new("\ue892");
+            Icon = new IconInfo("\ue892");
         }
         else
         {
             Name = "Next track";
-            Icon = new("\ue893");
+            Icon = new IconInfo("\ue893");
         }
     }
 

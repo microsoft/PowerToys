@@ -12,8 +12,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace MastodonExtension;
 
@@ -27,7 +27,7 @@ internal sealed partial class MastodonExtensionPage : ListPage
 
     public MastodonExtensionPage()
     {
-        Icon = new("https://mastodon.social/packs/media/icons/android-chrome-36x36-4c61fdb42936428af85afdbf8c6a45a8.png");
+        Icon = new IconInfo("https://mastodon.social/packs/media/icons/android-chrome-36x36-4c61fdb42936428af85afdbf8c6a45a8.png");
         Name = "Mastodon";
         ShowDetails = true;
         HasMoreItems = true;
@@ -45,20 +45,20 @@ internal sealed partial class MastodonExtensionPage : ListPage
             {
                 Title = p.Account.DisplayName, // p.ContentAsPlainText(),
                 Subtitle = $"@{p.Account.Username}",
-                Icon = new(p.Account.Avatar),
+                Icon = new IconInfo(p.Account.Avatar),
 
                 // *
                 Tags = [
                     new Tag()
                     {
-                        Icon = new("\ue734"), // FavoriteStar
+                        Icon = new IconInfo("\ue734"), // FavoriteStar
                         Background = ColorHelpers.FromRgb(255, 255, 0), // Yellow
                         Foreground = ColorHelpers.FromRgb(64, 64, 0), // Dark Yellow
                         Text = p.Favorites.ToString(CultureInfo.CurrentCulture),
                     },
                     new Tag()
                     {
-                        Icon = new("\ue8ee"), // RepeatAll
+                        Icon = new IconInfo("\ue8ee"), // RepeatAll
                         Background = ColorHelpers.FromRgb(86, 58, 204), // Mastodon color
                         Foreground = ColorHelpers.FromRgb(255, 255, 255), // White
                         Text = p.Boosts.ToString(CultureInfo.CurrentCulture),

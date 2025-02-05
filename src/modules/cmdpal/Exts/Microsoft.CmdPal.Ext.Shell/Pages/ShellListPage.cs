@@ -4,8 +4,8 @@
 
 using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CmdPal.Ext.Shell.Properties;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Shell.Pages;
 
@@ -15,7 +15,7 @@ internal sealed partial class ShellListPage : DynamicListPage
 
     public ShellListPage(SettingsManager settingsManager)
     {
-        Icon = new("\uE756");
+        Icon = new IconInfo("\uE756");
         Id = "com.microsoft.cmdpal.shell";
         Name = Resources.cmd_plugin_name;
         PlaceholderText = Resources.list_placeholder_text;

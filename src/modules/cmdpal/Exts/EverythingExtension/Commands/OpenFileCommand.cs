@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Windowing;
 
 namespace EverythingExtension;
@@ -18,7 +18,7 @@ internal sealed partial class OpenFileCommand : InvokableCommand
         _fullname = fullname;
         _path = path;
         Name = "Open file";
-        Icon = new("\ue8e5");
+        Icon = new IconInfo("\ue8e5");
     }
 
     public override CommandResult Invoke()

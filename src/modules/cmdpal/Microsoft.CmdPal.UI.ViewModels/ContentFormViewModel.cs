@@ -6,9 +6,9 @@ using System.Text.Json;
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Templating;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CommandPalette.Extensions;
 using Windows.Data.Json;
 
 namespace Microsoft.CmdPal.UI.ViewModels;

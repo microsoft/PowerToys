@@ -19,7 +19,7 @@
   IgnorableNamespaces="uap mp rescap uap3 uap17 desktop6 virtualization">
 
   <Identity
-	Name="Microsoft.CmdPal"
+	Name="Microsoft.CommandPalette"
 	Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
 	Version="0.0.1.0" />
 
@@ -58,12 +58,12 @@
 
 		<uap3:Extension Category="windows.appExtensionHost">
 		  <uap3:AppExtensionHost>
-			<uap3:Name>com.microsoft.windows.commandpalette</uap3:Name>
+			<uap3:Name>com.microsoft.commandpalette</uap3:Name>
 		  </uap3:AppExtensionHost>
 		</uap3:Extension>
 
 	  </Extensions>
-		
+
     </Application>
   </Applications>
 

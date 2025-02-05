@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text.Json;
 using Microsoft.CmdPal.Ext.WebSearch.Commands;
 using Microsoft.CmdPal.Ext.WebSearch.Properties;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WebSearch.Helpers;
 

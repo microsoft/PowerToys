@@ -12,8 +12,8 @@ using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.WindowsSettings.Classes;
 using Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
 using Microsoft.CmdPal.Ext.WindowsSettings.Properties;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Networking.NetworkOperators;
 using Windows.UI;
@@ -27,7 +27,7 @@ internal sealed partial class OpenSettingsCommand : InvokableCommand
     internal OpenSettingsCommand(WindowsSetting entry)
     {
         Name = Resources.OpenSettings;
-        Icon = new("\xE8C8");
+        Icon = new IconInfo("\xE8C8");
         _entry = entry;
     }
 

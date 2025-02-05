@@ -4,8 +4,8 @@
 
 using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WindowsTerminal.Pages;
 
@@ -23,7 +23,7 @@ internal sealed partial class SettingsPage : FormPage
     public SettingsPage(SettingsManager settingsManager)
     {
         Name = Resources.settings_page_name;
-        Icon = new("\uE713"); // Settings icon
+        Icon = new IconInfo("\uE713"); // Settings icon
         _settings = settingsManager.Settings;
         _settingsManager = settingsManager;
 

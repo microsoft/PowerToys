@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 internal sealed partial class OpenExplorerCommand : InvokableCommand
 {
@@ -13,7 +13,7 @@ internal sealed partial class OpenExplorerCommand : InvokableCommand
     {
         _fullname = fullname;
         Name = "Open path";
-        Icon = new("\uec50");
+        Icon = new IconInfo("\uec50");
     }
 
     public override CommandResult Invoke()

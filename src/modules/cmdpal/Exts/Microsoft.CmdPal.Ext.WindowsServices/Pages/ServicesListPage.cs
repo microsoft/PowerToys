@@ -5,8 +5,8 @@
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.CmdPal.Ext.WindowsServices.Helpers;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WindowsServices;
 

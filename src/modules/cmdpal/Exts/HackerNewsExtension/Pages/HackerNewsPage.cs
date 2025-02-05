@@ -11,8 +11,8 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using HackerNewsExtension.Commands;
 using HackerNewsExtension.Data;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace HackerNewsExtension;
 
@@ -20,7 +20,7 @@ internal sealed partial class HackerNewsPage : ListPage
 {
     public HackerNewsPage()
     {
-        Icon = new("https://news.ycombinator.com/favicon.ico");
+        Icon = new IconInfo("https://news.ycombinator.com/favicon.ico");
         Name = "Hacker News";
         AccentColor = ColorHelpers.FromRgb(255, 102, 0);
         IsLoading = true;

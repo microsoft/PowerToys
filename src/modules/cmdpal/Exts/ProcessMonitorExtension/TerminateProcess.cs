@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace ProcessMonitorExtension;
 
@@ -16,7 +16,7 @@ internal sealed partial class TerminateProcess : InvokableCommand
     {
         _process = process;
         _owner = owner;
-        Icon = new("\ue74d");
+        Icon = new IconInfo("\ue74d");
         Name = "End task";
     }
 

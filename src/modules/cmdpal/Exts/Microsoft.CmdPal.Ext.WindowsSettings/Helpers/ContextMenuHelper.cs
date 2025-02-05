@@ -10,7 +10,7 @@ using System.Windows.Input;
 using Microsoft.CmdPal.Ext.WindowsSettings.Classes;
 using Microsoft.CmdPal.Ext.WindowsSettings.Commands;
 using Microsoft.CmdPal.Ext.WindowsSettings.Properties;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
 

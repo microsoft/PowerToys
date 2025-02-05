@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Ext.Shell.Helpers;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Shell.Pages;
 
@@ -22,7 +22,7 @@ internal sealed partial class SettingsPage : FormPage
     public SettingsPage(SettingsManager settingsManager)
     {
         Name = Properties.Resources.settings_page_name;
-        Icon = new("\uE713"); // Settings icon
+        Icon = new IconInfo("\uE713"); // Settings icon
         _settings = settingsManager.Settings;
         _settingsManager = settingsManager;
 

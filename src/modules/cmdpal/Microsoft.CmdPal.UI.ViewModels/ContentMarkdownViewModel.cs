@@ -4,9 +4,9 @@
 
 using System.Collections.ObjectModel;
 using AdaptiveCards.ObjectModel.WinUI3;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -35,7 +35,7 @@ public partial class ContentMarkdownViewModel(IMarkdownContent _markdown, IPageC
         model.PropChanged += Model_PropChanged;
     }
 
-    private void Model_PropChanged(object sender, PropChangedEventArgs args)
+    private void Model_PropChanged(object sender, IPropChangedEventArgs args)
     {
         try
         {

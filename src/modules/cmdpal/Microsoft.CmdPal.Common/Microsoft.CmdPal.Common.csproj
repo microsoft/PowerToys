@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\extensionsdk\Microsoft.CmdPal.Extensions.Helpers\Microsoft.CmdPal.Extensions.Helpers.csproj" />
+    <ProjectReference Include="..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
   </ItemGroup>
 
 </Project>

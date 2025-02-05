@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Commands;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace Microsoft.CmdPal.Ext.WindowsTerminal.Pages;

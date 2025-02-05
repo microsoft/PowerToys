@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.WindowWalker.Components;
 using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Commands;
 
@@ -21,7 +21,7 @@ internal sealed partial class KillProcessCommand : InvokableCommand
 
     public KillProcessCommand(Window window)
     {
-        Icon = new("\xE74D"); // Delete symbol
+        Icon = new IconInfo("\xE74D"); // Delete symbol
         Name = $"{Resources.windowwalker_Kill}";
         _window = window;
     }

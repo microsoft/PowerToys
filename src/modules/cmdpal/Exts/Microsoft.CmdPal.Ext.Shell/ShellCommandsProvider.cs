@@ -5,8 +5,8 @@
 using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CmdPal.Ext.Shell.Pages;
 using Microsoft.CmdPal.Ext.Shell.Properties;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Shell;
 
@@ -20,13 +20,13 @@ public partial class ShellCommandsProvider : CommandProvider
     {
         Id = "Run";
         DisplayName = Resources.cmd_plugin_name;
-        Icon = new("\uE756");
+        Icon = new IconInfo("\uE756");
 
         _fallbackItem = new FallbackExecuteItem(_settingsManager);
 
         _shellPageItem = new CommandItem(new ShellListPage(_settingsManager))
         {
-            Icon = new("\uE756"),
+            Icon = new IconInfo("\uE756"),
             Title = Resources.shell_command_name,
             Subtitle = Resources.cmd_plugin_description,
             MoreCommands = [new CommandContextItem(new SettingsPage(_settingsManager))],

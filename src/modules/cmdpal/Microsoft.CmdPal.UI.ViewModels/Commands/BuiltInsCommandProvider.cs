@@ -2,10 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 
@@ -35,6 +35,6 @@ public partial class BuiltInsCommandProvider : CommandProvider
     {
         Id = "Core";
         DisplayName = "Built-in commands";
-        Icon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory.ToString(), "Assets\\StoreLogo.scale-200.png"));
+        Icon = new IconInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory.ToString(), "Assets\\StoreLogo.scale-200.png"));
     }
 }

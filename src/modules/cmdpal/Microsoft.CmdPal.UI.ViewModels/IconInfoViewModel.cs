@@ -3,14 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class IconInfoViewModel : ObservableObject
 {
-    private readonly ExtensionObject<IconInfo> _model = new(null);
+    private readonly ExtensionObject<IIconInfo> _model = new(null);
 
     // These are properties that are "observable" from the extension object
     // itself, in the sense that they get raised by PropChanged events from the
@@ -26,7 +26,7 @@ public partial class IconInfoViewModel : ObservableObject
 
     public bool HasIcon(bool light) => IconForTheme(light).HasIcon;
 
-    public IconInfoViewModel(IconInfo? icon)
+    public IconInfoViewModel(IIconInfo? icon)
     {
         _model = new(icon);
         Light = new(null);

@@ -11,8 +11,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.WindowsServices.Helpers;
 using Microsoft.CmdPal.Ext.WindowsServices.Properties;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.UI;
 
 namespace Microsoft.CmdPal.Ext.WindowsServices.Commands;
@@ -25,7 +25,7 @@ internal sealed partial class OpenServicesCommand : InvokableCommand
     {
         _serviceResult = serviceResult;
         Name = Resources.wox_plugin_service_open_services;
-        Icon = new("\xE8A7"); // OpenInNewWindow icon
+        Icon = new IconInfo("\xE8A7"); // OpenInNewWindow icon
     }
 
     public override CommandResult Invoke()

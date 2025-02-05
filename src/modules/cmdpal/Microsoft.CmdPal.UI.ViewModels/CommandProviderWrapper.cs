@@ -4,21 +4,19 @@
 
 using System.Diagnostics;
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CommandPalette.Extensions;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public sealed class CommandProviderWrapper
 {
-    public bool IsExtension => extensionWrapper != null;
+    public bool IsExtension => Extension != null;
 
     private readonly bool isValid;
 
     private readonly ExtensionObject<ICommandProvider> _commandProvider;
-
-    private readonly IExtensionWrapper? extensionWrapper;
 
     public ICommandItem[] TopLevelItems { get; private set; } = [];
 
@@ -26,17 +24,17 @@ public sealed class CommandProviderWrapper
 
     public string DisplayName { get; private set; } = string.Empty;
 
-    public IExtensionWrapper? Extension => extensionWrapper;
+    public IExtensionWrapper? Extension { get; }
 
     public CommandPaletteHost ExtensionHost { get; private set; }
 
-    public event TypedEventHandler<CommandProviderWrapper, ItemsChangedEventArgs>? CommandsChanged;
+    public event TypedEventHandler<CommandProviderWrapper, IItemsChangedEventArgs>? CommandsChanged;
 
     public string Id { get; private set; } = string.Empty;
 
     public IconInfoViewModel Icon { get; private set; } = new(null);
 
-    public string ProviderId => $"{extensionWrapper?.PackageFamilyName ?? string.Empty}/{Id}";
+    public string ProviderId => $"{Extension?.PackageFamilyName ?? string.Empty}/{Id}";
 
     public CommandProviderWrapper(ICommandProvider provider)
     {
@@ -59,9 +57,9 @@ public sealed class CommandProviderWrapper
 
     public CommandProviderWrapper(IExtensionWrapper extension)
     {
-        extensionWrapper = extension;
+        Extension = extension;
         ExtensionHost = new CommandPaletteHost(extension);
-        if (!extensionWrapper.IsRunning())
+        if (!Extension.IsRunning())
         {
             throw new ArgumentException("You forgot to start the extension. This is a coding error - make sure to call StartExtensionAsync");
         }
@@ -90,7 +88,7 @@ public sealed class CommandProviderWrapper
         catch (Exception e)
         {
             Debug.WriteLine("Failed to initialize CommandProvider for extension.");
-            Debug.WriteLine($"Extension was {extensionWrapper!.PackageFamilyName}");
+            Debug.WriteLine($"Extension was {Extension!.PackageFamilyName}");
             Debug.WriteLine(e);
         }
 
@@ -126,7 +124,7 @@ public sealed class CommandProviderWrapper
         catch (Exception e)
         {
             Debug.WriteLine("Failed to load commands from extension");
-            Debug.WriteLine($"Extension was {extensionWrapper!.PackageFamilyName}");
+            Debug.WriteLine($"Extension was {Extension!.PackageFamilyName}");
             Debug.WriteLine(e);
         }
 
@@ -160,8 +158,8 @@ public sealed class CommandProviderWrapper
 
     public override int GetHashCode() => _commandProvider.GetHashCode();
 
-    private void CommandProvider_ItemsChanged(object sender, ItemsChangedEventArgs args)
-    {
+    private void CommandProvider_ItemsChanged(object sender, IItemsChangedEventArgs args) =>
+
         // We don't want to handle this ourselves - we want the
         // TopLevelCommandManager to know about this, so they can remove
         // our old commands from their own list.
@@ -169,5 +167,4 @@ public sealed class CommandProviderWrapper
         // In handling this, a call will be made to `LoadTopLevelCommands` to
         // retrieve the new items.
         this.CommandsChanged?.Invoke(this, args);
-    }
 }

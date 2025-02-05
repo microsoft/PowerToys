@@ -4,7 +4,7 @@
 
 using System;
 using System.Text.Json.Nodes;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SamplePagesExtension;
 

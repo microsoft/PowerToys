@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.CmdPal.Ext.Calc;
@@ -15,7 +15,7 @@ public partial class CalculatorCopyCommand : InvokableCommand
 
     public CalculatorCopyCommand()
     {
-        Icon = new("\ue8ef");
+        Icon = new IconInfo("\ue8ef");
     }
 
     public override ICommandResult Invoke()

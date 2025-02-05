@@ -6,8 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CmdPal.Ext.WindowsSettings.Classes;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WindowsSettings;
 
@@ -18,7 +18,7 @@ internal sealed partial class WindowsSettingsListPage : DynamicListPage
 
     public WindowsSettingsListPage(Classes.WindowsSettings windowsSettings)
     {
-        Icon = new("\uE713"); // Settings
+        Icon = new IconInfo("\uE713"); // Settings
         Name = "Windows Settings";
         Id = "com.microsoft.cmdpal.windowsSettings";
         _defaultIconPath = "Images/WindowsSettings.light.png";

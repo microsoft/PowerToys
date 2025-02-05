@@ -7,7 +7,7 @@ using System.Diagnostics;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Commands;
 
@@ -19,7 +19,7 @@ internal sealed partial class OpenFileCommand : InvokableCommand
     {
         this._item = item;
         this.Name = Resources.Indexer_Command_OpenFile;
-        this.Icon = new("\uE8E5");
+        this.Icon = new IconInfo("\uE8E5");
     }
 
     public override CommandResult Invoke()

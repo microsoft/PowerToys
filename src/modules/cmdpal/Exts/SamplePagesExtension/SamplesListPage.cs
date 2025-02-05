@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SamplePagesExtension;
 
@@ -48,7 +48,7 @@ public partial class SamplesListPage : ListPage
         {
             Title = "Sample of nested comments",
             Subtitle = "Demo of using nested trees of content to create a comment thread-like experience",
-            Icon = new("\uE90A"), // Comment
+            Icon = new IconInfo("\uE90A"), // Comment
         },
 
         // DEPRECATED: Markdown pages
@@ -94,7 +94,7 @@ public partial class SamplesListPage : ListPage
     public SamplesListPage()
     {
         Name = "Samples";
-        Icon = new("\ue946"); // Info
+        Icon = new IconInfo("\ue946"); // Info
     }
 
     public override IListItem[] GetItems() => _commands;

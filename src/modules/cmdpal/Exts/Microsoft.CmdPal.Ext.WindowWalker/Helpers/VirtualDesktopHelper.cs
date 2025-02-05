@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Win32;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Helpers;

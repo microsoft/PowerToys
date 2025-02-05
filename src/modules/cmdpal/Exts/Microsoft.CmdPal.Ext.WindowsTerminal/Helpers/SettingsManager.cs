@@ -4,7 +4,7 @@
 
 using System.IO;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 #nullable enable
 

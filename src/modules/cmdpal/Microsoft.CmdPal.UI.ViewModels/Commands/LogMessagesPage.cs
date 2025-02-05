@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Specialized;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Commands;
 
@@ -16,7 +16,7 @@ public partial class LogMessagesPage : ListPage
     {
         Name = "View log";
         Title = "Log";
-        Icon = new("\uE8FD");
+        Icon = new IconInfo("\uE8FD");
         CommandPaletteHost.LogMessages.CollectionChanged += LogMessages_CollectionChanged;
     }
 

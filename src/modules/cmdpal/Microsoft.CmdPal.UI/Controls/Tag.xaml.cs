@@ -2,9 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -29,10 +29,7 @@ public partial class Tag : Control
         set => SetValue(ForegroundColorProperty, value);
     }
 
-    public bool HasIcon
-    {
-        get => Icon?.HasIcon(this.ActualTheme == ElementTheme.Light) ?? false;
-    }
+    public bool HasIcon => Icon?.HasIcon(this.ActualTheme == ElementTheme.Light) ?? false;
 
     public IconInfoViewModel? Icon
     {

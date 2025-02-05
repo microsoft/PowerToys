@@ -10,8 +10,8 @@ using System.Linq;
 using System.ServiceProcess;
 using Microsoft.CmdPal.Ext.WindowsServices.Commands;
 using Microsoft.CmdPal.Ext.WindowsServices.Properties;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Win32;
 
 namespace Microsoft.CmdPal.Ext.WindowsServices.Helpers;

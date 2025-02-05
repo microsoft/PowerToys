@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Native;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
@@ -50,7 +50,7 @@ internal sealed partial class OpenWithCommand : InvokableCommand
     {
         this._item = item;
         this.Name = Resources.Indexer_Command_OpenWith;
-        this.Icon = new("\uE7AC");
+        this.Icon = new IconInfo("\uE7AC");
     }
 
     public override CommandResult Invoke()

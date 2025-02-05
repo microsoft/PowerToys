@@ -4,7 +4,7 @@
 
 using System.Diagnostics;
 using HackerNewsExtension.Data;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace HackerNewsExtension.Commands;
 
@@ -16,7 +16,7 @@ internal sealed partial class CommentCommand : InvokableCommand
     {
         _post = post;
         Name = "Open comments";
-        Icon = new("\ue8f2"); // chat bubbles
+        Icon = new IconInfo("\ue8f2"); // chat bubbles
     }
 
     public override CommandResult Invoke()

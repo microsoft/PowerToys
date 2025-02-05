@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Xaml;
 
 internal sealed partial class CopyPathCommand : InvokableCommand
@@ -14,7 +14,7 @@ internal sealed partial class CopyPathCommand : InvokableCommand
     {
         _fullname = fullname;
         Name = "Copy path";
-        Icon = new("\ue8c8");
+        Icon = new IconInfo("\ue8c8");
     }
 
     public override CommandResult Invoke()

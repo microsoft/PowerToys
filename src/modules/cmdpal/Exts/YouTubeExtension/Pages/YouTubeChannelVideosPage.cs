@@ -10,8 +10,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using YouTubeExtension.Commands;
 using YouTubeExtension.Helper;
 
@@ -24,7 +24,7 @@ internal sealed partial class YouTubeChannelVideosPage : DynamicListPage
 
     public YouTubeChannelVideosPage(string channelId = null, string channelName = null)
     {
-        Icon = new("https://www.youtube.com/favicon.ico");
+        Icon = new IconInfo("https://www.youtube.com/favicon.ico");
         Name = $"Search for Videos by {channelName ?? "Channel"}";
         this.ShowDetails = true;
 
@@ -55,7 +55,7 @@ internal sealed partial class YouTubeChannelVideosPage : DynamicListPage
             Details = new Details()
             {
                 Title = video.Title,
-                HeroImage = new(video.ThumbnailUrl),
+                HeroImage = new IconInfo(video.ThumbnailUrl),
                 Body = $"{video.Channel}",
             },
             Tags = [

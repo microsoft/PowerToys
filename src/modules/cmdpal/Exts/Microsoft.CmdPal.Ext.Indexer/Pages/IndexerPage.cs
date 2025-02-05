@@ -10,8 +10,8 @@ using ManagedCommon;
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Indexer;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Indexer;
 
@@ -26,7 +26,7 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
     public IndexerPage()
     {
         Id = "com.microsoft.indexer.fileSearch";
-        Icon = new("\uEC50");
+        Icon = new IconInfo("\uEC50");
         Name = Resources.Indexer_Title;
         PlaceholderText = Resources.Indexer_PlaceholderText;
 
@@ -96,7 +96,7 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
                         FullPath = result.LaunchUri,
                     })
                     {
-                        Icon = new(result.IsFolder ? "\uE838" : "\uE8E5"),
+                        Icon = new IconInfo(result.IsFolder ? "\uE838" : "\uE8E5"),
                     });
                 }
 

@@ -4,7 +4,7 @@
 
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Commands;
@@ -17,7 +17,7 @@ internal sealed partial class CopyPathCommand : InvokableCommand
     {
         this._item = item;
         this.Name = Resources.Indexer_Command_CopyPath;
-        this.Icon = new("\uE8c8");
+        this.Icon = new IconInfo("\uE8c8");
     }
 
     public override CommandResult Invoke()

@@ -7,8 +7,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Management.Deployment;
 using Windows.Foundation.Metadata;
 
@@ -40,7 +40,7 @@ public partial class InstallPackageListItem : ListItem
 
 {description}
 """;
-            IconInfo heroIcon = new(string.Empty);
+            IconInfo heroIcon = new IconInfo(string.Empty);
             var icons = metadata.Icons;
             if (icons.Count > 0)
             {
@@ -167,7 +167,7 @@ public partial class InstallPackageListItem : ListItem
             Debug.WriteLine($"RefreshPackageCatalogAsync isn't available");
             e.FakeChangeStatus();
             Command = e;
-            Icon = Command.Icon;
+            Icon = (IconInfo?)Command.Icon;
             return;
         }
 

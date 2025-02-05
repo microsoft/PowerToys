@@ -2,16 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
-using Windows.UI.ApplicationSettings;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using static EverythingExtension.NativeMethods;
 
 namespace EverythingExtension;
@@ -20,10 +15,9 @@ internal sealed partial class EverythingExtensionPage : DynamicListPage
 {
     public EverythingExtensionPage()
     {
-        Icon = new(File.Exists("C:\\Program Files\\Everything\\Everything.exe") ?
+        Icon = new IconInfo(File.Exists("C:\\Program Files\\Everything\\Everything.exe") ?
             "C:\\Program Files\\Everything\\Everything.exe" :
-            "C:\\Program Files (x86)\\Everything\\Everything.exe"
-        );
+            "C:\\Program Files (x86)\\Everything\\Everything.exe");
         Name = "Everything";
 
         Everything_SetRequestFlags(Request.FILE_NAME | Request.PATH);
@@ -57,9 +51,11 @@ internal sealed partial class EverythingExtensionPage : DynamicListPage
                 (uint)EverythingErrors.EVERYTHING_ERROR_INVALIDCALL => "Invalid call",
                 _ => "Unexpected error",
             };
-            List<ListItem> items = new List<ListItem>();
-            items.Add(new ListItem(new NoOpCommand() { Name = "Failed to query. Error was:" }));
-            items.Add(new ListItem(new NoOpCommand()) { Title = message, Subtitle = $"0x{lastError:X8}" });
+            List<ListItem> items =
+            [
+                new ListItem(new NoOpCommand() { Name = "Failed to query. Error was:" }),
+                new ListItem(new NoOpCommand()) { Title = message, Subtitle = $"0x{lastError:X8}" },
+            ];
             if (lastError == (uint)EverythingErrors.EVERYTHING_ERROR_IPC)
             {
                 items.Add(new ListItem(new NoOpCommand() { Name = "(Are you sure Everything is running?)" }));

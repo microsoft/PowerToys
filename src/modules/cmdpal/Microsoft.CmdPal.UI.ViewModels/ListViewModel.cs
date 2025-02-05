@@ -6,10 +6,10 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -50,13 +50,13 @@ public partial class ListViewModel : PageViewModel
     }
 
     // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
-    private void Model_ItemsChanged(object sender, ItemsChangedEventArgs args) => FetchItems();
+    private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args) => FetchItems();
 
     protected override void OnFilterUpdated(string filter)
     {
         //// TODO: Just temp testing, need to think about where we want to filter, as ACVS in View could be done, but then grouping need CVS, maybe we do grouping in view
         //// and manage filtering below, but we should be smarter about this and understand caching and other requirements...
-        //// Investigate if we re-use src\modules\cmdpal\extensionsdk\Microsoft.CmdPal.Extensions.Helpers\ListHelpers.cs InPlaceUpdateList and FilterList?
+        //// Investigate if we re-use src\modules\cmdpal\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\ListHelpers.cs InPlaceUpdateList and FilterList?
 
         // Dynamic pages will handler their own filtering. They will tell us if
         // something needs to change, by raising ItemsChanged.

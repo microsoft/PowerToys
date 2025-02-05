@@ -4,8 +4,8 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
@@ -17,7 +17,7 @@ public sealed partial class AllAppsPage : ListPage
     {
         StringMatcher.Instance = new StringMatcher();
         this.Name = "All Apps";
-        this.Icon = new("\ue71d");
+        this.Icon = new IconInfo("\ue71d");
         this.ShowDetails = true;
         this.IsLoading = true;
         this.PlaceholderText = "Search installed apps...";

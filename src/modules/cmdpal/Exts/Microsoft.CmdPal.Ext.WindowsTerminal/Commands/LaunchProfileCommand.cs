@@ -11,8 +11,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.UI;
 
 namespace Microsoft.CmdPal.Ext.WindowsTerminal.Commands;
@@ -32,7 +32,7 @@ internal sealed partial class LaunchProfileCommand : InvokableCommand
         this._openQuake = openQuake;
 
         this.Name = Resources.launch_profile;
-        this.Icon = new(iconPath);
+        this.Icon = new IconInfo(iconPath);
     }
 
     private void Launch(string id, string profile)

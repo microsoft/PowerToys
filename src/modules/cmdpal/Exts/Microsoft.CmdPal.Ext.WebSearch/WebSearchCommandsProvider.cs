@@ -6,8 +6,8 @@ using Microsoft.CmdPal.Ext.WebSearch.Commands;
 using Microsoft.CmdPal.Ext.WebSearch.Helpers;
 using Microsoft.CmdPal.Ext.WebSearch.Pages;
 using Microsoft.CmdPal.Ext.WebSearch.Properties;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WebSearch;
 

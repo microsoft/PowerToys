@@ -4,7 +4,7 @@
 
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
@@ -17,7 +17,7 @@ internal sealed partial class AppCommand : InvokableCommand
         _app = app;
 
         Name = "Run";
-        Icon = new(_app.IcoPath);
+        Icon = new IconInfo(_app.IcoPath);
     }
 
     internal static async Task StartApp(string aumid)

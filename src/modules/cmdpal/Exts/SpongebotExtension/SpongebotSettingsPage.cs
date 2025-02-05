@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SpongebotExtension;
 
@@ -16,6 +16,6 @@ internal sealed partial class SpongebotSettingsPage : FormPage
     public SpongebotSettingsPage()
     {
         Name = "Settings";
-        Icon = new("https://imgflip.com/s/meme/Mocking-Spongebob.jpg");
+        Icon = new IconInfo("https://imgflip.com/s/meme/Mocking-Spongebob.jpg");
     }
 }

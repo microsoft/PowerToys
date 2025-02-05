@@ -7,8 +7,8 @@ using System.IO;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Pages;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WindowsTerminal;
 

@@ -9,7 +9,7 @@ using System.Windows.Input;
 using Microsoft.CmdPal.Ext.Registry.Classes;
 using Microsoft.CmdPal.Ext.Registry.Commands;
 using Microsoft.CmdPal.Ext.Registry.Properties;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Registry.Helpers;
 

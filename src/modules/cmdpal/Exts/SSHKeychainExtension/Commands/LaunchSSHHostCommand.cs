@@ -8,8 +8,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using SSHKeychainExtension.Data;
 
 namespace SSHKeychainExtension.Commands;
@@ -22,7 +22,7 @@ internal sealed partial class LaunchSSHHostCommand : InvokableCommand
     {
         this._host = host;
         this.Name = "Connect";
-        this.Icon = new("\uE8A7");
+        this.Icon = new IconInfo("\uE8A7");
     }
 
     public override CommandResult Invoke()

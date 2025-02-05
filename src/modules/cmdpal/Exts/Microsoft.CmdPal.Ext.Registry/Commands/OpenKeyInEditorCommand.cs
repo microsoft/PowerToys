@@ -12,8 +12,8 @@ using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Registry.Classes;
 using Microsoft.CmdPal.Ext.Registry.Helpers;
 using Microsoft.CmdPal.Ext.Registry.Properties;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI;
 
@@ -26,7 +26,7 @@ internal sealed partial class OpenKeyInEditorCommand : InvokableCommand
     internal OpenKeyInEditorCommand(RegistryEntry entry)
     {
         Name = Resources.OpenKeyInRegistryEditor;
-        Icon = new("\xE8A7"); // OpenInNewWindow icon
+        Icon = new IconInfo("\xE8A7"); // OpenInNewWindow icon
         _entry = entry;
     }
 

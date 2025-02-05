@@ -4,7 +4,7 @@
 
 using Microsoft.CmdPal.Ext.Shell.Commands;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Shell;
 
@@ -19,7 +19,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem
         Title = string.Empty;
         _executeItem.Name = string.Empty;
         Subtitle = Properties.Resources.generic_run_command;
-        Icon = new("\uE756");
+        Icon = new IconInfo("\uE756");
     }
 
     public override void UpdateQuery(string query)

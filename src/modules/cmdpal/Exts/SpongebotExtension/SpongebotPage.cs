@@ -7,8 +7,8 @@ using System.IO;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SpongebotExtension;
 
@@ -21,7 +21,7 @@ public partial class SpongebotPage : MarkdownPage, IFallbackHandler
     {
         Name = string.Empty;
 
-        Icon = new("https://imgflip.com/s/meme/Mocking-Spongebob.jpg");
+        Icon = new IconInfo("https://imgflip.com/s/meme/Mocking-Spongebob.jpg");
         Commands = [new CommandContextItem(CopyCommand)];
     }
 

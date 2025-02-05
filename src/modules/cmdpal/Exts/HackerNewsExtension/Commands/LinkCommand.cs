@@ -4,7 +4,7 @@
 
 using System.Diagnostics;
 using HackerNewsExtension.Data;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace HackerNewsExtension.Commands;
 
@@ -16,7 +16,7 @@ internal sealed partial class LinkCommand : InvokableCommand
     {
         _post = post;
         Name = "Open link";
-        Icon = new("\uE8A7");
+        Icon = new IconInfo("\uE8A7");
     }
 
     public override CommandResult Invoke()

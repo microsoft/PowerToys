@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace ProcessMonitorExtension;
 
@@ -15,7 +15,7 @@ internal sealed partial class ProcessListPage : ListPage
 {
     public ProcessListPage()
     {
-        this.Icon = new("\ue9d9");
+        this.Icon = new IconInfo("\ue9d9");
         this.Name = "Process Monitor";
     }
 

@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace YouTubeExtension.Commands;
 
@@ -15,7 +15,7 @@ internal sealed partial class OpenChannelLinkCommand : InvokableCommand
     {
         this._channelurl = url;
         this.Name = "Open channel";
-        this.Icon = new("\uF131");
+        this.Icon = new IconInfo("\uF131");
     }
 
     public override CommandResult Invoke()

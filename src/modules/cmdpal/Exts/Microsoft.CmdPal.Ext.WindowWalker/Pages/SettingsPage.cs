@@ -4,8 +4,8 @@
 
 using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Pages;
 
@@ -23,7 +23,7 @@ internal sealed partial class SettingsPage : FormPage
     public SettingsPage()
     {
         Name = Resources.windowwalker_settings_name;
-        Icon = new("\uE713"); // Settings icon
+        Icon = new IconInfo("\uE713"); // Settings icon
         _settingsManager = SettingsManager.Instance;
         _settings = _settingsManager.Settings;
 

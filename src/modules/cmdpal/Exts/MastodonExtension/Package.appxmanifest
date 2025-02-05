@@ -50,7 +50,7 @@
           </com:ComServer>
         </com:Extension>
         <uap3:Extension Category="windows.appExtension">
-          <uap3:AppExtension Name="com.microsoft.windows.commandpalette"
+          <uap3:AppExtension Name="com.microsoft.commandpalette"
             Id="PG-SP-ID"
             PublicFolder="Public"
             DisplayName="Mastodon extension for cmdpal"

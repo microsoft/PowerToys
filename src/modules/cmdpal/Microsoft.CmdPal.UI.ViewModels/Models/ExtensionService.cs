@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.CmdPal.Extensions;
+using Microsoft.CommandPalette.Extensions;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.AppExtensions;
 using Windows.Foundation;
@@ -143,7 +143,7 @@ public class ExtensionService : IExtensionService, IDisposable
 
     private static async Task<IsExtensionResult> IsValidCmdPalExtension(Package package)
     {
-        var extensions = await AppExtensionCatalog.Open("com.microsoft.windows.commandpalette").FindAllAsync();
+        var extensions = await AppExtensionCatalog.Open("com.microsoft.commandpalette").FindAllAsync();
         foreach (var extension in extensions)
         {
             if (package.Id?.FullName == extension.Package?.Id?.FullName)
@@ -185,7 +185,7 @@ public class ExtensionService : IExtensionService, IDisposable
         return (cmdPalProvider, classIds);
     }
 
-    private static async Task<IEnumerable<AppExtension>> GetInstalledAppExtensionsAsync() => await AppExtensionCatalog.Open("com.microsoft.windows.commandpalette").FindAllAsync();
+    private static async Task<IEnumerable<AppExtension>> GetInstalledAppExtensionsAsync() => await AppExtensionCatalog.Open("com.microsoft.commandpalette").FindAllAsync();
 
     public async Task<IEnumerable<IExtensionWrapper>> GetInstalledExtensionsAsync(bool includeDisabledExtensions = false)
     {

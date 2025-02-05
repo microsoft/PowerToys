@@ -4,8 +4,8 @@
 
 using System;
 using System.IO;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WinGet;
 
@@ -31,10 +31,10 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
          },
 
         new ListItem(
-            new OpenUrlCommand("ms-windows-store://assoc/?Tags=AppExtension-com.microsoft.windows.commandpalette"))
+            new OpenUrlCommand("ms-windows-store://assoc/?Tags=AppExtension-com.microsoft.commandpalette"))
          {
             Title = "Search for extensions on the Store",
-            Icon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory.ToString(), "Assets\\ms-store.png")),
+            Icon = new IconInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory.ToString(), "Assets\\ms-store.png")),
          },
     ];
 

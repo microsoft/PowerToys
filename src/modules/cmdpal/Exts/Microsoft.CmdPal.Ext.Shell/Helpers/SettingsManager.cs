@@ -5,7 +5,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.CmdPal.Ext.Shell.Properties;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Shell.Helpers;
 

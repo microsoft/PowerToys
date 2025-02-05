@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace YouTubeExtension.Commands;
 
@@ -15,7 +15,7 @@ internal sealed partial class OpenVideoLinkCommand : InvokableCommand
     {
         this._videourl = url;
         this.Name = "Open video";
-        this.Icon = new("\uE714");
+        this.Icon = new IconInfo("\uE714");
     }
 
     public override CommandResult Invoke()

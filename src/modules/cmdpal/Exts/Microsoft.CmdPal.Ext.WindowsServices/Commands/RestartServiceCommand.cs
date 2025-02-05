@@ -11,8 +11,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.WindowsServices.Helpers;
 using Microsoft.CmdPal.Ext.WindowsServices.Properties;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.UI;
 
 namespace Microsoft.CmdPal.Ext.WindowsServices.Commands;
@@ -25,7 +25,7 @@ internal sealed partial class RestartServiceCommand : InvokableCommand
     {
         _serviceResult = serviceResult;
         Name = Resources.wox_plugin_service_restart;
-        Icon = new("\xE72C"); // Refresh icon
+        Icon = new IconInfo("\xE72C"); // Refresh icon
     }
 
     public override CommandResult Invoke()

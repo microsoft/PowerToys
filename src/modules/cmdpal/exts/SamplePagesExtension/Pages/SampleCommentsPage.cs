@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SamplePagesExtension;
 
@@ -20,7 +20,7 @@ internal sealed partial class SampleCommentsPage : ContentPage
     public SampleCommentsPage()
     {
         Name = "View Posts";
-        Icon = new("\uE90A"); // Comment
+        Icon = new IconInfo("\uE90A"); // Comment
 
         myContentTree = new()
         {
@@ -28,9 +28,9 @@ internal sealed partial class SampleCommentsPage : ContentPage
             {
                 Body = """
 # Example of a thread of comments
-You can use TreeContent in combination with FormContent to build a structure like a page with comments. 
+You can use TreeContent in combination with FormContent to build a structure like a page with comments.
 
-The forms on this page use the AdaptiveCard `Action.ShowCard` action to show a nested, hidden card on the form. 
+The forms on this page use the AdaptiveCard `Action.ShowCard` action to show a nested, hidden card on the form.
 """,
             },
 

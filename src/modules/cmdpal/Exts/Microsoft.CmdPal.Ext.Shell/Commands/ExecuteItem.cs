@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CmdPal.Ext.Shell.Properties;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Shell.Commands;
 
@@ -26,17 +26,17 @@ internal sealed partial class ExecuteItem : InvokableCommand
         if (type == RunAsType.Administrator)
         {
             Name = Properties.Resources.cmd_run_as_administrator;
-            Icon = new("\xE7EF"); // Admin Icon
+            Icon = new IconInfo("\xE7EF"); // Admin Icon
         }
         else if (type == RunAsType.OtherUser)
         {
             Name = Properties.Resources.cmd_run_as_user;
-            Icon = new("\xE7EE"); // User Icon
+            Icon = new IconInfo("\xE7EE"); // User Icon
         }
         else
         {
             Name = Properties.Resources.generic_run_command;
-            Icon = new("\uE751"); // Return Key Icon
+            Icon = new IconInfo("\uE751"); // Return Key Icon
         }
 
         Cmd = cmd;

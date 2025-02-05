@@ -2,8 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -12,13 +13,13 @@ public partial class TopLevelCommandWrapper : ICommand
 {
     private readonly ExtensionObject<ICommand> _command;
 
-    public event TypedEventHandler<object, PropChangedEventArgs>? PropChanged;
+    public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged;
 
     public string Name { get; private set; } = string.Empty;
 
     public string Id { get; private set; } = string.Empty;
 
-    public IconInfo Icon { get; private set; } = new(null);
+    public IIconInfo Icon { get; private set; } = new IconInfo(null);
 
     public ICommand Command => _command.Unsafe!;
 
@@ -41,7 +42,7 @@ public partial class TopLevelCommandWrapper : ICommand
         model.PropChanged += this.PropChanged;
     }
 
-    private void Model_PropChanged(object sender, PropChangedEventArgs args)
+    private void Model_PropChanged(object sender, IPropChangedEventArgs args)
     {
         try
         {

@@ -4,8 +4,8 @@
 
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SamplePagesExtension;
 
@@ -13,7 +13,7 @@ internal sealed partial class SampleDynamicListPage : DynamicListPage
 {
     public SampleDynamicListPage()
     {
-        Icon = new(string.Empty);
+        Icon = new IconInfo(string.Empty);
         Name = "Dynamic List";
         IsLoading = true;
     }

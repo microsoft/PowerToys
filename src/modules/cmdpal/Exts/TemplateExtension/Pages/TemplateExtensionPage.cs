@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace TemplateExtension;
 
@@ -12,7 +12,7 @@ internal sealed partial class TemplateExtensionPage : ListPage
 {
     public TemplateExtensionPage()
     {
-        Icon = new(string.Empty);
+        Icon = new IconInfo(string.Empty);
         Name = "TemplateDisplayName";
     }
 

@@ -3,9 +3,9 @@
     "snippets":
     [
         {
-            "input": "pwsh -c .\\doc\\initial-sdk-spec\\generate-interface.ps1 > .\\extensionsdk\\Microsoft.CmdPal.Extensions\\Microsoft.CmdPal.Extensions.idl",
+            "input": "pwsh -c .\\doc\\initial-sdk-spec\\generate-interface.ps1 > .\\extensionsdk\\Microsoft.CommandPalette.Extensions\\Microsoft.CommandPalette.Extensions.idl",
             "name": "Generate interface",
-            "description": "Generate the interface from the SDK spec\nThis drops it into Microsoft.CmdPal.Extensions"
+            "description": "Generate the interface from the SDK spec\nThis drops it into Microsoft.CommandPalette.Extensions"
         },
         {
             "input": "tasklist | findstr Extension",

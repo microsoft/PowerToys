@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WindowsSettings;
 
@@ -20,7 +20,7 @@ public partial class WindowsSettingsCommandsProvider : CommandProvider
     {
         Id = "Windows.Settings";
         DisplayName = $"Windows Settings";
-        Icon = new("\uE713"); // Settings
+        Icon = new IconInfo("\uE713"); // Settings
 
         _windowsSettings = JsonSettingsListHelper.ReadAllPossibleSettings();
         _searchSettingsListItem = new CommandItem(new WindowsSettingsListPage(_windowsSettings))

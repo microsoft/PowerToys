@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.System;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
@@ -21,7 +21,7 @@ public partial class UrlCommand : InvokableCommand
     public UrlCommand(string name, string url, string type)
     {
         _url = url;
-        Icon = new(IconFromUrl(_url, type));
+        Icon = new IconInfo(IconFromUrl(_url, type));
         Name = name;
         Type = type;
         Url = url;

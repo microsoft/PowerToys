@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Timers;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualBasic;
 
 namespace SamplePagesExtension;
@@ -19,7 +19,7 @@ public partial class SampleUpdatingItemsPage : ListPage
     public SampleUpdatingItemsPage()
     {
         Name = "Open";
-        Icon = new(string.Empty);
+        Icon = new IconInfo(string.Empty);
     }
 
     public override IListItem[] GetItems()

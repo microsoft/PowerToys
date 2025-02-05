@@ -4,8 +4,8 @@
 
 using Microsoft.CmdPal.Ext.Registry.Classes;
 using Microsoft.CmdPal.Ext.Registry.Properties;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI;
 
@@ -21,19 +21,19 @@ internal sealed partial class CopyRegistryInfoCommand : InvokableCommand
         if (typeToCopy == CopyType.Key)
         {
             Name = Resources.CopyKeyNamePath;
-            Icon = new("\xE8C8"); // Copy Icon
+            Icon = new IconInfo("\xE8C8"); // Copy Icon
             _stringToCopy = entry.GetRegistryKey();
         }
         else if (typeToCopy == CopyType.ValueData)
         {
             Name = Resources.CopyValueData;
-            Icon = new("\xF413"); // CopyTo Icon
+            Icon = new IconInfo("\xF413"); // CopyTo Icon
             _stringToCopy = entry.GetValueData();
         }
         else if (typeToCopy == CopyType.ValueName)
         {
             Name = Resources.CopyValueName;
-            Icon = new("\xE8C8"); // Copy Icon
+            Icon = new IconInfo("\xE8C8"); // Copy Icon
             _stringToCopy = entry.GetValueNameWithKey();
         }
 

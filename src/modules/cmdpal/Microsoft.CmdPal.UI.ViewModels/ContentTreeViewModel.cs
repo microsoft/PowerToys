@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -47,9 +47,9 @@ public partial class ContentTreeViewModel(ITreeContent _tree, IPageContext conte
     }
 
     // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
-    private void Model_ItemsChanged(object sender, ItemsChangedEventArgs args) => FetchContent();
+    private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args) => FetchContent();
 
-    private void Model_PropChanged(object sender, PropChangedEventArgs args)
+    private void Model_PropChanged(object sender, IPropChangedEventArgs args)
     {
         try
         {

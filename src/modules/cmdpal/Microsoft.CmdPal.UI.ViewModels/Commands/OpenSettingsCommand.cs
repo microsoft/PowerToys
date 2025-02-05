@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 
@@ -14,7 +14,7 @@ public partial class OpenSettingsCommand : InvokableCommand
     public OpenSettingsCommand()
     {
         Name = "Open Settings";
-        Icon = new("\uE713");
+        Icon = new IconInfo("\uE713");
     }
 
     public override ICommandResult Invoke()

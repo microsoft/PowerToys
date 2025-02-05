@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SamplePagesExtension;
 
@@ -23,17 +23,17 @@ Markdown is a lightweight markup language with plain text formatting syntax. It'
     #### This is an <h4> tag
     ##### This is an <h5> tag
     ###### This is an <h6> tag
-    
+
 ### Emphasis
 
     *This text will be italic*
     _This will also be italic_
-    
+
     **This text will be bold**
     __This will also be bold__
-    
+
     _You **can** combine them_
-    
+
 Result:
 
 *This text will be italic*
@@ -64,14 +64,14 @@ Result:
 
 **Ordered:**
 
-    1. Tidy the kitchen  
-    2. Prepare ingredients  
+    1. Tidy the kitchen
+    2. Prepare ingredients
     3. Cook delicious things
 
 Result:
 
-1. Tidy the kitchen  
-2. Prepare ingredients  
+1. Tidy the kitchen
+2. Prepare ingredients
 3. Cook delicious things
 
 ### Images
@@ -85,7 +85,7 @@ Result:
 ### Links
 
     [example](http://example.com)
-    
+
 Result:
 
 [example](http://example.com)
@@ -163,7 +163,7 @@ Result:
 
     public SampleMarkdownPage()
     {
-        Icon = new(string.Empty);
+        Icon = new IconInfo(string.Empty);
         Name = "Sample Markdown Page";
     }
 

@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SamplePagesExtension;
 
@@ -11,7 +11,7 @@ internal sealed partial class SampleListPage : ListPage
 {
     public SampleListPage()
     {
-        Icon = new("\uEA37");
+        Icon = new IconInfo("\uEA37");
         Name = "Sample List Page";
     }
 

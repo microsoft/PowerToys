@@ -7,8 +7,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
 
 namespace VirtualDesktopExtension;
@@ -17,7 +17,7 @@ internal sealed partial class VirtualDesktopExtensionPage : ListPage
 {
     public VirtualDesktopExtensionPage()
     {
-        Icon = new(string.Empty);
+        Icon = new IconInfo(string.Empty);
         Name = "Virtual Desktops";
         Id = "com.zadjii.VirtualDesktopsList";
     }
@@ -44,7 +44,7 @@ internal sealed partial class VirtualDesktopExtensionPage : ListPage
             {
                 Title = d.Name,
                 Subtitle = $"Desktop {d.Index + 1}",
-                Icon = new(d.Wallpaper),
+                Icon = new IconInfo(d.Wallpaper),
                 Tags = d.IsVisible ? [new Tag() { Text = "Current" }] : [],
             };
             items.Add(li);

@@ -12,8 +12,8 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Windowing;
 using SSHKeychainExtension.Commands;
 using SSHKeychainExtension.Data;
@@ -28,7 +28,7 @@ internal sealed partial class SSHHostsListPage : ListPage
 
     public SSHHostsListPage()
     {
-        Icon = new("https://cdn-icons-png.flaticon.com/512/5558/5558264.png");
+        Icon = new IconInfo("https://cdn-icons-png.flaticon.com/512/5558/5558264.png");
         Name = "SSH Keychain";
     }
 

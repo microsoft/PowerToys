@@ -11,8 +11,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.WinGet.Pages;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Management.Deployment;
 
 namespace Microsoft.CmdPal.Ext.WinGet;

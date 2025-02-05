@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Linq;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
@@ -18,7 +18,7 @@ public partial class AllAppsCommandProvider : CommandProvider
     {
         Id = "AllApps";
         DisplayName = "Installed apps";
-        Icon = new("\ue71d");
+        Icon = new IconInfo("\ue71d");
 
         _listItem = new(Page) { Subtitle = "Search installed apps" };
     }

@@ -5,7 +5,7 @@
 using System.Globalization;
 using System.Text;
 using Microsoft.CmdPal.Ext.WebSearch.Helpers;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using BrowserInfo = Microsoft.CmdPal.Ext.WebSearch.Helpers.DefaultBrowserInfo;
 
 namespace Microsoft.CmdPal.Ext.WebSearch.Commands;
@@ -22,7 +22,7 @@ internal sealed partial class FallbackExecuteSearchItem : FallbackCommandItem
         Title = string.Empty;
         _executeItem.Name = string.Empty;
         Subtitle = string.Format(CultureInfo.CurrentCulture, PluginOpen, BrowserInfo.Name ?? BrowserInfo.MSEdgeName);
-        Icon = new("\uF6FA"); // WebSearch icon
+        Icon = new IconInfo("\uF6FA"); // WebSearch icon
     }
 
     public override void UpdateQuery(string query)

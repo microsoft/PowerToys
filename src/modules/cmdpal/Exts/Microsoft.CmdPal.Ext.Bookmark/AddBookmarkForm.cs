@@ -5,7 +5,7 @@
 using System;
 using System.IO;
 using System.Text.Json.Nodes;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;

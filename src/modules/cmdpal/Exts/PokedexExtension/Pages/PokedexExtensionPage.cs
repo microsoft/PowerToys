@@ -5,8 +5,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace PokedexExtension;
 
@@ -60,7 +60,7 @@ internal sealed partial class PokemonListItem : ListItem
     {
         Pokemon = p;
         Title = Pokemon.Name;
-        Icon = new(Pokemon.IconUrl);
+        Icon = new IconInfo(Pokemon.IconUrl);
         Subtitle = $"#{Pokemon.Number}";
         Tags = Pokemon.Types.Select(t => new Tag() { Text = t, Background = PokedexExtensionPage.GetColorForType(t) }).ToArray();
     }
@@ -468,7 +468,7 @@ internal sealed partial class PokedexExtensionPage : ListPage
 
     public PokedexExtensionPage()
     {
-        Icon = new("https://e7.pngegg.com/pngimages/311/5/png-clipart-pokedex-pokemon-go-hoenn-pokemon-x-and-y-hoenn-pokedex-pokemon-ash-thumbnail.png");
+        Icon = new IconInfo("https://e7.pngegg.com/pngimages/311/5/png-clipart-pokedex-pokemon-go-hoenn-pokemon-x-and-y-hoenn-pokedex-pokemon-ash-thumbnail.png");
         Name = "Pokedex";
     }
 

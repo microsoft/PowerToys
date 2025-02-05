@@ -13,7 +13,7 @@ public interface IExtensionService
     Task<IEnumerable<IExtensionWrapper>> GetInstalledExtensionsAsync(bool includeDisabledExtensions = false);
 
     // Task<IEnumerable<string>> GetInstalledHomeWidgetPackageFamilyNamesAsync(bool includeDisabledExtensions = false);
-    Task<IEnumerable<IExtensionWrapper>> GetInstalledExtensionsAsync(Microsoft.CmdPal.Extensions.ProviderType providerType, bool includeDisabledExtensions = false);
+    Task<IEnumerable<IExtensionWrapper>> GetInstalledExtensionsAsync(Microsoft.CommandPalette.Extensions.ProviderType providerType, bool includeDisabledExtensions = false);
 
     IExtensionWrapper? GetInstalledExtension(string extensionUniqueId);
 

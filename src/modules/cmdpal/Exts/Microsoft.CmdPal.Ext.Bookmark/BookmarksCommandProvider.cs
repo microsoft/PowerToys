@@ -6,8 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
@@ -20,7 +20,7 @@ public partial class BookmarksCommandProvider : CommandProvider
     {
         Id = "Bookmarks";
         DisplayName = "Bookmarks";
-        Icon = new("\uE718"); // Pin
+        Icon = new IconInfo("\uE718"); // Pin
 
         _addNewCommand.AddedCommand += AddNewCommand_AddedCommand;
     }

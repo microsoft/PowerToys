@@ -7,8 +7,8 @@ using System.IO;
 using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using YouTubeExtension.Helper;
 
 namespace YouTubeExtension.Pages;
@@ -20,7 +20,7 @@ internal sealed partial class YouTubeVideoInfoMarkdownPage : MarkdownPage
 
     public YouTubeVideoInfoMarkdownPage(YouTubeVideo video)
     {
-        Icon = new("\uE946");
+        Icon = new IconInfo("\uE946");
         Name = "See more information about this video";
         _video = video;
     }
@@ -70,7 +70,7 @@ internal sealed partial class YouTubeVideoInfoMarkdownPage : MarkdownPage
 
 ---
 
-_Last updated: {DateTime.Now:MMMM dd, yyyy}_  
+_Last updated: {DateTime.Now:MMMM dd, yyyy}_
 _Data sourced via YouTube API_
 ";
 

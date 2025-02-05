@@ -7,8 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace YouTubeExtension.Pages;
 
@@ -21,6 +21,6 @@ internal sealed partial class YouTubeAPIPage : FormPage
     public YouTubeAPIPage()
     {
         Name = "Edit YouTube API Key";
-        Icon = new("https://www.youtube.com/favicon.ico");
+        Icon = new IconInfo("https://www.youtube.com/favicon.ico");
     }
 }

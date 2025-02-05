@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SamplePagesExtension;
 
@@ -10,7 +10,7 @@ internal sealed partial class SampleMarkdownDetails : MarkdownPage
 {
     public SampleMarkdownDetails()
     {
-        Icon = new(string.Empty);
+        Icon = new IconInfo(string.Empty);
         Name = "Markdown with Details";
         Details = new Details()
         {
@@ -26,7 +26,7 @@ So you can have markdown...
 """,
 """
 But what this is really useful for is the tags and other things you can put into
-Details. Which I'd do. **IF I HAD ANY**. 
+Details. Which I'd do. **IF I HAD ANY**.
 """
     ];
 }

@@ -195,13 +195,13 @@ jobs:
            "packages.config" | "$(Agent.OS)"
            "packages.config"
         path: packages
-  
+
   - ${{ if eq(parameters.useLatestWinAppSDK, true)}}:
     - template: .\steps-update-winappsdk-and-restore-nuget.yml
       parameters:
         versionNumber: ${{ parameters.winAppSDKVersionNumber }}
         useExperimentalVersion: ${{ parameters.useExperimentalVersion }}
-  
+
   - ${{ if eq(parameters.useLatestWinAppSDK, false)}}:
     - template: .\steps-restore-nuget.yml
 
@@ -240,8 +240,8 @@ jobs:
     displayName: Stage SDK/build
     inputs:
       contents: |-
-        "**/cmdpal/extensionsdk/nuget/Microsoft.CmdPal.Extensions.SDK.props"
-        "**/cmdpal/extensionsdk/nuget/Microsoft.CmdPal.Extensions.SDK.targets"
+        "**/cmdpal/extensionsdk/nuget/Microsoft.CommandPalette.Extensions.SDK.props"
+        "**/cmdpal/extensionsdk/nuget/Microsoft.CommandPalette.Extensions.SDK.targets"
       flattenFolders: True
       targetFolder: $(JobOutputDirectory)/sdk/build
 
@@ -249,8 +249,8 @@ jobs:
     displayName: Stage SDK/lib
     inputs:
       contents: |-
-        "**/Microsoft.CmdPal.Extensions.Helpers/$(BuildPlatform)/release/WinUI3Apps/CmdPal/Microsoft.CmdPal.Extensions.Helpers.dll"
-        "**/Microsoft.CmdPal.Extensions.Helpers/$(BuildPlatform)/release/WinUI3Apps/CmdPal/Microsoft.CmdPal.Extensions.Helpers.deps.json"
+        "**/Microsoft.CommandPalette.Extensions.Toolkit/$(BuildPlatform)/release/WinUI3Apps/CmdPal/Microsoft.CommandPalette.Extensions.Toolkit.dll"
+        "**/Microsoft.CommandPalette.Extensions.Toolkit/$(BuildPlatform)/release/WinUI3Apps/CmdPal/Microsoft.CommandPalette.Extensions.Toolkit.deps.json"
       flattenFolders: True
       targetFolder: $(JobOutputDirectory)/sdk/lib/net8.0-windows10.0.19041.0
 
@@ -258,7 +258,7 @@ jobs:
     displayName: Stage SDK/winmd
     inputs:
       contents: |-
-        "**/Microsoft.CmdPal.Extensions/$(BuildPlatform)/release/Microsoft.CmdPal.Extensions/Microsoft.CmdPal.Extensions.winmd"
+        "**/Microsoft.CommandPalette.Extensions/$(BuildPlatform)/release/Microsoft.CommandPalette.Extensions/Microsoft.CommandPalette.Extensions.winmd"
       flattenFolders: True
       targetFolder: $(JobOutputDirectory)/sdk/winmd
 
@@ -482,7 +482,7 @@ jobs:
       $machinePlat = "hash_machine_$(BuildPlatform).txt";
       $combinedUserPath = $p + $userPlat;
       $combinedMachinePath = $p + $machinePlat;
-      
+
       echo $p
 
       echo $userPlat
@@ -492,7 +492,7 @@ jobs:
       echo $machinePlat
       echo $machineHash
       echo $combinedMachinePath
-      
+
       $userHash | out-file -filepath $combinedUserPath
       $machineHash | out-file -filepath $combinedMachinePath
     displayName: Calculate file hashes

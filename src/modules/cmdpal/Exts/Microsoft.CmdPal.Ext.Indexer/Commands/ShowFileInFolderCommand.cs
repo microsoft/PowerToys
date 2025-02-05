@@ -8,7 +8,7 @@ using System.IO;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Commands;
 
@@ -20,7 +20,7 @@ internal sealed partial class ShowFileInFolderCommand : InvokableCommand
     {
         this._item = item;
         this.Name = Resources.Indexer_Command_ShowInFolder;
-        this.Icon = new("\uE838");
+        this.Icon = new IconInfo("\uE838");
     }
 
     public override CommandResult Invoke()

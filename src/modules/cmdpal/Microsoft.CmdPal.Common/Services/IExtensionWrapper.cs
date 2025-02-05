@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.Extensions;
+using Microsoft.CommandPalette.Extensions;
 using Windows.ApplicationModel;
 
 namespace Microsoft.CmdPal.Common.Services;

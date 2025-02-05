@@ -10,8 +10,8 @@ using System.Resources;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.WindowsServices.Helpers;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.UI;
 
 namespace Microsoft.CmdPal.Ext.WindowsServices.Commands;
@@ -28,11 +28,11 @@ internal sealed partial class ServiceCommand : InvokableCommand
         Name = action.ToString();
         if (serviceResult.IsRunning)
         {
-            Icon = new("\xE71A"); // Stop icon
+            Icon = new IconInfo("\xE71A"); // Stop icon
         }
         else
         {
-            Icon = new("\xEDB5"); // Playbadge12 icon
+            Icon = new IconInfo("\xEDB5"); // Playbadge12 icon
         }
     }
 

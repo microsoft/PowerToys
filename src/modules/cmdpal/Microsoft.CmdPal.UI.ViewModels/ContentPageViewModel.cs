@@ -6,10 +6,10 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -38,7 +38,7 @@ public partial class ContentPageViewModel : PageViewModel
     }
 
     // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
-    private void Model_ItemsChanged(object sender, ItemsChangedEventArgs args) => FetchContent();
+    private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args) => FetchContent();
 
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
     private void FetchContent()

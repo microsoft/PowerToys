@@ -4,7 +4,7 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Media.Control;
 
 namespace MediaControlsExtension;
@@ -41,7 +41,7 @@ internal sealed partial class MediaListItem : CommandItem
         if (properties == null)
         {
             var a = (TogglePlayMediaCommand)this.Command;
-            a.Icon = new(string.Empty);
+            a.Icon = new IconInfo(string.Empty);
             a.Name = "No media playing";
 
             return;
@@ -57,12 +57,12 @@ internal sealed partial class MediaListItem : CommandItem
         var internalAction = (TogglePlayMediaCommand)this.Command;
         if (status == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused)
         {
-            internalAction.Icon = new("\ue768"); // play
+            internalAction.Icon = new IconInfo("\ue768"); // play
             internalAction.Name = "Paused";
         }
         else if (status == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
         {
-            internalAction.Icon = new("\ue769"); // pause
+            internalAction.Icon = new IconInfo("\ue769"); // pause
             internalAction.Name = "Playing";
         }
 

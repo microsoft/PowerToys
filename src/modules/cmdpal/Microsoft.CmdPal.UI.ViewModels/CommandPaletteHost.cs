@@ -5,8 +5,8 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;

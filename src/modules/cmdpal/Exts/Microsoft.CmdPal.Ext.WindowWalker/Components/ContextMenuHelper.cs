@@ -4,12 +4,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Windows;
-using ABI.Microsoft.CmdPal.Extensions;
 using Microsoft.CmdPal.Ext.WindowWalker.Commands;
 using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
-using Microsoft.CmdPal.Ext.WindowWalker.Properties;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.System;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Components;
@@ -18,16 +15,16 @@ internal sealed class ContextMenuHelper
 {
     internal static List<CommandContextItem> GetContextMenuResults(in WindowWalkerListItem listItem)
     {
-        if (!(listItem?.Window is Window windowData))
+        if (listItem?.Window is not Window windowData)
         {
-            return new List<CommandContextItem>(0);
+            return [];
         }
 
         var contextMenu = new List<CommandContextItem>()
         {
             new(new CloseWindowCommand(windowData))
             {
-                RequestedShortcut = new(true, false, false, false, (int)VirtualKey.F4, 0),
+                RequestedShortcut = KeyChordHelpers.FromModifiers(true, false, false, false, (int)VirtualKey.F4, 0),
             },
         };
 
@@ -38,7 +35,7 @@ internal sealed class ContextMenuHelper
         {
             contextMenu.Add(new CommandContextItem(new KillProcessCommand(windowData))
             {
-                RequestedShortcut = new(true, false, false, false, (int)VirtualKey.Delete, 0),
+                RequestedShortcut = KeyChordHelpers.FromModifiers(true, false, false, false, (int)VirtualKey.Delete, 0),
             });
         }
 

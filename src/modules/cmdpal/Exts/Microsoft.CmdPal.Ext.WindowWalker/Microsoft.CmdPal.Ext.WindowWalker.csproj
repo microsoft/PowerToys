@@ -8,7 +8,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\extensionsdk\Microsoft.CmdPal.Extensions.Helpers\Microsoft.CmdPal.Extensions.Helpers.csproj" />
+    <ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">

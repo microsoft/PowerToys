@@ -4,8 +4,8 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Nodes;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SamplePagesExtension;
 
@@ -19,7 +19,7 @@ internal sealed partial class SampleContentPage : ContentPage
     public SampleContentPage()
     {
         Name = "Sample Content";
-        Icon = new(string.Empty);
+        Icon = new IconInfo(string.Empty);
     }
 }
 
@@ -308,7 +308,7 @@ internal sealed partial class SampleTreeContentPage : ContentPage
     public SampleTreeContentPage()
     {
         Name = Title = "Sample Content";
-        Icon = new("\uE81E");
+        Icon = new IconInfo("\uE81E");
 
         myContentTree = new()
         {

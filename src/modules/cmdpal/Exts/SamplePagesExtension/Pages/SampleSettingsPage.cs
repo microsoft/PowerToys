@@ -4,8 +4,8 @@
 
 using System.Collections.Generic;
 using System.Reflection.Emit;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SamplePagesExtension;
 
@@ -31,7 +31,7 @@ internal sealed partial class SampleSettingsPage : FormPage
     public SampleSettingsPage()
     {
         Name = "Sample Settings";
-        Icon = new(string.Empty);
+        Icon = new IconInfo(string.Empty);
         _settings.Add(new ToggleSetting("onOff", true)
             {
                 Label = "This is a toggle",

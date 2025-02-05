@@ -11,7 +11,7 @@ using Microsoft.CmdPal.Ext.Registry.Commands;
 using Microsoft.CmdPal.Ext.Registry.Constants;
 using Microsoft.CmdPal.Ext.Registry.Enumerations;
 using Microsoft.CmdPal.Ext.Registry.Properties;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Win32;
 
 namespace Microsoft.CmdPal.Ext.Registry.Helpers;

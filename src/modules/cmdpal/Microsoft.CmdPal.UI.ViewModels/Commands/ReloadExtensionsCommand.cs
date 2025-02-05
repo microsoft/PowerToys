@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Extensions;
-using Microsoft.CmdPal.Extensions.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 
@@ -13,7 +13,7 @@ public partial class ReloadExtensionsCommand : InvokableCommand
 {
     public ReloadExtensionsCommand()
     {
-        Icon = new("\uE72C"); // Refresh icon
+        Icon = new IconInfo("\uE72C"); // Refresh icon
     }
 
     public override ICommandResult Invoke()

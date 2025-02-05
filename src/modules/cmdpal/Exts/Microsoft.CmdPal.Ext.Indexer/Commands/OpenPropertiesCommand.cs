@@ -8,7 +8,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Native;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
-using Microsoft.CmdPal.Extensions.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
@@ -52,7 +52,7 @@ internal sealed partial class OpenPropertiesCommand : InvokableCommand
     {
         this._item = item;
         this.Name = Resources.Indexer_Command_OpenProperties;
-        this.Icon = new("\uE90F");
+        this.Icon = new IconInfo("\uE90F");
     }
 
     public override CommandResult Invoke()
