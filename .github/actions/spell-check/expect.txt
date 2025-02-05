@@ -97,7 +97,6 @@ Autorun
 AUTOTICKS
 AUTOUPDATE
 AValid
-AVery
 awakeness
 AWAYMODE
 azcliversion
@@ -991,7 +990,6 @@ mst
 msvcp
 msvsmon
 MTND
-mtu
 MULTIPLEUSE
 multizone
 murmurhash
@@ -1407,7 +1405,6 @@ ROWSETEXT
 rpcrt
 RRF
 rrr
-rsdk
 rsop
 Rsp
 rstringalnum

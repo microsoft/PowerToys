@@ -220,7 +220,7 @@ In this release, we focused on new features, stability, and improvements.
  - Updated many .NET packages from .NET 9.0.0 to 9.0.1 for security fixes. Thanks [@snickler](https://github.com/snickler)!
  - Refactored the Mouse Without Borders Common.Log.cs and Common.Receiver.cs files. Thanks [@mikeclayton](https://github.com/mikeclayton)!
 
-#### What is being planned for version 0.88
+#### What is being planned for version 0.89
 
 For [v0.89][github-next-release-work], we'll work on the items below:
 
